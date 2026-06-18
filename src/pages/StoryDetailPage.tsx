@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  BookOpen, Bookmark, Bell, Share2, ChevronLeft, ChevronRight,
-  X, Clock, Star, TrendingUp, Heart, MessageCircle,
+  BookOpen, Bookmark, Bell, Share2, ChevronLeft, ChevronRight, Clock, Star, TrendingUp, Heart, MessageCircle,
 } from "lucide-react";
 import BackToCockpit from "../components/BackToCockpit";
 import { getStory } from "../lib/storiesData";

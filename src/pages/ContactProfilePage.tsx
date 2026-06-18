@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  ArrowLeft, Shield, Zap, Star, MapPin, Sparkles, MessageSquare,
+  ArrowLeft, MapPin, Sparkles, MessageSquare,
   UserPlus, UserCheck, Clock, CheckCircle2, ExternalLink, ChevronRight,
 } from "lucide-react";
 import {

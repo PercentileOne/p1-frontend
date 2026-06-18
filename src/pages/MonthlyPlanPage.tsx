@@ -112,7 +112,7 @@ export default function MonthlyPlanPage() {
           </div>
 
           {WEEKS.map((week, wi) => {
-            const weekBlocks = week.days.flatMap(d => PlanningEngine.blocksForDay(DEMO_BLOCKS, d));
+
             return (
               <div key={wi} className={`grid grid-cols-8 gap-1 mb-1`}>
                 <div className={`text-[9px] text-right pr-2 flex items-center justify-end ${week.highlight ? "text-indigo-400 font-bold" : "text-slate-600"}`}>

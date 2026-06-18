@@ -181,13 +181,16 @@ export default function UniversityShell() {
                     onSelectCohort={cohort => setView({ type: "cohort", cohort })}
                   />
                 </>
-              ) : (
+              ) : view.type === "cohort" ? (
                 <CohortAnalytics
                   cohort={view.cohort}
                   programmes={profile.programmes}
                   universityId={profile.id}
                   onBack={() => setView({ type: "dashboard" })}
                 />
+              ) : (
+                <div />
+
               )}
             </motion.div>
           </AnimatePresence>

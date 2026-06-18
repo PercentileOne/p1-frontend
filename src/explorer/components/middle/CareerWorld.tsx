@@ -1,4 +1,5 @@
 import React from "react";
+import type { Career } from "../../../data/models/Career";
 import { careers } from "../../../data/careers";
 
 import { CareerHeroSection } from "../right/sections/CareerHeroSection";
@@ -11,7 +12,7 @@ interface CareerWorldProps {
 }
 
 export const CareerWorld: React.FC<CareerWorldProps> = ({ careerId }) => {
-  const career = careers.find((c) => c.id === careerId);
+  const career = careers.find((c) => c.id === careerId) as unknown as Career | undefined;
 
   if (!career) {
     return <div>Career not found.</div>;

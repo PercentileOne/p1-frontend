@@ -1,9 +1,8 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Sparkles, CheckCircle2, AlertTriangle, Shield,
-  TrendingUp, TrendingDown, Flame, Target, BarChart3, Edit3,
+  ArrowLeft, Sparkles, CheckCircle2, AlertTriangle, Shield, Target, BarChart3,
   ChevronRight, Star, Activity, Zap,
 } from "lucide-react";
 import { getCurrentCycle, CycleAgent, formatCycleDate } from "../lib/cycleEngine";
@@ -11,23 +10,13 @@ import { getCurrentCycle, CycleAgent, formatCycleDate } from "../lib/cycleEngine
 export default function MidReviewPage() {
   const navigate = useNavigate();
   const cycle    = getCurrentCycle();
-  const [agentLoading, setAgentLoading] = useState(false);
-  const [agentDone, setAgentDone]       = useState(false);
-  const [adjustments, setAdjustments]   = useState(CycleAgent.suggestAdjustments(cycle));
+  const [adjustments, _setAdjustments]   = useState(CycleAgent.suggestAdjustments(cycle));
 
   const midNotes     = CycleAgent.generateMidReview(cycle);
   const risks        = CycleAgent.detectCycleRisk(cycle);
   const momentum     = CycleAgent.calculateMomentumScore(cycle);
   const allMilestone = cycle.goals.flatMap(g => g.milestones);
   const doneMilestone = allMilestone.filter(m => m.status === "completed");
-  const atRisk        = allMilestone.filter(m => m.status === "at_risk");
-
-  const runAgent = async () => {
-    setAgentLoading(true);
-    await new Promise(r => setTimeout(r, 1200));
-    setAgentLoading(false);
-    setAgentDone(true);
-  };
 
   return (
     <div className="min-h-screen bg-[#0f1117] text-slate-200 font-sans">

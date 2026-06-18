@@ -8,7 +8,7 @@ import {
   Users, BookOpen, ClipboardList, BarChart2,
   AlertTriangle, CheckCircle, Clock, Zap, TrendingUp,
 } from "lucide-react";
-import { computeClassHeatmap, heatColor, heatTextColor } from "../heatmapEngine";
+import { computeClassHeatmap, heatTextColor } from "../heatmapEngine";
 import type { Class } from "../teacherStore";
 
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
   onSelectClass: (cls: Class) => void;
 }
 
-function fmtDate(d: Date) {
+export function fmtDate(d: Date) {
   return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 

@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Plus, Search, ChevronDown, Star, Sparkles, Trophy,
+  ArrowLeft, Plus, Search, ChevronDown, Star, Sparkles,
   Calendar, CheckCircle2, TrendingUp, Clock, ChevronRight, Flame,
-  Target, Activity, BarChart3, Zap,
+  Target, Activity, Zap,
 } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════════════
@@ -542,7 +542,7 @@ export default function GoalsPage() {
 function Section({
   id, title, badge, children, collapsed, toggle,
 }: {
-  id: string; title: string; badge?: string; children: React.ReactNode;
+  id: string; title: string; badge?: string; accent?: string; children: React.ReactNode;
   collapsed: Record<string,boolean>; toggle: (id:string)=>void;
 }) {
   const isCollapsed = collapsed[id] ?? false;

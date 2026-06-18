@@ -7,7 +7,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   GraduationCap, Home, BookOpen, ClipboardList,
-  Zap, ChevronRight, ArrowLeft,
+  Zap, ChevronRight,
 } from "lucide-react";
 import { useSubjectsStore } from "../features/student/subjectsStore";
 import { useHomeworkStore }  from "../features/student/homeworkStore";

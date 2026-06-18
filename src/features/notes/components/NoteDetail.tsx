@@ -1,4 +1,4 @@
-﻿/* ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════
    NoteDetail — 3 tabs: Note · AI Summary · Concepts
    Full editing, AI generation, card creation, group sharing
    ══════════════════════════════════════════════════════════════ */
@@ -29,7 +29,7 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
 ];
 
 // ── Share to Group inline picker ──────────────────────────────────
-function ShareNoteButton({ noteTitle, noteId }: { noteTitle: string; noteId: string }) {
+function ShareNoteButton({ noteTitle }: { noteTitle: string; noteId?: string }) {
   const groupsStore = useGroupsStore();
   const [open,   setOpen]   = useState(false);
   const [shared, setShared] = useState<string | null>(null);

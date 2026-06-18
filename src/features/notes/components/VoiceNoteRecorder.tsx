@@ -58,7 +58,7 @@ function Waveform({ active }: { active: boolean }) {
 
 // ── Pulsing mic ring ──────────────────────────────────────────────
 
-function MicRing({ active }: { active: boolean }) {
+export function MicRing({ active }: { active: boolean }) {
   return (
     <div className="relative flex items-center justify-center">
       {active && (

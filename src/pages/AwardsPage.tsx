@@ -375,7 +375,7 @@ export default function AwardsPage() {
                         { tier: "gold" as const,   label: "Gold Award",   desc: "Monthly category winner"     },
                         { tier: "silver" as const, label: "Silver Award", desc: "Weekly category winner"      },
                         { tier: "bronze" as const, label: "Bronze Award", desc: "Runner-up / honourable mention" },
-                      ].map(({ tier, label, desc }) => {
+                      ].map(({ tier, desc }) => {
                         const mockWinner = { ...WEEKLY_WINNERS[0], tier, category: "Story of the Week" as const, id: `badge-${tier}`, period: "Jun 2026" };
                         return (
                           <div key={tier} className="flex items-center gap-3">

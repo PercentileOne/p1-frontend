@@ -151,7 +151,7 @@ interface Props {
   onStudy?: (cardId: string) => void;
 }
 
-export default function ReadinessView({ cert, result }: Props) {
+export default function ReadinessView({ result }: Props) {
   const {
     readinessScore, weakConcepts, strongConcepts,
     recommendedChapters, predictedExamScore, sectionScores,

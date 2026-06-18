@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  Timer, Sparkles, ChevronRight, History, BarChart2,
+  Timer, Sparkles, History, BarChart2,
   Target, Clock,
 } from "lucide-react";
 import BackToCockpit from "../components/BackToCockpit";

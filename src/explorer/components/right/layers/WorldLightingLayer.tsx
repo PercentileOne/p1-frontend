@@ -1,32 +1,23 @@
-import React from "react";
 import { motion } from "framer-motion";
+import { useExplorerMachine } from "../../../state/useExplorerMachine";
+import { useEmotionalMemory } from "../../../state/useEmotionalMemory";
 
-type Props = {
-  selectedCareerId: string | null;
-  machineState: string;
-  emotionalMemory: any;
-};
+export const WorldLightingLayer = () => {
+  const machineState    = useExplorerMachine((s) => s.state);
+  const selectedCareerId = useExplorerMachine((s) => s.selectedCareerId);
+  const viewedCareerIds  = useEmotionalMemory((s) => s.viewedCareerIds);
 
-export const WorldLightingLayer = ({
-  selectedCareerId,
-  machineState,
-  emotionalMemory,
-}: Props) => {
-  // Emotional tint based on transition type
   const tint =
     machineState === "enteringCareer"
-      ? "rgba(255,183,76,0.12)" // warm golden tint for commitment
+      ? "rgba(255,183,76,0.12)"
       : machineState === "enteringSubcategory"
-        ? "rgba(72,199,236,0.12)" // cool teal tint for exploration
+        ? "rgba(72,199,236,0.12)"
         : machineState === "enteringCategory"
-          ? "rgba(255,255,255,0.06)" // soft neutral fade
+          ? "rgba(255,255,255,0.06)"
           : "transparent";
 
-  // Optional: memory-aware lighting (future expansion)
   const familiarityBoost =
-    selectedCareerId && emotionalMemory?.viewedCareerIds?.has(selectedCareerId)
-      ? 0.04
-      : 0;
+    selectedCareerId && viewedCareerIds.has(selectedCareerId) ? 0.04 : 0;
 
   return (
     <motion.div
@@ -38,19 +29,10 @@ export const WorldLightingLayer = ({
         inset: 0,
         pointerEvents: "none",
         zIndex: 3,
-
-        // Base lighting gradient
-        background: `
-          radial-gradient(
-            circle at 50% 20%,
-            rgba(255,255,255,${0.08 + familiarityBoost}),
-            rgba(0,0,0,0.0) 60%
-          )
-        `,
+        background: `radial-gradient(circle at 50% 20%, rgba(255,255,255,${0.08 + familiarityBoost}), rgba(0,0,0,0.0) 60%)`,
         mixBlendMode: "screen",
       }}
     >
-      {/* Emotional tint overlay */}
       <div
         style={{
           position: "absolute",

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  BookOpen, Plus, X, ChevronDown, ChevronUp, Save, Send,
+  BookOpen, Plus, ChevronDown, ChevronUp, Save, Send,
   ArrowLeft, Sparkles, Trash2, GripVertical,
 } from "lucide-react";
 import BackToCockpit from "../components/BackToCockpit";

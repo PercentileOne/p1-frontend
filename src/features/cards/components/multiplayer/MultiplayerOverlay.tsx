@@ -7,7 +7,7 @@
    ══════════════════════════════════════════════════════════════ */
 
 import { useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Radio, Clock } from "lucide-react";
 import type { CognitiveCardData } from "../../types";
 import type { MPStore } from "../../multiplayerStore";
@@ -23,7 +23,7 @@ interface Props {
 
 // ── Per-player score bar ──────────────────────────────────────────
 function PlayerBar({
-  initials, accent, name, currentScore, done, isLocal, revealedCount, totalConcepts,
+  initials, accent, name, currentScore, done, isLocal,
 }: {
   initials: string; accent: string; name: string;
   currentScore: number; done: boolean;
@@ -58,7 +58,7 @@ function PlayerBar({
 export default function MultiplayerOverlay({ card, mpStore }: Props) {
   const store       = useTestStore(card);
   const submittedRef = useRef(false);
-  const { participants, results, elapsedSeconds, localUserId } = mpStore;
+  const { participants, results, elapsedSeconds } = mpStore;
   const timeLimit   = card.testConfig.timeLimitSeconds;
   const timeLeft    = Math.max(0, timeLimit - elapsedSeconds);
 

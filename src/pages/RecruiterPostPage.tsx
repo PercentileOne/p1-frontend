@@ -2,8 +2,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, ArrowRight, CheckCircle2, FileText, DollarSign,
-  MapPin, Zap, Sparkles, Send, Plus, X,
+  ArrowLeft, ArrowRight, CheckCircle2, DollarSign,
+  MapPin, Sparkles, Send, Plus, X,
 } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════════════

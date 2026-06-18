@@ -1,4 +1,4 @@
-﻿/* ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════
    COHORT ANALYTICS — Phase 11
    Tabs: Overview · Heatmap · Trends · Applicants
    ══════════════════════════════════════════════════════════════ */
@@ -344,7 +344,7 @@ function ApplicantsTab({
       {ranked.map(r => {
         const student = cohort.students.find(s => s.studentId === r.studentId);
         if (!student) return null;
-        const perm = getPermission(student.studentId, universityId);
+        void getPermission(student.studentId, universityId);
         return (
           <motion.button
             key={r.studentId}

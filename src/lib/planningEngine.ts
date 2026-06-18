@@ -355,7 +355,7 @@ export class PlanningEngine {
     return total > 600; // >10h
   }
 
-  static autoPlace(blocks: TimeBlock[], dayIndex: number): TimeBlock[] {
+  static autoPlace(_blocks: TimeBlock[], dayIndex: number): TimeBlock[] {
     const types: BlockType[] = ["breakout", "strategic", "strategic", "buffer", "strategic", "breakout"];
     const titles = ["Morning Breakout", "Deep Work Block 1", "Deep Work Block 2", "Admin Buffer", "Evening Strategic", "Wind Down"];
     const durations = [45, 120, 90, 45, 90, 30];

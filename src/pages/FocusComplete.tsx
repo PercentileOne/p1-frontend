@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   CheckCircle2, Sparkles, Shield, Zap, Timer,
-  Target, ChevronRight, RotateCcw,
+  Target, RotateCcw,
 } from "lucide-react";
 import {
   getCompletedSession, setCompletedSession,

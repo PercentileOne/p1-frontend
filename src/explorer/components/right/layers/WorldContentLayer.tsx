@@ -1,16 +1,8 @@
-import React from "react";
-import { motion } from "framer-motion"; // ← NEW
-import { careers } from "../../../../data/careers";
-import { subcategories as subcategories } from "../../../../data/Subcategories";
+import { motion } from "framer-motion";
 import { CategoryWorld } from "../CategoryWorld";
 import { CareerWorld } from "../../middle/CareerWorld";
 import { SubcategoryWorld } from "../../middle/SubcategoryWorld";
 import { useExplorerMachine } from "../../../state/useExplorerMachine";
-
-type Props = {
-  selectedCareerId: string | null;
-  emotionalMemory: any;
-};
 
 export const WorldContentLayer = () => {
   const selectedCareerId = useExplorerMachine((s) => s.selectedCareerId);

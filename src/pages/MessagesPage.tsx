@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  Search, Plus, Users, UserCheck, Briefcase, Sparkles, Bell,
+  Search, Plus, Users, UserCheck, Briefcase, Sparkles,
   MessageCircle, Pin, Settings, X, Camera,
 } from "lucide-react";
 import BackToCockpit from "../components/BackToCockpit";

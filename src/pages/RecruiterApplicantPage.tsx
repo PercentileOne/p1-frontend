@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  ArrowLeft, CheckCircle2, XCircle, Flag, Sparkles, Shield,
-  Zap, Trophy, User, Star, ChevronRight, Clock,
+  ArrowLeft, CheckCircle2, XCircle, Sparkles, Shield,
+  Zap, Star,
 } from "lucide-react";
 import {
   getApplicationById, getJobById, JobMatchingEngine,

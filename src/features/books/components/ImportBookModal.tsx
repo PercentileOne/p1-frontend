@@ -6,7 +6,7 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, BookOpen, CheckCircle2, Save, Layers, FileDown } from "lucide-react";
-import type { Book, Chapter } from "../booksStore";
+import type { Book } from "../booksStore";
 import { extractPdfMetadataMock, extractChaptersMock } from "../mockPipeline";
 import SectionLabel from "../../cards/components/shared/SectionLabel";
 

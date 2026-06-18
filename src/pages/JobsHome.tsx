@@ -8,8 +8,7 @@ import {
 } from "lucide-react";
 import {
   DEMO_JOBS, CURRENT_JOB_USER, JobMatchingEngine,
-  getFeaturedJobs, getTrendingJobs, getJobsForUser,
-  formatSalary, daysSince,
+  getFeaturedJobs, getTrendingJobs, getJobsForUser, daysSince,
 } from "../lib/jobsEngine";
 import type { Job } from "../lib/jobsEngine";
 

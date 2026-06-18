@@ -77,7 +77,7 @@ export function computeApplicantStrength(
   );
 
   // Programme matching — simple keyword-in-requirement heuristic
-  const recommendedProgrammeMatches = programmes.filter(prog => {
+  const recommendedProgrammeMatches = programmes.filter(_prog => {
     // If mock exam score is high enough for programme requirements
     const avgMock = avgMockScore(profile);
     return avgMock >= 55 && strengthScore >= 50;

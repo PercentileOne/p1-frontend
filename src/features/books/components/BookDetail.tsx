@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, FileText, Sparkles, Brain, LayoutGrid,
   CheckCircle2, ChevronRight, Share2, Check,
-  BookOpen, Layers, Send, ChevronDown, ExternalLink,
+  BookOpen, Send, ChevronDown, ExternalLink,
 } from "lucide-react";
 import type { Book, Chapter, BooksStore } from "../booksStore";
 import {
@@ -155,6 +155,7 @@ function ChaptersTab({ book, store }: { book: Book; store: BooksStore }) {
       title:      ch.title,
       content:    ch.rawText ?? `Chapter from "${book.title}" (${book.author})\nPages ${ch.pageStart}–${ch.pageEnd}`,
       sourceType: "import",
+      subject:    null,
       tags:       [book.title.split(" ")[0], ch.title.split(" ")[0]],
       aiSummary:  ch.aiSummary,
       aiConcepts: ch.aiConcepts,

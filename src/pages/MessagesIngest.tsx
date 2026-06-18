@@ -1,9 +1,9 @@
-import { useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Camera, Upload, Sparkles, Shield, Target, Zap,
-  CheckCircle2, RefreshCw, RotateCcw, Mic,
+  CheckCircle2, RefreshCw, Mic,
 } from "lucide-react";
 import { INGEST_SCENARIOS } from "../lib/messagesEngine";
 import type { IngestResult } from "../lib/messagesEngine";

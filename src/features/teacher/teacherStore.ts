@@ -83,7 +83,7 @@ const MOCK_STUDENTS_11B: StudentRef[] = [
   { studentId: "s-014", name: "Noah Kim",       avatar: "NK", accent: "bg-blue-500"   },
 ];
 
-function makeSubmissions(students: StudentRef[], cutDays = 2): Submission[] {
+function makeSubmissions(students: StudentRef[], _cutDays = 2): Submission[] {
   return students.slice(0, Math.ceil(students.length * 0.65)).map((s, i) => ({
     studentId:   s.studentId,
     submittedAt: new Date(Date.now() - (i + 1) * 3600000),
@@ -177,7 +177,7 @@ const SEED_PROFILE: TeacherProfile = {
 
 // ── Singleton ──────────────────────────────────────────────────────
 
-let _profile: TeacherProfile = JSON.parse(JSON.stringify(SEED_PROFILE, (k, v) =>
+let _profile: TeacherProfile = JSON.parse(JSON.stringify(SEED_PROFILE, (_k, v) =>
   v instanceof Date ? v.toISOString() : v
 ));
 

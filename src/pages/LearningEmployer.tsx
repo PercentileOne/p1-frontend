@@ -157,6 +157,7 @@ export default function LearningEmployer() {
               onConfirm={draft => {
                 store.addAssessment(creating.id, {
                   ...draft,
+                  sections: draft.sections as unknown as import("../features/employer/employerStore").AssessmentSection[],
                   createdBy: "u-francis",
                 });
                 setCreating(null);

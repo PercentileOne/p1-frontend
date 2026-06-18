@@ -1,4 +1,5 @@
 import React from "react";
+import type { Career } from "../../../data/models/Career";
 
 // ✅ Import the CINEMATIC WORLD subcategories (rich model)
 import { Subcategories as worldSubcategories } from "../../../explorer/data/models/Subcategory";
@@ -26,7 +27,7 @@ export const SubcategoryWorld: React.FC<Props> = ({ subcategoryId }) => {
   }
 
   // ⭐ Resolve top roles using the cinematic model's topRoles array
-  const topRoles = careers.filter((c) => subcategory.topRoles.includes(c.id));
+  const topRoles = careers.filter((c) => subcategory.topRoles.includes(c.id)) as unknown as Career[];
 
   return (
     <div

@@ -5,7 +5,7 @@
    ══════════════════════════════════════════════════════════════ */
 
 import { useState, useEffect } from "react";
-import { getSubject, computeStudentReadiness } from "../student/subjectsStore";
+import { computeStudentReadiness } from "../student/subjectsStore";
 import type { Subject, StudentReadinessResult } from "../student/subjectsStore";
 import type { DailyLearningEntry } from "../student/dailyLearningStore";
 import type { HomeworkItem }       from "../student/homeworkStore";

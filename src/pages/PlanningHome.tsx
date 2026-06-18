@@ -2,12 +2,12 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   CalendarDays, Sparkles, ChevronRight, Zap, Target, Clock,
-  CalendarCheck, LayoutGrid, TrendingUp, Plus,
+  CalendarCheck, LayoutGrid, TrendingUp,
 } from "lucide-react";
 import BackToCockpit from "../components/BackToCockpit";
 import {
   DEMO_BLOCKS, DEMO_EVENTS, CURRENT_WEEKLY_PLAN, CURRENT_MONTHLY_PLAN,
-  DAILY_AGENT_SUGGESTIONS, PlanningEngine, DAY_LABELS, BLOCK_COLORS,
+  DAILY_AGENT_SUGGESTIONS, PlanningEngine, DAY_LABELS,
   EVENT_TYPE_CONFIG,
 } from "../lib/planningEngine";
 

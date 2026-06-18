@@ -70,7 +70,7 @@ export default function ImportHomeworkModal({ onConfirm, onClose }: Props) {
 
   const activeSubject  = subjects.find(s => s.id === subjectId);
   const activeTopic    = activeSubject?.topics.find(t => t.id === topicId);
-  const activeSubtopic = activeTopic?.subtopics.find(s => s.id === subtopicId);
+
 
   const processFile = async (file: File) => {
     setFileName(file.name);

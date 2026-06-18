@@ -291,6 +291,8 @@ export function useMultiplayerStore(card: CognitiveCardData): MPStore {
   function setupRoom(opts: {
     name: string; mode: RoomMode; maxPlayers: number;
     isPublic: boolean; bots: RoomParticipant[];
+    groupId?: string; conceptCountMode?: ConceptCountMode;
+    groupConceptCount?: number; difficultyLevel?: DifficultyLevel;
   }) {
     clearTimers();
     const localP: RoomParticipant = { ...LOCAL_PARTICIPANT, ready: true };

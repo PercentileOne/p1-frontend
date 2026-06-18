@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import {
-  ShoppingBag, Sparkles, Heart, X, ExternalLink, ChevronRight,
-  Star, Zap, Target,
+  ShoppingBag, Sparkles, Heart, X, ExternalLink,
+  Star, Target,
 } from "lucide-react";
 import BackToCockpit from "../components/BackToCockpit";
 
@@ -247,11 +246,11 @@ const AGENT_RECO: { tab: Tab; id: string; reason: string }[] = [
    SHOP PAGE
    ══════════════════════════════════════════════════════════════ */
 export default function ShopPage() {
-  const navigate  = useNavigate();
+
   const [tab,     setTab]     = useState<Tab>("today");
   const [modal,   setModal]   = useState<Product | null>(null);
   const [wishlist, setWishlist] = useState<Set<string>>(new Set(["f1", "t1"]));
-  const [search,  setSearch]  = useState("");
+  const [search,  _setSearch]  = useState("");
 
   const products  = tab === "today" ? TOOLS_TODAY : FUTURE_YOU;
   const filtered  = products.filter(p =>

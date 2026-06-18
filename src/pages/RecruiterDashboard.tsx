@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Plus, Briefcase, Users, Eye, CheckCircle2, TrendingUp,
-  Sparkles, ChevronRight, Filter, Star, Shield, Zap, Trophy,
+  Sparkles, ChevronRight, Filter, Star, Shield, Zap,
 } from "lucide-react";
 import {
   DEMO_JOBS, DEMO_APPLICATIONS, DEMO_RECRUITER_POSTS,

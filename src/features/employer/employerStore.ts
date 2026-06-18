@@ -4,7 +4,7 @@
    ══════════════════════════════════════════════════════════════ */
 
 import { useState, useEffect } from "react";
-import type { Concept, DifficultyLevel, ConceptCountMode } from "../cards/types";
+import type { Concept, DifficultyLevel } from "../cards/types";
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -31,7 +31,7 @@ export interface AssessmentSection {
   title:            string;
   sourceType:       AssessmentSectionSourceType;
   sourceId:         string;
-  conceptCountMode: AssessmentConceptMode;
+  conceptCountMode?: AssessmentConceptMode;
   conceptCount?:    number;
   difficulty?:      DifficultyLevel;
   // Seed concepts — populated from linked card / generated for custom
@@ -101,7 +101,7 @@ const SYS_DESIGN_CONCEPTS: Concept[] = [
   mkConcept("sd-5", "Message queues decouple producers from consumers asynchronously", ["queue","message","producer","consumer","async"], 3, 1.2),
 ];
 
-const PYTHON_CONCEPTS: Concept[] = [
+export const PYTHON_CONCEPTS: Concept[] = [
   mkConcept("py-1", "List comprehensions create lists concisely from iterables", ["list","comprehension","iterable","filter"], 2, 1.0),
   mkConcept("py-2", "Decorators wrap functions to add behaviour without modifying source", ["decorator","@","wrap","function"], 3, 1.2),
   mkConcept("py-3", "GIL prevents true multi-threaded CPU parallelism in CPython", ["GIL","thread","CPython","parallel"], 4, 1.4),
@@ -173,9 +173,9 @@ const SEED: Employer[] = [
         createdBy:   "tc-01",
         assignedTo:  ["tc-04","tc-05","tc-06"],
         sections: [
-          { id: "tc-s1", title: "Component Patterns",  sourceType: "card", sourceId: "card-react-components", conceptCountMode: "auto",       concepts: REACT_CONCEPTS.slice(0, 3), difficulty: "medium" },
-          { id: "tc-s2", title: "React Hooks",          sourceType: "card", sourceId: "card-react-hooks",       conceptCountMode: "difficulty", concepts: REACT_CONCEPTS.slice(2),    difficulty: "medium" },
-          { id: "tc-s3", title: "TypeScript Essentials", sourceType: "card", sourceId: "card-typescript-generics", conceptCountMode: "fixed",  concepts: TS_CONCEPTS,                 conceptCount: 3, difficulty: "hard" },
+          { id: "tc-s1", title: "Component Patterns",  sourceType: "card", sourceId: "card-react-components",       concepts: REACT_CONCEPTS.slice(0, 3), difficulty: "medium" },
+          { id: "tc-s2", title: "React Hooks",          sourceType: "card", sourceId: "card-react-hooks", concepts: REACT_CONCEPTS.slice(2),    difficulty: "medium" },
+          { id: "tc-s3", title: "TypeScript Essentials", sourceType: "card", sourceId: "card-typescript-generics",  concepts: TS_CONCEPTS,                 conceptCount: 3, difficulty: "hard" },
         ],
         results: [
           mockResult("tc-04", "Dan Okafor",    "DO", "bg-emerald-500", 82, 1140, [...REACT_CONCEPTS, ...TS_CONCEPTS]),
@@ -191,8 +191,8 @@ const SEED: Employer[] = [
         createdBy:   "tc-01",
         assignedTo:  ["tc-04","tc-05"],
         sections: [
-          { id: "sd-s1", title: "Scalability Concepts",  sourceType: "custom", sourceId: "custom-sd-1", conceptCountMode: "auto",  concepts: SYS_DESIGN_CONCEPTS.slice(0, 3), difficulty: "hard"   },
-          { id: "sd-s2", title: "Distributed Patterns",  sourceType: "custom", sourceId: "custom-sd-2", conceptCountMode: "fixed", concepts: SYS_DESIGN_CONCEPTS.slice(2),    difficulty: "expert", conceptCount: 3 },
+          { id: "sd-s1", title: "Scalability Concepts",  sourceType: "custom", sourceId: "custom-sd-1",  concepts: SYS_DESIGN_CONCEPTS.slice(0, 3), difficulty: "hard"   },
+          { id: "sd-s2", title: "Distributed Patterns",  sourceType: "custom", sourceId: "custom-sd-2", concepts: SYS_DESIGN_CONCEPTS.slice(2),    difficulty: "expert", conceptCount: 3 },
         ],
         results: [
           mockResult("tc-04", "Dan Okafor",    "DO", "bg-emerald-500", 58, 1620, SYS_DESIGN_CONCEPTS),
@@ -228,8 +228,8 @@ const SEED: Employer[] = [
         createdBy:   "hp-01",
         assignedTo:  ["hp-03","hp-04"],
         sections: [
-          { id: "hp-s1", title: "Clinical Documentation", sourceType: "custom", sourceId: "custom-hp-1", conceptCountMode: "auto",  concepts: CLINICAL_CONCEPTS.slice(0, 3), difficulty: "medium" },
-          { id: "hp-s2", title: "Legal & Ethical",         sourceType: "custom", sourceId: "custom-hp-2", conceptCountMode: "fixed", concepts: CLINICAL_CONCEPTS.slice(3),    difficulty: "hard",   conceptCount: 2 },
+          { id: "hp-s1", title: "Clinical Documentation", sourceType: "custom", sourceId: "custom-hp-1",  concepts: CLINICAL_CONCEPTS.slice(0, 3), difficulty: "medium" },
+          { id: "hp-s2", title: "Legal & Ethical",         sourceType: "custom", sourceId: "custom-hp-2", concepts: CLINICAL_CONCEPTS.slice(3),    difficulty: "hard",   conceptCount: 2 },
         ],
         results: [
           mockResult("hp-03", "Isla Nwosu",  "IN", "bg-pink-500", 74, 1200, CLINICAL_CONCEPTS),

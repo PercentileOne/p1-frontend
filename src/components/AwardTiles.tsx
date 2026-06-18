@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  Trophy, Star, Bookmark, Bell, Share2, ChevronRight,
-  Sparkles, TrendingUp, Users, BookOpen, X, Check,
+  Trophy, Bookmark, Bell, Share2, ChevronRight,
+  Sparkles, TrendingUp, BookOpen, X, Check,
 } from "lucide-react";
 import type { AwardWinner, AwardTier } from "../lib/awardsData";
 import { CATEGORY_META, AWARD_PALETTE } from "../lib/awardsData";

@@ -12,17 +12,9 @@ import { SmallAwardBadge } from "../components/AwardTiles";
 import {
   buildPersonalisedHome,
   type PersonalisedModule,
-  type WisdomQuote,
-  type NewsItem,
-  type FeedHighlight,
-  type GroupSuggestion,
-  type AchievementHighlight,
   type BehaviourSignals,
 } from "../lib/personalisationEngine";
 import { OWN_PROFILE } from "../lib/profileData";
-import type { WallRecommendation } from "../lib/interestsEngine";
-import type { Story } from "../lib/storiesData";
-import type { AwardWinner } from "../lib/awardsData";
 
 /* ══════════════════════════════════════════════════════════════
    P1 PERSONALISED HOME PAGE — /home
@@ -574,7 +566,7 @@ function TrendingModule({ mod }: { mod: PersonalisedModule }) {
 
 // ── 11. Smart Picks placeholder ───────────────────────────────
 
-function SmartPicksModule({ mod }: { mod: PersonalisedModule }) {
+function SmartPicksModule(_: { mod: PersonalisedModule }) {
   return (
     <ModuleCard accent="#94a3b8">
       <div className="p-5 flex flex-col items-center text-center gap-3">
@@ -643,7 +635,7 @@ function BehaviourPanel({
             </div>
 
             <div className="p-4 space-y-3">
-              {signalItems.map(({ label, tags, emoji, color, ...rest }) => (
+              {signalItems.map(({ label, tags, emoji, color }) => (
                 <div key={label}>
                   <p className="text-[9px] font-bold uppercase tracking-widest mb-2" style={{ color }}>
                     {emoji} {label}

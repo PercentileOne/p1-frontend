@@ -1,4 +1,4 @@
-﻿/* ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════
    UNIVERSITY DASHBOARD — Phase 11
    Programme overview · cohort analytics · admissions insights · benchmarks
    ══════════════════════════════════════════════════════════════ */
@@ -6,9 +6,9 @@
 import { motion } from "framer-motion";
 import {
   BookOpen, Users, BarChart2, TrendingUp, Brain,
-  Flame, Clock, Star, AlertTriangle, ChevronRight, Globe,
+  Flame, ChevronRight, Globe,
 } from "lucide-react";
-import { getCognitiveProfile, SUBJECTS, SUBJECT_LABELS } from "../cognitiveProfileStore";
+import { getCognitiveProfile } from "../cognitiveProfileStore";
 import { rankCohort, TIER_COLOR, TIER_BG } from "../admissionsEngine";
 import type { UniversityProfile, Cohort, Programme } from "../universityStore";
 
@@ -148,8 +148,8 @@ function CohortSection({ cohorts, onSelectCohort }: { cohorts: Cohort[]; onSelec
   );
 }
 
-function AdmissionsInsights({ cohorts, programmes, universityId }: {
-  cohorts: Cohort[]; programmes: Programme[]; universityId: string;
+function AdmissionsInsights({ cohorts, programmes }: {
+  cohorts: Cohort[]; programmes: Programme[]; universityId?: string;
 }) {
   const allPermitted = cohorts.flatMap(c => c.students.filter(s => s.permissionGranted));
   if (allPermitted.length === 0) {

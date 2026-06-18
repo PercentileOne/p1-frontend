@@ -9,13 +9,10 @@ import {
   CalendarDays,
   Home,
   Wallet,
-  Building2,
   ClipboardList,
   Heart,
   BookOpen,
   Users,
-  Receipt,
-  FolderKanban,
   Map,
   ChevronRight,
   Send,
@@ -25,7 +22,6 @@ import {
   HelpCircle,
   Star,
   Briefcase,
-  ExternalLink,
   Settings,
   Sparkles,
   CheckCircle2,
@@ -1346,7 +1342,7 @@ function LiveOverviewTile({ icon, label, accent, accentText, faces }: {
 }
 
 /* ── Overview box ── */
-function OverviewBox({ icon, label, accent, accentText, children }: {
+export function OverviewBox({ icon, label, accent, accentText, children }: {
   icon: React.ReactNode; label: string; accent: string; accentText: string; children: React.ReactNode;
 }) {
   return (
@@ -1466,7 +1462,7 @@ const NEWS_CONTENT: Record<NewsTab, string[]> = {
   ],
 };
 
-function NewsPanel() {
+export function NewsPanel() {
   const [active, setActive] = useState<NewsTab>("Industry");
   return (
     <DismissableCard>

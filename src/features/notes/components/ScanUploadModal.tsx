@@ -54,6 +54,7 @@ export default function ScanUploadModal({ onConfirm, onClose }: Props) {
       title: title.trim() || fileName || "Scanned Note",
       content: extractedText,
       sourceType,
+      subject: null,
       tags: [],
     });
   };

@@ -1,4 +1,3 @@
-import React from "react";
 import { useExplorerMachine } from "../../state/useExplorerMachine";
 import { CategoryWorld } from "./CategoryWorld";
 import { SubcategoryWorld } from "./SubcategoryWorld";

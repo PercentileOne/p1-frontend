@@ -1,8 +1,7 @@
-import React from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Zap, CheckCircle2, Clock, Flame, BarChart3,
+  ArrowLeft, Zap, CheckCircle2, Flame, BarChart3,
   ChevronRight, Plus, Star,
 } from "lucide-react";
 import { getCycles, formatCycleDate } from "../lib/cycleEngine";

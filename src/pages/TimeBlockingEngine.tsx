@@ -2,8 +2,8 @@ import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Sparkles, Plus, Trash2, Zap, LayoutGrid,
-  AlertTriangle, ChevronRight, X,
+  ArrowLeft, Sparkles, Plus, Trash2, LayoutGrid,
+  AlertTriangle, X,
 } from "lucide-react";
 import {
   DEMO_BLOCKS, PlanningEngine, DAY_LABELS, DAY_FULL,
@@ -76,7 +76,6 @@ export default function TimeBlockingEngine() {
 
     if (drag) {
       const gridRect  = gridRef.current.getBoundingClientRect();
-      const colWidth  = gridRect.width / (view === "week" ? 7 : 1);
       const relY      = e.clientY - gridRect.top;
       const rawMin    = pxToMinutes(relY - drag.offsetPx);
       const clamped   = Math.max(0, Math.min(rawMin, (END_HOUR - START_HOUR) * 60 - 30));
@@ -90,7 +89,6 @@ export default function TimeBlockingEngine() {
     }
 
     if (resize) {
-      const gridRect = gridRef.current.getBoundingClientRect();
       const dy       = e.clientY - resize.startY;
       const deltaMins = pxToMinutes(dy);
       const newDur   = Math.max(MIN_DURATION, resize.startDuration + deltaMins);

@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   X, Camera, Video, Mic, FileText, MapPin, Clock, Brain,
-  MessageSquare, Users, Upload, Sparkles, Check, Shield,
-  ChevronRight, AlertTriangle, Zap, Flame, RefreshCw,
+  MessageSquare, Users, Upload, Sparkles, Check, Shield, AlertTriangle, Zap, Flame, RefreshCw,
 } from "lucide-react";
 import { ProofEngine } from "../lib/proofEngine";
 import type { ProofType, ProofReason, ProofUser } from "../lib/proofEngine";

@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import metadata from "../../data/careers/metadata.json";
 
 export type ExplorerMachineState =
   | "idle"

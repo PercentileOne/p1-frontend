@@ -1,4 +1,4 @@
-import { CareerWorld } from "./CareerWorld";
+import type { CareerWorld } from "./CareerWorld";
 
 export const CareerWorldData: CareerWorld[] = [
   {

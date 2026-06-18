@@ -2,11 +2,11 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Sparkles, ChevronRight, Zap, Sun, Battery,
-  CheckCircle2, Plus, Target, Clock, AlertTriangle,
+  ArrowLeft, Sparkles, ChevronRight, Sun, Battery,
+  CheckCircle2, Plus, Target, AlertTriangle,
 } from "lucide-react";
 import {
-  DEMO_BLOCKS, DAILY_AGENT_SUGGESTIONS, PlanningEngine,
+  DEMO_BLOCKS, PlanningEngine,
   BLOCK_COLORS, BLOCK_ICONS, BLOCK_LABELS,
 } from "../lib/planningEngine";
 import type { BlockType } from "../lib/planningEngine";

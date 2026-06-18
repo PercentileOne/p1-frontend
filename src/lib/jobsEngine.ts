@@ -506,13 +506,13 @@ export class JobMatchingEngine {
     return Math.round(proofBase + trustBonus);
   }
 
-  static matchByCycle(user: JobUser, job: Job): number {
+  static matchByCycle(user: JobUser, _job: Job): number {
     const cycleBase = Math.min(user.cyclesCompleted * 20, 60);
     const progressBonus = (user.currentCycleProgress / 100) * 40;
     return Math.round(cycleBase + progressBonus);
   }
 
-  static matchByBehaviour(user: JobUser, job: Job): number {
+  static matchByBehaviour(user: JobUser, _job: Job): number {
     return Math.round((user.behaviourScore * 0.6) + (user.trustScore * 0.4));
   }
 

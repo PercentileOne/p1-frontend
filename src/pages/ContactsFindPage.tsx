@@ -15,7 +15,7 @@ import type { Person, Domain, Availability } from "../lib/contactsEngine";
    CONTACTS FIND  /contacts/find
    ══════════════════════════════════════════════════════════════ */
 
-const fade = { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.25 } };
+export const fade = { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.25 } };
 
 const LOCATIONS = ["London", "Essex", "Manchester", "Birmingham", "Remote"];
 const AVAILABILITIES: Availability[] = ["available", "open_to_work", "busy", "unavailable"];

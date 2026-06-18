@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Plus, CheckCircle2, ChevronRight, Sparkles, Star,
-  Calendar, Clock, Trash2, Heart, Briefcase, Flame, FolderKanban,
-  Target, TrendingUp, Trophy, Zap, Globe, Lock, Eye, BarChart3,
+  ArrowLeft, Plus, CheckCircle2, ChevronRight, Sparkles, Star, Trash2, Heart, Briefcase, Flame, FolderKanban,
+  Target, TrendingUp, Trophy, Zap, Globe, Lock, Eye,
 } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════════════

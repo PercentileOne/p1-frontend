@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Sun, Cloud, CloudRain, Wind, Thermometer,
   Globe, TrendingUp, Trophy, Cpu,
-  ChevronRight,
 } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════════════

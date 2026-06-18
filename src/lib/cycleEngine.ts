@@ -102,7 +102,6 @@ export interface Cycle {
 }
 
 /* ── In-memory store ─────────────────────────────────────── */
-let _cycles: Cycle[] = [];
 
 /* ══════════════════════════════════════════════════════════════
    CYCLE AGENT
@@ -127,7 +126,6 @@ export class CycleAgent {
   }
 
   static generateWeeklyTargets(cycle: Cycle, weekNum: number): WeeklyTarget[] {
-    const weekProgress = ((weekNum - 1) / 12) * 100;
     return cycle.goals.map(g => ({
       goalId: g.id,
       goalTitle: g.title,

@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Sparkles, CheckCircle2, ChevronRight, Shield,
-  Flame, Target, Calendar, Zap, Star, Edit3, Plus, X, Check,
+  Flame, Target, Calendar, Zap, Edit3, Plus, X, Check,
   AlertTriangle, Battery, Clock,
 } from "lucide-react";
-import { getCurrentCycle, CycleAgent, formatCycleDate } from "../lib/cycleEngine";
+import { getCurrentCycle, CycleAgent } from "../lib/cycleEngine";
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -45,7 +45,7 @@ export default function WeeklyPlanningPage() {
   const [agentDone, setAgentDone] = useState(false);
   const [planLaunched, setPlanLaunched] = useState(false);
 
-  const suggestions = CycleAgent.generateWeeklyTargets(cycle, cycle.currentWeek);
+
   const risks       = CycleAgent.detectCycleRisk(cycle);
 
   const runAgentBrief = async () => {
@@ -390,7 +390,7 @@ export default function WeeklyPlanningPage() {
                       { title:"Energy Planning", body:`Energy set to ${energyLevel}/5. Agent recommends scheduling AWS study in your peak focus window (08:00–10:00).`, icon:<Battery size={11}/>, color:"text-teal-400" },
                       { title:"Habit Reinforcement", body:"Exercise streak at 19 days — the 21-day milestone is 2 days away. Protect it above all else this week.", icon:<Flame size={11}/>, color:"text-orange-400" },
                       { title:"Proof Scheduling", body:"2 proof submissions due this week. Batch them on Wednesday to stay ahead.", icon:<Shield size={11}/>, color:"text-indigo-400" },
-                      ...CycleAgent.suggestAdjustments(getCurrentCycle()).map((s, i) => ({
+                      ...CycleAgent.suggestAdjustments(getCurrentCycle()).map((s, _i) => ({
                         title:"Cycle Adjustment", body:s, icon:<Target size={11}/>, color:"text-violet-400",
                       })),
                     ].map((s, i) => (

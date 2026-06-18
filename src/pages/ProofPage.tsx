@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Shield, Sparkles, CheckCircle2, Clock, AlertTriangle,
-  Camera, Video, Mic, FileText, MessageSquare, Flame, Star,
-  TrendingUp, TrendingDown, ChevronDown, X, Eye,
+  ArrowLeft, Shield, Sparkles, Clock,
+  Camera, Video, Mic, FileText, MessageSquare, Star,
+  TrendingUp, TrendingDown, ChevronDown,
 } from "lucide-react";
 import { ProofEngine, seedDemoProofs } from "../lib/proofEngine";
 import type { ProofSubmission, ProofStatus, ProofType } from "../lib/proofEngine";

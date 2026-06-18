@@ -8,7 +8,7 @@ import {
   ArrowLeft, BookOpen, Trophy, FileText, Star, UserPlus,
   Users, Play, Plus, Crown, Flame, ChevronRight, CalendarClock,
 } from "lucide-react";
-import type { Group, ActivityItem, ActivityType, RoomPreview, LeaderboardEntry, GroupMember } from "../groupsStore";
+import type { Group, ActivityItem, ActivityType, RoomPreview, LeaderboardEntry, GroupMember, CreateRoomOpts } from "../groupsStore";
 import type { GroupsStore } from "../groupsStore";
 import SectionLabel from "../../cards/components/shared/SectionLabel";
 import CreateGroupRoomModal from "./CreateGroupRoomModal";
@@ -356,8 +356,8 @@ export default function GroupHome({ group, store, onBack }: Props) {
 
   const canCreate = group.localUserRole === "owner" || group.localUserRole === "admin";
 
-  const handleCreateRoom = (opts: Parameters<GroupsStore["addRoom"]>[1]) => {
-    store.addRoom(group.id, opts);
+  const handleCreateRoom = (opts: CreateRoomOpts) => {
+    store.addRoom(group.id, opts as unknown as RoomPreview);
     setShowRoomModal(false);
     store.addActivity(group.id, {
       type: "room_finished", userId: "u-francis", userName: "Francis",

@@ -58,7 +58,7 @@ export default function CardOverlay({ card, onClose }: Props) {
       {/* Phase indicator */}
       <div className="flex items-center justify-between mb-3 shrink-0">
         <div className="flex gap-1.5">
-          {(["study", "test", "score"] as Phase[]).map((p, i) => (
+          {(["study", "test", "score"] as Phase[]).map((p) => (
             <div
               key={p}
               className={`h-[2px] w-8 rounded-full transition-all duration-300 ${

@@ -1,9 +1,8 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Sparkles, CheckCircle2, Star, Shield, Trophy,
-  TrendingUp, Flame, Target, ChevronRight, Compass, Zap,
+  ArrowLeft, Sparkles, CheckCircle2, Star, Shield, Trophy, Target, ChevronRight, Compass, Zap,
   BarChart3, X, Heart,
 } from "lucide-react";
 import { getCurrentCycle, CycleAgent, formatCycleDate } from "../lib/cycleEngine";

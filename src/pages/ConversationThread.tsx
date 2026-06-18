@@ -2,33 +2,23 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  ArrowLeft, Send, Camera, Mic, Paperclip, Sparkles, Shield,
-  Zap, Timer, Target, ChevronDown, MoreHorizontal, Smile,
-  Users, UserCheck, Briefcase,
+  ArrowLeft, Send, Camera, Mic, Paperclip, Sparkles, MoreHorizontal,
 } from "lucide-react";
 import {
   MessagingEngine, CURRENT_USER_ID,
 } from "../lib/messagesEngine";
-import type { Message, Attachment, ConversationType } from "../lib/messagesEngine";
+import type { Message, Attachment } from "../lib/messagesEngine";
 
 /* ══════════════════════════════════════════════════════════════
    CONVERSATION THREAD  /messages/:id
    ══════════════════════════════════════════════════════════════ */
 
-const ATTACHMENT_EMOJIS: Record<string, string> = {
-  proof: "🛡️", focus: "⚡", goal: "🎯", cycle: "🔄", event: "📅", job: "🏢", timeblock: "⏱️",
-};
-
-const MSG_TYPE_COLORS: Record<string, string> = {
-  agent: "#10b981", system: "#64748b",
-};
 
 export default function ConversationThread() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const conv     = id ? MessagingEngine.getConversation(id) : undefined;
   const messages = id ? MessagingEngine.getMessages(id) : [];
-  const grouped  = MessagingEngine.groupMessagesByDate(messages);
 
   const [text,        setText]       = useState("");
   const [showAttach,  setShowAttach] = useState(false);

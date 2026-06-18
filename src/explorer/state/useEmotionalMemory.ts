@@ -19,7 +19,7 @@ type EmotionalMemoryStore = {
   setUserPace: (pace: UserPace) => void;
 };
 
-export const useEmotionalMemory = create<EmotionalMemoryStore>((set, get) => ({
+export const useEmotionalMemory = create<EmotionalMemoryStore>((set) => ({
   viewedCareerIds: new Set(),
   viewedCategoryIds: new Set(),
   deepScrollCareerIds: new Set(),

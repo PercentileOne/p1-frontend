@@ -13,7 +13,6 @@ type Props = {
 };
 
 export const SubcategoryGrowthSection = ({
-  growthGraph,
   industryStats,
 }: Props) => {
   return (

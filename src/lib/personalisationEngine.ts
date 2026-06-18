@@ -8,7 +8,6 @@ import {
   deriveWallRecommendations,
   deriveStoryRecommendations,
   deriveAgentRecommendations,
-  type Interest,
   type WallRecommendation,
 } from "./interestsEngine";
 import { STORIES, type Story } from "./storiesData";
@@ -155,6 +154,7 @@ export interface AchievementHighlight {
   accentColor: string;
   date: string;
   isNew: boolean;
+  value?: string | number;
 }
 
 // ── Personalisation profile ───────────────────────────────────
@@ -333,7 +333,7 @@ export function buildPersonalisedHome(
   const behaviourBoost = (moduleId: ModuleId): number => {
     if (moduleId === "wisdom"   && behaviourSignals.savedTags.some(t => ["stoicism","mindset","philosophy"].includes(t))) return 20;
     if (moduleId === "stories"  && behaviourSignals.readTags.length > 3) return 18;
-    if (moduleId === "groups"   && behaviourSignals.interactedGroups.length > 0) return 15;
+    if (moduleId === "group-suggestions" && behaviourSignals.interactedGroups.length > 0) return 15;
     if (moduleId === "news"     && behaviourSignals.ignoredTags.includes("news")) return -15;
     return 0;
   };

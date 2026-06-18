@@ -28,7 +28,7 @@ type View =
 
 // ── Sidebar nav items ──────────────────────────────────────────────
 
-function childNavItems(child: ChildProfile) {
+function childNavItems(_child: ChildProfile) {
   return [
     { type: "dashboard", icon: <LayoutDashboard size={13} />, label: "Overview",  sub: "Progress & grades"  },
     { type: "controls",  icon: <Shield size={13} />,          label: "Controls",  sub: "Safety & limits"    },

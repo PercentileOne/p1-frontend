@@ -1,11 +1,11 @@
-﻿/* ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════
    STUDENT PERMISSION MODAL — Phase 11
    Student controls what universities can see
    ══════════════════════════════════════════════════════════════ */
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Shield, Eye, EyeOff, CheckCircle, ChevronRight } from "lucide-react";
+import { X, Shield, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { setPermission, getPermission } from "../permissionsStore";
 import type { PermissionLevel } from "../permissionsStore";
 

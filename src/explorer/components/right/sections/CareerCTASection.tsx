@@ -1,4 +1,3 @@
-import React from "react";
 import type { Career } from "../../../data/models/Career";
 import { useExplorerMachine } from "../../../state/useExplorerMachine";
 

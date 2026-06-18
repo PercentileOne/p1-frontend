@@ -1,4 +1,3 @@
-import React from "react";
 import { SubcategoryList } from "./SubcategoryList";
 import { SubcategoryCareerList } from "./SubcategoryCareerList";
 import { Breadcrumb } from "./Breadcrumb";

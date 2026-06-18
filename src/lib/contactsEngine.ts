@@ -593,7 +593,7 @@ export class DiscoveryMatchingEngine {
     return Math.round(Math.min((hits.length / Math.max(person.goals.length, 1)) * 120, 100));
   }
 
-  static matchByProof(user: DiscoveryUser, person: Person): number {
+  static matchByProof(_user: DiscoveryUser, person: Person): number {
     const proofBase = Math.min((person.proofCount / 40) * 80, 80);
     return Math.round(proofBase + (person.trustScore / 100) * 20);
   }

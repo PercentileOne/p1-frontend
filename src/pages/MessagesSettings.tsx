@@ -2,8 +2,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Bell, Eye, MessageCircle, Sparkles, Camera, Shield,
-  Target, RefreshCw, Mic, ChevronRight,
+  ArrowLeft, Bell, Sparkles, Shield,
+  Target, ChevronRight,
 } from "lucide-react";
 import { DEFAULT_SETTINGS } from "../lib/messagesEngine";
 import type { MessagingSettings } from "../lib/messagesEngine";

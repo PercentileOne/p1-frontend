@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Sparkles, Flame, Target, CheckCircle2, AlertTriangle,
-  ChevronDown, ChevronRight, Shield, TrendingUp, Calendar,
-  BarChart3, Compass, Clock, Star, Zap, Activity, Plus,
+  ArrowLeft, Sparkles, Flame, CheckCircle2, AlertTriangle,
+  ChevronDown, ChevronRight, Shield, Calendar,
+  BarChart3, Compass, Star, Zap, Activity, Plus,
 } from "lucide-react";
 import {
   getCurrentCycle, CycleAgent, formatCycleDate, weeksRemaining,
 } from "../lib/cycleEngine";
-import type { CycleGoal, CycleMilestone, CycleInsight, CycleRisk } from "../lib/cycleEngine";
+import type { CycleGoal, CycleInsight } from "../lib/cycleEngine";
 
 /* ── helpers ──────────────────────────────────────────────── */
 const INSIGHT_ICON: Record<CycleInsight["icon"], React.ReactNode> = {
@@ -192,8 +192,6 @@ export default function CycleDashboard() {
   const doneMilestones = allMilestones.filter(m => m.status === "completed");
   const atRisk         = allMilestones.filter(m => m.status === "at_risk" || (m.status === "upcoming" && m.dueWeek <= cycle.currentWeek + 1));
   const currentPlan    = cycle.weeklyPlans[cycle.currentWeek - 1];
-  const progressPct    = Math.round((new Date().getTime() - cycle.startDate.getTime()) /
-    (cycle.endDate.getTime() - cycle.startDate.getTime()) * 100);
 
   const TABS = [
     { id:"overview",   label:"Overview"  },

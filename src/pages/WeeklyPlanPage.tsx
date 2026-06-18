@@ -2,14 +2,12 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Sparkles, ChevronRight, CheckCircle2, Zap,
-  TrendingUp, AlertTriangle, Target, Trophy, BookOpen,
+  ArrowLeft, Sparkles, ChevronRight, CheckCircle2, Zap, AlertTriangle, Target, Trophy, BookOpen,
 } from "lucide-react";
 import {
   DEMO_BLOCKS, CURRENT_WEEKLY_PLAN, WEEKLY_AGENT_SUGGESTIONS,
-  PlanningEngine, DAY_LABELS, DAY_FULL, BLOCK_COLORS, BLOCK_ICONS,
+  PlanningEngine, DAY_LABELS, DAY_FULL,
 } from "../lib/planningEngine";
-import type { BlockType } from "../lib/planningEngine";
 
 /* ══════════════════════════════════════════════════════════════
    WEEKLY PLANNING  /planning/weekly

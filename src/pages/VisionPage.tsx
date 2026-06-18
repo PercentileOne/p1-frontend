@@ -3,9 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Plus, ChevronDown, ChevronUp, Sparkles, Edit3, Trash2,
-  Check, X, RefreshCw, Heart, Wallet, Briefcase, BookOpen, Users,
-  Home, Globe, TrendingUp, Compass, Target, Star, Zap, Activity,
-  Lightbulb, Award, Shield, Flame, Eye, Mountain, ChevronRight,
+  Check, X, Heart, Wallet, Briefcase, BookOpen,
+  Home, Globe, Compass, Star, Activity, Award, Eye, Mountain, ChevronRight,
 } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════════════
@@ -183,7 +182,7 @@ const INIT_YEAR_VISIONS: YearVision[] = [
     description:"I have written and published a book on living a fully optimised, purpose-driven life — drawing on my journey, faith, and the P1 framework.",
     why:"A book is leverage — it reaches people I will never meet and creates a lasting artifact of what I believe.",
     progress:8,
-    agentPrediction:"No active writing goals detected. To hit a 1-year target, a writing habit goal needs to start this month.",
+    agentPrediction:"No active writing goals detected. To hit a 1-year a writing habit goal needs to start this month.",
     accent:"from-blue-600/15 to-sky-600/8", border:"border-blue-500/20",
   },
   {
@@ -312,8 +311,8 @@ export default function VisionPage() {
 /* ══════════════════════════════════════════════════════════════
    SECTION WRAPPER
    ══════════════════════════════════════════════════════════════ */
-function VisionSection({ id, title, icon, accent, collapsed, onToggle, onMoveUp, onMoveDown, children }: {
-  id:string; title:string; icon:React.ReactNode; accent:string;
+function VisionSection({ title, icon, accent, collapsed, onToggle, onMoveUp, onMoveDown, children }: {
+  id?:string; title:string; icon:React.ReactNode; accent:string;
   collapsed:boolean; onToggle:()=>void; onMoveUp?:()=>void; onMoveDown?:()=>void;
   children:React.ReactNode;
 }) {

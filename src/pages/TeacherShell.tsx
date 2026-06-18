@@ -28,10 +28,6 @@ export default function TeacherShell() {
   const [view,       setView]     = useState<View>({ type: "dashboard" });
   const [collapsed,  setCollapsed] = useState(false);
 
-  function navLabel(): string {
-    if (view.type === "classroom") return view.cls.name;
-    return "Dashboard";
-  }
 
   return (
     <div className="min-h-screen bg-[#0a0b10] text-slate-200 flex flex-col font-sans">

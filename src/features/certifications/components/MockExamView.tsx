@@ -237,7 +237,7 @@ function QuestionCard({
 // ── Results view ───────────────────────────────────────────────────
 
 function ResultsView({
-  questions, config, cert, onRetry, onDone,
+  questions, onRetry, onDone,
 }: {
   questions: ExamQuestion[];
   config:    MockExamConfig;

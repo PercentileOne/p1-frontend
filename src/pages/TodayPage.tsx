@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -6,7 +6,7 @@ import {
   Flame, Target, Trash2, Edit3, ChevronUp, Smile, Meh,
   Frown, Sun, Moon, Coffee, Utensils, ShoppingCart, Lightbulb, FileText,
   Heart, Zap, AlertTriangle, RefreshCw, RotateCcw, BookOpen, Droplets,
-  Activity, Battery, Wind, Check, X, Settings, Shield,
+  Activity, Battery, Wind, Check, X,
   TrendingUp, Sunrise, Sunset, Compass, ChevronRight,
 } from "lucide-react";
 import { ProofEngine } from "../lib/proofEngine";
@@ -907,7 +907,7 @@ function EnergyCard() {
         <input type="range" min={0} max={5} value={energy} onChange={e=>setEnergy(Number(e.target.value))}
           className="w-full accent-indigo-500 cursor-pointer" style={{height:"6px"}}/>
         <div className="flex justify-between mt-1">
-          {LABELS.map((l,i)=><span key={i} className="text-[9px] text-slate-700">{i}</span>)}
+          {LABELS.map((_l,i)=><span key={i} className="text-[9px] text-slate-700">{i}</span>)}
         </div>
       </div>
       <div className="flex items-start gap-2.5 p-3 bg-teal-500/8 border border-teal-500/15 rounded-xl">

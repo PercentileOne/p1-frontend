@@ -5,8 +5,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Zap, BookOpen, Trophy, Swords, Clock, Brain, Target,
-  ArrowLeft, ChevronRight, Users, Flame, Check, Lock,
+  Zap, BookOpen, Trophy, Swords, Clock,
+  ArrowLeft, ChevronRight, Users, Check, Lock,
 } from "lucide-react";
 import type { Subject } from "../subjectsStore";
 import SectionLabel from "../../cards/components/shared/SectionLabel";

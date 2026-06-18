@@ -60,7 +60,6 @@ function ProfileHeader({ profile, followed, onFollow }: {
   followed: boolean;
   onFollow: () => void;
 }) {
-  const navigate = useNavigate();
   const awards = [...WEEKLY_WINNERS, ...MONTHLY_WINNERS].filter(w => w.authorName === profile.name);
 
   return (
@@ -426,7 +425,7 @@ function InterestsPanel({ profile }: { profile: UserProfile }) {
    D) ACHIEVEMENTS GRID
    ══════════════════════════════════════════════════════════════ */
 
-const ACHIEVEMENT_ICON: Record<string, JSX.Element> = {
+export const ACHIEVEMENT_ICON: Record<string, React.ReactNode> = {
   streak:       <Flame size={14} className="text-orange-400" />,
   goal:         <Target size={14} className="text-green-400" />,
   certification:<Award size={14} className="text-amber-400" />,
@@ -571,7 +570,7 @@ function AwardsPanelSection({ profile }: { profile: UserProfile }) {
    G) STATS PANEL
    ══════════════════════════════════════════════════════════════ */
 
-function StatsPanel({ profile }: { profile: UserProfile }) {
+export function StatsPanel({ profile }: { profile: UserProfile }) {
   const stats = [
     { label: "Followers",        value: fmtNum(profile.followers),        icon: <Users size={13} />,    color: "text-indigo-400" },
     { label: "Following",        value: fmtNum(profile.following),        icon: <UserPlus size={13} />, color: "text-violet-400" },

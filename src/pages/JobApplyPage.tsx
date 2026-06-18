@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft, ArrowRight, CheckCircle2, User, Image, Zap, Shield,
-  Send, Sparkles, Trophy, FileText, Clock, Star,
+  Send, Sparkles, Trophy, Clock, Star,
 } from "lucide-react";
 import { getJobById, CURRENT_JOB_USER, JobMatchingEngine } from "../lib/jobsEngine";
 
@@ -363,7 +363,7 @@ export default function JobApplyPage() {
 }
 
 /* ── Success screen ── */
-function SuccessScreen({ job, match, onDone }: { job: any; match: number; onDone: () => void }) {
+function SuccessScreen({ job, onDone }: { job: any; match?: number; onDone: () => void }) {
   return (
     <div className="min-h-screen bg-[#0f1117] flex flex-col items-center justify-center px-6">
       <motion.div

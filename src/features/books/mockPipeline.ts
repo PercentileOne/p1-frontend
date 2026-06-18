@@ -27,7 +27,7 @@ export async function extractPdfMetadataMock(fileName: string): Promise<PdfMetad
 // ── Chapter extraction ────────────────────────────────────────────
 
 export async function extractChaptersMock(
-  fileName: string,
+  _fileName: string,
   pageCount: number,
 ): Promise<Array<{ id: string; title: string; pageStart: number; pageEnd: number }>> {
   await new Promise(r => setTimeout(r, 1200 + Math.random() * 600));

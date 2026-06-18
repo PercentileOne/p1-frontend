@@ -49,9 +49,9 @@ function Waveform({ active }: { active: boolean }) {
 
 // ── Concept row ───────────────────────────────────────────────────
 function ConceptRow({
-  id, text, weight, isHit, isPartial, isNew,
+  text, weight, isHit, isPartial, isNew,
 }: {
-  id: string; text: string; weight: number;
+  id?: string; text: string; weight: number;
   isHit: boolean; isPartial: boolean; isNew: boolean;
 }) {
   return (
@@ -114,8 +114,7 @@ function ConceptRow({
 // ── Main component ────────────────────────────────────────────────
 export default function TestView({ store, onBack }: Props) {
   const {
-    card, isRunning, hasStarted, timeRemaining, elapsed,
-    conceptsHit, partialHits, misconceptions,
+    card, isRunning, timeRemaining, conceptsHit, partialHits, misconceptions,
     inputMode, pressureColor, liveScore,
     deliveryScore, transcript, lastHitId,
     start, submit, changeMode, processText,
@@ -359,7 +358,7 @@ export default function TestView({ store, onBack }: Props) {
 
           {/* Misconception alerts */}
           <AnimatePresence>
-            {misconceptions.map((m, i) => (
+            {misconceptions.map((m, _i) => (
               <motion.div
                 key={m}
                 initial={{ opacity: 0, height: 0 }}

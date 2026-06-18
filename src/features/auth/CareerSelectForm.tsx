@@ -2,11 +2,11 @@ import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 
 type CareerSelectFormProps = {
-  setInsight: (msg: string) => void;
-  setImageUrl: (url: string) => void;
-  setLifestyle: (msg: string) => void;
-  showLifestyle: boolean;
-  setShowLifestyle: (value: boolean) => void;
+  setInsight?: (msg: string) => void;
+  setImageUrl?: (url: string) => void;
+  setLifestyle?: (msg: string) => void;
+  showLifestyle?: boolean;
+  setShowLifestyle?: (value: boolean) => void;
 };
 
 type RoleOption = {
@@ -191,7 +191,7 @@ export default function CareerSelectForm({
   );
 
   const hideLifestyleIfOpen = () => {
-    if (showLifestyle) setShowLifestyle(false);
+    if (showLifestyle) setShowLifestyle?.(false);
   };
 
   const handleDomainChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -203,9 +203,9 @@ export default function CareerSelectForm({
 
     const domain = DOMAINS.find((d) => d.id === value);
     if (domain) {
-      setImageUrl(domain.imageUrl);
-      setLifestyle(domain.lifestyle);
-      setInsight(domain.insight);
+      setImageUrl?.(domain.imageUrl);
+      setLifestyle?.(domain.lifestyle);
+      setInsight?.(domain.insight);
     }
   };
 
@@ -218,7 +218,7 @@ export default function CareerSelectForm({
     if (selectedDomain && value) {
       const sub = selectedDomain.subdomains.find((s) => s.id === value);
       if (sub) {
-        setInsight(
+        setInsight?.(
           `${selectedDomain.name} → ${sub.name}. You’re narrowing your craft.`,
         );
       }
@@ -234,7 +234,7 @@ export default function CareerSelectForm({
       const roleName =
         selectedSubdomain.roles.find((r) => r.id === value)?.name ??
         "this role";
-      setInsight(
+      setInsight?.(
         `${roleName}. Now we can start shaping a path that matches the reality of this world.`,
       );
     }
@@ -243,11 +243,11 @@ export default function CareerSelectForm({
   const handleContinue = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDomain || !selectedSubdomain || !selectedRole) {
-      setInsight("Choose your domain, discipline, and role to continue.");
+      setInsight?.("Choose your domain, discipline, and role to continue.");
       return;
     }
 
-    setInsight(
+    setInsight?.(
       `Locking in: ${selectedDomain.name} → ${selectedSubdomain.name} → ${selectedRole.name}. This is the identity we’ll build around.`,
     );
 

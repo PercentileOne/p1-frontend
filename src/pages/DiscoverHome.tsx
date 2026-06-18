@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import {
   DOMAINS, DEMO_PEOPLE, CURRENT_DISCOVERY_USER,
-  DiscoveryMatchingEngine, domainConfig,
+  DiscoveryMatchingEngine,
 } from "../lib/contactsEngine";
 
 /* ══════════════════════════════════════════════════════════════
