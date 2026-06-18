@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "air_traffic_controller",
+  "slug": "air-traffic-controller",
+  "category": "Transport",
+
+  "essence": "Manages the safe, efficient movement of aircraft through intense concentration, rapid decision‑making, and absolute precision.",
+
+  "identity": {
+    "title": "Air Traffic Controller",
+    "summary": "Directs aircraft during takeoff, landing, and en‑route flight, ensuring safety and smooth traffic flow through constant communication and real‑time coordination."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 40000 },
+    "mid": { "low": 50000, "high": 80000 },
+    "senior": { "low": 90000, "high": 120000 },
+    "notes": "UK NATS controllers often exceed £100k+ with experience, shift allowances, and high‑complexity airspace responsibilities."
+  },
+
+  "qualifications": [
+    "Air Traffic Controller Training (NATS or equivalent)",
+    "CAA Licence (after assessments and supervised hours)",
+    "Medical and psychological fitness tests",
+    "Strong spatial awareness, communication, and decision‑making skills"
+  ],
+
+  "curves": {
+    "difficulty": [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [7, 8, 8, 9, 9, 10, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Air traffic controllers work in towers, approach units, or area control centres, guiding aircraft through some of the busiest and most complex airspace in the world. Days involve monitoring radar screens, issuing instructions, coordinating with pilots and other controllers, and maintaining absolute focus for extended periods. The role is mentally demanding, with strict procedures and high responsibility. Shifts often include nights, weekends, and rotating patterns. Despite the pressure, the job offers exceptional pay, strong teamwork, and the satisfaction of keeping thousands of passengers safe every day. This lifestyle suits individuals who thrive under pressure, enjoy structured systems, and can maintain calm, rapid thinking."
+  },
+
+  "habits": [
+    "Maintains intense concentration for long periods",
+    "Communicates clearly and concisely under pressure",
+    "Monitors multiple aircraft simultaneously",
+    "Follows strict procedures and safety protocols",
+    "Makes rapid, confident decisions"
+  ],
+
+  "tags": [
+    "aviation",
+    "safety‑critical",
+    "communication",
+    "navigation",
+    "high pressure",
+    "teamwork",
+    "technology",
+    "decision‑making"
+  ],
+
+  "hero": {
+    "image": "air_traffic_controller_hero.jpg",
+    "color": "#0EA5E9",
+    "keywords": ["aviation", "control", "precision"]
+  }
+}

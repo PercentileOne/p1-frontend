@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "smoke_control_systems_designer",
+  "slug": "smoke-control-systems-designer",
+  "category": "Skilled Trades",
+
+  "essence": "Designs smoke‑control and extraction systems that keep escape routes clear and support safe evacuation during fires.",
+
+  "identity": {
+    "title": "Smoke Control Systems Designer",
+    "summary": "Creates layouts and specifications for smoke‑ventilation systems, including automatic vents, extraction fans, shafts, and control logic to meet fire‑safety regulations."
+  },
+
+  "salary": {
+    "entry": { "low": 32000, "high": 36000 },
+    "mid":   { "low": 37000, "high": 46000 },
+    "senior": { "low": 47000, "high": 65000 },
+    "notes": "Designers specialising in high‑rise, commercial, or complex industrial smoke‑control systems can exceed £65k-£80k+."
+  },
+
+  "qualifications": [
+    "Training in smoke‑control system design (e.g., BS EN 12101)",
+    "Knowledge of fire dynamics, airflow modelling, and building regulations",
+    "Ability to produce compliant system drawings and specifications",
+    "Understanding of electrical systems, fans, vents, and control panels"
+  ],
+
+  "curves": {
+    "difficulty": [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Smoke control systems designers work on high‑rise buildings, commercial developments, and industrial facilities. They create system layouts, specify vents and fans, model airflow, and ensure compliance with strict fire‑safety standards. The role suits individuals who enjoy technical design, engineering logic, and contributing to life‑safety infrastructure."
+  },
+
+  "habits": [
+    "Produces accurate system drawings and airflow calculations",
+    "Follows strict design and compliance standards",
+    "Communicates clearly with installers, engineers, and building managers",
+    "Reviews architectural plans and fire strategies",
+    "Documents design decisions and performance criteria"
+  ],
+
+  "tags": [
+    "fire safety",
+    "smoke control",
+    "system design",
+    "engineering",
+    "public safety",
+    "building systems",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "smoke_control_systems_designer_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["smoke control", "design", "safety"]
+  }
+}

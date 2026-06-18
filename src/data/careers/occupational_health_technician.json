@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "occupational_health_technician",
+  "slug": "occupational-health-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Supports workplace health by conducting screenings, monitoring employee wellbeing, and assisting occupational health professionals.",
+
+  "identity": {
+    "title": "Occupational Health Technician",
+    "summary": "Carries out health screenings, monitors workplace exposures, and supports occupational health advisors in promoting employee wellbeing and safety."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 28000 },
+    "mid":   { "low": 29000, "high": 36000 },
+    "senior": { "low": 37000, "high": 45000 },
+    "notes": "Technicians working in high‑risk industries or with advanced testing responsibilities can exceed £45k-£55k+."
+  },
+
+  "qualifications": [
+    "Training in occupational health or workplace wellbeing",
+    "Knowledge of health‑screening procedures",
+    "Ability to conduct tests such as audiometry, spirometry, and vision checks",
+    "Understanding of workplace hazards and exposure monitoring"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9]
+  },
+
+  "lifestyle": {
+    "description": "Occupational health technicians work across offices, factories, warehouses, and industrial sites conducting health screenings and monitoring workplace exposures. The role suits individuals who enjoy practical health‑related tasks, supporting wellbeing, and contributing to safer workplaces."
+  },
+
+  "habits": [
+    "Conducts routine health screenings",
+    "Maintains accurate medical and exposure records",
+    "Supports occupational health advisors and nurses",
+    "Communicates clearly with employees and managers",
+    "Monitors workplace hazards and wellbeing indicators"
+  ],
+
+  "tags": [
+    "occupational health",
+    "workplace wellbeing",
+    "health screening",
+    "safety",
+    "employee health",
+    "risk management"
+  ],
+
+  "hero": {
+    "image": "occupational_health_technician_hero.jpg",
+    "color": "#34D399",
+    "keywords": ["health screening", "wellbeing", "safety"]
+  }
+}

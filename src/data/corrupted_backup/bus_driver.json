@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "bus_driver",
+  "slug": "bus-driver",
+  "category": "Transport",
+
+  "essence": "Provides safe, reliable public transport while navigating fixed routes, schedules, and diverse passenger needs.",
+
+  "identity": {
+    "title": "Bus Driver",
+    "summary": "Operates buses along scheduled routes, transporting passengers safely while managing timetables, customer interactions, and road conditions."
+  },
+
+  "salary": {
+    "entry": { "low": 23000, "high": 26000 },
+    "mid": { "low": 27000, "high": 33000 },
+    "senior": { "low": 34000, "high": 42000 },
+    "notes": "Overtime, night routes, London weighting, and long‑distance or coach driving can exceed £40k–£50k+."
+  },
+
+  "qualifications": [
+    "Full UK Driving Licence",
+    "PCV Licence (Passenger Carrying Vehicle)",
+    "Driver Certificate of Professional Competence (CPC)",
+    "Training in customer service and safety procedures"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 5, 6, 6, 7, 7, 8, 8, 8],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Bus drivers work on fixed routes, transporting passengers across towns, cities, and rural areas. Days involve checking the vehicle, following timetables, assisting passengers, handling fares, navigating traffic, and maintaining a calm, professional presence. The role requires patience, focus, and strong awareness of safety. Shifts often include early mornings, late evenings, weekends, and split shifts. Despite the demands, the job offers stability, routine, and the satisfaction of serving the community. This lifestyle suits individuals who enjoy driving, structure, and interacting with a wide range of people."
+  },
+
+  "habits": [
+    "Performs safety checks before each shift",
+    "Drives smoothly and attentively",
+    "Keeps to timetables while prioritising safety",
+    "Communicates clearly and politely with passengers",
+    "Monitors traffic and adjusts routes when necessary"
+  },
+
+  "tags": [
+    "transport",
+    "public service",
+    "driving",
+    "customer interaction",
+    "routine",
+    "safety",
+    "navigation",
+    "community"
+  ],
+
+  "hero": {
+    "image": "bus_driver_hero.jpg",
+    "color": "#3B82F6",
+    "keywords": ["transport", "public service", "routes"]
+  }
+}

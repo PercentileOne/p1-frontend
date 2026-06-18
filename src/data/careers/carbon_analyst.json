@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "carbon_analyst",
+  "slug": "carbon-analyst",
+  "category": "Skilled Trades",
+
+  "essence": "Measures and analyses carbon emissions to help organisations reduce their climate impact and meet net‑zero goals.",
+
+  "identity": {
+    "title": "Carbon Analyst",
+    "summary": "Calculates carbon footprints, analyses emissions data, supports net‑zero strategies, and advises organisations on reducing greenhouse‑gas impact."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 38000 },
+    "mid":   { "low": 39000, "high": 52000 },
+    "senior": { "low": 53000, "high": 78000 },
+    "notes": "Specialists in corporate carbon accounting, lifecycle analysis, or net‑zero strategy can exceed £78k-£95k+."
+  },
+
+  "qualifications": [
+    "Training in sustainability, environmental science, or carbon accounting",
+    "Knowledge of greenhouse‑gas protocols and emissions reporting",
+    "Ability to analyse operational and supply‑chain emissions",
+    "Understanding of net‑zero strategy, energy use, and climate policy"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Carbon analysts work for corporations, consultancies, public bodies, and sustainability teams. They calculate emissions, analyse data, support net‑zero planning, and help organisations reduce climate impact. The role suits individuals who enjoy data, sustainability strategy, and measurable environmental outcomes."
+  },
+
+  "habits": [
+    "Calculates carbon footprints across scopes 1, 2, and 3",
+    "Analyses emissions data and reduction opportunities",
+    "Supports net‑zero and decarbonisation strategies",
+    "Prepares carbon reports for stakeholders and regulators",
+    "Advises teams on energy efficiency and climate impact"
+  ],
+
+  "tags": [
+    "carbon accounting",
+    "net zero",
+    "sustainability",
+    "ESG",
+    "climate strategy",
+    "data analysis"
+  ],
+
+  "hero": {
+    "image": "carbon_analyst_hero.jpg",
+    "color": "#059669",
+    "keywords": ["carbon", "net zero", "climate"]
+  }
+}

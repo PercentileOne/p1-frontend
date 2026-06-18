@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 286,
+  "id": "water_resources_engineer",
+  "slug": "water-resources-engineer",
+  "category": "Environment, Nature \u0026 Sustainability",
+  "essence": "Designs and manages systems for water supply, flood risk, and sustainable drainage to protect communities and ecosystems.",
+  "identity": {
+    "title": "Water Resources Engineer",
+    "summary": "Develops hydraulic models, designs drainage and flood mitigation, and advises on water management for infrastructure projects."
+  },
+  "salary": {
+    "entry": {
+      "low": 32000,
+      "high": 42000
+    },
+    "mid": {
+      "low": 43000,
+      "high": 70000
+    },
+    "senior": {
+      "low": 71000,
+      "high": 130000
+    },
+    "notes": "Specialists in flood risk and large infrastructure projects command higher salaries."
+  },
+  "qualifications": [
+    "Degree in civil or environmental engineering",
+    "Experience with hydraulic modelling and SuDS design",
+    "Knowledge of water regulations and flood risk assessment",
+    "Strong project management and stakeholder skills"
+  ],
+  "curves": {
+    "difficulty": [
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10,
+    10
+  ],
+    "effort": [
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10,
+    10
+  ],
+    "reward": [
+      7,
+      8,
+      8,
+      9,
+      9,
+      10,
+      10,
+      10,
+      10,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Office and site balance with modelling, design, and stakeholder engagement; project deadlines and regulatory submissions common."
+  },
+  "habits": [
+    "Builds hydraulic and flood models",
+    "Designs drainage and mitigation measures",
+    "Coordinates with planners and contractors",
+    "Monitors performance and adapts designs"
+  ],
+  "tags": [
+    "water",
+    "hydraulics",
+    "SuDS",
+    "flood risk"
+  ],
+  "hero": {
+    "image": "water_resources_engineer_hero.jpg",
+    "color": "#1F6B7A",
+    "keywords": [
+      "water",
+      "hydraulics",
+      "SuDS"
+    ]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 289,
+  "id": "forensic_scientist",
+  "slug": "forensic-scientist",
+  "category": "Science \u0026 Laboratory",
+  "essence": "Applies scientific methods to analyse evidence and support criminal investigations and legal processes.",
+  "identity": {
+    "title": "Forensic Scientist",
+    "summary": "Processes evidence, conducts laboratory analyses, and provides expert testimony to support investigations and prosecutions."
+  },
+  "salary": {
+    "entry": {
+      "low": 28000,
+      "high": 36000
+    },
+    "mid": {
+      "low": 37000,
+      "high": 60000
+    },
+    "senior": {
+      "low": 61000,
+      "high": 120000
+    },
+    "notes": "Specialist forensic disciplines and senior roles attract higher pay."
+  },
+  "qualifications": [
+    "Degree in forensic science, chemistry, biology, or related field",
+    "Experience with evidence handling and laboratory techniques",
+    "Ability to present findings clearly in court",
+    "Attention to chain of custody and quality systems"
+  ],
+  "curves": {
+    "difficulty": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10
+  ],
+    "effort": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      9,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Laboratory and scene work with strict protocols, occasional court appearances, and high standards of documentation."
+  },
+  "habits": [
+    "Analyses physical and biological evidence",
+    "Maintains strict chain of custody",
+    "Prepares reports and expert statements",
+    "Liaises with investigators and legal teams"
+  ],
+  "tags": [
+    "forensics",
+    "laboratory",
+    "evidence",
+    "investigation"
+  ],
+  "hero": {
+    "image": "forensic_scientist_hero.jpg",
+    "color": "#3A2F4A",
+    "keywords": [
+      "forensics",
+      "evidence",
+      "lab"
+    ]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 248,
+  "id": "additive_manufacturing_engineer",
+  "slug": "additive-manufacturing-engineer",
+  "category": "Advanced Manufacturing \u0026 Engineering",
+  "essence": "Designs parts and processes for additive manufacturing, optimising for strength, cost, and manufacturability.",
+  "identity": {
+    "title": "Additive Manufacturing Engineer",
+    "summary": "Develops AM process parameters, designs for additive manufacturing (DfAM), and scales prototypes into production."
+  },
+  "salary": {
+    "entry": {
+      "low": 35000,
+      "high": 48000
+    },
+    "mid": {
+      "low": 49000,
+      "high": 75000
+    },
+    "senior": {
+      "low": 76000,
+      "high": 130000
+    },
+    "notes": "Engineers with metal AM and aerospace experience are particularly well compensated."
+  },
+  "qualifications": [
+    "Degree in mechanical engineering, materials, or related field",
+    "Experience with DfAM, topology optimisation, and process development",
+    "Familiarity with AM hardware and materials",
+    "Strong CAD and simulation skills"
+  ],
+  "curves": {
+    "difficulty": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10
+  ],
+    "effort": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10
+  ],
+    "reward": [
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      10,
+      10,
+      10,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Combines lab development, simulation, and production scaling. Close collaboration with design, materials, and quality teams."
+  },
+  "habits": [
+    "Designs parts optimised for additive processes",
+    "Develops and tunes process parameters",
+    "Validates parts and performs failure analysis",
+    "Works with suppliers to qualify materials"
+  ],
+  "tags": [
+    "additive",
+    "engineering",
+    "DfAM",
+    "materials"
+  ],
+  "hero": {
+    "image": "additive_manufacturing_engineer_hero.jpg",
+    "color": "#2E5A3F",
+    "keywords": [
+      "additive",
+      "engineering",
+      "DfAM"
+    ]
+  }
+}

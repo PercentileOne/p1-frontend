@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "air_quality_modeller",
+  "slug": "air-quality-modeller",
+  "category": "Skilled Trades",
+
+  "essence": "Uses atmospheric models to predict pollution behaviour, assess environmental impact, and support regulatory decisions.",
+
+  "identity": {
+    "title": "Air Quality Modeller",
+    "summary": "Builds and runs atmospheric dispersion models, analyses emissions data, forecasts pollution levels, and supports environmental planning and regulation."
+  },
+
+  "salary": {
+    "entry": { "low": 32000, "high": 38000 },
+    "mid":   { "low": 39000, "high": 52000 },
+    "senior": { "low": 53000, "high": 80000 },
+    "notes": "Modellers specialising in advanced dispersion systems, industrial permitting, or national‑scale forecasting can exceed £80k-£100k+."
+  },
+
+  "qualifications": [
+    "Training in atmospheric science, environmental science, physics, or data modelling",
+    "Knowledge of air‑quality regulations and emissions sources",
+    "Ability to use dispersion‑modelling software and analyse large datasets",
+    "Understanding of meteorology, pollution behaviour, and environmental impact assessment"
+  ],
+
+  "curves": {
+    "difficulty": [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Air quality modellers work for environmental consultancies, government agencies, research organisations, and infrastructure planners. They run atmospheric models, analyse emissions data, forecast pollution, and support environmental impact assessments. The role suits individuals who enjoy modelling, data analysis, and environmental protection."
+  },
+
+  "habits": [
+    "Runs atmospheric dispersion models",
+    "Analyses emissions inventories and meteorological data",
+    "Forecasts pollution levels and air‑quality trends",
+    "Supports environmental impact assessments and planning",
+    "Prepares technical reports for regulators and clients"
+  ],
+
+  "tags": [
+    "air quality",
+    "modelling",
+    "environmental science",
+    "pollution",
+    "data analysis",
+    "forecasting"
+  ],
+
+  "hero": {
+    "image": "air_quality_modeller_hero.jpg",
+    "color": "#2563EB",
+    "keywords": ["modelling", "air quality", "atmosphere"]
+  }
+}

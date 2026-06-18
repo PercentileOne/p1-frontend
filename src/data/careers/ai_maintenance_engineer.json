@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "ai_maintenance_engineer",
+  "slug": "ai-maintenance-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Uses AI, predictive analytics, and sensor data to maintain, diagnose, and optimise manufacturing equipment before failures occur.",
+
+  "identity": {
+    "title": "AI Maintenance Engineer",
+    "summary": "Implements AI‑driven predictive maintenance, monitors machine health in real time, and ensures equipment reliability in advanced manufacturing environments."
+  },
+
+  "salary": {
+    "entry": { "low": 42000, "high": 55000 },
+    "mid":   { "low": 56000, "high": 85000 },
+    "senior": { "low": 86000, "high": 135000 },
+    "notes": "Engineers in aerospace, robotics, or fully autonomous smart‑factory environments can exceed £135k-£180k+."
+  },
+
+  "qualifications": [
+    "Experience in maintenance engineering, automation, or digital manufacturing",
+    "Knowledge of predictive maintenance, sensors, and machine‑health analytics",
+    "Skills in ML models for anomaly detection and failure prediction",
+    "Understanding of CNC, robotics, and Industry 4.0 systems"
+  ],
+
+  "curves": {
+    "difficulty": [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "AI maintenance engineers work in aerospace, robotics, automotive, and Industry 4.0 environments. They use AI to predict failures, schedule maintenance proactively, and ensure equipment reliability. The role suits individuals who enjoy diagnostics, optimisation, and high‑tech engineering."
+  },
+
+  "habits": [
+    "Implements AI‑driven predictive maintenance systems",
+    "Monitors machine health using sensors and analytics",
+    "Diagnoses issues before they cause downtime",
+    "Collaborates with production, AI, and automation teams",
+    "Ensures reliability and uptime in autonomous workflows"
+  ],
+
+  "tags": [
+    "AI",
+    "maintenance",
+    "predictive analytics",
+    "industry 4.0",
+    "smart factory",
+    "machine health"
+  ],
+
+  "hero": {
+    "image": "ai_maintenance_engineer_hero.jpg",
+    "color": "#000819",
+    "keywords": ["AI", "maintenance", "predictive"]
+  }
+}

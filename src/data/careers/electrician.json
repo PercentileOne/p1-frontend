@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "electrician",
+  "slug": "electrician",
+  "category": "Trades",
+
+  "essence": "Keeps homes, businesses, and infrastructure alive by mastering the flow of power.",
+
+  "identity": {
+    "title": "Electrician",
+    "summary": "Installs, maintains, and repairs electrical systems in homes, businesses, and industrial environments with precision and safety."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 30000 },
+    "mid": { "low": 32000, "high": 42000 },
+    "senior": { "low": 45000, "high": 60000 },
+    "notes": "Self‑employed electricians often earn significantly more. Emergency call‑outs and specialised industrial work can push earnings above £70k."
+  },
+
+  "qualifications": [
+    "Level 3 Electrical Installation Apprenticeship",
+    "18th Edition Wiring Regulations Certification",
+    "Practical On‑Site Experience",
+    "Strong Safety and Compliance Knowledge"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 5, 6, 6, 7, 7, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Electricians live a practical, hands‑on lifestyle built around problem‑solving and physical skill. Days often involve travelling between jobs, diagnosing faults, installing wiring, or ensuring systems meet strict safety standards. The work can be physically demanding - crawling through tight spaces, working at height, or handling heavy equipment - and the responsibility is high because mistakes can be dangerous. But the satisfaction is real: fixing something essential, restoring power, or completing a clean installation brings a strong sense of craftsmanship. Many electricians enjoy the independence of the job, the variety of environments, and the steady demand for their skills."
+  },
+
+  "habits": [
+    "Follows safety steps precisely",
+    "Checks tools before each job",
+    "Diagnoses faults methodically",
+    "Keeps wiring neat and organised",
+    "Reviews regulations regularly"
+  ],
+
+  "tags": [
+    "hands-on work",
+    "technical skill",
+    "problem-solving",
+    "safety-first mindset",
+    "independent work",
+    "physical activity",
+    "craftsmanship",
+    "high responsibility"
+  ],
+
+  "hero": {
+    "image": "electrician_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["trades", "precision", "power"]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "security_guard",
+  "slug": "security-guard",
+  "category": "Public Safety",
+
+  "essence": "Protects people, property, and environments through vigilance, presence, and calm decision‑making.",
+
+  "identity": {
+    "title": "Security Guard",
+    "summary": "Monitors premises, manages access, responds to incidents, and ensures safety in public, private, and commercial environments."
+  },
+
+  "salary": {
+    "entry": { "low": 20000, "high": 23000 },
+    "mid": { "low": 24000, "high": 28000 },
+    "senior": { "low": 29000, "high": 35000 },
+    "notes": "Specialist roles (CCTV operator, corporate security, mobile response, event security) and high‑risk environments can exceed £35k–£45k+."
+  },
+
+  "qualifications": [
+    "SIA Licence (Security Industry Authority)",
+    "Training in Conflict Management and Physical Intervention",
+    "Understanding of Safety Procedures and Incident Reporting",
+    "Good Communication and Observation Skills"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 5, 6, 6, 7, 7, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Security guards work in environments ranging from shops and offices to events, hospitals, and industrial sites. Days involve monitoring CCTV, patrolling premises, checking IDs, responding to alarms, writing reports, and assisting the public. The role requires alertness, calm under pressure, and the ability to de‑escalate situations. Shifts may include nights, weekends, and long hours, depending on the site. While the job can be routine, it also demands readiness for unexpected incidents. This lifestyle suits individuals who are observant, responsible, and motivated by keeping people and property safe."
+  },
+
+  "habits": [
+    "Stays alert and aware of surroundings",
+    "Maintains accurate incident logs",
+    "Communicates clearly with staff and visitors",
+    "Follows safety and access protocols",
+    "Practises calm, controlled decision‑making"
+  },
+
+  "tags": [
+    "public safety",
+    "security",
+    "vigilance",
+    "responsibility",
+    "communication",
+    "routine",
+    "incident response",
+    "teamwork"
+  ],
+
+  "hero": {
+    "image": "security_guard_hero.jpg",
+    "color": "#1E3A8A",
+    "keywords": ["safety", "vigilance", "protection"]
+  }
+}

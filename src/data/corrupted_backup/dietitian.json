@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "dietitian",
+  "slug": "dietitian",
+  "category": "Healthcare",
+
+  "essence": "Uses nutrition science to improve health, prevent disease, and support recovery through personalised dietary guidance.",
+
+  "identity": {
+    "title": "Dietitian",
+    "summary": "Assesses nutritional needs, develops tailored meal plans, supports patients with medical conditions, and provides evidence‑based dietary advice."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid": { "low": 35000, "high": 45000 },
+    "senior": { "low": 48000, "high": 60000 },
+    "notes": "Specialist roles in clinical nutrition, paediatrics, renal care, or advanced practice can exceed £60k–£75k+."
+  },
+
+  "qualifications": [
+    "Degree in Dietetics or Nutrition and Dietetics",
+    "HCPC Registration",
+    "Clinical Placements in Hospitals or Community Settings",
+    "Strong Understanding of Physiology, Biochemistry, and Medical Nutrition Therapy"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Dietitians work in clinical, community, or public health environments where evidence‑based nutrition and patient education are central. Days involve assessing dietary needs, creating personalised nutrition plans, supporting patients with conditions such as diabetes, kidney disease, or gastrointestinal disorders, and collaborating with multidisciplinary teams. The work is structured and patient‑focused, requiring strong communication skills and the ability to translate complex science into practical guidance. Progress can be gradual, but the impact is meaningful — helping people manage illness, improve wellbeing, or build healthier habits. This lifestyle suits individuals who are empathetic, analytical, and passionate about health and nutrition."
+  },
+
+  "habits": [
+    "Assesses dietary needs with precision",
+    "Translates science into practical advice",
+    "Documents patient progress clearly",
+    "Collaborates with healthcare teams",
+    "Stays current with nutrition research"
+  },
+
+  "tags": [
+    "nutrition",
+    "healthcare",
+    "patient care",
+    "education",
+    "evidence-based practice",
+    "wellbeing",
+    "analysis",
+    "support"
+  ],
+
+  "hero": {
+    "image": "dietitian_hero.jpg",
+    "color": "#84CC16",
+    "keywords": ["nutrition", "health", "guidance"]
+  }
+}

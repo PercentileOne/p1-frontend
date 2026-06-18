@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "conservation_officer",
+  "slug": "conservation-officer",
+  "category": "Skilled Trades",
+
+  "essence": "Protects natural habitats and wildlife by managing conservation projects, monitoring ecosystems, and guiding sustainable land use.",
+
+  "identity": {
+    "title": "Conservation Officer",
+    "summary": "Works to protect wildlife and habitats through field surveys, conservation planning, community engagement, and environmental management."
+  },
+
+  "salary": {
+    "entry": { "low": 25000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 40000 },
+    "senior": { "low": 41000, "high": 52000 },
+    "notes": "Senior conservation officers, project leads, or specialists in biodiversity strategy can exceed £52k-£65k+."
+  },
+
+  "qualifications": [
+    "Training in conservation, ecology, or environmental science",
+    "Knowledge of habitat management and biodiversity protection",
+    "Ability to conduct ecological surveys and conservation planning",
+    "Understanding of environmental legislation and protected species"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Conservation officers work across nature reserves, woodlands, wetlands, coastal areas, and community projects. They manage habitats, monitor wildlife, engage with landowners, and deliver conservation initiatives. The role suits individuals who enjoy fieldwork, ecology, community engagement, and environmental stewardship."
+  },
+
+  "habits": [
+    "Manages conservation projects and habitats",
+    "Conducts wildlife and ecological surveys",
+    "Engages with landowners, volunteers, and communities",
+    "Prepares conservation plans and reports",
+    "Monitors biodiversity and environmental change"
+  ],
+
+  "tags": [
+    "conservation",
+    "biodiversity",
+    "ecology",
+    "habitat management",
+    "environmental protection",
+    "wildlife"
+  ],
+
+  "hero": {
+    "image": "conservation_officer_hero.jpg",
+    "color": "#22C55E",
+    "keywords": ["conservation", "habitat", "wildlife"]
+  }
+}

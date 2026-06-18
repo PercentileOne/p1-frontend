@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "biodiversity_officer",
+  "slug": "biodiversity-officer",
+  "category": "Skilled Trades",
+
+  "essence": "Protects and enhances biodiversity by assessing habitats, guiding land‑use decisions, and supporting nature‑recovery initiatives.",
+
+  "identity": {
+    "title": "Biodiversity Officer",
+    "summary": "Assesses habitats and species, advises on biodiversity protection, supports planning decisions, and delivers nature‑recovery and conservation projects."
+  },
+
+  "salary": {
+    "entry": { "low": 27000, "high": 32000 },
+    "mid":   { "low": 33000, "high": 45000 },
+    "senior": { "low": 46000, "high": 60000 },
+    "notes": "Senior biodiversity specialists or strategic leads can exceed £60k-£75k+."
+  },
+
+  "qualifications": [
+    "Training in ecology, conservation, or environmental science",
+    "Knowledge of biodiversity legislation and planning policy",
+    "Ability to conduct habitat and species assessments",
+    "Understanding of nature‑recovery strategies and ecosystem management"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Biodiversity officers work for councils, conservation bodies, environmental agencies, and consultancies. They assess habitats, guide planning decisions, support conservation projects, and help deliver nature‑recovery strategies. The role suits individuals who enjoy ecology, policy, fieldwork, and long‑term environmental impact."
+  },
+
+  "habits": [
+    "Conducts biodiversity and habitat assessments",
+    "Advises on planning applications and land‑use decisions",
+    "Supports conservation and nature‑recovery projects",
+    "Engages with landowners, communities, and stakeholders",
+    "Monitors species, habitats, and environmental change"
+  ],
+
+  "tags": [
+    "biodiversity",
+    "ecology",
+    "conservation",
+    "environmental protection",
+    "habitat assessment",
+    "nature recovery"
+  ],
+
+  "hero": {
+    "image": "biodiversity_officer_hero.jpg",
+    "color": "#16A34A",
+    "keywords": ["biodiversity", "habitat", "nature"]
+  }
+}

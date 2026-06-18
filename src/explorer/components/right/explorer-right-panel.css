@@ -1,0 +1,14 @@
+.explorer-right-panel {
+  width: 360px;
+  background: #ffffff;
+  border-left: 1px solid #e5e5e5;
+  padding: 24px;
+  overflow-y: auto;
+}
+.career-item {
+  cursor: pointer;
+}
+
+.career-item {
+  cursor: pointer;
+}

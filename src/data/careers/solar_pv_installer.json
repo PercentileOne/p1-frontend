@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "solar_pv_installer",
+  "slug": "solar-pv-installer",
+  "category": "Skilled Trades",
+
+  "essence": "Installs and maintains solar photovoltaic systems for homes, businesses, and renewable‑energy projects.",
+
+  "identity": {
+    "title": "Solar PV Installer",
+    "summary": "Installs, configures, and maintains solar photovoltaic systems, ensuring safe operation, optimal performance, and reliable clean‑energy generation."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 40000 },
+    "senior": { "low": 41000, "high": 52000 },
+    "notes": "Specialists in commercial systems, battery integration, or large‑scale solar farms can exceed £52k-£65k+."
+  },
+
+  "qualifications": [
+    "Training in electrical installation or renewable‑energy systems",
+    "Knowledge of solar PV components and wiring",
+    "Ability to install, test, and maintain solar systems",
+    "Understanding of electrical safety and building regulations"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Solar PV installers work for renewable‑energy companies, electrical contractors, and solar‑installation firms. They install rooftop and ground‑mounted solar systems, connect inverters, integrate batteries, and ensure safe operation. The role suits individuals who enjoy hands‑on technical work, problem‑solving, and contributing to the clean‑energy transition."
+  },
+
+  "habits": [
+    "Installs rooftop and ground‑mounted solar panels",
+    "Connects inverters, wiring, and electrical components",
+    "Performs system testing and safety checks",
+    "Troubleshoots performance issues",
+    "Works with electricians, engineers, and energy planners"
+  ],
+
+  "tags": [
+    "solar",
+    "renewable energy",
+    "electrical",
+    "clean energy",
+    "installation",
+    "technical"
+  ],
+
+  "hero": {
+    "image": "solar_pv_installer_hero.jpg",
+    "color": "#FACC15",
+    "keywords": ["solar", "renewable energy", "installation"]
+  }
+}

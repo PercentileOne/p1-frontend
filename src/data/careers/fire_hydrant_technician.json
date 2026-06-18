@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_hydrant_technician",
+  "slug": "fire-hydrant-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Inspects, tests, and maintains fire hydrants to ensure reliable water supply for firefighting operations.",
+
+  "identity": {
+    "title": "Fire Hydrant Technician",
+    "summary": "Checks, repairs, and certifies fire hydrants, ensuring they provide adequate pressure and flow for emergency firefighting."
+  },
+
+  "salary": {
+    "entry": { "low": 23000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 33000 },
+    "senior": { "low": 34000, "high": 42000 },
+    "notes": "Technicians covering large municipal networks or specialist industrial hydrant systems can exceed £40k-£45k+."
+  },
+
+  "qualifications": [
+    "Training in hydrant inspection and maintenance",
+    "Knowledge of water‑supply systems and fire‑service requirements",
+    "Ability to test flow, pressure, and valve integrity",
+    "Understanding of safety protocols and compliance standards"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 5, 6, 6, 7, 7, 8, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9]
+  },
+
+  "lifestyle": {
+    "description": "Fire hydrant technicians travel across neighbourhoods, industrial sites, and public areas inspecting and maintaining hydrants. The role involves testing water flow, checking valves, repairing faults, and ensuring hydrants are accessible and compliant. It suits individuals who enjoy practical outdoor work, independence, and supporting firefighting readiness."
+  },
+
+  "habits": [
+    "Tests hydrants for flow and pressure",
+    "Keeps accurate inspection and maintenance records",
+    "Ensures hydrants remain accessible and unobstructed",
+    "Follows strict safety and compliance procedures",
+    "Communicates clearly with fire services and water authorities"
+  ],
+
+  "tags": [
+    "fire safety",
+    "infrastructure",
+    "maintenance",
+    "public safety",
+    "inspection",
+    "skilled trades",
+    "water systems"
+  ],
+
+  "hero": {
+    "image": "fire_hydrant_technician_hero.jpg",
+    "color": "#F97316",
+    "keywords": ["hydrants", "fire safety", "infrastructure"]
+  }
+}

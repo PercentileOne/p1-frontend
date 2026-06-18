@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "climate_modeller",
+  "slug": "climate-modeller",
+  "category": "Skilled Trades",
+
+  "essence": "Uses scientific models to predict climate change impacts and inform environmental policy and adaptation strategies.",
+
+  "identity": {
+    "title": "Climate Modeller",
+    "summary": "Develops and runs climate models, analyses environmental data, and forecasts climate impacts to support research, policy, and climate‑risk planning."
+  },
+
+  "salary": {
+    "entry": { "low": 32000, "high": 40000 },
+    "mid":   { "low": 41000, "high": 60000 },
+    "senior": { "low": 61000, "high": 90000 },
+    "notes": "Specialists in advanced modelling, climate‑risk analytics, or national research programmes can exceed £90k-£110k+."
+  },
+
+  "qualifications": [
+    "Training in climate science, environmental science, or atmospheric physics",
+    "Knowledge of climate models and simulation tools",
+    "Ability to analyse large datasets and interpret climate projections",
+    "Understanding of climate policy, adaptation, and mitigation"
+  ],
+
+  "curves": {
+    "difficulty": [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Climate modellers work for research institutes, universities, government agencies, and climate‑risk consultancies. They run simulations, analyse climate scenarios, and help organisations understand future risks. The role suits individuals who enjoy scientific modelling, data analysis, and long‑term environmental forecasting."
+  },
+
+  "habits": [
+    "Runs climate simulations and models",
+    "Analyses environmental and atmospheric data",
+    "Develops climate scenarios and projections",
+    "Supports climate‑risk assessments and adaptation planning",
+    "Collaborates with scientists, policymakers, and sustainability teams"
+  ],
+
+  "tags": [
+    "climate modelling",
+    "climate science",
+    "data analysis",
+    "environmental forecasting",
+    "climate risk",
+    "sustainability"
+  ],
+
+  "hero": {
+    "image": "climate_modeller_hero.jpg",
+    "color": "#0D9488",
+    "keywords": ["climate modelling", "forecasting", "climate science"]
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_data_engineer",
+  "slug": "cnc-data-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Builds and maintains the data pipelines, systems, and infrastructure that collect, process, and deliver CNC machine data at scale.",
+
+  "identity": {
+    "title": "CNC Data Engineer",
+    "summary": "Designs and manages industrial data pipelines that capture CNC machine data, transform it into usable formats, and support analytics, optimisation, and Industry 4.0 initiatives."
+  },
+
+  "salary": {
+    "entry": { "low": 42000, "high": 52000 },
+    "mid":   { "low": 53000, "high": 78000 },
+    "senior": { "low": 79000, "high": 120000 },
+    "notes": "Engineers in aerospace, defence, or fully digitalised smart‑factory environments can exceed £120k-£160k+."
+  },
+
+  "qualifications": [
+    "Experience with CNC data systems, IIoT, MES, or SCADA",
+    "Knowledge of data pipelines, ETL/ELT, and industrial communication protocols",
+    "Skills in databases, APIs, and real‑time data processing",
+    "Understanding of CNC machine behaviour, performance metrics, and manufacturing workflows"
+  ],
+
+  "curves": {
+    "difficulty": [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC data engineers work in advanced manufacturing, aerospace, automotive, robotics, and Industry 4.0 environments. They build the data infrastructure that powers analytics, automation, and optimisation. The role suits individuals who enjoy data systems, industrial technology, and enabling digital transformation."
+  },
+
+  "habits": [
+    "Builds and maintains CNC data pipelines",
+    "Connects machines to IIoT, MES, and SCADA platforms",
+    "Processes real‑time and historical machining data",
+    "Ensures data quality, reliability, and accessibility",
+    "Collaborates with analysts, engineers, and automation teams"
+  ],
+
+  "tags": [
+    "CNC",
+    "data engineering",
+    "industry 4.0",
+    "digital manufacturing",
+    "IIoT",
+    "data pipelines"
+  ],
+
+  "hero": {
+    "image": "cnc_data_engineer_hero.jpg",
+    "color": "#001729",
+    "keywords": ["CNC", "data engineering", "IIoT"]
+  }
+}

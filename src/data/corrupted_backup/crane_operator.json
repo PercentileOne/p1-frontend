@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "crane_operator",
+  "slug": "crane-operator",
+  "category": "Skilled Trades",
+
+  "essence": "Operates powerful lifting machinery with precision, awareness, and strict safety discipline on construction and industrial sites.",
+
+  "identity": {
+    "title": "Crane Operator",
+    "summary": "Controls tower cranes, mobile cranes, or overhead lifting equipment to move heavy materials safely and accurately on construction and industrial projects."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 30000 },
+    "mid": { "low": 32000, "high": 40000 },
+    "senior": { "low": 42000, "high": 55000 },
+    "notes": "Highly experienced operators, night‑shift roles, and large‑scale commercial projects can exceed £55k–£70k+."
+  },
+
+  "qualifications": [
+    "CPCS or NPORS crane operator certification",
+    "Training in lifting operations and site safety",
+    "Strong spatial awareness and coordination",
+    "Understanding of load charts, signalling, and rigging"
+  },
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Crane operators work on construction sites, ports, and industrial facilities, lifting heavy materials with precision and care. Days involve inspecting equipment, coordinating with riggers and signalers, following lift plans, and operating cranes from a cab or remote controls. The role is safety‑critical and requires focus, patience, and excellent communication. Work often depends on weather conditions and project schedules. This lifestyle suits individuals who enjoy machinery, responsibility, and working at height or in elevated positions."
+  },
+
+  "habits": [
+    "Performs daily crane safety checks",
+    "Communicates clearly with riggers and signalers",
+    "Follows lift plans and load charts precisely",
+    "Maintains calm focus during complex lifts",
+    "Keeps equipment and work areas safe"
+  ],
+
+  "tags": [
+    "construction",
+    "machinery",
+    "safety-critical",
+    "lifting operations",
+    "teamwork",
+    "precision",
+    "outdoor work",
+    "industrial"
+  ],
+
+  "hero": {
+    "image": "crane_operator_hero.jpg",
+    "color": "#D97706",
+    "keywords": ["machinery", "lifting", "construction"]
+  }
+}

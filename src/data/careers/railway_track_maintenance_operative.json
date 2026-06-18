@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "railway_track_maintenance_operative",
+  "slug": "railway-track-maintenance-operative",
+  "category": "Skilled Trades",
+
+  "essence": "Maintains and repairs the rail tracks and infrastructure that keep trains running safely and reliably.",
+
+  "identity": {
+    "title": "Railway Track Maintenance Operative",
+    "summary": "Inspects, repairs, and maintains railway tracks, sleepers, ballast, and lineside infrastructure to ensure safe train operations."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 28000 },
+    "mid":   { "low": 30000, "high": 38000 },
+    "senior": { "low": 39000, "high": 52000 },
+    "notes": "Night‑shift teams, possession work, and safety‑critical roles can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "PTS (Personal Track Safety) certification",
+    "Knowledge of track components and maintenance techniques",
+    "Understanding of safety procedures around live railways",
+    "Physical fitness and ability to work outdoors in all conditions"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Railway track maintenance operatives work on rail lines inspecting, repairing, and maintaining track, sleepers, ballast, and drainage. The role often involves night shifts, weekend work, and operating during engineering possessions when trains are not running. It is physical, safety‑critical, and essential to the reliability of the rail network. This lifestyle suits individuals who enjoy teamwork, outdoor work, and contributing to public transport safety."
+  },
+
+  "habits": [
+    "Follows strict rail safety procedures",
+    "Checks tools and PPE before each shift",
+    "Communicates clearly with the engineering team",
+    "Keeps work areas controlled and hazard‑free",
+    "Maintains accurate inspection and repair records"
+  ],
+
+  "tags": [
+    "rail",
+    "infrastructure",
+    "maintenance",
+    "public safety",
+    "transport",
+    "hands-on work",
+    "outdoor work",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "railway_track_maintenance_operative_hero.jpg",
+    "color": "#2563EB",
+    "keywords": ["railway", "maintenance", "infrastructure"]
+  }
+}

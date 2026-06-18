@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 260,
+  "id": "paving_operative",
+  "slug": "paving-operative",
+  "category": "Skilled Trades \u0026 Construction",
+  "essence": "Lays paving, kerbs, and hard landscaping elements for roads, paths, and public spaces.",
+  "identity": {
+    "title": "Paving Operative",
+    "summary": "Prepares surfaces, lays paving materials, and finishes hard landscaping works to specification and safety standards."
+  },
+  "salary": {
+    "entry": {
+      "low": 22000,
+      "high": 28000
+    },
+    "mid": {
+      "low": 29000,
+      "high": 38000
+    },
+    "senior": {
+      "low": 39000,
+      "high": 55000
+    },
+    "notes": "Specialist stonework or heritage paving can attract higher pay."
+  },
+  "qualifications": [
+    "Experience in paving, kerbing, or landscaping",
+    "Ability to work with hand and power tools",
+    "Understanding of levels, drainage, and materials",
+    "Good physical fitness and teamwork skills"
+  ],
+  "curves": {
+    "difficulty": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8
+  ],
+    "effort": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      7,
+      8,
+      8
+    ]
+  },
+  "lifestyle": {
+    "description": "Outdoor, physical work often seasonal; project\u2011based with early starts and teamwork on site."
+  },
+  "habits": [
+    "Prepares sub\u2011bases and sets levels",
+    "Lays paving and kerbs accurately",
+    "Ensures proper drainage and finishing",
+    "Maintains tools and site cleanliness"
+  ],
+  "tags": [
+    "paving",
+    "landscaping",
+    "construction",
+    "hardscaping"
+  ],
+  "hero": {
+    "image": "paving_operative_hero.jpg",
+    "color": "#6B4A3A",
+    "keywords": [
+      "paving",
+      "landscaping",
+      "construction"
+    ]
+  }
+}

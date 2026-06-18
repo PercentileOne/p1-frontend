@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 247,
+  "id": "additive_manufacturing_technician",
+  "slug": "additive-manufacturing-technician",
+  "category": "Advanced Manufacturing \u0026 Engineering",
+  "essence": "Operates and maintains 3D printers and post\u2011processing equipment for prototyping and production.",
+  "identity": {
+    "title": "Additive Manufacturing Technician",
+    "summary": "Prepares print jobs, monitors builds, performs post\u2011processing, and maintains additive manufacturing equipment."
+  },
+  "salary": {
+    "entry": {
+      "low": 24000,
+      "high": 30000
+    },
+    "mid": {
+      "low": 31000,
+      "high": 42000
+    },
+    "senior": {
+      "low": 43000,
+      "high": 65000
+    },
+    "notes": "Specialist technicians in metal AM or aerospace sectors earn higher wages."
+  },
+  "qualifications": [
+    "Experience with FDM, SLA, SLS, or metal AM processes",
+    "Skills in CAD preparation and slicing software",
+    "Workshop skills for post\u2011processing and finishing",
+    "Understanding of material properties and safety"
+  ],
+  "curves": {
+    "difficulty": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "effort": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8
+    ]
+  },
+  "lifestyle": {
+    "description": "Workshop environment with hands\u2011on machine operation and finishing work. Project\u2011based tasks with attention to detail."
+  },
+  "habits": [
+    "Prepares and queues print jobs",
+    "Monitors builds and resolves failures",
+    "Performs post\u2011processing and quality checks",
+    "Maintains equipment and logs"
+  ],
+  "tags": [
+    "additive",
+    "3D printing",
+    "manufacturing",
+    "technician"
+  ],
+  "hero": {
+    "image": "additive_manufacturing_technician_hero.jpg",
+    "color": "#3A6A4F",
+    "keywords": [
+      "additive",
+      "3D printing",
+      "technician"
+    ]
+  }
+}

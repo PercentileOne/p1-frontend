@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "ai_quality_engineer",
+  "slug": "ai-quality-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Uses AI, machine vision, and predictive analytics to improve manufacturing quality, detect defects, and enable autonomous inspection.",
+
+  "identity": {
+    "title": "AI Quality Engineer",
+    "summary": "Develops and deploys AI‑driven inspection systems, machine‑vision tools, and predictive quality models to ensure consistent, high‑precision manufacturing output."
+  },
+
+  "salary": {
+    "entry": { "low": 42000, "high": 55000 },
+    "mid":   { "low": 56000, "high": 85000 },
+    "senior": { "low": 86000, "high": 135000 },
+    "notes": "Engineers in aerospace, robotics, or fully autonomous smart‑factory environments can exceed £135k-£180k+."
+  },
+
+  "qualifications": [
+    "Experience in quality engineering, automation, or AI systems",
+    "Knowledge of machine vision, defect detection, and statistical quality control",
+    "Skills in ML models for anomaly detection and predictive quality",
+    "Understanding of CNC, robotics, and digital manufacturing workflows"
+  ],
+
+  "curves": {
+    "difficulty": [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "AI quality engineers work in aerospace, robotics, automotive, and Industry 4.0 environments. They build intelligent inspection systems that detect defects, predict failures, and ensure consistent product quality. The role suits individuals who enjoy AI, precision, and high‑tech manufacturing."
+  },
+
+  "habits": [
+    "Develops AI‑driven inspection and defect‑detection systems",
+    "Implements machine‑vision tools for real‑time quality control",
+    "Builds predictive models for quality and reliability",
+    "Collaborates with production, AI, and automation teams",
+    "Ensures consistent, high‑precision output in autonomous workflows"
+  ],
+
+  "tags": [
+    "AI",
+    "quality engineering",
+    "machine vision",
+    "predictive analytics",
+    "industry 4.0",
+    "smart factory"
+  ],
+
+  "hero": {
+    "image": "ai_quality_engineer_hero.jpg",
+    "color": "#000A1F",
+    "keywords": ["AI", "quality", "inspection"]
+  }
+}

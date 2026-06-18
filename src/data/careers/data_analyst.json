@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "data_analyst",
+  "slug": "data-analyst",
+  "category": "Technology",
+
+  "essence": "Turns raw information into clarity, insight, and decisions that move organisations forward.",
+
+  "identity": {
+    "title": "Data Analyst",
+    "summary": "Collects, cleans, and interprets data to uncover patterns, support decisions, and communicate insights to teams and stakeholders."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 35000 },
+    "mid": { "low": 40000, "high": 55000 },
+    "senior": { "low": 60000, "high": 75000 },
+    "notes": "London roles and specialised industries (finance, tech, healthcare) often pay higher. Contract analysts can exceed £400/day."
+  },
+
+  "qualifications": [
+    "Degree in Data Science, Maths, or a Related Field",
+    "Strong Portfolio of Data Projects",
+    "Proficiency with SQL and Data Visualisation Tools",
+    "Understanding of Statistics and Analytical Methods"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Data analysts spend their days exploring datasets, cleaning messy information, and uncovering patterns that help teams make better decisions. Much of the work is quiet, focused, and technical - writing queries, building dashboards, or testing assumptions. But another side of the role is communication: turning complex findings into clear stories that non‑technical colleagues can understand. The job can be mentally demanding, especially when deadlines are tight or when data quality issues slow progress. Yet the satisfaction is strong - seeing your insights shape strategy or solve a real problem is deeply rewarding. The lifestyle suits people who enjoy clarity, logic, and the calm puzzle‑solving nature of analytical work."
+  },
+
+  "habits": [
+    "Validates data before analysis",
+    "Documents assumptions clearly",
+    "Builds reusable queries and dashboards",
+    "Checks insights against real‑world context",
+    "Communicates findings simply"
+  ],
+
+  "tags": [
+    "analytical thinking",
+    "problem-solving",
+    "data visualisation",
+    "structured work",
+    "technical skill",
+    "business insight",
+    "communication",
+    "pattern recognition"
+  ],
+
+  "hero": {
+    "image": "data_analyst_hero.jpg",
+    "color": "#1E3A8A",
+    "keywords": ["data", "analysis", "insight"]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "architect",
+  "slug": "architect",
+  "category": "Design",
+
+  "essence": "Shapes the built world through creativity, technical mastery, and a deep respect for how people live and move within space.",
+
+  "identity": {
+    "title": "Architect",
+    "summary": "Designs buildings and spaces, prepares technical drawings, collaborates with engineers and planners, and oversees construction to ensure projects meet aesthetic, functional, and safety standards."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 35000 },
+    "mid": { "low": 38000, "high": 50000 },
+    "senior": { "low": 55000, "high": 75000 },
+    "notes": "Chartered architects and those working in large practices or specialised sectors (commercial, urban design, sustainability) can exceed £80k–£100k+."
+  },
+
+  "qualifications": [
+    "RIBA Part 1 Architecture Degree",
+    "RIBA Part 2 Postgraduate Qualification",
+    "RIBA Part 3 and ARB Registration",
+    "Experience with CAD, BIM, and Architectural Design Software"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+  "description": "Architecture blends creativity with rigorous technical problem-solving. Days often involve sketching concepts, refining digital models, meeting clients, coordinating with engineers, and ensuring designs comply with regulations. Deadlines can be demanding, especially during planning submissions or construction phases, and projects often span years from concept to completion. The work requires patience, precision, and the ability to balance beauty, practicality, and safety. Yet the reward is profound — seeing a building rise from imagination into physical reality offers a unique sense of legacy. The lifestyle suits individuals who enjoy design, long-term projects, and the challenge of shaping environments that people will inhabit for decades."
+},
+
+  "habits": [
+    "Iterates designs through sketches and models",
+    "Balances aesthetics with structural logic",
+    "Reviews regulations and planning constraints",
+    "Collaborates closely with engineers and contractors",
+    "Documents decisions and drawings meticulously"
+  },
+
+  "tags": [
+    "design",
+    "creativity",
+    "technical drawing",
+    "project management",
+    "long-term projects",
+    "spatial thinking",
+    "collaboration",
+    "precision"
+  ],
+
+  "hero": {
+    "image": "architect_hero.jpg",
+    "color": "#6B7280",
+    "keywords": ["design", "structure", "space"]
+  }
+}

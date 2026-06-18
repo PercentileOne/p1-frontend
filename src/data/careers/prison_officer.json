@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 271,
+  "id": "prison_officer",
+  "slug": "prison-officer",
+  "category": "Public Services, Emergency \u0026 Safety",
+  "essence": "Maintains security and order within custodial facilities while supporting rehabilitation and welfare of detainees.",
+  "identity": {
+    "title": "Prison Officer",
+    "summary": "Supervises prisoners, enforces rules, delivers programmes, and ensures safety and security within custodial settings."
+  },
+  "salary": {
+    "entry": {
+      "low": 22000,
+      "high": 30000
+    },
+    "mid": {
+      "low": 31000,
+      "high": 42000
+    },
+    "senior": {
+      "low": 43000,
+      "high": 70000
+    },
+    "notes": "Roles with specialist responsibilities or seniority attract higher pay."
+  },
+  "qualifications": [
+    "Training in custodial operations and conflict management",
+    "Good communication and resilience",
+    "Ability to work shifts and manage challenging behaviour",
+    "Background checks and security clearance"
+  ],
+  "curves": {
+    "difficulty": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10
+  ],
+    "effort": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Shift work in secure environments with high responsibility for safety, welfare, and rehabilitation activities."
+  },
+  "habits": [
+    "Supervises prisoners and enforces rules",
+    "Delivers safety and rehabilitation programmes",
+    "Manages incidents and reports occurrences",
+    "Works with multi\u2011disciplinary teams for welfare"
+  ],
+  "tags": [
+    "custodial",
+    "security",
+    "public services",
+    "rehabilitation"
+  ],
+  "hero": {
+    "image": "prison_officer_hero.jpg",
+    "color": "#3A2F2F",
+    "keywords": [
+      "prison",
+      "security",
+      "custodial"
+    ]
+  }
+}

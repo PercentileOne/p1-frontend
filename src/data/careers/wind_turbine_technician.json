@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "wind_turbine_technician",
+  "slug": "wind-turbine-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Installs, maintains, and repairs wind turbines to keep renewable‑energy generation running safely and efficiently.",
+
+  "identity": {
+    "title": "Wind Turbine Technician",
+    "summary": "Climbs and services wind turbines, performs mechanical and electrical maintenance, troubleshoots faults, and ensures safe and reliable energy production."
+  },
+
+  "salary": {
+    "entry": { "low": 27000, "high": 33000 },
+    "mid":   { "low": 34000, "high": 45000 },
+    "senior": { "low": 46000, "high": 60000 },
+    "notes": "Offshore specialists, rope‑access technicians, or senior turbine engineers can exceed £60k-£80k+."
+  },
+
+  "qualifications": [
+    "Training in electrical, mechanical, or renewable‑energy engineering",
+    "Working at height certification and safety training",
+    "Knowledge of turbine systems, hydraulics, and electrical components",
+    "Ability to diagnose and repair mechanical and electrical faults"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Wind turbine technicians work on onshore and offshore wind farms, often in remote or coastal locations. The role involves climbing turbines, performing maintenance, troubleshooting issues, and ensuring safe operation. It suits individuals who enjoy hands‑on technical work, heights, travel, and contributing to large‑scale clean‑energy production."
+  },
+
+  "habits": [
+    "Climbs and inspects wind turbines",
+    "Performs mechanical and electrical maintenance",
+    "Troubleshoots system faults and failures",
+    "Conducts safety checks and documentation",
+    "Works with engineers and renewable‑energy teams"
+  ],
+
+  "tags": [
+    "wind energy",
+    "renewable energy",
+    "mechanical",
+    "electrical",
+    "offshore",
+    "clean energy"
+  ],
+
+  "hero": {
+    "image": "wind_turbine_technician_hero.jpg",
+    "color": "#38BDF8",
+    "keywords": ["wind", "renewable energy", "turbine"]
+  }
+}

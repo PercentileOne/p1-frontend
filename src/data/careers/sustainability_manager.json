@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "sustainability_manager",
+  "slug": "sustainability-manager",
+  "category": "Skilled Trades",
+
+  "essence": "Leads an organisation's sustainability strategy, driving carbon reduction, ethical practices, and long‑term environmental performance.",
+
+  "identity": {
+    "title": "Sustainability Manager",
+    "summary": "Develops and delivers sustainability strategies, manages carbon‑reduction initiatives, oversees ESG reporting, and ensures the organisation meets environmental and social goals."
+  },
+
+  "salary": {
+    "entry": { "low": 38000, "high": 45000 },
+    "mid":   { "low": 46000, "high": 65000 },
+    "senior": { "low": 66000, "high": 95000 },
+    "notes": "Heads of sustainability or leaders in large organisations can exceed £95k-£130k+."
+  },
+
+  "qualifications": [
+    "Training in sustainability, environmental management, or corporate responsibility",
+    "Knowledge of ESG frameworks, carbon accounting, and sustainability reporting",
+    "Ability to lead projects and influence organisational change",
+    "Understanding of net‑zero strategy, supply‑chain sustainability, and compliance"
+  ],
+
+  "curves": {
+    "difficulty": [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Sustainability managers work for corporations, councils, universities, and NGOs. They lead sustainability programmes, manage carbon‑reduction plans, coordinate reporting, and embed environmental and social responsibility across the organisation. The role suits individuals who enjoy strategy, leadership, and driving measurable impact."
+  },
+
+  "habits": [
+    "Develops and delivers sustainability strategies",
+    "Leads carbon‑reduction and net‑zero initiatives",
+    "Oversees ESG reporting and compliance",
+    "Engages stakeholders and influences organisational change",
+    "Manages sustainability projects and partnerships"
+  ],
+
+  "tags": [
+    "sustainability",
+    "ESG",
+    "net zero",
+    "leadership",
+    "carbon reduction",
+    "corporate responsibility"
+  ],
+
+  "hero": {
+    "image": "sustainability_manager_hero.jpg",
+    "color": "#16A34A",
+    "keywords": ["sustainability", "leadership", "net zero"]
+  }
+}

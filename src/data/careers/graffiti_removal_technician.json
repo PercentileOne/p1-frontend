@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "graffiti_removal_technician",
+  "slug": "graffiti-removal-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Restores public and private spaces by safely removing graffiti, markings, and surface damage.",
+
+  "identity": {
+    "title": "Graffiti Removal Technician",
+    "summary": "Uses specialist equipment and cleaning methods to remove graffiti from buildings, walls, transport infrastructure, and public spaces."
+  },
+
+  "salary": {
+    "entry": { "low": 21000, "high": 24000 },
+    "mid":   { "low": 25000, "high": 30000 },
+    "senior": { "low": 31000, "high": 36000 },
+    "notes": "Specialists in heritage surfaces, chemical treatments, or rapid‑response teams can exceed £35k-£40k+."
+  },
+
+  "qualifications": [
+    "Training in safe chemical handling and COSHH awareness",
+    "Knowledge of pressure‑washing and surface‑cleaning techniques",
+    "Understanding of surface types (brick, stone, metal, paintwork)",
+    "Ability to work outdoors and at height when required"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9]
+  },
+
+  "lifestyle": {
+    "description": "Graffiti removal technicians travel between sites cleaning graffiti from buildings, walls, transport hubs, and public spaces. The role involves using pressure washers, chemical treatments, and protective coatings. It suits individuals who enjoy practical work, visible results, and contributing to clean, safe communities."
+  },
+
+  "habits": [
+    "Assesses surfaces before choosing cleaning methods",
+    "Follows strict safety and chemical‑handling procedures",
+    "Keeps equipment clean and well‑maintained",
+    "Documents completed work with photos and notes",
+    "Communicates clearly with supervisors and property owners"
+  ],
+
+  "tags": [
+    "public service",
+    "cleaning",
+    "environment",
+    "community work",
+    "hands-on work",
+    "surface restoration",
+    "skilled trades",
+    "outdoor work"
+  ],
+
+  "hero": {
+    "image": "graffiti_removal_technician_hero.jpg",
+    "color": "#0EA5E9",
+    "keywords": ["cleaning", "restoration", "public spaces"]
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "smoke_ventilation_technician",
+  "slug": "smoke-ventilation-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Installs, tests, and maintains smoke‑ventilation systems that keep escape routes clear during a fire.",
+
+  "identity": {
+    "title": "Smoke Ventilation Technician",
+    "summary": "Installs and services smoke‑control systems, including automatic vents, fans, control panels, and extraction pathways to ensure safe evacuation during fires."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 38000 },
+    "senior": { "low": 39000, "high": 50000 },
+    "notes": "Technicians specialising in large commercial, industrial, or high‑rise smoke‑control systems can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "Training in smoke‑control and ventilation systems",
+    "Knowledge of fire‑safety regulations and BS EN 12101",
+    "Ability to test, fault‑find, and certify smoke‑vent systems",
+    "Understanding of electrical systems, fans, vents, and control panels"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Smoke ventilation technicians work across high‑rise buildings, commercial sites, and industrial facilities installing and maintaining smoke‑control systems. The role involves electrical work, mechanical systems, diagnostics, and ensuring compliance with strict fire‑safety standards. It suits individuals who enjoy technical problem‑solving and contributing to life‑safety infrastructure."
+  },
+
+  "habits": [
+    "Tests vents, fans, and control systems regularly",
+    "Follows strict installation and compliance standards",
+    "Keeps accurate maintenance and certification records",
+    "Communicates clearly with building managers and contractors",
+    "Diagnoses faults in electrical and mechanical components"
+  ],
+
+  "tags": [
+    "fire safety",
+    "smoke control",
+    "HVAC",
+    "technical work",
+    "public safety",
+    "building systems",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "smoke_ventilation_technician_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["smoke control", "ventilation", "safety"]
+  }
+}

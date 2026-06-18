@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 258,
+  "id": "industrial_engineering_technician",
+  "slug": "industrial-engineering-technician",
+  "category": "Advanced Manufacturing \u0026 Engineering",
+  "essence": "Supports industrial engineers by collecting data, running time studies, and implementing efficiency improvements.",
+  "identity": {
+    "title": "Industrial Engineering Technician",
+    "summary": "Assists with process mapping, time and motion studies, and small\u2011scale improvements to increase throughput and reduce waste."
+  },
+  "salary": {
+    "entry": {
+      "low": 26000,
+      "high": 33000
+    },
+    "mid": {
+      "low": 34000,
+      "high": 48000
+    },
+    "senior": {
+      "low": 49000,
+      "high": 75000
+    },
+    "notes": "Technicians with strong data skills and lean experience are highly employable."
+  },
+  "qualifications": [
+    "Technical qualification in engineering or manufacturing",
+    "Experience with time studies, process mapping, and basic statistics",
+    "Good communication and problem\u2011solving skills",
+    "Familiarity with lean tools and continuous improvement"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    9,
+    9
+  ],
+    "effort": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Field and office work supporting engineering projects; frequent shop\u2011floor observation and data collection."
+  },
+  "habits": [
+    "Collects production data and runs time studies",
+    "Helps implement small process improvements",
+    "Prepares reports and visualisations for engineers",
+    "Supports pilot projects and trials"
+  ],
+  "tags": [
+    "industrial",
+    "engineering",
+    "continuous improvement",
+    "lean"
+  ],
+  "hero": {
+    "image": "industrial_engineering_technician_hero.jpg",
+    "color": "#3A4A4F",
+    "keywords": [
+      "industrial",
+      "engineering",
+      "lean"
+    ]
+  }
+}

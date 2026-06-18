@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "hgv_driver",
+  "slug": "hgv-driver",
+  "category": "Logistics",
+
+  "essence": "Moves goods across long distances with precision, responsibility, and mastery of large vehicles.",
+
+  "identity": {
+    "title": "HGV Driver",
+    "summary": "Operates heavy goods vehicles to transport cargo safely and efficiently across regional or national routes while following strict safety and driving regulations."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 30000 },
+    "mid": { "low": 32000, "high": 38000 },
+    "senior": { "low": 40000, "high": 50000 },
+    "notes": "Long‑haul, hazardous materials, tanker work, and night shifts can exceed £50k–£60k+."
+  },
+
+  "qualifications": [
+    "Category C or C+E HGV licence",
+    "Driver CPC qualification",
+    "Knowledge of road safety and tachograph regulations",
+    "Good spatial awareness and vehicle‑handling skills"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "HGV drivers transport goods using large vehicles across local, regional, or long‑distance routes. Days involve loading checks, route planning, long periods of focused driving, managing delivery schedules, and completing safety and compliance paperwork. Some roles require overnight stays or multi‑day trips, while others follow regular local routes. The work is independent, structured, and responsibility‑heavy. This lifestyle suits individuals who enjoy driving, routine, and working autonomously."
+  },
+
+  "habits": [
+    "Performs pre‑drive safety inspections",
+    "Plans routes and rest breaks carefully",
+    "Maintains accurate delivery and tachograph records",
+    "Handles cargo with care and attention",
+    "Drives with patience and awareness"
+  },
+
+  "tags": [
+    "logistics",
+    "transport",
+    "driving",
+    "independent work",
+    "safety-critical",
+    "long-distance",
+    "goods movement",
+    "vehicles"
+  ],
+
+  "hero": {
+    "image": "hgv_driver_hero.jpg",
+    "color": "#334155",
+    "keywords": ["transport", "driving", "logistics"]
+  }
+}

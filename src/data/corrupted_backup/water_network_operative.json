@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "water_network_operative",
+  "slug": "water-network-operative",
+  "category": "Skilled Trades",
+
+  "essence": "Maintains and repairs the underground water networks that supply homes, businesses, and essential services.",
+
+  "identity": {
+    "title": "Water Network Operative",
+    "summary": "Locates, repairs, installs, and maintains water mains, pipes, valves, and hydrants to ensure safe and reliable water supply."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 34000 },
+    "senior": { "low": 35000, "high": 45000 },
+    "notes": "Emergency response teams, leakage specialists, and senior operatives can exceed £45k–£55k+."
+  },
+
+  "qualifications": [
+    "Water hygiene and safety training (e.g., EUSR National Water Hygiene card)",
+    "Knowledge of pipe systems, valves, and network layouts",
+    "Experience with excavation and reinstatement",
+    "Understanding of leakage detection and repair techniques"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Water network operatives work outdoors repairing leaks, installing new pipes, maintaining valves and hydrants, and responding to emergencies. Days involve excavation, pipe fitting, pressure testing, and working with maps and detection equipment. The role is physical, often involves on‑call duties, and contributes directly to public health and essential infrastructure. This lifestyle suits individuals who enjoy hands‑on work, problem‑solving, and being part of a critical utility service."
+  },
+
+  "habits": [
+    "Follows strict hygiene and safety procedures",
+    "Locates leaks and faults accurately",
+    "Communicates clearly with team members and the public",
+    "Keeps tools and vehicles organised",
+    "Maintains accurate repair and inspection records"
+  },
+
+  "tags": [
+    "utilities",
+    "water",
+    "infrastructure",
+    "maintenance",
+    "public service",
+    "hands-on work",
+    "outdoor work",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "water_network_operative_hero.jpg",
+    "color": "#0EA5E9",
+    "keywords": ["water", "infrastructure", "utilities"]
+  }
+}

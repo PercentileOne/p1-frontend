@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 284,
+  "id": "habitat_restoration_specialist",
+  "slug": "habitat-restoration-specialist",
+  "category": "Environment, Nature \u0026 Sustainability",
+  "essence": "Designs and delivers projects to restore degraded habitats and improve ecosystem function.",
+  "identity": {
+    "title": "Habitat Restoration Specialist",
+    "summary": "Plans and implements restoration works such as rewilding, wetland creation, and native planting to recover biodiversity."
+  },
+  "salary": {
+    "entry": {
+      "low": 26000,
+      "high": 34000
+    },
+    "mid": {
+      "low": 35000,
+      "high": 52000
+    },
+    "senior": {
+      "low": 53000,
+      "high": 90000
+    },
+    "notes": "Project managers and consultants in large restoration programmes earn higher salaries."
+  },
+  "qualifications": [
+    "Experience in ecology, habitat management, or restoration projects",
+    "Project management and contractor coordination skills",
+    "Knowledge of native species and restoration techniques",
+    "Ability to monitor outcomes and adapt interventions"
+  ],
+  "curves": {
+    "difficulty": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      9,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Mix of field delivery and planning; often works with NGOs, landowners, and funders to deliver measurable outcomes."
+  },
+  "habits": [
+    "Designs restoration interventions and plans",
+    "Coordinates contractors and volunteers",
+    "Monitors ecological outcomes and adapts work",
+    "Secures funding and reports to stakeholders"
+  ],
+  "tags": [
+    "restoration",
+    "ecology",
+    "habitat",
+    "conservation"
+  ],
+  "hero": {
+    "image": "habitat_restoration_specialist_hero.jpg",
+    "color": "#3A7A5A",
+    "keywords": [
+      "restoration",
+      "ecology",
+      "habitat"
+    ]
+  }
+}

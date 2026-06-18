@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_ai_engineer",
+  "slug": "cnc-ai-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Builds AI systems that optimise CNC machining, automate decision‑making, and enable autonomous manufacturing.",
+
+  "identity": {
+    "title": "CNC AI Engineer",
+    "summary": "Develops artificial intelligence models that adjust machining parameters in real time, predict failures, optimise toolpaths, and support fully autonomous CNC operations."
+  },
+
+  "salary": {
+    "entry": { "low": 60000, "high": 75000 },
+    "mid":   { "low": 76000, "high": 110000 },
+    "senior": { "low": 111000, "high": 180000 },
+    "notes": "AI engineers in aerospace, defence, robotics, or fully autonomous smart‑factory environments can exceed £180k-£250k+."
+  },
+
+  "qualifications": [
+    "Experience in machine learning, AI engineering, or industrial automation",
+    "Understanding of CNC machining, sensors, and real‑time machine behaviour",
+    "Skills in Python, ML frameworks, reinforcement learning, and optimisation",
+    "Knowledge of IIoT, MES, SCADA, and industrial data systems"
+  ],
+
+  "curves": {
+    "difficulty": [8, 8, 9, 9, 9, 10, 10, 10, 10, 10],
+    "effort":     [8, 8, 9, 9, 9, 10, 10, 10, 10, 10],
+    "reward":     [8, 8, 9, 9, 10, 10, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC AI engineers work in advanced manufacturing, aerospace, robotics, and Industry 4.0 environments. They build AI systems that optimise machining, reduce downtime, and enable autonomous production. The role suits individuals who enjoy AI, optimisation, and high‑tech engineering challenges."
+  },
+
+  "habits": [
+    "Develops AI models for real‑time machining optimisation",
+    "Implements reinforcement learning for autonomous CNC control",
+    "Builds predictive systems for tool wear and machine health",
+    "Collaborates with data scientists, engineers, and automation teams",
+    "Integrates AI with CNC, robotics, and digital manufacturing platforms"
+  ],
+
+  "tags": [
+    "CNC",
+    "AI",
+    "machine learning",
+    "autonomous manufacturing",
+    "industry 4.0",
+    "smart factory"
+  ],
+
+  "hero": {
+    "image": "cnc_ai_engineer_hero.jpg",
+    "color": "#001129",
+    "keywords": ["CNC", "AI", "autonomy"]
+  }
+}

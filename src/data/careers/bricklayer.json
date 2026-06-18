@@ -1,0 +1,60 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "bricklayer",
+  "slug": "bricklayer",
+  "category": "Construction",
+
+  "essence": "Builds walls and structures using bricks, mortar, and precision craftsmanship.",
+
+  "identity": {
+    "title": "Bricklayer",
+    "summary": "Constructs walls, foundations, and structures by laying bricks and blocks with accuracy and skill."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid": { "low": 27000, "high": 35000 },
+    "senior": { "low": 36000, "high": 50000 },
+    "notes": "Experienced bricklayers and contractors can earn significantly more depending on demand."
+  },
+
+  "qualifications": [
+    "Apprenticeship in Bricklaying",
+    "Knowledge of construction techniques",
+    "Ability to read building plans",
+    "Good physical fitness"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "effort": [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9]
+  },
+
+  "lifestyle": {
+    "description": "Bricklayers work on construction sites, building walls and structures with precision. The role is physical and outdoors, suiting people who enjoy hands-on work and craftsmanship."
+  },
+
+  "habits": [
+    "Measures and aligns bricks accurately",
+    "Maintains consistent mortar application",
+    "Reads plans carefully",
+    "Keeps tools clean",
+    "Works safely on-site"
+  ],
+
+  "tags": [
+    "construction",
+    "hands-on",
+    "craftsmanship",
+    "outdoors",
+    "physical work"
+  ],
+
+  "hero": {
+    "image": "bricklayer_hero.jpg",
+    "color": "#D97706",
+    "keywords": ["bricks", "trowel", "construction"]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "window_fitter",
+  "slug": "window-fitter",
+  "category": "Skilled Trades",
+
+  "essence": "Installs windows, doors, and frames with precision, weatherproofing skill, and a strong focus on finish quality.",
+
+  "identity": {
+    "title": "Window Fitter",
+    "summary": "Fits and replaces windows, doors, and glazing units in homes and commercial buildings, ensuring accurate installation, insulation, and secure sealing."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid": { "low": 27000, "high": 34000 },
+    "senior": { "low": 35000, "high": 45000 },
+    "notes": "Specialists in commercial fenestration, curtain walling, or bespoke installations can exceed £45k–£60k+."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Level 2/3 Diploma in Fenestration Installation",
+    "Training in manual handling and working at height",
+    "Knowledge of frames, sealants, insulation, and glazing systems",
+    "Strong measurement accuracy and practical problem‑solving"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Window fitters work on residential and commercial properties installing or replacing windows, doors, and glazing systems. Days involve removing old units, measuring openings, fitting new frames, sealing and insulating, and ensuring a clean, weatherproof finish. The role requires precision, physical strength, and customer‑facing professionalism. Work is often outdoors or in partially completed buildings. This lifestyle suits individuals who enjoy practical craftsmanship, problem‑solving, and producing clean, high‑quality results."
+  },
+
+  "habits": [
+    "Measures openings with precision",
+    "Handles frames and glass safely",
+    "Uses sealants and fixings cleanly and accurately",
+    "Keeps tools organised and well‑maintained",
+    "Follows safety procedures when working at height"
+  },
+
+  "tags": [
+    "construction",
+    "installation",
+    "fenestration",
+    "craftsmanship",
+    "precision",
+    "working at height",
+    "skilled trades",
+    "hands-on work"
+  ],
+
+  "hero": {
+    "image": "window_fitter_hero.jpg",
+    "color": "#3B82F6",
+    "keywords": ["installation", "windows", "precision"]
+  }
+}

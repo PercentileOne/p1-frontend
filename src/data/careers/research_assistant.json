@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 292,
+  "id": "research_assistant",
+  "slug": "research-assistant",
+  "category": "Science \u0026 Laboratory",
+  "essence": "Supports research projects by running experiments, collecting data, and maintaining laboratory workflows.",
+  "identity": {
+    "title": "Research Assistant",
+    "summary": "Assists researchers with experimental work, data collection, literature reviews, and administrative tasks to advance projects."
+  },
+  "salary": {
+    "entry": {
+      "low": 22000,
+      "high": 30000
+    },
+    "mid": {
+      "low": 31000,
+      "high": 42000
+    },
+    "senior": {
+      "low": 43000,
+      "high": 70000
+    },
+    "notes": "Positions in high\u2011profile labs or with specialised skills may offer higher pay."
+  },
+  "qualifications": [
+    "Degree or technical qualification in relevant scientific discipline",
+    "Laboratory or fieldwork experience",
+    "Good organisational and data management skills",
+    "Ability to follow protocols and support multiple tasks"
+  ],
+  "curves": {
+    "difficulty": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "effort": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8
+    ]
+  },
+  "lifestyle": {
+    "description": "Project support role with hands\u2011on experimental work, data entry, and collaboration with senior researchers."
+  },
+  "habits": [
+    "Prepares and runs experiments under supervision",
+    "Collects and organises data",
+    "Maintains lab equipment and supplies",
+    "Contributes to literature reviews and reports"
+  ],
+  "tags": [
+    "research",
+    "assistant",
+    "laboratory",
+    "data"
+  ],
+  "hero": {
+    "image": "research_assistant_hero.jpg",
+    "color": "#4A6B7A",
+    "keywords": [
+      "research",
+      "assistant",
+      "lab"
+    ]
+  }
+}

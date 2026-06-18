@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "civil_engineer",
+  "slug": "civil-engineer",
+  "category": "Engineering",
+
+  "essence": "Designs and builds the infrastructure that supports modern life, balancing precision, safety, and long-term impact.",
+
+  "identity": {
+    "title": "Civil Engineer",
+    "summary": "Plans, designs, and oversees construction of infrastructure such as roads, bridges, buildings, and water systems, ensuring safety, durability, and efficiency."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 35000 },
+    "mid": { "low": 40000, "high": 55000 },
+    "senior": { "low": 60000, "high": 80000 },
+    "notes": "Chartered engineers and those in major infrastructure projects can exceed £90k+. London and large consultancies typically pay higher."
+  },
+
+  "qualifications": [
+    "Civil Engineering Degree (BEng or MEng)",
+    "Strong Understanding of Structural and Material Principles",
+    "Experience with CAD and Engineering Software",
+    "Progress Toward Chartered Engineer (CEng) Status"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Civil engineering blends analytical design work with on‑site problem‑solving. Days may involve reviewing plans, running calculations, coordinating with architects and contractors, or visiting construction sites to ensure work meets safety and quality standards. The role carries significant responsibility - infrastructure must be safe, durable, and compliant with regulations. Projects often span months or years, requiring patience, organisation, and steady communication. The lifestyle suits individuals who enjoy practical engineering, long-term projects, and the satisfaction of seeing physical structures take shape in the real world."
+  },
+
+  "habits": [
+    "Checks calculations and assumptions carefully",
+    "Reviews site progress regularly",
+    "Documents engineering decisions clearly",
+    "Collaborates across multidisciplinary teams",
+    "Monitors safety and compliance standards"
+  ],
+
+  "tags": [
+    "infrastructure",
+    "problem-solving",
+    "technical design",
+    "project management",
+    "safety-first mindset",
+    "long-term projects",
+    "precision",
+    "collaboration"
+  ],
+
+  "hero": {
+    "image": "civil_engineer_hero.jpg",
+    "color": "#0F172A",
+    "keywords": ["engineering", "infrastructure", "design"]
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "acoustic_technician",
+  "slug": "acoustic-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Measures, analyses, and evaluates sound to support noise control, building acoustics, and environmental protection.",
+
+  "identity": {
+    "title": "Acoustic Technician",
+    "summary": "Uses specialised equipment to measure sound levels, assess acoustic performance, support noise‑control investigations, and assist engineers and environmental officers."
+  },
+
+  "salary": {
+    "entry": { "low": 25000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 42000 },
+    "senior": { "low": 43000, "high": 55000 },
+    "notes": "Technicians specialising in building acoustics, industrial noise, or advanced acoustic modelling can exceed £55k-£70k+."
+  },
+
+  "qualifications": [
+    "Training in acoustics, audio engineering, environmental science, or physics",
+    "Knowledge of sound measurement and acoustic principles",
+    "Ability to use sound‑level meters and acoustic‑analysis software",
+    "Understanding of noise regulations, building acoustics, and mitigation techniques"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Acoustic technicians work for environmental consultancies, councils, engineering firms, and construction companies. They measure sound levels, assess acoustic performance, support noise investigations, and help design quieter environments. The role suits individuals who enjoy technical measurement, fieldwork, and applied science."
+  },
+
+  "habits": [
+    "Measures environmental and industrial noise",
+    "Uses acoustic equipment and analysis software",
+    "Assesses building acoustics and sound insulation",
+    "Supports noise investigations and mitigation planning",
+    "Prepares technical reports and data summaries"
+  ],
+
+  "tags": [
+    "acoustics",
+    "noise control",
+    "environmental health",
+    "measurement",
+    "sound analysis",
+    "engineering"
+  ],
+
+  "hero": {
+    "image": "acoustic_technician_hero.jpg",
+    "color": "#4F46E5",
+    "keywords": ["acoustics", "sound", "measurement"]
+  }
+}

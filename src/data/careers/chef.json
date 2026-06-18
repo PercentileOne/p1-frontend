@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "chef",
+  "slug": "chef",
+  "category": "Hospitality",
+
+  "essence": "Creates memorable dishes through craft, discipline, and relentless attention to detail.",
+
+  "identity": {
+    "title": "Chef",
+    "summary": "Prepares and cooks dishes, manages kitchen operations, and maintains high standards of flavour, presentation, and hygiene."
+  },
+
+  "salary": {
+    "entry": { "low": 21000, "high": 25000 },
+    "mid": { "low": 26000, "high": 32000 },
+    "senior": { "low": 35000, "high": 50000 },
+    "notes": "Head chefs in high‑end restaurants can earn £55k-£70k+. Michelin‑level roles vary widely depending on reputation and location."
+  },
+
+  "qualifications": [
+    "Culinary Arts Diploma or Apprenticeship",
+    "Food Hygiene and Safety Certification",
+    "Experience in Professional Kitchens",
+    "Strong Understanding of Flavour and Technique"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Life as a chef is intense, physical, and deeply creative. Kitchens run on tight timing, sharp coordination, and constant heat - both literal and emotional. Days often involve early prep, long shifts, and bursts of high pressure during service. The work demands precision, stamina, and the ability to stay calm when orders pile up. Yet there's a powerful satisfaction in crafting dishes that bring people joy, refining techniques over years, and being part of a tightly bonded team. The lifestyle suits individuals who thrive in fast‑paced environments, enjoy hands‑on craft, and find meaning in the pursuit of culinary excellence."
+  },
+
+  "habits": [
+    "Preps ingredients methodically",
+    "Keeps stations clean and organised",
+    "Tastes dishes throughout service",
+    "Refines techniques regularly",
+    "Stays calm during rush periods"
+  ],
+
+  "tags": [
+    "fast-paced work",
+    "craftsmanship",
+    "team coordination",
+    "physical stamina",
+    "creativity",
+    "precision",
+    "pressure management",
+    "hospitality mindset"
+  ],
+
+  "hero": {
+    "image": "chef_hero.jpg",
+    "color": "#DC2626",
+    "keywords": ["hospitality", "craft", "heat"]
+  }
+}

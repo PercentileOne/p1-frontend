@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "scaffolder",
+  "slug": "scaffolder",
+  "category": "Skilled Trades",
+
+  "essence": "Builds the temporary structures that make construction possible, combining strength, balance, and absolute safety discipline.",
+
+  "identity": {
+    "title": "Scaffolder",
+    "summary": "Erects, modifies, and dismantles scaffolding structures on construction and industrial sites, ensuring safe access for workers at height."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 28000 },
+    "mid": { "low": 30000, "high": 38000 },
+    "senior": { "low": 40000, "high": 55000 },
+    "notes": "Advanced scaffolders, offshore roles, and industrial projects can exceed £55k–£70k+."
+  },
+
+  "qualifications": [
+    "CISRS Part 1/Part 2 or Advanced Scaffolder certification",
+    "Working at height and site‑safety training",
+    "Strong physical fitness and balance",
+    "Understanding of load limits, bracing, and structural safety"
+  },
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Scaffolders work outdoors on construction, industrial, and maintenance projects, building the access structures that allow other trades to work safely at height. Days involve carrying and assembling tubes, boards, and fittings; climbing structures; reading scaffold plans; and ensuring stability and safety. The work is physically demanding and often performed in all weather conditions. This lifestyle suits individuals who enjoy physical challenges, teamwork, and working at height with precision and confidence."
+  },
+
+  "habits": [
+    "Follows strict working‑at‑height procedures",
+    "Checks fittings and bracing for stability",
+    "Communicates clearly with site teams",
+    "Maintains physical strength and balance",
+    "Keeps tools and equipment organised"
+  ],
+
+  "tags": [
+    "construction",
+    "working at height",
+    "physical activity",
+    "teamwork",
+    "safety-critical",
+    "outdoor work",
+    "structural assembly",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "scaffolder_hero.jpg",
+    "color": "#B45309",
+    "keywords": ["height", "construction", "structure"]
+  }
+}

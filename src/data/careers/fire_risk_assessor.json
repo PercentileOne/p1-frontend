@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_risk_assessor",
+  "slug": "fire-risk-assessor",
+  "category": "Skilled Trades",
+
+  "essence": "Assesses buildings for fire risks, identifies hazards, and recommends measures to ensure safety and legal compliance.",
+
+  "identity": {
+    "title": "Fire Risk Assessor",
+    "summary": "Conducts fire‑risk assessments for homes, businesses, and public buildings, evaluating hazards, escape routes, fire‑protection systems, and compliance with regulations."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 33000 },
+    "mid":   { "low": 34000, "high": 45000 },
+    "senior": { "low": 46000, "high": 65000 },
+    "notes": "Highly qualified assessors or those handling complex commercial portfolios can exceed £65k-£80k+."
+  },
+
+  "qualifications": [
+    "Fire‑risk assessment training (e.g., NEBOSH, FPA, or equivalent)",
+    "Knowledge of fire‑safety legislation and building regulations",
+    "Ability to identify hazards and recommend mitigation measures",
+    "Understanding of passive and active fire‑protection systems"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Fire risk assessors visit buildings to evaluate fire hazards, escape routes, fire‑protection systems, and compliance with regulations. They produce detailed reports and advise clients on safety improvements. The role suits individuals who enjoy investigative work, regulatory interpretation, and contributing to life‑safety compliance."
+  },
+
+  "habits": [
+    "Identifies fire hazards and evaluates risks",
+    "Reviews escape routes and fire‑protection systems",
+    "Writes detailed fire‑risk assessment reports",
+    "Communicates clearly with building managers and clients",
+    "Ensures compliance with fire‑safety legislation"
+  ],
+
+  "tags": [
+    "fire safety",
+    "risk assessment",
+    "compliance",
+    "public safety",
+    "inspection",
+    "building safety",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "fire_risk_assessor_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["risk assessment", "fire safety", "compliance"]
+  }
+}

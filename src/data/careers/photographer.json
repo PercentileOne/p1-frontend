@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 293,
+  "id": "photographer",
+  "slug": "photographer",
+  "category": "Creative, Media \u0026 Culture",
+  "essence": "Creates photographic images for editorial, commercial, and artistic purposes using technical and creative skills.",
+  "identity": {
+    "title": "Photographer",
+    "summary": "Plans shoots, captures images, edits photos, and delivers visual content for clients, publications, or personal projects."
+  },
+  "salary": {
+    "entry": {
+      "low": 18000,
+      "high": 26000
+    },
+    "mid": {
+      "low": 27000,
+      "high": 45000
+    },
+    "senior": {
+      "low": 46000,
+      "high": 100000
+    },
+    "notes": "Specialist commercial or editorial photographers can earn substantially more through commissions and licensing."
+  },
+  "qualifications": [
+    "Portfolio demonstrating technical and creative ability",
+    "Experience with camera systems, lighting, and post\u2011processing",
+    "Good client management and project planning skills",
+    "Ability to work across studio and location environments"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    9,
+    9
+  ],
+    "effort": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Project\u2011based work with variable hours, travel, and a mix of creative and client\u2011facing tasks."
+  },
+  "habits": [
+    "Plans and executes photographic shoots",
+    "Edits and retouches images for delivery",
+    "Manages client briefs and licensing",
+    "Maintains equipment and portfolio"
+  ],
+  "tags": [
+    "photography",
+    "visual",
+    "creative",
+    "editing"
+  ],
+  "hero": {
+    "image": "photographer_hero.jpg",
+    "color": "#2A2A3A",
+    "keywords": [
+      "photography",
+      "visual",
+      "creative"
+    ]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "dryliner",
+  "slug": "dryliner",
+  "category": "Skilled Trades",
+
+  "essence": "Builds the internal structure of modern buildings through precise installation of plasterboard, partitions, and interior framing.",
+
+  "identity": {
+    "title": "Dryliner",
+    "summary": "Installs plasterboard, partitions, and interior wall systems in residential and commercial buildings, creating smooth, ready-to-finish internal surfaces."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 34000 },
+    "senior": { "low": 35000, "high": 45000 },
+    "notes": "Specialists in commercial fit-outs, suspended ceilings, or complex partition systems can exceed £45k-£55k+."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Level 2/3 Diploma in Interior Systems or Drylining",
+    "Training in manual handling and site safety",
+    "Knowledge of plasterboard systems, studwork, and fixings",
+    "Good measurement accuracy and practical problem-solving"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Dryliners work on interior construction projects installing plasterboard, metal stud partitions, and suspended ceilings. Days involve measuring and marking layouts, fixing boards to frames, cutting openings, insulating cavities, and preparing surfaces for plastering or finishing. The role is physical, detail-oriented, and often fast-paced on commercial fit-out sites. This lifestyle suits individuals who enjoy hands-on building work, precision, and transforming empty shells into usable interior spaces."
+  },
+
+  "habits": [
+    "Measures and marks layouts accurately",
+    "Cuts and fits boards cleanly",
+    "Keeps tools and materials organised",
+    "Maintains consistent installation quality",
+    "Follows site safety procedures"
+  ],
+
+  "tags": [
+    "construction",
+    "interior systems",
+    "fit-out",
+    "craftsmanship",
+    "precision",
+    "hands-on work",
+    "skilled trades",
+    "building"
+  ],
+
+  "hero": {
+    "image": "dryliner_hero.jpg",
+    "color": "#FACC15",
+    "keywords": ["interior", "drylining", "construction"]
+  }
+}

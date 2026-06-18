@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "flight_dispatcher",
+  "slug": "flight-dispatcher",
+  "category": "Transport",
+
+  "essence": "Coordinates flights from the ground with precision, ensuring aircraft depart safely, efficiently, and on time.",
+
+  "identity": {
+    "title": "Flight Dispatcher",
+    "summary": "Plans and monitors flights, calculates fuel, evaluates weather, coordinates with pilots and air traffic control, and ensures safe, compliant operations."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 30000 },
+    "mid": { "low": 32000, "high": 45000 },
+    "senior": { "low": 50000, "high": 65000 },
+    "notes": "Major airlines and senior operations controllers can exceed £60k–£75k+ depending on shift allowances and operational complexity."
+  },
+
+  "qualifications": [
+    "Flight Operations or Dispatcher training (airline or aviation academy)",
+    "Strong understanding of meteorology and aviation regulations",
+    "Knowledge of aircraft performance and flight planning systems",
+    "Clear communication and high‑pressure decision‑making skills"
+  },
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Flight dispatchers work in airline operations centres, coordinating every detail of a flight before and during departure. Tasks include analysing weather, planning routes, calculating fuel loads, monitoring aircraft progress, and communicating with pilots and air traffic control. The role is safety‑critical and mentally demanding, requiring rapid judgement and constant situational awareness. Shifts often include nights, weekends, and high‑pressure operational peaks. Despite the intensity, the job offers deep involvement in aviation, strong teamwork, and the satisfaction of enabling safe, efficient global travel. This lifestyle suits individuals who enjoy complex systems, responsibility, and fast‑paced decision‑making."
+  },
+
+  "habits": [
+    "Monitors weather and airspace conditions continuously",
+    "Communicates clearly with pilots and operations teams",
+    "Plans routes and fuel with precision",
+    "Responds quickly to changing conditions",
+    "Follows strict regulatory and safety procedures"
+  },
+
+  "tags": [
+    "aviation",
+    "operations",
+    "safety‑critical",
+    "planning",
+    "communication",
+    "decision‑making",
+    "meteorology",
+    "logistics"
+  ],
+
+  "hero": {
+    "image": "flight_dispatcher_hero.jpg",
+    "color": "#0284C7",
+    "keywords": ["operations", "aviation", "coordination"]
+  }
+}

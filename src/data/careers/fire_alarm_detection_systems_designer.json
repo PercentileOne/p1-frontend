@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_alarm_detection_systems_designer",
+  "slug": "fire-alarm-detection-systems-designer",
+  "category": "Skilled Trades",
+
+  "essence": "Designs fire‑alarm and detection systems for buildings, ensuring compliance with safety standards and effective fire protection.",
+
+  "identity": {
+    "title": "Fire Alarm & Detection Systems Designer",
+    "summary": "Creates fire‑alarm layouts, specifies detectors and control equipment, and ensures systems meet regulatory and performance requirements."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 35000 },
+    "mid":   { "low": 36000, "high": 45000 },
+    "senior": { "low": 46000, "high": 60000 },
+    "notes": "Senior designers working on large commercial or industrial systems can exceed £60k-£75k+."
+  },
+
+  "qualifications": [
+    "Training in fire‑alarm system design (e.g., BS 5839)",
+    "Knowledge of detection technologies and control systems",
+    "Ability to produce compliant system drawings and specifications",
+    "Understanding of building layouts, risk categories, and regulations"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Fire alarm designers create system layouts for homes, commercial buildings, and industrial sites. They select detectors, plan wiring routes, ensure compliance with standards, and work closely with installers and inspectors. The role suits individuals who enjoy technical design, problem‑solving, and contributing to building safety."
+  },
+
+  "habits": [
+    "Produces accurate system drawings",
+    "Follows strict design and compliance standards",
+    "Communicates clearly with installers and clients",
+    "Reviews building plans and risk assessments",
+    "Documents design decisions and specifications"
+  ],
+
+  "tags": [
+    "fire safety",
+    "system design",
+    "technical work",
+    "public safety",
+    "engineering",
+    "skilled trades",
+    "building systems"
+  ],
+
+  "hero": {
+    "image": "fire_alarm_detection_systems_designer_hero.jpg",
+    "color": "#FB923C",
+    "keywords": ["fire alarm", "design", "safety"]
+  }
+}

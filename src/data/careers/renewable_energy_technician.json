@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "renewable_energy_technician",
+  "slug": "renewable-energy-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Installs, maintains, and troubleshoots renewable‑energy systems such as solar, wind, and battery storage.",
+
+  "identity": {
+    "title": "Renewable Energy Technician",
+    "summary": "Works on the installation, maintenance, and optimisation of renewable‑energy technologies, helping expand clean‑energy infrastructure and reduce carbon emissions."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid":   { "low": 33000, "high": 42000 },
+    "senior": { "low": 43000, "high": 55000 },
+    "notes": "Technicians specialising in large‑scale wind, grid‑scale batteries, or offshore systems can exceed £55k-£70k+."
+  },
+
+  "qualifications": [
+    "Training in electrical engineering, renewable energy, or related technical fields",
+    "Knowledge of solar PV, wind systems, or battery storage",
+    "Ability to install and maintain renewable‑energy equipment",
+    "Understanding of safety standards and electrical regulations"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Renewable energy technicians work for energy companies, installers, manufacturers, and infrastructure providers. They install solar panels, maintain wind turbines, configure battery systems, and support the transition to clean energy. The role suits individuals who enjoy hands‑on technical work, problem‑solving, and contributing to climate solutions."
+  },
+
+  "habits": [
+    "Installs and maintains renewable‑energy systems",
+    "Troubleshoots electrical and mechanical issues",
+    "Performs safety checks and system inspections",
+    "Optimises system performance and efficiency",
+    "Works with engineers, electricians, and energy planners"
+  ],
+
+  "tags": [
+    "renewable energy",
+    "solar",
+    "wind",
+    "battery storage",
+    "clean energy",
+    "technical"
+  ],
+
+  "hero": {
+    "image": "renewable_energy_technician_hero.jpg",
+    "color": "#22C55E",
+    "keywords": ["renewable energy", "solar", "wind"]
+  }
+}

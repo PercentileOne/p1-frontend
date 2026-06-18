@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_automation_engineer",
+  "slug": "cnc-automation-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Integrates automation, robotics, and CNC systems to create efficient, high‑precision manufacturing workflows.",
+
+  "identity": {
+    "title": "CNC Automation Engineer",
+    "summary": "Designs and implements automated CNC systems, integrates robotics and sensors, improves workflow efficiency, and ensures reliable, high‑precision production across advanced manufacturing environments."
+  },
+
+  "salary": {
+    "entry": { "low": 42000, "high": 52000 },
+    "mid":   { "low": 53000, "high": 70000 },
+    "senior": { "low": 71000, "high": 100000 },
+    "notes": "Engineers working in aerospace, robotics, or fully automated smart‑factory environments can exceed £100k-£140k+."
+  },
+
+  "qualifications": [
+    "Experience in CNC machining, manufacturing engineering, or process engineering",
+    "Knowledge of robotics, PLCs, sensors, and automation systems",
+    "Ability to integrate CNC machines with automated workflows",
+    "Understanding of lean manufacturing, quality systems, and industrial controls"
+  ],
+
+  "curves": {
+    "difficulty": [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC automation engineers work in advanced manufacturing, aerospace, automotive, robotics, and smart‑factory environments. They integrate CNC machines with automation systems, reduce manual handling, improve throughput, and enhance precision. The role suits individuals who enjoy systems engineering, robotics, and high‑tech manufacturing."
+  },
+
+  "habits": [
+    "Designs and integrates CNC automation systems",
+    "Implements robotics, sensors, and automated workflows",
+    "Optimises cycle times, material handling, and machine utilisation",
+    "Collaborates with engineers, machinists, and automation teams",
+    "Ensures reliability, safety, and quality in automated processes"
+  ],
+
+  "tags": [
+    "CNC",
+    "automation",
+    "robotics",
+    "manufacturing engineering",
+    "industrial controls",
+    "smart factory"
+  ],
+
+  "hero": {
+    "image": "cnc_automation_engineer_hero.jpg",
+    "color": "#002A08",
+    "keywords": ["CNC", "automation", "robotics"]
+  }
+}

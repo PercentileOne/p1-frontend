@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "emergency_dispatcher",
+  "slug": "emergency-dispatcher",
+  "category": "Skilled Trades",
+
+  "essence": "Coordinates frontline emergency services by dispatching units, managing radio communication, and supporting responders in real time.",
+
+  "identity": {
+    "title": "Emergency Dispatcher (Fire / Police / Ambulance)",
+    "summary": "Deploys emergency units, manages radio channels, tracks incidents, and supports responders with critical information during live emergencies."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 27000 },
+    "mid":   { "low": 28000, "high": 35000 },
+    "senior": { "low": 36000, "high": 45000 },
+    "notes": "Supervisors, senior controllers, and specialist dispatch coordinators can exceed £45k-£55k+."
+  },
+
+  "qualifications": [
+    "Emergency dispatch or control room training",
+    "Strong situational awareness and multitasking ability",
+    "Knowledge of emergency service protocols and radio systems",
+    "Calm decision‑making under pressure"
+  ],
+
+  "curves": {
+    "difficulty": [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Emergency dispatchers work in control rooms coordinating police, fire, or ambulance units. They manage radio communication, track incidents, prioritise resources, and support responders with real‑time information. The role involves shift work, rapid decision‑making, and high responsibility. It suits individuals who thrive under pressure and want to directly support frontline emergency operations."
+  },
+
+  "habits": [
+    "Maintains clear and concise radio communication",
+    "Tracks units and incidents accurately",
+    "Follows structured dispatch and escalation protocols",
+    "Stays calm and focused during high‑pressure events",
+    "Documents actions and updates in real time"
+  ],
+
+  "tags": [
+    "emergency services",
+    "public safety",
+    "dispatch",
+    "control room",
+    "communication",
+    "coordination",
+    "high pressure",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "emergency_dispatcher_hero.jpg",
+    "color": "#DC2626",
+    "keywords": ["dispatch", "emergency services", "coordination"]
+  }
+}

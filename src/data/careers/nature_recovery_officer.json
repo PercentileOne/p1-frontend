@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "nature_recovery_officer",
+  "slug": "nature-recovery-officer",
+  "category": "Skilled Trades",
+
+  "essence": "Drives landscape‑scale nature recovery by coordinating projects, advising on biodiversity policy, and supporting habitat restoration.",
+
+  "identity": {
+    "title": "Nature Recovery Officer",
+    "summary": "Supports the delivery of nature‑recovery strategies by coordinating conservation projects, assessing habitats, advising on land management, and working with communities and stakeholders."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 33000 },
+    "mid":   { "low": 34000, "high": 46000 },
+    "senior": { "low": 47000, "high": 62000 },
+    "notes": "Strategic leads or officers working on major landscape‑scale programmes can exceed £62k-£75k+."
+  },
+
+  "qualifications": [
+    "Training in ecology, conservation, or environmental management",
+    "Knowledge of biodiversity policy and nature‑recovery frameworks",
+    "Ability to assess habitats and plan restoration projects",
+    "Understanding of land‑use planning, ecosystems, and stakeholder engagement"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Nature recovery officers work for councils, conservation bodies, environmental agencies, and partnerships delivering landscape‑scale restoration. They coordinate projects, assess habitats, engage with landowners, and help implement nature‑recovery strategies. The role suits individuals who enjoy ecology, planning, collaboration, and long‑term environmental impact."
+  },
+
+  "habits": [
+    "Coordinates nature‑recovery and habitat‑restoration projects",
+    "Conducts habitat and biodiversity assessments",
+    "Advises on land‑use planning and conservation policy",
+    "Engages with landowners, communities, and stakeholders",
+    "Monitors ecological outcomes and environmental change"
+  ],
+
+  "tags": [
+    "nature recovery",
+    "biodiversity",
+    "conservation",
+    "ecology",
+    "habitat restoration",
+    "environmental management"
+  ],
+
+  "hero": {
+    "image": "nature_recovery_officer_hero.jpg",
+    "color": "#15803D",
+    "keywords": ["nature recovery", "habitat", "biodiversity"]
+  }
+}

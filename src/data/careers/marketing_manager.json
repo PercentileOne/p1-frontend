@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "marketing_manager",
+  "slug": "marketing-manager",
+  "category": "Business",
+
+  "essence": "Shapes how a brand is seen, felt, and remembered through strategy, creativity, and data-driven execution.",
+
+  "identity": {
+    "title": "Marketing Manager",
+    "summary": "Plans and executes marketing strategies, manages campaigns, analyses performance, and guides brand communication across channels."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 38000 },
+    "mid": { "low": 40000, "high": 55000 },
+    "senior": { "low": 60000, "high": 80000 },
+    "notes": "Tech, finance, and high-growth sectors often pay more. Senior brand or digital leads in London can exceed £90k-£110k."
+  },
+
+  "qualifications": [
+    "Degree in Marketing, Business, or Communications",
+    "Experience Managing Campaigns and Budgets",
+    "Strong Understanding of Digital Marketing Channels",
+    "Ability to Analyse Data and Consumer Behaviour"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Marketing managers live in a fast-moving blend of creativity, strategy, and constant iteration. Days often involve planning campaigns, reviewing content, analysing performance metrics, and coordinating with designers, writers, and product teams. The work can be high-pressure - deadlines, launches, and shifting priorities are common - and success depends on balancing bold ideas with data-driven decisions. The role is energising for people who enjoy storytelling, psychology, and the challenge of influencing how audiences think and feel. It suits individuals who thrive in dynamic environments, communicate clearly, and enjoy turning insights into compelling brand experiences."
+  },
+
+  "habits": [
+    "Reviews campaign metrics regularly",
+    "Aligns messaging across channels",
+    "Balances creativity with data",
+    "Plans content calendars consistently",
+    "Studies audience behaviour"
+  ],
+
+  "tags": [
+    "strategy",
+    "communication",
+    "brand building",
+    "digital marketing",
+    "analytics",
+    "creativity",
+    "project management",
+    "consumer psychology"
+  ],
+
+  "hero": {
+    "image": "marketing_manager_hero.jpg",
+    "color": "#F97316",
+    "keywords": ["brand", "strategy", "growth"]
+  }
+}

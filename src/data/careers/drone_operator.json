@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 238,
+  "id": "drone_operator",
+  "slug": "drone-operator",
+  "category": "AI, Robotics \u0026 Automation",
+  "essence": "Pilots unmanned aerial systems for inspection, surveying, media, and delivery tasks, following regulations and safety procedures.",
+  "identity": {
+    "title": "Drone Operator",
+    "summary": "Plans flights, operates drones for data capture or delivery, processes basic imagery, and ensures compliance with aviation rules."
+  },
+  "salary": {
+    "entry": {
+      "low": 22000,
+      "high": 30000
+    },
+    "mid": {
+      "low": 31000,
+      "high": 42000
+    },
+    "senior": {
+      "low": 43000,
+      "high": 65000
+    },
+    "notes": "Specialist roles (e.g., BVLOS, surveying) and commercial pilots can earn more."
+  },
+  "qualifications": [
+    "Remote pilot certification where required",
+    "Experience flying multirotor and fixed\u2011wing drones",
+    "Knowledge of airspace rules and safety planning",
+    "Basic photogrammetry and image processing skills"
+  ],
+  "curves": {
+    "difficulty": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "effort": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8
+    ]
+  },
+  "lifestyle": {
+    "description": "Fieldwork heavy with outdoor operations, pre\u2011flight planning, and post\u2011processing. Work can be project\u2011based and seasonal."
+  },
+  "habits": [
+    "Plans safe flight paths and risk assessments",
+    "Operates drones and captures imagery or sensor data",
+    "Performs routine maintenance and battery management",
+    "Processes and hands off data to analysts or clients"
+  ],
+  "tags": [
+    "drone",
+    "uav",
+    "surveying",
+    "inspection"
+  ],
+  "hero": {
+    "image": "drone_operator_hero.jpg",
+    "color": "#0E6BA8",
+    "keywords": [
+      "drone",
+      "uav",
+      "pilot"
+    ]
+  }
+}

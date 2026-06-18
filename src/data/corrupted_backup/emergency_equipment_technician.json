@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "emergency_equipment_technician",
+  "slug": "emergency-equipment-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Maintains, tests, and repairs the critical equipment used by emergency services to ensure readiness and safety.",
+
+  "identity": {
+    "title": "Emergency Equipment Technician",
+    "summary": "Inspects, services, and repairs emergency‑service equipment such as radios, PPE, breathing apparatus, medical kits, and rescue tools."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 27000 },
+    "mid":   { "low": 28000, "high": 35000 },
+    "senior": { "low": 36000, "high": 45000 },
+    "notes": "Specialists in breathing apparatus, communications systems, or advanced rescue tools can exceed £45k–£55k+."
+  },
+
+  "qualifications": [
+    "Technical training in equipment maintenance or engineering",
+    "Knowledge of emergency‑service tools and PPE standards",
+    "Ability to test, calibrate, and certify safety‑critical equipment",
+    "Understanding of health and safety and inspection protocols"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Emergency equipment technicians work in workshops, depots, or stations maintaining essential tools such as breathing apparatus, radios, medical kits, and rescue equipment. The role involves inspections, repairs, record‑keeping, and ensuring everything meets safety standards. It suits individuals who enjoy technical work, precision, and supporting emergency responders behind the scenes."
+  },
+
+  "habits": [
+    "Performs routine inspections and tests",
+    "Follows strict safety and certification procedures",
+    "Keeps detailed maintenance records",
+    "Communicates clearly with emergency teams",
+    "Maintains a clean and organised workshop"
+  },
+
+  "tags": [
+    "emergency services",
+    "technical work",
+    "equipment maintenance",
+    "public safety",
+    "precision",
+    "skilled trades",
+    "inspection",
+    "repair"
+  ],
+
+  "hero": {
+    "image": "emergency_equipment_technician_hero.jpg",
+    "color": "#F97316",
+    "keywords": ["equipment", "maintenance", "emergency services"]
+  }
+}

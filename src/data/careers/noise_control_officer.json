@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "noise_control_officer",
+  "slug": "noise-control-officer",
+  "category": "Skilled Trades",
+
+  "essence": "Investigates noise complaints, measures sound levels, and enforces regulations to protect community wellbeing.",
+
+  "identity": {
+    "title": "Noise Control Officer",
+    "summary": "Assesses noise from homes, businesses, construction, and industry; uses sound‑monitoring equipment; enforces noise regulations; and helps reduce environmental noise impacts."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid":   { "low": 33000, "high": 42000 },
+    "senior": { "low": 43000, "high": 55000 },
+    "notes": "Specialists in industrial noise, environmental permitting, or acoustic investigations can exceed £55k-£70k+."
+  },
+
+  "qualifications": [
+    "Training in acoustics, environmental health, or environmental science",
+    "Knowledge of noise regulations and environmental‑protection law",
+    "Ability to use sound‑level meters and acoustic‑monitoring equipment",
+    "Understanding of noise impacts, mitigation, and enforcement procedures"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Noise control officers work for councils, environmental‑health teams, and regulatory agencies. They investigate noise complaints, measure sound levels, assess nuisance, and enforce noise regulations. The role suits individuals who enjoy investigation, fieldwork, and protecting community wellbeing."
+  },
+
+  "habits": [
+    "Investigates noise complaints from residents and businesses",
+    "Measures sound levels using acoustic equipment",
+    "Assesses noise nuisance and regulatory breaches",
+    "Advises on noise mitigation and compliance",
+    "Prepares reports and supports enforcement actions"
+  ],
+
+  "tags": [
+    "noise control",
+    "acoustics",
+    "environmental health",
+    "regulation",
+    "public health",
+    "monitoring"
+  ],
+
+  "hero": {
+    "image": "noise_control_officer_hero.jpg",
+    "color": "#6366F1",
+    "keywords": ["noise", "acoustics", "environment"]
+  }
+}

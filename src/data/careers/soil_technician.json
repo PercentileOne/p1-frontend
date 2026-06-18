@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "soil_technician",
+  "slug": "soil-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Collects and analyses soil samples to assess contamination, fertility, and environmental impact.",
+
+  "identity": {
+    "title": "Soil Technician",
+    "summary": "Performs field sampling and laboratory testing on soil to detect contaminants, assess quality, and support environmental, agricultural, and construction projects."
+  },
+
+  "salary": {
+    "entry": { "low": 23000, "high": 28000 },
+    "mid":   { "low": 29000, "high": 36000 },
+    "senior": { "low": 37000, "high": 48000 },
+    "notes": "Technicians working in contaminated‑land remediation, geotechnical labs, or environmental consultancies can exceed £48k-£60k+."
+  },
+
+  "qualifications": [
+    "Training in environmental science, soil science, or laboratory testing",
+    "Knowledge of sampling techniques and contamination risks",
+    "Ability to operate laboratory instruments for soil analysis",
+    "Understanding of environmental regulations and reporting standards"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Soil technicians work for environmental consultancies, laboratories, agricultural services, and construction firms. They collect samples from sites, prepare them for testing, analyse results, and support environmental assessments. The role suits individuals who enjoy hands‑on science, fieldwork, and contributing to environmental protection and land‑quality management."
+  },
+
+  "habits": [
+    "Collects soil samples from field sites",
+    "Prepares and analyses samples in the lab",
+    "Operates testing instruments and equipment",
+    "Records and interprets scientific data",
+    "Supports environmental scientists and engineers"
+  ],
+
+  "tags": [
+    "soil science",
+    "environmental testing",
+    "laboratory science",
+    "contaminated land",
+    "environmental monitoring",
+    "public health"
+  ],
+
+  "hero": {
+    "image": "soil_technician_hero.jpg",
+    "color": "#A3E635",
+    "keywords": ["soil", "analysis", "environment"]
+  }
+}

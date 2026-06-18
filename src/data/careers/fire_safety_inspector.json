@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_safety_inspector",
+  "slug": "fire-safety-inspector",
+  "category": "Skilled Trades",
+
+  "essence": "Inspects buildings and workplaces to ensure compliance with fire‑safety laws, preventing risks before emergencies occur.",
+
+  "identity": {
+    "title": "Fire Safety Inspector",
+    "summary": "Assesses fire risks, inspects buildings, enforces safety regulations, and advises organisations on fire‑prevention measures."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 38000 },
+    "senior": { "low": 39000, "high": 50000 },
+    "notes": "Senior inspectors, enforcement officers, and specialists in complex buildings can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "Fire safety or fire‑risk assessment training",
+    "Knowledge of fire‑safety legislation and building regulations",
+    "Ability to conduct inspections and write compliance reports",
+    "Understanding of fire‑prevention systems and evacuation planning"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Fire safety inspectors visit buildings, workplaces, and public venues to assess fire risks, check compliance, and enforce regulations. They review evacuation plans, inspect fire‑safety systems, and advise organisations on improvements. The role suits individuals who enjoy investigative work, public safety, and ensuring safe environments."
+  },
+
+  "habits": [
+    "Conducts thorough inspections and risk assessments",
+    "Follows structured compliance and enforcement procedures",
+    "Keeps detailed inspection and incident records",
+    "Communicates clearly with building owners and managers",
+    "Monitors follow‑up actions and improvements"
+  ],
+
+  "tags": [
+    "fire service",
+    "public safety",
+    "inspection",
+    "regulation",
+    "risk assessment",
+    "compliance",
+    "skilled trades",
+    "building safety"
+  ],
+
+  "hero": {
+    "image": "fire_safety_inspector_hero.jpg",
+    "color": "#FB923C",
+    "keywords": ["fire safety", "inspection", "public safety"]
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "environmental_health_officer",
+  "slug": "environmental-health-officer",
+  "category": "Skilled Trades",
+
+  "essence": "Protects public health by inspecting environments, enforcing regulations, and managing environmental risks.",
+
+  "identity": {
+    "title": "Environmental Health Officer",
+    "summary": "Investigates environmental hazards, inspects businesses, enforces public‑health regulations, and ensures safe living and working conditions."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 36000 },
+    "mid":   { "low": 37000, "high": 48000 },
+    "senior": { "low": 49000, "high": 65000 },
+    "notes": "Senior EHOs or specialists in food safety, housing, or environmental protection can exceed £65k–£80k+."
+  },
+
+  "qualifications": [
+    "Degree or training in environmental health",
+    "Knowledge of public‑health legislation and enforcement",
+    "Ability to conduct inspections and investigations",
+    "Understanding of food safety, housing standards, and environmental hazards"
+  },
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Environmental health officers work for councils, public‑health bodies, and regulatory agencies. They inspect food businesses, housing, workplaces, and public spaces to ensure safety and compliance. The role suits individuals who enjoy investigation, regulation, and protecting community wellbeing."
+  },
+
+  "habits": [
+    "Conducts inspections and investigations",
+    "Enforces public‑health and safety regulations",
+    "Writes clear reports and legal notices",
+    "Communicates with businesses and the public",
+    "Monitors environmental and housing conditions"
+  ],
+
+  "tags": [
+    "environmental health",
+    "public safety",
+    "regulation",
+    "inspection",
+    "risk management",
+    "community wellbeing"
+  ],
+
+  "hero": {
+    "image": "environmental_health_officer_hero.jpg",
+    "color": "#22C55E",
+    "keywords": ["environment", "public health", "inspection"]
+  }
+}

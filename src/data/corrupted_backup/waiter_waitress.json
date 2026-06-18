@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "waiter_waitress",
+  "slug": "waiter-waitress",
+  "category": "Culinary",
+
+  "essence": "Delivers hospitality through service, timing, and human warmth — creating memorable dining experiences.",
+
+  "identity": {
+    "title": "Waiter / Waitress",
+    "summary": "Serves food and drinks, manages tables, communicates with kitchen staff, and ensures guests have a smooth, enjoyable dining experience."
+  },
+
+  "salary": {
+    "entry": { "low": 18000, "high": 21000 },
+    "mid": { "low": 21000, "high": 25000 },
+    "senior": { "low": 26000, "high": 32000 },
+    "notes": "Tips, high‑end venues, and supervisory roles can significantly increase earnings, with experienced servers reaching £30k–£40k+."
+  },
+
+  "qualifications": [
+    "On‑the‑job training in hospitality or customer service",
+    "Knowledge of menus, allergens, and service standards",
+    "Understanding of food safety and hygiene",
+    "Strong communication and multitasking skills"
+  },
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Waiters and waitresses work in fast‑paced, customer‑focused environments where timing, communication, and friendliness are essential. Days involve greeting guests, taking orders, serving food and drinks, coordinating with the kitchen, handling payments, and maintaining a clean dining area. The role can be physically demanding, with long periods of standing, carrying trays, and managing multiple tables at once. Peak times — evenings, weekends, and holidays — can be intense but energising. This lifestyle suits individuals who enjoy people, rhythm, teamwork, and creating positive experiences for guests."
+  },
+
+  "habits": [
+    "Maintains a calm, friendly presence under pressure",
+    "Keeps tables and service areas clean and organised",
+    "Communicates clearly with kitchen and bar staff",
+    "Memorises menu details and specials",
+    "Balances speed with accuracy during busy periods"
+  },
+
+  "tags": [
+    "hospitality",
+    "customer service",
+    "fast-paced",
+    "teamwork",
+    "food and drink",
+    "communication",
+    "hands-on work",
+    "social environment"
+  ],
+
+  "hero": {
+    "image": "waiter_waitress_hero.jpg",
+    "color": "#2563EB",
+    "keywords": ["service", "hospitality", "teamwork"]
+  }
+}

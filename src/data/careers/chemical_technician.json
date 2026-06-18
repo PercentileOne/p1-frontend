@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 290,
+  "id": "chemical_technician",
+  "slug": "chemical-technician",
+  "category": "Science \u0026 Laboratory",
+  "essence": "Supports chemical analysis, process monitoring, and laboratory operations in industrial and research settings.",
+  "identity": {
+    "title": "Chemical Technician",
+    "summary": "Prepares samples, runs analytical instruments, and supports process control and R\u0026D activities under supervision."
+  },
+  "salary": {
+    "entry": {
+      "low": 24000,
+      "high": 32000
+    },
+    "mid": {
+      "low": 33000,
+      "high": 48000
+    },
+    "senior": {
+      "low": 49000,
+      "high": 80000
+    },
+    "notes": "Specialist analytical skills and process experience increase earning potential."
+  },
+  "qualifications": [
+    "Qualification in chemistry or laboratory techniques",
+    "Experience with analytical instruments (GC, HPLC, spectrometry)",
+    "Good laboratory practice and safety awareness",
+    "Ability to follow SOPs and record data accurately"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "effort": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Laboratory or plant environment with routine analysis, sample prep, and adherence to safety and quality systems."
+  },
+  "habits": [
+    "Prepares and analyses chemical samples",
+    "Operates and maintains analytical equipment",
+    "Records results and follows QA procedures",
+    "Supports process monitoring and troubleshooting"
+  ],
+  "tags": [
+    "chemistry",
+    "laboratory",
+    "analysis",
+    "process"
+  ],
+  "hero": {
+    "image": "chemical_technician_hero.jpg",
+    "color": "#4A5A6B",
+    "keywords": [
+      "chemistry",
+      "analysis",
+      "lab"
+    ]
+  }
+}

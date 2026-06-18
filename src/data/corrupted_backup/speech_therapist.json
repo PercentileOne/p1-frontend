@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "speech_therapist",
+  "slug": "speech-therapist",
+  "category": "Healthcare",
+
+  "essence": "Helps people find their voice, rebuild communication, and regain confidence through specialised therapeutic support.",
+
+  "identity": {
+    "title": "Speech Therapist",
+    "summary": "Assesses, diagnoses, and treats communication and swallowing disorders in children and adults using tailored therapeutic techniques."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid": { "low": 35000, "high": 45000 },
+    "senior": { "low": 48000, "high": 60000 },
+    "notes": "Specialist roles in neurological rehabilitation, paediatrics, or advanced clinical practice can exceed £60k–£75k+."
+  },
+
+  "qualifications": [
+    "Degree in Speech and Language Therapy",
+    "HCPC Registration",
+    "Clinical Placements in Healthcare or Educational Settings",
+    "Strong Understanding of Linguistics, Communication Disorders, and Swallowing Physiology"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Speech therapists work in supportive, patient‑centred environments where communication, empathy, and creativity are essential. Days involve assessing speech, language, and swallowing abilities; designing personalised therapy plans; delivering one‑to‑one or group sessions; and collaborating with families, teachers, or clinical teams. The work spans hospitals, schools, community settings, and rehabilitation centres. Progress can be gradual, requiring patience and encouragement, but the impact is profound — helping someone speak clearly, communicate confidently, or swallow safely can transform their quality of life. This lifestyle suits individuals who are compassionate, articulate, observant, and motivated by meaningful, person‑to‑person change."
+  },
+
+  "habits": [
+    "Tailors therapy to each individual",
+    "Tracks progress with structured assessments",
+    "Communicates clearly with families and teams",
+    "Uses creative tools to engage clients",
+    "Reviews research to refine techniques"
+  },
+
+  "tags": [
+    "communication",
+    "patient care",
+    "empathy",
+    "rehabilitation",
+    "education",
+    "healthcare",
+    "language",
+    "support"
+  ],
+
+  "hero": {
+    "image": "speech_therapist_hero.jpg",
+    "color": "#F97316",
+    "keywords": ["communication", "support", "confidence"]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 259,
+  "id": "steel_fabricator",
+  "slug": "steel-fabricator",
+  "category": "Skilled Trades \u0026 Construction",
+  "essence": "Fabricates and assembles steel structures and components for construction and industrial projects.",
+  "identity": {
+    "title": "Steel Fabricator",
+    "summary": "Cuts, welds, and assembles steelwork to drawings, using fabrication techniques and heavy machinery to produce structural components."
+  },
+  "salary": {
+    "entry": {
+      "low": 25000,
+      "high": 32000
+    },
+    "mid": {
+      "low": 33000,
+      "high": 48000
+    },
+    "senior": {
+      "low": 49000,
+      "high": 80000
+    },
+    "notes": "Specialist welders and fabricators on large projects can earn higher rates."
+  },
+  "qualifications": [
+    "NVQ or apprenticeship in fabrication or welding",
+    "Experience with MIG, TIG, and arc welding",
+    "Ability to read engineering drawings and templates",
+    "Knowledge of lifting and health \u0026 safety procedures"
+  ],
+  "curves": {
+    "difficulty": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Workshop and site work with physically demanding tasks and exposure to outdoor conditions on construction sites."
+  },
+  "habits": [
+    "Cuts and prepares steel components",
+    "Performs welding and assembly to tolerances",
+    "Inspects finished work and corrects defects",
+    "Follows safety and lifting procedures"
+  ],
+  "tags": [
+    "fabrication",
+    "welding",
+    "construction",
+    "steel"
+  ],
+  "hero": {
+    "image": "steel_fabricator_hero.jpg",
+    "color": "#4A3B2E",
+    "keywords": [
+      "fabrication",
+      "welding",
+      "steel"
+    ]
+  }
+}

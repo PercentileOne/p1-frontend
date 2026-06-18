@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_strategy_consultant",
+  "slug": "fire-strategy-consultant",
+  "category": "Skilled Trades",
+
+  "essence": "Develops fire strategies for buildings, ensuring safe evacuation, compliance, and effective fire‑safety design.",
+
+  "identity": {
+    "title": "Fire Strategy Consultant",
+    "summary": "Creates fire strategies for new and existing buildings, analysing layouts, evacuation routes, fire‑resistance measures, and system requirements to meet regulations."
+  },
+
+  "salary": {
+    "entry": { "low": 35000, "high": 42000 },
+    "mid":   { "low": 43000, "high": 60000 },
+    "senior": { "low": 61000, "high": 85000 },
+    "notes": "Senior consultants working on high‑rise, complex commercial, or industrial projects can exceed £85k-£100k+."
+  },
+
+  "qualifications": [
+    "Training in fire‑safety engineering or fire‑strategy development",
+    "Knowledge of building regulations, fire dynamics, and evacuation modelling",
+    "Ability to produce fire‑strategy reports and compliance documentation",
+    "Understanding of passive and active fire‑protection systems"
+  ],
+
+  "curves": {
+    "difficulty": [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 10, 10, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Fire strategy consultants work with architects, engineers, and developers to design safe buildings. They analyse layouts, evacuation routes, fire‑resistance measures, and system requirements. The role suits individuals who enjoy technical design, regulatory interpretation, and contributing to life‑safety planning."
+  },
+
+  "habits": [
+    "Reviews architectural drawings and building layouts",
+    "Writes detailed fire‑strategy reports",
+    "Ensures compliance with building regulations and standards",
+    "Collaborates with architects, engineers, and inspectors",
+    "Assesses evacuation routes and fire‑protection measures"
+  ],
+
+  "tags": [
+    "fire safety",
+    "fire engineering",
+    "building safety",
+    "regulation",
+    "design",
+    "public safety",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "fire_strategy_consultant_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["fire strategy", "design", "safety"]
+  }
+}

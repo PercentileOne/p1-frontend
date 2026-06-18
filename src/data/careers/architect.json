@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "architect",
+  "slug": "architect",
+  "category": "Construction",
+
+  "essence": "Designs buildings and structures that balance function, safety, and aesthetics.",
+
+  "identity": {
+    "title": "Architect",
+    "summary": "Plans, designs, and oversees the construction of buildings, ensuring they are safe, functional, and visually appealing."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 35000 },
+    "mid": { "low": 38000, "high": 50000 },
+    "senior": { "low": 55000, "high": 80000 },
+    "notes": "Highly experienced architects, partners, and specialists in commercial or sustainable design can exceed £100k+."
+  },
+
+  "qualifications": [
+    "Degree in Architecture (RIBA Part 1, 2, and 3)",
+    "Strong design and technical drawing skills",
+    "Knowledge of building regulations and planning laws",
+    "Experience with CAD and BIM software"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward": [6, 7, 7, 8, 8, 9, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Architects work in studios and on-site, balancing creative design with technical problem-solving. Days involve drafting plans, meeting clients, coordinating with engineers, and ensuring projects meet regulations. The role suits people who enjoy creativity, precision, and long-term project work."
+  },
+
+  "habits": [
+    "Sketches and refines design concepts",
+    "Reviews building regulations regularly",
+    "Coordinates with engineers and contractors",
+    "Balances aesthetics with practicality",
+    "Iterates designs based on client feedback"
+  ],
+
+  "tags": [
+    "design",
+    "construction",
+    "creativity",
+    "technical",
+    "planning",
+    "problem-solving"
+  ],
+
+  "hero": {
+    "image": "architect_hero.jpg",
+    "color": "#2563EB",
+    "keywords": ["design", "blueprints", "buildings"]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "demolition_operative",
+  "slug": "demolition-operative",
+  "category": "Skilled Trades",
+
+  "essence": "Safely dismantles buildings and structures using controlled methods, heavy tools, and strict safety procedures.",
+
+  "identity": {
+    "title": "Demolition Operative",
+    "summary": "Carries out the safe dismantling of buildings and structures using hand tools, machinery, and controlled demolition techniques."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 34000 },
+    "senior": { "low": 35000, "high": 45000 },
+    "notes": "Specialists in high‑risk demolition, asbestos‑related work, or explosive demolition can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "CCDO (Certificate of Competence for Demolition Operatives)",
+    "Asbestos awareness training",
+    "Knowledge of demolition methods and structural behaviour",
+    "Strong physical fitness and safety discipline"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Demolition operatives work on sites where buildings or structures are being dismantled. Days involve stripping out interiors, operating tools and machinery, handling waste materials, and following strict safety procedures. The role is physical, outdoors, and often fast‑paced, requiring teamwork and awareness of structural risks. This lifestyle suits individuals who enjoy hands‑on work, problem‑solving, and transforming old structures into safe, clear sites for new development."
+  },
+
+  "habits": [
+    "Follows strict safety and PPE procedures",
+    "Assesses structural risks before work",
+    "Uses tools and machinery responsibly",
+    "Keeps work areas controlled and tidy",
+    "Communicates clearly with site teams"
+  ],
+
+  "tags": [
+    "construction",
+    "demolition",
+    "safety",
+    "hands-on work",
+    "skilled trades",
+    "structural work",
+    "outdoor work",
+    "civils"
+  ],
+
+  "hero": {
+    "image": "demolition_operative_hero.jpg",
+    "color": "#DC2626",
+    "keywords": ["demolition", "construction", "safety"]
+  }
+}

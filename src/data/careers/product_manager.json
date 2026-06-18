@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "product_manager",
+  "slug": "product-manager",
+  "category": "Business",
+
+  "essence": "Shapes products from concept to reality by aligning vision, strategy, and execution.",
+
+  "identity": {
+    "title": "Product Manager",
+    "summary": "Defines product direction, prioritises features, and works across teams to deliver solutions that meet user and business needs."
+  },
+
+  "salary": {
+    "entry": { "low": 35000, "high": 45000 },
+    "mid": { "low": 55000, "high": 75000 },
+    "senior": { "low": 85000, "high": 110000 },
+    "notes": "Tech companies and London-based roles often pay significantly higher. Senior PMs in large organisations may exceed £120k+."
+  },
+
+  "qualifications": [
+    "Business or Technical Degree",
+    "Experience with Agile Methodologies",
+    "Strong Product Portfolio or Case Studies",
+    "Understanding of UX and Market Research"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Product management is a constant balancing act between user needs, business goals, and technical constraints. Days are filled with prioritisation decisions, stakeholder conversations, and translating ideas into clear requirements for designers and engineers. The role demands emotional intelligence - navigating disagreements, aligning teams, and keeping momentum when complexity rises. It can be mentally intense, especially when deadlines collide or when a feature doesn't land as expected. But the reward is meaningful: seeing a product evolve from a rough idea into something real, useful, and loved. The lifestyle suits people who enjoy ownership, ambiguity, and the challenge of turning chaos into clarity."
+  },
+
+  "habits": [
+    "Prioritises ruthlessly",
+    "Seeks user feedback early",
+    "Aligns teams around clarity",
+    "Breaks work into small steps",
+    "Reviews metrics regularly"
+  ],
+
+  "tags": [
+    "leadership",
+    "decision-making",
+    "user empathy",
+    "cross-functional work",
+    "strategic thinking",
+    "communication",
+    "iteration cycles",
+    "problem-solving"
+  ],
+
+  "hero": {
+    "image": "product_manager_hero.jpg",
+    "color": "#475569",
+    "keywords": ["strategy", "leadership", "product"]
+  }
+}

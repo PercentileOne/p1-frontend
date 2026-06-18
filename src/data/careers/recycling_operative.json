@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "recycling_operative",
+  "slug": "recycling-operative",
+  "category": "Skilled Trades",
+
+  "essence": "Sorts, processes, and manages recyclable materials to reduce waste and support environmental sustainability.",
+
+  "identity": {
+    "title": "Recycling Operative",
+    "summary": "Sorts, processes, and handles recyclable materials in facilities or depots, ensuring safe and efficient recycling operations."
+  },
+
+  "salary": {
+    "entry": { "low": 21000, "high": 24000 },
+    "mid":   { "low": 25000, "high": 30000 },
+    "senior": { "low": 31000, "high": 36000 },
+    "notes": "Team leaders, machinery operators, and materials specialists can exceed £35k-£40k+."
+  },
+
+  "qualifications": [
+    "Basic safety and manual‑handling training",
+    "Understanding of recycling categories and contamination rules",
+    "Ability to operate sorting equipment and machinery",
+    "Awareness of environmental and waste‑handling regulations"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9]
+  },
+
+  "lifestyle": {
+    "description": "Recycling operatives work in recycling centres, materials recovery facilities, or depots, sorting and processing recyclable materials. The role involves operating machinery, identifying materials, preventing contamination, and maintaining safety and cleanliness. It suits individuals who enjoy routine, teamwork, and contributing to environmental sustainability."
+  },
+
+  "habits": [
+    "Sorts materials accurately and efficiently",
+    "Follows strict safety and hygiene procedures",
+    "Keeps work areas clean and organised",
+    "Communicates clearly with team members",
+    "Monitors contamination and quality levels"
+  ],
+
+  "tags": [
+    "recycling",
+    "environment",
+    "public service",
+    "sustainability",
+    "hands-on work",
+    "waste management",
+    "skilled trades",
+    "facility work"
+  ],
+
+  "hero": {
+    "image": "recycling_operative_hero.jpg",
+    "color": "#22C55E",
+    "keywords": ["recycling", "environment", "sustainability"]
+  }
+}

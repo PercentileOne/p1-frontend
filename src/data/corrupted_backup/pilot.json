@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "pilot",
+  "slug": "pilot",
+  "category": "Aviation",
+
+  "essence": "Commands aircraft with precision, calm judgement, and unwavering responsibility for every life on board.",
+
+  "identity": {
+    "title": "Pilot",
+    "summary": "Operates aircraft safely, navigates complex airspace, manages flight systems, and ensures the wellbeing of passengers and crew."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 45000 },
+    "mid": { "low": 60000, "high": 90000 },
+    "senior": { "low": 100000, "high": 150000 },
+    "notes": "Long‑haul captains at major airlines can exceed £160k–£200k+. Pay varies significantly by airline, aircraft type, and flight hours."
+  },
+
+  "qualifications": [
+    "Commercial Pilot Licence (CPL) or Airline Transport Pilot Licence (ATPL)",
+    "Extensive Flight Training and Simulator Hours",
+    "Class 1 Medical Certificate",
+    "Strong Understanding of Navigation, Meteorology, and Aircraft Systems"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "reward":     [6, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Pilots live a structured yet unpredictable lifestyle shaped by flight schedules, weather, and global travel. Days often begin early or stretch late into the night, with pre‑flight checks, briefings, navigation planning, and constant communication with air traffic control. In the cockpit, the role demands calm focus, teamwork, and the ability to manage both routine operations and rare high‑pressure situations. Time away from home is common, especially for long‑haul routes, but the job offers unique rewards: seeing the world from above, mastering complex machines, and carrying immense responsibility with quiet confidence. It suits individuals who value precision, discipline, and the thrill of flight."
+  },
+
+  "habits": [
+    "Reviews checklists meticulously",
+    "Monitors instruments continuously",
+    "Communicates clearly with crew and ATC",
+    "Plans routes with attention to weather",
+    "Practises emergency procedures regularly"
+  },
+
+  "tags": [
+    "precision",
+    "high responsibility",
+    "teamwork",
+    "technical skill",
+    "travel",
+    "discipline",
+    "situational awareness",
+    "structured routines"
+  ],
+
+  "hero": {
+    "image": "pilot_hero.jpg",
+    "color": "#0C4A6E",
+    "keywords": ["aviation", "flight", "discipline"]
+  }
+}

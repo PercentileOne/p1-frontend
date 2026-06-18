@@ -1,0 +1,54 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "automotive_technician",
+  "slug": "automotive_technician",
+  "category": "Automotive",
+
+  "essence": "Diagnoses, repairs, and maintains vehicles to keep them safe and roadworthy.",
+
+  "identity": {
+    "title": "Automotive Technician",
+    "summary": "Inspects, services, and repairs cars and light vehicles, using diagnostic tools and mechanical expertise."
+  },
+
+  "salary": {
+    "entry": { "low": 20000, "high": 24000 },
+    "mid": { "low": 25000, "high": 32000 },
+    "senior": { "low": 33000, "high": 45000 },
+    "notes": "Master technicians, EV specialists, and dealership experts can exceed £50k+."
+  },
+
+  "qualifications": [
+    "Automotive Maintenance and Repair qualification",
+    "Knowledge of vehicle systems and diagnostics",
+    "Experience with tools and workshop equipment",
+    "Understanding of safety and compliance standards"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 5, 6, 6, 7, 7, 8, 8, 9],
+    "effort": [5, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9]
+  },
+
+  "lifestyle": {
+    "description": "Automotive technicians work in garages, workshops, and dealerships. Days involve diagnosing faults, repairing components, performing services, and ensuring vehicles meet safety standards. The role suits hands-on problem-solvers who enjoy mechanical work."
+  },
+
+  "habits": [
+    "Uses diagnostic tools effectively",
+    "Keeps tools and workspace organised",
+    "Follows safety procedures",
+    "Documents repairs accurately",
+    "Stays updated on new vehicle technologies"
+  ],
+
+  "tags": ["automotive", "mechanical", "hands-on", "diagnostics", "repair"],
+
+  "hero": {
+    "image": "automotive_technician_hero.jpg",
+    "color": "#4B5563",
+    "keywords": ["tools", "engine", "diagnostics"]
+  }
+}

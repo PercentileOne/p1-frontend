@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "entrepreneur",
+  "slug": "entrepreneur",
+  "category": "Business",
+
+  "essence": "Builds something from nothing through vision, resilience, and the relentless pursuit of opportunity.",
+
+  "identity": {
+    "title": "Entrepreneur",
+    "summary": "Creates and grows businesses by identifying opportunities, developing products or services, securing resources, and navigating uncertainty to bring ideas to life."
+  },
+
+  "salary": {
+    "entry": { "low": 0, "high": 20000 },
+    "mid": { "low": 30000, "high": 80000 },
+    "senior": { "low": 100000, "high": 1000000 },
+    "notes": "Income varies dramatically. Many entrepreneurs earn little in early years; successful ventures can generate substantial wealth through profit, equity, or exits."
+  },
+
+  "qualifications": [
+    "No formal qualifications required",
+    "Strong Understanding of Business Fundamentals",
+    "Experience in Product Development or Market Research",
+    "Ability to Manage Risk, Teams, and Resources"
+  },
+
+  "curves": {
+    "difficulty": [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "effort":     [7, 8, 8, 9, 9, 9, 10, 10, 10, 10],
+    "reward":     [5, 6, 7, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Entrepreneurship is a high‑risk, high‑intensity lifestyle defined by uncertainty, creativity, and constant problem‑solving. Days often involve building products, talking to customers, pitching investors, managing finances, and making decisions with incomplete information. Hours can be long and unpredictable, especially in the early stages, and emotional resilience is essential — setbacks are frequent, and progress can feel slow until momentum hits. Yet the rewards are profound: autonomy, impact, and the possibility of creating something that changes lives or defines a new market. The lifestyle suits individuals who are self‑driven, adaptable, optimistic, and energised by challenge rather than stability."
+  },
+
+  "habits": [
+    "Tests ideas quickly with real users",
+    "Tracks metrics and cash flow closely",
+    "Iterates products based on feedback",
+    "Builds strong networks and partnerships",
+    "Stays resilient through uncertainty"
+  },
+
+  "tags": [
+    "risk-taking",
+    "innovation",
+    "leadership",
+    "problem-solving",
+    "resilience",
+    "vision",
+    "autonomy",
+    "adaptability"
+  ],
+
+  "hero": {
+    "image": "entrepreneur_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["innovation", "vision", "ownership"]
+  }
+}

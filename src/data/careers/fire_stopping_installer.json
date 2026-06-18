@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_stopping_installer",
+  "slug": "fire-stopping-installer",
+  "category": "Skilled Trades",
+
+  "essence": "Installs fire‑stopping materials to seal penetrations and maintain fire‑resistant barriers within buildings.",
+
+  "identity": {
+    "title": "Fire Stopping Installer",
+    "summary": "Applies fire‑resistant sealants, boards, wraps, and barriers around pipes, cables, ducts, and structural openings to prevent fire and smoke spread."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 28000 },
+    "mid":   { "low": 29000, "high": 36000 },
+    "senior": { "low": 37000, "high": 46000 },
+    "notes": "Installers specialising in large commercial or high‑rise projects can exceed £45k-£55k+."
+  },
+
+  "qualifications": [
+    "Training in fire‑stopping and passive fire‑protection installation",
+    "Knowledge of fire‑resistant materials and certification requirements",
+    "Ability to read construction drawings and follow specifications",
+    "Understanding of building regulations and fire‑resistance standards"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9]
+  },
+
+  "lifestyle": {
+    "description": "Fire stopping installers work on construction sites and refurbishments applying fire‑resistant materials to seal penetrations and maintain compartmentation. The role suits individuals who enjoy practical work, construction environments, and contributing to life‑safety compliance."
+  },
+
+  "habits": [
+    "Installs fire‑stopping materials accurately and neatly",
+    "Follows strict safety and compliance standards",
+    "Keeps detailed photographic and written records",
+    "Communicates clearly with site managers and inspectors",
+    "Checks materials and installation quality carefully"
+  ],
+
+  "tags": [
+    "fire safety",
+    "passive fire protection",
+    "construction",
+    "installation",
+    "public safety",
+    "building safety",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "fire_stopping_installer_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["fire stopping", "installation", "safety"]
+  }
+}

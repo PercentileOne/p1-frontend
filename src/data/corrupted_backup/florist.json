@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "florist",
+  "slug": "florist",
+  "category": "Creative",
+
+  "essence": "Creates expressive arrangements using colour, texture, and natural materials to bring beauty into everyday life.",
+
+  "identity": {
+    "title": "Florist",
+    "summary": "Designs, arranges, and sells floral displays for events, celebrations, and everyday occasions using creativity and plant knowledge."
+  },
+
+  "salary": {
+    "entry": { "low": 18000, "high": 21000 },
+    "mid": { "low": 22000, "high": 28000 },
+    "senior": { "low": 29000, "high": 38000 },
+    "notes": "Self‑employed florists, wedding/event specialists, and boutique shop owners can exceed £40k–£60k+ depending on clientele and seasonality."
+  },
+
+  "qualifications": [
+    "Diploma or Certificate in Floristry or Floral Design",
+    "Knowledge of Plants, Flowers, and Care Techniques",
+    "Experience with Arrangement, Colour Theory, and Design Principles",
+    "Customer Service and Retail Skills"
+  },
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Florists work in creative, hands‑on environments where design, customer service, and plant care come together. Days involve preparing flowers, creating bouquets and arrangements, managing stock, and helping customers choose designs for events such as weddings, funerals, and celebrations. The work can be physically active, involving early mornings, water, trimming, and lifting buckets or boxes. Seasonal peaks — especially holidays and wedding periods — can be intense but rewarding. This lifestyle suits individuals who enjoy creativity, nature, and crafting beautiful pieces that bring joy or comfort to others."
+  },
+
+  "habits": [
+    "Keeps flowers hydrated and fresh",
+    "Maintains clean, organised workspaces",
+    "Practises colour and composition techniques",
+    "Builds arrangements with precision and care",
+    "Engages warmly with customers"
+  },
+
+  "tags": [
+    "creativity",
+    "design",
+    "nature",
+    "hands-on work",
+    "customer service",
+    "aesthetics",
+    "seasonal work",
+    "craftsmanship"
+  ],
+
+  "hero": {
+    "image": "florist_hero.jpg",
+    "color": "#EC4899",
+    "keywords": ["flowers", "design", "beauty"]
+  }
+}

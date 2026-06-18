@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "occupational_hygienist",
+  "slug": "occupational-hygienist",
+  "category": "Skilled Trades",
+
+  "essence": "Identifies, measures, and controls workplace hazards to protect employee health and prevent long‑term exposure risks.",
+
+  "identity": {
+    "title": "Occupational Hygienist",
+    "summary": "Assesses chemical, biological, physical, and ergonomic hazards in workplaces, recommending controls to protect employee health and ensure regulatory compliance."
+  },
+
+  "salary": {
+    "entry": { "low": 32000, "high": 38000 },
+    "mid":   { "low": 39000, "high": 52000 },
+    "senior": { "low": 53000, "high": 75000 },
+    "notes": "Specialists in high‑risk industries (oil & gas, pharmaceuticals, heavy manufacturing) can exceed £75k-£95k+."
+  },
+
+  "qualifications": [
+    "Training in occupational hygiene or environmental health",
+    "Knowledge of exposure monitoring and hazard assessment",
+    "Ability to measure noise, dust, chemicals, and other risks",
+    "Understanding of workplace legislation and control strategies"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Occupational hygienists work across factories, laboratories, construction sites, and industrial facilities. They measure exposures, analyse risks, and recommend controls to protect employee health. The role suits individuals who enjoy scientific investigation, data analysis, and improving workplace safety."
+  },
+
+  "habits": [
+    "Conducts exposure monitoring and sampling",
+    "Analyses data and identifies health risks",
+    "Recommends engineering and procedural controls",
+    "Writes clear technical reports",
+    "Communicates findings to managers and employees"
+  ],
+
+  "tags": [
+    "occupational health",
+    "exposure monitoring",
+    "risk assessment",
+    "industrial hygiene",
+    "workplace safety",
+    "environmental health"
+  ],
+
+  "hero": {
+    "image": "occupational_hygienist_hero.jpg",
+    "color": "#0EA5E9",
+    "keywords": ["exposure", "hygiene", "risk"]
+  }
+}

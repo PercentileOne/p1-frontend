@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "train_conductor",
+  "slug": "train-conductor",
+  "category": "Transport",
+
+  "essence": "Supports safe, smooth rail journeys through coordination, communication, and confident passenger service.",
+
+  "identity": {
+    "title": "Train Conductor",
+    "summary": "Oversees passenger safety, checks tickets, manages boarding, communicates with the driver, and ensures trains run smoothly and on schedule."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 28000 },
+    "mid": { "low": 30000, "high": 38000 },
+    "senior": { "low": 40000, "high": 50000 },
+    "notes": "Long‑distance services, night shifts, and senior conductor or train manager roles can exceed £45k–£55k+."
+  },
+
+  "qualifications": [
+    "On‑the‑job conductor training (rail operator)",
+    "Safety‑critical communication certification",
+    "Strong customer‑service and conflict‑resolution skills",
+    "Good awareness of safety procedures and emergency protocols"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 5, 6, 6, 7, 7, 8, 8, 8],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Train conductors work on passenger services across regional, commuter, and long‑distance routes. Days involve checking tickets, assisting passengers, making announcements, coordinating with the driver, managing doors, and ensuring safety throughout the journey. The role requires confidence, clear communication, and the ability to stay calm when dealing with delays, busy platforms, or passenger issues. Shifts often include early mornings, late nights, weekends, and bank holidays. Despite the demands, the job offers variety, independence, and strong teamwork with rail staff. This lifestyle suits individuals who enjoy public interaction, structured routines, and safety‑critical responsibility."
+  },
+
+  "habits": [
+    "Communicates clearly with passengers and crew",
+    "Performs safety checks before departure",
+    "Manages boarding and doors with precision",
+    "Handles ticketing and passenger queries calmly",
+    "Responds quickly to incidents or disruptions"
+  },
+
+  "tags": [
+    "transport",
+    "rail",
+    "customer service",
+    "safety‑critical",
+    "communication",
+    "public interaction",
+    "routine",
+    "teamwork"
+  ],
+
+  "hero": {
+    "image": "train_conductor_hero.jpg",
+    "color": "#2563EB",
+    "keywords": ["rail", "service", "safety"]
+  }
+}

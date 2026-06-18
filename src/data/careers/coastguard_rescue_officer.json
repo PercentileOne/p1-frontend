@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 270,
+  "id": "coastguard_rescue_officer",
+  "slug": "coastguard-rescue-officer",
+  "category": "Public Services, Emergency \u0026 Safety",
+  "essence": "Performs maritime search and rescue operations to save lives at sea and along coastlines.",
+  "identity": {
+    "title": "Coastguard Rescue Officer",
+    "summary": "Responds to maritime emergencies, operates rescue craft, and coordinates with emergency services to conduct rescues and safety patrols."
+  },
+  "salary": {
+    "entry": {
+      "low": 26000,
+      "high": 32000
+    },
+    "mid": {
+      "low": 33000,
+      "high": 48000
+    },
+    "senior": {
+      "low": 49000,
+      "high": 80000
+    },
+    "notes": "Specialist roles and senior coordinators receive higher compensation."
+  },
+  "qualifications": [
+    "Maritime rescue training and boat handling qualifications",
+    "First aid and casualty care certification",
+    "Strong physical fitness and sea\u2011going experience",
+    "Ability to work in hazardous and changing conditions"
+  ],
+  "curves": {
+    "difficulty": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      9,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Shift and on\u2011call work with exposure to harsh weather; high responsibility for public safety and emergency response."
+  },
+  "habits": [
+    "Responds to distress calls and conducts rescues",
+    "Operates and maintains rescue craft and equipment",
+    "Provides casualty care and coordinates handover",
+    "Conducts safety patrols and community engagement"
+  ],
+  "tags": [
+    "coastguard",
+    "search and rescue",
+    "maritime",
+    "emergency"
+  ],
+  "hero": {
+    "image": "coastguard_rescue_officer_hero.jpg",
+    "color": "#0B5A7A",
+    "keywords": [
+      "coastguard",
+      "rescue",
+      "maritime"
+    ]
+  }
+}

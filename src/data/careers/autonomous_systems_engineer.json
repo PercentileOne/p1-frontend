@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 245,
+  "id": "autonomous_systems_engineer",
+  "slug": "autonomous-systems-engineer",
+  "category": "AI, Robotics \u0026 Automation",
+  "essence": "Designs and integrates perception, planning, and control systems for autonomous platforms.",
+  "identity": {
+    "title": "Autonomous Systems Engineer",
+    "summary": "Builds end\u2011to\u2011end autonomy stacks, integrating sensors, perception models, planners, and control algorithms for reliable operation."
+  },
+  "salary": {
+    "entry": {
+      "low": 45000,
+      "high": 60000
+    },
+    "mid": {
+      "low": 61000,
+      "high": 90000
+    },
+    "senior": {
+      "low": 91000,
+      "high": 160000
+    },
+    "notes": "Senior engineers with multi\u2011domain experience (AVs, drones, robotics) are highly sought after."
+  },
+  "qualifications": [
+    "Degree in robotics, controls, computer science, or related field",
+    "Experience with perception, planning, and control algorithms",
+    "Proficiency in C\u002B\u002B/Python and ROS or similar frameworks",
+    "Strong systems engineering and integration skills"
+  ],
+  "curves": {
+    "difficulty": [
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10,
+    10
+  ],
+    "effort": [
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10,
+    10
+  ],
+    "reward": [
+      7,
+      8,
+      8,
+      9,
+      9,
+      10,
+      10,
+      10,
+      10,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Cross\u2011disciplinary engineering role with lab prototyping, field trials, and close collaboration with software and hardware teams."
+  },
+  "habits": [
+    "Designs and integrates autonomy modules",
+    "Runs simulation and field tests",
+    "Diagnoses system failures and iterates designs",
+    "Documents interfaces and system behaviour"
+  ],
+  "tags": [
+    "autonomy",
+    "robotics",
+    "systems engineering",
+    "perception"
+  ],
+  "hero": {
+    "image": "autonomous_systems_engineer_hero.jpg",
+    "color": "#0F4C81",
+    "keywords": [
+      "autonomy",
+      "systems",
+      "robotics"
+    ]
+  }
+}

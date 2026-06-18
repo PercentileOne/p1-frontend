@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "warehouse_operative",
+  "slug": "warehouse-operative",
+  "category": "Logistics",
+
+  "essence": "Keeps supply chains moving through organisation, accuracy, and steady physical work.",
+
+  "identity": {
+    "title": "Warehouse Operative",
+    "summary": "Picks, packs, sorts, and organises goods in warehouses and distribution centres to support efficient logistics operations."
+  },
+
+  "salary": {
+    "entry": { "low": 19000, "high": 22000 },
+    "mid": { "low": 22000, "high": 26000 },
+    "senior": { "low": 27000, "high": 32000 },
+    "notes": "Forklift operators, shift leaders, and specialists in large distribution centres can exceed £30k-£40k+ depending on shifts and responsibilities."
+  },
+
+  "qualifications": [
+    "On‑the‑job training in warehouse operations",
+    "Understanding of health and safety procedures",
+    "Basic IT skills for scanners and inventory systems",
+    "Forklift licence (optional but valuable)"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Warehouse operatives work in distribution centres, factories, and storage facilities where organisation, speed, and accuracy are essential. Days involve picking items from shelves, packing orders, scanning barcodes, loading vehicles, and maintaining stock areas. The work is physical and often fast‑paced, with long periods of standing, lifting, and walking. Many warehouses operate shifts, including nights and weekends. Despite the demands, the role offers routine, teamwork, and clear daily targets. This lifestyle suits individuals who enjoy structured tasks, physical activity, and contributing to the flow of goods."
+  },
+
+  "habits": [
+    "Keeps work areas tidy and organised",
+    "Follows safety procedures consistently",
+    "Checks item accuracy before packing",
+    "Uses scanners and systems efficiently",
+    "Works steadily to meet daily targets"
+  ],
+
+  "tags": [
+    "logistics",
+    "warehouse",
+    "physical activity",
+    "organisation",
+    "teamwork",
+    "routine",
+    "inventory",
+    "supply chain"
+  ],
+
+  "hero": {
+    "image": "warehouse_operative_hero.jpg",
+    "color": "#6B7280",
+    "keywords": ["logistics", "organisation", "movement"]
+  }
+}

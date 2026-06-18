@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "landscaper",
+  "slug": "landscaper",
+  "category": "Skilled Trades",
+
+  "essence": "Shapes outdoor spaces into functional, beautiful environments through design, planting, and hands‑on craftsmanship.",
+
+  "identity": {
+    "title": "Landscaper",
+    "summary": "Builds and maintains gardens, lawns, and outdoor spaces using planting, hardscaping, and environmental knowledge to create attractive, usable landscapes."
+  },
+
+  "salary": {
+    "entry": { "low": 20000, "high": 24000 },
+    "mid": { "low": 25000, "high": 32000 },
+    "senior": { "low": 33000, "high": 45000 },
+    "notes": "Specialist landscaping, garden design, commercial contracts, and self‑employment can exceed £50k–£70k+ depending on scale and expertise."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Diploma in Horticulture or Landscaping",
+    "Knowledge of Plants, Soil, and Environmental Conditions",
+    "Experience with Tools, Machinery, and Hardscaping Techniques",
+    "Understanding of Garden Design and Maintenance Practices"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 6, 6, 7, 7, 8, 8, 9],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Landscapers work outdoors in varied environments where physical activity, creativity, and practical skill come together. Days involve planting trees and shrubs, laying turf, building patios or pathways, maintaining gardens, and shaping outdoor spaces to meet design plans. The work is seasonal, weather‑dependent, and physically demanding, often involving lifting, digging, and operating machinery. Yet the results are deeply rewarding — transforming bare ground into vibrant, functional landscapes. This lifestyle suits individuals who enjoy nature, hands‑on work, and seeing immediate, visible impact from their efforts."
+  },
+
+  "habits": [
+    "Plans work around weather and seasons",
+    "Maintains tools and machinery carefully",
+    "Checks soil and plant health regularly",
+    "Follows design plans with accuracy",
+    "Keeps outdoor spaces tidy and safe"
+  },
+
+  "tags": [
+    "outdoor work",
+    "hands-on work",
+    "nature",
+    "horticulture",
+    "design",
+    "physical activity",
+    "construction",
+    "practical skills"
+  ],
+
+  "hero": {
+    "image": "landscaper_hero.jpg",
+    "color": "#65A30D",
+    "keywords": ["nature", "design", "outdoors"]
+  }
+}

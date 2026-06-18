@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "energy_manager",
+  "slug": "energy-manager",
+  "category": "Skilled Trades",
+
+  "essence": "Improves an organisation's energy efficiency by analysing usage, reducing waste, and implementing cost‑saving, low‑carbon solutions.",
+
+  "identity": {
+    "title": "Energy Manager",
+    "summary": "Monitors and optimises energy use across buildings and operations, develops efficiency strategies, manages energy projects, and supports carbon‑reduction goals."
+  },
+
+  "salary": {
+    "entry": { "low": 32000, "high": 38000 },
+    "mid":   { "low": 39000, "high": 52000 },
+    "senior": { "low": 53000, "high": 75000 },
+    "notes": "Managers leading multi‑site portfolios or major decarbonisation programmes can exceed £75k-£95k+."
+  },
+
+  "qualifications": [
+    "Training in energy management, engineering, or sustainability",
+    "Knowledge of building systems, energy auditing, and efficiency measures",
+    "Ability to analyse energy data and identify savings opportunities",
+    "Understanding of carbon reduction, net‑zero planning, and compliance"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Energy managers work for councils, universities, hospitals, manufacturers, and large organisations. They analyse energy use, manage efficiency projects, oversee building systems, and support net‑zero strategies. The role suits individuals who enjoy data, optimisation, and delivering measurable environmental and financial impact."
+  },
+
+  "habits": [
+    "Monitors and analyses energy consumption",
+    "Conducts energy audits and identifies savings",
+    "Manages efficiency and retrofit projects",
+    "Optimises building systems and controls",
+    "Supports carbon‑reduction and net‑zero planning"
+  ],
+
+  "tags": [
+    "energy management",
+    "efficiency",
+    "sustainability",
+    "net zero",
+    "building systems",
+    "optimisation"
+  ],
+
+  "hero": {
+    "image": "energy_manager_hero.jpg",
+    "color": "#14B8A6",
+    "keywords": ["energy efficiency", "optimisation", "net zero"]
+  }
+}

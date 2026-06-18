@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fashion_designer",
+  "slug": "fashion-designer",
+  "category": "Creative",
+
+  "essence": "Transforms ideas, culture, and emotion into garments that express identity and shape trends.",
+
+  "identity": {
+    "title": "Fashion Designer",
+    "summary": "Creates clothing and accessories by developing concepts, sketching designs, selecting materials, and overseeing production from prototype to final garment."
+  },
+
+  "salary": {
+    "entry": { "low": 20000, "high": 26000 },
+    "mid": { "low": 30000, "high": 45000 },
+    "senior": { "low": 50000, "high": 80000 },
+    "notes": "High‑profile designers, luxury houses, and successful independent brands can exceed £100k–£200k+. Income varies widely depending on brand success and market reach."
+  },
+
+  "qualifications": [
+    "Degree or Diploma in Fashion Design",
+    "Strong Portfolio of Designs",
+    "Understanding of Textiles, Pattern Cutting, and Garment Construction",
+    "Experience with Fashion Illustration and CAD Tools"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Fashion designers live in a world of creativity, deadlines, and constant reinvention. Days involve sketching concepts, sourcing fabrics, working with pattern cutters, reviewing samples, and preparing collections for shows or clients. The pace can be intense, especially around seasonal launches, and competition is high. Inspiration can strike at any time, and experimentation is part of the craft. The work blends artistry with practical constraints like cost, fit, and production timelines. For many, the joy comes from seeing a design move from imagination to runway or retail. This lifestyle suits individuals who are expressive, detail‑oriented, resilient, and energised by visual storytelling."
+  },
+
+  "habits": [
+    "Sketches ideas regularly",
+    "Studies trends and cultural shifts",
+    "Experiments with fabrics and textures",
+    "Iterates designs through prototypes",
+    "Builds strong relationships with suppliers and makers"
+  },
+
+  "tags": [
+    "creativity",
+    "design",
+    "fashion",
+    "trend analysis",
+    "craftsmanship",
+    "visual storytelling",
+    "iteration",
+    "aesthetic sensitivity"
+  ],
+
+  "hero": {
+    "image": "fashion_designer_hero.jpg",
+    "color": "#DB2777",
+    "keywords": ["style", "creativity", "expression"]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "forklift_operative",
+  "slug": "forklift-operative",
+  "category": "Logistics",
+
+  "essence": "Moves goods safely and efficiently using specialised machinery, keeping warehouses and supply chains flowing.",
+
+  "identity": {
+    "title": "Forklift Operative",
+    "summary": "Operates forklifts to lift, move, and organise pallets and materials in warehouses, factories, and distribution centres."
+  },
+
+  "salary": {
+    "entry": { "low": 21000, "high": 24000 },
+    "mid": { "low": 25000, "high": 29000 },
+    "senior": { "low": 30000, "high": 36000 },
+    "notes": "Night shifts, large distribution centres, and advanced licences (reach truck, counterbalance, VNA) can exceed £35k–£45k+."
+  },
+
+  "qualifications": [
+    "Forklift Licence (Counterbalance, Reach Truck, or VNA)",
+    "Understanding of Health & Safety and Manual Handling",
+    "Basic IT skills for scanners and stock systems",
+    "Good spatial awareness and coordination"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 5, 6, 6, 7, 7, 8, 8, 8],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Forklift operatives work in warehouses, factories, and distribution centres where precision, safety, and steady focus are essential. Days involve loading and unloading vehicles, moving pallets, stacking goods, scanning inventory, and coordinating with warehouse teams. The role is physical but less strenuous than manual picking, with long periods of driving and operating machinery. Many sites run shifts, including nights and weekends. The work is structured, practical, and central to keeping goods moving. This lifestyle suits individuals who enjoy machinery, routine, and contributing to efficient logistics operations."
+  },
+
+  "habits": [
+    "Performs safety checks before operating machinery",
+    "Keeps aisles and loading areas clear",
+    "Handles pallets with precision and care",
+    "Communicates clearly with warehouse teams",
+    "Follows speed limits and safety protocols"
+  },
+
+  "tags": [
+    "logistics",
+    "warehouse",
+    "machinery",
+    "forklift",
+    "safety",
+    "teamwork",
+    "routine",
+    "inventory"
+  ],
+
+  "hero": {
+    "image": "forklift_operative_hero.jpg",
+    "color": "#FACC15",
+    "keywords": ["machinery", "precision", "movement"]
+  }
+}

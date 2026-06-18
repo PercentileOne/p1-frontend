@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 285,
+  "id": "sustainability_consultant",
+  "slug": "sustainability-consultant",
+  "category": "Environment, Nature \u0026 Sustainability",
+  "essence": "Advises organisations on strategies to reduce environmental impact and meet sustainability goals.",
+  "identity": {
+    "title": "Sustainability Consultant",
+    "summary": "Develops carbon reduction plans, advises on resource efficiency, and helps clients meet regulatory and voluntary sustainability targets."
+  },
+  "salary": {
+    "entry": {
+      "low": 32000,
+      "high": 42000
+    },
+    "mid": {
+      "low": 43000,
+      "high": 70000
+    },
+    "senior": {
+      "low": 71000,
+      "high": 130000
+    },
+    "notes": "Senior consultants and specialists in net\u2011zero strategy command premium rates."
+  },
+  "qualifications": [
+    "Background in sustainability, environmental science, or engineering",
+    "Experience with carbon accounting and sustainability frameworks",
+    "Strong stakeholder engagement and project management skills",
+    "Ability to translate technical analysis into business strategy"
+  ],
+  "curves": {
+    "difficulty": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10
+  ],
+    "effort": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10
+  ],
+    "reward": [
+      7,
+      8,
+      8,
+      9,
+      9,
+      10,
+      10,
+      10,
+      10,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Office and client site work with frequent reporting, modelling, and stakeholder engagement; consultancy pace and travel common."
+  },
+  "habits": [
+    "Performs carbon and sustainability assessments",
+    "Develops reduction strategies and roadmaps",
+    "Engages stakeholders and secures buy\u2011in",
+    "Monitors progress and reports outcomes"
+  ],
+  "tags": [
+    "sustainability",
+    "consulting",
+    "carbon",
+    "strategy"
+  ],
+  "hero": {
+    "image": "sustainability_consultant_hero.jpg",
+    "color": "#2E7A5A",
+    "keywords": [
+      "sustainability",
+      "carbon",
+      "strategy"
+    ]
+  }
+}

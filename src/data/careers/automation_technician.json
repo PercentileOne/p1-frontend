@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 243,
+  "id": "automation_technician",
+  "slug": "automation-technician",
+  "category": "AI, Robotics \u0026 Automation",
+  "essence": "Installs and maintains automation equipment, PLCs, and control systems that run production lines.",
+  "identity": {
+    "title": "Automation Technician",
+    "summary": "Supports automated production by wiring, commissioning, and troubleshooting control systems and sensors."
+  },
+  "salary": {
+    "entry": {
+      "low": 26000,
+      "high": 32000
+    },
+    "mid": {
+      "low": 33000,
+      "high": 45000
+    },
+    "senior": {
+      "low": 46000,
+      "high": 70000
+    },
+    "notes": "Technicians with PLC programming and network skills are in high demand."
+  },
+  "qualifications": [
+    "Apprenticeship or NVQ in electrical or control engineering",
+    "Experience with PLCs, HMIs, and industrial networks",
+    "Ability to read electrical schematics and perform wiring",
+    "Knowledge of safety and commissioning procedures"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Hands\u2011on role in factories and plants; often shift work with on\u2011call responsibilities for breakdowns and commissioning."
+  },
+  "habits": [
+    "Commissions and tests control systems",
+    "Troubleshoots faults and replaces components",
+    "Programs basic PLC logic and configures HMIs",
+    "Documents changes and updates maintenance records"
+  ],
+  "tags": [
+    "automation",
+    "PLC",
+    "maintenance",
+    "industrial"
+  ],
+  "hero": {
+    "image": "automation_technician_hero.jpg",
+    "color": "#0F5A3C",
+    "keywords": [
+      "automation",
+      "PLC",
+      "industrial"
+    ]
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "mechanical_assembler",
+  "slug": "mechanical-assembler",
+  "category": "Skilled Trades",
+
+  "essence": "Builds and assembles mechanical components and machinery using precision tools, technical drawings, and quality‑controlled processes.",
+
+  "identity": {
+    "title": "Mechanical Assembler",
+    "summary": "Assembles mechanical parts, sub‑assemblies, and machinery using technical drawings, tools, and manufacturing standards across engineering and industrial environments."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 34000 },
+    "senior": { "low": 35000, "high": 45000 },
+    "notes": "Assemblers specialising in precision engineering, aerospace, or high‑tolerance manufacturing can exceed £45k-£55k+."
+  },
+
+  "qualifications": [
+    "Training in mechanical assembly, engineering, or manufacturing",
+    "Ability to read technical drawings and follow assembly instructions",
+    "Knowledge of mechanical components, fasteners, and tools",
+    "Understanding of quality control, tolerances, and safety procedures"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [3, 4, 5, 5, 6, 6, 7, 7, 8, 9],
+    "reward":     [3, 4, 5, 5, 6, 6, 7, 7, 8, 9]
+  },
+
+  "lifestyle": {
+    "description": "Mechanical assemblers work in manufacturing plants, engineering workshops, and industrial facilities. They build mechanical systems, follow precise assembly procedures, and ensure components meet quality standards. The role suits individuals who enjoy hands‑on work, precision, and building physical systems."
+  },
+
+  "habits": [
+    "Assembles mechanical components and sub‑systems",
+    "Reads and interprets engineering drawings",
+    "Uses hand tools, power tools, and measurement equipment",
+    "Performs quality checks and ensures correct tolerances",
+    "Documents assembly steps and reports issues"
+  ],
+
+  "tags": [
+    "assembly",
+    "mechanical",
+    "manufacturing",
+    "engineering",
+    "precision",
+    "industrial"
+  ],
+
+  "hero": {
+    "image": "mechanical_assembler_hero.jpg",
+    "color": "#0A1F5A",
+    "keywords": ["assembly", "mechanical", "precision"]
+  }
+}

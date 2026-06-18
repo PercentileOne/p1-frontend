@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "pharmacy_technician",
+  "slug": "pharmacy-technician",
+  "category": "Healthcare",
+
+  "essence": "Supports safe, accurate dispensing and patient care through precision, organisation, and strong pharmaceutical knowledge.",
+
+  "identity": {
+    "title": "Pharmacy Technician",
+    "summary": "Prepares and dispenses medicines, manages stock, supports pharmacists, and ensures safe, efficient operation of pharmacy services."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid": { "low": 27000, "high": 33000 },
+    "senior": { "low": 34000, "high": 42000 },
+    "notes": "Specialist roles in hospitals, accuracy checking technician (ACT) positions, and supervisory posts can exceed £40k+."
+  },
+
+  "qualifications": [
+    "Level 3 Diploma in Pharmacy Service Skills or Equivalent",
+    "GPhC Registration",
+    "Training in Dispensing, Medicines Management, and Patient Safety",
+    "Strong Understanding of Pharmaceutical Procedures"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Pharmacy technicians work in structured, detail‑oriented environments where accuracy and patient safety are essential. Days involve preparing prescriptions, managing stock, supporting pharmacists, and interacting with patients who need guidance or reassurance. The pace can be steady or fast depending on the setting — community pharmacies often face high footfall, while hospitals involve more complex medication preparation. The role requires strong organisation, calm focus, and a commitment to safety. It suits individuals who enjoy practical tasks, teamwork, and contributing to patient care without the full clinical responsibilities of a pharmacist."
+  },
+
+  "habits": [
+    "Checks prescriptions carefully for accuracy",
+    "Organises stock and monitors expiry dates",
+    "Communicates clearly with pharmacists and patients",
+    "Follows safety and dispensing protocols",
+    "Maintains detailed records and logs"
+  ],
+
+  "tags": [
+    "precision",
+    "patient care",
+    "organisation",
+    "healthcare",
+    "teamwork",
+    "dispensing",
+    "safety",
+    "pharmacy operations"
+  ],
+
+  "hero": {
+    "image": "pharmacy_technician_hero.jpg",
+    "color": "#14B8A6",
+    "keywords": ["accuracy", "support", "care"]
+  }
+}

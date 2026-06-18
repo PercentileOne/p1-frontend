@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "pharmacologist",
+  "slug": "pharmacologist",
+  "category": "Healthcare",
+
+  "essence": "Explores how drugs interact with the body to develop safer, more effective treatments that improve human health.",
+
+  "identity": {
+    "title": "Pharmacologist",
+    "summary": "Studies drug actions, conducts laboratory research, analyses biological responses, and contributes to the development of new medicines and therapies."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 35000 },
+    "mid": { "low": 38000, "high": 50000 },
+    "senior": { "low": 55000, "high": 80000 },
+    "notes": "Pharmaceutical industry roles, senior research positions, and specialist toxicology or clinical pharmacology posts can exceed £90k–£120k+."
+  },
+
+  "qualifications": [
+    "Degree in Pharmacology, Biomedical Science, or Related Field",
+    "Postgraduate Research (MSc or PhD) Often Required",
+    "Laboratory Research Experience",
+    "Strong Understanding of Physiology, Biochemistry, and Drug Mechanisms"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Pharmacologists work in research‑driven environments where curiosity, precision, and patience are essential. Days often involve designing experiments, analysing data, reviewing scientific literature, and collaborating with chemists, clinicians, and regulatory teams. Progress can be slow — breakthroughs may take months or years — but the impact is profound, contributing to new treatments, safer drugs, and advances in medical science. The work is structured, intellectually demanding, and suited to those who enjoy deep focus and scientific problem‑solving. It fits individuals who value discovery, evidence‑based thinking, and contributing to long‑term improvements in human health."
+  },
+
+  "habits": [
+    "Designs experiments methodically",
+    "Keeps detailed laboratory notes",
+    "Analyses data with scientific rigour",
+    "Reviews research literature regularly",
+    "Collaborates with multidisciplinary teams"
+  },
+
+  "tags": [
+    "research",
+    "science",
+    "drug development",
+    "laboratory work",
+    "analysis",
+    "healthcare",
+    "precision",
+    "long-term impact"
+  ],
+
+  "hero": {
+    "image": "pharmacologist_hero.jpg",
+    "color": "#0F766E",
+    "keywords": ["research", "medicine", "science"]
+  }
+}

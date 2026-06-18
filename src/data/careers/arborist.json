@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 282,
+  "id": "arborist",
+  "slug": "arborist",
+  "category": "Environment, Nature \u0026 Sustainability",
+  "essence": "Specialist in tree care, pruning, and health assessment to maintain safe and healthy urban and rural trees.",
+  "identity": {
+    "title": "Arborist",
+    "summary": "Assesses tree health, performs pruning and removals, and advises on tree management for safety and biodiversity."
+  },
+  "salary": {
+    "entry": {
+      "low": 24000,
+      "high": 30000
+    },
+    "mid": {
+      "low": 31000,
+      "high": 45000
+    },
+    "senior": {
+      "low": 46000,
+      "high": 80000
+    },
+    "notes": "Consultant arborists and those with advanced qualifications command higher fees."
+  },
+  "qualifications": [
+    "Arboriculture qualifications and climbing certifications",
+    "Knowledge of tree biology and pest/disease identification",
+    "Experience with chainsaws and aerial work platforms",
+    "Strong risk assessment and client communication skills"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Outdoor specialist work with physical demands and client interaction; often self\u2011employed or contractor roles."
+  },
+  "habits": [
+    "Inspects and assesses tree health",
+    "Performs pruning, reductions, and removals",
+    "Prepares reports and management plans",
+    "Advises clients on tree care and safety"
+  ],
+  "tags": [
+    "arboriculture",
+    "trees",
+    "pruning",
+    "inspection"
+  ],
+  "hero": {
+    "image": "arborist_hero.jpg",
+    "color": "#3A6B4A",
+    "keywords": [
+      "arborist",
+      "trees",
+      "pruning"
+    ]
+  }
+}

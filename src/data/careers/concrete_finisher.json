@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "concrete_finisher",
+  "slug": "concrete-finisher",
+  "category": "Skilled Trades",
+
+  "essence": "Shapes, levels, and finishes concrete surfaces to create strong, durable foundations and structures.",
+
+  "identity": {
+    "title": "Concrete Finisher",
+    "summary": "Pours, levels, smooths, and finishes concrete for floors, pavements, foundations, and structural elements, ensuring strength, durability, and a clean final surface."
+  },
+
+  "salary": {
+    "entry": { "low": 23000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 35000 },
+    "senior": { "low": 36000, "high": 50000 },
+    "notes": "Large commercial projects, infrastructure work, and specialist finishing (e.g., power‑floating, decorative concrete) can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Level 2/3 Diploma in Concrete Occupations or Construction",
+    "Knowledge of concrete mixes, curing, and finishing techniques",
+    "Ability to use trowels, screeds, floats, and power‑floating equipment",
+    "Strong physical fitness and ability to work outdoors"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Concrete finishers work on construction sites preparing, pouring, and finishing concrete for foundations, floors, pavements, and structural elements. Days involve setting forms, levelling surfaces, smoothing and texturing concrete, and ensuring proper curing. The role is physical, outdoors, and often time‑sensitive due to concrete setting windows. This lifestyle suits individuals who enjoy hands‑on work, teamwork, and contributing to the structural backbone of buildings and infrastructure."
+  },
+
+  "habits": [
+    "Prepares forms and surfaces accurately",
+    "Levels and smooths concrete with precision",
+    "Keeps tools clean and ready for fast‑paced work",
+    "Monitors curing conditions carefully",
+    "Follows strict site safety procedures"
+  ],
+
+  "tags": [
+    "construction",
+    "structural work",
+    "concrete",
+    "heavy labour",
+    "hands-on work",
+    "skilled trades",
+    "infrastructure",
+    "building"
+  ],
+
+  "hero": {
+    "image": "concrete_finisher_hero.jpg",
+    "color": "#78716C",
+    "keywords": ["concrete", "finishing", "construction"]
+  }
+}

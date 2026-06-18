@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "curtain_wall_installer",
+  "slug": "curtain-wall-installer",
+  "category": "Skilled Trades",
+
+  "essence": "Installs large glass and aluminium façade systems with precision, teamwork, and strict safety discipline.",
+
+  "identity": {
+    "title": "Curtain Wall Installer",
+    "summary": "Installs large-scale glass and aluminium curtain wall systems on commercial and high-rise buildings, ensuring structural alignment, weatherproofing, and high-quality finishes."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 28000 },
+    "mid": { "low": 30000, "high": 38000 },
+    "senior": { "low": 40000, "high": 55000 },
+    "notes": "High-rise, specialist façade, and complex architectural projects can exceed £55k–£70k+."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Level 2/3 Diploma in Fenestration Installation or Curtain Walling",
+    "Training in working at height and site safety",
+    "Knowledge of glazing systems, aluminium frames, and fixings",
+    "Strong teamwork, measurement accuracy, and physical fitness"
+  },
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Curtain wall installers work on commercial buildings, offices, and high-rise developments, fitting large glass panels and aluminium framing systems. Days involve lifting and positioning panels, sealing joints, aligning frames, using access equipment, and working closely with crane operators and site teams. The role is physically demanding, precision-focused, and often performed at height. This lifestyle suits individuals who enjoy teamwork, technical installation work, and contributing to striking modern architecture."
+  },
+
+  "habits": [
+    "Checks measurements and alignment carefully",
+    "Handles large glass panels safely",
+    "Uses sealants and fixings with precision",
+    "Communicates clearly with lifting and site teams",
+    "Follows strict working-at-height procedures"
+  ],
+
+  "tags": [
+    "construction",
+    "fenestration",
+    "installation",
+    "working at height",
+    "glasswork",
+    "teamwork",
+    "skilled trades",
+    "commercial buildings"
+  ],
+
+  "hero": {
+    "image": "curtain_wall_installer_hero.jpg",
+    "color": "#2563EB",
+    "keywords": ["façade", "glass", "installation"]
+  }
+}

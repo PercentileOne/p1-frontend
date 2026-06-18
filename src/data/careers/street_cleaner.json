@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "street_cleaner",
+  "slug": "street-cleaner",
+  "category": "Skilled Trades",
+
+  "essence": "Keeps public streets, paths, and communal spaces clean, safe, and pleasant for the community.",
+
+  "identity": {
+    "title": "Street Cleaner (Street Scene Operative)",
+    "summary": "Maintains the cleanliness of streets, pavements, parks, and public areas through litter collection, sweeping, and waste handling."
+  },
+
+  "salary": {
+    "entry": { "low": 20000, "high": 23000 },
+    "mid":   { "low": 24000, "high": 28000 },
+    "senior": { "low": 29000, "high": 33000 },
+    "notes": "Team leaders, mechanical sweeper operators, and night‑shift roles can exceed £30k-£35k+."
+  },
+
+  "qualifications": [
+    "Basic safety and manual‑handling training",
+    "Understanding of waste‑handling and environmental procedures",
+    "Ability to work outdoors in all weather conditions",
+    "Optional training for mechanical sweepers or small plant"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9]
+  },
+
+  "lifestyle": {
+    "description": "Street cleaners work early mornings or daytime shifts maintaining the cleanliness of public spaces. Tasks include litter picking, sweeping, emptying bins, and reporting hazards. The role is active, outdoors, and essential to community wellbeing. It suits individuals who enjoy routine, independence, and contributing to a clean public environment."
+  },
+
+  "habits": [
+    "Maintains consistent cleaning routes",
+    "Follows safety and hygiene procedures",
+    "Keeps tools and equipment organised",
+    "Communicates clearly with supervisors and the public",
+    "Reports hazards or issues promptly"
+  ],
+
+  "tags": [
+    "public service",
+    "community work",
+    "cleaning",
+    "outdoor work",
+    "hands-on work",
+    "waste management",
+    "skilled trades",
+    "environment"
+  ],
+
+  "hero": {
+    "image": "street_cleaner_hero.jpg",
+    "color": "#10B981",
+    "keywords": ["cleaning", "public service", "community"]
+  }
+}

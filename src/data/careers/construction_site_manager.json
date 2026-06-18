@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 268,
+  "id": "construction_site_manager",
+  "slug": "construction-site-manager",
+  "category": "Skilled Trades \u0026 Construction",
+  "essence": "Manages construction projects on site, coordinating teams, schedules, budgets, and safety to deliver works.",
+  "identity": {
+    "title": "Construction Site Manager",
+    "summary": "Oversees all on\u2011site activities, liaises with clients and subcontractors, and ensures projects are delivered on time and to spec."
+  },
+  "salary": {
+    "entry": {
+      "low": 40000,
+      "high": 55000
+    },
+    "mid": {
+      "low": 56000,
+      "high": 90000
+    },
+    "senior": {
+      "low": 91000,
+      "high": 140000
+    },
+    "notes": "Large project managers and those in specialist sectors command premium salaries."
+  },
+  "qualifications": [
+    "Degree or HNC in construction management or equivalent experience",
+    "Proven site management experience and leadership",
+    "Knowledge of contracts, health \u0026 safety, and quality control",
+    "Strong communication and stakeholder management skills"
+  ],
+  "curves": {
+    "difficulty": [
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10,
+    10,
+    10
+  ],
+    "effort": [
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10,
+    10,
+    10,
+    10
+  ],
+    "reward": [
+      7,
+      8,
+      8,
+      9,
+      9,
+      10,
+      10,
+      10,
+      10,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "High\u2011responsibility role with long hours, frequent meetings, and direct accountability for project delivery and safety."
+  },
+  "habits": [
+    "Coordinates subcontractors and site teams",
+    "Monitors progress, budgets, and quality",
+    "Ensures compliance with health \u0026 safety",
+    "Communicates with clients and stakeholders"
+  ],
+  "tags": [
+    "construction",
+    "management",
+    "site",
+    "project delivery"
+  ],
+  "hero": {
+    "image": "construction_site_manager_hero.jpg",
+    "color": "#2F3A4A",
+    "keywords": [
+      "construction",
+      "management",
+      "site"
+    ]
+  }
+}

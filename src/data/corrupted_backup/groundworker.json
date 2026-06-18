@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "groundworker",
+  "slug": "groundworker",
+  "category": "Skilled Trades",
+
+  "essence": "Prepares the foundations and essential groundwork that every building and infrastructure project depends on.",
+
+  "identity": {
+    "title": "Groundworker",
+    "summary": "Carries out excavation, drainage, concreting, kerbing, and foundation preparation on construction and civil engineering sites."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 34000 },
+    "senior": { "low": 35000, "high": 45000 },
+    "notes": "Experienced groundworkers on large civils projects or with plant tickets can exceed £45k–£55k+."
+  },
+
+  "qualifications": [
+    "CSCS card and site safety training",
+    "Experience with excavation, drainage, and concreting",
+    "Knowledge of levels, foundations, and site plans",
+    "Optional plant operation tickets (e.g., dumper, roller, excavator)"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Groundworkers operate at the start of construction projects, preparing the land, digging trenches, installing drainage, laying foundations, and creating the base for roads, buildings, and utilities. The work is outdoors, physical, and often fast‑paced, involving teamwork and coordination with plant operators and site managers. This lifestyle suits individuals who enjoy hands‑on work, being outdoors, and contributing to the essential early stages of construction."
+  },
+
+  "habits": [
+    "Checks levels and measurements carefully",
+    "Uses tools and plant safely",
+    "Keeps work areas tidy and organised",
+    "Communicates clearly with site teams",
+    "Follows strict safety procedures"
+  ],
+
+  "tags": [
+    "construction",
+    "groundworks",
+    "civils",
+    "excavation",
+    "drainage",
+    "hands-on work",
+    "skilled trades",
+    "infrastructure"
+  ],
+
+  "hero": {
+    "image": "groundworker_hero.jpg",
+    "color": "#92400E",
+    "keywords": ["groundworks", "excavation", "construction"]
+  }
+}

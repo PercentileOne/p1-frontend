@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 264,
+  "id": "scaffolding_inspector",
+  "slug": "scaffolding-inspector",
+  "category": "Skilled Trades \u0026 Construction",
+  "essence": "Inspects scaffolding installations to ensure structural integrity and compliance with safety standards.",
+  "identity": {
+    "title": "Scaffolding Inspector",
+    "summary": "Conducts regular inspections, issues reports, and advises on remedial actions to keep scaffolding safe for workers and the public."
+  },
+  "salary": {
+    "entry": {
+      "low": 28000,
+      "high": 35000
+    },
+    "mid": {
+      "low": 36000,
+      "high": 52000
+    },
+    "senior": {
+      "low": 53000,
+      "high": 80000
+    },
+    "notes": "Inspectors with certification and experience on large projects command higher rates."
+  },
+  "qualifications": [
+    "Scaffolding inspection certification (e.g., CISRS) or equivalent",
+    "Experience in scaffolding erection and safety standards",
+    "Strong attention to detail and report writing",
+    "Ability to work at height and in varied site conditions"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "effort": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Site\u2011based inspections with travel between projects; requires methodical checks and clear reporting."
+  },
+  "habits": [
+    "Performs scaffold inspections and documents findings",
+    "Advises on remedial actions and compliance",
+    "Coordinates with site managers and contractors",
+    "Maintains inspection records and certifications"
+  ],
+  "tags": [
+    "scaffolding",
+    "inspection",
+    "safety",
+    "construction"
+  ],
+  "hero": {
+    "image": "scaffolding_inspector_hero.jpg",
+    "color": "#3B4A5A",
+    "keywords": [
+      "scaffolding",
+      "inspection",
+      "safety"
+    ]
+  }
+}

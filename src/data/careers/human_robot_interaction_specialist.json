@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 242,
+  "id": "human_robot_interaction_specialist",
+  "slug": "human-robot-interaction-specialist",
+  "category": "AI, Robotics \u0026 Automation",
+  "essence": "Designs interfaces and behaviours that let humans and robots collaborate safely and effectively.",
+  "identity": {
+    "title": "Human\u2011Robot Interaction Specialist",
+    "summary": "Focuses on usability, safety, and social aspects of robot behaviour to ensure intuitive and trustworthy human collaboration."
+  },
+  "salary": {
+    "entry": {
+      "low": 32000,
+      "high": 42000
+    },
+    "mid": {
+      "low": 43000,
+      "high": 65000
+    },
+    "senior": {
+      "low": 66000,
+      "high": 110000
+    },
+    "notes": "Roles combining HRI with UX or robotics engineering are highly valued."
+  },
+  "qualifications": [
+    "Background in HCI, robotics, psychology, or design",
+    "Experience prototyping robot behaviours and interfaces",
+    "Knowledge of safety standards and human factors",
+    "Strong user research and testing skills"
+  ],
+  "curves": {
+    "difficulty": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      9,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Combines lab studies, prototyping, and field trials. Regular user testing and cross\u2011disciplinary collaboration with engineers and designers."
+  },
+  "habits": [
+    "Runs user studies and usability tests",
+    "Prototypes interaction patterns and safety behaviours",
+    "Analyses human responses and refines designs",
+    "Works with engineers to implement interaction logic"
+  ],
+  "tags": [
+    "HRI",
+    "UX",
+    "robotics",
+    "human factors"
+  ],
+  "hero": {
+    "image": "human_robot_interaction_specialist_hero.jpg",
+    "color": "#1F6F8B",
+    "keywords": [
+      "HRI",
+      "UX",
+      "robotics"
+    ]
+  }
+}

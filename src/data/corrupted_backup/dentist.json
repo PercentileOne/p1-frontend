@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "dentist",
+  "slug": "dentist",
+  "category": "Healthcare",
+
+  "essence": "Protects oral health through precision, care, and a calm mastery of clinical technique.",
+
+  "identity": {
+    "title": "Dentist",
+    "summary": "Diagnoses and treats oral health issues, performs clinical procedures, advises patients on prevention, and ensures long-term dental wellbeing."
+  },
+
+  "salary": {
+    "entry": { "low": 32000, "high": 40000 },
+    "mid": { "low": 50000, "high": 80000 },
+    "senior": { "low": 90000, "high": 140000 },
+    "notes": "Private practice, cosmetic dentistry, and specialist roles (orthodontics, endodontics, oral surgery) can exceed £150k–£200k+."
+  },
+
+  "qualifications": [
+    "BDS or Equivalent Dental Degree",
+    "GDC Registration",
+    "Supervised Foundation Training",
+    "Strong Understanding of Oral Anatomy and Clinical Procedures"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [6, 7, 7, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Dentists work in a structured, clinically focused environment where precision and patient reassurance are central. Days involve examinations, fillings, extractions, cosmetic procedures, and preventive care. The work requires steady hands, strong communication skills, and the ability to keep patients calm — many arrive anxious or in pain. Hours can be regular in general practice, while private clinics may offer more flexibility but higher expectations. The role is physically demanding, with long periods of concentration and fine motor work, yet deeply rewarding: restoring confidence, relieving pain, and improving long-term health. It suits individuals who value precision, patient care, and a stable clinical routine."
+  },
+
+  "habits": [
+    "Explains procedures clearly to patients",
+    "Maintains meticulous hygiene and sterilisation",
+    "Performs examinations with precision",
+    "Tracks patient history and treatment plans",
+    "Stays current with new dental techniques"
+  },
+
+  "tags": [
+    "clinical skill",
+    "patient care",
+    "precision",
+    "communication",
+    "healthcare",
+    "high responsibility",
+    "steady routine",
+    "preventive care"
+  ],
+
+  "hero": {
+    "image": "dentist_hero.jpg",
+    "color": "#0EA5E9",
+    "keywords": ["oral health", "precision", "care"]
+  }
+}

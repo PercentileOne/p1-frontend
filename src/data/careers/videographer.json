@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 294,
+  "id": "videographer",
+  "slug": "videographer",
+  "category": "Creative, Media \u0026 Culture",
+  "essence": "Produces moving\u2011image content from planning through shooting to post\u2011production for a variety of platforms.",
+  "identity": {
+    "title": "Videographer",
+    "summary": "Captures and edits video, manages lighting and sound, and delivers finished content for events, marketing, or storytelling."
+  },
+  "salary": {
+    "entry": {
+      "low": 20000,
+      "high": 30000
+    },
+    "mid": {
+      "low": 31000,
+      "high": 52000
+    },
+    "senior": {
+      "low": 53000,
+      "high": 100000
+    },
+    "notes": "Specialist cinematographers and editors working in film or high\u2011end commercial production earn more."
+  },
+  "qualifications": [
+    "Portfolio of video work and technical proficiency with cameras and editing software",
+    "Experience with lighting, sound recording, and post\u2011production",
+    "Strong storytelling and project management skills",
+    "Ability to work to briefs and tight deadlines"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "effort": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Project and deadline driven with a mix of location shoots and editing suites; client interaction and creative problem solving common."
+  },
+  "habits": [
+    "Plans shoots and captures footage",
+    "Edits video and mixes audio",
+    "Delivers content in required formats",
+    "Maintains gear and media backups"
+  ],
+  "tags": [
+    "video",
+    "production",
+    "editing",
+    "cinematography"
+  ],
+  "hero": {
+    "image": "videographer_hero.jpg",
+    "color": "#1F2A4A",
+    "keywords": [
+      "video",
+      "production",
+      "editing"
+    ]
+  }
+}

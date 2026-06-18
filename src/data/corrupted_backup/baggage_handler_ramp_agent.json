@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "baggage_handler_ramp_agent",
+  "slug": "baggage-handler-ramp-agent",
+  "category": "Transport",
+
+  "essence": "Keeps airport operations moving by loading, unloading, and guiding aircraft with speed, accuracy, and safety awareness.",
+
+  "identity": {
+    "title": "Baggage Handler / Ramp Agent",
+    "summary": "Loads and unloads luggage, guides aircraft on the ground, operates ramp equipment, and ensures safe, efficient airport turnaround operations."
+  },
+
+  "salary": {
+    "entry": { "low": 20000, "high": 23000 },
+    "mid": { "low": 24000, "high": 28000 },
+    "senior": { "low": 29000, "high": 35000 },
+    "notes": "Shift allowances, overtime, and specialist equipment roles (e.g., de‑icing, pushback) can raise earnings to £35k–£45k+."
+  },
+
+  "qualifications": [
+    "On‑the‑job ramp and baggage training",
+    "Airside safety and security clearance",
+    "Manual handling and equipment operation training",
+    "Ability to work outdoors in all weather conditions"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 5, 6, 6, 7, 7, 8, 8, 8],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Baggage handlers and ramp agents work on the airside ramp, supporting aircraft turnaround operations. Days involve loading and unloading luggage, operating belt loaders and tugs, guiding aircraft with marshalling signals, securing cargo, and coordinating with flight crews and dispatchers. The work is physical, fast‑paced, and performed outdoors in all weather. Shifts often include early mornings, nights, weekends, and tight turnaround deadlines. Despite the demands, the role offers strong teamwork, variety, and the excitement of working close to aircraft. This lifestyle suits individuals who enjoy physical activity, outdoor work, and high‑energy environments."
+  },
+
+  "habits": [
+    "Follows strict airside safety procedures",
+    "Handles luggage and cargo efficiently",
+    "Communicates clearly with ramp and flight crews",
+    "Operates equipment with care and precision",
+    "Works quickly during tight turnaround windows"
+  },
+
+  "tags": [
+    "aviation",
+    "physical activity",
+    "outdoor work",
+    "teamwork",
+    "operations",
+    "safety",
+    "logistics",
+    "equipment"
+  ],
+
+  "hero": {
+    "image": "baggage_handler_ramp_agent_hero.jpg",
+    "color": "#F97316",
+    "keywords": ["aviation", "ground operations", "teamwork"]
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_door_inspector",
+  "slug": "fire-door-inspector",
+  "category": "Skilled Trades",
+
+  "essence": "Inspects and certifies fire doors to ensure they meet safety standards and provide effective fire and smoke protection.",
+
+  "identity": {
+    "title": "Fire Door Inspector",
+    "summary": "Examines fire doors for compliance, checks seals, hinges, closers, and frames, and ensures they perform correctly in an emergency."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 38000 },
+    "senior": { "low": 39000, "high": 50000 },
+    "notes": "Senior inspectors or those working on large commercial portfolios can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "Fire‑door inspection training (e.g., FDIS or equivalent)",
+    "Knowledge of fire‑door standards, regulations, and certification",
+    "Ability to assess seals, gaps, hardware, and installation quality",
+    "Understanding of building fire‑safety requirements"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9]
+  },
+
+  "lifestyle": {
+    "description": "Fire door inspectors travel to homes, businesses, and public buildings to assess the condition and compliance of fire doors. They check seals, gaps, hinges, closers, signage, and installation quality. The role suits individuals who enjoy detailed inspection work, independence, and contributing to building safety."
+  },
+
+  "habits": [
+    "Measures gaps and checks seals carefully",
+    "Follows strict inspection and reporting standards",
+    "Keeps accurate compliance records",
+    "Communicates clearly with building managers",
+    "Identifies installation faults and safety risks"
+  ],
+
+  "tags": [
+    "fire safety",
+    "inspection",
+    "compliance",
+    "public safety",
+    "building safety",
+    "skilled trades",
+    "regulation"
+  ],
+
+  "hero": {
+    "image": "fire_door_inspector_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["fire door", "inspection", "safety"]
+  }
+}

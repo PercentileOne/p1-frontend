@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "graphic_designer",
+  "slug": "graphic-designer",
+  "category": "Creative",
+
+  "essence": "Transforms ideas into visual stories through craft, intuition, and intentional design.",
+
+  "identity": {
+    "title": "Graphic Designer",
+    "summary": "Creates visual concepts and design assets that communicate messages clearly and beautifully across digital and print media."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 28000 },
+    "mid": { "low": 30000, "high": 40000 },
+    "senior": { "low": 45000, "high": 60000 },
+    "notes": "Freelancers may earn significantly more depending on client base and niche. London agencies typically pay 10-20% higher."
+  },
+
+  "qualifications": [
+    "Graphic Design Degree",
+    "Strong Creative Portfolio",
+    "Proficiency with Adobe Creative Suite",
+    "Understanding of Typography and Layout Principles"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 7, 8, 8, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 8, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Graphic design is a rhythm of creativity, iteration, and communication. Days often begin with briefs, moodboards, or client feedback, followed by long stretches of focused design work. The job blends artistic intuition with practical constraints - deadlines, brand guidelines, and the realities of what a client actually needs. Creative blocks can be frustrating, especially when inspiration feels distant, but breakthroughs are deeply satisfying. Designers often move between quiet solo work and collaborative reviews, balancing personal style with the voice of a brand. The lifestyle rewards curiosity, visual sensitivity, and the ability to stay calm when revisions pile up."
+  },
+
+  "habits": [
+    "Explores visual references daily",
+    "Iterates quickly on ideas",
+    "Seeks clear client feedback",
+    "Refines typography choices",
+    "Maintains an organised asset library"
+  ],
+
+  "tags": [
+    "creative autonomy",
+    "visual storytelling",
+    "iteration cycles",
+    "design thinking",
+    "aesthetic sensitivity",
+    "collaboration",
+    "craftsmanship mindset",
+    "problem-solving"
+  ],
+
+  "hero": {
+    "image": "graphic_designer_hero.jpg",
+    "color": "#F97316",
+    "keywords": ["creative", "visual", "design"]
+  }
+}

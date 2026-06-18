@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "electricity_network_lineworker",
+  "slug": "electricity-network-lineworker",
+  "category": "Skilled Trades",
+
+  "essence": "Installs, maintains, and repairs overhead and underground electrical distribution networks that power homes and businesses.",
+
+  "identity": {
+    "title": "Electricity Network Lineworker",
+    "summary": "Works on overhead lines, poles, substations, and underground cables to ensure safe and reliable electricity distribution."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 30000 },
+    "mid":   { "low": 32000, "high": 42000 },
+    "senior": { "low": 43000, "high": 60000 },
+    "notes": "High‑voltage specialists, live‑line workers, and emergency response teams can exceed £60k-£75k+."
+  },
+
+  "qualifications": [
+    "Electrical network training (e.g., DNO apprenticeship or linesperson certification)",
+    "Working‑at‑height and climbing qualifications",
+    "Knowledge of electrical safety, switching, and isolation procedures",
+    "Understanding of overhead line construction and underground cable systems"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Electricity network lineworkers maintain and repair the infrastructure that keeps the power grid running. Days involve climbing poles, working at height, handling high‑voltage equipment, repairing storm damage, installing new lines, and performing safety‑critical switching operations. The role is physical, technical, and often involves emergency callouts, especially during severe weather. This lifestyle suits individuals who enjoy outdoor work, teamwork, and high‑responsibility technical tasks."
+  },
+
+  "habits": [
+    "Follows strict electrical safety procedures",
+    "Performs careful equipment and PPE checks",
+    "Communicates clearly with control rooms and team members",
+    "Keeps tools and climbing gear organised",
+    "Maintains accurate records of work and inspections"
+  ],
+
+  "tags": [
+    "utilities",
+    "electricity",
+    "infrastructure",
+    "maintenance",
+    "public safety",
+    "working at height",
+    "skilled trades",
+    "outdoor work"
+  ],
+
+  "hero": {
+    "image": "electricity_network_lineworker_hero.jpg",
+    "color": "#FACC15",
+    "keywords": ["electricity", "power lines", "infrastructure"]
+  }
+}

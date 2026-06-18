@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_digital_manufacturing_engineer",
+  "slug": "cnc-digital-manufacturing-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Transforms CNC operations into data‑driven, connected, Industry 4.0 manufacturing systems using automation, analytics, and digital workflows.",
+
+  "identity": {
+    "title": "CNC Digital Manufacturing Engineer",
+    "summary": "Implements digital tools, data systems, automation platforms, and smart‑factory technologies to optimise CNC machining performance, traceability, and efficiency."
+  },
+
+  "salary": {
+    "entry": { "low": 48000, "high": 58000 },
+    "mid":   { "low": 59000, "high": 82000 },
+    "senior": { "low": 83000, "high": 130000 },
+    "notes": "Engineers in aerospace, defence, or fully digitalised smart‑factory environments can exceed £130k-£170k+."
+  },
+
+  "qualifications": [
+    "Experience in CNC systems, automation, or manufacturing engineering",
+    "Knowledge of MES, SCADA, IIoT, and industrial data platforms",
+    "Understanding of CNC machine communication protocols and data capture",
+    "Ability to implement digital workflows, analytics, and optimisation tools"
+  ],
+
+  "curves": {
+    "difficulty": [7, 8, 8, 9, 9, 9, 10, 10, 10, 10],
+    "effort":     [7, 8, 8, 9, 9, 9, 10, 10, 10, 10],
+    "reward":     [7, 8, 8, 9, 9, 10, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC digital manufacturing engineers work in advanced manufacturing, aerospace, automotive, robotics, and Industry 4.0 environments. They connect CNC machines to data systems, automate workflows, and use analytics to improve performance. The role suits individuals who enjoy digital transformation, automation, and high‑tech engineering."
+  },
+
+  "habits": [
+    "Implements digital manufacturing and Industry 4.0 tools",
+    "Connects CNC machines to MES, SCADA, and IIoT platforms",
+    "Analyses machining data to improve performance and reduce downtime",
+    "Automates workflows and enhances traceability",
+    "Collaborates with CNC, robotics, software, and operations teams"
+  ],
+
+  "tags": [
+    "CNC",
+    "digital manufacturing",
+    "industry 4.0",
+    "automation",
+    "data systems",
+    "smart factory"
+  ],
+
+  "hero": {
+    "image": "cnc_digital_manufacturing_engineer_hero.jpg",
+    "color": "#001F29",
+    "keywords": ["CNC", "digital", "industry 4.0"]
+  }
+}

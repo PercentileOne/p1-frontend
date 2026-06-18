@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_data_scientist",
+  "slug": "cnc-data-scientist",
+  "category": "Skilled Trades",
+
+  "essence": "Builds predictive models and machine‑learning systems that optimise CNC machining performance, quality, and reliability.",
+
+  "identity": {
+    "title": "CNC Data Scientist",
+    "summary": "Uses machine learning, statistical modelling, and advanced analytics to predict tool wear, optimise machining parameters, reduce downtime, and improve CNC manufacturing outcomes."
+  },
+
+  "salary": {
+    "entry": { "low": 50000, "high": 65000 },
+    "mid":   { "low": 66000, "high": 95000 },
+    "senior": { "low": 96000, "high": 150000 },
+    "notes": "Data scientists in aerospace, defence, or fully digitalised smart‑factory environments can exceed £150k-£200k+."
+  },
+
+  "qualifications": [
+    "Experience in data science, machine learning, or industrial analytics",
+    "Understanding of CNC machining data, sensors, and performance metrics",
+    "Skills in Python, SQL, ML frameworks, and statistical modelling",
+    "Knowledge of IIoT, MES, SCADA, and industrial data pipelines"
+  ],
+
+  "curves": {
+    "difficulty": [7, 8, 8, 9, 9, 9, 10, 10, 10, 10],
+    "effort":     [7, 8, 8, 9, 9, 9, 10, 10, 10, 10],
+    "reward":     [7, 8, 8, 9, 9, 10, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC data scientists work in advanced manufacturing, aerospace, automotive, robotics, and Industry 4.0 environments. They build predictive models that improve machining performance, reduce downtime, and enable autonomous manufacturing. The role suits individuals who enjoy machine learning, optimisation, and high‑tech engineering challenges."
+  },
+
+  "habits": [
+    "Builds predictive models for tool wear and machine health",
+    "Analyses machining data to optimise feeds, speeds, and strategies",
+    "Develops ML systems for anomaly detection and predictive maintenance",
+    "Collaborates with data engineers, CNC teams, and automation groups",
+    "Implements analytics that support autonomous manufacturing"
+  ],
+
+  "tags": [
+    "CNC",
+    "data science",
+    "machine learning",
+    "predictive maintenance",
+    "industry 4.0",
+    "smart factory"
+  ],
+
+  "hero": {
+    "image": "cnc_data_scientist_hero.jpg",
+    "color": "#001429",
+    "keywords": ["CNC", "data science", "machine learning"]
+  }
+}

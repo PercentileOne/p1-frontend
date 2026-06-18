@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_data_analyst",
+  "slug": "cnc-data-analyst",
+  "category": "Skilled Trades",
+
+  "essence": "Analyses CNC machine data to improve performance, reduce downtime, and drive data‑driven manufacturing decisions.",
+
+  "identity": {
+    "title": "CNC Data Analyst",
+    "summary": "Collects, interprets, and visualises CNC machining data to identify inefficiencies, optimise processes, and support digital manufacturing initiatives."
+  },
+
+  "salary": {
+    "entry": { "low": 35000, "high": 42000 },
+    "mid":   { "low": 43000, "high": 60000 },
+    "senior": { "low": 61000, "high": 90000 },
+    "notes": "Analysts in aerospace, defence, or fully digitalised smart‑factory environments can exceed £90k-£120k+."
+  },
+
+  "qualifications": [
+    "Experience with CNC systems, digital manufacturing, or industrial data",
+    "Knowledge of MES, SCADA, IIoT, and machine data capture",
+    "Ability to analyse machining performance metrics and trends",
+    "Skills in data visualisation, dashboards, and statistical analysis"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC data analysts work in advanced manufacturing, aerospace, automotive, and Industry 4.0 environments. They turn machine data into actionable insights that improve efficiency, reduce downtime, and support continuous improvement. The role suits individuals who enjoy analytics, optimisation, and digital transformation."
+  },
+
+  "habits": [
+    "Collects and analyses CNC machine data",
+    "Builds dashboards and visualisations",
+    "Identifies inefficiencies and optimisation opportunities",
+    "Supports digital manufacturing and Industry 4.0 initiatives",
+    "Collaborates with engineers, operators, and automation teams"
+  ],
+
+  "tags": [
+    "CNC",
+    "data analysis",
+    "industry 4.0",
+    "digital manufacturing",
+    "analytics",
+    "smart factory"
+  ],
+
+  "hero": {
+    "image": "cnc_data_analyst_hero.jpg",
+    "color": "#001A2A",
+    "keywords": ["CNC", "data", "analytics"]
+  }
+}

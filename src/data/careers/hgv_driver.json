@@ -1,0 +1,35 @@
+{
+  "id": 80,
+  "slug": "hgv_driver",
+  "title": "HGV Driver",
+  "overview": "HGV Drivers transport goods across local, national, or international routes using heavy goods vehicles. They ensure safe loading, secure transport, and timely delivery of cargo while complying with driving regulations.",
+  "day_to_day": [
+    "Driving long distances to deliver goods",
+    "Loading and unloading cargo",
+    "Completing delivery paperwork and logs",
+    "Performing basic vehicle checks",
+    "Following route plans and delivery schedules",
+    "Complying with driver hours and safety regulations"
+  ],
+  "skills": [
+    "Safe driving",
+    "Navigation",
+    "Time management",
+    "Communication",
+    "Basic vehicle maintenance",
+    "Attention to detail"
+  ],
+  "qualifications": [
+    "Category C or C+E HGV licence",
+    "Driver CPC qualification",
+    "Medical fitness certificate"
+  ],
+  "salary_range": "£28,000–£55,000 per year",
+  "work_environment": "On the road, distribution centres, warehouses; may involve nights out or long-distance travel.",
+  "career_progression": [
+    "Class 1 (C+E) Driver",
+    "Transport Planner",
+    "Logistics Supervisor",
+    "Fleet Manager"
+  ]
+}

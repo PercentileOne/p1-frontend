@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_systems_engineer",
+  "slug": "cnc-systems-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Designs and integrates complete CNC‑based manufacturing systems, combining machines, robotics, sensors, and software into unified production environments.",
+
+  "identity": {
+    "title": "CNC Systems Engineer",
+    "summary": "Develops and integrates CNC systems, robotics, automation, sensors, and control software to create efficient, reliable, and scalable manufacturing environments."
+  },
+
+  "salary": {
+    "entry": { "low": 48000, "high": 58000 },
+    "mid":   { "low": 59000, "high": 78000 },
+    "senior": { "low": 79000, "high": 120000 },
+    "notes": "Systems engineers in aerospace, defence, or smart‑factory environments can exceed £120k-£160k+."
+  },
+
+  "qualifications": [
+    "Experience in CNC automation, robotics, or manufacturing engineering",
+    "Knowledge of industrial control systems, PLCs, sensors, and networking",
+    "Ability to design integrated CNC‑robotic workflows",
+    "Understanding of software, data systems, and Industry 4.0 technologies"
+  ],
+
+  "curves": {
+    "difficulty": [7, 8, 8, 9, 9, 9, 10, 10, 10, 10],
+    "effort":     [7, 8, 8, 9, 9, 9, 10, 10, 10, 10],
+    "reward":     [7, 8, 8, 9, 9, 10, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC systems engineers work in advanced manufacturing, aerospace, automotive, robotics, and smart‑factory environments. They design integrated systems that combine CNC machines, robots, sensors, and software into cohesive production ecosystems. The role suits individuals who enjoy systems thinking, automation, and high‑tech engineering."
+  },
+
+  "habits": [
+    "Designs integrated CNC‑robotic systems",
+    "Implements sensors, PLCs, and industrial networks",
+    "Optimises workflow, automation, and data flow",
+    "Collaborates with robotics, CNC, and software teams",
+    "Ensures reliability, safety, and precision across systems"
+  ],
+
+  "tags": [
+    "CNC",
+    "systems engineering",
+    "automation",
+    "robotics",
+    "industry 4.0",
+    "smart factory"
+  ],
+
+  "hero": {
+    "image": "cnc_systems_engineer_hero.jpg",
+    "color": "#002A04",
+    "keywords": ["CNC", "systems", "automation"]
+  }
+}

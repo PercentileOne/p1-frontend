@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "smart_grid_technician",
+  "slug": "smart-grid-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Maintains and supports digital, automated grid systems that balance renewable energy, storage, and real‑time electricity demand.",
+
+  "identity": {
+    "title": "Smart Grid Technician",
+    "summary": "Installs, monitors, and troubleshoots smart‑grid equipment, sensors, and communication systems that enable a flexible, efficient, and renewable‑ready electricity grid."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 34000 },
+    "mid":   { "low": 35000, "high": 45000 },
+    "senior": { "low": 46000, "high": 60000 },
+    "notes": "Technicians specialising in advanced grid automation, SCADA systems, or distributed‑energy integration can exceed £60k-£75k+."
+  },
+
+  "qualifications": [
+    "Training in electrical engineering, energy systems, or smart‑grid technology",
+    "Knowledge of sensors, meters, communication networks, and automation systems",
+    "Ability to install and maintain digital grid equipment",
+    "Understanding of renewable integration, grid stability, and energy‑management systems"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Smart grid technicians work for utilities, energy companies, and infrastructure providers. They install smart meters, maintain grid‑automation systems, support renewable integration, and ensure reliable energy distribution. The role suits individuals who enjoy technical work, problem‑solving, and contributing to the future of clean energy."
+  },
+
+  "habits": [
+    "Installs and maintains smart‑grid equipment and sensors",
+    "Troubleshoots communication and automation systems",
+    "Monitors grid performance and resolves faults",
+    "Supports renewable‑energy and battery integration",
+    "Works with engineers, operators, and energy‑management teams"
+  ],
+
+  "tags": [
+    "smart grid",
+    "energy systems",
+    "renewable integration",
+    "electrical",
+    "automation",
+    "infrastructure"
+  ],
+
+  "hero": {
+    "image": "smart_grid_technician_hero.jpg",
+    "color": "#3B82F6",
+    "keywords": ["smart grid", "automation", "energy"]
+  }
+}

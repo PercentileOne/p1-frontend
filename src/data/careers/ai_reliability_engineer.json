@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "ai_reliability_engineer",
+  "slug": "ai-reliability-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Ensures manufacturing systems remain reliable by using AI to predict failures, optimise uptime, and maintain autonomous production environments.",
+
+  "identity": {
+    "title": "AI Reliability Engineer",
+    "summary": "Uses AI, machine‑health analytics, and predictive modelling to maximise equipment reliability, reduce downtime, and support autonomous manufacturing operations."
+  },
+
+  "salary": {
+    "entry": { "low": 45000, "high": 60000 },
+    "mid":   { "low": 61000, "high": 90000 },
+    "senior": { "low": 91000, "high": 145000 },
+    "notes": "Engineers in aerospace, robotics, or fully autonomous smart‑factory environments can exceed £145k-£190k+."
+  },
+
+  "qualifications": [
+    "Experience in reliability engineering, maintenance, or AI‑driven optimisation",
+    "Knowledge of predictive analytics, sensors, and machine‑health monitoring",
+    "Skills in ML models for failure prediction and reliability forecasting",
+    "Understanding of CNC, robotics, and Industry 4.0 systems"
+  ],
+
+  "curves": {
+    "difficulty": [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "AI reliability engineers work in aerospace, robotics, automotive, and Industry 4.0 environments. They ensure equipment remains reliable by using AI to predict failures, optimise uptime, and support autonomous production. The role suits individuals who enjoy diagnostics, optimisation, and high‑tech engineering."
+  },
+
+  "habits": [
+    "Builds AI‑driven reliability and uptime models",
+    "Monitors machine‑health data in real time",
+    "Predicts failures before they occur",
+    "Collaborates with maintenance, AI, and production teams",
+    "Ensures stable, reliable operation in autonomous workflows"
+  ],
+
+  "tags": [
+    "AI",
+    "reliability engineering",
+    "predictive analytics",
+    "industry 4.0",
+    "smart factory",
+    "machine health"
+  ],
+
+  "hero": {
+    "image": "ai_reliability_engineer_hero.jpg",
+    "color": "#000715",
+    "keywords": ["AI", "reliability", "uptime"]
+  }
+}

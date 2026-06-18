@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "baker",
+  "slug": "baker",
+  "category": "Culinary",
+
+  "essence": "Creates breads, pastries, and baked goods through skill, timing, and craft.",
+
+  "identity": {
+    "title": "Baker",
+    "summary": "Prepares and bakes breads, pastries, cakes, and other goods using recipes, techniques, and temperature control."
+  },
+
+  "salary": {
+    "entry": { "low": 19000, "high": 22000 },
+    "mid": { "low": 23000, "high": 28000 },
+    "senior": { "low": 29000, "high": 38000 },
+    "notes": "Artisan bakers and patisserie specialists can exceed £40k–£60k depending on skill and business scale."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Diploma in Baking or Patisserie",
+    "Knowledge of doughs, pastry, and baking techniques",
+    "Understanding of food safety and hygiene standards",
+    "Experience with ovens, mixers, and bakery equipment"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 6, 6, 7, 7, 8, 8, 9],
+    "effort": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward": [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Bakers work in warm, fast-paced environments with early starts. The role involves mixing doughs, shaping loaves, preparing pastries, monitoring ovens, and ensuring products are fresh. It suits people who enjoy hands-on craft and routine."
+  },
+
+  "habits": [
+    "Measures ingredients precisely",
+    "Monitors dough development",
+    "Keeps equipment clean",
+    "Maintains consistent temperatures",
+    "Plans production around demand"
+  ],
+
+  "tags": [
+    "culinary",
+    "hands-on",
+    "craft",
+    "food production",
+    "precision",
+    "creativity",
+    "early mornings"
+  ],
+
+  "hero": {
+    "image": "baker_hero.jpg",
+    "color": "#F97316",
+    "keywords": ["bread", "craft", "oven"]
+  }
+}

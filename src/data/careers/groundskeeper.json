@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "groundskeeper",
+  "slug": "groundskeeper",
+  "category": "Skilled Trades",
+
+  "essence": "Maintains outdoor grounds, sports fields, and estates through steady care, practical skill, and seasonal awareness.",
+
+  "identity": {
+    "title": "Groundskeeper",
+    "summary": "Looks after outdoor areas such as parks, estates, school grounds, and sports fields by mowing, planting, repairing surfaces, and keeping landscapes safe and tidy."
+  },
+
+  "salary": {
+    "entry": { "low": 19000, "high": 22000 },
+    "mid": { "low": 23000, "high": 28000 },
+    "senior": { "low": 29000, "high": 35000 },
+    "notes": "Specialist sports‑turf roles, estate grounds management, and senior positions can exceed £35k-£45k+ depending on scale and expertise."
+  },
+
+  "qualifications": [
+    "On‑the‑job training in grounds maintenance",
+    "Knowledge of plants, soil, and seasonal care",
+    "Experience with mowers, trimmers, and grounds machinery",
+    "Understanding of health and safety procedures"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Groundskeepers work outdoors year‑round, maintaining parks, school grounds, sports pitches, and estates. Days involve mowing lawns, trimming hedges, planting shrubs, repairing pathways, clearing leaves, and preparing sports surfaces. The work is physical and heavily influenced by weather and seasons, requiring steady effort and practical problem‑solving. Many roles involve early starts and a mix of routine tasks and seasonal projects. This lifestyle suits individuals who enjoy nature, hands‑on work, and seeing the visible results of their care over time."
+  },
+
+  "habits": [
+    "Plans tasks around weather and seasons",
+    "Maintains tools and machinery regularly",
+    "Monitors plant and turf health",
+    "Keeps grounds tidy and safe for public use",
+    "Works steadily through physical outdoor tasks"
+  ],
+
+  "tags": [
+    "outdoor work",
+    "physical activity",
+    "nature",
+    "maintenance",
+    "practical skills",
+    "seasonal work",
+    "grounds care",
+    "sports turf"
+  ],
+
+  "hero": {
+    "image": "groundskeeper_hero.jpg",
+    "color": "#4D7C0F",
+    "keywords": ["grounds", "maintenance", "outdoors"]
+  }
+}

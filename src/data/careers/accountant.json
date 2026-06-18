@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "accountant",
+  "slug": "accountant",
+  "category": "Finance",
+
+  "essence": "Brings order, clarity, and financial truth to organisations through precision and disciplined analysis.",
+
+  "identity": {
+    "title": "Accountant",
+    "summary": "Manages financial records, prepares reports, ensures compliance, and provides insight that supports sound financial decisions."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid": { "low": 35000, "high": 50000 },
+    "senior": { "low": 55000, "high": 75000 },
+    "notes": "Chartered accountants (ACA/ACCA/CIMA) often earn significantly more. Senior roles in London or industry specialisms can exceed £80k-£100k."
+  },
+
+  "qualifications": [
+    "Accounting or Finance Degree",
+    "ACCA, ACA, or CIMA Qualification",
+    "Experience with Financial Reporting",
+    "Strong Understanding of Tax, Audit, or Management Accounting"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 5, 6, 6, 7, 7, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Accountants live a structured, detail‑driven lifestyle centred around accuracy, deadlines, and financial clarity. Days often involve analysing transactions, preparing reports, reviewing budgets, or ensuring compliance with regulations. The work can be repetitive at times, but it demands high concentration and a calm, methodical mindset. Month‑end and year‑end periods can be intense, with long hours and tight timelines. Yet the role offers stability, clear progression, and the satisfaction of bringing order to complex financial information. It suits individuals who enjoy structure, precision, and the quiet confidence of knowing the numbers are right."
+  },
+
+  "habits": [
+    "Checks figures meticulously",
+    "Organises documents consistently",
+    "Reviews financial trends regularly",
+    "Maintains strong ethical standards",
+    "Communicates insights clearly"
+  ],
+
+  "tags": [
+    "precision",
+    "structured work",
+    "financial analysis",
+    "compliance",
+    "problem-solving",
+    "organisation",
+    "business insight",
+    "high responsibility"
+  ],
+
+  "hero": {
+    "image": "accountant_hero.jpg",
+    "color": "#475569",
+    "keywords": ["finance", "accuracy", "structure"]
+  }
+}

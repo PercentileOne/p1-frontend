@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "software_architect",
+  "slug": "software-architect",
+  "category": "Technology",
+
+  "essence": "Designs the blueprint of complex systems, balancing vision, constraints, and long-term technical clarity.",
+
+  "identity": {
+    "title": "Software Architect",
+    "summary": "Defines system structure, selects technologies, guides engineering teams, and ensures software solutions are scalable, maintainable, and aligned with business goals."
+  },
+
+  "salary": {
+    "entry": { "low": 60000, "high": 75000 },
+    "mid": { "low": 80000, "high": 100000 },
+    "senior": { "low": 110000, "high": 140000 },
+    "notes": "Enterprise architects and cloud specialists often exceed £150k+. Contract roles can surpass £700–£900/day depending on domain expertise."
+  },
+
+  "qualifications": [
+    "Computer Science Degree or Equivalent Experience",
+    "Extensive Software Engineering Background",
+    "Strong Understanding of System Design and Architecture Patterns",
+    "Experience with Cloud Platforms and Distributed Systems"
+  },
+
+  "curves": {
+    "difficulty": [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [6, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Software architects live at the intersection of deep technical thinking and high‑level decision‑making. Days often involve reviewing designs, mentoring engineers, evaluating trade‑offs, and ensuring systems remain scalable and coherent as they evolve. The work is mentally demanding — every decision has long-term consequences, and ambiguity is constant. Architects must balance ideal solutions with real-world constraints like deadlines, budgets, and legacy systems. Yet the role is deeply rewarding: shaping the foundation of a product, guiding teams, and seeing a well‑designed system come to life offers a unique sense of ownership and craft. The lifestyle suits individuals who enjoy complexity, clarity, and long‑horizon thinking."
+  },
+
+  "habits": [
+    "Evaluates trade-offs before choosing patterns",
+    "Documents architecture decisions clearly",
+    "Reviews code for alignment with system design",
+    "Mentors engineers with patience and clarity",
+    "Stays current with evolving technologies"
+  ],
+
+  "tags": [
+    "system design",
+    "technical leadership",
+    "architecture patterns",
+    "cloud computing",
+    "scalability",
+    "decision-making",
+    "mentorship",
+    "long-term thinking"
+  ],
+
+  "hero": {
+    "image": "software_architect_hero.jpg",
+    "color": "#4F46E5",
+    "keywords": ["architecture", "systems", "clarity"]
+  }
+}

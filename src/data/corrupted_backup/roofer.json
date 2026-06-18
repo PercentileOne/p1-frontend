@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "roofer",
+  "slug": "roofer",
+  "category": "Skilled Trades",
+
+  "essence": "Builds and protects structures from the elements through skilled installation, repair, and weather‑resistant craftsmanship.",
+
+  "identity": {
+    "title": "Roofer",
+    "summary": "Installs, repairs, and maintains roofs using materials such as tiles, slate, shingles, and waterproof membranes to ensure buildings stay safe and weatherproof."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid": { "low": 28000, "high": 36000 },
+    "senior": { "low": 37000, "high": 48000 },
+    "notes": "Specialist roofing (heritage slate, flat roofing systems, commercial contracts) and self‑employment can exceed £50k–£80k+ depending on demand and project scale."
+  },
+
+  "qualifications": [
+    "Apprenticeship in Roofing or Construction",
+    "NVQ or Diploma in Roofing Occupations",
+    "Strong Understanding of Materials, Weatherproofing, and Safety",
+    "Ability to Work at Height and Use Access Equipment Safely"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Roofers work outdoors in physically demanding environments where balance, strength, and safety are essential. Days involve removing old roofing, installing new materials, sealing joints, cutting tiles, and ensuring roofs are weatherproof and structurally sound. Work often takes place at height and in varying weather conditions, requiring resilience and careful risk management. Despite the challenges, the role offers strong satisfaction — every completed roof provides visible, lasting protection for a home or building. This lifestyle suits individuals who enjoy hands‑on work, physical activity, and contributing to essential structural craftsmanship."
+  },
+
+  "habits": [
+    "Checks safety equipment before climbing",
+    "Measures and cuts materials accurately",
+    "Maintains steady balance and footing",
+    "Ensures all joints and edges are sealed",
+    "Keeps tools organised and accessible"
+  },
+
+  "tags": [
+    "construction",
+    "hands-on work",
+    "outdoor work",
+    "physical strength",
+    "craftsmanship",
+    "weatherproofing",
+    "practical skills",
+    "safety"
+  ],
+
+  "hero": {
+    "image": "roofer_hero.jpg",
+    "color": "#CA8A04",
+    "keywords": ["height", "structure", "weatherproof"]
+  }
+}

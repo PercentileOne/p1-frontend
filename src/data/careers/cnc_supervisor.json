@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_supervisor",
+  "slug": "cnc-supervisor",
+  "category": "Skilled Trades",
+
+  "essence": "Leads CNC machining teams, oversees production quality, and ensures machines, people, and processes run efficiently.",
+
+  "identity": {
+    "title": "CNC Supervisor",
+    "summary": "Manages CNC operators, setters, and machinists; coordinates production schedules; ensures quality standards; and maintains efficient machining operations across manufacturing environments."
+  },
+
+  "salary": {
+    "entry": { "low": 33000, "high": 40000 },
+    "mid":   { "low": 41000, "high": 52000 },
+    "senior": { "low": 53000, "high": 70000 },
+    "notes": "Supervisors in aerospace, defence, or high‑precision manufacturing can exceed £70k-£85k+."
+  },
+
+  "qualifications": [
+    "Experience in CNC machining, setting, or programming",
+    "Knowledge of tooling, materials, tolerances, and machining processes",
+    "Ability to lead teams and coordinate production workflows",
+    "Understanding of quality control, safety standards, and lean manufacturing"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC supervisors work in precision engineering firms, aerospace, automotive, and industrial manufacturing. They manage teams, oversee production quality, and ensure machines run efficiently. The role suits individuals who enjoy leadership, technical expertise, and improving manufacturing performance."
+  },
+
+  "habits": [
+    "Oversees CNC operators, setters, and machinists",
+    "Coordinates production schedules and priorities",
+    "Ensures quality standards and tolerances are met",
+    "Troubleshoots machining issues and optimises processes",
+    "Maintains safety, documentation, and workflow efficiency"
+  ],
+
+  "tags": [
+    "CNC",
+    "supervision",
+    "manufacturing",
+    "leadership",
+    "precision engineering",
+    "production"
+  ],
+
+  "hero": {
+    "image": "cnc_supervisor_hero.jpg",
+    "color": "#022A30",
+    "keywords": ["CNC", "leadership", "production"]
+  }
+}

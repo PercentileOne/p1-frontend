@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "lawyer",
+  "slug": "lawyer",
+  "category": "Legal",
+
+  "essence": "Advocates for justice through precision, argument, and a deep command of the law.",
+
+  "identity": {
+    "title": "Lawyer",
+    "summary": "Advises clients, interprets legislation, prepares legal documents, and represents individuals or organisations in negotiations and court proceedings."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 40000 },
+    "mid": { "low": 50000, "high": 80000 },
+    "senior": { "low": 90000, "high": 150000 },
+    "notes": "City firms and specialist areas (corporate, commercial, IP) can exceed £150k-£200k+. Barristers' earnings vary widely depending on chambers and case load."
+  },
+
+  "qualifications": [
+    "Law Degree (LLB) or Conversion Course (GDL)",
+    "Solicitors Qualifying Examination (SQE) or Bar Training",
+    "Two Years of Qualifying Legal Work Experience",
+    "Strong Understanding of Legal Principles and Ethics"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [6, 7, 8, 8, 9, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Law is a demanding, intellectually intense lifestyle built around research, argument, and high‑stakes decision‑making. Days often involve drafting documents, analysing case law, meeting clients, negotiating settlements, or preparing for court. The work can be pressured - deadlines are strict, expectations are high, and the emotional weight of clients' problems can be significant. Long hours are common in certain fields, especially corporate or litigation. Yet the role offers deep satisfaction: solving complex problems, defending someone's rights, or winning a difficult case can be profoundly rewarding. The lifestyle suits individuals who enjoy structured thinking, persuasive communication, and the discipline of mastering detail."
+  },
+
+  "habits": [
+    "Researches cases thoroughly",
+    "Prepares arguments methodically",
+    "Communicates with clarity and confidence",
+    "Maintains strong ethical standards",
+    "Reviews documents with meticulous attention"
+  ],
+
+  "tags": [
+    "legal analysis",
+    "advocacy",
+    "communication",
+    "high responsibility",
+    "structured thinking",
+    "problem-solving",
+    "research",
+    "precision"
+  ],
+
+  "hero": {
+    "image": "lawyer_hero.jpg",
+    "color": "#111827",
+    "keywords": ["law", "justice", "advocacy"]
+  }
+}

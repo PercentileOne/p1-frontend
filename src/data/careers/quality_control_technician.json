@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 253,
+  "id": "quality_control_technician",
+  "slug": "quality-control-technician",
+  "category": "Advanced Manufacturing \u0026 Engineering",
+  "essence": "Inspects products and processes to ensure they meet quality standards and regulatory requirements.",
+  "identity": {
+    "title": "Quality Control Technician",
+    "summary": "Performs inspections, measurements, and tests; records results and works with production to resolve non\u2011conformances."
+  },
+  "salary": {
+    "entry": {
+      "low": 24000,
+      "high": 30000
+    },
+    "mid": {
+      "low": 31000,
+      "high": 42000
+    },
+    "senior": {
+      "low": 43000,
+      "high": 65000
+    },
+    "notes": "Specialist inspectors (NDT, metrology) can earn higher salaries."
+  },
+  "qualifications": [
+    "Experience with inspection tools and measurement equipment",
+    "Knowledge of quality systems (ISO, AS) and documentation",
+    "Attention to detail and strong record keeping",
+    "Ability to interpret engineering drawings and specs"
+  ],
+  "curves": {
+    "difficulty": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "effort": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8
+    ]
+  },
+  "lifestyle": {
+    "description": "Shop\u2011floor role with repetitive inspection tasks and collaboration with production and engineering to maintain standards."
+  },
+  "habits": [
+    "Conducts dimensional and visual inspections",
+    "Records and reports non\u2011conformances",
+    "Performs routine calibration checks",
+    "Supports continuous improvement initiatives"
+  ],
+  "tags": [
+    "quality",
+    "inspection",
+    "metrology",
+    "manufacturing"
+  ],
+  "hero": {
+    "image": "quality_control_technician_hero.jpg",
+    "color": "#3A3F47",
+    "keywords": [
+      "quality",
+      "inspection",
+      "metrology"
+    ]
+  }
+}

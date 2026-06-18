@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 241,
+  "id": "ai_ethics_specialist",
+  "slug": "ai-ethics-specialist",
+  "category": "AI, Robotics \u0026 Automation",
+  "essence": "Advises on ethical design, governance, and responsible deployment of AI systems across organisations.",
+  "identity": {
+    "title": "AI Ethics Specialist",
+    "summary": "Develops policies, conducts impact assessments, and guides teams to build fair, transparent, and accountable AI systems."
+  },
+  "salary": {
+    "entry": {
+      "low": 35000,
+      "high": 45000
+    },
+    "mid": {
+      "low": 46000,
+      "high": 70000
+    },
+    "senior": {
+      "low": 71000,
+      "high": 120000
+    },
+    "notes": "Senior roles in large organisations or consultancies command higher compensation."
+  },
+  "qualifications": [
+    "Background in ethics, law, social sciences, or technical AI",
+    "Experience conducting algorithmic impact assessments",
+    "Knowledge of fairness, transparency, and privacy frameworks",
+    "Strong communication and stakeholder management skills"
+  ],
+  "curves": {
+    "difficulty": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      9,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Cross\u2011functional role working with product, legal, and engineering teams to embed ethical practices into development lifecycles."
+  },
+  "habits": [
+    "Runs ethical impact assessments and audits",
+    "Drafts governance policies and guidelines",
+    "Advises product teams on risk mitigation",
+    "Engages with stakeholders and regulators"
+  ],
+  "tags": [
+    "ethics",
+    "governance",
+    "AI",
+    "policy"
+  ],
+  "hero": {
+    "image": "ai_ethics_specialist_hero.jpg",
+    "color": "#2A4B7C",
+    "keywords": [
+      "ethics",
+      "policy",
+      "AI"
+    ]
+  }
+}

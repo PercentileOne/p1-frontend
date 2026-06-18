@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "teacher",
+  "slug": "teacher",
+  "category": "Education",
+
+  "essence": "Guides learning with patience, clarity, and the ability to inspire growth in others.",
+
+  "identity": {
+    "title": "Teacher",
+    "summary": "Plans lessons, delivers instruction, supports student development, and creates a structured environment for learning and progress."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 34000 },
+    "mid": { "low": 36000, "high": 45000 },
+    "senior": { "low": 48000, "high": 60000 },
+    "notes": "Pay varies by region and school type. Additional responsibilities such as department leadership or pastoral roles increase earnings."
+  },
+
+  "qualifications": [
+    "Degree in a Relevant Subject",
+    "PGCE or Qualified Teacher Status (QTS)",
+    "Classroom Placement Experience",
+    "Strong Understanding of Curriculum and Assessment"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Teaching is a structured yet emotionally demanding lifestyle built around guiding young people through academic and personal growth. Days are filled with lesson delivery, marking, planning, and supporting students who each bring different needs, personalities, and challenges. The work can be exhausting - classrooms are energetic, expectations are high, and the emotional load of supporting students can be significant. Yet the role carries deep meaning: seeing a student understand something new, gain confidence, or overcome a barrier is profoundly rewarding. The lifestyle suits individuals who are patient, organised, empathetic, and able to stay steady in the face of constant demands."
+  },
+
+  "habits": [
+    "Plans lessons with intention",
+    "Maintains classroom structure",
+    "Gives clear, timely feedback",
+    "Builds rapport with students",
+    "Reflects on teaching practice"
+  ],
+
+  "tags": [
+    "communication",
+    "patience",
+    "youth development",
+    "structured work",
+    "emotional resilience",
+    "organisation",
+    "public service",
+    "high responsibility"
+  ],
+
+  "hero": {
+    "image": "teacher_hero.jpg",
+    "color": "#0EA5E9",
+    "keywords": ["education", "guidance", "growth"]
+  }
+}

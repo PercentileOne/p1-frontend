@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "reliability_engineer",
+  "slug": "reliability-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Improves equipment reliability, reduces downtime, and designs long‑term maintenance strategies using engineering analysis and predictive data.",
+
+  "identity": {
+    "title": "Reliability Engineer",
+    "summary": "Analyses failure modes, designs reliability strategies, optimises maintenance plans, and ensures machinery and systems operate safely, efficiently, and consistently."
+  },
+
+  "salary": {
+    "entry": { "low": 38000, "high": 45000 },
+    "mid":   { "low": 46000, "high": 65000 },
+    "senior": { "low": 66000, "high": 95000 },
+    "notes": "Engineers specialising in asset‑management systems, high‑risk industries, or advanced predictive analytics can exceed £95k-£120k+."
+  },
+
+  "qualifications": [
+    "Degree or training in mechanical engineering, reliability engineering, or maintenance engineering",
+    "Knowledge of failure‑mode analysis (FMEA), root‑cause analysis (RCA), and reliability‑centred maintenance (RCM)",
+    "Ability to use diagnostic tools, predictive‑maintenance systems, and asset‑management software",
+    "Understanding of engineering design, maintenance optimisation, and lifecycle costing"
+  ],
+
+  "curves": {
+    "difficulty": [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Reliability engineers work for manufacturing plants, utilities, energy companies, engineering firms, and industrial operations. They analyse equipment performance, design reliability strategies, and reduce downtime. The role suits individuals who enjoy engineering analysis, problem‑solving, and improving long‑term system performance."
+  },
+
+  "habits": [
+    "Analyses failure modes and root causes",
+    "Designs reliability and maintenance strategies",
+    "Optimises asset‑management and predictive‑maintenance systems",
+    "Reviews performance data to identify reliability risks",
+    "Collaborates with technicians, engineers, and operations teams"
+  ],
+
+  "tags": [
+    "reliability engineering",
+    "predictive maintenance",
+    "asset management",
+    "engineering",
+    "failure analysis",
+    "maintenance strategy"
+  ],
+
+  "hero": {
+    "image": "reliability_engineer_hero.jpg",
+    "color": "#0F172A",
+    "keywords": ["reliability", "engineering", "systems"]
+  }
+}

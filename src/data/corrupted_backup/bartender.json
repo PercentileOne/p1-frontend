@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "bartender",
+  "slug": "bartender",
+  "category": "Culinary",
+
+  "essence": "Creates drinks, atmosphere, and connection — blending craft, speed, and hospitality behind the bar.",
+
+  "identity": {
+    "title": "Bartender",
+    "summary": "Prepares and serves alcoholic and non‑alcoholic drinks, engages with customers, and maintains a welcoming, efficient bar environment."
+  },
+
+  "salary": {
+    "entry": { "low": 18000, "high": 21000 },
+    "mid": { "low": 21000, "high": 26000 },
+    "senior": { "low": 27000, "high": 34000 },
+    "notes": "Tips, cocktail specialisation, high‑end venues, and supervisory roles can raise earnings significantly, with experienced bartenders reaching £35k–£45k+."
+  },
+
+  "qualifications": [
+    "On‑the‑job training in bartending or hospitality",
+    "Knowledge of spirits, cocktails, and drink preparation",
+    "Understanding of licensing laws and responsible alcohol service",
+    "Customer service and cash‑handling skills"
+  },
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Bartenders work in lively, social environments where speed, multitasking, and hospitality are essential. Days (and often nights) involve mixing drinks, taking orders, managing queues, handling payments, cleaning equipment, and creating a friendly atmosphere. The role can be fast‑paced and physically demanding, especially during busy evenings or weekends. Despite the intensity, bartending is highly social and creative — bartenders become part of the venue’s personality and customer experience. This lifestyle suits individuals who enjoy people, rhythm, craft, and working in energetic, community‑driven spaces."
+  },
+
+  "habits": [
+    "Maintains clean, organised bar stations",
+    "Prepares cocktails with consistency and flair",
+    "Engages warmly with customers",
+    "Monitors stock and restocks efficiently",
+    "Balances speed with accuracy during busy periods"
+  },
+
+  "tags": [
+    "hospitality",
+    "customer service",
+    "fast-paced",
+    "creativity",
+    "food and drink",
+    "hands-on work",
+    "night work",
+    "social environment"
+  ],
+
+  "hero": {
+    "image": "bartender_hero.jpg",
+    "color": "#9333EA",
+    "keywords": ["drinks", "hospitality", "energy"]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "biomedical_scientist",
+  "slug": "biomedical-scientist",
+  "category": "Healthcare",
+
+  "essence": "Investigates the hidden mechanisms of disease to improve diagnosis, treatment, and human health.",
+
+  "identity": {
+    "title": "Biomedical Scientist",
+    "summary": "Performs laboratory tests, analyses biological samples, supports diagnosis, and contributes to research that advances medical understanding and patient care."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid": { "low": 35000, "high": 45000 },
+    "senior": { "low": 48000, "high": 60000 },
+    "notes": "Specialist roles, advanced pathology positions, and senior laboratory management can exceed £60k-£75k+. Research-intensive roles vary depending on funding and institution."
+  },
+
+  "qualifications": [
+    "Biomedical Science Degree (IBMS Accredited)",
+    "HCPC Registration",
+    "Laboratory Training and Clinical Placement",
+    "Strong Understanding of Pathology, Microbiology, and Laboratory Techniques"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Biomedical scientists work in highly controlled laboratory environments where precision, consistency, and scientific rigour are essential. Days involve analysing blood, tissue, and fluid samples; operating specialised equipment; validating results; and collaborating with clinicians to support diagnosis and treatment. The work is structured and methodical, often requiring long periods of concentration and adherence to strict protocols. While patient interaction is limited, the impact is profound - accurate laboratory results underpin nearly every medical decision. This lifestyle suits individuals who enjoy scientific investigation, careful analysis, and contributing to healthcare behind the scenes."
+  },
+
+  "habits": [
+    "Follows laboratory protocols meticulously",
+    "Maintains accurate records and sample logs",
+    "Calibrates and checks equipment regularly",
+    "Reviews results with scientific scrutiny",
+    "Keeps knowledge current through ongoing study"
+  ],
+
+  "tags": [
+    "laboratory work",
+    "science",
+    "analysis",
+    "healthcare",
+    "precision",
+    "diagnostics",
+    "research",
+    "evidence-based practice"
+  ],
+
+  "hero": {
+    "image": "biomedical_scientist_hero.jpg",
+    "color": "#1D4ED8",
+    "keywords": ["laboratory", "diagnostics", "science"]
+  }
+}

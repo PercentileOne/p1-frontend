@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "ai_manufacturing_engineer",
+  "slug": "ai-manufacturing-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Applies artificial intelligence to optimise, automate, and enhance manufacturing processes across CNC, robotics, and digital production systems.",
+
+  "identity": {
+    "title": "AI Manufacturing Engineer",
+    "summary": "Implements AI-driven optimisation, automation, and decision-making across manufacturing workflows, improving efficiency, quality, and real-time responsiveness."
+  },
+
+  "salary": {
+    "entry": { "low": 55000, "high": 70000 },
+    "mid":   { "low": 71000, "high": 105000 },
+    "senior": { "low": 106000, "high": 165000 },
+    "notes": "Engineers in aerospace, robotics, or fully autonomous smart‑factory environments can exceed £165k-£230k+."
+  },
+
+  "qualifications": [
+    "Experience in AI engineering, automation, or digital manufacturing",
+    "Understanding of CNC machining, robotics, and industrial workflows",
+    "Skills in machine learning, optimisation algorithms, and data systems",
+    "Knowledge of IIoT, MES, SCADA, and real-time control platforms"
+  ],
+
+  "curves": {
+    "difficulty": [7, 8, 8, 9, 9, 9, 10, 10, 10, 10],
+    "effort":     [7, 8, 8, 9, 9, 9, 10, 10, 10, 10],
+    "reward":     [7, 8, 8, 9, 9, 10, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "AI manufacturing engineers work in aerospace, robotics, automotive, and Industry 4.0 environments. They apply AI to optimise production, reduce downtime, and enable semi‑autonomous or fully autonomous manufacturing. The role suits individuals who enjoy AI, optimisation, and high‑tech engineering."
+  },
+
+  "habits": [
+    "Implements AI-driven optimisation in manufacturing workflows",
+    "Integrates AI with CNC, robotics, and automation systems",
+    "Analyses production data to improve efficiency and quality",
+    "Develops predictive and adaptive control systems",
+    "Collaborates with AI architects, engineers, and operations teams"
+  ],
+
+  "tags": [
+    "AI",
+    "manufacturing",
+    "automation",
+    "industry 4.0",
+    "smart factory",
+    "machine learning"
+  ],
+
+  "hero": {
+    "image": "ai_manufacturing_engineer_hero.jpg",
+    "color": "#000D26",
+    "keywords": ["AI", "manufacturing", "automation"]
+  }
+}

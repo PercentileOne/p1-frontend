@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "environmental_services_technician",
+  "slug": "environmental-services-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Responds to environmental hazards, chemical spills, and contamination incidents to protect people, wildlife, and ecosystems.",
+
+  "identity": {
+    "title": "Environmental Services Technician (Hazardous Materials / Spill Response)",
+    "summary": "Handles hazardous materials, responds to spills, contains contamination, and supports environmental protection and cleanup operations."
+  },
+
+  "salary": {
+    "entry": { "low": 23000, "high": 27000 },
+    "mid":   { "low": 28000, "high": 36000 },
+    "senior": { "low": 37000, "high": 48000 },
+    "notes": "Specialists in chemical response, industrial sites, or emergency hazmat teams can exceed £45k-£55k+."
+  },
+
+  "qualifications": [
+    "Hazardous materials handling training (COSHH awareness)",
+    "Knowledge of spill response and containment procedures",
+    "Understanding of environmental regulations and waste protocols",
+    "Ability to use PPE, monitoring equipment, and cleanup tools"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Environmental services technicians respond to chemical spills, contamination incidents, and hazardous waste issues. Work includes containment, cleanup, sampling, and safe disposal. The role is physical, safety‑critical, and often involves on‑call duties. It suits individuals who enjoy technical hands‑on work, environmental protection, and high‑responsibility tasks."
+  },
+
+  "habits": [
+    "Follows strict hazmat and PPE procedures",
+    "Assesses hazards before taking action",
+    "Keeps equipment clean and calibrated",
+    "Documents incidents and cleanup steps accurately",
+    "Communicates clearly with teams and authorities"
+  ],
+
+  "tags": [
+    "environment",
+    "hazardous materials",
+    "public safety",
+    "spill response",
+    "field work",
+    "skilled trades",
+    "regulation",
+    "environmental protection"
+  ],
+
+  "hero": {
+    "image": "environmental_services_technician_hero.jpg",
+    "color": "#0D9488",
+    "keywords": ["hazmat", "environment", "spill response"]
+  }
+}

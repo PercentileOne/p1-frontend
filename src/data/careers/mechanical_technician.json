@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "mechanical_technician",
+  "slug": "mechanical-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Installs, operates, maintains, and repairs mechanical equipment across industrial and engineering environments.",
+
+  "identity": {
+    "title": "Mechanical Technician",
+    "summary": "Performs hands‑on mechanical work including installation, troubleshooting, maintenance, and repair of machinery, supporting smooth and safe industrial operations."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 40000 },
+    "senior": { "low": 41000, "high": 55000 },
+    "notes": "Technicians specialising in automation, hydraulics, pneumatics, or high‑risk industrial environments can exceed £55k-£70k+."
+  },
+
+  "qualifications": [
+    "Training in mechanical engineering, industrial maintenance, or machinery operations",
+    "Knowledge of mechanical systems, components, and industrial equipment",
+    "Ability to diagnose faults and perform repairs safely",
+    "Understanding of preventive maintenance and mechanical diagnostics"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 10],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Mechanical technicians work in factories, utilities, engineering firms, and industrial plants. They install machinery, troubleshoot mechanical issues, perform repairs, and support maintenance teams. The role suits individuals who enjoy hands‑on mechanical work, problem‑solving, and keeping equipment running reliably."
+  },
+
+  "habits": [
+    "Installs and maintains mechanical equipment",
+    "Diagnoses mechanical faults and performs repairs",
+    "Reads and interprets technical drawings",
+    "Supports preventive and corrective maintenance",
+    "Uses mechanical tools and diagnostic equipment"
+  ],
+
+  "tags": [
+    "mechanical",
+    "maintenance",
+    "engineering",
+    "repairs",
+    "industrial",
+    "machinery"
+  ],
+
+  "hero": {
+    "image": "mechanical_technician_hero.jpg",
+    "color": "#0A2F6A",
+    "keywords": ["mechanical", "maintenance", "machinery"]
+  }
+}

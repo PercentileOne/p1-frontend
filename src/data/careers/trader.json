@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "trader",
+  "slug": "trader",
+  "category": "Finance",
+
+  "essence": "Operates in fast‑moving markets where discipline, risk, and psychology define performance.",
+
+  "identity": {
+    "title": "Trader",
+    "summary": "Buys and sells financial instruments, manages risk, and makes rapid decisions based on market data and strategy."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 45000 },
+    "mid": { "low": 60000, "high": 90000 },
+    "senior": { "low": 120000, "high": 200000 },
+    "notes": "Bonuses can exceed base salary significantly. High performers in London institutions may earn £250k-£500k+ total compensation."
+  },
+
+  "qualifications": [
+    "Finance or Economics Degree",
+    "Strong Analytical Portfolio or Case Studies",
+    "Understanding of Market Microstructure",
+    "Experience with Trading Platforms and Data Tools"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [6, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Trading is an intense, high‑pressure lifestyle built around speed, discipline, and emotional control. Days begin early, often before sunrise, with market scans, news checks, and strategy preparation. Once markets open, the pace accelerates - decisions must be made in seconds, and the psychological swings can be extreme. Losses are part of the job, and managing them without panic is a core skill. The work is mentally exhausting but deeply rewarding for those who thrive under pressure. Outside of market hours, traders analyse performance, refine strategies, and prepare for the next session. The lifestyle suits individuals who enjoy competition, data, and the challenge of mastering their own psychology."
+  },
+
+  "habits": [
+    "Reviews market data early",
+    "Follows risk rules strictly",
+    "Logs trades consistently",
+    "Practises emotional discipline",
+    "Refines strategy after hours"
+  ],
+
+  "tags": [
+    "high-pressure work",
+    "risk management",
+    "data-driven decisions",
+    "psychological resilience",
+    "fast-paced environment",
+    "competitive mindset",
+    "discipline",
+    "market awareness"
+  ],
+
+  "hero": {
+    "image": "trader_hero.jpg",
+    "color": "#047857",
+    "keywords": ["finance", "markets", "risk"]
+  }
+}

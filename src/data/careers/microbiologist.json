@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 288,
+  "id": "microbiologist",
+  "slug": "microbiologist",
+  "category": "Science \u0026 Laboratory",
+  "essence": "Studies microorganisms to understand their behaviour, impacts, and applications in health, industry, and environment.",
+  "identity": {
+    "title": "Microbiologist",
+    "summary": "Designs and conducts experiments on bacteria, viruses, and other microbes for research, diagnostics, or industrial processes."
+  },
+  "salary": {
+    "entry": {
+      "low": 30000,
+      "high": 42000
+    },
+    "mid": {
+      "low": 43000,
+      "high": 70000
+    },
+    "senior": {
+      "low": 71000,
+      "high": 140000
+    },
+    "notes": "Senior researchers and specialists in clinical microbiology command higher salaries."
+  },
+  "qualifications": [
+    "Degree in microbiology, biology, or related field",
+    "Experience with aseptic technique and microbial assays",
+    "Knowledge of biosafety and containment procedures",
+    "Strong analytical and laboratory skills"
+  ],
+  "curves": {
+    "difficulty": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10
+  ],
+    "effort": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10
+  ],
+    "reward": [
+      7,
+      8,
+      8,
+      9,
+      9,
+      10,
+      10,
+      10,
+      10,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Laboratory research or clinical work with strict biosafety practices and detailed experimental protocols."
+  },
+  "habits": [
+    "Designs and runs microbial experiments",
+    "Maintains sterile technique and containment",
+    "Analyses data and prepares reports",
+    "Keeps up to date with literature and methods"
+  ],
+  "tags": [
+    "microbiology",
+    "laboratory",
+    "research",
+    "biosafety"
+  ],
+  "hero": {
+    "image": "microbiologist_hero.jpg",
+    "color": "#2A4A6B",
+    "keywords": [
+      "microbiology",
+      "lab",
+      "research"
+    ]
+  }
+}

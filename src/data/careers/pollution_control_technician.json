@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "pollution_control_technician",
+  "slug": "pollution-control-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Monitors and controls pollution from industrial, commercial, and environmental sources to protect public health and ecosystems.",
+
+  "identity": {
+    "title": "Pollution Control Technician",
+    "summary": "Operates monitoring equipment, investigates pollution incidents, collects samples, and supports enforcement of environmental regulations."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 38000 },
+    "senior": { "low": 39000, "high": 50000 },
+    "notes": "Technicians specialising in industrial emissions, hazardous waste, or advanced monitoring systems can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "Training in environmental science, pollution control, or laboratory techniques",
+    "Knowledge of pollution sources and environmental regulations",
+    "Ability to operate monitoring instruments and collect accurate samples",
+    "Understanding of air, water, and soil contamination indicators"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Pollution control technicians work for councils, environmental agencies, water companies, and industrial sites. They monitor emissions, investigate pollution complaints, collect samples, and support compliance with environmental laws. The role suits individuals who enjoy fieldwork, technical equipment, and environmental protection."
+  },
+
+  "habits": [
+    "Monitors air, water, and soil pollution",
+    "Operates environmental monitoring equipment",
+    "Collects and analyses environmental samples",
+    "Investigates pollution complaints and incidents",
+    "Supports enforcement of environmental regulations"
+  ],
+
+  "tags": [
+    "pollution control",
+    "environmental monitoring",
+    "sampling",
+    "regulation",
+    "environmental protection",
+    "fieldwork"
+  ],
+
+  "hero": {
+    "image": "pollution_control_technician_hero.jpg",
+    "color": "#3B82F6",
+    "keywords": ["pollution", "monitoring", "environment"]
+  }
+}

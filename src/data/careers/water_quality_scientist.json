@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "water_quality_scientist",
+  "slug": "water-quality-scientist",
+  "category": "Skilled Trades",
+
+  "essence": "Analyses water samples, monitors contamination, and ensures water meets environmental and public‑health standards.",
+
+  "identity": {
+    "title": "Water Quality Scientist",
+    "summary": "Conducts laboratory and field testing of water samples, investigates contamination sources, and supports regulatory compliance for drinking water and natural water bodies."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 34000 },
+    "mid":   { "low": 35000, "high": 45000 },
+    "senior": { "low": 46000, "high": 60000 },
+    "notes": "Scientists specialising in advanced water chemistry, microbiology, or regulatory investigations can exceed £60k-£75k+."
+  },
+
+  "qualifications": [
+    "Training in environmental science, chemistry, microbiology, or water science",
+    "Knowledge of water‑quality standards and regulatory frameworks",
+    "Ability to conduct laboratory analysis and field sampling",
+    "Understanding of contamination pathways, pollutants, and water chemistry"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Water quality scientists work for water companies, environmental agencies, laboratories, and research organisations. They analyse samples, monitor water bodies, investigate contamination, and ensure compliance with drinking‑water and environmental standards. The role suits individuals who enjoy science, environmental protection, and analytical work."
+  },
+
+  "habits": [
+    "Collects and analyses water samples",
+    "Conducts laboratory tests for chemical and microbiological contaminants",
+    "Monitors rivers, reservoirs, and treatment facilities",
+    "Investigates pollution sources and contamination events",
+    "Ensures compliance with water‑quality regulations"
+  ],
+
+  "tags": [
+    "water quality",
+    "environmental science",
+    "laboratory",
+    "sampling",
+    "public health",
+    "regulation"
+  ],
+
+  "hero": {
+    "image": "water_quality_scientist_hero.jpg",
+    "color": "#0EA5E9",
+    "keywords": ["water quality", "science", "environment"]
+  }
+}

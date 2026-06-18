@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "glazier",
+  "slug": "glazier",
+  "category": "Skilled Trades",
+
+  "essence": "Cuts, fits, and installs glass with precision, care, and a strong focus on safety and finish quality.",
+
+  "identity": {
+    "title": "Glazier",
+    "summary": "Installs, repairs, and replaces glass in windows, doors, facades, and interior features while ensuring accuracy, safety, and weatherproofing."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid": { "low": 27000, "high": 34000 },
+    "senior": { "low": 35000, "high": 45000 },
+    "notes": "Specialists in commercial glazing, curtain walling, or bespoke architectural glass can exceed £45k–£60k+."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Level 2/3 Diploma in Fenestration or Glazing",
+    "Training in manual handling and working at height",
+    "Knowledge of glass types, sealants, and installation methods",
+    "Strong precision, measurement, and safety awareness"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Glaziers work on residential, commercial, and industrial projects installing and repairing glass. Days involve measuring openings, cutting glass, fitting panes, sealing frames, and working with ladders or scaffolding. The role requires precision, physical strength, and strict safety practices due to the risks of handling large or fragile materials. Work may be indoors or outdoors depending on the project. This lifestyle suits individuals who enjoy hands‑on craftsmanship, problem‑solving, and creating clean, high‑quality finishes."
+  },
+
+  "habits": [
+    "Measures openings with accuracy",
+    "Handles glass safely and confidently",
+    "Uses sealants and fixings with precision",
+    "Keeps tools clean and organised",
+    "Follows safety procedures at all times"
+  },
+
+  "tags": [
+    "construction",
+    "craftsmanship",
+    "precision",
+    "working at height",
+    "installation",
+    "glasswork",
+    "skilled trades",
+    "hands-on work"
+  ],
+
+  "hero": {
+    "image": "glazier_hero.jpg",
+    "color": "#60A5FA",
+    "keywords": ["glass", "installation", "precision"]
+  }
+}

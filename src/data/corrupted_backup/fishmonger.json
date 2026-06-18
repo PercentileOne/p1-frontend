@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fishmonger",
+  "slug": "fishmonger",
+  "category": "Culinary",
+
+  "essence": "Prepares and sells fresh seafood with skill, precision, and deep knowledge of quality and seasonality.",
+
+  "identity": {
+    "title": "Fishmonger",
+    "summary": "Selects, prepares, fillets, and sells fish and seafood while ensuring freshness, hygiene, and excellent customer service."
+  },
+
+  "salary": {
+    "entry": { "low": 19000, "high": 23000 },
+    "mid": { "low": 24000, "high": 30000 },
+    "senior": { "low": 31000, "high": 40000 },
+    "notes": "Experienced fishmongers, seafood specialists, and shop owners can exceed £45k–£65k+ depending on location, clientele, and business scale."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Certificate in Fishmongery or Food Preparation",
+    "Knowledge of Seafood Species, Seasonality, and Sustainability",
+    "Strong Knife Skills and Filleting Techniques",
+    "Understanding of Food Safety, Hygiene, and Temperature Control"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Fishmongers work in chilled, fast‑paced environments where freshness, precision, and hygiene are essential. Days often start early, involving receiving deliveries, checking quality, filleting fish, preparing seafood displays, and serving customers. The work is physical and requires strong knife control, knowledge of species, and respect for safety and cleanliness. Seasonal peaks — especially around holidays — can be intense but rewarding. This lifestyle suits individuals who enjoy craftsmanship, food preparation, and helping customers choose high‑quality seafood with confidence."
+  },
+
+  "habits": [
+    "Keeps knives sharp and tools sanitised",
+    "Checks freshness and quality on arrival",
+    "Maintains strict temperature control",
+    "Fillets fish with precision and consistency",
+    "Engages warmly and knowledgeably with customers"
+  },
+
+  "tags": [
+    "culinary",
+    "hands-on work",
+    "craftsmanship",
+    "food preparation",
+    "precision",
+    "customer service",
+    "seafood",
+    "early mornings"
+  ],
+
+  "hero": {
+    "image": "fishmonger_hero.jpg",
+    "color": "#0284C7",
+    "keywords": ["seafood", "craft", "freshness"]
+  }
+}

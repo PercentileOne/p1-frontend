@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 240,
+  "id": "machine_learning_technician",
+  "slug": "machine-learning-technician",
+  "category": "AI, Robotics \u0026 Automation",
+  "essence": "Supports ML engineers by maintaining training pipelines, labelling data, and running experiments at scale.",
+  "identity": {
+    "title": "Machine Learning Technician",
+    "summary": "Manages datasets, runs training jobs, monitors model performance, and helps productionise ML workflows under engineer supervision."
+  },
+  "salary": {
+    "entry": {
+      "low": 28000,
+      "high": 36000
+    },
+    "mid": {
+      "low": 37000,
+      "high": 52000
+    },
+    "senior": {
+      "low": 53000,
+      "high": 80000
+    },
+    "notes": "Experience with MLOps tooling and cloud platforms increases value."
+  },
+  "qualifications": [
+    "Practical experience with data pipelines, Docker, and cloud compute",
+    "Familiarity with ML frameworks and experiment tracking",
+    "Good scripting skills (Python, Bash)",
+    "Attention to data quality and reproducibility"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "effort": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Lab and cloud work supporting ML teams; mix of repetitive pipeline tasks and problem solving when experiments fail."
+  },
+  "habits": [
+    "Prepares and validates datasets",
+    "Launches and monitors training jobs",
+    "Maintains experiment logs and reproducibility",
+    "Automates routine MLOps tasks"
+  ],
+  "tags": [
+    "mlops",
+    "data",
+    "machine learning",
+    "pipelines"
+  ],
+  "hero": {
+    "image": "machine_learning_technician_hero.jpg",
+    "color": "#123E6B",
+    "keywords": [
+      "mlops",
+      "training",
+      "pipelines"
+    ]
+  }
+}

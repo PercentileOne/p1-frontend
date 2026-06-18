@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "sustainability_analyst",
+  "slug": "sustainability-analyst",
+  "category": "Skilled Trades",
+
+  "essence": "Analyses environmental performance and sustainability data to help organisations reduce impact and meet climate goals.",
+
+  "identity": {
+    "title": "Sustainability Analyst",
+    "summary": "Collects and analyses sustainability data, evaluates environmental performance, supports ESG reporting, and advises on strategies to reduce environmental impact."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 38000 },
+    "mid":   { "low": 39000, "high": 52000 },
+    "senior": { "low": 53000, "high": 75000 },
+    "notes": "Senior analysts or specialists in ESG, carbon accounting, or corporate sustainability can exceed £75k-£95k+."
+  },
+
+  "qualifications": [
+    "Training in sustainability, environmental science, or data analysis",
+    "Knowledge of ESG frameworks and sustainability reporting",
+    "Ability to analyse environmental and operational data",
+    "Understanding of carbon accounting, resource efficiency, and climate strategy"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Sustainability analysts work for corporations, consultancies, public bodies, and NGOs. They analyse environmental performance, support ESG reporting, and help organisations reduce emissions and improve sustainability. The role suits individuals who enjoy data, strategy, and driving measurable environmental impact."
+  },
+
+  "habits": [
+    "Collects and analyses sustainability and ESG data",
+    "Evaluates environmental performance and resource use",
+    "Supports carbon accounting and emissions reporting",
+    "Advises on sustainability strategy and improvement plans",
+    "Prepares reports for stakeholders and regulators"
+  ],
+
+  "tags": [
+    "sustainability",
+    "ESG",
+    "carbon accounting",
+    "environmental analysis",
+    "climate strategy",
+    "data analysis"
+  ],
+
+  "hero": {
+    "image": "sustainability_analyst_hero.jpg",
+    "color": "#10B981",
+    "keywords": ["sustainability", "ESG", "analysis"]
+  }
+}

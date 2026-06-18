@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "air_quality_technician",
+  "slug": "air-quality-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Monitors and analyses air quality to protect public health, the environment, and regulatory compliance.",
+
+  "identity": {
+    "title": "Air Quality Technician",
+    "summary": "Collects air‑quality data, operates monitoring equipment, analyses pollution levels, and supports environmental protection and regulatory compliance."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid":   { "low": 33000, "high": 42000 },
+    "senior": { "low": 43000, "high": 55000 },
+    "notes": "Technicians working in industrial, scientific, or government monitoring networks can exceed £55k-£65k+."
+  },
+
+  "qualifications": [
+    "Training in environmental science or air‑quality monitoring",
+    "Knowledge of pollution sources and atmospheric processes",
+    "Ability to operate and maintain monitoring equipment",
+    "Understanding of environmental legislation and reporting"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Air quality technicians work for councils, environmental agencies, scientific labs, and industrial sites. They collect samples, maintain monitoring stations, analyse pollution data, and support environmental protection. The role suits individuals who enjoy fieldwork, data analysis, and contributing to public‑health outcomes."
+  },
+
+  "habits": [
+    "Collects air‑quality samples and data",
+    "Maintains monitoring stations and sensors",
+    "Analyses pollution levels and trends",
+    "Prepares clear environmental reports",
+    "Works with scientists, regulators, and local authorities"
+  ],
+
+  "tags": [
+    "air quality",
+    "environmental monitoring",
+    "public health",
+    "pollution",
+    "data analysis",
+    "environmental science"
+  ],
+
+  "hero": {
+    "image": "air_quality_technician_hero.jpg",
+    "color": "#38BDF8",
+    "keywords": ["air quality", "monitoring", "pollution"]
+  }
+}

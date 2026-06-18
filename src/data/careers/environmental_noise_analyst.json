@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "environmental_noise_analyst",
+  "slug": "environmental-noise-analyst",
+  "category": "Skilled Trades",
+
+  "essence": "Analyses environmental noise data, models sound propagation, and supports planning, regulation, and noise‑mitigation decisions.",
+
+  "identity": {
+    "title": "Environmental Noise Analyst",
+    "summary": "Collects and analyses noise data, uses modelling tools to predict sound impacts, evaluates compliance with noise regulations, and supports environmental assessments."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 34000 },
+    "mid":   { "low": 35000, "high": 48000 },
+    "senior": { "low": 49000, "high": 70000 },
+    "notes": "Analysts specialising in major infrastructure, transport modelling, or advanced acoustic simulation can exceed £70k-£90k+."
+  },
+
+  "qualifications": [
+    "Training in acoustics, environmental science, physics, or data analysis",
+    "Knowledge of environmental‑noise regulations and assessment methods",
+    "Ability to use acoustic‑modelling and GIS software",
+    "Understanding of sound propagation, mitigation, and environmental impact"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Environmental noise analysts work for consultancies, councils, engineering firms, and transport authorities. They analyse noise data, model sound propagation, support planning applications, and help design quieter environments. The role suits individuals who enjoy data analysis, modelling, and environmental protection."
+  },
+
+  "habits": [
+    "Collects and analyses environmental noise data",
+    "Uses modelling tools to predict noise impacts",
+    "Evaluates compliance with noise regulations",
+    "Supports planning and environmental assessments",
+    "Prepares technical reports and visualisations"
+  ],
+
+  "tags": [
+    "noise analysis",
+    "acoustics",
+    "environmental health",
+    "modelling",
+    "data analysis",
+    "regulation"
+  ],
+
+  "hero": {
+    "image": "environmental_noise_analyst_hero.jpg",
+    "color": "#4C1D95",
+    "keywords": ["noise", "analysis", "acoustics"]
+  }
+}

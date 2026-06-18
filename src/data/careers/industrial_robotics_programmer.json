@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 244,
+  "id": "industrial_robotics_programmer",
+  "slug": "industrial-robotics-programmer",
+  "category": "AI, Robotics \u0026 Automation",
+  "essence": "Programs and optimises robot motion, toolpaths, and cell logic for manufacturing tasks.",
+  "identity": {
+    "title": "Industrial Robotics Programmer",
+    "summary": "Writes robot programs, simulates cells, and tunes trajectories to achieve safe, efficient automation for welding, assembly, and material handling."
+  },
+  "salary": {
+    "entry": {
+      "low": 32000,
+      "high": 42000
+    },
+    "mid": {
+      "low": 43000,
+      "high": 65000
+    },
+    "senior": {
+      "low": 66000,
+      "high": 100000
+    },
+    "notes": "Expertise in specific robot brands and offline programming tools increases market value."
+  },
+  "qualifications": [
+    "Experience programming industrial robots (ABB, KUKA, FANUC, Yaskawa)",
+    "Knowledge of robot kinematics, tooling, and safety",
+    "Familiarity with simulation and offline programming tools",
+    "Ability to collaborate with controls and process engineers"
+  ],
+  "curves": {
+    "difficulty": [
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10
+  ],
+    "effort": [
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      10,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Workshop and factory environment with periods of simulation work and on\u2011site commissioning. Often project\u2011driven with tight deadlines."
+  },
+  "habits": [
+    "Develops and tests robot programs",
+    "Simulates cell behaviour and optimises cycle times",
+    "Implements safety zones and interlocks",
+    "Works with integrators to deploy solutions"
+  ],
+  "tags": [
+    "robotics",
+    "programming",
+    "automation",
+    "simulation"
+  ],
+  "hero": {
+    "image": "industrial_robotics_programmer_hero.jpg",
+    "color": "#0C4A6E",
+    "keywords": [
+      "robotics",
+      "programming",
+      "automation"
+    ]
+  }
+}

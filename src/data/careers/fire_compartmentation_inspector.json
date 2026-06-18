@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_compartmentation_inspector",
+  "slug": "fire-compartmentation-inspector",
+  "category": "Skilled Trades",
+
+  "essence": "Inspects fire‑resistant walls, floors, ceilings, and penetrations to ensure buildings prevent the spread of fire and smoke.",
+
+  "identity": {
+    "title": "Fire Compartmentation Inspector",
+    "summary": "Assesses fire‑stopping, cavity barriers, penetrations, and structural fire‑resistance measures to ensure buildings meet safety and compliance standards."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 32000 },
+    "mid":   { "low": 33000, "high": 42000 },
+    "senior": { "low": 43000, "high": 55000 },
+    "notes": "Senior inspectors or those specialising in complex commercial or high‑rise buildings can exceed £55k-£65k+."
+  },
+
+  "qualifications": [
+    "Fire‑stopping or passive‑fire‑protection inspection training",
+    "Knowledge of fire‑resistance standards and building regulations",
+    "Ability to assess penetrations, barriers, and structural fire protection",
+    "Understanding of construction methods and materials"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Fire compartmentation inspectors examine buildings to ensure fire‑resistant walls, floors, ceilings, and penetrations are correctly installed and maintained. They check fire‑stopping, cavity barriers, ductwork, risers, and structural protection. The role suits individuals who enjoy detailed inspection work, construction knowledge, and contributing to life‑safety compliance."
+  },
+
+  "habits": [
+    "Inspects penetrations and fire‑stopping carefully",
+    "Follows strict compliance and reporting standards",
+    "Keeps detailed photographic and written records",
+    "Communicates clearly with contractors and building managers",
+    "Identifies installation faults and safety risks"
+  ],
+
+  "tags": [
+    "fire safety",
+    "passive fire protection",
+    "inspection",
+    "building safety",
+    "compliance",
+    "construction",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "fire_compartmentation_inspector_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["compartmentation", "inspection", "fire safety"]
+  }
+}

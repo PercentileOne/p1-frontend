@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "acoustic_engineer",
+  "slug": "acoustic-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Designs, analyses, and optimises acoustic environments, noise‑control systems, and sound‑insulation solutions across buildings, products, and infrastructure.",
+
+  "identity": {
+    "title": "Acoustic Engineer",
+    "summary": "Applies acoustic science to design quieter buildings, improve sound quality, reduce noise pollution, and support engineering, architectural, and environmental projects."
+  },
+
+  "salary": {
+    "entry": { "low": 32000, "high": 38000 },
+    "mid":   { "low": 39000, "high": 55000 },
+    "senior": { "low": 56000, "high": 85000 },
+    "notes": "Engineers specialising in architectural acoustics, transport noise, or advanced simulation can exceed £85k-£110k+."
+  },
+
+  "qualifications": [
+    "Degree or training in acoustics, audio engineering, physics, mechanical engineering, or environmental science",
+    "Knowledge of acoustic theory, noise control, and sound‑insulation design",
+    "Ability to use acoustic‑modelling and simulation software",
+    "Understanding of building regulations, environmental noise standards, and engineering principles"
+  ],
+
+  "curves": {
+    "difficulty": [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Acoustic engineers work for engineering consultancies, architectural firms, environmental agencies, and product‑design companies. They design acoustic solutions, model sound behaviour, assess noise impacts, and improve sound quality in buildings, vehicles, and public spaces. The role suits individuals who enjoy applied physics, modelling, and improving real‑world environments."
+  },
+
+  "habits": [
+    "Designs acoustic and noise‑control solutions",
+    "Uses modelling tools to simulate sound behaviour",
+    "Assesses building acoustics and sound insulation",
+    "Supports planning, engineering, and architectural projects",
+    "Conducts measurements and prepares technical reports"
+  ],
+
+  "tags": [
+    "acoustics",
+    "engineering",
+    "noise control",
+    "modelling",
+    "sound design",
+    "environmental health"
+  ],
+
+  "hero": {
+    "image": "acoustic_engineer_hero.jpg",
+    "color": "#312E81",
+    "keywords": ["acoustics", "engineering", "sound"]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 276,
+  "id": "lifeguard",
+  "slug": "lifeguard",
+  "category": "Public Services, Emergency \u0026 Safety",
+  "essence": "Provides water safety, rescue, and first aid at pools, beaches, and aquatic facilities.",
+  "identity": {
+    "title": "Lifeguard",
+    "summary": "Monitors swimmers, enforces safety rules, performs rescues, and delivers emergency care when required."
+  },
+  "salary": {
+    "entry": {
+      "low": 18000,
+      "high": 24000
+    },
+    "mid": {
+      "low": 25000,
+      "high": 34000
+    },
+    "senior": {
+      "low": 35000,
+      "high": 50000
+    },
+    "notes": "Seasonal and supervisory roles increase earnings; qualifications in lifeguarding and first aid required."
+  },
+  "qualifications": [
+    "Lifeguard certification and first aid training",
+    "Strong swimming ability and physical fitness",
+    "Good situational awareness and communication",
+    "Experience in public safety or aquatic supervision"
+  ],
+  "curves": {
+    "difficulty": [
+    3,
+    4,
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7
+  ],
+    "effort": [
+    4,
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8
+  ],
+    "reward": [
+      3,
+      4,
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      7
+    ]
+  },
+  "lifestyle": {
+    "description": "Shift work often outdoors or in pools; requires vigilance, physical readiness, and public interaction."
+  },
+  "habits": [
+    "Monitors water and swimmer behaviour",
+    "Performs rescues and casualty care",
+    "Maintains equipment and safety checks",
+    "Engages with the public on safety guidance"
+  ],
+  "tags": [
+    "lifeguard",
+    "water safety",
+    "rescue",
+    "first aid"
+  ],
+  "hero": {
+    "image": "lifeguard_hero.jpg",
+    "color": "#0A6B8A",
+    "keywords": [
+      "lifeguard",
+      "rescue",
+      "water"
+    ]
+  }
+}

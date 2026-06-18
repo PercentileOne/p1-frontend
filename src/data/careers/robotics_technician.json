@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 236,
+  "id": "robotics_technician",
+  "slug": "robotics-technician",
+  "category": "AI, Robotics \u0026 Automation",
+  "essence": "Installs, maintains, and repairs robotic systems used in manufacturing, logistics, and service environments.",
+  "identity": {
+    "title": "Robotics Technician",
+    "summary": "Maintains robotic arms, mobile robots, and automation cells; performs diagnostics, repairs, and routine servicing to keep systems operational."
+  },
+  "salary": {
+    "entry": {
+      "low": 26000,
+      "high": 32000
+    },
+    "mid": {
+      "low": 33000,
+      "high": 42000
+    },
+    "senior": {
+      "low": 43000,
+      "high": 65000
+    },
+    "notes": "Specialist technicians with programming and safety certification can command higher pay."
+  },
+  "qualifications": [
+    "Vocational qualification or apprenticeship in robotics, mechatronics, or electrical engineering",
+    "Experience with PLCs, robot controllers, and industrial networks",
+    "Ability to read schematics and perform mechanical repairs",
+    "Familiarity with safety standards and lockout/tagout procedures"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Field and workshop work with a mix of hands\u2011on mechanical tasks and controller programming. Often shift\u2011based in factories or on customer sites."
+  },
+  "habits": [
+    "Performs preventative maintenance and calibrations",
+    "Diagnoses faults using logs and diagnostic tools",
+    "Replaces mechanical and electrical components",
+    "Works with engineers to implement upgrades"
+  ],
+  "tags": [
+    "robotics",
+    "maintenance",
+    "mechatronics",
+    "industrial"
+  ],
+  "hero": {
+    "image": "robotics_technician_hero.jpg",
+    "color": "#0B6A4A",
+    "keywords": [
+      "robotics",
+      "maintenance",
+      "industrial"
+    ]
+  }
+}

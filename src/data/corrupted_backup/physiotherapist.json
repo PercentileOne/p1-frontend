@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "physiotherapist",
+  "slug": "physiotherapist",
+  "category": "Healthcare",
+
+  "essence": "Restores movement, reduces pain, and rebuilds physical function through hands‑on therapy and personalised rehabilitation.",
+
+  "identity": {
+    "title": "Physiotherapist",
+    "summary": "Assesses physical conditions, designs rehabilitation programmes, delivers therapeutic treatments, and helps patients recover mobility, strength, and independence."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid": { "low": 35000, "high": 45000 },
+    "senior": { "low": 48000, "high": 60000 },
+    "notes": "Advanced practice roles, specialist MSK/neurological positions, and private practice can exceed £60k–£80k+."
+  },
+
+  "qualifications": [
+    "Degree in Physiotherapy",
+    "HCPC Registration",
+    "Clinical Placements in Hospitals or Community Settings",
+    "Strong Understanding of Anatomy, Movement, and Rehabilitation"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Physiotherapists work in active, patient‑focused environments where movement, recovery, and hands‑on treatment are central. Days involve assessing injuries or conditions, designing personalised rehabilitation plans, guiding patients through exercises, and using manual therapy or specialist equipment. The work spans hospitals, sports clinics, community settings, and private practice. It requires patience, physical stamina, and strong communication — progress can be gradual, but the impact is deeply meaningful. Physiotherapy suits individuals who enjoy problem‑solving, human connection, and helping people regain strength, mobility, and confidence."
+  },
+
+  "habits": [
+    "Assesses movement patterns carefully",
+    "Designs tailored rehabilitation plans",
+    "Guides patients through exercises",
+    "Documents progress consistently",
+    "Collaborates with multidisciplinary teams"
+  },
+
+  "tags": [
+    "rehabilitation",
+    "movement",
+    "patient care",
+    "healthcare",
+    "exercise therapy",
+    "manual therapy",
+    "support",
+    "recovery"
+  ],
+
+  "hero": {
+    "image": "physiotherapist_hero.jpg",
+    "color": "#06B6D4",
+    "keywords": ["movement", "recovery", "strength"]
+  }
+}

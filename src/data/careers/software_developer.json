@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "software_engineer",
+  "slug": "software-engineer",
+  "category": "Technology",
+
+  "essence": "Builds digital systems through logic, creativity, and relentless problem‑solving.",
+
+  "identity": {
+    "title": "Software Engineer",
+    "summary": "Designs, builds, tests, and maintains software systems through structured problem‑solving, collaboration, and continuous iteration."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 35000 },
+    "mid": { "low": 45000, "high": 60000 },
+    "senior": { "low": 70000, "high": 90000 },
+    "notes": "London weighting typically adds 10-20%. Contract roles can exceed £500/day depending on stack and experience."
+  },
+
+  "qualifications": [
+    "Computer Science Degree",
+    "Strong Programming Portfolio",
+    "Industry Certifications (e.g., AWS, Azure)",
+    "Experience with Modern Frameworks"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 6, 7, 7, 8, 8, 9, 9],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Life as a software engineer is a blend of deep focus and collaborative problem‑solving. Most days revolve around writing code, reviewing pull requests, and navigating the subtle pressure of delivering clean solutions under shifting deadlines. The work can be mentally draining, especially when a single bug blocks progress for hours or a feature grows more complex than expected. Yet there's a quiet satisfaction in seeing something you built come alive, used by real people, shaping real outcomes. Engineers often guard their downtime carefully - the job rewards those who balance intensity with recovery, curiosity with discipline, and ambition with patience."
+  },
+
+  "habits": [
+    "Protects deep‑focus time",
+    "Reviews code with intention",
+    "Tracks progress daily",
+    "Practises calm under pressure",
+    "Learns continuously in small doses"
+  ],
+
+  "tags": [
+    "problem-solving",
+    "deep-focus work",
+    "builder mindset",
+    "high-pressure cycles",
+    "technical creativity",
+    "systems thinking",
+    "collaboration",
+    "craftsmanship mindset"
+  ],
+
+  "hero": {
+    "image": "software_engineer_hero.jpg",
+    "color": "#1E3A8A",
+    "keywords": ["technology", "focus", "problem-solving"]
+  }
+}

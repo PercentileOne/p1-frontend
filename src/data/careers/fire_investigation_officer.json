@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_investigation_officer",
+  "slug": "fire-investigation-officer",
+  "category": "Skilled Trades",
+
+  "essence": "Determines the cause and origin of fires through forensic investigation, evidence analysis, and scene examination.",
+
+  "identity": {
+    "title": "Fire Investigation Officer (Fire Investigator)",
+    "summary": "Examines fire scenes, identifies ignition sources, analyses burn patterns, collects evidence, and works with police and insurers to determine how fires started."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 32000 },
+    "mid":   { "low": 33000, "high": 42000 },
+    "senior": { "low": 43000, "high": 55000 },
+    "notes": "Senior investigators, forensic specialists, and complex‑incident leads can exceed £55k-£65k+."
+  },
+
+  "qualifications": [
+    "Fire investigation or forensic investigation training",
+    "Knowledge of fire behaviour, ignition sources, and burn patterns",
+    "Understanding of evidence handling and scene preservation",
+    "Ability to write detailed forensic reports and give expert testimony"
+  ],
+
+  "curves": {
+    "difficulty": [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 10, 10, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Fire investigation officers attend fire scenes to determine how and why a fire started. They analyse burn patterns, identify ignition sources, collect evidence, and collaborate with police, insurers, and forensic teams. The role suits individuals who enjoy investigative work, forensic detail, and contributing to public safety and justice."
+  },
+
+  "habits": [
+    "Preserves and documents fire scenes carefully",
+    "Analyses burn patterns and material behaviour",
+    "Collects and handles evidence according to forensic standards",
+    "Writes clear, detailed investigation reports",
+    "Works closely with police, insurers, and fire crews"
+  ],
+
+  "tags": [
+    "fire service",
+    "forensics",
+    "investigation",
+    "public safety",
+    "evidence",
+    "risk assessment",
+    "skilled trades",
+    "scene analysis"
+  ],
+
+  "hero": {
+    "image": "fire_investigation_officer_hero.jpg",
+    "color": "#C2410C",
+    "keywords": ["fire investigation", "forensics", "public safety"]
+  }
+}

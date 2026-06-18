@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "ai_robotics_engineer",
+  "slug": "ai-robotics-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Builds AI‑enhanced robotic systems that adapt, learn, and optimise their behaviour in advanced manufacturing environments.",
+
+  "identity": {
+    "title": "AI Robotics Engineer",
+    "summary": "Designs, programs, and deploys robotics systems powered by machine learning, enabling autonomous manipulation, adaptive control, and intelligent interaction with CNC and production equipment."
+  },
+
+  "salary": {
+    "entry": { "low": 52000, "high": 68000 },
+    "mid":   { "low": 69000, "high": 105000 },
+    "senior": { "low": 106000, "high": 165000 },
+    "notes": "Engineers in aerospace, robotics, or fully autonomous smart‑factory environments can exceed £165k-£230k+."
+  },
+
+  "qualifications": [
+    "Experience in robotics engineering, automation, or AI‑driven control systems",
+    "Knowledge of robot kinematics, motion planning, and sensor integration",
+    "Skills in machine learning, reinforcement learning, and adaptive control",
+    "Understanding of CNC, manufacturing workflows, and Industry 4.0 systems"
+  ],
+
+  "curves": {
+    "difficulty": [7, 7, 8, 8, 9, 9, 10, 10, 10, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 10, 10, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 10, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "AI robotics engineers work in aerospace, automotive, robotics, and Industry 4.0 environments. They build intelligent robotic systems that adapt to real‑time conditions, collaborate with CNC machines, and support autonomous manufacturing. The role suits individuals who enjoy robotics, AI, and high‑tech engineering challenges."
+  },
+
+  "habits": [
+    "Designs and programs AI‑enhanced robotic systems",
+    "Implements reinforcement learning for adaptive behaviour",
+    "Integrates robotics with CNC, automation, and digital manufacturing",
+    "Develops perception systems using sensors and machine vision",
+    "Ensures safe, efficient, autonomous robotic operation"
+  ],
+
+  "tags": [
+    "AI",
+    "robotics",
+    "automation",
+    "industry 4.0",
+    "smart factory",
+    "adaptive control"
+  ],
+
+  "hero": {
+    "image": "ai_robotics_engineer_hero.jpg",
+    "color": "#00050F",
+    "keywords": ["AI", "robotics", "autonomy"]
+  }
+}

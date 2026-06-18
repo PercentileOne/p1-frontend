@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "social_worker",
+  "slug": "social-worker",
+  "category": "Public Service",
+
+  "essence": "Supports vulnerable people with calm strength, advocacy, and steady emotional presence.",
+
+  "identity": {
+    "title": "Social Worker",
+    "summary": "Assesses needs, safeguards vulnerable individuals, coordinates support services, and helps people navigate complex personal and social challenges."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 32000 },
+    "mid": { "low": 35000, "high": 45000 },
+    "senior": { "low": 48000, "high": 60000 },
+    "notes": "Local authority roles vary. Specialist teams and high‑demand regions often offer recruitment and retention bonuses."
+  },
+
+  "qualifications": [
+    "Degree in Social Work",
+    "Registration with Social Work England",
+    "Supervised Practice Placements",
+    "Strong Understanding of Safeguarding and Legislation"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Social work is emotionally heavy, unpredictable, and deeply human. Days often involve home visits, assessments, safeguarding decisions, and difficult conversations with individuals or families in crisis. The work requires calm judgement under pressure, strong boundaries, and the ability to stay compassionate without becoming overwhelmed. Paperwork and case management take significant time, and the emotional load can follow you home if not managed carefully. Yet the meaning is profound: helping someone feel safe, heard, or supported at their lowest point can change the trajectory of their life. The lifestyle suits individuals who are empathetic, resilient, organised, and able to hold steady in complex emotional environments."
+  },
+
+  "habits": [
+    "Documents cases thoroughly",
+    "Maintains strong professional boundaries",
+    "Practises reflective supervision",
+    "Communicates with clarity and empathy",
+    "Monitors emotional wellbeing"
+  ],
+
+  "tags": [
+    "public service",
+    "safeguarding",
+    "emotional resilience",
+    "communication",
+    "high responsibility",
+    "case management",
+    "advocacy",
+    "complex decision-making"
+  ],
+
+  "hero": {
+    "image": "social_worker_hero.jpg",
+    "color": "#1D4ED8",
+    "keywords": ["support", "safeguarding", "care"]
+  }
+}

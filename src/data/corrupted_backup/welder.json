@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "welder",
+  "slug": "welder",
+  "category": "Skilled Trades",
+
+  "essence": "Fuses metal with heat, precision, and technical mastery to build structures that last.",
+
+  "identity": {
+    "title": "Welder",
+    "summary": "Joins, cuts, and shapes metal components using welding equipment, working across construction, manufacturing, engineering, and repair industries."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid": { "low": 28000, "high": 35000 },
+    "senior": { "low": 36000, "high": 45000 },
+    "notes": "Specialist welding (TIG, underwater, aerospace, high‑precision fabrication) can exceed £50k–£80k+. Hazard pay and overtime often increase earnings."
+  },
+
+  "qualifications": [
+    "Apprenticeship in Welding or Fabrication",
+    "NVQ or Diploma in Welding and Fabrication",
+    "Certification in MIG, TIG, or Arc Welding",
+    "Strong Understanding of Safety Procedures and Metal Properties"
+  },
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Welders work in hands‑on, technical environments where precision, safety, and steady focus are essential. Days involve preparing materials, setting up equipment, reading technical drawings, and performing welds that must meet strict structural or aesthetic standards. Work may take place in workshops, construction sites, factories, or shipyards, often requiring protective gear and adherence to safety protocols. The role can be physically demanding and sometimes involves heat, noise, or confined spaces. Yet the satisfaction is high — welders create strong, lasting structures and components. This lifestyle suits individuals who enjoy practical craftsmanship, technical skill, and seeing tangible results from their work."
+  },
+
+  "habits": [
+    "Checks equipment and safety gear carefully",
+    "Reads and interprets technical drawings",
+    "Practises steady hand control and precision",
+    "Maintains clean, consistent welds",
+    "Inspects joints for strength and quality"
+  },
+
+  "tags": [
+    "hands-on work",
+    "precision",
+    "metalwork",
+    "construction",
+    "manufacturing",
+    "technical skill",
+    "craftsmanship",
+    "safety"
+  ],
+
+  "hero": {
+    "image": "welder_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["metal", "heat", "craft"]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "highway_maintenance_operative",
+  "slug": "highway-maintenance-operative",
+  "category": "Skilled Trades",
+
+  "essence": "Keeps roads, highways, and public routes safe and operational through repair, inspection, and maintenance work.",
+
+  "identity": {
+    "title": "Highway Maintenance Operative",
+    "summary": "Maintains and repairs roads, verges, signage, drainage, and safety barriers to ensure safe and reliable transport routes."
+  },
+
+  "salary": {
+    "entry": { "low": 21000, "high": 25000 },
+    "mid":   { "low": 26000, "high": 33000 },
+    "senior": { "low": 34000, "high": 42000 },
+    "notes": "Night‑shift teams, winter gritting crews, and motorway specialists can exceed £40k-£50k+."
+  },
+
+  "qualifications": [
+    "CSCS or highways safety card",
+    "Knowledge of road maintenance and repair techniques",
+    "Understanding of traffic management and safety procedures",
+    "Physical fitness and ability to work outdoors in all conditions"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 6, 6, 7, 7, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [4, 5, 6, 7, 7, 8, 8, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Highway maintenance operatives work on roads, motorways, and public routes carrying out repairs, inspections, vegetation control, drainage work, and winter gritting. The role often involves early mornings, night shifts, and working in all weather conditions. This lifestyle suits individuals who enjoy practical outdoor work, teamwork, and contributing to public safety and infrastructure reliability."
+  },
+
+  "habits": [
+    "Follows strict traffic‑management procedures",
+    "Checks tools and vehicles before use",
+    "Communicates clearly with team members",
+    "Keeps work areas safe and controlled",
+    "Monitors road conditions and hazards"
+  ],
+
+  "tags": [
+    "construction",
+    "infrastructure",
+    "roadworks",
+    "public safety",
+    "maintenance",
+    "hands-on work",
+    "outdoor work",
+    "civils"
+  ],
+
+  "hero": {
+    "image": "highway_maintenance_operative_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["highways", "maintenance", "infrastructure"]
+  }
+}

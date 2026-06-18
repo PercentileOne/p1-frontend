@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 299,
+  "id": "copywriter",
+  "slug": "copywriter",
+  "category": "Creative, Media \u0026 Culture",
+  "essence": "Writes persuasive, engaging, and brand\u2011aligned text for marketing, advertising, and digital content.",
+  "identity": {
+    "title": "Copywriter",
+    "summary": "Crafts messaging for campaigns, websites, ads, and scripts, balancing creativity with strategic communication."
+  },
+  "salary": {
+    "entry": {
+      "low": 22000,
+      "high": 30000
+    },
+    "mid": {
+      "low": 31000,
+      "high": 52000
+    },
+    "senior": {
+      "low": 53000,
+      "high": 90000
+    },
+    "notes": "Senior copywriters and creative leads in agencies can exceed \u00A3100k."
+  },
+  "qualifications": [
+    "Strong writing portfolio",
+    "Understanding of brand voice and marketing principles",
+    "Ability to write for different formats and audiences",
+    "Collaboration with designers and strategists"
+  ],
+  "curves": {
+    "difficulty": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "effort": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8
+    ]
+  },
+  "lifestyle": {
+    "description": "Agency or freelance work with deadlines, creative briefs, and collaboration across marketing teams."
+  },
+  "habits": [
+    "Writes copy for campaigns and content",
+    "Refines tone and messaging",
+    "Collaborates with creative teams",
+    "Researches audiences and competitors"
+  ],
+  "tags": [
+    "writing",
+    "creative",
+    "marketing",
+    "content"
+  ],
+  "hero": {
+    "image": "copywriter_hero.jpg",
+    "color": "#2A3A2F",
+    "keywords": [
+      "writing",
+      "creative",
+      "content"
+    ]
+  }
+}

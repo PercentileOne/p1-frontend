@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_service_equipment_technician",
+  "slug": "fire-service-equipment-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Maintains and certifies the specialist equipment used by fire and rescue crews to ensure operational safety and readiness.",
+
+  "identity": {
+    "title": "Fire Service Equipment Technician",
+    "summary": "Inspects, services, and repairs fire‑and‑rescue equipment including breathing apparatus, hoses, ladders, pumps, rescue tools, and PPE."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 28000 },
+    "mid":   { "low": 29000, "high": 36000 },
+    "senior": { "low": 37000, "high": 46000 },
+    "notes": "Technicians specialising in breathing apparatus, hydraulic rescue tools, or pump systems can exceed £45k-£55k+."
+  },
+
+  "qualifications": [
+    "Technical training in equipment maintenance or mechanical engineering",
+    "Knowledge of fire‑and‑rescue tools, PPE, and breathing apparatus standards",
+    "Ability to test, calibrate, and certify safety‑critical equipment",
+    "Understanding of fire‑service operational procedures and safety protocols"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Fire service equipment technicians work in workshops, stations, and training centres maintaining essential firefighting gear. They test breathing apparatus, service hoses and pumps, repair ladders, maintain rescue tools, and ensure PPE meets strict safety standards. The role suits individuals who enjoy technical precision, safety‑critical work, and supporting frontline firefighters."
+  },
+
+  "habits": [
+    "Performs scheduled inspections and certifications",
+    "Follows strict safety and maintenance protocols",
+    "Keeps detailed service and compliance records",
+    "Communicates clearly with fire crews and officers",
+    "Maintains an organised and well‑equipped workshop"
+  ],
+
+  "tags": [
+    "fire service",
+    "emergency services",
+    "equipment maintenance",
+    "public safety",
+    "technical work",
+    "inspection",
+    "repair",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "fire_service_equipment_technician_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["fire service", "equipment", "maintenance"]
+  }
+}

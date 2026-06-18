@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "condition_monitoring_technician",
+  "slug": "condition-monitoring-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Monitors machinery health using diagnostic tools to detect faults early and prevent equipment failure.",
+
+  "identity": {
+    "title": "Condition Monitoring Technician",
+    "summary": "Uses vibration analysis, thermal imaging, oil analysis, and other diagnostic techniques to assess machinery condition and support predictive‑maintenance programmes."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid":   { "low": 33000, "high": 45000 },
+    "senior": { "low": 46000, "high": 65000 },
+    "notes": "Technicians specialising in advanced diagnostics or large industrial systems can exceed £65k-£85k+."
+  },
+
+  "qualifications": [
+    "Training in mechanical engineering, condition monitoring, or reliability engineering",
+    "Knowledge of rotating machinery, lubrication, and failure modes",
+    "Ability to use diagnostic tools such as vibration analysers, thermal cameras, and oil‑sampling kits",
+    "Understanding of predictive maintenance and reliability strategies"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Condition monitoring technicians work for manufacturing plants, engineering firms, utilities, and maintenance contractors. They monitor machinery health, detect early signs of failure, and help prevent costly breakdowns. The role suits individuals who enjoy diagnostics, engineering systems, and hands‑on technical work."
+  },
+
+  "habits": [
+    "Collects vibration, thermal, and lubrication data",
+    "Analyses machinery condition and identifies early faults",
+    "Supports predictive‑maintenance programmes",
+    "Uses diagnostic tools and monitoring software",
+    "Prepares reports and maintenance recommendations"
+  ],
+
+  "tags": [
+    "condition monitoring",
+    "predictive maintenance",
+    "mechanical diagnostics",
+    "engineering",
+    "reliability",
+    "maintenance"
+  ],
+
+  "hero": {
+    "image": "condition_monitoring_technician_hero.jpg",
+    "color": "#1E40AF",
+    "keywords": ["monitoring", "diagnostics", "machinery"]
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "ai_systems_engineer",
+  "slug": "ai-systems-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Designs and integrates AI‑driven systems across robotics, automation, sensors, and control platforms to enable cohesive autonomous manufacturing environments.",
+
+  "identity": {
+    "title": "AI Systems Engineer",
+    "summary": "Builds and integrates complex AI‑enhanced systems that combine robotics, automation, data pipelines, and real‑time intelligence into unified, reliable manufacturing ecosystems."
+  },
+
+  "salary": {
+    "entry": { "low": 52000, "high": 68000 },
+    "mid":   { "low": 69000, "high": 105000 },
+    "senior": { "low": 106000, "high": 165000 },
+    "notes": "Engineers in aerospace, robotics, or fully autonomous smart‑factory environments can exceed £165k-£230k+."
+  },
+
+  "qualifications": [
+    "Experience in systems engineering, robotics, or AI‑driven automation",
+    "Knowledge of sensors, control systems, data pipelines, and embedded intelligence",
+    "Skills in machine learning, optimisation, and system‑level integration",
+    "Understanding of CNC, manufacturing workflows, and Industry 4.0 architectures"
+  ],
+
+  "curves": {
+    "difficulty": [7, 7, 8, 8, 9, 9, 10, 10, 10, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 10, 10, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 10, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "AI systems engineers work in aerospace, robotics, automotive, and Industry 4.0 environments. They integrate AI, robotics, automation, and data systems into cohesive intelligent manufacturing platforms. The role suits individuals who enjoy multidisciplinary engineering, systems thinking, and high‑tech innovation."
+  },
+
+  "habits": [
+    "Integrates AI, robotics, automation, and control systems",
+    "Designs system‑level architectures for intelligent manufacturing",
+    "Implements adaptive, real‑time decision logic across equipment",
+    "Collaborates with robotics, mechatronics, and AI engineering teams",
+    "Ensures reliability, scalability, and autonomy across the ecosystem"
+  ],
+
+  "tags": [
+    "AI",
+    "systems engineering",
+    "robotics",
+    "automation",
+    "industry 4.0",
+    "smart factory"
+  ],
+
+  "hero": {
+    "image": "ai_systems_engineer_hero.jpg",
+    "color": "#00030B",
+    "keywords": ["AI", "systems", "integration"]
+  }
+}

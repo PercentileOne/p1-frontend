@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cab_driver_taxi_driver",
+  "slug": "cab-driver-taxi-driver",
+  "category": "Transport",
+
+  "essence": "Provides safe, reliable transport while navigating roads, people, and unpredictable city rhythms.",
+
+  "identity": {
+    "title": "Cab Driver / Taxi Driver",
+    "summary": "Transports passengers between locations, offering safe driving, local knowledge, and friendly customer service across varied routes and schedules."
+  },
+
+  "salary": {
+    "entry": { "low": 20000, "high": 24000 },
+    "mid": { "low": 25000, "high": 32000 },
+    "senior": { "low": 33000, "high": 45000 },
+    "notes": "Income varies widely depending on hours, location, licensing type (Hackney vs Private Hire), and whether the driver is self‑employed. Busy cities and night shifts can exceed £45k–£55k+."
+  },
+
+  "qualifications": [
+    "Full UK Driving Licence",
+    "Private Hire or Hackney Carriage Licence (local authority)",
+    "Background checks and medical assessment",
+    "Knowledge of local roads, traffic patterns, and navigation apps"
+  },
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Cab drivers spend their days (and often nights) transporting passengers across towns, cities, and airports. Tasks include accepting bookings, navigating routes, assisting passengers, handling payments, and maintaining a clean vehicle. The work offers independence and flexibility, but also long hours, unpredictable traffic, and the need for patience and strong customer service. Drivers encounter a wide range of people and situations, from quiet early‑morning airport runs to lively weekend nightlife. This lifestyle suits individuals who enjoy driving, autonomy, and meeting new people while staying calm under pressure."
+  },
+
+  "habits": [
+    "Keeps the vehicle clean and presentable",
+    "Plans routes and monitors traffic conditions",
+    "Drives safely and smoothly",
+    "Communicates politely with passengers",
+    "Manages fuel, maintenance, and daily logs"
+  },
+
+  "tags": [
+    "transport",
+    "driving",
+    "customer service",
+    "independent work",
+    "navigation",
+    "flexible hours",
+    "public interaction",
+    "local knowledge"
+  ],
+
+  "hero": {
+    "image": "cab_driver_taxi_driver_hero.jpg",
+    "color": "#FDE047",
+    "keywords": ["transport", "city", "service"]
+  }
+}

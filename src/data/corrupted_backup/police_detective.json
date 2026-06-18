@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "police_detective",
+  "slug": "police-detective",
+  "category": "Public Service",
+
+  "essence": "Uncovers truth through investigation, intuition, and a disciplined commitment to justice.",
+
+  "identity": {
+    "title": "Police Detective",
+    "summary": "Investigates crimes, gathers evidence, interviews witnesses and suspects, and builds cases that support prosecution and protect the public."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid": { "low": 35000, "high": 45000 },
+    "senior": { "low": 48000, "high": 60000 },
+    "notes": "Specialist units (CID, homicide, cybercrime) and supervisory roles can exceed £60k–£70k+. Overtime and on‑call duties can increase earnings."
+  },
+
+  "qualifications": [
+    "Police Constable Entry and Training",
+    "Detective Training Programme (PIP2 or equivalent)",
+    "Strong Understanding of Criminal Law and Procedure",
+    "Experience in Evidence Handling and Interview Techniques"
+  },
+
+  "curves": {
+    "difficulty": [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 7, 8, 8, 9, 9, 10, 10, 10, 10],
+    "reward":     [6, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Detectives work in a demanding, unpredictable environment where cases can shift rapidly and require long hours of focused investigation. Days involve interviewing witnesses, analysing evidence, writing reports, attending crime scenes, and collaborating with forensic teams. The emotional weight can be significant — detectives encounter trauma, conflict, and human complexity regularly. The work requires patience, intuition, and the ability to see patterns others miss. While the pressure is high, the sense of purpose is strong: solving crimes, protecting victims, and bringing clarity to difficult situations. This lifestyle suits individuals who are analytical, resilient, observant, and motivated by justice."
+  },
+
+  "habits": [
+    "Documents evidence meticulously",
+    "Interviews with patience and precision",
+    "Builds timelines and case theories",
+    "Collaborates closely with forensic teams",
+    "Reviews case files regularly for new angles"
+  },
+
+  "tags": [
+    "investigation",
+    "analysis",
+    "public service",
+    "resilience",
+    "communication",
+    "problem-solving",
+    "high responsibility",
+    "justice"
+  ],
+
+  "hero": {
+    "image": "police_detective_hero.jpg",
+    "color": "#1E3A8A",
+    "keywords": ["investigation", "justice", "analysis"]
+  }
+}

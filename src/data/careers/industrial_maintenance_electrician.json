@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 255,
+  "id": "industrial_maintenance_electrician",
+  "slug": "industrial-maintenance-electrician",
+  "category": "Advanced Manufacturing \u0026 Engineering",
+  "essence": "Maintains and repairs electrical systems in industrial plants to ensure continuous production.",
+  "identity": {
+    "title": "Industrial Maintenance Electrician",
+    "summary": "Installs, inspects, and repairs electrical equipment, motors, and control systems in manufacturing environments to minimise downtime."
+  },
+  "salary": {
+    "entry": {
+      "low": 28000,
+      "high": 35000
+    },
+    "mid": {
+      "low": 36000,
+      "high": 52000
+    },
+    "senior": {
+      "low": 53000,
+      "high": 85000
+    },
+    "notes": "Shift work and hazardous\u2011area certifications can increase pay."
+  },
+  "qualifications": [
+    "Electrical apprenticeship or NVQ",
+    "Experience with industrial motors, drives, and control panels",
+    "Knowledge of electrical safety and lockout/tagout",
+    "Ability to read schematics and perform fault finding"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Hands\u2011on role with a mix of planned maintenance and reactive repairs; often shift\u2011based in factories or plants."
+  },
+  "habits": [
+    "Performs electrical fault diagnosis and repairs",
+    "Maintains motors, drives, and control panels",
+    "Works with maintenance teams to schedule outages",
+    "Keeps accurate maintenance records"
+  ],
+  "tags": [
+    "electrical",
+    "maintenance",
+    "industrial",
+    "motors"
+  ],
+  "hero": {
+    "image": "industrial_maintenance_electrician_hero.jpg",
+    "color": "#2E4A3A",
+    "keywords": [
+      "electrical",
+      "maintenance",
+      "industrial"
+    ]
+  }
+}

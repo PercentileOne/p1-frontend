@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_manufacturing_engineer",
+  "slug": "cnc-manufacturing-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Designs, improves, and oversees CNC‑based manufacturing systems to maximise efficiency, quality, and throughput.",
+
+  "identity": {
+    "title": "CNC Manufacturing Engineer",
+    "summary": "Develops manufacturing processes, integrates CNC technologies, improves workflow, and ensures production meets engineering, quality, and cost targets across the full manufacturing lifecycle."
+  },
+
+  "salary": {
+    "entry": { "low": 40000, "high": 48000 },
+    "mid":   { "low": 49000, "high": 65000 },
+    "senior": { "low": 66000, "high": 95000 },
+    "notes": "Engineers in aerospace, defence, robotics, or high‑precision manufacturing can exceed £95k-£130k+."
+  },
+
+  "qualifications": [
+    "Degree or experience in manufacturing engineering, mechanical engineering, or CNC process engineering",
+    "Strong understanding of CNC machining, tooling, materials, and tolerances",
+    "Knowledge of lean manufacturing, workflow optimisation, and quality systems",
+    "Ability to design processes, improve efficiency, and integrate new technologies"
+  ],
+
+  "curves": {
+    "difficulty": [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC manufacturing engineers work in aerospace, automotive, robotics, and advanced manufacturing. They design and optimise machining processes, integrate automation, reduce waste, and ensure production meets engineering and business goals. The role suits individuals who enjoy systems thinking, optimisation, and engineering leadership."
+  },
+
+  "habits": [
+    "Designs and improves CNC manufacturing processes",
+    "Optimises workflow, tooling, and cycle times",
+    "Implements lean manufacturing and continuous improvement",
+    "Collaborates with machinists, programmers, and quality teams",
+    "Integrates automation, robotics, and new CNC technologies"
+  ],
+
+  "tags": [
+    "CNC",
+    "manufacturing engineering",
+    "process optimisation",
+    "precision engineering",
+    "lean manufacturing",
+    "automation"
+  ],
+
+  "hero": {
+    "image": "cnc_manufacturing_engineer_hero.jpg",
+    "color": "#002A0A",
+    "keywords": ["CNC", "manufacturing", "engineering"]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 281,
+  "id": "forestry_worker",
+  "slug": "forestry-worker",
+  "category": "Environment, Nature \u0026 Sustainability",
+  "essence": "Manages woodlands through planting, thinning, and habitat management to support timber production and biodiversity.",
+  "identity": {
+    "title": "Forestry Worker",
+    "summary": "Performs tree felling, planting, and woodland maintenance tasks while following safety and environmental guidelines."
+  },
+  "salary": {
+    "entry": {
+      "low": 20000,
+      "high": 26000
+    },
+    "mid": {
+      "low": 27000,
+      "high": 36000
+    },
+    "senior": {
+      "low": 37000,
+      "high": 55000
+    },
+    "notes": "Qualified arborists and machine operators can earn higher wages."
+  },
+  "qualifications": [
+    "Experience in forestry, arboriculture, or countryside management",
+    "Chainsaw and machinery operation qualifications",
+    "Knowledge of woodland ecology and safety practices",
+    "Physical fitness and teamwork"
+  ],
+  "curves": {
+    "difficulty": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      7,
+      8,
+      8
+    ]
+  },
+  "lifestyle": {
+    "description": "Outdoor, physical work with seasonal variation; often remote sites and use of heavy machinery."
+  },
+  "habits": [
+    "Performs planting, thinning, and felling tasks",
+    "Operates forestry machinery safely",
+    "Maintains woodland tracks and habitats",
+    "Records work and follows environmental guidelines"
+  ],
+  "tags": [
+    "forestry",
+    "woodland",
+    "arboriculture",
+    "fieldwork"
+  ],
+  "hero": {
+    "image": "forestry_worker_hero.jpg",
+    "color": "#2E5A3A",
+    "keywords": [
+      "forestry",
+      "woodland",
+      "fieldwork"
+    ]
+  }
+}

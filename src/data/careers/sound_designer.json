@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 296,
+  "id": "sound_designer",
+  "slug": "sound-designer",
+  "category": "Creative, Media \u0026 Culture",
+  "essence": "Creates and manipulates audio elements to enhance films, games, performances, and digital experiences.",
+  "identity": {
+    "title": "Sound Designer",
+    "summary": "Records, edits, and mixes sound effects, ambience, and audio layers to support storytelling and emotional impact."
+  },
+  "salary": {
+    "entry": {
+      "low": 20000,
+      "high": 28000
+    },
+    "mid": {
+      "low": 29000,
+      "high": 50000
+    },
+    "senior": {
+      "low": 51000,
+      "high": 100000
+    },
+    "notes": "Experienced designers in film, AAA games, or theatre can earn significantly more."
+  },
+  "qualifications": [
+    "Experience with audio editing and mixing software",
+    "Understanding of acoustics and sound theory",
+    "Creative problem\u2011solving and attention to detail",
+    "Ability to collaborate with directors and composers"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Studio\u2011based with periods of intense project work; requires creativity, technical skill, and iterative refinement."
+  },
+  "habits": [
+    "Records and edits sound effects",
+    "Designs ambience and audio layers",
+    "Mixes audio for clarity and impact",
+    "Collaborates with creative teams"
+  ],
+  "tags": [
+    "sound",
+    "audio",
+    "design",
+    "post\u2011production"
+  ],
+  "hero": {
+    "image": "sound_designer_hero.jpg",
+    "color": "#1F2A3A",
+    "keywords": [
+      "sound",
+      "audio",
+      "design"
+    ]
+  }
+}

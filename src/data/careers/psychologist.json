@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "psychologist",
+  "slug": "psychologist",
+  "category": "Healthcare",
+
+  "essence": "Understands the human mind and helps people change, heal, and grow through evidence‑based insight.",
+
+  "identity": {
+    "title": "Psychologist",
+    "summary": "Assesses behaviour, emotions, and cognition, provides therapeutic interventions, and supports individuals through mental and emotional challenges."
+  },
+
+  "salary": {
+    "entry": { "low": 32000, "high": 38000 },
+    "mid": { "low": 42000, "high": 55000 },
+    "senior": { "low": 60000, "high": 80000 },
+    "notes": "Highly specialised or consultant psychologists can exceed £90k-£110k+. Private practice earnings vary widely."
+  },
+
+  "qualifications": [
+    "Psychology Degree (BPS Accredited)",
+    "Postgraduate Training (e.g., Clinical, Counselling, Educational)",
+    "HCPC Registration",
+    "Supervised Clinical Practice"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Psychologists work in a calm, structured, emotionally intense environment where listening and analysis are central. Days often involve assessments, therapy sessions, report writing, and multidisciplinary meetings. The work requires deep empathy, strong boundaries, and the ability to stay grounded while supporting people through trauma, anxiety, or complex life situations. Progress can be slow and emotionally heavy, but the meaning is profound - helping someone understand themselves, break a pattern, or regain stability can be life‑changing. The lifestyle suits individuals who value reflection, emotional intelligence, and the quiet, steady craft of guiding human change."
+  },
+
+  "habits": [
+    "Listens with full presence",
+    "Maintains strong professional boundaries",
+    "Documents sessions accurately",
+    "Reflects on cases regularly",
+    "Applies evidence‑based methods consistently"
+  ],
+
+  "tags": [
+    "emotional intelligence",
+    "communication",
+    "mental health",
+    "analysis",
+    "patient care",
+    "high responsibility",
+    "structured work",
+    "long-term impact"
+  ],
+
+  "hero": {
+    "image": "psychologist_hero.jpg",
+    "color": "#7C3AED",
+    "keywords": ["mind", "therapy", "insight"]
+  }
+}

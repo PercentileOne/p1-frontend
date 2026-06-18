@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "ai_mechatronics_engineer",
+  "slug": "ai-mechatronics-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Designs intelligent electromechanical systems that combine robotics, sensors, control systems, and AI for autonomous manufacturing.",
+
+  "identity": {
+    "title": "AI Mechatronics Engineer",
+    "summary": "Builds and integrates AI‑enhanced mechanical, electrical, and software systems that enable robots, machines, and automated equipment to operate adaptively and intelligently."
+  },
+
+  "salary": {
+    "entry": { "low": 48000, "high": 62000 },
+    "mid":   { "low": 63000, "high": 95000 },
+    "senior": { "low": 96000, "high": 150000 },
+    "notes": "Engineers in aerospace, robotics, or fully autonomous smart‑factory environments can exceed £150k-£200k+."
+  },
+
+  "qualifications": [
+    "Experience in mechatronics, robotics, or AI‑driven control systems",
+    "Knowledge of sensors, actuators, embedded systems, and motion control",
+    "Skills in machine learning, adaptive control, and system integration",
+    "Understanding of CNC, automation, and Industry 4.0 workflows"
+  ],
+
+  "curves": {
+    "difficulty": [7, 7, 8, 8, 9, 9, 10, 10, 10, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 10, 10, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 10, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "AI mechatronics engineers work in aerospace, robotics, automotive, and Industry 4.0 environments. They design intelligent electromechanical systems that adapt to real‑time conditions and support autonomous manufacturing. The role suits individuals who enjoy robotics, AI, and multidisciplinary engineering."
+  },
+
+  "habits": [
+    "Designs AI‑enhanced electromechanical systems",
+    "Integrates sensors, actuators, and embedded intelligence",
+    "Implements adaptive control and machine‑learning behaviours",
+    "Collaborates with robotics, automation, and AI teams",
+    "Ensures safe, efficient, autonomous operation of mechatronic equipment"
+  ],
+
+  "tags": [
+    "AI",
+    "mechatronics",
+    "robotics",
+    "automation",
+    "industry 4.0",
+    "smart factory"
+  ],
+
+  "hero": {
+    "image": "ai_mechatronics_engineer_hero.jpg",
+    "color": "#00040D",
+    "keywords": ["AI", "mechatronics", "robotics"]
+  }
+}

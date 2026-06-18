@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_team_leader",
+  "slug": "cnc-team-leader",
+  "category": "Skilled Trades",
+
+  "essence": "Leads CNC teams on the shop floor, coordinating workflow, solving machining issues, and ensuring high‑quality production output.",
+
+  "identity": {
+    "title": "CNC Team Leader",
+    "summary": "Supervises CNC operators, setters, and machinists; manages daily workflow; resolves technical issues; and ensures production targets, quality standards, and safety requirements are met."
+  },
+
+  "salary": {
+    "entry": { "low": 34000, "high": 42000 },
+    "mid":   { "low": 43000, "high": 55000 },
+    "senior": { "low": 56000, "high": 72000 },
+    "notes": "Team leaders in aerospace, defence, or multi‑cell machining environments can exceed £72k-£90k+."
+  },
+
+  "qualifications": [
+    "Experience in CNC machining, setting, or programming",
+    "Knowledge of tooling, materials, tolerances, and machining processes",
+    "Ability to lead teams and coordinate workflow",
+    "Understanding of quality control, safety standards, and lean manufacturing"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC team leaders work in precision engineering firms, aerospace, automotive, and industrial manufacturing. They coordinate teams, solve machining issues, and ensure production runs smoothly. The role suits individuals who enjoy leadership, technical expertise, and improving manufacturing performance."
+  },
+
+  "habits": [
+    "Leads CNC operators, setters, and machinists",
+    "Coordinates workflow and production priorities",
+    "Ensures quality standards and tolerances are met",
+    "Troubleshoots machining and tooling issues",
+    "Maintains safety, documentation, and process efficiency"
+  ],
+
+  "tags": [
+    "CNC",
+    "leadership",
+    "manufacturing",
+    "precision engineering",
+    "production",
+    "team management"
+  ],
+
+  "hero": {
+    "image": "cnc_team_leader_hero.jpg",
+    "color": "#012A28",
+    "keywords": ["CNC", "leadership", "workflow"]
+  }
+}

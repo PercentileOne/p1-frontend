@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "ecology_field_technician",
+  "slug": "ecology-field-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Supports ecological surveys and conservation work by collecting field data on wildlife, habitats, and environmental conditions.",
+
+  "identity": {
+    "title": "Ecology Field Technician",
+    "summary": "Carries out wildlife surveys, habitat assessments, and environmental monitoring to support ecologists, conservationists, and environmental projects."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 34000 },
+    "senior": { "low": 35000, "high": 45000 },
+    "notes": "Technicians with specialist survey licences (e.g., bats, newts) or working in major consultancies can exceed £45k–£55k+."
+  },
+
+  "qualifications": [
+    "Training in ecology, environmental science, or conservation",
+    "Knowledge of wildlife identification and habitat assessment",
+    "Ability to conduct field surveys and collect accurate data",
+    "Understanding of ecological regulations and protected species"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Ecology field technicians work outdoors across woodlands, rivers, wetlands, grasslands, and development sites. They collect ecological data, support environmental assessments, and contribute to conservation projects. The role suits individuals who enjoy fieldwork, wildlife, and hands‑on environmental science."
+  },
+
+  "habits": [
+    "Conducts wildlife and habitat surveys",
+    "Collects ecological and environmental data",
+    "Uses field equipment such as GPS, traps, and sensors",
+    "Records observations accurately",
+    "Supports ecologists and conservation scientists"
+  },
+
+  "tags": [
+    "ecology",
+    "wildlife",
+    "environmental monitoring",
+    "conservation",
+    "fieldwork",
+    "environmental science"
+  ],
+
+  "hero": {
+    "image": "ecology_field_technician_hero.jpg",
+    "color": "#86EFAC",
+    "keywords": ["ecology", "wildlife", "fieldwork"]
+  }
+}

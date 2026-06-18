@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_production_manager",
+  "slug": "cnc-production-manager",
+  "category": "Skilled Trades",
+
+  "essence": "Oversees CNC production operations, manages teams, optimises workflow, and ensures high‑quality, efficient manufacturing output.",
+
+  "identity": {
+    "title": "CNC Production Manager",
+    "summary": "Leads CNC machining operations, manages production schedules, ensures quality and efficiency, and drives continuous improvement across manufacturing environments."
+  },
+
+  "salary": {
+    "entry": { "low": 42000, "high": 52000 },
+    "mid":   { "low": 53000, "high": 70000 },
+    "senior": { "low": 71000, "high": 95000 },
+    "notes": "Managers in aerospace, defence, or multi‑facility operations can exceed £95k-£120k+."
+  },
+
+  "qualifications": [
+    "Extensive experience in CNC machining, programming, or team leadership",
+    "Knowledge of production planning, workflow optimisation, and lean manufacturing",
+    "Ability to manage teams, budgets, and performance metrics",
+    "Understanding of quality control, safety standards, and industrial processes"
+  ],
+
+  "curves": {
+    "difficulty": [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC production managers work in precision engineering firms, aerospace, automotive, and industrial manufacturing. They oversee production lines, manage teams, optimise processes, and ensure output meets quality and efficiency targets. The role suits individuals who enjoy leadership, operational strategy, and improving manufacturing performance."
+  },
+
+  "habits": [
+    "Manages CNC production teams and workflows",
+    "Oversees scheduling, capacity planning, and resource allocation",
+    "Ensures quality standards and compliance",
+    "Optimises machining processes and reduces downtime",
+    "Drives continuous improvement and operational efficiency"
+  ],
+
+  "tags": [
+    "CNC",
+    "production management",
+    "manufacturing",
+    "leadership",
+    "operations",
+    "precision engineering"
+  ],
+
+  "hero": {
+    "image": "cnc_production_manager_hero.jpg",
+    "color": "#002A24",
+    "keywords": ["CNC", "production", "leadership"]
+  }
+}

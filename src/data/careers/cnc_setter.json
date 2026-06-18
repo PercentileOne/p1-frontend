@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_setter",
+  "slug": "cnc-setter",
+  "category": "Skilled Trades",
+
+  "essence": "Prepares CNC machines for production by installing tooling, setting parameters, and ensuring accurate machining conditions.",
+
+  "identity": {
+    "title": "CNC Setter",
+    "summary": "Sets up CNC machines, installs and aligns tooling, configures machining parameters, and ensures equipment is ready for precise and efficient production."
+  },
+
+  "salary": {
+    "entry": { "low": 25000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 38000 },
+    "senior": { "low": 39000, "high": 50000 },
+    "notes": "Setters with multi‑axis, aerospace, or high‑precision experience can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "Training in CNC machining, mechanical engineering, or precision manufacturing",
+    "Ability to set up CNC lathes, mills, or multi‑axis machines",
+    "Knowledge of tooling, offsets, feeds, speeds, and machining strategies",
+    "Understanding of tolerances, materials, and quality‑control processes"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 10],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC setters work in precision engineering firms, aerospace, automotive, and industrial manufacturing. They prepare machines for production, ensure correct tooling, and verify machining conditions. The role suits individuals who enjoy precision, problem‑solving, and hands‑on technical setup."
+  },
+
+  "habits": [
+    "Installs and aligns tooling and fixtures",
+    "Sets machine offsets and parameters",
+    "Reads and interprets engineering drawings",
+    "Runs test pieces and verifies tolerances",
+    "Collaborates with machinists and programmers"
+  ],
+
+  "tags": [
+    "CNC",
+    "machining",
+    "setup",
+    "precision engineering",
+    "manufacturing",
+    "tooling"
+  ],
+
+  "hero": {
+    "image": "cnc_setter_hero.jpg",
+    "color": "#032A36",
+    "keywords": ["CNC", "setup", "precision"]
+  }
+}

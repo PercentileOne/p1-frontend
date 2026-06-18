@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 273,
+  "id": "crime_scene_investigator",
+  "slug": "crime-scene-investigator",
+  "category": "Public Services, Emergency \u0026 Safety",
+  "essence": "Collects and analyses forensic evidence from crime scenes to support criminal investigations.",
+  "identity": {
+    "title": "Crime Scene Investigator",
+    "summary": "Processes scenes, collects trace and physical evidence, documents findings, and liaises with forensic laboratories and investigators."
+  },
+  "salary": {
+    "entry": {
+      "low": 26000,
+      "high": 34000
+    },
+    "mid": {
+      "low": 35000,
+      "high": 52000
+    },
+    "senior": {
+      "low": 53000,
+      "high": 90000
+    },
+    "notes": "Specialist forensic roles and senior investigators earn higher salaries."
+  },
+  "qualifications": [
+    "Forensic science qualification or relevant technical training",
+    "Experience in scene processing and evidence handling",
+    "Attention to detail and methodical working practices",
+    "Ability to provide courtroom testimony"
+  ],
+  "curves": {
+    "difficulty": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10
+  ],
+    "effort": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      9,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Shift and on\u2011call work with exposure to challenging scenes; requires resilience and strict evidence protocols."
+  },
+  "habits": [
+    "Secures and documents crime scenes",
+    "Collects and preserves physical and trace evidence",
+    "Prepares detailed scene reports and exhibits",
+    "Liaises with forensic labs and investigators"
+  ],
+  "tags": [
+    "forensics",
+    "crime scene",
+    "investigation",
+    "evidence"
+  ],
+  "hero": {
+    "image": "crime_scene_investigator_hero.jpg",
+    "color": "#3A2F4A",
+    "keywords": [
+      "forensics",
+      "crime scene",
+      "evidence"
+    ]
+  }
+}

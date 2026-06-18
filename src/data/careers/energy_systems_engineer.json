@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "energy_systems_engineer",
+  "slug": "energy-systems-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Designs and optimises energy systems-renewable, grid, storage, and hybrid-to improve efficiency, reliability, and sustainability.",
+
+  "identity": {
+    "title": "Energy Systems Engineer",
+    "summary": "Develops and integrates energy technologies such as solar, wind, batteries, hydrogen, and smart‑grid systems to support the transition to clean, reliable energy."
+  },
+
+  "salary": {
+    "entry": { "low": 35000, "high": 42000 },
+    "mid":   { "low": 43000, "high": 60000 },
+    "senior": { "low": 61000, "high": 90000 },
+    "notes": "Engineers working on grid‑scale systems, hydrogen integration, or national infrastructure can exceed £90k-£120k+."
+  },
+
+  "qualifications": [
+    "Degree or training in energy engineering, electrical engineering, or renewable‑energy systems",
+    "Knowledge of grid systems, renewable technologies, and energy storage",
+    "Ability to model and optimise energy flows and system performance",
+    "Understanding of decarbonisation, smart‑grid technologies, and energy policy"
+  ],
+
+  "curves": {
+    "difficulty": [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Energy systems engineers work for utilities, renewable‑energy companies, engineering consultancies, and infrastructure providers. They design integrated energy systems, model performance, and support the transition to low‑carbon energy. The role suits individuals who enjoy engineering, optimisation, and solving large‑scale sustainability challenges."
+  },
+
+  "habits": [
+    "Designs and models integrated energy systems",
+    "Optimises renewable, grid, and storage performance",
+    "Analyses energy flows and system efficiency",
+    "Supports decarbonisation and energy‑transition projects",
+    "Collaborates with engineers, planners, and energy operators"
+  ],
+
+  "tags": [
+    "energy systems",
+    "renewable energy",
+    "grid engineering",
+    "energy storage",
+    "decarbonisation",
+    "engineering"
+  ],
+
+  "hero": {
+    "image": "energy_systems_engineer_hero.jpg",
+    "color": "#0EA5E9",
+    "keywords": ["energy systems", "grid", "renewables"]
+  }
+}

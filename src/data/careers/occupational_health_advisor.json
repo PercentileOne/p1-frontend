@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "occupational_health_advisor",
+  "slug": "occupational-health-advisor",
+  "category": "Skilled Trades",
+
+  "essence": "Supports employee wellbeing by assessing health risks, advising on workplace adjustments, and promoting safe working practices.",
+
+  "identity": {
+    "title": "Occupational Health Advisor",
+    "summary": "Provides health assessments, advises on fitness for work, manages workplace health risks, and supports employee wellbeing across organisations."
+  },
+
+  "salary": {
+    "entry": { "low": 32000, "high": 38000 },
+    "mid":   { "low": 39000, "high": 50000 },
+    "senior": { "low": 51000, "high": 65000 },
+    "notes": "Advisors with clinical backgrounds or working in high‑risk industries can exceed £65k-£80k+."
+  },
+
+  "qualifications": [
+    "Training in occupational health or workplace wellbeing",
+    "Knowledge of health‑risk assessment and case management",
+    "Ability to conduct fitness‑for‑work assessments",
+    "Understanding of workplace hazards, ergonomics, and wellbeing strategies"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Occupational health advisors work across offices, factories, warehouses, and public organisations. They conduct health assessments, advise on workplace adjustments, support employees returning to work, and help organisations manage health risks. The role suits individuals who enjoy wellbeing, communication, and improving workplace health outcomes."
+  },
+
+  "habits": [
+    "Conducts health assessments and screenings",
+    "Advises on fitness for work and adjustments",
+    "Supports return‑to‑work planning",
+    "Maintains accurate medical and case‑management records",
+    "Communicates clearly with employees and managers"
+  ],
+
+  "tags": [
+    "occupational health",
+    "employee wellbeing",
+    "health assessment",
+    "risk management",
+    "workplace safety",
+    "case management"
+  ],
+
+  "hero": {
+    "image": "occupational_health_advisor_hero.jpg",
+    "color": "#059669",
+    "keywords": ["wellbeing", "health assessment", "workplace"]
+  }
+}

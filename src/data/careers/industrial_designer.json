@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 250,
+  "id": "industrial_designer",
+  "slug": "industrial-designer",
+  "category": "Advanced Manufacturing \u0026 Engineering",
+  "essence": "Creates product concepts and designs that balance aesthetics, ergonomics, and manufacturability.",
+  "identity": {
+    "title": "Industrial Designer",
+    "summary": "Develops product form, user experience, and manufacturable designs, working closely with engineers and prototyping teams."
+  },
+  "salary": {
+    "entry": {
+      "low": 28000,
+      "high": 36000
+    },
+    "mid": {
+      "low": 37000,
+      "high": 60000
+    },
+    "senior": {
+      "low": 61000,
+      "high": 100000
+    },
+    "notes": "Designers with strong CAD and DfM skills are in demand across consumer and industrial sectors."
+  },
+  "qualifications": [
+    "Degree or diploma in industrial design or product design",
+    "Strong sketching, CAD, and prototyping skills",
+    "Understanding of materials and manufacturing processes",
+    "User\u2011centred design and research experience"
+  ],
+  "curves": {
+    "difficulty": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      9,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Studio and workshop work with iterative prototyping, user testing, and collaboration with engineering to bring products to market."
+  },
+  "habits": [
+    "Sketches and prototypes concepts rapidly",
+    "Creates CAD models and prepares manufacturing drawings",
+    "Runs user tests and refines ergonomics",
+    "Collaborates with engineers on DfM"
+  ],
+  "tags": [
+    "design",
+    "product",
+    "CAD",
+    "prototyping"
+  ],
+  "hero": {
+    "image": "industrial_designer_hero.jpg",
+    "color": "#4A5A7A",
+    "keywords": [
+      "design",
+      "product",
+      "prototype"
+    ]
+  }
+}

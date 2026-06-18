@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_machinist",
+  "slug": "cnc-machinist",
+  "category": "Skilled Trades",
+
+  "essence": "Produces precision components by setting up, programming, and operating CNC machining equipment.",
+
+  "identity": {
+    "title": "CNC Machinist",
+    "summary": "Sets up CNC machines, selects tooling, interprets technical drawings, and produces high‑precision components for engineering and manufacturing industries."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid":   { "low": 33000, "high": 42000 },
+    "senior": { "low": 43000, "high": 55000 },
+    "notes": "Machinists with multi‑axis, aerospace, or complex programming expertise can exceed £55k-£70k+."
+  },
+
+  "qualifications": [
+    "Training in CNC machining, mechanical engineering, or precision manufacturing",
+    "Ability to set up CNC lathes, mills, or multi‑axis machines",
+    "Knowledge of tooling, feeds, speeds, and machining strategies",
+    "Understanding of tolerances, materials, and quality‑control processes"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC machinists work in precision engineering firms, aerospace, automotive, and industrial manufacturing. They set up machines, produce components, inspect quality, and optimise machining processes. The role suits individuals who enjoy precision, problem‑solving, and working with advanced machinery."
+  },
+
+  "habits": [
+    "Sets up CNC machines and selects tooling",
+    "Reads and interprets engineering drawings",
+    "Produces precision components to tight tolerances",
+    "Optimises machining parameters for efficiency",
+    "Performs quality checks and maintains equipment"
+  ],
+
+  "tags": [
+    "CNC",
+    "machining",
+    "precision engineering",
+    "manufacturing",
+    "tooling",
+    "industrial"
+  ],
+
+  "hero": {
+    "image": "cnc_machinist_hero.jpg",
+    "color": "#052A3F",
+    "keywords": ["CNC", "machining", "precision"]
+  }
+}

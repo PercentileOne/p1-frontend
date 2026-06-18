@@ -1,0 +1,62 @@
+[
+  {
+    "id": "accountant",
+    "name": "Accountant",
+    "categoryName": "Business",
+    "subcategoryName": "Finance"
+  },
+  {
+    "id": "acoustic_consultant",
+    "name": "Acoustic Consultant",
+    "categoryName": "Engineering",
+    "subcategoryName": "Sound Engineering"
+  },
+  {
+    "id": "ai_automation_engineer",
+    "name": "AI Automation Engineer",
+    "categoryName": "IT",
+    "subcategoryName": "Artificial Intelligence"
+  },
+  {
+    "id": "ai_research_scientist",
+    "name": "AI Research Scientist",
+    "categoryName": "IT",
+    "subcategoryName": "Artificial Intelligence"
+  },
+  {
+    "id": "air_quality_scientist",
+    "name": "Air Quality Scientist",
+    "categoryName": "Science",
+    "subcategoryName": "Environmental Science"
+  },
+  {
+    "id": "software_engineer",
+    "name": "Software Engineer",
+    "categoryName": "IT",
+    "subcategoryName": "Software Development"
+  },
+  {
+    "id": "data_analyst",
+    "name": "Data Analyst",
+    "categoryName": "IT",
+    "subcategoryName": "Data"
+  },
+  {
+    "id": "cyber_security_analyst",
+    "name": "Cyber Security Analyst",
+    "categoryName": "IT",
+    "subcategoryName": "Cyber Security"
+  },
+  {
+    "id": "dialysis_nurse",
+    "name": "Dialysis Nurse",
+    "categoryName": "Healthcare",
+    "subcategoryName": "Nursing"
+  },
+  {
+    "id": "renal_consultant",
+    "name": "Renal Consultant",
+    "categoryName": "Healthcare",
+    "subcategoryName": "Medicine"
+  }
+]

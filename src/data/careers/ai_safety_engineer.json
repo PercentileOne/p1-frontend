@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 246,
+  "id": "ai_safety_engineer",
+  "slug": "ai-safety-engineer",
+  "category": "AI, Robotics \u0026 Automation",
+  "essence": "Ensures AI systems operate within defined safety envelopes and mitigates risks from failure modes.",
+  "identity": {
+    "title": "AI Safety Engineer",
+    "summary": "Identifies hazards, defines safety requirements, implements monitoring and fail\u2011safe mechanisms, and validates system behaviour under edge cases."
+  },
+  "salary": {
+    "entry": {
+      "low": 48000,
+      "high": 65000
+    },
+    "mid": {
+      "low": 66000,
+      "high": 100000
+    },
+    "senior": {
+      "low": 101000,
+      "high": 180000
+    },
+    "notes": "High demand in safety\u2011critical domains (transport, healthcare, defence) drives premium salaries."
+  },
+  "qualifications": [
+    "Background in safety engineering, controls, or AI",
+    "Experience with hazard analysis and safety cases",
+    "Knowledge of monitoring, verification, and validation techniques",
+    "Familiarity with relevant standards and regulations"
+  ],
+  "curves": {
+    "difficulty": [
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10,
+    10
+  ],
+    "effort": [
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10,
+    10
+  ],
+    "reward": [
+      7,
+      8,
+      8,
+      9,
+      9,
+      10,
+      10,
+      10,
+      10,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Work blends engineering, risk assessment, and cross\u2011team coordination. Often involves rigorous documentation and regulatory engagement."
+  },
+  "habits": [
+    "Performs hazard and failure mode analyses",
+    "Defines safety requirements and monitors compliance",
+    "Designs fail\u2011safe and fallback behaviours",
+    "Validates systems under edge and adversarial conditions"
+  ],
+  "tags": [
+    "safety",
+    "AI",
+    "risk",
+    "validation"
+  ],
+  "hero": {
+    "image": "ai_safety_engineer_hero.jpg",
+    "color": "#083A5A",
+    "keywords": [
+      "safety",
+      "AI",
+      "risk"
+    ]
+  }
+}

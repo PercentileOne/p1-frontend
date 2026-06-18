@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 275,
+  "id": "fire_safety_auditor",
+  "slug": "fire-safety-auditor",
+  "category": "Public Services, Emergency \u0026 Safety",
+  "essence": "Audits buildings and systems to ensure fire safety compliance and reduce risk to occupants.",
+  "identity": {
+    "title": "Fire Safety Auditor",
+    "summary": "Inspects premises, reviews fire risk assessments, and advises on remedial actions to meet regulatory standards and improve safety."
+  },
+  "salary": {
+    "entry": {
+      "low": 30000,
+      "high": 38000
+    },
+    "mid": {
+      "low": 39000,
+      "high": 60000
+    },
+    "senior": {
+      "low": 61000,
+      "high": 100000
+    },
+    "notes": "Consultancy roles and specialist auditors in high\u2011risk sectors command higher fees."
+  },
+  "qualifications": [
+    "Fire safety qualification or relevant technical background",
+    "Experience conducting fire risk assessments and audits",
+    "Knowledge of building regulations and fire codes",
+    "Strong report writing and stakeholder communication skills"
+  ],
+  "curves": {
+    "difficulty": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      9,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Field inspections and office reporting; frequent site visits and liaison with facilities teams and regulators."
+  },
+  "habits": [
+    "Conducts systematic fire safety inspections",
+    "Prepares clear audit reports and recommendations",
+    "Advises on remedial works and compliance",
+    "Keeps up to date with regulations and guidance"
+  ],
+  "tags": [
+    "fire safety",
+    "audit",
+    "compliance",
+    "risk"
+  ],
+  "hero": {
+    "image": "fire_safety_auditor_hero.jpg",
+    "color": "#5A2A2A",
+    "keywords": [
+      "fire",
+      "audit",
+      "safety"
+    ]
+  }
+}

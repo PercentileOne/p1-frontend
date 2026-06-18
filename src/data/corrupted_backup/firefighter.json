@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "firefighter",
+  "slug": "firefighter",
+  "category": "Public Service",
+
+  "essence": "Protects life, property, and community through courage, teamwork, and rapid, disciplined action.",
+
+  "identity": {
+    "title": "Firefighter",
+    "summary": "Responds to emergencies, extinguishes fires, rescues individuals, provides first aid, and ensures public safety through prevention and rapid response."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 28000 },
+    "mid": { "low": 30000, "high": 38000 },
+    "senior": { "low": 40000, "high": 50000 },
+    "notes": "Specialist roles (urban search and rescue, hazardous materials) and leadership positions can exceed £50k–£60k+. Overtime and on‑call duties can increase earnings."
+  },
+
+  "qualifications": [
+    "Firefighter Training Programme",
+    "Strong Physical Fitness and Stamina",
+    "Emergency Response and First Aid Certification",
+    "Ability to Work in High‑Pressure, Dangerous Environments"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 7, 8, 8, 9, 9, 10, 10, 10, 10],
+    "reward":     [6, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Firefighters live a physically demanding, high‑stakes lifestyle built around readiness and teamwork. Shifts often include long hours, overnight duties, and sudden transitions from calm to intense action. Days involve equipment checks, drills, community education, and responding to emergencies ranging from fires to road accidents to medical incidents. The work is dangerous and emotionally heavy — firefighters witness trauma and must stay composed under extreme pressure. Yet the sense of purpose is unmatched: saving lives, protecting communities, and being part of a tightly bonded team creates deep pride and meaning. This lifestyle suits individuals who are courageous, disciplined, physically strong, and motivated by service."
+  },
+
+  "habits": [
+    "Maintains peak physical fitness",
+    "Checks equipment thoroughly each shift",
+    "Communicates clearly under pressure",
+    "Trains regularly for rare emergencies",
+    "Supports teammates on and off duty"
+  },
+
+  "tags": [
+    "courage",
+    "teamwork",
+    "public service",
+    "physical strength",
+    "emergency response",
+    "discipline",
+    "high responsibility",
+    "resilience"
+  ],
+
+  "hero": {
+    "image": "firefighter_hero.jpg",
+    "color": "#DC2626",
+    "keywords": ["courage", "rescue", "service"]
+  }
+}

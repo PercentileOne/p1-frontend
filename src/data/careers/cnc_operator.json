@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_operator",
+  "slug": "cnc-operator",
+  "category": "Skilled Trades",
+
+  "essence": "Operates computer‑controlled machining equipment to produce precision components safely and accurately.",
+
+  "identity": {
+    "title": "CNC Operator",
+    "summary": "Runs and monitors CNC machines, loads materials, adjusts settings, ensures dimensional accuracy, and maintains consistent production quality in manufacturing environments."
+  },
+
+  "salary": {
+    "entry": { "low": 23000, "high": 28000 },
+    "mid":   { "low": 29000, "high": 36000 },
+    "senior": { "low": 37000, "high": 48000 },
+    "notes": "Operators with multi‑axis CNC experience, aerospace tolerances, or programming skills can exceed £48k-£60k+."
+  },
+
+  "qualifications": [
+    "Training in CNC machining, mechanical engineering, or manufacturing",
+    "Ability to operate CNC lathes, mills, or multi‑axis machines",
+    "Knowledge of tooling, feeds, speeds, and machining processes",
+    "Understanding of quality control, tolerances, and safety procedures"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 10],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC operators work in manufacturing plants, precision engineering firms, and industrial workshops. They run machining equipment, monitor production, and ensure parts meet strict tolerances. The role suits individuals who enjoy precision work, machinery, and computer‑controlled systems."
+  },
+
+  "habits": [
+    "Operates CNC machines and monitors production",
+    "Loads materials and sets up tooling",
+    "Measures finished parts for accuracy",
+    "Adjusts machine settings to maintain tolerances",
+    "Performs basic maintenance and troubleshooting"
+  ],
+
+  "tags": [
+    "CNC",
+    "machining",
+    "manufacturing",
+    "precision engineering",
+    "operations",
+    "industrial"
+  ],
+
+  "hero": {
+    "image": "cnc_operator_hero.jpg",
+    "color": "#062A4A",
+    "keywords": ["CNC", "machining", "precision"]
+  }
+}

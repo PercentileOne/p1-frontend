@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "steel_fixer",
+  "slug": "steel-fixer",
+  "category": "Skilled Trades",
+
+  "essence": "Builds the structural backbone of reinforced concrete by assembling and securing steel rebar with precision and strength.",
+
+  "identity": {
+    "title": "Steel Fixer",
+    "summary": "Positions, cuts, bends, and ties steel reinforcement bars and mesh for concrete structures, ensuring strength, alignment, and compliance with engineering specifications."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 28000 },
+    "mid":   { "low": 30000, "high": 38000 },
+    "senior": { "low": 40000, "high": 55000 },
+    "notes": "Large commercial projects, infrastructure work, and high‑rise construction can exceed £55k-£70k+."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Level 2/3 Diploma in Steel Fixing or Construction",
+    "Knowledge of rebar types, tying methods, and structural drawings",
+    "Strong physical fitness and ability to work outdoors",
+    "Understanding of site safety and lifting procedures"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Steel fixers work on construction sites assembling the steel reinforcement that forms the core of concrete structures. Days involve reading technical drawings, cutting and bending rebar, tying steel into cages or mats, and working closely with formwork and concrete teams. The role is physically demanding, outdoors, and often fast‑paced on large projects. This lifestyle suits individuals who enjoy heavy, hands‑on work, teamwork, and contributing to major structural builds."
+  },
+
+  "habits": [
+    "Reads and interprets structural drawings accurately",
+    "Cuts and bends steel with precision",
+    "Keeps tools and materials organised",
+    "Maintains consistent tying quality",
+    "Follows strict site safety procedures"
+  ],
+
+  "tags": [
+    "construction",
+    "structural work",
+    "rebar",
+    "heavy labour",
+    "teamwork",
+    "skilled trades",
+    "infrastructure",
+    "building"
+  ],
+
+  "hero": {
+    "image": "steel_fixer_hero.jpg",
+    "color": "#B45309",
+    "keywords": ["rebar", "construction", "steel"]
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "ecologist",
+  "slug": "ecologist",
+  "category": "Skilled Trades",
+  "essence": "Studies ecosystems, wildlife, and habitats to protect biodiversity and guide sustainable land use.",
+  "identity": {
+    "title": "Ecologist",
+    "summary": "Conducts ecological surveys, analyses habitats and species data, prepares environmental reports, and advises on conservation and sustainable development."
+  },
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid":   { "low": 33000, "high": 45000 },
+    "senior": { "low": 46000, "high": 60000 },
+    "notes": "Senior ecologists, licensed specialists (e.g., bats, newts), or consultancy leads can exceed £60k-£75k+."
+  },
+  "qualifications": [
+    "Degree or training in ecology, environmental science, or conservation",
+    "Knowledge of species identification and habitat assessment",
+    "Ability to conduct ecological surveys and impact assessments",
+    "Understanding of biodiversity legislation and protected species"
+  ],
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+  "lifestyle": {
+    "description": "Ecologists work across natural habitats, development sites, conservation areas, and research projects. They conduct surveys, analyse ecological data, prepare reports, and advise on biodiversity protection. The role suits individuals who enjoy wildlife, fieldwork, scientific analysis, and environmental stewardship."
+  },
+  "habits": [
+    "Conducts species and habitat surveys",
+    "Analyses ecological and environmental data",
+    "Prepares ecological impact assessments",
+    "Advises on conservation and mitigation strategies",
+    "Works with planners, developers, and conservation bodies"
+  ],
+  "tags": [
+    "ecology",
+    "biodiversity",
+    "conservation",
+    "environmental science",
+    "habitat assessment",
+    "wildlife"
+  ],
+  "hero": {
+    "image": "ecologist_hero.jpg",
+    "color": "#4ADE80",
+    "keywords": ["ecology", "biodiversity", "conservation"]
+  }
+}

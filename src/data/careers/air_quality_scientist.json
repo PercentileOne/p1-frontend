@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "air_quality_scientist",
+  "slug": "air-quality-scientist",
+  "category": "Skilled Trades",
+
+  "essence": "Studies air pollution, analyses atmospheric data, and helps protect public health and the environment.",
+
+  "identity": {
+    "title": "Air Quality Scientist",
+    "summary": "Monitors air pollutants, analyses atmospheric samples, models air‑quality trends, and supports environmental regulation and public‑health protection."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 36000 },
+    "mid":   { "low": 37000, "high": 50000 },
+    "senior": { "low": 51000, "high": 75000 },
+    "notes": "Scientists specialising in atmospheric modelling, industrial emissions, or regulatory investigations can exceed £75k-£95k+."
+  },
+
+  "qualifications": [
+    "Training in environmental science, atmospheric science, chemistry, or physics",
+    "Knowledge of air‑quality standards and pollution sources",
+    "Ability to conduct atmospheric sampling and laboratory analysis",
+    "Understanding of dispersion modelling, emissions, and public‑health impacts"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Air quality scientists work for environmental agencies, councils, research organisations, and consultancies. They monitor pollutants, analyse atmospheric data, investigate air‑quality incidents, and support environmental regulation. The role suits individuals who enjoy science, modelling, and environmental protection."
+  },
+
+  "habits": [
+    "Collects and analyses air‑quality samples",
+    "Operates atmospheric monitoring equipment",
+    "Models pollution dispersion and air‑quality trends",
+    "Investigates pollution incidents and emissions sources",
+    "Supports compliance with air‑quality regulations"
+  ],
+
+  "tags": [
+    "air quality",
+    "environmental science",
+    "pollution",
+    "modelling",
+    "public health",
+    "regulation"
+  ],
+
+  "hero": {
+    "image": "air_quality_scientist_hero.jpg",
+    "color": "#3B82F6",
+    "keywords": ["air quality", "pollution", "atmosphere"]
+  }
+}

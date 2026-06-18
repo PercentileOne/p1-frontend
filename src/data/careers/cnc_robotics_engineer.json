@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_robotics_engineer",
+  "slug": "cnc-robotics-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Integrates robots with CNC machines to automate material handling, tool changes, inspection, and end‑to‑end manufacturing workflows.",
+
+  "identity": {
+    "title": "CNC Robotics Engineer",
+    "summary": "Designs, programs, and maintains robotic systems that work alongside CNC machines, enabling automated loading, unloading, inspection, and high‑efficiency production."
+  },
+
+  "salary": {
+    "entry": { "low": 45000, "high": 55000 },
+    "mid":   { "low": 56000, "high": 75000 },
+    "senior": { "low": 76000, "high": 110000 },
+    "notes": "Engineers in aerospace, defence, or fully automated smart‑factory environments can exceed £110k-£150k+."
+  },
+
+  "qualifications": [
+    "Experience in CNC automation, robotics, or manufacturing engineering",
+    "Knowledge of robotic arms, PLCs, sensors, and industrial control systems",
+    "Ability to integrate robots with CNC machines and automated workflows",
+    "Understanding of safety systems, programming languages, and precision manufacturing"
+  ],
+
+  "curves": {
+    "difficulty": [7, 8, 8, 9, 9, 9, 10, 10, 10, 10],
+    "effort":     [7, 8, 8, 9, 9, 9, 10, 10, 10, 10],
+    "reward":     [7, 8, 8, 9, 9, 10, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC robotics engineers work in advanced manufacturing, aerospace, automotive, and smart‑factory environments. They integrate robots with CNC machines, automate material handling, reduce cycle times, and improve precision. The role suits individuals who enjoy robotics, automation, and high‑tech engineering challenges."
+  },
+
+  "habits": [
+    "Designs and programs robotic systems for CNC integration",
+    "Implements automated loading, unloading, and inspection",
+    "Optimises cycle times and robotic motion paths",
+    "Collaborates with automation, CNC, and manufacturing teams",
+    "Ensures safety, reliability, and precision in robotic workflows"
+  ],
+
+  "tags": [
+    "CNC",
+    "robotics",
+    "automation",
+    "manufacturing engineering",
+    "industrial robotics",
+    "smart factory"
+  ],
+
+  "hero": {
+    "image": "cnc_robotics_engineer_hero.jpg",
+    "color": "#002A06",
+    "keywords": ["CNC", "robotics", "automation"]
+  }
+}

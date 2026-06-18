@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 272,
+  "id": "probation_officer",
+  "slug": "probation-officer",
+  "category": "Public Services, Emergency \u0026 Safety",
+  "essence": "Supervises and supports individuals in the community serving sentences or on licence to reduce reoffending.",
+  "identity": {
+    "title": "Probation Officer",
+    "summary": "Assesses risk, develops supervision plans, and works with offenders to address behaviour and reintegration needs."
+  },
+  "salary": {
+    "entry": {
+      "low": 30000,
+      "high": 38000
+    },
+    "mid": {
+      "low": 39000,
+      "high": 52000
+    },
+    "senior": {
+      "low": 53000,
+      "high": 90000
+    },
+    "notes": "Specialist roles in high\u2011risk caseloads attract higher pay."
+  },
+  "qualifications": [
+    "Degree or professional qualification in criminology, social work, or related field",
+    "Experience in case management and risk assessment",
+    "Strong communication and motivational skills",
+    "Ability to manage complex caseloads and multi\u2011agency work"
+  ],
+  "curves": {
+    "difficulty": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10
+  ],
+    "effort": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      9,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Community\u2011based role with casework, home visits, and coordination with courts and support services."
+  },
+  "habits": [
+    "Assesses risk and develops supervision plans",
+    "Conducts home visits and monitors compliance",
+    "Works with partners to provide support and interventions",
+    "Prepares reports for courts and parole boards"
+  ],
+  "tags": [
+    "probation",
+    "casework",
+    "community",
+    "justice"
+  ],
+  "hero": {
+    "image": "probation_officer_hero.jpg",
+    "color": "#2F4A3A",
+    "keywords": [
+      "probation",
+      "casework",
+      "community"
+    ]
+  }
+}

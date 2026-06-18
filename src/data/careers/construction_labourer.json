@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "construction_labourer",
+  "slug": "construction-labourer",
+  "category": "Skilled Trades",
+
+  "essence": "Provides the physical foundation of construction work through strength, reliability, and steady on‑site support.",
+
+  "identity": {
+    "title": "Construction Labourer",
+    "summary": "Supports building projects by carrying materials, preparing sites, assisting tradespeople, and performing general physical labour on construction sites."
+  },
+
+  "salary": {
+    "entry": { "low": 20000, "high": 23000 },
+    "mid": { "low": 24000, "high": 30000 },
+    "senior": { "low": 31000, "high": 38000 },
+    "notes": "Labourers with plant tickets (dumper, telehandler), groundwork skills, or site experience can exceed £35k-£45k+."
+  },
+
+  "qualifications": [
+    "CSCS Card or equivalent site certification",
+    "On‑the‑job training in site safety and labouring tasks",
+    "Basic knowledge of tools, materials, and manual handling",
+    "Physical fitness and ability to work outdoors"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 6, 6, 7, 7, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [4, 5, 6, 7, 7, 8, 8, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Construction labourers work outdoors on building sites, supporting tradespeople and helping keep projects moving. Days involve carrying materials, clearing debris, mixing cement, setting up equipment, digging trenches, and preparing work areas. The role is physically demanding and heavily influenced by weather, deadlines, and site conditions. Labourers often start early and work as part of a coordinated team. This lifestyle suits individuals who enjoy physical work, practical tasks, and being part of building projects from the ground up."
+  },
+
+  "habits": [
+    "Follows safety procedures consistently",
+    "Keeps tools and materials organised",
+    "Supports tradespeople with basic tasks",
+    "Maintains physical stamina throughout the day",
+    "Works steadily in changing site conditions"
+  ],
+
+  "tags": [
+    "construction",
+    "physical activity",
+    "hands-on work",
+    "teamwork",
+    "outdoor work",
+    "manual labour",
+    "site support",
+    "practical skills"
+  ],
+
+  "hero": {
+    "image": "construction_labourer_hero.jpg",
+    "color": "#CA8A04",
+    "keywords": ["labour", "construction", "strength"]
+  }
+}

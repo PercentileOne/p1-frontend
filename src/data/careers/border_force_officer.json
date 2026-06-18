@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 269,
+  "id": "border_force_officer",
+  "slug": "border-force-officer",
+  "category": "Public Services, Emergency \u0026 Safety",
+  "essence": "Protects borders by enforcing immigration, customs, and security regulations at ports and crossings.",
+  "identity": {
+    "title": "Border Force Officer",
+    "summary": "Conducts checks on people and goods, detects illicit activity, and enforces border controls to protect national security."
+  },
+  "salary": {
+    "entry": {
+      "low": 24000,
+      "high": 30000
+    },
+    "mid": {
+      "low": 31000,
+      "high": 42000
+    },
+    "senior": {
+      "low": 43000,
+      "high": 70000
+    },
+    "notes": "Roles with specialist detection or intelligence responsibilities may attract higher pay."
+  },
+  "qualifications": [
+    "Relevant security or law enforcement training",
+    "Good communication and decision\u2011making skills",
+    "Ability to work shifts and in high\u2011pressure situations",
+    "Background checks and security clearance"
+  ],
+  "curves": {
+    "difficulty": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Shift work at ports, airports, and crossings with operational duties, public contact, and enforcement responsibilities."
+  },
+  "habits": [
+    "Performs identity and goods checks",
+    "Uses detection equipment and intelligence",
+    "Reports incidents and enforces regulations",
+    "Works with partner agencies and law enforcement"
+  ],
+  "tags": [
+    "border",
+    "security",
+    "enforcement",
+    "customs"
+  ],
+  "hero": {
+    "image": "border_force_officer_hero.jpg",
+    "color": "#1F3A5A",
+    "keywords": [
+      "border",
+      "security",
+      "enforcement"
+    ]
+  }
+}

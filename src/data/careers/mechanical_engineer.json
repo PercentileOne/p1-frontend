@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "mechanical_engineer",
+  "slug": "mechanical-engineer",
+  "category": "Engineering",
+
+  "essence": "Designs and improves the machines, systems, and mechanisms that keep the physical world moving.",
+
+  "identity": {
+    "title": "Mechanical Engineer",
+    "summary": "Designs, analyses, and tests mechanical systems and components, applying physics and engineering principles to solve practical problems."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 35000 },
+    "mid": { "low": 40000, "high": 55000 },
+    "senior": { "low": 60000, "high": 75000 },
+    "notes": "Specialist sectors such as aerospace, energy, and automotive often pay higher. Chartered status increases earning potential."
+  },
+
+  "qualifications": [
+    "Mechanical Engineering Degree (BEng or MEng)",
+    "Strong Understanding of Physics and Materials",
+    "Experience with CAD and Simulation Tools",
+    "Progress Toward Chartered Engineer (CEng) Status"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Mechanical engineering blends analytical thinking with hands‑on problem‑solving. Days often involve designing components, running simulations, testing prototypes, and collaborating with manufacturing teams. The work can be highly technical, requiring precision and patience, especially when troubleshooting failures or refining designs under tight constraints. Projects may span months or even years, offering a deep sense of ownership and craftsmanship. The lifestyle suits individuals who enjoy physics, practical engineering, and the satisfaction of seeing ideas become real, functional systems."
+  },
+
+  "habits": [
+    "Validates designs with calculations",
+    "Iterates prototypes methodically",
+    "Documents engineering decisions clearly",
+    "Collaborates closely with manufacturing teams",
+    "Reviews test data with precision"
+  ],
+
+  "tags": [
+    "problem-solving",
+    "technical design",
+    "physics-based thinking",
+    "hands-on engineering",
+    "precision",
+    "systems thinking",
+    "manufacturing collaboration",
+    "long-term projects"
+  ],
+
+  "hero": {
+    "image": "mechanical_engineer_hero.jpg",
+    "color": "#334155",
+    "keywords": ["engineering", "design", "mechanics"]
+  }
+}

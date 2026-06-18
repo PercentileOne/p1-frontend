@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 266,
+  "id": "fencing_installer",
+  "slug": "fencing-installer",
+  "category": "Skilled Trades \u0026 Construction",
+  "essence": "Installs boundary and security fencing for residential, commercial, and agricultural sites.",
+  "identity": {
+    "title": "Fencing Installer",
+    "summary": "Sets out, installs, and secures fencing systems, gates, and posts to client specifications and safety standards."
+  },
+  "salary": {
+    "entry": {
+      "low": 22000,
+      "high": 28000
+    },
+    "mid": {
+      "low": 29000,
+      "high": 38000
+    },
+    "senior": {
+      "low": 39000,
+      "high": 55000
+    },
+    "notes": "Specialist security fencing installers can command higher rates."
+  },
+  "qualifications": [
+    "Experience in fencing, groundworks, or landscaping",
+    "Ability to set out and install posts and panels",
+    "Knowledge of materials and fixing methods",
+    "Good physical fitness and teamwork"
+  ],
+  "curves": {
+    "difficulty": [
+    3,
+    4,
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7
+  ],
+    "effort": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "reward": [
+      3,
+      4,
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      7
+    ]
+  },
+  "lifestyle": {
+    "description": "Outdoor, physical work with travel between sites; often seasonal and project\u2011based."
+  },
+  "habits": [
+    "Sets out fence lines and posts",
+    "Installs panels, gates, and fixings",
+    "Ensures secure and level installations",
+    "Maintains tools and site tidiness"
+  ],
+  "tags": [
+    "fencing",
+    "installation",
+    "landscaping",
+    "security"
+  ],
+  "hero": {
+    "image": "fencing_installer_hero.jpg",
+    "color": "#6B5A4A",
+    "keywords": [
+      "fencing",
+      "installation",
+      "security"
+    ]
+  }
+}

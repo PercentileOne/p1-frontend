@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 297,
+  "id": "film_editor",
+  "slug": "film-editor",
+  "category": "Creative, Media \u0026 Culture",
+  "essence": "Shapes the final narrative of films and videos by selecting, arranging, and refining footage.",
+  "identity": {
+    "title": "Film Editor",
+    "summary": "Cuts and assembles footage, refines pacing, collaborates with directors, and ensures the emotional and narrative flow of the final product."
+  },
+  "salary": {
+    "entry": {
+      "low": 22000,
+      "high": 30000
+    },
+    "mid": {
+      "low": 31000,
+      "high": 52000
+    },
+    "senior": {
+      "low": 53000,
+      "high": 120000
+    },
+    "notes": "Editors in film, TV, and high\u2011end commercial work can earn significantly more."
+  },
+  "qualifications": [
+    "Experience with editing software (Premiere, DaVinci Resolve, Avid)",
+    "Strong storytelling and pacing instincts",
+    "Attention to detail and ability to work under pressure",
+    "Collaboration with directors and sound teams"
+  ],
+  "curves": {
+    "difficulty": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Editing suites, long hours during deadlines, and deep creative collaboration with directors and producers."
+  },
+  "habits": [
+    "Cuts and assembles footage",
+    "Refines pacing and narrative flow",
+    "Collaborates with sound and VFX teams",
+    "Delivers final edits for distribution"
+  ],
+  "tags": [
+    "editing",
+    "film",
+    "post\u2011production",
+    "storytelling"
+  ],
+  "hero": {
+    "image": "film_editor_hero.jpg",
+    "color": "#2A2F4A",
+    "keywords": [
+      "editing",
+      "film",
+      "storytelling"
+    ]
+  }
+}

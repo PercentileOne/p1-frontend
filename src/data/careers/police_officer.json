@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "police_officer",
+  "slug": "police-officer",
+  "category": "Public Service",
+
+  "essence": "Protects communities through calm judgement, resilience, and decisive action under pressure.",
+
+  "identity": {
+    "title": "Police Officer",
+    "summary": "Responds to incidents, supports the public, investigates crime, and maintains safety through law enforcement and community engagement."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 32000 },
+    "mid": { "low": 35000, "high": 42000 },
+    "senior": { "low": 45000, "high": 55000 },
+    "notes": "Overtime, specialist units, and London weighting can significantly increase earnings. Progression varies by force and role."
+  },
+
+  "qualifications": [
+    "Police Constable Degree Apprenticeship (PCDA)",
+    "Pre‑Join Degree in Professional Policing",
+    "Fitness and Medical Assessments",
+    "Strong Communication and Conflict‑Resolution Skills"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Policing is a demanding and unpredictable lifestyle built around public safety, rapid decision‑making, and emotional resilience. Shifts can be long and irregular, often involving nights, weekends, and high‑pressure situations. Officers move between routine patrols, urgent calls, paperwork, and community conversations - never fully knowing what the next hour will bring. The emotional load can be heavy, especially when dealing with conflict, trauma, or vulnerable individuals. Yet the role carries a strong sense of purpose: helping people in moments of crisis, preventing harm, and building trust within communities. It suits individuals who stay calm under pressure, communicate clearly, and can balance empathy with authority."
+  },
+
+  "habits": [
+    "Assesses situations quickly",
+    "Communicates with clarity",
+    "Follows procedures precisely",
+    "Practises emotional regulation",
+    "Maintains physical fitness"
+  ],
+
+  "tags": [
+    "public safety",
+    "high responsibility",
+    "conflict management",
+    "teamwork",
+    "emotional resilience",
+    "decision-making",
+    "community engagement",
+    "shift work"
+  ],
+
+  "hero": {
+    "image": "police_officer_hero.jpg",
+    "color": "#1D4ED8",
+    "keywords": ["public service", "safety", "resilience"]
+  }
+}

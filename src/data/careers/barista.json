@@ -1,0 +1,60 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "barista",
+  "slug": "barista",
+  "category": "Hospitality",
+
+  "essence": "Crafts coffee and provides friendly customer service in fast-paced environments.",
+
+  "identity": {
+    "title": "Barista",
+    "summary": "Prepares coffee and beverages, operates equipment, and delivers excellent customer service."
+  },
+
+  "salary": {
+    "entry": { "low": 18000, "high": 21000 },
+    "mid": { "low": 21000, "high": 24000 },
+    "senior": { "low": 24000, "high": 28000 },
+    "notes": "Specialist baristas and supervisors can earn more, especially in artisan cafés."
+  },
+
+  "qualifications": [
+    "Customer service experience",
+    "Knowledge of coffee preparation",
+    "Ability to operate espresso machines",
+    "Good communication and teamwork"
+  ],
+
+  "curves": {
+    "difficulty": [3, 3, 4, 4, 5, 5, 6, 6, 7, 7],
+    "effort": [4, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "reward": [4, 4, 5, 5, 6, 6, 7, 7, 7, 8]
+  },
+
+  "lifestyle": {
+    "description": "Baristas work in cafés and coffee shops, preparing drinks, serving customers, and maintaining equipment. The role suits friendly, energetic people who enjoy fast-paced service work."
+  },
+
+  "habits": [
+    "Maintains clean equipment",
+    "Practices consistent drink preparation",
+    "Greets customers warmly",
+    "Works efficiently under pressure",
+    "Keeps the workspace organised"
+  ],
+
+  "tags": [
+    "hospitality",
+    "customer service",
+    "coffee",
+    "teamwork",
+    "fast-paced"
+  ],
+
+  "hero": {
+    "image": "barista_hero.jpg",
+    "color": "#8B5E3C",
+    "keywords": ["coffee", "espresso", "service"]
+  }
+}

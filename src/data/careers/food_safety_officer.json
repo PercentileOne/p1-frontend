@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "food_safety_officer",
+  "slug": "food-safety-officer",
+  "category": "Skilled Trades",
+
+  "essence": "Protects public health by inspecting food businesses, enforcing hygiene standards, and preventing food‑borne risks.",
+
+  "identity": {
+    "title": "Food Safety Officer",
+    "summary": "Inspects restaurants, takeaways, manufacturers, and retailers to ensure food is safe, hygienic, and compliant with regulations."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 34000 },
+    "mid":   { "low": 35000, "high": 45000 },
+    "senior": { "low": 46000, "high": 60000 },
+    "notes": "Senior officers or specialists in complex manufacturing environments can exceed £60k-£75k+."
+  },
+
+  "qualifications": [
+    "Training in food safety or environmental health",
+    "Knowledge of food‑hygiene legislation and enforcement",
+    "Ability to conduct inspections and sampling",
+    "Understanding of HACCP, contamination risks, and food‑borne illness prevention"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Food safety officers work for councils and regulatory bodies, inspecting food businesses, investigating complaints, and enforcing hygiene standards. The role suits individuals who enjoy investigation, regulation, and protecting public health."
+  },
+
+  "habits": [
+    "Conducts hygiene inspections",
+    "Investigates food complaints and contamination risks",
+    "Enforces food‑safety legislation",
+    "Writes clear inspection reports and notices",
+    "Communicates with business owners and the public"
+  ],
+
+  "tags": [
+    "food safety",
+    "public health",
+    "inspection",
+    "regulation",
+    "risk management",
+    "environmental health"
+  ],
+
+  "hero": {
+    "image": "food_safety_officer_hero.jpg",
+    "color": "#16A34A",
+    "keywords": ["food safety", "inspection", "public health"]
+  }
+}

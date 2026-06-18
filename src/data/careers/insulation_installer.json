@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 261,
+  "id": "insulation_installer",
+  "slug": "insulation-installer",
+  "category": "Skilled Trades \u0026 Construction",
+  "essence": "Installs thermal and acoustic insulation in buildings to improve energy efficiency and comfort.",
+  "identity": {
+    "title": "Insulation Installer",
+    "summary": "Measures, cuts, and fits insulation materials in walls, roofs, and services, following safety and building regulations."
+  },
+  "salary": {
+    "entry": {
+      "low": 22000,
+      "high": 28000
+    },
+    "mid": {
+      "low": 29000,
+      "high": 38000
+    },
+    "senior": {
+      "low": 39000,
+      "high": 60000
+    },
+    "notes": "Specialist installers for high\u2011performance or heritage buildings can earn more."
+  },
+  "qualifications": [
+    "Experience with mineral wool, PIR, and specialist insulation systems",
+    "Understanding of building regulations and thermal performance",
+    "Good manual dexterity and attention to detail",
+    "Health and safety awareness for working at height and in confined spaces"
+  ],
+  "curves": {
+    "difficulty": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8
+  ],
+    "effort": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      7,
+      8,
+      8
+    ]
+  },
+  "lifestyle": {
+    "description": "Site work with physical tasks and exposure to varying weather; often part of refurbishment or new build projects."
+  },
+  "habits": [
+    "Measures and cuts insulation to fit",
+    "Installs insulation in walls, roofs, and services",
+    "Ensures airtightness and thermal continuity",
+    "Follows safety procedures and maintains tools"
+  ],
+  "tags": [
+    "insulation",
+    "energy efficiency",
+    "construction",
+    "retrofit"
+  ],
+  "hero": {
+    "image": "insulation_installer_hero.jpg",
+    "color": "#5A6B4A",
+    "keywords": [
+      "insulation",
+      "energy",
+      "construction"
+    ]
+  }
+}

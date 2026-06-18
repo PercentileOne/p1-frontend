@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "maintenance_technician",
+  "slug": "maintenance-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Performs hands‑on maintenance, repairs, and inspections to keep machinery and equipment running safely and efficiently.",
+
+  "identity": {
+    "title": "Maintenance Technician",
+    "summary": "Carries out routine maintenance, diagnoses faults, repairs equipment, and supports smooth industrial operations across manufacturing, utilities, and engineering environments."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 40000 },
+    "senior": { "low": 41000, "high": 55000 },
+    "notes": "Technicians specialising in automation, electrical systems, or high‑risk industrial environments can exceed £55k-£70k+."
+  },
+
+  "qualifications": [
+    "Training in mechanical, electrical, or maintenance engineering",
+    "Knowledge of industrial machinery and equipment",
+    "Ability to diagnose faults and perform repairs safely",
+    "Understanding of preventive and predictive maintenance practices"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 10],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Maintenance technicians work in factories, utilities, engineering firms, and industrial facilities. They perform repairs, troubleshoot equipment, and ensure safe, reliable operations. The role suits individuals who enjoy hands‑on technical work, problem‑solving, and keeping systems running smoothly."
+  },
+
+  "habits": [
+    "Performs routine and preventive maintenance",
+    "Diagnoses mechanical and electrical faults",
+    "Repairs or replaces components and systems",
+    "Supports maintenance planning and reliability efforts",
+    "Uses diagnostic tools and maintenance software"
+  ],
+
+  "tags": [
+    "maintenance",
+    "mechanical",
+    "electrical",
+    "engineering",
+    "repairs",
+    "operations"
+  ],
+
+  "hero": {
+    "image": "maintenance_technician_hero.jpg",
+    "color": "#0F3D8A",
+    "keywords": ["maintenance", "repairs", "machinery"]
+  }
+}

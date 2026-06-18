@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "telecommunications_line_installer",
+  "slug": "telecommunications-line-installer",
+  "category": "Skilled Trades",
+
+  "essence": "Installs and maintains the fibre‑optic and telecom networks that keep homes and businesses connected.",
+
+  "identity": {
+    "title": "Telecommunications Line Installer (Fibre Technician)",
+    "summary": "Installs, splices, tests, and repairs fibre‑optic and copper communication lines for broadband, phone, and data networks."
+  },
+
+  "salary": {
+    "entry": { "low": 23000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 36000 },
+    "senior": { "low": 37000, "high": 48000 },
+    "notes": "Fibre‑splicing specialists, overhead line installers, and network engineers can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "Telecoms or fibre‑optic installation training",
+    "Knowledge of fibre splicing, testing, and fault‑finding",
+    "Understanding of network layouts and safety procedures",
+    "Working‑at‑height or pole‑climbing certification (role‑dependent)"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Telecommunications line installers work on fibre‑optic and copper networks, installing new connections, repairing faults, splicing fibre, and testing signal quality. The role involves both indoor and outdoor work, sometimes at height or in underground chambers. It suits individuals who enjoy technical hands‑on tasks, problem‑solving, and contributing to essential digital infrastructure."
+  },
+
+  "habits": [
+    "Performs accurate fibre splicing and testing",
+    "Keeps tools and equipment organised",
+    "Follows strict safety and network procedures",
+    "Communicates clearly with customers and team members",
+    "Maintains detailed installation and repair records"
+  ],
+
+  "tags": [
+    "telecommunications",
+    "fibre",
+    "infrastructure",
+    "technology",
+    "maintenance",
+    "hands-on work",
+    "skilled trades",
+    "connectivity"
+  ],
+
+  "hero": {
+    "image": "telecommunications_line_installer_hero.jpg",
+    "color": "#4F46E5",
+    "keywords": ["fibre", "telecoms", "infrastructure"]
+  }
+}

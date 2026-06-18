@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "radiographer",
+  "slug": "radiographer",
+  "category": "Healthcare",
+
+  "essence": "Uses imaging technology to reveal what the eye cannot see, supporting diagnosis, treatment, and patient care with precision and compassion.",
+
+  "identity": {
+    "title": "Radiographer",
+    "summary": "Operates imaging equipment such as X‑ray, CT, MRI, and ultrasound machines to capture diagnostic images and support clinical decision‑making."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid": { "low": 35000, "high": 45000 },
+    "senior": { "low": 48000, "high": 60000 },
+    "notes": "Advanced practice roles (reporting radiographer, MRI/CT specialist) and consultant-level posts can exceed £60k-£75k+."
+  },
+
+  "qualifications": [
+    "Degree in Diagnostic Radiography",
+    "HCPC Registration",
+    "Training in Imaging Equipment and Radiation Safety",
+    "Strong Understanding of Anatomy and Patient Care"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Radiographers work in clinical environments where accuracy, patient reassurance, and technical skill are essential. Days involve preparing patients, operating imaging equipment, reviewing image quality, and collaborating with radiologists and clinicians. The work can be fast‑paced, especially in emergency departments, and requires balancing technical precision with compassionate communication - many patients are anxious, in pain, or facing serious diagnoses. Shifts may include evenings or weekends depending on the hospital. The role suits individuals who enjoy technology, patient interaction, and contributing directly to diagnosis and treatment."
+  },
+
+  "habits": [
+    "Checks imaging settings carefully",
+    "Communicates calmly with patients",
+    "Reviews images for clarity and accuracy",
+    "Follows radiation safety protocols",
+    "Maintains equipment and room readiness"
+  ],
+
+  "tags": [
+    "healthcare",
+    "imaging",
+    "technology",
+    "patient care",
+    "precision",
+    "diagnostics",
+    "clinical environment",
+    "teamwork"
+  ],
+
+  "hero": {
+    "image": "radiographer_hero.jpg",
+    "color": "#3B82F6",
+    "keywords": ["imaging", "diagnosis", "care"]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 239,
+  "id": "drone_technician",
+  "slug": "drone-technician",
+  "category": "AI, Robotics \u0026 Automation",
+  "essence": "Maintains, repairs, and configures unmanned aerial systems and their payloads for reliable field operations.",
+  "identity": {
+    "title": "Drone Technician",
+    "summary": "Handles hardware repairs, sensor integration, firmware updates, and pre\u2011flight checks to keep drone fleets operational."
+  },
+  "salary": {
+    "entry": {
+      "low": 22000,
+      "high": 28000
+    },
+    "mid": {
+      "low": 29000,
+      "high": 38000
+    },
+    "senior": {
+      "low": 39000,
+      "high": 60000
+    },
+    "notes": "Technicians with avionics or sensor specialisms can command higher rates."
+  },
+  "qualifications": [
+    "Experience with electronics, soldering, and small\u2011aircraft systems",
+    "Familiarity with drone firmware and payload integration",
+    "Ability to troubleshoot sensors and communications",
+    "Good workshop skills and parts sourcing knowledge"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9
+  ],
+    "effort": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8
+    ]
+  },
+  "lifestyle": {
+    "description": "Workshop and field balance; frequent hands\u2011on repair work and collaboration with operators and engineers to resolve faults quickly."
+  },
+  "habits": [
+    "Performs component\u2011level repairs and firmware updates",
+    "Calibrates sensors and integrates payloads",
+    "Maintains spares inventory and repair logs",
+    "Supports operators with pre\u2011flight checks"
+  ],
+  "tags": [
+    "drone",
+    "maintenance",
+    "avionics",
+    "sensors"
+  ],
+  "hero": {
+    "image": "drone_technician_hero.jpg",
+    "color": "#0A5A7A",
+    "keywords": [
+      "drone",
+      "technician",
+      "repair"
+    ]
+  }
+}

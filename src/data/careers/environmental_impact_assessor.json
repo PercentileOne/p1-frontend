@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "environmental_impact_assessor",
+  "slug": "environmental-impact-assessor",
+  "category": "Skilled Trades",
+
+  "essence": "Evaluates how proposed developments affect the environment and guides decisions to minimise harm and support sustainability.",
+
+  "identity": {
+    "title": "Environmental Impact Assessor",
+    "summary": "Conducts Environmental Impact Assessments (EIAs), analyses ecological and environmental risks, and advises developers and authorities on mitigation and sustainable design."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 36000 },
+    "mid":   { "low": 37000, "high": 52000 },
+    "senior": { "low": 53000, "high": 75000 },
+    "notes": "Senior assessors working on major infrastructure or national projects can exceed £75k-£90k+."
+  },
+
+  "qualifications": [
+    "Training in environmental science, planning, or sustainability",
+    "Knowledge of EIA regulations and planning policy",
+    "Ability to analyse environmental risks and impacts",
+    "Understanding of ecology, pollution, land use, and mitigation strategies"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Environmental impact assessors work for consultancies, councils, environmental agencies, and infrastructure projects. They evaluate development proposals, analyse environmental risks, and produce EIA reports that shape planning decisions. The role suits individuals who enjoy analysis, sustainability, policy, and balancing development with environmental protection."
+  },
+
+  "habits": [
+    "Conducts Environmental Impact Assessments",
+    "Analyses ecological, social, and environmental risks",
+    "Prepares detailed EIA reports and mitigation plans",
+    "Advises developers and planning authorities",
+    "Engages with stakeholders and environmental bodies"
+  ],
+
+  "tags": [
+    "environmental impact",
+    "EIA",
+    "sustainability",
+    "planning",
+    "risk assessment",
+    "environmental protection"
+  ],
+
+  "hero": {
+    "image": "environmental_impact_assessor_hero.jpg",
+    "color": "#0284C7",
+    "keywords": ["impact assessment", "planning", "environment"]
+  }
+}

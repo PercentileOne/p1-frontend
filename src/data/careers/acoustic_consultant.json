@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "acoustic_consultant",
+  "slug": "acoustic-consultant",
+  "category": "Skilled Trades",
+
+  "essence": "Advises on noise control, building acoustics, and environmental sound to create safer, quieter, and better‑designed spaces.",
+
+  "identity": {
+    "title": "Acoustic Consultant",
+    "summary": "Provides expert advice on noise control, building acoustics, environmental noise assessments, and sound‑insulation design for construction, planning, and industry."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 36000 },
+    "mid":   { "low": 37000, "high": 50000 },
+    "senior": { "low": 51000, "high": 75000 },
+    "notes": "Consultants specialising in advanced modelling, major infrastructure, or architectural acoustics can exceed £75k-£95k+."
+  },
+
+  "qualifications": [
+    "Training in acoustics, audio engineering, physics, or environmental science",
+    "Knowledge of building acoustics, environmental noise, and sound‑insulation standards",
+    "Ability to use acoustic‑modelling software and measurement equipment",
+    "Understanding of planning regulations, noise mitigation, and acoustic design"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Acoustic consultants work for engineering firms, environmental consultancies, architectural practices, and local authorities. They assess noise impacts, design acoustic solutions, support planning applications, and advise on sound insulation. The role suits individuals who enjoy technical analysis, modelling, and improving built environments."
+  },
+
+  "habits": [
+    "Conducts environmental and building‑acoustic assessments",
+    "Uses acoustic‑modelling software to predict noise behaviour",
+    "Advises architects, planners, and engineers on acoustic design",
+    "Measures sound levels and evaluates noise mitigation options",
+    "Prepares technical reports for planning and regulatory compliance"
+  ],
+
+  "tags": [
+    "acoustics",
+    "noise control",
+    "engineering",
+    "environmental health",
+    "modelling",
+    "consultancy"
+  ],
+
+  "hero": {
+    "image": "acoustic_consultant_hero.jpg",
+    "color": "#4338CA",
+    "keywords": ["acoustics", "consultancy", "sound"]
+  }
+}

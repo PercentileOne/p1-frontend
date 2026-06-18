@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 254,
+  "id": "production_planner",
+  "slug": "production-planner",
+  "category": "Advanced Manufacturing \u0026 Engineering",
+  "essence": "Coordinates production schedules, capacity, and materials to meet delivery targets efficiently.",
+  "identity": {
+    "title": "Production Planner",
+    "summary": "Balances demand, capacity, and inventory to create realistic production plans and minimise bottlenecks."
+  },
+  "salary": {
+    "entry": {
+      "low": 28000,
+      "high": 36000
+    },
+    "mid": {
+      "low": 37000,
+      "high": 52000
+    },
+    "senior": {
+      "low": 53000,
+      "high": 80000
+    },
+    "notes": "Experience with complex supply chains and ERP systems increases earning potential."
+  },
+  "qualifications": [
+    "Experience in production planning and MRP/ERP systems",
+    "Strong organisational and problem\u2011solving skills",
+    "Understanding of capacity planning and lead times",
+    "Good communication with operations and procurement"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "effort": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Office and shop\u2011floor coordination role with frequent adjustments to plans as demand and supply conditions change."
+  },
+  "habits": [
+    "Creates and updates production schedules",
+    "Monitors capacity and resolves bottlenecks",
+    "Coordinates with procurement and operations",
+    "Analyses performance and improves throughput"
+  ],
+  "tags": [
+    "production",
+    "planning",
+    "manufacturing",
+    "supply chain"
+  ],
+  "hero": {
+    "image": "production_planner_hero.jpg",
+    "color": "#2F5A4A",
+    "keywords": [
+      "production",
+      "planning",
+      "manufacturing"
+    ]
+  }
+}

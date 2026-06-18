@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "butcher",
+  "slug": "butcher",
+  "category": "Culinary",
+
+  "essence": "Prepares high‑quality cuts of meat with precision, knowledge, and traditional craftsmanship.",
+
+  "identity": {
+    "title": "Butcher",
+    "summary": "Cuts, trims, prepares, and presents meat products while ensuring quality, safety, and excellent customer service."
+  },
+
+  "salary": {
+    "entry": { "low": 19000, "high": 23000 },
+    "mid": { "low": 24000, "high": 30000 },
+    "senior": { "low": 31000, "high": 40000 },
+    "notes": "Master butchers, specialist charcutiers, and shop owners can exceed £45k–£70k+ depending on skill, niche, and business scale."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Diploma in Butchery",
+    "Knowledge of Meat Cuts, Preparation, and Food Safety",
+    "Understanding of Hygiene Standards and Temperature Control",
+    "Knife Skills and Experience with Butchery Equipment"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Butchers work in chilled, fast‑paced environments where precision, hygiene, and physical stamina are essential. Days involve breaking down carcasses, preparing cuts, making sausages or burgers, managing stock, and serving customers. Early mornings are common, especially in traditional shops or markets. The work is physical and requires strong knife control, attention to detail, and respect for safety. Despite the demands, the role is deeply rewarding for those who enjoy craftsmanship, food preparation, and building relationships with customers. This lifestyle suits individuals who appreciate tradition, skill, and producing high‑quality food."
+  },
+
+  "habits": [
+    "Keeps knives sharp and tools sanitised",
+    "Maintains strict hygiene and temperature control",
+    "Cuts meat with precision and consistency",
+    "Manages stock rotation carefully",
+    "Engages warmly with customers"
+  },
+
+  "tags": [
+    "culinary",
+    "craftsmanship",
+    "hands-on work",
+    "food preparation",
+    "precision",
+    "customer service",
+    "traditional skills",
+    "physical activity"
+  ],
+
+  "hero": {
+    "image": "butcher_hero.jpg",
+    "color": "#DC2626",
+    "keywords": ["craft", "food", "precision"]
+  }
+}

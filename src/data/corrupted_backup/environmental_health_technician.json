@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "environmental_health_technician",
+  "slug": "environmental-health-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Supports public health by inspecting environments, identifying hazards, and ensuring safe living and working conditions.",
+
+  "identity": {
+    "title": "Environmental Health Technician",
+    "summary": "Assists environmental health officers by inspecting premises, monitoring hazards, collecting samples, and supporting public‑health enforcement."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 34000 },
+    "senior": { "low": 35000, "high": 42000 },
+    "notes": "Technicians specialising in food safety, housing standards, or environmental monitoring can exceed £40k–£50k+."
+  },
+
+  "qualifications": [
+    "Environmental health or public‑health support training",
+    "Knowledge of food hygiene, housing standards, and environmental hazards",
+    "Ability to collect samples and complete inspection reports",
+    "Understanding of health and safety legislation"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Environmental health technicians support inspections of food businesses, rental properties, workplaces, and public spaces. They collect samples, check hygiene standards, investigate complaints, and help enforce regulations. The role involves travel, public interaction, and detailed reporting. It suits individuals who enjoy investigative work, community impact, and ensuring safe environments."
+  },
+
+  "habits": [
+    "Conducts thorough inspections and observations",
+    "Follows strict sampling and hygiene procedures",
+    "Keeps accurate and detailed records",
+    "Communicates clearly with businesses and the public",
+    "Monitors compliance with health and safety standards"
+  },
+
+  "tags": [
+    "public health",
+    "inspection",
+    "environment",
+    "safety",
+    "regulation",
+    "community service",
+    "field work",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "environmental_health_technician_hero.jpg",
+    "color": "#059669",
+    "keywords": ["public health", "inspection", "environment"]
+  }
+}

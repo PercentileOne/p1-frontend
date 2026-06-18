@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "emergency_planning_officer",
+  "slug": "emergency-planning-officer",
+  "category": "Skilled Trades",
+
+  "essence": "Develops plans, procedures, and coordination frameworks to prepare communities and organisations for major incidents and emergencies.",
+
+  "identity": {
+    "title": "Emergency Planning Officer",
+    "summary": "Creates emergency response plans, coordinates multi‑agency preparedness, runs training exercises, and supports resilience during major incidents."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 38000 },
+    "senior": { "low": 39000, "high": 50000 },
+    "notes": "Senior resilience officers, major‑incident coordinators, and regional leads can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "Training in emergency planning, civil protection, or resilience",
+    "Knowledge of risk assessment and major‑incident frameworks",
+    "Understanding of multi‑agency coordination (police, fire, NHS, local authorities)",
+    "Ability to run exercises, simulations, and training sessions"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Emergency planning officers work with councils, emergency services, and organisations to prepare for major incidents such as floods, fires, pandemics, and infrastructure failures. The role involves risk assessments, writing response plans, running exercises, and supporting real‑time incident coordination when required. It suits individuals who enjoy strategic thinking, public safety, and multi‑agency collaboration."
+  },
+
+  "habits": [
+    "Conducts detailed risk assessments",
+    "Maintains up‑to‑date emergency plans and procedures",
+    "Coordinates with multiple agencies and stakeholders",
+    "Runs training exercises and simulations",
+    "Documents lessons learned after incidents"
+  ],
+
+  "tags": [
+    "emergency services",
+    "public safety",
+    "resilience",
+    "planning",
+    "risk management",
+    "multi-agency",
+    "civil protection",
+    "strategic work"
+  ],
+
+  "hero": {
+    "image": "emergency_planning_officer_hero.jpg",
+    "color": "#B91C1C",
+    "keywords": ["resilience", "planning", "public safety"]
+  }
+}

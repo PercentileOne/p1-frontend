@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "public_space_maintenance_operative",
+  "slug": "public-space-maintenance-operative",
+  "category": "Skilled Trades",
+
+  "essence": "Maintains parks, streets, and public spaces to keep communities clean, safe, and welcoming.",
+
+  "identity": {
+    "title": "Public Space Maintenance Operative (Street Scene Technician)",
+    "summary": "Carries out repairs, cleaning, landscaping, and general upkeep of public spaces including parks, streets, and communal areas."
+  },
+
+  "salary": {
+    "entry": { "low": 21000, "high": 24000 },
+    "mid":   { "low": 25000, "high": 30000 },
+    "senior": { "low": 31000, "high": 36000 },
+    "notes": "Team leaders, machinery operators, and multi‑skilled technicians can exceed £35k-£40k+."
+  },
+
+  "qualifications": [
+    "Basic safety and manual‑handling training",
+    "Knowledge of grounds maintenance and minor repairs",
+    "Ability to operate small tools and outdoor equipment",
+    "Understanding of environmental and public‑realm standards"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9]
+  },
+
+  "lifestyle": {
+    "description": "Public space maintenance operatives work outdoors maintaining parks, streets, paths, and communal areas. Tasks include litter removal, minor repairs, graffiti checks, landscaping, and reporting hazards. The role suits individuals who enjoy varied outdoor work, community impact, and keeping public spaces safe and attractive."
+  },
+
+  "habits": [
+    "Maintains consistent inspection routes",
+    "Follows safety and environmental procedures",
+    "Keeps tools and equipment organised",
+    "Communicates clearly with supervisors and the public",
+    "Reports hazards or damage promptly"
+  ],
+
+  "tags": [
+    "public service",
+    "community work",
+    "maintenance",
+    "outdoor work",
+    "hands-on work",
+    "environment",
+    "street scene",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "public_space_maintenance_operative_hero.jpg",
+    "color": "#34D399",
+    "keywords": ["public spaces", "maintenance", "community"]
+  }
+}

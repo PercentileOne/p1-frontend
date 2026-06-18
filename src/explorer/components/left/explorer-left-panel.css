@@ -1,0 +1,32 @@
+/* Force categories, subcategories, and careers to stack vertically */
+.category-list,
+.subcategory-list,
+.career-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  white-space: normal; /* ⭐ allows wrapping */
+}
+
+/* Ensure each item takes a full line */
+.category-list button,
+.subcategory-list button,
+.career-list button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  color: #000;
+  font-size: 16px;
+  padding: 6px 4px;
+  white-space: normal; /* ⭐ ensures wrapping */
+}
+
+.category-list button:hover,
+.subcategory-list button:hover,
+.career-list button:hover {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}

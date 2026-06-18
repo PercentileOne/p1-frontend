@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "pest_control_technician",
+  "slug": "pest-control-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Identifies, manages, and prevents pest infestations to protect public health, homes, and businesses.",
+
+  "identity": {
+    "title": "Pest Control Technician",
+    "summary": "Inspects properties, identifies pest issues, applies treatments, and advises clients on prevention and long‑term control."
+  },
+
+  "salary": {
+    "entry": { "low": 21000, "high": 24000 },
+    "mid":   { "low": 25000, "high": 32000 },
+    "senior": { "low": 33000, "high": 42000 },
+    "notes": "Specialists in commercial, wildlife, or advanced chemical treatments can exceed £40k-£50k+."
+  },
+
+  "qualifications": [
+    "RSPH Level 2 Award in Pest Management (or equivalent)",
+    "Knowledge of pest biology and behaviour",
+    "Understanding of safe chemical handling and application",
+    "Ability to assess property conditions and identify entry points"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Pest control technicians travel between homes and businesses inspecting for pests, applying treatments, setting traps, and advising on prevention. The role involves problem‑solving, customer interaction, and working in varied environments. It suits individuals who enjoy practical work, independence, and contributing to public health and safety."
+  },
+
+  "habits": [
+    "Assesses properties thoroughly before treatment",
+    "Follows strict safety and chemical‑handling procedures",
+    "Keeps tools and equipment clean and organised",
+    "Communicates clearly with clients",
+    "Maintains accurate treatment and inspection records"
+  ],
+
+  "tags": [
+    "public health",
+    "environment",
+    "inspection",
+    "hands-on work",
+    "community service",
+    "skilled trades",
+    "safety",
+    "field work"
+  ],
+
+  "hero": {
+    "image": "pest_control_technician_hero.jpg",
+    "color": "#15803D",
+    "keywords": ["pest control", "public health", "inspection"]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "hotel_receptionist",
+  "slug": "hotel-receptionist",
+  "category": "Hospitality",
+
+  "essence": "Welcomes guests with professionalism and warmth, shaping the first and last impression of every stay.",
+
+  "identity": {
+    "title": "Hotel Receptionist",
+    "summary": "Manages check‑ins, check‑outs, reservations, guest enquiries, and front‑desk operations to ensure a smooth and pleasant hotel experience."
+  },
+
+  "salary": {
+    "entry": { "low": 19000, "high": 22000 },
+    "mid": { "low": 23000, "high": 27000 },
+    "senior": { "low": 28000, "high": 34000 },
+    "notes": "Supervisors, duty managers, and reception leads can exceed £35k–£45k+, especially in large hotels or premium locations."
+  },
+
+  "qualifications": [
+    "On‑the‑job training in hospitality or customer service",
+    "Knowledge of booking systems and front‑desk software",
+    "Strong communication and problem‑solving skills",
+    "Understanding of hotel procedures and guest service standards"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Hotel receptionists work in polished, guest‑facing environments where professionalism, communication, and calm under pressure are essential. Days involve greeting guests, handling check‑ins and check‑outs, managing reservations, answering enquiries, coordinating with housekeeping and management, and resolving issues quickly and diplomatically. The role can be fast‑paced during peak times and often includes shift work, including evenings, weekends, and holidays. Despite the demands, the job is rewarding for those who enjoy helping people, creating positive experiences, and being at the centre of hotel operations."
+  },
+
+  "habits": [
+    "Maintains a calm, welcoming presence",
+    "Keeps front‑desk systems and records organised",
+    "Communicates clearly with guests and staff",
+    "Resolves issues quickly and professionally",
+    "Monitors lobby cleanliness and atmosphere"
+  },
+
+  "tags": [
+    "hospitality",
+    "customer service",
+    "communication",
+    "front desk",
+    "organisation",
+    "problem-solving",
+    "teamwork",
+    "guest experience"
+  ],
+
+  "hero": {
+    "image": "hotel_receptionist_hero.jpg",
+    "color": "#0EA5E9",
+    "keywords": ["hospitality", "service", "welcome"]
+  }
+}

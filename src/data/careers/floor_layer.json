@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "floor_layer",
+  "slug": "floor-layer",
+  "category": "Skilled Trades",
+
+  "essence": "Installs a wide range of flooring materials with precision, durability, and a focus on clean, high‑quality finishes.",
+
+  "identity": {
+    "title": "Floor Layer",
+    "summary": "Fits and finishes flooring materials such as vinyl, laminate, hardwood, carpet tiles, and safety flooring in residential and commercial spaces."
+  },
+
+  "salary": {
+    "entry": { "low": 21000, "high": 25000 },
+    "mid":   { "low": 26000, "high": 34000 },
+    "senior": { "low": 35000, "high": 48000 },
+    "notes": "Specialists in commercial safety flooring, resin floors, or high‑end hardwood installations can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Level 2/3 Diploma in Flooring Installation",
+    "Knowledge of subfloor preparation, adhesives, and materials",
+    "Strong measurement and cutting accuracy",
+    "Understanding of moisture control and levelling compounds"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Floor layers work in homes, offices, shops, and commercial buildings installing a variety of flooring materials. Days involve preparing subfloors, levelling surfaces, cutting and fitting materials, applying adhesives, and ensuring clean, durable finishes. The role is physical and requires precision, problem‑solving, and attention to detail. This lifestyle suits individuals who enjoy hands‑on craftsmanship and transforming interior spaces from the ground up."
+  },
+
+  "habits": [
+    "Prepares subfloors thoroughly",
+    "Cuts materials cleanly and accurately",
+    "Keeps tools sharp and organised",
+    "Maintains consistent fitting quality",
+    "Follows safety and material‑handling procedures"
+  ],
+
+  "tags": [
+    "construction",
+    "flooring",
+    "interior finishing",
+    "craftsmanship",
+    "precision",
+    "hands-on work",
+    "skilled trades",
+    "installation"
+  ],
+
+  "hero": {
+    "image": "floor_layer_hero.jpg",
+    "color": "#A16207",
+    "keywords": ["flooring", "installation", "craft"]
+  }
+}

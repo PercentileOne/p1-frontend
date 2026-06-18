@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 274,
+  "id": "emergency_planning_coordinator",
+  "slug": "emergency-planning-coordinator",
+  "category": "Public Services, Emergency \u0026 Safety",
+  "essence": "Develops and coordinates plans to prepare for, respond to, and recover from emergencies and major incidents.",
+  "identity": {
+    "title": "Emergency Planning Coordinator",
+    "summary": "Creates contingency plans, runs exercises, and coordinates multi\u2011agency responses to ensure community resilience."
+  },
+  "salary": {
+    "entry": {
+      "low": 30000,
+      "high": 38000
+    },
+    "mid": {
+      "low": 39000,
+      "high": 60000
+    },
+    "senior": {
+      "low": 61000,
+      "high": 100000
+    },
+    "notes": "Senior roles in large local authorities or national agencies attract higher pay."
+  },
+  "qualifications": [
+    "Experience in emergency planning, civil contingencies, or resilience roles",
+    "Knowledge of multi\u2011agency coordination and incident management",
+    "Strong project management and communication skills",
+    "Ability to run exercises and produce clear plans"
+  ],
+  "curves": {
+    "difficulty": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      9,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Office and stakeholder engagement role with responsibility for preparedness, exercises, and incident coordination when required."
+  },
+  "habits": [
+    "Develops and updates emergency plans and procedures",
+    "Runs multi\u2011agency exercises and training",
+    "Coordinates resources and communications during incidents",
+    "Engages with communities and partner organisations"
+  ],
+  "tags": [
+    "emergency planning",
+    "resilience",
+    "coordination",
+    "civil contingencies"
+  ],
+  "hero": {
+    "image": "emergency_planning_coordinator_hero.jpg",
+    "color": "#2A4A5A",
+    "keywords": [
+      "emergency",
+      "planning",
+      "resilience"
+    ]
+  }
+}

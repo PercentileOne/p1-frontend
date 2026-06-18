@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "barista",
+  "slug": "barista",
+  "category": "Culinary",
+
+  "essence": "Crafts coffee with skill, speed, and hospitality, creating small moments of comfort and connection.",
+
+  "identity": {
+    "title": "Barista",
+    "summary": "Prepares espresso-based drinks, manages coffee equipment, and provides friendly customer service in cafés and hospitality settings."
+  },
+
+  "salary": {
+    "entry": { "low": 18000, "high": 21000 },
+    "mid": { "low": 21000, "high": 25000 },
+    "senior": { "low": 26000, "high": 32000 },
+    "notes": "Head baristas, specialty coffee professionals, and café managers can exceed £30k–£40k+, with additional earnings in busy or high-end locations."
+  },
+
+  "qualifications": [
+    "On-the-job training in coffee preparation",
+    "Knowledge of espresso extraction and milk texturing",
+    "Understanding of food safety and hygiene standards",
+    "Customer service and hospitality skills"
+  },
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Baristas work in lively, customer-focused environments where speed, consistency, and friendliness are essential. Days involve pulling espresso shots, steaming milk, preparing drinks, managing queues, cleaning equipment, and creating a welcoming atmosphere. The role can be fast-paced, especially during morning rushes, and often involves standing for long periods. Despite the pace, the work is social, creative, and rewarding — baristas become part of customers’ daily routines and café culture. This lifestyle suits individuals who enjoy hospitality, craft, and working in energetic, community-oriented spaces."
+  },
+
+  "habits": [
+    "Dialling in espresso each morning",
+    "Maintaining clean, well-organised stations",
+    "Texturing milk consistently for latte art",
+    "Engaging warmly with customers",
+    "Monitoring equipment and grinder settings"
+  },
+
+  "tags": [
+    "coffee",
+    "hospitality",
+    "customer service",
+    "hands-on work",
+    "creativity",
+    "fast-paced",
+    "food and drink",
+    "craftsmanship"
+  ],
+
+  "hero": {
+    "image": "barista_hero.jpg",
+    "color": "#A16207",
+    "keywords": ["coffee", "craft", "service"]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "pharmacist",
+  "slug": "pharmacist",
+  "category": "Healthcare",
+
+  "essence": "Ensures safe, effective use of medicines through precision, clinical knowledge, and calm patient guidance.",
+
+  "identity": {
+    "title": "Pharmacist",
+    "summary": "Dispenses medication, advises patients, checks prescriptions for safety, and supports treatment plans through expert pharmaceutical knowledge."
+  },
+
+  "salary": {
+    "entry": { "low": 32000, "high": 38000 },
+    "mid": { "low": 40000, "high": 50000 },
+    "senior": { "low": 52000, "high": 65000 },
+    "notes": "Hospital pharmacists and independent prescribers often earn more. Managerial roles and clinical specialisms increase pay further."
+  },
+
+  "qualifications": [
+    "MPharm Degree",
+    "1-Year Pre‑Registration Training",
+    "GPhC Registration",
+    "Strong Understanding of Medicines and Patient Safety"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Pharmacists work in a structured, clinically focused environment where accuracy and patient safety come first. Days involve checking prescriptions, advising patients, managing stock, and collaborating with doctors and nurses. The role requires calm focus - a single error can have serious consequences - and strong communication skills to explain treatments clearly. Workloads can be intense, especially in busy community pharmacies or hospital settings, but the job offers stability, respect, and the satisfaction of helping people manage their health. It suits individuals who value precision, patient interaction, and a steady clinical routine."
+  },
+
+  "habits": [
+    "Checks prescriptions meticulously",
+    "Explains medicines clearly to patients",
+    "Monitors interactions and contraindications",
+    "Keeps accurate dispensing records",
+    "Maintains calm under pressure"
+  ],
+
+  "tags": [
+    "clinical knowledge",
+    "patient care",
+    "precision",
+    "structured work",
+    "communication",
+    "healthcare",
+    "high responsibility",
+    "safety-first mindset"
+  ],
+
+  "hero": {
+    "image": "pharmacist_hero.jpg",
+    "color": "#16A34A",
+    "keywords": ["healthcare", "medicine", "precision"]
+  }
+}

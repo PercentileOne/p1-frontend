@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "emergency_call_handler",
+  "slug": "emergency-call-handler",
+  "category": "Skilled Trades",
+
+  "essence": "Answers emergency calls, gathers critical information, and dispatches police, fire, or ambulance services to incidents.",
+
+  "identity": {
+    "title": "Emergency Call Handler (999 / Control Room Operator)",
+    "summary": "Receives emergency calls, assesses situations, provides immediate guidance, and coordinates the dispatch of emergency services."
+  },
+
+  "salary": {
+    "entry": { "low": 23000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 33000 },
+    "senior": { "low": 34000, "high": 42000 },
+    "notes": "Supervisors, senior controllers, and specialist dispatchers can exceed £40k–£50k+."
+  },
+
+  "qualifications": [
+    "Emergency call handling or control room training",
+    "Strong communication and decision‑making skills",
+    "Ability to remain calm under pressure",
+    "Understanding of emergency service protocols and triage systems"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Emergency call handlers work in control rooms answering 999 calls, gathering essential details, providing immediate advice, and dispatching emergency services. The role involves shift work, high‑pressure decision‑making, and constant communication. It suits individuals who stay calm under stress, think quickly, and want to make a direct impact on public safety."
+  },
+
+  "habits": [
+    "Listens actively and asks precise questions",
+    "Follows structured triage and dispatch protocols",
+    "Stays calm and reassuring during emergencies",
+    "Documents information accurately and quickly",
+    "Communicates clearly with frontline responders"
+  },
+
+  "tags": [
+    "emergency services",
+    "public safety",
+    "communication",
+    "control room",
+    "decision-making",
+    "high pressure",
+    "skilled trades",
+    "service coordination"
+  ],
+
+  "hero": {
+    "image": "emergency_call_handler_hero.jpg",
+    "color": "#EF4444",
+    "keywords": ["emergency", "control room", "public safety"]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "occupational_therapist",
+  "slug": "occupational-therapist",
+  "category": "Healthcare",
+
+  "essence": "Helps people rebuild independence, confidence, and daily function through personalised, practical therapeutic support.",
+
+  "identity": {
+    "title": "Occupational Therapist",
+    "summary": "Assesses individuals’ physical, cognitive, and emotional needs, and develops tailored interventions to help them perform daily activities and improve quality of life."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid": { "low": 35000, "high": 45000 },
+    "senior": { "low": 48000, "high": 60000 },
+    "notes": "Advanced practice roles, specialist clinical posts, and leadership positions can exceed £60k–£75k+."
+  },
+
+  "qualifications": [
+    "Degree in Occupational Therapy",
+    "HCPC Registration",
+    "Clinical Placements in Healthcare or Community Settings",
+    "Strong Understanding of Rehabilitation and Human Function"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Occupational therapists work in supportive, patient‑focused environments where empathy and problem‑solving are central. Days involve assessing clients’ abilities, designing personalised interventions, adapting environments, and helping individuals regain independence after injury, illness, or disability. The work is varied — from hospitals and rehabilitation centres to schools and community visits — and requires creativity, patience, and strong communication skills. Emotional resilience is important, as progress can be gradual and clients may face significant challenges. The role suits individuals who are compassionate, practical, and motivated by helping others live fuller, more independent lives."
+  },
+
+  "habits": [
+    "Assesses client needs holistically",
+    "Designs personalised rehabilitation plans",
+    "Documents progress clearly and consistently",
+    "Collaborates with multidisciplinary teams",
+    "Adapts environments and tools creatively"
+  },
+
+  "tags": [
+    "rehabilitation",
+    "patient care",
+    "empathy",
+    "problem-solving",
+    "healthcare",
+    "independence",
+    "adaptation",
+    "support"
+  ],
+
+  "hero": {
+    "image": "occupational_therapist_hero.jpg",
+    "color": "#10B981",
+    "keywords": ["independence", "support", "rehabilitation"]
+  }
+}

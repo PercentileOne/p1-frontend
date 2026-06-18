@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_alarm_technician",
+  "slug": "fire-alarm-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Installs, tests, and maintains fire‑alarm systems to ensure buildings meet safety standards and remain protected.",
+
+  "identity": {
+    "title": "Fire Alarm Technician",
+    "summary": "Installs, inspects, and repairs fire‑alarm systems, ensuring they function correctly and comply with fire‑safety regulations."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 28000 },
+    "mid":   { "low": 29000, "high": 36000 },
+    "senior": { "low": 37000, "high": 46000 },
+    "notes": "Specialists in complex commercial systems, addressable networks, or multi‑site maintenance can exceed £45k-£55k+."
+  },
+
+  "qualifications": [
+    "Training in fire‑alarm installation and maintenance",
+    "Knowledge of BS 5839 and fire‑safety regulations",
+    "Ability to test, fault‑find, and certify alarm systems",
+    "Understanding of wiring, control panels, and detection devices"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Fire alarm technicians work across homes, businesses, and public buildings installing and maintaining fire‑alarm systems. The role involves wiring, testing, fault‑finding, and ensuring compliance with safety standards. It suits individuals who enjoy technical work, problem‑solving, and contributing to building safety."
+  },
+
+  "habits": [
+    "Tests alarm systems regularly",
+    "Follows strict safety and wiring standards",
+    "Keeps accurate maintenance and inspection records",
+    "Communicates clearly with building managers",
+    "Diagnoses faults methodically"
+  ],
+
+  "tags": [
+    "fire safety",
+    "technical work",
+    "installation",
+    "maintenance",
+    "public safety",
+    "inspection",
+    "skilled trades",
+    "building systems"
+  ],
+
+  "hero": {
+    "image": "fire_alarm_technician_hero.jpg",
+    "color": "#FB923C",
+    "keywords": ["fire alarm", "installation", "safety"]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 295,
+  "id": "animator",
+  "slug": "animator",
+  "category": "Creative, Media \u0026 Culture",
+  "essence": "Creates animated sequences using digital or traditional techniques for film, games, advertising, and storytelling.",
+  "identity": {
+    "title": "Animator",
+    "summary": "Designs characters, environments, and motion; produces animated scenes using 2D, 3D, or stop\u2011motion techniques for creative projects."
+  },
+  "salary": {
+    "entry": {
+      "low": 20000,
+      "high": 28000
+    },
+    "mid": {
+      "low": 29000,
+      "high": 45000
+    },
+    "senior": {
+      "low": 46000,
+      "high": 90000
+    },
+    "notes": "Senior animators in film, VFX, or games can exceed \u00A3100k depending on studio and project scale."
+  },
+  "qualifications": [
+    "Portfolio demonstrating animation skills",
+    "Experience with animation software (e.g., Blender, Maya, After Effects)",
+    "Understanding of motion, timing, and storytelling",
+    "Ability to collaborate with directors and artists"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Studio\u2011based work with deadlines, iterative feedback, and creative collaboration; project cycles vary in intensity."
+  },
+  "habits": [
+    "Creates storyboards and animatics",
+    "Animates characters and scenes",
+    "Refines timing and motion curves",
+    "Collaborates with directors and editors"
+  ],
+  "tags": [
+    "animation",
+    "creative",
+    "motion",
+    "visual storytelling"
+  ],
+  "hero": {
+    "image": "animator_hero.jpg",
+    "color": "#2A3A5A",
+    "keywords": [
+      "animation",
+      "motion",
+      "creative"
+    ]
+  }
+}

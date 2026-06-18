@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "health_and_safety_officer",
+  "slug": "health-and-safety-officer",
+  "category": "Skilled Trades",
+
+  "essence": "Ensures workplaces are safe, compliant, and free from hazards through inspections, training, and risk management.",
+
+  "identity": {
+    "title": "Health & Safety Officer",
+    "summary": "Monitors workplace safety, conducts risk assessments, investigates incidents, and ensures compliance with health and safety regulations."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid":   { "low": 33000, "high": 45000 },
+    "senior": { "low": 46000, "high": 65000 },
+    "notes": "Senior H&S managers or specialists in high‑risk industries can exceed £65k–£85k+."
+  },
+
+  "qualifications": [
+    "NEBOSH General Certificate or equivalent",
+    "Knowledge of workplace safety legislation",
+    "Ability to conduct risk assessments and inspections",
+    "Understanding of incident investigation and reporting"
+  },
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Health and safety officers work across offices, construction sites, warehouses, and industrial facilities. They inspect workplaces, identify hazards, train staff, and ensure compliance with regulations. The role suits individuals who enjoy investigative work, communication, and improving workplace wellbeing."
+  },
+
+  "habits": [
+    "Conducts regular safety inspections",
+    "Writes clear risk assessments and reports",
+    "Trains staff on safety procedures",
+    "Investigates incidents and near‑misses",
+    "Monitors compliance with legislation"
+  ],
+
+  "tags": [
+    "health and safety",
+    "risk assessment",
+    "compliance",
+    "workplace safety",
+    "inspection",
+    "public safety",
+    "regulation"
+  ],
+
+  "hero": {
+    "image": "health_and_safety_officer_hero.jpg",
+    "color": "#10B981",
+    "keywords": ["safety", "compliance", "risk"]
+  }
+}

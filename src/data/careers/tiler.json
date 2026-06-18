@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "tiler",
+  "slug": "tiler",
+  "category": "Skilled Trades",
+
+  "essence": "Creates durable, precise, and visually clean surfaces using tiles, adhesives, and skilled craftsmanship.",
+
+  "identity": {
+    "title": "Tiler",
+    "summary": "Installs wall and floor tiles in homes and commercial spaces, ensuring accurate layout, clean cuts, strong adhesion, and high‑quality finishes."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 35000 },
+    "senior": { "low": 36000, "high": 48000 },
+    "notes": "Specialists in large‑format tiles, wet rooms, or high‑end commercial work can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Level 2/3 Diploma in Wall and Floor Tiling",
+    "Knowledge of adhesives, grouts, and substrates",
+    "Strong measurement and layout skills",
+    "Precision cutting and finishing ability"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Tilers work on residential and commercial projects installing tiles on floors, walls, bathrooms, kitchens, and wet rooms. Days involve preparing surfaces, marking layouts, cutting tiles, applying adhesives, grouting, and ensuring clean, symmetrical finishes. The role requires precision, patience, and strong practical skill. This lifestyle suits individuals who enjoy craftsmanship, visual detail, and transforming spaces through clean, high‑quality finishes."
+  },
+
+  "habits": [
+    "Plans tile layouts carefully",
+    "Cuts tiles cleanly and accurately",
+    "Keeps tools and materials organised",
+    "Maintains consistent spacing and alignment",
+    "Follows safety and surface‑prep procedures"
+  ],
+
+  "tags": [
+    "construction",
+    "craftsmanship",
+    "interior finishing",
+    "precision",
+    "hands-on work",
+    "skilled trades",
+    "tiling",
+    "renovation"
+  ],
+
+  "hero": {
+    "image": "tiler_hero.jpg",
+    "color": "#F59E0B",
+    "keywords": ["tiling", "craft", "precision"]
+  }
+}

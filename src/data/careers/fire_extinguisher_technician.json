@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_extinguisher_technician",
+  "slug": "fire-extinguisher-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Installs, inspects, and maintains fire extinguishers to ensure buildings remain compliant and protected.",
+
+  "identity": {
+    "title": "Fire Extinguisher Technician",
+    "summary": "Services, tests, and replaces fire extinguishers, ensuring they meet safety standards and function correctly in an emergency."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 33000 },
+    "senior": { "low": 34000, "high": 42000 },
+    "notes": "Technicians covering large commercial sites or multi‑site contracts can exceed £40k-£45k+."
+  },
+
+  "qualifications": [
+    "Training in fire‑extinguisher servicing (e.g., BAFE or equivalent)",
+    "Knowledge of extinguisher types, ratings, and regulations",
+    "Ability to test, refill, and certify extinguishers",
+    "Understanding of fire‑safety compliance and building requirements"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 5, 6, 6, 7, 7, 8, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9]
+  },
+
+  "lifestyle": {
+    "description": "Fire extinguisher technicians travel between homes, businesses, and public buildings inspecting, servicing, and replacing extinguishers. The role involves testing, refilling, ensuring compliance, and advising clients on correct placement and usage. It suits individuals who enjoy practical work, independence, and contributing to building safety."
+  },
+
+  "habits": [
+    "Checks extinguisher pressure and condition",
+    "Follows strict servicing and certification procedures",
+    "Keeps accurate maintenance records",
+    "Advises clients on correct extinguisher placement",
+    "Ensures compliance with fire‑safety regulations"
+  ],
+
+  "tags": [
+    "fire safety",
+    "inspection",
+    "maintenance",
+    "public safety",
+    "technical work",
+    "compliance",
+    "skilled trades",
+    "building safety"
+  ],
+
+  "hero": {
+    "image": "fire_extinguisher_technician_hero.jpg",
+    "color": "#F97316",
+    "keywords": ["fire safety", "extinguishers", "maintenance"]
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "passive_fire_protection_technician",
+  "slug": "passive-fire-protection-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Installs and maintains passive fire‑protection systems that slow or prevent the spread of fire and smoke within buildings.",
+
+  "identity": {
+    "title": "Passive Fire Protection Technician",
+    "summary": "Installs fire‑stopping, cavity barriers, fire‑resistant boards, coatings, and structural protection to ensure buildings meet fire‑safety standards."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 38000 },
+    "senior": { "low": 39000, "high": 50000 },
+    "notes": "Technicians specialising in complex commercial or high‑rise passive‑fire systems can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "Training in passive fire‑protection installation",
+    "Knowledge of fire‑stopping materials and methods",
+    "Ability to read construction drawings and specifications",
+    "Understanding of building regulations and fire‑resistance standards"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Passive fire‑protection technicians work on construction sites, refurbishments, and commercial buildings installing fire‑stopping, cavity barriers, structural protection, and fire‑resistant materials. The role suits individuals who enjoy practical work, construction environments, and contributing to life‑safety compliance."
+  },
+
+  "habits": [
+    "Installs fire‑stopping and barriers accurately",
+    "Follows strict safety and compliance standards",
+    "Keeps detailed photographic and written records",
+    "Communicates clearly with site managers and inspectors",
+    "Checks materials and installation quality carefully"
+  ],
+
+  "tags": [
+    "fire safety",
+    "passive fire protection",
+    "construction",
+    "installation",
+    "public safety",
+    "building safety",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "passive_fire_protection_technician_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["passive fire", "installation", "safety"]
+  }
+}

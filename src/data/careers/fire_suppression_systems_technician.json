@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_suppression_systems_technician",
+  "slug": "fire-suppression-systems-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Installs and maintains advanced fire‑suppression systems that protect buildings, equipment, and critical infrastructure.",
+
+  "identity": {
+    "title": "Fire Suppression Systems Technician",
+    "summary": "Installs, tests, and services fire‑suppression systems such as gas suppression, foam systems, mist systems, and specialist industrial protection."
+  },
+
+  "salary": {
+    "entry": { "low": 27000, "high": 32000 },
+    "mid":   { "low": 33000, "high": 42000 },
+    "senior": { "low": 43000, "high": 55000 },
+    "notes": "Technicians specialising in complex industrial, data‑centre, or marine suppression systems can exceed £55k-£70k+."
+  },
+
+  "qualifications": [
+    "Training in fire‑suppression installation and maintenance",
+    "Knowledge of gas, foam, and mist suppression technologies",
+    "Ability to test, fault‑find, and certify suppression systems",
+    "Understanding of pumps, valves, control panels, and safety protocols"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Fire suppression systems technicians work across commercial, industrial, and specialist environments installing and maintaining advanced suppression systems. The role involves technical diagnostics, safety‑critical testing, and ensuring compliance with strict standards. It suits individuals who enjoy complex systems, problem‑solving, and contributing to high‑level fire protection."
+  },
+
+  "habits": [
+    "Tests suppression systems regularly",
+    "Follows strict installation and safety standards",
+    "Keeps accurate maintenance and certification records",
+    "Communicates clearly with clients and contractors",
+    "Diagnoses faults in complex systems methodically"
+  ],
+
+  "tags": [
+    "fire safety",
+    "suppression systems",
+    "technical work",
+    "installation",
+    "maintenance",
+    "public safety",
+    "skilled trades",
+    "building systems"
+  ],
+
+  "hero": {
+    "image": "fire_suppression_systems_technician_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["suppression", "fire safety", "systems"]
+  }
+}

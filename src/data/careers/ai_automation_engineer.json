@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "ai_automation_engineer",
+  "slug": "ai-automation-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Builds AI‑driven automation systems that control machines, robotics, and production workflows with adaptive, real‑time intelligence.",
+
+  "identity": {
+    "title": "AI Automation Engineer",
+    "summary": "Designs and deploys automation systems enhanced by machine learning, enabling equipment, robots, and production lines to make intelligent, real‑time decisions."
+  },
+
+  "salary": {
+    "entry": { "low": 48000, "high": 62000 },
+    "mid":   { "low": 63000, "high": 95000 },
+    "senior": { "low": 96000, "high": 150000 },
+    "notes": "Engineers in aerospace, robotics, or fully autonomous smart‑factory environments can exceed £150k-£200k+."
+  },
+
+  "qualifications": [
+    "Experience in automation engineering, robotics, or AI‑driven control systems",
+    "Knowledge of PLCs, sensors, and industrial automation platforms",
+    "Skills in machine learning, optimisation, and real‑time decision systems",
+    "Understanding of CNC, robotics, and Industry 4.0 workflows"
+  ],
+
+  "curves": {
+    "difficulty": [6, 7, 8, 8, 9, 9, 10, 10, 10, 10],
+    "effort":     [6, 7, 8, 8, 9, 9, 10, 10, 10, 10],
+    "reward":     [6, 7, 8, 8, 9, 10, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "AI automation engineers work in aerospace, robotics, automotive, and Industry 4.0 environments. They build intelligent automation systems that adapt to real‑time conditions, optimise performance, and support autonomous manufacturing. The role suits individuals who enjoy robotics, AI, and high‑tech engineering."
+  },
+
+  "habits": [
+    "Designs AI‑enhanced automation and control systems",
+    "Integrates robotics, sensors, and machine‑learning models",
+    "Implements adaptive, real‑time decision logic",
+    "Collaborates with reliability, production, and AI teams",
+    "Ensures safe, efficient, autonomous operation of equipment"
+  ],
+
+  "tags": [
+    "AI",
+    "automation",
+    "robotics",
+    "industry 4.0",
+    "smart factory",
+    "adaptive control"
+  ],
+
+  "hero": {
+    "image": "ai_automation_engineer_hero.jpg",
+    "color": "#000613",
+    "keywords": ["AI", "automation", "robotics"]
+  }
+}

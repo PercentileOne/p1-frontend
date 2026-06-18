@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_maintenance_technician",
+  "slug": "cnc-maintenance-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Maintains, repairs, and optimises CNC machines to ensure reliable, accurate, and efficient production.",
+
+  "identity": {
+    "title": "CNC Maintenance Technician",
+    "summary": "Diagnoses mechanical, electrical, and control-system issues in CNC machines, performs repairs, conducts preventive maintenance, and ensures equipment operates safely and accurately."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 36000 },
+    "mid":   { "low": 37000, "high": 48000 },
+    "senior": { "low": 49000, "high": 65000 },
+    "notes": "Technicians specialising in multi‑axis systems, robotics, or advanced controls can exceed £65k-£80k+."
+  },
+
+  "qualifications": [
+    "Training in mechanical, electrical, or mechatronic maintenance",
+    "Knowledge of CNC machinery, drives, motors, and control systems",
+    "Ability to diagnose faults and perform mechanical/electrical repairs",
+    "Understanding of preventive maintenance, safety, and calibration"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC maintenance technicians work in precision engineering firms, aerospace, automotive, and industrial manufacturing. They keep CNC machines running reliably, reduce downtime, and ensure production accuracy. The role suits individuals who enjoy diagnostics, hands‑on technical work, and maintaining complex machinery."
+  },
+
+  "habits": [
+    "Diagnoses mechanical and electrical CNC faults",
+    "Performs repairs on motors, drives, spindles, and control systems",
+    "Conducts preventive maintenance and calibration",
+    "Reads schematics, manuals, and engineering documentation",
+    "Works with machinists and engineers to minimise downtime"
+  ],
+
+  "tags": [
+    "CNC",
+    "maintenance",
+    "mechanical",
+    "electrical",
+    "diagnostics",
+    "industrial"
+  ],
+
+  "hero": {
+    "image": "cnc_maintenance_technician_hero.jpg",
+    "color": "#002A16",
+    "keywords": ["CNC", "maintenance", "diagnostics"]
+  }
+}

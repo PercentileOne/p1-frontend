@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_service_engineer",
+  "slug": "cnc-service-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Installs, services, and repairs CNC machines on-site, providing advanced diagnostics and technical support to manufacturing clients.",
+
+  "identity": {
+    "title": "CNC Service Engineer",
+    "summary": "Travels to customer sites to install CNC machinery, diagnose complex faults, perform repairs, calibrate systems, and ensure machines operate at peak performance."
+  },
+
+  "salary": {
+    "entry": { "low": 35000, "high": 42000 },
+    "mid":   { "low": 43000, "high": 58000 },
+    "senior": { "low": 59000, "high": 80000 },
+    "notes": "Engineers specialising in multi‑axis, robotics, or OEM‑level systems can exceed £80k-£100k+ with overtime and travel allowances."
+  },
+
+  "qualifications": [
+    "Training in mechanical, electrical, or mechatronic engineering",
+    "Strong knowledge of CNC machinery, drives, motors, PLCs, and control systems",
+    "Ability to diagnose complex mechanical/electrical faults",
+    "Experience with installation, calibration, and customer support"
+  ],
+
+  "curves": {
+    "difficulty": [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC service engineers work for OEMs, distributors, and engineering service companies. They travel to factories to install, repair, and optimise CNC machines. The role suits individuals who enjoy autonomy, problem‑solving, customer interaction, and working with advanced machinery."
+  },
+
+  "habits": [
+    "Installs CNC machines and configures control systems",
+    "Diagnoses complex mechanical, electrical, and software faults",
+    "Performs repairs, calibration, and preventive maintenance",
+    "Trains operators and provides technical support",
+    "Travels to customer sites and manages service documentation"
+  ],
+
+  "tags": [
+    "CNC",
+    "service engineering",
+    "maintenance",
+    "diagnostics",
+    "field engineering",
+    "industrial"
+  ],
+
+  "hero": {
+    "image": "cnc_service_engineer_hero.jpg",
+    "color": "#002A12",
+    "keywords": ["CNC", "service", "engineering"]
+  }
+}

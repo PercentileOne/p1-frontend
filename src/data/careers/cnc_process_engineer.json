@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_process_engineer",
+  "slug": "cnc-process-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Designs, improves, and optimises CNC machining processes to increase efficiency, accuracy, and production quality.",
+
+  "identity": {
+    "title": "CNC Process Engineer",
+    "summary": "Develops machining processes, optimises toolpaths, improves cycle times, and ensures CNC production meets engineering, quality, and efficiency standards."
+  },
+
+  "salary": {
+    "entry": { "low": 38000, "high": 45000 },
+    "mid":   { "low": 46000, "high": 62000 },
+    "senior": { "low": 63000, "high": 90000 },
+    "notes": "Process engineers in aerospace, defence, or high‑precision manufacturing can exceed £90k-£120k+."
+  },
+
+  "qualifications": [
+    "Experience in CNC machining, programming, or applications engineering",
+    "Strong understanding of tooling, materials, feeds, speeds, and machining strategies",
+    "Ability to analyse and optimise machining processes",
+    "Knowledge of lean manufacturing, quality control, and engineering principles"
+  ],
+
+  "curves": {
+    "difficulty": [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC process engineers work in advanced manufacturing, aerospace, automotive, and precision engineering. They design machining processes, improve efficiency, reduce waste, and ensure consistent production quality. The role suits individuals who enjoy engineering analysis, optimisation, and improving manufacturing performance."
+  },
+
+  "habits": [
+    "Develops and optimises CNC machining processes",
+    "Analyses cycle times, tooling performance, and workflow",
+    "Improves efficiency, accuracy, and quality",
+    "Collaborates with machinists, programmers, and engineers",
+    "Implements lean manufacturing and continuous improvement"
+  ],
+
+  "tags": [
+    "CNC",
+    "process engineering",
+    "manufacturing",
+    "optimisation",
+    "precision engineering",
+    "tooling"
+  ],
+
+  "hero": {
+    "image": "cnc_process_engineer_hero.jpg",
+    "color": "#002A0C",
+    "keywords": ["CNC", "process", "optimisation"]
+  }
+}

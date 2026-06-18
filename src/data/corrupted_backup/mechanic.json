@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "mechanic",
+  "slug": "mechanic",
+  "category": "Skilled Trades",
+
+  "essence": "Diagnoses, repairs, and maintains vehicles with technical skill, problem‑solving, and hands‑on precision.",
+
+  "identity": {
+    "title": "Mechanic",
+    "summary": "Inspects, services, and repairs vehicles by identifying faults, replacing parts, and ensuring safe, reliable performance."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid": { "low": 27000, "high": 35000 },
+    "senior": { "low": 36000, "high": 45000 },
+    "notes": "Specialist diagnostics, performance tuning, EV/hybrid certification, and dealership master technician roles can exceed £50k–£70k+."
+  },
+
+  "qualifications": [
+    "Apprenticeship in Vehicle Maintenance and Repair",
+    "NVQ or Diploma in Light Vehicle Maintenance",
+    "Strong Understanding of Engines, Electronics, and Diagnostics",
+    "Experience with Tools, Lifts, and Safety Procedures"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Mechanics work in busy workshops where technical skill, problem‑solving, and physical activity define the day. Tasks include diagnosing faults, repairing engines, servicing vehicles, and using diagnostic equipment to identify electrical issues. The environment can be noisy, hands‑on, and fast‑paced, especially during peak seasons. The role requires precision, patience, and a methodical approach — small mistakes can have major safety implications. While physically demanding, the work is deeply satisfying for those who enjoy fixing things, understanding how systems work, and helping people stay safe on the road. This lifestyle suits individuals who are practical, curious, and mechanically minded."
+  },
+
+  "habits": [
+    "Diagnoses faults methodically",
+    "Keeps tools and workspace organised",
+    "Follows safety procedures consistently",
+    "Documents repairs and findings clearly",
+    "Stays updated on new vehicle technologies"
+  },
+
+  "tags": [
+    "hands-on work",
+    "problem-solving",
+    "vehicles",
+    "diagnostics",
+    "technical skill",
+    "repair",
+    "safety",
+    "mechanical systems"
+  ],
+
+  "hero": {
+    "image": "mechanic_hero.jpg",
+    "color": "#2563EB",
+    "keywords": ["repair", "diagnostics", "mechanics"]
+  }
+}

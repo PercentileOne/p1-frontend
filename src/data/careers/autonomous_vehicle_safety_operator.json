@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 237,
+  "id": "autonomous_vehicle_safety_operator",
+  "slug": "autonomous-vehicle-safety-operator",
+  "category": "AI, Robotics \u0026 Automation",
+  "essence": "Monitors and intervenes in autonomous vehicle trials and operations to ensure safety and regulatory compliance.",
+  "identity": {
+    "title": "Autonomous Vehicle Safety Operator",
+    "summary": "Oversees AV test runs, monitors system behaviour, takes manual control when necessary, and documents incidents for engineering teams and regulators."
+  },
+  "salary": {
+    "entry": {
+      "low": 28000,
+      "high": 35000
+    },
+    "mid": {
+      "low": 36000,
+      "high": 48000
+    },
+    "senior": {
+      "low": 49000,
+      "high": 70000
+    },
+    "notes": "Roles in urban trials or with major OEMs often include additional training and allowances."
+  },
+  "qualifications": [
+    "Full driving licence and experience in vehicle operations",
+    "Training in AV safety protocols and incident reporting",
+    "Good situational awareness and communication skills",
+    "Basic understanding of AV systems and sensors"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9
+  ],
+    "effort": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "reward": [
+      4,
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Work is often shift\u2011based around test schedules, with time in vehicles and at control centres. Requires readiness to respond quickly and document findings accurately."
+  },
+  "habits": [
+    "Monitors sensor feeds and vehicle telemetry",
+    "Intervenes safely when systems behave unexpectedly",
+    "Logs incidents and collaborates with engineers",
+    "Supports public demonstrations and regulatory audits"
+  ],
+  "tags": [
+    "autonomous vehicles",
+    "safety",
+    "testing",
+    "operations"
+  ],
+  "hero": {
+    "image": "autonomous_vehicle_safety_operator_hero.jpg",
+    "color": "#1A4B6B",
+    "keywords": [
+      "autonomous",
+      "safety",
+      "vehicle"
+    ]
+  }
+}

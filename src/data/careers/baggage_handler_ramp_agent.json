@@ -1,0 +1,54 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "baggage_handler_ramp_agent",
+  "slug": "baggage_handler_ramp_agent",
+  "category": "Aviation",
+
+  "essence": "Loads, unloads, and transports luggage and cargo to keep flights running smoothly.",
+
+  "identity": {
+    "title": "Baggage Handler / Ramp Agent",
+    "summary": "Moves luggage, guides aircraft, and supports ground operations to ensure safe and efficient flight turnaround."
+  },
+
+  "salary": {
+    "entry": { "low": 19000, "high": 22000 },
+    "mid": { "low": 23000, "high": 26000 },
+    "senior": { "low": 27000, "high": 32000 },
+    "notes": "Overtime, shift allowances, and airport security roles can increase earnings."
+  },
+
+  "qualifications": [
+    "Good physical fitness",
+    "Ability to work outdoors in all weather",
+    "Understanding of safety procedures",
+    "Teamwork and communication skills"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 5, 6, 6, 7, 7, 7, 8, 8],
+    "effort": [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "reward": [4, 4, 5, 5, 6, 6, 7, 7, 7, 8]
+  },
+
+  "lifestyle": {
+    "description": "Ramp agents work on the airfield, loading luggage, operating equipment, and guiding aircraft. The role is physical, fast-paced, and often outdoors. It suits people who enjoy active work and teamwork."
+  },
+
+  "habits": [
+    "Follows safety protocols",
+    "Communicates clearly with team members",
+    "Handles luggage efficiently",
+    "Operates ground equipment safely",
+    "Works effectively under time pressure"
+  ],
+
+  "tags": ["aviation", "physical work", "teamwork", "outdoors", "operations"],
+
+  "hero": {
+    "image": "baggage_handler_hero.jpg",
+    "color": "#1E3A8A",
+    "keywords": ["aircraft", "luggage", "ramp"]
+  }
+}

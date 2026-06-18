@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "occupational_health_nurse",
+  "slug": "occupational-health-nurse",
+  "category": "Skilled Trades",
+
+  "essence": "Provides clinical support in workplace health, carrying out assessments, managing cases, and promoting employee wellbeing.",
+
+  "identity": {
+    "title": "Occupational Health Nurse",
+    "summary": "Delivers clinical assessments, manages workplace health cases, advises on fitness for work, and supports employee wellbeing across organisations."
+  },
+
+  "salary": {
+    "entry": { "low": 34000, "high": 40000 },
+    "mid":   { "low": 41000, "high": 52000 },
+    "senior": { "low": 53000, "high": 70000 },
+    "notes": "Highly experienced OH nurses or those working in high‑risk industries can exceed £70k-£85k+."
+  },
+
+  "qualifications": [
+    "Registered Nurse (NMC) with occupational health training",
+    "Knowledge of workplace health risks and legislation",
+    "Ability to conduct clinical assessments and case management",
+    "Understanding of ergonomics, wellbeing, and return‑to‑work planning"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Occupational health nurses work across offices, factories, public organisations, and high‑risk industries. They conduct clinical assessments, manage health cases, advise on fitness for work, and support employee wellbeing. The role suits individuals who enjoy clinical practice, communication, and improving workplace health outcomes."
+  },
+
+  "habits": [
+    "Conducts clinical assessments and screenings",
+    "Manages health cases and return‑to‑work plans",
+    "Advises on workplace adjustments and wellbeing",
+    "Maintains accurate medical records",
+    "Communicates clearly with employees and managers"
+  ],
+
+  "tags": [
+    "occupational health",
+    "nursing",
+    "employee wellbeing",
+    "clinical assessment",
+    "risk management",
+    "workplace health"
+  ],
+
+  "hero": {
+    "image": "occupational_health_nurse_hero.jpg",
+    "color": "#0D9488",
+    "keywords": ["nursing", "wellbeing", "workplace health"]
+  }
+}

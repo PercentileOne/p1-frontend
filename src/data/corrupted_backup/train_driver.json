@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "train_driver",
+  "slug": "train-driver",
+  "category": "Transport",
+
+  "essence": "Operates powerful rail vehicles with precision, safety, and calm focus across long, structured routes.",
+
+  "identity": {
+    "title": "Train Driver",
+    "summary": "Drives passenger or freight trains, following strict safety procedures, signals, and timetables while maintaining full control of the locomotive."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 38000 },
+    "mid": { "low": 45000, "high": 55000 },
+    "senior": { "low": 58000, "high": 70000 },
+    "notes": "Fully qualified UK train drivers often earn £55k–£70k+, with London and major operators paying at the top end. Overtime and night shifts can increase earnings further."
+  },
+
+  "qualifications": [
+    "Train Driver Apprenticeship or Trainee Programme",
+    "Medical and eyesight assessments",
+    "Safety‑critical communication training",
+    "Strong concentration, spatial awareness, and rule‑based decision‑making"
+  },
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [6, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Train drivers work on fixed routes across regional, intercity, or freight networks. Days involve performing safety checks, monitoring signals, controlling speed, communicating with control centres, and ensuring smooth journeys. The role demands intense concentration, especially during adverse weather, busy stations, or unexpected track conditions. Shifts often include early mornings, late nights, weekends, and bank holidays. Despite the responsibility, the job offers excellent pay, strong job security, and a calm, structured working rhythm. This lifestyle suits individuals who enjoy independence, routine, and operating large, powerful machinery with precision."
+  },
+
+  "habits": [
+    "Performs detailed pre‑departure safety checks",
+    "Maintains full focus on signals and track conditions",
+    "Communicates clearly with control and station staff",
+    "Keeps to timetables while prioritising safety",
+    "Logs incidents and operational details accurately"
+  },
+
+  "tags": [
+    "transport",
+    "rail",
+    "safety‑critical",
+    "routine",
+    "machinery",
+    "independent work",
+    "navigation",
+    "public service"
+  ],
+
+  "hero": {
+    "image": "train_driver_hero.jpg",
+    "color": "#1D4ED8",
+    "keywords": ["rail", "precision", "safety"]
+  }
+}

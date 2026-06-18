@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "delivery_driver",
+  "slug": "delivery-driver",
+  "category": "Logistics",
+
+  "essence": "Keeps goods moving and customers connected through reliable transport, timing, and route awareness.",
+
+  "identity": {
+    "title": "Delivery Driver",
+    "summary": "Transports parcels, food, or goods between locations, managing routes, schedules, and customer interactions with reliability and care."
+  },
+
+  "salary": {
+    "entry": { "low": 20000, "high": 23000 },
+    "mid": { "low": 24000, "high": 28000 },
+    "senior": { "low": 29000, "high": 35000 },
+    "notes": "Self‑employed couriers, multi‑drop specialists, and heavy‑goods drivers can exceed £35k–£50k+ depending on vehicle type, contracts, and hours."
+  },
+
+  "qualifications": [
+    "Valid UK driving licence (appropriate category)",
+    "Good navigation and route‑planning skills",
+    "Understanding of road safety and delivery procedures",
+    "Customer service and time‑management abilities"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Delivery drivers spend their days on the road, transporting goods between homes, businesses, and depots. Tasks include loading vehicles, planning routes, navigating traffic, delivering parcels or food, obtaining signatures, and maintaining delivery records. The work can be fast‑paced, especially during peak seasons, and often involves long periods of driving, lifting packages, and working independently. Despite the demands, the role offers freedom, routine, and the satisfaction of completing clear daily goals. This lifestyle suits individuals who enjoy driving, autonomy, and staying active throughout the day."
+  },
+
+  "habits": [
+    "Plans efficient routes before setting off",
+    "Keeps the vehicle clean and organised",
+    "Handles parcels with care and accuracy",
+    "Communicates clearly with customers",
+    "Manages time effectively across multiple stops"
+  },
+
+  "tags": [
+    "logistics",
+    "driving",
+    "independent work",
+    "customer service",
+    "time management",
+    "physical activity",
+    "transport",
+    "routine"
+  ],
+
+  "hero": {
+    "image": "delivery_driver_hero.jpg",
+    "color": "#F59E0B",
+    "keywords": ["transport", "movement", "reliability"]
+  }
+}

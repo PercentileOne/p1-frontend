@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 277,
+  "id": "search_and_rescue_technician",
+  "slug": "search-and-rescue-technician",
+  "category": "Public Services, Emergency \u0026 Safety",
+  "essence": "Conducts technical search and rescue operations in challenging environments to locate and recover people in distress.",
+  "identity": {
+    "title": "Search and Rescue Technician",
+    "summary": "Operates in mountain, maritime, or urban environments using specialist equipment and techniques to save lives."
+  },
+  "salary": {
+    "entry": {
+      "low": 26000,
+      "high": 34000
+    },
+    "mid": {
+      "low": 35000,
+      "high": 52000
+    },
+    "senior": {
+      "low": 53000,
+      "high": 90000
+    },
+    "notes": "Specialist teams and volunteer coordinators may receive allowances or higher pay."
+  },
+  "qualifications": [
+    "Training in rope rescue, casualty care, and navigation",
+    "Experience in hazardous environments and teamwork",
+    "Strong physical fitness and decision\u2011making under pressure",
+    "Certifications relevant to the operating environment"
+  ],
+  "curves": {
+    "difficulty": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10
+  ],
+    "effort": [
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    9,
+    10
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      9,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "On\u2011call and shift work with exposure to hazardous conditions; high teamwork and training demands."
+  },
+  "habits": [
+    "Conducts search planning and briefings",
+    "Uses technical rescue equipment and navigation tools",
+    "Provides casualty care and evacuation",
+    "Maintains readiness and training currency"
+  ],
+  "tags": [
+    "search and rescue",
+    "technical rescue",
+    "emergency",
+    "operations"
+  ],
+  "hero": {
+    "image": "search_and_rescue_technician_hero.jpg",
+    "color": "#1F4A5A",
+    "keywords": [
+      "search",
+      "rescue",
+      "technical"
+    ]
+  }
+}

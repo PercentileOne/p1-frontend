@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "stonemason",
+  "slug": "stonemason",
+  "category": "Skilled Trades",
+
+  "essence": "Shapes and restores stone structures with craftsmanship, precision, and deep respect for traditional building techniques.",
+
+  "identity": {
+    "title": "Stonemason",
+    "summary": "Cuts, shapes, and installs natural stone for buildings, monuments, and restoration projects, combining traditional craft with modern tools."
+  },
+
+  "salary": {
+    "entry": { "low": 23000, "high": 26000 },
+    "mid": { "low": 28000, "high": 35000 },
+    "senior": { "low": 36000, "high": 50000 },
+    "notes": "Heritage restoration specialists and highly skilled masons can exceed £50k–£65k+ depending on project scale and expertise."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Level 2/3 Diploma in Stonemasonry",
+    "Knowledge of stone types, tools, and carving techniques",
+    "Understanding of restoration and conservation methods",
+    "Strong hand‑eye coordination and physical stamina"
+  },
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Stonemasons work on construction sites, workshops, and heritage restoration projects, shaping stone for walls, facades, monuments, and architectural details. Days involve cutting and carving stone, reading technical drawings, repairing historic structures, and working with both hand tools and machinery. The role is physically demanding and requires patience, precision, and artistic skill. This lifestyle suits individuals who enjoy craftsmanship, tradition, and creating work that lasts for centuries."
+  },
+
+  "habits": [
+    "Measures and marks stone accurately",
+    "Maintains sharp, well‑kept tools",
+    "Works patiently with precision and care",
+    "Follows safety procedures around heavy materials",
+    "Studies traditional and modern masonry techniques"
+  ],
+
+  "tags": [
+    "craftsmanship",
+    "heritage",
+    "construction",
+    "manual skills",
+    "precision",
+    "restoration",
+    "stonework",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "stonemason_hero.jpg",
+    "color": "#78716C",
+    "keywords": ["craft", "stone", "heritage"]
+  }
+}

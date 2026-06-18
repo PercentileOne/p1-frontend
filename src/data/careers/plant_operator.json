@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "plant_operator",
+  "slug": "plant-operator",
+  "category": "Skilled Trades",
+
+  "essence": "Operates heavy machinery that shapes land, moves materials, and powers major construction and civil engineering projects.",
+
+  "identity": {
+    "title": "Plant Operator",
+    "summary": "Operates heavy construction machinery such as excavators, dumpers, rollers, telehandlers, and loaders to support earthworks, groundwork, and infrastructure projects."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 28000 },
+    "mid":   { "low": 30000, "high": 38000 },
+    "senior": { "low": 40000, "high": 55000 },
+    "notes": "Operators with multiple machine tickets or working on large civils/infrastructure projects can exceed £55k-£65k+."
+  },
+
+  "qualifications": [
+    "CPCS or NPORS plant operation tickets",
+    "Knowledge of machine controls, safety systems, and maintenance",
+    "Understanding of site plans, levels, and communication signals",
+    "Strong spatial awareness and safety discipline"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Plant operators work on construction and civil engineering sites using heavy machinery to move earth, dig trenches, lift materials, compact ground, and support major structural works. Days involve machine checks, safe operation, teamwork with groundworkers and supervisors, and adapting to changing site conditions. The role suits individuals who enjoy machinery, outdoor work, and being central to the progress of large projects."
+  },
+
+  "habits": [
+    "Performs daily machine safety checks",
+    "Operates machinery smoothly and safely",
+    "Communicates clearly with ground teams",
+    "Keeps work areas tidy and hazard‑free",
+    "Follows strict site and machine protocols"
+  ],
+
+  "tags": [
+    "construction",
+    "civils",
+    "machinery",
+    "earthmoving",
+    "infrastructure",
+    "skilled trades",
+    "plant operation",
+    "outdoor work"
+  ],
+
+  "hero": {
+    "image": "plant_operator_hero.jpg",
+    "color": "#CA8A04",
+    "keywords": ["machinery", "excavator", "construction"]
+  }
+}

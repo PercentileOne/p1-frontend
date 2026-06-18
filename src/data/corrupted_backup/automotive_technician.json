@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "automotive_technician",
+  "slug": "automotive-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Keeps modern vehicles running safely and efficiently through diagnostics, technical expertise, and hands‑on precision.",
+
+  "identity": {
+    "title": "Automotive Technician",
+    "summary": "Diagnoses, services, and repairs modern vehicles using advanced diagnostic tools, mechanical knowledge, and electrical systems expertise."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid": { "low": 27000, "high": 35000 },
+    "senior": { "low": 36000, "high": 45000 },
+    "notes": "EV/hybrid certification, dealership master technician roles, and specialist diagnostics can exceed £50k–£70k+."
+  },
+
+  "qualifications": [
+    "Apprenticeship in Vehicle Maintenance and Repair",
+    "NVQ or Diploma in Light Vehicle Maintenance",
+    "Training in Diagnostics, Electronics, and EV/Hybrid Systems",
+    "Strong Understanding of Mechanical and Electrical Components"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Automotive technicians work in dynamic workshop environments where technology, diagnostics, and hands‑on repair come together. Days involve inspecting vehicles, running diagnostic tests, repairing mechanical and electrical faults, and performing routine servicing. Modern vehicles require strong understanding of electronics, sensors, and computer‑based systems, making continuous learning essential. The work is practical, problem‑solving‑heavy, and often fast‑paced, especially in dealership or high‑volume garages. It suits individuals who enjoy technical challenges, working with their hands, and seeing immediate, tangible results from their expertise."
+  },
+
+  "habits": [
+    "Uses diagnostic tools to identify faults",
+    "Keeps tools and workspace organised",
+    "Follows safety and manufacturer procedures",
+    "Documents repairs and findings accurately",
+    "Stays updated on new vehicle technologies"
+  },
+
+  "tags": [
+    "diagnostics",
+    "vehicles",
+    "technical skill",
+    "mechanical systems",
+    "electronics",
+    "repair",
+    "hands-on work",
+    "problem-solving"
+  ],
+
+  "hero": {
+    "image": "automotive_technician_hero.jpg",
+    "color": "#0EA5E9",
+    "keywords": ["diagnostics", "technology", "repair"]
+  }
+}

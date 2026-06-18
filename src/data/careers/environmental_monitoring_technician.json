@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "environmental_monitoring_technician",
+  "slug": "environmental-monitoring-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Collects and analyses environmental samples to monitor pollution, ecosystem health, and regulatory compliance.",
+
+  "identity": {
+    "title": "Environmental Monitoring Technician",
+    "summary": "Carries out field sampling, operates monitoring equipment, records environmental data, and supports pollution control and environmental‑quality assessments."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 38000 },
+    "senior": { "low": 39000, "high": 48000 },
+    "notes": "Technicians specialising in advanced instrumentation, water‑quality networks, or industrial monitoring can exceed £48k-£55k+."
+  },
+
+  "qualifications": [
+    "Training in environmental science, laboratory techniques, or field monitoring",
+    "Knowledge of sampling methods and environmental regulations",
+    "Ability to operate monitoring instruments and record accurate data",
+    "Understanding of pollution, water quality, and environmental indicators"
+  ],
+
+  "curves": {
+    "difficulty": [5, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "effort":     [5, 5, 6, 6, 7, 7, 8, 8, 9, 10],
+    "reward":     [5, 5, 6, 6, 7, 7, 8, 8, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Environmental monitoring technicians work for councils, environmental agencies, laboratories, and water companies. They collect samples, maintain monitoring stations, analyse results, and support environmental‑quality assessments. The role suits individuals who enjoy fieldwork, data collection, and environmental protection."
+  },
+
+  "habits": [
+    "Collects water, soil, and air samples",
+    "Operates environmental monitoring equipment",
+    "Records and analyses environmental data",
+    "Supports pollution investigations and compliance checks",
+    "Maintains sampling logs and prepares reports"
+  ],
+
+  "tags": [
+    "environmental monitoring",
+    "sampling",
+    "pollution",
+    "environmental quality",
+    "fieldwork",
+    "compliance"
+  ],
+
+  "hero": {
+    "image": "environmental_monitoring_technician_hero.jpg",
+    "color": "#0EA5E9",
+    "keywords": ["monitoring", "sampling", "environment"]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 252,
+  "id": "toolmaker",
+  "slug": "toolmaker",
+  "category": "Advanced Manufacturing \u0026 Engineering",
+  "essence": "Produces precision tools, jigs, and fixtures used in manufacturing and assembly processes.",
+  "identity": {
+    "title": "Toolmaker",
+    "summary": "Manufactures and maintains specialised tooling, using precision machining, grinding, and inspection techniques."
+  },
+  "salary": {
+    "entry": {
+      "low": 26000,
+      "high": 34000
+    },
+    "mid": {
+      "low": 35000,
+      "high": 52000
+    },
+    "senior": {
+      "low": 53000,
+      "high": 90000
+    },
+    "notes": "Highly skilled toolmakers with experience in precision and aerospace tooling are well rewarded."
+  },
+  "qualifications": [
+    "Apprenticeship or NVQ in toolmaking or precision engineering",
+    "Experience with lathes, mills, grinders, and inspection tools",
+    "Ability to read engineering drawings and tolerances",
+    "Strong attention to detail and measurement skills"
+  ],
+  "curves": {
+    "difficulty": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      9,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Workshop\u2011based craft with precision work, long periods at machines, and a focus on quality and repeatability."
+  },
+  "habits": [
+    "Machines and fits precision tooling",
+    "Performs inspections and tolerance checks",
+    "Maintains tooling and documents changes",
+    "Collaborates with production to improve tooling life"
+  ],
+  "tags": [
+    "toolmaking",
+    "precision",
+    "machining",
+    "workshop"
+  ],
+  "hero": {
+    "image": "toolmaker_hero.jpg",
+    "color": "#4A3B2E",
+    "keywords": [
+      "tooling",
+      "precision",
+      "machining"
+    ]
+  }
+}

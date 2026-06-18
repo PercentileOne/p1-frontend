@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "mechanical_operator",
+  "slug": "mechanical-operator",
+  "category": "Skilled Trades",
+
+  "essence": "Operates mechanical machinery and production equipment safely, efficiently, and to quality standards.",
+
+  "identity": {
+    "title": "Mechanical Operator",
+    "summary": "Runs, monitors, and adjusts mechanical machinery in manufacturing and industrial environments, ensuring safe operation, consistent output, and high‑quality production."
+  },
+
+  "salary": {
+    "entry": { "low": 21000, "high": 25000 },
+    "mid":   { "low": 26000, "high": 32000 },
+    "senior": { "low": 33000, "high": 42000 },
+    "notes": "Operators specialising in CNC, automated systems, or high‑precision manufacturing can exceed £42k-£55k+."
+  },
+
+  "qualifications": [
+    "Training in mechanical operations, manufacturing, or industrial machinery",
+    "Ability to operate and monitor mechanical equipment safely",
+    "Knowledge of production processes and quality standards",
+    "Understanding of basic maintenance, troubleshooting, and safety procedures"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [3, 4, 5, 5, 6, 6, 7, 7, 8, 9],
+    "reward":     [3, 4, 5, 5, 6, 6, 7, 7, 8, 9]
+  },
+
+  "lifestyle": {
+    "description": "Mechanical operators work in factories, workshops, and industrial plants. They run machinery, monitor performance, adjust settings, and ensure production meets quality and safety standards. The role suits individuals who enjoy hands‑on work, routine processes, and operating mechanical systems."
+  },
+
+  "habits": [
+    "Operates and monitors mechanical machinery",
+    "Adjusts machine settings for optimal performance",
+    "Performs basic troubleshooting and minor maintenance",
+    "Follows production schedules and quality standards",
+    "Keeps equipment and work areas safe and clean"
+  ],
+
+  "tags": [
+    "mechanical",
+    "operations",
+    "manufacturing",
+    "production",
+    "machinery",
+    "industrial"
+  ],
+
+  "hero": {
+    "image": "mechanical_operator_hero.jpg",
+    "color": "#082A4F",
+    "keywords": ["machinery", "operations", "production"]
+  }
+}

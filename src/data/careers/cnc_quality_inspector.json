@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_quality_inspector",
+  "slug": "cnc-quality-inspector",
+  "category": "Skilled Trades",
+
+  "essence": "Inspects CNC‑machined components to ensure they meet dimensional, material, and quality standards.",
+
+  "identity": {
+    "title": "CNC Quality Inspector",
+    "summary": "Uses precision measurement tools, inspection processes, and engineering drawings to verify that CNC‑produced parts meet required tolerances and quality specifications."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid":   { "low": 33000, "high": 42000 },
+    "senior": { "low": 43000, "high": 55000 },
+    "notes": "Inspectors specialising in aerospace, defence, or CMM programming can exceed £55k-£70k+."
+  },
+
+  "qualifications": [
+    "Training in CNC machining, quality control, or precision engineering",
+    "Ability to read engineering drawings and interpret tolerances",
+    "Knowledge of measurement tools such as micrometers, calipers, gauges, and CMMs",
+    "Understanding of quality standards, inspection processes, and documentation"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 10],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC quality inspectors work in precision engineering firms, aerospace, automotive, and industrial manufacturing. They verify part accuracy, document results, and ensure production meets strict quality standards. The role suits individuals who enjoy precision, detail, and ensuring engineering excellence."
+  },
+
+  "habits": [
+    "Inspects CNC‑machined components using precision tools",
+    "Reads engineering drawings and verifies tolerances",
+    "Documents inspection results and quality issues",
+    "Works with machinists and engineers to resolve defects",
+    "Ensures compliance with quality and safety standards"
+  ],
+
+  "tags": [
+    "CNC",
+    "quality inspection",
+    "precision engineering",
+    "manufacturing",
+    "measurement",
+    "quality control"
+  ],
+
+  "hero": {
+    "image": "cnc_quality_inspector_hero.jpg",
+    "color": "#002A1A",
+    "keywords": ["quality", "inspection", "precision"]
+  }
+}

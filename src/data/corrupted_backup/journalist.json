@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "journalist",
+  "slug": "journalist",
+  "category": "Media",
+
+  "essence": "Tells the truth with clarity and courage, turning events into stories that inform, challenge, and shape public understanding.",
+
+  "identity": {
+    "title": "Journalist",
+    "summary": "Researches stories, interviews sources, verifies facts, and produces written or broadcast content for news outlets and media organisations."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 28000 },
+    "mid": { "low": 30000, "high": 40000 },
+    "senior": { "low": 45000, "high": 65000 },
+    "notes": "National outlets, investigative roles, and broadcast journalism can exceed £70k–£90k+. Freelance income varies widely depending on commissions."
+  },
+
+  "qualifications": [
+    "Degree in Journalism, Media, or a Related Field",
+    "Strong Writing and Research Skills",
+    "Understanding of Media Law and Ethics",
+    "Experience with Interviews, Reporting, and Fact‑Checking"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Journalism is fast‑paced, unpredictable, and driven by curiosity. Days often involve chasing leads, interviewing people, verifying facts, and writing under tight deadlines. Breaking news can disrupt plans at any moment, while investigative work requires patience, persistence, and a strong ethical compass. The emotional load can be significant — stories often involve conflict, injustice, or human vulnerability — but the work carries deep purpose: informing the public, holding power to account, and giving voice to stories that matter. The lifestyle suits individuals who are inquisitive, resilient, articulate, and energised by the pursuit of truth."
+  },
+
+  "habits": [
+    "Verifies facts before publishing",
+    "Builds strong, trustworthy sources",
+    "Writes with clarity and precision",
+    "Tracks developments continuously",
+    "Maintains ethical reporting standards"
+  },
+
+  "tags": [
+    "storytelling",
+    "research",
+    "communication",
+    "public interest",
+    "investigation",
+    "deadlines",
+    "media ethics",
+    "writing"
+  ],
+
+  "hero": {
+    "image": "journalist_hero.jpg",
+    "color": "#9A3412",
+    "keywords": ["truth", "storytelling", "investigation"]
+  }
+}

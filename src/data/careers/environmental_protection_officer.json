@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "environmental_protection_officer",
+  "slug": "environmental-protection-officer",
+  "category": "Skilled Trades",
+
+  "essence": "Monitors and enforces environmental standards to protect communities, ecosystems, and public health.",
+
+  "identity": {
+    "title": "Environmental Protection Officer",
+    "summary": "Investigates pollution, monitors environmental quality, enforces regulations, and works with businesses and communities to reduce environmental harm."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 36000 },
+    "mid":   { "low": 37000, "high": 48000 },
+    "senior": { "low": 49000, "high": 65000 },
+    "notes": "Specialists in air quality, water pollution, or industrial regulation can exceed £65k-£80k+."
+  },
+
+  "qualifications": [
+    "Training in environmental science or environmental health",
+    "Knowledge of pollution control and environmental legislation",
+    "Ability to conduct investigations and sampling",
+    "Understanding of ecosystems, waste management, and environmental risk"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Environmental protection officers work for councils, environmental agencies, and regulatory bodies. They investigate pollution, monitor environmental quality, enforce regulations, and support sustainable practices. The role suits individuals who enjoy fieldwork, investigation, and protecting natural environments."
+  },
+
+  "habits": [
+    "Investigates pollution incidents",
+    "Conducts environmental sampling and monitoring",
+    "Enforces environmental legislation",
+    "Writes clear reports and notices",
+    "Engages with businesses and communities"
+  ],
+
+  "tags": [
+    "environmental protection",
+    "public health",
+    "regulation",
+    "pollution control",
+    "risk management",
+    "sustainability"
+  ],
+
+  "hero": {
+    "image": "environmental_protection_officer_hero.jpg",
+    "color": "#4ADE80",
+    "keywords": ["environment", "pollution", "regulation"]
+  }
+}

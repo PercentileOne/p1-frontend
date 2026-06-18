@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 263,
+  "id": "roofing_labourer",
+  "slug": "roofing-labourer",
+  "category": "Skilled Trades \u0026 Construction",
+  "essence": "Assists roofers by preparing materials, handling tools, and performing basic roofing tasks under supervision.",
+  "identity": {
+    "title": "Roofing Labourer",
+    "summary": "Supports roofing teams with material handling, site preparation, and basic installation tasks while learning trade skills."
+  },
+  "salary": {
+    "entry": {
+      "low": 20000,
+      "high": 26000
+    },
+    "mid": {
+      "low": 27000,
+      "high": 34000
+    },
+    "senior": {
+      "low": 35000,
+      "high": 48000
+    },
+    "notes": "Progression to qualified roofer increases earnings significantly."
+  },
+  "qualifications": [
+    "Experience on construction sites or in manual trades",
+    "Willingness to work at height and follow safety procedures",
+    "Basic tool handling and teamwork skills",
+    "CSCS card or equivalent desirable"
+  ],
+  "curves": {
+    "difficulty": [
+    3,
+    4,
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7
+  ],
+    "effort": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "reward": [
+      3,
+      4,
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      7
+    ]
+  },
+  "lifestyle": {
+    "description": "Physically demanding outdoor work with exposure to weather and early starts; apprenticeship pathways common."
+  },
+  "habits": [
+    "Prepares materials and site areas",
+    "Assists with lifting and positioning roofing materials",
+    "Maintains tools and cleans work areas",
+    "Learns trade techniques under supervision"
+  ],
+  "tags": [
+    "roofing",
+    "labourer",
+    "construction",
+    "apprenticeship"
+  ],
+  "hero": {
+    "image": "roofing_labourer_hero.jpg",
+    "color": "#6B3A2E",
+    "keywords": [
+      "roofing",
+      "construction",
+      "labour"
+    ]
+  }
+}

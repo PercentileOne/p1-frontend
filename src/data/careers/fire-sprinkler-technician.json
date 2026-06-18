@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_sprinkler_technician",
+  "slug": "fire-sprinkler-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Installs, tests, and maintains fire‑sprinkler systems to protect buildings and occupants from fire.",
+
+  "identity": {
+    "title": "Fire Sprinkler Technician",
+    "summary": "Installs, inspects, and repairs fire‑sprinkler systems, ensuring they operate correctly and comply with fire‑safety regulations."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 38000 },
+    "senior": { "low": 39000, "high": 50000 },
+    "notes": "Technicians specialising in large commercial systems or complex suppression networks can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "Training in fire‑sprinkler installation and maintenance",
+    "Knowledge of BS EN 12845 and fire‑safety regulations",
+    "Ability to test, fault‑find, and certify sprinkler systems",
+    "Understanding of pipework, pumps, valves, and control systems"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Fire sprinkler technicians work across homes, commercial buildings, and industrial sites installing and maintaining sprinkler systems. The role involves pipework, testing, fault‑finding, and ensuring compliance with safety standards. It suits individuals who enjoy technical work, problem‑solving, and contributing to building fire protection."
+  },
+
+  "habits": [
+    "Tests sprinkler systems regularly",
+    "Follows strict installation and safety standards",
+    "Keeps accurate maintenance and inspection records",
+    "Communicates clearly with building managers and contractors",
+    "Diagnoses faults methodically and safely"
+  ],
+
+  "tags": [
+    "fire safety",
+    "technical work",
+    "installation",
+    "maintenance",
+    "public safety",
+    "inspection",
+    "skilled trades",
+    "building systems"
+  ],
+
+  "hero": {
+    "image": "fire_sprinkler_technician_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["sprinklers", "fire safety", "installation"]
+  }
+}

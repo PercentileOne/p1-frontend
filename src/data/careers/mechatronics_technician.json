@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 249,
+  "id": "mechatronics_technician",
+  "slug": "mechatronics-technician",
+  "category": "Advanced Manufacturing \u0026 Engineering",
+  "essence": "Supports electromechanical systems by combining mechanical, electrical, and control skills for maintenance and assembly.",
+  "identity": {
+    "title": "Mechatronics Technician",
+    "summary": "Builds, tests, and maintains mechatronic assemblies, sensors, and control systems used across manufacturing and automation."
+  },
+  "salary": {
+    "entry": {
+      "low": 25000,
+      "high": 32000
+    },
+    "mid": {
+      "low": 33000,
+      "high": 45000
+    },
+    "senior": {
+      "low": 46000,
+      "high": 70000
+    },
+    "notes": "Technicians with multi\u2011disciplinary skills are highly employable in advanced factories."
+  },
+  "qualifications": [
+    "Vocational training in mechatronics, electrical, or mechanical engineering",
+    "Experience with sensors, actuators, and control systems",
+    "Ability to perform mechanical assembly and electrical wiring",
+    "Familiarity with diagnostic tools and test equipment"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "effort": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Workshop and factory environment with hands\u2011on assembly, testing, and troubleshooting of integrated systems."
+  },
+  "habits": [
+    "Assembles and tests mechatronic modules",
+    "Performs wiring and sensor calibration",
+    "Troubleshoots electromechanical faults",
+    "Maintains documentation and spare parts"
+  ],
+  "tags": [
+    "mechatronics",
+    "technician",
+    "electromechanical",
+    "maintenance"
+  ],
+  "hero": {
+    "image": "mechatronics_technician_hero.jpg",
+    "color": "#2B6B4A",
+    "keywords": [
+      "mechatronics",
+      "technician",
+      "assembly"
+    ]
+  }
+}

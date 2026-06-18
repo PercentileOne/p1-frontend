@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_damper_technician",
+  "slug": "fire-damper-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Tests, inspects, and maintains fire dampers to prevent fire and smoke spreading through ventilation systems.",
+
+  "identity": {
+    "title": "Fire Damper Technician",
+    "summary": "Inspects, tests, and repairs fire dampers within HVAC systems, ensuring they close correctly and comply with fire‑safety regulations."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 28000 },
+    "mid":   { "low": 29000, "high": 36000 },
+    "senior": { "low": 37000, "high": 46000 },
+    "notes": "Technicians specialising in large commercial HVAC networks or complex industrial systems can exceed £45k-£55k+."
+  },
+
+  "qualifications": [
+    "Training in fire‑damper inspection and maintenance",
+    "Knowledge of HVAC systems and fire‑safety regulations",
+    "Ability to test damper operation and identify faults",
+    "Understanding of ductwork, access requirements, and compliance standards"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9]
+  },
+
+  "lifestyle": {
+    "description": "Fire damper technicians work across commercial buildings, hospitals, schools, and industrial sites inspecting and testing fire dampers. The role involves accessing ductwork, verifying damper closure, documenting compliance, and ensuring ventilation systems meet fire‑safety standards. It suits individuals who enjoy practical technical work, problem‑solving, and contributing to building safety."
+  },
+
+  "habits": [
+    "Tests damper closure and operation",
+    "Follows strict inspection and reporting standards",
+    "Keeps accurate compliance and maintenance records",
+    "Communicates clearly with building managers and contractors",
+    "Identifies faults in ductwork and damper mechanisms"
+  ],
+
+  "tags": [
+    "fire safety",
+    "HVAC",
+    "inspection",
+    "maintenance",
+    "public safety",
+    "building safety",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "fire_damper_technician_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["fire damper", "HVAC", "inspection"]
+  }
+}

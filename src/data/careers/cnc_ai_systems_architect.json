@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_ai_systems_architect",
+  "slug": "cnc-ai-systems-architect",
+  "category": "Skilled Trades",
+
+  "essence": "Designs the architecture for AI‑driven CNC ecosystems, integrating machine learning, robotics, automation, and real‑time optimisation into unified autonomous manufacturing systems.",
+
+  "identity": {
+    "title": "CNC AI Systems Architect",
+    "summary": "Creates the high‑level architecture for autonomous CNC manufacturing, combining AI models, robotics, sensors, data pipelines, and control systems into a cohesive intelligent production environment."
+  },
+
+  "salary": {
+    "entry": { "low": 75000, "high": 95000 },
+    "mid":   { "low": 96000, "high": 140000 },
+    "senior": { "low": 141000, "high": 220000 },
+    "notes": "Architects in aerospace, defence, robotics, or fully autonomous smart‑factory environments can exceed £220k-£300k+."
+  },
+
+  "qualifications": [
+    "Experience in AI engineering, robotics, or advanced manufacturing",
+    "Deep understanding of CNC machining, automation, and real‑time control",
+    "Knowledge of ML systems, reinforcement learning, and optimisation algorithms",
+    "Ability to design large‑scale autonomous manufacturing architectures"
+  ],
+
+  "curves": {
+    "difficulty": [8, 8, 9, 9, 10, 10, 10, 10, 10, 10],
+    "effort":     [8, 8, 9, 9, 10, 10, 10, 10, 10, 10],
+    "reward":     [8, 8, 9, 9, 10, 10, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC AI systems architects work in aerospace, robotics, defence, and advanced manufacturing. They design the architecture for autonomous CNC ecosystems, integrating AI, robotics, sensors, and data systems. The role suits individuals who enjoy high‑level systems thinking, AI, and next‑generation manufacturing design."
+  },
+
+  "habits": [
+    "Designs AI‑driven CNC system architectures",
+    "Integrates robotics, sensors, and real‑time optimisation",
+    "Defines data pipelines, control systems, and ML deployment",
+    "Collaborates with AI engineers, roboticists, and manufacturing leaders",
+    "Ensures scalability, reliability, and autonomy across the ecosystem"
+  ],
+
+  "tags": [
+    "CNC",
+    "AI",
+    "systems architecture",
+    "autonomous manufacturing",
+    "robotics",
+    "industry 4.0"
+  ],
+
+  "hero": {
+    "image": "cnc_ai_systems_architect_hero.jpg",
+    "color": "#000F29",
+    "keywords": ["CNC", "AI", "architecture"]
+  }
+}

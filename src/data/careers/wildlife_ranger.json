@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 279,
+  "id": "wildlife_ranger",
+  "slug": "wildlife-ranger",
+  "category": "Environment, Nature \u0026 Sustainability",
+  "essence": "Protects wildlife and habitats through monitoring, enforcement, and public engagement in natural areas.",
+  "identity": {
+    "title": "Wildlife Ranger",
+    "summary": "Patrols reserves, records species, deters illegal activity, and educates visitors to conserve biodiversity."
+  },
+  "salary": {
+    "entry": {
+      "low": 20000,
+      "high": 26000
+    },
+    "mid": {
+      "low": 27000,
+      "high": 38000
+    },
+    "senior": {
+      "low": 39000,
+      "high": 60000
+    },
+    "notes": "Specialist roles in protected areas or with advanced survey skills may earn more."
+  },
+  "qualifications": [
+    "Experience in conservation, ecology, or countryside management",
+    "Field survey and species identification skills",
+    "Good communication and enforcement awareness",
+    "Physical fitness for outdoor patrols"
+  ],
+  "curves": {
+    "difficulty": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "effort": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8
+    ]
+  },
+  "lifestyle": {
+    "description": "Outdoor work with variable hours, seasonal patterns, and public engagement; often in remote or rural locations."
+  },
+  "habits": [
+    "Conducts wildlife and habitat surveys",
+    "Patrols to deter illegal activity",
+    "Engages visitors with conservation messages",
+    "Records data and reports incidents"
+  ],
+  "tags": [
+    "wildlife",
+    "conservation",
+    "fieldwork",
+    "biodiversity"
+  ],
+  "hero": {
+    "image": "wildlife_ranger_hero.jpg",
+    "color": "#2E6B3A",
+    "keywords": [
+      "wildlife",
+      "conservation",
+      "fieldwork"
+    ]
+  }
+}

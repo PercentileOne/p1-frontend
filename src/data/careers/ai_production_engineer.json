@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "ai_production_engineer",
+  "slug": "ai-production-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Runs and optimises production environments that rely on AI‑driven decision‑making, adaptive control, and autonomous manufacturing systems.",
+
+  "identity": {
+    "title": "AI Production Engineer",
+    "summary": "Oversees AI‑enhanced production lines, ensuring that machine‑learning systems, automation, and robotics operate reliably, efficiently, and safely in real‑world manufacturing."
+  },
+
+  "salary": {
+    "entry": { "low": 48000, "high": 62000 },
+    "mid":   { "low": 63000, "high": 90000 },
+    "senior": { "low": 91000, "high": 140000 },
+    "notes": "Engineers in aerospace, robotics, or fully autonomous smart‑factory environments can exceed £140k-£190k+."
+  },
+
+  "qualifications": [
+    "Experience in manufacturing engineering, automation, or AI‑driven systems",
+    "Understanding of CNC, robotics, and digital production workflows",
+    "Knowledge of machine‑learning deployment and real‑time optimisation",
+    "Ability to troubleshoot AI‑controlled production environments"
+  ],
+
+  "curves": {
+    "difficulty": [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "AI production engineers work in aerospace, robotics, automotive, and Industry 4.0 environments. They ensure that AI‑driven production systems run smoothly, adapt to real‑time conditions, and deliver consistent output. The role suits individuals who enjoy hands‑on engineering, AI‑enabled optimisation, and high‑tech operations."
+  },
+
+  "habits": [
+    "Monitors and optimises AI‑controlled production lines",
+    "Troubleshoots automation, robotics, and ML‑driven systems",
+    "Implements adaptive control strategies to improve throughput",
+    "Collaborates with AI engineers, manufacturing teams, and operations",
+    "Ensures safety, reliability, and quality in autonomous workflows"
+  ],
+
+  "tags": [
+    "AI",
+    "production engineering",
+    "automation",
+    "industry 4.0",
+    "smart factory",
+    "machine learning"
+  ],
+
+  "hero": {
+    "image": "ai_production_engineer_hero.jpg",
+    "color": "#000B22",
+    "keywords": ["AI", "production", "automation"]
+  }
+}

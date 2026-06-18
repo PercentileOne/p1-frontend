@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 278,
+  "id": "community_support_officer",
+  "slug": "community-support-officer",
+  "category": "Public Services, Emergency \u0026 Safety",
+  "essence": "Works with local communities to provide support, reduce vulnerability, and connect people to services.",
+  "identity": {
+    "title": "Community Support Officer",
+    "summary": "Delivers outreach, welfare checks, and signposting to services; acts as a bridge between communities and statutory agencies."
+  },
+  "salary": {
+    "entry": {
+      "low": 22000,
+      "high": 30000
+    },
+    "mid": {
+      "low": 31000,
+      "high": 42000
+    },
+    "senior": {
+      "low": 43000,
+      "high": 70000
+    },
+    "notes": "Roles in specialist teams or with additional responsibilities may attract higher pay."
+  },
+  "qualifications": [
+    "Experience in community work, social care, or outreach",
+    "Strong communication and safeguarding awareness",
+    "Ability to manage complex needs and multi\u2011agency referrals",
+    "Resilience and cultural sensitivity"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9
+  ],
+    "effort": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Community\u2011facing role with varied hours, home visits, and partnership working to support vulnerable people."
+  },
+  "habits": [
+    "Conducts outreach and welfare checks",
+    "Makes referrals and signposts to services",
+    "Records interactions and monitors outcomes",
+    "Builds trust with local communities"
+  ],
+  "tags": [
+    "community",
+    "support",
+    "outreach",
+    "welfare"
+  ],
+  "hero": {
+    "image": "community_support_officer_hero.jpg",
+    "color": "#3A6B5A",
+    "keywords": [
+      "community",
+      "support",
+      "outreach"
+    ]
+  }
+}

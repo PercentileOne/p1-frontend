@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "flight_attendant",
+  "slug": "flight-attendant",
+  "category": "Transport",
+
+  "essence": "Ensures passenger safety and comfort while delivering calm, professional service at 35,000 feet.",
+
+  "identity": {
+    "title": "Flight Attendant",
+    "summary": "Supports passenger safety, delivers in‑flight service, manages emergencies, and represents the airline with professionalism and care."
+  },
+
+  "salary": {
+    "entry": { "low": 18000, "high": 22000 },
+    "mid": { "low": 23000, "high": 30000 },
+    "senior": { "low": 32000, "high": 42000 },
+    "notes": "Long‑haul allowances, overnight stops, and senior cabin crew roles can exceed £40k–£55k+ depending on airline and routes."
+  },
+
+  "qualifications": [
+    "Cabin Crew Training Certificate (airline‑provided)",
+    "Medical and fitness assessments",
+    "Safety and emergency procedures training",
+    "Strong communication and customer‑service skills"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 5, 6, 6, 7, 7, 8, 8, 8],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Flight attendants work on domestic and international flights, balancing safety responsibilities with hospitality. Days involve safety briefings, demonstrating procedures, serving meals, assisting passengers, managing turbulence or medical issues, and ensuring a calm cabin environment. The role includes irregular hours, jet lag, long shifts, and time away from home, but also travel opportunities and strong team camaraderie. This lifestyle suits individuals who enjoy people, adaptability, and working in dynamic, high‑responsibility environments."
+  },
+
+  "habits": [
+    "Performs safety checks before each flight",
+    "Maintains calm, reassuring communication",
+    "Delivers consistent service under pressure",
+    "Monitors passenger wellbeing throughout the flight",
+    "Follows strict safety and emergency protocols"
+  },
+
+  "tags": [
+    "aviation",
+    "customer service",
+    "safety",
+    "travel",
+    "teamwork",
+    "communication",
+    "adaptability",
+    "public interaction"
+  ],
+
+  "hero": {
+    "image": "flight_attendant_hero.jpg",
+    "color": "#38BDF8",
+    "keywords": ["aviation", "service", "safety"]
+  }
+}

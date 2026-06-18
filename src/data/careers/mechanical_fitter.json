@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "mechanical_fitter",
+  "slug": "mechanical-fitter",
+  "category": "Skilled Trades",
+
+  "essence": "Installs, assembles, maintains, and repairs mechanical machinery and industrial equipment.",
+
+  "identity": {
+    "title": "Mechanical Fitter",
+    "summary": "Builds, installs, aligns, and repairs mechanical components and machinery across engineering, manufacturing, utilities, and industrial environments."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid":   { "low": 33000, "high": 42000 },
+    "senior": { "low": 43000, "high": 55000 },
+    "notes": "Fitters specialising in heavy industry, precision alignment, or hazardous environments can exceed £55k-£70k+."
+  },
+
+  "qualifications": [
+    "Training in mechanical engineering, fitting, or industrial maintenance",
+    "Knowledge of mechanical systems, components, and industrial machinery",
+    "Ability to read technical drawings and perform precision assembly",
+    "Understanding of safety procedures, alignment, and mechanical diagnostics"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 10],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Mechanical fitters work in factories, utilities, engineering firms, and industrial plants. They assemble machinery, install components, diagnose faults, and perform repairs. The role suits individuals who enjoy hands‑on mechanical work, precision assembly, and maintaining industrial systems."
+  },
+
+  "habits": [
+    "Installs and assembles mechanical components",
+    "Reads and interprets technical drawings",
+    "Aligns shafts, bearings, and rotating equipment",
+    "Diagnoses mechanical faults and performs repairs",
+    "Conducts routine maintenance and safety checks"
+  ],
+
+  "tags": [
+    "mechanical",
+    "fitting",
+    "assembly",
+    "maintenance",
+    "engineering",
+    "industrial"
+  ],
+
+  "hero": {
+    "image": "mechanical_fitter_hero.jpg",
+    "color": "#0A2A6A",
+    "keywords": ["mechanical", "assembly", "machinery"]
+  }
+}

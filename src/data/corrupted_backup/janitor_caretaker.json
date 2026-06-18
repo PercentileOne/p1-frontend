@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "janitor_caretaker",
+  "slug": "janitor-caretaker",
+  "category": "Hospitality",
+
+  "essence": "Keeps buildings safe, clean, and functional through steady maintenance, routine care, and practical problem‑solving.",
+
+  "identity": {
+    "title": "Janitor / Caretaker",
+    "summary": "Maintains buildings by cleaning, performing minor repairs, managing supplies, and ensuring facilities remain safe, secure, and operational."
+  },
+
+  "salary": {
+    "entry": { "low": 19000, "high": 22000 },
+    "mid": { "low": 23000, "high": 27000 },
+    "senior": { "low": 28000, "high": 34000 },
+    "notes": "Caretakers with responsibility for large sites, schools, estates, or on‑call duties can exceed £35k–£45k+."
+  },
+
+  "qualifications": [
+    "On‑the‑job training in cleaning and maintenance",
+    "Basic knowledge of plumbing, electrics, and repairs",
+    "Understanding of health, safety, and security procedures",
+    "Good organisation and time‑management skills"
+  },
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Janitors and caretakers work in schools, offices, public buildings, and residential complexes, ensuring facilities remain clean, safe, and functional. Days involve cleaning, restocking supplies, locking and unlocking buildings, performing minor repairs, checking heating and lighting systems, and responding to maintenance issues. The role is practical and varied, often requiring independence and steady physical work. Some positions include early mornings, late finishes, or on‑call responsibilities. This lifestyle suits individuals who enjoy hands‑on tasks, routine, and keeping environments running smoothly."
+  },
+
+  "habits": [
+    "Performs routine cleaning and maintenance checks",
+    "Responds quickly to repair or safety issues",
+    "Keeps tools and supplies organised",
+    "Maintains building security procedures",
+    "Works steadily through practical tasks"
+  },
+
+  "tags": [
+    "maintenance",
+    "cleaning",
+    "facility care",
+    "practical skills",
+    "routine",
+    "independent work",
+    "safety",
+    "building operations"
+  ],
+
+  "hero": {
+    "image": "janitor_caretaker_hero.jpg",
+    "color": "#64748B",
+    "keywords": ["maintenance", "facility care", "safety"]
+  }
+}

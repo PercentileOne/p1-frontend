@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 283,
+  "id": "environmental_sampling_technician",
+  "slug": "environmental-sampling-technician",
+  "category": "Environment, Nature \u0026 Sustainability",
+  "essence": "Collects environmental samples and performs field tests to support monitoring and regulatory compliance.",
+  "identity": {
+    "title": "Environmental Sampling Technician",
+    "summary": "Takes water, soil, and air samples, operates field instruments, and ensures chain of custody for laboratory analysis."
+  },
+  "salary": {
+    "entry": {
+      "low": 22000,
+      "high": 30000
+    },
+    "mid": {
+      "low": 31000,
+      "high": 42000
+    },
+    "senior": {
+      "low": 43000,
+      "high": 70000
+    },
+    "notes": "Specialist sampling in contaminated land or marine environments can attract higher pay."
+  },
+  "qualifications": [
+    "Experience in environmental monitoring and sampling techniques",
+    "Familiarity with field instruments and chain of custody procedures",
+    "Attention to detail and health \u0026 safety awareness",
+    "Ability to work in varied outdoor conditions"
+  ],
+  "curves": {
+    "difficulty": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "effort": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8
+    ]
+  },
+  "lifestyle": {
+    "description": "Fieldwork with travel to sampling sites; requires careful documentation and adherence to protocols."
+  },
+  "habits": [
+    "Collects and labels environmental samples",
+    "Operates field testing equipment",
+    "Maintains chain of custody and records",
+    "Prepares samples for laboratory analysis"
+  ],
+  "tags": [
+    "sampling",
+    "environmental monitoring",
+    "fieldwork",
+    "laboratory"
+  ],
+  "hero": {
+    "image": "environmental_sampling_technician_hero.jpg",
+    "color": "#2F6B5A",
+    "keywords": [
+      "sampling",
+      "environment",
+      "fieldwork"
+    ]
+  }
+}

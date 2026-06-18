@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_technical_trainer",
+  "slug": "cnc-technical-trainer",
+  "category": "Skilled Trades",
+
+  "essence": "Trains operators, machinists, and engineers in CNC machining, programming, safety, and best‑practice manufacturing techniques.",
+
+  "identity": {
+    "title": "CNC Technical Trainer",
+    "summary": "Delivers training on CNC operation, programming, tooling, safety, and process optimisation, helping individuals and teams develop advanced machining skills."
+  },
+
+  "salary": {
+    "entry": { "low": 32000, "high": 38000 },
+    "mid":   { "low": 39000, "high": 52000 },
+    "senior": { "low": 53000, "high": 75000 },
+    "notes": "Trainers working for OEMs, aerospace firms, or national training centres can exceed £75k-£95k+."
+  },
+
+  "qualifications": [
+    "Experience in CNC machining, programming, or applications engineering",
+    "Strong understanding of tooling, feeds, speeds, and machining strategies",
+    "Ability to teach technical concepts clearly and effectively",
+    "Knowledge of safety standards, quality control, and manufacturing processes"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC technical trainers work for manufacturers, training centres, OEMs, and engineering organisations. They deliver hands‑on and classroom training, develop learning materials, and help teams improve machining performance. The role suits individuals who enjoy teaching, communication, and sharing deep technical expertise."
+  },
+
+  "habits": [
+    "Delivers CNC training sessions and workshops",
+    "Creates training materials and demonstrations",
+    "Teaches programming, tooling, and machining strategies",
+    "Assesses trainee performance and provides feedback",
+    "Keeps up‑to‑date with new CNC technologies and methods"
+  ],
+
+  "tags": [
+    "CNC",
+    "training",
+    "education",
+    "manufacturing",
+    "technical instruction",
+    "precision engineering"
+  ],
+
+  "hero": {
+    "image": "cnc_technical_trainer_hero.jpg",
+    "color": "#002A0E",
+    "keywords": ["CNC", "training", "education"]
+  }
+}

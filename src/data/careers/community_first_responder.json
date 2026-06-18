@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "community_first_responder",
+  "slug": "community-first-responder",
+  "category": "Skilled Trades",
+
+  "essence": "Provides immediate lifesaving care in the critical minutes before ambulance crews arrive.",
+
+  "identity": {
+    "title": "Community First Responder (Volunteer Emergency Responder)",
+    "summary": "Attends local 999 medical emergencies, delivers basic life support, and stabilises patients until paramedics arrive."
+  },
+
+  "salary": {
+    "entry": { "low": 0, "high": 0 },
+    "mid":   { "low": 0, "high": 0 },
+    "senior": { "low": 0, "high": 0 },
+    "notes": "Typically a volunteer role; some organisations offer stipends or paid responder roles in advanced schemes."
+  },
+
+  "qualifications": [
+    "First responder or basic life support training",
+    "Knowledge of CPR, AED use, and trauma basics",
+    "Ability to remain calm and reassuring under pressure",
+    "Understanding of emergency service protocols"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Community first responders attend local medical emergencies such as cardiac arrests, breathing difficulties, and trauma incidents. They provide immediate care, reassure patients, and support paramedics on arrival. The role suits individuals who want to contribute directly to public safety, often alongside another career."
+  },
+
+  "habits": [
+    "Keeps equipment ready and checked",
+    "Responds quickly and safely to callouts",
+    "Follows structured medical protocols",
+    "Communicates clearly with ambulance crews",
+    "Documents incidents accurately"
+  ],
+
+  "tags": [
+    "emergency services",
+    "public safety",
+    "medical response",
+    "volunteer",
+    "community",
+    "lifesaving",
+    "first aid",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "community_first_responder_hero.jpg",
+    "color": "#F43F5E",
+    "keywords": ["first responder", "medical", "community"]
+  }
+}

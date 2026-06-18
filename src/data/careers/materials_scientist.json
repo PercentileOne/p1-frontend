@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 291,
+  "id": "materials_scientist",
+  "slug": "materials-scientist",
+  "category": "Science \u0026 Laboratory",
+  "essence": "Researches and develops materials with tailored properties for applications in industry, energy, and technology.",
+  "identity": {
+    "title": "Materials Scientist",
+    "summary": "Investigates material structure and performance, develops new alloys, polymers, or composites, and supports product development."
+  },
+  "salary": {
+    "entry": {
+      "low": 35000,
+      "high": 48000
+    },
+    "mid": {
+      "low": 49000,
+      "high": 80000
+    },
+    "senior": {
+      "low": 81000,
+      "high": 150000
+    },
+    "notes": "Specialists in advanced materials for aerospace or energy sectors are highly valued."
+  },
+  "qualifications": [
+    "Degree in materials science, metallurgy, or related field",
+    "Experience with materials characterisation and testing",
+    "Knowledge of processing and failure analysis",
+    "Strong research and problem\u2011solving skills"
+  ],
+  "curves": {
+    "difficulty": [
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10,
+    10,
+    10
+  ],
+    "effort": [
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10,
+    10,
+    10
+  ],
+    "reward": [
+      7,
+      8,
+      8,
+      9,
+      9,
+      10,
+      10,
+      10,
+      10,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Research and lab work with collaboration across design and manufacturing; often project\u2011driven with publication or patent outputs."
+  },
+  "habits": [
+    "Designs experiments to probe material behaviour",
+    "Performs characterisation and failure analysis",
+    "Collaborates with engineers to apply materials",
+    "Keeps abreast of new materials and techniques"
+  ],
+  "tags": [
+    "materials",
+    "research",
+    "characterisation",
+    "engineering"
+  ],
+  "hero": {
+    "image": "materials_scientist_hero.jpg",
+    "color": "#2F3A5A",
+    "keywords": [
+      "materials",
+      "research",
+      "characterisation"
+    ]
+  }
+}

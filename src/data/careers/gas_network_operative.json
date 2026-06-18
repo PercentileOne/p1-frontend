@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "gas_network_operative",
+  "slug": "gas-network-operative",
+  "category": "Skilled Trades",
+
+  "essence": "Installs, maintains, and repairs the underground gas networks that keep homes and businesses safely supplied.",
+
+  "identity": {
+    "title": "Gas Network Operative",
+    "summary": "Installs, inspects, and repairs gas mains, services, valves, and pressure systems to ensure safe and reliable gas distribution."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 28000 },
+    "mid":   { "low": 30000, "high": 38000 },
+    "senior": { "low": 39000, "high": 52000 },
+    "notes": "Emergency response teams, high‑pressure mains specialists, and senior operatives can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "Gas network safety training (e.g., NCO Gas Level 1/2/3)",
+    "Understanding of gas mains, pressure systems, and fittings",
+    "Experience with excavation and reinstatement",
+    "Knowledge of emergency response and leak detection procedures"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Gas network operatives work outdoors installing and maintaining gas mains, responding to leaks, and ensuring safe supply to homes and businesses. Days involve excavation, pipe fitting, pressure testing, valve work, and emergency callouts. The role is physical, safety‑critical, and often involves on‑call duties. This lifestyle suits individuals who enjoy hands‑on technical work, problem‑solving, and contributing to essential public safety."
+  },
+
+  "habits": [
+    "Follows strict gas safety and PPE procedures",
+    "Locates and repairs leaks accurately",
+    "Keeps tools and vehicles organised",
+    "Communicates clearly with team members and the public",
+    "Maintains accurate records of work and inspections"
+  ],
+
+  "tags": [
+    "utilities",
+    "gas",
+    "infrastructure",
+    "maintenance",
+    "public safety",
+    "hands-on work",
+    "outdoor work",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "gas_network_operative_hero.jpg",
+    "color": "#F59E0B",
+    "keywords": ["gas", "utilities", "infrastructure"]
+  }
+}

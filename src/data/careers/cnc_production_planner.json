@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_production_planner",
+  "slug": "cnc-production-planner",
+  "category": "Skilled Trades",
+
+  "essence": "Plans, schedules, and coordinates CNC machining work to ensure efficient, on‑time production.",
+
+  "identity": {
+    "title": "CNC Production Planner",
+    "summary": "Creates machining schedules, allocates resources, coordinates with engineers and supervisors, and ensures CNC production meets deadlines, quality standards, and capacity constraints."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 36000 },
+    "mid":   { "low": 37000, "high": 48000 },
+    "senior": { "low": 49000, "high": 65000 },
+    "notes": "Planners in aerospace, defence, or multi‑facility operations can exceed £65k-£80k+."
+  },
+
+  "qualifications": [
+    "Experience in CNC machining, production planning, or manufacturing operations",
+    "Knowledge of machining processes, tooling, and capacity planning",
+    "Ability to create schedules and coordinate workflow",
+    "Understanding of quality standards, lead times, and resource allocation"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC production planners work in precision engineering firms, aerospace, automotive, and industrial manufacturing. They coordinate machining schedules, manage capacity, and ensure production runs smoothly and efficiently. The role suits individuals who enjoy organisation, problem‑solving, and optimising manufacturing workflows."
+  },
+
+  "habits": [
+    "Creates and manages CNC production schedules",
+    "Coordinates with engineers, supervisors, and machinists",
+    "Allocates resources and machine time",
+    "Monitors workflow and adjusts plans as needed",
+    "Ensures deadlines, quality, and capacity targets are met"
+  ],
+
+  "tags": [
+    "CNC",
+    "production planning",
+    "manufacturing",
+    "scheduling",
+    "operations",
+    "workflow"
+  ],
+
+  "hero": {
+    "image": "cnc_production_planner_hero.jpg",
+    "color": "#002A20",
+    "keywords": ["CNC", "planning", "workflow"]
+  }
+}

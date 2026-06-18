@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "bricklayer",
+  "slug": "bricklayer",
+  "category": "Skilled Trades",
+
+  "essence": "Builds the structural backbone of buildings through precision, strength, and time‑tested craftsmanship.",
+
+  "identity": {
+    "title": "Bricklayer",
+    "summary": "Constructs walls, foundations, and structural elements by laying bricks, blocks, and mortar with accuracy and skill."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid": { "low": 28000, "high": 36000 },
+    "senior": { "low": 37000, "high": 48000 },
+    "notes": "High‑skill bricklayers, site supervisors, and self‑employed tradespeople can exceed £50k–£80k+ depending on demand and project scale."
+  },
+
+  "qualifications": [
+    "Apprenticeship in Bricklaying",
+    "NVQ or Diploma in Trowel Occupations",
+    "Strong Understanding of Construction Techniques and Materials",
+    "Ability to Read Plans and Work to Precise Measurements"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Bricklayers work outdoors on construction sites where physical strength, endurance, and precision are essential. Days involve laying bricks or blocks, mixing mortar, checking levels and alignment, and building structural elements that must be both strong and accurate. The work is physically demanding and weather‑dependent, often requiring early starts and steady pacing throughout the day. Despite the challenges, the role offers deep satisfaction — every wall, building, or extension stands as a visible testament to the bricklayer’s skill. This lifestyle suits individuals who enjoy hands‑on work, craftsmanship, and contributing to structures that last for decades."
+  },
+
+  "habits": [
+    "Checks levels and alignment constantly",
+    "Maintains steady, consistent bricklaying rhythm",
+    "Prepares mortar to the correct mix",
+    "Reads plans and measurements accurately",
+    "Keeps tools and workspace organised"
+  },
+
+  "tags": [
+    "construction",
+    "hands-on work",
+    "craftsmanship",
+    "precision",
+    "outdoor work",
+    "physical strength",
+    "building",
+    "practical skills"
+  ],
+
+  "hero": {
+    "image": "bricklayer_hero.jpg",
+    "color": "#B45309",
+    "keywords": ["build", "structure", "craft"]
+  }
+}

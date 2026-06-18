@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cleaner",
+  "slug": "cleaner",
+  "category": "Hospitality",
+
+  "essence": "Creates orderly, hygienic environments through consistency, care, and attention to detail.",
+
+  "identity": {
+    "title": "Cleaner",
+    "summary": "Maintains cleanliness and hygiene in homes, offices, and commercial spaces through routine cleaning, organisation, and sanitation tasks."
+  },
+
+  "salary": {
+    "entry": { "low": 18500, "high": 21000 },
+    "mid": { "low": 21000, "high": 25000 },
+    "senior": { "low": 26000, "high": 32000 },
+    "notes": "Specialist cleaners (deep cleaning, medical environments, industrial cleaning) and self‑employed professionals can exceed £30k–£40k+ depending on contracts and workload."
+  },
+
+  "qualifications": [
+    "On‑the‑job training in cleaning procedures",
+    "Knowledge of hygiene standards and safe chemical use",
+    "Understanding of equipment such as vacuums and floor machines",
+    "Organisation, time management, and attention to detail"
+  },
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Cleaners work in homes, offices, schools, hospitals, and commercial buildings where consistency, efficiency, and thoroughness are essential. Days involve vacuuming, dusting, sanitising surfaces, emptying bins, restocking supplies, and ensuring spaces meet hygiene and presentation standards. The work is physical and often fast‑paced, with tasks scheduled around building use or client routines. Many cleaners work early mornings, evenings, or flexible hours. Despite the demands, the role offers clear structure and visible results — each completed space reflects care and professionalism. This lifestyle suits individuals who enjoy order, routine, and creating clean, comfortable environments."
+  },
+
+  "habits": [
+    "Follows consistent cleaning routines",
+    "Keeps supplies and equipment organised",
+    "Checks details others might overlook",
+    "Manages time efficiently across tasks",
+    "Practises safe handling of chemicals and equipment"
+  },
+
+  "tags": [
+    "cleaning",
+    "organisation",
+    "routine",
+    "attention to detail",
+    "physical activity",
+    "facility care",
+    "hygiene",
+    "indoor work"
+  ],
+
+  "hero": {
+    "image": "cleaner_hero.jpg",
+    "color": "#0D9488",
+    "keywords": ["cleanliness", "order", "care"]
+  }
+}

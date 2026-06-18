@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "waste_collection_operative",
+  "slug": "waste-collection-operative",
+  "category": "Skilled Trades",
+
+  "essence": "Collects and transports household and commercial waste, keeping communities clean, safe, and functioning.",
+
+  "identity": {
+    "title": "Waste Collection Operative",
+    "summary": "Works as part of a team to collect household, commercial, and recycling waste, ensuring safe and efficient disposal."
+  },
+
+  "salary": {
+    "entry": { "low": 21000, "high": 24000 },
+    "mid":   { "low": 25000, "high": 30000 },
+    "senior": { "low": 31000, "high": 36000 },
+    "notes": "Team leaders, HGV‑licensed operatives, and commercial waste specialists can exceed £35k-£40k+."
+  },
+
+  "qualifications": [
+    "Basic safety and manual‑handling training",
+    "Understanding of waste‑handling procedures",
+    "Ability to work outdoors in all conditions",
+    "Optional HGV licence for driving collection vehicles"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9]
+  },
+
+  "lifestyle": {
+    "description": "Waste collection operatives work early mornings and outdoors, collecting household and commercial waste, sorting recycling, and ensuring safe handling of materials. The role is physical, fast‑paced, and essential to public health and community cleanliness. It suits individuals who enjoy teamwork, routine, and active outdoor work."
+  },
+
+  "habits": [
+    "Follows strict safety and hygiene procedures",
+    "Communicates clearly with the driver and team",
+    "Handles bins and materials efficiently",
+    "Keeps routes organised and on schedule",
+    "Maintains awareness of surroundings and traffic"
+  ],
+
+  "tags": [
+    "public service",
+    "waste management",
+    "recycling",
+    "community work",
+    "hands-on work",
+    "outdoor work",
+    "skilled trades",
+    "safety"
+  ],
+
+  "hero": {
+    "image": "waste_collection_operative_hero.jpg",
+    "color": "#16A34A",
+    "keywords": ["waste", "recycling", "public service"]
+  }
+}

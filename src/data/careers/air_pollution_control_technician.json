@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "air_pollution_control_technician",
+  "slug": "air-pollution-control-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Operates and maintains equipment that reduces air pollution from industrial and commercial sources.",
+
+  "identity": {
+    "title": "Air Pollution Control Technician",
+    "summary": "Installs, operates, and maintains emissions‑control systems, monitors air pollutants, and supports compliance with environmental regulations."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 38000 },
+    "senior": { "low": 39000, "high": 52000 },
+    "notes": "Technicians specialising in industrial emissions, advanced filtration, or regulatory inspections can exceed £52k-£65k+."
+  },
+
+  "qualifications": [
+    "Training in environmental science, mechanical engineering, or pollution control",
+    "Knowledge of emissions‑control systems and air‑quality regulations",
+    "Ability to operate monitoring instruments and maintain filtration equipment",
+    "Understanding of industrial processes and pollution‑prevention techniques"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Air pollution control technicians work for industrial facilities, environmental contractors, and regulatory agencies. They maintain emissions‑control systems, monitor pollutants, troubleshoot equipment, and support compliance with environmental laws. The role suits individuals who enjoy hands‑on technical work, environmental protection, and system maintenance."
+  },
+
+  "habits": [
+    "Operates and maintains emissions‑control equipment",
+    "Monitors air pollutants and records data",
+    "Troubleshoots filtration and ventilation systems",
+    "Supports environmental compliance and inspections",
+    "Collects samples and assists with pollution investigations"
+  ],
+
+  "tags": [
+    "air pollution",
+    "environmental protection",
+    "emissions control",
+    "monitoring",
+    "industrial operations",
+    "compliance"
+  ],
+
+  "hero": {
+    "image": "air_pollution_control_technician_hero.jpg",
+    "color": "#1D4ED8",
+    "keywords": ["air pollution", "emissions", "environment"]
+  }
+}

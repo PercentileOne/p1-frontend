@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "paramedic",
+  "slug": "paramedic",
+  "category": "Healthcare",
+
+  "essence": "Provides life‑saving care in unpredictable, high‑pressure situations with speed, skill, and compassion.",
+
+  "identity": {
+    "title": "Paramedic",
+    "summary": "Responds to emergencies, delivers advanced pre‑hospital care, stabilises patients, and transports them safely to medical facilities."
+  },
+
+  "salary": {
+    "entry": { "low": 26000, "high": 32000 },
+    "mid": { "low": 35000, "high": 45000 },
+    "senior": { "low": 48000, "high": 60000 },
+    "notes": "Specialist roles (critical care paramedic, HEMS, advanced practice) can exceed £60k–£75k+. Overtime and shift enhancements increase earnings."
+  },
+
+  "qualifications": [
+    "Degree in Paramedic Science",
+    "HCPC Registration",
+    "Training in Emergency Care, Trauma Response, and Clinical Assessment",
+    "Strong Physical Fitness and Ability to Work Under Pressure"
+  },
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "reward":     [6, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Paramedics work in fast‑moving, unpredictable environments where every call can be life‑changing. Days (and nights) involve responding to emergencies, assessing patients on scene, delivering advanced care, and making rapid decisions under pressure. The work is physically and emotionally demanding — paramedics encounter trauma, distress, and high‑stakes situations regularly. Shifts are long and often include nights, weekends, and holidays. Yet the sense of purpose is profound: saving lives, comforting people in crisis, and being the first line of medical care. This lifestyle suits individuals who are calm under pressure, resilient, decisive, and motivated by service."
+  },
+
+  "habits": [
+    "Assesses patients quickly and accurately",
+    "Communicates clearly with control rooms and hospitals",
+    "Maintains equipment readiness",
+    "Documents cases thoroughly",
+    "Practises physical and emotional resilience"
+  ],
+
+  "tags": [
+    "emergency care",
+    "patient care",
+    "resilience",
+    "decision-making",
+    "healthcare",
+    "teamwork",
+    "high responsibility",
+    "trauma response"
+  ],
+
+  "hero": {
+    "image": "paramedic_hero.jpg",
+    "color": "#22C55E",
+    "keywords": ["emergency", "care", "response"]
+  }
+}

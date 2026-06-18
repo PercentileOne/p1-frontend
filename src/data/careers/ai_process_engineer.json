@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "ai_process_engineer",
+  "slug": "ai-process-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Uses AI, optimisation algorithms, and real‑time analytics to design, refine, and automate manufacturing processes end‑to‑end.",
+
+  "identity": {
+    "title": "AI Process Engineer",
+    "summary": "Improves manufacturing workflows using AI‑driven optimisation, predictive modelling, and adaptive control, ensuring processes are efficient, stable, and capable of autonomous adjustment."
+  },
+
+  "salary": {
+    "entry": { "low": 45000, "high": 60000 },
+    "mid":   { "low": 61000, "high": 90000 },
+    "senior": { "low": 91000, "high": 145000 },
+    "notes": "Engineers in aerospace, robotics, or fully autonomous smart‑factory environments can exceed £145k-£190k+."
+  },
+
+  "qualifications": [
+    "Experience in process engineering, automation, or AI‑driven optimisation",
+    "Knowledge of CNC, robotics, and digital manufacturing workflows",
+    "Skills in machine learning, statistical modelling, and process simulation",
+    "Understanding of IIoT, MES, SCADA, and real‑time control systems"
+  ],
+
+  "curves": {
+    "difficulty": [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "AI process engineers work in aerospace, robotics, automotive, and Industry 4.0 environments. They design and optimise manufacturing processes using AI‑driven insights, enabling adaptive, efficient, and increasingly autonomous workflows. The role suits individuals who enjoy optimisation, systems thinking, and high‑tech engineering."
+  },
+
+  "habits": [
+    "Optimises manufacturing processes using AI and analytics",
+    "Implements adaptive control strategies for real‑time adjustment",
+    "Builds predictive models for process stability and efficiency",
+    "Collaborates with production, AI, and automation teams",
+    "Ensures processes are scalable, reliable, and ready for autonomy"
+  ],
+
+  "tags": [
+    "AI",
+    "process engineering",
+    "automation",
+    "industry 4.0",
+    "smart factory",
+    "optimisation"
+  ],
+
+  "hero": {
+    "image": "ai_process_engineer_hero.jpg",
+    "color": "#00091C",
+    "keywords": ["AI", "process", "optimisation"]
+  }
+}

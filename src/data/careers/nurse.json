@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "nurse",
+  "slug": "nurse",
+  "category": "Healthcare",
+
+  "essence": "Provides skilled care with calm, compassion, and resilience in moments that matter most.",
+
+  "identity": {
+    "title": "Nurse",
+    "summary": "Delivers hands‑on patient care, monitors health, administers treatments, and supports individuals and families through challenging medical moments."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 32000 },
+    "mid": { "low": 34000, "high": 42000 },
+    "senior": { "low": 45000, "high": 55000 },
+    "notes": "NHS Band progression affects pay. Specialist roles, night shifts, and agency work can significantly increase earnings."
+  },
+
+  "qualifications": [
+    "Nursing Degree (Adult, Child, Mental Health, or Learning Disability)",
+    "NMC Registration",
+    "Clinical Placement Experience",
+    "Strong Understanding of Patient Care and Safety"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Nursing is emotionally demanding, physically intense, and deeply meaningful. Days often begin before sunrise or stretch late into the night, depending on shift patterns. Nurses move constantly - checking observations, administering medication, coordinating with doctors, and supporting patients through fear, pain, or uncertainty. The emotional weight can be heavy, especially when caring for vulnerable people or navigating difficult outcomes. Yet the role carries a profound sense of purpose: small acts of care can transform someone's day, and moments of connection stay with you. The lifestyle suits people who are steady under pressure, empathetic, and able to balance compassion with clinical precision."
+  },
+
+  "habits": [
+    "Monitors patients consistently",
+    "Communicates calmly under pressure",
+    "Documents care accurately",
+    "Follows safety protocols closely",
+    "Practises emotional grounding"
+  ],
+
+  "tags": [
+    "compassion",
+    "high responsibility",
+    "patient care",
+    "emotional resilience",
+    "teamwork",
+    "clinical precision",
+    "shift work",
+    "pressure management"
+  ],
+
+  "hero": {
+    "image": "nurse_hero.jpg",
+    "color": "#2563EB",
+    "keywords": ["healthcare", "care", "resilience"]
+  }
+}

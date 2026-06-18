@@ -1,0 +1,97 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 235,
+  "id": "ai_research_scientist",
+  "slug": "ai-research-scientist",
+  "category": "AI, Robotics \u0026 Automation",
+  "essence": "Designs and advances core machine\u2011learning algorithms and architectures to push the boundaries of AI capability.",
+  "identity": {
+    "title": "AI Research Scientist",
+    "summary": "Conducts original research in machine learning, publishes papers, prototypes novel models, and translates research into production prototypes."
+  },
+  "salary": {
+    "entry": {
+      "low": 45000,
+      "high": 70000
+    },
+    "mid": {
+      "low": 70000,
+      "high": 110000
+    },
+    "senior": {
+      "low": 110000,
+      "high": 220000
+    },
+    "notes": "Senior research scientists at leading labs or in specialised domains (e.g., robotics, safety) can earn significantly more."
+  },
+  "qualifications": [
+    "PhD or strong research record in machine learning, AI, or related field",
+    "Experience publishing in top conferences and building research prototypes",
+    "Strong programming skills (Python, PyTorch/TensorFlow)",
+    "Ability to design experiments and evaluate models rigorously"
+  ],
+  "curves": {
+    "difficulty": [
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10,
+    10,
+    10,
+    10
+  ],
+    "effort": [
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10,
+    10,
+    10,
+    10
+  ],
+    "reward": [
+      7,
+      8,
+      8,
+      9,
+      9,
+      10,
+      10,
+      10,
+      10,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Work alternates between deep research, reading literature, coding experiments, and collaborating with engineers to productise models. Often based in labs, universities, or R\u0026D teams."
+  },
+  "habits": [
+    "Reads and critiques recent papers",
+    "Designs and runs experiments to test hypotheses",
+    "Prototypes models and shares results with peers",
+    "Mentors junior researchers and interns"
+  ],
+  "tags": [
+    "research",
+    "machine learning",
+    "deep learning",
+    "AI",
+    "R\u0026D"
+  ],
+  "hero": {
+    "image": "ai_research_scientist_hero.jpg",
+    "color": "#0B3D91",
+    "keywords": [
+      "research",
+      "machine learning",
+      "models"
+    ]
+  }
+}

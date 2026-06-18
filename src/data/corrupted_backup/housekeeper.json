@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "housekeeper",
+  "slug": "housekeeper",
+  "category": "Hospitality",
+
+  "essence": "Creates clean, comfortable, and welcoming environments through consistency, organisation, and quiet professionalism.",
+
+  "identity": {
+    "title": "Housekeeper",
+    "summary": "Cleans, organises, and maintains rooms and facilities to ensure high standards of hygiene, comfort, and presentation."
+  },
+
+  "salary": {
+    "entry": { "low": 18500, "high": 21000 },
+    "mid": { "low": 21000, "high": 25000 },
+    "senior": { "low": 26000, "high": 32000 },
+    "notes": "Supervisors, head housekeepers, and private household staff can exceed £30k–£40k+, especially in luxury hotels or estates."
+  },
+
+  "qualifications": [
+    "On‑the‑job training in cleaning and housekeeping",
+    "Knowledge of hygiene standards and cleaning procedures",
+    "Understanding of equipment, chemicals, and safety practices",
+    "Organisation, time management, and attention to detail"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Housekeepers work in hotels, private homes, hospitals, and commercial buildings where cleanliness, organisation, and efficiency are essential. Days involve making beds, cleaning bathrooms, vacuuming, dusting, restocking supplies, and ensuring rooms meet high presentation standards. The work is physical and often fast‑paced, with set targets for the number of rooms or areas to complete. Despite the demands, the role offers a sense of order, routine, and satisfaction — each completed space is a visible result of care and effort. This lifestyle suits individuals who enjoy structure, tidiness, and creating comfortable environments for others."
+  },
+
+  "habits": [
+    "Follows consistent cleaning routines",
+    "Keeps equipment and supplies organised",
+    "Checks details others might overlook",
+    "Manages time efficiently across tasks",
+    "Maintains a calm, professional presence"
+  },
+
+  "tags": [
+    "hospitality",
+    "cleaning",
+    "organisation",
+    "routine",
+    "attention to detail",
+    "physical activity",
+    "customer service",
+    "facility care"
+  ],
+
+  "hero": {
+    "image": "housekeeper_hero.jpg",
+    "color": "#14B8A6",
+    "keywords": ["cleanliness", "care", "comfort"]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "construction_worker",
+  "slug": "construction-worker",
+  "category": "Skilled Trades",
+
+  "essence": "Builds the physical world through strength, precision, and steady, hands‑on craftsmanship.",
+
+  "identity": {
+    "title": "Construction Worker",
+    "summary": "Performs physical labour on building sites, operates tools and machinery, follows plans, and supports the construction of structures and infrastructure."
+  },
+
+  "salary": {
+    "entry": { "low": 21000, "high": 25000 },
+    "mid": { "low": 26000, "high": 33000 },
+    "senior": { "low": 35000, "high": 45000 },
+    "notes": "Specialised roles (steel fixing, scaffolding, heavy machinery operation) can exceed £50k–£60k+. Overtime and site allowances can increase earnings."
+  },
+
+  "qualifications": [
+    "CSCS Card or Equivalent Site Certification",
+    "Apprenticeship or On‑Site Training",
+    "Knowledge of Tools, Materials, and Safety Procedures",
+    "Physical Fitness and Ability to Work Outdoors"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Construction workers operate in a physically demanding, outdoor environment where teamwork and safety are essential. Days involve lifting materials, assembling structures, operating tools, and following instructions from supervisors or tradespeople. Weather, deadlines, and site conditions shape the rhythm of the work. The role requires stamina, coordination, and a strong respect for safety protocols. While the work can be tough and repetitive, it offers clear, tangible results — seeing a building rise from the ground is deeply satisfying. This lifestyle suits individuals who enjoy physical activity, practical tasks, and contributing to projects that shape communities."
+  },
+
+  "habits": [
+    "Follows safety procedures consistently",
+    "Keeps tools and equipment organised",
+    "Communicates clearly with the site team",
+    "Maintains physical strength and stamina",
+    "Checks measurements and materials carefully"
+  },
+
+  "tags": [
+    "hands-on work",
+    "teamwork",
+    "physical strength",
+    "construction",
+    "safety",
+    "outdoor work",
+    "precision",
+    "practical skills"
+  ],
+
+  "hero": {
+    "image": "construction_worker_hero.jpg",
+    "color": "#CA8A04",
+    "keywords": ["building", "craft", "labour"]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 257,
+  "id": "manufacturing_operations_manager",
+  "slug": "manufacturing-operations-manager",
+  "category": "Advanced Manufacturing \u0026 Engineering",
+  "essence": "Leads production operations, balancing capacity, quality, and cost to meet business objectives.",
+  "identity": {
+    "title": "Manufacturing Operations Manager",
+    "summary": "Oversees production teams, implements continuous improvement, manages KPIs, and ensures safe, efficient operations."
+  },
+  "salary": {
+    "entry": {
+      "low": 45000,
+      "high": 60000
+    },
+    "mid": {
+      "low": 61000,
+      "high": 90000
+    },
+    "senior": {
+      "low": 91000,
+      "high": 140000
+    },
+    "notes": "Large site managers or those in high\u2011value sectors command higher packages."
+  },
+  "qualifications": [
+    "Experience managing production teams and operations",
+    "Knowledge of lean manufacturing and continuous improvement",
+    "Strong leadership and stakeholder management skills",
+    "Familiarity with safety and regulatory compliance"
+  ],
+  "curves": {
+    "difficulty": [
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10,
+    10
+  ],
+    "effort": [
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10,
+    10
+  ],
+    "reward": [
+      7,
+      8,
+      8,
+      9,
+      9,
+      10,
+      10,
+      10,
+      10,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Management role with responsibility for shifts, targets, and continuous improvement; frequent cross\u2011functional coordination."
+  },
+  "habits": [
+    "Monitors production KPIs and drives improvements",
+    "Leads daily operations meetings and shift handovers",
+    "Implements safety and quality initiatives",
+    "Manages resource allocation and staffing"
+  ],
+  "tags": [
+    "operations",
+    "management",
+    "manufacturing",
+    "lean"
+  ],
+  "hero": {
+    "image": "manufacturing_operations_manager_hero.jpg",
+    "color": "#2F4A5A",
+    "keywords": [
+      "operations",
+      "management",
+      "manufacturing"
+    ]
+  }
+}

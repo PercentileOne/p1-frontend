@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "emergency_services_support_officer",
+  "slug": "emergency-services-support-officer",
+  "category": "Skilled Trades",
+
+  "essence": "Provides operational, logistical, and administrative support to police, fire, and ambulance teams during routine work and major incidents.",
+
+  "identity": {
+    "title": "Emergency Services Support Officer",
+    "summary": "Assists emergency teams with logistics, equipment management, scene support, documentation, and coordination during incidents and daily operations."
+  },
+
+  "salary": {
+    "entry": { "low": 23000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 33000 },
+    "senior": { "low": 34000, "high": 42000 },
+    "notes": "Specialists in major‑incident logistics, evidence support, or multi‑agency coordination can exceed £40k-£50k+."
+  },
+
+  "qualifications": [
+    "Emergency services support or incident‑response training",
+    "Knowledge of equipment handling and scene‑safety procedures",
+    "Strong organisational and communication skills",
+    "Ability to work under pressure and follow structured protocols"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Emergency services support officers assist police, fire, and ambulance teams with logistics, equipment, scene management, and documentation. They may help set up cordons, transport equipment, support responders at incidents, and manage operational resources. The role suits individuals who enjoy varied work, teamwork, and contributing to public safety without being on the frontline."
+  },
+
+  "habits": [
+    "Prepares and checks equipment before shifts",
+    "Follows strict safety and incident‑scene procedures",
+    "Communicates clearly with responders and control rooms",
+    "Keeps accurate records and logs",
+    "Responds flexibly to changing incident needs"
+  ],
+
+  "tags": [
+    "emergency services",
+    "public safety",
+    "logistics",
+    "incident support",
+    "coordination",
+    "teamwork",
+    "skilled trades",
+    "operational support"
+  ],
+
+  "hero": {
+    "image": "emergency_services_support_officer_hero.jpg",
+    "color": "#F87171",
+    "keywords": ["emergency support", "logistics", "public safety"]
+  }
+}

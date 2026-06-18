@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 298,
+  "id": "illustrator",
+  "slug": "illustrator",
+  "category": "Creative, Media \u0026 Culture",
+  "essence": "Creates visual artwork for books, games, branding, advertising, and digital media.",
+  "identity": {
+    "title": "Illustrator",
+    "summary": "Produces original artwork, characters, and visual concepts using traditional or digital tools for a wide range of creative projects."
+  },
+  "salary": {
+    "entry": {
+      "low": 18000,
+      "high": 26000
+    },
+    "mid": {
+      "low": 27000,
+      "high": 45000
+    },
+    "senior": {
+      "low": 46000,
+      "high": 90000
+    },
+    "notes": "Freelance illustrators\u2019 earnings vary widely depending on commissions and licensing."
+  },
+  "qualifications": [
+    "Portfolio demonstrating artistic skill and style",
+    "Experience with digital illustration tools",
+    "Understanding of composition and visual storytelling",
+    "Ability to work to briefs and deadlines"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    9,
+    9
+  ],
+    "effort": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Freelance or studio\u2011based work with creative autonomy, deadlines, and varied client projects."
+  },
+  "habits": [
+    "Creates sketches and concepts",
+    "Produces final artwork digitally or traditionally",
+    "Collaborates with clients and art directors",
+    "Maintains a portfolio and personal projects"
+  ],
+  "tags": [
+    "illustration",
+    "art",
+    "creative",
+    "visual"
+  ],
+  "hero": {
+    "image": "illustrator_hero.jpg",
+    "color": "#3A2A4A",
+    "keywords": [
+      "illustration",
+      "art",
+      "creative"
+    ]
+  }
+}

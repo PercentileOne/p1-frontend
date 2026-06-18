@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "plumber",
+  "slug": "plumber",
+  "category": "Skilled Trades",
+
+  "essence": "Keeps water, heat, and sanitation flowing through practical skill, problem‑solving, and hands‑on precision.",
+
+  "identity": {
+    "title": "Plumber",
+    "summary": "Installs, repairs, and maintains plumbing systems, heating systems, and drainage infrastructure in homes, businesses, and industrial settings."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 28000 },
+    "mid": { "low": 30000, "high": 40000 },
+    "senior": { "low": 42000, "high": 60000 },
+    "notes": "Self‑employed plumbers and emergency call‑out specialists can exceed £70k–£100k+ depending on demand and hours worked."
+  },
+
+  "qualifications": [
+    "Plumbing and Heating NVQ Level 2 or 3",
+    "Apprenticeship or On‑Site Training",
+    "Gas Safe Registration (for gas‑related work)",
+    "Strong Understanding of Water Systems and Regulations"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Plumbers work in a practical, hands‑on environment where every day brings a new problem to solve. Tasks range from installing boilers and pipework to fixing leaks, unblocking drains, or responding to urgent call‑outs. The work is physically demanding and often requires crawling into tight spaces, lifting equipment, and working in varied conditions. Hours can be regular for those in maintenance roles, while self‑employed plumbers may work evenings or weekends to meet demand. The job offers strong independence, steady income, and the satisfaction of solving essential problems that keep homes and businesses running. It suits individuals who enjoy practical work, problem‑solving, and visible results."
+  },
+
+  "habits": [
+    "Diagnoses issues methodically",
+    "Keeps tools organised and ready",
+    "Follows safety and building regulations",
+    "Communicates clearly with customers",
+    "Checks systems thoroughly after repairs"
+  },
+
+  "tags": [
+    "hands-on work",
+    "problem-solving",
+    "independence",
+    "technical skill",
+    "physical activity",
+    "customer service",
+    "maintenance",
+    "reliability"
+  ],
+
+  "hero": {
+    "image": "plumber_hero.jpg",
+    "color": "#2563EB",
+    "keywords": ["plumbing", "repair", "systems"]
+  }
+}

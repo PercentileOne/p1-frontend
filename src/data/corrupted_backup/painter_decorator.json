@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "painter_decorator",
+  "slug": "painter-decorator",
+  "category": "Skilled Trades",
+
+  "essence": "Transforms spaces through colour, detail, and finishing skill, bringing walls and interiors to life.",
+
+  "identity": {
+    "title": "Painter & Decorator",
+    "summary": "Prepares surfaces, applies paint, wallpaper, and finishes, and enhances the appearance and durability of interior and exterior spaces."
+  },
+
+  "salary": {
+    "entry": { "low": 21000, "high": 25000 },
+    "mid": { "low": 26000, "high": 33000 },
+    "senior": { "low": 34000, "high": 45000 },
+    "notes": "High‑end residential, commercial contracts, and specialist decorative work can exceed £50k–£70k+, especially for self‑employed tradespeople."
+  },
+
+  "qualifications": [
+    "Apprenticeship in Painting & Decorating",
+    "NVQ or Diploma in Decorative Finishing",
+    "Strong Understanding of Surface Preparation and Application Techniques",
+    "Knowledge of Materials, Tools, and Safety Procedures"
+  },
+
+  "curves": {
+    "difficulty": [3, 4, 5, 6, 6, 7, 7, 8, 8, 9],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Painters and decorators work in varied environments — homes, offices, construction sites, and commercial buildings — where attention to detail and steady craftsmanship define the day. Tasks include preparing surfaces, filling imperfections, applying paint or wallpaper, and ensuring clean, consistent finishes. The work can be physical and sometimes repetitive, involving ladders, tight spaces, and long periods of standing. Yet the transformation is immediate and satisfying: a room, façade, or entire building can be renewed through colour and finish. This lifestyle suits individuals who enjoy hands‑on work, visual creativity, and delivering polished, high‑quality results."
+  },
+
+  "habits": [
+    "Prepares surfaces thoroughly before finishing",
+    "Keeps tools clean and organised",
+    "Applies coatings with steady, consistent technique",
+    "Checks colour accuracy and finish quality",
+    "Protects surrounding areas with care"
+  },
+
+  "tags": [
+    "craftsmanship",
+    "hands-on work",
+    "finishing",
+    "renovation",
+    "visual design",
+    "precision",
+    "construction",
+    "practical skills"
+  ],
+
+  "hero": {
+    "image": "painter_decorator_hero.jpg",
+    "color": "#F59E0B",
+    "keywords": ["colour", "finish", "craft"]
+  }
+}

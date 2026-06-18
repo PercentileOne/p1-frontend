@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 251,
+  "id": "manufacturing_planner",
+  "slug": "manufacturing-planner",
+  "category": "Advanced Manufacturing \u0026 Engineering",
+  "essence": "Plans production schedules, coordinates resources, and ensures materials and capacity meet demand.",
+  "identity": {
+    "title": "Manufacturing Planner",
+    "summary": "Creates production plans, manages inventory buffers, and liaises with procurement and operations to meet delivery targets."
+  },
+  "salary": {
+    "entry": {
+      "low": 28000,
+      "high": 36000
+    },
+    "mid": {
+      "low": 37000,
+      "high": 52000
+    },
+    "senior": {
+      "low": 53000,
+      "high": 80000
+    },
+    "notes": "Planners with ERP and lean manufacturing experience are particularly valuable."
+  },
+  "qualifications": [
+    "Experience in production planning, MRP/ERP systems",
+    "Understanding of supply chain and inventory management",
+    "Strong organisational and communication skills",
+    "Familiarity with lean manufacturing principles"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "effort": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Office and shop\u2011floor coordination role with regular interaction across procurement, production, and logistics teams."
+  },
+  "habits": [
+    "Creates and updates production schedules",
+    "Monitors inventory and material availability",
+    "Coordinates with suppliers and operations",
+    "Adjusts plans to meet changing demand"
+  ],
+  "tags": [
+    "planning",
+    "manufacturing",
+    "supply chain",
+    "ERP"
+  ],
+  "hero": {
+    "image": "manufacturing_planner_hero.jpg",
+    "color": "#3B5A4F",
+    "keywords": [
+      "planning",
+      "manufacturing",
+      "supply chain"
+    ]
+  }
+}

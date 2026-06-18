@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 256,
+  "id": "process_technician",
+  "slug": "process-technician",
+  "category": "Advanced Manufacturing \u0026 Engineering",
+  "essence": "Monitors and optimises manufacturing processes to maintain product quality and throughput.",
+  "identity": {
+    "title": "Process Technician",
+    "summary": "Operates process equipment, collects data, troubleshoots process issues, and implements adjustments to meet quality and efficiency targets."
+  },
+  "salary": {
+    "entry": {
+      "low": 26000,
+      "high": 32000
+    },
+    "mid": {
+      "low": 33000,
+      "high": 48000
+    },
+    "senior": {
+      "low": 49000,
+      "high": 75000
+    },
+    "notes": "Specialist process technicians in chemical or pharmaceutical sectors earn premiums."
+  },
+  "qualifications": [
+    "Technical qualification in process operations or engineering",
+    "Experience with process control systems and instrumentation",
+    "Good analytical and problem\u2011solving skills",
+    "Understanding of quality and safety procedures"
+  ],
+  "curves": {
+    "difficulty": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    9,
+    9
+  ],
+    "effort": [
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9
+  ],
+    "reward": [
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8,
+      9,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Shift work in production environments with a focus on monitoring, data collection, and rapid response to process deviations."
+  },
+  "habits": [
+    "Monitors process variables and trends",
+    "Adjusts equipment and parameters to maintain quality",
+    "Performs routine sampling and testing",
+    "Collaborates with engineers on process improvements"
+  ],
+  "tags": [
+    "process",
+    "operations",
+    "control",
+    "quality"
+  ],
+  "hero": {
+    "image": "process_technician_hero.jpg",
+    "color": "#3B5A5A",
+    "keywords": [
+      "process",
+      "control",
+      "operations"
+    ]
+  }
+}

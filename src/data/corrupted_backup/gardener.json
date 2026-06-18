@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "gardener",
+  "slug": "gardener",
+  "category": "Skilled Trades",
+
+  "essence": "Cultivates and cares for outdoor spaces, bringing life, colour, and balance to natural environments.",
+
+  "identity": {
+    "title": "Gardener",
+    "summary": "Maintains gardens, plants, lawns, and outdoor spaces through planting, pruning, soil care, and seasonal upkeep."
+  },
+
+  "salary": {
+    "entry": { "low": 19000, "high": 23000 },
+    "mid": { "low": 24000, "high": 30000 },
+    "senior": { "low": 31000, "high": 42000 },
+    "notes": "Self‑employed gardeners, estate gardeners, and specialist horticulturists can exceed £45k–£60k+ depending on clientele and expertise."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Diploma in Horticulture",
+    "Knowledge of Plants, Soil, and Seasonal Care",
+    "Experience with Tools, Machinery, and Garden Maintenance",
+    "Understanding of Pest Control and Plant Health"
+  },
+
+  "curves": {
+    "difficulty": [3, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Gardeners work outdoors in peaceful, natural environments where physical activity and plant knowledge come together. Days involve planting flowers and shrubs, mowing lawns, pruning trees, managing soil health, and keeping gardens tidy throughout the seasons. The work is physical and weather‑dependent, often requiring early starts and steady pacing. While conditions can be muddy, hot, or cold, the rewards are immediate and deeply satisfying — watching a garden grow, bloom, and thrive under your care. This lifestyle suits individuals who enjoy nature, hands‑on work, and creating beautiful, living spaces."
+  },
+
+  "habits": [
+    "Monitors plant health regularly",
+    "Plans tasks around weather and seasons",
+    "Keeps tools clean and well‑maintained",
+    "Manages soil quality and watering schedules",
+    "Maintains tidy, safe outdoor spaces"
+  },
+
+  "tags": [
+    "nature",
+    "outdoor work",
+    "horticulture",
+    "hands-on work",
+    "seasonal work",
+    "plant care",
+    "physical activity",
+    "environment"
+  ],
+
+  "hero": {
+    "image": "gardener_hero.jpg",
+    "color": "#4D7C0F",
+    "keywords": ["nature", "growth", "care"]
+  }
+}

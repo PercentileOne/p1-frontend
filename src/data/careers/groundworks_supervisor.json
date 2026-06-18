@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 267,
+  "id": "groundworks_supervisor",
+  "slug": "groundworks-supervisor",
+  "category": "Skilled Trades \u0026 Construction",
+  "essence": "Supervises groundworks teams, ensuring safe excavation, drainage, and foundation preparation.",
+  "identity": {
+    "title": "Groundworks Supervisor",
+    "summary": "Leads operatives on earthworks, drainage, and foundation tasks, coordinating plant, materials, and safety on site."
+  },
+  "salary": {
+    "entry": {
+      "low": 30000,
+      "high": 38000
+    },
+    "mid": {
+      "low": 39000,
+      "high": 52000
+    },
+    "senior": {
+      "low": 53000,
+      "high": 80000
+    },
+    "notes": "Supervisors on large civil projects can earn higher pay and allowances."
+  },
+  "qualifications": [
+    "Experience in groundworks, civils, or construction supervision",
+    "Knowledge of plant operations and excavation safety",
+    "Strong organisational and leadership skills",
+    "CSCS and relevant supervisory certifications"
+  ],
+  "curves": {
+    "difficulty": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      9,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Site leadership role with responsibility for teams, plant, and safety; frequent early starts and coordination with contractors."
+  },
+  "habits": [
+    "Plans daily tasks and allocates resources",
+    "Monitors excavation and drainage works",
+    "Ensures compliance with safety and quality",
+    "Reports progress and coordinates deliveries"
+  ],
+  "tags": [
+    "groundworks",
+    "supervision",
+    "civil",
+    "construction"
+  ],
+  "hero": {
+    "image": "groundworks_supervisor_hero.jpg",
+    "color": "#3A4A3B",
+    "keywords": [
+      "groundworks",
+      "supervision",
+      "civil"
+    ]
+  }
+}

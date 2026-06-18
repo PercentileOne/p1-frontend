@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_integration_engineer",
+  "slug": "cnc-integration-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Integrates CNC machines, robotics, sensors, software, and data systems into unified, high‑performance manufacturing environments.",
+
+  "identity": {
+    "title": "CNC Integration Engineer",
+    "summary": "Builds complete CNC manufacturing ecosystems by connecting machines, automation, control systems, and data platforms into seamless, reliable, and scalable production workflows."
+  },
+
+  "salary": {
+    "entry": { "low": 50000, "high": 60000 },
+    "mid":   { "low": 61000, "high": 82000 },
+    "senior": { "low": 83000, "high": 125000 },
+    "notes": "Engineers working in aerospace, defence, robotics, or Industry 4.0 smart‑factory environments can exceed £125k-£170k+."
+  },
+
+  "qualifications": [
+    "Experience in CNC systems engineering, robotics, automation, or industrial controls",
+    "Knowledge of PLCs, sensors, industrial networking, and machine communication protocols",
+    "Ability to integrate CNC machines with robotics, MES, SCADA, and data systems",
+    "Understanding of workflow optimisation, safety systems, and Industry 4.0 technologies"
+  ],
+
+  "curves": {
+    "difficulty": [7, 8, 8, 9, 9, 9, 10, 10, 10, 10],
+    "effort":     [7, 8, 8, 9, 9, 9, 10, 10, 10, 10],
+    "reward":     [7, 8, 8, 9, 9, 10, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC integration engineers work in advanced manufacturing, aerospace, automotive, robotics, and smart‑factory environments. They connect CNC machines, robots, sensors, and software into cohesive production systems. The role suits individuals who enjoy systems thinking, automation, and building high‑tech manufacturing ecosystems."
+  },
+
+  "habits": [
+    "Integrates CNC machines with robotics and automation systems",
+    "Implements industrial networking, sensors, and control systems",
+    "Connects CNC equipment to MES, SCADA, and data platforms",
+    "Optimises workflow, communication, and system reliability",
+    "Collaborates with robotics, software, CNC, and manufacturing teams"
+  ],
+
+  "tags": [
+    "CNC",
+    "systems integration",
+    "automation",
+    "robotics",
+    "industry 4.0",
+    "smart factory",
+    "industrial networking"
+  ],
+
+  "hero": {
+    "image": "cnc_integration_engineer_hero.jpg",
+    "color": "#002A02",
+    "keywords": ["CNC", "integration", "automation"]
+  }
+}

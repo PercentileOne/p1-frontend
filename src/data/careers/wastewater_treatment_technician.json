@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "wastewater_treatment_technician",
+  "slug": "wastewater-treatment-technician",
+  "category": "Skilled Trades",
+
+  "essence": "Operates and maintains wastewater treatment systems to protect public health and the environment.",
+
+  "identity": {
+    "title": "Wastewater Treatment Technician",
+    "summary": "Monitors, operates, and maintains wastewater treatment equipment, ensuring safe processing of sewage and industrial effluent to meet environmental standards."
+  },
+
+  "salary": {
+    "entry": { "low": 24000, "high": 30000 },
+    "mid":   { "low": 31000, "high": 38000 },
+    "senior": { "low": 39000, "high": 50000 },
+    "notes": "Technicians specialising in advanced treatment systems, process optimisation, or industrial wastewater can exceed £50k-£60k+."
+  },
+
+  "qualifications": [
+    "Training in water operations, environmental science, or process engineering",
+    "Knowledge of wastewater treatment processes and regulations",
+    "Ability to operate pumps, filters, and monitoring instruments",
+    "Understanding of water chemistry, contamination, and environmental compliance"
+  ],
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
+    "reward":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Wastewater treatment technicians work for water companies, councils, and industrial facilities. They monitor treatment processes, maintain equipment, test water quality, and ensure compliance with environmental standards. The role suits individuals who enjoy technical operations, environmental protection, and hands‑on system management."
+  },
+
+  "habits": [
+    "Operates and maintains wastewater treatment equipment",
+    "Monitors water quality and treatment performance",
+    "Collects and analyses water samples",
+    "Troubleshoots mechanical and process issues",
+    "Ensures compliance with environmental regulations"
+  ],
+
+  "tags": [
+    "wastewater",
+    "water treatment",
+    "environmental protection",
+    "operations",
+    "water quality",
+    "infrastructure"
+  ],
+
+  "hero": {
+    "image": "wastewater_treatment_technician_hero.jpg",
+    "color": "#0EA5E9",
+    "keywords": ["water treatment", "environment", "operations"]
+  }
+}

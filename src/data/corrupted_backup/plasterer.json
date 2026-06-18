@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "plasterer",
+  "slug": "plasterer",
+  "category": "Skilled Trades",
+
+  "essence": "Creates smooth, durable surfaces that shape the look and feel of every interior space.",
+
+  "identity": {
+    "title": "Plasterer",
+    "summary": "Applies plaster, render, and finishing materials to walls and ceilings, creating smooth, even surfaces for decoration or structural protection."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid": { "low": 27000, "high": 35000 },
+    "senior": { "low": 36000, "high": 45000 },
+    "notes": "Skilled finishers, decorative plaster specialists, and self‑employed tradespeople can exceed £50k–£70k+ depending on demand and project type."
+  },
+
+  "qualifications": [
+    "Apprenticeship in Plastering",
+    "NVQ or Diploma in Plastering or Interior Systems",
+    "Strong Understanding of Materials, Mixing, and Application Techniques",
+    "Ability to Work at Height and Follow Safety Procedures"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Plasterers work in hands‑on, physical environments where technique, timing, and consistency are essential. Days involve preparing surfaces, mixing materials, applying plaster or render, smoothing finishes, and ensuring walls and ceilings are ready for painting or decoration. The work can be physically demanding and often requires working on ladders or scaffolding. Conditions vary from new builds to renovations, sometimes in dusty or unfinished spaces. The satisfaction comes from transforming rough surfaces into clean, flawless finishes. This lifestyle suits individuals who enjoy practical craftsmanship, steady focus, and seeing immediate, tangible results from their skill."
+  },
+
+  "habits": [
+    "Prepares surfaces carefully before application",
+    "Mixes materials to the correct consistency",
+    "Applies smooth, even coats with precision",
+    "Maintains tools and equipment properly",
+    "Checks finishes from multiple angles for imperfections"
+  },
+
+  "tags": [
+    "hands-on work",
+    "craftsmanship",
+    "construction",
+    "precision",
+    "finishing",
+    "renovation",
+    "practical skills",
+    "attention to detail"
+  ],
+
+  "hero": {
+    "image": "plasterer_hero.jpg",
+    "color": "#D97706",
+    "keywords": ["finish", "craft", "surface"]
+  }
+}

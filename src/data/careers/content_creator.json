@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 300,
+  "id": "content_creator",
+  "slug": "content-creator",
+  "category": "Creative, Media \u0026 Culture",
+  "essence": "Produces digital content across video, social media, blogs, and multimedia platforms to engage audiences.",
+  "identity": {
+    "title": "Content Creator",
+    "summary": "Plans, produces, and edits content for online platforms, building audience engagement through storytelling and consistency."
+  },
+  "salary": {
+    "entry": {
+      "low": 18000,
+      "high": 26000
+    },
+    "mid": {
+      "low": 27000,
+      "high": 45000
+    },
+    "senior": {
+      "low": 46000,
+      "high": 100000
+    },
+    "notes": "Earnings vary widely depending on platform success, sponsorships, and freelance work."
+  },
+  "qualifications": [
+    "Experience creating digital content",
+    "Skills in video editing, writing, and social media",
+    "Understanding of audience engagement and analytics",
+    "Creative storytelling and consistency"
+  ],
+  "curves": {
+    "difficulty": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "effort": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      9
+    ]
+  },
+  "lifestyle": {
+    "description": "Flexible and self\u2011directed work with content cycles, platform management, and audience interaction."
+  },
+  "habits": [
+    "Plans and produces digital content",
+    "Edits video, audio, or written posts",
+    "Engages with audiences and tracks analytics",
+    "Collaborates with brands or clients"
+  ],
+  "tags": [
+    "content",
+    "digital",
+    "social media",
+    "creative"
+  ],
+  "hero": {
+    "image": "content_creator_hero.jpg",
+    "color": "#1F3A2A",
+    "keywords": [
+      "content",
+      "digital",
+      "creative"
+    ]
+  }
+}

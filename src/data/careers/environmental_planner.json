@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "environmental_planner",
+  "slug": "environmental-planner",
+  "category": "Skilled Trades",
+
+  "essence": "Guides land‑use decisions by assessing environmental impacts, protecting habitats, and shaping sustainable development.",
+
+  "identity": {
+    "title": "Environmental Planner",
+    "summary": "Evaluates development proposals, conducts environmental assessments, and advises on sustainable land use to balance growth with environmental protection."
+  },
+
+  "salary": {
+    "entry": { "low": 30000, "high": 36000 },
+    "mid":   { "low": 37000, "high": 50000 },
+    "senior": { "low": 51000, "high": 70000 },
+    "notes": "Senior planners or specialists in major infrastructure projects can exceed £70k-£85k+."
+  },
+
+  "qualifications": [
+    "Training in environmental planning, environmental science, or geography",
+    "Knowledge of planning policy and environmental legislation",
+    "Ability to conduct environmental impact assessments (EIAs)",
+    "Understanding of land‑use planning, habitats, and sustainability principles"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Environmental planners work for councils, consultancies, environmental agencies, and infrastructure projects. They assess environmental impacts, guide planning decisions, and ensure developments protect habitats and comply with regulations. The role suits individuals who enjoy analysis, policy, sustainability, and shaping long‑term land‑use outcomes."
+  },
+
+  "habits": [
+    "Reviews planning applications for environmental impact",
+    "Conducts or contributes to environmental impact assessments",
+    "Advises developers and councils on sustainable land use",
+    "Balances ecological, social, and economic considerations",
+    "Engages with communities, stakeholders, and environmental bodies"
+  ],
+
+  "tags": [
+    "environmental planning",
+    "sustainability",
+    "land use",
+    "environmental impact",
+    "policy",
+    "ecology"
+  ],
+
+  "hero": {
+    "image": "environmental_planner_hero.jpg",
+    "color": "#0EA5E9",
+    "keywords": ["planning", "environment", "sustainability"]
+  }
+}

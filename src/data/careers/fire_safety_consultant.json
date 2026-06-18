@@ -1,0 +1,62 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "fire_safety_consultant",
+  "slug": "fire-safety-consultant",
+  "category": "Skilled Trades",
+
+  "essence": "Advises organisations on fire‑safety compliance, risk reduction, and best‑practice strategies across buildings and operations.",
+
+  "identity": {
+    "title": "Fire Safety Consultant",
+    "summary": "Provides expert guidance on fire‑safety legislation, risk management, building compliance, and safety strategies for businesses and public organisations."
+  },
+
+  "salary": {
+    "entry": { "low": 35000, "high": 42000 },
+    "mid":   { "low": 43000, "high": 60000 },
+    "senior": { "low": 61000, "high": 90000 },
+    "notes": "Senior consultants, chartered fire engineers, or those advising large commercial portfolios can exceed £90k-£120k+."
+  },
+
+  "qualifications": [
+    "Fire‑safety or fire‑engineering training (e.g., NEBOSH, IFE, FPA)",
+    "Knowledge of fire‑safety legislation and building regulations",
+    "Ability to conduct risk assessments and develop safety strategies",
+    "Understanding of passive and active fire‑protection systems"
+  ],
+
+  "curves": {
+    "difficulty": [6, 7, 7, 8, 8, 9, 9, 9, 10, 10],
+    "effort":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Fire safety consultants work with businesses, developers, and public organisations to ensure buildings and operations meet fire‑safety standards. They review layouts, assess risks, advise on compliance, and develop fire‑safety strategies. The role suits individuals who enjoy advisory work, regulation, and improving safety across diverse environments."
+  },
+
+  "habits": [
+    "Reviews building layouts and fire‑safety systems",
+    "Advises clients on compliance and risk reduction",
+    "Writes detailed fire‑safety reports and strategies",
+    "Communicates clearly with stakeholders and regulators",
+    "Keeps up‑to‑date with legislation and best practice"
+  ],
+
+  "tags": [
+    "fire safety",
+    "consulting",
+    "risk assessment",
+    "compliance",
+    "public safety",
+    "building safety",
+    "skilled trades"
+  ],
+
+  "hero": {
+    "image": "fire_safety_consultant_hero.jpg",
+    "color": "#EA580C",
+    "keywords": ["fire safety", "consulting", "compliance"]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "road_surfacing_operative",
+  "slug": "road-surfacing-operative",
+  "category": "Skilled Trades",
+
+  "essence": "Lays and finishes asphalt and road surfaces that keep transport networks moving safely and smoothly.",
+
+  "identity": {
+    "title": "Road Surfacing Operative",
+    "summary": "Prepares, lays, and compacts asphalt and other road‑surfacing materials on highways, pavements, and infrastructure projects."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid":   { "low": 27000, "high": 34000 },
+    "senior": { "low": 35000, "high": 45000 },
+    "notes": "Night‑shift work, major highways projects, and machine‑operator roles can exceed £45k-£55k+."
+  },
+
+  "qualifications": [
+    "CSCS card and site safety training",
+    "Experience with asphalt laying and compaction",
+    "Knowledge of road construction methods and materials",
+    "Optional plant tickets (roller, paver, planer)"
+  ],
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Road surfacing operatives work on highways, car parks, pavements, and infrastructure projects laying asphalt and other surfacing materials. Days involve preparing the ground, operating rollers and pavers, raking and levelling hot asphalt, and working as part of a coordinated team. The role is physical, outdoors, and often involves early starts or night shifts to minimise traffic disruption. This lifestyle suits individuals who enjoy teamwork, outdoor work, and contributing to essential public infrastructure."
+  },
+
+  "habits": [
+    "Prepares surfaces and edges accurately",
+    "Works efficiently with hot materials",
+    "Communicates clearly with plant operators",
+    "Keeps tools clean and organised",
+    "Follows strict safety and traffic‑management procedures"
+  ],
+
+  "tags": [
+    "construction",
+    "civils",
+    "infrastructure",
+    "roadworks",
+    "asphalt",
+    "hands-on work",
+    "skilled trades",
+    "outdoor work"
+  ],
+
+  "hero": {
+    "image": "road_surfacing_operative_hero.jpg",
+    "color": "#F97316",
+    "keywords": ["asphalt", "roadworks", "infrastructure"]
+  }
+}

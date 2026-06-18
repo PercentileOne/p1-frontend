@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 262,
+  "id": "drainage_engineer",
+  "slug": "drainage-engineer",
+  "category": "Skilled Trades \u0026 Construction",
+  "essence": "Designs and oversees drainage systems to manage surface water and prevent flooding on construction projects.",
+  "identity": {
+    "title": "Drainage Engineer",
+    "summary": "Plans drainage layouts, specifies materials, and supervises installation to ensure effective water management and compliance."
+  },
+  "salary": {
+    "entry": {
+      "low": 30000,
+      "high": 38000
+    },
+    "mid": {
+      "low": 39000,
+      "high": 60000
+    },
+    "senior": {
+      "low": 61000,
+      "high": 100000
+    },
+    "notes": "Engineers with flood risk and sustainable drainage expertise are in demand."
+  },
+  "qualifications": [
+    "Degree or HND in civil engineering or related field",
+    "Experience with drainage design and SuDS principles",
+    "Familiarity with CAD and hydraulic modelling tools",
+    "Knowledge of regulations and site supervision"
+  ],
+  "curves": {
+    "difficulty": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "effort": [
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+    "reward": [
+      6,
+      7,
+      7,
+      8,
+      8,
+      9,
+      9,
+      9,
+      9,
+      10
+    ]
+  },
+  "lifestyle": {
+    "description": "Office and site balance with design work, site visits, and coordination with contractors and planners."
+  },
+  "habits": [
+    "Designs drainage and SuDS solutions",
+    "Performs hydraulic calculations and modelling",
+    "Supervises installation and inspects works",
+    "Coordinates with planners and environmental teams"
+  ],
+  "tags": [
+    "drainage",
+    "civil engineering",
+    "SuDS",
+    "flood risk"
+  ],
+  "hero": {
+    "image": "drainage_engineer_hero.jpg",
+    "color": "#2E6B5A",
+    "keywords": [
+      "drainage",
+      "civil",
+      "SuDS"
+    ]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "nanny_childcare_worker",
+  "slug": "nanny-childcare-worker",
+  "category": "Care & Support",
+
+  "essence": "Provides nurturing, structure, and safety to support children’s growth, learning, and emotional wellbeing.",
+
+  "identity": {
+    "title": "Nanny / Childcare Worker",
+    "summary": "Cares for children in homes or childcare settings, supporting daily routines, learning activities, safety, and emotional development."
+  },
+
+  "salary": {
+    "entry": { "low": 19000, "high": 22000 },
+    "mid": { "low": 23000, "high": 28000 },
+    "senior": { "low": 29000, "high": 38000 },
+    "notes": "Live‑in nannies, specialist childcare workers, and those with early‑years qualifications can exceed £35k–£50k+, especially in private households."
+  },
+
+  "qualifications": [
+    "Level 2 or 3 Diploma in Childcare or Early Years",
+    "Paediatric First Aid Certification",
+    "Understanding of Safeguarding and Child Protection",
+    "Experience with Child Development and Behaviour Support"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 5, 6, 6, 7, 7, 8, 8, 9],
+    "effort":     [5, 6, 6, 7, 7, 8, 8, 9, 9, 9],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Nannies and childcare workers spend their days supporting children’s routines, learning, and emotional needs. Tasks include preparing meals, organising play activities, helping with homework, supervising outdoor time, managing naps, and maintaining a safe environment. The work can be physically and emotionally demanding, requiring patience, consistency, and strong communication. Days are structured around children’s rhythms, with moments of calm mixed with bursts of activity. Despite the challenges, the role is deeply meaningful — childcare workers play a direct role in shaping a child’s confidence, development, and wellbeing. This lifestyle suits individuals who are nurturing, responsible, and energised by helping children grow."
+  },
+
+  "habits": [
+    "Maintains consistent routines for children",
+    "Communicates clearly with parents or supervisors",
+    "Plans age‑appropriate activities",
+    "Monitors safety and wellbeing at all times",
+    "Practises patience and emotional regulation"
+  },
+
+  "tags": [
+    "childcare",
+    "caregiving",
+    "education",
+    "emotional support",
+    "routine",
+    "communication",
+    "responsibility",
+    "development"
+  ],
+
+  "hero": {
+    "image": "nanny_childcare_worker_hero.jpg",
+    "color": "#FBBF24",
+    "keywords": ["care", "growth", "support"]
+  }
+}

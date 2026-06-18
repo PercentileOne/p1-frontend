@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 265,
+  "id": "window_installer",
+  "slug": "window-installer",
+  "category": "Skilled Trades \u0026 Construction",
+  "essence": "Installs windows and glazed systems, ensuring weatherproofing, security, and thermal performance.",
+  "identity": {
+    "title": "Window Installer",
+    "summary": "Measures, fits, and seals windows and frames in residential and commercial buildings to specification."
+  },
+  "salary": {
+    "entry": {
+      "low": 22000,
+      "high": 28000
+    },
+    "mid": {
+      "low": 29000,
+      "high": 42000
+    },
+    "senior": {
+      "low": 43000,
+      "high": 65000
+    },
+    "notes": "Specialist installers for curtain walling or heritage glazing can earn more."
+  },
+  "qualifications": [
+    "Experience in glazing and window installation",
+    "Ability to read installation drawings and levels",
+    "Knowledge of sealing, flashing, and thermal performance",
+    "Working at height and manual handling awareness"
+  ],
+  "curves": {
+    "difficulty": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "effort": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8
+    ]
+  },
+  "lifestyle": {
+    "description": "Site work with physical tasks and customer interaction; often project\u2011based with travel between sites."
+  },
+  "habits": [
+    "Measures and prepares openings for windows",
+    "Installs frames, glazing, and seals",
+    "Checks levels and weatherproofing",
+    "Maintains tools and ensures site cleanliness"
+  ],
+  "tags": [
+    "glazing",
+    "installation",
+    "construction",
+    "windows"
+  ],
+  "hero": {
+    "image": "window_installer_hero.jpg",
+    "color": "#5A6B7A",
+    "keywords": [
+      "windows",
+      "glazing",
+      "installation"
+    ]
+  }
+}

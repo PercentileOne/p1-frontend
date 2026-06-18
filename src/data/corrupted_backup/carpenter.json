@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "carpenter",
+  "slug": "carpenter",
+  "category": "Skilled Trades",
+
+  "essence": "Shapes wood into structures, spaces, and objects through precision, craftsmanship, and practical creativity.",
+
+  "identity": {
+    "title": "Carpenter",
+    "summary": "Builds, installs, and repairs wooden structures, frameworks, and fittings using tools, measurements, and skilled craftsmanship."
+  },
+
+  "salary": {
+    "entry": { "low": 22000, "high": 26000 },
+    "mid": { "low": 28000, "high": 35000 },
+    "senior": { "low": 36000, "high": 45000 },
+    "notes": "Specialist joinery, bespoke furniture making, and self‑employment can exceed £50k–£70k+ depending on demand and craftsmanship level."
+  },
+
+  "qualifications": [
+    "Apprenticeship in Carpentry or Joinery",
+    "NVQ or Diploma in Wood Occupations",
+    "Strong Understanding of Tools, Materials, and Construction Techniques",
+    "Ability to Read Technical Drawings and Measurements"
+  },
+
+  "curves": {
+    "difficulty": [4, 5, 6, 6, 7, 7, 8, 8, 8, 9],
+    "effort":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Carpenters work in hands‑on, practical environments where precision and craftsmanship define the day. Tasks include measuring, cutting, assembling, and installing wooden structures such as frames, doors, floors, and cabinetry. Work may take place on construction sites, in workshops, or in clients’ homes. The role requires physical stamina, attention to detail, and a strong respect for safety. While the work can be physically demanding and weather‑dependent, it offers deep satisfaction — each project leaves behind a tangible result. This lifestyle suits individuals who enjoy building, problem‑solving, and creating functional, beautiful structures with their hands."
+  },
+
+  "habits": [
+    "Measures twice, cuts once",
+    "Maintains tools with care",
+    "Follows safety procedures consistently",
+    "Reads plans and drawings accurately",
+    "Checks alignment and fit at every stage"
+  },
+
+  "tags": [
+    "craftsmanship",
+    "hands-on work",
+    "precision",
+    "construction",
+    "problem-solving",
+    "practical skills",
+    "woodworking",
+    "creativity"
+  ],
+
+  "hero": {
+    "image": "carpenter_hero.jpg",
+    "color": "#A16207",
+    "keywords": ["craft", "wood", "build"]
+  }
+}

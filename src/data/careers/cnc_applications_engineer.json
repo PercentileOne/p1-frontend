@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "cnc_applications_engineer",
+  "slug": "cnc-applications-engineer",
+  "category": "Skilled Trades",
+
+  "essence": "Optimises CNC machining processes for customers, providing technical expertise, training, and advanced application support.",
+
+  "identity": {
+    "title": "CNC Applications Engineer",
+    "summary": "Works with customers to improve machining performance, develop optimised toolpaths, recommend tooling strategies, and ensure CNC systems deliver maximum productivity and precision."
+  },
+
+  "salary": {
+    "entry": { "low": 38000, "high": 45000 },
+    "mid":   { "low": 46000, "high": 62000 },
+    "senior": { "low": 63000, "high": 90000 },
+    "notes": "Applications engineers in aerospace, robotics, or OEM‑level roles can exceed £90k-£120k+ with bonuses and travel allowances."
+  },
+
+  "qualifications": [
+    "Experience in CNC machining, programming, or service engineering",
+    "Strong knowledge of CAM software, tooling, and machining strategies",
+    "Ability to analyse machining performance and optimise processes",
+    "Understanding of materials, tolerances, and advanced manufacturing"
+  ],
+
+  "curves": {
+    "difficulty": [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "effort":     [7, 7, 8, 8, 9, 9, 9, 10, 10, 10],
+    "reward":     [7, 7, 8, 8, 9, 9, 10, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "CNC applications engineers work for OEMs, tooling companies, and advanced manufacturing firms. They support customers with process optimisation, training, and technical expertise. The role suits individuals who enjoy problem‑solving, customer interaction, and pushing machining performance to its limits."
+  },
+
+  "habits": [
+    "Optimises machining processes and toolpaths",
+    "Advises customers on tooling, feeds, speeds, and strategies",
+    "Runs machining trials and performance tests",
+    "Trains operators, programmers, and engineers",
+    "Collaborates with R&D and product teams to improve CNC systems"
+  ],
+
+  "tags": [
+    "CNC",
+    "applications engineering",
+    "CAM",
+    "tooling",
+    "process optimisation",
+    "advanced manufacturing"
+  ],
+
+  "hero": {
+    "image": "cnc_applications_engineer_hero.jpg",
+    "color": "#002A10",
+    "keywords": ["CNC", "applications", "optimisation"]
+  }
+}

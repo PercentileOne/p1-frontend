@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "baker",
+  "slug": "baker",
+  "category": "Culinary",
+
+  "essence": "Transforms simple ingredients into breads, pastries, and baked goods through precision, timing, and craft.",
+
+  "identity": {
+    "title": "Baker",
+    "summary": "Prepares and bakes breads, pastries, cakes, and other goods using recipes, techniques, and careful temperature control."
+  },
+
+  "salary": {
+    "entry": { "low": 19000, "high": 22000 },
+    "mid": { "low": 23000, "high": 28000 },
+    "senior": { "low": 29000, "high": 38000 },
+    "notes": "Artisan bakers, patisserie specialists, and bakery owners can exceed £40k–£60k+ depending on skill, niche, and business scale."
+  },
+
+  "qualifications": [
+    "Apprenticeship or Diploma in Baking or Patisserie",
+    "Knowledge of Doughs, Pastry, and Baking Techniques",
+    "Understanding of Food Safety and Hygiene Standards",
+    "Experience with Ovens, Mixers, and Bakery Equipment"
+  },
+
+  "curves": {
+    "difficulty": [3, 4, 5, 6, 6, 7, 7, 8, 8, 9],
+    "effort":     [4, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    "reward":     [5, 6, 7, 7, 8, 8, 9, 9, 9, 10]
+  },
+
+  "lifestyle": {
+    "description": "Bakers work in warm, fast‑paced environments where early mornings, precision, and consistency are essential. Days often start before sunrise, involving mixing doughs, shaping loaves, preparing pastries, monitoring ovens, and ensuring products are fresh for customers. The work is physical and repetitive but deeply satisfying — each batch is a blend of technique, timing, and craft. Bakers often work in bakeries, patisseries, supermarkets, or artisan shops. This lifestyle suits individuals who enjoy hands‑on work, routine, creativity with ingredients, and the joy of producing food that brings comfort and delight."
+  },
+
+  "habits": [
+    "Measures ingredients with precision",
+    "Monitors dough development carefully",
+    "Keeps equipment clean and organised",
+    "Maintains consistent baking temperatures",
+    "Plans production around daily demand"
+  },
+
+  "tags": [
+    "culinary",
+    "hands-on work",
+    "craftsmanship",
+    "food production",
+    "precision",
+    "creativity",
+    "early mornings",
+    "artisan skills"
+  ],
+
+  "hero": {
+    "image": "baker_hero.jpg",
+    "color": "#F97316",
+    "keywords": ["bread", "craft", "oven"]
+  }
+}

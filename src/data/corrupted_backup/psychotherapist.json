@@ -1,0 +1,63 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "psychotherapist",
+  "slug": "psychotherapist",
+  "category": "Healthcare",
+
+  "essence": "Helps people heal, grow, and understand themselves through deep listening, emotional insight, and evidence‑based therapeutic practice.",
+
+  "identity": {
+    "title": "Psychotherapist",
+    "summary": "Provides talking therapies to help individuals understand emotions, resolve inner conflicts, change patterns, and improve mental wellbeing."
+  },
+
+  "salary": {
+    "entry": { "low": 25000, "high": 32000 },
+    "mid": { "low": 35000, "high": 45000 },
+    "senior": { "low": 50000, "high": 70000 },
+    "notes": "Private practice, specialist modalities, and senior clinical roles can exceed £80k–£100k+. Income varies significantly depending on caseload and setting."
+  },
+
+  "qualifications": [
+    "Accredited Psychotherapy Training (e.g., UKCP, BACP)",
+    "Supervised Clinical Practice",
+    "Strong Understanding of Psychological Theory and Therapeutic Modalities",
+    "Ongoing Professional Development and Personal Therapy"
+  },
+
+  "curves": {
+    "difficulty": [5, 6, 6, 7, 7, 8, 8, 8, 9, 9],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "reward":     [6, 7, 7, 8, 8, 9, 9, 10, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Psychotherapists work in a calm, reflective environment where emotional presence and deep listening are central. Days involve one‑to‑one or group sessions, case notes, supervision, and ongoing study of therapeutic approaches. The work is emotionally intense — clients bring trauma, anxiety, relationship struggles, and long‑held patterns — and therapists must maintain strong boundaries and self‑care. Progress can be gradual, but the meaning is profound: helping someone understand themselves, break cycles, or find stability can be life‑changing. This lifestyle suits individuals who are empathetic, patient, grounded, and committed to long‑term personal and professional growth."
+  },
+
+  "habits": [
+    "Listens with deep, non‑judgmental attention",
+    "Maintains clear therapeutic boundaries",
+    "Reflects on sessions through supervision",
+    "Documents insights and progress carefully",
+    "Continues personal and professional development"
+  },
+
+  "tags": [
+    "emotional intelligence",
+    "communication",
+    "mental health",
+    "therapy",
+    "self-awareness",
+    "long-term impact",
+    "patient care",
+    "reflection"
+  ],
+
+  "hero": {
+    "image": "psychotherapist_hero.jpg",
+    "color": "#9333EA",
+    "keywords": ["healing", "insight", "growth"]
+  }
+}

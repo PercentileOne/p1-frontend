@@ -1,0 +1,60 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "bartender",
+  "slug": "bartender",
+  "category": "Hospitality",
+
+  "essence": "Prepares drinks and creates a welcoming atmosphere for guests.",
+
+  "identity": {
+    "title": "Bartender",
+    "summary": "Mixes and serves drinks, interacts with customers, and maintains a clean and organised bar."
+  },
+
+  "salary": {
+    "entry": { "low": 18000, "high": 21000 },
+    "mid": { "low": 21000, "high": 26000 },
+    "senior": { "low": 26000, "high": 32000 },
+    "notes": "Tips and high-end venues can significantly increase earnings."
+  },
+
+  "qualifications": [
+    "Customer service experience",
+    "Knowledge of drinks and mixology",
+    "Ability to work in fast-paced environments",
+    "Strong communication skills"
+  ],
+
+  "curves": {
+    "difficulty": [3, 4, 4, 5, 5, 6, 6, 7, 7, 8],
+    "effort": [4, 5, 5, 6, 6, 7, 7, 8, 8, 9],
+    "reward": [4, 5, 5, 6, 6, 7, 7, 8, 8, 9]
+  },
+
+  "lifestyle": {
+    "description": "Bartenders work in pubs, bars, and restaurants, preparing drinks, serving customers, and managing busy shifts. The role suits sociable people who enjoy lively environments."
+  },
+
+  "habits": [
+    "Keeps bar area clean",
+    "Prepares drinks consistently",
+    "Engages customers positively",
+    "Manages stock effectively",
+    "Works efficiently during rushes"
+  ],
+
+  "tags": [
+    "hospitality",
+    "customer service",
+    "mixology",
+    "fast-paced",
+    "teamwork"
+  ],
+
+  "hero": {
+    "image": "bartender_hero.jpg",
+    "color": "#A855F7",
+    "keywords": ["drinks", "bar", "service"]
+  }
+}

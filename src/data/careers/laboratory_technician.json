@@ -1,0 +1,96 @@
+{
+  "type": "career",
+  "version": 1,
+  "id_number": 287,
+  "id": "laboratory_technician",
+  "slug": "laboratory-technician",
+  "category": "Science \u0026 Laboratory",
+  "essence": "Performs laboratory tests, prepares samples, and maintains equipment to support scientific research and diagnostics.",
+  "identity": {
+    "title": "Laboratory Technician",
+    "summary": "Prepares reagents, runs assays, records results, and ensures laboratory quality and safety standards are met."
+  },
+  "salary": {
+    "entry": {
+      "low": 22000,
+      "high": 30000
+    },
+    "mid": {
+      "low": 31000,
+      "high": 42000
+    },
+    "senior": {
+      "low": 43000,
+      "high": 70000
+    },
+    "notes": "Specialist technicians in clinical or research labs may earn higher pay."
+  },
+  "qualifications": [
+    "Laboratory qualification or relevant technical training",
+    "Experience with lab techniques and equipment",
+    "Attention to detail and good record keeping",
+    "Understanding of health \u0026 safety and quality systems"
+  ],
+  "curves": {
+    "difficulty": [
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "effort": [
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8,
+    8
+  ],
+    "reward": [
+      4,
+      5,
+      5,
+      6,
+      6,
+      7,
+      7,
+      8,
+      8,
+      8
+    ]
+  },
+  "lifestyle": {
+    "description": "Laboratory environment with routine testing, sample handling, and strict adherence to protocols and documentation."
+  },
+  "habits": [
+    "Prepares samples and reagents",
+    "Runs assays and records results accurately",
+    "Maintains equipment and logs",
+    "Follows safety and quality procedures"
+  ],
+  "tags": [
+    "laboratory",
+    "testing",
+    "research",
+    "diagnostics"
+  ],
+  "hero": {
+    "image": "laboratory_technician_hero.jpg",
+    "color": "#3A4A6B",
+    "keywords": [
+      "laboratory",
+      "testing",
+      "samples"
+    ]
+  }
+}

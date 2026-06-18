@@ -1,0 +1,61 @@
+{
+  "type": "career",
+  "version": 1,
+  "id": "vibration_analyst",
+  "slug": "vibration-analyst",
+  "category": "Skilled Trades",
+
+  "essence": "Uses vibration data to diagnose mechanical faults, prevent equipment failure, and improve reliability in industrial systems.",
+
+  "identity": {
+    "title": "Vibration Analyst",
+    "summary": "Collects and interprets vibration data from machinery, identifies early signs of wear or failure, and supports predictive‑maintenance programmes across industrial and engineering environments."
+  },
+
+  "salary": {
+    "entry": { "low": 28000, "high": 34000 },
+    "mid":   { "low": 35000, "high": 48000 },
+    "senior": { "low": 49000, "high": 70000 },
+    "notes": "Analysts specialising in advanced diagnostics, condition monitoring, or large industrial systems can exceed £70k-£90k+."
+  },
+
+  "qualifications": [
+    "Training in mechanical engineering, vibration analysis, or condition monitoring",
+    "Knowledge of rotating machinery, mechanical systems, and failure modes",
+    "Ability to use vibration‑analysis tools and diagnostic software",
+    "Understanding of predictive maintenance, reliability engineering, and data interpretation"
+  ],
+
+  "curves": {
+    "difficulty": [6, 6, 7, 7, 8, 8, 9, 9, 9, 10],
+    "effort":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10],
+    "reward":     [6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
+  },
+
+  "lifestyle": {
+    "description": "Vibration analysts work for manufacturing plants, engineering firms, energy companies, and maintenance contractors. They monitor machinery health, diagnose faults, and help prevent breakdowns. The role suits individuals who enjoy diagnostics, engineering systems, and data‑driven problem‑solving."
+  },
+
+  "habits": [
+    "Collects vibration data from rotating machinery",
+    "Analyses frequency patterns to diagnose faults",
+    "Identifies early signs of wear, imbalance, or misalignment",
+    "Supports predictive‑maintenance and reliability programmes",
+    "Prepares diagnostic reports and maintenance recommendations"
+  ],
+
+  "tags": [
+    "vibration analysis",
+    "mechanical diagnostics",
+    "predictive maintenance",
+    "engineering",
+    "condition monitoring",
+    "reliability"
+  ],
+
+  "hero": {
+    "image": "vibration_analyst_hero.jpg",
+    "color": "#1E3A8A",
+    "keywords": ["vibration", "diagnostics", "engineering"]
+  }
+}
