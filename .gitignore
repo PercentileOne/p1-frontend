@@ -161,4 +161,8 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
->>>>>>> 7eeb3fae758f26bd7ef728ccffc7598ea105de33
+
+__azurite_db_blob__.json
+__azurite_db_blob_extent__.json
+__blobstorage__/
+
