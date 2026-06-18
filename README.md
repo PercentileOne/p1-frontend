@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -71,3 +72,7 @@ export default defineConfig([
   },
 ])
 ```
+=======
+# p1-frontend
+Frontend codebase for the Percentile.One platform — powering the P1 Cockpit and Study Notes App UI.
+>>>>>>> 7eeb3fae758f26bd7ef728ccffc7598ea105de33
