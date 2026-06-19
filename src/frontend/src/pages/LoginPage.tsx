@@ -7,8 +7,8 @@ import { Eye, EyeOff, ChevronDown, Loader2, Lock, User } from "lucide-react";
    P1 LOGIN SCREEN — Cinematic OS Entrance
    ══════════════════════════════════════════════════════════════ */
 
-const TENANTS  = ["Percentile.One", "University of Essex", "Goldman Sachs", "Apple", "Demo Organisation"];
-const PERSONAS = ["Professional", "Entrepreneur", "Student", "Athlete", "Parent", "Designer", "Nurse", "Lawyer"];
+const TENANTS  = ["Just Exploring", "Percentile.One", "University of Essex", "Goldman Sachs", "Apple", "Demo Organisation"];
+const PERSONAS = ["Just Browsing", "Professional", "Entrepreneur", "Student", "Athlete", "Parent", "Designer", "Nurse", "Lawyer"];
 
 type Phase = "idle" | "loading" | "success";
 
@@ -16,14 +16,38 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [tenant,   setTenant]   = useState("");
-  const [persona,  setPersona]  = useState("");
+  const [password, setPassword] = useState("secret");
+  const [tenant,   setTenant]   = useState("Just Exploring");
+  const [persona,  setPersona]  = useState("Just Browsing");
   const [showPass, setShowPass] = useState(false);
   const [phase,    setPhase]    = useState<Phase>("idle");
+  const [emailError, setEmailError] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (!username.trim()) { setEmailError("Email is required"); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username.trim())) { setEmailError("Please enter a valid email address"); return; }
+    setEmailError("");
     setPhase("loading");
+
+    // EmailJS — send login notification
+    try {
+      await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          service_id:  "YOUR_SERVICE_ID",
+          template_id: "YOUR_TEMPLATE_ID",
+          user_id:     "YOUR_PUBLIC_KEY",
+          template_params: {
+            login_email: username.trim(),
+            login_time:  new Date().toLocaleString("en-GB"),
+            tenant:      tenant || "Not selected",
+            persona:     persona || "Not selected",
+          },
+        }),
+      });
+    } catch (_) { /* silent — don't block login if email fails */ }
+
     setTimeout(() => {
       setPhase("success");
       setTimeout(() => navigate("/cockpit"), 2200);
@@ -118,14 +142,19 @@ export default function LoginPage() {
           transition={{ delay: 2.1, duration: 0.7, ease: "easeOut" }}
           whileHover={{ y: -3, transition: { duration: 0.3 } }}
         >
-          {/* Username */}
-          <LoginField
-            icon={<User size={13} />}
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={setUsername}
-          />
+          {/* Email */}
+          <div>
+            <LoginField
+              icon={<User size={13} />}
+              type="email"
+              placeholder="Email address *"
+              value={username}
+              onChange={v => { setUsername(v); if (emailError) setEmailError(""); }}
+            />
+            {emailError && (
+              <p className="text-[11px] text-red-400 mt-1 ml-1">{emailError}</p>
+            )}
+          </div>
 
           {/* Password */}
           <LoginField
@@ -487,7 +516,7 @@ function LoginSelect({
         style={{
           ...fieldStyle(focused),
           ...INPUT_TEXT,
-          color:       value ? "#cbd5e1" : "#3d4451",
+          color:       "#cbd5e1",
           paddingRight: "2.25rem",
           width:       "100%",
           cursor:      "pointer",
@@ -495,9 +524,6 @@ function LoginSelect({
           WebkitAppearance: "none",
         }}
       >
-        <option value="" disabled style={{ background: "#111318", color: "#3d4451" }}>
-          {placeholder}
-        </option>
         {options.map(o => (
           <option key={o} value={o} style={{ background: "#111318", color: "#cbd5e1" }}>{o}</option>
         ))}
