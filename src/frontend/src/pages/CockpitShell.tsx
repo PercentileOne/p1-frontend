@@ -1510,30 +1510,29 @@ const RECO_CONTENT: Record<RecoMode, { icon: React.ReactNode; text: string; sub:
 };
 
 // ── YouTube Shorts — @theschoolofhardknocks ──────────────────
-// Real video IDs from the channel. Shorts embed via /embed/<ID>.
 const YT_VIDEOS = [
   {
-    id: "V0gfStE9mf4",
-    title: "He Became a Millionaire at 23 👀",
-    channel: "School of Hard Knocks",
-    duration: "Short",
-    category: "Millionaire",
+    id: "7lI8NS_9nJ4",
+    title: "How to Build a Startup in 2024",
+    channel: "Y Combinator",
+    duration: "18 min",
+    category: "Startup",
     categoryColor: "text-indigo-400 bg-indigo-500/10",
   },
   {
-    id: "Kn_hZ4kw-N8",
-    title: "He Became a BILLIONAIRE Doing This..?",
-    channel: "School of Hard Knocks",
-    duration: "Short",
-    category: "Billionaire",
+    id: "uVoASGmxbcI",
+    title: "How to Get Rich (Without Getting Lucky)",
+    channel: "Naval",
+    duration: "45 min",
+    category: "Wealth",
     categoryColor: "text-amber-400 bg-amber-500/10",
   },
   {
-    id: "ZkAALnnnrr8",
-    title: "He Got RICH Off WHAT 🤯",
-    channel: "School of Hard Knocks",
-    duration: "Short",
-    category: "Wealth",
+    id: "PFDu9oVAE-g",
+    title: "The Power of Discipline",
+    channel: "Jocko Willink",
+    duration: "12 min",
+    category: "Mindset",
     categoryColor: "text-green-400 bg-green-500/10",
   },
 ];
