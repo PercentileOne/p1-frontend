@@ -48,7 +48,7 @@ export const SubcategoryCareerList: React.FC = () => {
               cursor: "pointer",
             }}
           >
-            {career.name}
+            {String(career.identity?.title ?? career.id)}
           </button>
         ))}
       </div>
