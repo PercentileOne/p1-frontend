@@ -437,7 +437,7 @@ function LeftSidebar({
       </div>
 
       {/* ── 4. DYNAMIC LIFE / WORK AREAS ── */}
-      <div className="flex-1 overflow-y-auto min-h-0 border-t border-white/[0.05]">
+      <div className="border-t border-white/[0.05]">
         <AnimatePresence mode="wait">
           <motion.div
             key={mode}
