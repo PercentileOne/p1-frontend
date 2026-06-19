@@ -123,7 +123,7 @@ export default function LoginPage() {
             Welcome to the future of Success.
           </h1>
           <p className="text-sm text-slate-500 mt-1.5 leading-snug">
-            Your personal operating system for life, work, and growth.
+            Built for people who take Success seriously.
           </p>
         </motion.div>
 
