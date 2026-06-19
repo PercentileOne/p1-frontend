@@ -35,9 +35,9 @@ export default function LoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          service_id:  "YOUR_SERVICE_ID",
-          template_id: "YOUR_TEMPLATE_ID",
-          user_id:     "YOUR_PUBLIC_KEY",
+          service_id:  "service_dlx0gm3",
+          template_id: "template_2k4ef9k",
+          user_id:     "EIvp2nUPUz6Gw_Urf",
           template_params: {
             login_email: username.trim(),
             login_time:  new Date().toLocaleString("en-GB"),
