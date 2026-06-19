@@ -301,16 +301,16 @@ export interface AgentSuggestion {
 }
 
 export const DAILY_AGENT_SUGGESTIONS: AgentSuggestion[] = [
-  { id: "a1", type: "action",  message: "You have 2 unblocked strategic goals — add time blocks now.",        action: "Add blocks",       actionRoute: "/planning/timeblocks" },
+  { id: "a1", type: "action",  message: "You have 2 unblocked strategic goals — add time blocks now.",        action: "Add blocks",       actionRoute: "/planning/time-blocking" },
   { id: "a2", type: "warning", message: "No buffer block scheduled — email admin will fragment your flow.",  action: "Add buffer",       actionRoute: "/planning/daily"      },
   { id: "a3", type: "info",    message: "You're in Week 6 — historically your most productive cycle week.",  action: "View cycle",       actionRoute: "/cycles"               },
   { id: "a4", type: "success", message: "3 strategic blocks scheduled. That's your optimal load for today."                                                                   },
 ];
 
 export const WEEKLY_AGENT_SUGGESTIONS: AgentSuggestion[] = [
-  { id: "w1", type: "action",  message: "Mon & Tue are your high-energy days — front-load strategic blocks.", action: "Auto-place",      actionRoute: "/planning/timeblocks" },
-  { id: "w2", type: "warning", message: "Wednesday looks overloaded — 5 tasks, no buffer. Rebalance.",       action: "Rebalance",       actionRoute: "/planning/timeblocks" },
-  { id: "w3", type: "info",    message: "Your fundraising goal has 0 blocks this week. Schedule outreach.",   action: "Add blocks",       actionRoute: "/planning/timeblocks" },
+  { id: "w1", type: "action",  message: "Mon & Tue are your high-energy days — front-load strategic blocks.", action: "Auto-place",      actionRoute: "/planning/time-blocking" },
+  { id: "w2", type: "warning", message: "Wednesday looks overloaded — 5 tasks, no buffer. Rebalance.",       action: "Rebalance",       actionRoute: "/planning/time-blocking" },
+  { id: "w3", type: "info",    message: "Your fundraising goal has 0 blocks this week. Schedule outreach.",   action: "Add blocks",       actionRoute: "/planning/time-blocking" },
   { id: "w4", type: "success", message: "Training consistency is up — 4 breakout blocks scheduled correctly."                                                                 },
 ];
 

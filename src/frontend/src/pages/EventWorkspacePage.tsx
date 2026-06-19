@@ -338,7 +338,7 @@ export default function EventWorkspacePage() {
                 ))}
               </div>
 
-              <button onClick={() => navigate("/planning/timeblocks")}
+              <button onClick={() => navigate("/planning/time-blocking")}
                 className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2">
                 <Target size={14} /> Add Blocks in Time-Blocking Engine
               </button>

@@ -44,7 +44,7 @@ export default function PlanningHome() {
             <p className="text-[11px] text-slate-500">Week {CURRENT_WEEKLY_PLAN.weekNumber} · {CURRENT_MONTHLY_PLAN.month}</p>
             </div>
           </div>
-          <button onClick={() => navigate("/planning/timeblocks")}
+          <button onClick={() => navigate("/planning/time-blocking")}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors">
             <LayoutGrid size={12} /> Time-Blocking Engine
           </button>
@@ -261,7 +261,7 @@ export default function PlanningHome() {
               { label: "Plan Today",              icon: "☀️", route: "/planning/daily",      color: "border-amber-500/25 bg-amber-600/8 text-amber-300"   },
               { label: "Plan This Week",           icon: "📅", route: "/planning/weekly",     color: "border-indigo-500/25 bg-indigo-600/8 text-indigo-300" },
               { label: "Create Event Plan",        icon: "🎯", route: "/planning/events",     color: "border-violet-500/25 bg-violet-600/8 text-violet-300" },
-              { label: "Time-Blocking Engine",     icon: "⚡", route: "/planning/timeblocks", color: "border-green-500/25 bg-green-600/8 text-green-300"    },
+              { label: "Time-Blocking Engine",     icon: "⚡", route: "/planning/time-blocking", color: "border-green-500/25 bg-green-600/8 text-green-300"    },
               { label: "Monthly Overview",         icon: "🗓️", route: "/planning/monthly",    color: "border-blue-500/25 bg-blue-600/8 text-blue-300"       },
             ].map(a => (
               <motion.button key={a.label} whileHover={{ scale: 1.01 }}

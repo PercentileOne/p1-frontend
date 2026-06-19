@@ -251,7 +251,7 @@ export default function DailyPlanPage() {
                 <div className="flex items-center gap-3 p-3 bg-red-600/10 border border-red-500/20 rounded-xl">
                   <AlertTriangle size={14} className="text-red-400 shrink-0" />
                   <p className="text-xs text-red-300">{overlaps.length / 2} block overlap detected. Visit the Time-Blocking Engine to fix.</p>
-                  <button onClick={() => navigate("/planning/timeblocks")}
+                  <button onClick={() => navigate("/planning/time-blocking")}
                     className="ml-auto text-[11px] text-red-400 font-semibold hover:text-red-300 flex items-center gap-1 shrink-0">
                     Fix <ChevronRight size={10} />
                   </button>
@@ -293,7 +293,7 @@ export default function DailyPlanPage() {
                 <button onClick={() => setStep(2)} className="flex-1 py-3 rounded-xl bg-white/[0.05] text-slate-300 text-sm font-semibold hover:bg-white/[0.08] transition-colors">
                   ← Back
                 </button>
-                <button onClick={() => navigate("/planning/timeblocks")}
+                <button onClick={() => navigate("/planning/time-blocking")}
                   className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2">
                   <Target size={14} /> Open Time-Blocking Engine
                 </button>

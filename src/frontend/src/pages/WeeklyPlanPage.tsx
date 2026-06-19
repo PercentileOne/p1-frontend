@@ -174,7 +174,7 @@ export default function WeeklyPlanPage() {
             <motion.div key="blocks" {...fade} className="space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Weekly Block Overview</p>
-                <button onClick={() => navigate("/planning/timeblocks")}
+                <button onClick={() => navigate("/planning/time-blocking")}
                   className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors">
                   Edit in engine <ChevronRight size={10} />
                 </button>
@@ -293,7 +293,7 @@ export default function WeeklyPlanPage() {
                 </div>
               </div>
 
-              <button onClick={() => navigate("/planning/timeblocks")}
+              <button onClick={() => navigate("/planning/time-blocking")}
                 className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2">
                 <Target size={14} /> Auto-Place Optimal Blocks
               </button>

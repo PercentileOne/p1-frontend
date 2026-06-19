@@ -223,7 +223,7 @@ export default function CycleDashboard() {
               className="text-[10px] text-slate-500 hover:text-slate-300 transition-colors">
               All Cycles
             </button>
-            <button onClick={() => navigate("/cycle/weekly-planning")}
+            <button onClick={() => navigate("/planning/weekly-session")}
               className="flex items-center gap-1.5 text-[10px] font-semibold text-indigo-300 bg-indigo-600/15 border border-indigo-500/25 px-2.5 py-1.5 rounded-lg hover:bg-indigo-600/25 transition-colors">
               <Calendar size={10}/> Plan Week
             </button>
@@ -474,7 +474,7 @@ export default function CycleDashboard() {
               </div>
             ))}
 
-            <button onClick={() => navigate("/cycle/weekly-planning")}
+            <button onClick={() => navigate("/planning/weekly-session")}
               className="w-full py-3 rounded-2xl border border-dashed border-indigo-500/25 text-indigo-400 hover:border-indigo-500/50 hover:bg-indigo-600/5 transition-colors text-xs font-semibold flex items-center justify-center gap-2">
               <Plus size={13}/> Plan Next Week
             </button>
@@ -542,13 +542,13 @@ export default function CycleDashboard() {
 
             {/* Mid / End review shortcuts */}
             <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => navigate("/cycle/mid-review")}
+              <button onClick={() => navigate("/cycles")}
                 className="flex flex-col items-center gap-2 p-4 bg-[#13151c] border border-white/[0.06] rounded-2xl hover:border-indigo-500/25 transition-colors">
                 <Activity size={16} className="text-amber-400"/>
                 <p className="text-xs font-bold text-slate-300">Mid-Cycle Review</p>
                 <p className="text-[9px] text-slate-600">Week 6 checkpoint</p>
               </button>
-              <button onClick={() => navigate("/cycle/end-review")}
+              <button onClick={() => navigate("/cycles")}
                 className="flex flex-col items-center gap-2 p-4 bg-[#13151c] border border-white/[0.06] rounded-2xl hover:border-indigo-500/25 transition-colors">
                 <Star size={16} className="text-green-400"/>
                 <p className="text-xs font-bold text-slate-300">End-Cycle Review</p>

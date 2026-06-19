@@ -179,7 +179,7 @@ export default function MidReviewPage() {
 
         {/* ── Action buttons ── */}
         <div className="grid grid-cols-2 gap-2">
-          <button onClick={() => navigate("/cycle/weekly-planning")}
+          <button onClick={() => navigate("/planning/weekly-session")}
             className="py-3 bg-indigo-600/20 border border-indigo-500/25 rounded-xl text-xs font-bold text-indigo-300 hover:bg-indigo-600/30 transition-colors flex items-center justify-center gap-1.5">
             <Zap size={12}/> Plan Week 7
           </button>

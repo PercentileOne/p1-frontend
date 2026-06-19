@@ -337,7 +337,7 @@ export default function JobDetailPage() {
             </div>
 
             <button
-              onClick={() => navigate("/cycle/weekly-planning")}
+              onClick={() => navigate("/planning/weekly-session")}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-indigo-600/15 border border-indigo-500/25 text-indigo-300 text-sm font-semibold hover:bg-indigo-600/25 transition-colors"
             >
               <Zap size={14} /> Start This Cycle Plan
