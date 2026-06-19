@@ -1,0 +1,186 @@
+/* ══════════════════════════════════════════════════════════════
+   Seed card data — Document 3 full shape
+   6 cards covering the P1 tech stack
+   ══════════════════════════════════════════════════════════════ */
+
+import type { CognitiveCardData } from "../types";
+
+const DEFAULT_TEST_CONFIG = {
+  timeLimitSeconds: 90,
+  allowVoice: true,
+  allowVideo: false,
+  allowTyping: true,
+  revealMode: "fade" as const,
+  scoringMode: "standard" as const,
+};
+
+const DEFAULT_AI = {
+  generatedFrom: null,
+  modelVersion: null,
+  autoImprove: true,
+  suggestions: [],
+};
+
+const DEFAULT_MASTERY = {
+  score: 0,
+  lastTested: null,
+  streak: 0,
+  attempts: 0,
+  history: [],
+};
+
+export const CARDS: CognitiveCardData[] = [
+  {
+    id: "card-react-components",
+    userId: "u-francis",
+    title: "React Components",
+    category: "React 19",
+    subject: "Frontend Architecture",
+    difficulty: 2,
+    tags: ["react", "jsx", "props", "components"],
+    description: "Components are the building blocks of React apps — reusable, self-contained units that accept props and return JSX.",
+    examples: [
+      "function Hello({ name }: { name: string }) { return <h1>Hello, {name}</h1>; }",
+    ],
+    notesLink: null,
+    concepts: [
+      { id: "c1", text: "Components are JavaScript functions returning JSX", keywords: ["component", "jsx", "function", "return"], difficulty: 1, weight: 1, aiGenerated: false, order: 1 },
+      { id: "c2", text: "Props are read-only inputs passed from parent to child", keywords: ["props", "properties", "read-only", "parent"], difficulty: 2, weight: 1.5, aiGenerated: false, order: 2 },
+      { id: "c3", text: "Component names must start with uppercase", keywords: ["uppercase", "naming", "capitalise"], difficulty: 1, weight: 0.5, aiGenerated: false, order: 3 },
+      { id: "c4", text: "Components can be composed to build complex UIs", keywords: ["compose", "composition", "reuse", "nesting"], difficulty: 2, weight: 1, aiGenerated: false, order: 4 },
+    ],
+    testConfig: DEFAULT_TEST_CONFIG,
+    mastery: { ...DEFAULT_MASTERY, score: 72, streak: 2, attempts: 5, lastTested: new Date(Date.now() - 86_400_000 * 2) },
+    createdAt: new Date("2025-01-01"), updatedAt: new Date(),
+    source: "manual", version: 1, ai: DEFAULT_AI,
+    accent: "bg-sky-500", gradientBg: "bg-gradient-to-br from-sky-950/70 to-sky-900/40", textAccent: "text-sky-400",
+  },
+  {
+    id: "card-react-hooks",
+    userId: "u-francis",
+    title: "React Hooks",
+    category: "React 19",
+    subject: "State & Effects",
+    difficulty: 3,
+    tags: ["hooks", "state", "useEffect", "useMemo"],
+    description: "Hooks let function components use state, side effects, context, and memoization without class components.",
+    examples: [
+      "const [count, setCount] = useState(0);",
+      "useEffect(() => { /* side effect */ return () => { /* cleanup */ }; }, [dep]);",
+    ],
+    notesLink: null,
+    concepts: [
+      { id: "c1", text: "useState returns a stateful value and a setter function", keywords: ["usestate", "state", "setter", "stateful"], difficulty: 2, weight: 1.5, aiGenerated: false, order: 1 },
+      { id: "c2", text: "useEffect runs after render and can return a cleanup function", keywords: ["useeffect", "side effect", "cleanup", "lifecycle"], difficulty: 3, weight: 2, aiGenerated: false, order: 2 },
+      { id: "c3", text: "Hooks must be called at the top level — never in conditionals", keywords: ["rules of hooks", "top level", "conditional"], difficulty: 2, weight: 1, aiGenerated: false, order: 3 },
+      { id: "c4", text: "useMemo and useCallback memoize values and functions to prevent re-renders", keywords: ["usememo", "usecallback", "memoize", "performance"], difficulty: 3, weight: 1.5, aiGenerated: false, order: 4 },
+    ],
+    testConfig: { ...DEFAULT_TEST_CONFIG, timeLimitSeconds: 120 },
+    mastery: { ...DEFAULT_MASTERY, score: 58, streak: 0, attempts: 3, lastTested: new Date(Date.now() - 86_400_000 * 5) },
+    createdAt: new Date("2025-01-02"), updatedAt: new Date(),
+    source: "manual", version: 1, ai: DEFAULT_AI,
+    accent: "bg-indigo-500", gradientBg: "bg-gradient-to-br from-indigo-950/70 to-indigo-900/40", textAccent: "text-indigo-400",
+  },
+  {
+    id: "card-typescript-generics",
+    userId: "u-francis",
+    title: "TypeScript Generics",
+    category: "TypeScript",
+    subject: "Type System",
+    difficulty: 4,
+    tags: ["typescript", "generics", "type-parameters", "utility-types"],
+    description: "Generics enable type-safe, reusable code by using type parameters that are resolved at compile time — zero runtime cost.",
+    examples: [
+      "function identity<T>(value: T): T { return value; }",
+      "interface ApiResponse<T> { data: T; status: number; }",
+    ],
+    notesLink: null,
+    concepts: [
+      { id: "c1", text: "Generic type parameters act as type-level variables", keywords: ["generic", "type parameter", "type variable"], difficulty: 3, weight: 2, aiGenerated: false, order: 1 },
+      { id: "c2", text: "Constraints narrow what types a parameter can be: T extends SomeType", keywords: ["constraint", "extends", "bound"], difficulty: 4, weight: 2, aiGenerated: false, order: 2 },
+      { id: "c3", text: "TypeScript infers generic types from usage — rarely need explicit annotation", keywords: ["inference", "infer", "implicit"], difficulty: 3, weight: 1.5, aiGenerated: false, order: 3 },
+      { id: "c4", text: "Generics are erased at compile time — no runtime overhead", keywords: ["erasure", "runtime", "compile time", "overhead"], difficulty: 4, weight: 1.5, aiGenerated: false, order: 4 },
+    ],
+    testConfig: { ...DEFAULT_TEST_CONFIG, timeLimitSeconds: 120, scoringMode: "strict" },
+    mastery: { ...DEFAULT_MASTERY, score: 41, streak: 0, attempts: 2 },
+    createdAt: new Date("2025-01-03"), updatedAt: new Date(),
+    source: "manual", version: 1, ai: DEFAULT_AI,
+    accent: "bg-violet-500", gradientBg: "bg-gradient-to-br from-violet-950/70 to-violet-900/40", textAccent: "text-violet-400",
+  },
+  {
+    id: "card-vite-hmr",
+    userId: "u-francis",
+    title: "Vite & HMR",
+    category: "Vite 8",
+    subject: "Build Tooling",
+    difficulty: 3,
+    tags: ["vite", "hmr", "esm", "rolldown"],
+    description: "Vite serves raw ESM in dev for instant startup and uses HMR to patch only changed modules — no full reloads.",
+    examples: [
+      "if (import.meta.hot) { import.meta.hot.accept((mod) => { /* apply */ }); }",
+    ],
+    notesLink: null,
+    concepts: [
+      { id: "c1", text: "Vite uses native ES modules — no bundling in dev", keywords: ["esm", "native modules", "no bundle", "vite"], difficulty: 2, weight: 1.5, aiGenerated: false, order: 1 },
+      { id: "c2", text: "HMR replaces only the changed module without a full page reload", keywords: ["hmr", "hot reload", "module replacement"], difficulty: 2, weight: 1.5, aiGenerated: false, order: 2 },
+      { id: "c3", text: "Production builds use Rolldown (Rust bundler) for speed and output quality", keywords: ["rolldown", "rust bundler", "production build"], difficulty: 3, weight: 2, aiGenerated: false, order: 3 },
+      { id: "c4", text: "Node modules are pre-bundled with esbuild once and cached", keywords: ["pre-bundle", "esbuild", "cache", "dependency"], difficulty: 2, weight: 1, aiGenerated: false, order: 4 },
+    ],
+    testConfig: DEFAULT_TEST_CONFIG,
+    mastery: { ...DEFAULT_MASTERY, score: 85, streak: 4, attempts: 8, lastTested: new Date(Date.now() - 86_400_000) },
+    createdAt: new Date("2025-01-04"), updatedAt: new Date(),
+    source: "manual", version: 1, ai: DEFAULT_AI,
+    accent: "bg-amber-500", gradientBg: "bg-gradient-to-br from-amber-950/70 to-amber-900/40", textAccent: "text-amber-400",
+  },
+  {
+    id: "card-tailwind-v4",
+    userId: "u-francis",
+    title: "Tailwind CSS v4",
+    category: "Tailwind v4",
+    subject: "Styling System",
+    difficulty: 2,
+    tags: ["tailwind", "css", "utility-first", "design-tokens"],
+    description: "Tailwind v4 uses a single CSS import and @theme directives — no config file. Arbitrary values cover one-off needs.",
+    examples: [
+      '@import "tailwindcss";',
+      '<div class="pt-[20px] bg-white/[0.06]">…</div>',
+    ],
+    notesLink: null,
+    concepts: [
+      { id: "c1", text: "Single @import 'tailwindcss' replaces the three-directive setup", keywords: ["import tailwindcss", "single import", "entry point"], difficulty: 1, weight: 1, aiGenerated: false, order: 1 },
+      { id: "c2", text: "@theme defines design tokens directly in CSS — no tailwind.config.js", keywords: ["theme", "design tokens", "config", "css variables"], difficulty: 2, weight: 1.5, aiGenerated: false, order: 2 },
+      { id: "c3", text: "Arbitrary values in bracket notation for one-off values", keywords: ["arbitrary", "bracket", "one-off", "custom value"], difficulty: 1, weight: 1, aiGenerated: false, order: 3 },
+      { id: "c4", text: "CSS cascade layers (@layer) ensure utility classes win without !important", keywords: ["layer", "cascade", "specificity"], difficulty: 3, weight: 1.5, aiGenerated: false, order: 4 },
+    ],
+    testConfig: DEFAULT_TEST_CONFIG,
+    mastery: { ...DEFAULT_MASTERY, score: 91, streak: 6, attempts: 12, lastTested: new Date(Date.now() - 86_400_000 * 3) },
+    createdAt: new Date("2025-01-05"), updatedAt: new Date(),
+    source: "manual", version: 1, ai: DEFAULT_AI,
+    accent: "bg-teal-500", gradientBg: "bg-gradient-to-br from-teal-950/70 to-teal-900/40", textAccent: "text-teal-400",
+  },
+  {
+    id: "card-framer-motion",
+    userId: "u-francis",
+    title: "Framer Motion",
+    category: "Animation",
+    subject: "UI Motion",
+    difficulty: 3,
+    tags: ["framer-motion", "animation", "spring", "variants"],
+    description: "Framer Motion gives React components spring-physics animations, gesture support, layout transitions, and exit animations via AnimatePresence.",
+    examples: [
+      '<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />',
+    ],
+    notesLink: null,
+    concepts: [
+      { id: "c1", text: "motion.div wraps HTML elements to add declarative animation props", keywords: ["motion", "motion.div", "declarative"], difficulty: 1, weight: 1, aiGenerated: false, order: 1 },
+      { id: "c2", text: "AnimatePresence enables exit animations when components unmount", keywords: ["animatepresence", "exit", "unmount", "leave"], difficulty: 2, weight: 1.5, aiGenerated: false, order: 2 },
+      { id: "c3", text: "Spring physics create natural, elastic motion without hand-tuning bezier curves", keywords: ["spring", "physics", "elastic", "natural"], difficulty: 2, weight: 1.5, aiGenerated: false, order: 3 },
+      { id: "c4", text: "The layout prop automatically animates size and position changes between renders", keywords: ["layout", "layout animation", "reflow", "auto"], difficulty: 3, weight: 2, aiGenerated: false, order: 4 },
+    ],
+    testConfig: DEFAULT_TEST_CONFIG,
+    mastery: { ...DEFAULT_MASTERY, score: 63, streak: 1, attempts: 4, lastTested: new Date(Date.now() - 86_400_000 * 7) },
+    createdAt: new Date("2025-01-06"), updatedAt: new Date(),
+    source: "manual", version: 1, ai: DEFAULT_AI,
+    accent: "bg-rose-500", gradientBg: "bg-gradient-to-br from-rose-950/70 to-rose-900/40", textAccent: "text-rose-400",
+  },
+];
