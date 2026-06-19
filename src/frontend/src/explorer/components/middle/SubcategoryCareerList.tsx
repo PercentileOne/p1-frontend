@@ -1,12 +1,12 @@
 import React from "react";
-import { useExplorerMachine } from "../../state/useExplorerMachine";
-import { careers } from "../../../data/careers";
+import { useExplorerMachine, type ExplorerMachineStore } from "../../state/useExplorerMachine";
+import { careers, type Career } from "../../../data/careers";
 
 export const SubcategoryCareerList: React.FC = () => {
   const selectedSubcategoryId = useExplorerMachine(
-    (s) => s.selectedSubcategoryId,
+    (s: ExplorerMachineStore) => s.selectedSubcategoryId,
   );
-  const setSelectedCareerId = useExplorerMachine((s) => s.setSelectedCareerId);
+  const setSelectedCareerId = useExplorerMachine((s: ExplorerMachineStore) => s.setSelectedCareerId);
 
   if (!selectedSubcategoryId) {
     return null;
@@ -14,7 +14,7 @@ export const SubcategoryCareerList: React.FC = () => {
 
   // Filter careers that belong to this subcategory
   const filteredCareers = careers.filter(
-    (c) => c.subcategoryId === selectedSubcategoryId,
+    (c: Career) => (c as Career & { subcategoryId?: string }).subcategoryId === selectedSubcategoryId,
   );
 
   if (filteredCareers.length === 0) {
@@ -32,7 +32,7 @@ export const SubcategoryCareerList: React.FC = () => {
       <h3 style={{ marginBottom: "12px", color: "#444" }}>Careers</h3>
 
       <div className="career-list">
-        {filteredCareers.map((career) => (
+        {filteredCareers.map((career: Career) => (
           <button
             key={career.id}
             onClick={() => setSelectedCareerId(career.id)}

@@ -1,13 +1,13 @@
-import { categories } from "../../../data/categories";
-import { useExplorerMachine } from "../../state/useExplorerMachine";
+import { categories, type Category } from "../../../data/categories";
+import { useExplorerMachine, type ExplorerMachineStore } from "../../state/useExplorerMachine";
 
 export const CategoryList = () => {
-  const selectedCategoryId = useExplorerMachine((s) => s.selectedCategoryId);
-  const selectCategory = useExplorerMachine((s) => s.selectCategory);
+  const selectedCategoryId = useExplorerMachine((s: ExplorerMachineStore) => s.selectedCategoryId);
+  const selectCategory = useExplorerMachine((s: ExplorerMachineStore) => s.selectCategory);
 
   return (
     <div className="category-list">
-      {categories.map((cat) => (
+      {categories.map((cat: Category) => (
         <button
           key={cat.id}
           onClick={() => selectCategory(cat.id)}

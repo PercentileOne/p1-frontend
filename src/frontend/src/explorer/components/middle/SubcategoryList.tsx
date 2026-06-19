@@ -1,20 +1,20 @@
-import { subcategories } from "../../../data/Subcategories";
-import { useExplorerMachine } from "../../state/useExplorerMachine";
+import { subcategories, type Subcategory } from "../../../data/Subcategories";
+import { useExplorerMachine, type ExplorerMachineStore } from "../../state/useExplorerMachine";
 
 export const SubcategoryList = () => {
-  const selectedCategoryId = useExplorerMachine((s) => s.selectedCategoryId);
+  const selectedCategoryId = useExplorerMachine((s: ExplorerMachineStore) => s.selectedCategoryId);
   const selectedSubcategoryId = useExplorerMachine(
-    (s) => s.selectedSubcategoryId,
+    (s: ExplorerMachineStore) => s.selectedSubcategoryId,
   );
-  const selectSubcategory = useExplorerMachine((s) => s.selectSubcategory);
+  const selectSubcategory = useExplorerMachine((s: ExplorerMachineStore) => s.selectSubcategory);
 
   const filtered = subcategories.filter(
-    (sub) => sub.categoryId === selectedCategoryId,
+    (sub: Subcategory) => sub.categoryId === selectedCategoryId,
   );
 
   return (
     <div className="subcategory-list">
-      {filtered.map((sub) => (
+      {filtered.map((sub: Subcategory) => (
         <button
           key={sub.id}
           onClick={() => selectSubcategory(sub.id)}

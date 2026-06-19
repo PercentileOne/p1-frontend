@@ -1,6 +1,6 @@
 import React from "react";
 import type { Career } from "../../../data/models/Career";
-import { careers } from "../../../data/careers";
+import { careers, type Career as DataCareer } from "../../../data/careers";
 
 import { CareerHeroSection } from "../right/sections/CareerHeroSection";
 import { CareerLifestyleSection } from "../right/sections/CareerLifestyleSection";
@@ -12,7 +12,7 @@ interface CareerWorldProps {
 }
 
 export const CareerWorld: React.FC<CareerWorldProps> = ({ careerId }) => {
-  const career = careers.find((c) => c.id === careerId) as unknown as Career | undefined;
+  const career = careers.find((c: DataCareer) => c.id === careerId) as unknown as Career | undefined;
 
   if (!career) {
     return <div>Career not found.</div>;

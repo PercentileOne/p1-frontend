@@ -1,6 +1,6 @@
-import { careers } from "../../../data/careers";
-import { subcategories } from "../../../data/Subcategories";
-import { useExplorerMachine } from "../../state/useExplorerMachine";
+import { careers, type Career } from "../../../data/careers";
+import { subcategories, type Subcategory } from "../../../data/Subcategories";
+import { useExplorerMachine, type ExplorerMachineStore } from "../../state/useExplorerMachine";
 
 type CareerListProps = {
   selectedCareerId: string | null;
@@ -12,17 +12,17 @@ export const CareerList = ({
   onSelectCareer,
 }: CareerListProps) => {
   const selectedSubcategoryId = useExplorerMachine(
-    (s) => s.selectedSubcategoryId,
+    (s: ExplorerMachineStore) => s.selectedSubcategoryId,
   );
 
-  const sub = subcategories.find((s) => s.id === selectedSubcategoryId);
+  const sub = subcategories.find((s: Subcategory) => s.id === selectedSubcategoryId);
   if (!sub) return null;
 
-  const visibleCareers = careers.filter((c) => sub.careers.includes(c.id));
+  const visibleCareers = careers.filter((c: Career) => sub.careers.includes(c.id));
 
   return (
     <div className="career-list">
-      {visibleCareers.map((career) => (
+      {visibleCareers.map((career: Career) => (
         <button
           key={career.id}
           onClick={() => onSelectCareer(career.id)}

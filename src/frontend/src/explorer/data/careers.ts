@@ -4,27 +4,27 @@ export type Career = {
   id: string;
   slug?: string;
   category?: string;
-  essence?: string;
+  subcategory?: string;
   identity?: {
     title: string;
     summary: string;
   };
-  salary?: unknown;
-  qualifications?: string[];
-  curves?: unknown;
-  lifestyle?: unknown;
-  habits?: string[];
-  tags?: string[];
-  hero?: unknown;
   [key: string]: unknown;
 };
 
-export const careers: Career[] = (meta as Array<{ id: string; name: string; categoryName: string; subcategoryName: string }>).map((item) => ({
-  id: item.id,
-  slug: item.id,
-  category: item.categoryName,
-  identity: {
-    title: item.name,
-    summary: "",
-  },
-}));
+type MetaCategory = { id: string; name: string; subcategories: { id: string; name: string; careers: string[] }[] };
+
+export const careers: Career[] = (meta as { categories: MetaCategory[] }).categories.flatMap((cat) =>
+  cat.subcategories.flatMap((sub) =>
+    sub.careers.map((id) => ({
+      id,
+      slug: id,
+      category: cat.id,
+      subcategory: sub.id,
+      identity: {
+        title: id.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+        summary: "",
+      },
+    }))
+  )
+);

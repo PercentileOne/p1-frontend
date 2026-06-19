@@ -5,7 +5,7 @@ import type { Career } from "../../../data/models/Career";
 import { Subcategories as worldSubcategories } from "../../../explorer/data/models/Subcategory";
 
 // ✅ Import careers (these are the full career objects)
-import { careers } from "../../../data/careers";
+import { careers, type Career as DataCareer } from "../../../data/careers";
 
 import { SubcategoryHeroSection } from "../right/sections/SubcategoryHeroSection";
 import { SubcategoryOverviewSection } from "../right/sections/SubcategoryOverviewSection";
@@ -27,7 +27,7 @@ export const SubcategoryWorld: React.FC<Props> = ({ subcategoryId }) => {
   }
 
   // ⭐ Resolve top roles using the cinematic model's topRoles array
-  const topRoles = careers.filter((c) => subcategory.topRoles.includes(c.id)) as unknown as Career[];
+  const topRoles = careers.filter((c: DataCareer) => subcategory.topRoles.includes(c.id)) as unknown as Career[];
 
   return (
     <div

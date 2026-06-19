@@ -7,17 +7,13 @@ export type Subcategory = {
   careers: string[];
 };
 
-const map = new Map<string, Subcategory>();
+type MetaCategory = { id: string; name: string; subcategories: { id: string; name: string; careers: string[] }[] };
 
-(meta as Array<{ id: string; categoryName: string; subcategoryName: string }>).forEach((item) => {
-  const subId = item.subcategoryName.toLowerCase().replace(/\s+/g, "_");
-  const catId = item.categoryName.toLowerCase().replace(/\s+/g, "_");
-
-  if (!map.has(subId)) {
-    map.set(subId, { id: subId, name: item.subcategoryName, categoryId: catId, careers: [] });
-  }
-
-  map.get(subId)!.careers.push(item.id);
-});
-
-export const subcategories = Array.from(map.values());
+export const subcategories: Subcategory[] = (meta as { categories: MetaCategory[] }).categories.flatMap((cat) =>
+  cat.subcategories.map((sub) => ({
+    id: sub.id,
+    name: sub.name,
+    categoryId: cat.id,
+    careers: sub.careers,
+  }))
+);

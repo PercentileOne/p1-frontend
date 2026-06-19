@@ -5,13 +5,7 @@ export type Category = {
   name: string;
 };
 
-const map = new Map<string, Category>();
-
-(meta as Array<{ categoryName: string }>).forEach((item) => {
-  const id = item.categoryName.toLowerCase().replace(/\s+/g, "_");
-  if (!map.has(id)) {
-    map.set(id, { id, name: item.categoryName });
-  }
-});
-
-export const categories = Array.from(map.values());
+export const categories: Category[] = (meta as { categories: { id: string; name: string }[] }).categories.map((c) => ({
+  id: c.id,
+  name: c.name,
+}));
