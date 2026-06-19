@@ -5,7 +5,7 @@ import type { Career } from "../../../data/models/Career";
 import { Subcategories as worldSubcategories } from "../../../explorer/data/models/Subcategory";
 
 // ✅ Import careers (these are the full career objects)
-import { careers, type Career as DataCareer } from "../../../data/careers";
+import { careers, type Career as DataCareer } from "../../data/careers";
 
 import { SubcategoryHeroSection } from "../right/sections/SubcategoryHeroSection";
 import { SubcategoryOverviewSection } from "../right/sections/SubcategoryOverviewSection";

@@ -1,4 +1,4 @@
-import { subcategories, type Subcategory } from "../../../data/Subcategories";
+import { subcategories, type Subcategory } from "../../data/Subcategories";
 import { useExplorerMachine, type ExplorerMachineStore } from "../../state/useExplorerMachine";
 
 export const SubcategoryList = () => {

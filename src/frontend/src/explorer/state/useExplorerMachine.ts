@@ -8,7 +8,7 @@ export type ExplorerMachineState =
   | "inCareer"
   | "exitingCareer";
 
-type ExplorerMachineStore = {
+export type ExplorerMachineStore = {
   state: ExplorerMachineState;
   chapter: number;
   emotionalDepth: number;

@@ -1,4 +1,4 @@
-import { categories, type Category } from "../../../data/categories";
+import { categories, type Category } from "../../data/categories";
 import { useExplorerMachine, type ExplorerMachineStore } from "../../state/useExplorerMachine";
 
 export const CategoryList = () => {

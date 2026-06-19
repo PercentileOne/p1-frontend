@@ -1,6 +1,6 @@
 import React from "react";
 import { useExplorerMachine, type ExplorerMachineStore } from "../../state/useExplorerMachine";
-import { careers, type Career } from "../../../data/careers";
+import { careers, type Career } from "../../data/careers";
 
 export const SubcategoryCareerList: React.FC = () => {
   const selectedSubcategoryId = useExplorerMachine(

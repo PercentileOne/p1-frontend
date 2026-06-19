@@ -1,6 +1,6 @@
 import React from "react";
 import type { Career } from "../../../data/models/Career";
-import { careers, type Career as DataCareer } from "../../../data/careers";
+import { careers, type Career as DataCareer } from "../../data/careers";
 
 import { CareerHeroSection } from "../right/sections/CareerHeroSection";
 import { CareerLifestyleSection } from "../right/sections/CareerLifestyleSection";

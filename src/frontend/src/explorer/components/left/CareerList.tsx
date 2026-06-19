@@ -1,5 +1,5 @@
-import { careers, type Career } from "../../../data/careers";
-import { subcategories, type Subcategory } from "../../../data/Subcategories";
+import { careers, type Career } from "../../data/careers";
+import { subcategories, type Subcategory } from "../../data/Subcategories";
 import { useExplorerMachine, type ExplorerMachineStore } from "../../state/useExplorerMachine";
 
 type CareerListProps = {
