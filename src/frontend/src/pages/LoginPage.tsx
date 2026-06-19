@@ -497,9 +497,9 @@ function LoginField({
 }
 
 function LoginSelect({
-  placeholder, value, onChange, options,
+  value, onChange, options,
 }: {
-  placeholder: string;
+  placeholder?: string;
   value: string;
   onChange: (v: string) => void;
   options: string[];
