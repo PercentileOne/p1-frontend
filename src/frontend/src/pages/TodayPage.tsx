@@ -433,7 +433,7 @@ function CycleTodayCard() {
         <p className="text-[10px] text-slate-400 leading-snug">{currentPlan.agentNotes}</p>
       </div>
 
-      <button onClick={() => navigate("/cycle")}
+      <button onClick={() => navigate("/cycles")}
         className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-violet-600/10 border border-violet-500/20 text-[10px] font-semibold text-violet-400 hover:bg-violet-600/20 transition-colors">
         <Zap size={10}/> Open Cycle Dashboard <ChevronRight size={10}/>
       </button>

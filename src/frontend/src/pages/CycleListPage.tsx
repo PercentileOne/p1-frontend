@@ -84,7 +84,7 @@ function CycleCard({ cycle, index }: { cycle: Cycle; index: number }) {
         )}
 
         <button
-          onClick={() => isActive ? navigate("/cycle") : undefined}
+          onClick={() => isActive ? navigate("/cycles") : undefined}
           className={`w-full py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
             isActive
               ? "bg-indigo-600/20 border border-indigo-500/25 text-indigo-300 hover:bg-indigo-600/30"
@@ -117,7 +117,7 @@ export default function CycleListPage() {
           <div className="w-px h-4 bg-white/10"/>
           <BarChart3 size={13} className="text-indigo-400"/>
           <h1 className="text-sm font-bold text-white">All Cycles</h1>
-          <button onClick={() => navigate("/cycle")}
+          <button onClick={() => navigate("/cycles")}
             className="ml-auto flex items-center gap-1.5 text-[10px] font-semibold text-indigo-300 bg-indigo-600/15 border border-indigo-500/25 px-2.5 py-1.5 rounded-lg hover:bg-indigo-600/25 transition-colors">
             <Zap size={10}/> Current Cycle
           </button>

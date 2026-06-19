@@ -77,7 +77,7 @@ export default function EndReviewPage() {
 
       <header className="sticky top-0 z-20 bg-[#13151c]/95 backdrop-blur-md border-b border-white/[0.06]">
         <div className="max-w-3xl mx-auto px-6 h-14 flex items-center gap-3">
-          <button onClick={() => navigate("/cycle")}
+          <button onClick={() => navigate("/cycles")}
             className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 transition-colors text-xs font-medium">
             <ArrowLeft size={14}/> Cycle
           </button>

@@ -303,7 +303,7 @@ export interface AgentSuggestion {
 export const DAILY_AGENT_SUGGESTIONS: AgentSuggestion[] = [
   { id: "a1", type: "action",  message: "You have 2 unblocked strategic goals — add time blocks now.",        action: "Add blocks",       actionRoute: "/planning/timeblocks" },
   { id: "a2", type: "warning", message: "No buffer block scheduled — email admin will fragment your flow.",  action: "Add buffer",       actionRoute: "/planning/daily"      },
-  { id: "a3", type: "info",    message: "You're in Week 6 — historically your most productive cycle week.",  action: "View cycle",       actionRoute: "/cycle"               },
+  { id: "a3", type: "info",    message: "You're in Week 6 — historically your most productive cycle week.",  action: "View cycle",       actionRoute: "/cycles"               },
   { id: "a4", type: "success", message: "3 strategic blocks scheduled. That's your optimal load for today."                                                                   },
 ];
 

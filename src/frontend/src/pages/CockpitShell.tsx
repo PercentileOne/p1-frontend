@@ -379,8 +379,8 @@ function LeftSidebar({
           />
           <SidebarPrimaryItem
             icon={<Zap size={14} />} label="Cycle"
-            active={pathname.startsWith("/cycle") || pathname === "/cycles"}
-            onClick={() => navigate("/cycle")}
+            active={pathname.startsWith("/cycles") || pathname === "/cycles"}
+            onClick={() => navigate("/cycles")}
           />
           <SidebarPrimaryItem
             icon={<Compass size={14} />} label="Vision"

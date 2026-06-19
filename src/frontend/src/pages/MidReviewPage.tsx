@@ -23,7 +23,7 @@ export default function MidReviewPage() {
 
       <header className="sticky top-0 z-20 bg-[#13151c]/95 backdrop-blur-md border-b border-white/[0.06]">
         <div className="max-w-3xl mx-auto px-6 h-14 flex items-center gap-3">
-          <button onClick={() => navigate("/cycle")}
+          <button onClick={() => navigate("/cycles")}
             className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 transition-colors text-xs font-medium">
             <ArrowLeft size={14}/> Cycle
           </button>
@@ -183,7 +183,7 @@ export default function MidReviewPage() {
             className="py-3 bg-indigo-600/20 border border-indigo-500/25 rounded-xl text-xs font-bold text-indigo-300 hover:bg-indigo-600/30 transition-colors flex items-center justify-center gap-1.5">
             <Zap size={12}/> Plan Week 7
           </button>
-          <button onClick={() => navigate("/cycle")}
+          <button onClick={() => navigate("/cycles")}
             className="py-3 bg-white/[0.04] border border-white/[0.07] rounded-xl text-xs font-bold text-slate-400 hover:bg-white/[0.07] transition-colors flex items-center justify-center gap-1.5">
             <BarChart3 size={12}/> View Dashboard
           </button>

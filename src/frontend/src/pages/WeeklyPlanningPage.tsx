@@ -104,7 +104,7 @@ export default function WeeklyPlanningPage() {
               className="flex-1 py-3 bg-indigo-600/20 border border-indigo-500/25 rounded-xl text-sm font-bold text-indigo-300 hover:bg-indigo-600/30 transition-colors">
               Go to Today
             </button>
-            <button onClick={() => navigate("/cycle")}
+            <button onClick={() => navigate("/cycles")}
               className="flex-1 py-3 bg-white/[0.04] border border-white/[0.07] rounded-xl text-sm font-bold text-slate-400 hover:bg-white/[0.07] transition-colors">
               View Cycle
             </button>
@@ -120,7 +120,7 @@ export default function WeeklyPlanningPage() {
       {/* ── Header ── */}
       <header className="sticky top-0 z-20 bg-[#13151c]/95 backdrop-blur-md border-b border-white/[0.06]">
         <div className="max-w-2xl mx-auto px-6 h-14 flex items-center gap-3">
-          <button onClick={() => navigate("/cycle")}
+          <button onClick={() => navigate("/cycles")}
             className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 transition-colors text-xs font-medium">
             <ArrowLeft size={14}/> Cycle
           </button>
