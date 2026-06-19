@@ -54,8 +54,8 @@ import {
    ══════════════════════════════════════════════════════════════ */
 
 const PROFILE_IMG = "/images/francis.jpg";
-const SIDEBAR_W   = "w-52";   // slightly narrower left col
-const RIGHT_W     = "w-72";   // wider right col for thumbnails
+const SIDEBAR_W   = "w-52";
+const RIGHT_W     = "w-64 xl:w-72";
 
 type CockpitView  = "home" | "chat";
 type NotifType    = "red" | "amber" | "blue" | "star" | "pulse";
@@ -182,7 +182,7 @@ const WORK_AREAS: AreaItem[] = [
   },
 ];
 
-interface YtVideo { id: string; title: string; channel: string; duration: string; category: string; categoryColor: string; }
+interface YtVideo { id: string; title: string; channel: string; duration: string; category: string; categoryColor: string; thumb: string; }
 
 export default function CockpitShell() {
   const [mode,           setMode]           = useState<"life" | "profession">("life");
@@ -1512,28 +1512,31 @@ const RECO_CONTENT: Record<RecoMode, { icon: React.ReactNode; text: string; sub:
 // ── YouTube Shorts — @theschoolofhardknocks ──────────────────
 const YT_VIDEOS = [
   {
-    id: "7lI8NS_9nJ4",
-    title: "How to Build a Startup in 2024",
-    channel: "Y Combinator",
+    id: "qp0HIF3SfI4",
+    title: "How Great Leaders Inspire Action",
+    channel: "Simon Sinek · TED",
     duration: "18 min",
-    category: "Startup",
+    category: "Leadership",
     categoryColor: "text-indigo-400 bg-indigo-500/10",
+    thumb: "from-indigo-900 to-blue-900",
   },
   {
-    id: "uVoASGmxbcI",
-    title: "How to Get Rich (Without Getting Lucky)",
-    channel: "Naval",
-    duration: "45 min",
-    category: "Wealth",
+    id: "Lp7E973zozc",
+    title: "The Power of Vulnerability",
+    channel: "Brené Brown · TED",
+    duration: "20 min",
+    category: "Growth",
     categoryColor: "text-amber-400 bg-amber-500/10",
+    thumb: "from-amber-900 to-orange-900",
   },
   {
-    id: "PFDu9oVAE-g",
-    title: "The Power of Discipline",
-    channel: "Jocko Willink",
-    duration: "12 min",
+    id: "iG9CE55wbtY",
+    title: "Inside the Mind of a Master Procrastinator",
+    channel: "Tim Urban · TED",
+    duration: "14 min",
     category: "Mindset",
     categoryColor: "text-green-400 bg-green-500/10",
+    thumb: "from-green-900 to-teal-900",
   },
 ];
 
@@ -1554,21 +1557,15 @@ function RightSidebar({ onP1ScoreClick, onYtClick }: {
               whileHover={{ scale: 1.02 }} transition={{ duration: 0.12 }}
               className="w-full text-left group">
               {/* Thumbnail */}
-              <div className="relative w-full rounded-xl overflow-hidden mb-1.5" style={{ height: "80px" }}>
+              <div className={`relative w-full rounded-xl overflow-hidden mb-1.5 bg-gradient-to-br ${v.thumb}`} style={{ height: "80px" }}>
                 <img
-                  src={`https://img.youtube.com/vi/${v.id}/hqdefault.jpg`}
+                  src={`https://img.youtube.com/vi/${v.id}/mqdefault.jpg`}
                   alt={v.title}
                   className="absolute inset-0 w-full h-full object-cover"
-                  onError={(e) => {
-                    const t = e.target as HTMLImageElement;
-                    t.style.display = "none";
-                    const fb = t.parentElement?.querySelector(".yt-fallback") as HTMLElement | null;
-                    if (fb) fb.style.display = "flex";
-                  }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                 />
-                {/* Fallback */}
-                <div className="yt-fallback absolute inset-0 bg-gradient-to-br from-indigo-900/60 to-violet-900/60 items-center justify-center hidden">
-                  <PlayCircle size={20} className="text-white/40" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <PlayCircle size={20} className="text-white/20" />
                 </div>
                 {/* Play overlay */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
