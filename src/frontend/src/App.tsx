@@ -79,16 +79,18 @@ export default function App() {
       <Route path="/home" element={<PersonalisedHomePage />} />
       <Route path="/today" element={<TodayPage />} />
 
-      {/* Learning */}
-      <Route path="/learning" element={<LearningShell />} />
-      <Route path="/learning/cards" element={<LearningCards />} />
-      <Route path="/learning/notes" element={<LearningNotes />} />
-      <Route path="/learning/books" element={<LearningBooks />} />
-      <Route path="/learning/certifications" element={<LearningCertifications />} />
-      <Route path="/learning/groups" element={<LearningGroups />} />
-      <Route path="/learning/multiplayer" element={<LearningMultiplayer />} />
-      <Route path="/learning/queue" element={<LearningQueue />} />
-      <Route path="/learning/employer" element={<LearningEmployer />} />
+      {/* Learning — nested so LearningShell sidebar always wraps sub-pages */}
+      <Route path="/learning" element={<LearningShell />}>
+        <Route index element={<Navigate to="cards" replace />} />
+        <Route path="cards" element={<LearningCards />} />
+        <Route path="notes" element={<LearningNotes />} />
+        <Route path="books" element={<LearningBooks />} />
+        <Route path="certifications" element={<LearningCertifications />} />
+        <Route path="groups" element={<LearningGroups />} />
+        <Route path="multiplayer" element={<LearningMultiplayer />} />
+        <Route path="queue" element={<LearningQueue />} />
+        <Route path="employer" element={<LearningEmployer />} />
+      </Route>
 
       {/* Planning */}
       <Route path="/planning" element={<PlanningHome />} />
