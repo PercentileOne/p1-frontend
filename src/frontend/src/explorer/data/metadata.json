@@ -1,0 +1,79 @@
+{
+  "categories": [
+    {
+      "id": "Business",
+      "name": "Business",
+      "subcategories": [
+        {
+          "id": "Finance",
+          "name": "Finance",
+          "careers": ["accountant"]
+        }
+      ]
+    },
+    {
+      "id": "Engineering",
+      "name": "Engineering",
+      "subcategories": [
+        {
+          "id": "Sound Engineering",
+          "name": "Sound Engineering",
+          "careers": ["acoustic_consultant"]
+        }
+      ]
+    },
+    {
+      "id": "IT",
+      "name": "IT",
+      "subcategories": [
+        {
+          "id": "Artificial Intelligence",
+          "name": "Artificial Intelligence",
+          "careers": ["ai_automation_engineer", "ai_research_scientist"]
+        },
+        {
+          "id": "Software Development",
+          "name": "Software Development",
+          "careers": ["software_engineer"]
+        },
+        {
+          "id": "Data",
+          "name": "Data",
+          "careers": ["data_analyst"]
+        },
+        {
+          "id": "Cyber Security",
+          "name": "Cyber Security",
+          "careers": ["cyber_security_analyst"]
+        }
+      ]
+    },
+    {
+      "id": "Science",
+      "name": "Science",
+      "subcategories": [
+        {
+          "id": "Environmental Science",
+          "name": "Environmental Science",
+          "careers": ["air_quality_scientist"]
+        }
+      ]
+    },
+    {
+      "id": "Healthcare",
+      "name": "Healthcare",
+      "subcategories": [
+        {
+          "id": "Nursing",
+          "name": "Nursing",
+          "careers": ["dialysis_nurse"]
+        },
+        {
+          "id": "Medicine",
+          "name": "Medicine",
+          "careers": ["renal_consultant"]
+        }
+      ]
+    }
+  ]
+}
