@@ -1982,16 +1982,26 @@ function YouTubeModal({ video, onClose }: { video: YtVideo; onClose: () => void 
           boxShadow: "0 0 0 1px rgba(255,255,255,0.05), 0 40px 80px rgba(0,0,0,0.8), 0 0 60px rgba(99,102,241,0.10)",
         }}
       >
-        {/* Video embed */}
-        <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-          <iframe
-            className="absolute inset-0 w-full h-full"
-            src={`https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0&modestbranding=1`}
-            title={video.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-            sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+        {/* Video preview — opens YouTube in new tab (avoids embed restrictions) */}
+        <div className={`relative w-full bg-gradient-to-br ${video.thumb} flex items-center justify-center`} style={{ height: "320px" }}>
+          <img
+            src={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`}
+            alt={video.title}
+            className="absolute inset-0 w-full h-full object-cover opacity-60"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
+          <a
+            href={`https://www.youtube.com/watch?v=${video.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onClose}
+            className="relative z-10 flex flex-col items-center gap-3 group"
+          >
+            <div className="w-16 h-16 rounded-full bg-red-600 hover:bg-red-500 transition-colors flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="white"><path d="M7 4l10 6-10 6V4z"/></svg>
+            </div>
+            <span className="text-white/80 text-sm font-medium bg-black/40 px-3 py-1 rounded-full">Watch on YouTube</span>
+          </a>
         </div>
 
         {/* Metadata bar */}
