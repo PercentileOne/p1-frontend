@@ -697,8 +697,8 @@ function YearArcsContent() {
               <p className="text-[9px] text-slate-600">complete</p>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
-              <button onClick={e=>{e.stopPropagation();del(arc.id);}}
-                className="opacity-0 group-hover:opacity-100 text-slate-700 hover:text-red-400 transition-all p-1"><Trash2 size={11}/></button>
+              <div role="button" onClick={e=>{e.stopPropagation();del(arc.id);}}
+                className="opacity-0 group-hover:opacity-100 text-slate-700 hover:text-red-400 transition-all p-1 cursor-pointer"><Trash2 size={11}/></div>
               <motion.span animate={{rotate:collapsed.has(arc.id)?-90:0}} transition={{duration:0.18}} style={{display:"block"}}>
                 <ChevronDown size={14} className="text-slate-600"/>
               </motion.span>
