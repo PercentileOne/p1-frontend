@@ -348,7 +348,7 @@ function LeftSidebar({
   };
 
   return (
-    <aside className={`${SIDEBAR_W} shrink-0 bg-[#13151c] border-r border-white/[0.06] flex flex-col h-full overflow-hidden pt-[20px]`}>
+    <aside className={`${SIDEBAR_W} shrink-0 bg-[#13151c] border-r border-white/[0.06] flex flex-col h-full overflow-y-auto pt-[20px]`}>
 
       {/* ── Brand ── */}
       <BrandFlipCard />
@@ -1547,8 +1547,13 @@ function RightSidebar({ onP1ScoreClick, onYtClick }: {
   const [recoMode, setRecoMode] = useState<RecoMode>("Amazon Deals");
 
   return (
-    <aside className={`${RIGHT_W} shrink-0 bg-[#13151c] border-l border-white/[0.06] overflow-y-auto h-full p-3 flex flex-col gap-3`}>
-      <ProfileCard onP1ScoreClick={onP1ScoreClick} />
+    <aside className={`${RIGHT_W} shrink-0 bg-[#13151c] border-l border-white/[0.06] flex flex-col h-full`}>
+      {/* Profile card — always visible at top */}
+      <div className="shrink-0 p-3 border-b border-white/[0.05]">
+        <ProfileCard onP1ScoreClick={onP1ScoreClick} />
+      </div>
+      {/* Scrollable content below */}
+      <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
 
       <RightCard icon={<PlayCircle size={13} />} title="YouTube for You">
         <div className="flex flex-col gap-2.5">
@@ -1625,6 +1630,7 @@ function RightSidebar({ onP1ScoreClick, onYtClick }: {
           <MessagePreview sender="Sarah"   preview="Can you review the proposal?" />
         </ul>
       </RightCard>
+      </div>
     </aside>
   );
 }
