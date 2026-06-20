@@ -275,7 +275,7 @@ function TopNav({
         <NavLink label="Awards"    icon={<Trophy         size={12} />} href="/awards"    />
         <NavLink label="Profile"   icon={<Users          size={12} />} href="/profile"   />
         <NavLink label="Interests" icon={<Sparkles      size={12} />} href="/interests" />
-        <NavLink label="My Home"   icon={<Sparkles      size={12} />} href="/home"      />
+        <NavLink label="Me"        icon={<Sparkles      size={12} />} href="/home"      />
       </nav>
       <div className="flex items-center gap-2 px-4 border-l border-white/[0.06]">
         <button
