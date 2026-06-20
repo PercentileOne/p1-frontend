@@ -687,9 +687,13 @@ function MainContent({ mode }: { mode: "life" | "profession" }) {
         {/* Hero greeting */}
         <div>
           <h1 className="text-2xl font-semibold text-white tracking-tight">
-            How do you feel this morning, Francis, after your early gym session?
+            {(() => {
+              const h = new Date().getHours();
+              const tod = h < 12 ? "morning" : h < 17 ? "afternoon" : "evening";
+              return `Good ${tod}, Francis.`;
+            })()}
           </h1>
-          <p className="text-sm text-slate-500 mt-0.5">Thursday, 12 June 2026</p>
+          <p className="text-sm text-slate-500 mt-0.5">{new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>
         </div>
 
         {/* §1 Overview — 4 compact cards */}
