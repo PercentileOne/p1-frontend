@@ -5,6 +5,7 @@ import {
   Users, Search, Sparkles, ChevronRight, UserPlus,
   UserCheck, Clock, MapPin, Shield, Zap, Star, MessageSquare,
 } from "lucide-react";
+import BackToCockpit from "../components/BackToCockpit";
 import {
   DEMO_PEOPLE, DEMO_RELATIONS, CURRENT_DISCOVERY_USER,
   DiscoveryMatchingEngine, getMyContacts, getSuggestedContacts,
@@ -49,11 +50,14 @@ export default function ContactsHome() {
       {/* Header */}
       <div className="sticky top-0 z-20 bg-[#13151c] border-b border-white/[0.06] px-6 py-3">
         <div className="flex items-center justify-between mb-3">
-          <div>
-            <h1 className="text-base font-bold text-white flex items-center gap-2">
-              <Users size={16} className="text-indigo-400" /> Contacts
-            </h1>
-            <p className="text-[11px] text-slate-500">{myContacts.length} connections · {DEMO_PEOPLE.length} people in P1</p>
+          <div className="flex items-center gap-3">
+            <BackToCockpit />
+            <div>
+              <h1 className="text-base font-bold text-white flex items-center gap-2">
+                <Users size={16} className="text-indigo-400" /> Contacts
+              </h1>
+              <p className="text-[11px] text-slate-500">{myContacts.length} connections · {DEMO_PEOPLE.length} people in P1</p>
+            </div>
           </div>
           <button onClick={() => navigate("/contacts/find")}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors">
