@@ -1,3 +1,10 @@
+# Secrets — never commit these
+appsettings.Development.json
+appsettings.Production.json
+.env
+.env.local
+.env.production
+
 # Logs
 logs
 *.log
