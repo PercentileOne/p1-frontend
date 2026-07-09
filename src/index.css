@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+/* Prevent text selection cursor on non-interactive elements */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
+input, textarea, [contenteditable], p, span, li, td, th, label {
+  user-select: text;
+  -webkit-user-select: text;
+}

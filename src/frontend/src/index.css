@@ -5,6 +5,16 @@ body {
   color: #e2e8f0;
 }
 
+/* Prevent text selection cursor on non-interactive elements */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
+input, textarea, [contenteditable], p, span, li, td, th, label {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
 /* Hide scrollbars globally while keeping scroll functionality */
 * {
   scrollbar-width: none;        /* Firefox */
