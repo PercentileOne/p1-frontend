@@ -3,15 +3,24 @@ import AppMockup from './AppMockup'
 import ContactModal from './ContactModal'
 import { useIsMobile } from '../hooks/useIsMobile'
 
+const CHIPS = [
+  { icon: '⚖️', label: 'Work / Life' },
+  { icon: '🎯', label: 'Goals' },
+  { icon: '💼', label: 'Jobs & Career' },
+  { icon: '🧠', label: 'Deep Focus' },
+  { icon: '📅', label: 'Daily Planning' },
+]
+
 export default function HeroSection() {
   const [showContact, setShowContact] = useState(false)
   const isMobile = useIsMobile()
 
   return (
-    <section id="hero" style={{ background: 'var(--bg-dark)', display: 'flex', alignItems: 'center', paddingTop: 64, position: 'relative', overflow: 'hidden' }}>
+    <section id="hero" style={{ background: 'var(--bg-dark)', paddingTop: 64, position: 'relative', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(99,102,241,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,0.04) 1px,transparent 1px)', backgroundSize: '48px 48px' }} />
       <div style={{ position: 'absolute', top: -200, right: -100, width: 600, height: 600, background: 'radial-gradient(circle,rgba(99,102,241,0.12) 0%,transparent 70%)', pointerEvents: 'none' }} />
 
+      {/* Two-column grid */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: isMobile ? '1fr' : '36% 64%',
@@ -19,7 +28,7 @@ export default function HeroSection() {
         alignItems: 'center',
         position: 'relative', zIndex: 1,
         width: '100%', maxWidth: 1280, margin: '0 auto',
-        padding: isMobile ? '60px 20px 40px' : '80px 24px 48px',
+        padding: isMobile ? '60px 20px 0' : '80px 24px 0',
       }}>
 
         {/* Copy */}
@@ -52,10 +61,8 @@ export default function HeroSection() {
           {showContact && <ContactModal onClose={() => setShowContact(false)} />}
         </div>
 
-        {/* App mockup — scaled down on mobile */}
+        {/* App mockup */}
         <div style={{ width: '100%', overflow: 'hidden' }}>
-
-          {/* Live preview label */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10B981', display: 'inline-block', boxShadow: '0 0 6px #10B981' }} />
             <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#475569' }}>Live Preview · P1 Cockpit</span>
@@ -68,30 +75,23 @@ export default function HeroSection() {
           ) : (
             <AppMockup />
           )}
+        </div>
+      </div>
 
-          {/* Feature chips */}
-          <div style={{ background: 'var(--bg-dark)', paddingTop: 16, paddingBottom: 4 }}>
-          <div style={{ display: 'flex', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: 7 }}>
-            {[
-              { icon: '⚖️', label: 'Work / Life' },
-              { icon: '🎯', label: 'Goals' },
-              { icon: '💼', label: 'Jobs & Career' },
-              { icon: '🧠', label: 'Deep Focus' },
-              { icon: '📅', label: 'Daily Planning' },
-            ].map(f => (
-              <div key={f.label} style={{
-                display: 'flex', alignItems: 'center', gap: 5,
-                background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)',
-                borderRadius: 100, padding: '5px 10px',
-                fontSize: 11, fontWeight: 600, color: '#64748B', whiteSpace: 'nowrap',
-              }}>
-                <span style={{ fontSize: 12 }}>{f.icon}</span>
-                {f.label}
-              </div>
-            ))}
-          </div>
-          </div>
-
+      {/* Feature chips — full-width row below the grid, on hero background */}
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 1280, margin: '0 auto', padding: isMobile ? '20px 20px 40px' : '20px 24px 48px' }}>
+        <div style={{ display: 'flex', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: 8 }}>
+          {CHIPS.map(f => (
+            <div key={f.label} style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)',
+              borderRadius: 100, padding: '6px 12px',
+              fontSize: 12, fontWeight: 600, color: '#64748B', whiteSpace: 'nowrap',
+            }}>
+              <span style={{ fontSize: 13 }}>{f.icon}</span>
+              {f.label}
+            </div>
+          ))}
         </div>
       </div>
 
