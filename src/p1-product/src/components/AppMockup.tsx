@@ -34,23 +34,20 @@ const EXERCISE_SLIDES = [
 ]
 
 // ─── Self-contained animated card components ─────────────────────────────────
-// Each card owns its own state + timer. No external idx props.
-// Pattern: setVisible(false) → wait 420ms → swap content → setVisible(true)
-// This gives: old content fades out, new content fades in. No mount-blink.
+// Each card owns its own state + timer.
+// Pattern: key={idx} on the content div — when idx changes React remounts the
+// element and the CSS @keyframes animation fires from scratch. No opacity state,
+// no setTimeout race conditions, works reliably in all React versions.
 
 function TaskCard() {
   const [idx, setIdx] = useState(0)
-  const [visible, setVisible] = useState(true)
   useEffect(() => {
-    const id = setInterval(() => {
-      setVisible(false)
-      setTimeout(() => { setIdx(i => (i + 1) % TASK_SLIDES.length); setVisible(true) }, 420)
-    }, 8000)
+    const id = setInterval(() => setIdx(i => (i + 1) % TASK_SLIDES.length), 8000)
     return () => clearInterval(id)
   }, [])
   const s = TASK_SLIDES[idx]
   return (
-    <div style={{ opacity: visible ? 1 : 0, transition: 'opacity .4s' }}>
+    <div key={idx} style={{ animation: 'p1FadeIn .6s ease both' }}>
       <div style={{ fontSize: 14, marginBottom: 2 }}>{s.icon}</div>
       <div style={{ fontSize: 13, fontWeight: 900, color: '#E2E8F0', lineHeight: 1 }}>{s.big}</div>
       <div style={{ fontSize: 9, color: '#64748B', marginTop: 2 }}>{s.sub}</div>
@@ -61,17 +58,13 @@ function TaskCard() {
 
 function WeekCard() {
   const [idx, setIdx] = useState(0)
-  const [visible, setVisible] = useState(true)
   useEffect(() => {
-    const id = setInterval(() => {
-      setVisible(false)
-      setTimeout(() => { setIdx(i => (i + 1) % WEEK_SLIDES.length); setVisible(true) }, 420)
-    }, 13000)
+    const id = setInterval(() => setIdx(i => (i + 1) % WEEK_SLIDES.length), 13000)
     return () => clearInterval(id)
   }, [])
   const w = WEEK_SLIDES[idx]
   return (
-    <div style={{ opacity: visible ? 1 : 0, transition: 'opacity .4s' }}>
+    <div key={idx} style={{ animation: 'p1FadeIn .6s ease both' }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 30, margin: '4px 0' }}>
         {w.bars.map((b, i) => (
           <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flex: 1 }}>
@@ -90,17 +83,13 @@ function WeekCard() {
 
 function MealCard() {
   const [idx, setIdx] = useState(0)
-  const [visible, setVisible] = useState(true)
   useEffect(() => {
-    const id = setInterval(() => {
-      setVisible(false)
-      setTimeout(() => { setIdx(i => (i + 1) % MEAL_SLIDES.length); setVisible(true) }, 420)
-    }, 11000)
+    const id = setInterval(() => setIdx(i => (i + 1) % MEAL_SLIDES.length), 11000)
     return () => clearInterval(id)
   }, [])
   const m = MEAL_SLIDES[idx]
   return (
-    <div style={{ opacity: visible ? 1 : 0, transition: 'opacity .4s' }}>
+    <div key={idx} style={{ animation: 'p1FadeIn .6s ease both' }}>
       <div style={{ width: 6, height: 6, borderRadius: '50%', background: m.dot, marginBottom: 3 }} />
       <div style={{ fontSize: 7, fontWeight: 800, color: m.dot, letterSpacing: 1, marginBottom: 3 }}>{m.time}</div>
       <div style={{ fontSize: 9, fontWeight: 700, color: '#E2E8F0', lineHeight: 1.3 }}>{m.meal}</div>
@@ -111,17 +100,13 @@ function MealCard() {
 
 function ExerciseCard() {
   const [idx, setIdx] = useState(0)
-  const [visible, setVisible] = useState(true)
   useEffect(() => {
-    const id = setInterval(() => {
-      setVisible(false)
-      setTimeout(() => { setIdx(i => (i + 1) % EXERCISE_SLIDES.length); setVisible(true) }, 420)
-    }, 6000)
+    const id = setInterval(() => setIdx(i => (i + 1) % EXERCISE_SLIDES.length), 6000)
     return () => clearInterval(id)
   }, [])
   const e = EXERCISE_SLIDES[idx]
   return (
-    <div style={{ opacity: visible ? 1 : 0, transition: 'opacity .4s' }}>
+    <div key={idx} style={{ animation: 'p1FadeIn .6s ease both' }}>
       <div style={{ fontSize: 13, fontWeight: 900, color: e.accent, lineHeight: 1 }}>{e.metric}</div>
       <div style={{ fontSize: 8, color: '#64748B', marginTop: 1 }}>{e.unit}</div>
       <div style={{ height: 3, background: 'rgba(255,255,255,.05)', borderRadius: 2, overflow: 'hidden', margin: '5px 0 3px' }}>
@@ -132,22 +117,18 @@ function ExerciseCard() {
   )
 }
 
-// WisdomCard: self-contained — owns its own timer, no mount-blink
+// WisdomCard: same key-based approach — no opacity state, no blink
 function WisdomCard({ startIdx, intervalMs }: { startIdx: number; intervalMs: number }) {
   const [idx, setIdx] = useState(startIdx)
-  const [visible, setVisible] = useState(true)
   useEffect(() => {
-    const id = setInterval(() => {
-      setVisible(false)
-      setTimeout(() => { setIdx(i => (i + 1) % quotes.length); setVisible(true) }, 420)
-    }, intervalMs)
+    const id = setInterval(() => setIdx(i => (i + 1) % quotes.length), intervalMs)
     return () => clearInterval(id)
   }, [intervalMs])
   const q = quotes[idx]
   return (
-    <div style={{
+    <div key={idx} style={{
       borderRadius: 8, padding: 9, border: `1px solid ${q.col}22`,
-      background: q.bg, opacity: visible ? 1 : 0, transition: 'opacity .4s', fontSize: 10,
+      background: q.bg, animation: 'p1FadeIn .6s ease both', fontSize: 10,
     }}>
       <div style={{ fontSize: 7, fontWeight: 800, letterSpacing: '1.5px', textTransform: 'uppercase', color: q.col, marginBottom: 5 }}>{q.cat}</div>
       <div style={{ fontSize: 9, color: '#94A3B8', lineHeight: 1.5, marginBottom: 4 }}>"{q.text}"</div>
@@ -235,6 +216,7 @@ export default function AppMockup() {
 
   return (
     <div style={s.root}>
+      <style>{`@keyframes p1FadeIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}`}</style>
 
       {/* Toast */}
       <div style={{
