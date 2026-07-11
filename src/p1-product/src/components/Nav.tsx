@@ -33,7 +33,7 @@ export default function Nav() {
             <span style={{ fontSize: 16, fontWeight: 800, color: '#F1F5F9', letterSpacing: '-0.3px' }}>Percentile.One</span>
           </div>
 
-          <ul style={{ display: 'flex', alignItems: 'center', gap: 28, listStyle: 'none' }}>
+          <ul style={{ display: 'flex', alignItems: 'center', gap: 28, listStyle: 'none', marginLeft: 'auto', marginRight: 32 }}>
             {links.map(l => (
               <li key={l}>
                 <a href={`#${l.toLowerCase()}`} style={{ fontSize: 14, fontWeight: 500, color: '#94A3B8', transition: 'color .2s' }}

@@ -22,6 +22,7 @@ export default function HeroSection() {
 
           <h1 style={{ fontSize: 'clamp(32px,4.5vw,58px)', fontWeight: 900, lineHeight: 1.05, letterSpacing: -2, color: '#F1F5F9', marginBottom: 20 }}>
             Your Life.<br />
+            Your Success.<br />
             Organised.<br />
             Upgraded.<br />
             <em style={{ fontStyle: 'normal', color: 'var(--accent)' }}>Optimised.</em>
