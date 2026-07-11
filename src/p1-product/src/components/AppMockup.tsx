@@ -38,10 +38,10 @@ export default function AppMockup() {
   const [p1Score, setP1Score] = useState(72)
   const [chatBadge, setChatBadge] = useState(3)
   const [showToast, setShowToast] = useState(false)
-  const [time, setTime] = useState('')
+  const [, setTime] = useState('')
   const [date, setDate] = useState('')
   const [wIdx, setWIdx] = useState([0, 1, 2])
-  const scoreFlash = useRef(false)
+  const scoreFlash = useRef<boolean>(false); void scoreFlash
 
   // Live clock
   useEffect(() => {
