@@ -53,11 +53,14 @@ export default function HeroSection() {
         </div>
 
         {/* App mockup — scaled down on mobile */}
-        <div style={isMobile ? {
-          width: '100%',
-          overflowX: 'auto',
-          WebkitOverflowScrolling: 'touch' as any,
-        } : {}}>
+        <div style={isMobile ? { width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any } : {}}>
+
+          {/* Live preview label */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10B981', display: 'inline-block', boxShadow: '0 0 6px #10B981' }} />
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#475569' }}>Live Preview · P1 Cockpit</span>
+          </div>
+
           {isMobile ? (
             <div style={{ transform: 'scale(0.72)', transformOrigin: 'top left', width: '139%' }}>
               <AppMockup />
@@ -65,6 +68,28 @@ export default function HeroSection() {
           ) : (
             <AppMockup />
           )}
+
+          {/* Feature chips */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 16 }}>
+            {[
+              { icon: '⚖️', label: 'Work / Life Balance' },
+              { icon: '🎯', label: 'Goals & Progress' },
+              { icon: '💼', label: 'Jobs & Career' },
+              { icon: '🧠', label: 'Deep Focus' },
+              { icon: '📅', label: 'Daily Planning' },
+            ].map(f => (
+              <div key={f.label} style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)',
+                borderRadius: 100, padding: '6px 14px',
+                fontSize: 12, fontWeight: 600, color: '#64748B',
+              }}>
+                <span style={{ fontSize: 13 }}>{f.icon}</span>
+                {f.label}
+              </div>
+            ))}
+          </div>
+
         </div>
       </div>
 
