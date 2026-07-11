@@ -14,7 +14,7 @@ export default function HeroSection() {
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : '42% 58%',
+        gridTemplateColumns: isMobile ? '1fr' : '36% 64%',
         gap: isMobile ? 40 : 48,
         alignItems: 'center',
         position: 'relative', zIndex: 1,
@@ -70,21 +70,21 @@ export default function HeroSection() {
           )}
 
           {/* Feature chips */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 16 }}>
+          <div style={{ display: 'flex', flexWrap: 'nowrap', gap: 7, marginTop: 16, overflow: 'hidden' }}>
             {[
-              { icon: '⚖️', label: 'Work / Life Balance' },
-              { icon: '🎯', label: 'Goals & Progress' },
+              { icon: '⚖️', label: 'Work / Life' },
+              { icon: '🎯', label: 'Goals' },
               { icon: '💼', label: 'Jobs & Career' },
               { icon: '🧠', label: 'Deep Focus' },
               { icon: '📅', label: 'Daily Planning' },
             ].map(f => (
               <div key={f.label} style={{
-                display: 'flex', alignItems: 'center', gap: 6,
+                display: 'flex', alignItems: 'center', gap: 5,
                 background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)',
-                borderRadius: 100, padding: '6px 14px',
-                fontSize: 12, fontWeight: 600, color: '#64748B',
+                borderRadius: 100, padding: '5px 10px',
+                fontSize: 11, fontWeight: 600, color: '#64748B', whiteSpace: 'nowrap',
               }}>
-                <span style={{ fontSize: 13 }}>{f.icon}</span>
+                <span style={{ fontSize: 12 }}>{f.icon}</span>
                 {f.label}
               </div>
             ))}
