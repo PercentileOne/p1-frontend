@@ -70,7 +70,8 @@ export default function HeroSection() {
           )}
 
           {/* Feature chips */}
-          <div style={{ display: 'flex', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: 7, marginTop: 16 }}>
+          <div style={{ background: 'var(--bg-dark)', paddingTop: 16, paddingBottom: 4 }}>
+          <div style={{ display: 'flex', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: 7 }}>
             {[
               { icon: '⚖️', label: 'Work / Life' },
               { icon: '🎯', label: 'Goals' },
@@ -88,6 +89,7 @@ export default function HeroSection() {
                 {f.label}
               </div>
             ))}
+          </div>
           </div>
 
         </div>
