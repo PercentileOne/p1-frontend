@@ -3,6 +3,8 @@ import { quotes } from '../data/quotes'
 
 const NAV_TABS = ['Jobs','Focus','Planning','Shop','Contacts','Messages','Feed','Walls','Stories','Awards','Profile','Interests','Me']
 
+// ─── Data for animated cards ────────────────────────────────────────────────
+
 const TASK_SLIDES = [
   { icon: '⚡', big: '2 left.', sub: 'Finish strong.', detail: 'Start with investor update.' },
   { icon: '✅', big: 'All done!', sub: 'Outstanding day.', detail: 'Review tomorrow\'s goals.' },
@@ -11,63 +13,137 @@ const TASK_SLIDES = [
 ]
 
 const WEEK_SLIDES = [
-  { bars: [{h:30},{h:55},{h:45},{h:80,a:true},{h:15,d:true},{h:8,d:true},{h:5,d:true}], label: '3 events this week' },
-  { bars: [{h:60},{h:40},{h:70},{h:50,a:true},{h:20,d:true},{h:10,d:true},{h:5,d:true}], label: '5 events this week' },
-  { bars: [{h:80},{h:60},{h:90},{h:70,a:true},{h:30,d:true},{h:15,d:true},{h:8,d:true}], label: '7 events this week' },
-  { bars: [{h:20},{h:35},{h:55},{h:65,a:true},{h:10,d:true},{h:5,d:true},{h:3,d:true}], label: '2 events this week' },
+  { bars: [{h:30,a:false,d:false},{h:55,a:false,d:false},{h:45,a:false,d:false},{h:80,a:true,d:false},{h:15,a:false,d:true},{h:8,a:false,d:true},{h:5,a:false,d:true}], label: '3 events this week' },
+  { bars: [{h:60,a:false,d:false},{h:40,a:false,d:false},{h:70,a:false,d:false},{h:50,a:true,d:false},{h:20,a:false,d:true},{h:10,a:false,d:true},{h:5,a:false,d:true}], label: '5 events this week' },
+  { bars: [{h:80,a:false,d:false},{h:60,a:false,d:false},{h:90,a:false,d:false},{h:70,a:true,d:false},{h:30,a:false,d:true},{h:15,a:false,d:true},{h:8,a:false,d:true}], label: '7 events this week' },
+  { bars: [{h:20,a:false,d:false},{h:35,a:false,d:false},{h:55,a:false,d:false},{h:65,a:true,d:false},{h:10,a:false,d:true},{h:5,a:false,d:true},{h:3,a:false,d:true}], label: '2 events this week' },
 ]
 
 const MEAL_SLIDES = [
-  { dot: '#F59E0B', time: 'LUNCH',   meal: 'Grilled Chicken Salad', meta: 'High protein · ~520 kcal' },
-  { dot: '#10B981', time: 'DINNER',  meal: 'Salmon & Roasted Veg',  meta: 'Omega-3 rich · ~610 kcal' },
+  { dot: '#F59E0B', time: 'LUNCH',   meal: 'Grilled Chicken Salad',  meta: 'High protein · ~520 kcal' },
+  { dot: '#10B981', time: 'DINNER',  meal: 'Salmon & Roasted Veg',   meta: 'Omega-3 rich · ~610 kcal' },
   { dot: '#6366F1', time: 'MORNING', meal: 'Oat Porridge & Berries', meta: 'Slow-release · ~380 kcal' },
-  { dot: '#F43F5E', time: 'SNACK',   meal: 'Greek Yoghurt & Nuts',  meta: 'Protein boost · ~210 kcal' },
+  { dot: '#F43F5E', time: 'SNACK',   meal: 'Greek Yoghurt & Nuts',   meta: 'Protein boost · ~210 kcal' },
 ]
 
 const EXERCISE_SLIDES = [
-  { accent: '#10B981', metric: '7,420', unit: '/ 10,000 steps', bar: 74, note: '2,580 steps to go' },
+  { accent: '#10B981', metric: '7,420', unit: '/ 10,000 steps',   bar: 74, note: '2,580 steps to go' },
   { accent: '#6366F1', metric: '32 min', unit: 'strength training', bar: 80, note: 'Personal best this week' },
   { accent: '#38BDF8', metric: '1.2 L',  unit: '/ 2.5 L water',    bar: 48, note: '1.3 L remaining today' },
   { accent: '#F59E0B', metric: '7.2 h',  unit: 'sleep last night',  bar: 90, note: 'Above your 7 h goal' },
 ]
 
-type OverviewSlide = typeof TASK_SLIDES[0] | typeof WEEK_SLIDES[0] | typeof MEAL_SLIDES[0] | typeof EXERCISE_SLIDES[0]
+// ─── Self-contained animated card components ─────────────────────────────────
+// Each card owns its own state + timer. No external idx props.
+// Pattern: setVisible(false) → wait 420ms → swap content → setVisible(true)
+// This gives: old content fades out, new content fades in. No mount-blink.
 
-function OverviewCard({ idx, slides, children }: { idx: number; slides: OverviewSlide[]; children: (slide: OverviewSlide) => React.ReactNode }) {
-  const [current, setCurrent] = useState(idx)
+function TaskCard() {
+  const [idx, setIdx] = useState(0)
   const [visible, setVisible] = useState(true)
-
   useEffect(() => {
-    setVisible(false)
-    const t = setTimeout(() => { setCurrent(idx); setVisible(true) }, 420)
-    return () => clearTimeout(t)
-  }, [idx])
-
+    const id = setInterval(() => {
+      setVisible(false)
+      setTimeout(() => { setIdx(i => (i + 1) % TASK_SLIDES.length); setVisible(true) }, 420)
+    }, 8000)
+    return () => clearInterval(id)
+  }, [])
+  const s = TASK_SLIDES[idx]
   return (
-    <div style={{ opacity: visible ? 1 : 0, transition: 'opacity .4s', height: '100%' }}>
-      {children(slides[current % slides.length])}
+    <div style={{ opacity: visible ? 1 : 0, transition: 'opacity .4s' }}>
+      <div style={{ fontSize: 14, marginBottom: 2 }}>{s.icon}</div>
+      <div style={{ fontSize: 13, fontWeight: 900, color: '#E2E8F0', lineHeight: 1 }}>{s.big}</div>
+      <div style={{ fontSize: 9, color: '#64748B', marginTop: 2 }}>{s.sub}</div>
+      <div style={{ fontSize: 8, color: '#334155', marginTop: 3 }}>{s.detail}</div>
     </div>
   )
 }
 
-const YT_VIDEOS = [
-  { tag: 'Leadership', title: 'How Great Leaders Inspire Action',             ch: 'Simon Sinek · TED', dur: '18 min', bg: 'linear-gradient(135deg,#1E3A5F,#0F2040)' },
-  { tag: 'Growth',     title: 'The Power of Vulnerability',                   ch: 'Brené Brown · TED', dur: '20 min', bg: 'linear-gradient(135deg,#1A3A2A,#0F2518)' },
-  { tag: 'Mindset',   title: 'Inside the Mind of a Master Procrastinator',   ch: 'Tim Urban · TED',   dur: '14 min', bg: 'linear-gradient(135deg,#2A1A3A,#1A0F28)' },
-]
-
-function WisdomCard({ quoteIdx }: { quoteIdx: number }) {
-  const [current, setCurrent] = useState(quoteIdx)
+function WeekCard() {
+  const [idx, setIdx] = useState(0)
   const [visible, setVisible] = useState(true)
-
   useEffect(() => {
-    setCurrent(quoteIdx)
-    setVisible(false)
-    const t = setTimeout(() => setVisible(true), 420)
-    return () => clearTimeout(t)
-  }, [quoteIdx])
+    const id = setInterval(() => {
+      setVisible(false)
+      setTimeout(() => { setIdx(i => (i + 1) % WEEK_SLIDES.length); setVisible(true) }, 420)
+    }, 13000)
+    return () => clearInterval(id)
+  }, [])
+  const w = WEEK_SLIDES[idx]
+  return (
+    <div style={{ opacity: visible ? 1 : 0, transition: 'opacity .4s' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 30, margin: '4px 0' }}>
+        {w.bars.map((b, i) => (
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flex: 1 }}>
+            <div style={{ width: '100%', height: `${b.h}%`, borderRadius: 2, minHeight: 3,
+              background: b.a ? '#6366F1' : b.d ? 'rgba(99,102,241,.15)' : 'rgba(99,102,241,.45)' }} />
+            <div style={{ fontSize: 7, color: b.a ? '#6366F1' : '#334155', fontWeight: 600 }}>
+              {['M','T','W','T','F','S','S'][i]}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 8, color: '#334155' }}>{w.label}</div>
+    </div>
+  )
+}
 
-  const q = quotes[current % quotes.length]
+function MealCard() {
+  const [idx, setIdx] = useState(0)
+  const [visible, setVisible] = useState(true)
+  useEffect(() => {
+    const id = setInterval(() => {
+      setVisible(false)
+      setTimeout(() => { setIdx(i => (i + 1) % MEAL_SLIDES.length); setVisible(true) }, 420)
+    }, 11000)
+    return () => clearInterval(id)
+  }, [])
+  const m = MEAL_SLIDES[idx]
+  return (
+    <div style={{ opacity: visible ? 1 : 0, transition: 'opacity .4s' }}>
+      <div style={{ width: 6, height: 6, borderRadius: '50%', background: m.dot, marginBottom: 3 }} />
+      <div style={{ fontSize: 7, fontWeight: 800, color: m.dot, letterSpacing: 1, marginBottom: 3 }}>{m.time}</div>
+      <div style={{ fontSize: 9, fontWeight: 700, color: '#E2E8F0', lineHeight: 1.3 }}>{m.meal}</div>
+      <div style={{ fontSize: 8, color: '#334155', marginTop: 3 }}>{m.meta}</div>
+    </div>
+  )
+}
+
+function ExerciseCard() {
+  const [idx, setIdx] = useState(0)
+  const [visible, setVisible] = useState(true)
+  useEffect(() => {
+    const id = setInterval(() => {
+      setVisible(false)
+      setTimeout(() => { setIdx(i => (i + 1) % EXERCISE_SLIDES.length); setVisible(true) }, 420)
+    }, 6000)
+    return () => clearInterval(id)
+  }, [])
+  const e = EXERCISE_SLIDES[idx]
+  return (
+    <div style={{ opacity: visible ? 1 : 0, transition: 'opacity .4s' }}>
+      <div style={{ fontSize: 13, fontWeight: 900, color: e.accent, lineHeight: 1 }}>{e.metric}</div>
+      <div style={{ fontSize: 8, color: '#64748B', marginTop: 1 }}>{e.unit}</div>
+      <div style={{ height: 3, background: 'rgba(255,255,255,.05)', borderRadius: 2, overflow: 'hidden', margin: '5px 0 3px' }}>
+        <div style={{ height: '100%', width: `${e.bar}%`, background: `linear-gradient(90deg,${e.accent},${e.accent}99)`, borderRadius: 2 }} />
+      </div>
+      <div style={{ fontSize: 8, color: '#334155' }}>{e.note}</div>
+    </div>
+  )
+}
+
+// WisdomCard: self-contained — owns its own timer, no mount-blink
+function WisdomCard({ startIdx, intervalMs }: { startIdx: number; intervalMs: number }) {
+  const [idx, setIdx] = useState(startIdx)
+  const [visible, setVisible] = useState(true)
+  useEffect(() => {
+    const id = setInterval(() => {
+      setVisible(false)
+      setTimeout(() => { setIdx(i => (i + 1) % quotes.length); setVisible(true) }, 420)
+    }, intervalMs)
+    return () => clearInterval(id)
+  }, [intervalMs])
+  const q = quotes[idx]
   return (
     <div style={{
       borderRadius: 8, padding: 9, border: `1px solid ${q.col}22`,
@@ -80,6 +156,12 @@ function WisdomCard({ quoteIdx }: { quoteIdx: number }) {
   )
 }
 
+const YT_VIDEOS = [
+  { tag: 'Leadership', title: 'How Great Leaders Inspire Action',            ch: 'Simon Sinek · TED', dur: '18 min', bg: 'linear-gradient(135deg,#1E3A5F,#0F2040)' },
+  { tag: 'Growth',     title: 'The Power of Vulnerability',                  ch: 'Brené Brown · TED', dur: '20 min', bg: 'linear-gradient(135deg,#1A3A2A,#0F2518)' },
+  { tag: 'Mindset',   title: 'Inside the Mind of a Master Procrastinator',  ch: 'Tim Urban · TED',   dur: '14 min', bg: 'linear-gradient(135deg,#2A1A3A,#1A0F28)' },
+]
+
 export default function AppMockup() {
   const [steps, setSteps] = useState(7420)
   const [p1Score, setP1Score] = useState(72)
@@ -87,8 +169,7 @@ export default function AppMockup() {
   const [showToast, setShowToast] = useState(false)
   const [, setTime] = useState('')
   const [date, setDate] = useState('')
-  const [wIdx, setWIdx] = useState([0, 1, 2])
-  const [ovIdx, setOvIdx] = useState([0, 0, 0, 0])
+  const [lifeTab, setLifeTab] = useState<'life'|'work'>('life')
   const scoreFlash = useRef<boolean>(false); void scoreFlash
 
   // Live clock
@@ -126,25 +207,7 @@ export default function AppMockup() {
     return () => clearTimeout(t)
   }, [])
 
-  // Independent wisdom card timers
-  useEffect(() => {
-    const t0 = setInterval(() => setWIdx(w => [w[0] + 3, w[1], w[2]]), 7000)
-    const t1 = setInterval(() => setWIdx(w => [w[0], w[1] + 3, w[2]]), 11000)
-    const t2 = setInterval(() => setWIdx(w => [w[0], w[1], w[2] + 3]), 9000)
-    return () => { clearInterval(t0); clearInterval(t1); clearInterval(t2) }
-  }, [])
-
-  // Independent life overview card timers
-  useEffect(() => {
-    const i0 = setInterval(() => setOvIdx(v => [v[0] + 1, v[1], v[2], v[3]]), 8000)
-    const i1 = setInterval(() => setOvIdx(v => [v[0], v[1] + 1, v[2], v[3]]), 13000)
-    const i2 = setInterval(() => setOvIdx(v => [v[0], v[1], v[2] + 1, v[3]]), 11000)
-    const i3 = setInterval(() => setOvIdx(v => [v[0], v[1], v[2], v[3] + 1]), 6000)
-    return () => { clearInterval(i0); clearInterval(i1); clearInterval(i2); clearInterval(i3) }
-  }, [])
-
   const stepsLeft = Math.max(0, 10000 - steps)
-  const stepPct = Math.min(100, (steps / 10000) * 100)
 
   const s: Record<string, React.CSSProperties> = {
     root: { background: '#0B1021', border: '1px solid rgba(255,255,255,.08)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 0 0 1px rgba(99,102,241,.15), 0 32px 80px rgba(0,0,0,.7)', fontSize: 10, lineHeight: '1.4', userSelect: 'none', position: 'relative' },
@@ -167,6 +230,9 @@ export default function AppMockup() {
     statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 5 },
     statCard: { background: '#131929', border: '1px solid rgba(255,255,255,.04)', borderRadius: 7, padding: '7px 6px' },
   }
+
+  const LIFE_NAV  = [['🏠','Home',true],['📅','Today',false],['💬','Chat',false,chatBadge],['🎯','Goals',false],['🔁','Cycle',false],['🔭','Vision',false],['📚','Learning',false]] as const
+  const WORK_NAV  = [['💼','Projects',true],['📊','Pipeline',false],['📬','Inbox',false,2],['🤝','Clients',false],['💰','Revenue',false],['📈','Analytics',false],['⚡','Actions',false]] as const
 
   return (
     <div style={s.root}>
@@ -210,26 +276,55 @@ export default function AppMockup() {
             <span style={{ fontSize: 9, fontWeight: 800, color: '#94A3B8' }}>Percentile.One</span>
           </div>
 
+          {/* Life / Work tabs */}
+          <div style={{ display: 'flex', background: 'rgba(255,255,255,.04)', borderRadius: 6, padding: 2, gap: 2, marginBottom: 4 }}>
+            {(['life','work'] as const).map(tab => (
+              <button key={tab} onClick={() => setLifeTab(tab)} style={{
+                flex: 1, fontSize: 8, fontWeight: 700, padding: '4px 0', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: lifeTab === tab ? '#6366F1' : 'transparent',
+                color: lifeTab === tab ? '#fff' : '#475569',
+                textTransform: 'capitalize', transition: 'background .2s, color .2s',
+              }}>
+                {tab === 'life' ? '🌿 Life' : '💼 Work'}
+              </button>
+            ))}
+          </div>
+
           <div style={s.navSection}>Navigation</div>
-          {[['🏠','Home',true],['📅','Today',false],['💬','Chat',false,chatBadge],['🎯','Goals',false],['🔁','Cycle',false],['🔭','Vision',false],['📚','Learning',false]].map(([icon,label,active,badge]) => (
+          {(lifeTab === 'life' ? LIFE_NAV : WORK_NAV).map(([icon, label, active, badge]) => (
             <div key={label as string} style={{ ...s.navItem, ...(active ? s.navItemActive : {}) }}>
               <span>{icon} {label}</span>
               {badge && <span style={{ background: 'rgba(99,102,241,.3)', color: '#A5B4FC', borderRadius: 100, padding: '1px 5px', fontSize: 8, fontWeight: 800 }}>{badge}</span>}
             </div>
           ))}
 
-          <div style={s.navSection}>Your Walls</div>
-          {[['Founders\' Wall',true],['AI Builders UK',false]].map(([name,on]) => (
-            <div key={name as string} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 6px', fontSize: 9, color: '#334155' }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: on ? '#10B981' : '#1E3050', flexShrink: 0, display: 'inline-block' }} />
-              {name}
-            </div>
-          ))}
+          {lifeTab === 'life' && <>
+            <div style={s.navSection}>Your Walls</div>
+            {[['Founders\' Wall',true],['AI Builders UK',false]].map(([name,on]) => (
+              <div key={name as string} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 6px', fontSize: 9, color: '#334155' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: on ? '#10B981' : '#1E3050', flexShrink: 0, display: 'inline-block' }} />
+                {name}
+              </div>
+            ))}
+            <div style={s.navSection}>Life Areas</div>
+            {['❤️ Health & Vitality','👥 Friends & Family','💰 Wealth','🎮 Fun & Relaxation','✨ Spirituality'].map(a => (
+              <div key={a} style={{ fontSize: 8, color: '#1E3050', padding: '3px 6px' }}>{a}</div>
+            ))}
+          </>}
 
-          <div style={s.navSection}>Life Areas</div>
-          {['❤️ Health & Vitality','👥 Friends & Family','💰 Wealth','🎮 Fun & Relaxation','✨ Spirituality'].map(a => (
-            <div key={a} style={{ fontSize: 8, color: '#1E3050', padding: '3px 6px' }}>{a}</div>
-          ))}
+          {lifeTab === 'work' && <>
+            <div style={s.navSection}>Workspaces</div>
+            {[['P1 Product',true],['TalkToLearn',false]].map(([name,on]) => (
+              <div key={name as string} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 6px', fontSize: 9, color: '#334155' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: on ? '#6366F1' : '#1E3050', flexShrink: 0, display: 'inline-block' }} />
+                {name}
+              </div>
+            ))}
+            <div style={s.navSection}>Work Areas</div>
+            {['🚀 Product','💡 Strategy','🤝 Partnerships','📣 Marketing'].map(a => (
+              <div key={a} style={{ fontSize: 8, color: '#1E3050', padding: '3px 6px' }}>{a}</div>
+            ))}
+          </>}
         </div>
 
         {/* Main */}
@@ -245,62 +340,19 @@ export default function AppMockup() {
             <div style={s.ovGrid}>
               <div style={s.ovCard}>
                 <div style={s.ovLabel}>TOP 3 TASKS</div>
-                <OverviewCard idx={ovIdx[0]} slides={TASK_SLIDES}>
-                  {(slide) => { const t = slide as typeof TASK_SLIDES[0]; return (
-                    <>
-                      <div style={{ fontSize: 14, marginBottom: 2 }}>{t.icon}</div>
-                      <div style={{ fontSize: 13, fontWeight: 900, color: '#E2E8F0', lineHeight: 1 }}>{t.big}</div>
-                      <div style={{ fontSize: 9, color: '#64748B', marginTop: 2 }}>{t.sub}</div>
-                      <div style={{ fontSize: 8, color: '#334155', marginTop: 3 }}>{t.detail}</div>
-                    </>
-                  )}}
-                </OverviewCard>
+                <TaskCard />
               </div>
               <div style={s.ovCard}>
                 <div style={s.ovLabel}>THIS WEEK</div>
-                <OverviewCard idx={ovIdx[1]} slides={WEEK_SLIDES}>
-                  {(slide) => { const w = slide as typeof WEEK_SLIDES[0]; return (
-                    <>
-                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 30, margin: '4px 0' }}>
-                        {w.bars.map((b, i) => (
-                          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flex: 1 }}>
-                            <div style={{ width: '100%', height: `${b.h}%`, borderRadius: 2, background: b.a ? '#6366F1' : b.d ? 'rgba(99,102,241,.15)' : 'rgba(99,102,241,.45)', minHeight: 3 }} />
-                            <div style={{ fontSize: 7, color: b.a ? '#6366F1' : '#334155', fontWeight: 600 }}>{['M','T','W','T','F','S','S'][i]}</div>
-                          </div>
-                        ))}
-                      </div>
-                      <div style={{ fontSize: 8, color: '#334155' }}>{w.label}</div>
-                    </>
-                  )}}
-                </OverviewCard>
+                <WeekCard />
               </div>
               <div style={s.ovCard}>
                 <div style={s.ovLabel}>MEAL PLAN</div>
-                <OverviewCard idx={ovIdx[2]} slides={MEAL_SLIDES}>
-                  {(slide) => { const m = slide as typeof MEAL_SLIDES[0]; return (
-                    <>
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: m.dot, marginBottom: 3 }} />
-                      <div style={{ fontSize: 7, fontWeight: 800, color: m.dot, letterSpacing: 1, marginBottom: 3 }}>{m.time}</div>
-                      <div style={{ fontSize: 9, fontWeight: 700, color: '#E2E8F0', lineHeight: 1.3 }}>{m.meal}</div>
-                      <div style={{ fontSize: 8, color: '#334155', marginTop: 3 }}>{m.meta}</div>
-                    </>
-                  )}}
-                </OverviewCard>
+                <MealCard />
               </div>
               <div style={s.ovCard}>
                 <div style={s.ovLabel}>EXERCISE</div>
-                <OverviewCard idx={ovIdx[3]} slides={EXERCISE_SLIDES}>
-                  {(slide) => { const e = slide as typeof EXERCISE_SLIDES[0]; return (
-                    <>
-                      <div style={{ fontSize: 13, fontWeight: 900, color: e.accent, lineHeight: 1 }}>{e.metric}</div>
-                      <div style={{ fontSize: 8, color: '#64748B', marginTop: 1 }}>{e.unit}</div>
-                      <div style={{ height: 3, background: 'rgba(255,255,255,.05)', borderRadius: 2, overflow: 'hidden', margin: '5px 0 3px' }}>
-                        <div style={{ height: '100%', width: `${e.bar}%`, background: `linear-gradient(90deg,${e.accent},${e.accent}99)`, borderRadius: 2 }} />
-                      </div>
-                      <div style={{ fontSize: 8, color: '#334155' }}>{e.note}</div>
-                    </>
-                  )}}
-                </OverviewCard>
+                <ExerciseCard />
               </div>
             </div>
           </div>
@@ -312,7 +364,9 @@ export default function AppMockup() {
               <span style={{ fontSize: 8, color: '#475569', textDecoration: 'underline' }}>Library</span>
             </div>
             <div style={s.wisdomGrid}>
-              {wIdx.map((qi, i) => <WisdomCard key={i} quoteIdx={qi} />)}
+              <WisdomCard startIdx={0} intervalMs={7000} />
+              <WisdomCard startIdx={3} intervalMs={11000} />
+              <WisdomCard startIdx={6} intervalMs={9000} />
             </div>
           </div>
 
@@ -321,14 +375,14 @@ export default function AppMockup() {
             <div style={s.sectionLabel}>P1 ACTIVITY — THIS WEEK</div>
             <div style={s.statsGrid}>
               {[
-                { v: '12',     vc: '#10B981', l: 'Tasks Done',       s: 'this week' },
-                { v: '9 days', vc: '#6366F1', l: 'Habit Streak',     s: 'current' },
-                { v: '6.5 h',  vc: '#F59E0B', l: 'Deep Work',        s: 'this week' },
-                { v: steps.toLocaleString(), vc: '#E2E8F0', l: 'Steps', s: 'today' },
-                { v: '1.2 L',  vc: '#38BDF8', l: 'Water Intake',     s: 'of 2.5 L' },
-                { v: '7.2 h',  vc: '#E2E8F0', l: 'Sleep Avg',        s: 'last 7 nights' },
-                { v: '5 / 8',  vc: '#6366F1', l: 'Goals Progressed', s: 'active goals' },
-                { v: '8',      vc: '#10B981', l: 'Health Metrics',   s: 'updated today' },
+                { v: '12',                      vc: '#10B981', l: 'Tasks Done',       s: 'this week' },
+                { v: '9 days',                  vc: '#6366F1', l: 'Habit Streak',     s: 'current' },
+                { v: '6.5 h',                   vc: '#F59E0B', l: 'Deep Work',        s: 'this week' },
+                { v: steps.toLocaleString(),    vc: '#E2E8F0', l: 'Steps',            s: 'today' },
+                { v: '1.2 L',                   vc: '#38BDF8', l: 'Water Intake',     s: 'of 2.5 L' },
+                { v: '7.2 h',                   vc: '#E2E8F0', l: 'Sleep Avg',        s: 'last 7 nights' },
+                { v: '5 / 8',                   vc: '#6366F1', l: 'Goals Progressed', s: 'active goals' },
+                { v: '8',                       vc: '#10B981', l: 'Health Metrics',   s: 'updated today' },
               ].map(({ v, vc, l, s: sub }) => (
                 <div key={l} style={s.statCard}>
                   <div style={{ fontSize: 12, fontWeight: 900, color: vc, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{v}</div>
@@ -345,7 +399,16 @@ export default function AppMockup() {
           {/* Profile */}
           <div style={{ background: '#0D1320', border: '1px solid rgba(255,255,255,.04)', borderRadius: 8, padding: 8 }}>
             <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start', marginBottom: 7 }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#6366F1,#818CF8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 900, color: '#fff', flexShrink: 0 }}>FC</div>
+              {/* Photo avatar — swap src for real photo URL when available */}
+              <div style={{ width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(99,102,241,.4)', position: 'relative' }}>
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#312E81,#4F46E5,#6366F1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {/* silhouette */}
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <circle cx="10" cy="7" r="4" fill="rgba(255,255,255,.6)" />
+                    <path d="M2 18c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="rgba(255,255,255,.6)" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+                  </svg>
+                </div>
+              </div>
               <div>
                 <div style={{ fontSize: 9, fontWeight: 800, color: '#CBD5E1', lineHeight: 1.2 }}>Francis Cobbinah</div>
                 <div style={{ fontSize: 8, color: '#6366F1', marginTop: 1 }}>Founder · Percentile.One</div>
