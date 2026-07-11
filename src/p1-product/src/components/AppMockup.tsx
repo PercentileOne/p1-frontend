@@ -207,7 +207,6 @@ export default function AppMockup() {
     return () => clearTimeout(t)
   }, [])
 
-  const stepsLeft = Math.max(0, 10000 - steps)
 
   const s: Record<string, React.CSSProperties> = {
     root: { background: '#0B1021', border: '1px solid rgba(255,255,255,.08)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 0 0 1px rgba(99,102,241,.15), 0 32px 80px rgba(0,0,0,.7)', fontSize: 10, lineHeight: '1.4', userSelect: 'none', position: 'relative' },
