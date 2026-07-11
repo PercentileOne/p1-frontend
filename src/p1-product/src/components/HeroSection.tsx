@@ -28,7 +28,7 @@ export default function HeroSection() {
         alignItems: 'center',
         position: 'relative', zIndex: 1,
         width: '100%', maxWidth: 1280, margin: '0 auto',
-        padding: isMobile ? '60px 20px 0' : '80px 24px 0',
+        padding: isMobile ? '40px 20px 0' : '40px 24px 0',
       }}>
 
         {/* Copy */}
