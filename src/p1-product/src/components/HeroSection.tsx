@@ -78,8 +78,9 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Feature chips — full-width row below the grid, on hero background */}
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 1280, margin: '0 auto', padding: isMobile ? '20px 20px 40px' : '20px 24px 48px' }}>
+      {/* Feature chips — same grid as above, chips sit under the dashboard column */}
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 1280, margin: '0 auto', padding: isMobile ? '16px 20px 40px' : '16px 24px 48px', display: isMobile ? 'block' : 'grid', gridTemplateColumns: '36% 64%', gap: 24 }}>
+        {!isMobile && <div />}
         <div style={{ display: 'flex', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: 8 }}>
           {CHIPS.map(f => (
             <div key={f.label} style={{
