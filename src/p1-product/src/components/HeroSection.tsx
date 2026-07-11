@@ -33,13 +33,14 @@ export default function HeroSection() {
 
         {/* Copy */}
         <div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(99,102,241,0.3)', padding: '6px 14px', borderRadius: 100, marginBottom: 28 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(99,102,241,0.3)', padding: '6px 14px', borderRadius: 100, marginBottom: 20 }}>
             <span style={{ width: 6, height: 6, background: '#10B981', borderRadius: '50%', display: 'inline-block', animation: 'pulse 2s infinite' }} />
             <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#A5B4FC' }}>Now in Beta</span>
           </div>
 
           <h1 style={{ fontSize: isMobile ? 'clamp(36px,10vw,52px)' : 'clamp(32px,4.5vw,58px)', fontWeight: 900, lineHeight: 1.05, letterSpacing: -2, color: '#F1F5F9', marginBottom: 20 }}>
             Your Life.<br />
+            Your Identity.<br />
             Your Success.<br />
             Organised.<br />
             Upgraded.<br />
