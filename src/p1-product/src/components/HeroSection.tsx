@@ -15,7 +15,7 @@ export default function HeroSection() {
       <div style={{
         display: 'grid',
         gridTemplateColumns: isMobile ? '1fr' : '36% 64%',
-        gap: isMobile ? 40 : 48,
+        gap: isMobile ? 40 : 24,
         alignItems: 'center',
         position: 'relative', zIndex: 1,
         width: '100%', maxWidth: 1280, margin: '0 auto',
