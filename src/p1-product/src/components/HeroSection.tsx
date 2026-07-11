@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import AppMockup from './AppMockup'
+import ContactModal from './ContactModal'
 
 export default function HeroSection() {
+  const [showContact, setShowContact] = useState(false)
   return (
     <section id="hero" style={{ background: 'var(--bg-dark)', minHeight: '100vh', display: 'flex', alignItems: 'center', paddingTop: 64, position: 'relative', overflow: 'hidden' }}>
       {/* Grid background */}
@@ -29,13 +32,14 @@ export default function HeroSection() {
           </p>
 
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-            <button style={{ background: 'var(--accent)', color: '#fff', padding: '13px 26px', borderRadius: 10, fontSize: 15, fontWeight: 700, border: 'none', boxShadow: '0 4px 24px rgba(99,102,241,.35)' }}>
+            <button onClick={() => setShowContact(true)} style={{ background: 'var(--accent)', color: '#fff', padding: '13px 26px', borderRadius: 10, fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 4px 24px rgba(99,102,241,.35)' }}>
               Start Your Journey
             </button>
-            <button style={{ background: 'transparent', color: '#94A3B8', padding: '13px 26px', borderRadius: 10, fontSize: 15, fontWeight: 600, border: '1px solid rgba(255,255,255,.12)' }}>
+            <button style={{ background: 'transparent', color: '#94A3B8', padding: '13px 26px', borderRadius: 10, fontSize: 15, fontWeight: 600, border: '1px solid rgba(255,255,255,.12)', cursor: 'pointer' }}>
               See How It Works
             </button>
           </div>
+          {showContact && <ContactModal onClose={() => setShowContact(false)} />}
         </div>
 
         {/* Live app mockup */}
