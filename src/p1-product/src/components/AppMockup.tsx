@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { quotes } from '../data/quotes'
+import type { Quote } from '../data/quotes'
+
+// Partition quotes into 3 non-overlapping sets so each WisdomCard cycles
+// through a completely different pool — they can never show the same quote.
+const WISDOM_SETS: [Quote[], Quote[], Quote[]] = [
+  quotes.filter((_, i) => i % 3 === 0),
+  quotes.filter((_, i) => i % 3 === 1),
+  quotes.filter((_, i) => i % 3 === 2),
+]
 
 const NAV_TABS = ['Jobs','Focus','Planning','Shop','Contacts','Messages','Feed','Walls','Stories','Awards','Profile','Interests','Me']
 
@@ -119,14 +128,14 @@ function ExerciseCard() {
 
 // WisdomCard: outer shell is STATIC (card stays in place, background transitions
 // smoothly). Only the inner content remounts via key={idx} and fades in.
-// This means the card never flashes — it stays visible while content changes.
-function WisdomCard({ startIdx, intervalMs }: { startIdx: number; intervalMs: number }) {
-  const [idx, setIdx] = useState(startIdx)
+// Each card receives its own isolated quoteList so they can never show the same quote.
+function WisdomCard({ quoteList, intervalMs }: { quoteList: Quote[]; intervalMs: number }) {
+  const [idx, setIdx] = useState(0)
   useEffect(() => {
-    const id = setInterval(() => setIdx(i => (i + 1) % quotes.length), intervalMs)
+    const id = setInterval(() => setIdx(i => (i + 1) % quoteList.length), intervalMs)
     return () => clearInterval(id)
-  }, [intervalMs])
-  const q = quotes[idx]
+  }, [intervalMs, quoteList.length])
+  const q = quoteList[idx]
   return (
     <div style={{
       borderRadius: 8, padding: 9, fontSize: 10,
@@ -143,10 +152,44 @@ function WisdomCard({ startIdx, intervalMs }: { startIdx: number; intervalMs: nu
 }
 
 const YT_VIDEOS = [
-  { tag: 'Leadership', title: 'How Great Leaders Inspire Action',            ch: 'Simon Sinek · TED', dur: '18 min', bg: 'linear-gradient(135deg,#1E3A5F,#0F2040)' },
-  { tag: 'Growth',     title: 'The Power of Vulnerability',                  ch: 'Brené Brown · TED', dur: '20 min', bg: 'linear-gradient(135deg,#1A3A2A,#0F2518)' },
-  { tag: 'Mindset',   title: 'Inside the Mind of a Master Procrastinator',  ch: 'Tim Urban · TED',   dur: '14 min', bg: 'linear-gradient(135deg,#2A1A3A,#1A0F28)' },
+  { tag: 'Leadership', title: 'How Great Leaders Inspire Action',           ch: 'Simon Sinek',  chSub: '63M views', dur: '18:04', accent: '#3B82F6', bg: 'linear-gradient(160deg,#1E3A5F 0%,#0F2040 60%,#162032 100%)' },
+  { tag: 'Growth',     title: 'The Power of Vulnerability',                 ch: 'Brené Brown',  chSub: '21M views', dur: '20:19', accent: '#10B981', bg: 'linear-gradient(160deg,#1A3A2A 0%,#0F2518 60%,#12201A 100%)' },
+  { tag: 'Mindset',   title: 'Inside the Mind of a Master Procrastinator', ch: 'Tim Urban',    chSub: '8.3M views', dur: '14:03', accent: '#8B5CF6', bg: 'linear-gradient(160deg,#2A1A3A 0%,#1A0F28 60%,#1E1230 100%)' },
 ]
+
+// SVG speaker-at-podium thumbnail graphic — drawn at 120×68 viewBox
+function ThumbnailSVG({ accent }: { accent: string }) {
+  return (
+    <svg viewBox="0 0 120 68" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+      {/* Stage floor line */}
+      <line x1="20" y1="54" x2="100" y2="54" stroke={`${accent}33`} strokeWidth="1" />
+      {/* Podium */}
+      <rect x="52" y="44" width="16" height="10" rx="1" fill={`${accent}22`} stroke={`${accent}44`} strokeWidth="0.8" />
+      {/* Speaker head */}
+      <circle cx="60" cy="32" r="6" fill={`${accent}55`} />
+      {/* Speaker body */}
+      <path d="M50 54 Q55 42 60 40 Q65 42 70 54" fill={`${accent}33`} />
+      {/* Arms */}
+      <path d="M54 46 L47 42" stroke={`${accent}44`} strokeWidth="1.2" strokeLinecap="round" />
+      <path d="M66 46 L73 42" stroke={`${accent}44`} strokeWidth="1.2" strokeLinecap="round" />
+      {/* Spotlight rays from top */}
+      <line x1="60" y1="2" x2="40" y2="40" stroke={`${accent}18`} strokeWidth="12" strokeLinecap="round" />
+      {/* Audience dots */}
+      {[14,22,30,38,46,54,62,70,78,86,94,102].map((x, i) => (
+        <circle key={i} cx={x} cy={63} r="2.2" fill={`${accent}${i % 3 === 1 ? '40' : '22'}`} />
+      ))}
+      {[18,26,34,42,50,58,66,74,82,90,98].map((x, i) => (
+        <circle key={i} cx={x} cy={67} r="2" fill={`${accent}18`} />
+      ))}
+      {/* TED-style text in top-left */}
+      <rect x="4" y="4" width="3" height="8" fill={`${accent}66`} rx="0.5" />
+      <rect x="8.5" y="4" width="5" height="1.5" fill={`${accent}66`} rx="0.5" />
+      <rect x="8.5" y="6.8" width="4" height="1.5" fill={`${accent}66`} rx="0.5" />
+      <rect x="8.5" y="9.5" width="5" height="1.5" fill={`${accent}66`} rx="0.5" />
+      <rect x="15" y="4" width="1.5" height="8" fill={`${accent}66`} rx="0.5" />
+    </svg>
+  )
+}
 
 export default function AppMockup() {
   const [steps, setSteps] = useState(7420)
@@ -367,9 +410,9 @@ export default function AppMockup() {
               <span style={{ fontSize: 8, color: '#475569', textDecoration: 'underline' }}>Library</span>
             </div>
             <div style={s.wisdomGrid}>
-              <WisdomCard startIdx={0} intervalMs={7000} />
-              <WisdomCard startIdx={3} intervalMs={11000} />
-              <WisdomCard startIdx={6} intervalMs={9000} />
+              <WisdomCard quoteList={WISDOM_SETS[0]} intervalMs={7000} />
+              <WisdomCard quoteList={WISDOM_SETS[1]} intervalMs={11000} />
+              <WisdomCard quoteList={WISDOM_SETS[2]} intervalMs={9000} />
             </div>
           </div>
 
@@ -434,17 +477,35 @@ export default function AppMockup() {
 
           {/* YouTube */}
           <div>
-            <div style={{ fontSize: 7, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#334155', marginBottom: 6 }}>YouTube For You</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 7 }}>
+              {/* YouTube wordmark */}
+              <svg width="28" height="10" viewBox="0 0 28 10" fill="none">
+                <rect width="12" height="10" rx="2" fill="#FF0000"/>
+                <polygon points="5,3 9,5 5,7" fill="white"/>
+                <text x="14" y="8" fontSize="7.5" fontWeight="700" fill="#CBD5E1" fontFamily="sans-serif">For You</text>
+              </svg>
+            </div>
             {YT_VIDEOS.map(v => (
-              <div key={v.title} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', marginBottom: 7 }}>
-                <div style={{ width: 46, height: 30, borderRadius: 5, flexShrink: 0, position: 'relative', background: v.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,.7)' }}>▶</span>
-                  <span style={{ position: 'absolute', top: 2, left: 2, fontSize: 6, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,.6)', padding: '1px 3px', borderRadius: 2 }}>{v.tag}</span>
-                  <span style={{ position: 'absolute', bottom: 2, right: 2, fontSize: 6, color: '#fff', background: 'rgba(0,0,0,.75)', padding: '1px 3px', borderRadius: 2 }}>{v.dur}</span>
+              <div key={v.title} style={{ marginBottom: 9 }}>
+                {/* Thumbnail — full width, 16:9 */}
+                <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: 6, overflow: 'hidden', background: v.bg, marginBottom: 5 }}>
+                  <ThumbnailSVG accent={v.accent} />
+                  {/* YouTube play button */}
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(255,0,0,.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 6px rgba(0,0,0,.5)' }}>
+                      <svg width="7" height="8" viewBox="0 0 7 8" fill="white"><polygon points="1,0 7,4 1,8"/></svg>
+                    </div>
+                  </div>
+                  {/* Duration badge */}
+                  <span style={{ position: 'absolute', bottom: 3, right: 3, fontSize: 6, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,.8)', padding: '1px 4px', borderRadius: 3 }}>{v.dur}</span>
+                  {/* Category tag */}
+                  <span style={{ position: 'absolute', top: 3, left: 3, fontSize: 6, fontWeight: 800, letterSpacing: '0.5px', color: '#fff', background: `${v.accent}cc`, padding: '1px 4px', borderRadius: 3 }}>{v.tag.toUpperCase()}</span>
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 8, color: '#64748B', lineHeight: 1.4, fontWeight: 600, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const }}>{v.title}</div>
-                  <div style={{ fontSize: 7, color: '#334155', marginTop: 2 }}>{v.ch}</div>
+                {/* Meta */}
+                <div style={{ fontSize: 8, color: '#CBD5E1', fontWeight: 600, lineHeight: 1.3, marginBottom: 2, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const }}>{v.title}</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 7, color: '#475569', fontWeight: 500 }}>{v.ch}</span>
+                  <span style={{ fontSize: 7, color: '#334155' }}>{v.chSub}</span>
                 </div>
               </div>
             ))}
