@@ -1,3 +1,7 @@
+import { useState } from 'react'
+import ContactModal from './ContactModal'
+import { useIsMobile } from '../hooks/useIsMobile'
+
 const plans = [
   {
     name: 'Free',
@@ -30,15 +34,18 @@ const plans = [
 ]
 
 export default function PricingSection() {
+  const [showContact, setShowContact] = useState(false)
+  const isMobile = useIsMobile()
+
   return (
-    <section id="pricing" style={{ background: 'var(--bg)', padding: '96px 0' }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px' }}>
+    <section id="pricing" style={{ background: 'var(--bg)', padding: isMobile ? '64px 0' : '96px 0' }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '0 20px' : '0 24px' }}>
         <div style={{ textAlign: 'center', marginBottom: 52 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)' }}>Pricing</div>
           <h2 style={{ fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, color: 'var(--text)', margin: '12px 0 14px' }}>Invest in your percentile.</h2>
           <p style={{ fontSize: 16, color: 'var(--text-3)', maxWidth: 500, margin: '0 auto', lineHeight: 1.65 }}>Start free. Upgrade when you're ready to go further. Cancel any time.</p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18, alignItems: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3,1fr)', gap: isMobile ? 20 : 18, alignItems: 'center' }}>
           {plans.map(p => (
             <div key={p.name} style={{
               background: p.featured ? 'var(--bg-dark)' : 'var(--bg-2)',
@@ -46,7 +53,7 @@ export default function PricingSection() {
               borderRadius: 'var(--radius-lg)',
               padding: p.featured ? '32px 26px' : '26px',
               position: 'relative',
-              transform: p.featured ? 'scale(1.04)' : 'none',
+              transform: (p.featured && !isMobile) ? 'scale(1.04)' : 'none',
             }}>
               {p.badge && (
                 <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: 'var(--accent)', color: '#fff', fontSize: 10, fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase', padding: '4px 14px', borderRadius: 100, whiteSpace: 'nowrap' }}>{p.badge}</div>
@@ -67,7 +74,7 @@ export default function PricingSection() {
                   </li>
                 ))}
               </ul>
-              <button style={{ width: '100%', padding: '12px 0', borderRadius: 10, fontWeight: 800, fontSize: 14, cursor: 'pointer', border: p.featured ? 'none' : '1px solid var(--border)', background: p.featured ? 'var(--accent)' : 'transparent', color: p.featured ? '#fff' : 'var(--text-2)', letterSpacing: .3 }}>
+              <button onClick={() => setShowContact(true)} style={{ width: '100%', padding: '12px 0', borderRadius: 10, fontWeight: 800, fontSize: 14, cursor: 'pointer', border: p.featured ? 'none' : '1px solid var(--border)', background: p.featured ? 'var(--accent)' : 'transparent', color: p.featured ? '#fff' : 'var(--text-2)', letterSpacing: .3 }}>
                 {p.cta}
               </button>
             </div>
@@ -75,6 +82,7 @@ export default function PricingSection() {
         </div>
         <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-3)', marginTop: 32 }}>All plans include a 14-day free trial. No credit card required to start.</p>
       </div>
+      {showContact && <ContactModal onClose={() => setShowContact(false)} />}
     </section>
   )
 }

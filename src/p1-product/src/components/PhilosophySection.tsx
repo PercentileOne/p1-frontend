@@ -1,3 +1,5 @@
+import { useIsMobile } from '../hooks/useIsMobile'
+
 const points = [
   { n: '01', t: "Know who you are and who you're becoming — identity drives every decision." },
   { n: '02', t: 'Set goals with clarity and deadlines. Vague ambition produces vague results.' },
@@ -7,10 +9,11 @@ const points = [
 ]
 
 export default function PhilosophySection() {
+  const isMobile = useIsMobile()
   return (
-    <section id="philosophy" style={{ background: 'var(--bg)', padding: '96px 0' }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
+    <section id="philosophy" style={{ background: 'var(--bg)', padding: isMobile ? '64px 0' : '96px 0' }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '0 20px' : '0 24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 40 : 80, alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>Our Philosophy</div>
             <h2 style={{ fontSize: 'clamp(26px,3.5vw,44px)', fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, color: 'var(--text)', marginBottom: 20 }}>

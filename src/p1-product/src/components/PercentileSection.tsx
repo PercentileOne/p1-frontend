@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 const metrics = [
   { name: 'Habit Consistency', score: 88, col: '#6366F1' },
@@ -11,17 +12,21 @@ const metrics = [
 export default function PercentileSection() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const barsRef = useRef<HTMLDivElement[]>([])
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')!
-    const cx = 170, cy = 170, r = 120
+    const size = isMobile ? 260 : 340
+    const cx = size / 2, cy = size / 2, r = size * 0.35
+    canvas.width = size
+    canvas.height = size
     const labels = ['Habits','Goals','Skills','Consistency','Growth','Achievement']
     const values = [.88,.74,.91,.82,.79,.85]
     const n = labels.length
 
-    ctx.clearRect(0,0,340,340)
+    ctx.clearRect(0, 0, size, size)
     for (let ring = 1; ring <= 5; ring++) {
       ctx.beginPath()
       for (let i = 0; i < n; i++) { const a=(Math.PI*2*i/n)-Math.PI/2,rr=r*ring/5; i===0?ctx.moveTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a)):ctx.lineTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a)) }
@@ -32,9 +37,9 @@ export default function PercentileSection() {
     for (let i = 0; i < n; i++) { const a=(Math.PI*2*i/n)-Math.PI/2,x=cx+r*values[i]*Math.cos(a),y=cy+r*values[i]*Math.sin(a); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y) }
     ctx.closePath(); ctx.fillStyle='rgba(99,102,241,.15)'; ctx.fill(); ctx.strokeStyle='#6366F1'; ctx.lineWidth=2; ctx.stroke()
     for (let i = 0; i < n; i++) { const a=(Math.PI*2*i/n)-Math.PI/2,x=cx+r*values[i]*Math.cos(a),y=cy+r*values[i]*Math.sin(a); ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fillStyle='#6366F1'; ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke() }
-    ctx.fillStyle='#94A3B8'; ctx.font='600 11px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'
-    for (let i = 0; i < n; i++) { const a=(Math.PI*2*i/n)-Math.PI/2; ctx.fillText(labels[i],cx+(r+22)*Math.cos(a),cy+(r+22)*Math.sin(a)) }
-  }, [])
+    ctx.fillStyle='#94A3B8'; ctx.font=`600 ${isMobile ? 9 : 11}px system-ui,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'
+    for (let i = 0; i < n; i++) { const a=(Math.PI*2*i/n)-Math.PI/2; ctx.fillText(labels[i],cx+(r+20)*Math.cos(a),cy+(r+20)*Math.sin(a)) }
+  }, [isMobile])
 
   useEffect(() => {
     const obs = new IntersectionObserver(entries => {
@@ -50,9 +55,9 @@ export default function PercentileSection() {
   }, [])
 
   return (
-    <section id="ranking" style={{ background: 'var(--bg)', padding: '96px 0' }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 72, alignItems: 'center' }}>
+    <section id="ranking" style={{ background: 'var(--bg)', padding: isMobile ? '64px 0' : '96px 0' }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '0 20px' : '0 24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 40 : 72, alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>Percentile Ranking System</div>
             <h2 style={{ fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, color: 'var(--text)', marginBottom: 20 }}>Your personal performance index.</h2>
@@ -73,7 +78,7 @@ export default function PercentileSection() {
             ))}
           </div>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <canvas ref={canvasRef} width={340} height={340} />
+            <canvas ref={canvasRef} width={isMobile ? 260 : 340} height={isMobile ? 260 : 340} />
           </div>
         </div>
       </div>

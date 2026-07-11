@@ -1,3 +1,5 @@
+import { useIsMobile } from '../hooks/useIsMobile'
+
 const options = [
   { icon: '🔒', title: 'Private',   desc: 'Your story stays with you. A personal journal only you can see.' },
   { icon: '👤', title: 'Anonymous', desc: 'Share your journey without your name. Inspire others, protect your privacy.' },
@@ -11,10 +13,11 @@ const testimonials = [
 ]
 
 export default function StorySection() {
+  const isMobile = useIsMobile()
   return (
-    <section id="story" style={{ background: 'var(--bg-dark)', padding: '96px 0' }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 72, alignItems: 'center' }}>
+    <section id="story" style={{ background: 'var(--bg-dark)', padding: isMobile ? '64px 0' : '96px 0' }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '0 20px' : '0 24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 40 : 72, alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>My Story</div>
             <h2 style={{ fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, color: '#F1F5F9', marginBottom: 20 }}>Your story.<br />Your terms.</h2>

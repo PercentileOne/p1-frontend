@@ -1,3 +1,5 @@
+import { useIsMobile } from '../hooks/useIsMobile'
+
 const cols = [
   { head: 'Product', links: ['Features','Cockpit','Percentile Ranking','My Story','Top Stories','Pricing'] },
   { head: 'Company', links: ['About','Blog','Careers','Press','Partners','Contact'] },
@@ -5,11 +7,12 @@ const cols = [
 ]
 
 export default function Footer() {
+  const isMobile = useIsMobile()
   return (
     <footer style={{ background: 'var(--bg-dark)', borderTop: '1px solid rgba(255,255,255,.06)', padding: '64px 0 32px' }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 48 }}>
-          <div>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '0 20px' : '0 24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '2fr 1fr 1fr 1fr', gap: isMobile ? 32 : 48, marginBottom: 48 }}>
+          <div style={{ gridColumn: isMobile ? '1 / -1' : 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <div style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: '#fff' }}>P</div>
               <span style={{ fontWeight: 900, fontSize: 16, color: '#F1F5F9', letterSpacing: -0.5 }}>Percentile.One</span>
@@ -30,7 +33,7 @@ export default function Footer() {
             </div>
           ))}
         </div>
-        <div style={{ borderTop: '1px solid rgba(255,255,255,.05)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,.05)', paddingTop: 24, display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 8 : 0 }}>
           <div style={{ fontSize: 12, color: '#334155' }}>© 2025 Percentile.One Ltd. All rights reserved.</div>
           <div style={{ fontSize: 12, color: '#334155' }}>Built by founders, for founders. 🇬🇧</div>
         </div>
