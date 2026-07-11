@@ -1,5 +1,6 @@
 import Nav from './components/Nav'
 import HeroSection from './components/HeroSection'
+import WhoIsItForSection from './components/WhoIsItForSection'
 import PhilosophySection from './components/PhilosophySection'
 import PillarsSection from './components/PillarsSection'
 import CockpitSection from './components/CockpitSection'
@@ -26,6 +27,7 @@ export default function App() {
       `}</style>
       <Nav />
       <HeroSection />
+      <WhoIsItForSection />
       <PhilosophySection />
       <PillarsSection />
       <CockpitSection />
