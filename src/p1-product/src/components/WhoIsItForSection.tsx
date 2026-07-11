@@ -13,7 +13,7 @@ export default function WhoIsItForSection() {
   const isMobile = useIsMobile()
 
   return (
-    <section style={{ background: 'var(--bg-dark)', padding: isMobile ? '80px 0' : '112px 0', borderTop: '1px solid rgba(255,255,255,.04)' }}>
+    <section style={{ background: 'var(--bg-dark)', padding: isMobile ? '60px 0' : '72px 0', borderTop: '1px solid rgba(255,255,255,.04)' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '0 20px' : '0 24px' }}>
 
         {/* Header */}
