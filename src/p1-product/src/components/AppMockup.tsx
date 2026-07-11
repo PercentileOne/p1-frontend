@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { quotes } from '../data/quotes'
 import type { Quote } from '../data/quotes'
+import francisPhoto from '../assets/francis.jpeg'
 
 // Partition quotes into 3 non-overlapping sets so each WisdomCard cycles
 // through a completely different pool — they can never show the same quote.
@@ -413,14 +414,8 @@ export default function AppMockup() {
           <div style={{ background: '#0D1320', border: '1px solid rgba(255,255,255,.04)', borderRadius: 8, padding: 8 }}>
             <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start', marginBottom: 7 }}>
               {/* Photo avatar — swap src for real photo URL when available */}
-              <div style={{ width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(99,102,241,.4)', position: 'relative' }}>
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#312E81,#4F46E5,#6366F1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {/* silhouette */}
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <circle cx="10" cy="7" r="4" fill="rgba(255,255,255,.6)" />
-                    <path d="M2 18c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="rgba(255,255,255,.6)" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-                  </svg>
-                </div>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(99,102,241,.4)' }}>
+                <img src={francisPhoto} alt="Francis Cobbinah" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
               </div>
               <div>
                 <div style={{ fontSize: 9, fontWeight: 800, color: '#CBD5E1', lineHeight: 1.2 }}>Francis Cobbinah</div>
