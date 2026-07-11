@@ -204,13 +204,13 @@ export default function AppMockup() {
     sidebar: { background: '#070E1C', borderRight: '1px solid rgba(255,255,255,.04)', padding: 10, display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', scrollbarWidth: 'none' as const },
     main: { background: '#0D1320', padding: '12px 14px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10, scrollbarWidth: 'none' as const },
     right: { background: '#070E1C', borderLeft: '1px solid rgba(255,255,255,.04)', padding: '10px 8px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, scrollbarWidth: 'none' as const },
-    navSection: { fontSize: 8, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: '#1E3050', padding: '6px 6px 3px', marginTop: 4 },
-    navItem: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '5px 6px', borderRadius: 6, fontSize: 9, color: '#475569', fontWeight: 500 },
-    navItemActive: { background: 'rgba(99,102,241,.12)', color: '#A5B4FC', fontWeight: 700 },
-    sectionLabel: { fontSize: 8, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: '#334155', marginBottom: 6 },
+    navSection: { fontSize: 7.5, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: '#475569', padding: '6px 6px 3px', marginTop: 4 },
+    navItem: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '5px 6px', borderRadius: 6, fontSize: 9, color: '#64748B', fontWeight: 500 },
+    navItemActive: { background: 'rgba(99,102,241,.15)', color: '#A5B4FC', fontWeight: 700 },
+    sectionLabel: { fontSize: 8, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: '#64748B', marginBottom: 6 },
     ovGrid: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 5 },
-    ovCard: { background: '#131929', border: '1px solid rgba(255,255,255,.04)', borderRadius: 8, padding: 8 },
-    ovLabel: { fontSize: 7, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase' as const, color: '#334155', marginBottom: 5 },
+    ovCard: { background: '#131929', border: '1px solid rgba(255,255,255,.06)', borderRadius: 8, padding: 8 },
+    ovLabel: { fontSize: 7, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase' as const, color: '#94A3B8', marginBottom: 5 },
     wisdomGrid: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6 },
     statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 5 },
     statCard: { background: '#131929', border: '1px solid rgba(255,255,255,.04)', borderRadius: 7, padding: '7px 6px' },
@@ -262,20 +262,6 @@ export default function AppMockup() {
             <span style={{ fontSize: 9, fontWeight: 800, color: '#94A3B8' }}>Percentile.One</span>
           </div>
 
-          {/* Life / Work tabs */}
-          <div style={{ display: 'flex', background: 'rgba(255,255,255,.04)', borderRadius: 6, padding: 2, gap: 2, marginBottom: 4 }}>
-            {(['life','work'] as const).map(tab => (
-              <button key={tab} onClick={() => setLifeTab(tab)} style={{
-                flex: 1, fontSize: 8, fontWeight: 700, padding: '4px 0', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: lifeTab === tab ? '#6366F1' : 'transparent',
-                color: lifeTab === tab ? '#fff' : '#475569',
-                textTransform: 'capitalize', transition: 'background .2s, color .2s',
-              }}>
-                {tab === 'life' ? '🌿 Life' : '💼 Work'}
-              </button>
-            ))}
-          </div>
-
           <div style={s.navSection}>Navigation</div>
           {(lifeTab === 'life' ? LIFE_NAV : WORK_NAV).map(([icon, label, active, badge]) => (
             <div key={label as string} style={{ ...s.navItem, ...(active ? s.navItemActive : {}) }}>
@@ -285,32 +271,63 @@ export default function AppMockup() {
           ))}
 
           {lifeTab === 'life' && <>
-            <div style={s.navSection}>Your Walls</div>
-            {[['Founders\' Wall',true],['AI Builders UK',false]].map(([name,on]) => (
-              <div key={name as string} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 6px', fontSize: 9, color: '#334155' }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: on ? '#10B981' : '#1E3050', flexShrink: 0, display: 'inline-block' }} />
-                {name}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', ...s.navSection }}>
+              <span>Your Walls</span>
+              <span style={{ color: '#6366F1', fontWeight: 700, letterSpacing: 0, textTransform: 'none', fontSize: 8 }}>Explore</span>
+            </div>
+            {[['🚀','Founders\' Wall','#10B981'],['🤖','AI Builders UK','#6366F1']].map(([icon,name,dot]) => (
+              <div key={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 6px', fontSize: 9, color: '#94A3B8' }}>
+                <span>{icon} {name}</span>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot, flexShrink: 0, display: 'inline-block' }} />
               </div>
-            ))}
-            <div style={s.navSection}>Life Areas</div>
-            {['❤️ Health & Vitality','👥 Friends & Family','💰 Wealth','🎮 Fun & Relaxation','✨ Spirituality'].map(a => (
-              <div key={a} style={{ fontSize: 8, color: '#1E3050', padding: '3px 6px' }}>{a}</div>
             ))}
           </>}
 
           {lifeTab === 'work' && <>
             <div style={s.navSection}>Workspaces</div>
-            {[['P1 Product',true],['TalkToLearn',false]].map(([name,on]) => (
-              <div key={name as string} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 6px', fontSize: 9, color: '#334155' }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: on ? '#6366F1' : '#1E3050', flexShrink: 0, display: 'inline-block' }} />
-                {name}
+            {[['🚀','P1 Product','#6366F1'],['🎙️','TalkToLearn','#334155']].map(([icon,name,dot]) => (
+              <div key={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 6px', fontSize: 9, color: '#94A3B8' }}>
+                <span>{icon} {name}</span>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot, flexShrink: 0, display: 'inline-block' }} />
               </div>
             ))}
-            <div style={s.navSection}>Work Areas</div>
-            {['🚀 Product','💡 Strategy','🤝 Partnerships','📣 Marketing'].map(a => (
-              <div key={a} style={{ fontSize: 8, color: '#1E3050', padding: '3px 6px' }}>{a}</div>
-            ))}
           </>}
+
+          {/* My Life / My Work tabs — matches cockpit position: after Walls, before Life Areas */}
+          <div style={{ display: 'flex', background: 'rgba(255,255,255,.05)', borderRadius: 20, padding: 2, gap: 2, margin: '6px 0' }}>
+            {(['life','work'] as const).map(tab => (
+              <button key={tab} onClick={() => setLifeTab(tab)} style={{
+                flex: 1, fontSize: 8, fontWeight: 700, padding: '5px 0', borderRadius: 18, border: 'none', cursor: 'pointer',
+                background: lifeTab === tab ? '#4F46E5' : 'transparent',
+                color: lifeTab === tab ? '#fff' : '#475569',
+                transition: 'background .2s, color .2s',
+              }}>
+                {tab === 'life' ? 'My Life' : 'My Work'}
+              </button>
+            ))}
+          </div>
+
+          <div style={s.navSection}>Life Areas</div>
+          {lifeTab === 'life'
+            ? [['❤️','Health & Vitality','#6366F1'],['👥','Friends & Family',null],['💰','Wealth','#F59E0B'],['😊','Fun & Relaxation',null],['✨','Spirituality & Meaning',null]].map(([icon,name,dot]) => (
+              <div key={name as string} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 6px', fontSize: 8.5, color: '#94A3B8', fontWeight: 500 }}>
+                <span>{icon} {name}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {dot && <span style={{ width: 5, height: 5, borderRadius: '50%', background: dot as string, display: 'inline-block' }} />}
+                  <span style={{ color: '#334155', fontSize: 8 }}>›</span>
+                </span>
+              </div>
+            ))
+            : [['🚀','Product','#6366F1'],['💡','Strategy',null],['🤝','Partnerships','#F59E0B'],['📣','Marketing',null]].map(([icon,name,dot]) => (
+              <div key={name as string} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 6px', fontSize: 8.5, color: '#94A3B8', fontWeight: 500 }}>
+                <span>{icon} {name}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {dot && <span style={{ width: 5, height: 5, borderRadius: '50%', background: dot as string, display: 'inline-block' }} />}
+                  <span style={{ color: '#334155', fontSize: 8 }}>›</span>
+                </span>
+              </div>
+            ))
+          }
         </div>
 
         {/* Main */}
