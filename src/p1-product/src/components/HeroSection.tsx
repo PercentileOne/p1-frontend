@@ -62,10 +62,8 @@ export default function HeroSection() {
           </div>
 
           {isMobile ? (
-            <div style={{ width: '100%', overflowX: 'hidden', marginBottom: -80 }}>
-              <div style={{ transform: 'scale(0.72)', transformOrigin: 'top left', width: '139%' }}>
-                <AppMockup />
-              </div>
+            <div style={{ zoom: 0.72, width: '100%', overflowX: 'hidden' }}>
+              <AppMockup />
             </div>
           ) : (
             <AppMockup />
