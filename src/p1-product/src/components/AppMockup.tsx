@@ -151,45 +151,12 @@ function WisdomCard({ quoteList, intervalMs }: { quoteList: Quote[]; intervalMs:
   )
 }
 
+// Real YouTube thumbnail URLs (public CDN — no auth required)
 const YT_VIDEOS = [
-  { tag: 'Leadership', title: 'How Great Leaders Inspire Action',           ch: 'Simon Sinek',  chSub: '63M views', dur: '18:04', accent: '#3B82F6', bg: 'linear-gradient(160deg,#1E3A5F 0%,#0F2040 60%,#162032 100%)' },
-  { tag: 'Growth',     title: 'The Power of Vulnerability',                 ch: 'Brené Brown',  chSub: '21M views', dur: '20:19', accent: '#10B981', bg: 'linear-gradient(160deg,#1A3A2A 0%,#0F2518 60%,#12201A 100%)' },
-  { tag: 'Mindset',   title: 'Inside the Mind of a Master Procrastinator', ch: 'Tim Urban',    chSub: '8.3M views', dur: '14:03', accent: '#8B5CF6', bg: 'linear-gradient(160deg,#2A1A3A 0%,#1A0F28 60%,#1E1230 100%)' },
+  { tag: 'Leadership', title: 'How Great Leaders Inspire Action',           ch: 'Simon Sinek · TED', chSub: '63M views', dur: '18:04', accent: '#3B82F6', thumb: 'https://i.ytimg.com/vi/qp0HIF3SfI4/mqdefault.jpg' },
+  { tag: 'Growth',     title: 'The Power of Vulnerability',                 ch: 'Brené Brown · TED', chSub: '21M views', dur: '20:19', accent: '#10B981', thumb: 'https://i.ytimg.com/vi/iCvmsMzlF7o/mqdefault.jpg' },
+  { tag: 'Mindset',   title: 'Inside the Mind of a Master Procrastinator', ch: 'Tim Urban · TED',   chSub: '8.3M views', dur: '14:03', accent: '#8B5CF6', thumb: 'https://i.ytimg.com/vi/arj7oStGLkU/mqdefault.jpg' },
 ]
-
-// SVG speaker-at-podium thumbnail graphic — drawn at 120×68 viewBox
-function ThumbnailSVG({ accent }: { accent: string }) {
-  return (
-    <svg viewBox="0 0 120 68" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-      {/* Stage floor line */}
-      <line x1="20" y1="54" x2="100" y2="54" stroke={`${accent}33`} strokeWidth="1" />
-      {/* Podium */}
-      <rect x="52" y="44" width="16" height="10" rx="1" fill={`${accent}22`} stroke={`${accent}44`} strokeWidth="0.8" />
-      {/* Speaker head */}
-      <circle cx="60" cy="32" r="6" fill={`${accent}55`} />
-      {/* Speaker body */}
-      <path d="M50 54 Q55 42 60 40 Q65 42 70 54" fill={`${accent}33`} />
-      {/* Arms */}
-      <path d="M54 46 L47 42" stroke={`${accent}44`} strokeWidth="1.2" strokeLinecap="round" />
-      <path d="M66 46 L73 42" stroke={`${accent}44`} strokeWidth="1.2" strokeLinecap="round" />
-      {/* Spotlight rays from top */}
-      <line x1="60" y1="2" x2="40" y2="40" stroke={`${accent}18`} strokeWidth="12" strokeLinecap="round" />
-      {/* Audience dots */}
-      {[14,22,30,38,46,54,62,70,78,86,94,102].map((x, i) => (
-        <circle key={i} cx={x} cy={63} r="2.2" fill={`${accent}${i % 3 === 1 ? '40' : '22'}`} />
-      ))}
-      {[18,26,34,42,50,58,66,74,82,90,98].map((x, i) => (
-        <circle key={i} cx={x} cy={67} r="2" fill={`${accent}18`} />
-      ))}
-      {/* TED-style text in top-left */}
-      <rect x="4" y="4" width="3" height="8" fill={`${accent}66`} rx="0.5" />
-      <rect x="8.5" y="4" width="5" height="1.5" fill={`${accent}66`} rx="0.5" />
-      <rect x="8.5" y="6.8" width="4" height="1.5" fill={`${accent}66`} rx="0.5" />
-      <rect x="8.5" y="9.5" width="5" height="1.5" fill={`${accent}66`} rx="0.5" />
-      <rect x="15" y="4" width="1.5" height="8" fill={`${accent}66`} rx="0.5" />
-    </svg>
-  )
-}
 
 export default function AppMockup() {
   const [steps, setSteps] = useState(7420)
@@ -488,8 +455,8 @@ export default function AppMockup() {
             {YT_VIDEOS.map(v => (
               <div key={v.title} style={{ marginBottom: 9 }}>
                 {/* Thumbnail — full width, 16:9 */}
-                <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: 6, overflow: 'hidden', background: v.bg, marginBottom: 5 }}>
-                  <ThumbnailSVG accent={v.accent} />
+                <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: 6, overflow: 'hidden', background: '#0F172A', marginBottom: 5 }}>
+                  <img src={v.thumb} alt={v.title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                   {/* YouTube play button */}
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(255,0,0,.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 6px rgba(0,0,0,.5)' }}>
