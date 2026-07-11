@@ -55,22 +55,22 @@ export default function PercentileSection() {
   }, [])
 
   return (
-    <section id="ranking" style={{ background: 'var(--bg)', padding: isMobile ? '64px 0' : '96px 0' }}>
+    <section id="ranking" style={{ background: 'var(--bg)', padding: isMobile ? '80px 0' : '112px 0' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '0 20px' : '0 24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 40 : 72, alignItems: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 48 : 80, alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>Percentile Ranking System</div>
-            <h2 style={{ fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, color: 'var(--text)', marginBottom: 20 }}>Your personal performance index.</h2>
-            <p style={{ fontSize: 16, color: 'var(--text-3)', lineHeight: 1.7, marginBottom: 28 }}>
-              Every habit completed, every goal reached, every skill levelled up — all feed into a single score that tells you exactly where you stand.
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 14 }}>Percentile Ranking System</div>
+            <h2 style={{ fontSize: 'clamp(28px,3.5vw,36px)', fontWeight: 900, letterSpacing: -1, lineHeight: 1.1, color: 'var(--text)', marginBottom: 20 }}>Your Personal Performance Index.</h2>
+            <p style={{ fontSize: 17, color: 'var(--text-3)', lineHeight: 1.7, marginBottom: 32 }}>
+              Your percentile score shows how aligned your habits, goals, and skills are with your identity — giving you a clear measure of your personal performance and growth trajectory.
             </p>
             {metrics.map((m, i) => (
-              <div key={m.name} style={{ marginBottom: 13 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+              <div key={m.name} style={{ marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-2)' }}>{m.name}</span>
                   <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--accent)' }}>{m.label ?? m.score}</span>
                 </div>
-                <div style={{ height: 5, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
                   <div ref={el => { if (el) barsRef.current[i] = el }} data-width={m.score}
                     style={{ height: '100%', width: 0, background: m.col, borderRadius: 3, transition: 'width 1.2s cubic-bezier(.16,1,.3,1)' }} />
                 </div>

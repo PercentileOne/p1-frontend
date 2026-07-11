@@ -28,16 +28,15 @@ export default function CockpitSection() {
   const cellColors = ['rgba(255,255,255,.04)','rgba(99,102,241,.25)','rgba(99,102,241,.5)','rgba(99,102,241,.75)','#6366F1']
 
   return (
-    <section id="cockpit" style={{ background: 'var(--bg-dark)', padding: isMobile ? '64px 0' : '96px 0' }}>
+    <section id="cockpit" style={{ background: 'var(--bg-dark)', padding: isMobile ? '80px 0' : '112px 0' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '0 20px' : '0 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 52 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)' }}>The Cockpit</div>
-          <h2 style={{ fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, color: '#F1F5F9', margin: '12px 0 14px' }}>Everything that matters. One place.</h2>
-          <p style={{ fontSize: 16, color: '#64748B', maxWidth: 540, margin: '0 auto', lineHeight: 1.65 }}>Your personal command centre — habits, goals, skills, rankings, and daily focus, all in a single premium dashboard.</p>
+        <div style={{ textAlign: 'center', marginBottom: 60 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 14 }}>The Cockpit</div>
+          <h2 style={{ fontSize: 'clamp(28px,3.5vw,36px)', fontWeight: 900, letterSpacing: -1, lineHeight: 1.1, color: '#F1F5F9', margin: '0 0 16px' }}>Your Life, Visualised.</h2>
+          <p style={{ fontSize: 17, color: '#64748B', maxWidth: 580, margin: '0 auto', lineHeight: 1.7 }}>The P1 Cockpit brings your goals, habits, skills, and identity together in one powerful dashboard — designed to help you stay focused, consistent, and in control.</p>
         </div>
 
         <div style={{ background: '#111827', border: '1px solid rgba(255,255,255,.07)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: '0 40px 100px rgba(0,0,0,.7)' }}>
-          {/* Bar */}
           <div style={{ background: '#0D1320', padding: '13px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,.05)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ display: 'flex', gap: 5 }}>
@@ -51,9 +50,7 @@ export default function CockpitSection() {
             </div>
           </div>
 
-          {/* Layout */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '200px 1fr 200px', minHeight: isMobile ? 'auto' : 360 }}>
-            {/* Left sidebar — desktop only */}
             {!isMobile && (
               <div style={{ background: '#0D1320', borderRight: '1px solid rgba(255,255,255,.05)', padding: 14, display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {[['⊞','Dashboard',true],['🪞','Identity'],['🎯','Goals'],['🔁','Habits'],['⚡','Skills']].map(([icon,label,active]) => (
@@ -68,7 +65,6 @@ export default function CockpitSection() {
               </div>
             )}
 
-            {/* Main */}
             <div style={{ padding: isMobile ? 16 : 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={{ fontSize: isMobile ? 14 : 15, fontWeight: 800, color: '#E2E8F0' }}>
                 Good afternoon, <span style={{ color: 'var(--accent)' }}>Francis</span> — 4 habits completed today.
@@ -109,7 +105,6 @@ export default function CockpitSection() {
               </div>
             </div>
 
-            {/* Right panel — desktop only */}
             {!isMobile && (
               <div style={{ background: '#0D1320', borderLeft: '1px solid rgba(255,255,255,.05)', padding: 14, display: 'flex', flexDirection: 'column', gap: 7 }}>
                 <div style={{ fontSize: 8, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#334155', marginBottom: 2 }}>Today's Focus</div>

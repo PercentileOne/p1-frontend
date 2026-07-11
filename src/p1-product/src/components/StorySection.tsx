@@ -15,33 +15,33 @@ const testimonials = [
 export default function StorySection() {
   const isMobile = useIsMobile()
   return (
-    <section id="story" style={{ background: 'var(--bg-dark)', padding: isMobile ? '64px 0' : '96px 0' }}>
+    <section id="story" style={{ background: 'var(--bg-dark)', padding: isMobile ? '80px 0' : '112px 0' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '0 20px' : '0 24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 40 : 72, alignItems: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 48 : 80, alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>My Story</div>
-            <h2 style={{ fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, color: '#F1F5F9', marginBottom: 20 }}>Your story.<br />Your terms.</h2>
-            <p style={{ fontSize: 16, color: '#64748B', lineHeight: 1.7, marginBottom: 24 }}>
-              Behind every percentile rank is a human story. Where you came from, what you overcame, why you keep going. Percentile.One gives you a private space to write that story — and the choice to share it if you want to.
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 14 }}>My Story</div>
+            <h2 style={{ fontSize: 'clamp(28px,3.5vw,36px)', fontWeight: 900, letterSpacing: -1, lineHeight: 1.1, color: '#F1F5F9', marginBottom: 20 }}>Your Story Matters.</h2>
+            <p style={{ fontSize: 17, color: '#64748B', lineHeight: 1.7, marginBottom: 28 }}>
+              Your story is yours.<br />Share it privately, anonymously, or publicly — and watch how your journey inspires others.
             </p>
             {options.map(o => (
-              <div key={o.title} style={{ display: 'flex', gap: 13, alignItems: 'center', background: 'var(--bg-mid)', border: '1px solid var(--border-dark)', borderRadius: 'var(--radius)', padding: '14px 18px', marginBottom: 10 }}>
-                <span style={{ fontSize: 18 }}>{o.icon}</span>
+              <div key={o.title} style={{ display: 'flex', gap: 14, alignItems: 'center', background: 'var(--bg-mid)', border: '1px solid var(--border-dark)', borderRadius: 12, padding: '16px 20px', marginBottom: 12 }}>
+                <span style={{ fontSize: 20 }}>{o.icon}</span>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#E2E8F0' }}>{o.title}</div>
-                  <div style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>{o.desc}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#E2E8F0' }}>{o.title}</div>
+                  <div style={{ fontSize: 12, color: '#475569', marginTop: 3 }}>{o.desc}</div>
                 </div>
               </div>
             ))}
           </div>
           <div>
             {testimonials.map(t => (
-              <div key={t.name} style={{ background: 'var(--bg-mid)', border: '1px solid var(--border-dark)', borderRadius: 'var(--radius)', padding: 18, display: 'flex', gap: 13, alignItems: 'flex-start', marginBottom: 12 }}>
-                <div style={{ width: 38, height: 38, borderRadius: '50%', background: t.col, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: '#fff', flexShrink: 0 }}>{t.init}</div>
+              <div key={t.name} style={{ background: 'var(--bg-mid)', border: '1px solid var(--border-dark)', borderRadius: 14, padding: 20, display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 14 }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', background: t.col, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 900, color: '#fff', flexShrink: 0 }}>{t.init}</div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#E2E8F0', marginBottom: 4 }}>{t.name}</div>
-                  <div style={{ fontSize: 12, color: '#64748B', lineHeight: 1.55 }}>{t.quote}</div>
-                  <span style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 100, marginTop: 7, background: t.rankBg, color: t.rankCol }}>{t.rank}</span>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#E2E8F0', marginBottom: 5 }}>{t.name}</div>
+                  <div style={{ fontSize: 13, color: '#64748B', lineHeight: 1.6 }}>{t.quote}</div>
+                  <span style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 100, marginTop: 8, background: t.rankBg, color: t.rankCol }}>{t.rank}</span>
                 </div>
               </div>
             ))}
