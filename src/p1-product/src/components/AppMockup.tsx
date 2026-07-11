@@ -117,7 +117,9 @@ function ExerciseCard() {
   )
 }
 
-// WisdomCard: same key-based approach — no opacity state, no blink
+// WisdomCard: outer shell is STATIC (card stays in place, background transitions
+// smoothly). Only the inner content remounts via key={idx} and fades in.
+// This means the card never flashes — it stays visible while content changes.
 function WisdomCard({ startIdx, intervalMs }: { startIdx: number; intervalMs: number }) {
   const [idx, setIdx] = useState(startIdx)
   useEffect(() => {
@@ -126,13 +128,16 @@ function WisdomCard({ startIdx, intervalMs }: { startIdx: number; intervalMs: nu
   }, [intervalMs])
   const q = quotes[idx]
   return (
-    <div key={idx} style={{
-      borderRadius: 8, padding: 9, border: `1px solid ${q.col}22`,
-      background: q.bg, animation: 'p1FadeIn .6s ease both', fontSize: 10,
+    <div style={{
+      borderRadius: 8, padding: 9, fontSize: 10,
+      border: `1px solid ${q.col}22`, background: q.bg,
+      transition: 'background .6s, border-color .6s',
     }}>
-      <div style={{ fontSize: 7, fontWeight: 800, letterSpacing: '1.5px', textTransform: 'uppercase', color: q.col, marginBottom: 5 }}>{q.cat}</div>
-      <div style={{ fontSize: 9, color: '#94A3B8', lineHeight: 1.5, marginBottom: 4 }}>"{q.text}"</div>
-      <div style={{ fontSize: 8, color: '#475569' }}>— {q.author}</div>
+      <div key={idx} style={{ animation: 'p1FadeIn .6s ease both' }}>
+        <div style={{ fontSize: 7, fontWeight: 800, letterSpacing: '1.5px', textTransform: 'uppercase', color: q.col, marginBottom: 5 }}>{q.cat}</div>
+        <div style={{ fontSize: 9, color: '#94A3B8', lineHeight: 1.5, marginBottom: 4 }}>"{q.text}"</div>
+        <div style={{ fontSize: 8, color: '#475569' }}>— {q.author}</div>
+      </div>
     </div>
   )
 }
