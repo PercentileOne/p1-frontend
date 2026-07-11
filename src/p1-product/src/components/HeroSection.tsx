@@ -29,14 +29,16 @@ export default function HeroSection() {
             <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#A5B4FC' }}>Now in Beta</span>
           </div>
 
-          <h1 style={{ fontSize: isMobile ? 'clamp(36px,10vw,48px)' : 'clamp(32px,4.5vw,48px)', fontWeight: 900, lineHeight: 1.08, letterSpacing: -1.5, color: '#F1F5F9', marginBottom: 20 }}>
-            Become the Person<br />
-            You Were Meant<br />
-            <em style={{ fontStyle: 'normal', color: 'var(--accent)' }}>to Be.</em>
+          <h1 style={{ fontSize: isMobile ? 'clamp(36px,10vw,52px)' : 'clamp(32px,4.5vw,58px)', fontWeight: 900, lineHeight: 1.05, letterSpacing: -2, color: '#F1F5F9', marginBottom: 20 }}>
+            Your Life.<br />
+            Your Success.<br />
+            Organised.<br />
+            Upgraded.<br />
+            <em style={{ fontStyle: 'normal', color: 'var(--accent)' }}>Optimised.</em>
           </h1>
 
           <p style={{ fontSize: isMobile ? 15 : 17, color: '#94A3B8', lineHeight: 1.65, maxWidth: 420, marginBottom: 36 }}>
-            Percentile.One is your personal operating system — built to help you grow, achieve, and transform your life.
+            Percentile.One is your personal operating system — built to help you achieve more, grow faster, and become the person you were meant to be.
           </p>
 
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
