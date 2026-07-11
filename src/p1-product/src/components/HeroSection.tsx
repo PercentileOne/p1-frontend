@@ -53,7 +53,7 @@ export default function HeroSection() {
         </div>
 
         {/* App mockup — scaled down on mobile */}
-        <div style={isMobile ? { width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any } : {}}>
+        <div style={{ width: '100%', overflow: 'hidden' }}>
 
           {/* Live preview label */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
@@ -62,15 +62,17 @@ export default function HeroSection() {
           </div>
 
           {isMobile ? (
-            <div style={{ transform: 'scale(0.72)', transformOrigin: 'top left', width: '139%' }}>
-              <AppMockup />
+            <div style={{ width: '100%', overflowX: 'hidden' }}>
+              <div style={{ transform: 'scale(0.72)', transformOrigin: 'top left', width: '139%' }}>
+                <AppMockup />
+              </div>
             </div>
           ) : (
             <AppMockup />
           )}
 
           {/* Feature chips */}
-          <div style={{ display: 'flex', flexWrap: 'nowrap', gap: 7, marginTop: 16, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: 7, marginTop: 16 }}>
             {[
               { icon: '⚖️', label: 'Work / Life' },
               { icon: '🎯', label: 'Goals' },
