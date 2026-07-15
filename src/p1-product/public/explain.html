@@ -1,0 +1,1034 @@
+<title>Explain.app — Product Vision Brief</title>
+<style>
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+  body { background: #080E1C !important; }
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #080E1C;
+  --surface: rgba(255,255,255,0.04);
+  --border: rgba(255,255,255,0.08);
+  --blue: #1E4DD8;
+  --blue-light: #4F8EF7;
+  --blue-glow: rgba(30,77,216,0.12);
+  --green: #2D9E6A;
+  --purple: #7C3AED;
+  --amber: #D97706;
+  --text: #FFFFFF;
+  --text-2: rgba(255,255,255,0.60);
+  --text-3: rgba(255,255,255,0.32);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+}
+
+.doc {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 60px 40px 100px;
+}
+
+/* ── Hero ── */
+.hero {
+  text-align: center;
+  padding: 80px 0 72px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 64px;
+}
+
+.hero-eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--blue-light);
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+
+.hero-name {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 108px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -5px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.hero-tld { color: var(--blue-light); }
+
+.hero-tagline {
+  font-family: Georgia, serif;
+  font-size: 22px;
+  color: rgba(255,255,255,0.55);
+  font-style: italic;
+  margin: 20px auto 36px;
+  max-width: 560px;
+  line-height: 1.5;
+}
+
+.hero-pill {
+  display: inline-block;
+  background: var(--blue-glow);
+  border: 1px solid rgba(30,77,216,0.40);
+  border-radius: 100px;
+  padding: 10px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue-light);
+  letter-spacing: 0.2px;
+}
+
+/* ── Status bar ── */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 18px 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 72px;
+  flex-wrap: wrap;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.dot {
+  width: 7px; height: 7px;
+  border-radius: 50%; flex-shrink: 0;
+}
+.dot-green { background: #2D9E6A; box-shadow: 0 0 8px #2D9E6A88; }
+.dot-amber { background: #D97706; box-shadow: 0 0 8px #D9770688; }
+.dot-blue  { background: #4F8EF7; box-shadow: 0 0 8px #4F8EF788; }
+
+/* ── Sections ── */
+.section { margin-bottom: 72px; }
+
+.section-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 3.5px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.section-title {
+  font-family: Georgia, serif;
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+  text-wrap: balance;
+}
+
+.section-body {
+  font-size: 16px;
+  color: var(--text-2);
+  line-height: 1.8;
+  max-width: 700px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 72px 0;
+}
+
+/* ── Product Layers ── */
+.layers { display: flex; flex-direction: column; gap: 14px; }
+
+.layer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 28px 32px;
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 20px;
+}
+
+.layer-num {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--text-3);
+  padding-top: 3px;
+}
+
+.layer-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 4px;
+  letter-spacing: -0.2px;
+}
+
+.layer-hook {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue-light);
+  margin-bottom: 10px;
+}
+
+.layer-desc {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+
+.bullets {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bullets li {
+  font-size: 13px;
+  color: var(--text-2);
+  padding-left: 18px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.bullets li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--blue-light);
+  font-size: 11px;
+  top: 2px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-top: 14px;
+}
+
+.tag-b2c { background: rgba(30,77,216,0.14); color: #60A5FA; border: 1px solid rgba(30,77,216,0.30); }
+.tag-b2b { background: rgba(45,158,106,0.14); color: #34D399; border: 1px solid rgba(45,158,106,0.30); }
+.tag-new { background: rgba(124,58,237,0.14); color: #A78BFA; border: 1px solid rgba(124,58,237,0.30); }
+
+/* ── Killer Feature ── */
+.killer {
+  background: linear-gradient(135deg, rgba(124,58,237,0.10) 0%, rgba(30,77,216,0.06) 100%);
+  border: 1px solid rgba(124,58,237,0.28);
+  border-radius: 22px;
+  padding: 36px;
+  margin-bottom: 72px;
+}
+
+.killer-header {
+  display: flex; align-items: flex-start; gap: 16px; margin-bottom: 14px;
+}
+
+.killer-emoji { font-size: 32px; line-height: 1; padding-top: 2px; }
+
+.killer-titles {}
+.killer-eyebrow {
+  font-size: 10px; font-weight: 800; letter-spacing: 3px;
+  color: #A78BFA; text-transform: uppercase; margin-bottom: 4px;
+}
+.killer-title {
+  font-size: 22px; font-weight: 800; color: var(--text); letter-spacing: -0.3px;
+}
+
+.killer-desc {
+  font-size: 15px;
+  color: rgba(255,255,255,0.60);
+  line-height: 1.75;
+  margin-bottom: 28px;
+  max-width: 680px;
+}
+
+.filler-demo {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.filler-demo-label {
+  font-size: 10px; font-weight: 800; letter-spacing: 3px;
+  color: var(--text-3); text-transform: uppercase; margin-bottom: 16px;
+}
+
+.filler-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.filler-card {
+  text-align: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 16px 12px;
+}
+
+.filler-val {
+  font-size: 30px; font-weight: 900; color: #A78BFA;
+  letter-spacing: -1.5px; line-height: 1; margin-bottom: 4px;
+}
+
+.filler-word {
+  font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.50);
+  margin-bottom: 6px;
+}
+
+.filler-trend {
+  font-size: 10px; font-weight: 800; color: #34D399;
+}
+
+.filler-trend.bad { color: #F87171; }
+
+.lifetime-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+
+.lifetime-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.lifetime-val {
+  font-size: 24px; font-weight: 900; color: var(--text);
+  letter-spacing: -1px; line-height: 1; margin-bottom: 4px;
+}
+
+.lifetime-label {
+  font-size: 11px; color: var(--text-3); font-weight: 600;
+}
+
+/* ── B2B ── */
+.b2b {
+  background: rgba(45,158,106,0.07);
+  border: 1px solid rgba(45,158,106,0.22);
+  border-radius: 22px;
+  padding: 36px;
+}
+
+.b2b-eyebrow {
+  font-size: 10px; font-weight: 800; letter-spacing: 3px;
+  color: #34D399; text-transform: uppercase; margin-bottom: 12px;
+}
+
+.b2b-title {
+  font-family: Georgia, serif;
+  font-size: 26px; font-weight: 700; color: var(--text);
+  letter-spacing: -0.4px; margin-bottom: 14px; line-height: 1.3;
+}
+
+.b2b-desc {
+  font-size: 15px; color: rgba(255,255,255,0.60);
+  line-height: 1.75; margin-bottom: 28px; max-width: 680px;
+}
+
+.b2b-flow {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
+}
+
+.b2b-step {
+  background: rgba(45,158,106,0.14);
+  border: 1px solid rgba(45,158,106,0.28);
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 13px; font-weight: 700; color: #34D399;
+}
+
+.b2b-arrow { color: rgba(255,255,255,0.20); font-size: 14px; }
+
+.b2b-revenue {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+
+.rev-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.rev-val {
+  font-size: 26px; font-weight: 900; color: #34D399;
+  letter-spacing: -1px; line-height: 1; margin-bottom: 4px;
+}
+
+.rev-label { font-size: 11px; color: var(--text-3); font-weight: 600; line-height: 1.4; }
+
+/* ── Pricing ── */
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+}
+
+.price-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 24px;
+}
+
+.price-card.featured {
+  background: rgba(30,77,216,0.10);
+  border-color: rgba(30,77,216,0.40);
+}
+
+.price-card.enterprise {
+  background: rgba(45,158,106,0.08);
+  border-color: rgba(45,158,106,0.30);
+}
+
+.price-tier {
+  font-size: 10px; font-weight: 800; letter-spacing: 2.5px;
+  color: var(--text-3); text-transform: uppercase; margin-bottom: 14px;
+}
+
+.price-card.featured .price-tier { color: var(--blue-light); }
+.price-card.enterprise .price-tier { color: #34D399; }
+
+.price-amount {
+  font-size: 40px; font-weight: 900; color: var(--text);
+  letter-spacing: -2px; line-height: 1; margin-bottom: 3px;
+}
+
+.price-period {
+  font-size: 12px; color: var(--text-3); margin-bottom: 20px; font-weight: 500;
+}
+
+.price-features {
+  list-style: none; display: flex; flex-direction: column; gap: 9px;
+}
+
+.price-features li {
+  font-size: 13px; color: var(--text-2);
+  padding-left: 18px; position: relative; line-height: 1.4;
+}
+
+.price-features li::before {
+  content: '✓'; position: absolute; left: 0;
+  color: var(--green); font-weight: 800; font-size: 12px;
+}
+
+/* ── Vision ── */
+.vision {
+  text-align: center;
+  padding-top: 72px;
+  border-top: 1px solid var(--border);
+}
+
+.vision-quote {
+  font-family: Georgia, serif;
+  font-size: 28px;
+  font-style: italic;
+  color: rgba(255,255,255,0.80);
+  line-height: 1.55;
+  max-width: 660px;
+  margin: 0 auto 28px;
+  letter-spacing: -0.3px;
+  text-wrap: balance;
+}
+
+.vision-sub {
+  font-size: 15px; color: var(--text-3);
+  max-width: 480px; margin: 0 auto 36px; line-height: 1.6;
+}
+
+.vision-meta {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px;
+}
+
+.vision-name {
+  font-size: 13px; font-weight: 800; color: var(--text-2);
+}
+
+.vision-sep { color: var(--text-3); }
+
+.vision-date {
+  font-size: 13px; color: var(--text-3);
+}
+
+/* ── Problem ── */
+.problem-cards {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+}
+
+.problem-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 22px;
+}
+
+.problem-icon { font-size: 24px; margin-bottom: 10px; }
+.problem-title { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.problem-desc { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+
+/* ── Feynman callout ── */
+.feynman {
+  background: rgba(30,77,216,0.08);
+  border: 1px solid rgba(30,77,216,0.22);
+  border-left: 3px solid var(--blue);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin: 28px 0 0;
+}
+
+.feynman-quote {
+  font-family: Georgia, serif;
+  font-size: 17px;
+  font-style: italic;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.6;
+  margin-bottom: 6px;
+}
+
+.feynman-attr {
+  font-size: 11px; font-weight: 700;
+  color: var(--blue-light); letter-spacing: 0.5px;
+}
+</style>
+
+<div class="doc">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-eyebrow">Product Vision Brief · Confidential · July 2026</div>
+    <div class="hero-name">Explain<span class="hero-tld">.app</span></div>
+    <div class="hero-tagline">You only truly understand something<br>when you can explain it out loud.</div>
+    <div class="hero-pill">The Feynman Technique — turned into a product.</div>
+  </div>
+
+  <!-- ── STATUS ── -->
+  <div class="status-bar">
+    <div class="status-item"><div class="dot dot-green"></div> Mobile App Built (React Native)</div>
+    <div class="status-item"><div class="dot dot-green"></div> AI Scoring Live</div>
+    <div class="status-item"><div class="dot dot-green"></div> Backend on Azure</div>
+    <div class="status-item"><div class="dot dot-amber"></div> Domain Offer Pending</div>
+    <div class="status-item"><div class="dot dot-blue"></div> B2B Portal — In Design</div>
+  </div>
+
+  <!-- ── THE PROBLEM ── -->
+  <div class="section">
+    <div class="section-label">The Problem</div>
+    <div class="section-title">Interview prep is broken.<br>And nobody's fixed the real thing.</div>
+    <div class="section-body">Every candidate reads articles, watches YouTube, memorises bullet points. Then they sit in the interview — and freeze. Because reading about something and being able to explain it under pressure are completely different skills. Nobody is training the skill that actually matters.</div>
+
+    <div class="feynman">
+      <div class="feynman-quote">"If you can't explain it simply, you don't understand it well enough."</div>
+      <div class="feynman-attr">— Richard Feynman, Nobel Laureate in Physics</div>
+    </div>
+
+    <div style="margin-top: 28px;">
+      <div class="problem-cards">
+        <div class="problem-card">
+          <div class="problem-icon">📚</div>
+          <div class="problem-title">Passive learning doesn't work</div>
+          <div class="problem-desc">Flashcards, videos, and notes create the illusion of understanding. The interview exposes the truth — immediately.</div>
+        </div>
+        <div class="problem-card">
+          <div class="problem-icon">🎭</div>
+          <div class="problem-title">Filler words destroy credibility</div>
+          <div class="problem-desc">"Um", "basically", "sort of thing" — interviewers count these. Candidates don't even know they're doing it.</div>
+        </div>
+        <div class="problem-card">
+          <div class="problem-icon">🎯</div>
+          <div class="problem-title">Generic prep misses the brief</div>
+          <div class="problem-desc">A .NET/Angular/Azure SQL role needs completely different preparation to a .NET/React/Python role. Generic prep fails both.</div>
+        </div>
+        <div class="problem-card">
+          <div class="problem-icon">📊</div>
+          <div class="problem-title">No measurable progress</div>
+          <div class="problem-desc">Candidates have no idea if they're improving. There's no score, no feedback, no data — just hope.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── THE PRODUCT ── -->
+  <div class="section">
+    <div class="section-label">The Product</div>
+    <div class="section-title">Three layers. One complete system.</div>
+    <div class="section-body" style="margin-bottom: 32px;">Explain is built in three layers that work independently and compound together. Each layer adds value on its own. Together they create something nobody else has.</div>
+
+    <div class="layers">
+
+      <div class="layer">
+        <div class="layer-num">01</div>
+        <div>
+          <div class="layer-title">The Candidate App</div>
+          <div class="layer-hook">Speak. Get scored. Get better. Repeat.</div>
+          <div class="layer-desc">A candidate picks a subject — "Tell me about microservices" or "Explain your biggest career mistake" — and speaks for 60–120 seconds. AI scores their explanation across five dimensions in real time. Their history tracks improvement across every session.</div>
+          <ul class="bullets">
+            <li>AI-generated lesson on any subject — understand before you explain</li>
+            <li>Timed talk session with transcription</li>
+            <li>Scored on Clarity, Confidence, Depth, Accuracy, Structure (0–100)</li>
+            <li>Full AI coaching feedback after every session</li>
+            <li>Session history with improvement trends over time</li>
+          </ul>
+          <span class="tag tag-b2c">B2C · Consumer App</span>
+        </div>
+      </div>
+
+      <div class="layer">
+        <div class="layer-num">02</div>
+        <div>
+          <div class="layer-title">Job Spec Upload</div>
+          <div class="layer-hook">Upload the actual job description. Get prep built for that exact role.</div>
+          <div class="layer-desc">The candidate or recruiter uploads the real job specification. AI reads the requirements — tech stack, seniority, domain — and generates targeted interview questions and subject material specific to that role. A £600k quant-developer role in New York gets completely different prep to a £80k React developer role in Manchester.</div>
+          <ul class="bullets">
+            <li>Upload PDF or paste job description</li>
+            <li>AI extracts role requirements, seniority, domain, tech stack</li>
+            <li>Generates 10–20 targeted practice questions</li>
+            <li>Creates subject lessons for each key area</li>
+            <li>Works across every industry and seniority level</li>
+          </ul>
+          <span class="tag tag-new">New · Unique Feature</span>
+        </div>
+      </div>
+
+      <div class="layer">
+        <div class="layer-num">03</div>
+        <div>
+          <div class="layer-title">The Recruiter Portal</div>
+          <div class="layer-hook">Recruiters send prep. Candidates arrive ready. Everyone wins.</div>
+          <div class="layer-desc">A recruitment firm logs into their portal, uploads a job spec, and assigns a tailored interview prep package to a candidate. The candidate gets a notification, completes the sessions, and the recruiter sees their readiness scores before the interview. This is the B2B product that no recruitment software has ever thought to build.</div>
+          <ul class="bullets">
+            <li>Recruiter dashboard — manage candidates and live roles</li>
+            <li>Upload job spec → assign prep to candidate in 2 clicks</li>
+            <li>Candidate gets push notification with their prep package</li>
+            <li>Recruiter sees candidate's practice scores and filler word trends</li>
+            <li>Billed per candidate prep or monthly subscription per recruiter seat</li>
+          </ul>
+          <span class="tag tag-b2b">B2B · Recruiter Platform</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── KILLER FEATURE ── -->
+  <div class="killer">
+    <div class="killer-header">
+      <div class="killer-emoji">🔬</div>
+      <div class="killer-titles">
+        <div class="killer-eyebrow">The Differentiator</div>
+        <div class="killer-title">Filler Word Intelligence — the feature no one else has.</div>
+      </div>
+    </div>
+    <div class="killer-desc">
+      Interviewers notice filler words. Candidates don't know they're using them. After every session, Explain analyses the full transcript for filler words, filler phrases, pacing, pauses, repetition and vocabulary richness. Across multiple sessions, it tracks whether they're improving — or getting worse under pressure. This is the data that changes behaviour. Nobody forgets their score the first time they see "basically × 18."
+    </div>
+
+    <div class="filler-demo">
+      <div class="filler-demo-label">Sample Session Analysis — Senior Dev Interview Practice</div>
+      <div class="filler-grid">
+        <div class="filler-card">
+          <div class="filler-val">18×</div>
+          <div class="filler-word">"basically"</div>
+          <div class="filler-trend bad">↑ Most used filler</div>
+        </div>
+        <div class="filler-card">
+          <div class="filler-val">7×</div>
+          <div class="filler-word">"you know"</div>
+          <div class="filler-trend">↓ Down from 11</div>
+        </div>
+        <div class="filler-card">
+          <div class="filler-val">3.2s</div>
+          <div class="filler-word">Avg pause</div>
+          <div class="filler-trend">↓ Down from 4.8s</div>
+        </div>
+        <div class="filler-card">
+          <div class="filler-val">142</div>
+          <div class="filler-word">Words per min</div>
+          <div class="filler-trend">✓ Ideal range</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lifetime-row">
+      <div class="lifetime-card">
+        <div class="lifetime-val">↓ 61%</div>
+        <div class="lifetime-label">Filler words reduced<br>across 10 sessions</div>
+      </div>
+      <div class="lifetime-card">
+        <div class="lifetime-val">+23pts</div>
+        <div class="lifetime-label">Confidence score<br>improvement</div>
+      </div>
+      <div class="lifetime-card">
+        <div class="lifetime-val">8.4/10</div>
+        <div class="lifetime-label">Avg readiness score<br>before interview</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LEARNING ANGLE ── -->
+  <div class="section">
+    <div class="section-label">Beyond Interviews</div>
+    <div class="section-title">Learn anything. By explaining it.</div>
+    <div class="section-body">Before we built the interview prep wedge, we built something deeper — a universal learning engine. The same mechanic that makes you interview-ready makes you genuinely smarter about any subject. This is the B2C long game: millions of curious people who want to actually understand things, not just pass tests.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:28px;">
+      <div class="problem-card" style="border-color:rgba(30,77,216,0.25);background:rgba(30,77,216,0.06);">
+        <div class="problem-icon">🧠</div>
+        <div class="problem-title" style="color:#60A5FA;">Students</div>
+        <div class="problem-desc">Oral exams, presentations, vivas. Explain turns revision into active recall — the most effective learning technique proven by science.</div>
+      </div>
+      <div class="problem-card" style="border-color:rgba(124,58,237,0.25);background:rgba(124,58,237,0.06);">
+        <div class="problem-icon">💼</div>
+        <div class="problem-title" style="color:#A78BFA;">Professionals</div>
+        <div class="problem-desc">Board presentations, client pitches, stakeholder updates. Prove you understand your subject before you walk into the room.</div>
+      </div>
+      <div class="problem-card" style="border-color:rgba(45,158,106,0.25);background:rgba(45,158,106,0.06);">
+        <div class="problem-icon">🌍</div>
+        <div class="problem-title" style="color:#34D399;">Curious Minds</div>
+        <div class="problem-desc">Learn how the internet works. Learn quantum computing. Learn stoicism. If you can explain it, you own it. Explain makes that addictive.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:18px;padding:24px 28px;">
+      <div style="font-size:10px;font-weight:800;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:14px;">The Learning Flow — Any Subject, Any Time</div>
+      <div class="b2b-flow">
+        <div class="b2b-step" style="background:rgba(30,77,216,0.12);border-color:rgba(30,77,216,0.25);color:#60A5FA;">🔍 Search a Subject</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step" style="background:rgba(30,77,216,0.12);border-color:rgba(30,77,216,0.25);color:#60A5FA;">📖 Read the AI Lesson</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step" style="background:rgba(30,77,216,0.12);border-color:rgba(30,77,216,0.25);color:#60A5FA;">🎙 Explain It Back</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step" style="background:rgba(30,77,216,0.12);border-color:rgba(30,77,216,0.25);color:#60A5FA;">📊 Get Your Score</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step" style="background:rgba(30,77,216,0.12);border-color:rgba(30,77,216,0.25);color:#60A5FA;">🔁 Go Deeper</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── B2B ── -->
+  <div class="section">
+    <div class="section-label">The B2B Opportunity</div>
+    <div class="section-title">Three industries. Millions of interviews.<br>Zero tools that do this.</div>
+
+    <!-- Private Sector -->
+    <div class="b2b" style="margin-bottom:16px;">
+      <div class="b2b-eyebrow">Private Sector · Recruitment Firms</div>
+      <div class="b2b-title">Every recruitment firm in the country has this problem. None of them have this solution.</div>
+      <div class="b2b-desc">
+        Recruitment firms already invest heavily in candidate preparation — CV coaching, interview briefings, feedback calls. Explain gives them a tool to do this at scale, with data. A recruiter can prep 50 candidates simultaneously, see who's ready and who isn't, and walk into client presentations with confidence.
+      </div>
+
+      <div class="b2b-flow">
+        <div class="b2b-step">📋 Upload Job Spec</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step">👤 Assign to Candidate</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step">📱 Candidate Practices</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step">📊 Recruiter Sees Scores</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step">✅ Candidate Gets Hired</div>
+      </div>
+
+      <div class="b2b-revenue">
+        <div class="rev-card">
+          <div class="rev-val">£50–100</div>
+          <div class="rev-label">Per candidate prep<br>package (B2B rate)</div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-val">£499/mo</div>
+          <div class="rev-label">Per recruiter seat<br>unlimited candidates</div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-val">£200–500</div>
+          <div class="rev-label">Already spent per placed<br>candidate on prep today</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Government / NHS -->
+    <div class="b2b" style="background:rgba(30,77,216,0.07);border-color:rgba(30,77,216,0.22);margin-bottom:16px;">
+      <div class="b2b-eyebrow" style="color:#60A5FA;">Public Sector · Government &amp; NHS</div>
+      <div class="b2b-title">The UK's largest employer. Millions of competency-based interviews. Every single year.</div>
+      <div class="b2b-desc">
+        Every civil service job, NHS role, local council position and government graduate scheme uses structured competency interviews — the STAR method (Situation, Task, Action, Result). These are the hardest interviews to prepare for because the format is rigid, the scoring is strict, and the answers must be delivered fluently under pressure. Explain is built for exactly this. A government department could license Explain for every applicant to every role — at scale no private recruiter can match.
+      </div>
+
+      <div class="b2b-flow">
+        <div class="b2b-step" style="background:rgba(30,77,216,0.14);border-color:rgba(30,77,216,0.28);color:#60A5FA;">🏛 Civil Service</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step" style="background:rgba(30,77,216,0.14);border-color:rgba(30,77,216,0.28);color:#60A5FA;">🏥 NHS</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step" style="background:rgba(30,77,216,0.14);border-color:rgba(30,77,216,0.28);color:#60A5FA;">🎓 Graduate Fast Stream</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step" style="background:rgba(30,77,216,0.14);border-color:rgba(30,77,216,0.28);color:#60A5FA;">🏙 Local Councils</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step" style="background:rgba(30,77,216,0.14);border-color:rgba(30,77,216,0.28);color:#60A5FA;">⚖️ Legal &amp; Judiciary</div>
+      </div>
+
+      <div class="b2b-revenue">
+        <div class="rev-card">
+          <div class="rev-val">400k+</div>
+          <div class="rev-label">Civil service job<br>applications per year (UK)</div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-val">1.4M</div>
+          <div class="rev-label">NHS staff — ongoing<br>promotion interviews</div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-val">Enterprise</div>
+          <div class="rev-label">Departmental licensing<br>deals · custom STAR modules</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graduate -->
+    <div class="b2b" style="background:rgba(124,58,237,0.07);border-color:rgba(124,58,237,0.22);">
+      <div class="b2b-eyebrow" style="color:#A78BFA;">Graduate Schemes · Universities &amp; Bootcamps</div>
+      <div class="b2b-title">Every graduate is terrified of their first real interview. Explain gives them something to practice with — and a score to prove they're ready.</div>
+      <div class="b2b-desc">
+        Universities spend millions on careers services. Coding bootcamps charge £10,000+ and promise job outcomes. Neither gives graduates a way to actually practice explaining themselves under pressure. Explain licenses directly to careers departments and bootcamps as a platform tool — every student gets access, the institution sees aggregate readiness data, and placement rates improve.
+      </div>
+
+      <div class="b2b-flow">
+        <div class="b2b-step" style="background:rgba(124,58,237,0.14);border-color:rgba(124,58,237,0.28);color:#A78BFA;">🎓 University Careers</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step" style="background:rgba(124,58,237,0.14);border-color:rgba(124,58,237,0.28);color:#A78BFA;">💻 Coding Bootcamps</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step" style="background:rgba(124,58,237,0.14);border-color:rgba(124,58,237,0.28);color:#A78BFA;">🏦 Grad Scheme Coaches</div>
+        <div class="b2b-arrow">→</div>
+        <div class="b2b-step" style="background:rgba(124,58,237,0.14);border-color:rgba(124,58,237,0.28);color:#A78BFA;">📈 Placement Outcomes</div>
+      </div>
+
+      <div class="b2b-revenue">
+        <div class="rev-card">
+          <div class="rev-val">£2–5k</div>
+          <div class="rev-label">Per university per year<br>careers department deal</div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-val">£500/cohort</div>
+          <div class="rev-label">Per bootcamp cohort<br>add-on to existing fee</div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-val">500k+</div>
+          <div class="rev-label">UK graduates per year<br>entering job market</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── ADDITIONAL B2B VERTICALS ── -->
+  <div class="section">
+    <div class="section-label">Further B2B Verticals</div>
+    <div class="section-title">The market is bigger than interviews.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="problem-card" style="border-color:rgba(215,119,6,0.25);background:rgba(215,119,6,0.06);">
+        <div class="problem-icon">🏢</div>
+        <div class="problem-title" style="color:#FBB24B;">Corporate L&amp;D</div>
+        <div class="problem-desc">Onboarding, compliance training, junior lawyer knowledge retention, financial services CPD. Any organisation that needs staff to truly understand — not just read — policies and procedures. Law firms, banks, consultancies.</div>
+      </div>
+      <div class="problem-card" style="border-color:rgba(45,158,106,0.25);background:rgba(45,158,106,0.06);">
+        <div class="problem-icon">🏛</div>
+        <div class="problem-title" style="color:#34D399;">DWP / JobCentre Plus</div>
+        <div class="problem-desc">The Department for Work and Pensions spends billions on employability programmes. Explain gives jobseekers a structured, measurable way to practice interview skills — at a fraction of the cost of human coaching. A natural government contract.</div>
+      </div>
+      <div class="problem-card" style="border-color:rgba(124,58,237,0.25);background:rgba(124,58,237,0.06);">
+        <div class="problem-icon">⚕️</div>
+        <div class="problem-title" style="color:#A78BFA;">NHS Clinical CPD</div>
+        <div class="problem-desc">Continuous Professional Development for clinical staff. Nurses, doctors and allied health professionals must demonstrate knowledge regularly. Explain turns CPD from passive reading into active, scored demonstration.</div>
+      </div>
+      <div class="problem-card" style="border-color:rgba(30,77,216,0.25);background:rgba(30,77,216,0.06);">
+        <div class="problem-icon">🌍</div>
+        <div class="problem-title" style="color:#60A5FA;">International Markets</div>
+        <div class="problem-desc">Every English-speaking country runs competency interviews. Australia, Canada, USA, India — the same problem, the same gap, the same solution. One codebase. Global reach from day one.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── ECONOMICS ── -->
+  <div class="section">
+    <div class="section-label">The Economics</div>
+    <div class="section-title">Exceptional margins.<br>That get better as AI improves.</div>
+    <div class="section-body" style="margin-bottom:32px;">This is the part that surprises people. The cost of delivering Explain to one user for an entire month is less than a cup of coffee. The revenue per user is not. At scale, this is one of the highest-margin software businesses possible — and the margins grow automatically as AI models get cheaper.</div>
+
+    <!-- Cost per action -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 32px;margin-bottom:16px;">
+      <div style="font-size:10px;font-weight:800;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:20px;">Cost Per Action — What It Costs Us To Serve You</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px;text-align:center;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">Generate Lesson</div>
+          <div style="font-size:32px;font-weight:900;color:#4F8EF7;letter-spacing:-1.5px;line-height:1;margin-bottom:6px;">$0.002</div>
+          <div style="font-size:11px;color:var(--text-3);">Full structured lesson<br>via Claude AI</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px;text-align:center;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">Transcribe Talk</div>
+          <div style="font-size:32px;font-weight:900;color:#4F8EF7;letter-spacing:-1.5px;line-height:1;margin-bottom:6px;">$0.006</div>
+          <div style="font-size:11px;color:var(--text-3);">Per minute via<br>OpenAI Whisper</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px;text-align:center;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">Score Answer</div>
+          <div style="font-size:32px;font-weight:900;color:#4F8EF7;letter-spacing:-1.5px;line-height:1;margin-bottom:6px;">$0.0003</div>
+          <div style="font-size:11px;color:var(--text-3);">Full 5-dimension<br>AI scoring</div>
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:16px 20px;background:rgba(45,158,106,0.08);border:1px solid rgba(45,158,106,0.20);border-radius:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.75);">Monthly AI cost per active user (typical usage)</div>
+        <div style="font-size:24px;font-weight:900;color:#34D399;letter-spacing:-1px;">~$0.05</div>
+      </div>
+    </div>
+
+    <!-- Margin table -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 32px;margin-bottom:16px;">
+      <div style="font-size:10px;font-weight:800;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:20px;">Gross Margin Per User — Revenue vs AI Cost</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px;text-align:center;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">Free Tier</div>
+          <div style="font-size:28px;font-weight:900;color:var(--text);letter-spacing:-1px;line-height:1;margin-bottom:4px;">£0</div>
+          <div style="font-size:11px;color:var(--text-3);margin-bottom:10px;">Revenue</div>
+          <div style="font-size:13px;font-weight:700;color:#34D399;">Acquisition cost only</div>
+        </div>
+        <div style="background:rgba(30,77,216,0.08);border:1px solid rgba(30,77,216,0.25);border-radius:14px;padding:20px;text-align:center;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:#60A5FA;text-transform:uppercase;margin-bottom:10px;">Pro · £9.99/mo</div>
+          <div style="font-size:28px;font-weight:900;color:var(--text);letter-spacing:-1px;line-height:1;margin-bottom:4px;">£9.94</div>
+          <div style="font-size:11px;color:var(--text-3);margin-bottom:10px;">Gross margin on AI cost</div>
+          <div style="font-size:18px;font-weight:900;color:#34D399;">99.4%</div>
+        </div>
+        <div style="background:rgba(45,158,106,0.08);border:1px solid rgba(45,158,106,0.25);border-radius:14px;padding:20px;text-align:center;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:#34D399;text-transform:uppercase;margin-bottom:10px;">Recruiter · £499/mo</div>
+          <div style="font-size:28px;font-weight:900;color:var(--text);letter-spacing:-1px;line-height:1;margin-bottom:4px;">£498+</div>
+          <div style="font-size:11px;color:var(--text-3);margin-bottom:10px;">Gross margin on AI cost</div>
+          <div style="font-size:18px;font-weight:900;color:#34D399;">99.9%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scale story -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 32px;">
+      <div style="font-size:10px;font-weight:800;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:20px;">Revenue vs AI Cost at Scale</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;margin-bottom:12px;">1,000 Pro Users</div>
+          <div style="font-size:24px;font-weight:900;color:#34D399;letter-spacing:-1px;margin-bottom:4px;">£9,990/mo</div>
+          <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Revenue</div>
+          <div style="font-size:15px;font-weight:800;color:var(--text-2);">~$50 AI cost</div>
+        </div>
+        <div style="background:rgba(30,77,216,0.08);border:1px solid rgba(30,77,216,0.20);border-radius:14px;padding:20px;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:#60A5FA;text-transform:uppercase;margin-bottom:12px;">10,000 Pro Users</div>
+          <div style="font-size:24px;font-weight:900;color:#34D399;letter-spacing:-1px;margin-bottom:4px;">£99,900/mo</div>
+          <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Revenue</div>
+          <div style="font-size:15px;font-weight:800;color:var(--text-2);">~$500 AI cost</div>
+        </div>
+        <div style="background:rgba(45,158,106,0.08);border:1px solid rgba(45,158,106,0.20);border-radius:14px;padding:20px;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:#34D399;text-transform:uppercase;margin-bottom:12px;">100,000 Pro Users</div>
+          <div style="font-size:24px;font-weight:900;color:#34D399;letter-spacing:-1px;margin-bottom:4px;">£999k/mo</div>
+          <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Revenue</div>
+          <div style="font-size:15px;font-weight:800;color:var(--text-2);">~$5,000 AI cost</div>
+        </div>
+      </div>
+      <div style="padding:16px 20px;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.20);border-radius:12px;">
+        <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.75);line-height:1.6;">✨ <strong style="color:#A78BFA;">The compounding advantage:</strong> As AI models improve and get cheaper — which they do every 12–18 months — our margins grow automatically without us changing a single line of code. The better the AI gets, the more profitable we become.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── MONETISATION ── -->
+  <div class="section">
+    <div class="section-label">Monetisation</div>
+    <div class="section-title">Three revenue streams.<br>Each one self-sustaining.</div>
+    <div class="section-body" style="margin-bottom: 32px;">Consumer subscriptions fund the infrastructure. B2B contracts fund the growth. Enterprise deals fund the ambition.</div>
+
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-tier">Free</div>
+        <div class="price-amount">£0</div>
+        <div class="price-period">forever · get them hooked</div>
+        <ul class="price-features">
+          <li>3 practice sessions / month</li>
+          <li>Basic scoring (overall only)</li>
+          <li>Last 3 sessions history</li>
+          <li>1 job spec upload</li>
+        </ul>
+      </div>
+      <div class="price-card featured">
+        <div class="price-tier">Pro · Most Popular</div>
+        <div class="price-amount">£9.99</div>
+        <div class="price-period">per month · billed monthly</div>
+        <ul class="price-features">
+          <li>Unlimited practice sessions</li>
+          <li>Full 5-dimension scoring</li>
+          <li>Filler word tracking</li>
+          <li>Full session history + trends</li>
+          <li>Unlimited job spec uploads</li>
+          <li>AI interview tips (personalised)</li>
+        </ul>
+      </div>
+      <div class="price-card enterprise">
+        <div class="price-tier">Recruiter · B2B</div>
+        <div class="price-amount">£499</div>
+        <div class="price-period">per month · per recruiter seat</div>
+        <ul class="price-features">
+          <li>Unlimited candidate assignments</li>
+          <li>Recruiter portal dashboard</li>
+          <li>Candidate readiness scores</li>
+          <li>Bulk job spec processing</li>
+          <li>White-label option</li>
+          <li>Dedicated support</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── VISION ── -->
+  <div class="vision">
+    <div class="vision-quote">"We're not building another language app, another flashcard tool, or another mock interview simulator. We're building the first product that treats spoken explanation as a skill — measurable, trainable, and worth paying for. The person who can explain anything clearly, confidently and without filler has an unfair advantage in every room they walk into. Explain gives everyone that advantage."</div>
+    <div class="vision-sub">From the desk of the founder. Built on dialysis, with conviction, for the millions of people who deserve to walk into that room ready.</div>
+    <div class="vision-meta">
+      <div class="vision-name">Francis Cobbinah</div>
+      <div class="vision-sep">·</div>
+      <div class="vision-date">Founder, Percentile.One · July 2026</div>
+    </div>
+  </div>
+
+</div>
