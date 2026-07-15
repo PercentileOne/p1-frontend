@@ -986,6 +986,75 @@ body {
       </div>
     </div>
 
+    <!-- Likely Pass -->
+    <div style="background:linear-gradient(135deg,rgba(45,158,106,0.12) 0%,rgba(30,77,216,0.08) 100%);border:1px solid rgba(45,158,106,0.30);border-radius:22px;padding:32px;margin-bottom:16px;">
+      <div style="font-size:10px;font-weight:800;letter-spacing:3px;color:#34D399;text-transform:uppercase;margin-bottom:12px;">The Recruiter's Secret Weapon</div>
+      <div style="font-family:Georgia,serif;font-size:26px;font-weight:700;color:var(--text);letter-spacing:-0.4px;margin-bottom:14px;line-height:1.3;">Likely Pass % — Know who to put forward before you make the call.</div>
+      <div style="font-size:15px;color:rgba(255,255,255,0.60);line-height:1.75;margin-bottom:24px;">A recruiter's reputation lives or dies on the quality of candidates they put forward. Right now, Mike Petrie — and every recruiter like him — has to make that call on gut feel. Explain changes that. After a candidate completes their screening pack, the AI generates a <strong style="color:#34D399;">Likely Pass %</strong> — a single readiness score built from explanation quality, filler trends, answer structure, confidence trajectory, and how well their responses match the job spec. Mike sees the number before he picks up the phone to the client.</div>
+
+      <!-- Mock dashboard -->
+      <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin-bottom:20px;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:16px;">Mike's Dashboard — Senior .NET Developer @ Accenture</div>
+
+        <!-- Table header -->
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.2fr;gap:8px;padding:0 12px;margin-bottom:8px;">
+          <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;">Candidate</div>
+          <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;">Sessions</div>
+          <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;">Avg Score</div>
+          <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;">Likely Pass</div>
+          <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;">Status</div>
+        </div>
+
+        <!-- Row 1 - green -->
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.2fr;gap:8px;background:rgba(45,158,106,0.10);border:1px solid rgba(45,158,106,0.20);border-radius:10px;padding:12px;margin-bottom:6px;align-items:center;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);">Sarah M.</div>
+          <div style="font-size:13px;color:var(--text-2);">8</div>
+          <div style="font-size:13px;color:var(--text-2);">84</div>
+          <div style="font-size:16px;font-weight:900;color:#34D399;">87%</div>
+          <div style="font-size:11px;font-weight:800;color:#34D399;background:rgba(45,158,106,0.20);border-radius:6px;padding:4px 8px;text-align:center;">🟢 Put Forward</div>
+        </div>
+
+        <!-- Row 2 - amber -->
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.2fr;gap:8px;background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.20);border-radius:10px;padding:12px;margin-bottom:6px;align-items:center;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);">James T.</div>
+          <div style="font-size:13px;color:var(--text-2);">3</div>
+          <div style="font-size:13px;color:var(--text-2);">61</div>
+          <div style="font-size:16px;font-weight:900;color:#D97706;">52%</div>
+          <div style="font-size:11px;font-weight:800;color:#D97706;background:rgba(217,119,6,0.15);border-radius:6px;padding:4px 8px;text-align:center;">🟡 Needs More Prep</div>
+        </div>
+
+        <!-- Row 3 - red -->
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.2fr;gap:8px;background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.15);border-radius:10px;padding:12px;align-items:center;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);">Priya K.</div>
+          <div style="font-size:13px;color:var(--text-2);">12</div>
+          <div style="font-size:13px;color:var(--text-2);">38</div>
+          <div style="font-size:16px;font-weight:900;color:#F87171;">31%</div>
+          <div style="font-size:11px;font-weight:800;color:#F87171;background:rgba(248,113,113,0.12);border-radius:6px;padding:4px 8px;text-align:center;">🔴 Not Ready</div>
+        </div>
+      </div>
+
+      <!-- How it's calculated -->
+      <div style="font-size:10px;font-weight:800;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:12px;">How Likely Pass % Is Calculated</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px;">
+          <div style="font-size:11px;font-weight:800;color:#34D399;margin-bottom:4px;">Explanation Quality</div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;">Clarity, depth, accuracy, structure, confidence — across all submitted attempts</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px;">
+          <div style="font-size:11px;font-weight:800;color:#34D399;margin-bottom:4px;">Improvement Trajectory</div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;">Are scores going up? Filler words going down? A fast improver scores higher than a static one</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px;">
+          <div style="font-size:11px;font-weight:800;color:#34D399;margin-bottom:4px;">Job Spec Match</div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;">How well their answers reference the actual skills and requirements from the uploaded job spec</div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding:14px 18px;background:rgba(45,158,106,0.10);border:1px solid rgba(45,158,106,0.22);border-radius:12px;">
+        <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.80);line-height:1.6;">"Stop guessing which candidates to put forward. Let the data tell you." — This is the line that sells Explain to every recruitment firm in the country.</div>
+      </div>
+    </div>
+
     <!-- Government / NHS -->
     <div class="b2b" style="background:rgba(30,77,216,0.07);border-color:rgba(30,77,216,0.22);margin-bottom:16px;">
       <div class="b2b-eyebrow" style="color:#60A5FA;">Public Sector · Government &amp; NHS — TAM Story</div>
