@@ -1,4 +1,5 @@
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Explain.app — Product Vision Brief</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-JPS8NSNCLD"></script>
@@ -532,6 +533,43 @@ body {
   font-weight: 800;
   font-style: normal;
 }
+
+@media (max-width: 620px) {
+  /* 3-column grids → single column */
+  .grid-3col {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Panel call mockup */
+  .xscreen { border-radius: 10px; }
+  .xtopbar { padding: 8px 12px; gap: 8px; }
+  .xcall-title { font-size: 12px; }
+  .xpartic { display: none; }
+  .xpanel-badge2 { display: none; }
+  .xtimer2 { font-size: 11px; }
+  .xgrid2 { gap: 2px; padding: 2px; }
+  .xquestion-wrap2 { padding: 10px 12px 8px; }
+  .xquestion2 { font-size: 12px; }
+  .xqspeaker-name2 { font-size: 10px; }
+  .xcontrols2 { padding: 8px 12px 10px; gap: 6px; flex-wrap: wrap; }
+  .xqnum2 { width: 100%; font-size: 11px; }
+  .xnext-btn2 { font-size: 11px; padding: 6px 10px; }
+  .xrec-btn2 { font-size: 12px; padding: 8px 14px; }
+  .xagent-bar { padding: 6px 12px; }
+  .xagent-txt { font-size: 10px; }
+  .xscore-toast { margin: 0 12px 8px; padding: 8px 10px; }
+  .xmeter-bar { margin: 0 12px; }
+  .xname2 { font-size: 11px; }
+  .xrole-badge2 { font-size: 9px; padding: 1px 5px; }
+  #xyoupip { width: 24% !important; }
+
+  /* Live Feedback toggle row */
+  #xfbtoggle-row { flex-wrap: wrap; gap: 6px; }
+
+  /* General page */
+  .section { padding: 28px 16px; }
+  .problem-card { padding: 16px; }
+}
 </style>
 
 <div class="doc">
@@ -661,7 +699,7 @@ body {
       <div style="font-size:10px;font-weight:800;letter-spacing:3px;color:#60A5FA;text-transform:uppercase;margin-bottom:12px;">Candidate Privacy — A Key Design Principle</div>
       <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:10px;letter-spacing:-0.2px;">Practice privately. Submit only when you're ready.</div>
       <div style="font-size:14px;color:rgba(255,255,255,0.60);line-height:1.75;margin-bottom:20px;">Nobody wants their recruiter seeing their first attempt at explaining microservices at 11pm. Candidates can practice as many times as they like — all sessions are private by default. Only when they're happy with a run do they tap <strong style="color:#60A5FA;">Submit This Attempt</strong> — and only that score reaches the recruiter. Nothing else.</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+      <div class="grid-3col" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
         <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:18px;text-align:center;">
           <div style="font-size:28px;margin-bottom:8px;">🔒</div>
           <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:4px;">Private Practice</div>
@@ -950,7 +988,7 @@ body {
       </script>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:4px;">
+    <div class="grid-3col" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:4px;">
       <div class="problem-card" style="border-color:rgba(30,77,216,0.25);background:rgba(30,77,216,0.06);">
         <div class="problem-icon">🎭</div>
         <div class="problem-title" style="color:#60A5FA;">AI Panel Personalities</div>
@@ -1210,7 +1248,7 @@ body {
     <div class="section-title">Learn anything. By explaining it.</div>
     <div class="section-body">Before we built the interview prep wedge, we built something deeper — a universal learning engine. The same mechanic that makes you interview-ready makes you genuinely smarter about any subject. This is the B2C long game: millions of curious people who want to actually understand things, not just pass tests.</div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:28px;">
+    <div class="grid-3col" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:28px;">
       <div class="problem-card" style="border-color:rgba(30,77,216,0.25);background:rgba(30,77,216,0.06);">
         <div class="problem-icon">🧠</div>
         <div class="problem-title" style="color:#60A5FA;">Students</div>
