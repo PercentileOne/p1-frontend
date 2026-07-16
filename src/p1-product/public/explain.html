@@ -563,6 +563,13 @@ body {
   .xrole-badge2 { font-size: 9px; padding: 1px 5px; }
   #xyoupip { width: 24% !important; }
 
+  /* Demo label — brighter and bigger on mobile */
+  #xdemo-label { font-size: 11px !important; color: rgba(255,255,255,0.75) !important; letter-spacing: 1.5px !important; }
+
+  /* Top bar text */
+  .xcall-title { font-size: 13px; font-weight: 800; }
+  .xtimer-wrap { gap: 6px; }
+
   /* Live Feedback toggle row */
   #xfbtoggle-row { flex-wrap: wrap; gap: 6px; }
 
@@ -731,7 +738,7 @@ body {
     <!-- Interactive mockup -->
     <div style="margin-bottom:28px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div style="font-size:10px;font-weight:800;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;">Live Demo — Senior .NET Developer Interview · Accenture</div>
+        <div id="xdemo-label" style="font-size:10px;font-weight:800;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;">Live Demo — Senior .NET Developer Interview · Accenture</div>
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.40);">Live Feedback Mode</span>
           <div id="xfbtoggle" onclick="toggleFB()" style="width:40px;height:22px;border-radius:11px;background:#1E4DD8;cursor:pointer;position:relative;transition:background 0.2s;">
