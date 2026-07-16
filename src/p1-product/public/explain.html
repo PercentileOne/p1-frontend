@@ -1,5 +1,6 @@
 <meta charset="utf-8">
 <title>Explain.app — Product Vision Brief</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-JPS8NSNCLD"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -679,6 +680,187 @@ body {
       </div>
     </div>
 
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── INTERVIEW EXPERIENCE ── -->
+  <div class="section">
+    <div class="section-label">The Interview Experience</div>
+    <div class="section-title">Not a practice tool.<br>A simulation you can't tell apart from the real thing.</div>
+    <div class="section-body" style="margin-bottom:32px;">The candidate faces a live panel of AI interviewers — each with a name, a role, and a personality. One evaluates. One deep-dives. One challenges everything. The candidate answers in real time, on camera, just like the actual interview. It's the closest preparation possible without sitting in the room — and it's interactive, scored, and repeatable as many times as they need.</div>
+
+    <!-- Interactive mockup -->
+    <div style="margin-bottom:28px;">
+      <div style="font-size:10px;font-weight:800;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:14px;">Live Demo — Senior .NET Developer Interview · Accenture</div>
+      <style>
+        .xscreen{background:#040C1A;border-radius:14px;overflow:hidden;font-family:system-ui,-apple-system,sans-serif;border:1px solid rgba(255,255,255,0.10)}
+        .xtopbar{display:flex;align-items:center;gap:14px;padding:10px 16px;background:#070F1E;border-bottom:1px solid rgba(255,255,255,0.07)}
+        .xcall-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.85)}
+        .xpartic{font-size:12px;color:rgba(255,255,255,0.30)}
+        .xsep2{color:rgba(255,255,255,0.12)}
+        .xtimer-wrap{margin-left:auto;display:flex;align-items:center;gap:10px}
+        .xrec2{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:#EF4444;letter-spacing:1px}
+        .xrec-dot2{width:7px;height:7px;border-radius:50%;background:#EF4444}
+        .xpanel-badge2{font-size:10px;font-weight:800;letter-spacing:1.5px;color:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.10);border-radius:4px;padding:3px 8px}
+        .xtimer2{font-size:13px;font-weight:700;color:rgba(255,255,255,0.55);font-variant-numeric:tabular-nums}
+        .xgrid2{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:#020810;padding:3px}
+        .xtile2{position:relative;overflow:hidden;border-radius:6px;background:#0D1A2E;aspect-ratio:16/10}
+        .xsilhouette2{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+        .xlive2{position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,0.55);border-radius:4px;padding:3px 7px}
+        .xlive-dot2{width:6px;height:6px;border-radius:50%;background:#EF4444}
+        .xlive-txt2{font-size:10px;font-weight:800;color:#fff;letter-spacing:0.5px}
+        .xmuted2{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,0.85);display:flex;align-items:center;justify-content:center}
+        .xname-row2{position:absolute;bottom:0;left:0;right:0;padding:20px 10px 8px;background:linear-gradient(transparent,rgba(0,0,0,0.80))}
+        .xname2{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px}
+        .xrole-badge2{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
+        .xtile-you2{border:2px solid rgba(30,77,216,0.60)}
+        .xtile-speaking2{border:2px solid #4F8EF7}
+        .xbottom2{background:#070F1E;border-top:1px solid rgba(255,255,255,0.07)}
+        .xquestion-wrap2{padding:14px 18px 10px}
+        .xqspeaker2{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+        .xqspeaker-dot2{width:8px;height:8px;border-radius:50%}
+        .xqspeaker-name2{font-size:11px;font-weight:700;color:rgba(255,255,255,0.40);letter-spacing:0.3px}
+        .xquestion2{font-size:14px;color:rgba(255,255,255,0.90);line-height:1.6;font-style:italic}
+        .xcontrols2{display:flex;align-items:center;gap:10px;padding:10px 18px 14px;border-top:1px solid rgba(255,255,255,0.05)}
+        .xqnum2{font-size:12px;color:rgba(255,255,255,0.25);margin-right:auto;font-variant-numeric:tabular-nums}
+        .xnext-btn2{font-size:12px;font-weight:600;color:rgba(255,255,255,0.50);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:6px;padding:7px 14px;cursor:pointer}
+        .xnext-btn2:hover{background:rgba(255,255,255,0.10);color:rgba(255,255,255,0.80)}
+        .xrec-btn2{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#fff;background:#1E4DD8;border:none;border-radius:8px;padding:9px 20px;cursor:pointer}
+        .xrec-btn2:hover{background:#2559F0}
+        .xrec-btn2.recording2{background:#991B1B}
+        .xrec-btn-dot2{width:8px;height:8px;border-radius:50%;background:#fff}
+        @keyframes xpulse2{0%,100%{opacity:1}50%{opacity:0.6}}
+        .xpulsing{animation:xpulse2 1.2s infinite}
+      </style>
+
+      <div class="xscreen">
+        <div class="xtopbar">
+          <span class="xcall-title">Panel Call</span>
+          <span class="xsep2">·</span>
+          <span class="xpartic">4 participants</span>
+          <div class="xtimer-wrap">
+            <div class="xrec2" id="xrecind2" style="opacity:0.25"><div class="xrec-dot2" id="xrecdot2"></div>REC</div>
+            <span class="xtimer2" id="xtimer2">00:00</span>
+            <span class="xsep2">·</span>
+            <div class="xpanel-badge2">PROFESSIONAL PANEL</div>
+          </div>
+        </div>
+
+        <div class="xgrid2">
+          <div class="xtile2 xtile-speaking2" id="xtile0">
+            <div style="position:absolute;inset:0;background:#0E1E35"></div>
+            <div class="xsilhouette2"><svg width="100%" height="100%" viewBox="0 0 200 125"><ellipse cx="100" cy="46" rx="27" ry="30" fill="rgba(255,255,255,0.07)"/><ellipse cx="100" cy="112" rx="56" ry="30" fill="rgba(255,255,255,0.07)"/></svg></div>
+            <div class="xlive2"><div class="xlive-dot2"></div><span class="xlive-txt2">LIVE</span></div>
+            <div class="xname-row2"><div class="xname2">Victoria Hart</div><span class="xrole-badge2" style="background:rgba(30,77,216,0.28);color:#60A5FA">&#11044; The Evaluator</span></div>
+          </div>
+          <div class="xtile2" id="xtile1">
+            <div style="position:absolute;inset:0;background:#150E2E"></div>
+            <div class="xsilhouette2"><svg width="100%" height="100%" viewBox="0 0 200 125"><ellipse cx="100" cy="46" rx="27" ry="30" fill="rgba(255,255,255,0.07)"/><ellipse cx="100" cy="112" rx="56" ry="30" fill="rgba(255,255,255,0.07)"/></svg></div>
+            <div class="xlive2"><div class="xlive-dot2"></div><span class="xlive-txt2">LIVE</span></div>
+            <div class="xname-row2"><div class="xname2">Dr. James Reid</div><span class="xrole-badge2" style="background:rgba(124,58,237,0.28);color:#A78BFA">&#11044; The Deep Diver</span></div>
+          </div>
+          <div class="xtile2" id="xtile2">
+            <div style="position:absolute;inset:0;background:#1A1205"></div>
+            <div class="xsilhouette2"><svg width="100%" height="100%" viewBox="0 0 200 125"><ellipse cx="100" cy="46" rx="27" ry="30" fill="rgba(255,255,255,0.07)"/><ellipse cx="100" cy="112" rx="56" ry="30" fill="rgba(255,255,255,0.07)"/></svg></div>
+            <div class="xlive2"><div class="xlive-dot2"></div><span class="xlive-txt2">LIVE</span></div>
+            <div class="xmuted2"><i class="ti ti-microphone-off" style="font-size:12px;color:#fff"></i></div>
+            <div class="xname-row2"><div class="xname2">R. Cooper</div><span class="xrole-badge2" style="background:rgba(217,119,6,0.22);color:#FBB24B">&#11044; The Skeptic</span></div>
+          </div>
+          <div class="xtile2 xtile-you2" id="xtile3">
+            <div style="position:absolute;inset:0;background:#0A1828"></div>
+            <div class="xsilhouette2"><svg width="100%" height="100%" viewBox="0 0 200 125"><ellipse cx="100" cy="46" rx="27" ry="30" fill="rgba(79,142,247,0.12)"/><ellipse cx="100" cy="112" rx="56" ry="30" fill="rgba(79,142,247,0.10)"/></svg></div>
+            <div class="xlive2" style="background:rgba(30,77,216,0.55)"><div class="xlive-dot2" style="background:#4F8EF7"></div><span class="xlive-txt2">YOU</span></div>
+            <div class="xmuted2" id="xyoumic2"><i class="ti ti-microphone-off" style="font-size:12px;color:#fff" id="xmicicon2"></i></div>
+            <div class="xname-row2"><div class="xname2" style="color:#4F8EF7">You</div><span class="xrole-badge2" id="xyoubadge2" style="background:rgba(30,77,216,0.18);color:rgba(255,255,255,0.38)">Muted</span></div>
+          </div>
+        </div>
+
+        <div class="xbottom2">
+          <div class="xquestion-wrap2">
+            <div class="xqspeaker2">
+              <div class="xqspeaker-dot2" id="xqdot2" style="background:#60A5FA"></div>
+              <span class="xqspeaker-name2" id="xqspeaker2">Victoria Hart is asking:</span>
+            </div>
+            <div class="xquestion2" id="xquestion2">"Tell me about your experience with .NET Core — specifically how you've used it in a production environment at scale."</div>
+          </div>
+          <div class="xcontrols2">
+            <span class="xqnum2" id="xqnum2">Question 1 of 5</span>
+            <button class="xnext-btn2" onclick="nextQ2()">Next question →</button>
+            <button class="xrec-btn2" id="xrecbtn2" onclick="toggleRec2()">
+              <div class="xrec-btn-dot2" id="xrecbtndot2"></div>
+              <span id="xrecbtntxt2">Start Answer</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        const xqs=[
+          {q:'"Tell me about your experience with .NET Core — specifically how you\'ve used it in a production environment at scale."',speaker:'Victoria Hart is asking:',dot:'#60A5FA',tile:0},
+          {q:'"Walk me through a time you debugged a critical production issue under real pressure. What was the root cause, and how did you fix it?"',speaker:'Dr. James Reid is asking:',dot:'#A78BFA',tile:1},
+          {q:'"Why should we pick you over the other candidates we\'re seeing today? Be specific — not generic."',speaker:'R. Cooper is asking:',dot:'#FBB24B',tile:2},
+          {q:'"Where do you see yourself in three years, and how does this role fit into that plan?"',speaker:'Victoria Hart is asking:',dot:'#60A5FA',tile:0},
+          {q:'"Tell me about your biggest technical weakness. And please — don\'t say you work too hard."',speaker:'Dr. James Reid is asking:',dot:'#A78BFA',tile:1}
+        ];
+        let xqi=0,xrec=false,xsecs=0,xiv=null;
+        function nextQ2(){
+          if(xrec)toggleRec2();
+          xqi=(xqi+1)%xqs.length;
+          const q=xqs[xqi];
+          document.getElementById('xquestion2').textContent=q.q;
+          document.getElementById('xqspeaker2').textContent=q.speaker;
+          document.getElementById('xqdot2').style.background=q.dot;
+          document.getElementById('xqnum2').textContent='Question '+(xqi+1)+' of 5';
+          [0,1,2,3].forEach(i=>{
+            const t=document.getElementById('xtile'+i);
+            t.classList.remove('xtile-speaking2');
+            if(i!==3&&i===q.tile)t.classList.add('xtile-speaking2');
+          });
+        }
+        function toggleRec2(){
+          xrec=!xrec;
+          const btn=document.getElementById('xrecbtn2');
+          const txt=document.getElementById('xrecbtntxt2');
+          const ind=document.getElementById('xrecind2');
+          const dot=document.getElementById('xrecdot2');
+          const mic=document.getElementById('xyoumic2');
+          const icon=document.getElementById('xmicicon2');
+          const badge=document.getElementById('xyoubadge2');
+          if(xrec){
+            btn.classList.add('recording2');txt.textContent='Stop Recording';
+            ind.style.opacity='1';dot.classList.add('xpulsing');
+            mic.style.background='rgba(30,77,216,0.85)';icon.className='ti ti-microphone';
+            badge.textContent='Live';badge.style.color='#4F8EF7';
+            xiv=setInterval(()=>{xsecs++;const m=String(Math.floor(xsecs/60)).padStart(2,'0');const s=String(xsecs%60).padStart(2,'0');document.getElementById('xtimer2').textContent=m+':'+s;},1000);
+          } else {
+            btn.classList.remove('recording2');txt.textContent='Start Answer';
+            ind.style.opacity='0.25';dot.classList.remove('xpulsing');
+            mic.style.background='rgba(239,68,68,0.85)';icon.className='ti ti-microphone-off';
+            badge.textContent='Muted';badge.style.color='rgba(255,255,255,0.38)';
+            clearInterval(xiv);xsecs=0;document.getElementById('xtimer2').textContent='00:00';
+          }
+        }
+      </script>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:4px;">
+      <div class="problem-card" style="border-color:rgba(30,77,216,0.25);background:rgba(30,77,216,0.06);">
+        <div class="problem-icon">🎭</div>
+        <div class="problem-title" style="color:#60A5FA;">AI Panel Personalities</div>
+        <div class="problem-desc">Every panel has an Evaluator, a Deep Diver, a Skeptic. Different interviewers ask different types of questions. Choose Friendly, Professional, or Brutal difficulty.</div>
+      </div>
+      <div class="problem-card" style="border-color:rgba(124,58,237,0.25);background:rgba(124,58,237,0.06);">
+        <div class="problem-icon">🎙</div>
+        <div class="problem-title" style="color:#A78BFA;">Live Camera + Mic</div>
+        <div class="problem-desc">Candidates answer on camera, just like the real interview. Watch your own playback. See yourself say "basically" seventeen times. You never forget it.</div>
+      </div>
+      <div class="problem-card" style="border-color:rgba(45,158,106,0.25);background:rgba(45,158,106,0.06);">
+        <div class="problem-icon">🔁</div>
+        <div class="problem-title" style="color:#34D399;">Repeat Until Ready</div>
+        <div class="problem-desc">Private mode means unlimited attempts, zero pressure. Practice the same question ten times. Submit only when you're genuinely ready.</div>
+      </div>
+    </div>
   </div>
 
   <div class="divider"></div>
