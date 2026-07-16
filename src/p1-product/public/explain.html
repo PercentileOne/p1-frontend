@@ -400,8 +400,13 @@ body {
 
 /* ── Pricing ── */
 .pricing-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
 }
+.price-card.oneoff {
+  background: rgba(251,146,60,0.07);
+  border-color: rgba(251,146,60,0.35);
+}
+.price-card.oneoff .price-tier { color: #FB923C; }
 
 .price-card {
   background: var(--surface);
@@ -1674,6 +1679,19 @@ body {
           <li>Basic scoring (overall only)</li>
           <li>Last 3 sessions history</li>
           <li>1 job spec upload</li>
+        </ul>
+      </div>
+      <div class="price-card oneoff">
+        <div class="price-tier">Interview Pass · One-Off</div>
+        <div class="price-amount">£9.99</div>
+        <div class="price-period">one-time · no subscription</div>
+        <ul class="price-features">
+          <li>3 job spec uploads</li>
+          <li>Unlimited practice against those roles</li>
+          <li>Full 5-dimension scoring</li>
+          <li>Filler word tracking</li>
+          <li>30 days access</li>
+          <li>Perfect for one upcoming interview</li>
         </ul>
       </div>
       <div class="price-card featured">
