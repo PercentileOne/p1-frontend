@@ -714,21 +714,18 @@ body {
         .xpanel-badge2{font-size:10px;font-weight:800;letter-spacing:1.5px;color:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.10);border-radius:4px;padding:3px 8px}
         .xtimer2{font-size:13px;font-weight:700;color:rgba(255,255,255,0.55);font-variant-numeric:tabular-nums}
         .xvideo-wrap{position:relative;background:#020810;padding:3px}
-        .xgrid2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px}
-        .xtile2{position:relative;overflow:hidden;border-radius:6px;background:#0D1A2E;aspect-ratio:4/3;transition:border-color 0.4s}
-        .xtile2 img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;filter:brightness(0.82)}
-        .xlive2{position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,0.55);border-radius:4px;padding:3px 7px}
+        .xgrid2{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+        .xtile2{position:relative;overflow:hidden;border-radius:6px;background:#0D1A2E;aspect-ratio:16/10;transition:outline 0.3s}
+        .xtile2 img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 15%;filter:brightness(0.72) saturate(0.80)}
+        .xtile2::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,12,26,0.15) 0%,rgba(4,12,26,0.0) 40%,rgba(4,12,26,0.65) 100%);pointer-events:none}
+        .xlive2{position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,0.55);border-radius:4px;padding:3px 7px;z-index:2}
         .xlive-dot2{width:6px;height:6px;border-radius:50%;background:#EF4444}
         .xlive-txt2{font-size:10px;font-weight:800;color:#fff;letter-spacing:0.5px}
-        .xmuted2{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,0.85);display:flex;align-items:center;justify-content:center}
-        .xname-row2{position:absolute;bottom:0;left:0;right:0;padding:20px 10px 8px;background:linear-gradient(transparent,rgba(0,0,0,0.85))}
+        .xmuted2{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,0.85);display:flex;align-items:center;justify-content:center;z-index:2}
+        .xname-row2{position:absolute;bottom:0;left:0;right:0;padding:20px 10px 8px;z-index:2}
         .xname2{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px}
         .xrole-badge2{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;transition:all 0.5s}
         .xtile-speaking2{outline:2px solid #4F8EF7;outline-offset:-2px}
-        .xpip{position:absolute;bottom:12px;right:12px;width:22%;aspect-ratio:4/3;border-radius:8px;overflow:hidden;border:2px solid rgba(30,77,216,0.80);box-shadow:0 4px 20px rgba(0,0,0,0.60);z-index:10}
-        .xpip img{width:100%;height:100%;object-fit:cover;object-position:center top;filter:brightness(0.90)}
-        .xpip-label{position:absolute;bottom:0;left:0;right:0;padding:10px 6px 4px;background:linear-gradient(transparent,rgba(0,0,0,0.85));font-size:9px;font-weight:800;color:#4F8EF7}
-        .xpip-mic{position:absolute;top:5px;right:5px;width:18px;height:18px;border-radius:50%;background:rgba(239,68,68,0.85);display:flex;align-items:center;justify-content:center}
         .xbottom2{background:#070F1E;border-top:1px solid rgba(255,255,255,0.07)}
         .xquestion-wrap2{padding:14px 18px 10px}
         .xqspeaker2{display:flex;align-items:center;gap:8px;margin-bottom:8px}
@@ -770,28 +767,32 @@ body {
 
         <div class="xvideo-wrap">
           <div class="xgrid2">
+            <!-- Victoria Hart — professional woman at desk -->
             <div class="xtile2 xtile-speaking2" id="xtile0">
-              <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=480&h=360&fit=crop&crop=faces,top" alt="Victoria Hart">
+              <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=480&h=300&fit=crop&crop=top" alt="Victoria Hart">
               <div class="xlive2"><div class="xlive-dot2"></div><span class="xlive-txt2">LIVE</span></div>
               <div class="xname-row2"><div class="xname2">Victoria Hart</div><span class="xrole-badge2" id="xbadge0" style="background:rgba(30,77,216,0.28);color:#60A5FA">&#11044; The Evaluator</span></div>
             </div>
+            <!-- Dr. James Reid — man in office -->
             <div class="xtile2" id="xtile1">
-              <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=480&h=360&fit=crop&crop=faces,top" alt="Dr. James Reid">
+              <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=480&h=300&fit=crop&crop=top" alt="Dr. James Reid">
               <div class="xlive2"><div class="xlive-dot2"></div><span class="xlive-txt2">LIVE</span></div>
               <div class="xname-row2"><div class="xname2">Dr. James Reid</div><span class="xrole-badge2" id="xbadge1" style="background:rgba(124,58,237,0.28);color:#A78BFA">&#11044; The Deep Diver</span></div>
             </div>
+            <!-- R. Cooper — arms-crossed skeptic -->
             <div class="xtile2" id="xtile2">
-              <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=480&h=360&fit=crop&crop=faces,top" alt="R. Cooper">
+              <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=480&h=300&fit=crop&crop=top" alt="R. Cooper">
               <div class="xlive2"><div class="xlive-dot2"></div><span class="xlive-txt2">LIVE</span></div>
               <div class="xmuted2"><i class="ti ti-microphone-off" style="font-size:12px;color:#fff"></i></div>
               <div class="xname-row2"><div class="xname2">R. Cooper</div><span class="xrole-badge2" id="xbadge2" style="background:rgba(217,119,6,0.22);color:#FBB24B">&#11044; The Skeptic</span></div>
             </div>
-          </div>
-          <!-- Candidate pip -->
-          <div class="xpip" id="xtile3">
-            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=240&h=180&fit=crop&crop=faces,top" alt="You" id="xpipimg">
-            <div class="xpip-mic" id="xyoumic2"><i class="ti ti-microphone-off" style="font-size:10px;color:#fff" id="xmicicon2"></i></div>
-            <div class="xpip-label" id="xyoubadge2">YOU · Muted</div>
+            <!-- You — candidate tile (bottom-right, 4th square) -->
+            <div class="xtile2" id="xtile3" style="outline:2px solid rgba(30,77,216,0.55);outline-offset:-2px;">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=480&h=300&fit=crop&crop=top" alt="You">
+              <div class="xlive2" style="background:rgba(30,77,216,0.65);"><div class="xlive-dot2" style="background:#4F8EF7"></div><span class="xlive-txt2">YOU</span></div>
+              <div class="xmuted2" id="xyoumic2"><i class="ti ti-microphone-off" style="font-size:12px;color:#fff" id="xmicicon2"></i></div>
+              <div class="xname-row2"><div class="xname2" style="color:#93C5FD;">You</div><span class="xrole-badge2" id="xyoubadge2" style="background:rgba(30,77,216,0.18);color:rgba(255,255,255,0.45);">Muted</span></div>
+            </div>
           </div>
         </div>
 
@@ -925,15 +926,15 @@ body {
             btn.classList.add('recording2');txt.textContent='Stop Recording';
             ind.style.opacity='1';dot.classList.add('xpulsing');
             mic.style.background='rgba(30,77,216,0.85)';icon.className='ti ti-microphone';
-            badge.textContent='YOU · Live';
-            document.getElementById('xtile3').style.borderColor='rgba(79,142,247,0.90)';
+            badge.textContent='Live';badge.style.color='#93C5FD';
+            document.getElementById('xtile3').style.outline='2px solid #4F8EF7';
             xiv=setInterval(()=>{xsecs++;const m=String(Math.floor(xsecs/60)).padStart(2,'0');const s=String(xsecs%60).padStart(2,'0');document.getElementById('xtimer2').textContent=m+':'+s;},1000);
           } else {
             btn.classList.remove('recording2');txt.textContent='Start Answer';
             ind.style.opacity='0.25';dot.classList.remove('xpulsing');
             mic.style.background='rgba(239,68,68,0.85)';icon.className='ti ti-microphone-off';
-            badge.textContent='YOU · Muted';
-            document.getElementById('xtile3').style.borderColor='rgba(30,77,216,0.80)';
+            badge.textContent='Muted';badge.style.color='rgba(255,255,255,0.45)';
+            document.getElementById('xtile3').style.outline='2px solid rgba(30,77,216,0.55)';
             clearInterval(xiv);xsecs=0;document.getElementById('xtimer2').textContent='00:00';
             const reaction=xReactions[xAnswered%xReactions.length];
             xAnswered++;
