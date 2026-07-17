@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=960">
-<title>Explain.app — Product Vision Brief</title>
+<title>Explain.global — Product Vision Brief</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-JPS8NSNCLD"></script>
 <script>
@@ -149,6 +149,8 @@ body {
   line-height: 1.2;
   margin-bottom: 16px;
   letter-spacing: -0.5px;
+  user-select: none;
+  cursor: default;
   text-wrap: balance;
 }
 
@@ -400,8 +402,14 @@ body {
 
 /* ── Pricing ── */
 .pricing-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px;
+  user-select: none;
 }
+.price-card.agency {
+  background: linear-gradient(160deg, rgba(234,179,8,0.07), rgba(239,68,68,0.05));
+  border-color: rgba(234,179,8,0.35);
+}
+.price-card.agency .price-tier { color: #FBBF24; }
 .price-card.oneoff {
   background: rgba(251,146,60,0.07);
   border-color: rgba(251,146,60,0.35);
@@ -591,7 +599,7 @@ body {
   <!-- ── HERO ── -->
   <div class="hero">
     <div class="hero-eyebrow">Product Vision Brief · Confidential · July 2026</div>
-    <div class="hero-name">Explain<span class="hero-tld">.app</span></div>
+    <div class="hero-name">Explain<span class="hero-tld">.global</span></div>
     <div class="hero-tagline">You only truly understand something<br>when you can explain it out loud.</div>
     <div class="hero-pill">The Feynman Technique — turned into a product.</div>
   </div>
@@ -644,10 +652,198 @@ body {
 
   <div class="divider"></div>
 
+  <!-- ── INTERVIEW PACK ── -->
+  <div class="section">
+    <div class="section-label">New Product Line</div>
+    <div class="section-title">The Interview Pack.<br>Both sides of the table.</div>
+    <div class="section-body">For 25 years, interview prep has only ever served the candidate. Nobody has ever thought about the interviewer — who is just as unprepared, just as scrambled, and just as in need of help. The Interview Pack fixes both sides of the same conversation.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px;">
+
+      <!-- Candidate Pack -->
+      <div style="background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.25);border-radius:16px;padding:28px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#4F8EF7;margin-bottom:14px;">For the Candidate</div>
+        <div style="font-size:22px;font-weight:900;color:var(--text);margin-bottom:8px;letter-spacing:-0.02em;">Candidate Interview Pack</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:20px;">Upload the job spec. Get 20 targeted questions built around your CV and the role — with model answers, coaching tips, and filler word guidance. Walk in knowing exactly what they're going to ask.</div>
+        <ul class="bullets" style="margin-bottom:20px;">
+          <li>20 questions generated from the actual job spec</li>
+          <li>Model answers tailored to the role and seniority</li>
+          <li>Per-question coaching tips — what to emphasise, what to avoid</li>
+          <li>Filler word awareness built into every answer guide</li>
+          <li>Printable or in-app — use it however you need</li>
+        </ul>
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px;">
+          <div style="font-size:36px;font-weight:900;color:var(--text);line-height:1;">£4.99</div>
+          <div style="font-size:13px;color:var(--text-3);">one-time · no subscription</div>
+        </div>
+        <div style="font-size:12px;color:#4F8EF7;font-weight:700;">"Got an interview coming up? Relax."</div>
+      </div>
+
+      <!-- Interviewer Pack -->
+      <div style="background:rgba(234,179,8,0.06);border:1px solid rgba(234,179,8,0.28);border-radius:16px;padding:28px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#EAB308;margin-bottom:14px;">For the Interviewer</div>
+        <div style="font-size:22px;font-weight:900;color:var(--text);margin-bottom:8px;letter-spacing:-0.02em;">Interviewer Interview Pack</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:20px;">The hiring manager who finds out at 9am that their panel is at 2pm. The recruiter scrambling to find "worthy questions" from Google. Upload the job spec — get a professional, structured question pack to walk into the room with.</div>
+        <ul class="bullets" style="margin-bottom:20px;">
+          <li>30 targeted questions built from the job specification</li>
+          <li>What a <strong style="color:#34D399;">strong answer</strong> looks like — per question</li>
+          <li>What a <strong style="color:#F87171;">weak answer</strong> looks like — per question</li>
+          <li>Red flags to listen for in each response</li>
+          <li>Competency scoring guide — structure your debrief objectively</li>
+          <li>Printable panel pack — ready to walk into the room</li>
+        </ul>
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px;">
+          <div style="font-size:36px;font-weight:900;color:var(--text);line-height:1;">£9.99</div>
+          <div style="font-size:13px;color:var(--text-3);">one-time · no subscription</div>
+        </div>
+        <div style="font-size:12px;color:#EAB308;font-weight:700;">"Stop Googling questions at 8:55am."</div>
+      </div>
+
+    </div>
+
+    <!-- The insight callout -->
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px 28px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;text-align:center;">
+      <div>
+        <div style="font-size:28px;font-weight:900;color:#4F8EF7;margin-bottom:6px;">Same job spec.</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.6;">The candidate uploads it. The interviewer uploads it. The AI produces completely different outputs for each.</div>
+      </div>
+      <div>
+        <div style="font-size:28px;font-weight:900;color:#EAB308;margin-bottom:6px;">Sold twice.</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.6;">The same document monetised on both sides of the interview table. No other product in the world does this.</div>
+      </div>
+      <div>
+        <div style="font-size:28px;font-weight:900;color:#34D399;margin-bottom:6px;">Every day.</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.6;">Millions of interviews happen globally every single day. Every one of them needs both a candidate pack and an interviewer pack.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── WHO IS THIS FOR ── -->
+  <div class="section">
+    <div class="section-label">Who Is This For?</div>
+    <div class="section-title">Not just job interviews.<br>Every high-stakes interview in the world.</div>
+    <div class="section-body" style="margin-bottom:40px;"><span class="brand">Explain</span> started with career interviews. Then we realised — the terror of walking into a room unprepared isn't unique to job seekers. It's universal. Visa applicants. Driving theory candidates. University hopefuls. Citizenship seekers. The product is the same. The stakes are just as high. Here's who this is really for.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:32px;">
+
+      <div class="problem-card" style="border-color:rgba(99,102,241,0.25);background:rgba(99,102,241,0.06);">
+        <div class="problem-icon">🎓</div>
+        <div class="problem-title" style="color:#818cf8;">The First-Timer</div>
+        <div class="problem-desc">16 years old. First ever job interview — McDonald's, Tesco, a local café. Never been in that situation before. Terrified. <span class="brand">Explain</span> makes the first interview feel like the tenth. <strong style="color:var(--text-1);">£4.99 CV Interrogation Pass.</strong> Job done.</div>
+      </div>
+
+      <div class="problem-card" style="border-color:rgba(99,102,241,0.25);background:rgba(99,102,241,0.06);">
+        <div class="problem-icon">🏥</div>
+        <div class="problem-title" style="color:#818cf8;">The Medical Graduate</div>
+        <div class="problem-desc">Foundation Programme interview. One shot. Years of study, one conversation that shapes an entire career. <span class="brand">Explain</span> builds a panel of consultants and grills them on clinical scenarios, ethics, and situational judgement — before the real panel does.</div>
+      </div>
+
+      <div class="problem-card" style="border-color:rgba(99,102,241,0.25);background:rgba(99,102,241,0.06);">
+        <div class="problem-icon">💼</div>
+        <div class="problem-title" style="color:#818cf8;">The Graduate</div>
+        <div class="problem-desc">First "proper" job. Doesn't know what to wear, let alone what to say. Uploads the job spec at midnight. <span class="brand">Explain</span> finds the gaps at 11pm — not 9am. Walks in the next morning like they've done this before.</div>
+      </div>
+
+      <div class="problem-card" style="border-color:rgba(99,102,241,0.25);background:rgba(99,102,241,0.06);">
+        <div class="problem-icon">🔄</div>
+        <div class="problem-title" style="color:#818cf8;">The Career Changer</div>
+        <div class="problem-desc">Moving from one industry to another. The skills transfer — but how do you explain that convincingly in 60 seconds? <span class="brand">Explain</span> stress-tests that story until it lands every time.</div>
+      </div>
+
+      <div class="problem-card" style="border-color:rgba(99,102,241,0.25);background:rgba(99,102,241,0.06);">
+        <div class="problem-icon">📋</div>
+        <div class="problem-title" style="color:#818cf8;">The Redundant Professional</div>
+        <div class="problem-desc">50 years old. Made redundant after 20 years. Hasn't interviewed since 2004. Paralysed by the thought of it. <span class="brand">Explain</span> rebuilds interview confidence one session at a time — privately, safely, at their own pace.</div>
+      </div>
+
+      <div class="problem-card" style="border-color:rgba(99,102,241,0.25);background:rgba(99,102,241,0.06);">
+        <div class="problem-icon">🌍</div>
+        <div class="problem-title" style="color:#818cf8;">The International Candidate</div>
+        <div class="problem-desc">English is perfect. Interview manner is calibrated to a different culture. <span class="brand">Explain</span> teaches not just what to say — but how to say it. Tone, pacing, filler words, confidence. The full picture.</div>
+      </div>
+
+      <div class="problem-card" style="border-color:rgba(99,102,241,0.25);background:rgba(99,102,241,0.06);">
+        <div class="problem-icon">🏛️</div>
+        <div class="problem-title" style="color:#818cf8;">The University Applicant</div>
+        <div class="problem-desc">Oxford. Cambridge. Imperial. Medicine. Law. Every competitive university programme ends with an interview. <span class="brand">Explain</span> is the only tool that actually simulates that panel — and tells you honestly how you did.</div>
+      </div>
+
+      <div class="problem-card" style="border-color:rgba(99,102,241,0.25);background:rgba(99,102,241,0.06);">
+        <div class="problem-icon">📈</div>
+        <div class="problem-title" style="color:#818cf8;">The Ambitious Climber</div>
+        <div class="problem-desc">Already employed. Eyeing a promotion or a senior role elsewhere. Doesn't want anyone at work to know they're looking. <span class="brand">Explain</span> is completely private prep — no agency, no coach, no awkward conversations.</div>
+      </div>
+
+      <div class="problem-card" style="border-color:rgba(99,102,241,0.25);background:rgba(99,102,241,0.06);">
+        <div class="problem-icon">🐾</div>
+        <div class="problem-title" style="color:#818cf8;">Everyone Else</div>
+        <div class="problem-desc">Dog walkers. Retail managers. Chefs. Solicitors. Nurses. Architects. Pilots. If there's a job spec and an interview at the end — <span class="brand">Explain</span> builds the prep. Every industry. Every level. Every role.</div>
+      </div>
+
+    </div>
+
+    <!-- Coming Soon vertical divider -->
+    <div style="display:flex;align-items:center;gap:16px;margin:32px 0 24px;">
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+      <div style="font-size:11px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#F59E0B;white-space:nowrap;">Coming · Beyond Job Interviews</div>
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:32px;">
+
+      <div class="problem-card" style="border-color:rgba(245,158,11,0.25);background:rgba(245,158,11,0.05);">
+        <div class="problem-icon">🛂</div>
+        <div class="problem-title" style="color:#F59E0B;">Visa Interviews <span style="font-size:10px;background:rgba(245,158,11,0.2);color:#F59E0B;padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:0.05em;margin-left:4px;">COMING</span></div>
+        <div class="problem-desc">US Green Card. UK Skilled Worker. Canadian PR. Australian points-based. Schengen. The most life-changing interview most people will ever face — and right now they prepare by Googling. <span class="brand">Explain</span> builds them an immigration officer panel and drills every question until they're ready. Millions of applicants globally. Every single year.</div>
+      </div>
+
+      <div class="problem-card" style="border-color:rgba(245,158,11,0.25);background:rgba(245,158,11,0.05);">
+        <div class="problem-icon">🚗</div>
+        <div class="problem-title" style="color:#F59E0B;">Driving Theory <span style="font-size:10px;background:rgba(245,158,11,0.2);color:#F59E0B;padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:0.05em;margin-left:4px;">COMING</span></div>
+        <div class="problem-desc">UK Theory Test. US Written Exam. European driving licences. The MCQ engine we've already built — applied to hazard perception, highway code, and road law. Timed. Pressured. Scored. Exactly how the real test feels. A market of 600,000+ UK test-takers every year alone.</div>
+      </div>
+
+      <div class="problem-card" style="border-color:rgba(245,158,11,0.25);background:rgba(245,158,11,0.05);">
+        <div class="problem-icon">🏛️</div>
+        <div class="problem-title" style="color:#F59E0B;">Citizenship Tests <span style="font-size:10px;background:rgba(245,158,11,0.2);color:#F59E0B;padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:0.05em;margin-left:4px;">COMING</span></div>
+        <div class="problem-desc">Life in the UK. US Naturalization. Canadian citizenship. For millions of immigrants, this is the final gate — years of building a life, one test standing between them and belonging. <span class="brand">Explain</span> makes sure they walk in ready.</div>
+      </div>
+
+      <div class="problem-card" style="border-color:rgba(245,158,11,0.25);background:rgba(245,158,11,0.05);">
+        <div class="problem-icon">⚕️</div>
+        <div class="problem-title" style="color:#F59E0B;">Medical Licensing <span style="font-size:10px;background:rgba(245,158,11,0.2);color:#F59E0B;padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:0.05em;margin-left:4px;">COMING</span></div>
+        <div class="problem-desc">PLAB. GMC registration interviews. Foundation Programme. Specialty training applications. International medical graduates face some of the most gruelling verbal assessments in any profession. <span class="brand">Explain</span> becomes their clinical panel — before the real one.</div>
+      </div>
+
+      <div class="problem-card" style="border-color:rgba(245,158,11,0.25);background:rgba(245,158,11,0.05);">
+        <div class="problem-icon">👮</div>
+        <div class="problem-title" style="color:#F59E0B;">Civil Service & Police <span style="font-size:10px;background:rgba(245,158,11,0.2);color:#F59E0B;padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:0.05em;margin-left:4px;">COMING</span></div>
+        <div class="problem-desc">Police officer selection. Civil Service Fast Stream. Armed forces interviews. These are structured competency-based interviews with strict scoring frameworks — exactly what <span class="brand">Explain</span> is built to simulate and coach.</div>
+      </div>
+
+      <div class="problem-card" style="border-color:rgba(245,158,11,0.25);background:rgba(245,158,11,0.05);">
+        <div class="problem-icon">📊</div>
+        <div class="problem-title" style="color:#F59E0B;">Financial Licensing <span style="font-size:10px;background:rgba(245,158,11,0.2);color:#F59E0B;padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:0.05em;margin-left:4px;">COMING</span></div>
+        <div class="problem-desc">CFA. FCA regulatory interviews. Series 7. IMC. Financial professionals face verbal regulatory assessments that combine technical knowledge with articulate explanation under pressure. That is precisely what <span class="brand">Explain</span> trains.</div>
+      </div>
+
+    </div>
+
+    <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.25);border-radius:12px;padding:22px 28px;text-align:center;user-select:none;">
+      <div style="font-size:15px;color:var(--text-1);font-weight:600;margin-bottom:6px;">This is no longer an interview prep app.</div>
+      <div style="font-size:14px;color:var(--text-2);">It is the world's interview engine. Every high-stakes verbal assessment, in every industry, in every country. The same product. The same terror. The same fix.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
   <!-- ── THE PRODUCT ── -->
   <div class="section">
     <div class="section-label">The Product</div>
-    <div class="section-title">Three layers. One complete system.</div>
+    <div class="section-title">Four layers. One complete system.</div>
     <div class="section-body" style="margin-bottom: 32px;"><span class="brand">Explain</span> is built in three layers that work independently and compound together. Each layer adds value on its own. Together they create something nobody else has.</div>
 
     <div class="layers">
@@ -680,6 +876,7 @@ body {
           <div class="layer-desc">The candidate or recruiter uploads the real job specification. AI reads the requirements — tech stack, seniority, domain — and generates targeted interview questions and subject material specific to that role. A £600k quant-developer role in New York gets completely different prep to a £80k React developer role in Manchester.</div>
           <ul class="bullets">
             <li>Upload PDF or paste job description</li>
+            <li>Review &amp; edit the extracted spec before generating — add skills, context, or emphasis (e.g. "add SCRUM, Azure, stakeholder management")</li>
             <li>AI extracts role requirements, seniority, domain, tech stack</li>
             <li>Generates 10–20 targeted practice questions</li>
             <li>Creates subject lessons for each key area</li>
@@ -691,6 +888,25 @@ body {
 
       <div class="layer">
         <div class="layer-num">03</div>
+        <div>
+          <div class="layer-title">The Candidate Portal</div>
+          <div class="layer-hook">A simulated panel interview. On your screen. Before the real one.</div>
+          <div class="layer-desc">The desktop experience that sets Explain apart. A candidate sits at their computer and runs a simulated panel interview — built from the actual job spec, with realistic panel characters, real pressure, and spoken answers. This is practice, but practice so close to the real thing that when the actual interview comes, it already feels familiar. The AI coaches in the background, scores every answer, and delivers a full debrief the moment the session ends. You are in control the whole time. Nothing else on the market does this.</div>
+          <ul class="bullets">
+            <li>Zoom-style panel simulator — realistic characters, real pressure, fully in your control</li>
+            <li>Questions generated from the uploaded job spec</li>
+            <li>Live filler word detection ("um", "uh", "like", "basically")</li>
+            <li>Real-time confidence meter updated after each answer</li>
+            <li>Full 5-dimension scoring — Clarity, Confidence, Depth, Accuracy, Structure</li>
+            <li>Post-interview debrief with per-question breakdown</li>
+            <li>Desktop-first — built for the environment where interviews actually happen</li>
+          </ul>
+          <span class="tag tag-new">New · Unique Feature</span>
+        </div>
+      </div>
+
+      <div class="layer">
+        <div class="layer-num">04</div>
         <div>
           <div class="layer-title">The Recruiter Portal</div>
           <div class="layer-hook">Recruiters send prep. Candidates arrive ready. Everyone wins.</div>
@@ -736,11 +952,65 @@ body {
 
   <div class="divider"></div>
 
+  <!-- ── THE DATA LAYER ── -->
+  <div class="section">
+    <div class="section-label">The Data Layer</div>
+    <div class="section-title">The most valuable recruitment dataset ever built.</div>
+    <div class="section-body" style="margin-bottom:40px;">Because <span class="brand">Explain</span> scores every candidate, for every role, on the same five dimensions — it becomes something no recruiter, no platform, and no AI tool has ever had: a real-time, comparable benchmark across every interview happening right now. That data changes everything.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:40px;">
+
+      <div class="b2b" style="border-color:#6366f1;background:rgba(99,102,241,0.06);">
+        <div class="b2b-eyebrow" style="color:#818cf8;">Comparative Insight · For Candidates</div>
+        <div class="b2b-title" style="font-size:17px;margin-bottom:10px;">"Why didn't I get the job?"</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">For the first time in history, a candidate can be told exactly why someone else got the role — not vague HR speak, but real dimensional data.<br><br><em style="color:var(--text-1);">"You scored 71 on Technical Depth. The hired candidate scored 89. Their edge was .NET 10 and system design questions."</em><br><br>No recruiter has ever been able to give feedback this honest. They didn't have the data. <span class="brand">Explain</span> does.</div>
+      </div>
+
+      <div class="b2b" style="border-color:#6366f1;background:rgba(99,102,241,0.06);">
+        <div class="b2b-eyebrow" style="color:#818cf8;">Percentile Benchmarking · For Candidates</div>
+        <div class="b2b-title" style="font-size:17px;margin-bottom:10px;">Where do you actually rank?</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">With thousands of scored interviews across every role type, <span class="brand">Explain</span> can tell any candidate exactly where they sit in the global talent pool.<br><br><em style="color:var(--text-1);">"You're in the 68th percentile of all Senior .NET Developer candidates on Explain. Your strongest dimension is Clarity. Your gap is Depth."</em><br><br>This is what the company was always building toward. Percentile. One.</div>
+      </div>
+
+      <div class="b2b" style="border-color:#6366f1;background:rgba(99,102,241,0.06);">
+        <div class="b2b-eyebrow" style="color:#818cf8;">Recruiter Ranking View · For Recruiters</div>
+        <div class="b2b-title" style="font-size:17px;margin-bottom:10px;">10 candidates. Ranked. On Tuesday.</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">A recruiter posts a Senior .NET Developer role. Ten candidates complete their <span class="brand">Explain</span> interview. The recruiter opens a dashboard — every candidate ranked, scored, and compared side by side. Click any name to watch their full recorded session.<br><br>Weeks of phone screens, CV sifts, and first-round interviews — compressed into a single afternoon. This is what hiring looks like when the data exists.</div>
+      </div>
+
+      <div class="b2b" style="border-color:#6366f1;background:rgba(99,102,241,0.06);">
+        <div class="b2b-eyebrow" style="color:#818cf8;">The Shareable Interview · For Everyone</div>
+        <div class="b2b-title" style="font-size:17px;margin-bottom:10px;">Your interview. As a portfolio piece.</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">A candidate completes their <span class="brand">Explain</span> panel interview, hits share, and sends a link. The employer watches a full 20-minute interview before they've even picked up the phone.<br><br>Some employers will shortlist directly from it. Some will hire. The CV becomes secondary. The first-round interview call becomes optional.<br><br><em style="color:var(--text-1);">Nobody has built the shareable interview. Until now.</em></div>
+      </div>
+
+    </div>
+
+    <div style="background:rgba(99,102,241,0.10);border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:28px 32px;max-width:760px;margin:0 auto 8px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;color:#818cf8;text-transform:uppercase;margin-bottom:12px;">The strategic moat</div>
+      <div style="font-size:15px;color:var(--text-1);line-height:1.8);">Every interview scored on <span class="brand">Explain</span> makes the benchmarks more accurate. More accurate benchmarks make the product more valuable. More value attracts more users. More users generate more data. The moat widens automatically — and no competitor can replicate it without starting from zero.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
   <!-- ── INTERVIEW EXPERIENCE ── -->
   <div class="section">
     <div class="section-label">The Interview Experience</div>
     <div class="section-title">Not a practice tool.<br>As close to the real thing as you're going to get.</div>
-    <div class="section-body" style="margin-bottom:32px;">The candidate faces a live panel of AI interviewers — each with a name, a role, and a personality. One evaluates. One deep-dives. One challenges everything. The candidate answers in real time, on camera, just like the actual interview. It's the closest preparation possible without sitting in the room — and it's interactive, scored, and repeatable as many times as they need.</div>
+    <div class="section-body" style="margin-bottom:28px;">The candidate runs a simulated panel interview — each panel character has a name, a role, and a personality. One evaluates. One deep-dives. One challenges everything. This isn't a company screening you. This is you, on your terms, practising until it feels second nature. Spoken answers, real pressure, immediate scoring — and repeatable as many times as needed until you're ready.</div>
+
+    <div style="text-align:center;margin-bottom:36px;padding:32px 24px;background:linear-gradient(135deg,rgba(30,77,216,0.12),rgba(99,102,241,0.08));border:1px solid rgba(99,102,241,0.25);border-radius:16px;user-select:none;">
+      <div style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:10px;letter-spacing:-0.5px;">"The hardest interview you'll ever take.<br>On purpose."</div>
+      <div style="font-size:13px;color:var(--text-3);margin-bottom:16px;">If you pass here, you'll pass out there.</div>
+      <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
+        <div style="font-size:12px;color:var(--text-2);"><span style="color:#34D399;font-weight:700;">✓</span> Panel with distinct personalities</div>
+        <div style="font-size:12px;color:var(--text-2);"><span style="color:#34D399;font-weight:700;">✓</span> Live filler word tracking</div>
+        <div style="font-size:12px;color:var(--text-2);"><span style="color:#34D399;font-weight:700;">✓</span> Surprise MCQ under countdown</div>
+        <div style="font-size:12px;color:var(--text-2);"><span style="color:#34D399;font-weight:700;">✓</span> Immediate honest scoring</div>
+        <div style="font-size:12px;color:var(--text-2);"><span style="color:#34D399;font-weight:700;">✓</span> No polite feedback. Real feedback.</div>
+      </div>
+    </div>
 
     <!-- Interactive mockup -->
     <div style="margin-bottom:28px;">
@@ -787,6 +1057,7 @@ body {
         .xagent-bar{padding:8px 18px;background:rgba(124,58,237,0.12);border-top:1px solid rgba(124,58,237,0.20);display:none;align-items:center;gap:10px}
         .xagent-spinner{width:14px;height:14px;border:2px solid rgba(167,139,250,0.30);border-top-color:#A78BFA;border-radius:50%}
         @keyframes xspin{to{transform:rotate(360deg)}}
+        @keyframes xslideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
         .xspinning{animation:xspin 0.7s linear infinite}
         .xagent-txt{font-size:11px;font-weight:700;color:#A78BFA}
         .xmeter-bar{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;margin:0 18px 0;display:none}
@@ -874,6 +1145,36 @@ body {
             <div class="xmeter-fill" id="xmeterfill" style="width:0%;background:#4F8EF7"></div>
           </div>
 
+          <!-- Coaching card -->
+          <div id="xcoachcard" style="display:none;margin-bottom:10px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:10px;padding:14px 16px;font-size:12px;line-height:1.7;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#818cf8;margin-bottom:6px;">Question answered</div>
+                <div id="xcoach-q" style="color:var(--text-2);font-style:italic;"></div>
+              </div>
+              <div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#34D399;margin-bottom:6px;">Recommended for next time</div>
+                <div id="xcoach-tip" style="color:var(--text-1);"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MCQ Panel -->
+          <div id="xmcqpanel" style="display:none;margin-bottom:10px;background:#0d1117;border:1px solid rgba(99,102,241,0.45);border-radius:12px;overflow:hidden;animation:xslideDown 0.4s ease;">
+            <div style="background:rgba(99,102,241,0.15);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#818cf8;">⚡ Quick-fire · Multiple Choice</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="font-size:11px;color:rgba(255,255,255,0.5);">Answer in</div>
+                <div id="xmcqcountdown" style="font-size:16px;font-weight:900;color:#F87171;font-variant-numeric:tabular-nums;min-width:24px;text-align:center;">30</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.5);">seconds</div>
+              </div>
+            </div>
+            <div style="padding:14px 16px;">
+              <div id="xmcqquestion" style="font-size:13px;color:var(--text-1);font-weight:600;margin-bottom:14px;line-height:1.6;"></div>
+              <div id="xmcqoptions" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+            </div>
+          </div>
+
           <!-- Score toast -->
           <div class="xscore-toast" id="xscoretoast">
             <span id="xscoreemoji" style="font-size:18px"></span>
@@ -885,8 +1186,8 @@ body {
           </div>
 
           <div class="xcontrols2">
-            <span class="xqnum2" id="xqnum2">Question 1 of 5</span>
-            <button class="xnext-btn2" onclick="nextQ2()">Next question →</button>
+            <span class="xqnum2" id="xqnum2"></span>
+            <button id="xbreatherbtn" onclick="toggleBreather()" style="display:none;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);font-size:12px;font-weight:600;padding:8px 16px;border-radius:20px;cursor:pointer;letter-spacing:0.03em;">⏸ Take a breather</button>
             <button class="xrec-btn2" id="xrecbtn2" onclick="toggleRec2()">
               <div class="xrec-btn-dot2"></div>
               <span id="xrecbtntxt2">Start Answer</span>
@@ -900,16 +1201,111 @@ body {
           {q:'"Tell me about your experience with .NET Core — specifically how you\'ve used it in a production environment at scale."',speaker:'Victoria Hart is asking:',dot:'#60A5FA',tile:0},
           {q:'"Walk me through a time you debugged a critical production issue under real pressure. What was the root cause, and how did you fix it?"',speaker:'Dr. James Reid is asking:',dot:'#A78BFA',tile:1},
           {q:'"Why should we pick you over the other candidates we\'re seeing today? Be specific — not generic."',speaker:'R. Cooper is asking:',dot:'#FBB24B',tile:2},
-          {q:'"Where do you see yourself in three years, and how does this role fit into that plan?"',speaker:'Victoria Hart is asking:',dot:'#60A5FA',tile:0},
-          {q:'"Tell me about your biggest technical weakness. And please — don\'t say you work too hard."',speaker:'Dr. James Reid is asking:',dot:'#A78BFA',tile:1}
+          {q:'"Describe your approach to system design. Walk us through how you\'d architect a high-traffic API from scratch."',speaker:'Victoria Hart is asking:',dot:'#60A5FA',tile:0},
+          {q:'"Tell me about your biggest technical weakness. And please — don\'t say you work too hard."',speaker:'Dr. James Reid is asking:',dot:'#A78BFA',tile:1},
+          {q:'"Give me an example of a time you disagreed with a technical decision made by your team. What did you do?"',speaker:'S. Davies is asking:',dot:'#34D399',tile:3},
+          {q:'"How do you stay current with .NET and the broader ecosystem? What have you learned in the last three months?"',speaker:'R. Cooper is asking:',dot:'#FBB24B',tile:2},
+          {q:'"Walk me through the most complex codebase you\'ve ever worked on. What made it complex, and how did you navigate it?"',speaker:'Victoria Hart is asking:',dot:'#60A5FA',tile:0},
+          {q:'"Where do you see yourself in three years, and how does this role fit into that plan?"',speaker:'Dr. James Reid is asking:',dot:'#A78BFA',tile:1},
+          {q:'"Last question. If you could go back and change one decision you made in your career — what would it be and why?"',speaker:'S. Davies is asking:',dot:'#34D399',tile:3},
         ];
-        let xqi=0,xrec=false,xsecs=0,xiv=null,xfb=true,xtotalScore=0,xAnswered=0;
+        let xqi=0,xrec=false,xsecs=0,xiv=null,xfb=true,xtotalScore=0,xAnswered=0,xAdvanceTimer=null,xPaused=false;
+
+        // MCQ questions — triggered randomly at questions 4 and 8 (0-indexed)
+        const xMCQtriggers=new Set([4,8]);
+        const xMCQs=[
+          {
+            q:'Which of the following best describes the difference between async/await and traditional threading in .NET?',
+            options:['async/await blocks the thread while waiting','async/await frees the thread to do other work while awaiting','async/await only works with UI applications','async/await is faster because it uses multiple CPU cores'],
+            correct:1
+          },
+          {
+            q:'In a microservices architecture, which pattern best handles a failure in one service cascading to others?',
+            options:['Singleton Pattern','Circuit Breaker Pattern','Repository Pattern','Observer Pattern'],
+            correct:1
+          }
+        ];
+        let xMCQindex=0,xMCQtimer=null,xMCQactive=false;
+
+        function showMCQ(){
+          xMCQactive=true;
+          const mcq=xMCQs[xMCQindex%xMCQs.length];
+          document.getElementById('xrecbtn2').style.display='none';
+          document.getElementById('xbreatherbtn').style.display='none';
+          document.getElementById('xmcqquestion').textContent=mcq.q;
+          const opts=document.getElementById('xmcqoptions');
+          opts.innerHTML='';
+          mcq.options.forEach((o,i)=>{
+            const btn=document.createElement('button');
+            btn.textContent=o;
+            btn.style.cssText='background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:var(--text-2);font-size:12px;padding:10px 12px;border-radius:8px;cursor:pointer;text-align:left;line-height:1.5;transition:all 0.2s;';
+            btn.onmouseover=()=>{if(!btn.disabled)btn.style.background='rgba(99,102,241,0.15)';btn.style.borderColor='rgba(99,102,241,0.4)';};
+            btn.onmouseout=()=>{if(!btn.disabled&&!btn.dataset.selected)btn.style.background='rgba(255,255,255,0.05)';btn.style.borderColor='rgba(255,255,255,0.12)';};
+            btn.onclick=()=>answerMCQ(i,mcq.correct);
+            opts.appendChild(btn);
+          });
+          document.getElementById('xmcqpanel').style.display='block';
+          let secs=30;
+          document.getElementById('xmcqcountdown').textContent=secs;
+          xMCQtimer=setInterval(()=>{
+            secs--;
+            document.getElementById('xmcqcountdown').textContent=secs;
+            if(secs<=10)document.getElementById('xmcqcountdown').style.color='#EF4444';
+            if(secs<=0){clearInterval(xMCQtimer);answerMCQ(-1,mcq.correct);}
+          },1000);
+        }
+
+        function answerMCQ(chosen,correct){
+          clearInterval(xMCQtimer);
+          const btns=document.getElementById('xmcqoptions').querySelectorAll('button');
+          btns.forEach((b,i)=>{
+            b.disabled=true;
+            if(i===correct){b.style.background='rgba(52,211,153,0.2)';b.style.borderColor='#34D399';b.style.color='#34D399';}
+            else if(i===chosen){b.style.background='rgba(239,68,68,0.2)';b.style.borderColor='#EF4444';b.style.color='#EF4444';}
+          });
+          setTimeout(()=>{
+            document.getElementById('xmcqpanel').style.display='none';
+            document.getElementById('xrecbtn2').style.display='';
+            xMCQactive=false;
+            xMCQindex++;
+            nextQ2();
+          },2000);
+        }
+
+        const xCoaching=[
+          {q:'"Tell me about your experience with .NET Core at scale."',tip:'Strong opening and your Azure example landed well. Next time close with the business impact — they remember the outcome, not the implementation. Cut the last 20 seconds.'},
+          {q:'"Walk me through debugging a critical production issue under pressure."',tip:'Good use of STAR structure. But you glossed over the root cause — that\'s the part they\'re testing. Slow down there, be specific, then move on.'},
+          {q:'"Why should we pick you over the other candidates?"',tip:'You were too humble here. This question wants confidence, not modesty. Name your edge directly: "I ship. I don\'t just architect." Own it.'},
+          {q:'"How would you architect a high-traffic API from scratch?"',tip:'You covered the right areas but jumped around. Lead with your constraints first — scale, latency, cost — then walk the layers. Structure before detail.'},
+          {q:'"What\'s your biggest technical weakness?"',tip:'Good that you named a real one. But follow it immediately with what you\'re doing about it. "I\'m weak on X, which is why I\'ve spent the last 3 months doing Y." That\'s the full answer.'},
+          {q:'"Tell me about a time you disagreed with a technical decision."',tip:'You told the story but buried the outcome. What actually happened? Did it go your way? What did you learn? The ending is the whole point of this question.'},
+          {q:'"How do you stay current with .NET and the ecosystem?"',tip:'Solid answer. Could be sharper — name one specific thing you learned recently and why it matters. Vague answers here make you sound like everyone else.'},
+          {q:'"Walk me through the most complex codebase you\'ve worked on."',tip:'You spent too long on what made it complex and not enough on how you navigated it. They want to see your process under pressure, not just the chaos.'},
+          {q:'"Where do you see yourself in three years?"',tip:'Answer was fine but generic. Tie it to this specific role and company — show you\'ve thought about it. "In three years I want to have built X here" is 10× stronger.'},
+          {q:'"If you could change one career decision — what would it be?"',tip:'Honest answer, which is exactly right. But end on a forward note — what that experience taught you. Never leave a reflective question without a growth moment at the end.'},
+        ];
 
         const xReactions=[
           {score:88,badge0:'&#11044; Impressed',b0col:'#34D399',b0bg:'rgba(45,158,106,0.28)',badge1:'&#11044; Leaning In',b1col:'#A78BFA',badge2:'&#11044; Warming Up',b2col:'#60A5FA',b2bg:'rgba(30,77,216,0.22)',toast:'Outstanding answer.',emoji:'🟢',tcol:'rgba(45,158,106,0.20)',tbord:'rgba(45,158,106,0.35)',ttcol:'#34D399',desc:'Clear, confident, structured. No filler.'},
           {score:71,badge0:'&#11044; Interested',b0col:'#60A5FA',b0bg:'rgba(30,77,216,0.22)',badge1:'&#11044; Needs More Depth',b1col:'#A78BFA',badge2:'&#11044; The Skeptic',b2col:'#FBB24B',b2bg:'rgba(217,119,6,0.22)',toast:'Decent — but too vague.',emoji:'🟡',tcol:'rgba(217,119,6,0.15)',tbord:'rgba(217,119,6,0.30)',ttcol:'#FBB24B',desc:'Push for specifics next time. Less "basically".'},
           {score:44,badge0:'&#11044; Unconvinced',b0col:'#F87171',b0bg:'rgba(239,68,68,0.20)',badge1:'&#11044; Raising an Eyebrow',b1col:'#A78BFA',badge2:'&#11044; The Interrogator',b2col:'#F87171',b2bg:'rgba(239,68,68,0.18)',toast:'Panel sensed a gap.',emoji:'🔴',tcol:'rgba(239,68,68,0.12)',tbord:'rgba(239,68,68,0.28)',ttcol:'#F87171',desc:'Said "sort of thing" 4×. Restructure using STAR.'},
         ];
+
+        function toggleBreather(){
+          const btn=document.getElementById('xbreatherbtn');
+          if(!xPaused){
+            xPaused=true;
+            clearTimeout(xAdvanceTimer);
+            btn.textContent='▶ Ready — next question';
+            btn.style.background='rgba(30,77,216,0.25)';
+            btn.style.borderColor='rgba(30,77,216,0.5)';
+            btn.style.color='#93C5FD';
+          } else {
+            xPaused=false;
+            btn.style.display='none';
+            nextQ2();
+          }
+        }
 
         function toggleFB(){
           xfb=!xfb;
@@ -950,6 +1346,21 @@ body {
             document.getElementById('xbadge2').innerHTML=reaction.badge2;
             document.getElementById('xbadge2').style.color=reaction.b2col;
             document.getElementById('xbadge2').style.background=reaction.b2bg||'rgba(217,119,6,0.22)';
+            const coaching=xCoaching[xqi%xCoaching.length];
+            document.getElementById('xcoach-q').textContent=coaching.q;
+            document.getElementById('xcoach-tip').textContent=coaching.tip;
+            document.getElementById('xcoachcard').style.display='block';
+            document.getElementById('xbreatherbtn').style.display='inline-flex';
+            xPaused=false;
+            let xCountdown=10;
+            document.getElementById('xbreatherbtn').textContent='⏸ Take a breather  ·  Next question in '+xCountdown+'s';
+            const xCountIv=setInterval(()=>{
+              if(xPaused){clearInterval(xCountIv);return;}
+              xCountdown--;
+              if(xCountdown<=0){clearInterval(xCountIv);return;}
+              document.getElementById('xbreatherbtn').textContent='⏸ Take a breather  ·  Next question in '+xCountdown+'s';
+            },1000);
+            xAdvanceTimer=setTimeout(()=>{clearInterval(xCountIv);document.getElementById('xbreatherbtn').style.display='none';nextQ2();}, 10000);
           },2200);
         }
 
@@ -957,15 +1368,24 @@ body {
           if(xrec)toggleRec2();
           document.getElementById('xscoretoast').style.display='none';
           document.getElementById('xmeterbar').style.display='none';
+          document.getElementById('xcoachcard').style.display='none';
           document.getElementById('xbadge0').innerHTML='&#11044; The Evaluator';document.getElementById('xbadge0').style.color='#60A5FA';document.getElementById('xbadge0').style.background='rgba(30,77,216,0.28)';
           document.getElementById('xbadge1').innerHTML='&#11044; The Deep Diver';document.getElementById('xbadge1').style.color='#A78BFA';
           document.getElementById('xbadge2').innerHTML='&#11044; The Skeptic';document.getElementById('xbadge2').style.color='#FBB24B';document.getElementById('xbadge2').style.background='rgba(217,119,6,0.22)';
           xqi=(xqi+1)%xqs.length;
+          if(xMCQtriggers.has(xqi)){
+            document.getElementById('xqspeaker2').textContent='Quick-fire round incoming...';
+            document.getElementById('xqdot2').style.background='#818cf8';
+            document.getElementById('xquestion2').textContent='The panel has a quick-fire question for you...';
+            [0,1,2].forEach(i=>document.getElementById('xtile'+i).classList.remove('xtile-speaking2'));
+            setTimeout(()=>showMCQ(),800);
+            return;
+          }
           const q=xqs[xqi];
           document.getElementById('xquestion2').textContent=q.q;
           document.getElementById('xqspeaker2').textContent=q.speaker;
           document.getElementById('xqdot2').style.background=q.dot;
-          document.getElementById('xqnum2').textContent='Question '+(xqi+1)+' of 5';
+          document.getElementById('xqnum2').textContent='';
           [0,1,2].forEach(i=>{const t=document.getElementById('xtile'+i);t.classList.remove('xtile-speaking2');if(i===q.tile)t.classList.add('xtile-speaking2');});
         }
 
@@ -1080,6 +1500,53 @@ body {
       </div>
     </div>
   </div>
+
+  <!-- ── THE SCIENCE ── -->
+  <div class="section">
+    <div class="section-label">The Science</div>
+    <div class="section-title">This isn't a new idea.<br>The research has known it for decades.</div>
+    <div class="section-body" style="margin-bottom:40px;">The learning science behind <span class="brand">Explain</span> is not a hypothesis. It is one of the most replicated findings in cognitive psychology. The method has a name — <strong style="color:var(--text-1);">retrieval practice</strong> — and the evidence for it is overwhelming. We just built a product around it.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;">
+
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:14px;padding:24px 26px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#818cf8;margin-bottom:16px;">The problem with traditional studying</div>
+        <div style="font-size:14px;color:var(--text-2);line-height:1.85;margin-bottom:16px;">"Rereading feels effective because the second encounter is easier than the first. The sentences move faster. Technical terms look familiar. The argument seems obvious. We interpret that smoothness as evidence that the information has entered memory. Often, the source is doing more of the work than we realise."</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.75;margin-bottom:12px;"><strong style="color:var(--text-1);">Familiarity is easily mistaken for knowledge.</strong> Highlighting, rereading, and note-taking all create the <em>feeling</em> of learning without producing durable memory. Research reviews have consistently found these techniques produce weaker long-term results than retrieval practice.</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">Dunlosky et al. (2013) · Bjork, Dunlosky & Kornell (2013) · Soderstrom & Bjork (2015)</div>
+      </div>
+
+      <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.25);border-radius:14px;padding:24px 26px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#818cf8;margin-bottom:16px;">What actually works — and why Explain is built on it</div>
+        <div style="font-size:14px;color:var(--text-2);line-height:1.85;margin-bottom:16px;">"A note proves that you encountered an idea. It does not prove that you can explain it independently."</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.75;margin-bottom:12px;"><strong style="color:var(--text-1);">Retrieval practice</strong> — the act of recalling and explaining information from memory, without the source — consistently produces stronger long-term retention than any passive study method. The more effortful the recall, the stronger the memory trace. <span class="brand">Explain</span> makes this the entire product: read, close the source, speak it out loud, get scored.</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">Karpicke & Blunt (2011) · Roediger & Karpicke (2006) · Cepeda et al. (2006)</div>
+      </div>
+
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:32px;">
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:20px 22px;text-align:center;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px;">The Feynman Technique</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">"What I cannot create, I do not understand." If you can explain a concept clearly in plain language — without jargon, without notes — you understand it. If your explanation becomes vague or circular, you've found the gap. <span class="brand">Explain</span> surfaces that gap in real time.</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:20px 22px;text-align:center;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px;">Spaced Repetition</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">Distributing practice across sessions produces stronger retention than massed study. The optimal moment to review is just as forgetting begins — when the path through the grass has faded but not disappeared. <span class="brand">Explain</span>'s session history and retry mechanic is built on this principle.</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:20px 22px;text-align:center;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px;">The Generation Effect</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">Information you generate yourself is remembered better than information you passively receive. Speaking an answer out loud — under time pressure, scored in real time — is the highest-effort form of generation. That effort is precisely what makes it stick.</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:22px 28px;max-width:760px;margin:0 auto;">
+      <div style="font-size:13px;color:var(--text-2);line-height:1.85;font-style:italic;">"Studying covers material. Learning leaves something behind."</div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:10px;">— Dr. Viktoria Verde, PhD (Applied Linguistics) · <em>How to Study Effectively When You Have Too Much to Learn</em>, 2026</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
 
   <!-- ── IMPACT ── -->
   <div class="section">
@@ -1302,6 +1769,17 @@ body {
   <div class="section">
     <div class="section-label">The B2B Opportunity</div>
     <div class="section-title">Three industries. Millions of interviews.<br>Zero tools that do this.</div>
+
+    <!-- Fake Jobs callout -->
+    <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:24px 28px;margin-bottom:28px;display:flex;gap:20px;align-items:flex-start;">
+      <div style="font-size:28px;line-height:1;margin-top:2px;">🔒</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#818cf8;margin-bottom:8px;">A hidden trust signal — for every candidate</div>
+        <div style="font-size:15px;color:var(--text-1);font-weight:600;margin-bottom:8px;">"If a recruiter sent you here, the role is real."</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.75;">Fake job postings are one of the most damaging problems in recruitment — roles that exist only to harvest CVs, with no intention of hiring. Candidates waste hours applying, preparing, and waiting for calls that never come.<br><br>
+        <span class="brand">Explain</span> eliminates this by design. A recruiter is billed per job spec uploaded, per candidate assigned, per seat used. <strong style="color:var(--text-1);">Nobody pays to run fake prep on a ghost role.</strong> The moment a recruiter commissions an <span class="brand">Explain</span> interview package, the candidate knows something no job board can ever tell them: this vacancy is real, this company is serious, and someone is invested in them getting the role.</div>
+      </div>
+    </div>
 
     <!-- Private Sector -->
     <div class="b2b" style="margin-bottom:16px;">
@@ -1541,6 +2019,141 @@ body {
 
   <div class="divider"></div>
 
+  <!-- ── CV INTERROGATION ENGINE ── -->
+  <div class="section">
+    <div class="section-label">New Feature · CV Interrogation Engine</div>
+    <div class="section-title">Your CV makes promises.<br>We make sure you can keep them.</div>
+    <div class="section-body" style="margin-bottom:40px;">Everyone exaggerates their CV. It's practically a sport. "Worked with Kubernetes" could mean anything from architecting a production cluster to once seeing the word on a colleague's screen. <span class="brand">Explain</span> reads the CV, finds every claim, and builds the exact questions a sharp interviewer — or a sharp recruiter — would ask. Before the room does.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:40px;">
+
+      <div class="b2b" style="border-color:rgba(99,102,241,0.3);background:rgba(99,102,241,0.06);">
+        <div class="b2b-eyebrow" style="color:#818cf8;">Mode 1 · Candidate</div>
+        <div class="b2b-title" style="font-size:16px;margin-bottom:10px;">Stress-test your own CV before the interview does.</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">Upload your CV. <span class="brand">Explain</span> generates 10–50 questions based entirely on what you've claimed — every role, every technology, every achievement. Answer them out loud. Find out where your gaps are before you're sitting in a glass-walled office trying to remember what you actually did at Barclays.</div>
+        <div style="margin-top:14px;font-size:12px;color:var(--text-3);font-style:italic;border-top:1px solid var(--border);padding-top:12px;">"You list Windows Azure at 14 months. Walk me through what you specifically built, and what you'd do differently today."</div>
+      </div>
+
+      <div class="b2b" style="border-color:rgba(99,102,241,0.3);background:rgba(99,102,241,0.06);">
+        <div class="b2b-eyebrow" style="color:#818cf8;">Mode 2 · Recruiter · Automated Due Diligence</div>
+        <div class="b2b-title" style="font-size:16px;margin-bottom:10px;">Know if they're worth calling. Before you call.</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">Right now, Mike's day looks like this: find CV → gut check → call candidate → hope for the best → put them in front of the client → pray. With <span class="brand">Explain</span>, he uploads the CV and the job spec before he picks up the phone. In 30 seconds he knows exactly where the candidate's claims don't match the role requirements — and has 15 sharp, generated questions ready to ask on the call.<br><br>His junior staff stop being a liability. They walk into every call sounding like a 20-year veteran. Mike stops being the bottleneck in his own business. And the candidates who've been blagging their way through screens for years? Caught. Before the client ever sees them.</div>
+        <div style="margin-top:14px;font-size:12px;color:var(--text-3);font-style:italic;border-top:1px solid var(--border);padding-top:12px;">"Your CV looks great for this .NET role — but before I put you forward, walk me through what you specifically built on Azure. The client will ask."</div>
+      </div>
+
+      <div class="b2b" style="border-color:rgba(99,102,241,0.3);background:rgba(99,102,241,0.06);">
+        <div class="b2b-eyebrow" style="color:#818cf8;">Mode 3 · CV + Job Spec Combined</div>
+        <div class="b2b-title" style="font-size:16px;margin-bottom:10px;">The exact interview mix. Before the exact interview.</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">Upload both a CV and a job spec together. <span class="brand">Explain</span> generates a blended interview — role questions based on what the employer needs, CV questions based on what the candidate claimed. This is exactly what real interviews look like. Candidates who prepare this way walk in having already faced their hardest questions.</div>
+        <div style="margin-top:14px;font-size:12px;color:var(--text-3);font-style:italic;border-top:1px solid var(--border);padding-top:12px;">"The role requires Kubernetes orchestration at scale. Your CV mentions Kubernetes in passing. Tell me specifically what you did with it."</div>
+      </div>
+
+    </div>
+
+    <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.25);border-radius:12px;padding:24px 28px;margin-bottom:8px;display:flex;gap:20px;align-items:flex-start;">
+      <div style="font-size:28px;line-height:1;margin-top:2px;">🎯</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#F87171;margin-bottom:8px;">The uncomfortable truth this feature exposes</div>
+        <div style="font-size:14px;color:var(--text-1);line-height:1.8;">Every CV is a version of the truth. Candidates stretch dates, inflate titles, claim tools they've Googled once. Recruiters put people in front of clients who collapse under questioning. Clients waste half-days interviewing people who shouldn't be there. <span class="brand">Explain</span> fixes this at every stage of the pipeline — and the candidate who uses it to prepare is the one who deserves to win the role. LinkedIn has built an industry on CV advice. We're about to make the CV itself accountable.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── VISA INTERVIEW ENGINE ── -->
+  <div class="section">
+    <div class="section-label">Coming · Visa Interview Engine</div>
+    <div class="section-title">The most important interview<br>most people will ever face.</div>
+    <div class="section-body" style="margin-bottom:32px;">A job interview costs you a role. A visa interview can cost you a life you've spent years building. Millions of people go through this process every year — and most prepare by Googling "common visa interview questions" and hoping for the best. <span class="brand">Explain</span> changes that completely.</div>
+
+    <!-- Visa mockup -->
+    <div style="background:#000;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);margin-bottom:32px;">
+      <div style="position:relative;aspect-ratio:16/9;">
+        <img src="images/Immigration-officer-2.jpg" alt="Officer M. Harrison" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;filter:brightness(0.88) saturate(0.7) contrast(1.05);">
+        <!-- gradient overlay -->
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 50%);"></div>
+        <!-- name label -->
+        <div style="position:absolute;bottom:12px;left:14px;font-size:11px;font-weight:700;color:#fff;letter-spacing:0.03em;text-shadow:0 1px 4px rgba(0,0,0,0.8);">Officer M. Harrison · <span style="color:rgba(255,255,255,0.5);font-weight:600;">UK Visa &amp; Immigration</span></div>
+        <!-- No warmth badge -->
+        <div style="position:absolute;top:12px;right:12px;font-size:10px;font-weight:700;color:#fff;background:rgba(239,68,68,0.85);padding:4px 10px;border-radius:20px;letter-spacing:0.03em;">● No Warmth</div>
+        <!-- You pip -->
+        <div style="position:absolute;bottom:12px;right:12px;width:72px;border-radius:8px;overflow:hidden;border:2px solid rgba(255,255,255,0.25);box-shadow:0 2px 12px rgba(0,0,0,0.5);">
+          <img src="images/Man2.png" alt="You" style="width:100%;display:block;object-fit:cover;">
+          <div style="background:rgba(0,0,0,0.75);text-align:center;font-size:9px;font-weight:800;color:#fff;letter-spacing:0.08em;padding:3px 0;">YOU</div>
+        </div>
+      </div>
+      <div style="padding:14px 16px 16px;border-top:1px solid rgba(255,255,255,0.07);">
+        <div style="font-size:10px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#F59E0B;margin-bottom:6px;">Officer Harrison is asking:</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.85);font-style:italic;line-height:1.6;margin-bottom:12px;">"What is the name of your sponsoring employer, and can you explain your specific role and responsibilities?"</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:11px;font-weight:700;color:rgba(245,158,11,0.8);background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);padding:5px 12px;border-radius:20px;">🇬🇧 UK Skilled Worker · Tier 2</div>
+          <div style="display:flex;align-items:center;gap:8px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);color:#F59E0B;font-size:12px;font-weight:700;padding:8px 18px;border-radius:20px;letter-spacing:0.03em;"><div style="width:8px;height:8px;border-radius:50%;background:#F59E0B;"></div>Answering...</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;">
+
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:14px;padding:24px 26px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#F59E0B;margin-bottom:14px;">The Flow · How It Works</div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:24px;height:24px;border-radius:50%;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#F59E0B;flex-shrink:0;">1</div>
+            <div><div style="font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:3px;">Select your situation</div><div style="font-size:12px;color:var(--text-2);line-height:1.6;">Visa type · Nationality · Destination country · Purpose (Work / Study / Family / Settlement)</div></div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:24px;height:24px;border-radius:50%;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#F59E0B;flex-shrink:0;">2</div>
+            <div><div style="font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:3px;">Upload supporting documents <span style="font-size:10px;color:var(--text-3);font-weight:400;">(optional)</span></div><div style="font-size:12px;color:var(--text-2);line-height:1.6;">Offer letter · bank statements · sponsor letter · tenancy agreement. Explain reads them and generates questions specific to YOUR case — not generic visa questions.</div></div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:24px;height:24px;border-radius:50%;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#F59E0B;flex-shrink:0;">3</div>
+            <div><div style="font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:3px;">Face the panel</div><div style="font-size:12px;color:var(--text-2);line-height:1.6;">One immigration officer character. Formal. Stern. No warmth. No small talk. Exactly like the real thing.</div></div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:24px;height:24px;border-radius:50%;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#F59E0B;flex-shrink:0;">4</div>
+            <div><div style="font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:3px;">Consistency scoring</div><div style="font-size:12px;color:var(--text-2);line-height:1.6;">Immigration officers are trained to find inconsistencies between what you say and what's in your documents. <span class="brand">Explain</span> flags them before the officer does.</div></div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:24px;height:24px;border-radius:50%;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#F59E0B;flex-shrink:0;">5</div>
+            <div><div style="font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:3px;">Coaching & recommended answers</div><div style="font-size:12px;color:var(--text-2);line-height:1.6;">The exact wording that works. The questions that trip people up. The answers that get visas approved.</div></div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:24px;height:24px;border-radius:50%;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#F59E0B;flex-shrink:0;">6</div>
+            <div><div style="font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:3px;">The Letter Engine <span style="font-size:10px;background:rgba(245,158,11,0.2);color:#F59E0B;padding:2px 8px;border-radius:20px;font-weight:700;">COMING</span></div><div style="font-size:12px;color:var(--text-2);line-height:1.6;"><span class="brand">Explain</span> already knows your visa type, nationality, purpose, and documents. It generates your cover letter, invitation letter, or explanation letter — specific, correct, approved-tone. First time. Copilot refuses to do this. ChatGPT gets nervous. <span class="brand">Explain</span> does it — because this is exactly what it's built for.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:18px 22px;margin-top:0;">
+        <div style="font-size:22px;font-weight:900;color:#F87171;margin-bottom:6px;">"If you fail, you cannot reapply for 6 months."</div>
+        <div style="font-size:12px;color:var(--text-3);font-style:italic;margin-bottom:12px;">— Printed on the application form. Every time.</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.75;">6 months is a wedding missed. A job gone. A family reunion that doesn't happen. A life on hold. And the system remembers the refusal — making every subsequent application harder. There is no equal second chance.<br><br><strong style="color:var(--text-1);">For £9.99, Explain gives you the best possible shot at getting it right the first time. That's not a purchase. That's insurance.</strong></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:18px 20px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#F87171;margin-bottom:10px;">The question that has denied millions of people</div>
+          <div style="font-size:13px;color:var(--text-1);font-style:italic;line-height:1.7;margin-bottom:10px;">"You have a wife and two children at home. What guarantees do you have that you will return after your visa expires?"</div>
+          <div style="font-size:12px;color:var(--text-2);line-height:1.7;">Most people answer this badly without knowing it. <span class="brand">Explain</span> coaches the exact response: <em style="color:var(--text-1);">"My family, my home and my business are there — my life is there. This visa is for a specific professional opportunity with a defined end date."</em></div>
+        </div>
+
+        <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);border-radius:12px;padding:18px 20px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#818cf8;margin-bottom:10px;">The advertising revenue layer</div>
+          <div style="font-size:13px;color:var(--text-2);line-height:1.7;">A candidate completing visa interview prep on <span class="brand">Explain</span> is the most qualified immigration lawyer lead in the world — actively going through the process right now. Law firms pay £50–200 per qualified referral. The same model applies across every vertical: driving instructors, recruitment agencies, university admissions consultants, financial advisors. <strong style="color:var(--text-1);">Explain becomes the referral engine for an entire ecosystem of professional services.</strong></div>
+        </div>
+
+        <div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);border-radius:12px;padding:18px 20px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#34D399;margin-bottom:10px;">The market size</div>
+          <div style="font-size:13px;color:var(--text-2);line-height:1.7;">The UK alone processes <strong style="color:var(--text-1);">3 million+ visa applications per year.</strong> Globally it is tens of millions. Add citizenship tests, driving theory, medical licensing, civil service — and the total addressable market dwarfs job interviews entirely. This was always bigger than recruitment.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
   <!-- ── ADDITIONAL B2B VERTICALS ── -->
   <div class="section">
     <div class="section-label">Further B2B Verticals</div>
@@ -1666,8 +2279,8 @@ body {
   <!-- ── MONETISATION ── -->
   <div class="section">
     <div class="section-label">Monetisation</div>
-    <div class="section-title">Three revenue streams.<br>Each one self-sustaining.</div>
-    <div class="section-body" style="margin-bottom: 32px;">Consumer subscriptions fund the infrastructure. B2B contracts fund the growth. Enterprise deals fund the ambition.</div>
+    <div class="section-title">Four revenue streams.<br>Each one self-sustaining.</div>
+    <div class="section-body" style="margin-bottom: 32px;">Consumer subscriptions fund the infrastructure. One-off passes convert the hesitant. B2B contracts fund the growth. And agency deals — at £50–75 per candidate prep — are the money spinner that makes everything else look like a warm-up act.</div>
 
     <div class="pricing-grid">
       <div class="price-card">
@@ -1686,7 +2299,7 @@ body {
         <div class="price-amount">£9.99</div>
         <div class="price-period">one-time · no subscription</div>
         <ul class="price-features">
-          <li>3 job spec uploads</li>
+          <li>2 job spec uploads</li>
           <li>Unlimited practice against those roles</li>
           <li>Full 5-dimension scoring</li>
           <li>Filler word tracking</li>
@@ -1720,6 +2333,66 @@ body {
           <li>Dedicated support</li>
         </ul>
       </div>
+
+      <div class="price-card agency">
+        <div class="price-tier">Agency · Enterprise</div>
+        <div class="price-amount" style="font-size:28px;line-height:1.1;">£50–75</div>
+        <div class="price-period">per candidate prep · volume pricing</div>
+        <ul class="price-features">
+          <li>Bespoke onboarding & setup</li>
+          <li>Per-spec billing — only pay for what you place</li>
+          <li>Full candidate scoring & debrief reports</li>
+          <li>Comparative ranking across all candidates</li>
+          <li>Shareable interview recordings</li>
+          <li>Account manager included</li>
+          <li>White-label & API access available</li>
+        </ul>
+        <div style="margin-top:16px;background:#FBBF24;color:#000;font-size:12px;font-weight:800;text-align:center;padding:10px 0;border-radius:8px;letter-spacing:0.04em;">Get a quote →</div>
+      </div>
+    </div>
+
+    <!-- CV Interrogation full-width card -->
+    <div style="margin-top:14px;background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.3);border-radius:14px;padding:22px 28px;display:flex;align-items:center;gap:32px;user-select:none;">
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#C084FC;margin-bottom:6px;">CV Interrogation Pass · One-Off</div>
+        <div style="font-size:36px;font-weight:900;color:var(--text);line-height:1;margin-bottom:4px;">£4.99</div>
+        <div style="font-size:12px;color:var(--text-3);">one-time · no subscription</div>
+      </div>
+      <div style="width:1px;height:60px;background:rgba(168,85,247,0.25);flex-shrink:0;"></div>
+      <div style="flex:1;font-size:13px;color:var(--text-2);line-height:1.75;">Upload your CV. <span class="brand">Explain</span> reads every claim you've made — every role, every technology, every achievement — and builds the exact questions a sharp interviewer would fire at you. Answer them out loud. Find your gaps at 11pm, not 9am. <strong style="color:var(--text-1);">One upload. One session. Everything you need to walk in ready.</strong></div>
+      <div style="flex-shrink:0;background:#A855F7;color:#fff;font-size:12px;font-weight:800;padding:12px 24px;border-radius:10px;letter-spacing:0.04em;white-space:nowrap;">Get CV Interrogation →</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── FROM THE FOUNDER ── -->
+  <div class="section">
+    <div class="section-label">From the Founder</div>
+    <div class="section-title">I've been that candidate.<br>That's why I built this.</div>
+
+    <div style="max-width:720px;margin:0 auto;">
+
+      <div style="font-size:16px;color:var(--text-2);line-height:2;margin-bottom:28px;">
+        I've postponed interviews. Not because I wasn't good enough — but because the nerves got there first. You lie awake the night before running through answers in your head. You travel to London. You sit in a glass-walled office. You shake hands with three people whose names you immediately forget. And then you spend forty minutes trying to sound calm while you're quietly trying to remember what REST means.
+      </div>
+
+      <div style="font-size:16px;color:var(--text-2);line-height:2;margin-bottom:28px;">
+        And the worst part isn't the interview. It's the silence after. If it went well, the agency calls before you've left the building. If it didn't — they never answer again. No feedback. No explanation. Just a ghost. You're left wondering whether it was your answers, your nerves, your accent, or just the other guy who happened to know .NET 10 better than you did that morning.
+      </div>
+
+      <div style="font-size:16px;color:var(--text-2);line-height:2;margin-bottom:28px;">
+        I kept thinking: what if I could do the interview somewhere I felt safe first? Not a fake mock. The real thing — panel, pressure, questions from the actual job spec — but in my own space, at my own pace, until I felt ready. And then, what if I could just send them that? My best run. Not me at 9am on a Tuesday, nervous in a glass-walled office. Me, prepared, confident, at my absolute best.
+      </div>
+
+      <div style="font-size:16px;color:var(--text-2);line-height:2;margin-bottom:28px;">
+        That's <span class="brand">Explain</span>. And it goes further than I ever imagined — because when you score everyone interviewing for the same role on the same dimensions, you finally have the data to answer the question nobody has ever been able to answer honestly: <em style="color:var(--text-1);">why did the other person get the job?</em> Not vague. Not polite. Actual data. "They scored 18 points higher on Technical Depth. Their edge was system design." That feedback alone would have changed the trajectory of my career.
+      </div>
+
+      <div style="font-size:16px;color:var(--text-1);line-height:2;font-weight:500;border-left:3px solid #6366f1;padding-left:20px;margin-bottom:8px;">
+        I'm building this on dialysis — three days a week, four hours at a time — because I know how much it matters. Every person who walks into an interview underprepared, undersupported, and underestimated is someone I understand. This platform is for them.
+      </div>
+
     </div>
   </div>
 

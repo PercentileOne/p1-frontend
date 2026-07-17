@@ -1,0 +1,1117 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Explain.global — Walk In Ready.</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+  :root {
+    --bg: #080c14;
+    --bg2: #0d1421;
+    --bg3: #111827;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f1f5f9;
+    --text-2: #94a3b8;
+    --text-3: #64748b;
+    --blue: #4F8EF7;
+    --blue-dim: rgba(79,142,247,0.12);
+    --indigo: #818cf8;
+    --indigo-dim: rgba(99,102,241,0.1);
+    --amber: #F59E0B;
+    --green: #34D399;
+    --red: #F87171;
+    --purple: #C084FC;
+    --radius: 14px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px; height: 60px;
+    background: rgba(8,12,20,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-brand { font-size: 17px; font-weight: 900; letter-spacing: -0.02em; color: var(--text); }
+  .nav-brand span { color: var(--blue); }
+  .nav-links {
+    display: flex; align-items: center; gap: 4px;
+  }
+  .nav-link {
+    font-size: 13px; font-weight: 600; color: var(--text-2);
+    padding: 6px 14px; border-radius: 8px; text-decoration: none;
+    transition: color 0.15s, background 0.15s;
+    cursor: pointer; border: none; background: none;
+  }
+  .nav-link:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .nav-lang {
+    position: relative; display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 700; color: var(--text-2);
+    padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border);
+    cursor: pointer; background: none; transition: border-color 0.15s, color 0.15s;
+    user-select: none;
+  }
+  .nav-lang:hover { border-color: var(--border2); color: var(--text); }
+  .nav-lang-dropdown {
+    display: none; position: absolute; top: calc(100% + 8px); right: 0;
+    background: #0d1421; border: 1px solid var(--border2); border-radius: 10px;
+    min-width: 160px; overflow: hidden; z-index: 200;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .nav-lang.open .nav-lang-dropdown { display: block; }
+  .nav-lang-option {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--text-2);
+    cursor: pointer; transition: background 0.1s, color 0.1s;
+    text-decoration: none;
+  }
+  .nav-lang-option:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  .nav-lang-option.active { color: var(--blue); }
+  .nav-cta {
+    background: var(--blue); color: #fff; font-size: 13px; font-weight: 700;
+    padding: 8px 20px; border-radius: 8px; border: none; cursor: pointer;
+    text-decoration: none; letter-spacing: 0.01em;
+    transition: opacity 0.2s;
+  }
+  .nav-cta:hover { opacity: 0.88; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 120px 40px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 30%, rgba(79,142,247,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--blue); margin-bottom: 24px;
+    background: rgba(79,142,247,0.12); border: 1px solid rgba(79,142,247,0.25);
+    padding: 5px 14px; border-radius: 20px; display: inline-block;
+  }
+  .hero-headline {
+    font-size: clamp(44px, 7vw, 86px);
+    font-weight: 900; letter-spacing: -0.03em; line-height: 1.0;
+    color: var(--text); margin-bottom: 16px;
+    text-wrap: balance;
+  }
+  .hero-headline em { font-style: normal; color: var(--blue); }
+  .hero-sub {
+    font-size: clamp(16px, 2.2vw, 20px); color: var(--text-2);
+    max-width: 560px; margin: 0 auto 40px; line-height: 1.65;
+    text-wrap: balance;
+  }
+  .hero-actions {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: center;
+    margin-bottom: 72px;
+  }
+  .btn-primary {
+    background: var(--blue); color: #fff; font-size: 15px; font-weight: 700;
+    padding: 14px 32px; border-radius: 10px; border: none; cursor: pointer;
+    letter-spacing: 0.01em; text-decoration: none; transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-ghost {
+    background: transparent; color: var(--text-2); font-size: 14px; font-weight: 600;
+    padding: 13px 24px; border-radius: 10px; border: 1px solid var(--border2);
+    cursor: pointer; text-decoration: none; transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--blue); color: var(--text); }
+
+  /* ── INTERVIEW MOCKUP ── */
+  .mockup-wrap {
+    width: 100%; max-width: 760px; margin: 0 auto;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  }
+  .mockup-bar {
+    display: flex; align-items: center; gap: 7px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+  }
+  .mock-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .mock-title {
+    margin-left: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+    color: var(--text-3);
+  }
+  .mock-live {
+    margin-left: auto; display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--red);
+  }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--red);
+    animation: pulse-red 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse-red { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+
+  .mock-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+    padding: 4px; background: #000; position: relative;
+    aspect-ratio: 16/7;
+  }
+  .mock-tile {
+    position: relative; overflow: hidden; border-radius: 6px;
+    background: #0a0f1a;
+  }
+  .mock-tile img { width: 100%; height: 100%; object-fit: cover; object-position: center 15%; display: block; }
+  .mock-tile-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(transparent 55%, rgba(0,0,0,0.85));
+  }
+  .mock-tile-label {
+    position: absolute; bottom: 8px; left: 10px; right: 10px;
+    font-size: 10px; font-weight: 800; color: #fff; letter-spacing: 0.04em;
+  }
+  .mock-tile-badge {
+    position: absolute; top: 8px; right: 8px;
+    font-size: 9px; font-weight: 800; letter-spacing: 0.05em;
+    padding: 3px 8px; border-radius: 20px;
+    background: rgba(239,68,68,0.85); color: #fff;
+  }
+  .mock-you-pip {
+    position: absolute; bottom: 10px; right: 10px;
+    width: 17%; aspect-ratio: 4/3;
+    border-radius: 7px; overflow: hidden;
+    border: 2px solid rgba(79,142,247,0.8);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.55);
+  }
+  .mock-you-pip img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; display: block; }
+  .mock-you-pip-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 6px 5px 3px;
+    background: linear-gradient(transparent,rgba(0,0,0,0.9));
+    font-size: 8px; font-weight: 800; color: #93C5FD; letter-spacing: 0.04em;
+  }
+
+  .mock-bottom {
+    padding: 14px 16px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .mock-speaker {
+    display: flex; align-items: center; gap: 7px;
+    margin-bottom: 6px;
+  }
+  .mock-speaker-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .mock-speaker-name { font-size: 11px; font-weight: 700; color: var(--text-3); letter-spacing: 0.03em; }
+  .mock-question {
+    font-size: 13px; color: var(--text); font-style: italic; line-height: 1.6;
+    margin-bottom: 12px; min-height: 42px;
+  }
+  .mock-controls {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+  }
+  .mock-progress { font-size: 11px; color: var(--text-3); font-weight: 700; letter-spacing: 0.03em; }
+  .mock-rec-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4);
+    color: #F87171; font-size: 12px; font-weight: 700;
+    padding: 8px 18px; border-radius: 20px; cursor: pointer; letter-spacing: 0.03em;
+    transition: background 0.2s;
+  }
+  .mock-rec-btn:hover { background: rgba(239,68,68,0.25); }
+  .mock-rec-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: #EF4444;
+    animation: pulse-rec 1.1s ease-in-out infinite;
+  }
+  @keyframes pulse-rec { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .mock-score-bar {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  .mock-score-label { font-size: 10px; color: var(--text-3); font-weight: 700; white-space: nowrap; }
+  .mock-score-track {
+    flex: 1; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden;
+  }
+  .mock-score-fill {
+    height: 100%; border-radius: 2px; background: var(--green);
+    width: 0%; transition: width 1.2s ease;
+  }
+  .mock-score-val { font-size: 12px; font-weight: 900; color: var(--green); min-width: 28px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* ── PIVOT SECTION ── */
+  .pivot {
+    padding: 100px 40px;
+    text-align: center;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 50%, var(--bg) 100%);
+    position: relative;
+  }
+  .pivot-line {
+    font-size: clamp(22px, 3.5vw, 36px);
+    font-weight: 900; letter-spacing: -0.02em; color: var(--text);
+    max-width: 680px; margin: 0 auto 12px; text-wrap: balance;
+  }
+  .pivot-line em { font-style: normal; color: var(--amber); }
+  .pivot-sub {
+    font-size: 16px; color: var(--text-2); max-width: 520px; margin: 0 auto 56px;
+    line-height: 1.7;
+  }
+
+  /* ── VISA MOCKUP ── */
+  .visa-mockup-wrap {
+    width: 100%; max-width: 680px; margin: 0 auto 56px;
+    background: var(--bg2);
+    border: 1px solid rgba(245,158,11,0.25);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 60px rgba(245,158,11,0.06);
+  }
+  .visa-bar {
+    display: flex; align-items: center; gap: 7px;
+    padding: 12px 16px;
+    background: rgba(245,158,11,0.06);
+    border-bottom: 1px solid rgba(245,158,11,0.2);
+  }
+  .visa-bar-title {
+    margin-left: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+    color: rgba(245,158,11,0.7);
+  }
+  .visa-bar-badge {
+    margin-left: auto; font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--amber);
+    background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3);
+    padding: 3px 10px; border-radius: 20px;
+  }
+
+  /* ── WHO IT'S FOR (mini cards) ── */
+  .section { padding: 80px 40px; max-width: 1100px; margin: 0 auto; }
+  .section-eyebrow {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--blue); margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: clamp(28px, 4vw, 46px); font-weight: 900; letter-spacing: -0.02em;
+    line-height: 1.1; margin-bottom: 16px; text-wrap: balance;
+  }
+  .section-body { font-size: 16px; color: var(--text-2); max-width: 620px; line-height: 1.7; margin-bottom: 48px; }
+
+  .who-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    margin-bottom: 32px;
+  }
+  .who-card {
+    background: var(--indigo-dim); border: 1px solid rgba(99,102,241,0.2);
+    border-radius: var(--radius); padding: 20px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .who-card:hover { border-color: rgba(99,102,241,0.45); transform: translateY(-2px); }
+  .who-icon { font-size: 22px; margin-bottom: 10px; }
+  .who-name { font-size: 13px; font-weight: 800; color: var(--indigo); margin-bottom: 6px; letter-spacing: 0.01em; }
+  .who-desc { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+  .coming-divider {
+    display: flex; align-items: center; gap: 14px; margin: 36px 0 28px;
+  }
+  .coming-divider-line { flex: 1; height: 1px; background: var(--border); }
+  .coming-divider-label {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--amber); white-space: nowrap;
+    background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2);
+    padding: 4px 12px; border-radius: 20px;
+  }
+
+  .coming-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  .coming-card {
+    background: rgba(245,158,11,0.04); border: 1px solid rgba(245,158,11,0.18);
+    border-radius: var(--radius); padding: 20px;
+  }
+  .coming-name { font-size: 13px; font-weight: 800; color: var(--amber); margin-bottom: 6px; }
+  .coming-desc { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+  /* ── THE TAGLINE BLOCK ── */
+  .tagline-block {
+    margin: 0 40px 80px;
+    background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 14px; padding: 28px 36px; text-align: center;
+    max-width: 1020px; margin: 0 auto 80px;
+  }
+  .tagline-block p { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .tagline-block span { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+
+  /* ── WAITLIST ── */
+  .waitlist-section {
+    padding: 100px 40px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+  .waitlist-eyebrow {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--green); margin-bottom: 20px;
+    background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25);
+    padding: 5px 14px; border-radius: 20px; display: inline-block;
+  }
+  .waitlist-title {
+    font-size: clamp(28px, 4vw, 50px); font-weight: 900; letter-spacing: -0.02em;
+    margin-bottom: 14px; text-wrap: balance;
+  }
+  .waitlist-title em { font-style: normal; color: var(--blue); }
+  .waitlist-sub { font-size: 16px; color: var(--text-2); margin-bottom: 40px; line-height: 1.65; }
+  .waitlist-form {
+    display: flex; gap: 10px; max-width: 440px; margin: 0 auto;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .waitlist-input {
+    flex: 1; min-width: 220px;
+    background: var(--bg3); border: 1px solid var(--border2);
+    color: var(--text); font-size: 14px;
+    padding: 13px 18px; border-radius: 10px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .waitlist-input::placeholder { color: var(--text-3); }
+  .waitlist-input:focus { border-color: var(--blue); }
+  .waitlist-submit {
+    background: var(--blue); color: #fff; font-size: 14px; font-weight: 700;
+    padding: 13px 28px; border-radius: 10px; border: none; cursor: pointer;
+    letter-spacing: 0.01em; white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+  .waitlist-submit:hover { opacity: 0.88; }
+  .waitlist-note { margin-top: 14px; font-size: 12px; color: var(--text-3); }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 32px 40px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 14px;
+  }
+  .footer-brand { font-size: 15px; font-weight: 900; color: var(--text); }
+  .footer-brand span { color: var(--blue); }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { font-size: 13px; color: var(--text-3); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--text); }
+  .footer-right { font-size: 12px; color: var(--text-3); }
+
+  /* ── ANIMATIONS ── */
+  .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .fade-in.visible { opacity: 1; transform: none; }
+
+  @keyframes slideQ { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+</style>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">Explain<span>.global</span></div>
+  <div class="nav-links">
+    <a href="#how-it-works" class="nav-link">How It Works</a>
+    <a href="#about" class="nav-link">About</a>
+    <a href="#contact" class="nav-link">Contact</a>
+  </div>
+  <div class="nav-right">
+    <!-- Language dropdown -->
+    <div class="nav-lang" id="langBtn" onclick="this.classList.toggle('open')">
+      🌐 EN
+      <svg width="10" height="6" viewBox="0 0 10 6" fill="none" style="opacity:0.5"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <div class="nav-lang-dropdown">
+        <div class="nav-lang-option active">🇬🇧 English</div>
+        <div class="nav-lang-option">🇫🇷 Français</div>
+        <div class="nav-lang-option">🇩🇪 Deutsch</div>
+        <div class="nav-lang-option">🇪🇸 Español</div>
+        <div class="nav-lang-option">🇦🇪 العربية</div>
+        <div class="nav-lang-option">🇮🇳 हिन्दी</div>
+        <div class="nav-lang-option">🇨🇳 中文</div>
+      </div>
+    </div>
+    <a href="#waitlist" class="nav-cta">Get Early Access</a>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-eyebrow">Coming Soon · Interview Intelligence Platform</div>
+  <h1 class="hero-headline">Got an interview<br>coming up?</h1>
+  <p style="font-size:clamp(22px,3.5vw,38px);font-weight:900;color:var(--blue);letter-spacing:-0.02em;margin-bottom:20px;line-height:1.1;">Walk in <em>ready.</em></p>
+  <p class="hero-sub" style="max-width:620px;">Upload a job spec, a CV, or both. We'll build your questions, your panel, and coach every answer — so you can practice before the real interview. <strong style="color:var(--text);">No more faking it.</strong></p>
+
+  <!-- Interview type pills -->
+  <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:28px 0 36px;">
+    <div style="font-size:12px;font-weight:700;padding:7px 16px;border-radius:20px;background:rgba(79,142,247,0.12);border:1px solid rgba(79,142,247,0.3);color:var(--blue);">💼 Job Interviews</div>
+    <div style="font-size:12px;font-weight:700;padding:7px 16px;border-radius:20px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.25);color:var(--green);">🎓 University Admissions</div>
+    <div style="font-size:12px;font-weight:700;padding:7px 16px;border-radius:20px;background:rgba(192,132,252,0.1);border:1px solid rgba(192,132,252,0.25);color:var(--purple);">🏥 Medical &amp; Clinical</div>
+    <div style="font-size:12px;font-weight:700;padding:7px 16px;border-radius:20px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);color:var(--amber);">🛂 Visa &amp; Immigration</div>
+    <div style="font-size:12px;font-weight:700;padding:7px 16px;border-radius:20px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.25);color:var(--red);">🏛️ Citizenship Tests</div>
+    <div style="font-size:12px;font-weight:700;padding:7px 16px;border-radius:20px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);color:#6ee7b7;">🚗 Driving Theory</div>
+    <div style="font-size:12px;font-weight:700;padding:7px 16px;border-radius:20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:var(--text-2);">+ Any interview, anywhere</div>
+  </div>
+
+  <div class="hero-actions">
+    <a href="#waitlist" class="btn-primary">Join the Waitlist</a>
+    <a href="#how-it-works" class="btn-ghost">See how it works ↓</a>
+  </div>
+
+  <!-- JOB INTERVIEW MOCKUP -->
+  <div class="mockup-wrap fade-in" id="mockup-hero">
+    <div class="mockup-bar">
+      <div class="mock-dot" style="background:#EF4444"></div>
+      <div class="mock-dot" style="background:#F59E0B"></div>
+      <div class="mock-dot" style="background:#34D399"></div>
+      <div class="mock-title">Explain · Senior .NET Developer · Panel Round</div>
+      <div class="mock-live"><div class="live-dot"></div>LIVE</div>
+    </div>
+    <div class="mock-grid">
+      <!-- Tile 0 -->
+      <div class="mock-tile" id="ltile0">
+        <img src="images/Lady1.png" alt="Victoria Hart">
+        <div class="mock-tile-overlay"></div>
+        <div class="mock-tile-label">Victoria Hart · <span style="color:rgba(255,255,255,0.5);font-weight:600;">Hiring Manager</span></div>
+        <div class="mock-tile-badge" id="lbadge0" style="background:rgba(30,77,216,0.75);">● Interested</div>
+      </div>
+      <!-- Tile 1 -->
+      <div class="mock-tile" id="ltile1">
+        <img src="images/Man1.png" alt="Dr. James Reid">
+        <div class="mock-tile-overlay"></div>
+        <div class="mock-tile-label">Dr. James Reid · <span style="color:rgba(255,255,255,0.5);font-weight:600;">Tech Lead</span></div>
+        <div class="mock-tile-badge" id="lbadge1" style="background:rgba(100,80,180,0.75);">● Evaluating</div>
+      </div>
+      <!-- Tile 2 -->
+      <div class="mock-tile" id="ltile2">
+        <img src="images/Man3.png" alt="R. Cooper">
+        <div class="mock-tile-overlay"></div>
+        <div class="mock-tile-label">R. Cooper · <span style="color:rgba(255,255,255,0.5);font-weight:600;">Senior Dev</span></div>
+        <div class="mock-tile-badge" id="lbadge2" style="background:rgba(217,119,6,0.75);">● The Skeptic</div>
+      </div>
+      <!-- Tile 3 -->
+      <div class="mock-tile" id="ltile3">
+        <img src="images/Lady2.png" alt="S. Davies">
+        <div class="mock-tile-overlay"></div>
+        <div class="mock-tile-label">S. Davies · <span style="color:rgba(255,255,255,0.5);font-weight:600;">HR Director</span></div>
+        <div class="mock-tile-badge" id="lbadge3" style="background:rgba(30,77,216,0.75);">● Listening</div>
+      </div>
+      <!-- You pip -->
+      <div class="mock-you-pip">
+        <img src="images/Man2.png" alt="You">
+        <div class="mock-you-pip-label">YOU</div>
+      </div>
+    </div>
+    <div class="mock-bottom">
+      <!-- Score bar -->
+      <div class="mock-score-bar" id="lscorebar" style="display:none;">
+        <div class="mock-score-label">Confidence</div>
+        <div class="mock-score-track"><div class="mock-score-fill" id="lscorefill"></div></div>
+        <div class="mock-score-val" id="lscoreval">0</div>
+      </div>
+      <div class="mock-speaker">
+        <div class="mock-speaker-dot" id="lqdot" style="background:#60A5FA"></div>
+        <div class="mock-speaker-name" id="lqspeaker">Victoria Hart is asking:</div>
+      </div>
+      <div class="mock-question" id="lquestion">"Tell me about your experience with .NET Core — specifically how you've used it in a production environment at scale."</div>
+      <div class="mock-controls">
+        <div class="mock-progress" id="lqnum">Question 1 of 10</div>
+        <button class="mock-rec-btn" id="lrecbtn" onclick="lToggleRec()">
+          <div class="mock-rec-dot" id="lrecdot"></div>
+          <span id="lrecbtntxt">Start Answer</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PIVOT BEAT ══ -->
+<section class="pivot" id="how-it-works">
+  <div class="fade-in">
+    <p class="pivot-line">But interviews don't only<br>happen <em>in office buildings.</em></p>
+    <p class="pivot-sub">Visa appointments. University panels. Medical licensing. Citizenship tests. The same product. The same stakes. The same fix.</p>
+  </div>
+
+  <!-- VISA / IMMIGRATION MOCKUP -->
+  <div class="visa-mockup-wrap fade-in">
+    <div class="visa-bar">
+      <div class="mock-dot" style="background:#EF4444"></div>
+      <div class="mock-dot" style="background:#F59E0B"></div>
+      <div class="mock-dot" style="background:#34D399"></div>
+      <div class="visa-bar-title">Explain · UK Skilled Worker Visa Interview</div>
+      <div class="visa-bar-badge">Coming Soon</div>
+    </div>
+    <!-- Single officer tile with You pip -->
+    <div style="position:relative;border-radius:10px;overflow:hidden;aspect-ratio:16/9;background:#000;">
+      <img src="images/Immigration-officer-2.jpg" alt="Officer M. Harrison" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;filter:brightness(0.88) saturate(0.7) contrast(1.05);">
+      <div class="mock-tile-overlay"></div>
+      <div class="mock-tile-label">Officer M. Harrison · <span style="color:rgba(255,255,255,0.5);font-weight:600;">UK Visa & Immigration</span></div>
+      <div class="mock-tile-badge" style="background:rgba(239,68,68,0.85);">● No Warmth</div>
+      <!-- You pip -->
+      <div class="mock-you-pip">
+        <img src="images/Man2.png" alt="You">
+        <div class="mock-you-pip-label">YOU</div>
+      </div>
+    </div>
+    <div class="mock-bottom">
+      <div style="font-size:10px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--amber);margin-bottom:6px;">Officer Harrison is asking:</div>
+      <div class="mock-question" id="visaQ">"What is the name of your sponsoring employer, and can you explain your specific role and responsibilities?"</div>
+      <div class="mock-controls">
+        <div style="font-size:11px;font-weight:700;color:rgba(245,158,11,0.8);background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);padding:5px 12px;border-radius:20px;">🇬🇧 UK Skilled Worker · Tier 2</div>
+        <div style="display:flex;align-items:center;gap:8px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);color:var(--amber);font-size:12px;font-weight:700;padding:8px 18px;border-radius:20px;letter-spacing:0.03em;"><div style="width:8px;height:8px;border-radius:50%;background:var(--amber);animation:pulse 1.1s ease-in-out infinite;"></div>Answering...</div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes bar1 { 0%,100%{height:6px} 50%{height:18px} }
+    @keyframes bar2 { 0%,100%{height:14px} 50%{height:5px} }
+  </style>
+</section>
+
+<!-- ══ INTERVIEW PACK ══ -->
+<div style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 40px;">
+  <div style="max-width:1100px;margin:0 auto;" class="fade-in">
+    <div class="section-eyebrow">New · Interview Pack</div>
+    <h2 class="section-title" style="margin-bottom:14px;">Both sides of the table.<br>Finally.</h2>
+    <p class="section-body">For 25 years, interview prep has only served the candidate. Nobody thought about the interviewer — scrambling to find worthy questions at 8:55am. The Interview Pack fixes both sides of the same conversation.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px;">
+
+      <div style="background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.25);border-radius:16px;padding:28px;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#4F8EF7;margin-bottom:12px;">For the Candidate</div>
+        <div style="font-size:20px;font-weight:900;color:var(--text);margin-bottom:8px;">Candidate Interview Pack</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:18px;">Upload the job spec. Get 20 targeted questions with model answers and coaching tips. Walk in knowing exactly what they're going to ask.</div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Includes</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:2;">✓ 20 role-specific questions<br>✓ Model answers per question<br>✓ Coaching tips &amp; filler word guide<br>✓ Printable or in-app</div>
+        <div style="margin-top:20px;display:flex;align-items:baseline;gap:10px;">
+          <div style="font-size:32px;font-weight:900;color:var(--text);">£4.99</div>
+          <div style="font-size:12px;color:var(--text-3);">one-time</div>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#4F8EF7;font-weight:700;font-style:italic;">"Got an interview coming up? Relax."</div>
+      </div>
+
+      <div style="background:rgba(234,179,8,0.06);border:1px solid rgba(234,179,8,0.28);border-radius:16px;padding:28px;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#EAB308;margin-bottom:12px;">For the Interviewer</div>
+        <div style="font-size:20px;font-weight:900;color:var(--text);margin-bottom:8px;">Interviewer Interview Pack</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:18px;">Upload the job spec. Get 30 structured questions with strong answers, weak answers, and red flags to listen for. Walk in like a professional.</div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Includes</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:2;">✓ 30 role-specific questions<br>✓ Strong &amp; weak answer guides<br>✓ Red flags per question<br>✓ Printable panel pack</div>
+        <div style="margin-top:20px;display:flex;align-items:baseline;gap:10px;">
+          <div style="font-size:32px;font-weight:900;color:var(--text);">£9.99</div>
+          <div style="font-size:12px;color:var(--text-3);">one-time</div>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#EAB308;font-weight:700;font-style:italic;">"Stop Googling questions at 8:55am."</div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ HOW IT WORKS ══ -->
+<div style="background:var(--bg2);border-top:1px solid var(--border);padding:80px 40px;" id="how-it-works-detail">
+  <div style="max-width:1100px;margin:0 auto;" class="fade-in">
+    <div class="section-eyebrow">The Product</div>
+    <h2 class="section-title" style="margin-bottom:14px;">Four layers.<br>One complete system.</h2>
+    <p class="section-body" style="margin-bottom:48px;">Each layer works on its own. Together they create something that doesn't exist anywhere else.</p>
+
+    <div style="display:flex;flex-direction:column;gap:3px;">
+
+      <!-- Layer 01 -->
+      <div style="display:grid;grid-template-columns:64px 1fr;gap:0;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+        <div style="background:rgba(79,142,247,0.1);display:flex;align-items:center;justify-content:center;padding:28px 0;">
+          <div style="font-size:13px;font-weight:900;color:var(--blue);letter-spacing:0.05em;writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);">01</div>
+        </div>
+        <div style="padding:28px 32px;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--blue);margin-bottom:8px;">Speak &amp; Get Scored</div>
+          <div style="font-size:20px;font-weight:900;color:var(--text);margin-bottom:8px;">Learn it. Say it. Score it.</div>
+          <div style="font-size:14px;color:var(--text-2);line-height:1.75;margin-bottom:16px;">Pick any topic — "microservices", "your biggest career mistake", "explain agile" — and speak for 60–120 seconds. AI scores your answer across five dimensions in real time and delivers full coaching feedback the moment you finish.</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <div style="font-size:11px;font-weight:700;color:var(--blue);background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.2);padding:4px 12px;border-radius:20px;">AI lesson on any subject</div>
+            <div style="font-size:11px;font-weight:700;color:var(--blue);background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.2);padding:4px 12px;border-radius:20px;">Timed talk session</div>
+            <div style="font-size:11px;font-weight:700;color:var(--blue);background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.2);padding:4px 12px;border-radius:20px;">Scored 0–100</div>
+            <div style="font-size:11px;font-weight:700;color:var(--blue);background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.2);padding:4px 12px;border-radius:20px;">Improvement tracked over time</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 02 -->
+      <div style="display:grid;grid-template-columns:64px 1fr;gap:0;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+        <div style="background:rgba(129,140,248,0.1);display:flex;align-items:center;justify-content:center;padding:28px 0;">
+          <div style="font-size:13px;font-weight:900;color:var(--indigo);letter-spacing:0.05em;writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);">02</div>
+        </div>
+        <div style="padding:28px 32px;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--indigo);margin-bottom:8px;">Job Spec Upload</div>
+          <div style="font-size:20px;font-weight:900;color:var(--text);margin-bottom:8px;">Prep built for that exact role.</div>
+          <div style="font-size:14px;color:var(--text-2);line-height:1.75;margin-bottom:16px;">Upload the actual job description. Explain reads the requirements — tech stack, seniority, domain — and generates targeted questions specific to that role. A senior quant role gets completely different prep to a junior React role. Because they are completely different interviews.</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <div style="font-size:11px;font-weight:700;color:var(--indigo);background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);padding:4px 12px;border-radius:20px;">Upload PDF or paste spec</div>
+            <div style="font-size:11px;font-weight:700;color:var(--indigo);background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);padding:4px 12px;border-radius:20px;">10–20 targeted questions generated</div>
+            <div style="font-size:11px;font-weight:700;color:var(--indigo);background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);padding:4px 12px;border-radius:20px;">Every industry · every level</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 03 -->
+      <div style="display:grid;grid-template-columns:64px 1fr;gap:0;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+        <div style="background:rgba(52,211,153,0.08);display:flex;align-items:center;justify-content:center;padding:28px 0;">
+          <div style="font-size:13px;font-weight:900;color:var(--green);letter-spacing:0.05em;writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);">03</div>
+        </div>
+        <div style="padding:28px 32px;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);margin-bottom:8px;">The Panel Simulator</div>
+          <div style="font-size:20px;font-weight:900;color:var(--text);margin-bottom:8px;">A real interview. Before the real interview.</div>
+          <div style="font-size:14px;color:var(--text-2);line-height:1.75;margin-bottom:16px;">Sit at your screen and run a full simulated panel interview — built from your job spec, with realistic characters, real pressure, and spoken answers. When the actual interview comes, it already feels familiar. Nothing else on the market does this.</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <div style="font-size:11px;font-weight:700;color:var(--green);background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);padding:4px 12px;border-radius:20px;">Zoom-style panel simulator</div>
+            <div style="font-size:11px;font-weight:700;color:var(--green);background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);padding:4px 12px;border-radius:20px;">Live filler word detection</div>
+            <div style="font-size:11px;font-weight:700;color:var(--green);background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);padding:4px 12px;border-radius:20px;">Real-time confidence meter</div>
+            <div style="font-size:11px;font-weight:700;color:var(--green);background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);padding:4px 12px;border-radius:20px;">Full debrief after every session</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 04 -->
+      <div style="display:grid;grid-template-columns:64px 1fr;gap:0;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+        <div style="background:rgba(245,158,11,0.08);display:flex;align-items:center;justify-content:center;padding:28px 0;">
+          <div style="font-size:13px;font-weight:900;color:var(--amber);letter-spacing:0.05em;writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);">04</div>
+        </div>
+        <div style="padding:28px 32px;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;">The Recruiter Portal</div>
+          <div style="font-size:20px;font-weight:900;color:var(--text);margin-bottom:8px;">Recruiters send prep. Candidates arrive ready.</div>
+          <div style="font-size:14px;color:var(--text-2);line-height:1.75;margin-bottom:16px;">A recruiter uploads a job spec and assigns a tailored prep package to a candidate in two clicks. The candidate gets notified, completes the sessions, and the recruiter sees readiness scores before the interview. Everyone wins.</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <div style="font-size:11px;font-weight:700;color:var(--amber);background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);padding:4px 12px;border-radius:20px;">Recruiter dashboard</div>
+            <div style="font-size:11px;font-weight:700;color:var(--amber);background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);padding:4px 12px;border-radius:20px;">Assign prep in 2 clicks</div>
+            <div style="font-size:11px;font-weight:700;color:var(--amber);background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);padding:4px 12px;border-radius:20px;">See candidate readiness scores</div>
+          </div>
+          <div style="margin-top:14px;font-size:12px;color:var(--text-3);font-style:italic;">Coming · B2B Platform</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ THE PANEL ══ -->
+<div style="background:var(--bg);border-top:1px solid var(--border);padding:80px 40px;">
+  <div style="max-width:1100px;margin:0 auto;" class="fade-in">
+    <div class="section-eyebrow">The Panel Simulator</div>
+    <h2 class="section-title" style="margin-bottom:14px;">Each panellist has a personality.<br>And they're watching.</h2>
+    <p class="section-body" style="margin-bottom:48px;">One evaluates everything you say. One goes three levels deep on every answer. One challenges you regardless of how well you're doing. Their reactions shift in real time — based on how you're performing.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px;">
+      <div style="background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.22);border-radius:16px;padding:24px;">
+        <div style="font-size:28px;margin-bottom:12px;">🔵</div>
+        <div style="font-size:16px;font-weight:900;color:var(--text);margin-bottom:6px;">The Evaluator</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.7;">Scores every answer methodically. Impressed by structure and clarity. Neutral until you earn it. Becomes visibly warmer as your scores improve.</div>
+      </div>
+      <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.22);border-radius:16px;padding:24px;">
+        <div style="font-size:28px;margin-bottom:12px;">🟣</div>
+        <div style="font-size:16px;font-weight:900;color:var(--text);margin-bottom:6px;">The Deep Diver</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.7;">Follows up every answer with a harder question. Doesn't accept surface-level answers. "Can you go deeper on that?" is a good sign, not a bad one.</div>
+      </div>
+      <div style="background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.22);border-radius:16px;padding:24px;">
+        <div style="font-size:28px;margin-bottom:12px;">🔴</div>
+        <div style="font-size:16px;font-weight:900;color:var(--text);margin-bottom:6px;">The Skeptic</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.7;">Challenges everything. Not impressed easily. Every real interview has one. Explain puts them in every panel so you stop being surprised by them.</div>
+      </div>
+    </div>
+
+    <!-- Feature callouts -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div style="background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.2);border-radius:14px;padding:24px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--red);margin-bottom:10px;">Filler Word Detection</div>
+        <div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px;">Nobody forgets their score the first time they see "basically × 18."</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">Live detection of "um", "uh", "like", "basically", "you know". After every session, Explain shows your filler word count, tracks whether it's improving across sessions, and flags the moments they appeared in your transcript. Interviewers notice. Now you will too.</div>
+      </div>
+      <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:14px;padding:24px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--amber);margin-bottom:10px;">Surprise MCQ</div>
+        <div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px;">Mid-interview. Countdown timer. No warning.</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">At a random point in your session, the panel pauses and drops a multiple-choice question from the job spec — timed. Real interviews test how you think under pressure, not just when you're comfortable. The Surprise MCQ makes sure you're ready for that too.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ YOUR SCORE ══ -->
+<div style="background:var(--bg2);border-top:1px solid var(--border);padding:80px 40px;">
+  <div style="max-width:1100px;margin:0 auto;" class="fade-in">
+    <div class="section-eyebrow">Your Score</div>
+    <h2 class="section-title" style="margin-bottom:14px;">Five dimensions.<br>One honest number.</h2>
+    <p class="section-body" style="margin-bottom:48px;">Every answer you give is scored across five dimensions in real time. Not a vague "good job" — a number, a breakdown, and specific coaching on what to fix.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:40px;">
+      <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:10px;">🎯</div>
+        <div style="font-size:13px;font-weight:900;color:var(--text);margin-bottom:4px;">Clarity</div>
+        <div style="font-size:11px;color:var(--text-3);line-height:1.5;">Was the answer easy to follow?</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:10px;">💪</div>
+        <div style="font-size:13px;font-weight:900;color:var(--text);margin-bottom:4px;">Confidence</div>
+        <div style="font-size:11px;color:var(--text-3);line-height:1.5;">Did you sound like you believe it?</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:10px;">🧠</div>
+        <div style="font-size:13px;font-weight:900;color:var(--text);margin-bottom:4px;">Depth</div>
+        <div style="font-size:11px;color:var(--text-3);line-height:1.5;">Did you go beyond the surface?</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:10px;">✅</div>
+        <div style="font-size:13px;font-weight:900;color:var(--text);margin-bottom:4px;">Accuracy</div>
+        <div style="font-size:11px;color:var(--text-3);line-height:1.5;">Was what you said actually correct?</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:10px;">📐</div>
+        <div style="font-size:13px;font-weight:900;color:var(--text);margin-bottom:4px;">Structure</div>
+        <div style="font-size:11px;color:var(--text-3);line-height:1.5;">Was there a beginning, middle, end?</div>
+      </div>
+    </div>
+
+    <!-- Private practice callout -->
+    <div style="background:linear-gradient(135deg,rgba(30,77,216,0.08) 0%,rgba(124,58,237,0.06) 100%);border:1px solid rgba(79,142,247,0.25);border-radius:16px;padding:32px;">
+      <div style="font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;">Private by Design</div>
+      <div style="font-size:22px;font-weight:900;color:var(--text);margin-bottom:10px;">Practice privately. Submit only when you're ready.</div>
+      <div style="font-size:14px;color:var(--text-2);line-height:1.75;margin-bottom:24px;">Nobody wants their recruiter seeing their first attempt at explaining microservices at 11pm. Every practice session is private by default — unlimited attempts, only you can see them. When you're happy with a run, one tap sends your best score to the recruiter. Nothing else.</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:18px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:8px;">🔒</div>
+          <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:4px;">Private Practice</div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;">Unlimited attempts. Only you see your scores.</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:18px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:8px;">✅</div>
+          <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:4px;">Submit When Ready</div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;">One tap sends your best attempt. Your choice, your timing.</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:18px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:8px;">📊</div>
+          <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:4px;">Recruiter Sees Best</div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;">They only ever see what you chose to share.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WHO IT'S FOR ══ -->
+<div style="background:var(--bg);padding: 0 0 80px;">
+  <div class="section fade-in">
+    <div class="section-eyebrow">Who It's For</div>
+    <h2 class="section-title">Every high-stakes interview<br>in the world.</h2>
+    <p class="section-body">Explain started with career interviews. Then we realised — the terror of walking in unprepared is universal.</p>
+
+    <div class="who-grid">
+      <div class="who-card">
+        <div class="who-icon">🎓</div>
+        <div class="who-name">The First-Timer</div>
+        <div class="who-desc">16 years old. First ever job interview. Terrified. Explain makes the first interview feel like the tenth.</div>
+      </div>
+      <div class="who-card">
+        <div class="who-icon">💼</div>
+        <div class="who-name">The Graduate</div>
+        <div class="who-desc">Uploads the job spec at midnight. Finds the gaps at 11pm — not 9am. Walks in the next morning like they've done this before.</div>
+      </div>
+      <div class="who-card">
+        <div class="who-icon">🔄</div>
+        <div class="who-name">The Career Changer</div>
+        <div class="who-desc">The skills transfer — but how do you explain that convincingly in 60 seconds? Explain stress-tests that story until it lands.</div>
+      </div>
+      <div class="who-card">
+        <div class="who-icon">📋</div>
+        <div class="who-name">The Redundant Professional</div>
+        <div class="who-desc">50 years old. Made redundant after 20 years. Hasn't interviewed since 2004. Explain rebuilds confidence — privately, safely.</div>
+      </div>
+      <div class="who-card">
+        <div class="who-icon">🌍</div>
+        <div class="who-name">The International Candidate</div>
+        <div class="who-desc">English is perfect. Interview manner is calibrated to a different culture. Explain coaches not just what to say — but how.</div>
+      </div>
+      <div class="who-card">
+        <div class="who-icon">🏥</div>
+        <div class="who-name">The Medical Graduate</div>
+        <div class="who-desc">Foundation Programme. One shot. Years of study, one conversation. Explain builds a panel of consultants and grills them first.</div>
+      </div>
+    </div>
+
+    <div class="coming-divider">
+      <div class="coming-divider-line"></div>
+      <div class="coming-divider-label">Coming · Beyond Job Interviews</div>
+      <div class="coming-divider-line"></div>
+    </div>
+
+    <div class="coming-grid">
+      <div class="coming-card">
+        <div class="who-icon">🛂</div>
+        <div class="coming-name">Visa Interviews</div>
+        <div class="coming-desc">US Green Card. UK Skilled Worker. Canadian PR. Millions of applicants globally. Every single year. Preparing by Googling.</div>
+      </div>
+      <div class="coming-card">
+        <div class="who-icon">🚗</div>
+        <div class="coming-name">Driving Theory</div>
+        <div class="coming-desc">UK Theory Test. US Written Exam. 600,000+ UK test-takers per year. Timed. Pressured. Scored. Exactly how the real test feels.</div>
+      </div>
+      <div class="coming-card">
+        <div class="who-icon">🏛️</div>
+        <div class="coming-name">Citizenship Tests</div>
+        <div class="coming-desc">Life in the UK. US Naturalization. Canadian citizenship. Years of building a life — one test standing between them and belonging.</div>
+      </div>
+    </div>
+
+    <div class="tagline-block" style="margin-top:40px;">
+      <p>This is no longer an interview prep app.</p>
+      <span>It is the world's interview engine. Every high-stakes verbal assessment, in every industry, in every country.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LEARN SOMETHING FIRST ══ -->
+<div style="background:var(--bg);border-top:1px solid var(--border);padding:80px 40px;">
+  <div style="max-width:1100px;margin:0 auto;" class="fade-in">
+    <div class="section-eyebrow" style="color:#34D399;">Also · The Learning Engine</div>
+    <h2 class="section-title" style="margin-bottom:14px;">Need to learn something first?</h2>
+    <p class="section-body">Exam. Certification. University module. Professional qualification. Generate any lesson on any subject in seconds — then speak it back and get scored. You don't truly understand something until you can explain it out loud.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:36px;">
+      <div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);border-radius:14px;padding:22px;">
+        <div style="font-size:22px;margin-bottom:10px;">🎓</div>
+        <div style="font-size:13px;font-weight:800;color:#34D399;margin-bottom:6px;">University & College</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.65;">Generate a lesson on any module — Economics, Law, Engineering, Medicine. Speak it back. Get scored. Understand it before the exam.</div>
+      </div>
+      <div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);border-radius:14px;padding:22px;">
+        <div style="font-size:22px;margin-bottom:10px;">📜</div>
+        <div style="font-size:13px;font-weight:800;color:#34D399;margin-bottom:6px;">Professional Certifications</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.65;">AWS. Azure. CFA. ACCA. Prince2. PMP. Generate the lesson, explain it back, identify every gap — before the real exam finds them first.</div>
+      </div>
+      <div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);border-radius:14px;padding:22px;">
+        <div style="font-size:22px;margin-bottom:10px;">💡</div>
+        <div style="font-size:13px;font-weight:800;color:#34D399;margin-bottom:6px;">Anything. Any Subject.</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.65;">Type any topic. Get a lesson built for your level. Speak it back in your own words. That's the Feynman Technique — and it's the most powerful learning method ever discovered.</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);border-radius:14px;padding:24px 32px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:260px;">
+        <div style="font-size:15px;font-weight:900;color:var(--text);margin-bottom:6px;">"If you can't explain it simply, you don't understand it well enough."</div>
+        <div style="font-size:12px;color:var(--text-3);">— Richard Feynman, Nobel Laureate in Physics</div>
+      </div>
+      <div style="flex-shrink:0;font-size:13px;color:#34D399;font-weight:700;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.25);padding:10px 20px;border-radius:8px;">
+        The Feynman Technique — turned into a product.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WAITLIST ══ -->
+<section class="waitlist-section" id="waitlist">
+  <div class="waitlist-eyebrow">Early Access</div>
+  <h2 class="waitlist-title">Be first in.<br><em>Be ready first.</em></h2>
+  <p class="waitlist-sub">Join the waitlist. No spam — just a heads-up when Explain opens its doors.</p>
+  <form class="waitlist-form" onsubmit="handleWaitlist(event)">
+    <input type="email" class="waitlist-input" placeholder="your@email.com" required id="waitlist-email">
+    <button type="submit" class="waitlist-submit">Get Early Access →</button>
+  </form>
+  <p class="waitlist-note" id="waitlist-note">No card required. No commitment. Just first in line.</p>
+</section>
+
+<!-- ══ ABOUT ══ -->
+<div style="background:var(--bg2);border-top:1px solid var(--border);padding:80px 40px;" id="about">
+  <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;" class="fade-in">
+    <div>
+      <div class="section-eyebrow">About</div>
+      <h2 class="section-title" style="margin-bottom:20px;">Built by someone who has been in that chair.</h2>
+      <p style="font-size:15px;color:var(--text-2);line-height:1.85;margin-bottom:16px;">Over 25 years of commercial software development. Dozens of interviews — on both sides of the table. Technical panels, competency rounds, visa appointments, the lot. I know exactly what it feels like to walk in underprepared. And I know what it feels like to walk out knowing you nailed it.</p>
+      <p style="font-size:15px;color:var(--text-2);line-height:1.85;margin-bottom:16px;">Explain exists because the gap between those two experiences is entirely fixable — with the right preparation. Not generic tips. Not a list of "common interview questions." <strong style="color:var(--text);">A real simulation, built from your actual job spec, that forces you to speak your answers out loud until they're good.</strong></p>
+      <p style="font-size:15px;color:var(--text-2);line-height:1.85;">The Feynman Technique says if you can't explain something simply, you don't understand it well enough. Explain turns that principle into a product — for interviews, for exams, for every high-stakes moment where words matter.</p>
+      <div style="margin-top:32px;display:flex;align-items:center;gap:16px;">
+        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,rgba(79,142,247,0.3),rgba(129,140,248,0.3));border:1px solid rgba(79,142,247,0.3);display:flex;align-items:center;justify-content:center;font-size:20px;">F</div>
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--text);">Francis Cobbinah</div>
+          <div style="font-size:12px;color:var(--text-3);">Founder · Explain.global</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div style="background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.2);border-radius:16px;padding:24px;">
+        <div style="font-size:28px;margin-bottom:10px;">🎯</div>
+        <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:6px;">The Mission</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">Nobody should lose an opportunity because they were underprepared. Not a job. Not a visa. Not a university place. Not a driving licence. Preparation should be available to everyone — not just those who can afford a coach.</div>
+      </div>
+      <div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);border-radius:16px;padding:24px;">
+        <div style="font-size:28px;margin-bottom:10px;">🌍</div>
+        <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:6px;">Why .global</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">Interviews happen everywhere. Visa panels. Medical licensing. Citizenship tests. University admissions. The product is the same. The stakes are just as high. Explain was built global from day one — not as an afterthought.</div>
+      </div>
+      <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:16px;padding:24px;">
+        <div style="font-size:28px;margin-bottom:10px;">⚡</div>
+        <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:6px;">Built with AI. Grounded in reality.</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">AI generates the questions. AI scores the answers. But the insight behind the product — what interviewers actually look for, what trips candidates up, what wins the room — that comes from 25 years of doing this for real.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONTACT ══ -->
+<div style="background:var(--bg);border-top:1px solid var(--border);padding:80px 40px;" id="contact">
+  <div style="max-width:700px;margin:0 auto;text-align:center;" class="fade-in">
+    <div class="section-eyebrow">Contact</div>
+    <h2 class="section-title" style="margin-bottom:14px;">Get in touch.</h2>
+    <p style="font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:48px;">Whether you're interested in early access, a partnership, a recruitment integration, or you just want to say the product looks good — we'd love to hear from you.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:40px;">
+      <a href="mailto:francis@percentile.one?subject=Early Access - Explain.global" style="text-decoration:none;">
+        <div style="background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.2);border-radius:14px;padding:24px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(79,142,247,0.5)'" onmouseout="this.style.borderColor='rgba(79,142,247,0.2)'">
+          <div style="font-size:24px;margin-bottom:10px;">✉️</div>
+          <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px;">Early Access</div>
+          <div style="font-size:12px;color:var(--text-3);line-height:1.5;">Get on the list before we open the doors.</div>
+        </div>
+      </a>
+      <a href="mailto:francis@percentile.one?subject=Partnership Enquiry - Explain.global" style="text-decoration:none;">
+        <div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);border-radius:14px;padding:24px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(52,211,153,0.5)'" onmouseout="this.style.borderColor='rgba(52,211,153,0.2)'">
+          <div style="font-size:24px;margin-bottom:10px;">🤝</div>
+          <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px;">Partnerships</div>
+          <div style="font-size:12px;color:var(--text-3);line-height:1.5;">Recruiters, universities, training providers.</div>
+        </div>
+      </a>
+      <a href="mailto:francis@percentile.one?subject=Press Enquiry - Explain.global" style="text-decoration:none;">
+        <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:14px;padding:24px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(245,158,11,0.5)'" onmouseout="this.style.borderColor='rgba(245,158,11,0.2)'">
+          <div style="font-size:24px;margin-bottom:10px;">📰</div>
+          <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px;">Press</div>
+          <div style="font-size:12px;color:var(--text-3);line-height:1.5;">Media enquiries and press coverage.</div>
+        </div>
+      </a>
+    </div>
+
+    <a href="mailto:francis@percentile.one" style="display:inline-flex;align-items:center;gap:10px;background:var(--blue);color:#fff;font-size:15px;font-weight:700;padding:14px 32px;border-radius:10px;text-decoration:none;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+      ✉ francis@percentile.one
+    </a>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-brand">Explain<span>.global</span></div>
+  <div class="footer-links">
+    <a href="explain.html">Product Brief</a>
+    <a href="mailto:francis@percentile.one">Contact</a>
+  </div>
+  <div class="footer-right">© 2026 Percentile One Ltd</div>
+</footer>
+
+<script>
+  // ── Language dropdown close on outside click ──
+  document.addEventListener('click', e => {
+    const btn = document.getElementById('langBtn');
+    if (btn && !btn.contains(e.target)) btn.classList.remove('open');
+  });
+
+  // ── Scroll fade-in ──
+  const fadeEls = document.querySelectorAll('.fade-in');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  fadeEls.forEach(el => obs.observe(el));
+  // Hero mockup visible immediately
+  document.getElementById('mockup-hero').classList.add('visible');
+
+  // ── Job interview mockup auto-cycle ──
+  const lQs = [
+    {q:'"Tell me about your experience with .NET Core — specifically how you\'ve used it in a production environment at scale."', speaker:'Victoria Hart is asking:', dot:'#60A5FA', score:88, badges:['● Impressed','● Leaning In','● Warming Up','● Listening'], bcols:['#34D399','#A78BFA','#60A5FA','#34D399']},
+    {q:'"Walk me through a time you debugged a critical production issue under real pressure."', speaker:'Dr. James Reid is asking:', dot:'#A78BFA', score:71, badges:['● Interested','● Needs More Depth','● The Skeptic','● Listening'], bcols:['#60A5FA','#A78BFA','#FBB24B','#34D399']},
+    {q:'"Why should we pick you over the other candidates we\'re seeing today? Be specific."', speaker:'R. Cooper is asking:', dot:'#FBB24B', score:44, badges:['● Unconvinced','● Raising an Eyebrow','● The Interrogator','● Concerned'], bcols:['#F87171','#A78BFA','#F87171','#F87171']},
+    {q:'"Describe your approach to system design. Walk us through how you\'d architect a high-traffic API from scratch."', speaker:'Victoria Hart is asking:', dot:'#60A5FA', score:82, badges:['● Impressed','● Evaluating','● Interested','● Listening'], bcols:['#34D399','#A78BFA','#60A5FA','#34D399']},
+    {q:'"Tell me about your biggest technical weakness. And please — don\'t say you work too hard."', speaker:'Dr. James Reid is asking:', dot:'#A78BFA', score:66, badges:['● Interested','● Skeptical','● The Skeptic','● Neutral'], bcols:['#60A5FA','#F87171','#FBB24B','#94a3b8']},
+  ];
+  let lQi = 0, lPhase = 'question', lTimer = null;
+
+  function lSetQuestion(qi) {
+    const q = lQs[qi];
+    document.getElementById('lqdot').style.background = q.dot;
+    document.getElementById('lqspeaker').textContent = q.speaker;
+    const el = document.getElementById('lquestion');
+    el.style.animation = 'none'; el.offsetHeight;
+    el.style.animation = 'slideQ 0.5s ease';
+    el.textContent = q.q;
+    document.getElementById('lqnum').textContent = 'Question ' + (qi + 1) + ' of 10';
+    document.getElementById('lrecbtntxt').textContent = 'Start Answer';
+    document.getElementById('lrecdot').style.animationPlayState = 'paused';
+    document.getElementById('lscorebar').style.display = 'none';
+    document.getElementById('lscorefill').style.width = '0%';
+    [0,1,2,3].forEach(i => {
+      const b = document.getElementById('lbadge'+i);
+      if(b) { b.textContent = q.badges[i]; b.style.color = q.bcols[i]; }
+    });
+    lPhase = 'question';
+    lTimer = setTimeout(() => lStartAnswer(qi), 2800);
+  }
+
+  function lStartAnswer(qi) {
+    document.getElementById('lrecbtntxt').textContent = 'Answering...';
+    document.getElementById('lrecdot').style.animationPlayState = 'running';
+    lPhase = 'answering';
+    lTimer = setTimeout(() => lShowScore(qi), 3800);
+  }
+
+  function lShowScore(qi) {
+    const q = lQs[qi];
+    document.getElementById('lrecdot').style.animationPlayState = 'paused';
+    document.getElementById('lrecbtntxt').textContent = 'Answer Recorded';
+    document.getElementById('lscorebar').style.display = 'flex';
+    const fill = document.getElementById('lscorefill');
+    const val = document.getElementById('lscoreval');
+    setTimeout(() => {
+      fill.style.width = q.score + '%';
+      fill.style.background = q.score >= 75 ? '#34D399' : q.score >= 55 ? '#FBB24B' : '#F87171';
+      val.textContent = q.score;
+      val.style.color = q.score >= 75 ? '#34D399' : q.score >= 55 ? '#FBB24B' : '#F87171';
+    }, 100);
+    lPhase = 'scored';
+    lTimer = setTimeout(() => {
+      lQi = (lQi + 1) % lQs.length;
+      lSetQuestion(lQi);
+    }, 4000);
+  }
+
+  function lToggleRec() { /* visual only — auto-cycling */ }
+
+  // Kick off
+  setTimeout(() => lSetQuestion(0), 1200);
+
+  // Cycling visa questions
+  const visaQs = [
+    '"What is the name of your sponsoring employer, and can you explain your specific role and responsibilities?"',
+    '"How long have you worked in this field, and do you hold any professional qualifications?"',
+    '"What is your current salary, and what salary are you expecting in the UK?"',
+    '"Have you visited the UK before? What was the purpose of those visits?"',
+    '"Who will be accompanying you to the UK, and what are their immigration statuses?"',
+  ];
+  let vqi = 0;
+  setInterval(() => {
+    vqi = (vqi + 1) % visaQs.length;
+    const el = document.getElementById('visaQ');
+    el.style.opacity = '0';
+    setTimeout(() => { el.textContent = visaQs[vqi]; el.style.opacity = '1'; el.style.transition = 'opacity 0.5s'; }, 300);
+  }, 5000);
+
+  // Waitlist form
+  function handleWaitlist(e) {
+    e.preventDefault();
+    const email = document.getElementById('waitlist-email').value;
+    const btn = e.target.querySelector('button');
+    // Fire mailto to Francis
+    const subject = encodeURIComponent('Explain.global Waitlist — ' + email);
+    const body = encodeURIComponent('New waitlist signup:\n\nEmail: ' + email + '\nDate: ' + new Date().toUTCString());
+    window.location.href = 'mailto:francis@percentile.one?subject=' + subject + '&body=' + body;
+    // Confirm UI
+    btn.textContent = '✓ You\'re on the list!';
+    btn.style.background = '#34D399';
+    btn.disabled = true;
+    document.getElementById('waitlist-note').textContent = 'We\'ve noted ' + email + ' — you\'ll be first to know.';
+    document.getElementById('waitlist-email').disabled = true;
+  }
+</script>
