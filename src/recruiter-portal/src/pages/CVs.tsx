@@ -54,6 +54,17 @@ const CVS = [
     summary: 'Junior data analyst with experience in retail analytics and dashboard reporting. Looking for first permanent role.',
   },
   {
+    id: 7, initials: 'FC', candidate: 'Francis Cobbinah', email: 'francis@percentile.one', mobile: '07432 367 704',
+    role: 'Senior .NET Developer & Software Architect', source: 'Upload', received: '19 Jul', status: 'Shortlisted',
+    trustScore: 96, practiceScore: null, hasPracticed: false, packGenerated: false,
+    location: 'London, UK', experience: '24 years', currentEmployer: 'Percentile One (Self-Employed)',
+    education: 'Microsoft Certified Professional (1998, 2005) · 400+ Technical Books',
+    salaryExpectation: '£95,000+', rightToWork: 'Yes — UK',
+    linkedin: 'linkedin.com/in/franciscobbinah',
+    skills: ['.NET / C#', 'Azure', 'React', 'SQL Server', 'Software Architecture', 'Microservices'],
+    summary: 'Exceptionally passionate Senior .NET Developer and Software Architect with 24 years of commercial experience across investment banking, insurance, and retail. Currently building a cutting-edge AI-powered learning and recruitment platform (Explain.global). Previous employers include Bank of Tokyo Mitsubishi, HSBC, Amlin Insurance, Marks & Spencer and BGC Partners.',
+  },
+  {
     id: 6, initials: 'PS', candidate: 'Priya Sharma', email: 'priya.sharma@hotmail.co.uk', mobile: '07688 774 902',
     role: 'Business Analyst', source: 'Upload', received: '14 Jul', status: 'Reviewed',
     trustScore: 77, practiceScore: 74, hasPracticed: true, packGenerated: true,
