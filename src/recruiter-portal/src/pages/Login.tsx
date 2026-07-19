@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ExplainLogo } from '../components/LogoMark'
@@ -52,7 +52,6 @@ export default function Login() {
           caret-color: #4F8EF7 !important;
           transition: background-color 5000s ease-in-out 0s;
         }
-        .ex-select option { background: #111318; color: #cbd5e1; }
       `}</style>
 
       {/* Ambient orbs */}
@@ -126,20 +125,11 @@ export default function Login() {
         >
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
-            {/* Company */}
-            <FieldWrap>
-              <span style={iconStyle}>🏢</span>
-              <select
-                className="ex-select ex-input"
-                value={form.company}
-                onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
-                style={{ ...inputBase, color: form.company ? '#cbd5e1' : '#3d4451', appearance: 'none', WebkitAppearance: 'none', cursor: 'pointer' }}
-              >
-                <option value="" disabled>Select your company</option>
-                {COMPANIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-              <span style={{ color: '#4b5563', fontSize: 10, pointerEvents: 'none', marginLeft: 'auto' }}>▾</span>
-            </FieldWrap>
+            {/* Company dropdown */}
+            <CompanyDropdown
+              value={form.company}
+              onChange={val => setForm(f => ({ ...f, company: val }))}
+            />
 
             {/* Email */}
             <FieldWrap>
@@ -248,6 +238,96 @@ export default function Login() {
       {/* Success overlay */}
       <AnimatePresence>
         {phase === 'success' && <SuccessOverlay company={form.company || 'Vallum Associates'} username={form.username || 'Mike'} />}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+/* ── COMPANY DROPDOWN ── */
+function CompanyDropdown({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const [hovered, setHovered] = useState(false)
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
+
+  return (
+    <div ref={ref} style={{ position: 'relative', userSelect: 'none' }}>
+      <div
+        onClick={() => setOpen(o => !o)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '10px 14px', borderRadius: 8,
+          background: '#111318',
+          border: `1px solid ${hovered || open ? 'rgba(79,142,247,0.4)' : 'rgba(148,163,184,0.12)'}`,
+          boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.5)',
+          cursor: 'pointer',
+          transition: 'border-color 0.18s',
+        }}
+      >
+        <span style={iconStyle}>🏢</span>
+        <span style={{
+          flex: 1, fontSize: 13, fontWeight: 350, letterSpacing: '0.01em',
+          color: value ? '#cbd5e1' : '#2d3441',
+        }}>
+          {value || 'Select your company'}
+        </span>
+        <span style={{
+          fontSize: 16,
+          color: hovered || open ? '#4F8EF7' : '#4b5563',
+          transition: 'color 0.18s, transform 0.2s',
+          display: 'inline-block',
+          transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+          lineHeight: 1,
+        }}>▾</span>
+      </div>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scaleY: 0.92 }}
+            animate={{ opacity: 1, y: 0, scaleY: 1 }}
+            exit={{ opacity: 0, y: -4, scaleY: 0.94 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            style={{
+              position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 50,
+              background: '#111318',
+              border: '1px solid rgba(79,142,247,0.25)',
+              borderRadius: 8,
+              boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
+              overflow: 'hidden',
+              transformOrigin: 'top',
+            }}
+          >
+            {COMPANIES.map(c => (
+              <div
+                key={c}
+                onMouseEnter={() => setHoveredItem(c)}
+                onMouseLeave={() => setHoveredItem(null)}
+                onClick={() => { onChange(c); setOpen(false) }}
+                style={{
+                  padding: '10px 14px',
+                  fontSize: 13, color: hoveredItem === c ? '#fff' : '#cbd5e1',
+                  background: hoveredItem === c ? 'rgba(79,142,247,0.15)' : 'transparent',
+                  cursor: 'pointer',
+                  transition: 'background 0.12s, color 0.12s',
+                  borderLeft: hoveredItem === c ? '2px solid #4F8EF7' : '2px solid transparent',
+                }}
+              >
+                {c}
+              </div>
+            ))}
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   )
