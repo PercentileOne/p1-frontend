@@ -77,7 +77,6 @@ const CVS = [
 ]
 
 const STATUS_OPTIONS = ['All', 'New', 'Reviewed', 'Shortlisted', 'Rejected']
-const SOURCE_OPTIONS = ['All Sources', 'Upload', 'Email']
 
 const STATUS_COLORS: Record<string, string> = {
   New: '#4F8EF7',
@@ -88,7 +87,6 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function CVsPage() {
   const [filter, setFilter] = useState('All')
-  const [source, setSource] = useState('All Sources')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<typeof CVS[0] | null>(null)
   const [dragging, setDragging] = useState(false)
@@ -97,10 +95,9 @@ export default function CVsPage() {
 
   const visible = CVS.filter(c => {
     const matchStatus = filter === 'All' || c.status === filter
-    const matchSource = source === 'All Sources' || c.source === source
     const q = search.toLowerCase()
     const matchSearch = !q || c.candidate.toLowerCase().includes(q) || c.role.toLowerCase().includes(q) || c.skills.some(s => s.toLowerCase().includes(q))
-    return matchStatus && matchSource && matchSearch
+    return matchStatus && matchSearch
   })
 
   return (
@@ -215,17 +212,6 @@ export default function CVsPage() {
                 transition: 'all 0.15s',
               }}>{s}</button>
             ))}
-            <div style={{ width: 1, background: 'var(--border)', margin: '0 2px' }} />
-            {SOURCE_OPTIONS.map(s => (
-              <button key={s} onClick={() => setSource(s)} style={{
-                padding: '7px 13px', borderRadius: 20, border: '1px solid',
-                fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-                background: source === s ? 'rgba(167,139,250,0.15)' : 'transparent',
-                borderColor: source === s ? 'rgba(167,139,250,0.5)' : 'var(--border)',
-                color: source === s ? '#A78BFA' : 'var(--text-3)',
-                transition: 'all 0.15s',
-              }}>{s}</button>
-            ))}
           </div>
         </div>
 
@@ -234,7 +220,7 @@ export default function CVsPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Candidate', 'Role', 'Skills', 'Source', 'Received', 'Trust', 'Practiced', 'Status', ''].map(h => (
+                {['Candidate', 'Role', 'Skills', 'Received', 'Trust', 'Practiced', 'Status', ''].map(h => (
                   <th key={h} style={{ padding: '12px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
@@ -269,11 +255,6 @@ export default function CVsPage() {
                       ))}
                       {c.skills.length > 3 && <span style={{ fontSize: 10, color: 'var(--text-3)' }}>+{c.skills.length - 3}</span>}
                     </div>
-                  </td>
-                  <td style={{ padding: '13px 16px' }}>
-                    <span style={{ fontSize: 11, color: c.source === 'Email' ? '#A78BFA' : 'var(--text-3)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      {c.source === 'Email' ? <Mail size={11} /> : <Upload size={11} />} {c.source}
-                    </span>
                   </td>
                   <td style={{ padding: '13px 16px', fontSize: 12, color: 'var(--text-3)', whiteSpace: 'nowrap' }}>{c.received}</td>
                   <td style={{ padding: '13px 16px' }}>
