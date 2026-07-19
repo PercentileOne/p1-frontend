@@ -27,6 +27,8 @@ jobs:
 
       - name: Build
         working-directory: src/frontend
+        env:
+          VITE_COCKPIT_PASSWORD: ${{ secrets.VITE_COCKPIT_PASSWORD }}
         run: npm install && npm run build
 
       - name: Deploy
