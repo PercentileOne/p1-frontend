@@ -266,25 +266,7 @@ function SuccessOverlay({ company, username }: { company: string; username: stri
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
     >
-      <div style={{ position: 'relative', width: 100, height: 100 }}>
-        <ExplainLogo size={100} withAnimation={false} />
-        {/* Orbiting comet ring */}
-        <motion.svg
-          width={100} height={100} viewBox="0 0 100 100"
-          style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2.8, repeat: Infinity, ease: 'linear' }}
-        >
-          <circle cx={50} cy={50} r={43} fill="none"
-            stroke="rgba(79,142,247,0.25)" strokeWidth="7"
-            strokeLinecap="round" strokeDasharray="38 233"
-          />
-          <circle cx={50} cy={50} r={43} fill="none"
-            stroke="rgba(99,179,255,0.92)" strokeWidth="2.5"
-            strokeLinecap="round" strokeDasharray="20 251"
-          />
-        </motion.svg>
-      </div>
+      <ExplainLogo size={100} withAnimation={false} cometDuration={2.8} />
 
       <motion.div
         style={{ textAlign: 'center' }}

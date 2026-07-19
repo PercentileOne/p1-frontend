@@ -148,7 +148,7 @@ export default function Dashboard() {
       }}>
         {/* Logo */}
         <div style={{ padding: '24px 20px 18px', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-          <ExplainLogo size={72} withAnimation={false} />
+          <ExplainLogo size={72} withAnimation={false} cometDuration={8} />
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', lineHeight: 1.2 }}>
               Explain<span style={{ color: '#4F8EF7' }}>.global</span>

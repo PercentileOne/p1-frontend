@@ -4,9 +4,10 @@ interface ExplainLogoProps {
   size?: number
   withAnimation?: boolean
   delay?: number
+  cometDuration?: number  // seconds per orbit — lower = faster, 0 = no comet
 }
 
-export function ExplainLogo({ size = 100, withAnimation = true, delay = 0.3 }: ExplainLogoProps) {
+export function ExplainLogo({ size = 100, withAnimation = true, delay = 0.3, cometDuration = 2.8 }: ExplainLogoProps) {
   const CX = 50, CY = 50, R = 42
 
   const bars = [
@@ -22,8 +23,8 @@ export function ExplainLogo({ size = 100, withAnimation = true, delay = 0.3 }: E
     : { duration: 0 }
 
   return (
-    <motion.div initial={logoInit} animate={logoAnim} transition={logoTrans}>
-      <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <motion.div initial={logoInit} animate={logoAnim} transition={logoTrans} style={{ position: 'relative', width: size, height: size }}>
+      <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
         <defs>
           <linearGradient id="exl-ring" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%"   stopColor="#4f46e5" />
@@ -83,6 +84,24 @@ export function ExplainLogo({ size = 100, withAnimation = true, delay = 0.3 }: E
           transition={{ duration: 1.8, repeat: Infinity, repeatDelay: 6, ease: 'easeOut', delay: delay + 4.7 }}
         />
       </svg>
+
+      {cometDuration > 0 && (
+        <motion.svg
+          width={size} height={size} viewBox="0 0 100 100"
+          style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: cometDuration, repeat: Infinity, ease: 'linear' }}
+        >
+          <circle cx={50} cy={50} r={43} fill="none"
+            stroke="rgba(79,142,247,0.25)" strokeWidth="7"
+            strokeLinecap="round" strokeDasharray="38 233"
+          />
+          <circle cx={50} cy={50} r={43} fill="none"
+            stroke="rgba(99,179,255,0.92)" strokeWidth="2.5"
+            strokeLinecap="round" strokeDasharray="20 251"
+          />
+        </motion.svg>
+      )}
     </motion.div>
   )
 }
