@@ -164,6 +164,7 @@ export default function AppMockup() {
   const [p1Score, setP1Score] = useState(72)
   const [chatBadge, setChatBadge] = useState(3)
   const [showToast, setShowToast] = useState(false)
+  const [showLogoInfo, setShowLogoInfo] = useState(false)
   const [, setTime] = useState('')
   const [date, setDate] = useState('')
   const [lifeTab, setLifeTab] = useState<'life'|'work'>('life')
@@ -266,11 +267,51 @@ export default function AppMockup() {
 
         {/* Sidebar */}
         <div style={s.sidebar}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', marginBottom: 6 }}>
-            <div style={{ width: 22, height: 22, background: '#6366F1', borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="white" strokeWidth="1.2"/><path d="M6 3.5v2.5l1.5 1.5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/></svg>
+          {/* Logo — click for description */}
+          <div style={{ position: 'relative' }}>
+            <div
+              onClick={() => setShowLogoInfo(v => !v)}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 6px 8px', marginBottom: 4, cursor: 'pointer', borderRadius: 8, transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(99,102,241,0.08)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              <svg width="78" height="78" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="mock-ring" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#4f46e5"/>
+                    <stop offset="60%" stopColor="#7c3aed"/>
+                    <stop offset="100%" stopColor="#a855f7"/>
+                  </linearGradient>
+                  <clipPath id="mock-clip">
+                    <circle cx="50" cy="50" r="40"/>
+                  </clipPath>
+                </defs>
+                <circle cx="50" cy="50" r="43" fill="#0d0a1a"/>
+                <circle cx="50" cy="50" r="43" fill="none" stroke="url(#mock-ring)" strokeWidth="2.5"/>
+                <g clipPath="url(#mock-clip)" transform="translate(26,27) scale(1.01)">
+                  <path fill="#863bff" d="M25.946 44.938c-.664.845-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.287c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.497 0-3.578-1.842-3.578H1.237c-.92 0-1.456-1.04-.92-1.788L10.013.474c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.579 1.842 3.579h11.377c.943 0 1.473 1.088.89 1.83L25.947 44.94z"/>
+                </g>
+              </svg>
+              <span style={{ fontSize: 9, fontWeight: 800, color: '#94A3B8', marginTop: 5, letterSpacing: '0.02em' }}>Percentile.One</span>
             </div>
-            <span style={{ fontSize: 9, fontWeight: 800, color: '#94A3B8' }}>Percentile.One</span>
+
+            {/* Info popup */}
+            {showLogoInfo && (
+              <div style={{
+                position: 'absolute', top: '100%', left: 4, zIndex: 50,
+                background: '#0f1628', border: '1px solid rgba(99,102,241,0.35)',
+                borderRadius: 10, padding: '12px 14px', width: 190,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+              }}>
+                <div style={{ fontSize: 10, fontWeight: 800, color: '#6366F1', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Percentile.One</div>
+                <div style={{ fontSize: 10, color: '#94A3B8', lineHeight: 1.6 }}>
+                  Your personal operating system. Track goals, habits, skills and identity — and discover exactly where you rank.
+                </div>
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: 9, color: '#475569' }}>
+                  v1.0 · Beta · Built in Colchester, UK
+                </div>
+              </div>
+            )}
           </div>
 
           <div style={s.navSection}>Navigation</div>

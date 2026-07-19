@@ -1,13 +1,14 @@
 {
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": ["/assets/*", "/*.css", "/*.js"]
-  },
-  "mimeTypes": {
-    ".js": "text/javascript",
-    ".mjs": "text/javascript",
-    ".css": "text/css",
-    ".json": "application/json",
-    ".wasm": "application/wasm"
+  "routes": [
+    {
+      "route": "/*",
+      "redirect": "https://explain.global/coming-soon.html",
+      "statusCode": 302
+    }
+  ],
+  "globalHeaders": {
+    "Cache-Control": "public, max-age=0, must-revalidate",
+    "X-Frame-Options": "DENY",
+    "X-Content-Type-Options": "nosniff"
   }
 }

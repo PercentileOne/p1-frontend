@@ -16,17 +16,31 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("secret");
+  const [password, setPassword] = useState("");
   const [tenant,   setTenant]   = useState("Just Exploring");
   const [persona,  setPersona]  = useState("Just Browsing");
   const [showPass, setShowPass] = useState(false);
   const [phase,    setPhase]    = useState<Phase>("idle");
   const [emailError, setEmailError] = useState("");
+  const [authError,  setAuthError]  = useState("");
+
+  const ALLOWED_EMAIL   = "francis@percentile.one";
+  const COCKPIT_PASSWORD = import.meta.env.VITE_COCKPIT_PASSWORD as string;
 
   const handleLogin = async () => {
     if (!username.trim()) { setEmailError("Email is required"); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username.trim())) { setEmailError("Please enter a valid email address"); return; }
     setEmailError("");
+
+    if (username.trim().toLowerCase() !== ALLOWED_EMAIL) {
+      setAuthError("Access denied.");
+      return;
+    }
+    if (password !== COCKPIT_PASSWORD) {
+      setAuthError("Incorrect password.");
+      return;
+    }
+    setAuthError("");
     setPhase("loading");
 
     // EmailJS — send login notification
@@ -149,7 +163,7 @@ export default function LoginPage() {
               type="email"
               placeholder="Email address *"
               value={username}
-              onChange={v => { setUsername(v); if (emailError) setEmailError(""); }}
+              onChange={v => { setUsername(v); if (emailError) setEmailError(""); if (authError) setAuthError(""); }}
             />
             {emailError && (
               <p className="text-[11px] text-red-400 mt-1 ml-1">{emailError}</p>
@@ -157,22 +171,27 @@ export default function LoginPage() {
           </div>
 
           {/* Password */}
-          <LoginField
-            icon={<Lock size={13} />}
-            type={showPass ? "text" : "password"}
-            placeholder="Password"
-            value={password}
-            onChange={setPassword}
-            suffix={
-              <button
-                onClick={() => setShowPass(p => !p)}
-                className="text-slate-600 hover:text-slate-300 transition-colors p-1"
-                tabIndex={-1}
-              >
-                {showPass ? <EyeOff size={13} /> : <Eye size={13} />}
-              </button>
-            }
-          />
+          <div>
+            <LoginField
+              icon={<Lock size={13} />}
+              type={showPass ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={v => { setPassword(v); if (authError) setAuthError(""); }}
+              suffix={
+                <button
+                  onClick={() => setShowPass(p => !p)}
+                  className="text-slate-600 hover:text-slate-300 transition-colors p-1"
+                  tabIndex={-1}
+                >
+                  {showPass ? <EyeOff size={13} /> : <Eye size={13} />}
+                </button>
+              }
+            />
+            {authError && (
+              <p className="text-[11px] text-red-400 mt-1 ml-1">{authError}</p>
+            )}
+          </div>
 
           {/* Tenant */}
           <LoginSelect

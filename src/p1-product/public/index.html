@@ -1,0 +1,779 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Explain.global — Walk In Ready.</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+  :root {
+    --bg: #080c14;
+    --bg2: #0d1421;
+    --bg3: #111827;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f1f5f9;
+    --text-2: #94a3b8;
+    --text-3: #64748b;
+    --blue: #4F8EF7;
+    --blue-dim: rgba(79,142,247,0.12);
+    --indigo: #818cf8;
+    --indigo-dim: rgba(99,102,241,0.1);
+    --amber: #F59E0B;
+    --green: #34D399;
+    --red: #F87171;
+    --purple: #C084FC;
+    --radius: 14px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px; height: 60px;
+    background: rgba(8,12,20,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-brand { font-size: 17px; font-weight: 900; letter-spacing: -0.02em; color: var(--text); }
+  .nav-brand span { color: var(--blue); }
+  .nav-cta {
+    background: var(--blue); color: #fff; font-size: 13px; font-weight: 700;
+    padding: 8px 20px; border-radius: 8px; border: none; cursor: pointer;
+    text-decoration: none; letter-spacing: 0.01em;
+    transition: opacity 0.2s;
+  }
+  .nav-cta:hover { opacity: 0.88; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 120px 40px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 30%, rgba(79,142,247,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--blue); margin-bottom: 24px;
+    background: rgba(79,142,247,0.12); border: 1px solid rgba(79,142,247,0.25);
+    padding: 5px 14px; border-radius: 20px; display: inline-block;
+  }
+  .hero-headline {
+    font-size: clamp(44px, 7vw, 86px);
+    font-weight: 900; letter-spacing: -0.03em; line-height: 1.0;
+    color: var(--text); margin-bottom: 16px;
+    text-wrap: balance;
+  }
+  .hero-headline em { font-style: normal; color: var(--blue); }
+  .hero-sub {
+    font-size: clamp(16px, 2.2vw, 20px); color: var(--text-2);
+    max-width: 560px; margin: 0 auto 40px; line-height: 1.65;
+    text-wrap: balance;
+  }
+  .hero-actions {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: center;
+    margin-bottom: 72px;
+  }
+  .btn-primary {
+    background: var(--blue); color: #fff; font-size: 15px; font-weight: 700;
+    padding: 14px 32px; border-radius: 10px; border: none; cursor: pointer;
+    letter-spacing: 0.01em; text-decoration: none; transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-ghost {
+    background: transparent; color: var(--text-2); font-size: 14px; font-weight: 600;
+    padding: 13px 24px; border-radius: 10px; border: 1px solid var(--border2);
+    cursor: pointer; text-decoration: none; transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--blue); color: var(--text); }
+
+  /* ── INTERVIEW MOCKUP ── */
+  .mockup-wrap {
+    width: 100%; max-width: 760px; margin: 0 auto;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  }
+  .mockup-bar {
+    display: flex; align-items: center; gap: 7px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+  }
+  .mock-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .mock-title {
+    margin-left: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+    color: var(--text-3);
+  }
+  .mock-live {
+    margin-left: auto; display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--red);
+  }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--red);
+    animation: pulse-red 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse-red { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+
+  .mock-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+    padding: 4px; background: #000; position: relative;
+    aspect-ratio: 16/7;
+  }
+  .mock-tile {
+    position: relative; overflow: hidden; border-radius: 6px;
+    background: #0a0f1a;
+  }
+  .mock-tile img { width: 100%; height: 100%; object-fit: cover; object-position: center 15%; display: block; }
+  .mock-tile-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(transparent 55%, rgba(0,0,0,0.85));
+  }
+  .mock-tile-label {
+    position: absolute; bottom: 8px; left: 10px; right: 10px;
+    font-size: 10px; font-weight: 800; color: #fff; letter-spacing: 0.04em;
+  }
+  .mock-tile-badge {
+    position: absolute; top: 8px; right: 8px;
+    font-size: 9px; font-weight: 800; letter-spacing: 0.05em;
+    padding: 3px 8px; border-radius: 20px;
+    background: rgba(239,68,68,0.85); color: #fff;
+  }
+  .mock-you-pip {
+    position: absolute; bottom: 10px; right: 10px;
+    width: 17%; aspect-ratio: 4/3;
+    border-radius: 7px; overflow: hidden;
+    border: 2px solid rgba(79,142,247,0.8);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.55);
+  }
+  .mock-you-pip img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; display: block; }
+  .mock-you-pip-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 6px 5px 3px;
+    background: linear-gradient(transparent,rgba(0,0,0,0.9));
+    font-size: 8px; font-weight: 800; color: #93C5FD; letter-spacing: 0.04em;
+  }
+
+  .mock-bottom {
+    padding: 14px 16px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .mock-speaker {
+    display: flex; align-items: center; gap: 7px;
+    margin-bottom: 6px;
+  }
+  .mock-speaker-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .mock-speaker-name { font-size: 11px; font-weight: 700; color: var(--text-3); letter-spacing: 0.03em; }
+  .mock-question {
+    font-size: 13px; color: var(--text); font-style: italic; line-height: 1.6;
+    margin-bottom: 12px; min-height: 42px;
+  }
+  .mock-controls {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+  }
+  .mock-progress { font-size: 11px; color: var(--text-3); font-weight: 700; letter-spacing: 0.03em; }
+  .mock-rec-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4);
+    color: #F87171; font-size: 12px; font-weight: 700;
+    padding: 8px 18px; border-radius: 20px; cursor: pointer; letter-spacing: 0.03em;
+    transition: background 0.2s;
+  }
+  .mock-rec-btn:hover { background: rgba(239,68,68,0.25); }
+  .mock-rec-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: #EF4444;
+    animation: pulse-rec 1.1s ease-in-out infinite;
+  }
+  @keyframes pulse-rec { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .mock-score-bar {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  .mock-score-label { font-size: 10px; color: var(--text-3); font-weight: 700; white-space: nowrap; }
+  .mock-score-track {
+    flex: 1; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden;
+  }
+  .mock-score-fill {
+    height: 100%; border-radius: 2px; background: var(--green);
+    width: 0%; transition: width 1.2s ease;
+  }
+  .mock-score-val { font-size: 12px; font-weight: 900; color: var(--green); min-width: 28px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* ── PIVOT SECTION ── */
+  .pivot {
+    padding: 100px 40px;
+    text-align: center;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 50%, var(--bg) 100%);
+    position: relative;
+  }
+  .pivot-line {
+    font-size: clamp(22px, 3.5vw, 36px);
+    font-weight: 900; letter-spacing: -0.02em; color: var(--text);
+    max-width: 680px; margin: 0 auto 12px; text-wrap: balance;
+  }
+  .pivot-line em { font-style: normal; color: var(--amber); }
+  .pivot-sub {
+    font-size: 16px; color: var(--text-2); max-width: 520px; margin: 0 auto 56px;
+    line-height: 1.7;
+  }
+
+  /* ── VISA MOCKUP ── */
+  .visa-mockup-wrap {
+    width: 100%; max-width: 680px; margin: 0 auto 56px;
+    background: var(--bg2);
+    border: 1px solid rgba(245,158,11,0.25);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 60px rgba(245,158,11,0.06);
+  }
+  .visa-bar {
+    display: flex; align-items: center; gap: 7px;
+    padding: 12px 16px;
+    background: rgba(245,158,11,0.06);
+    border-bottom: 1px solid rgba(245,158,11,0.2);
+  }
+  .visa-bar-title {
+    margin-left: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+    color: rgba(245,158,11,0.7);
+  }
+  .visa-bar-badge {
+    margin-left: auto; font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--amber);
+    background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3);
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .visa-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+    padding: 4px; background: #000;
+  }
+  .visa-tile {
+    position: relative; overflow: hidden; border-radius: 6px;
+    background: #07080d; aspect-ratio: 16/9;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .visa-tile-icon { font-size: 36px; margin-bottom: 8px; }
+  .visa-tile-content { text-align: center; padding: 16px; }
+  .visa-tile-name { font-size: 11px; font-weight: 800; color: var(--text-3); letter-spacing: 0.05em; margin-bottom: 4px; }
+  .visa-tile-status { font-size: 10px; color: rgba(245,158,11,0.7); font-weight: 700; letter-spacing: 0.04em; }
+  .visa-officer-tile {
+    background: #0a0c10;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px;
+    border: 1px solid rgba(245,158,11,0.12);
+  }
+  .visa-officer-avatar {
+    width: 54px; height: 54px; border-radius: 50%;
+    background: rgba(245,158,11,0.10);
+    border: 2px solid rgba(245,158,11,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; margin-bottom: 10px;
+  }
+  .visa-officer-name { font-size: 12px; font-weight: 800; color: var(--text); margin-bottom: 2px; }
+  .visa-officer-role { font-size: 10px; font-weight: 700; color: rgba(245,158,11,0.7); letter-spacing: 0.04em; }
+  .visa-officer-mood {
+    margin-top: 8px; font-size: 9px; font-weight: 800; letter-spacing: 0.07em;
+    text-transform: uppercase; color: #F87171;
+    background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3);
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .visa-bottom {
+    padding: 14px 16px 16px;
+    border-top: 1px solid rgba(245,158,11,0.15);
+  }
+  .visa-q-label {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--amber); margin-bottom: 6px;
+  }
+  .visa-question {
+    font-size: 13px; color: var(--text); font-style: italic; line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .visa-controls { display: flex; align-items: center; justify-content: space-between; }
+  .visa-country-badge {
+    font-size: 11px; font-weight: 700; color: rgba(245,158,11,0.8);
+    background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2);
+    padding: 5px 12px; border-radius: 20px;
+  }
+  .visa-rec-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.35);
+    color: var(--amber); font-size: 12px; font-weight: 700;
+    padding: 8px 18px; border-radius: 20px; cursor: default; letter-spacing: 0.03em;
+  }
+  .visa-rec-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--amber);
+    animation: pulse-amber 1.1s ease-in-out infinite;
+  }
+  @keyframes pulse-amber { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── WHO IT'S FOR (mini cards) ── */
+  .section { padding: 80px 40px; max-width: 1100px; margin: 0 auto; }
+  .section-eyebrow {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--blue); margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: clamp(28px, 4vw, 46px); font-weight: 900; letter-spacing: -0.02em;
+    line-height: 1.1; margin-bottom: 16px; text-wrap: balance;
+  }
+  .section-body { font-size: 16px; color: var(--text-2); max-width: 620px; line-height: 1.7; margin-bottom: 48px; }
+
+  .who-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    margin-bottom: 32px;
+  }
+  .who-card {
+    background: var(--indigo-dim); border: 1px solid rgba(99,102,241,0.2);
+    border-radius: var(--radius); padding: 20px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .who-card:hover { border-color: rgba(99,102,241,0.45); transform: translateY(-2px); }
+  .who-icon { font-size: 22px; margin-bottom: 10px; }
+  .who-name { font-size: 13px; font-weight: 800; color: var(--indigo); margin-bottom: 6px; letter-spacing: 0.01em; }
+  .who-desc { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+  .coming-divider {
+    display: flex; align-items: center; gap: 14px; margin: 36px 0 28px;
+  }
+  .coming-divider-line { flex: 1; height: 1px; background: var(--border); }
+  .coming-divider-label {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--amber); white-space: nowrap;
+    background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2);
+    padding: 4px 12px; border-radius: 20px;
+  }
+
+  .coming-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  .coming-card {
+    background: rgba(245,158,11,0.04); border: 1px solid rgba(245,158,11,0.18);
+    border-radius: var(--radius); padding: 20px;
+  }
+  .coming-name { font-size: 13px; font-weight: 800; color: var(--amber); margin-bottom: 6px; }
+  .coming-desc { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+  /* ── THE TAGLINE BLOCK ── */
+  .tagline-block {
+    margin: 0 40px 80px;
+    background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 14px; padding: 28px 36px; text-align: center;
+    max-width: 1020px; margin: 0 auto 80px;
+  }
+  .tagline-block p { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .tagline-block span { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+
+  /* ── WAITLIST ── */
+  .waitlist-section {
+    padding: 100px 40px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+  .waitlist-eyebrow {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--green); margin-bottom: 20px;
+    background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25);
+    padding: 5px 14px; border-radius: 20px; display: inline-block;
+  }
+  .waitlist-title {
+    font-size: clamp(28px, 4vw, 50px); font-weight: 900; letter-spacing: -0.02em;
+    margin-bottom: 14px; text-wrap: balance;
+  }
+  .waitlist-title em { font-style: normal; color: var(--blue); }
+  .waitlist-sub { font-size: 16px; color: var(--text-2); margin-bottom: 40px; line-height: 1.65; }
+  .waitlist-form {
+    display: flex; gap: 10px; max-width: 440px; margin: 0 auto;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .waitlist-input {
+    flex: 1; min-width: 220px;
+    background: var(--bg3); border: 1px solid var(--border2);
+    color: var(--text); font-size: 14px;
+    padding: 13px 18px; border-radius: 10px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .waitlist-input::placeholder { color: var(--text-3); }
+  .waitlist-input:focus { border-color: var(--blue); }
+  .waitlist-submit {
+    background: var(--blue); color: #fff; font-size: 14px; font-weight: 700;
+    padding: 13px 28px; border-radius: 10px; border: none; cursor: pointer;
+    letter-spacing: 0.01em; white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+  .waitlist-submit:hover { opacity: 0.88; }
+  .waitlist-note { margin-top: 14px; font-size: 12px; color: var(--text-3); }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 32px 40px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 14px;
+  }
+  .footer-brand { font-size: 15px; font-weight: 900; color: var(--text); }
+  .footer-brand span { color: var(--blue); }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { font-size: 13px; color: var(--text-3); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--text); }
+  .footer-right { font-size: 12px; color: var(--text-3); }
+
+  /* ── ANIMATIONS ── */
+  .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .fade-in.visible { opacity: 1; transform: none; }
+
+  @keyframes slideQ { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+</style>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">Explain<span>.global</span></div>
+  <a href="#waitlist" class="nav-cta">Get Early Access</a>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-eyebrow">Coming Soon · Interview Intelligence Platform</div>
+  <h1 class="hero-headline">Walk in<br><em>ready.</em></h1>
+  <p class="hero-sub">Upload your job spec. Meet your AI panel. Answer every question out loud — before the real interview begins.</p>
+  <div class="hero-actions">
+    <a href="#waitlist" class="btn-primary">Join the Waitlist</a>
+    <a href="#how-it-works" class="btn-ghost">See how it works ↓</a>
+  </div>
+
+  <!-- JOB INTERVIEW MOCKUP -->
+  <div class="mockup-wrap fade-in" id="mockup-hero">
+    <div class="mockup-bar">
+      <div class="mock-dot" style="background:#EF4444"></div>
+      <div class="mock-dot" style="background:#F59E0B"></div>
+      <div class="mock-dot" style="background:#34D399"></div>
+      <div class="mock-title">Explain · Senior .NET Developer · Panel Round</div>
+      <div class="mock-live"><div class="live-dot"></div>LIVE</div>
+    </div>
+    <div class="mock-grid">
+      <!-- Tile 0 -->
+      <div class="mock-tile" id="ltile0">
+        <img src="images/Woman1.png" alt="Victoria Hart">
+        <div class="mock-tile-overlay"></div>
+        <div class="mock-tile-label">Victoria Hart · <span style="color:rgba(255,255,255,0.5);font-weight:600;">Hiring Manager</span></div>
+        <div class="mock-tile-badge" id="lbadge0" style="background:rgba(30,77,216,0.75);">● Interested</div>
+      </div>
+      <!-- Tile 1 -->
+      <div class="mock-tile" id="ltile1">
+        <img src="images/Man1.png" alt="Dr. James Reid">
+        <div class="mock-tile-overlay"></div>
+        <div class="mock-tile-label">Dr. James Reid · <span style="color:rgba(255,255,255,0.5);font-weight:600;">Tech Lead</span></div>
+        <div class="mock-tile-badge" id="lbadge1" style="background:rgba(100,80,180,0.75);">● Evaluating</div>
+      </div>
+      <!-- Tile 2 -->
+      <div class="mock-tile" id="ltile2">
+        <img src="images/Man3.png" alt="R. Cooper">
+        <div class="mock-tile-overlay"></div>
+        <div class="mock-tile-label">R. Cooper · <span style="color:rgba(255,255,255,0.5);font-weight:600;">Senior Dev</span></div>
+        <div class="mock-tile-badge" id="lbadge2" style="background:rgba(217,119,6,0.75);">● The Skeptic</div>
+      </div>
+      <!-- Tile 3 -->
+      <div class="mock-tile" id="ltile3">
+        <img src="images/Woman2.png" alt="S. Davies">
+        <div class="mock-tile-overlay"></div>
+        <div class="mock-tile-label">S. Davies · <span style="color:rgba(255,255,255,0.5);font-weight:600;">HR Director</span></div>
+        <div class="mock-tile-badge" id="lbadge3" style="background:rgba(30,77,216,0.75);">● Listening</div>
+      </div>
+      <!-- You pip -->
+      <div class="mock-you-pip">
+        <img src="images/Man2.png" alt="You">
+        <div class="mock-you-pip-label">YOU</div>
+      </div>
+    </div>
+    <div class="mock-bottom">
+      <!-- Score bar -->
+      <div class="mock-score-bar" id="lscorebar" style="display:none;">
+        <div class="mock-score-label">Confidence</div>
+        <div class="mock-score-track"><div class="mock-score-fill" id="lscorefill"></div></div>
+        <div class="mock-score-val" id="lscoreval">0</div>
+      </div>
+      <div class="mock-speaker">
+        <div class="mock-speaker-dot" id="lqdot" style="background:#60A5FA"></div>
+        <div class="mock-speaker-name" id="lqspeaker">Victoria Hart is asking:</div>
+      </div>
+      <div class="mock-question" id="lquestion">"Tell me about your experience with .NET Core — specifically how you've used it in a production environment at scale."</div>
+      <div class="mock-controls">
+        <div class="mock-progress" id="lqnum">Question 1 of 10</div>
+        <button class="mock-rec-btn" id="lrecbtn" onclick="lToggleRec()">
+          <div class="mock-rec-dot" id="lrecdot"></div>
+          <span id="lrecbtntxt">Start Answer</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PIVOT BEAT ══ -->
+<section class="pivot" id="how-it-works">
+  <div class="fade-in">
+    <p class="pivot-line">But interviews don't only<br>happen <em>in office buildings.</em></p>
+    <p class="pivot-sub">Visa appointments. University panels. Medical licensing. Citizenship tests. The same product. The same stakes. The same fix.</p>
+  </div>
+
+  <!-- VISA / IMMIGRATION MOCKUP -->
+  <div class="visa-mockup-wrap fade-in">
+    <div class="visa-bar">
+      <div class="mock-dot" style="background:#EF4444"></div>
+      <div class="mock-dot" style="background:#F59E0B"></div>
+      <div class="mock-dot" style="background:#34D399"></div>
+      <div class="visa-bar-title">Explain · UK Skilled Worker Visa Interview</div>
+      <div class="visa-bar-badge">Coming Soon</div>
+    </div>
+    <div class="visa-grid">
+      <!-- Immigration Officer -->
+      <div class="visa-tile visa-officer-tile">
+        <div class="visa-officer-avatar">🏛️</div>
+        <div class="visa-officer-name">Officer M. Harrison</div>
+        <div class="visa-officer-role">UK Visa & Immigration</div>
+        <div class="visa-officer-mood">No Warmth · Strict Protocol</div>
+      </div>
+      <!-- Applicant -->
+      <div class="visa-tile" style="background:#08090f;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:10px;">
+        <div style="width:52px;height:52px;border-radius:50%;background:rgba(79,142,247,0.12);border:2px solid rgba(79,142,247,0.3);display:flex;align-items:center;justify-content:center;font-size:26px;">👤</div>
+        <div style="font-size:12px;font-weight:800;color:var(--text);">Applicant</div>
+        <div style="font-size:10px;color:var(--text-3);font-weight:700;letter-spacing:0.04em;">SPEAKING</div>
+        <div style="display:flex;gap:3px;align-items:flex-end;height:20px;">
+          <div style="width:3px;background:var(--blue);border-radius:2px;animation:bar1 0.8s ease-in-out infinite;"></div>
+          <div style="width:3px;background:var(--blue);border-radius:2px;animation:bar2 0.8s ease-in-out infinite 0.1s;"></div>
+          <div style="width:3px;background:var(--blue);border-radius:2px;animation:bar1 0.8s ease-in-out infinite 0.2s;"></div>
+          <div style="width:3px;background:var(--blue);border-radius:2px;animation:bar2 0.8s ease-in-out infinite 0.3s;"></div>
+          <div style="width:3px;background:var(--blue);border-radius:2px;animation:bar1 0.8s ease-in-out infinite 0.15s;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="visa-bottom">
+      <div class="visa-q-label">Immigration Officer is asking:</div>
+      <div class="visa-question" id="visaQ">"What is the name of your sponsoring employer, and can you explain your specific role and responsibilities?"</div>
+      <div class="visa-controls">
+        <div class="visa-country-badge">🇬🇧 UK Skilled Worker · Tier 2</div>
+        <div class="visa-rec-btn"><div class="visa-rec-dot"></div>Answering...</div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes bar1 { 0%,100%{height:6px} 50%{height:18px} }
+    @keyframes bar2 { 0%,100%{height:14px} 50%{height:5px} }
+  </style>
+</section>
+
+<!-- ══ WHO IT'S FOR ══ -->
+<div style="background:var(--bg);padding: 0 0 80px;">
+  <div class="section fade-in">
+    <div class="section-eyebrow">Who It's For</div>
+    <h2 class="section-title">Every high-stakes interview<br>in the world.</h2>
+    <p class="section-body">Explain started with career interviews. Then we realised — the terror of walking in unprepared is universal.</p>
+
+    <div class="who-grid">
+      <div class="who-card">
+        <div class="who-icon">🎓</div>
+        <div class="who-name">The First-Timer</div>
+        <div class="who-desc">16 years old. First ever job interview. Terrified. Explain makes the first interview feel like the tenth.</div>
+      </div>
+      <div class="who-card">
+        <div class="who-icon">💼</div>
+        <div class="who-name">The Graduate</div>
+        <div class="who-desc">Uploads the job spec at midnight. Finds the gaps at 11pm — not 9am. Walks in the next morning like they've done this before.</div>
+      </div>
+      <div class="who-card">
+        <div class="who-icon">🔄</div>
+        <div class="who-name">The Career Changer</div>
+        <div class="who-desc">The skills transfer — but how do you explain that convincingly in 60 seconds? Explain stress-tests that story until it lands.</div>
+      </div>
+      <div class="who-card">
+        <div class="who-icon">📋</div>
+        <div class="who-name">The Redundant Professional</div>
+        <div class="who-desc">50 years old. Made redundant after 20 years. Hasn't interviewed since 2004. Explain rebuilds confidence — privately, safely.</div>
+      </div>
+      <div class="who-card">
+        <div class="who-icon">🌍</div>
+        <div class="who-name">The International Candidate</div>
+        <div class="who-desc">English is perfect. Interview manner is calibrated to a different culture. Explain coaches not just what to say — but how.</div>
+      </div>
+      <div class="who-card">
+        <div class="who-icon">🏥</div>
+        <div class="who-name">The Medical Graduate</div>
+        <div class="who-desc">Foundation Programme. One shot. Years of study, one conversation. Explain builds a panel of consultants and grills them first.</div>
+      </div>
+    </div>
+
+    <div class="coming-divider">
+      <div class="coming-divider-line"></div>
+      <div class="coming-divider-label">Coming · Beyond Job Interviews</div>
+      <div class="coming-divider-line"></div>
+    </div>
+
+    <div class="coming-grid">
+      <div class="coming-card">
+        <div class="who-icon">🛂</div>
+        <div class="coming-name">Visa Interviews</div>
+        <div class="coming-desc">US Green Card. UK Skilled Worker. Canadian PR. Millions of applicants globally. Every single year. Preparing by Googling.</div>
+      </div>
+      <div class="coming-card">
+        <div class="who-icon">🚗</div>
+        <div class="coming-name">Driving Theory</div>
+        <div class="coming-desc">UK Theory Test. US Written Exam. 600,000+ UK test-takers per year. Timed. Pressured. Scored. Exactly how the real test feels.</div>
+      </div>
+      <div class="coming-card">
+        <div class="who-icon">🏛️</div>
+        <div class="coming-name">Citizenship Tests</div>
+        <div class="coming-desc">Life in the UK. US Naturalization. Canadian citizenship. Years of building a life — one test standing between them and belonging.</div>
+      </div>
+    </div>
+
+    <div class="tagline-block" style="margin-top:40px;">
+      <p>This is no longer an interview prep app.</p>
+      <span>It is the world's interview engine. Every high-stakes verbal assessment, in every industry, in every country.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WAITLIST ══ -->
+<section class="waitlist-section" id="waitlist">
+  <div class="waitlist-eyebrow">Early Access</div>
+  <h2 class="waitlist-title">Be first in.<br><em>Be ready first.</em></h2>
+  <p class="waitlist-sub">Join the waitlist. No spam — just a heads-up when Explain opens its doors.</p>
+  <form class="waitlist-form" onsubmit="handleWaitlist(event)">
+    <input type="email" class="waitlist-input" placeholder="your@email.com" required id="waitlist-email">
+    <button type="submit" class="waitlist-submit">Get Early Access →</button>
+  </form>
+  <p class="waitlist-note" id="waitlist-note">No card required. No commitment. Just first in line.</p>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-brand">Explain<span>.global</span></div>
+  <div class="footer-links">
+    <a href="explain.html">Product Brief</a>
+    <a href="mailto:francis@percentile.one">Contact</a>
+  </div>
+  <div class="footer-right">© 2026 Percentile One Ltd</div>
+</footer>
+
+<script>
+  // ── Scroll fade-in ──
+  const fadeEls = document.querySelectorAll('.fade-in');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  fadeEls.forEach(el => obs.observe(el));
+  // Hero mockup visible immediately
+  document.getElementById('mockup-hero').classList.add('visible');
+
+  // ── Job interview mockup auto-cycle ──
+  const lQs = [
+    {q:'"Tell me about your experience with .NET Core — specifically how you\'ve used it in a production environment at scale."', speaker:'Victoria Hart is asking:', dot:'#60A5FA', score:88, badges:['● Impressed','● Leaning In','● Warming Up','● Listening'], bcols:['#34D399','#A78BFA','#60A5FA','#34D399']},
+    {q:'"Walk me through a time you debugged a critical production issue under real pressure."', speaker:'Dr. James Reid is asking:', dot:'#A78BFA', score:71, badges:['● Interested','● Needs More Depth','● The Skeptic','● Listening'], bcols:['#60A5FA','#A78BFA','#FBB24B','#34D399']},
+    {q:'"Why should we pick you over the other candidates we\'re seeing today? Be specific."', speaker:'R. Cooper is asking:', dot:'#FBB24B', score:44, badges:['● Unconvinced','● Raising an Eyebrow','● The Interrogator','● Concerned'], bcols:['#F87171','#A78BFA','#F87171','#F87171']},
+    {q:'"Describe your approach to system design. Walk us through how you\'d architect a high-traffic API from scratch."', speaker:'Victoria Hart is asking:', dot:'#60A5FA', score:82, badges:['● Impressed','● Evaluating','● Interested','● Listening'], bcols:['#34D399','#A78BFA','#60A5FA','#34D399']},
+    {q:'"Tell me about your biggest technical weakness. And please — don\'t say you work too hard."', speaker:'Dr. James Reid is asking:', dot:'#A78BFA', score:66, badges:['● Interested','● Skeptical','● The Skeptic','● Neutral'], bcols:['#60A5FA','#F87171','#FBB24B','#94a3b8']},
+  ];
+  let lQi = 0, lPhase = 'question', lTimer = null;
+
+  function lSetQuestion(qi) {
+    const q = lQs[qi];
+    document.getElementById('lqdot').style.background = q.dot;
+    document.getElementById('lqspeaker').textContent = q.speaker;
+    const el = document.getElementById('lquestion');
+    el.style.animation = 'none'; el.offsetHeight;
+    el.style.animation = 'slideQ 0.5s ease';
+    el.textContent = q.q;
+    document.getElementById('lqnum').textContent = 'Question ' + (qi + 1) + ' of 10';
+    document.getElementById('lrecbtntxt').textContent = 'Start Answer';
+    document.getElementById('lrecdot').style.animationPlayState = 'paused';
+    document.getElementById('lscorebar').style.display = 'none';
+    document.getElementById('lscorefill').style.width = '0%';
+    [0,1,2,3].forEach(i => {
+      const b = document.getElementById('lbadge'+i);
+      if(b) { b.textContent = q.badges[i]; b.style.color = q.bcols[i]; }
+    });
+    lPhase = 'question';
+    lTimer = setTimeout(() => lStartAnswer(qi), 2800);
+  }
+
+  function lStartAnswer(qi) {
+    document.getElementById('lrecbtntxt').textContent = 'Answering...';
+    document.getElementById('lrecdot').style.animationPlayState = 'running';
+    lPhase = 'answering';
+    lTimer = setTimeout(() => lShowScore(qi), 3800);
+  }
+
+  function lShowScore(qi) {
+    const q = lQs[qi];
+    document.getElementById('lrecdot').style.animationPlayState = 'paused';
+    document.getElementById('lrecbtntxt').textContent = 'Answer Recorded';
+    document.getElementById('lscorebar').style.display = 'flex';
+    const fill = document.getElementById('lscorefill');
+    const val = document.getElementById('lscoreval');
+    setTimeout(() => {
+      fill.style.width = q.score + '%';
+      fill.style.background = q.score >= 75 ? '#34D399' : q.score >= 55 ? '#FBB24B' : '#F87171';
+      val.textContent = q.score;
+      val.style.color = q.score >= 75 ? '#34D399' : q.score >= 55 ? '#FBB24B' : '#F87171';
+    }, 100);
+    lPhase = 'scored';
+    lTimer = setTimeout(() => {
+      lQi = (lQi + 1) % lQs.length;
+      lSetQuestion(lQi);
+    }, 4000);
+  }
+
+  function lToggleRec() { /* visual only — auto-cycling */ }
+
+  // Kick off
+  setTimeout(() => lSetQuestion(0), 1200);
+
+  // Cycling visa questions
+  const visaQs = [
+    '"What is the name of your sponsoring employer, and can you explain your specific role and responsibilities?"',
+    '"How long have you worked in this field, and do you hold any professional qualifications?"',
+    '"What is your current salary, and what salary are you expecting in the UK?"',
+    '"Have you visited the UK before? What was the purpose of those visits?"',
+    '"Who will be accompanying you to the UK, and what are their immigration statuses?"',
+  ];
+  let vqi = 0;
+  setInterval(() => {
+    vqi = (vqi + 1) % visaQs.length;
+    const el = document.getElementById('visaQ');
+    el.style.opacity = '0';
+    setTimeout(() => { el.textContent = visaQs[vqi]; el.style.opacity = '1'; el.style.transition = 'opacity 0.5s'; }, 300);
+  }, 5000);
+
+  // Waitlist form
+  function handleWaitlist(e) {
+    e.preventDefault();
+    const email = document.getElementById('waitlist-email').value;
+    const btn = e.target.querySelector('button');
+    // Fire mailto to Francis
+    const subject = encodeURIComponent('Explain.global Waitlist — ' + email);
+    const body = encodeURIComponent('New waitlist signup:\n\nEmail: ' + email + '\nDate: ' + new Date().toUTCString());
+    window.location.href = 'mailto:francis@percentile.one?subject=' + subject + '&body=' + body;
+    // Confirm UI
+    btn.textContent = '✓ You\'re on the list!';
+    btn.style.background = '#34D399';
+    btn.disabled = true;
+    document.getElementById('waitlist-note').textContent = 'We\'ve noted ' + email + ' — you\'ll be first to know.';
+    document.getElementById('waitlist-email').disabled = true;
+  }
+</script>

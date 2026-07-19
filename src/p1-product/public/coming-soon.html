@@ -1,0 +1,524 @@
+<title>Explain — Something Great is Coming</title>
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5T94QMVQG5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5T94QMVQG5', {
+    page_title: 'Coming Soon',
+    page_location: window.location.href,
+    page_referrer: document.referrer
+  });
+</script>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #060a14;
+    --bg2: #0c1220;
+    --indigo: #4f46e5;
+    --violet: #7c3aed;
+    --purple: #a855f7;
+    --blue: #4F8EF7;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #475569;
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ── ORBS ── */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    animation: drift linear infinite;
+  }
+  .orb1 { width: 600px; height: 600px; top: -15%; left: -12%; background: radial-gradient(ellipse, rgba(79,70,229,0.12) 0%, transparent 70%); animation-duration: 22s; animation-delay: 0s; }
+  .orb2 { width: 400px; height: 400px; bottom: -10%; right: -8%;  background: radial-gradient(ellipse, rgba(168,85,247,0.10) 0%, transparent 70%); animation-duration: 28s; animation-delay: -8s; }
+  .orb3 { width: 280px; height: 280px; top: 40%;  right: 20%;     background: radial-gradient(ellipse, rgba(79,142,247,0.08) 0%, transparent 70%); animation-duration: 18s; animation-delay: -4s; }
+
+  @keyframes drift {
+    0%   { transform: translate(0,0); }
+    25%  { transform: translate(30px,-20px); }
+    50%  { transform: translate(-20px,30px); }
+    75%  { transform: translate(20px,15px); }
+    100% { transform: translate(0,0); }
+  }
+
+  /* ── LAYOUT ── */
+  .page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── LOGO ── */
+  .logo-wrap {
+    opacity: 0;
+    animation: fadeScale 0.9s cubic-bezier(0.22,1,0.36,1) 0.3s forwards;
+  }
+  @keyframes fadeScale {
+    from { opacity: 0; transform: scale(0.88); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  /* Ring pulse (subtle backdrop) */
+  .ring-pulse {
+    animation: ringPulse 4s ease-in-out 2.5s infinite;
+  }
+  @keyframes ringPulse {
+    0%,100% { opacity: 0.08; }
+    50%      { opacity: 0.14; }
+  }
+
+  /* Comet orbit — light sweeping around the ring */
+  .comet-glow, .comet-core {
+    animation: cometOrbit 2.8s linear 0.4s infinite;
+  }
+  @keyframes cometOrbit {
+    from { stroke-dashoffset: 0; }
+    to   { stroke-dashoffset: -271; }
+  }
+
+  /* ── WORDMARK ── */
+  .wordmark {
+    margin-top: 18px;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    color: var(--text);
+    opacity: 0;
+    animation: fadeUp 0.7s ease-out 1.6s forwards;
+  }
+  .wordmark span { color: var(--blue); }
+
+  /* ── EYEBROW ── */
+  .eyebrow {
+    margin-top: 48px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--violet);
+    opacity: 0;
+    animation: fadeUp 0.6s ease-out 2.1s forwards;
+  }
+
+  /* ── HEADLINE ── */
+  .headline {
+    margin-top: 14px;
+    font-size: clamp(32px, 5vw, 54px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    text-align: center;
+    max-width: 640px;
+    color: var(--text);
+    opacity: 0;
+    animation: fadeUp 0.8s cubic-bezier(0.22,1,0.36,1) 2.4s forwards;
+  }
+  .headline em {
+    font-style: normal;
+    background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 40%, #c084fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    margin-top: 36px;
+    width: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(124,58,237,0.6), transparent);
+    animation: drawLine 0.8s ease-out 3.1s forwards;
+  }
+  @keyframes drawLine {
+    to { width: 280px; }
+  }
+
+  /* ── BULLETS ── */
+  .bullets {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .bullet {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  .bullet:nth-child(1) { animation: slideIn 0.5s cubic-bezier(0.22,1,0.36,1) 3.5s forwards; }
+  .bullet:nth-child(2) { animation: slideIn 0.5s cubic-bezier(0.22,1,0.36,1) 3.8s forwards; }
+  .bullet:nth-child(3) { animation: slideIn 0.5s cubic-bezier(0.22,1,0.36,1) 4.1s forwards; }
+  .bullet:nth-child(4) { animation: slideIn 0.5s cubic-bezier(0.22,1,0.36,1) 4.4s forwards; }
+
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .bullet-rail {
+    width: 3px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, var(--indigo), var(--purple));
+    flex-shrink: 0;
+    height: 0;
+    animation: none;
+  }
+  .bullet:nth-child(1) .bullet-rail { animation: railGrow 0.35s ease-out 3.55s forwards; }
+  .bullet:nth-child(2) .bullet-rail { animation: railGrow 0.35s ease-out 3.85s forwards; }
+  .bullet:nth-child(3) .bullet-rail { animation: railGrow 0.35s ease-out 4.15s forwards; }
+  .bullet:nth-child(4) .bullet-rail { animation: railGrow 0.35s ease-out 4.45s forwards; }
+
+  @keyframes railGrow {
+    to { height: 44px; }
+  }
+
+  .bullet-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .bullet-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .bullet-sub {
+    font-size: 12px;
+    color: var(--text3);
+    font-weight: 400;
+  }
+
+  /* ── CTA ── */
+  .cta-wrap {
+    margin-top: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    opacity: 0;
+    animation: fadeUp 0.7s ease-out 5.0s forwards;
+  }
+
+  .cta-btn {
+    padding: 14px 36px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 32px rgba(124,58,237,0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s ease;
+  }
+  .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(124,58,237,0.55); }
+  .cta-btn:hover::after { transform: translateX(100%); }
+  .cta-btn:active { transform: translateY(0); }
+
+  .cta-sub {
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.04em;
+    opacity: 0;
+    white-space: nowrap;
+    animation: fadeUp 0.6s ease-out 5.6s forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── MODAL ── */
+  .modal-bg {
+    display: none;
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(6,10,20,0.85);
+    backdrop-filter: blur(8px);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: #0c1220;
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 20px;
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+    animation: modalIn 0.4s cubic-bezier(0.22,1,0.36,1);
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.94) translateY(16px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .modal h2 {
+    font-size: 20px; font-weight: 900; letter-spacing: -0.02em;
+    margin-bottom: 6px; color: var(--text);
+  }
+  .modal p { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.6; }
+  .modal input {
+    width: 100%; padding: 12px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; font-size: 14px;
+    color: var(--text); outline: none; font-family: inherit;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+  .modal input:focus { border-color: rgba(124,58,237,0.5); }
+  .modal input::placeholder { color: var(--text3); }
+  .modal-submit {
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff; border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: inherit; margin-top: 4px;
+    transition: opacity 0.2s;
+  }
+  .modal-submit:hover { opacity: 0.9; }
+  .modal-close {
+    margin-top: 14px; width: 100%; background: none; border: none;
+    color: var(--text3); font-size: 13px; cursor: pointer;
+    font-family: inherit;
+  }
+  .modal-close:hover { color: var(--text2); }
+
+  .success-msg {
+    display: none; text-align: center; padding: 16px 0;
+  }
+  .success-msg .tick {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: rgba(52,211,153,0.15);
+    border: 2px solid rgba(52,211,153,0.4);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px;
+    font-size: 22px;
+  }
+  .success-msg p { font-size: 14px; color: var(--text2); line-height: 1.6; }
+</style>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<div class="page">
+
+  <!-- Logo -->
+  <div class="logo-wrap">
+    <svg width="110" height="110" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="cs-ring" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#4f46e5"/>
+          <stop offset="60%" stop-color="#7c3aed"/>
+          <stop offset="100%" stop-color="#a855f7"/>
+        </linearGradient>
+        <linearGradient id="cs-e" x1="50" y1="28" x2="50" y2="72" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#a5b4fc"/>
+          <stop offset="50%" stop-color="#6366f1"/>
+          <stop offset="100%" stop-color="#3730a3" stop-opacity="0.85"/>
+        </linearGradient>
+        <filter id="cs-glow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="2" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="cs-comet-glow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="3" result="blur1"/>
+          <feGaussianBlur stdDeviation="1.5" in="SourceGraphic" result="blur2"/>
+          <feMerge>
+            <feMergeNode in="blur1"/>
+            <feMergeNode in="blur1"/>
+            <feMergeNode in="blur2"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+
+      <!-- Outer pulse ring -->
+      <circle cx="50" cy="50" r="50" fill="none" stroke="#7c3aed" stroke-width="1" class="ring-pulse" opacity="0.08"/>
+
+      <!-- Dark fill -->
+      <circle cx="50" cy="50" r="43" fill="#060c18"/>
+
+      <!-- Gradient ring -->
+      <circle cx="50" cy="50" r="43" fill="none" stroke="url(#cs-ring)" stroke-width="2.5"/>
+
+      <!-- Comet orbit: rotate -90 so it starts at 12 o'clock -->
+      <g transform="rotate(-90 50 50)">
+        <!-- Soft aura / tail -->
+        <circle cx="50" cy="50" r="43"
+          fill="none"
+          stroke="rgba(139,92,246,0.28)"
+          stroke-width="7"
+          stroke-linecap="round"
+          stroke-dasharray="38 233"
+          class="comet-glow"
+        />
+        <!-- Bright core arc -->
+        <circle cx="50" cy="50" r="43"
+          fill="none"
+          stroke="rgba(192,132,252,0.92)"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-dasharray="20 251"
+          class="comet-core"
+          filter="url(#cs-comet-glow)"
+        />
+      </g>
+
+      <!-- E spine -->
+      <rect x="33" y="28" width="7" height="44" fill="url(#cs-e)" filter="url(#cs-glow)"/>
+      <!-- E top bar -->
+      <rect x="33" y="28" width="34" height="7"  fill="url(#cs-e)" filter="url(#cs-glow)"/>
+      <!-- E mid bar -->
+      <rect x="33" y="46" width="22" height="7"  fill="url(#cs-e)" filter="url(#cs-glow)"/>
+      <!-- E bottom bar -->
+      <rect x="33" y="65" width="34" height="7"  fill="url(#cs-e)" filter="url(#cs-glow)"/>
+    </svg>
+  </div>
+
+  <!-- Wordmark -->
+  <div class="wordmark">Explain<span>.global</span></div>
+
+  <!-- Eyebrow -->
+  <div class="eyebrow">Coming Soon</div>
+
+  <!-- Headline -->
+  <h1 class="headline">Something <em>great</em><br>is on its way.</h1>
+
+  <!-- Divider -->
+  <div class="divider"></div>
+
+  <!-- Bullets -->
+  <div class="bullets">
+    <div class="bullet">
+      <div class="bullet-rail"></div>
+      <div class="bullet-text">
+        <span class="bullet-label">Interview Prep</span>
+        <span class="bullet-sub">AI-powered preparation, personalised to every role</span>
+      </div>
+    </div>
+    <div class="bullet">
+      <div class="bullet-rail"></div>
+      <div class="bullet-text">
+        <span class="bullet-label">Exam Prep</span>
+        <span class="bullet-sub">Smart revision tools that adapt to how you learn</span>
+      </div>
+    </div>
+    <div class="bullet">
+      <div class="bullet-rail"></div>
+      <div class="bullet-text">
+        <span class="bullet-label">Learn Anything</span>
+        <span class="bullet-sub">Turn any subject into a structured learning journey</span>
+      </div>
+    </div>
+    <div class="bullet">
+      <div class="bullet-rail"></div>
+      <div class="bullet-text">
+        <span class="bullet-label">And more…</span>
+        <span class="bullet-sub">A platform built around how people actually grow</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <button class="cta-btn" onclick="openModal()">Request Early Access</button>
+    <span class="cta-sub">No spam. Just a heads-up when we launch.</span>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">© 2026 Explain · Built in Colchester, UK</div>
+
+<!-- Early Access Modal -->
+<div class="modal-bg" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal-box">
+    <h2>Get Early Access</h2>
+    <p>Be the first to know when Explain launches. We'll send you one email — that's it.</p>
+
+    <div id="modal-form">
+      <input type="text"  id="modal-name"  placeholder="Your name" autocomplete="off"/>
+      <input type="email" id="modal-email" placeholder="Your email address" autocomplete="off"/>
+      <button class="modal-submit" onclick="submitForm()">Notify Me</button>
+      <button class="modal-close" onclick="closeModal()">Maybe later</button>
+    </div>
+
+    <div class="success-msg" id="modal-success">
+      <div class="tick">✓</div>
+      <p>You're on the list.<br>We'll be in touch when something great arrives.</p>
+      <button class="modal-close" onclick="closeModal()" style="margin-top:20px">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openModal() {
+    document.getElementById('modal').classList.add('open');
+  }
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+  }
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modal')) closeModal();
+  }
+  function submitForm() {
+    const email = document.getElementById('modal-email').value.trim();
+    if (!email || !email.includes('@')) {
+      document.getElementById('modal-email').style.borderColor = 'rgba(239,68,68,0.6)';
+      return;
+    }
+    document.getElementById('modal-form').style.display = 'none';
+    document.getElementById('modal-success').style.display = 'block';
+  }
+</script>
