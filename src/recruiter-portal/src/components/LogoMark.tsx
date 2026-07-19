@@ -11,9 +11,9 @@ export function ExplainLogo({ size = 100, withAnimation = true, delay = 0.3, com
   const CX = 50, CY = 50, R = 42
 
   const bars = [
-    { x: 30, y: 26, w: 34, h: 7, d: delay + 0.58 },
-    { x: 30, y: 44, w: 22, h: 7, d: delay + 0.80 },
-    { x: 30, y: 63, w: 34, h: 7, d: delay + 1.02 },
+    { x: 33, y: 28, w: 34, h: 7, d: delay + 0.58 },
+    { x: 33, y: 46, w: 22, h: 7, d: delay + 0.80 },
+    { x: 33, y: 65, w: 34, h: 7, d: delay + 1.02 },
   ]
 
   const logoInit = withAnimation ? { opacity: 0, scale: 0.88 } : { opacity: 1, scale: 1 }
@@ -58,12 +58,12 @@ export function ExplainLogo({ size = 100, withAnimation = true, delay = 0.3, com
         />
 
         <motion.rect
-          x={30} y={26} width={7} height={44}
+          x={33} y={28} width={7} height={44}
           fill="url(#exl-e)" filter="url(#exl-glow)"
           initial={withAnimation ? { opacity: 0, scaleY: 0 } : { opacity: 1, scaleY: 1 }}
           animate={{ opacity: 1, scaleY: 1 }}
           transition={{ delay: delay + 0.35, duration: 0.45, ease: 'easeOut' }}
-          style={{ transformOrigin: '33px 26px' }}
+          style={{ transformOrigin: '36px 28px' }}
         />
 
         {bars.map((b, i) => (
