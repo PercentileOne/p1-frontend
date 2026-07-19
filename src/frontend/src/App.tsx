@@ -70,13 +70,11 @@ import ParentShell from "./pages/ParentShell";
 import TeacherShell from "./pages/TeacherShell";
 import UniversityShell from "./pages/UniversityShell";
 
-const IS_RECRUITER_PORTAL = window.location.hostname === "recruiter.explain.global";
-
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to={IS_RECRUITER_PORTAL ? "/recruiter" : "/login"} replace />} />
-      <Route path="/login" element={IS_RECRUITER_PORTAL ? <Navigate to="/recruiter" replace /> : <LoginPage />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/cockpit" element={<CockpitShell />} />
       <Route path="/home" element={<PersonalisedHomePage />} />
       <Route path="/today" element={<TodayPage />} />
