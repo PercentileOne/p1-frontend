@@ -297,17 +297,7 @@ export default function Dashboard() {
                 </thead>
                 <tbody>
                   {PACKS.map((p, i) => (
-                    <tr key={i} style={{ background: i % 2 === 1 ? 'rgba(255,255,255,0.025)' : 'transparent' }}>
-                      <td style={{ padding: '11px 12px 11px 8px', fontSize: 13, fontWeight: 700, color: 'var(--text)', borderRadius: i % 2 === 1 ? '6px 0 0 6px' : 0 }}>{p.candidate}</td>
-                      <td style={{ padding: '11px 12px 11px 0', fontSize: 12, color: 'var(--text-2)' }}>{p.role}</td>
-                      <td style={{ padding: '11px 12px 11px 0', fontSize: 12, color: 'var(--text-3)' }}>{p.sent}</td>
-                      <td style={{ padding: '11px 12px 11px 0', fontSize: 13, fontWeight: 700, color: p.score ? (p.score >= 80 ? '#34D399' : p.score >= 65 ? '#F59E0B' : '#EF4444') : 'var(--text-3)' }}>
-                        {p.score ? `${p.score}%` : '—'}
-                      </td>
-                      <td style={{ padding: '11px 8px 11px 0', borderRadius: i % 2 === 1 ? '0 6px 6px 0' : 0 }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: p.statusColor, background: p.statusBg, padding: '3px 10px', borderRadius: 20 }}>{p.status}</span>
-                      </td>
-                    </tr>
+                    <PackRow key={i} pack={p} i={i} />
                   ))}
                 </tbody>
               </table>
@@ -425,6 +415,31 @@ export default function Dashboard() {
         </>}
       </main>
     </div>
+  )
+}
+
+function PackRow({ pack: p, i }: { pack: typeof PACKS[0]; i: number }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <tr
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: hovered ? 'rgba(79,142,247,0.08)' : i % 2 === 1 ? 'rgba(255,255,255,0.025)' : 'transparent',
+        cursor: 'pointer',
+        transition: 'background 0.15s ease',
+      }}
+    >
+      <td style={{ padding: '11px 12px 11px 8px', fontSize: 13, fontWeight: 700, color: 'var(--text)', borderRadius: '6px 0 0 6px' }}>{p.candidate}</td>
+      <td style={{ padding: '11px 12px 11px 0', fontSize: 12, color: 'var(--text-2)' }}>{p.role}</td>
+      <td style={{ padding: '11px 12px 11px 0', fontSize: 12, color: 'var(--text-3)' }}>{p.sent}</td>
+      <td style={{ padding: '11px 12px 11px 0', fontSize: 13, fontWeight: 700, color: p.score ? (p.score >= 80 ? '#34D399' : p.score >= 65 ? '#F59E0B' : '#EF4444') : 'var(--text-3)' }}>
+        {p.score ? `${p.score}%` : '—'}
+      </td>
+      <td style={{ padding: '11px 8px 11px 0', borderRadius: '0 6px 6px 0' }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: p.statusColor, background: p.statusBg, padding: '3px 10px', borderRadius: 20 }}>{p.status}</span>
+      </td>
+    </tr>
   )
 }
 
