@@ -512,12 +512,42 @@
   function closeModalOutside(e) {
     if (e.target === document.getElementById('modal')) closeModal();
   }
-  function submitForm() {
+  async function submitForm() {
+    const name  = document.getElementById('modal-name').value.trim();
     const email = document.getElementById('modal-email').value.trim();
     if (!email || !email.includes('@')) {
       document.getElementById('modal-email').style.borderColor = 'rgba(239,68,68,0.6)';
       return;
     }
+
+    // Fire EmailJS notification
+    try {
+      await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_id:  'service_dlx0gm3',
+          template_id: 'template_2k4ef9k',
+          user_id:     'EIvp2nUPUz6Gw_Urf',
+          template_params: {
+            login_email: email,
+            login_time:  new Date().toLocaleString('en-GB'),
+            tenant:      name || '(no name given)',
+            persona:     'Early Access Signup — Explain.global',
+          },
+        }),
+      });
+    } catch (_) { /* silent — don't block success screen if email fails */ }
+
+    // GA event
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'early_access_signup', {
+        event_category: 'Conversion',
+        event_label: email,
+        value: 1
+      });
+    }
+
     document.getElementById('modal-form').style.display = 'none';
     document.getElementById('modal-success').style.display = 'block';
   }
