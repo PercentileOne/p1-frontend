@@ -13,7 +13,7 @@ const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: 'Dashboard' },
   { Icon: Package,         label: 'Interview Packs' },
   { Icon: Users,           label: 'Candidates' },
-  { Icon: Briefcase,       label: 'Job Positions' },
+  { Icon: Briefcase,       label: 'Job Specs' },
   { Icon: FileText,        label: 'CVs' },
   { Icon: BarChart2,       label: 'Analytics' },
   { Icon: CalendarCheck,   label: 'Interviews' },
@@ -241,10 +241,10 @@ export default function Dashboard() {
         {activeNav === 'Interview Packs' && <InterviewPacks />}
         {activeNav === 'Candidates' && <Candidates />}
         {activeNav === 'Analytics' && <Analytics />}
-        {activeNav === 'Job Positions' && <JobPositions />}
+        {activeNav === 'Job Specs' && <JobPositions />}
         {activeNav === 'Interviews' && <Interviews />}
         {activeNav === 'CVs' && <CVsPage />}
-        {activeNav !== 'Dashboard' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'Analytics' && activeNav !== 'Job Positions' && activeNav !== 'Interviews' && activeNav !== 'CVs' && (
+        {activeNav !== 'Dashboard' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--text-3)', fontSize: 14 }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
             <div style={{ fontWeight: 700, color: 'var(--text-2)' }}>{activeNav}</div>
