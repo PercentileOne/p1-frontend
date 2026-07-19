@@ -1,6 +1,6 @@
 import { useState, useRef, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Upload, Mail, Linkedin } from 'lucide-react'
+import { X, Upload, Mail } from 'lucide-react'
 
 const CVS = [
   {
@@ -354,7 +354,7 @@ export default function CVsPage() {
                 <DetailRow label="Location" value={selected.location} />
                 {selected.linkedin && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
-                    <Linkedin size={12} color="#4F8EF7" />
+                    <svg width={12} height={12} viewBox="0 0 24 24" fill="#4F8EF7"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2" fill="#4F8EF7"/></svg>
                     <span style={{ fontSize: 11, color: '#4F8EF7' }}>{selected.linkedin}</span>
                   </div>
                 )}
