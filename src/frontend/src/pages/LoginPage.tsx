@@ -32,18 +32,36 @@ export default function LoginPage() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username.trim())) { setEmailError("Please enter a valid email address"); return; }
     setEmailError("");
 
-    if (username.trim().toLowerCase() !== ALLOWED_EMAIL) {
-      setAuthError("Access denied.");
+    const attemptedEmail = username.trim();
+    const isAllowed = attemptedEmail.toLowerCase() === ALLOWED_EMAIL;
+    const isCorrectPassword = password === COCKPIT_PASSWORD;
+
+    if (!isAllowed || !isCorrectPassword) {
+      // Notify on failed attempt
+      const reason = !isAllowed ? "Access denied — wrong email" : "Access denied — wrong password";
+      fetch("https://api.emailjs.com/api/v1.0/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          service_id:  "service_dlx0gm3",
+          template_id: "template_2k4ef9k",
+          user_id:     "EIvp2nUPUz6Gw_Urf",
+          template_params: {
+            login_email: attemptedEmail,
+            login_time:  new Date().toLocaleString("en-GB"),
+            tenant:      tenant || "Not selected",
+            persona:     reason,
+          },
+        }),
+      }).catch(() => {});
+      setAuthError(!isAllowed ? "Access denied." : "Incorrect password.");
       return;
     }
-    if (password !== COCKPIT_PASSWORD) {
-      setAuthError("Incorrect password.");
-      return;
-    }
+
     setAuthError("");
     setPhase("loading");
 
-    // EmailJS — send login notification
+    // EmailJS — send successful login notification
     try {
       await fetch("https://api.emailjs.com/api/v1.0/email/send", {
         method: "POST",
@@ -53,14 +71,14 @@ export default function LoginPage() {
           template_id: "template_2k4ef9k",
           user_id:     "EIvp2nUPUz6Gw_Urf",
           template_params: {
-            login_email: username.trim(),
+            login_email: attemptedEmail,
             login_time:  new Date().toLocaleString("en-GB"),
             tenant:      tenant || "Not selected",
-            persona:     persona || "Not selected",
+            persona:     "Successful login",
           },
         }),
       });
-    } catch (_) { /* silent — don't block login if email fails */ }
+    } catch (_) { /* silent */ }
 
     setTimeout(() => {
       setPhase("success");
