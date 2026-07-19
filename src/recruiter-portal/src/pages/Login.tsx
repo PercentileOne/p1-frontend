@@ -31,7 +31,7 @@ export default function Login() {
     setPhase('loading')
     setTimeout(() => {
       setPhase('success')
-      setTimeout(() => navigate('/dashboard'), 2200)
+      setTimeout(() => navigate('/dashboard'), 5000)
     }, 1100)
   }
 
@@ -266,22 +266,25 @@ function SuccessOverlay({ company, username }: { company: string; username: stri
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
     >
-      <motion.div
-        style={{
-          width: 72, height: 72, borderRadius: '50%',
-          border: '2px solid rgba(79,142,247,0.6)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}
-        animate={{ scale: [1, 1.15, 1], borderColor: ['rgba(79,142,247,0.6)', 'rgba(52,211,153,0.9)', 'rgba(79,142,247,0.6)'] }}
-        transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <div style={{
-          width: 48, height: 48, borderRadius: '50%',
-          background: 'linear-gradient(135deg,#3b7ef7,#4F8EF7)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 22,
-        }}>⚡</div>
-      </motion.div>
+      <div style={{ position: 'relative', width: 100, height: 100 }}>
+        <ExplainLogo size={100} withAnimation={false} />
+        {/* Orbiting comet ring */}
+        <motion.svg
+          width={100} height={100} viewBox="0 0 100 100"
+          style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2.8, repeat: Infinity, ease: 'linear' }}
+        >
+          <circle cx={50} cy={50} r={43} fill="none"
+            stroke="rgba(79,142,247,0.25)" strokeWidth="7"
+            strokeLinecap="round" strokeDasharray="38 233"
+          />
+          <circle cx={50} cy={50} r={43} fill="none"
+            stroke="rgba(99,179,255,0.92)" strokeWidth="2.5"
+            strokeLinecap="round" strokeDasharray="20 251"
+          />
+        </motion.svg>
+      </div>
 
       <motion.div
         style={{ textAlign: 'center' }}
@@ -326,15 +329,16 @@ function SuccessOverlay({ company, username }: { company: string; username: stri
 /* ── HELPERS ── */
 function FieldWrap({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{
+    <label style={{
       display: 'flex', alignItems: 'center', gap: 10,
       padding: '10px 14px', borderRadius: 8,
       background: '#111318', border: '1px solid rgba(148,163,184,0.12)',
       boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.5)',
       transition: 'border-color 0.18s',
+      cursor: 'text',
     }}>
       {children}
-    </div>
+    </label>
   )
 }
 
