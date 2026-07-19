@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 const CANDIDATES = [
   { id: 1, name: 'James Okafor',    initials: 'JO', role: 'Senior .NET Developer',  score: 82, status: 'Interview Booked', color: '#34D399', location: 'London',     available: 'Immediate',    packs: 2, lastContact: '18 Jul' },
@@ -57,12 +58,17 @@ export default function Candidates() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 14 }}>
         {visible.map(c => (
-          <div key={c.id} style={{
+          <motion.div key={c.id} style={{
             background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '18px 20px',
-            cursor: 'pointer', transition: 'border-color 0.15s, box-shadow 0.15s',
+            cursor: 'pointer',
           }}
-            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(79,142,247,0.35)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 20px rgba(79,142,247,0.1)' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}
+            whileHover={{
+              y: -4,
+              borderColor: 'rgba(79,142,247,0.6)',
+              background: 'rgba(79,142,247,0.06)',
+              boxShadow: '0 8px 32px rgba(79,142,247,0.18)',
+            }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
               <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'linear-gradient(135deg,#4F8EF7,#7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#fff', flexShrink: 0 }}>{c.initials}</div>
@@ -82,7 +88,7 @@ export default function Candidates() {
               <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Last contact: {c.lastContact}</span>
               <button style={{ fontSize: 11, color: '#4F8EF7', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>View profile →</button>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
       {visible.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>No candidates match your search.</div>}
