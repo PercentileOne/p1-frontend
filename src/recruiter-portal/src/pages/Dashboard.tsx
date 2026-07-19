@@ -7,6 +7,7 @@ import Candidates from './Candidates'
 import Analytics from './Analytics'
 import JobPositions from './JobPositions'
 import Interviews from './Interviews'
+import CVsPage from './CVs'
 
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: 'Dashboard' },
@@ -242,7 +243,8 @@ export default function Dashboard() {
         {activeNav === 'Analytics' && <Analytics />}
         {activeNav === 'Job Positions' && <JobPositions />}
         {activeNav === 'Interviews' && <Interviews />}
-        {activeNav !== 'Dashboard' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'Analytics' && activeNav !== 'Job Positions' && activeNav !== 'Interviews' && (
+        {activeNav === 'CVs' && <CVsPage />}
+        {activeNav !== 'Dashboard' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'Analytics' && activeNav !== 'Job Positions' && activeNav !== 'Interviews' && activeNav !== 'CVs' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--text-3)', fontSize: 14 }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
             <div style={{ fontWeight: 700, color: 'var(--text-2)' }}>{activeNav}</div>
