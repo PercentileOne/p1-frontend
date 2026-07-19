@@ -22,7 +22,7 @@ const NAV_ITEMS = [
 const LIVE_STATS = [
   {
     color: '#4F8EF7', bg: 'rgba(79,142,247,0.08)', border: 'rgba(79,142,247,0.2)', shadow: '79,142,247',
-    interval: 4200,
+    interval: 12000,
     slides: [
       { label: 'Packs Generated', value: '47', change: '+12 this month' },
       { label: 'Drafts in Progress', value: '8', change: '3 pending your review' },
@@ -31,7 +31,7 @@ const LIVE_STATS = [
   },
   {
     color: '#34D399', bg: 'rgba(52,211,153,0.08)', border: 'rgba(52,211,153,0.2)', shadow: '52,211,153',
-    interval: 3600,
+    interval: 13000,
     slides: [
       { label: 'Sent to Candidates', value: '38', change: '+9 this month' },
       { label: 'Opened Today', value: '12', change: '32% open rate' },
@@ -40,7 +40,7 @@ const LIVE_STATS = [
   },
   {
     color: '#A78BFA', bg: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.2)', shadow: '167,139,250',
-    interval: 5100,
+    interval: 14000,
     slides: [
       { label: 'Interviews Booked', value: '29', change: '76% conversion rate' },
       { label: 'Scheduled This Week', value: '3', change: 'Mon · Tue · Wed' },
@@ -49,7 +49,7 @@ const LIVE_STATS = [
   },
   {
     color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', shadow: '245,158,11',
-    interval: 4800,
+    interval: 15000,
     slides: [
       { label: 'Avg. Candidate Score', value: '74%', change: '+6pts vs last month' },
       { label: 'Top Performing Role', value: 'UX', change: 'UX Design · 91% pass rate' },
