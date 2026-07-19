@@ -3,17 +3,20 @@
     "rewrite": "/index.html",
     "exclude": ["/assets/*", "/*.js", "/*.css", "/*.svg", "/*.png", "/*.ico"]
   },
-  "globalHeaders": {
-    "Cache-Control": "no-cache"
-  },
   "mimeTypes": {
     ".html": "text/html"
   },
   "routes": [
     {
-      "route": "/index.html",
+      "route": "/assets/*",
       "headers": {
-        "Cache-Control": "no-store, no-cache, must-revalidate"
+        "Cache-Control": "max-age=31536000, immutable"
+      }
+    },
+    {
+      "route": "/*",
+      "headers": {
+        "Cache-Control": "no-store"
       }
     }
   ]
