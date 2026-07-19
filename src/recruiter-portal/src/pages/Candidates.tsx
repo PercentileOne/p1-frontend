@@ -59,16 +59,16 @@ export default function Candidates() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 14 }}>
         {visible.map(c => (
           <motion.div key={c.id} style={{
-            background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '18px 20px',
+            background: '#0c1220', border: '1px solid var(--border)', borderRadius: 14, padding: '18px 20px',
             cursor: 'pointer',
           }}
             whileHover={{
               y: -4,
               borderColor: 'rgba(79,142,247,0.6)',
-              background: 'rgba(79,142,247,0.06)',
-              boxShadow: '0 8px 32px rgba(79,142,247,0.18)',
+              background: '#0f1a2e',
+              boxShadow: '0 8px 32px rgba(79,142,247,0.15)',
             }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
               <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'linear-gradient(135deg,#4F8EF7,#7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#fff', flexShrink: 0 }}>{c.initials}</div>
