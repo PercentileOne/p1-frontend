@@ -51,13 +51,22 @@ const MOCK_CV: CV = {
   ],
 }
 
-const MOCK_PACK = [
-  { category: 'Technical', question: 'Walk me through your experience with microservices in .NET — what patterns have you used and what challenges did you face?', spec: 'Microservices architecture', cv: '2M+ daily transaction platform' },
-  { category: 'Technical', question: 'Describe a complex Azure deployment you led. What services did you use and how did you handle scaling?', spec: 'Strong Azure cloud background', cv: 'Led Azure migration for UK bank' },
-  { category: 'Technical', question: 'How do you approach database design in SQL Server for high-throughput financial applications?', spec: 'SQL Server · Financial services', cv: '8 years enterprise .NET' },
-  { category: 'Behavioural', question: 'Tell me about a time you led a team through a challenging delivery. How did you manage competing priorities?', spec: 'Agile / Scrum delivery', cv: 'Team lead, 6-person squads' },
-  { category: 'Behavioural', question: 'Describe a situation where you had to push back on requirements from a stakeholder. How did you handle it?', spec: 'Financial services experience', cv: 'Accenture client delivery' },
-  { category: 'Culture', question: 'What does a good engineering culture look like to you, and how have you contributed to one in your current role?', spec: 'Barclays Tech values', cv: 'Senior / lead background' },
+const MOCK_PACK_SPEC_ONLY = [
+  { category: 'Technical',   question: 'Walk me through your experience with microservices in .NET — what patterns have you used and what challenges did you face?', from: 'Spec', fromText: 'Microservices architecture' },
+  { category: 'Technical',   question: 'Describe a complex Azure deployment you led. What services did you use and how did you handle scaling?',                     from: 'Spec', fromText: 'Strong Azure cloud background' },
+  { category: 'Technical',   question: 'How do you approach database design in SQL Server for high-throughput financial applications?',                              from: 'Spec', fromText: 'SQL Server · Financial services' },
+  { category: 'Behavioural', question: 'Tell me about a time you led a team through a challenging delivery. How did you manage competing priorities?',               from: 'Spec', fromText: 'Agile / Scrum delivery' },
+  { category: 'Behavioural', question: 'Describe a situation where you had to push back on requirements from a stakeholder. How did you handle it?',                 from: 'Spec', fromText: 'Financial services experience' },
+  { category: 'Culture',     question: 'What does a good engineering culture look like to you, and how have you contributed to one in your current role?',           from: 'Spec', fromText: 'Barclays Tech values' },
+]
+
+const MOCK_PACK_WITH_CV = [
+  { category: 'Technical',   question: 'Walk me through your experience with microservices in .NET — what patterns have you used and what challenges did you face?', from: 'CV',   fromText: '2M+ daily transaction platform' },
+  { category: 'Technical',   question: 'Describe a complex Azure deployment you led. What services did you use and how did you handle scaling?',                     from: 'CV',   fromText: 'Led Azure migration for UK bank' },
+  { category: 'Technical',   question: 'How do you approach database design in SQL Server for high-throughput financial applications?',                              from: 'Spec', fromText: 'SQL Server · Financial services' },
+  { category: 'Behavioural', question: 'Tell me about a time you led a team through a challenging delivery. How did you manage competing priorities?',               from: 'CV',   fromText: 'Team lead, 6-person squads' },
+  { category: 'Behavioural', question: 'Describe a situation where you had to push back on requirements from a stakeholder. How did you handle it?',                 from: 'Spec', fromText: 'Financial services experience' },
+  { category: 'Culture',     question: 'What does a good engineering culture look like to you, and how have you contributed to one in your current role?',           from: 'CV',   fromText: 'Senior / lead background' },
 ]
 
 const CAT_COLORS: Record<string, string> = {
@@ -86,6 +95,7 @@ export default function PackBuilder({ specTitle, onBack }: { specTitle: string; 
 
   const spec = MOCK_SPEC
   const cv = cvUploaded ? MOCK_CV : null
+  const packRows = cvUploaded ? MOCK_PACK_WITH_CV : MOCK_PACK_SPEC_ONLY
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, height: '100%' }}>
@@ -239,7 +249,7 @@ export default function PackBuilder({ specTitle, onBack }: { specTitle: string; 
               <div>
                 <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.02em' }}>Generated Interview Pack</div>
                 <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>
-                  {MOCK_PACK.length} questions · {cvUploaded ? 'Tailored to spec + CV' : 'Based on spec only'}
+                  {packRows.length} questions · {cvUploaded ? 'Tailored to spec + CV' : 'Based on spec only'}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -260,21 +270,23 @@ export default function PackBuilder({ specTitle, onBack }: { specTitle: string; 
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['#', 'Category', 'Question', 'From Spec', cvUploaded ? 'From CV' : ''].filter(Boolean).map(h => (
+                    {['#', 'Category', 'Question', 'From'].map(h => (
                       <th key={h} style={{ padding: '11px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {MOCK_PACK.map((q, i) => (
+                  {packRows.map((q, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid var(--border)', background: i % 2 === 1 ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
                       <td style={{ padding: '13px 16px', fontSize: 11, color: 'var(--text-3)', width: 32 }}>{i + 1}</td>
                       <td style={{ padding: '13px 16px', whiteSpace: 'nowrap' }}>
                         <span style={{ fontSize: 10, fontWeight: 700, color: CAT_COLORS[q.category], background: `${CAT_COLORS[q.category]}18`, padding: '3px 8px', borderRadius: 20 }}>{q.category}</span>
                       </td>
                       <td style={{ padding: '13px 16px', fontSize: 12, color: 'var(--text-2)', maxWidth: 400 }}>{q.question}</td>
-                      <td style={{ padding: '13px 16px', fontSize: 11, color: 'var(--text-3)', whiteSpace: 'nowrap' }}>{q.spec}</td>
-                      {cvUploaded && <td style={{ padding: '13px 16px', fontSize: 11, color: '#A78BFA', whiteSpace: 'nowrap' }}>{q.cv}</td>}
+                      <td style={{ padding: '13px 16px', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: q.from === 'CV' ? '#A78BFA' : '#4F8EF7', background: q.from === 'CV' ? 'rgba(167,139,250,0.12)' : 'rgba(79,142,247,0.12)', padding: '3px 8px', borderRadius: 20, marginRight: 6 }}>{q.from}</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-3)' }}>{q.fromText}</span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
