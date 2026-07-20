@@ -24,7 +24,7 @@ function fmtDate(iso: string) {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })
 }
 
-export default function JobPositions() {
+export default function JobPositions({ onViewSpec }: { onViewSpec?: (title: string) => void }) {
   const [filter, setFilter]       = useState('All')
   const [search, setSearch]       = useState('')
   const [sortKey, setSortKey]     = useState<SortKey>('received')
@@ -148,7 +148,7 @@ export default function JobPositions() {
                 </td>
                 <td style={{ padding: '14px 16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <button style={{ fontSize: 11, color: '#4F8EF7', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, whiteSpace: 'nowrap' }}>View →</button>
+                    <button onClick={e => { e.stopPropagation(); onViewSpec?.(j.title) }} style={{ fontSize: 11, color: '#4F8EF7', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, whiteSpace: 'nowrap' }}>View →</button>
                     <button
                       title="Archive"
                       onClick={e => { e.stopPropagation(); setArchived(a => [...a, j.id]) }}

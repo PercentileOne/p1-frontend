@@ -8,6 +8,7 @@ import Analytics from './Analytics'
 import JobPositions from './JobPositions'
 import Interviews from './Interviews'
 import CVsPage from './CVs'
+import PackBuilder from './PackBuilder'
 
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: 'Dashboard' },
@@ -131,6 +132,7 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const [todos, setTodos] = useState(TODOS)
   const [activeNav, setActiveNav] = useState('Dashboard')
+  const [packBuilderSpec, setPackBuilderSpec] = useState<string | null>(null)
 
   function toggleTodo(i: number) {
     setTodos(t => t.map((todo, idx) => idx === i ? { ...todo, done: !todo.done } : todo))
@@ -171,7 +173,7 @@ export default function Dashboard() {
           {NAV_ITEMS.map(({ Icon, label }) => (
             <button
               key={label}
-              onClick={() => setActiveNav(label)}
+              onClick={() => { setActiveNav(label); setPackBuilderSpec(null) }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '9px 12px', borderRadius: 8, border: 'none',
@@ -241,7 +243,8 @@ export default function Dashboard() {
         {activeNav === 'Interview Packs' && <InterviewPacks />}
         {activeNav === 'Candidates' && <Candidates />}
         {activeNav === 'Analytics' && <Analytics />}
-        {activeNav === 'Job Specs' && <JobPositions />}
+        {activeNav === 'Job Specs' && !packBuilderSpec && <JobPositions onViewSpec={title => setPackBuilderSpec(title)} />}
+        {activeNav === 'Job Specs' && packBuilderSpec && <PackBuilder specTitle={packBuilderSpec} onBack={() => setPackBuilderSpec(null)} />}
         {activeNav === 'Interviews' && <Interviews />}
         {activeNav === 'CVs' && <CVsPage />}
         {activeNav !== 'Dashboard' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && (
