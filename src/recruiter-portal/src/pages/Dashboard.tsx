@@ -11,12 +11,12 @@ import CVsPage from './CVs'
 
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: 'Dashboard' },
-  { Icon: Package,         label: 'Interview Packs' },
-  { Icon: Users,           label: 'Candidates' },
   { Icon: Briefcase,       label: 'Job Specs' },
   { Icon: FileText,        label: 'CVs' },
-  { Icon: BarChart2,       label: 'Analytics' },
+  { Icon: Users,           label: 'Candidates' },
   { Icon: CalendarCheck,   label: 'Interviews' },
+  { Icon: Package,         label: 'Interview Packs' },
+  { Icon: BarChart2,       label: 'Analytics' },
   { Icon: Settings,        label: 'Settings' },
 ]
 
