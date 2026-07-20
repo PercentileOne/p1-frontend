@@ -151,17 +151,17 @@ export default function PackBuilder({ specTitle, onBack }: { specTitle: string; 
               <FileText size={15} color="#4F8EF7" />
             </div>
             <div>
-              <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>{spec.title}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{spec.client} · {spec.type} · {spec.salary}</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>{spec.title}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{spec.client} · {spec.type} · {spec.salary}</div>
             </div>
-            <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: '#34D399', background: 'rgba(52,211,153,0.1)', padding: '3px 8px', borderRadius: 20 }}>Loaded</span>
+            <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: '#34D399', background: 'rgba(52,211,153,0.1)', padding: '3px 8px', borderRadius: 20 }}>Loaded</span>
           </div>
 
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>Requirements</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 8 }}>Requirements</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {spec.requirements.map((r, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 12, color: 'var(--text-2)' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 13, color: 'var(--text-2)' }}>
                   <span style={{ color: '#4F8EF7', marginTop: 1, flexShrink: 0 }}>·</span> {r}
                 </div>
               ))}
@@ -169,10 +169,10 @@ export default function PackBuilder({ specTitle, onBack }: { specTitle: string; 
           </div>
 
           <div>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>Key Skills</div>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 8 }}>Key Skills</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
               {spec.skills.map(s => (
-                <span key={s} style={{ fontSize: 10, fontWeight: 600, color: '#4F8EF7', background: 'rgba(79,142,247,0.1)', padding: '3px 8px', borderRadius: 10 }}>{s}</span>
+                <span key={s} style={{ fontSize: 12, fontWeight: 600, color: '#4F8EF7', background: 'rgba(79,142,247,0.1)', padding: '4px 10px', borderRadius: 10 }}>{s}</span>
               ))}
             </div>
           </div>
@@ -217,17 +217,17 @@ export default function PackBuilder({ specTitle, onBack }: { specTitle: string; 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                   <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#A78BFA,#7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#fff' }}>JO</div>
                   <div>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text)' }}>{cv!.name}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{cv!.role} · {cv!.experience} exp</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>{cv!.name}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{cv!.role} · {cv!.experience} exp</div>
                   </div>
-                  <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: '#34D399', background: 'rgba(52,211,153,0.1)', padding: '3px 8px', borderRadius: 20 }}>CV Loaded</span>
+                  <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: '#34D399', background: 'rgba(52,211,153,0.1)', padding: '3px 8px', borderRadius: 20 }}>CV Loaded</span>
                 </div>
 
                 <div style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>Key Highlights</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 8 }}>Key Highlights</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {cv!.highlights.map((h, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 12, color: 'var(--text-2)' }}>
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 13, color: 'var(--text-2)' }}>
                         <span style={{ color: '#A78BFA', marginTop: 1, flexShrink: 0 }}>·</span> {h}
                       </div>
                     ))}
@@ -235,10 +235,10 @@ export default function PackBuilder({ specTitle, onBack }: { specTitle: string; 
                 </div>
 
                 <div>
-                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>Skills</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 8 }}>Skills</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                     {cv!.skills.map(s => (
-                      <span key={s} style={{ fontSize: 10, fontWeight: 600, color: '#A78BFA', background: 'rgba(167,139,250,0.1)', padding: '3px 8px', borderRadius: 10 }}>{s}</span>
+                      <span key={s} style={{ fontSize: 12, fontWeight: 600, color: '#A78BFA', background: 'rgba(167,139,250,0.1)', padding: '4px 10px', borderRadius: 10 }}>{s}</span>
                     ))}
                   </div>
                 </div>
