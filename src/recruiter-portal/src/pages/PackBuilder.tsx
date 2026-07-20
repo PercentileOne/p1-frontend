@@ -349,7 +349,7 @@ export default function PackBuilder({ specTitle, onBack }: { specTitle: string; 
                         style={{
                           width: '100%', boxSizing: 'border-box',
                           background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)',
-                          borderRadius: 8, padding: '8px 12px', fontSize: 12, color: 'var(--text-2)',
+                          borderRadius: 8, padding: '8px 12px', fontSize: 14, color: 'var(--text-2)',
                           fontFamily: 'inherit', resize: 'vertical', outline: 'none',
                           transition: 'border-color 0.15s',
                         }}
