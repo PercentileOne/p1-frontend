@@ -6,6 +6,7 @@ import { explainApi } from '../api/explainApi';
 import { generateIntros, parseCVWithAI, aiScoringConfigured } from '../api/aiScoring';
 import { FileUpload } from '../components/FileUpload';
 
+type HubTab = 'interview' | 'learn' | 'coming-soon';
 type Step = 'job-spec' | 'cv' | 'preparing';
 type JobSpecMode = 'paste' | 'upload' | 'url';
 
@@ -255,6 +256,7 @@ export default function InterviewIntake() {
   const urlJobSpec = urlParams.get('jobSpec') ?? '';
 
   const initialJobSpec = external.jobDescriptionText ?? urlJobSpec;
+  const [hubTab, setHubTab] = useState<HubTab>('interview');
   const [step, setStep] = useState<Step>(initialJobSpec ? (external.cvText ? 'preparing' : 'cv') : 'job-spec');
   const [jobSpec, setJobSpec] = useState(initialJobSpec);
   const [jobSpecMode, setJobSpecMode] = useState<JobSpecMode>('paste');
@@ -267,6 +269,41 @@ export default function InterviewIntake() {
   // Pre-parsed CV context — populated as soon as the user provides CV text
   const [cvCtxParsed, setCvCtxParsed] = useState<CVContext | null>(null);
   const [parsingCv, setParsingCv] = useState(false);
+
+  // Learn tab state
+  const [learnSubject, setLearnSubject] = useState('');
+  const [learnLoading, setLearnLoading] = useState(false);
+  const [learnLesson, setLearnLesson] = useState<null | {
+    concept: string; keyPoints: string[]; example: string; practiceQuestion: string; tip: string;
+  }>(null);
+  const [learnError, setLearnError] = useState('');
+
+  const openAiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
+
+  const runLearn = async () => {
+    if (!learnSubject.trim() || !openAiKey) return;
+    setLearnLoading(true); setLearnError(''); setLearnLesson(null);
+    try {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${openAiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'gpt-4o', temperature: 0.7,
+          response_format: { type: 'json_object' },
+          messages: [
+            { role: 'system', content: 'You are an expert interview coach. Return ONLY valid JSON.' },
+            { role: 'user', content: `Create a concise, practical lesson on "${learnSubject.trim()}" for someone preparing for a job interview.\n\nReturn JSON: { "concept": "one-line definition", "keyPoints": ["3-4 bullets"], "example": "concrete example 2-3 sentences", "practiceQuestion": "one interview question testing this", "tip": "one insider tip" }` },
+          ],
+        }),
+      });
+      const data = await res.json() as { choices: { message: { content: string } }[] };
+      setLearnLesson(JSON.parse(data.choices[0].message.content));
+    } catch {
+      setLearnError('Could not generate lesson — please try again.');
+    } finally {
+      setLearnLoading(false);
+    }
+  };
 
   // Auto-advance if both were pre-filled (enterprise / Magic Button path)
   useEffect(() => {
@@ -391,13 +428,150 @@ export default function InterviewIntake() {
     />
   );
 
+  const HUB_TABS: { id: HubTab; label: string }[] = [
+    { id: 'interview', label: '🎤 Interview' },
+    { id: 'learn', label: '📚 Learn' },
+    { id: 'coming-soon', label: '⚡ Coming Soon' },
+  ];
+
+  const LEARN_TOPICS = ['STAR method', 'System Design', 'Stakeholder management', 'Salary negotiation', 'Leadership', 'Behavioural interviews'];
+
   return (
     <div style={{
       minHeight: '100vh', background: 'var(--bg)',
       fontFamily: '-apple-system,"Segoe UI",sans-serif',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      padding: '48px 16px',
+      display: 'flex', flexDirection: 'column',
     }}>
+      {/* Hub tab bar */}
+      <div style={{ background: 'var(--bg2)', borderBottom: '1px solid var(--border)', padding: '0 24px', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: 0, maxWidth: '640px', width: '100%' }}>
+          {HUB_TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setHubTab(tab.id)}
+              style={{
+                padding: '14px 20px', border: 'none', background: 'none', cursor: 'pointer',
+                fontSize: '13px', fontWeight: 700, fontFamily: 'inherit',
+                color: hubTab === tab.id ? 'var(--blue)' : 'var(--text-3)',
+                borderBottom: hubTab === tab.id ? '2px solid var(--blue)' : '2px solid transparent',
+                marginBottom: '-1px', transition: 'all 0.15s',
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <AnimatePresence mode="wait">
+
+        {/* ── LEARN tab ── */}
+        {hubTab === 'learn' && (
+          <motion.div key="hub-learn" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px' }}>
+            <div style={{ width: '100%', maxWidth: '640px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '6px' }}>Learn</div>
+                <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text)', margin: '0 0 8px' }}>Study any topic, instantly</h1>
+                <p style={{ fontSize: '14px', color: 'var(--text-2)', margin: 0, lineHeight: 1.6 }}>Enter any subject and get a focused lesson built for interview preparation.</p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  value={learnSubject}
+                  onChange={e => setLearnSubject(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && runLearn()}
+                  placeholder="e.g. C# async/await, STAR method, System Design…"
+                  style={{ flex: 1, background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 16px', color: 'var(--text)', fontSize: '14px', outline: 'none', fontFamily: 'inherit' }}
+                />
+                <button onClick={runLearn} disabled={!learnSubject.trim() || learnLoading || !openAiKey}
+                  style={{ background: learnSubject.trim() && !learnLoading && openAiKey ? 'var(--blue)' : 'rgba(79,142,247,0.3)', color: '#fff', border: 'none', borderRadius: '10px', padding: '12px 20px', fontSize: '13px', fontWeight: 700, cursor: learnSubject.trim() && openAiKey ? 'pointer' : 'default', whiteSpace: 'nowrap', fontFamily: 'inherit' }}>
+                  {learnLoading ? 'Building…' : 'Learn →'}
+                </button>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {LEARN_TOPICS.map(t => (
+                  <button key={t} onClick={() => setLearnSubject(t)}
+                    style={{ fontSize: '11px', fontWeight: 600, background: learnSubject === t ? 'rgba(79,142,247,0.15)' : 'rgba(255,255,255,0.04)', border: `1px solid ${learnSubject === t ? 'rgba(79,142,247,0.3)' : 'var(--border)'}`, color: learnSubject === t ? 'var(--blue)' : 'var(--text-3)', borderRadius: '20px', padding: '4px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    {t}
+                  </button>
+                ))}
+              </div>
+              {learnError && <div style={{ fontSize: '13px', color: 'var(--red)' }}>{learnError}</div>}
+              {learnLoading && (
+                <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '28px', textAlign: 'center' }}>
+                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                    style={{ width: '24px', height: '24px', border: '3px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%', margin: '0 auto 12px' }} />
+                  <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Generating lesson on <strong>{learnSubject}</strong>…</div>
+                </div>
+              )}
+              {learnLesson && !learnLoading && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ background: 'linear-gradient(135deg,rgba(79,142,247,0.1),rgba(167,139,250,0.08))', border: '1px solid rgba(79,142,247,0.2)', borderRadius: '12px', padding: '20px' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '8px' }}>What is it?</div>
+                    <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text)', lineHeight: 1.6 }}>{learnLesson.concept}</div>
+                  </div>
+                  <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '12px' }}>Key points</div>
+                    {learnLesson.keyPoints.map((p, i) => (
+                      <div key={i} style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
+                        <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(79,142,247,0.15)', border: '1px solid rgba(79,142,247,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 800, color: 'var(--blue)', flexShrink: 0 }}>{i + 1}</div>
+                        <div style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.55, paddingTop: '2px' }}>{p}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: '12px', padding: '20px' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#34D399', marginBottom: '8px' }}>Example</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.65, fontStyle: 'italic' }}>{learnLesson.example}</div>
+                  </div>
+                  <div style={{ background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '12px', padding: '20px' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--amber)', marginBottom: '8px' }}>Practice question</div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', lineHeight: 1.55 }}>{learnLesson.practiceQuestion}</div>
+                  </div>
+                  <div style={{ background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '12px', padding: '16px 18px', display: 'flex', gap: '12px' }}>
+                    <div style={{ fontSize: '18px' }}>💡</div>
+                    <div>
+                      <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#a78bfa', marginBottom: '4px' }}>Insider tip</div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.6 }}>{learnLesson.tip}</div>
+                    </div>
+                  </div>
+                  <button onClick={() => { setLearnLesson(null); setLearnSubject(''); }}
+                    style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '9px', padding: '10px 20px', fontSize: '13px', color: 'var(--text-3)', cursor: 'pointer', fontFamily: 'inherit', alignSelf: 'center' }}>
+                    ← Learn another topic
+                  </button>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── COMING SOON tab ── */}
+        {hubTab === 'coming-soon' && (
+          <motion.div key="hub-coming" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 16px' }}>
+            <div style={{ width: '100%', maxWidth: '560px', textAlign: 'center' }}>
+              <div style={{ fontSize: '40px', marginBottom: '16px' }}>⚡</div>
+              <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text)', marginBottom: '10px' }}>More coming soon</div>
+              <div style={{ fontSize: '14px', color: 'var(--text-2)', lineHeight: 1.65, marginBottom: '28px' }}>
+                We're building visa interview prep, court preparation, driving theory, and more — because Explain isn't just for job interviews.
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '32px' }}>
+                {['Visa Interviews', 'Driving Theory', 'Citizenship Tests', 'Court Preparation', 'Academic Admissions', 'Assessment Centres'].map(s => (
+                  <span key={s} style={{ fontSize: '12px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '20px', padding: '5px 14px', color: '#a78bfa', fontWeight: 600 }}>{s}</span>
+                ))}
+              </div>
+              <button onClick={() => setHubTab('interview')}
+                style={{ background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '10px', padding: '13px 32px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                Back to Interview →
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── INTERVIEW tab ── */}
+        {hubTab === 'interview' && (
+          <motion.div key="hub-interview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 16px' }}>
+
       {/* Progress dots */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '40px' }}>
         {(['job-spec', 'cv', 'preparing'] as Step[]).map((s, i) => (
@@ -590,6 +764,10 @@ export default function InterviewIntake() {
 
         </AnimatePresence>
       </div>
+          </motion.div>
+        )}
+
+      </AnimatePresence>
     </div>
   );
 }

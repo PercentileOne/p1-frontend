@@ -45,7 +45,7 @@ export interface JobSpecContext {
 
 const TECH_KEYWORDS = [
   'React', 'Angular', 'Vue', 'TypeScript', 'JavaScript', 'Python', 'C#', '.NET',
-  'Java', 'Go', 'Rust', 'Swift', 'Kotlin', 'PHP', 'Ruby',
+  'Java', 'Rust', 'Swift', 'Kotlin', 'PHP', 'Ruby',
   'Azure', 'AWS', 'GCP', 'Kubernetes', 'Docker', 'Terraform', 'Ansible',
   'SQL', 'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Cosmos DB', 'DynamoDB',
   'Kafka', 'RabbitMQ', 'Service Bus', 'GraphQL', 'REST', 'gRPC',
@@ -56,7 +56,7 @@ const TECH_KEYWORDS = [
 
 // Terms that must match as whole words — they are substrings of longer tech names
 // e.g. "java" matches inside "javascript", "go" matches inside "going"
-const WORD_BOUNDARY_TERMS = new Set(['java', 'go', 'c', 'r', 'rust', 'php', 'ruby', 'sql']);
+const WORD_BOUNDARY_TERMS = new Set(['java', 'c', 'r', 'rust', 'php', 'ruby', 'sql']);
 
 const SENIORITY_MAP: Record<string, CVContext['seniority']> = {
   'c-level': 'Executive', 'cto': 'Executive', 'ceo': 'Executive', 'coo': 'Executive', 'cpo': 'Executive',
@@ -120,7 +120,8 @@ function findMatches(text: string, candidates: string[]): string[] {
 }
 
 function extractYearsOfExp(text: string): number | undefined {
-  const match = text.match(/(\d+)\+?\s*years?\s*(of\s*)?(experience|exp)/i);
+  // Match "24 years commercial experience", "over 24 years of experience", "24+ years exp", etc.
+  const match = text.match(/(\d+)\+?\s*years?\s+(?:of\s+)?(?:commercial\s+|professional\s+|industry\s+)?(experience|exp)/i);
   return match ? parseInt(match[1]) : undefined;
 }
 
@@ -167,7 +168,8 @@ function extractRoles(text: string): string[] {
   const roles: string[] = [];
   const lines = extractLines(text);
   for (const line of lines) {
-    const m = line.match(/^((?:senior|junior|lead|principal|staff|head of|director of|vp of|chief)[\w\s,/.-]{3,40})/i);
+    // Allow up to 70 chars after the seniority keyword to capture full job titles
+    const m = line.match(/^((?:senior|junior|lead|principal|staff|head of|director of|vp of|chief)[\w\s,/.-]{3,70})/i);
     if (m) {
       const role = m[1].trim();
       if (!roles.includes(role)) roles.push(role);

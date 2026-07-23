@@ -64,7 +64,7 @@ Return ONLY valid JSON — no markdown, no explanation.`;
 
 CV text:
 """
-${rawText.slice(0, 6000)}
+${rawText.slice(0, 10000)}
 """
 
 ═══ EXTRACTION RULES ═══

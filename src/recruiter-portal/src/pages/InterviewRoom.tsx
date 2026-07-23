@@ -227,7 +227,7 @@ export default function InterviewRoom() {
     setTypedAnswer('');
     setCoachingMessage(null);
     if (qIndex + 1 >= questions.length) {
-      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers } });
+      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx } });
     } else {
       const next = qIndex + 1;
       setQIndex(next);
@@ -250,7 +250,7 @@ export default function InterviewRoom() {
     setCoachingMessage(null);
     setTypedAnswer('');
     if (qIndex + 1 >= questions.length) {
-      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: [...sessionAnswers, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }] } });
+      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: [...sessionAnswers, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }], cvCtx, jobCtx } });
     } else {
       const next = qIndex + 1;
       setQIndex(next);
