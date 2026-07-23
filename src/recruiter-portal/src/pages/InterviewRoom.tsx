@@ -235,6 +235,29 @@ export default function InterviewRoom() {
     }
   }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion]);
 
+  const handlePass = useCallback(() => {
+    const thinkTimeMs = thinkStartRef.current > 0 ? Date.now() - thinkStartRef.current : undefined;
+    thinkStartRef.current = 0;
+    const passScore: ScoreResponse = {
+      clarity: 0, relevance: 0, depth: 0, confidence: 0, overallScore: 0,
+      feedback: [{ dimension: 'overall', message: 'Question passed — no answer given.', severity: 'high' }],
+      suggestions: ['Attempt all questions in a real interview — passing signals lack of preparation.'],
+    };
+    setRunningScores(prev => [...prev, 0]);
+    setSessionAnswers(prev => [...prev, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs, meta: undefined }]);
+    // Skip coaching — advance directly
+    setCurrentScore(null);
+    setCoachingMessage(null);
+    setTypedAnswer('');
+    if (qIndex + 1 >= questions.length) {
+      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: [...sessionAnswers, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }] } });
+    } else {
+      const next = qIndex + 1;
+      setQIndex(next);
+      askQuestion(next);
+    }
+  }, [q, qIndex, questions.length, sessionAnswers, navigate, askQuestion]);
+
   const submitAnswer = useCallback(async (text: string, meta?: TranscriptMeta, byVoice = false) => {
     if (!text.trim()) return;
     const thinkTimeMs = thinkStartRef.current > 0 ? Date.now() - thinkStartRef.current : undefined;
@@ -460,14 +483,25 @@ export default function InterviewRoom() {
                         lineHeight: 1.65, resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
                       }}
                     />
-                    {typedAnswer.trim() && (
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                      <button
+                        onClick={handlePass}
+                        title="Skip this question — counts as 0 in your final score"
+                        style={{
+                          background: 'none', border: '1px solid var(--border)', borderRadius: '9px',
+                          padding: '10px 20px', fontSize: '13px', fontWeight: 600,
+                          color: 'var(--text-3)', cursor: 'pointer', letterSpacing: '0.02em',
+                        }}
+                      >
+                        Pass →
+                      </button>
+                      {typedAnswer.trim() && (
                         <button onClick={() => submitAnswer(typedAnswer, undefined, false)} style={{
                           background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9px',
                           padding: '10px 24px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
                         }}>Submit Answer</button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

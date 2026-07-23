@@ -16,15 +16,17 @@ export interface CVContext {
   roles: string[];
   dates: string[];
   skills: string[];        // clean structured skills — safe for AI prompts
-  technologies: string[]; // raw extracted tech names — do NOT pass to interviewer prompts
+  technologies: string[]; // legacy alias for skills — do NOT pass to interviewer prompts
   achievements: string[];
   certifications: string[];
+  education: string[];
   responsibilities: string[];
   leadershipSignals: string[];
   seniority: 'Junior' | 'Mid' | 'Senior' | 'Lead' | 'Director' | 'Executive' | 'Unknown';
   yearsOfExperience?: number;
   experience?: CVExperience[];
-  summary?: string; // verbatim candidate profile summary from CV
+  summary?: string;
+  _source?: 'ai' | 'heuristic'; // which parser produced this context
 }
 
 export interface JobSpecContext {
@@ -52,6 +54,10 @@ const TECH_KEYWORDS = [
   'Agile', 'Scrum', 'Kanban', 'JIRA', 'Figma', 'Tableau', 'Power BI',
 ];
 
+// Terms that must match as whole words — they are substrings of longer tech names
+// e.g. "java" matches inside "javascript", "go" matches inside "going"
+const WORD_BOUNDARY_TERMS = new Set(['java', 'go', 'c', 'r', 'rust', 'php', 'ruby', 'sql']);
+
 const SENIORITY_MAP: Record<string, CVContext['seniority']> = {
   'c-level': 'Executive', 'cto': 'Executive', 'ceo': 'Executive', 'coo': 'Executive', 'cpo': 'Executive',
   'vp': 'Executive', 'vice president': 'Executive',
@@ -74,15 +80,43 @@ const BEHAVIOURAL_THEMES = [
   'problem solving', 'innovation', 'customer focus', 'resilience',
 ];
 
+// Lines that match the achievement regex but are NOT real achievements
+const ACHIEVEMENT_BLACKLIST: RegExp[] = [
+  // Imperative task descriptions (start with infinitive verbs)
+  /^bring\s/i, /^create\s/i, /^introduce\s/i, /^develop\s/i,
+  /^maintain\s/i, /^provide\s/i, /^assist\s/i, /^support\s/i,
+  /^implement\s/i, /^ensure\s/i, /^manage\s/i, /^handle\s/i,
+  // Section headings
+  /tools\s*[&and]+\s*techniques/i,
+  /tools\s*used\s*include/i,
+  // Hardware and peripherals (NOT achievements)
+  /pager|mobile\s*phone|credit\s*card|laptop|desktop\s*pc/i,
+  // KPI tracking strings
+  /acknowledg|queries?\s*on\s*time|response\s*time\s*sla/i,
+  // App descriptions starting with "This application..."
+  /^this\s+application\s+was\s+built/i,
+  /^this\s+application\s+is/i,
+  // Responsibility/bullet continuations
+  /^[A-Z][a-z]+ing\s+the\s+/,  // "Managing the...", "Maintaining the..."
+];
+
 // ── Utility ───────────────────────────────────────────────────────────────────
 
 function extractLines(text: string): string[] {
   return text.split(/[\n\r]+/).map(l => l.trim()).filter(Boolean);
 }
 
+// Word-boundary aware matching — prevents "Java" matching inside "JavaScript"
 function findMatches(text: string, candidates: string[]): string[] {
-  const lower = text.toLowerCase();
-  return candidates.filter(c => lower.includes(c.toLowerCase()));
+  return candidates.filter(c => {
+    const cLower = c.toLowerCase();
+    if (WORD_BOUNDARY_TERMS.has(cLower)) {
+      // Escape regex special chars then require word boundaries
+      const escaped = cLower.replace(/[+.]/g, '\\$&');
+      return new RegExp(`\\b${escaped}\\b`, 'i').test(text);
+    }
+    return text.toLowerCase().includes(cLower);
+  });
 }
 
 function extractYearsOfExp(text: string): number | undefined {
@@ -98,6 +132,15 @@ function extractSeniority(text: string): CVContext['seniority'] {
   return 'Unknown';
 }
 
+// Clip a string at a word boundary — never mid-word
+function wordClip(s: string, max: number): string {
+  if (s.length <= max) return s;
+  const clipped = s.slice(0, max);
+  // Walk back to the last space to avoid cutting a word in half
+  const lastSpace = clipped.lastIndexOf(' ');
+  return (lastSpace > max * 0.6 ? clipped.slice(0, lastSpace) : clipped) + '…';
+}
+
 // Tech terms and generic words that should never be treated as company names
 const NOT_A_COMPANY = new Set([
   ...TECH_KEYWORDS.map(t => t.toLowerCase()),
@@ -108,7 +151,6 @@ const NOT_A_COMPANY = new Set([
 ]);
 
 function extractCompanies(text: string): string[] {
-  // Only match "at Company" / "@ Company" / "for Company" — exclude "with" (used for tech)
   const companies: string[] = [];
   const atPattern = /(?:at|@|for)\s+([A-Z][A-Za-z0-9&\s'.-]{2,30}?)(?:\s*[,|·\n]|$)/gm;
   let m: RegExpExecArray | null;
@@ -136,29 +178,43 @@ function extractRoles(text: string): string[] {
 
 function extractAchievements(text: string): string[] {
   const lines = extractLines(text);
-  const achievements = lines.filter(l =>
-    /increased|reduced|saved|delivered|grew|launched|built|led|designed|achieved|improved|generated|raised|closed|managed \$|£|€|\d+%/i.test(l)
-    && l.length > 20 && l.length < 200
-  );
-  return achievements.slice(0, 5);
+  return lines
+    .filter(l =>
+      /increased|reduced|saved|delivered|grew|launched|built|led|designed|achieved|improved|generated|raised|closed|managed \$|£|€|\d+%/i.test(l)
+      && l.length > 30 && l.length < 200
+      && !ACHIEVEMENT_BLACKLIST.some(p => p.test(l))
+    )
+    .slice(0, 5);
 }
 
-// ── Public API ────────────────────────────────────────────────────────────────
-
 function extractName(text: string): { firstName: string; lastName: string } {
-  // First non-empty line that looks like a name (2 capitalised words, ≤ 4 words total)
   const lines = extractLines(text);
-  for (const line of lines.slice(0, 5)) {
-    const words = line.trim().split(/\s+/);
-    if (words.length >= 2 && words.length <= 4 && words.every(w => /^[A-Z][a-z'-]+$/.test(w))) {
+  for (const line of lines.slice(0, 6)) {
+    // Strip honourific prefixes before matching
+    const cleaned = line.trim().replace(/^(Mr\.?|Mrs\.?|Ms\.?|Dr\.?|Prof\.?)\s+/i, '').trim();
+    const words = cleaned.split(/\s+/);
+    if (
+      words.length >= 2 && words.length <= 4 &&
+      words.every(w => /^[A-Z][a-z'-]+$/.test(w)) &&
+      // Exclude known section heading phrases
+      !['Personal', 'Professional', 'Career', 'Employment', 'Education', 'Technical'].includes(words[0])
+    ) {
       return { firstName: words[0], lastName: words[words.length - 1] };
     }
   }
   return { firstName: '', lastName: '' };
 }
 
+// ── Public API ────────────────────────────────────────────────────────────────
+
 export function buildCVContext(cvText: string): CVContext {
   const { firstName, lastName } = extractName(cvText);
+  const skills = findMatches(cvText, TECH_KEYWORDS).concat(
+    ['communication', 'leadership', 'stakeholder management'].filter(s =>
+      cvText.toLowerCase().includes(s)
+    )
+  ).slice(0, 10);
+
   return {
     rawText: cvText,
     firstName,
@@ -167,18 +223,16 @@ export function buildCVContext(cvText: string): CVContext {
     companies: extractCompanies(cvText),
     roles: extractRoles(cvText),
     dates: [],
-    skills: findMatches(cvText, TECH_KEYWORDS).concat(
-      ['communication', 'leadership', 'stakeholder management'].filter(s =>
-        cvText.toLowerCase().includes(s)
-      )
-    ).slice(0, 10),
-    technologies: findMatches(cvText, TECH_KEYWORDS).slice(0, 8),
+    skills,
+    technologies: skills,
     achievements: extractAchievements(cvText),
     certifications: [],
+    education: [],
     responsibilities: [],
     leadershipSignals: LEADERSHIP_PHRASES.filter(p => cvText.toLowerCase().includes(p)).slice(0, 4),
     seniority: extractSeniority(cvText),
     yearsOfExperience: extractYearsOfExp(cvText),
+    _source: 'heuristic',
   };
 }
 
@@ -204,23 +258,23 @@ export function buildJobSpecContext(jobSpecText: string): JobSpecContext {
   };
 }
 
-// ── Personalised speech lines ─────────────────────────────────────────────────
+// ── Heuristic intro fallbacks ─────────────────────────────────────────────────
+// Safe fields only: role/company/yearsOfExperience. No achievements[], no technologies[].
 
 export function buildSarahIntro(cv: CVContext, _job: JobSpecContext): string {
-  // Safe fields only — achievements[] excluded (heuristic contaminates it with section headings)
   const role = cv.roles[0] ?? cv.experience?.[0]?.role;
   const company = cv.experience?.[0]?.company ?? cv.companies[0];
   const years = cv.yearsOfExperience;
 
-  let intro = "Welcome to your practice interview. Before we begin, here's how it works. When you're ready to answer a question, click the record button. Speak naturally — we'll transcribe everything in real time. When you're finished, click Stop. You'll immediately see our feedback, along with suggestions for how to improve. ";
+  let intro = "Welcome to your practice interview. Before we begin, here's how it works: click the record button when you're ready, speak naturally, then click Stop. You'll get instant feedback after each answer. ";
 
   if (role || company || years) {
     intro += "I've had a chance to review your background. ";
     if (role && company) intro += `I can see you've been working as ${role} at ${company}`;
     else if (role) intro += `I can see you've been working as ${role}`;
     else if (company) intro += `I can see you've worked at ${company}`;
-    if (years) intro += ` — ${years} years of commercial experience is impressive`;
-    intro += ". I'll tailor some of my questions to your experience. Let's begin.";
+    if (years) intro += ` — ${years} years of commercial experience`;
+    intro += ". Let's begin.";
   } else {
     intro += "I'll be asking you about your background, leadership experience, and how you approach challenges. Let's begin.";
   }
@@ -229,7 +283,6 @@ export function buildSarahIntro(cv: CVContext, _job: JobSpecContext): string {
 }
 
 export function buildJamesIntro(cv: CVContext, _job: JobSpecContext): string {
-  // Safe fields only — technologies[] and achievements[] excluded (heuristic contaminates them)
   const recentRole = cv.roles[0];
   const recentCompany = cv.experience?.[0]?.company ?? cv.companies[0];
 
@@ -248,14 +301,15 @@ export function buildJamesIntro(cv: CVContext, _job: JobSpecContext): string {
 // ── Personalised question generation ─────────────────────────────────────────
 
 export function buildPersonalisedQuestions(cv: CVContext, job: JobSpecContext) {
-  const company = cv.companies[0] ?? 'your previous company';
-  const tech1 = cv.technologies[0] ?? job.techStack[0] ?? 'your tech stack';
-  const tech2 = cv.technologies[1] ?? job.techStack[1];
+  const company = cv.experience?.[0]?.company ?? cv.companies[0] ?? 'your previous company';
+  // Use skills[] (verified) not technologies[] (heuristic may contain hallucinations)
+  const tech1 = cv.skills[0] ?? job.techStack[0] ?? 'your technical background';
+  const tech2 = cv.skills[1] ?? job.techStack[1];
   const achievement = cv.achievements[0];
   const seniority = cv.seniority;
   const jobTitle = job.title;
 
-  const questions = [
+  return [
     {
       questionId: 'pq1',
       questionText: `Tell me about yourself and what specifically attracted you to the ${jobTitle}.`,
@@ -267,10 +321,11 @@ export function buildPersonalisedQuestions(cv: CVContext, job: JobSpecContext) {
     },
     {
       questionId: 'pq2',
+      // wordClip at 200 chars — cuts at last complete word, never mid-word
       questionText: achievement
-        ? `Your CV mentions: "${achievement.substring(0, 100)}". Can you walk me through how you achieved that, and what was the biggest obstacle?`
+        ? `Your CV mentions: "${wordClip(achievement, 200)}". Can you walk me through how you achieved that, and what was the biggest obstacle?`
         : `Tell me about a significant achievement from ${company} that you're most proud of. What was your specific contribution?`,
-      modelAnswer: 'Use STAR format. Be specific about YOUR role vs the team\'s. Quantify the outcome and be honest about obstacles.',
+      modelAnswer: "Use STAR format. Be specific about YOUR role vs the team's. Quantify the outcome and be honest about obstacles.",
       questionType: 'Behavioural' as const,
       difficulty: 'Medium' as const,
       source: 'HR',
@@ -300,18 +355,17 @@ export function buildPersonalisedQuestions(cv: CVContext, job: JobSpecContext) {
     },
     {
       questionId: 'pq5',
+      // wordClip at 200 chars on responsibilities too
       questionText: job.responsibilities.length > 0
-        ? `This role involves: "${job.responsibilities[0].substring(0, 100)}". How does your experience at ${company} prepare you for that specific challenge?`
+        ? `This role involves: "${wordClip(job.responsibilities[0], 200)}". How does your experience at ${company} prepare you for that specific challenge?`
         : `Where do you see the biggest technical challenge in this ${jobTitle} role, and how would you approach it in your first 90 days?`,
-      modelAnswer: 'Show you\'ve read the job spec carefully. Connect your specific experience to their specific need. Have a concrete 30/60/90 day framework ready.',
+      modelAnswer: "Show you've read the job spec carefully. Connect your specific experience to their specific need. Have a concrete 30/60/90 day framework ready.",
       questionType: 'Behavioural' as const,
       difficulty: 'Medium' as const,
       source: 'HR',
       competencyTags: ['motivation', 'planning', 'adaptability'],
     },
   ];
-
-  return questions;
 }
 
 // ── Follow-up question generator ─────────────────────────────────────────────
@@ -325,7 +379,6 @@ export function generateFollowUp(
   const lower = answerText.toLowerCase();
   const interviewer: 'hr' | 'technical' = question.source === 'Technical' ? 'technical' : 'hr';
 
-  // If they mentioned a specific company from their CV
   const mentionedCompany = cv.companies.find(c => lower.includes(c.toLowerCase()));
   if (mentionedCompany) {
     return {
@@ -334,7 +387,6 @@ export function generateFollowUp(
     };
   }
 
-  // If they mentioned a metric
   if (/\d+%|\d+x|£\d+|\$\d+|saved|reduced|increased/.test(lower)) {
     return {
       text: "You mentioned some impressive numbers there. How did you measure that outcome, and how did you communicate it to leadership?",
@@ -342,9 +394,8 @@ export function generateFollowUp(
     };
   }
 
-  // If it's technical and they mentioned a tech
   if (question.source === 'Technical') {
-    const tech = cv.technologies.find(t => lower.includes(t.toLowerCase()));
+    const tech = cv.skills.find(t => lower.includes(t.toLowerCase()));
     if (tech) {
       return {
         text: `You touched on your ${tech} experience. What's the hardest production issue you've faced with it, and how did you diagnose and resolve it?`,
@@ -357,7 +408,6 @@ export function generateFollowUp(
     };
   }
 
-  // Behavioural follow-ups
   if (lower.includes('team') || lower.includes('we ')) {
     return {
       text: "You mentioned the team a few times. What was YOUR specific contribution to that outcome — separate from what the team did collectively?",

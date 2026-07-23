@@ -14,9 +14,13 @@ interface LocationState {
   cvText?: string;
 }
 
-// ── Structured CV preview card ────────────────────────────────────────────────
+// ── Structured CV preview card (tabbed) ──────────────────────────────────────
+
+type PreviewTab = 'overview' | 'experience' | 'skills' | 'achievements' | 'qualifications';
 
 function CVPreviewCard({ ctx, parsing }: { ctx: CVContext | null; parsing: boolean }) {
+  const [activeTab, setActiveTab] = useState<PreviewTab>('overview');
+
   if (parsing) {
     return (
       <div style={{ marginTop: '16px', padding: '20px', background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -33,14 +37,38 @@ function CVPreviewCard({ ctx, parsing }: { ctx: CVContext | null; parsing: boole
 
   const initials = [ctx.firstName?.[0], ctx.lastName?.[0]].filter(Boolean).join('') || '?';
   const name = [ctx.firstName, ctx.lastName].filter(Boolean).join(' ') || 'Candidate';
+  const isAi = ctx._source === 'ai';
+
+  const tabs: { id: PreviewTab; label: string; count?: number }[] = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'experience', label: 'Experience', count: ctx.experience?.length ?? 0 },
+    { id: 'skills', label: 'Skills', count: (ctx.skills ?? ctx.technologies).length },
+    { id: 'achievements', label: 'Achievements', count: ctx.achievements.length },
+    { id: 'qualifications', label: 'Qualifications', count: (ctx.education ?? []).length + ctx.certifications.length },
+  ];
+
+  const tabStyle = (id: PreviewTab) => ({
+    padding: '7px 14px',
+    border: 'none',
+    borderRadius: '7px',
+    fontSize: '12px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    background: activeTab === id ? 'var(--bg)' : 'transparent',
+    color: activeTab === id ? 'var(--text)' : 'var(--text-3)',
+    boxShadow: activeTab === id ? '0 1px 4px rgba(0,0,0,0.2)' : 'none',
+    transition: 'all 0.15s',
+    whiteSpace: 'nowrap' as const,
+  });
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      style={{ marginTop: '16px', background: 'var(--bg3)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: '12px', overflow: 'hidden' }}
+      style={{ marginTop: '16px', background: 'var(--bg3)', border: '1px solid rgba(52,211,153,0.22)', borderRadius: '14px', overflow: 'hidden' }}
     >
-      {/* Header */}
+      {/* Header row */}
       <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg,#667eea,#764ba2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 800, color: '#fff', flexShrink: 0 }}>
           {initials}
@@ -51,67 +79,167 @@ function CVPreviewCard({ ctx, parsing }: { ctx: CVContext | null; parsing: boole
             {[ctx.roles[0], ctx.seniority !== 'Unknown' ? ctx.seniority : null, ctx.yearsOfExperience ? `${ctx.yearsOfExperience} yrs exp` : null].filter(Boolean).join(' · ')}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: '6px', padding: '3px 9px', flexShrink: 0 }}>
-          <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#34D399' }} />
-          <span style={{ fontSize: '10px', fontWeight: 700, color: '#34D399', letterSpacing: '0.04em' }}>AI PARSED</span>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0,
+          background: isAi ? 'rgba(52,211,153,0.08)' : 'rgba(251,191,36,0.08)',
+          border: `1px solid ${isAi ? 'rgba(52,211,153,0.2)' : 'rgba(251,191,36,0.2)'}`,
+          borderRadius: '6px', padding: '3px 9px',
+        }}>
+          <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isAi ? '#34D399' : '#FBBF24' }} />
+          <span style={{ fontSize: '10px', fontWeight: 700, color: isAi ? '#34D399' : '#FBBF24', letterSpacing: '0.04em' }}>
+            {isAi ? 'AI PARSED' : 'HEURISTIC'}
+          </span>
         </div>
       </div>
 
-      {/* Experience table */}
-      {ctx.experience && ctx.experience.length > 0 && (
-        <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>Experience</div>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-            <tbody>
-              {ctx.experience.map((e, i) => (
-                <tr key={i} style={{ borderBottom: i < (ctx.experience?.length ?? 0) - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                  <td style={{ padding: '6px 0', color: 'var(--text)', fontWeight: 600, width: '42%', verticalAlign: 'top' }}>{e.role}</td>
-                  <td style={{ padding: '6px 10px', color: 'var(--text-2)', width: '35%', verticalAlign: 'top' }}>{e.company}</td>
-                  <td style={{ padding: '6px 0', color: 'var(--text-3)', textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontSize: '12px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>{e.period}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {/* Tab bar */}
+      <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '4px', overflowX: 'auto', background: 'var(--bg3)' }}>
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setActiveTab(t.id)} style={tabStyle(t.id)}>
+            {t.label}
+            {t.count !== undefined && t.count > 0 && (
+              <span style={{ marginLeft: '5px', fontSize: '10px', background: 'rgba(79,142,247,0.18)', color: 'var(--blue)', borderRadius: '4px', padding: '1px 5px', fontVariantNumeric: 'tabular-nums' }}>{t.count}</span>
+            )}
+          </button>
+        ))}
+      </div>
 
-      {/* Technologies */}
-      {ctx.technologies.length > 0 && (
-        <div style={{ padding: '14px 18px', borderBottom: ctx.achievements.length > 0 || ctx.certifications.length > 0 ? '1px solid var(--border)' : 'none' }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>Skills & Technologies</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {ctx.technologies.map(t => (
-              <span key={t} style={{ fontSize: '12px', fontWeight: 600, color: 'var(--blue)', background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.18)', borderRadius: '6px', padding: '3px 10px' }}>{t}</span>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Tab content */}
+      <div style={{ padding: '16px 18px', minHeight: '120px' }}>
+        <AnimatePresence mode="wait">
+          {activeTab === 'overview' && (
+            <motion.div key="overview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {[
+                  { label: 'Current Role', value: ctx.roles[0] },
+                  { label: 'Seniority', value: ctx.seniority !== 'Unknown' ? ctx.seniority : null },
+                  { label: 'Experience', value: ctx.yearsOfExperience ? `${ctx.yearsOfExperience} years` : null },
+                  { label: 'Top Skill', value: (ctx.skills ?? ctx.technologies)[0] },
+                ].filter(r => r.value).map(r => (
+                  <div key={r.label} style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '10px 12px' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '4px' }}>{r.label}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{r.value}</div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
-      {/* Achievements */}
-      {ctx.achievements.length > 0 && (
-        <div style={{ padding: '14px 18px', borderBottom: ctx.certifications.length > 0 ? '1px solid var(--border)' : 'none' }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>Key Achievements</div>
-          {ctx.achievements.slice(0, 4).map((a, i) => (
-            <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'flex-start' }}>
-              <span style={{ color: '#34D399', flexShrink: 0, marginTop: '1px' }}>●</span>
-              <span style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.5 }}>{a}</span>
-            </div>
-          ))}
-        </div>
-      )}
+          {activeTab === 'experience' && (
+            <motion.div key="experience" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {(ctx.experience ?? []).length > 0 ? (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                    <thead>
+                      <tr>
+                        {['Role', 'Company', 'Period'].map(h => (
+                          <th key={h} style={{ textAlign: 'left', fontSize: '10px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-3)', paddingBottom: '8px', borderBottom: '1px solid var(--border)' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(ctx.experience ?? []).map((e, i) => (
+                        <tr key={i} style={{ borderBottom: i < (ctx.experience?.length ?? 0) - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                          <td style={{ padding: '8px 12px 8px 0', color: 'var(--text)', fontWeight: 600, verticalAlign: 'top' }}>{e.role}</td>
+                          <td style={{ padding: '8px 12px', color: 'var(--text-2)', verticalAlign: 'top' }}>{e.company}</td>
+                          <td style={{ padding: '8px 0', color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums', fontSize: '12px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>{e.period}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>No experience entries extracted.</div>
+              )}
+            </motion.div>
+          )}
 
-      {/* Certifications */}
-      {ctx.certifications.length > 0 && (
-        <div style={{ padding: '14px 18px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>Certifications</div>
-          {ctx.certifications.map((c, i) => (
-            <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '5px', alignItems: 'flex-start' }}>
-              <span style={{ color: '#FBBF24', flexShrink: 0 }}>★</span>
-              <span style={{ fontSize: '13px', color: 'var(--text-2)' }}>{c}</span>
-            </div>
-          ))}
-        </div>
-      )}
+          {activeTab === 'skills' && (
+            <motion.div key="skills" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {(() => {
+                const all = [...new Set([...(ctx.skills ?? []), ...ctx.technologies])];
+                return all.length > 0 ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
+                    {all.map(t => (
+                      <span key={t} style={{ fontSize: '12px', fontWeight: 600, color: 'var(--blue)', background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.18)', borderRadius: '6px', padding: '4px 11px' }}>{t}</span>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>No skills extracted.</div>
+                );
+              })()}
+            </motion.div>
+          )}
+
+          {activeTab === 'achievements' && (
+            <motion.div key="achievements" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {ctx.achievements.length > 0 ? (
+                ctx.achievements.map((a, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'flex-start' }}>
+                    <span style={{ color: '#34D399', flexShrink: 0, marginTop: '2px', fontSize: '10px' }}>●</span>
+                    <span style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.55 }}>{a}</span>
+                  </div>
+                ))
+              ) : (
+                <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>No achievements extracted.</div>
+              )}
+            </motion.div>
+          )}
+
+          {activeTab === 'qualifications' && (
+            <motion.div key="qualifications" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {(() => {
+                const edu = ctx.education ?? [];
+                const certs = ctx.certifications ?? [];
+                if (edu.length === 0 && certs.length === 0) {
+                  return <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>No qualifications extracted.</div>;
+                }
+                // Parse entries like "BSc Computer Science – University of London, 2001"
+                const parseEdu = (s: string) => {
+                  const yearMatch = s.match(/\b(19|20)\d{2}\b/);
+                  const year = yearMatch ? yearMatch[0] : '';
+                  const withoutYear = s.replace(/[\s,–-]*\b(19|20)\d{2}\b/, '').trim();
+                  const parts = withoutYear.split(/[,–\-]/);
+                  const qualification = parts[0]?.trim() ?? s;
+                  const institution = parts[1]?.trim() ?? '';
+                  const notes = parts.slice(2).join(', ').trim();
+                  return { qualification, institution, year, notes };
+                };
+                const rows = [
+                  ...edu.map(e => ({ ...parseEdu(e), type: 'edu' as const })),
+                  ...certs.map(c => ({ qualification: c, institution: '', year: '', notes: '', type: 'cert' as const })),
+                ];
+                return (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                      <thead>
+                        <tr>
+                          {['Qualification', 'Institution', 'Year', 'Notes'].map(h => (
+                            <th key={h} style={{ textAlign: 'left', fontSize: '10px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-3)', paddingBottom: '8px', paddingRight: '12px', borderBottom: '1px solid var(--border)' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((r, i) => (
+                          <tr key={i} style={{ borderBottom: i < rows.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                            <td style={{ padding: '8px 12px 8px 0', color: 'var(--text)', fontWeight: 600, verticalAlign: 'top' }}>
+                              {r.type === 'cert' && <span style={{ fontSize: '10px', marginRight: '6px', color: '#FBBF24' }}>★</span>}
+                              {r.qualification}
+                            </td>
+                            <td style={{ padding: '8px 12px 8px 0', color: 'var(--text-2)', verticalAlign: 'top' }}>{r.institution}</td>
+                            <td style={{ padding: '8px 12px 8px 0', color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums', verticalAlign: 'top', whiteSpace: 'nowrap' }}>{r.year}</td>
+                            <td style={{ padding: '8px 0', color: 'var(--text-3)', fontSize: '12px', verticalAlign: 'top' }}>{r.notes}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </motion.div>
   );
 }

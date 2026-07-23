@@ -109,6 +109,7 @@ Return JSON:
   "skills": ["C#", "ASP.NET MVC", "JavaScript", "React", "SQL Server", "Azure"],
   "achievements": ["only entries satisfying strict criteria above"],
   "certifications": ["exact certification names"],
+  "education": ["BSc Computer Science, University of X, 2001"],
   "seniority": "Junior|Mid|Senior|Lead|Director|Executive|Unknown",
   "yearsOfExperience": 24
 }
@@ -165,9 +166,10 @@ Return JSON:
       companies: arr(raw.companies),
       dates: [],
       skills: verifiedSkills,
-      technologies: verifiedSkills, // keep in sync — technologies is legacy, skills is authoritative
+      technologies: verifiedSkills,
       achievements: arr(raw.achievements),
       certifications: arr(raw.certifications),
+      education: arr(raw.education),
       responsibilities: [],
       leadershipSignals: [],
       seniority: (['Junior','Mid','Senior','Lead','Director','Executive'].includes(str(raw.seniority))
@@ -175,6 +177,7 @@ Return JSON:
       yearsOfExperience: num(raw.yearsOfExperience),
       experience,
       summary: str(raw.summary) || undefined,
+      _source: 'ai',
     };
 
     console.group('[Explain AI] CV PARSED — VERIFIED FIELDS');
@@ -190,7 +193,7 @@ Return JSON:
     return ctx;
   } catch (e) {
     console.warn('[Explain AI] parseCVWithAI failed — using heuristic fallback:', e);
-    return buildCVContext(rawText);
+    return { ...buildCVContext(rawText), _source: 'heuristic' as const };
   }
 }
 
@@ -278,10 +281,10 @@ Return ONLY valid JSON.`;
     expLines ? `Work history:\n${expLines}` : null,
   ].filter(Boolean).join('\n');
 
+  // Job summary: title and company only — no responsibility slice that could truncate mid-word
   const jobSummary = [
     `Role: ${jobCtx.title}`,
     jobCtx.company ? `Company: ${jobCtx.company}` : null,
-    jobCtx.responsibilities[0] ? `Main responsibility: ${jobCtx.responsibilities[0].slice(0, 80)}` : null,
   ].filter(Boolean).join('\n');
 
   const firstName = cvCtx.firstName || 'there';
@@ -358,7 +361,7 @@ Return ONLY a valid JSON object — no markdown, no explanation.`;
   const recentCompany = cvCtx?.experience?.[0]?.company ?? cvCtx?.companies?.[0];
   const context = [
     recentCompany ? `Candidate has worked at: ${recentCompany}` : null,
-    cvCtx?.achievements?.[0] ? `Notable achievement: ${cvCtx.achievements[0].slice(0, 80)}` : null,
+    cvCtx?.experience?.[0] ? `Most recent role: ${cvCtx.experience[0].role} at ${cvCtx.experience[0].company}` : null,
     jobCtx?.title ? `Applying for: ${jobCtx.title}` : null,
     jobCtx?.requiredSkills?.[0] ? `Key requirement: ${jobCtx.requiredSkills[0]}` : null,
   ].filter(Boolean).join('\n');
