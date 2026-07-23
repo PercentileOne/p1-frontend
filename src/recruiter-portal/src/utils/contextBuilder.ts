@@ -1,6 +1,12 @@
 // Deterministic CV + Job Spec context extraction — no AI required.
 // Used to personalise interviewer intros, questions, and follow-ups.
 
+export interface CVExperience {
+  role: string;
+  company: string;
+  period: string;
+}
+
 export interface CVContext {
   rawText: string;
   firstName: string;
@@ -17,6 +23,7 @@ export interface CVContext {
   leadershipSignals: string[];
   seniority: 'Junior' | 'Mid' | 'Senior' | 'Lead' | 'Director' | 'Executive' | 'Unknown';
   yearsOfExperience?: number;
+  experience?: CVExperience[];
 }
 
 export interface JobSpecContext {

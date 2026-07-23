@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { buildCVContext, buildJobSpecContext, buildPersonalisedQuestions, buildSarahIntro, buildJamesIntro } from '../utils/contextBuilder';
+import { buildCVContext, buildJobSpecContext, buildPersonalisedQuestions, buildSarahIntro, buildJamesIntro, type CVContext } from '../utils/contextBuilder';
 import { explainApi } from '../api/explainApi';
 import { generateIntros, parseCVWithAI, aiScoringConfigured } from '../api/aiScoring';
 import { FileUpload } from '../components/FileUpload';
@@ -13,6 +13,110 @@ interface LocationState {
   jobDescriptionText?: string;
   cvText?: string;
 }
+
+// ── Structured CV preview card ────────────────────────────────────────────────
+
+function CVPreviewCard({ ctx, parsing }: { ctx: CVContext | null; parsing: boolean }) {
+  if (parsing) {
+    return (
+      <div style={{ marginTop: '16px', padding: '20px', background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+          style={{ width: '18px', height: '18px', border: '2px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%', flexShrink: 0 }}
+        />
+        <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>Parsing CV with AI…</div>
+      </div>
+    );
+  }
+  if (!ctx) return null;
+
+  const initials = [ctx.firstName?.[0], ctx.lastName?.[0]].filter(Boolean).join('') || '?';
+  const name = [ctx.firstName, ctx.lastName].filter(Boolean).join(' ') || 'Candidate';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      style={{ marginTop: '16px', background: 'var(--bg3)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: '12px', overflow: 'hidden' }}
+    >
+      {/* Header */}
+      <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg,#667eea,#764ba2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+          {initials}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)' }}>{name}</div>
+          <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '2px' }}>
+            {[ctx.roles[0], ctx.seniority !== 'Unknown' ? ctx.seniority : null, ctx.yearsOfExperience ? `${ctx.yearsOfExperience} yrs exp` : null].filter(Boolean).join(' · ')}
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: '6px', padding: '3px 9px', flexShrink: 0 }}>
+          <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#34D399' }} />
+          <span style={{ fontSize: '10px', fontWeight: 700, color: '#34D399', letterSpacing: '0.04em' }}>AI PARSED</span>
+        </div>
+      </div>
+
+      {/* Experience table */}
+      {ctx.experience && ctx.experience.length > 0 && (
+        <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>Experience</div>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+            <tbody>
+              {ctx.experience.map((e, i) => (
+                <tr key={i} style={{ borderBottom: i < (ctx.experience?.length ?? 0) - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                  <td style={{ padding: '6px 0', color: 'var(--text)', fontWeight: 600, width: '42%', verticalAlign: 'top' }}>{e.role}</td>
+                  <td style={{ padding: '6px 10px', color: 'var(--text-2)', width: '35%', verticalAlign: 'top' }}>{e.company}</td>
+                  <td style={{ padding: '6px 0', color: 'var(--text-3)', textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontSize: '12px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>{e.period}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Technologies */}
+      {ctx.technologies.length > 0 && (
+        <div style={{ padding: '14px 18px', borderBottom: ctx.achievements.length > 0 || ctx.certifications.length > 0 ? '1px solid var(--border)' : 'none' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>Skills & Technologies</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {ctx.technologies.map(t => (
+              <span key={t} style={{ fontSize: '12px', fontWeight: 600, color: 'var(--blue)', background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.18)', borderRadius: '6px', padding: '3px 10px' }}>{t}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Achievements */}
+      {ctx.achievements.length > 0 && (
+        <div style={{ padding: '14px 18px', borderBottom: ctx.certifications.length > 0 ? '1px solid var(--border)' : 'none' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>Key Achievements</div>
+          {ctx.achievements.slice(0, 4).map((a, i) => (
+            <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'flex-start' }}>
+              <span style={{ color: '#34D399', flexShrink: 0, marginTop: '1px' }}>●</span>
+              <span style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.5 }}>{a}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Certifications */}
+      {ctx.certifications.length > 0 && (
+        <div style={{ padding: '14px 18px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>Certifications</div>
+          {ctx.certifications.map((c, i) => (
+            <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '5px', alignItems: 'flex-start' }}>
+              <span style={{ color: '#FBBF24', flexShrink: 0 }}>★</span>
+              <span style={{ fontSize: '13px', color: 'var(--text-2)' }}>{c}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// ── Main component ─────────────────────────────────────────────────────────────
 
 export default function InterviewIntake() {
   const { packId } = useParams<{ packId: string }>();
@@ -32,13 +136,40 @@ export default function InterviewIntake() {
   const [cvText, setCvText] = useState(external.cvText ?? '');
   const [preparingMsg, setPreparingMsg] = useState('Analysing your CV…');
 
+  // Pre-parsed CV context — populated as soon as the user provides CV text
+  const [cvCtxParsed, setCvCtxParsed] = useState<CVContext | null>(null);
+  const [parsingCv, setParsingCv] = useState(false);
+
   // Auto-advance if both were pre-filled (enterprise / Magic Button path)
   useEffect(() => {
     if (external.jobDescriptionText && external.cvText) {
-      prepare(external.jobDescriptionText, external.cvText);
+      prepare(external.jobDescriptionText, external.cvText, null);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Parse CV with AI immediately whenever CV text changes (debounced 800ms)
+  useEffect(() => {
+    if (cvText.trim().length < 50) {
+      setCvCtxParsed(null);
+      setParsingCv(false);
+      return;
+    }
+
+    setParsingCv(true);
+    const timer = setTimeout(() => {
+      const parse = aiScoringConfigured
+        ? parseCVWithAI(cvText).catch(() => buildCVContext(cvText))
+        : Promise.resolve(buildCVContext(cvText));
+
+      parse.then(ctx => {
+        setCvCtxParsed(ctx);
+        setParsingCv(false);
+      });
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [cvText]);
 
   const fetchFromUrl = async () => {
     const raw = jobSpecUrl.trim();
@@ -52,7 +183,6 @@ export default function InterviewIntake() {
       const json = await res.json();
       const html: string = json.contents ?? '';
       const doc = new DOMParser().parseFromString(html, 'text/html');
-      // strip nav/header/footer/script/style noise
       ['script','style','nav','header','footer','aside'].forEach(tag => {
         doc.querySelectorAll(tag).forEach(el => el.remove());
       });
@@ -66,7 +196,7 @@ export default function InterviewIntake() {
     }
   };
 
-  const prepare = async (js: string, cv: string) => {
+  const prepare = async (js: string, cv: string, preComputedCvCtx: CVContext | null) => {
     setStep('preparing');
 
     const msgs = [
@@ -82,16 +212,18 @@ export default function InterviewIntake() {
       if (i < msgs.length) setPreparingMsg(msgs[i]);
     }, 900);
 
-    const cvCtx = cv.trim()
-      ? aiScoringConfigured
-        ? await parseCVWithAI(cv).catch(() => buildCVContext(cv))
-        : buildCVContext(cv)
-      : buildCVContext('');
+    // Use pre-parsed context if available — avoids a second API call
+    const cvCtx = preComputedCvCtx ?? (
+      cv.trim()
+        ? aiScoringConfigured
+          ? await parseCVWithAI(cv).catch(() => buildCVContext(cv))
+          : buildCVContext(cv)
+        : buildCVContext('')
+    );
+
     const jobCtx = buildJobSpecContext(js);
 
-    // Run intros + questions in parallel — all three are independent
     const [introResult, questions] = await Promise.all([
-      // AI intros (vary each session) — fall back to templates if API unavailable
       aiScoringConfigured
         ? generateIntros(cvCtx, jobCtx).catch(() => ({
             sarahIntro: buildSarahIntro(cvCtx, jobCtx),
@@ -101,7 +233,6 @@ export default function InterviewIntake() {
             sarahIntro: buildSarahIntro(cvCtx, jobCtx),
             jamesIntro: buildJamesIntro(cvCtx, jobCtx),
           }),
-      // Questions from Explain API or local templates
       explainApi.quickGenerate({ jobDescriptionText: js, exampleCvText: cv })
         .then(pack => pack.questions)
         .catch(() => buildPersonalisedQuestions(cvCtx, jobCtx)),
@@ -164,7 +295,6 @@ export default function InterviewIntake() {
                 </p>
               </div>
 
-              {/* Mode tabs */}
               <div style={{ display: 'flex', gap: '4px', background: 'var(--bg3)', borderRadius: '10px', padding: '4px', marginBottom: '20px' }}>
                 {(['paste', 'upload', 'url'] as JobSpecMode[]).map(mode => (
                   <button
@@ -172,7 +302,7 @@ export default function InterviewIntake() {
                     onClick={() => { setJobSpecMode(mode); setUrlError(''); }}
                     style={{
                       flex: 1, padding: '8px', border: 'none', borderRadius: '7px', fontSize: '13px', fontWeight: 600,
-                      cursor: 'pointer', transition: 'all 0.15s',
+                      cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit',
                       background: jobSpecMode === mode ? 'var(--bg)' : 'transparent',
                       color: jobSpecMode === mode ? 'var(--text)' : 'var(--text-3)',
                       boxShadow: jobSpecMode === mode ? '0 1px 4px rgba(0,0,0,0.15)' : 'none',
@@ -186,15 +316,9 @@ export default function InterviewIntake() {
               <AnimatePresence mode="wait">
                 {jobSpecMode === 'paste' && (
                   <motion.div key="js-paste" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    <Field
-                      value={jobSpec}
-                      onChange={setJobSpec}
-                      placeholder="Paste the full job description here — title, responsibilities, required skills, company background…"
-                      rows={12}
-                    />
+                    <Field value={jobSpec} onChange={setJobSpec} placeholder="Paste the full job description here — title, responsibilities, required skills, company background…" rows={12} />
                   </motion.div>
                 )}
-
                 {jobSpecMode === 'upload' && (
                   <motion.div key="js-upload" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                     <FileUpload label="job description" onExtracted={(text) => setJobSpec(text)} />
@@ -205,61 +329,34 @@ export default function InterviewIntake() {
                     )}
                   </motion.div>
                 )}
-
                 {jobSpecMode === 'url' && (
                   <motion.div key="js-url" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <input
-                        type="url"
-                        value={jobSpecUrl}
+                        type="url" value={jobSpecUrl}
                         onChange={e => { setJobSpecUrl(e.target.value); setUrlError(''); }}
                         onKeyDown={e => e.key === 'Enter' && fetchFromUrl()}
                         placeholder="https://company.com/careers/job-title"
-                        style={{
-                          flex: 1, background: 'var(--bg3)', border: '1px solid var(--border)',
-                          borderRadius: '10px', padding: '13px 16px', color: 'var(--text)',
-                          fontSize: '14px', outline: 'none', fontFamily: 'inherit',
-                        }}
+                        style={{ flex: 1, background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '10px', padding: '13px 16px', color: 'var(--text)', fontSize: '14px', outline: 'none', fontFamily: 'inherit' }}
                       />
-                      <button
-                        onClick={fetchFromUrl}
-                        disabled={urlFetching || !jobSpecUrl.trim()}
-                        style={{
-                          background: 'var(--blue)', color: '#fff', border: 'none',
-                          borderRadius: '10px', padding: '13px 20px', fontSize: '13px',
-                          fontWeight: 700, cursor: urlFetching ? 'default' : 'pointer',
-                          opacity: !jobSpecUrl.trim() ? 0.4 : 1, whiteSpace: 'nowrap',
-                        }}
-                      >
+                      <button onClick={fetchFromUrl} disabled={urlFetching || !jobSpecUrl.trim()}
+                        style={{ background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '10px', padding: '13px 20px', fontSize: '13px', fontWeight: 700, cursor: urlFetching ? 'default' : 'pointer', opacity: !jobSpecUrl.trim() ? 0.4 : 1, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>
                         {urlFetching ? '…' : 'Fetch'}
                       </button>
                     </div>
-                    {urlError && (
-                      <div style={{ marginTop: '10px', fontSize: '13px', color: 'var(--red)' }}>{urlError}</div>
-                    )}
+                    {urlError && <div style={{ marginTop: '10px', fontSize: '13px', color: 'var(--red)' }}>{urlError}</div>}
                     {jobSpec.trim().length >= 50 && !urlError && (
                       <div style={{ marginTop: '12px', padding: '10px 14px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: '8px', fontSize: '13px', color: '#34D399' }}>
                         ✓ Job description fetched — ready to continue
                       </div>
                     )}
-                    <p style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '12px', lineHeight: 1.6 }}>
-                      Paste a direct link to the job posting. Works best with public job boards and company careers pages.
-                    </p>
                   </motion.div>
                 )}
               </AnimatePresence>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                <button
-                  onClick={() => setStep('cv')}
-                  disabled={jobSpec.trim().length < 50}
-                  style={{
-                    background: jobSpec.trim().length >= 50 ? 'var(--blue)' : 'rgba(79,142,247,0.3)',
-                    color: '#fff', border: 'none', borderRadius: '10px',
-                    padding: '13px 32px', fontSize: '14px', fontWeight: 700,
-                    cursor: jobSpec.trim().length >= 50 ? 'pointer' : 'default',
-                  }}
-                >
+                <button onClick={() => setStep('cv')} disabled={jobSpec.trim().length < 50}
+                  style={{ background: jobSpec.trim().length >= 50 ? 'var(--blue)' : 'rgba(79,142,247,0.3)', color: '#fff', border: 'none', borderRadius: '10px', padding: '13px 32px', fontSize: '14px', fontWeight: 700, cursor: jobSpec.trim().length >= 50 ? 'pointer' : 'default', fontFamily: 'inherit' }}>
                   Next: Add your CV →
                 </button>
               </div>
@@ -273,47 +370,58 @@ export default function InterviewIntake() {
                 <div style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '8px' }}>Step 2 of 2</div>
                 <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)', margin: '0 0 8px' }}>Add your CV</h1>
                 <p style={{ fontSize: '14px', color: 'var(--text-2)', margin: 0, lineHeight: 1.6 }}>
-                  Sarah and James will reference your actual companies, achievements, and skills — making the simulation feel completely real.
+                  Sarah and James will reference your actual experience, skills, and achievements — making the simulation feel completely real.
                 </p>
               </div>
 
-              {/* Upload zone */}
-              <FileUpload
-                label="CV"
-                onExtracted={(text) => setCvText(text)}
-              />
+              <FileUpload label="CV" onExtracted={(text) => setCvText(text)} />
 
-              {/* Divider */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
-                <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-                <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>or paste below</span>
-                <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-              </div>
+              {/* Structured CV preview — appears as soon as AI parsing completes */}
+              <CVPreviewCard ctx={cvCtxParsed} parsing={parsingCv && cvText.trim().length >= 50} />
 
-              <Field
-                value={cvText}
-                onChange={setCvText}
-                placeholder="Paste your CV text here — work history, skills, achievements, education…"
-                rows={7}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
+              {/* Raw text fallback / edit area — collapsed if preview is shown */}
+              {!cvCtxParsed && !parsingCv && (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+                    <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>or paste below</span>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+                  </div>
+                  <Field value={cvText} onChange={setCvText} placeholder="Paste your CV text here — work history, skills, achievements, education…" rows={7} />
+                </>
+              )}
+
+              {/* If parsed, show a small "edit text" toggle */}
+              {cvCtxParsed && (
+                <details style={{ marginTop: '12px' }}>
+                  <summary style={{ fontSize: '12px', color: 'var(--text-3)', cursor: 'pointer', userSelect: 'none', listStyle: 'none' }}>
+                    ✎ Edit raw CV text
+                  </summary>
+                  <div style={{ marginTop: '10px' }}>
+                    <Field value={cvText} onChange={setCvText} placeholder="" rows={6} />
+                  </div>
+                </details>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
                 <button onClick={() => setStep('job-spec')}
-                  style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '10px', padding: '13px 24px', fontSize: '14px', color: 'var(--text-2)', cursor: 'pointer' }}>
+                  style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '10px', padding: '13px 24px', fontSize: '14px', color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'inherit' }}>
                   ← Back
                 </button>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <button onClick={() => prepare(jobSpec, '')}
-                    style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '10px', padding: '13px 20px', fontSize: '13px', color: 'var(--text-3)', cursor: 'pointer' }}>
+                  <button onClick={() => prepare(jobSpec, '', null)}
+                    style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '10px', padding: '13px 20px', fontSize: '13px', color: 'var(--text-3)', cursor: 'pointer', fontFamily: 'inherit' }}>
                     Skip CV
                   </button>
                   <button
-                    onClick={() => prepare(jobSpec, cvText)}
-                    disabled={cvText.trim().length < 50}
+                    onClick={() => prepare(jobSpec, cvText, cvCtxParsed)}
+                    disabled={cvText.trim().length < 50 && !cvCtxParsed}
                     style={{
-                      background: cvText.trim().length >= 50 ? 'var(--blue)' : 'rgba(79,142,247,0.3)',
+                      background: (cvText.trim().length >= 50 || cvCtxParsed) ? 'var(--blue)' : 'rgba(79,142,247,0.3)',
                       color: '#fff', border: 'none', borderRadius: '10px',
                       padding: '13px 32px', fontSize: '14px', fontWeight: 700,
-                      cursor: cvText.trim().length >= 50 ? 'pointer' : 'default',
+                      cursor: (cvText.trim().length >= 50 || cvCtxParsed) ? 'pointer' : 'default',
+                      fontFamily: 'inherit',
                     }}
                   >
                     Start Interview →
@@ -332,16 +440,10 @@ export default function InterviewIntake() {
                 style={{ width: '48px', height: '48px', border: '3px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%', margin: '0 auto 24px' }}
               />
               <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>Preparing your session</div>
-              <motion.div
-                key={preparingMsg}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{ fontSize: '14px', color: 'var(--text-3)' }}
-              >
+              <motion.div key={preparingMsg} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                style={{ fontSize: '14px', color: 'var(--text-3)' }}>
                 {preparingMsg}
               </motion.div>
-
-              {/* Interviewer preview */}
               <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '40px' }}>
                 {[
                   { initials: 'SM', name: 'Sarah Mitchell', role: 'HR Director', gradient: 'linear-gradient(135deg,#667eea,#764ba2)' },

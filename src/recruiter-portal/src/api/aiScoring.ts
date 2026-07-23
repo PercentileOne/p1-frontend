@@ -2,7 +2,7 @@
 // Uses the same VITE_OPENAI_API_KEY already configured for Whisper STT.
 
 import type { ScoreResponse, InterviewQuestion } from './explainApi';
-import { buildCVContext, type CVContext, type JobSpecContext } from '../utils/contextBuilder';
+import { buildCVContext, type CVContext, type CVExperience, type JobSpecContext } from '../utils/contextBuilder';
 import type { CoachingMessage } from '../utils/coachingEngine';
 
 const OPENAI_KEY = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
@@ -11,7 +11,7 @@ const MODEL = 'gpt-4o';
 
 export const aiScoringConfigured = !!OPENAI_KEY;
 
-async function chatJSON<T>(systemPrompt: string, userPrompt: string): Promise<T> {
+async function chatJSON<T>(systemPrompt: string, userPrompt: string, temperature = 0.3): Promise<T> {
   if (!OPENAI_KEY) throw new Error('OpenAI key not configured');
 
   const res = await fetch(OPENAI_URL, {
@@ -22,7 +22,7 @@ async function chatJSON<T>(systemPrompt: string, userPrompt: string): Promise<T>
     },
     body: JSON.stringify({
       model: MODEL,
-      temperature: 0.3,
+      temperature,
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: systemPrompt },
@@ -61,6 +61,10 @@ Return JSON:
   "lastName": "candidate last name or empty string",
   "roles": ["most recent job title", "second most recent", ...],
   "companies": ["employer name only — actual companies worked FOR, never tech names"],
+  "experience": [
+    { "role": "Senior .NET Developer", "company": "Barclays", "period": "2021–present" },
+    { "role": "Software Architect", "company": "HSBC", "period": "2018–2021" }
+  ],
   "technologies": ["React", "C#", ".NET", "Azure", ...],
   "achievements": ["only achievements with measurable outcomes, numbers, or named results"],
   "certifications": ["AWS Certified", "PMP", ...],
@@ -72,7 +76,8 @@ Return JSON:
 }
 
 Rules:
-- technologies[]: clean canonical names only ("C#" not "C# programming", "Azure" not "Microsoft Azure cloud")
+- experience[]: one entry per job, most recent first, max 6. period uses "YYYY–YYYY" or "YYYY–present". company = the employer name only.
+- technologies[]: clean canonical names only ("C#" not "C# programming", "Azure" not "Microsoft Azure cloud"). NEVER include generic section headings like "Tools and Techniques".
 - achievements[]: trim to under 100 chars each, include only ones with numbers, %, £, $, or named outcomes
 - responsibilities[]: short phrases, max 6 items
 - yearsOfExperience: integer, estimate from dates if not stated explicitly
@@ -88,6 +93,16 @@ Rules:
 
     const firstName = str(raw.firstName);
     const lastName = str(raw.lastName);
+
+    const expRaw = Array.isArray(raw.experience) ? raw.experience : [];
+    const experience: CVExperience[] = expRaw
+      .filter((e): e is Record<string, unknown> => typeof e === 'object' && e !== null)
+      .map(e => ({
+        role: str(e.role),
+        company: str(e.company),
+        period: str(e.period),
+      }))
+      .filter(e => e.role || e.company);
 
     return {
       rawText,
@@ -106,6 +121,7 @@ Rules:
       seniority: (['Junior','Mid','Senior','Lead','Director','Executive'].includes(str(raw.seniority))
         ? str(raw.seniority) : 'Unknown') as CVContext['seniority'],
       yearsOfExperience: num(raw.yearsOfExperience),
+      experience,
     };
   } catch {
     return buildCVContext(rawText);
@@ -189,7 +205,10 @@ Return ONLY valid JSON.`;
 
   const firstName = cvCtx.firstName || 'there';
 
-  const userPrompt = `Write natural spoken intros for Sarah and James for this interview session.
+  const styles = ['warm and encouraging', 'direct and professional', 'curious and engaged', 'brisk and businesslike'];
+  const chosenStyle = styles[Math.floor(Math.random() * styles.length)];
+
+  const userPrompt = `Write natural spoken intros for Sarah and James for this interview session. Session style this time: ${chosenStyle}.
 
 Candidate profile:
 ${cvSummary}
@@ -211,7 +230,7 @@ Return JSON:
   "jamesIntro": "..."
 }`;
 
-  return chatJSON<{ sarahIntro: string; jamesIntro: string }>(systemPrompt, userPrompt);
+  return chatJSON<{ sarahIntro: string; jamesIntro: string }>(systemPrompt, userPrompt, 0.9);
 }
 
 // ── Coaching ──────────────────────────────────────────────────────────────────
