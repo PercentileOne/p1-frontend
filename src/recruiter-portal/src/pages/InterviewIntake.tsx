@@ -42,7 +42,7 @@ function CVPreviewCard({ ctx, parsing }: { ctx: CVContext | null; parsing: boole
 
   const tabs: { id: PreviewTab; label: string; count?: number }[] = [
     { id: 'overview', label: 'Overview' },
-    { id: 'experience', label: 'Experience', count: ctx.experience?.length ?? 0 },
+    { id: 'experience', label: 'Experience', count: (ctx.experience?.length ?? 0) || ctx.roles.length },
     { id: 'skills', label: 'Skills', count: (ctx.skills ?? ctx.technologies).length },
     { id: 'achievements', label: 'Achievements', count: ctx.achievements.length },
     { id: 'qualifications', label: 'Qualifications', count: (ctx.education ?? []).length + ctx.certifications.length },
@@ -148,6 +148,18 @@ function CVPreviewCard({ ctx, parsing }: { ctx: CVContext | null; parsing: boole
                       ))}
                     </tbody>
                   </table>
+                </div>
+              ) : ctx.roles.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {ctx.roles.map((role, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                      <span style={{ color: '#34D399', flexShrink: 0, marginTop: '3px', fontSize: '10px' }}>●</span>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{role}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-3)', marginTop: '2px' }}>Extracted from CV · upload with job spec for full breakdown</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>No experience entries extracted.</div>

@@ -207,6 +207,34 @@ function extractName(text: string): { firstName: string; lastName: string } {
   return { firstName: '', lastName: '' };
 }
 
+// ── Education heuristic ────────────────────────────────────────────────────────
+
+const EDUCATION_KEYWORDS = [
+  'bsc', 'b.sc', 'msc', 'm.sc', 'ba ', 'b.a.', 'mba', 'phd', 'ph.d',
+  'beng', 'meng', 'llb', 'hnd', 'hnc', 'btec', 'a-level', 'a level',
+  'gcse', 'diploma', 'certificate', 'degree', 'university', 'college',
+  'institute of', 'school of', 'foundation degree', 'ond', 'nvq',
+  'postgraduate', 'undergraduate', 'honours',
+];
+
+const EDUCATION_EXCLUDES = /\b(senior|junior|lead|developer|engineer|architect|manager|director|consultant|officer|head of|vp |vice president|cto|ceo|founder)\b/i;
+
+function extractEducation(text: string): string[] {
+  const lines = extractLines(text);
+  const found: string[] = [];
+  for (const line of lines) {
+    const lower = line.toLowerCase();
+    if (
+      EDUCATION_KEYWORDS.some(k => lower.includes(k)) &&
+      line.length > 8 && line.length < 160 &&
+      !EDUCATION_EXCLUDES.test(line)
+    ) {
+      found.push(line);
+    }
+  }
+  return [...new Set(found)].slice(0, 8);
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export function buildCVContext(cvText: string): CVContext {
@@ -229,7 +257,7 @@ export function buildCVContext(cvText: string): CVContext {
     technologies: skills,
     achievements: extractAchievements(cvText),
     certifications: [],
-    education: [],
+    education: extractEducation(cvText),
     responsibilities: [],
     leadershipSignals: LEADERSHIP_PHRASES.filter(p => cvText.toLowerCase().includes(p)).slice(0, 4),
     seniority: extractSeniority(cvText),
