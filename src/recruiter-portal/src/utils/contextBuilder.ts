@@ -209,26 +209,22 @@ function extractName(text: string): { firstName: string; lastName: string } {
 
 // ── Education heuristic ────────────────────────────────────────────────────────
 
-const EDUCATION_KEYWORDS = [
-  'bsc', 'b.sc', 'msc', 'm.sc', 'ba ', 'b.a.', 'mba', 'phd', 'ph.d',
-  'beng', 'meng', 'llb', 'hnd', 'hnc', 'btec', 'a-level', 'a level',
-  'gcse', 'diploma', 'certificate', 'degree', 'university', 'college',
-  'institute of', 'school of', 'foundation degree', 'ond', 'nvq',
-  'postgraduate', 'undergraduate', 'honours',
-];
+// Explicit degree/institution terms — word-boundary anchored to avoid substring hits
+const EDUCATION_DEGREE_RE = /\b(b\.?sc|m\.?sc|b\.?a\b|m\.?b\.?a|ph\.?d|b\.?eng|m\.?eng|ll\.?b|hnd|hnc|btec|a-level|a level|gcse|diploma|nvq|postgraduate|undergraduate|honours|bachelor|master|doctorate)\b/i;
+const EDUCATION_INSTITUTION_RE = /\b(university|college|institute of|school of|polytechnic|academy)\b/i;
 
-const EDUCATION_EXCLUDES = /\b(senior|junior|lead|developer|engineer|architect|manager|director|consultant|officer|head of|vp |vice president|cto|ceo|founder)\b/i;
+// Lines that look like project or job entries — not qualifications
+const EDUCATION_PROJECT_EXCLUDES = /\b(application|system|portal|platform|development of|migration|integration|implementation|solution|project|deployment|support and)\b/i;
+const EDUCATION_ROLE_EXCLUDES = /\b(senior|junior|lead|developer|engineer|architect|manager|director|consultant|officer|head of|vp |vice president|cto|ceo|founder)\b/i;
 
 function extractEducation(text: string): string[] {
   const lines = extractLines(text);
   const found: string[] = [];
   for (const line of lines) {
-    const lower = line.toLowerCase();
-    if (
-      EDUCATION_KEYWORDS.some(k => lower.includes(k)) &&
-      line.length > 8 && line.length < 160 &&
-      !EDUCATION_EXCLUDES.test(line)
-    ) {
+    if (line.length < 8 || line.length > 160) continue;
+    if (EDUCATION_PROJECT_EXCLUDES.test(line)) continue;
+    if (EDUCATION_ROLE_EXCLUDES.test(line)) continue;
+    if (EDUCATION_DEGREE_RE.test(line) || EDUCATION_INSTITUTION_RE.test(line)) {
       found.push(line);
     }
   }
