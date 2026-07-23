@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Package, Users, Briefcase, FileText, BarChart2, CalendarCheck, Settings } from 'lucide-react'
+import { LayoutDashboard, Package, Users, Briefcase, FileText, BarChart2, CalendarCheck, Settings, History, Zap } from 'lucide-react'
 import { ExplainLogo } from '../components/LogoMark'
 import InterviewPacks from './InterviewPacks'
 import Candidates from './Candidates'
@@ -9,6 +9,7 @@ import JobPositions from './JobPositions'
 import Interviews from './Interviews'
 import CVsPage from './CVs'
 import PackBuilder from './PackBuilder'
+import PackHistory from './PackHistory'
 
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: 'Dashboard' },
@@ -17,7 +18,9 @@ const NAV_ITEMS = [
   { Icon: Users,           label: 'Candidates' },
   { Icon: CalendarCheck,   label: 'Interviews' },
   { Icon: Package,         label: 'Interview Packs' },
+  { Icon: History,         label: 'Pack History' },
   { Icon: BarChart2,       label: 'Analytics' },
+  { Icon: Zap,             label: 'Demos' },
   { Icon: Settings,        label: 'Settings' },
 ]
 
@@ -247,7 +250,33 @@ export default function Dashboard() {
         {activeNav === 'Job Specs' && packBuilderSpec && <PackBuilder specTitle={packBuilderSpec} onBack={() => setPackBuilderSpec(null)} />}
         {activeNav === 'Interviews' && <Interviews />}
         {activeNav === 'CVs' && <CVsPage />}
-        {activeNav !== 'Dashboard' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && (
+        {activeNav === 'Pack History' && <PackHistory />}
+        {activeNav === 'Demos' && (
+          <div style={{ padding: '32px', maxWidth: '600px' }}>
+            <div style={{ marginBottom: '28px' }}>
+              <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text)', margin: '0 0 6px' }}>Magic Button Demos</h1>
+              <p style={{ fontSize: '14px', color: 'var(--text-2)', margin: 0 }}>Live demos of the Explain Magic Button embedded in real job pages.</p>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {[
+                { title: 'LinkedIn-style Job Page', url: '/demo/linkedin-job', desc: 'Standard job board layout with Magic Button in the apply row.' },
+                { title: 'Vallum Associates Career Page', url: '/demo/vallum-job', desc: 'Branded career page matching the real Vallum site, with Magic Button in the sidebar.' },
+                { title: '⚡ Interview Room', url: '/interview-room/demo', desc: 'Two AI interviewers, voice input, real-time scoring — the full simulation experience.' },
+              ].map(d => (
+                <div key={d.url} style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', marginBottom: '4px' }}>{d.title}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>{d.desc}</div>
+                  </div>
+                  <button onClick={() => window.open(d.url, '_blank')} style={{ background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 18px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+                    Open Demo
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {activeNav !== 'Dashboard' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && activeNav !== 'Pack History' && activeNav !== 'Demos' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--text-3)', fontSize: 14 }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
             <div style={{ fontWeight: 700, color: 'var(--text-2)' }}>{activeNav}</div>

@@ -316,7 +316,7 @@ export default function PackBuilder({ specTitle, onBack }: { specTitle: string; 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {packRows.map((q, i) => {
                 const s = scores[i]
-                const scoreColor = s ? (s.score >= 8 ? '#34D399' : s.score >= 6 ? '#F59E0B' : '#EF4444') : null
+                const scoreColor = s ? (s.score >= 8 ? '#34D399' : s.score >= 6 ? '#F59E0B' : '#EF4444') : undefined
                 return (
                   <div key={i} style={{ background: 'var(--bg2)', border: `1px solid ${s ? (scoreColor + '40') : 'var(--border)'}`, borderRadius: 12, padding: '14px 16px', transition: 'border-color 0.3s' }}>
                     {/* Question row */}

@@ -30,6 +30,12 @@ jobs:
       - name: Build
         working-directory: src/recruiter-portal
         run: npm run build
+        env:
+          VITE_ELEVENLABS_API_KEY: ${{ secrets.VITE_ELEVENLABS_API_KEY }}
+          VITE_ELEVENLABS_VOICE_HR: ${{ secrets.VITE_ELEVENLABS_VOICE_HR }}
+          VITE_ELEVENLABS_VOICE_TECH: ${{ secrets.VITE_ELEVENLABS_VOICE_TECH }}
+          VITE_OPENAI_API_KEY: ${{ secrets.VITE_OPENAI_API_KEY }}
+          VITE_DID_API_KEY: ${{ secrets.VITE_DID_API_KEY }}
 
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
