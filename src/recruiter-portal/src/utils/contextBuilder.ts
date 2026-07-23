@@ -207,23 +207,20 @@ export function buildJobSpecContext(jobSpecText: string): JobSpecContext {
 // ── Personalised speech lines ─────────────────────────────────────────────────
 
 export function buildSarahIntro(cv: CVContext, _job: JobSpecContext): string {
-  const company = cv.companies[0];
-  const role = cv.roles[0];
-  const achievement = cv.achievements[0];
+  // Safe fields only — achievements[] excluded (heuristic contaminates it with section headings)
+  const role = cv.roles[0] ?? cv.experience?.[0]?.role;
+  const company = cv.experience?.[0]?.company ?? cv.companies[0];
+  const years = cv.yearsOfExperience;
 
   let intro = "Welcome to your practice interview. Before we begin, here's how it works. When you're ready to answer a question, click the record button. Speak naturally — we'll transcribe everything in real time. When you're finished, click Stop. You'll immediately see our feedback, along with suggestions for how to improve. ";
 
-  if (company || role || achievement) {
+  if (role || company || years) {
     intro += "I've had a chance to review your background. ";
-    if (company && role) intro += `I can see you've worked at ${company} as ${role}. `;
-    else if (company) intro += `I can see you've worked at ${company}. `;
-    else if (role) intro += `I can see you've worked as ${role}. `;
-    if (achievement) {
-      // Trim long achievements and make them flow naturally in speech
-      const ach = achievement.substring(0, 80).replace(/^[-•*]\s*/, '');
-      intro += `I was particularly struck by your work where you ${ach.toLowerCase()}. `;
-    }
-    intro += "I'll tailor some of my questions to your experience. Let's begin.";
+    if (role && company) intro += `I can see you've been working as ${role} at ${company}`;
+    else if (role) intro += `I can see you've been working as ${role}`;
+    else if (company) intro += `I can see you've worked at ${company}`;
+    if (years) intro += ` — ${years} years of commercial experience is impressive`;
+    intro += ". I'll tailor some of my questions to your experience. Let's begin.";
   } else {
     intro += "I'll be asking you about your background, leadership experience, and how you approach challenges. Let's begin.";
   }
@@ -231,16 +228,17 @@ export function buildSarahIntro(cv: CVContext, _job: JobSpecContext): string {
   return intro;
 }
 
-export function buildJamesIntro(cv: CVContext, job: JobSpecContext): string {
-  const techs = cv.technologies.slice(0, 3).join(', ');
-  const achievement = cv.achievements.find(a => /built|designed|architected|developed|migrated|scaled/i.test(a));
+export function buildJamesIntro(cv: CVContext, _job: JobSpecContext): string {
+  // Safe fields only — technologies[] and achievements[] excluded (heuristic contaminates them)
+  const recentRole = cv.roles[0];
+  const recentCompany = cv.experience?.[0]?.company ?? cv.companies[0];
 
-  if (techs || achievement) {
+  if (recentRole || recentCompany) {
     let intro = `Thanks Sarah. `;
-    if (techs) intro += `I noticed your experience with ${techs}. `;
-    if (achievement) intro += `I also saw that you ${achievement.substring(0, 80).toLowerCase()}. `;
-    intro += `I'll focus on the technical side and ask a few questions related to your specific experience. `;
-    if (job.techStack.length > 0) intro += `This role requires ${job.techStack.slice(0, 2).join(' and ')}, so I'll explore that too.`;
+    if (recentRole && recentCompany) intro += `I've had a look at your background as ${recentRole} at ${recentCompany}. `;
+    else if (recentRole) intro += `I've had a look at your background as ${recentRole}. `;
+    else if (recentCompany) intro += `I've had a look at your time at ${recentCompany}. `;
+    intro += `I'll be focusing on the technical aspects — architecture decisions, problem-solving, and how you approach complexity at scale.`;
     return intro;
   }
 

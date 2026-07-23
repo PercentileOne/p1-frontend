@@ -266,7 +266,8 @@ STRICT MODE — ZERO HALLUCINATION POLICY:
 
 Return ONLY valid JSON.`;
 
-  // Use only safe structured fields — no raw text, no technologies[]
+  // SAFE DATA ONLY: role/company/period cannot contain section headings or hardware lists.
+  // achievements[] and technologies[] are excluded — heuristic parser contaminates them.
   const expLines = (cvCtx.experience ?? []).slice(0, 4)
     .map(e => `  ${e.role} at ${e.company} (${e.period})`).join('\n');
 
@@ -275,8 +276,6 @@ Return ONLY valid JSON.`;
     cvCtx.roles[0] ? `Most recent title: ${cvCtx.roles[0]}` : null,
     cvCtx.yearsOfExperience ? `Total experience: ${cvCtx.yearsOfExperience} years` : null,
     expLines ? `Work history:\n${expLines}` : null,
-    cvCtx.achievements[0] ? `A key achievement: ${cvCtx.achievements[0].slice(0, 100)}` : null,
-    cvCtx.certifications[0] ? `Certification: ${cvCtx.certifications[0]}` : null,
   ].filter(Boolean).join('\n');
 
   const jobSummary = [
