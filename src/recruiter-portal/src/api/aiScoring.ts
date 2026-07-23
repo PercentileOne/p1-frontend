@@ -38,70 +38,99 @@ async function chatJSON<T>(systemPrompt: string, userPrompt: string, temperature
 
 // ── CV Parsing ────────────────────────────────────────────────────────────────
 
-export async function parseCVWithAI(rawText: string): Promise<CVContext> {
-  const systemPrompt = `You are a precise CV parser. Extract structured data exactly as written in the CV text.
-Return ONLY valid JSON — no markdown, no explanation, no invented data.`;
+// Hybrid verification: remove any extracted tech that doesn't literally appear in the raw text.
+// This eliminates hallucinated languages (Java, Go) that never appear in the CV.
+function verifyTechAgainstRawText(technologies: string[], rawText: string): string[] {
+  const rawLower = rawText.toLowerCase();
+  return technologies.filter(tech => {
+    const techLower = tech.toLowerCase();
+    // Special case: "Java" is a substring of "JavaScript".
+    // Only keep "Java" if it appears standalone (not only as part of "javascript").
+    if (techLower === 'java') {
+      const matches = [...rawLower.matchAll(/java(script)?/gi)];
+      return matches.some(m => !m[1]); // true if any match has no "script" suffix
+    }
+    return rawLower.includes(techLower);
+  });
+}
 
-  const userPrompt = `Parse this CV and return a JSON object.
+export async function parseCVWithAI(rawText: string): Promise<CVContext> {
+  const systemPrompt = `You are a strict CV data extractor. Your ONLY job is to extract data that is EXPLICITLY WRITTEN in the CV text.
+ZERO HALLUCINATION POLICY: Do not infer, guess, paraphrase, shorten, or invent ANY data.
+If a field cannot be found verbatim in the CV text, return an empty string or empty array.
+Return ONLY valid JSON — no markdown, no explanation.`;
+
+  const userPrompt = `Extract structured data from this CV. Copy values VERBATIM from the text — never paraphrase.
 
 CV text:
 """
 ${rawText.slice(0, 6000)}
 """
 
-CRITICAL NAME RULE:
-- The candidate's name is on the FIRST non-blank line, often preceded by "Mr.", "Mrs.", "Ms.", "Dr." (strip the title).
-- "Personal Profile", "Professional Summary", "Career Objective", "Personal Statement" are SECTION HEADINGS — NEVER use these as the name.
-- firstName = first given name only. lastName = family name.
+═══ EXTRACTION RULES ═══
 
-CRITICAL TECHNOLOGY RULE:
-- ONLY include a technology if the EXACT WORD appears in the CV text.
-- If the CV says "JavaScript", write "JavaScript" — NEVER write "Java" as a substitute. They are different languages.
-- If the CV says "Go" only in context like "going forward" or "good" — do NOT include "Go" the language.
-- Do NOT include section headings: "Tools & techniques used include:", "Tools and Techniques", "Technology and Experience Summary" are headings, NOT technologies.
-- Do NOT include hardware: "Pagers", "Mobile phones", "laptops", "credit cards" are NOT technologies.
-- Copy exact canonical names: "C#", "ASP.NET MVC", "SQL Server", "Azure", "React", "Tailwind CSS", "JavaScript", "jQuery".
+NAME:
+- firstName = the candidate's FIRST given name, found on the FIRST non-blank line (often after "Mr.", "Mrs.", etc. — strip the title)
+- "Personal Profile", "Personal Statement", "Professional Summary", "Career Objective" = SECTION HEADINGS. NEVER extract these as names.
 
-CRITICAL ACHIEVEMENT RULE:
-- An achievement requires: (1) the candidate personally did something, AND (2) there is a measurable or named outcome.
-- KPI lists the candidate was TRACKING are NOT achievements (e.g. "Acknowledging queries on time" = KPI tracked, not achievement).
-- Application DESCRIPTIONS are NOT achievements (e.g. "This application was built to manage bank assets such as Pagers..." = description).
-- TASK DESCRIPTIONS are NOT achievements (e.g. "Bring improved usability to existing systems using jQuery and Ajax" = task, not outcome).
-- ONLY include bullets where the candidate personally delivered something with a number, %, £, named result, or named deliverable.
+SUMMARY:
+- summary = the full text of the candidate's personal profile / personal statement section, copied verbatim. Empty string if not found.
 
-CRITICAL COMPANIES RULE:
-- Only actual employers (organisations the candidate worked FOR).
-- NEVER include technology names as companies.
+EXPERIENCE:
+- One object per job role, most recent first, max 8 entries.
+- period format: "YYYY–present" or "YYYY–YYYY". Read dates from the CV — do not invent.
+
+SKILLS (structured, safe for display):
+- Include ONLY skills explicitly listed in the CV under a skills or technology section.
+- Copy exact names: "C#" not "C Sharp", "ASP.NET MVC" not "ASP.NET", "JavaScript" not "JS" or "Java".
+- FORBIDDEN: Do NOT include section headings as skills. "Tools & techniques used include:" is a HEADING, not a skill.
+- FORBIDDEN: Do NOT include hardware. "Pagers", "Mobile phones", "Laptops", "Credit card terminals" are NOT skills.
+- FORBIDDEN: Do NOT include "Java" unless the CV literally contains the word "Java" NOT as part of "JavaScript".
+- FORBIDDEN: Do NOT include "Go" unless the CV literally contains "Go" as a programming language (not "going", "good", "Agora").
+
+ACHIEVEMENTS (strict criteria):
+- MUST satisfy BOTH: (1) candidate personally did something, AND (2) measurable or named outcome.
+- NOT achievements: KPIs the candidate was tracking ("Acknowledging queries on time"), app descriptions ("This app manages bank assets such as Pagers..."), task descriptions ("Bring improved usability using jQuery").
+- ONLY bullets with: a number, %, £/$, a named system delivered, or an explicit business outcome.
+
+COMPANIES:
+- Only actual employer organisation names. Never technology names.
 
 Return JSON:
 {
-  "firstName": "given name only, from first line",
-  "lastName": "family name, from first line",
-  "roles": ["most recent job title", "second most recent", ...],
-  "companies": ["actual employer name only"],
+  "firstName": "Francis",
+  "lastName": "Cobbinah",
+  "summary": "verbatim text of personal profile section, or empty string",
+  "roles": ["most recent job title"],
+  "companies": ["actual employer names only"],
   "experience": [
-    { "role": "Senior Developer/Software Architect", "company": "Self Employed (Vallum Associates)", "period": "2023–present" },
-    { "role": "Senior Software Architect", "company": "Amlin Insurance", "period": "2014–2023" }
+    { "role": "exact job title", "company": "exact employer name", "period": "YYYY–present" }
   ],
-  "technologies": ["C#", "ASP.NET MVC", "React", "JavaScript", "SQL Server", "Azure", "Tailwind CSS"],
-  "achievements": ["only entries with personal contribution + measurable outcome"],
-  "certifications": ["Microsoft Certified Professional – Developing & Implementing Distributed Applications"],
-  "responsibilities": ["key responsibility phrase"],
+  "skills": ["C#", "ASP.NET MVC", "JavaScript", "React", "SQL Server", "Azure"],
+  "achievements": ["only entries satisfying strict criteria above"],
+  "certifications": ["exact certification names"],
   "seniority": "Junior|Mid|Senior|Lead|Director|Executive|Unknown",
-  "yearsOfExperience": 24,
-  "education": [],
-  "softSkills": ["leadership", "mentoring"]
+  "yearsOfExperience": 24
 }
 
-Rules:
-- experience[]: one entry per job, most recent first, max 8 entries. period uses "YYYY–present" or "YYYY–YYYY".
-- technologies[]: max 12. Only exact names found in the CV text.
-- achievements[]: max 5, under 120 chars each. Strict criteria above.
-- yearsOfExperience: read from the CV text first (e.g. "24 years commercial experience"). Estimate from dates only as fallback.
-- All arrays: empty [] if nothing found. Never null.`;
+- skills[]: max 15, exact names only, verbatim from the CV.
+- achievements[]: max 5, under 120 chars each.
+- yearsOfExperience: read from CV text first ("24 years commercial experience"). Estimate from dates only as last resort.
+- All arrays: [] if nothing found. Never null.`;
+
+  console.group('[Explain AI] CV PARSE — FULL PROMPT');
+  console.log('System:', systemPrompt);
+  console.log('User prompt length:', userPrompt.length, 'chars');
+  console.log('Raw text preview:', rawText.slice(0, 300));
+  console.groupEnd();
 
   try {
     const raw = await chatJSON<Record<string, unknown>>(systemPrompt, userPrompt, 0);
+
+    console.group('[Explain AI] CV PARSE — RAW GPT RESPONSE');
+    console.log(JSON.stringify(raw, null, 2));
+    console.groupEnd();
+
     const str = (v: unknown) => (typeof v === 'string' ? v : '');
     const arr = (v: unknown): string[] =>
       Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
@@ -117,6 +146,16 @@ Rules:
       .map(e => ({ role: str(e.role), company: str(e.company), period: str(e.period) }))
       .filter(e => e.role || e.company);
 
+    // Hybrid verification: filter AI-extracted skills against the raw text.
+    // This eliminates any hallucinated technology that the AI made up.
+    const aiSkills = arr(raw.skills);
+    const verifiedSkills = verifyTechAgainstRawText(aiSkills, rawText);
+
+    const removedSkills = aiSkills.filter(t => !verifiedSkills.includes(t));
+    if (removedSkills.length > 0) {
+      console.warn('[Explain AI] VERIFICATION REMOVED hallucinated skills:', removedSkills);
+    }
+
     const ctx: CVContext = {
       rawText,
       firstName,
@@ -125,25 +164,27 @@ Rules:
       roles: arr(raw.roles),
       companies: arr(raw.companies),
       dates: [],
-      technologies: arr(raw.technologies),
-      skills: [...arr(raw.technologies), ...arr(raw.softSkills)].slice(0, 12),
+      skills: verifiedSkills,
+      technologies: verifiedSkills, // keep in sync — technologies is legacy, skills is authoritative
       achievements: arr(raw.achievements),
       certifications: arr(raw.certifications),
-      responsibilities: arr(raw.responsibilities),
+      responsibilities: [],
       leadershipSignals: [],
       seniority: (['Junior','Mid','Senior','Lead','Director','Executive'].includes(str(raw.seniority))
         ? str(raw.seniority) : 'Unknown') as CVContext['seniority'],
       yearsOfExperience: num(raw.yearsOfExperience),
       experience,
+      summary: str(raw.summary) || undefined,
     };
 
-    console.group('[Explain AI] CV PARSED');
+    console.group('[Explain AI] CV PARSED — VERIFIED FIELDS');
     console.log('Name:', `${ctx.firstName} ${ctx.lastName}`);
     console.log('Seniority:', ctx.seniority, '|', ctx.yearsOfExperience, 'yrs');
     console.log('Experience:', ctx.experience);
-    console.log('Technologies:', ctx.technologies);
+    console.log('Skills (verified):', ctx.skills);
     console.log('Achievements:', ctx.achievements);
     console.log('Certifications:', ctx.certifications);
+    console.log('Summary:', ctx.summary?.slice(0, 100));
     console.groupEnd();
 
     return ctx;
@@ -166,7 +207,7 @@ Return ONLY a valid JSON object — no markdown, no explanation.`;
 
   const context = [
     cvCtx?.roles?.[0] ? `Candidate role: ${cvCtx.roles[0]}` : null,
-    cvCtx?.technologies?.length ? `Candidate tech: ${cvCtx.technologies.slice(0, 5).join(', ')}` : null,
+    cvCtx?.skills?.length ? `Candidate skills: ${cvCtx.skills.slice(0, 5).join(', ')}` : null,
     jobCtx?.title ? `Role applied for: ${jobCtx.title}` : null,
     jobCtx?.requiredSkills?.length ? `Required skills: ${jobCtx.requiredSkills.slice(0, 5).join(', ')}` : null,
   ].filter(Boolean).join('\n');
@@ -216,9 +257,16 @@ export async function generateIntros(
 Sarah Mitchell is the HR Director — warm, professional, observant about people and culture.
 James Okafor is the Technical Lead — direct, curious, focused on systems and problem-solving.
 Each session should sound slightly different — vary sentence structure, word choice, and what details they pick up on.
+
+STRICT MODE — ZERO HALLUCINATION POLICY:
+- Reference ONLY facts explicitly listed in the candidate profile below.
+- Do NOT mention any programming language, technology, tool, framework, or hardware — not even ones implied by job titles.
+- Do NOT infer, paraphrase, or invent any company name, achievement, or technology.
+- If a field is not listed below, skip it silently.
+
 Return ONLY valid JSON.`;
 
-  // Use structured experience[] — avoids hallucinated or garbled technology names in TTS
+  // Use only safe structured fields — no raw text, no technologies[]
   const expLines = (cvCtx.experience ?? []).slice(0, 4)
     .map(e => `  ${e.role} at ${e.company} (${e.period})`).join('\n');
 
@@ -234,7 +282,6 @@ Return ONLY valid JSON.`;
   const jobSummary = [
     `Role: ${jobCtx.title}`,
     jobCtx.company ? `Company: ${jobCtx.company}` : null,
-    jobCtx.requiredSkills.length ? `Key skills needed: ${jobCtx.requiredSkills.slice(0, 4).join(', ')}` : null,
     jobCtx.responsibilities[0] ? `Main responsibility: ${jobCtx.responsibilities[0].slice(0, 80)}` : null,
   ].filter(Boolean).join('\n');
 
@@ -245,19 +292,20 @@ Return ONLY valid JSON.`;
 
   const userPrompt = `Write natural spoken intros for Sarah and James for this interview session. Session style this time: ${chosenStyle}.
 
-Candidate profile:
+═══ CANDIDATE PROFILE (use ONLY these facts) ═══
 ${cvSummary}
 
-Role being interviewed for:
+═══ ROLE BEING INTERVIEWED FOR ═══
 ${jobSummary}
 
-Rules:
-- Sarah goes first. Address the candidate by first name (${firstName}) once. Welcome them, briefly explain the format (click record, speak, click stop, get feedback), mention ONE specific thing noticed in their background, then say "Let's begin."
-- James goes second (starts with "Thanks Sarah." or similar). Address candidate by first name once. Mention a specific technology or achievement from their CV, say what he'll focus on.
+═══ RULES ═══
+- Sarah goes first. Address candidate by first name (${firstName}) once. Welcome them, briefly explain the format (click record, speak, click stop, get feedback), mention ONE specific fact from their work history above, then say "Let's begin."
+- James goes second (starts with "Thanks Sarah." or similar). Address candidate by first name once. Mention ONE specific fact from their work history (a role title, a company name, or their career span) — NEVER mention any technology, programming language, or tool. Say what he'll focus on in the technical questions.
 - Each intro: 3–5 sentences, natural spoken pace, no bullet points, no em dashes.
 - Vary the opening — Sarah should NOT always start with "Welcome". Use "Great to have you here", "Thanks for joining us", "Good to meet you", etc.
 - Sound like real humans. Different each session.
 - Keep each intro under 80 words.
+- CRITICAL: Do NOT reference any technology, tool, language, or framework — not in Sarah's intro, not in James's intro.
 
 Return JSON:
 {
@@ -265,10 +313,11 @@ Return JSON:
   "jamesIntro": "..."
 }`;
 
-  console.group('[Explain AI] INTRO GENERATION');
-  console.log('CV summary sent to GPT:', cvSummary);
-  console.log('Job summary sent to GPT:', jobSummary);
+  console.group('[Explain AI] INTRO GENERATION — FULL PROMPT');
+  console.log('CV summary sent to GPT:\n', cvSummary);
+  console.log('Job summary sent to GPT:\n', jobSummary);
   console.log('Style this session:', chosenStyle);
+  console.log('Full user prompt:\n', userPrompt);
   console.groupEnd();
 
   const result = await chatJSON<{ sarahIntro: string; jamesIntro: string }>(systemPrompt, userPrompt, 0.9);
@@ -307,8 +356,9 @@ Return ONLY a valid JSON object — no markdown, no explanation.`;
   const firstName = cvCtx?.firstName || '';
   const thinkSecs = thinkTimeMs ? Math.round(thinkTimeMs / 1000) : null;
 
+  const recentCompany = cvCtx?.experience?.[0]?.company ?? cvCtx?.companies?.[0];
   const context = [
-    cvCtx?.companies?.[0] ? `Candidate has worked at: ${cvCtx.companies[0]}` : null,
+    recentCompany ? `Candidate has worked at: ${recentCompany}` : null,
     cvCtx?.achievements?.[0] ? `Notable achievement: ${cvCtx.achievements[0].slice(0, 80)}` : null,
     jobCtx?.title ? `Applying for: ${jobCtx.title}` : null,
     jobCtx?.requiredSkills?.[0] ? `Key requirement: ${jobCtx.requiredSkills[0]}` : null,

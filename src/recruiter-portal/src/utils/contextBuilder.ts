@@ -15,8 +15,8 @@ export interface CVContext {
   companies: string[];
   roles: string[];
   dates: string[];
-  skills: string[];
-  technologies: string[];
+  skills: string[];        // clean structured skills — safe for AI prompts
+  technologies: string[]; // raw extracted tech names — do NOT pass to interviewer prompts
   achievements: string[];
   certifications: string[];
   responsibilities: string[];
@@ -24,6 +24,7 @@ export interface CVContext {
   seniority: 'Junior' | 'Mid' | 'Senior' | 'Lead' | 'Director' | 'Executive' | 'Unknown';
   yearsOfExperience?: number;
   experience?: CVExperience[];
+  summary?: string; // verbatim candidate profile summary from CV
 }
 
 export interface JobSpecContext {
