@@ -161,6 +161,8 @@ export default function InterviewRoom() {
       }).catch(() => {});
     }
 
+    console.log(`[Explain AI] Q${index + 1} [${interviewer.toUpperCase()}]:`, question.questionText);
+
     cancelSpeakRef.current = speak(question.questionText, interviewer, () => {
       setHrState('idle'); setTechState('idle');
       thinkStartRef.current = Date.now();
@@ -419,10 +421,20 @@ export default function InterviewRoom() {
               )}
 
               {phase === 'interviewer-intro' && (
-                <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '22px 24px', marginBottom: '16px', textAlign: 'center' }}>
-                  <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.4 }}
-                    style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#a78bfa', margin: '0 auto 12px' }} />
-                  <div style={{ fontSize: '14px', color: 'var(--text-2)' }}>Your interviewers are introducing themselves…</div>
+                <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '22px 24px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.4 }}
+                        style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#a78bfa', flexShrink: 0 }} />
+                      <div style={{ fontSize: '14px', color: 'var(--text-2)' }}>Your interviewers are introducing themselves…</div>
+                    </div>
+                    <button
+                      onClick={() => { cancelSpeakRef.current?.(); setHrState('idle'); setTechState('idle'); askQuestion(0); }}
+                      style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 14px', fontSize: '12px', color: 'var(--text-3)', cursor: 'pointer', whiteSpace: 'nowrap', marginLeft: '16px', flexShrink: 0 }}
+                    >
+                      Skip Intro →
+                    </button>
+                  </div>
                 </div>
               )}
 

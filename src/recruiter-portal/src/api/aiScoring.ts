@@ -39,52 +39,69 @@ async function chatJSON<T>(systemPrompt: string, userPrompt: string, temperature
 // ── CV Parsing ────────────────────────────────────────────────────────────────
 
 export async function parseCVWithAI(rawText: string): Promise<CVContext> {
-  const systemPrompt = `You are a precise CV parser. Extract structured data from the CV text.
-Return ONLY valid JSON — no markdown, no explanation.
+  const systemPrompt = `You are a precise CV parser. Extract structured data exactly as written in the CV text.
+Return ONLY valid JSON — no markdown, no explanation, no invented data.`;
 
-CRITICAL RULES for companies[]:
-- Only include the names of organisations the candidate was EMPLOYED BY (actual employers).
-- NEVER include: software frameworks, programming languages, tools, products (e.g. "React", ".NET", "Azure", "Microsoft Office", "Visual Basic", "Visual Studio", "SQL Server").
-- If "Microsoft" appears as an employer they worked at, include it. If it appears as a technology, exclude it.
-- Same rule applies to all technology product names regardless of brand.`;
-
-  const userPrompt = `Parse this CV and return a JSON object with these fields:
+  const userPrompt = `Parse this CV and return a JSON object.
 
 CV text:
 """
 ${rawText.slice(0, 6000)}
 """
 
+CRITICAL NAME RULE:
+- The candidate's name is on the FIRST non-blank line, often preceded by "Mr.", "Mrs.", "Ms.", "Dr." (strip the title).
+- "Personal Profile", "Professional Summary", "Career Objective", "Personal Statement" are SECTION HEADINGS — NEVER use these as the name.
+- firstName = first given name only. lastName = family name.
+
+CRITICAL TECHNOLOGY RULE:
+- ONLY include a technology if the EXACT WORD appears in the CV text.
+- If the CV says "JavaScript", write "JavaScript" — NEVER write "Java" as a substitute. They are different languages.
+- If the CV says "Go" only in context like "going forward" or "good" — do NOT include "Go" the language.
+- Do NOT include section headings: "Tools & techniques used include:", "Tools and Techniques", "Technology and Experience Summary" are headings, NOT technologies.
+- Do NOT include hardware: "Pagers", "Mobile phones", "laptops", "credit cards" are NOT technologies.
+- Copy exact canonical names: "C#", "ASP.NET MVC", "SQL Server", "Azure", "React", "Tailwind CSS", "JavaScript", "jQuery".
+
+CRITICAL ACHIEVEMENT RULE:
+- An achievement requires: (1) the candidate personally did something, AND (2) there is a measurable or named outcome.
+- KPI lists the candidate was TRACKING are NOT achievements (e.g. "Acknowledging queries on time" = KPI tracked, not achievement).
+- Application DESCRIPTIONS are NOT achievements (e.g. "This application was built to manage bank assets such as Pagers..." = description).
+- TASK DESCRIPTIONS are NOT achievements (e.g. "Bring improved usability to existing systems using jQuery and Ajax" = task, not outcome).
+- ONLY include bullets where the candidate personally delivered something with a number, %, £, named result, or named deliverable.
+
+CRITICAL COMPANIES RULE:
+- Only actual employers (organisations the candidate worked FOR).
+- NEVER include technology names as companies.
+
 Return JSON:
 {
-  "firstName": "candidate first name or empty string",
-  "lastName": "candidate last name or empty string",
+  "firstName": "given name only, from first line",
+  "lastName": "family name, from first line",
   "roles": ["most recent job title", "second most recent", ...],
-  "companies": ["employer name only — actual companies worked FOR, never tech names"],
+  "companies": ["actual employer name only"],
   "experience": [
-    { "role": "Senior .NET Developer", "company": "Barclays", "period": "2021–present" },
-    { "role": "Software Architect", "company": "HSBC", "period": "2018–2021" }
+    { "role": "Senior Developer/Software Architect", "company": "Self Employed (Vallum Associates)", "period": "2023–present" },
+    { "role": "Senior Software Architect", "company": "Amlin Insurance", "period": "2014–2023" }
   ],
-  "technologies": ["React", "C#", ".NET", "Azure", ...],
-  "achievements": ["only achievements with measurable outcomes, numbers, or named results"],
-  "certifications": ["AWS Certified", "PMP", ...],
-  "responsibilities": ["key responsibility phrase", ...],
+  "technologies": ["C#", "ASP.NET MVC", "React", "JavaScript", "SQL Server", "Azure", "Tailwind CSS"],
+  "achievements": ["only entries with personal contribution + measurable outcome"],
+  "certifications": ["Microsoft Certified Professional – Developing & Implementing Distributed Applications"],
+  "responsibilities": ["key responsibility phrase"],
   "seniority": "Junior|Mid|Senior|Lead|Director|Executive|Unknown",
-  "yearsOfExperience": 0,
-  "education": ["BSc Computer Science, UCL", ...],
-  "softSkills": ["leadership", "communication", ...]
+  "yearsOfExperience": 24,
+  "education": [],
+  "softSkills": ["leadership", "mentoring"]
 }
 
 Rules:
-- experience[]: one entry per job, most recent first, max 6. period uses "YYYY–YYYY" or "YYYY–present". company = the employer name only.
-- technologies[]: clean canonical names only ("C#" not "C# programming", "Azure" not "Microsoft Azure cloud"). NEVER include generic section headings like "Tools and Techniques".
-- achievements[]: trim to under 100 chars each, include only ones with numbers, %, £, $, or named outcomes
-- responsibilities[]: short phrases, max 6 items
-- yearsOfExperience: integer, estimate from dates if not stated explicitly
-- All arrays: empty array [] if nothing found, never null`;
+- experience[]: one entry per job, most recent first, max 8 entries. period uses "YYYY–present" or "YYYY–YYYY".
+- technologies[]: max 12. Only exact names found in the CV text.
+- achievements[]: max 5, under 120 chars each. Strict criteria above.
+- yearsOfExperience: read from the CV text first (e.g. "24 years commercial experience"). Estimate from dates only as fallback.
+- All arrays: empty [] if nothing found. Never null.`;
 
   try {
-    const raw = await chatJSON<Record<string, unknown>>(systemPrompt, userPrompt);
+    const raw = await chatJSON<Record<string, unknown>>(systemPrompt, userPrompt, 0);
     const str = (v: unknown) => (typeof v === 'string' ? v : '');
     const arr = (v: unknown): string[] =>
       Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
@@ -97,14 +114,10 @@ Rules:
     const expRaw = Array.isArray(raw.experience) ? raw.experience : [];
     const experience: CVExperience[] = expRaw
       .filter((e): e is Record<string, unknown> => typeof e === 'object' && e !== null)
-      .map(e => ({
-        role: str(e.role),
-        company: str(e.company),
-        period: str(e.period),
-      }))
+      .map(e => ({ role: str(e.role), company: str(e.company), period: str(e.period) }))
       .filter(e => e.role || e.company);
 
-    return {
+    const ctx: CVContext = {
       rawText,
       firstName,
       lastName,
@@ -113,7 +126,7 @@ Rules:
       companies: arr(raw.companies),
       dates: [],
       technologies: arr(raw.technologies),
-      skills: [...arr(raw.technologies), ...arr(raw.softSkills)].slice(0, 10),
+      skills: [...arr(raw.technologies), ...arr(raw.softSkills)].slice(0, 12),
       achievements: arr(raw.achievements),
       certifications: arr(raw.certifications),
       responsibilities: arr(raw.responsibilities),
@@ -123,7 +136,19 @@ Rules:
       yearsOfExperience: num(raw.yearsOfExperience),
       experience,
     };
-  } catch {
+
+    console.group('[Explain AI] CV PARSED');
+    console.log('Name:', `${ctx.firstName} ${ctx.lastName}`);
+    console.log('Seniority:', ctx.seniority, '|', ctx.yearsOfExperience, 'yrs');
+    console.log('Experience:', ctx.experience);
+    console.log('Technologies:', ctx.technologies);
+    console.log('Achievements:', ctx.achievements);
+    console.log('Certifications:', ctx.certifications);
+    console.groupEnd();
+
+    return ctx;
+  } catch (e) {
+    console.warn('[Explain AI] parseCVWithAI failed — using heuristic fallback:', e);
     return buildCVContext(rawText);
   }
 }
@@ -173,7 +198,12 @@ Return JSON:
   "suggestions": ["one actionable improvement tip"]
 }`;
 
-  return chatJSON<ScoreResponse>(systemPrompt, userPrompt);
+  console.log('[Explain AI] SCORING Q:', question.questionText.slice(0, 60));
+  const score = await chatJSON<ScoreResponse>(systemPrompt, userPrompt);
+  console.group('[Explain AI] SCORE RECEIVED');
+  console.log(`Overall: ${Math.round(score.overallScore * 100)}% | Relevance: ${Math.round((score.relevance ?? 0) * 100)}% | Clarity: ${Math.round((score.clarity ?? 0) * 100)}% | Depth: ${Math.round((score.depth ?? 0) * 100)}% | Confidence: ${Math.round((score.confidence ?? 0) * 100)}%`);
+  console.groupEnd();
+  return score;
 }
 
 // ── Interviewer intros ────────────────────────────────────────────────────────
@@ -188,12 +218,17 @@ James Okafor is the Technical Lead — direct, curious, focused on systems and p
 Each session should sound slightly different — vary sentence structure, word choice, and what details they pick up on.
 Return ONLY valid JSON.`;
 
+  // Use structured experience[] — avoids hallucinated or garbled technology names in TTS
+  const expLines = (cvCtx.experience ?? []).slice(0, 4)
+    .map(e => `  ${e.role} at ${e.company} (${e.period})`).join('\n');
+
   const cvSummary = [
-    cvCtx.roles[0] ? `Most recent role: ${cvCtx.roles[0]}` : null,
-    cvCtx.companies.length ? `Companies: ${cvCtx.companies.slice(0, 3).join(', ')}` : null,
-    cvCtx.technologies.length ? `Technologies: ${cvCtx.technologies.slice(0, 4).join(', ')}` : null,
-    cvCtx.achievements[0] ? `Achievement: ${cvCtx.achievements[0].slice(0, 80)}` : null,
-    cvCtx.yearsOfExperience ? `Years of experience: ${cvCtx.yearsOfExperience}` : null,
+    cvCtx.firstName ? `Candidate first name: ${cvCtx.firstName}` : null,
+    cvCtx.roles[0] ? `Most recent title: ${cvCtx.roles[0]}` : null,
+    cvCtx.yearsOfExperience ? `Total experience: ${cvCtx.yearsOfExperience} years` : null,
+    expLines ? `Work history:\n${expLines}` : null,
+    cvCtx.achievements[0] ? `A key achievement: ${cvCtx.achievements[0].slice(0, 100)}` : null,
+    cvCtx.certifications[0] ? `Certification: ${cvCtx.certifications[0]}` : null,
   ].filter(Boolean).join('\n');
 
   const jobSummary = [
@@ -230,7 +265,20 @@ Return JSON:
   "jamesIntro": "..."
 }`;
 
-  return chatJSON<{ sarahIntro: string; jamesIntro: string }>(systemPrompt, userPrompt, 0.9);
+  console.group('[Explain AI] INTRO GENERATION');
+  console.log('CV summary sent to GPT:', cvSummary);
+  console.log('Job summary sent to GPT:', jobSummary);
+  console.log('Style this session:', chosenStyle);
+  console.groupEnd();
+
+  const result = await chatJSON<{ sarahIntro: string; jamesIntro: string }>(systemPrompt, userPrompt, 0.9);
+
+  console.group('[Explain AI] INTROS GENERATED');
+  console.log('Sarah:', result.sarahIntro);
+  console.log('James:', result.jamesIntro);
+  console.groupEnd();
+
+  return result;
 }
 
 // ── Coaching ──────────────────────────────────────────────────────────────────
@@ -306,9 +354,16 @@ Return JSON:
     lines.push("Okay… back to your interview. You're doing great.");
   }
 
-  return {
+  const coaching: CoachingMessage = {
     lines,
     fullText: lines.join(' '),
     tone: (result.tone as CoachingMessage['tone']) ?? tone,
   };
+
+  console.group('[Explain AI] COACHING GENERATED');
+  console.log('Tone:', coaching.tone);
+  console.log('Lines:', coaching.lines);
+  console.groupEnd();
+
+  return coaching;
 }
