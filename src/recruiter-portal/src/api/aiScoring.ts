@@ -31,6 +31,18 @@ async function chatJSON<T>(systemPrompt: string, userPrompt: string, temperature
     }),
   });
 
+  if (res.status === 429) {
+    // Rate limited — wait and retry once
+    await new Promise(r => setTimeout(r, 3000));
+    const retry = await fetch(OPENAI_URL, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: MODEL, temperature, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }] }),
+    });
+    if (!retry.ok) throw new Error(`OpenAI error ${retry.status}`);
+    const retryData = await retry.json() as { choices: { message: { content: string } }[] };
+    return JSON.parse(retryData.choices[0].message.content) as T;
+  }
   if (!res.ok) throw new Error(`OpenAI error ${res.status}`);
   const data = await res.json() as { choices: { message: { content: string } }[] };
   return JSON.parse(data.choices[0].message.content) as T;
