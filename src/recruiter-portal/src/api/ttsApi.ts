@@ -80,7 +80,7 @@ async function speakElevenLabs(
   onEnd: () => void,
 ): Promise<() => void> {
   const res = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`,
+    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
     {
       method: 'POST',
       headers: {
