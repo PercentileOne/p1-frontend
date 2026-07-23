@@ -7,6 +7,7 @@ import CandidatePractice from './pages/CandidatePractice'
 import InterviewRoom from './pages/InterviewRoom'
 import InterviewSummary from './pages/InterviewSummary'
 import InterviewIntake from './pages/InterviewIntake'
+import LeagueTable from './pages/LeagueTable'
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/interview-intake/:packId" element={<InterviewIntake />} />
         <Route path="/interview-room/:packId" element={<InterviewRoom />} />
         <Route path="/interview-summary/:sessionId" element={<InterviewSummary />} />
+        <Route path="/league" element={<LeagueTable />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
