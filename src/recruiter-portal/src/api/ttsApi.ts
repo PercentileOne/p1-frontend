@@ -98,11 +98,12 @@ async function speakElevenLabs(
   if (!res.ok) throw new Error(`ElevenLabs error: ${res.status}`);
 
   const blob = await res.blob();
+  if (blob.size < 100) throw new Error('ElevenLabs returned empty audio');
   const url  = URL.createObjectURL(blob);
   const audio = new Audio(url);
   audio.onended = () => { URL.revokeObjectURL(url); onEnd(); };
   audio.onerror = () => { URL.revokeObjectURL(url); onEnd(); };
-  audio.play();
+  audio.play().catch(() => { URL.revokeObjectURL(url); onEnd(); });
   return () => { audio.pause(); URL.revokeObjectURL(url); };
 }
 
