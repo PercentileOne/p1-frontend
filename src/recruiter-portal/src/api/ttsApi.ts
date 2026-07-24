@@ -108,15 +108,17 @@ async function speakElevenLabs(
   audio.onended = done;
   audio.onerror = done;
 
-  // Safety timeout: if audio hasn't ended naturally within its estimated duration + 5s, force-advance
+  // Safety: force-advance after duration + 5s so interview never hangs
   audio.onloadedmetadata = () => {
     const safetyMs = (isFinite(audio.duration) ? audio.duration * 1000 : 30000) + 5000;
     setTimeout(done, safetyMs);
   };
-  // Fallback if metadata never loads
   setTimeout(done, 45000);
 
-  audio.play().catch(done);
+  // Await play() — if browser blocks autoplay this throws, causing speak()'s
+  // .catch() to trigger Web Speech fallback instead of silently doing nothing.
+  await audio.play();
+
   return () => { ended = true; audio.pause(); URL.revokeObjectURL(url); };
 }
 
