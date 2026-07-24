@@ -101,10 +101,23 @@ async function speakElevenLabs(
   if (blob.size < 100) throw new Error('ElevenLabs returned empty audio');
   const url  = URL.createObjectURL(blob);
   const audio = new Audio(url);
-  audio.onended = () => { URL.revokeObjectURL(url); onEnd(); };
-  audio.onerror = () => { URL.revokeObjectURL(url); onEnd(); };
-  audio.play().catch(() => { URL.revokeObjectURL(url); onEnd(); });
-  return () => { audio.pause(); URL.revokeObjectURL(url); };
+
+  let ended = false;
+  const done = () => { if (!ended) { ended = true; URL.revokeObjectURL(url); onEnd(); } };
+
+  audio.onended = done;
+  audio.onerror = done;
+
+  // Safety timeout: if audio hasn't ended naturally within its estimated duration + 5s, force-advance
+  audio.onloadedmetadata = () => {
+    const safetyMs = (isFinite(audio.duration) ? audio.duration * 1000 : 30000) + 5000;
+    setTimeout(done, safetyMs);
+  };
+  // Fallback if metadata never loads
+  setTimeout(done, 45000);
+
+  audio.play().catch(done);
+  return () => { ended = true; audio.pause(); URL.revokeObjectURL(url); };
 }
 
 function speakWebSpeech(
