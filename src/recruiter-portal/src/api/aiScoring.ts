@@ -209,6 +209,49 @@ Return JSON:
   }
 }
 
+// ── Question generation ───────────────────────────────────────────────────────
+
+export async function generateQuestionsWithAI(
+  cvCtx: CVContext,
+  jobCtx: JobSpecContext,
+): Promise<InterviewQuestion[]> {
+  const role = jobCtx.title;
+  const company = jobCtx.company ?? 'the company';
+  const skills = cvCtx.skills.slice(0, 6).join(', ');
+  const experience = cvCtx.experience?.slice(0, 3).map(e => `${e.role} at ${e.company} (${e.period})`).join('; ') ?? cvCtx.roles.slice(0, 2).join(', ');
+  const achievement = cvCtx.achievements[0] ?? '';
+  const seniority = cvCtx.seniority;
+
+  const systemPrompt = `You are an expert interview question generator. Generate exactly 5 interview questions for a ${seniority} candidate applying for ${role} at ${company}.
+Mix: 2 HR/behavioural questions (source: "HR") and 3 technical questions (source: "Technical").
+Return ONLY valid JSON — no markdown, no explanation.`;
+
+  const userPrompt = `Candidate background:
+- Skills: ${skills}
+- Recent experience: ${experience}
+- Notable achievement: ${achievement}
+- Years of experience: ${cvCtx.yearsOfExperience ?? 'unknown'}
+
+Return JSON:
+{
+  "questions": [
+    {
+      "questionId": "q1",
+      "questionText": "...",
+      "modelAnswer": "Brief guide on what a great answer looks like (2-3 sentences).",
+      "questionType": "Behavioural",
+      "difficulty": "Medium",
+      "source": "HR",
+      "competencyTags": ["communication"]
+    }
+  ]
+}`;
+
+  const raw = await chatJSON<{ questions: InterviewQuestion[] }>(systemPrompt, userPrompt, 0.7);
+  if (!Array.isArray(raw.questions) || raw.questions.length === 0) throw new Error('No questions returned');
+  return raw.questions;
+}
+
 // ── Scoring ───────────────────────────────────────────────────────────────────
 
 export async function scoreWithAI(

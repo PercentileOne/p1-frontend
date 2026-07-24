@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { buildCVContext, buildJobSpecContext, buildPersonalisedQuestions, buildSarahIntro, buildJamesIntro, type CVContext } from '../utils/contextBuilder';
 import { explainApi } from '../api/explainApi';
-import { generateIntros, parseCVWithAI, aiScoringConfigured } from '../api/aiScoring';
+import { generateIntros, parseCVWithAI, generateQuestionsWithAI, aiScoringConfigured } from '../api/aiScoring';
 import { FileUpload } from '../components/FileUpload';
 
 type HubTab = 'interview' | 'learn' | 'coming-soon';
@@ -414,9 +414,9 @@ export default function InterviewIntake() {
             sarahIntro: buildSarahIntro(cvCtx, jobCtx),
             jamesIntro: buildJamesIntro(cvCtx, jobCtx),
           }),
-      explainApi.quickGenerate({ jobDescriptionText: js, exampleCvText: cv })
-        .then(pack => pack.questions)
-        .catch(() => buildPersonalisedQuestions(cvCtx, jobCtx)),
+      aiScoringConfigured
+        ? generateQuestionsWithAI(cvCtx, jobCtx).catch(() => buildPersonalisedQuestions(cvCtx, jobCtx))
+        : Promise.resolve(buildPersonalisedQuestions(cvCtx, jobCtx)),
     ]);
 
     clearInterval(interval);
