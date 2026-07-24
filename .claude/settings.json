@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C *)",
+      "Bash(npx tsc *)",
+      "Bash(npx tsc)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet build)",
+      "Bash(find . *)",
+      "Bash(git diff *)",
+      "Bash(git diff)",
+      "mcp__ccd_session__mark_chapter"
+    ]
+  }
+}

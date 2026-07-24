@@ -5,6 +5,7 @@ import { buildCVContext, buildJobSpecContext, buildPersonalisedQuestions, buildS
 import { generateIntros, parseCVWithAI, generateQuestionsWithAI, aiScoringConfigured } from '../api/aiScoring';
 import { SendToClientModal } from '../components/SendToClientModal';
 import { FileUpload } from '../components/FileUpload';
+import { buildCandidatePrepUrl, type CandidatePrepSession } from '../utils/clientSession';
 
 type HubTab = 'interview' | 'learn' | 'coming-soon';
 type Step = 'inputs' | 'preparing';
@@ -287,6 +288,7 @@ export default function InterviewIntake() {
     jobCtx: import('../utils/contextBuilder').JobSpecContext;
     questions: import('../api/explainApi').InterviewQuestion[];
   } | null>(null);
+  const [prepLink, setPrepLink] = useState<{ url: string; copied: boolean } | null>(null);
 
   // Pre-parsed CV context — populated as soon as the user provides CV text
   const [cvCtxParsed, setCvCtxParsed] = useState<CVContext | null>(null);
@@ -399,6 +401,34 @@ export default function InterviewIntake() {
     clearInterval(interval);
     setClientPortalData({ cvCtx, jobCtx, questions });
     setStep('inputs');
+  };
+
+  const generatePrepLink = async (js: string, cv: string, preComputedCvCtx: CVContext | null) => {
+    // Reuse already-generated questions if available, otherwise generate now
+    let questions = clientPortalData?.questions;
+    let jobCtx = clientPortalData?.jobCtx;
+    let cvCtx = clientPortalData?.cvCtx;
+
+    if (!questions) {
+      cvCtx = preComputedCvCtx ?? (cv.trim() ? aiScoringConfigured ? await parseCVWithAI(cv).catch(() => buildCVContext(cv)) : buildCVContext(cv) : buildCVContext(''));
+      jobCtx = buildJobSpecContext(js);
+      questions = aiScoringConfigured
+        ? await generateQuestionsWithAI(cvCtx, jobCtx).catch(() => buildPersonalisedQuestions(cvCtx!, jobCtx!))
+        : buildPersonalisedQuestions(cvCtx, jobCtx);
+    }
+
+    const session: CandidatePrepSession = {
+      version: 1,
+      prepType: 'full-prep',
+      candidateName: cvCtx ? `${cvCtx.firstName} ${cvCtx.lastName ?? ''}`.trim() || undefined : undefined,
+      role: jobCtx?.title ?? '',
+      company: jobCtx?.company,
+      industry: jobCtx?.industry,
+      questions,
+      generatedAt: Date.now(),
+    };
+    const url = buildCandidatePrepUrl(session);
+    setPrepLink({ url, copied: false });
   };
 
   const prepare = async (js: string, cv: string, preComputedCvCtx: CVContext | null) => {
@@ -752,6 +782,7 @@ export default function InterviewIntake() {
                 const effectiveCv = cvOk ? cvText : '';
                 const effectiveCvCtx = cvOk ? cvCtxParsed : null;
                 return (
+                  <>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', marginTop: '24px', flexWrap: 'wrap' }}>
                     {anyToggled && !canStart && (
                       <span style={{ fontSize: '12px', color: 'var(--text-3)', flex: 1 }}>
@@ -764,11 +795,36 @@ export default function InterviewIntake() {
                         Send to Client
                       </button>
                     )}
+                    {canStart && (
+                      <button onClick={() => generatePrepLink(effectiveSpec, effectiveCv, effectiveCvCtx)}
+                        style={{ background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '13px 22px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                        Send Prep Link →
+                      </button>
+                    )}
                     <button onClick={() => prepare(effectiveSpec, effectiveCv, effectiveCvCtx)} disabled={!canStart}
                       style={{ background: canStart ? 'var(--blue)' : 'rgba(79,142,247,0.3)', color: '#fff', border: 'none', borderRadius: '10px', padding: '13px 32px', fontSize: '14px', fontWeight: 700, cursor: canStart ? 'pointer' : 'default', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
                       Start Interview →
                     </button>
                   </div>
+                  {/* Prep link inline display */}
+                  {prepLink && (
+                    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                      style={{ marginTop: '14px', padding: '14px 16px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-3)', flex: 1, fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                        {prepLink.url.slice(0, 80)}{prepLink.url.length > 80 ? '…' : ''}
+                      </div>
+                      <button
+                        onClick={async () => {
+                          await navigator.clipboard.writeText(prepLink.url);
+                          setPrepLink(p => p ? { ...p, copied: true } : null);
+                          setTimeout(() => setPrepLink(p => p ? { ...p, copied: false } : null), 2500);
+                        }}
+                        style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, background: prepLink.copied ? 'rgba(52,211,153,0.12)' : 'var(--blue)', border: prepLink.copied ? '1px solid rgba(52,211,153,0.3)' : 'none', color: prepLink.copied ? '#34D399' : '#fff', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit' }}>
+                        {prepLink.copied ? '✓ Copied' : 'Copy candidate prep link'}
+                      </button>
+                    </motion.div>
+                  )}
+                  </>
                 );
               })()}
             </motion.div>

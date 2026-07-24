@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The FDE Playbook — Forward-Deployed Engineering at £1M+</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #09090f;
+    --bg2:      #111320;
+    --bg3:      #181c2e;
+    --bg-warm:  #110d07;
+    --border:   #1d2140;
+    --gold:     #C8901A;
+    --gold-dim: rgba(200,144,26,0.12);
+    --gold-mid: rgba(200,144,26,0.35);
+    --blue:     #3D7FE8;
+    --blue-dim: rgba(61,127,232,0.12);
+    --green:    #34D399;
+    --red:      #F87171;
+    --text:     #DDE0EC;
+    --text-2:   #8891AA;
+    --text-3:   #434868;
+    --r:        14px;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg:       #F4F1EB;
+      --bg2:      #EAE6DE;
+      --bg3:      #DEDAD1;
+      --bg-warm:  #FBF6EC;
+      --border:   #C4BFB2;
+      --gold:     #8A5E08;
+      --gold-dim: rgba(138,94,8,0.08);
+      --gold-mid: rgba(138,94,8,0.25);
+      --blue:     #1F57C0;
+      --blue-dim: rgba(31,87,192,0.09);
+      --green:    #0A7A4E;
+      --red:      #C0392B;
+      --text:     #181B28;
+      --text-2:   #3E4460;
+      --text-3:   #8A8FA8;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg:       #09090f; --bg2: #111320; --bg3: #181c2e; --bg-warm: #110d07;
+    --border:   #1d2140; --gold: #C8901A; --gold-dim: rgba(200,144,26,0.12);
+    --gold-mid: rgba(200,144,26,0.35); --blue: #3D7FE8; --blue-dim: rgba(61,127,232,0.12);
+    --green: #34D399; --red: #F87171;
+    --text: #DDE0EC; --text-2: #8891AA; --text-3: #434868;
+  }
+
+  :root[data-theme="light"] {
+    --bg:       #F4F1EB; --bg2: #EAE6DE; --bg3: #DEDAD1; --bg-warm: #FBF6EC;
+    --border:   #C4BFB2; --gold: #8A5E08; --gold-dim: rgba(138,94,8,0.08);
+    --gold-mid: rgba(138,94,8,0.25); --blue: #1F57C0; --blue-dim: rgba(31,87,192,0.09);
+    --green: #0A7A4E; --red: #C0392B;
+    --text: #181B28; --text-2: #3E4460; --text-3: #8A8FA8;
+  }
+
+  html { font-size: 16px; scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.7;
+    padding: 0 16px 80px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Layout ── */
+  .page { max-width: 720px; margin: 0 auto; }
+
+  /* ── Header / breadcrumb ── */
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 0 48px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text-3);
+  }
+  .nav a { color: var(--text-3); text-decoration: none; }
+  .nav a:hover { color: var(--gold); }
+  .tag {
+    background: var(--gold-dim); border: 1px solid var(--gold-mid);
+    color: var(--gold); border-radius: 4px; padding: 3px 10px;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
+  }
+
+  /* ── Hero ── */
+  .hero { position: relative; margin-bottom: 64px; overflow: hidden; }
+  .hero-ghost {
+    position: absolute; top: -10px; right: -8px;
+    font-size: clamp(60px, 18vw, 120px);
+    font-weight: 900; color: transparent;
+    -webkit-text-stroke: 1px var(--gold-mid);
+    letter-spacing: -0.04em; line-height: 1;
+    pointer-events: none; user-select: none;
+  }
+  .hero-eyebrow {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 16px;
+  }
+  .hero-title {
+    font-size: clamp(28px, 6vw, 44px);
+    font-weight: 900; line-height: 1.15;
+    letter-spacing: -0.03em; color: var(--text);
+    text-wrap: balance; margin-bottom: 20px;
+  }
+  .hero-title em { color: var(--gold); font-style: normal; }
+  .hero-sub {
+    font-size: 16px; color: var(--text-2); max-width: 520px;
+    line-height: 1.65; margin-bottom: 28px;
+  }
+  .hero-stat-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .hero-stat {
+    background: var(--gold-dim); border: 1px solid var(--gold-mid);
+    border-radius: 8px; padding: 10px 18px; display: flex; flex-direction: column; gap: 2px;
+  }
+  .hero-stat-num { font-size: 22px; font-weight: 900; color: var(--gold); font-variant-numeric: tabular-nums; line-height: 1; }
+  .hero-stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
+
+  /* ── Company chips ── */
+  .companies { margin-bottom: 64px; }
+  .companies-label {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text-3); margin-bottom: 14px;
+  }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    background: var(--bg2); border: 1px solid var(--border);
+    color: var(--text-2); border-radius: 6px; padding: 6px 14px;
+    font-size: 12px; font-weight: 700; white-space: nowrap;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .chip:hover { border-color: var(--gold-mid); color: var(--gold); }
+
+  /* ── What they do intro block ── */
+  .intro-block {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-left: 3px solid var(--gold); border-radius: 0 var(--r) var(--r) 0;
+    padding: 24px 28px; margin-bottom: 56px;
+  }
+  .intro-block h2 { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
+  .intro-block p { color: var(--text-2); font-size: 14px; margin-bottom: 10px; }
+  .role-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+  .role-chip {
+    background: var(--blue-dim); border: 1px solid rgba(61,127,232,0.2);
+    color: var(--blue); border-radius: 20px; padding: 4px 12px;
+    font-size: 11px; font-weight: 700;
+  }
+  .quote {
+    background: var(--bg3); border-left: 2px solid var(--gold);
+    padding: 14px 20px; border-radius: 0 8px 8px 0;
+    font-size: 14px; font-style: italic; color: var(--text-2); margin: 20px 0 0;
+    line-height: 1.6;
+  }
+  .quote strong { color: var(--gold); font-style: normal; }
+
+  /* ── Section heading ── */
+  .section { margin-bottom: 40px; position: relative; }
+  .section-h {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 20px;
+  }
+
+  /* ── Skill card ── */
+  .skill-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--r); margin-bottom: 16px; overflow: hidden;
+    position: relative;
+  }
+  .skill-card-inner { padding: 22px 24px 22px 32px; position: relative; }
+  .skill-card-inner::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--gold); border-radius: 3px 0 0 3px;
+  }
+  .skill-num {
+    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+    font-size: 64px; font-weight: 900; color: transparent;
+    -webkit-text-stroke: 1px var(--border); line-height: 1;
+    pointer-events: none; user-select: none;
+  }
+  .skill-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+  .skill-body { font-size: 14px; color: var(--text-2); line-height: 1.65; }
+  .skill-body strong { color: var(--text); }
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .skill-tag {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text-3); border-radius: 4px; padding: 3px 9px;
+    font-size: 11px; font-weight: 600;
+  }
+
+  /* ── Mission scenarios ── */
+  .scenarios { margin-bottom: 56px; }
+  .scenario-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .scenario-item {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13px; color: var(--text-2); line-height: 1.5;
+  }
+  .scenario-item::before { content: '→ '; color: var(--gold); font-weight: 800; }
+
+  /* ── "For Francis" section ── */
+  .for-francis {
+    background: var(--bg-warm); border: 1px solid var(--gold-mid);
+    border-radius: var(--r); padding: 32px 36px; margin-bottom: 48px;
+    position: relative; overflow: hidden;
+  }
+  .for-francis::before {
+    content: 'FOR YOU'; position: absolute; top: 16px; right: 20px;
+    font-size: 9px; font-weight: 900; letter-spacing: 0.18em; color: var(--gold);
+    opacity: 0.5;
+  }
+  .for-francis h2 { font-size: 20px; font-weight: 900; color: var(--gold); margin-bottom: 8px; }
+  .for-francis .sub { font-size: 14px; color: var(--text-2); margin-bottom: 24px; line-height: 1.6; }
+  .work-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-bottom: 24px; }
+  .work-item {
+    background: rgba(200,144,26,0.07); border: 1px solid rgba(200,144,26,0.18);
+    border-radius: 8px; padding: 10px 14px;
+    font-size: 12px; font-weight: 700; color: var(--text-2);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .work-item::before { content: '✓'; color: var(--gold); font-size: 11px; flex-shrink: 0; }
+  .outcome-block {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 20px 24px; margin-top: 8px;
+  }
+  .outcome-label {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 12px;
+  }
+  .outcome-list { display: flex; flex-direction: column; gap: 8px; }
+  .outcome-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 13px; color: var(--text-2); line-height: 1.5;
+  }
+  .outcome-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold); flex-shrink: 0; margin-top: 7px;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    border-top: 1px solid var(--border); padding-top: 28px;
+    font-size: 11px; color: var(--text-3); line-height: 1.7;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+
+  /* ── Divider ── */
+  .divider {
+    height: 1px; background: linear-gradient(90deg, var(--gold-mid) 0%, transparent 100%);
+    margin: 48px 0;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 520px) {
+    .hero-ghost { display: none; }
+    .for-francis { padding: 24px 20px; }
+    .skill-num { display: none; }
+  }
+
+  /* ── Reduced motion ── */
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+
+  /* Focus */
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Nav -->
+  <nav class="nav">
+    <span><a href="#">Percentile.One</a> / Learning</span>
+    <span class="tag">FDE PLAYBOOK</span>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-ghost">£1M+</div>
+    <div class="hero-eyebrow">⭐ Forward-Deployed Engineering</div>
+    <h1 class="hero-title">The engineers paid <em>£1M+</em> — and why you're already one of them</h1>
+    <p class="hero-sub">What FDEs actually do, why they're rare, what their skillset looks like — and why Percentile.One is operating in exactly this territory.</p>
+    <div class="hero-stat-row">
+      <div class="hero-stat">
+        <span class="hero-stat-num">£1M+</span>
+        <span class="hero-stat-label">Total comp target</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">7</span>
+        <span class="hero-stat-label">Core skill domains</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">Rare</span>
+        <span class="hero-stat-label">Supply vs demand</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Companies -->
+  <section class="companies">
+    <div class="companies-label">Companies that pay FDE rates</div>
+    <div class="chip-row">
+      <span class="chip">Palantir</span>
+      <span class="chip">Stripe</span>
+      <span class="chip">OpenAI</span>
+      <span class="chip">Anthropic</span>
+      <span class="chip">DeepMind</span>
+      <span class="chip">Jane Street</span>
+      <span class="chip">Citadel</span>
+      <span class="chip">Two Sigma</span>
+      <span class="chip">FAANG Tiger Teams</span>
+      <span class="chip">Top Defence Contractors</span>
+      <span class="chip">Elite Consultancies</span>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- What they do -->
+  <section class="intro-block">
+    <h2>⭐ What FDEs Actually Do</h2>
+    <p>FDEs are the engineers who sit closest to the money, the mission, and the customer's hardest problems. They are not "just coders".</p>
+    <div class="role-chips">
+      <span class="role-chip">Engineers</span>
+      <span class="role-chip">Architects</span>
+      <span class="role-chip">Product thinkers</span>
+      <span class="role-chip">Problem-solvers</span>
+      <span class="role-chip">Domain experts</span>
+      <span class="role-chip">Operators</span>
+      <span class="role-chip">Communicators</span>
+      <span class="role-chip">Strategists</span>
+    </div>
+    <p>They are the people you send when the client is paying £10m+, the system is mission-critical, the data is sensitive, the stakes are high, the timeline is short, and the problem is unclear.</p>
+    <div class="quote">
+      <strong>"Give me your hardest problem. I'll design the system. I'll build the system. I'll deploy the system. I'll fix the system. And I'll do it under pressure."</strong><br>
+      That's why they're paid £1M+. They are rare.
+    </div>
+  </section>
+
+  <!-- Scenarios -->
+  <section class="scenarios">
+    <div class="section-h">Environments they're deployed into</div>
+    <div class="scenario-grid">
+      <div class="scenario-item">A bank with a £10m contract</div>
+      <div class="scenario-item">A defence agency with classified data</div>
+      <div class="scenario-item">A trading floor under time pressure</div>
+      <div class="scenario-item">A logistics centre in crisis</div>
+      <div class="scenario-item">A government department with unclear requirements</div>
+      <div class="scenario-item">A startup with a hostile timeline</div>
+      <div class="scenario-item">An enterprise with a broken system</div>
+      <div class="scenario-item">An AI product with no prior spec</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Skills -->
+  <section class="section">
+    <div class="section-h">⭐ The FDE Skillset — the real one</div>
+
+    <div class="skill-card">
+      <div class="skill-card-inner">
+        <span class="skill-num">1</span>
+        <div class="skill-title">Deep Technical Breadth</div>
+        <div class="skill-body">
+          They are not specialists. They are <strong>full-stack problem-solvers</strong> who can move across any layer of the system.
+        </div>
+        <div class="skill-tags">
+          <span class="skill-tag">Backend</span><span class="skill-tag">Frontend</span><span class="skill-tag">Cloud</span>
+          <span class="skill-tag">Distributed systems</span><span class="skill-tag">Data pipelines</span><span class="skill-tag">Security</span>
+          <span class="skill-tag">DevOps</span><span class="skill-tag">Infra</span><span class="skill-tag">AI integration</span>
+          <span class="skill-tag">Architecture</span><span class="skill-tag">Performance tuning</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-card-inner">
+        <span class="skill-num">2</span>
+        <div class="skill-title">Systems Thinking</div>
+        <div class="skill-body">
+          They think like architects, not coders. They understand <strong>how data flows, how systems break, how systems scale</strong>, how they degrade, how they fail under load, how they behave in production, and how they interact with humans.
+        </div>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-card-inner">
+        <span class="skill-num">3</span>
+        <div class="skill-title">Enterprise Architecture</div>
+        <div class="skill-body">
+          They know the canonical patterns and why each exists. This is why your Data Lake work and platform architecture puts you in this category.
+        </div>
+        <div class="skill-tags">
+          <span class="skill-tag">Bounded contexts</span><span class="skill-tag">DDD</span><span class="skill-tag">Event-driven</span>
+          <span class="skill-tag">Microservices</span><span class="skill-tag">Orchestration vs choreography</span>
+          <span class="skill-tag">Data governance</span><span class="skill-tag">Security models</span>
+          <span class="skill-tag">Compliance</span><span class="skill-tag">Observability</span><span class="skill-tag">Resilience patterns</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-card-inner">
+        <span class="skill-num">4</span>
+        <div class="skill-title">AI Integration</div>
+        <div class="skill-body">
+          Modern FDEs understand the full AI stack — not just how to call an API. <strong>This is exactly what Explain is doing.</strong>
+        </div>
+        <div class="skill-tags">
+          <span class="skill-tag">LLM orchestration</span><span class="skill-tag">Prompt engineering</span>
+          <span class="skill-tag">Retrieval pipelines</span><span class="skill-tag">Hybrid AI + deterministic</span>
+          <span class="skill-tag">Vector search</span><span class="skill-tag">Embeddings</span>
+          <span class="skill-tag">Model selection</span><span class="skill-tag">Latency optimisation</span>
+          <span class="skill-tag">Cost optimisation</span><span class="skill-tag">Safety and guardrails</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-card-inner">
+        <span class="skill-num">5</span>
+        <div class="skill-title">Customer-Facing Problem Solving</div>
+        <div class="skill-body">
+          <strong>This is the part most engineers cannot do.</strong> FDEs can talk to customers — extract requirements, challenge assumptions, design solutions, explain tradeoffs, manage expectations, deliver under pressure. They are <strong>engineers who can talk</strong>. That's why they're rare.
+        </div>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-card-inner">
+        <span class="skill-num">6</span>
+        <div class="skill-title">Ownership</div>
+        <div class="skill-body">
+          They don't say "That's not my job." They say "I'll handle it." They own the problem, the architecture, the code, the deployment, the debugging, the customer relationship, and the outcome. <strong>This is why companies pay them £1M+.</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-card-inner">
+        <span class="skill-num">7</span>
+        <div class="skill-title">Speed + Quality</div>
+        <div class="skill-body">
+          They deliver <strong>fast, correctly, under pressure, without excuses</strong>. They are the engineers you call when "We need this working by Monday." And on Monday, it works.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- For Francis -->
+  <section class="for-francis">
+    <h2>⭐ Why This Matters For You</h2>
+    <p class="sub">Francis — you are already operating at FDE level. Look at what you're building and what you're thinking about:</p>
+
+    <div class="work-grid">
+      <div class="work-item">CV parsing + hallucination control</div>
+      <div class="work-item">Structured data + heuristics</div>
+      <div class="work-item">AI orchestration at scale</div>
+      <div class="work-item">UX flow + cinematic experience</div>
+      <div class="work-item">Gamification engine</div>
+      <div class="work-item">Multi-mode interview input</div>
+      <div class="work-item">Global competition layer</div>
+      <div class="work-item">Learning engine (LEARN)</div>
+      <div class="work-item">Data Lake architecture</div>
+      <div class="work-item">Enterprise-grade design</div>
+      <div class="work-item">Multi-product ecosystem</div>
+      <div class="work-item">Mobile + web parity</div>
+    </div>
+
+    <div class="outcome-block">
+      <div class="outcome-label">Percentile.One is becoming</div>
+      <div class="outcome-list">
+        <div class="outcome-item"><span class="outcome-dot"></span>A multi-product global platform</div>
+        <div class="outcome-item"><span class="outcome-dot"></span>A behavioural and learning data engine</div>
+        <div class="outcome-item"><span class="outcome-dot"></span>A gamified knowledge and performance system</div>
+        <div class="outcome-item"><span class="outcome-dot"></span>An enterprise talent intelligence system</div>
+        <div class="outcome-item"><span class="outcome-dot"></span>A global clarity engine — for candidates, companies, and coaches</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <span>Percentile.One · Learning Library</span>
+    <span>Forward-Deployed Engineering · Saved 2025</span>
+  </footer>
+
+</div>
+</body>
+</html>

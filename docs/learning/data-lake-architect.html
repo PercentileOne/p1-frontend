@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Data Lake Architect — The Intelligence Layer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #080c10;
+    --bg2:      #0d1318;
+    --bg3:      #131b24;
+    --bg-cool:  #07100f;
+    --border:   #162030;
+    --accent:   #0EA5E9;
+    --acc-dim:  rgba(14,165,233,0.10);
+    --acc-mid:  rgba(14,165,233,0.30);
+    --cyan:     #22D3EE;
+    --gold:     #FBBF24;
+    --text:     #D8E6F0;
+    --text-2:   #7B9BB0;
+    --text-3:   #334455;
+    --r:        14px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #F0F5FA; --bg2: #E4EDF5; --bg3: #D8E5EF; --bg-cool: #EBF5F0;
+      --border: #B8CDD8; --accent: #0369A1; --acc-dim: rgba(3,105,161,0.08);
+      --acc-mid: rgba(3,105,161,0.22); --cyan: #0891B2; --gold: #B45309;
+      --text: #0F1E2C; --text-2: #2A4A5E; --text-3: #6A8CA0;
+    }
+  }
+  :root[data-theme="dark"]  { --bg:#080c10;--bg2:#0d1318;--bg3:#131b24;--bg-cool:#07100f;--border:#162030;--accent:#0EA5E9;--acc-dim:rgba(14,165,233,0.10);--acc-mid:rgba(14,165,233,0.30);--cyan:#22D3EE;--gold:#FBBF24;--text:#D8E6F0;--text-2:#7B9BB0;--text-3:#334455; }
+  :root[data-theme="light"] { --bg:#F0F5FA;--bg2:#E4EDF5;--bg3:#D8E5EF;--bg-cool:#EBF5F0;--border:#B8CDD8;--accent:#0369A1;--acc-dim:rgba(3,105,161,0.08);--acc-mid:rgba(3,105,161,0.22);--cyan:#0891B2;--gold:#B45309;--text:#0F1E2C;--text-2:#2A4A5E;--text-3:#6A8CA0; }
+
+  html { font-size: 16px; scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system,'Segoe UI',system-ui,sans-serif; line-height: 1.7; padding: 0 16px 80px; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 720px; margin: 0 auto; }
+
+  .nav { display:flex; align-items:center; justify-content:space-between; padding:20px 0 48px; font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-3); }
+  .nav a { color:var(--text-3); text-decoration:none; }
+  .nav a:hover { color:var(--accent); }
+  .tag { background:var(--acc-dim); border:1px solid var(--acc-mid); color:var(--accent); border-radius:4px; padding:3px 10px; font-size:10px; font-weight:800; letter-spacing:0.1em; }
+
+  .hero { position:relative; margin-bottom:56px; overflow:hidden; }
+  .hero-ghost { position:absolute; top:-16px; right:-4px; font-size:clamp(56px,16vw,108px); font-weight:900; color:transparent; -webkit-text-stroke:1px var(--acc-mid); letter-spacing:-0.04em; line-height:1; pointer-events:none; user-select:none; }
+  .hero-eyebrow { font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); margin-bottom:16px; }
+  .hero-title { font-size:clamp(26px,5.5vw,42px); font-weight:900; line-height:1.15; letter-spacing:-0.03em; color:var(--text); text-wrap:balance; margin-bottom:20px; }
+  .hero-title em { color:var(--accent); font-style:normal; }
+  .hero-sub { font-size:16px; color:var(--text-2); max-width:540px; line-height:1.65; margin-bottom:28px; }
+  .hero-stat-row { display:flex; gap:16px; flex-wrap:wrap; }
+  .hero-stat { background:var(--acc-dim); border:1px solid var(--acc-mid); border-radius:8px; padding:10px 18px; display:flex; flex-direction:column; gap:2px; }
+  .hero-stat-num { font-size:20px; font-weight:900; color:var(--accent); line-height:1; }
+  .hero-stat-label { font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-3); }
+
+  .divider { height:1px; background:linear-gradient(90deg,var(--acc-mid) 0%,transparent 100%); margin:48px 0; }
+
+  .section-h { font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); margin-bottom:20px; }
+
+  /* Medallion zones */
+  .zones { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:48px; }
+  .zone { border-radius:var(--r); padding:20px 18px; border:1px solid var(--border); }
+  .zone-bronze { background:linear-gradient(160deg, rgba(146,64,14,0.15), rgba(120,53,15,0.06)); border-color:rgba(146,64,14,0.3); }
+  .zone-silver { background:linear-gradient(160deg, rgba(71,85,105,0.2), rgba(51,65,85,0.08)); border-color:rgba(100,116,139,0.3); }
+  .zone-gold   { background:linear-gradient(160deg, rgba(161,98,7,0.2), rgba(133,77,14,0.08)); border-color:rgba(161,98,7,0.35); }
+  .zone-label { font-size:10px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px; }
+  .zone-bronze .zone-label { color:#D97706; }
+  .zone-silver .zone-label { color:#94A3B8; }
+  .zone-gold   .zone-label { color:#F59E0B; }
+  .zone-name { font-size:15px; font-weight:800; color:var(--text); margin-bottom:8px; }
+  .zone-desc { font-size:12px; color:var(--text-2); line-height:1.55; }
+
+  /* Problem cards */
+  .problem-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); margin-bottom:14px; overflow:hidden; }
+  .problem-inner { padding:20px 24px 20px 30px; position:relative; }
+  .problem-inner::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent); border-radius:3px 0 0 3px; }
+  .problem-num { position:absolute; right:18px; top:50%; transform:translateY(-50%); font-size:56px; font-weight:900; color:transparent; -webkit-text-stroke:1px var(--border); line-height:1; pointer-events:none; }
+  .problem-title { font-size:15px; font-weight:800; color:var(--text); margin-bottom:6px; }
+  .problem-body { font-size:13px; color:var(--text-2); line-height:1.65; }
+  .problem-body strong { color:var(--text); }
+
+  /* Moat block */
+  .moat-block { background:var(--bg-cool); border:1px solid var(--acc-mid); border-radius:var(--r); padding:28px 32px; margin-bottom:48px; }
+  .moat-block h2 { font-size:18px; font-weight:800; color:var(--accent); margin-bottom:12px; }
+  .moat-body { font-size:14px; color:var(--text-2); line-height:1.7; margin-bottom:16px; }
+  .moat-points { display:flex; flex-direction:column; gap:10px; }
+  .moat-point { display:flex; align-items:flex-start; gap:10px; font-size:13px; color:var(--text-2); }
+  .moat-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); flex-shrink:0; margin-top:7px; }
+
+  /* Stack chips */
+  .chip-row { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { background:var(--bg2); border:1px solid var(--border); color:var(--text-2); border-radius:6px; padding:6px 14px; font-size:12px; font-weight:700; transition:border-color 0.15s,color 0.15s; }
+  .chip:hover { border-color:var(--acc-mid); color:var(--accent); }
+  .companies { margin-bottom:48px; }
+  .companies-label { font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-3); margin-bottom:14px; }
+
+  /* Francis section */
+  .for-francis { background:var(--bg-cool); border:1px solid var(--acc-mid); border-radius:var(--r); padding:32px 36px; margin-bottom:48px; position:relative; overflow:hidden; }
+  .for-francis::before { content:'FOR EXPLAIN'; position:absolute; top:16px; right:20px; font-size:9px; font-weight:900; letter-spacing:0.18em; color:var(--accent); opacity:0.5; }
+  .for-francis h2 { font-size:20px; font-weight:900; color:var(--accent); margin-bottom:8px; }
+  .for-francis .sub { font-size:14px; color:var(--text-2); margin-bottom:24px; line-height:1.65; }
+  .future-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; margin-bottom:20px; }
+  .future-item { background:var(--acc-dim); border:1px solid var(--acc-mid); border-radius:8px; padding:10px 14px; font-size:12px; font-weight:700; color:var(--text-2); display:flex; align-items:center; gap:8px; }
+  .future-item::before { content:'→'; color:var(--accent); font-size:12px; flex-shrink:0; }
+  .insight-block { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:18px 22px; font-size:14px; color:var(--text-2); line-height:1.7; font-style:italic; }
+  .insight-block strong { color:var(--accent); font-style:normal; }
+
+  .footer { border-top:1px solid var(--border); padding-top:28px; font-size:11px; color:var(--text-3); line-height:1.7; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  @media(max-width:520px){ .hero-ghost{display:none;} .for-francis{padding:24px 20px;} .problem-num{display:none;} .zones{grid-template-columns:1fr;} }
+  @media(prefers-reduced-motion:reduce){ *{transition:none!important;} }
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav class="nav">
+    <span><a href="fde-playbook.html">← FDE Playbook</a> / Learning</span>
+    <span class="tag">DATA ARCHITECTURE</span>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-ghost">DATA</div>
+    <div class="hero-eyebrow">⭐ The Intelligence Layer</div>
+    <h1 class="hero-title">The Data Lake Architect — the engineer who builds <em>the moat</em></h1>
+    <p class="hero-sub">Data doesn't depreciate. It compounds. A well-designed data lake is the only competitive asset in technology that cannot be copied, purchased, or reverse-engineered.</p>
+    <div class="hero-stat-row">
+      <div class="hero-stat"><span class="hero-stat-num">∞</span><span class="hero-stat-label">Compounds over time</span></div>
+      <div class="hero-stat"><span class="hero-stat-num">3</span><span class="hero-stat-label">Medallion zones</span></div>
+      <div class="hero-stat"><span class="hero-stat-num">Moat</span><span class="hero-stat-label">Strategic advantage</span></div>
+    </div>
+  </header>
+
+  <section style="margin-bottom:56px;">
+    <div class="section-h">The Medallion Architecture — Bronze · Silver · Gold</div>
+    <p style="font-size:14px;color:var(--text-2);line-height:1.7;margin-bottom:20px;">Every serious data lake is built in three zones. Each zone transforms the data — removing noise, enforcing contracts, and distilling it toward intelligence. The Data Lake Architect designs and governs all three.</p>
+    <div class="zones">
+      <div class="zone zone-bronze">
+        <div class="zone-label">Zone 1</div>
+        <div class="zone-name">Bronze / Raw</div>
+        <div class="zone-desc">The exact data as it arrived. No transformation. No deletion. Immutable. The source of truth for everything that follows. Structured and unstructured, streaming and batch — all ingested here.</div>
+      </div>
+      <div class="zone zone-silver">
+        <div class="zone-label">Zone 2</div>
+        <div class="zone-name">Silver / Clean</div>
+        <div class="zone-desc">Validated, deduplicated, standardised. Schemas enforced. PII masked or removed. Data contracts applied. This is the layer analysts and ML engineers trust to build on.</div>
+      </div>
+      <div class="zone zone-gold">
+        <div class="zone-label">Zone 3</div>
+        <div class="zone-name">Gold / Intelligence</div>
+        <div class="zone-desc">Business-ready aggregations, feature stores, and dashboards. The questions the CEO, the product team, and the enterprise client need answered — answered in milliseconds.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section style="margin-bottom:48px;">
+    <div class="section-h">8 problems a Data Lake Architect solves</div>
+
+    <div class="problem-card"><div class="problem-inner"><span class="problem-num">1</span>
+      <div class="problem-title">Ingestion at scale</div>
+      <div class="problem-body">Designing pipelines that handle <strong>streaming events</strong> (Kafka, Event Hubs) and <strong>batch loads</strong> (nightly ETL, API pulls) without data loss, duplication, or lag — at any volume.</div>
+    </div></div>
+
+    <div class="problem-card"><div class="problem-inner"><span class="problem-num">2</span>
+      <div class="problem-title">Schema evolution and data contracts</div>
+      <div class="problem-body">Systems change. Fields are renamed, removed, added. A Data Lake Architect defines <strong>data contracts</strong> between producers and consumers so changes never silently break downstream intelligence.</div>
+    </div></div>
+
+    <div class="problem-card"><div class="problem-inner"><span class="problem-num">3</span>
+      <div class="problem-title">Governance, lineage, and compliance</div>
+      <div class="problem-body">Every data point must have a traceable origin, a retention policy, and a security classification. <strong>GDPR, HIPAA, SOC 2</strong> — the architect designs the system so compliance is baked in, not bolted on.</div>
+    </div></div>
+
+    <div class="problem-card"><div class="problem-inner"><span class="problem-num">4</span>
+      <div class="problem-title">Query performance and cost optimisation</div>
+      <div class="problem-body">Unoptimised queries on petabyte-scale data cost thousands per run. The architect designs <strong>partitioning strategies, caching layers, and materialised views</strong> so queries are fast and bills are controlled.</div>
+    </div></div>
+
+    <div class="problem-card"><div class="problem-inner"><span class="problem-num">5</span>
+      <div class="problem-title">ML feature stores</div>
+      <div class="problem-body">AI is only as good as its training data. The architect builds <strong>feature stores</strong> — versioned, reusable, low-latency data representations that ML models consume at inference time without recomputing from scratch.</div>
+    </div></div>
+
+    <div class="problem-card"><div class="problem-inner"><span class="problem-num">6</span>
+      <div class="problem-title">Real-time vs batch tradeoffs</div>
+      <div class="problem-body">Not every decision needs to wait for a nightly batch. The architect knows when to use <strong>streaming (sub-second)</strong>, micro-batch (seconds), or daily aggregation — and builds the right pipeline for each.</div>
+    </div></div>
+
+    <div class="problem-card"><div class="problem-inner"><span class="problem-num">7</span>
+      <div class="problem-title">Observability and data quality</div>
+      <div class="problem-body"><strong>Silent data corruption</strong> is the most dangerous failure mode. The architect instruments freshness checks, completeness tests, anomaly detection, and alerting so bad data never reaches the Gold layer undetected.</div>
+    </div></div>
+
+    <div class="problem-card"><div class="problem-inner"><span class="problem-num">8</span>
+      <div class="problem-title">Self-serve analytics</div>
+      <div class="problem-body">The ultimate goal: a system so well-designed that <strong>product managers, analysts, and executives</strong> can answer their own questions without raising a ticket. The architect builds the catalogue, the semantics layer, and the access model that makes this possible.</div>
+    </div></div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="moat-block">
+    <h2>Why data is the only moat that compounds</h2>
+    <p class="moat-body">Code can be copied. Products can be cloned. Designs can be imitated. But a dataset built over years of real user behaviour — that cannot be reproduced. It can only be accumulated.</p>
+    <div class="moat-points">
+      <div class="moat-point"><span class="moat-dot"></span><span>More users → more data → better models → better product → more users. A self-reinforcing flywheel.</span></div>
+      <div class="moat-point"><span class="moat-dot"></span><span>Historical depth is irreplaceable. A competitor starting today can copy your product on day one — but they cannot copy your last 5 years of data.</span></div>
+      <div class="moat-point"><span class="moat-dot"></span><span>Behavioural data reveals patterns no human would notice — patterns that become the intelligence layer powering your AI.</span></div>
+      <div class="moat-point"><span class="moat-dot"></span><span>Enterprise clients pay premium prices for platforms that can prove outcomes with data. The lake is the evidence.</span></div>
+      <div class="moat-point"><span class="moat-dot"></span><span>Every data point collected today is worth more in year 5 than it was on the day it was captured.</span></div>
+    </div>
+  </section>
+
+  <section class="companies" style="margin-bottom:48px;">
+    <div class="companies-label">The Data Lake stack</div>
+    <div class="chip-row">
+      <span class="chip">Azure Data Lake</span><span class="chip">Databricks</span><span class="chip">Apache Spark</span>
+      <span class="chip">Delta Lake</span><span class="chip">Apache Kafka</span><span class="chip">dbt</span>
+      <span class="chip">Synapse Analytics</span><span class="chip">BigQuery</span><span class="chip">Snowflake</span>
+      <span class="chip">Apache Iceberg</span><span class="chip">Feast (feature store)</span><span class="chip">Great Expectations</span>
+      <span class="chip">Apache Airflow</span><span class="chip">Azure Event Hubs</span>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="for-francis">
+    <h2>What Explain's Data Lake becomes</h2>
+    <p class="sub">Every session running through Explain right now is a data point. After 1 million sessions, Percentile.One will hold the richest behavioural dataset in global talent assessment. Here's what that looks like:</p>
+    <div class="future-grid">
+      <div class="future-item">Every CV parsed becomes structured data</div>
+      <div class="future-item">Every interview score feeds the scoring model</div>
+      <div class="future-item">Every LEARN session maps to skill gaps</div>
+      <div class="future-item">Every challenge result builds the benchmark</div>
+      <div class="future-item">Every voice pattern feeds confidence scoring</div>
+      <div class="future-item">Every question answered calibrates difficulty</div>
+      <div class="future-item">Cross-role performance patterns emerge</div>
+      <div class="future-item">Industry benchmarks become proprietary</div>
+    </div>
+    <div class="insight-block">
+      After enough sessions, Percentile.One won't just <em>know</em> what a strong answer looks like for a Senior Software Architect. It will know what a strong answer looks like for a <strong>Senior Software Architect in fintech, with 10+ years experience, applying at a scale-up</strong> — broken down by competency, by question type, by industry. <strong>That is the intelligence layer. That is the moat.</strong>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span>Percentile.One · Learning Library</span>
+    <span>Data Lake Architecture · <a href="ai-systems-engineer.html" style="color:var(--accent);text-decoration:none;">Next: AI Systems Engineer →</a></span>
+  </footer>
+
+</div>
+</body>
+</html>

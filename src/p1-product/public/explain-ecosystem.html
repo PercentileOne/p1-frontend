@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explain.global — Platform Ecosystem</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:      #0B0B0B;
+      --surface:  #131313;
+      --surface2: #181818;
+      --edge:     #222222;
+      --edge2:    #2C2C2C;
+      --hi:       #F2F2EE;
+      --mid:      #9A9A94;
+      --lo:       #4A4A46;
+      --green:    #6DFF8A;
+      --green-d:  rgba(109,255,138,0.08);
+      --green-b:  rgba(109,255,138,0.18);
+      --amber:    #F0A500;
+      --amber-d:  rgba(240,165,0,0.08);
+      --amber-b:  rgba(240,165,0,0.18);
+      --blue:     #4F9EFF;
+      --blue-d:   rgba(79,158,255,0.08);
+      --blue-b:   rgba(79,158,255,0.18);
+      --red:      #FF5F5F;
+    }
+
+    body {
+      background: var(--ink);
+      color: var(--hi);
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Typography ─────────────────────────────────── */
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .eyebrow.amber { color: var(--amber); }
+    .eyebrow.blue  { color: var(--blue); }
+
+    h1 {
+      font-size: clamp(36px, 5.5vw, 60px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      color: var(--hi);
+      margin-bottom: 22px;
+    }
+    h1 .a  { color: var(--green); }
+    h1 .am { color: var(--amber); }
+    h1 .bl { color: var(--blue);  }
+
+    h2.section-title {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 900;
+      letter-spacing: -0.035em;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      margin-bottom: 8px;
+      color: var(--hi);
+    }
+
+    .lead {
+      font-size: 16px;
+      color: var(--mid);
+      line-height: 1.72;
+      max-width: 640px;
+      margin-bottom: 36px;
+    }
+
+    /* ── Layout ─────────────────────────────────────── */
+    .page { max-width: 960px; margin: 0 auto; padding: 0 32px; }
+    .wide { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+    hr.rule {
+      border: none;
+      border-top: 1px solid var(--edge);
+      margin: 0;
+    }
+
+    /* ── Masthead ───────────────────────────────────── */
+    .masthead {
+      border-bottom: 1px solid var(--edge);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 100%;
+    }
+    .masthead-left { font-size: 11px; color: var(--lo); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+    .masthead-right {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 5px 12px; border: 1px solid var(--edge2); color: var(--mid);
+    }
+
+    /* ── Hero ───────────────────────────────────────── */
+    .hero {
+      padding: 72px 32px 64px;
+      max-width: 960px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-wm {
+      position: absolute;
+      top: 20px; right: -20px;
+      font-size: clamp(100px, 18vw, 200px);
+      font-weight: 900;
+      letter-spacing: -0.06em;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(109,255,138,0.07);
+      pointer-events: none;
+      line-height: 1;
+      user-select: none;
+    }
+
+    /* ── Stat tiles ─────────────────────────────────── */
+    .stats {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .stat {
+      border: 1px solid var(--edge2);
+      padding: 18px 28px;
+      min-width: 140px;
+    }
+    .stat strong {
+      display: block;
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      color: var(--green);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat span {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--lo);
+    }
+    .stat.am strong { color: var(--amber); }
+    .stat.bl strong { color: var(--blue); }
+
+    /* ── Full-bleed section ─────────────────────────── */
+    .section-block {
+      border-top: 1px solid var(--edge);
+      border-bottom: 1px solid var(--edge);
+      padding: 64px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .section-wm {
+      position: absolute;
+      bottom: -30px; right: -10px;
+      font-size: clamp(80px, 14vw, 160px);
+      font-weight: 900;
+      letter-spacing: -0.06em;
+      pointer-events: none;
+      line-height: 1;
+      user-select: none;
+    }
+    .section-wm.g { color: transparent; -webkit-text-stroke: 1px rgba(109,255,138,0.06); }
+    .section-wm.a { color: transparent; -webkit-text-stroke: 1px rgba(240,165,0,0.06); }
+    .section-wm.b { color: transparent; -webkit-text-stroke: 1px rgba(79,158,255,0.06); }
+
+    /* ── Gateway cards ──────────────────────────────── */
+    .gateway-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1px;
+      background: var(--edge);
+      border: 1px solid var(--edge);
+      margin-top: 36px;
+    }
+    .gateway {
+      background: var(--surface);
+      padding: 28px 26px 32px;
+    }
+    .gateway-num {
+      font-size: 40px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      margin-bottom: 14px;
+    }
+    .gateway-num.g { color: var(--green); }
+    .gateway-num.a { color: var(--amber); }
+    .gateway-num.b { color: var(--blue);  }
+    .gateway h3 { font-size: 15px; margin-bottom: 10px; }
+    .gateway p  { font-size: 13px; color: var(--mid); line-height: 1.65; margin-bottom: 14px; }
+    .gateway .tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border: 1px solid;
+    }
+    .tag.g { color: var(--green); border-color: var(--green-b); background: var(--green-d); }
+    .tag.a { color: var(--amber); border-color: var(--amber-b); background: var(--amber-d); }
+    .tag.b { color: var(--blue);  border-color: var(--blue-b);  background: var(--blue-d);  }
+
+    /* ── Portal sections ────────────────────────────── */
+    .portal-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+      margin-bottom: 48px;
+    }
+    @media (max-width: 700px) {
+      .portal-header { grid-template-columns: 1fr; }
+    }
+
+    /* ── Feature list ───────────────────────────────── */
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--edge2);
+    }
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--edge);
+      font-size: 13px;
+    }
+    .feature-item:last-child { border-bottom: none; }
+    .feature-item .fi-icon {
+      font-size: 13px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .feature-item strong { color: var(--hi); font-size: 13px; }
+    .feature-item span { color: var(--mid); }
+
+    /* ── Numbered steps ─────────────────────────────── */
+    .steps { display: flex; flex-direction: column; gap: 20px; }
+    .step { display: flex; gap: 16px; align-items: flex-start; }
+    .step-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 900;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .step-num.g { background: var(--green-d); border: 1px solid var(--green-b); color: var(--green); }
+    .step-num.a { background: var(--amber-d); border: 1px solid var(--amber-b); color: var(--amber); }
+    .step-num.b { background: var(--blue-d);  border: 1px solid var(--blue-b);  color: var(--blue);  }
+    .step-body { flex: 1; font-size: 14px; line-height: 1.65; color: var(--mid); }
+    .step-body strong { color: var(--hi); }
+
+    /* ── Screen mockup ──────────────────────────────── */
+    .mockup-wrap {
+      border: 1px solid var(--edge2);
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .mockup-bar {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--edge);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mockup-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--edge2); }
+    .mockup-dot.r { background: #FF5F5F44; }
+    .mockup-dot.y { background: #FFBD2E44; }
+    .mockup-dot.g { background: #28C84044; }
+    .mockup-url {
+      flex: 1; background: var(--surface); border: 1px solid var(--edge); padding: 3px 10px;
+      font-size: 10px; color: var(--lo); font-family: monospace; margin: 0 8px;
+    }
+    .mockup-body { padding: 20px 20px 24px; }
+
+    /* Mini UI elements inside mockups */
+    .mu-nav {
+      display: flex; gap: 0; border-bottom: 1px solid var(--edge);
+      margin: -20px -20px 16px; padding: 0 20px;
+    }
+    .mu-nav-item {
+      padding: 10px 16px; font-size: 11px; font-weight: 600; color: var(--lo);
+      border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap;
+    }
+    .mu-nav-item.active { color: var(--hi); border-bottom-color: var(--green); }
+    .mu-nav-item.amber.active { color: var(--hi); border-bottom-color: var(--amber); }
+    .mu-nav-item.blue.active { color: var(--hi); border-bottom-color: var(--blue); }
+    .mu-label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--lo); margin-bottom: 6px; }
+    .mu-input {
+      background: var(--ink); border: 1px solid var(--edge2); padding: 8px 10px;
+      font-size: 11px; color: var(--mid); width: 100%; margin-bottom: 10px;
+    }
+    .mu-btn {
+      display: inline-block; padding: 8px 16px; font-size: 11px; font-weight: 700;
+      border: none; cursor: pointer;
+    }
+    .mu-btn.g { background: var(--green); color: #000; }
+    .mu-btn.a { background: var(--amber); color: #000; }
+    .mu-btn.b { background: var(--blue);  color: #fff; }
+    .mu-btn.ghost { background: transparent; border: 1px solid var(--edge2); color: var(--mid); }
+    .mu-chip {
+      display: inline-block; padding: 3px 9px; font-size: 10px; font-weight: 700;
+      border: 1px solid var(--edge2); color: var(--mid); margin: 2px;
+    }
+    .mu-chip.g { border-color: var(--green-b); color: var(--green); background: var(--green-d); }
+    .mu-chip.a { border-color: var(--amber-b); color: var(--amber); background: var(--amber-d); }
+    .mu-chip.b { border-color: var(--blue-b);  color: var(--blue);  background: var(--blue-d);  }
+    .mu-card {
+      border: 1px solid var(--edge2); padding: 10px 12px; background: var(--ink); margin-bottom: 8px;
+    }
+    .mu-card-title { font-size: 11px; font-weight: 700; color: var(--hi); margin-bottom: 3px; }
+    .mu-card-sub   { font-size: 10px; color: var(--lo); }
+    .mu-row { display: flex; gap: 8px; align-items: center; }
+    .mu-score {
+      font-size: 22px; font-weight: 900; letter-spacing: -0.04em; line-height: 1; color: var(--green);
+    }
+    .mu-bar-track { background: var(--edge); height: 3px; flex: 1; }
+    .mu-bar-fill  { height: 3px; }
+    .mu-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 900;
+    }
+    .mu-section-head {
+      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--lo); border-bottom: 1px solid var(--edge); padding-bottom: 6px; margin-bottom: 10px;
+    }
+    .mu-outcome {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+      border: 1px solid; margin-bottom: 6px; cursor: pointer;
+    }
+    .mu-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ── Loop diagram ───────────────────────────────── */
+    .loop-diagram {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      align-items: center;
+      gap: 0;
+      margin: 40px 0;
+      border: 1px solid var(--edge);
+      overflow-x: auto;
+    }
+    .loop-node {
+      padding: 24px 20px;
+      text-align: center;
+      border-right: 1px solid var(--edge);
+    }
+    .loop-node:last-child { border-right: none; }
+    .loop-node-icon { font-size: 26px; margin-bottom: 8px; }
+    .loop-node-label { font-size: 12px; font-weight: 800; letter-spacing: -0.01em; color: var(--hi); margin-bottom: 3px; }
+    .loop-node-sub   { font-size: 10px; color: var(--lo); }
+    .loop-arrow {
+      padding: 0 2px;
+      font-size: 14px;
+      color: var(--lo);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* ── Architecture box ───────────────────────────── */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1px;
+      background: var(--edge);
+      border: 1px solid var(--edge);
+      margin-top: 28px;
+    }
+    .arch-cell {
+      background: var(--surface);
+      padding: 20px 22px;
+    }
+    .arch-cell .label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--lo); margin-bottom: 6px; }
+    .arch-cell .value { font-size: 13px; font-weight: 700; color: var(--hi); line-height: 1.5; }
+    .arch-cell .value code { font-family: monospace; font-size: 12px; color: var(--green); }
+
+    /* ── Comparison table ───────────────────────────── */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--edge);
+      border: 1px solid var(--edge);
+      margin-top: 36px;
+    }
+    .compare-col { background: var(--surface); }
+    .compare-head {
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid var(--edge);
+    }
+    .compare-head .label { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+    .compare-head .label.g { color: var(--green); }
+    .compare-head .label.a { color: var(--amber); }
+    .compare-head .label.b { color: var(--blue);  }
+    .compare-head .title { font-size: 14px; font-weight: 800; color: var(--hi); }
+    .compare-item {
+      display: flex; align-items: flex-start; gap: 9px;
+      padding: 10px 18px; border-bottom: 1px solid var(--edge);
+      font-size: 12px; line-height: 1.5;
+    }
+    .compare-item:last-child { border-bottom: none; }
+    .compare-item .tick { color: var(--green); flex-shrink: 0; font-size: 11px; margin-top: 2px; }
+    .compare-item .tick.a { color: var(--amber); }
+    .compare-item .tick.b { color: var(--blue);  }
+    .compare-item .cross { color: var(--lo); flex-shrink: 0; font-size: 11px; margin-top: 2px; }
+    .compare-item span { color: var(--mid); }
+
+    /* ── Domain tags ────────────────────────────────── */
+    .domain-tag {
+      display: inline-block;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      font-family: monospace;
+      padding: 4px 10px;
+      border: 1px solid;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+    .domain-tag.g { color: var(--green); border-color: var(--green-b); background: var(--green-d); }
+    .domain-tag.a { color: var(--amber); border-color: var(--amber-b); background: var(--amber-d); }
+    .domain-tag.b { color: var(--blue);  border-color: var(--blue-b);  background: var(--blue-d);  }
+
+    /* ── Spacing utility ─────────────────────────────── */
+    .gap-sm { height: 32px; }
+    .gap-md { height: 56px; }
+    .gap-lg { height: 80px; }
+    .mt16  { margin-top: 16px; }
+    .mt24  { margin-top: 24px; }
+    .mt36  { margin-top: 36px; }
+    .mb24  { margin-bottom: 24px; }
+
+    @media (max-width: 600px) {
+      .compare-grid { grid-template-columns: 1fr; }
+      .loop-diagram { grid-template-columns: 1fr; }
+      .loop-arrow { transform: rotate(90deg); padding: 8px 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── MASTHEAD ─────────────────────────────────────── -->
+<div class="masthead">
+  <div class="masthead-left">— AI SYSTEMS / EXPLAIN.GLOBAL</div>
+  <div class="masthead-right">PLATFORM BRIEF · 2025</div>
+</div>
+
+<!-- ── HERO ───────────────────────────────────────── -->
+<div class="hero page">
+  <div class="hero-wm">LOOP</div>
+  <p class="eyebrow">★ THE CLOSED-LOOP HIRING PLATFORM</p>
+  <h1>Explain.global —<br>the platform where<br><span class="a">every hire completes</span><br><span class="a">the loop</span></h1>
+  <p class="lead">Not just an interview tool. Not just a candidate tracker. Explain.global is a three-sided platform: Recruiter, Client, and Candidate — each with their own portal, each connected by the same AI engine, each speaking the same language. One hire. One loop. Fully closed.</p>
+  <div class="stats">
+    <div class="stat"><strong>3</strong><span>Portals</span></div>
+    <div class="stat"><strong>3</strong><span>Domains</span></div>
+    <div class="stat am"><strong>1</strong><span>AI Engine</span></div>
+    <div class="stat bl"><strong>0</strong><span>Backend Required</span></div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- ── HOW CANDIDATES ENTER ─────────────────────────── -->
+<div class="section-block">
+  <div class="section-wm g">ENTER</div>
+  <div class="page">
+    <p class="eyebrow">HOW CANDIDATES DISCOVER EXPLAIN</p>
+    <h2 class="section-title">Three gateways into<br>the ecosystem</h2>
+    <p class="lead" style="margin-bottom:0">Every candidate journey begins at one of three entry points. Each one drops the candidate directly into the right experience — no friction, no login, no setup.</p>
+
+    <div class="gateway-grid">
+      <div class="gateway">
+        <div class="gateway-num g">01</div>
+        <h3>Jobs Board → Magic Button</h3>
+        <p>A candidate sees a job posting — on LinkedIn, a company careers page, or the Explain Jobs Board. They click "Prep for Interview" and land directly inside Interview Prep, pre-loaded with the role and company.</p>
+        <p>Questions are generated for their exact role — no form-filling, no account. Thirty seconds from click to first question.</p>
+        <span class="tag g">INSTANT PREP</span>&nbsp;<span class="tag g">ROLE PRE-LOADED</span>
+      </div>
+      <div class="gateway">
+        <div class="gateway-num a">02</div>
+        <h3>Social Media → Self-Serve Learning</h3>
+        <p>A candidate arrives at candidate.explain.global via a TikTok ad, Instagram story, or organic search. They enter the Candidate Home — a self-serve hub where they choose their own path.</p>
+        <p>They enter the role, paste their CV, choose 3 or 6 questions, and build their own prep pack in under a minute. No recruiter involvement required.</p>
+        <span class="tag a">SELF-SERVE</span>&nbsp;<span class="tag a">SOCIAL-FIRST</span>
+      </div>
+      <div class="gateway">
+        <div class="gateway-num b">03</div>
+        <h3>Recruiter → Candidate Magic Link</h3>
+        <p>A recruiter has placed a candidate for interview. From the Interview Intake, they click "Send Prep Link →" — this generates a personalised, hash-encoded URL containing the candidate's questions, role, company, and context.</p>
+        <p>The candidate clicks the link and lands inside their own tailored prep pack. They also receive feedback and LEARN recommendations via a separate link after the interview.</p>
+        <span class="tag b">RECRUITER-SENT</span>&nbsp;<span class="tag b">PERSONALISED</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── THE LOOP ─────────────────────────────────────── -->
+<div class="page">
+  <div class="gap-lg"></div>
+  <p class="eyebrow">THE HIRING LOOP — END TO END</p>
+  <h2 class="section-title">One platform. Five stages.<br>Every role, every industry.</h2>
+  <div class="gap-sm"></div>
+
+  <div class="loop-diagram">
+    <div class="loop-node">
+      <div class="loop-node-icon">📋</div>
+      <div class="loop-node-label" style="color:var(--green)">Recruiter Intake</div>
+      <div class="loop-node-sub">CV + Job Spec parsed<br>Questions generated<br>Interviewers briefed</div>
+    </div>
+    <div class="loop-arrow">→</div>
+    <div class="loop-node">
+      <div class="loop-node-icon">🎤</div>
+      <div class="loop-node-label">AI Interview</div>
+      <div class="loop-node-sub">Voice + AI scoring<br>Coaching overlays<br>Session summary</div>
+    </div>
+    <div class="loop-arrow">→</div>
+    <div class="loop-node">
+      <div class="loop-node-icon">📄</div>
+      <div class="loop-node-label" style="color:var(--amber)">Client Brief</div>
+      <div class="loop-node-sub">Questions + follow-ups<br>Candidate profile<br>Feedback form</div>
+    </div>
+    <div class="loop-arrow">→</div>
+    <div class="loop-node">
+      <div class="loop-node-icon">💬</div>
+      <div class="loop-node-label">AI Feedback</div>
+      <div class="loop-node-sub">Pass / Door Open / Fail<br>Improvement areas<br>Professional summary</div>
+    </div>
+    <div class="loop-arrow">→</div>
+    <div class="loop-node">
+      <div class="loop-node-icon">📚</div>
+      <div class="loop-node-label" style="color:var(--blue)">Candidate LEARN</div>
+      <div class="loop-node-sub">Feedback received<br>Module recommendations<br>Re-interview prep</div>
+    </div>
+  </div>
+
+  <div class="gap-lg"></div>
+</div>
+
+<hr class="rule">
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ── RECRUITER PORTAL ─────────────────────────────── -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="section-block" style="background: var(--surface)">
+  <div class="section-wm g">RECRUIT</div>
+  <div class="page">
+    <p class="eyebrow">PORTAL ONE</p>
+    <h2 class="section-title">The Recruiter Portal
+      <span class="domain-tag g">recruiter.explain.global</span>
+    </h2>
+    <div class="gap-sm"></div>
+
+    <div class="portal-header">
+      <div>
+        <p style="font-size:14px; color:var(--mid); line-height:1.72; margin-bottom:24px">
+          The recruiter's command centre. Everything from CV parsing to question generation, AI voice interviewing, client briefing, and sending feedback to candidates — all in one portal, all in one session.
+        </p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num g">1</div>
+            <div class="step-body"><strong>Upload a CV and job spec.</strong> The AI parses both in seconds. A structured candidate profile is built automatically — roles, skills, experience, seniority, achievements.</div>
+          </div>
+          <div class="step">
+            <div class="step-num g">2</div>
+            <div class="step-body"><strong>Questions are generated.</strong> 6 role-specific questions + 2 HR questions — tailored to the exact role, company, industry, and candidate background. Not generic templates.</div>
+          </div>
+          <div class="step">
+            <div class="step-num g">3</div>
+            <div class="step-body"><strong>The interview runs.</strong> Two AI interviewers — Sarah (HR) and James (specialist, title inferred from role) — conduct the session with voice. Answers are transcribed and scored in real time.</div>
+          </div>
+          <div class="step">
+            <div class="step-num g">4</div>
+            <div class="step-body"><strong>Send to Client or Candidate.</strong> One click generates a private, hash-encoded link for the hiring manager (client brief) or the candidate (prep pack). No backend. No login required.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recruiter Portal mockup -->
+      <div class="mockup-wrap">
+        <div class="mockup-bar">
+          <div class="mockup-dot r"></div>
+          <div class="mockup-dot y"></div>
+          <div class="mockup-dot g"></div>
+          <div class="mockup-url">recruiter.explain.global/interview-intake</div>
+        </div>
+        <div class="mockup-body">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px">
+            <div>
+              <div style="font-size:9px; color:var(--green); font-weight:700; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:2px">EXPLAIN · INTERVIEW INTAKE</div>
+              <div style="font-size:14px; font-weight:900; color:var(--hi); letter-spacing:-0.02em">Prepare Interview</div>
+            </div>
+            <div style="font-size:9px; color:var(--lo); font-weight:600">Session #A1F4</div>
+          </div>
+
+          <div class="mu-label">Job title</div>
+          <div class="mu-input">Senior Software Engineer</div>
+          <div class="mu-label">Company</div>
+          <div class="mu-input">Google DeepMind</div>
+
+          <div style="display:flex; gap:8px; margin-bottom:12px">
+            <div style="flex:1; background:var(--ink); border:1px solid var(--green-b); padding:10px; text-align:center">
+              <div style="font-size:9px; color:var(--green); font-weight:700; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:4px">CV PARSED ✓</div>
+              <div style="font-size:10px; color:var(--mid)">Priya Sharma · 8yr · Senior</div>
+            </div>
+            <div style="flex:1; background:var(--ink); border:1px solid var(--edge2); padding:10px; text-align:center">
+              <div style="font-size:9px; color:var(--lo); font-weight:700; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:4px">8 QUESTIONS</div>
+              <div style="font-size:10px; color:var(--mid)">6 Role · 2 HR</div>
+            </div>
+          </div>
+
+          <div style="background:var(--ink); border:1px solid var(--edge2); padding:10px; margin-bottom:12px">
+            <div class="mu-section-head">AI-GENERATED QUESTIONS</div>
+            <div style="font-size:10px; color:var(--mid); line-height:1.6; margin-bottom:6px">1. Tell me about a time you designed a system that needed to scale to 10× current load…</div>
+            <div style="font-size:10px; color:var(--mid); line-height:1.6; margin-bottom:6px">2. How do you approach trade-offs between system complexity and delivery pace?</div>
+            <div style="font-size:10px; color:var(--lo)">+ 6 more questions generated</div>
+          </div>
+
+          <div style="display:flex; gap:6px; flex-wrap:wrap">
+            <button class="mu-btn ghost" style="font-size:10px; padding:7px 10px">Send to Client</button>
+            <button class="mu-btn ghost" style="font-size:10px; padding:7px 10px">Send Prep Link →</button>
+            <button class="mu-btn g" style="font-size:10px; padding:7px 12px; flex:1">Start Interview →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature list -->
+    <div class="mu-section-head" style="margin-bottom:16px">RECRUITER PORTAL — FULL FEATURE SET</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--edge); border:1px solid var(--edge)">
+      <div class="feature-list" style="border:none">
+        <div class="feature-item"><span class="fi-icon" style="color:var(--green)">✦</span><div><strong>AI CV Parsing</strong><br><span>GPT-4o extracts roles, skills, achievements, seniority, education, and leadership signals from any CV format.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--green)">✦</span><div><strong>Role-Driven Question Generation</strong><br><span>8 questions tailored to role + company + candidate background. A barista gets different questions to a software engineer.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--green)">✦</span><div><strong>Company-Aware Context</strong><br><span>inferIndustry() maps role + company to a rich sector context. Starbucks barista ≠ Costa barista in the AI's eyes.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--green)">✦</span><div><strong>Two AI Interviewers</strong><br><span>Sarah (HR) handles culture and behavioural questions. James (dynamic title inferred from role) handles competency questions.</span></div></div>
+      </div>
+      <div class="feature-list" style="border:none">
+        <div class="feature-item"><span class="fi-icon" style="color:var(--green)">✦</span><div><strong>ElevenLabs Voice + Whisper STT</strong><br><span>Natural AI voices for both interviewers. Web Speech API fallback. Whisper transcription with pace and filler-word analysis.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--green)">✦</span><div><strong>Real-Time Scoring</strong><br><span>Each answer scored on clarity, relevance, depth, and confidence. Per-question LEARN recommendations for low scores.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--green)">✦</span><div><strong>Send to Client Magic Link</strong><br><span>One-click generates a hash-encoded client brief URL. No backend. Hiring manager needs no account to open it.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--green)">✦</span><div><strong>Send Prep Link to Candidate</strong><br><span>Generates a personalised prep pack URL for the candidate. Opens directly in /candidate/prep with their questions pre-loaded.</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ── CLIENT PORTAL ─────────────────────────────────── -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="section-block">
+  <div class="section-wm a">CLIENT</div>
+  <div class="page">
+    <p class="eyebrow amber">PORTAL TWO</p>
+    <h2 class="section-title">The Client Portal
+      <span class="domain-tag a">client.explain.global</span>
+    </h2>
+    <div class="gap-sm"></div>
+
+    <div class="portal-header">
+      <div>
+        <p style="font-size:14px; color:var(--mid); line-height:1.72; margin-bottom:24px">
+          The hiring manager's private briefing room. A link arrives from the recruiter — no login, no account, no app install. The client opens it, reads the candidate profile, studies the questions, and provides feedback — all in one confidential URL.
+        </p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num a">1</div>
+            <div class="step-body"><strong>Interview Overview.</strong> Stat cards show role questions vs culture fit questions, total count, and the candidate's years of experience. Recommended interview flow with timing. Skills to probe. Interview tips.</div>
+          </div>
+          <div class="step">
+            <div class="step-num a">2</div>
+            <div class="step-body"><strong>Questions &amp; Follow-Ups.</strong> Every question shown with source tag (Role / HR), difficulty, competency. Expand any card to see the model answer guide, follow-up probes (↳), and red flags to watch for.</div>
+          </div>
+          <div class="step">
+            <div class="step-num a">3</div>
+            <div class="step-body"><strong>Candidate Profile.</strong> Work history, skills, education, and achievements — all parsed from the CV. Seniority, years of experience, current role and company prominently surfaced.</div>
+          </div>
+          <div class="step">
+            <div class="step-num a">4</div>
+            <div class="step-body"><strong>Provide Feedback.</strong> 4-step guided flow: select outcome (Pass / Leave Door Open / Not Progressing), select improvement chips, add notes, and AI generates a kind, professional 3-paragraph feedback summary. Copy and send to recruiter.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Client Portal mockup -->
+      <div class="mockup-wrap">
+        <div class="mockup-bar">
+          <div class="mockup-dot r"></div>
+          <div class="mockup-dot y"></div>
+          <div class="mockup-dot g"></div>
+          <div class="mockup-url">client.explain.global/client#eyJjYW5k...</div>
+        </div>
+        <div class="mockup-body">
+          <div style="background:linear-gradient(135deg,#0f1729,#111827); margin:-20px -20px 0; padding:16px 20px 14px; margin-bottom:0">
+            <div style="display:flex; gap:12px; align-items:center; margin-bottom:10px">
+              <div class="mu-avatar" style="background:linear-gradient(135deg,#667eea,#764ba2); color:#fff">PS</div>
+              <div>
+                <div style="font-size:13px; font-weight:900; color:#fff">Priya Sharma</div>
+                <div style="font-size:10px; color:rgba(255,255,255,0.5)">Staff Engineer · Meta · Applying for Senior SWE @ Google DeepMind</div>
+              </div>
+            </div>
+          </div>
+          <div class="mu-nav" style="margin-top:0">
+            <div class="mu-nav-item amber active">Interview Overview</div>
+            <div class="mu-nav-item">Questions (8)</div>
+            <div class="mu-nav-item">Profile</div>
+            <div class="mu-nav-item">Feedback</div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px">
+            <div class="mu-card"><div class="mu-card-title" style="color:var(--amber)">6</div><div class="mu-card-sub">Role questions</div></div>
+            <div class="mu-card"><div class="mu-card-title">2</div><div class="mu-card-sub">Culture fit</div></div>
+          </div>
+
+          <div class="mu-card" style="margin-bottom:8px">
+            <div class="mu-card-title">Q1 · Role Competency · Hard</div>
+            <div style="font-size:10px; color:var(--mid); margin:4px 0 6px">Design a system that scales to 10× current load…</div>
+            <div>
+              <span class="mu-chip b">system design</span>
+              <span class="mu-chip b">architecture</span>
+            </div>
+          </div>
+
+          <div style="background:rgba(240,165,0,0.05); border:1px solid rgba(240,165,0,0.15); padding:10px; margin-top:8px">
+            <div style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--amber); margin-bottom:8px">PROVIDE FEEDBACK</div>
+            <div class="mu-outcome" style="border-color:rgba(52,211,153,0.3); background:rgba(52,211,153,0.06)">
+              <div class="mu-dot" style="background:#34D399"></div>
+              <div style="font-size:10px; font-weight:700; color:#34D399">Pass</div>
+            </div>
+            <div class="mu-outcome" style="border-color:var(--edge2); background:var(--ink)">
+              <div class="mu-dot" style="background:var(--lo)"></div>
+              <div style="font-size:10px; color:var(--lo)">Leave Door Open</div>
+            </div>
+            <div class="mu-outcome" style="border-color:var(--edge2); background:var(--ink)">
+              <div class="mu-dot" style="background:var(--lo)"></div>
+              <div style="font-size:10px; color:var(--lo)">Not Progressing</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap-sm"></div>
+    <div class="mu-section-head" style="margin-bottom:16px">CLIENT PORTAL — FULL FEATURE SET</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--edge); border:1px solid var(--edge)">
+      <div class="feature-list" style="border:none">
+        <div class="feature-item"><span class="fi-icon" style="color:var(--amber)">✦</span><div><strong>No Login Required</strong><br><span>The entire brief is encoded in the URL hash. Works on any device, in any browser. Nothing stored server-side.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--amber)">✦</span><div><strong>Interview Overview Tab</strong><br><span>Stat cards, recommended interview flow with timing, skills to probe, recruiter notes, and 4 best-practice interview tips.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--amber)">✦</span><div><strong>Questions Tab with Model Answers</strong><br><span>Expandable question cards with source, difficulty, competency tags, model answer guide, follow-up probes, and red flags.</span></div></div>
+      </div>
+      <div class="feature-list" style="border:none">
+        <div class="feature-item"><span class="fi-icon" style="color:var(--amber)">✦</span><div><strong>Candidate Profile Tab</strong><br><span>Full work history, skills chips, education, and achievements — all AI-parsed from the candidate's CV.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--amber)">✦</span><div><strong>Guided Feedback (4 Steps)</strong><br><span>Outcome selection → role-aware improvement chips → free-text notes → AI-generated feedback summary. Under 2 minutes.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--amber)">✦</span><div><strong>AI Feedback Generation</strong><br><span>3-paragraph structured feedback: outcome opening, strengths, areas to develop. 150–220 words. Kind, professional, actionable.</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ── CANDIDATE PORTAL ──────────────────────────────── -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="section-block" style="background:var(--surface)">
+  <div class="section-wm b">GROW</div>
+  <div class="page">
+    <p class="eyebrow blue">PORTAL THREE</p>
+    <h2 class="section-title">The Candidate Portal
+      <span class="domain-tag b">candidate.explain.global</span>
+    </h2>
+    <div class="gap-sm"></div>
+
+    <div class="portal-header">
+      <div>
+        <p style="font-size:14px; color:var(--mid); line-height:1.72; margin-bottom:24px">
+          The candidate's home for the entire journey — from first prep session to receiving feedback and building toward re-interview. Three surfaces, one portal, zero accounts required.
+        </p>
+
+        <div style="border:1px solid var(--edge2); margin-bottom:24px">
+          <div style="display:flex; border-bottom:1px solid var(--edge2)">
+            <div style="padding:12px 16px; flex:1; border-right:1px solid var(--edge2)">
+              <div style="font-size:10px; color:var(--blue); font-weight:700; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px">/candidate</div>
+              <div style="font-size:12px; font-weight:700; color:var(--hi); margin-bottom:3px">Candidate Home</div>
+              <div style="font-size:11px; color:var(--lo)">Self-serve hub · 3 gateways</div>
+            </div>
+            <div style="padding:12px 16px; flex:1; border-right:1px solid var(--edge2)">
+              <div style="font-size:10px; color:var(--blue); font-weight:700; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px">/candidate/prep</div>
+              <div style="font-size:12px; font-weight:700; color:var(--hi); margin-bottom:3px">Interview Prep</div>
+              <div style="font-size:11px; color:var(--lo)">Questions · answers · LEARN</div>
+            </div>
+            <div style="padding:12px 16px; flex:1">
+              <div style="font-size:10px; color:var(--blue); font-weight:700; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px">/candidate/feedback</div>
+              <div style="font-size:12px; font-weight:700; color:var(--hi); margin-bottom:3px">Feedback Received</div>
+              <div style="font-size:11px; color:var(--lo)">Outcome · LEARN · re-interview</div>
+            </div>
+          </div>
+          <div style="padding:12px 16px">
+            <div style="font-size:11px; color:var(--lo); line-height:1.6">All three surfaces use hash-encoded sessions. A recruiter-sent link drops the candidate directly into Prep or Feedback with their data pre-loaded. No login. No friction.</div>
+          </div>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-num b">A</div>
+            <div class="step-body"><strong>Candidate Home.</strong> The self-serve hub. Three gateways: Start Interview Prep, Explore LEARN Modules, or open a recruiter-sent link. Animated role ticker. No account needed to begin.</div>
+          </div>
+          <div class="step">
+            <div class="step-num b">B</div>
+            <div class="step-body"><strong>Interview Prep.</strong> Intake form (role, company, CV paste, question count). AI generates 3 or 6 questions. One-at-a-time practice with timer, model answer reveal, follow-up probes, and self-assessment (Strong / OK / Need Work).</div>
+          </div>
+          <div class="step">
+            <div class="step-num b">C</div>
+            <div class="step-body"><strong>Feedback Received.</strong> Outcome badge, AI-generated feedback summary, improvement area chips, personalised LEARN module plan. If outcome = Leave Door Open, a Re-Interview Prep tab appears with a curated 5-module playlist and 4-step next-steps guide.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Candidate Portal mockup -->
+      <div class="mockup-wrap">
+        <div class="mockup-bar">
+          <div class="mockup-dot r"></div>
+          <div class="mockup-dot y"></div>
+          <div class="mockup-dot g"></div>
+          <div class="mockup-url">candidate.explain.global/feedback#eyJ2ZXJzaW9u...</div>
+        </div>
+        <div class="mockup-body">
+          <div style="background:linear-gradient(135deg,#0f1729,#111827); margin:-20px -20px 0; padding:16px 20px 14px; margin-bottom:0">
+            <div style="font-size:9px; color:rgba(255,255,255,0.4); font-weight:700; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px">KEEP GOING</div>
+            <div style="font-size:15px; font-weight:900; color:#fff; margin-bottom:2px">Priya Sharma</div>
+            <div style="font-size:10px; color:rgba(255,255,255,0.45)">Senior Software Engineer · Google DeepMind</div>
+            <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); padding:6px 12px; margin-top:10px">
+              <div class="mu-dot" style="background:var(--amber)"></div>
+              <span style="font-size:10px; font-weight:700; color:var(--amber)">The client is keeping the door open</span>
+            </div>
+          </div>
+          <div class="mu-nav" style="margin-top:0">
+            <div class="mu-nav-item blue active">Your Feedback</div>
+            <div class="mu-nav-item">LEARN (4)</div>
+            <div class="mu-nav-item">Re-Interview Prep</div>
+          </div>
+
+          <div style="font-size:11px; color:var(--mid); line-height:1.7; margin-bottom:12px">
+            Priya, thank you for interviewing for the Senior Software Engineer role at Google DeepMind. The interview panel were impressed with your <strong style="color:var(--hi)">problem-solving approach</strong> and your ability to articulate complex architectural decisions clearly…
+          </div>
+
+          <div class="mu-section-head">AREAS TO DEVELOP</div>
+          <div style="margin-bottom:12px">
+            <span class="mu-chip a">System design depth</span>
+            <span class="mu-chip a">Delivery pace</span>
+            <span class="mu-chip a">Stakeholder management</span>
+          </div>
+
+          <div style="background:var(--blue-d); border:1px solid var(--blue-b); padding:10px">
+            <div style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--blue); margin-bottom:6px">LEARN RECOMMENDATION</div>
+            <div style="font-size:10px; font-weight:700; color:var(--hi); margin-bottom:2px">System Design Fundamentals</div>
+            <div style="font-size:9px; color:var(--lo)">60 min · Advanced · Software Engineering</div>
+            <div style="margin-top:8px">
+              <div class="mu-bar-track"><div class="mu-bar-fill" style="background:var(--blue); width:0%"></div></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:4px">
+              <span style="font-size:9px; color:var(--lo)">Not started</span>
+              <button class="mu-btn b" style="font-size:9px; padding:4px 10px">Start Module</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap-sm"></div>
+    <div class="mu-section-head" style="margin-bottom:16px">CANDIDATE PORTAL — FULL FEATURE SET</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--edge); border:1px solid var(--edge)">
+      <div class="feature-list" style="border:none">
+        <div class="feature-item"><span class="fi-icon" style="color:var(--blue)">✦</span><div><strong>Self-Serve Intake</strong><br><span>Role, company, optional CV paste, question count (3 or 6). AI generates a personalised prep pack in under 30 seconds.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--blue)">✦</span><div><strong>One-at-a-Time Practice</strong><br><span>Questions shown individually. Progress dots. Countdown timer. Notes area. Reveal model answer on demand.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--blue)">✦</span><div><strong>Self-Assessment</strong><br><span>Strong / OK / Need Work rating per question. Drives the LEARN plan at the end of the session.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--blue)">✦</span><div><strong>Follow-Up Probes</strong><br><span>Every question includes 2 follow-up probes — the questions interviewers use to go deeper. Practice these too.</span></div></div>
+      </div>
+      <div class="feature-list" style="border:none">
+        <div class="feature-item"><span class="fi-icon" style="color:var(--blue)">✦</span><div><strong>Feedback Received</strong><br><span>Outcome badge, AI-generated 3-paragraph feedback, improvement area chips — all delivered via a private recruiter-sent link.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--blue)">✦</span><div><strong>Personalised LEARN Plan</strong><br><span>40+ modules across 12 categories. mapImprovementAreasToLearnModules() matches feedback chips to modules automatically.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--blue)">✦</span><div><strong>Re-Interview Prep Tab</strong><br><span>Shown when outcome = Leave Door Open. Motivational banner, curated 5-module playlist, 4-step next-steps guide.</span></div></div>
+        <div class="feature-item"><span class="fi-icon" style="color:var(--blue)">✦</span><div><strong>Recruiter-Sent Prep Pack</strong><br><span>A hash-encoded URL from the recruiter drops the candidate into /candidate/prep with their questions already loaded.</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ALL THREE PORTALS COMPARED ────────────────────── -->
+<div class="page">
+  <div class="gap-lg"></div>
+  <p class="eyebrow">THE THREE PORTALS — COMPARED</p>
+  <h2 class="section-title">Who sees what.<br>Who does what.</h2>
+
+  <div class="compare-grid">
+    <div class="compare-col">
+      <div class="compare-head">
+        <div class="label g">Recruiter Portal</div>
+        <div class="title">recruiter.explain.global</div>
+      </div>
+      <div class="compare-item"><span class="tick">✓</span><span>Uploads CV &amp; job spec</span></div>
+      <div class="compare-item"><span class="tick">✓</span><span>Runs the AI interview</span></div>
+      <div class="compare-item"><span class="tick">✓</span><span>Sends client brief link</span></div>
+      <div class="compare-item"><span class="tick">✓</span><span>Sends candidate prep link</span></div>
+      <div class="compare-item"><span class="tick">✓</span><span>Sends candidate feedback link</span></div>
+      <div class="compare-item"><span class="tick">✓</span><span>Views LEARN progress (Phase 3)</span></div>
+      <div class="compare-item"><span class="cross">–</span><span>Provides pass/fail decision</span></div>
+      <div class="compare-item"><span class="cross">–</span><span>Receives LEARN recommendations</span></div>
+    </div>
+    <div class="compare-col">
+      <div class="compare-head">
+        <div class="label a">Client Portal</div>
+        <div class="title">client.explain.global</div>
+      </div>
+      <div class="compare-item"><span class="tick a">✓</span><span>Views interview brief</span></div>
+      <div class="compare-item"><span class="tick a">✓</span><span>Reads all 8 questions + model answers</span></div>
+      <div class="compare-item"><span class="tick a">✓</span><span>Views candidate profile</span></div>
+      <div class="compare-item"><span class="tick a">✓</span><span>Selects outcome (Pass / Door / Fail)</span></div>
+      <div class="compare-item"><span class="tick a">✓</span><span>Selects improvement area chips</span></div>
+      <div class="compare-item"><span class="tick a">✓</span><span>AI generates feedback summary</span></div>
+      <div class="compare-item"><span class="cross">–</span><span>Runs the interview</span></div>
+      <div class="compare-item"><span class="cross">–</span><span>Accesses recruiter features</span></div>
+    </div>
+    <div class="compare-col">
+      <div class="compare-head">
+        <div class="label b">Candidate Portal</div>
+        <div class="title">candidate.explain.global</div>
+      </div>
+      <div class="compare-item"><span class="tick b">✓</span><span>Self-serve interview prep</span></div>
+      <div class="compare-item"><span class="tick b">✓</span><span>Receives recruiter prep pack</span></div>
+      <div class="compare-item"><span class="tick b">✓</span><span>Receives feedback with outcome</span></div>
+      <div class="compare-item"><span class="tick b">✓</span><span>Gets LEARN module recommendations</span></div>
+      <div class="compare-item"><span class="tick b">✓</span><span>Re-interview prep (door-open flow)</span></div>
+      <div class="compare-item"><span class="tick b">✓</span><span>Practice with timer + model answers</span></div>
+      <div class="compare-item"><span class="cross">–</span><span>Provides feedback on other candidates</span></div>
+      <div class="compare-item"><span class="cross">–</span><span>Accesses client or recruiter features</span></div>
+    </div>
+  </div>
+  <div class="gap-lg"></div>
+</div>
+
+<hr class="rule">
+
+<!-- ── LEARN ENGINE ──────────────────────────────────── -->
+<div class="section-block">
+  <div class="section-wm g">LEARN</div>
+  <div class="page">
+    <p class="eyebrow">THE LEARN ENGINE</p>
+    <h2 class="section-title">60+ modules.<br>18 categories.<br>Any role.</h2>
+    <div class="gap-sm"></div>
+    <p class="lead">The LEARN Engine sits behind all three portals. It maps any improvement area chip to the most relevant module — automatically, without configuration. From Specialty Coffee: Beverage Craft to System Design Fundamentals, Electrical Safety to Stage Performance, it covers every role the platform supports.</p>
+
+    <div class="arch-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr))">
+      <div class="arch-cell"><div class="label">Software Engineering</div><div class="value">System Design · Clean Code · TDD · Architecture · Docs</div></div>
+      <div class="arch-cell"><div class="label">Leadership</div><div class="value">Stakeholder Mgmt · Team Leadership · Commercial Awareness · Coaching</div></div>
+      <div class="arch-cell"><div class="label">Communication</div><div class="value">Interview Comms · Presenting · Client Relationships</div></div>
+      <div class="arch-cell"><div class="label">Performance</div><div class="value">Speed Under Pressure · Time Mgmt · KPIs · Resilience</div></div>
+      <div class="arch-cell"><div class="label">Customer &amp; Sales</div><div class="value">Customer Service · Upselling · Closing · Objection Handling · Negotiation</div></div>
+      <div class="arch-cell"><div class="label">Hospitality</div><div class="value">Beverage Craft · Food Safety · Kitchen Hygiene · Menu Knowledge</div></div>
+      <div class="arch-cell"><div class="label">Fast Food &amp; QSR</div><div class="value">Speed of Service · Allergen Awareness · Upselling · Shift Management · Cleanliness Standards</div></div>
+      <div class="arch-cell"><div class="label">Retail</div><div class="value">Floor Sales · Visual Merchandising · Stock Management · POS Systems · Loss Prevention</div></div>
+      <div class="arch-cell"><div class="label">Trades &amp; Construction</div><div class="value">Health &amp; Safety · Technical Competency · Tool Knowledge · Site Communication · Client Handover</div></div>
+      <div class="arch-cell"><div class="label">Healthcare</div><div class="value">Clinical Decision Making · Patient Communication · Safeguarding · Documentation</div></div>
+      <div class="arch-cell"><div class="label">Education</div><div class="value">Classroom Management · Differentiation · Inclusive Teaching · Assessment</div></div>
+      <div class="arch-cell"><div class="label">Legal</div><div class="value">Legal Research · Case Analysis · Analytical Thinking · Client Advisory</div></div>
+      <div class="arch-cell"><div class="label">Childcare</div><div class="value">Child Development · Safeguarding · Behaviour Management · Activity Planning</div></div>
+      <div class="arch-cell"><div class="label">Coaching &amp; Fitness</div><div class="value">Programme Design · Client Motivation · Retention · Nutritional Awareness</div></div>
+      <div class="arch-cell"><div class="label">Logistics</div><div class="value">Route Planning · Load Management · Vehicle Knowledge · Compliance</div></div>
+      <div class="arch-cell"><div class="label">Creative Arts</div><div class="value">Portfolio Presentation · Client Briefs · Creative Process · Design Software · Brand Identity</div></div>
+      <div class="arch-cell"><div class="label">Music &amp; Entertainment</div><div class="value">Performance Confidence · Stage Presence · Set Management · Collaboration · Audience Engagement</div></div>
+      <div class="arch-cell"><div class="label">Beauty &amp; Wellness</div><div class="value">Client Consultation · Hygiene Standards · Product Knowledge · Retention · Upselling Treatments</div></div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- ── ARCHITECTURE ──────────────────────────────────── -->
+<div class="page">
+  <div class="gap-lg"></div>
+  <p class="eyebrow">ARCHITECTURE &amp; DEPLOYMENT</p>
+  <h2 class="section-title">One repo. One SWA.<br>Three domains.</h2>
+  <div class="gap-sm"></div>
+  <p class="lead">The entire platform is a React 19 + Vite 8 SPA deployed to a single Azure Static Web App. All session data is hash-encoded in the URL — no backend, no database, no server costs. Phase 3 adds Cosmos DB for progress persistence.</p>
+
+  <div class="arch-grid">
+    <div class="arch-cell">
+      <div class="label">Repository</div>
+      <div class="value"><code>PercentileOne/<br>explain-global-platform</code></div>
+    </div>
+    <div class="arch-cell">
+      <div class="label">Deployment</div>
+      <div class="value">Azure Static Web Apps<br><code>explain-global-platform</code></div>
+    </div>
+    <div class="arch-cell">
+      <div class="label">Domains</div>
+      <div class="value"><code>recruiter.explain.global</code><br><code>client.explain.global</code><br><code>candidate.explain.global</code></div>
+    </div>
+    <div class="arch-cell">
+      <div class="label">Session Storage</div>
+      <div class="value">Hash-encoded URLs<br><code>btoa(encodeURIComponent(JSON))</code><br>No backend required</div>
+    </div>
+    <div class="arch-cell">
+      <div class="label">AI Engine</div>
+      <div class="value">GPT-4o for CV parsing,<br>question generation,<br>scoring + feedback</div>
+    </div>
+    <div class="arch-cell">
+      <div class="label">Voice</div>
+      <div class="value">ElevenLabs TTS<br>Whisper STT<br>Web Speech fallback</div>
+    </div>
+    <div class="arch-cell">
+      <div class="label">Frontend Stack</div>
+      <div class="value">React 19 · Vite 8<br>Tailwind v4 · Framer Motion<br>React Router v7</div>
+    </div>
+    <div class="arch-cell">
+      <div class="label">Phase 3</div>
+      <div class="value">Cosmos DB for<br>candidate progress<br>+ recruiter dashboard</div>
+    </div>
+  </div>
+
+  <div class="gap-lg"></div>
+
+  <!-- Phase roadmap -->
+  <div style="border:1px solid var(--edge2); overflow:hidden">
+    <div style="background:var(--surface2); padding:16px 20px; border-bottom:1px solid var(--edge); display:flex; justify-content:space-between; align-items:center">
+      <div style="font-size:12px; font-weight:800; letter-spacing:-0.01em; color:var(--hi)">Platform Phases</div>
+      <div style="font-size:10px; color:var(--lo); font-weight:600; letter-spacing:0.08em; text-transform:uppercase">ROADMAP</div>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0">
+      <div style="padding:18px 20px; border-right:1px solid var(--edge)">
+        <div style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:var(--green); margin-bottom:6px">Phase 1 — Complete ✓</div>
+        <div style="font-size:12px; color:var(--mid); line-height:1.65">Recruiter Portal · AI Interview · CV Parsing · Client Portal · Feedback Engine</div>
+      </div>
+      <div style="padding:18px 20px; border-right:1px solid var(--edge)">
+        <div style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:var(--green); margin-bottom:6px">Phase 2 — Complete ✓</div>
+        <div style="font-size:12px; color:var(--mid); line-height:1.65">Candidate Portal · LEARN Engine · Feedback-to-Candidate · Re-Interview Prep</div>
+      </div>
+      <div style="padding:18px 20px; border-right:1px solid var(--edge)">
+        <div style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:var(--amber); margin-bottom:6px">Phase 3 — Next</div>
+        <div style="font-size:12px; color:var(--mid); line-height:1.65">Cosmos DB · Candidate progress tracking · Recruiter dashboard · Module completion</div>
+      </div>
+      <div style="padding:18px 20px">
+        <div style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:var(--lo); margin-bottom:6px">Phase 4 — Future</div>
+        <div style="font-size:12px; color:var(--lo); line-height:1.65">Mobile app · Jobs board integration · Employer dashboard · Industry packs</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gap-lg"></div>
+</div>
+
+<!-- ── FOOTER ─────────────────────────────────────────── -->
+<div style="border-top:1px solid var(--edge); padding:24px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px">
+  <div style="font-size:11px; color:var(--lo)">Explain.global · Platform Documentation · <span style="color:var(--green)">PercentileOne/explain-global-platform</span></div>
+  <div style="font-size:11px; color:var(--lo)">recruiter · client · candidate · 2025</div>
+</div>
+
+</body>
+</html>

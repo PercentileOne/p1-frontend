@@ -1,13 +1,16 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using MediatR;
+using Microsoft.Azure.Cosmos;
 using TalkToLearn.Api.Common;
 using TalkToLearn.Api.Infrastructure.Anthropic;
+using TalkToLearn.Api.Infrastructure.Cosmos;
 
 namespace TalkToLearn.Api.Features.Lessons.Generate;
 
 public class GenerateLessonHandler(
     AnthropicService anthropic,
+    CosmosService cosmos,
     ILogger<GenerateLessonHandler> logger)
     : IRequestHandler<GenerateLessonCommand, Result<LessonDto>>
 {
@@ -15,6 +18,21 @@ public class GenerateLessonHandler(
     {
         if (string.IsNullOrWhiteSpace(cmd.Subject))
             return Result<LessonDto>.Failure("Subject is required.");
+
+        var pk = cmd.Subject.Trim().ToLowerInvariant();
+
+        // Check shared lesson cache in Cosmos before calling Anthropic
+        var container = cosmos.GetContainer("lessons");
+        try
+        {
+            var cached = await container.ReadItemAsync<CachedLesson>(pk, new PartitionKey(pk), cancellationToken: ct);
+            logger.LogInformation("Lesson cache HIT for '{Subject}'", cmd.Subject);
+            return Result<LessonDto>.Success(cached.Resource.Lesson);
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            // Cache miss — generate below
+        }
 
         logger.LogInformation("Generating lesson for subject '{Subject}' requested by user {UserId}",
             cmd.Subject, cmd.UserId);
@@ -41,6 +59,7 @@ public class GenerateLessonHandler(
                 Glossary:       raw.Glossary?.Select(g => new GlossaryItemDto(g.Term ?? "", g.Def ?? ""))
                                     .ToList() ?? [],
                 ExamQuestions:  raw.ExamQuestions ?? [],
+                ExamAnswers:    raw.ExamAnswers   ?? [],
                 McQuestions:    raw.McQuestions?.Select(q => new MCQuestionDto(
                                     q.Q ?? "", q.Options ?? [], q.Answer))
                                     .ToList() ?? []
@@ -48,6 +67,16 @@ public class GenerateLessonHandler(
 
             logger.LogInformation("Lesson generated successfully for '{Subject}' — {Concepts} concepts",
                 cmd.Subject, lesson.KeyConcepts.Count);
+
+            // Write to shared cache — fire-and-forget; never block the response
+            _ = container.UpsertItemAsync(
+                new CachedLesson(pk, pk, lesson),
+                new PartitionKey(pk)
+            ).ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                    logger.LogWarning(t.Exception, "Failed to cache lesson for '{Subject}'", cmd.Subject);
+            }, TaskContinuationOptions.OnlyOnFaulted);
 
             return Result<LessonDto>.Success(lesson);
         }
@@ -57,6 +86,12 @@ public class GenerateLessonHandler(
             return Result<LessonDto>.Failure("Failed to generate lesson. Please try again.", 500);
         }
     }
+
+    private record CachedLesson(
+        [property: JsonPropertyName("id")] string Id,
+        [property: JsonPropertyName("pk")] string Pk,
+        [property: JsonPropertyName("lesson")] LessonDto Lesson
+    );
 
     private static string BuildPrompt(string subject) => $@"You are an expert educator. Generate a complete, high-quality study lesson for: ""{subject}""
 
@@ -82,14 +117,16 @@ Return ONLY a valid JSON object with this exact structure (no markdown, no expla
   ""misconceptions"": [{{ ""wrong"": ""common wrong belief"", ""right"": ""the truth, clearly stated"" }}],
   ""glossary"": [{{ ""term"": ""key term"", ""def"": ""plain-English definition"" }}],
   ""examQuestions"": [""Explain X in your own words and give an example.""],
+  ""examAnswers"": [""Model answer: A clear 2-3 sentence spoken response the learner should aim to match.""],
   ""mcQuestions"": [{{ ""q"": ""question text"", ""options"": [""A"", ""B"", ""C"", ""D""], ""answer"": 0 }}]
 }}
 
 Rules:
 - keyConcepts: 4-5 concepts
-- misconceptions: 3 items
-- glossary: 6-8 terms
-- examQuestions: exactly 8 questions tailored to THIS subject
+- misconceptions: 5-6 items
+- glossary: 10-12 terms
+- examQuestions: exactly 12 spoken questions tailored to THIS subject (these are answered out loud)
+- examAnswers: exactly 12 model answers, one per question — 2-3 sentences each, written as what a good spoken answer sounds like
 - mcQuestions: exactly 10 questions, varied difficulty, answer is the INDEX (0-3) of correct option
 - All content must be accurate, educational, and specific to ""{subject}""";
 
@@ -111,6 +148,7 @@ Rules:
         [JsonPropertyName("misconceptions")] public List<RawMisconception>? Misconceptions { get; set; }
         [JsonPropertyName("glossary")]       public List<RawGlossary>? Glossary      { get; set; }
         [JsonPropertyName("examQuestions")]  public List<string>? ExamQuestions  { get; set; }
+        [JsonPropertyName("examAnswers")]    public List<string>? ExamAnswers    { get; set; }
         [JsonPropertyName("mcQuestions")]    public List<RawMCQuestion>? McQuestions   { get; set; }
     }
 

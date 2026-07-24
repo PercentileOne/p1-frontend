@@ -5,6 +5,9 @@ import { ScoringDisplay } from '../components/ScoringDisplay';
 import type { InterviewQuestion, ScoreResponse } from '../api/explainApi';
 import type { TranscriptMeta } from '../components/VoiceInput';
 import type { CVContext, JobSpecContext } from '../utils/contextBuilder';
+import type { FeedbackOutcome } from '../utils/clientSession';
+import { buildCandidateFeedbackUrl, type CandidateFeedbackSession } from '../utils/clientSession';
+import { getRoleImprovementAreas } from '../utils/clientSession';
 
 interface SessionAnswer {
   question: InterviewQuestion;
@@ -285,9 +288,171 @@ function LearnTab({
   );
 }
 
+// ── Send Feedback to Candidate Tab ────────────────────────────────────────────
+
+const OUTCOME_OPTIONS: { value: FeedbackOutcome; label: string; sub: string; color: string; bg: string }[] = [
+  { value: 'pass',      label: 'Pass',             sub: 'Candidate is being progressed',                        color: '#34D399', bg: 'rgba(52,211,153,0.08)' },
+  { value: 'door-open', label: 'Leave Door Open',  sub: 'Not progressing now, may reconsider',                 color: '#F59E0B', bg: 'rgba(245,158,11,0.08)' },
+  { value: 'fail',      label: 'Not Progressing',  sub: 'Candidate will not be moved forward at this time',    color: '#F87171', bg: 'rgba(248,113,113,0.08)' },
+];
+
+function SendFeedbackTab({ cvCtx, jobCtx }: { cvCtx?: CVContext; jobCtx?: JobSpecContext }) {
+  const [outcome, setOutcome]             = useState<FeedbackOutcome | null>(null);
+  const [feedbackText, setFeedbackText]   = useState('');
+  const [recruiterNotes, setRecruiterNotes] = useState('');
+  const [recruiterName, setRecruiterName] = useState('');
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [candidateUrl, setCandidateUrl]   = useState('');
+  const [copied, setCopied]               = useState(false);
+
+  const areaGroups = getRoleImprovementAreas(jobCtx?.title ?? '', jobCtx?.industry);
+
+  function toggleArea(area: string) {
+    setSelectedAreas(prev => prev.includes(area) ? prev.filter(a => a !== area) : [...prev, area]);
+  }
+
+  function generate() {
+    if (!outcome || !feedbackText.trim()) return;
+    const session: CandidateFeedbackSession = {
+      version: 1,
+      candidateName: cvCtx ? `${cvCtx.firstName} ${cvCtx.lastName ?? ''}`.trim() : 'Candidate',
+      role: jobCtx?.title ?? 'the role',
+      company: jobCtx?.company,
+      outcome,
+      feedbackText: feedbackText.trim(),
+      improvementAreas: selectedAreas,
+      recruiterName: recruiterName.trim() || undefined,
+      recruiterNotes: recruiterNotes.trim() || undefined,
+      generatedAt: Date.now(),
+    };
+    setCandidateUrl(buildCandidateFeedbackUrl(session));
+    setCopied(false);
+  }
+
+  async function copy() {
+    await navigator.clipboard.writeText(candidateUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  }
+
+  const canGenerate = !!outcome && feedbackText.trim().length > 20;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+
+      <div>
+        <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Send feedback to candidate</div>
+        <div style={{ fontSize: '13px', color: 'var(--text-3)', lineHeight: 1.6 }}>
+          Paste in the client's feedback, select the outcome and improvement areas, then generate a private link for the candidate. The link includes personalised LEARN module recommendations.
+        </div>
+      </div>
+
+      {/* Outcome */}
+      <div>
+        <Label text="1. Outcome" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {OUTCOME_OPTIONS.map(opt => (
+            <button key={opt.value} onClick={() => setOutcome(opt.value)}
+              style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '13px 16px', borderRadius: '10px', background: outcome === opt.value ? opt.bg : 'var(--bg2)', border: `1px solid ${outcome === opt.value ? opt.color + '50' : 'var(--border)'}`, cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
+              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: outcome === opt.value ? opt.color : 'var(--border)', border: `2px solid ${outcome === opt.value ? opt.color : 'var(--border)'}`, transition: 'all 0.15s', flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: outcome === opt.value ? opt.color : 'var(--text)', marginBottom: '1px' }}>{opt.label}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-3)' }}>{opt.sub}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Feedback text */}
+      <div>
+        <Label text="2. Paste client feedback" />
+        <textarea
+          value={feedbackText}
+          onChange={e => setFeedbackText(e.target.value)}
+          placeholder="Paste the AI-generated feedback from the client portal here, or write your own…"
+          rows={6}
+          style={{ width: '100%', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px', color: 'var(--text)', fontSize: '13px', resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.65, outline: 'none' }}
+        />
+      </div>
+
+      {/* Improvement areas */}
+      <div>
+        <Label text="3. Improvement areas (optional)" />
+        <p style={{ fontSize: '12px', color: 'var(--text-3)', marginBottom: '12px', lineHeight: 1.5 }}>
+          Select the areas the client flagged. The candidate will see LEARN modules matched to these.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {areaGroups.map((group, gi) => (
+            <div key={gi} style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
+              {group.map(area => (
+                <button key={area} onClick={() => toggleArea(area)}
+                  style={{ padding: '6px 13px', borderRadius: '7px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', background: selectedAreas.includes(area) ? 'rgba(79,142,247,0.12)' : 'var(--bg2)', border: `1px solid ${selectedAreas.includes(area) ? 'rgba(79,142,247,0.35)' : 'var(--border)'}`, color: selectedAreas.includes(area) ? '#4F8EF7' : 'var(--text-3)' }}>
+                  {selectedAreas.includes(area) ? '✓ ' : ''}{area}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recruiter fields */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+        <div>
+          <Label text="Your name (optional)" />
+          <input value={recruiterName} onChange={e => setRecruiterName(e.target.value)} placeholder="e.g. Sarah at Percentile.One"
+            style={{ width: '100%', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '9px', padding: '11px 13px', color: 'var(--text)', fontSize: '13px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+        </div>
+        <div>
+          <Label text="Recruiter notes to candidate (optional)" />
+          <input value={recruiterNotes} onChange={e => setRecruiterNotes(e.target.value)} placeholder="e.g. Keep an eye out for a similar role…"
+            style={{ width: '100%', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '9px', padding: '11px 13px', color: 'var(--text)', fontSize: '13px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+        </div>
+      </div>
+
+      {/* Generate */}
+      <button onClick={generate} disabled={!canGenerate}
+        style={{ background: canGenerate ? 'var(--blue)' : 'rgba(79,142,247,0.3)', color: '#fff', border: 'none', borderRadius: '10px', padding: '14px', fontSize: '14px', fontWeight: 700, cursor: canGenerate ? 'pointer' : 'default', transition: 'background 0.2s' }}>
+        Generate candidate feedback link →
+      </button>
+
+      {/* Result */}
+      {candidateUrl && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+            Candidate Feedback Link
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--text-3)', fontFamily: 'monospace', wordBreak: 'break-all', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '7px', padding: '10px 12px' }}>
+            {candidateUrl.slice(0, 90)}{candidateUrl.length > 90 ? '…' : ''}
+          </div>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button onClick={copy}
+              style={{ flex: 1, padding: '11px', borderRadius: '9px', fontSize: '13px', fontWeight: 700, background: copied ? 'rgba(52,211,153,0.12)' : 'var(--blue)', border: copied ? '1px solid rgba(52,211,153,0.3)' : 'none', color: copied ? '#34D399' : '#fff', cursor: 'pointer', transition: 'all 0.2s' }}>
+              {copied ? '✓ Copied' : 'Copy link'}
+            </button>
+            <a href={candidateUrl} target="_blank" rel="noreferrer"
+              style={{ padding: '11px 18px', borderRadius: '9px', fontSize: '13px', fontWeight: 700, background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-2)', cursor: 'pointer', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+              Preview ↗
+            </a>
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--text-3)', lineHeight: 1.55 }}>
+            Send this link directly to the candidate. It includes their feedback, LEARN recommendations
+            {outcome === 'door-open' ? ', and a Re-Interview Prep guide.' : '.'}
+          </div>
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
+function Label({ text }: { text: string }) {
+  return <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '10px' }}>{text}</div>;
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
-type Tab = 'interview' | 'learn' | 'coming-soon';
+type Tab = 'interview' | 'learn' | 'feedback' | 'coming-soon';
 
 export default function InterviewSummary() {
   const location = useLocation();
@@ -388,6 +553,7 @@ ${questionsHtml}
   const TABS: { id: Tab; label: string }[] = [
     { id: 'interview', label: '🎤 Interview Room' },
     { id: 'learn', label: '📚 Learn' },
+    { id: 'feedback', label: '✉ Send Feedback to Candidate' },
     { id: 'coming-soon', label: '⚡ Coming Soon' },
   ];
 
@@ -550,6 +716,11 @@ ${questionsHtml}
             recommendedTopic={weakestTag}
             openAiKey={openAiKey}
           />
+        )}
+
+        {/* ── FEEDBACK TAB ── */}
+        {activeTab === 'feedback' && (
+          <SendFeedbackTab cvCtx={cvCtx} jobCtx={jobCtx} />
         )}
 
         {/* ── COMING SOON TAB ── */}

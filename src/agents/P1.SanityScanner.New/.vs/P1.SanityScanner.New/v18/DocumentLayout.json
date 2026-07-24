@@ -1,0 +1,178 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.New.csproj|c:\\develop\\percentileone\\p1\\src\\agents\\p1.sanityscanner.new\\sanityscanner.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.New.csproj|solutionrelative:sanityscanner.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.csproj|c:\\develop\\percentileone\\p1\\src\\agents\\p1.sanityscanner.new\\models\\tocchapter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.csproj|solutionrelative:models\\tocchapter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.New.csproj|c:\\develop\\percentileone\\p1\\src\\agents\\p1.sanityscanner.new\\local.settings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.New.csproj|solutionrelative:local.settings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.csproj|c:\\develop\\percentileone\\p1\\src\\agents\\p1.sanityscanner.new\\models\\toc.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.csproj|solutionrelative:models\\toc.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.csproj|c:\\develop\\percentileone\\p1\\src\\agents\\p1.sanityscanner.new\\p1.sanityscanner.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.csproj|solutionrelative:p1.sanityscanner.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.New.csproj|c:\\develop\\percentileone\\p1\\src\\agents\\p1.sanityscanner.new\\sanityscannerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.New.csproj|solutionrelative:sanityscannerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.csproj|c:\\develop\\percentileone\\p1\\src\\agents\\p1.sanityscanner.new\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.csproj|solutionrelative:properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.New.csproj|c:\\develop\\percentileone\\p1\\src\\agents\\p1.sanityscanner.new\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DC2CE9DB-6D24-ED27-0CBE-4157C4D45F8F}|P1.SanityScanner.New.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "TocChapter.cs",
+              "DocumentMoniker": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\Models\\TocChapter.cs",
+              "RelativeDocumentMoniker": "Models\\TocChapter.cs",
+              "ToolTip": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\Models\\TocChapter.cs",
+              "RelativeToolTip": "Models\\TocChapter.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-07T17:14:51.194Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Toc.cs",
+              "DocumentMoniker": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\Models\\Toc.cs",
+              "RelativeDocumentMoniker": "Models\\Toc.cs",
+              "ToolTip": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\Models\\Toc.cs",
+              "RelativeToolTip": "Models\\Toc.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-07T17:13:58.631Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "SanityScannerService.cs",
+              "DocumentMoniker": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\SanityScannerService.cs",
+              "RelativeDocumentMoniker": "SanityScannerService.cs",
+              "ToolTip": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\SanityScannerService.cs",
+              "RelativeToolTip": "SanityScannerService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-06T16:04:53.595Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-06T15:55:34.837Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "SanityScanner.cs",
+              "DocumentMoniker": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\SanityScanner.cs",
+              "RelativeDocumentMoniker": "SanityScanner.cs",
+              "ToolTip": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\SanityScanner.cs",
+              "RelativeToolTip": "SanityScanner.cs",
+              "ViewState": "AgIAAEEAAAAAAAAAAAAQwE0AAABJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-06T15:45:44.224Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "local.settings.json",
+              "DocumentMoniker": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\local.settings.json",
+              "RelativeDocumentMoniker": "local.settings.json",
+              "ToolTip": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\local.settings.json",
+              "RelativeToolTip": "local.settings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-06-06T15:54:19.633Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "P1.SanityScanner.csproj",
+              "DocumentMoniker": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\P1.SanityScanner.csproj",
+              "RelativeDocumentMoniker": "P1.SanityScanner.csproj",
+              "ToolTip": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\P1.SanityScanner.csproj",
+              "RelativeToolTip": "P1.SanityScanner.csproj",
+              "ViewState": "AgIAABYAAAAAAAAAAAAwPRYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-06-06T15:51:43.804Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "Properties\\launchSettings.json",
+              "ToolTip": "C:\\Develop\\PercentileOne\\P1\\src\\agents\\P1.SanityScanner.New\\Properties\\launchSettings.json",
+              "RelativeToolTip": "Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-06-07T16:29:41.154Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

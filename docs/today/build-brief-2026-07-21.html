@@ -1,0 +1,584 @@
+<title>Explain — Build Brief · July 2026</title>
+<style>
+  @import url('data:text/css,');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #070b14;
+    --bg2:      #0d1424;
+    --bg3:      #111827;
+    --border:   rgba(255,255,255,0.08);
+    --text:     #e2e8f0;
+    --text-2:   #94a3b8;
+    --text-3:   #475569;
+    --blue:     #4F8EF7;
+    --purple:   #A78BFA;
+    --green:    #34D399;
+    --amber:    #F59E0B;
+    --red:      #EF4444;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg:     #f8fafc;
+      --bg2:    #ffffff;
+      --bg3:    #f1f5f9;
+      --border: rgba(0,0,0,0.08);
+      --text:   #0f172a;
+      --text-2: #334155;
+      --text-3: #94a3b8;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg:     #f8fafc;
+    --bg2:    #ffffff;
+    --bg3:    #f1f5f9;
+    --border: rgba(0,0,0,0.08);
+    --text:   #0f172a;
+    --text-2: #334155;
+    --text-3: #94a3b8;
+  }
+  :root[data-theme="dark"] {
+    --bg:     #070b14;
+    --bg2:    #0d1424;
+    --bg3:    #111827;
+    --border: rgba(255,255,255,0.08);
+    --text:   #e2e8f0;
+    --text-2: #94a3b8;
+    --text-3: #475569;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 0 0 60px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, rgba(79,142,247,0.12), rgba(167,139,250,0.08));
+    border-bottom: 1px solid var(--border);
+    padding: 40px 48px 32px;
+  }
+  .eyebrow {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 10px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    color: var(--text);
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+  .header h1 span { color: var(--blue); }
+  .header .sub {
+    font-size: 13px;
+    color: var(--text-3);
+    margin-bottom: 24px;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .meta-chip {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    background: var(--bg2);
+  }
+  .meta-chip.blue   { color: var(--blue);   background: rgba(79,142,247,0.1);  border-color: rgba(79,142,247,0.3);  }
+  .meta-chip.green  { color: var(--green);  background: rgba(52,211,153,0.1);  border-color: rgba(52,211,153,0.3);  }
+  .meta-chip.purple { color: var(--purple); background: rgba(167,139,250,0.1); border-color: rgba(167,139,250,0.3); }
+  .meta-chip.amber  { color: var(--amber);  background: rgba(245,158,11,0.1);  border-color: rgba(245,158,11,0.3);  }
+
+  /* ── LAYOUT ── */
+  .body { max-width: 860px; margin: 0 auto; padding: 0 48px; }
+
+  /* ── SECTION ── */
+  .section { margin-top: 44px; }
+  .section-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-bottom: 12px;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .card-icon {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .card h3 {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .card .badge {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+  .badge.done    { color: var(--green);  background: rgba(52,211,153,0.12);  }
+  .badge.wip     { color: var(--blue);   background: rgba(79,142,247,0.12);  }
+  .badge.planned { color: var(--amber);  background: rgba(245,158,11,0.12);  }
+  .badge.new     { color: var(--purple); background: rgba(167,139,250,0.12); }
+
+  .card p, .card li {
+    font-size: 12.5px;
+    color: var(--text-2);
+    line-height: 1.65;
+  }
+  .card ul { padding-left: 16px; }
+  .card li { margin-bottom: 4px; }
+  .card li::marker { color: var(--text-3); }
+
+  /* ── TWO COL ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ── HIGHLIGHT BOX ── */
+  .highlight {
+    background: linear-gradient(135deg, rgba(79,142,247,0.08), rgba(167,139,250,0.06));
+    border: 1px solid rgba(79,142,247,0.2);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 12px;
+  }
+  .highlight p { font-size: 13px; color: var(--text-2); line-height: 1.7; }
+  .highlight strong { color: var(--text); font-weight: 700; }
+
+  /* ── DB CONTAINERS ── */
+  .db-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
+  @media (max-width: 640px) { .db-grid { grid-template-columns: repeat(2,1fr); } }
+  .db-container {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .db-container .db-name {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .db-container .db-pk {
+    font-size: 9px; color: var(--text-3); font-style: italic; margin-bottom: 8px;
+  }
+  .db-container .db-fields {
+    font-size: 10.5px; color: var(--text-3); line-height: 1.7;
+  }
+
+  /* ── NEXT STEPS ── */
+  .next-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .next-step:last-child { border-bottom: none; }
+  .step-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(79,142,247,0.15);
+    border: 1px solid rgba(79,142,247,0.3);
+    color: var(--blue);
+    font-size: 11px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .step-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .step-desc  { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+
+  /* ── STAT ROW ── */
+  .stat-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .stat {
+    flex: 1; min-width: 120px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .stat .stat-val { font-size: 24px; font-weight: 900; letter-spacing: -0.03em; color: var(--text); }
+  .stat .stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin-top: 2px; }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-3);
+    text-align: center;
+  }
+</style>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="eyebrow">Percentile.One · Build Brief</div>
+  <h1>Explain<span>.global</span> — Where We Are</h1>
+  <div class="sub">Prepared 21 July 2026 · For Copilot handoff and planning session</div>
+  <div class="meta-row">
+    <span class="meta-chip blue">Recruiter Portal · Live</span>
+    <span class="meta-chip green">Coming Soon · Live</span>
+    <span class="meta-chip purple">Pack Builder · Built</span>
+    <span class="meta-chip amber">Cosmos DB · Designed</span>
+    <span class="meta-chip">Mobile · Pending</span>
+  </div>
+</div>
+
+<div class="body">
+
+  <!-- ── THE BIG PICTURE ── -->
+  <div class="section">
+    <div class="section-label">The Big Picture — What Changed and Why</div>
+
+    <div class="highlight">
+      <p>The product was previously called <strong>TalkToLearn</strong> — an AI-powered learning app built around the Feynman Technique (you only understand what you can explain out loud). The name has been officially changed to <strong>Explain</strong>. The domain <strong>explain.global</strong> is live and the coming soon page is already attracting organic traffic from the US, UK, Italy and Taiwan with zero marketing.</p>
+    </div>
+
+    <div class="highlight">
+      <p>Alongside Explain (the learning product), a second product has been scoped and is now in active development: the <strong>Explain Recruiter Portal</strong> — a B2B tool for recruitment agencies to build AI-powered interview packs, conduct live phone interviews with answer capture, and score candidates automatically. The first pilot agency is <strong>Vallum Associates</strong>. Both products sit under the <strong>Percentile.One</strong> platform umbrella.</p>
+    </div>
+  </div>
+
+  <!-- ── PLATFORM ARCHITECTURE ── -->
+  <div class="section">
+    <div class="section-label">Platform Architecture — The Unified Model</div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(79,142,247,0.15);">🏗️</div>
+        <h3>Workspace-First Platform Identity</h3>
+        <span class="badge new">New Decision</span>
+      </div>
+      <p style="margin-bottom:10px;">Inspired by how Slack, Notion, Linear and GitHub handle multi-product identity. Every user belongs to a <strong>Workspace</strong> — the top-level unit for billing, members, and product access.</p>
+      <ul>
+        <li><strong>Workspace type: Personal</strong> — an individual using Explain to learn (B2C)</li>
+        <li><strong>Workspace type: Organisation</strong> — a company using the Recruiter Portal (B2B)</li>
+        <li>One login works across all Explain products — no separate accounts per product</li>
+        <li>Billing, subscriptions, and team members all attach to the Workspace</li>
+        <li>A user can belong to multiple Workspaces (personal + employer's org)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(52,211,153,0.15);">🗄️</div>
+        <h3>Cosmos DB — 5 Containers, Serverless</h3>
+        <span class="badge new">Designed</span>
+      </div>
+      <p style="margin-bottom:14px;">Decision: <strong>5 separate containers</strong> (not one shared container) so each entity type can scale independently. All on <strong>serverless throughput</strong> — zero minimum cost, pay per request, switch to provisioned when scale demands it.</p>
+      <div class="db-grid">
+        <div class="db-container">
+          <div class="db-name" style="color:#4F8EF7;">workspaces</div>
+          <div class="db-pk">pk: /id</div>
+          <div class="db-fields">id · name · type<br>plan · ownerId<br>members[] · products[]<br>createdAt</div>
+        </div>
+        <div class="db-container">
+          <div class="db-name" style="color:#4F8EF7;">job-specs</div>
+          <div class="db-pk">pk: /workspaceId</div>
+          <div class="db-fields">id · title · client<br>salary · status<br>requirements[]<br>skills[] · blobUrl</div>
+        </div>
+        <div class="db-container">
+          <div class="db-name" style="color:#A78BFA;">candidates</div>
+          <div class="db-pk">pk: /workspaceId</div>
+          <div class="db-fields">id · name · email<br>phone · currentRole<br>linkedIn · tags[]<br>createdAt</div>
+        </div>
+        <div class="db-container">
+          <div class="db-name" style="color:#A78BFA;">cvs</div>
+          <div class="db-pk">pk: /workspaceId</div>
+          <div class="db-fields">id · candidateId<br>fileName · blobUrl<br>extractedData {}<br>uploadedAt</div>
+        </div>
+        <div class="db-container">
+          <div class="db-name" style="color:#34D399;">interview-packs</div>
+          <div class="db-pk">pk: /workspaceId</div>
+          <div class="db-fields">id · specId · cvId<br>candidateId · status<br>overallScore<br>questions[] embedded</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RECRUITER PORTAL ── -->
+  <div class="section">
+    <div class="section-label">Recruiter Portal — recruiter.explain.global</div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(52,211,153,0.15);">✅</div>
+          <h3>What's Built</h3>
+          <span class="badge done">Live</span>
+        </div>
+        <ul>
+          <li>Login screen with demo user flow</li>
+          <li>Dashboard with live rotating stat cards, pending interviews, recent packs, pass rates, to-dos, industry news</li>
+          <li>Job Specs page — sortable columns, received date, status filters, pagination, archive</li>
+          <li>CV Library — upload tracking, candidate linking</li>
+          <li>Candidates page — card grid with animated hover</li>
+          <li>Interviews page</li>
+          <li>Interview Packs page</li>
+          <li>Analytics page</li>
+          <li>Sidebar nav ordered by recruiter workflow</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(167,139,250,0.15);">⭐</div>
+          <h3>Pack Builder — Flagship Feature</h3>
+          <span class="badge done">Live</span>
+        </div>
+        <ul>
+          <li>Opened via "View →" on any Job Spec row</li>
+          <li>Left panel: Job Spec details (auto-loaded)</li>
+          <li>Right panel: CV upload with drag-and-drop</li>
+          <li>AI generates tailored interview questions from spec + CV</li>
+          <li>Each question shows a "From" badge — Spec or CV — with source context</li>
+          <li>Live answer capture — recruiter types candidate answers during the phone call</li>
+          <li>AI scores each answer (1–10) with a comment</li>
+          <li>Overall % score shown with colour coding</li>
+          <li>Save Pack and Regenerate actions</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(245,158,11,0.15);">🔧</div>
+        <h3>Technical Stack — Recruiter Portal</h3>
+      </div>
+      <ul>
+        <li><strong>Frontend:</strong> React 19 + Vite 8 + TypeScript — deployed to Azure Static Web Apps (mango-bay)</li>
+        <li><strong>Domain:</strong> recruiter.explain.global via GoDaddy CNAME → Azure Front Door</li>
+        <li><strong>CI/CD:</strong> GitHub Actions → Deploy recruiter.explain.global workflow</li>
+        <li><strong>Caching:</strong> staticwebapp.config.json — assets immutable, HTML no-store, server-side redirect / → /login</li>
+        <li><strong>Animation:</strong> Framer Motion throughout</li>
+        <li><strong>AI (current):</strong> Mock data — ready to wire to Claude API</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── EXPLAIN (LEARNING APP) ── -->
+  <div class="section">
+    <div class="section-label">Explain — The Learning App</div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(79,142,247,0.15);">🌐</div>
+          <h3>Coming Soon Page</h3>
+          <span class="badge done">Live · explain.global</span>
+        </div>
+        <ul>
+          <li>Branded landing page — dark, animated, Explain identity</li>
+          <li>Early access signup form</li>
+          <li>3 signups in under 24 hours, zero marketing</li>
+          <li>17 unique visitors across US, UK, Italy, Taiwan</li>
+          <li>1m 31s average engagement time</li>
+          <li>Fully indexed by Google/Bing</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(167,139,250,0.15);">📱</div>
+          <h3>Mobile App — iOS</h3>
+          <span class="badge planned">Pending Planning</span>
+        </div>
+        <ul>
+          <li>Previously TalkToLearn — needs renaming to Explain throughout</li>
+          <li>Core mechanic: speak to learn (Feynman Technique)</li>
+          <li>Apple Watch companion app built (TalkToLearnWatch)</li>
+          <li>Developer account active</li>
+          <li>Mac Mini M4 Pro being acquired for Xcode builds</li>
+          <li>App Store submission: full walkthrough needed (first submission)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(52,211,153,0.15);">🔌</div>
+        <h3>.NET API Backend — TalkToLearn.Api</h3>
+        <span class="badge wip">In Progress</span>
+      </div>
+      <ul>
+        <li>ASP.NET Core API with feature-based folder structure</li>
+        <li>Features: Lessons/Generate, Lessons/Score, Lessons/GoDeeper, Lessons/Export, Auth (magic link), Profile, Search, Notifications</li>
+        <li>Cosmos DB infrastructure folder in place</li>
+        <li>SQL migrations in place</li>
+        <li>GitHub Actions deploy pipeline: deploy-api.yml</li>
+        <li>Needs: wiring to new Workspace/platform Cosmos model</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── EARLY TRACTION ── -->
+  <div class="section">
+    <div class="section-label">Early Traction — Explain Coming Soon</div>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="stat-val" style="color:var(--blue)">17</div>
+        <div class="stat-label">Unique Visitors</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" style="color:var(--green)">3</div>
+        <div class="stat-label">Early Access Signups</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" style="color:var(--purple)">4</div>
+        <div class="stat-label">Countries</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" style="color:var(--amber)">1m 31s</div>
+        <div class="stat-label">Avg. Engagement</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" style="color:var(--green)">0</div>
+        <div class="stat-label">Marketing Spend</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── NEXT STEPS ── -->
+  <div class="section">
+    <div class="section-label">Next Steps — Prioritised</div>
+    <div class="card" style="padding: 8px 22px;">
+
+      <div class="next-step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Cosmos DB — Provision 5 Containers</div>
+          <div class="step-desc">Create the Azure Cosmos DB account (serverless), provision all 5 containers with correct partition keys. Write C# domain models and repository interfaces in TalkToLearn.Api.</div>
+        </div>
+      </div>
+
+      <div class="next-step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">Wire Real AI — Pack Builder Generate + Score</div>
+          <div class="step-desc">Replace mock data in Pack Builder with real Claude API calls. Generate questions endpoint + score answers endpoint in the .NET API.</div>
+        </div>
+      </div>
+
+      <div class="next-step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">Voice Answer Capture</div>
+          <div class="step-desc">Add microphone button to each Pack Builder question using the browser Web Speech API (built into Chrome/Edge — no external service needed). Transcribes candidate answers in real time, sets answerSource: "Voice".</div>
+        </div>
+      </div>
+
+      <div class="next-step">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-title">Rename Mobile App — TalkToLearn → Explain</div>
+          <div class="step-desc">Update all app display names, bundle identifiers, Watch app targets, and branding across iOS and watchOS targets in Xcode.</div>
+        </div>
+      </div>
+
+      <div class="next-step">
+        <div class="step-num">5</div>
+        <div>
+          <div class="step-title">DevOps Planning — Azure Pipelines + Environments</div>
+          <div class="step-desc">Map all 7 projects to Azure DevOps boards. Define dev/staging/prod environments per product. Set up deployment gates and branching strategy.</div>
+        </div>
+      </div>
+
+      <div class="next-step">
+        <div class="step-num">6</div>
+        <div>
+          <div class="step-title">App Store Submission — Explain iOS</div>
+          <div class="step-desc">Full guided walkthrough: App Store Connect setup, certificates, provisioning profiles, screenshots, metadata, review guidelines compliance, and submission.</div>
+        </div>
+      </div>
+
+      <div class="next-step">
+        <div class="step-num">7</div>
+        <div>
+          <div class="step-title">Candidate Portal</div>
+          <div class="step-desc">Separate portal for candidates to view their interview pack, see their scored results, and book interviews. Sits alongside the Recruiter Portal under explain.global.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── PRODUCTS ── -->
+  <div class="section">
+    <div class="section-label">The 7 Products — Percentile.One Ecosystem</div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(79,142,247,0.15);">📚</div>
+          <h3>Explain (Learning App)</h3>
+          <span class="badge wip">Building</span>
+        </div>
+        <p>AI learning via the Feynman Technique. Speak to learn, get scored, go deeper. iOS + Apple Watch + Web.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(52,211,153,0.15);">💼</div>
+          <h3>Explain Recruiter Portal</h3>
+          <span class="badge done">Live</span>
+        </div>
+        <p>AI interview pack builder for recruitment agencies. Job Spec → CV → Pack → Live Interview → Score.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(167,139,250,0.15);">🎓</div>
+          <h3>Teach to Learn</h3>
+          <span class="badge planned">Planned</span>
+        </div>
+        <p>Educator-facing product. Teachers create content packs, students learn through explanation.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(245,158,11,0.15);">🔤</div>
+          <h3>Word-Up</h3>
+          <span class="badge planned">Planned</span>
+        </div>
+        <p>Vocabulary building game. Learn high-value words through explanation and spaced repetition.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Explain · Percentile.One · Build Brief · 21 July 2026 · Prepared with Claude Code
+  </div>
+
+</div>

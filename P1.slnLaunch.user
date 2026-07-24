@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "src\\backend\\Contexts\\Identity\\Identity.Api\\Identity.Api.csproj",
+        "Action": "StartWithoutDebugging"
+      },
+      {
+        "Path": "UserOnboardingService\\P1.UserOnboardingService.csproj",
+        "Action": "StartWithoutDebugging"
+      }
+    ]
+  }
+]

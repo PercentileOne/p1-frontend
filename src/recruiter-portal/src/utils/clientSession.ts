@@ -43,6 +43,185 @@ export function readSessionFromHash(): ClientSession | null {
   return decodeSession(hash);
 }
 
+export type FeedbackOutcome = 'pass' | 'fail' | 'door-open';
+
+// ── Candidate Feedback Session (hash-encoded, sent by recruiter to candidate) ──
+
+export interface CandidateFeedbackSession {
+  version: 1;
+  candidateName: string;
+  role: string;
+  company?: string;
+  outcome: FeedbackOutcome;
+  feedbackText: string;
+  improvementAreas: string[];
+  recruiterName?: string;
+  recruiterNotes?: string;
+  generatedAt: number;
+}
+
+export function encodeCandidateSession(session: CandidateFeedbackSession): string {
+  return btoa(encodeURIComponent(JSON.stringify(session)));
+}
+
+export function decodeCandidateSession(encoded: string): CandidateFeedbackSession | null {
+  try {
+    return JSON.parse(decodeURIComponent(atob(encoded))) as CandidateFeedbackSession;
+  } catch {
+    return null;
+  }
+}
+
+export function buildCandidateFeedbackUrl(session: CandidateFeedbackSession): string {
+  const token = encodeCandidateSession(session);
+  return `${window.location.origin}/candidate/feedback#${token}`;
+}
+
+export function readCandidateSessionFromHash(): CandidateFeedbackSession | null {
+  const hash = window.location.hash.slice(1);
+  if (!hash) return null;
+  return decodeCandidateSession(hash);
+}
+
+// ── Candidate Prep Session (recruiter → candidate pre-interview prep link) ─────
+
+export interface CandidatePrepSession {
+  version: 1;
+  prepType: 'pre-interview' | 'full-prep' | 'practice';
+  candidateName?: string;
+  role: string;
+  company?: string;
+  industry?: string;
+  questions: import('../api/explainApi').InterviewQuestion[];
+  recruiterName?: string;
+  recruiterMessage?: string;
+  generatedAt: number;
+}
+
+export function encodePrepSession(session: CandidatePrepSession): string {
+  return btoa(encodeURIComponent(JSON.stringify(session)));
+}
+
+export function decodePrepSession(encoded: string): CandidatePrepSession | null {
+  try {
+    return JSON.parse(decodeURIComponent(atob(encoded))) as CandidatePrepSession;
+  } catch {
+    return null;
+  }
+}
+
+export function buildCandidatePrepUrl(session: CandidatePrepSession): string {
+  const token = encodePrepSession(session);
+  return `${window.location.origin}/candidate/prep#${token}`;
+}
+
+export function readPrepSessionFromHash(): CandidatePrepSession | null {
+  const hash = window.location.hash.slice(1);
+  if (!hash) return null;
+  return decodePrepSession(hash);
+}
+
+export interface ClientFeedbackContext {
+  candidateName: string;
+  role: string;
+  company?: string;
+  industry?: string;
+  outcome: FeedbackOutcome;
+  improvementAreas: string[];
+  clientNotes: string;
+  aiGeneratedSummary: string;
+  timestamp: number;
+}
+
+export function getRoleImprovementAreas(jobTitle: string, industry?: string): string[][] {
+  const t = (jobTitle + ' ' + (industry ?? '')).toLowerCase();
+
+  if (/engineer|developer|architect|software|backend|frontend|devops|cloud/.test(t)) {
+    return [
+      ['Technical depth', 'System design', 'Code quality', 'Problem solving'],
+      ['Architecture', 'Communication', 'Leadership', 'Delivery pace'],
+      ['Testing', 'Documentation', 'Stakeholder management', 'Domain knowledge'],
+    ];
+  }
+  if (/barista|coffee|café|cafe|starbucks|costa/.test(t)) {
+    return [
+      ['Beverage craft', 'Speed under pressure', 'Customer service', 'Product knowledge'],
+      ['Hygiene', 'Teamwork', 'Communication', 'Reliability'],
+      ['Upselling', 'Consistency', 'Time management', 'Brand knowledge'],
+    ];
+  }
+  if (/chef|cook|kitchen|restaurant|hospitality|hotel/.test(t)) {
+    return [
+      ['Food safety', 'Speed under pressure', 'Consistency', 'Kitchen hygiene'],
+      ['Menu knowledge', 'Teamwork', 'Communication', 'Creativity'],
+      ['Time management', 'Waste management', 'Leadership', 'Reliability'],
+    ];
+  }
+  if (/store manager|retail manager|shop manager|assistant manager/.test(t)) {
+    return [
+      ['Retail operations', 'Team leadership', 'Customer service', 'Stock management'],
+      ['KPI delivery', 'Communication', 'Problem solving', 'Loss prevention'],
+      ['Staff development', 'Stakeholder management', 'Commercial awareness', 'Reliability'],
+    ];
+  }
+  if (/sales|account manager|business development/.test(t)) {
+    return [
+      ['Closing skills', 'Pipeline management', 'Communication', 'Product knowledge'],
+      ['Objection handling', 'Relationship building', 'Resilience', 'Stakeholder management'],
+      ['Negotiation', 'CRM discipline', 'Domain knowledge', 'Commercial awareness'],
+    ];
+  }
+  if (/nurse|doctor|clinician|gp |therapist|physio/.test(t)) {
+    return [
+      ['Clinical knowledge', 'Patient communication', 'Decision-making', 'Empathy'],
+      ['Documentation', 'Teamwork', 'Safeguarding', 'Resilience'],
+      ['Time management', 'Leadership', 'Professional boundaries', 'Domain knowledge'],
+    ];
+  }
+  if (/teacher|lecturer|tutor|educator/.test(t)) {
+    return [
+      ['Subject knowledge', 'Classroom management', 'Communication', 'Student engagement'],
+      ['Differentiation', 'Assessment', 'Teamwork', 'Resilience'],
+      ['Behaviour management', 'Curriculum knowledge', 'Leadership', 'Reliability'],
+    ];
+  }
+  if (/trainer|coach|fitness|gym|sport/.test(t)) {
+    return [
+      ['Coaching methodology', 'Client motivation', 'Communication', 'Programme design'],
+      ['Safety awareness', 'Reliability', 'Domain knowledge', 'Empathy'],
+      ['Commercial awareness', 'Retention skills', 'Leadership', 'Resilience'],
+    ];
+  }
+  if (/driver|logistics|warehouse|delivery/.test(t)) {
+    return [
+      ['Route planning', 'Time management', 'Safety awareness', 'Reliability'],
+      ['Communication', 'Teamwork', 'Problem solving', 'Vehicle knowledge'],
+      ['Customer service', 'Documentation', 'Resilience', 'Physical fitness'],
+    ];
+  }
+  if (/lawyer|solicitor|legal|barrister/.test(t)) {
+    return [
+      ['Legal knowledge', 'Analytical thinking', 'Communication', 'Attention to detail'],
+      ['Client management', 'Stakeholder management', 'Problem solving', 'Resilience'],
+      ['Time management', 'Commercial awareness', 'Leadership', 'Domain knowledge'],
+    ];
+  }
+  if (/childcare|nursery|nanny|early years/.test(t)) {
+    return [
+      ['Child development knowledge', 'Safeguarding', 'Communication', 'Empathy'],
+      ['Patience', 'Teamwork', 'Reliability', 'Creativity'],
+      ['Behaviour management', 'Documentation', 'Parent communication', 'Resilience'],
+    ];
+  }
+
+  // Generic fallback
+  return [
+    ['Communication', 'Problem solving', 'Leadership', 'Teamwork'],
+    ['Domain knowledge', 'Stakeholder management', 'Reliability', 'Resilience'],
+    ['Time management', 'Commercial awareness', 'Delivery pace', 'Technical depth'],
+  ];
+}
+
 export function generateFollowUps(question: InterviewQuestion): string[] {
   const q = question.questionText.toLowerCase();
   const source = question.source;

@@ -4,8 +4,9 @@ import { readSessionFromHash, type ClientSession } from '../../utils/clientSessi
 import ClientOverview from './ClientOverview';
 import ClientQuestions from './ClientQuestions';
 import ClientProfile from './ClientProfile';
+import ClientFeedback from './ClientFeedback';
 
-type ClientTab = 'overview' | 'questions' | 'profile';
+type ClientTab = 'overview' | 'questions' | 'profile' | 'feedback';
 
 export default function ClientPortal() {
   const [session, setSession] = useState<ClientSession | null>(null);
@@ -27,6 +28,7 @@ export default function ClientPortal() {
     { id: 'overview', label: 'Interview Overview' },
     { id: 'questions', label: `Questions (${session.questions.length})` },
     { id: 'profile', label: 'Candidate Profile' },
+    { id: 'feedback', label: 'Provide Feedback' },
   ];
 
   return (
@@ -114,6 +116,7 @@ export default function ClientPortal() {
             {tab === 'overview'   && <ClientOverview session={session} />}
             {tab === 'questions'  && <ClientQuestions session={session} />}
             {tab === 'profile'    && <ClientProfile session={session} />}
+            {tab === 'feedback'   && <ClientFeedback session={session} />}
           </motion.div>
         </AnimatePresence>
       </div>

@@ -9,6 +9,9 @@ import InterviewSummary from './pages/InterviewSummary'
 import InterviewIntake from './pages/InterviewIntake'
 import LeagueTable from './pages/LeagueTable'
 import ClientPortal from './pages/client/ClientPortal'
+import CandidateFeedbackPortal from './pages/candidate/CandidateFeedbackPortal'
+import CandidateHome from './pages/candidate/CandidateHome'
+import CandidatePrep from './pages/candidate/CandidatePrep'
 
 export default function App() {
   return (
@@ -26,6 +29,10 @@ export default function App() {
         <Route path="/league" element={<LeagueTable />} />
         {/* Client Portal — hiring manager facing, token encoded in URL hash */}
         <Route path="/client" element={<ClientPortal />} />
+        {/* Candidate Portal — self-serve hub, interview prep, feedback */}
+        <Route path="/candidate" element={<CandidateHome />} />
+        <Route path="/candidate/prep" element={<CandidatePrep />} />
+        <Route path="/candidate/feedback" element={<CandidateFeedbackPortal />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

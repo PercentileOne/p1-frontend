@@ -15,6 +15,7 @@ public record LessonDto(
     List<MisconceptionDto> Misconceptions,
     List<GlossaryItemDto> Glossary,
     List<string> ExamQuestions,
+    List<string> ExamAnswers,
     List<MCQuestionDto> McQuestions
 );
 

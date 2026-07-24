@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Founder-Technologist — The Rarest Profile Alive</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #050e0a;
+    --bg2:      #0b1812;
+    --bg3:      #10211a;
+    --bg-warm:  #071009;
+    --border:   #122a1c;
+    --accent:   #10B981;
+    --acc-dim:  rgba(16,185,129,0.09);
+    --acc-mid:  rgba(16,185,129,0.26);
+    --emerald:  #34D399;
+    --gold:     #FBBF24;
+    --blue:     #60A5FA;
+    --text:     #D4EDE3;
+    --text-2:   #6B9E84;
+    --text-3:   #1E3D2C;
+    --r:        14px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg:#F0FAF5;--bg2:#E2F4EC;--bg3:#D1EDE0;--bg-warm:#EAF7EE;
+      --border:#A8D8BE;--accent:#059669;--acc-dim:rgba(5,150,105,0.08);
+      --acc-mid:rgba(5,150,105,0.22);--emerald:#047857;--gold:#92400E;
+      --blue:#1D4ED8;--text:#0A2416;--text-2:#1A5436;--text-3:#6AAE88;
+    }
+  }
+  :root[data-theme="dark"]  { --bg:#050e0a;--bg2:#0b1812;--bg3:#10211a;--bg-warm:#071009;--border:#122a1c;--accent:#10B981;--acc-dim:rgba(16,185,129,0.09);--acc-mid:rgba(16,185,129,0.26);--emerald:#34D399;--gold:#FBBF24;--blue:#60A5FA;--text:#D4EDE3;--text-2:#6B9E84;--text-3:#1E3D2C; }
+  :root[data-theme="light"] { --bg:#F0FAF5;--bg2:#E2F4EC;--bg3:#D1EDE0;--bg-warm:#EAF7EE;--border:#A8D8BE;--accent:#059669;--acc-dim:rgba(5,150,105,0.08);--acc-mid:rgba(5,150,105,0.22);--emerald:#047857;--gold:#92400E;--blue:#1D4ED8;--text:#0A2416;--text-2:#1A5436;--text-3:#6AAE88; }
+
+  html { font-size:16px; scroll-behavior:smooth; }
+  body { background:var(--bg); color:var(--text); font-family:-apple-system,'Segoe UI',system-ui,sans-serif; line-height:1.7; padding:0 16px 80px; -webkit-font-smoothing:antialiased; }
+  .page { max-width:720px; margin:0 auto; }
+
+  .nav { display:flex; align-items:center; justify-content:space-between; padding:20px 0 48px; font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-3); }
+  .nav a { color:var(--text-3); text-decoration:none; }
+  .nav a:hover { color:var(--accent); }
+  .tag { background:var(--acc-dim); border:1px solid var(--acc-mid); color:var(--accent); border-radius:4px; padding:3px 10px; font-size:10px; font-weight:800; letter-spacing:0.1em; }
+
+  .hero { position:relative; margin-bottom:56px; overflow:hidden; }
+  .hero-ghost { position:absolute; top:-10px; right:-6px; font-size:clamp(52px,15vw,100px); font-weight:900; color:transparent; -webkit-text-stroke:1px var(--acc-mid); letter-spacing:-0.04em; line-height:1; pointer-events:none; user-select:none; }
+  .hero-eyebrow { font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); margin-bottom:16px; }
+  .hero-title { font-size:clamp(26px,5.5vw,42px); font-weight:900; line-height:1.15; letter-spacing:-0.03em; color:var(--text); text-wrap:balance; margin-bottom:20px; }
+  .hero-title em { color:var(--accent); font-style:normal; }
+  .hero-sub { font-size:16px; color:var(--text-2); max-width:540px; line-height:1.65; margin-bottom:28px; }
+  .hero-stat-row { display:flex; gap:16px; flex-wrap:wrap; }
+  .hero-stat { background:var(--acc-dim); border:1px solid var(--acc-mid); border-radius:8px; padding:10px 18px; display:flex; flex-direction:column; gap:2px; }
+  .hero-stat-num { font-size:20px; font-weight:900; color:var(--accent); line-height:1; }
+  .hero-stat-label { font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-3); }
+
+  .divider { height:1px; background:linear-gradient(90deg,var(--acc-mid) 0%,transparent 100%); margin:48px 0; }
+  .section-h { font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); margin-bottom:20px; }
+
+  /* Venn comparison */
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:48px; }
+  .compare-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:18px 16px; }
+  .compare-title { font-size:13px; font-weight:800; color:var(--text-2); margin-bottom:10px; }
+  .compare-list { display:flex; flex-direction:column; gap:6px; }
+  .compare-item { font-size:12px; color:var(--text-3); display:flex; align-items:flex-start; gap:6px; line-height:1.4; }
+  .compare-item.has::before { content:'✓'; color:var(--accent); flex-shrink:0; font-weight:800; }
+  .compare-item.missing::before { content:'✗'; color:var(--text-3); flex-shrink:0; }
+  .compare-card.highlight { border-color:var(--acc-mid); }
+  .compare-card.highlight .compare-title { color:var(--accent); }
+  .compare-card.highlight .compare-item.has::before { color:var(--emerald); }
+
+  /* Convergence wheel */
+  .convergence { background:var(--bg2); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:0 var(--r) var(--r) 0; padding:24px 28px; margin-bottom:48px; }
+  .convergence h2 { font-size:18px; font-weight:800; color:var(--text); margin-bottom:16px; }
+  .conv-list { display:flex; flex-direction:column; gap:12px; }
+  .conv-item { display:grid; grid-template-columns:28px 1fr; gap:12px; align-items:flex-start; }
+  .conv-num { width:28px; height:28px; border-radius:50%; background:var(--acc-dim); border:1px solid var(--acc-mid); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:var(--accent); flex-shrink:0; }
+  .conv-text { font-size:14px; color:var(--text-2); line-height:1.6; }
+  .conv-text strong { color:var(--text); }
+
+  /* Compounding section */
+  .compound-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); margin-bottom:14px; }
+  .compound-inner { padding:20px 24px 20px 30px; position:relative; }
+  .compound-inner::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent); border-radius:3px 0 0 3px; }
+  .compound-year { font-size:10px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
+  .compound-title { font-size:15px; font-weight:800; color:var(--text); margin-bottom:6px; }
+  .compound-body { font-size:13px; color:var(--text-2); line-height:1.65; }
+  .compound-body strong { color:var(--text); }
+
+  /* Quote */
+  .quote-block { background:var(--bg3); border-left:2px solid var(--accent); padding:18px 24px; border-radius:0 10px 10px 0; font-size:15px; font-style:italic; color:var(--text-2); margin:32px 0; line-height:1.7; }
+  .quote-block strong { color:var(--accent); font-style:normal; }
+
+  /* Francis section */
+  .for-francis { background:var(--bg-warm); border:1px solid var(--acc-mid); border-radius:var(--r); padding:32px 36px; margin-bottom:48px; position:relative; overflow:hidden; }
+  .for-francis::before { content:'FOR FRANCIS'; position:absolute; top:16px; right:20px; font-size:9px; font-weight:900; letter-spacing:0.18em; color:var(--accent); opacity:0.5; }
+  .for-francis h2 { font-size:20px; font-weight:900; color:var(--accent); margin-bottom:8px; }
+  .for-francis .sub { font-size:14px; color:var(--text-2); margin-bottom:24px; line-height:1.65; }
+  .proof-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(195px,1fr)); gap:8px; margin-bottom:24px; }
+  .proof-item { background:var(--acc-dim); border:1px solid var(--acc-mid); border-radius:8px; padding:10px 14px; font-size:12px; font-weight:700; color:var(--text-2); display:flex; align-items:flex-start; gap:8px; line-height:1.45; }
+  .proof-item::before { content:'⭐'; font-size:10px; flex-shrink:0; margin-top:1px; }
+  .closing { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:22px 26px; }
+  .closing p { font-size:14px; color:var(--text-2); line-height:1.75; }
+  .closing p + p { margin-top:12px; }
+  .closing strong { color:var(--emerald); }
+
+  .footer { border-top:1px solid var(--border); padding-top:28px; font-size:11px; color:var(--text-3); line-height:1.7; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  @media(max-width:520px){ .hero-ghost{display:none;} .for-francis{padding:24px 20px;} .compare-grid{grid-template-columns:1fr;} }
+  @media(prefers-reduced-motion:reduce){ *{transition:none!important;} }
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav class="nav">
+    <span><a href="ai-systems-engineer.html">← AI Systems</a> / Learning</span>
+    <span class="tag">FOUNDER · TECHNOLOGIST</span>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-ghost">RARE</div>
+    <div class="hero-eyebrow">⭐ The Rarest Profile Alive</div>
+    <h1 class="hero-title">The Founder-Technologist — the person who holds <em>the whole picture</em></h1>
+    <p class="hero-sub">Not just a technical founder. Not just a visionary CEO. The Founder-Technologist holds the full mental model — vision, architecture, code, product, customer — simultaneously. In the same hour. Under pressure.</p>
+    <div class="hero-stat-row">
+      <div class="hero-stat"><span class="hero-stat-num">1 in</span><span class="hero-stat-label">10,000 engineers</span></div>
+      <div class="hero-stat"><span class="hero-stat-num">5</span><span class="hero-stat-label">Domains convergent</span></div>
+      <div class="hero-stat"><span class="hero-stat-num">10×</span><span class="hero-stat-label">Decisions compounding</span></div>
+    </div>
+  </header>
+
+  <div class="divider"></div>
+
+  <!-- Why rare -->
+  <section style="margin-bottom:48px;">
+    <div class="section-h">Why this profile is vanishingly rare</div>
+    <div class="compare-grid">
+      <div class="compare-card">
+        <div class="compare-title">The Business Founder</div>
+        <div class="compare-list">
+          <div class="compare-item has">Vision and market insight</div>
+          <div class="compare-item has">Sales, fundraising, narrative</div>
+          <div class="compare-item has">Stakeholder management</div>
+          <div class="compare-item missing">Can't build the system</div>
+          <div class="compare-item missing">Needs a CTO to translate</div>
+          <div class="compare-item missing">Architecture is a black box</div>
+        </div>
+      </div>
+      <div class="compare-card highlight">
+        <div class="compare-title">The Founder-Technologist</div>
+        <div class="compare-list">
+          <div class="compare-item has">Full product vision</div>
+          <div class="compare-item has">Builds the system themselves</div>
+          <div class="compare-item has">Talks to customers directly</div>
+          <div class="compare-item has">Owns the architecture</div>
+          <div class="compare-item has">Deploys and debugs in prod</div>
+          <div class="compare-item has">No translation layer needed</div>
+        </div>
+      </div>
+      <div class="compare-card">
+        <div class="compare-title">The Engineering Leader</div>
+        <div class="compare-list">
+          <div class="compare-item has">Deep technical expertise</div>
+          <div class="compare-item has">Team leadership</div>
+          <div class="compare-item has">System architecture</div>
+          <div class="compare-item missing">Doesn't hold the product vision</div>
+          <div class="compare-item missing">Executes others' strategy</div>
+          <div class="compare-item missing">Rarely customer-facing</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Convergence -->
+  <section class="convergence">
+    <h2>The 5 things that converge in one person</h2>
+    <div class="conv-list">
+      <div class="conv-item">
+        <div class="conv-num">1</div>
+        <div class="conv-text"><strong>Product vision.</strong> They can see the finished product from the first line of code. Every architectural decision is made with the user experience in mind, not just the engineering convenience.</div>
+      </div>
+      <div class="conv-item">
+        <div class="conv-num">2</div>
+        <div class="conv-text"><strong>Systems architecture.</strong> They design the structure before they write the code. Bounded contexts, data models, API contracts, event flows — all held in their head simultaneously, with the ten-year view.</div>
+      </div>
+      <div class="conv-item">
+        <div class="conv-num">3</div>
+        <div class="conv-text"><strong>Execution ability.</strong> They don't just design. They build. They can go from architecture diagram to deployed production feature in the same day. No ticket, no sprint, no handoff.</div>
+      </div>
+      <div class="conv-item">
+        <div class="conv-num">4</div>
+        <div class="conv-text"><strong>Customer understanding.</strong> They've talked to real users. They know what actually hurts — not the polished feedback in a survey, but the raw friction of a real person trying to do a real job. That knowledge shapes every decision.</div>
+      </div>
+      <div class="conv-item">
+        <div class="conv-num">5</div>
+        <div class="conv-text"><strong>Strategic judgment.</strong> They know what to build, what not to build, and why. They can say no to a feature because they understand its second-order effects on the system. Most engineers can't say no. The Founder-Technologist does it routinely.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Compounding -->
+  <section style="margin-bottom:48px;">
+    <div class="section-h">Why every correct decision compounds</div>
+    <p style="font-size:14px;color:var(--text-2);line-height:1.7;margin-bottom:20px;">The Founder-Technologist's advantage is not speed. It's that the decisions they make in year one are still earning returns in year ten. Here's how the compounding works:</p>
+
+    <div class="compound-card"><div class="compound-inner">
+      <div class="compound-year">Year 0 — Architecture</div>
+      <div class="compound-title">The right structure from the start</div>
+      <div class="compound-body">A Founder-Technologist doesn't build a prototype and scale it. They build the production architecture first — <strong>the data model, the API contracts, the event flows</strong> — because they can see ten years ahead. This saves 18 months of rewriting later.</div>
+    </div></div>
+
+    <div class="compound-card"><div class="compound-inner">
+      <div class="compound-year">Year 1 — Data</div>
+      <div class="compound-title">Every interaction becomes an asset</div>
+      <div class="compound-body">Because the architecture is right, every user interaction generates clean, structured, queryable data. <strong>The data lake fills correctly from day one.</strong> By year 5, this data is a moat that cannot be purchased or replicated.</div>
+    </div></div>
+
+    <div class="compound-card"><div class="compound-inner">
+      <div class="compound-year">Year 2 — Product</div>
+      <div class="compound-title">Speed without technical debt</div>
+      <div class="compound-body">Because the foundations are clean, new features ship fast. No wrestling with legacy decisions. No refactoring sprints. The product evolves at <strong>a pace that funded competitors with large engineering teams cannot match</strong> — because the Founder-Technologist built it to evolve.</div>
+    </div></div>
+
+    <div class="compound-card"><div class="compound-inner">
+      <div class="compound-year">Year 3–5 — Moat</div>
+      <div class="compound-title">Compounding becomes insurmountable</div>
+      <div class="compound-body">The data is richer. The AI is better trained. The product is more refined. The architecture still holds. What would take a new competitor <strong>five years and £10 million to replicate</strong> was built by one person who understood all the layers simultaneously.</div>
+    </div></div>
+  </section>
+
+  <div class="quote-block">
+    The Founder-Technologist is not the 10× engineer of mythology — the person who codes faster than everyone else. They are the person who <strong>decides correctly</strong> faster than everyone else. And correct decisions, made consistently, compound exponentially.
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Francis -->
+  <section class="for-francis">
+    <h2>Francis. This is you.</h2>
+    <p class="sub">Here is the evidence. Not the aspiration — the evidence. What you have already built, and what it proves about the profile you carry:</p>
+    <div class="proof-grid">
+      <div class="proof-item">7-product ecosystem designed and built simultaneously</div>
+      <div class="proof-item">AI hallucination control architecture — production grade</div>
+      <div class="proof-item">Multi-voice TTS + STT pipeline in production</div>
+      <div class="proof-item">Global gamification layer with league table</div>
+      <div class="proof-item">Full LEARN engine — lesson generation + scoring</div>
+      <div class="proof-item">Cinematic UX + cinematic challenge flow</div>
+      <div class="proof-item">Data Lake architecture already in design</div>
+      <div class="proof-item">Mobile + web + API + watch — all layers held</div>
+      <div class="proof-item">CV parsing + verification hybrid system</div>
+      <div class="proof-item">Enterprise-grade data contracts + quality gates</div>
+      <div class="proof-item">Multi-mode input — title, spec, CV, URL, combinations</div>
+      <div class="proof-item">Post-interview LEARN recommendations engine</div>
+    </div>
+    <div class="closing">
+      <p>No team did this. No sprint planning committee reviewed it. No external architect designed it. <strong>One person held the full picture</strong> — the product, the architecture, the code, the UX, the AI stack, the data strategy, the business model — simultaneously.</p>
+      <p>That is the definition of the Founder-Technologist. And it is why Percentile.One is not a startup with a product. <strong>It is a compounding intelligence platform</strong> — built correctly from the start, by the one person who understood what it needed to become.</p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span>Percentile.One · Learning Library</span>
+    <span>
+      <a href="fde-playbook.html" style="color:var(--text-3);text-decoration:none;">FDE Playbook</a> ·
+      <a href="data-lake-architect.html" style="color:var(--text-3);text-decoration:none;">Data Lake</a> ·
+      <a href="ai-systems-engineer.html" style="color:var(--text-3);text-decoration:none;">AI Systems</a>
+    </span>
+  </footer>
+
+</div>
+</body>
+</html>

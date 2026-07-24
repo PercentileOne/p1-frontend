@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The AI Systems Engineer — The Role Being Invented Right Now</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0a080f;
+    --bg2:      #120e1c;
+    --bg3:      #1a1428;
+    --bg-cool:  #0d0b14;
+    --border:   #221a38;
+    --accent:   #A855F7;
+    --acc-dim:  rgba(168,85,247,0.10);
+    --acc-mid:  rgba(168,85,247,0.28);
+    --violet:   #C084FC;
+    --blue:     #60A5FA;
+    --green:    #34D399;
+    --red:      #F87171;
+    --text:     #E2D9F0;
+    --text-2:   #8B7BAA;
+    --text-3:   #3D3060;
+    --r:        14px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg:#F5F0FC;--bg2:#EBE4F8;--bg3:#E0D6F2;--bg-cool:#F0EBF8;
+      --border:#C4B4E0;--accent:#7C3AED;--acc-dim:rgba(124,58,237,0.08);
+      --acc-mid:rgba(124,58,237,0.22);--violet:#6D28D9;--blue:#2563EB;
+      --green:#059669;--red:#DC2626;--text:#1A1030;--text-2:#4A3870;--text-3:#9488B0;
+    }
+  }
+  :root[data-theme="dark"]  { --bg:#0a080f;--bg2:#120e1c;--bg3:#1a1428;--bg-cool:#0d0b14;--border:#221a38;--accent:#A855F7;--acc-dim:rgba(168,85,247,0.10);--acc-mid:rgba(168,85,247,0.28);--violet:#C084FC;--blue:#60A5FA;--green:#34D399;--red:#F87171;--text:#E2D9F0;--text-2:#8B7BAA;--text-3:#3D3060; }
+  :root[data-theme="light"] { --bg:#F5F0FC;--bg2:#EBE4F8;--bg3:#E0D6F2;--bg-cool:#F0EBF8;--border:#C4B4E0;--accent:#7C3AED;--acc-dim:rgba(124,58,237,0.08);--acc-mid:rgba(124,58,237,0.22);--violet:#6D28D9;--blue:#2563EB;--green:#059669;--red:#DC2626;--text:#1A1030;--text-2:#4A3870;--text-3:#9488B0; }
+
+  html { font-size:16px; scroll-behavior:smooth; }
+  body { background:var(--bg); color:var(--text); font-family:-apple-system,'Segoe UI',system-ui,sans-serif; line-height:1.7; padding:0 16px 80px; -webkit-font-smoothing:antialiased; }
+  .page { max-width:720px; margin:0 auto; }
+
+  .nav { display:flex; align-items:center; justify-content:space-between; padding:20px 0 48px; font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-3); }
+  .nav a { color:var(--text-3); text-decoration:none; }
+  .nav a:hover { color:var(--accent); }
+  .tag { background:var(--acc-dim); border:1px solid var(--acc-mid); color:var(--accent); border-radius:4px; padding:3px 10px; font-size:10px; font-weight:800; letter-spacing:0.1em; }
+
+  .hero { position:relative; margin-bottom:56px; overflow:hidden; }
+  .hero-ghost { position:absolute; top:-12px; right:-6px; font-size:clamp(60px,18vw,116px); font-weight:900; color:transparent; -webkit-text-stroke:1px var(--acc-mid); letter-spacing:-0.04em; line-height:1; pointer-events:none; user-select:none; }
+  .hero-eyebrow { font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); margin-bottom:16px; }
+  .hero-title { font-size:clamp(26px,5.5vw,42px); font-weight:900; line-height:1.15; letter-spacing:-0.03em; color:var(--text); text-wrap:balance; margin-bottom:20px; }
+  .hero-title em { color:var(--accent); font-style:normal; }
+  .hero-sub { font-size:16px; color:var(--text-2); max-width:540px; line-height:1.65; margin-bottom:28px; }
+  .hero-stat-row { display:flex; gap:16px; flex-wrap:wrap; }
+  .hero-stat { background:var(--acc-dim); border:1px solid var(--acc-mid); border-radius:8px; padding:10px 18px; display:flex; flex-direction:column; gap:2px; }
+  .hero-stat-num { font-size:20px; font-weight:900; color:var(--accent); line-height:1; }
+  .hero-stat-label { font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-3); }
+
+  .divider { height:1px; background:linear-gradient(90deg,var(--acc-mid) 0%,transparent 100%); margin:48px 0; }
+  .section-h { font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); margin-bottom:20px; }
+
+  /* Gap block */
+  .gap-block { background:var(--bg2); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:0 var(--r) var(--r) 0; padding:24px 28px; margin-bottom:48px; }
+  .gap-block h2 { font-size:18px; font-weight:800; color:var(--text); margin-bottom:12px; }
+  .gap-block p { color:var(--text-2); font-size:14px; margin-bottom:12px; line-height:1.7; }
+  .gap-block strong { color:var(--text); }
+  .quote { background:var(--bg3); border-left:2px solid var(--accent); padding:14px 20px; border-radius:0 8px 8px 0; font-size:14px; font-style:italic; color:var(--text-2); margin:20px 0 0; line-height:1.6; }
+  .quote strong { color:var(--accent); font-style:normal; }
+
+  /* Failure modes */
+  .failure-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:48px; }
+  .failure-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:18px 20px; }
+  .failure-icon { font-size:18px; margin-bottom:8px; }
+  .failure-title { font-size:13px; font-weight:800; color:var(--text); margin-bottom:6px; }
+  .failure-body { font-size:12px; color:var(--text-2); line-height:1.6; }
+
+  /* Skill cards */
+  .skill-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); margin-bottom:14px; overflow:hidden; }
+  .skill-inner { padding:20px 24px 20px 30px; position:relative; }
+  .skill-inner::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent); border-radius:3px 0 0 3px; }
+  .skill-num { position:absolute; right:18px; top:50%; transform:translateY(-50%); font-size:56px; font-weight:900; color:transparent; -webkit-text-stroke:1px var(--border); line-height:1; pointer-events:none; }
+  .skill-title { font-size:15px; font-weight:800; color:var(--text); margin-bottom:7px; }
+  .skill-body { font-size:13px; color:var(--text-2); line-height:1.65; }
+  .skill-body strong { color:var(--text); }
+  .skill-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .skill-tag { background:var(--bg3); border:1px solid var(--border); color:var(--text-3); border-radius:4px; padding:3px 9px; font-size:11px; font-weight:600; }
+
+  /* Stack */
+  .chip-row { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { background:var(--bg2); border:1px solid var(--border); color:var(--text-2); border-radius:6px; padding:6px 14px; font-size:12px; font-weight:700; transition:border-color 0.15s,color 0.15s; }
+  .chip:hover { border-color:var(--acc-mid); color:var(--accent); }
+
+  /* Francis section */
+  .for-explain { background:var(--bg-cool); border:1px solid var(--acc-mid); border-radius:var(--r); padding:32px 36px; margin-bottom:48px; position:relative; overflow:hidden; }
+  .for-explain::before { content:'FOR EXPLAIN'; position:absolute; top:16px; right:20px; font-size:9px; font-weight:900; letter-spacing:0.18em; color:var(--accent); opacity:0.5; }
+  .for-explain h2 { font-size:20px; font-weight:900; color:var(--accent); margin-bottom:8px; }
+  .for-explain .sub { font-size:14px; color:var(--text-2); margin-bottom:24px; line-height:1.65; }
+  .explain-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; margin-bottom:20px; }
+  .explain-item { background:var(--acc-dim); border:1px solid var(--acc-mid); border-radius:8px; padding:10px 14px; font-size:12px; font-weight:700; color:var(--text-2); display:flex; align-items:flex-start; gap:8px; line-height:1.5; }
+  .explain-item::before { content:'✓'; color:var(--accent); font-size:11px; flex-shrink:0; margin-top:1px; }
+  .insight { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:18px 22px; font-size:14px; color:var(--text-2); line-height:1.7; }
+  .insight strong { color:var(--accent); }
+
+  .footer { border-top:1px solid var(--border); padding-top:28px; font-size:11px; color:var(--text-3); line-height:1.7; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  @media(max-width:520px){ .hero-ghost{display:none;} .for-explain{padding:24px 20px;} .skill-num{display:none;} .failure-grid{grid-template-columns:1fr;} }
+  @media(prefers-reduced-motion:reduce){ *{transition:none!important;} }
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav class="nav">
+    <span><a href="data-lake-architect.html">← Data Lake</a> / Learning</span>
+    <span class="tag">AI SYSTEMS</span>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-ghost">AI</div>
+    <div class="hero-eyebrow">⭐ The Role Being Invented Right Now</div>
+    <h1 class="hero-title">The AI Systems Engineer — closing the gap between <em>demo and production</em></h1>
+    <p class="hero-sub">90% of AI demos fail when they hit the real world. The AI Systems Engineer is the person who makes them not fail — and they are the most in-demand engineering profile of the next decade.</p>
+    <div class="hero-stat-row">
+      <div class="hero-stat"><span class="hero-stat-num">90%</span><span class="hero-stat-label">AI demos fail in prod</span></div>
+      <div class="hero-stat"><span class="hero-stat-num">2024</span><span class="hero-stat-label">Role being minted now</span></div>
+      <div class="hero-stat"><span class="hero-stat-num">£1M+</span><span class="hero-stat-label">Top comp already</span></div>
+    </div>
+  </header>
+
+  <section class="gap-block">
+    <h2>The Demo–Production Gap</h2>
+    <p>An AI demo is a prompt and an API call. It looks brilliant in a slide deck. It works perfectly when the CEO watches.</p>
+    <p>An AI <strong>system</strong> is reliable at 3am when the CEO is asleep. It handles edge cases, bad input, rate limits, model outages, prompt injection, hallucinations, cost spikes, latency spikes, and the user who pastes their entire 60-page contract into the text box.</p>
+    <p>Most AI engineers can build the demo. <strong>Very few can build the system.</strong> The AI Systems Engineer is the person who understands the full stack — probabilistic + deterministic, model + infrastructure, prompt + guardrail — and makes it production-grade.</p>
+    <div class="quote">
+      <strong>"Anyone can wire up a GPT call. Almost no one knows how to make it behave correctly at scale, under adversarial conditions, with real users, for real money."</strong>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section style="margin-bottom:48px;">
+    <div class="section-h">The 6 failure modes they prevent</div>
+    <div class="failure-grid">
+      <div class="failure-card">
+        <div class="failure-icon">🎭</div>
+        <div class="failure-title">Hallucination at scale</div>
+        <div class="failure-body">A model that's 97% accurate fails publicly 30,000 times per million requests. The AI Systems Engineer builds verification layers, hybrid validation, and output constraints that catch the 3%.</div>
+      </div>
+      <div class="failure-card">
+        <div class="failure-icon">💸</div>
+        <div class="failure-title">Cost explosion</div>
+        <div class="failure-body">Unconstrained LLM usage at scale can generate five-figure monthly bills overnight. Intelligent routing, caching, prompt compression, and model tiering keep costs under control.</div>
+      </div>
+      <div class="failure-card">
+        <div class="failure-icon">🐢</div>
+        <div class="failure-title">Latency collapse</div>
+        <div class="failure-body">A 4-second response is unusable in a real product. Streaming, async orchestration, parallel tool calls, and intelligent pre-fetching keep the experience feeling instant.</div>
+      </div>
+      <div class="failure-card">
+        <div class="failure-icon">🔓</div>
+        <div class="failure-title">Prompt injection</div>
+        <div class="failure-body">Real users will try to break your system — or malicious actors will craft input that hijacks the model's behaviour. The AI Systems Engineer designs guardrails, sandboxing, and output validation.</div>
+      </div>
+      <div class="failure-card">
+        <div class="failure-icon">📉</div>
+        <div class="failure-title">Model drift</div>
+        <div class="failure-body">Models are updated. Behaviour shifts. A prompt that worked perfectly in March may behave differently in October. Eval frameworks and regression testing catch degradation before users do.</div>
+      </div>
+      <div class="failure-card">
+        <div class="failure-icon">🌫</div>
+        <div class="failure-title">Zero observability</div>
+        <div class="failure-body">Without tracing, logging, and eval metrics, AI failures are invisible until users complain. The AI Systems Engineer instruments every decision point so failures are found and fixed, not guessed at.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section style="margin-bottom:48px;">
+    <div class="section-h">What they actually build — the production AI stack</div>
+
+    <div class="skill-card"><div class="skill-inner"><span class="skill-num">1</span>
+      <div class="skill-title">LLM Orchestration</div>
+      <div class="skill-body">Not one model, but a <strong>decision layer</strong> that routes requests to the right model based on task complexity, cost, latency requirements, and risk tolerance. GPT-4o for critical paths. Smaller models for classification and simple extraction.</div>
+      <div class="skill-tags"><span class="skill-tag">Model routing</span><span class="skill-tag">Fallback chains</span><span class="skill-tag">Cost tiers</span><span class="skill-tag">Latency budgets</span></div>
+    </div></div>
+
+    <div class="skill-card"><div class="skill-inner"><span class="skill-num">2</span>
+      <div class="skill-title">Prompt Engineering as Software Engineering</div>
+      <div class="skill-body">Prompts are not strings. They are <strong>versioned, tested, typed contracts</strong> between the application and the model. The AI Systems Engineer treats prompts like code — with diff history, regression tests, and deployment pipelines.</div>
+      <div class="skill-tags"><span class="skill-tag">Prompt versioning</span><span class="skill-tag">Regression testing</span><span class="skill-tag">Output schemas</span><span class="skill-tag">System prompt design</span></div>
+    </div></div>
+
+    <div class="skill-card"><div class="skill-inner"><span class="skill-num">3</span>
+      <div class="skill-title">Retrieval-Augmented Generation (RAG)</div>
+      <div class="skill-body">LLMs have static knowledge cutoffs and small context windows. RAG systems <strong>inject the right information at inference time</strong> — from a vector database, a document store, or a structured query — so the model always has current, relevant context.</div>
+      <div class="skill-tags"><span class="skill-tag">Vector search</span><span class="skill-tag">Embeddings</span><span class="skill-tag">Chunking strategies</span><span class="skill-tag">Hybrid retrieval</span></div>
+    </div></div>
+
+    <div class="skill-card"><div class="skill-inner"><span class="skill-num">4</span>
+      <div class="skill-title">Hybrid AI + Deterministic Systems</div>
+      <div class="skill-body">The most resilient AI systems are <strong>not purely AI</strong>. They combine probabilistic LLM outputs with deterministic validation, structured extraction, rule-based guardrails, and verifiable logic. The AI handles language; the deterministic layer handles correctness.</div>
+      <div class="skill-tags"><span class="skill-tag">Verification layers</span><span class="skill-tag">Structured output</span><span class="skill-tag">Business rules</span><span class="skill-tag">Fallback heuristics</span></div>
+    </div></div>
+
+    <div class="skill-card"><div class="skill-inner"><span class="skill-num">5</span>
+      <div class="skill-title">Eval Frameworks</div>
+      <div class="skill-body"><strong>Vibes testing is not a strategy.</strong> The AI Systems Engineer builds automated evaluation pipelines — gold-standard datasets, LLM-as-judge scoring, human-in-the-loop review — that measure quality continuously, not just at launch.</div>
+      <div class="skill-tags"><span class="skill-tag">Automated evals</span><span class="skill-tag">LLM-as-judge</span><span class="skill-tag">Regression suites</span><span class="skill-tag">Quality gates</span></div>
+    </div></div>
+
+    <div class="skill-card"><div class="skill-inner"><span class="skill-num">6</span>
+      <div class="skill-title">Multi-Agent Orchestration</div>
+      <div class="skill-body">Single-model systems hit limits on complex tasks. The AI Systems Engineer designs <strong>networks of specialised agents</strong> — each with a focused role — orchestrated by a planner that routes tasks, manages state, and resolves conflicts between agents.</div>
+      <div class="skill-tags"><span class="skill-tag">Agent graphs</span><span class="skill-tag">Tool use</span><span class="skill-tag">State management</span><span class="skill-tag">Orchestration patterns</span></div>
+    </div></div>
+  </section>
+
+  <section style="margin-bottom:48px;">
+    <div class="section-h">The production AI stack</div>
+    <div class="chip-row">
+      <span class="chip">OpenAI GPT-4o</span><span class="chip">Anthropic Claude</span><span class="chip">LangChain</span>
+      <span class="chip">LlamaIndex</span><span class="chip">Pinecone</span><span class="chip">Weaviate</span>
+      <span class="chip">ElevenLabs TTS</span><span class="chip">Whisper STT</span>
+      <span class="chip">Azure AI Search</span><span class="chip">Structured outputs</span>
+      <span class="chip">Prompt versioning</span><span class="chip">LLM eval frameworks</span>
+      <span class="chip">Streaming APIs</span><span class="chip">Token budgeting</span>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="for-explain">
+    <h2>What Explain already is</h2>
+    <p class="sub">Every challenge in Explain is an AI Systems Engineering problem disguised as a UX decision. Here's the full production AI stack Explain has already built:</p>
+    <div class="explain-grid">
+      <div class="explain-item">CV parsing with zero-hallucination policy</div>
+      <div class="explain-item">Hybrid AI + heuristic verification layer</div>
+      <div class="explain-item">Structured output enforcement (JSON schema)</div>
+      <div class="explain-item">Temperature-tuned prompts per task type</div>
+      <div class="explain-item">Multi-voice TTS orchestration (ElevenLabs)</div>
+      <div class="explain-item">STT pipeline (Whisper) at 16kHz</div>
+      <div class="explain-item">AI scoring across 4 dimensions</div>
+      <div class="explain-item">AI coaching with contextual tone logic</div>
+      <div class="explain-item">Intro generation with ZERO hallucination rules</div>
+      <div class="explain-item">LEARN engine (lesson generation)</div>
+      <div class="explain-item">Challenge scoring via batch eval</div>
+      <div class="explain-item">Fallback heuristics when API unavailable</div>
+    </div>
+    <div class="insight">
+      The hallucination control architecture alone — <strong>verified extraction, blacklists, boundary terms, AI + heuristic cross-validation</strong> — is a production AI systems pattern that most AI teams at funded startups haven't implemented. Explain has it. That's the difference between a demo and a system.
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span>Percentile.One · Learning Library</span>
+    <span><a href="data-lake-architect.html" style="color:var(--text-3);text-decoration:none;">← Data Lake</a> &nbsp;·&nbsp; <a href="founder-technologist.html" style="color:var(--accent);text-decoration:none;">Next: Founder-Technologist →</a></span>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -494,3 +494,58 @@ Return JSON:
 
   return coaching;
 }
+
+// ── Client feedback generation ────────────────────────────────────────────────
+
+import type { FeedbackOutcome } from '../utils/clientSession';
+
+export async function generateFeedbackWithAI(params: {
+  candidateName: string;
+  role: string;
+  company?: string;
+  industry?: string;
+  cvCtx: CVContext;
+  outcome: FeedbackOutcome;
+  improvementAreas: string[];
+  clientNotes: string;
+}): Promise<string> {
+  const { candidateName, role, company, industry, cvCtx, outcome, improvementAreas, clientNotes } = params;
+
+  const outcomeLabel =
+    outcome === 'pass' ? 'successful — the candidate is being progressed'
+    : outcome === 'door-open' ? 'on hold — the candidate is not being progressed at this time but may be reconsidered'
+    : 'unsuccessful — the candidate will not be progressed';
+
+  const experience = cvCtx.experience?.slice(0, 2).map(e => `${e.role} at ${e.company}`).join(', ')
+    ?? cvCtx.roles.slice(0, 2).join(', ');
+
+  const systemPrompt = `You are a professional recruitment consultant writing candidate interview feedback on behalf of a client.
+Your feedback must be:
+- Kind, professional, and constructive — never harsh or personal
+- Specific to the role, company, and the candidate's background
+- Actionable — give the candidate something useful to work on
+- Written as if being sent directly to the candidate from the recruiter
+- 3 paragraphs: (1) opening with outcome, (2) strengths observed, (3) areas to develop
+- 150–220 words total
+- Never mention scores, percentages, or internal ratings
+- Use warm but professional language — this is a real person reading this`;
+
+  const userPrompt = `Write interview feedback for the following:
+
+Candidate: ${candidateName}
+Background: ${experience || 'not specified'}
+Role interviewed for: ${role}${company ? ` at ${company}` : ''}${industry ? ` (${industry})` : ''}
+Outcome: ${outcomeLabel}
+Areas to develop: ${improvementAreas.length > 0 ? improvementAreas.join(', ') : 'none specified'}
+${clientNotes ? `Additional notes from the interviewer: ${clientNotes}` : ''}
+
+Write the feedback as three clear paragraphs. Open the first paragraph with a warm acknowledgement of the interview and state the outcome clearly but kindly. The second paragraph should highlight genuine strengths (infer from their background and the role). The third paragraph should give specific, constructive development suggestions based on the areas listed${outcome === 'pass' ? ' — even successful candidates benefit from knowing what to keep developing' : ''}.`;
+
+  const raw = await chatJSON<{ feedback: string }>(
+    systemPrompt,
+    `Return JSON: { "feedback": "..." }\n\n${userPrompt}`,
+    0.7,
+  );
+
+  return raw.feedback ?? '';
+}
