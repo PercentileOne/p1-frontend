@@ -308,96 +308,134 @@ export function buildSarahIntro(cv: CVContext, _job: JobSpecContext): string {
   return intro;
 }
 
-export function buildJamesIntro(cv: CVContext, _job: JobSpecContext): string {
+// ── Role category inference ───────────────────────────────────────────────────
+
+export function inferSpecialistTitle(jobTitle: string): string {
+  const t = jobTitle.toLowerCase();
+  if (/engineer|developer|architect|devops|software|backend|frontend|fullstack|data scientist|ml |ai |cloud|platform|sre|qa|tester/.test(t)) return 'Technical Lead';
+  if (/product manager|product owner|programme|project manager|scrum/.test(t)) return 'Delivery Manager';
+  if (/doctor|nurse|clinician|therapist|physio|paramedic|gp |consultant physician/.test(t)) return 'Clinical Lead';
+  if (/teacher|lecturer|tutor|headteacher|principal|education|senco/.test(t)) return 'Head of Department';
+  if (/lawyer|solicitor|barrister|legal|paralegal|counsel/.test(t)) return 'Senior Partner';
+  if (/accountant|auditor|finance|financial analyst|cfo|bookkeeper/.test(t)) return 'Finance Director';
+  if (/designer|ux|ui |creative|art director|illustrator|animator/.test(t)) return 'Creative Director';
+  if (/marketing|copywriter|content|seo|social media|brand/.test(t)) return 'Marketing Director';
+  if (/manager|supervisor|team lead|store|retail|assistant manager/.test(t)) return 'Operations Manager';
+  if (/chef|cook|kitchen|baker|barista|hospitality|hotel|restaurant/.test(t)) return 'Head Chef';
+  if (/trainer|coach|fitness|gym|sports|athlete/.test(t)) return 'Head Coach';
+  if (/driver|logistics|warehouse|delivery|forklift|hgv/.test(t)) return 'Operations Supervisor';
+  if (/childcare|nursery|nanny|teaching assistant|early years/.test(t)) return 'Lead Practitioner';
+  if (/electrician|plumber|carpenter|builder|site manager|construction|surveyor|trade/.test(t)) return 'Site Manager';
+  if (/sales|account manager|business development|bdm/.test(t)) return 'Sales Director';
+  return 'Hiring Manager';
+}
+
+export function buildJamesIntro(cv: CVContext, job: JobSpecContext): string {
   const recentRole = cv.roles[0];
   const recentCompany = cv.experience?.[0]?.company ?? cv.companies[0];
+  const specialistTitle = inferSpecialistTitle(job.title);
+  const focus = getRoleFocus(job.title);
 
-  if (recentRole || recentCompany) {
-    let intro = `Thanks Sarah. `;
-    if (recentRole && recentCompany) intro += `I've had a look at your background as ${recentRole} at ${recentCompany}. `;
-    else if (recentRole) intro += `I've had a look at your background as ${recentRole}. `;
-    else if (recentCompany) intro += `I've had a look at your time at ${recentCompany}. `;
-    intro += `I'll be focusing on the technical aspects — architecture decisions, problem-solving, and how you approach complexity at scale.`;
-    return intro;
-  }
+  let intro = `Thanks Sarah. `;
+  if (recentRole && recentCompany) intro += `I've had a look at your background as ${recentRole} at ${recentCompany}. `;
+  else if (recentRole) intro += `I've had a look at your background as ${recentRole}. `;
+  else if (recentCompany) intro += `I've had a look at your time at ${recentCompany}. `;
+  intro += `As ${specialistTitle}, I'll be focusing on ${focus}. Let's get into it.`;
+  return intro;
+}
 
-  return "Thanks Sarah. I'll be focusing on the technical aspects of your background — architecture decisions, problem-solving approaches, and how you handle complexity at scale.";
+function getRoleFocus(jobTitle: string): string {
+  const t = jobTitle.toLowerCase();
+  if (/engineer|developer|architect|software|backend|frontend|devops|cloud/.test(t)) return 'your technical approach, system design, and how you tackle complex engineering problems';
+  if (/product manager|product owner/.test(t)) return 'how you prioritise, manage stakeholders, and drive products from idea to delivery';
+  if (/doctor|nurse|clinician|therapist|physio/.test(t)) return 'your clinical approach, patient care, and how you handle complex cases';
+  if (/teacher|lecturer|tutor/.test(t)) return 'your teaching philosophy, how you engage learners, and how you handle classroom challenges';
+  if (/lawyer|solicitor|legal/.test(t)) return 'your legal reasoning, case management approach, and how you handle client matters';
+  if (/chef|cook|kitchen|baker|barista|hospitality/.test(t)) return 'your craft, how you perform under pressure, and how you deliver a great customer experience';
+  if (/trainer|coach|fitness/.test(t)) return 'your coaching methodology, how you motivate clients, and how you measure progress';
+  if (/manager|supervisor|store|retail/.test(t)) return 'how you lead teams, manage operations, and drive performance';
+  if (/sales|account|business development/.test(t)) return 'your sales approach, how you build relationships, and how you close deals';
+  if (/designer|creative|ux|ui /.test(t)) return 'your creative process, how you balance aesthetics with usability, and how you handle feedback';
+  if (/driver|logistics|warehouse/.test(t)) return 'your operational approach, safety record, and how you handle challenges on the road or in the warehouse';
+  if (/childcare|nursery|nanny|early years/.test(t)) return 'your approach to child development, safeguarding, and how you support families';
+  if (/electrician|plumber|builder|construction|trades/.test(t)) return 'your trade skills, how you approach complex jobs, and your commitment to safety and quality';
+  return 'the role-specific competencies, how you approach challenges, and what makes you effective in this position';
 }
 
 // ── Personalised question generation ─────────────────────────────────────────
 
 export function buildPersonalisedQuestions(cv: CVContext, job: JobSpecContext) {
   const company = cv.experience?.[0]?.company ?? cv.companies[0] ?? 'your previous company';
-  // Use skills[] (verified) not technologies[] (heuristic may contain hallucinations)
-  const tech1 = cv.skills[0] ?? job.techStack[0] ?? 'your technical background';
-  const tech2 = cv.skills[1] ?? job.techStack[1];
+  const skill1 = cv.skills[0] ?? job.techStack[0] ?? 'your core skill';
+  const skill2 = cv.skills[1] ?? job.techStack[1];
   const achievement = cv.achievements[0];
   const seniority = cv.seniority;
   const jobTitle = job.title;
+  const responsibility = job.responsibilities[0];
 
   return [
-    // ── Technical questions first (James asks these) ──────────────────────────
+    // ── Role-specific questions first (James / specialist asks these) ─────────
     {
       questionId: 'pq1',
-      questionText: tech2
-        ? `I can see you have experience with both ${tech1} and ${tech2}. Walk me through a technical decision where you had to choose between the two — what trade-offs did you weigh?`
-        : `Walk me through the most complex technical system you've designed using ${tech1}. What trade-offs did you make and what would you do differently now?`,
-      modelAnswer: 'Cover: context and constraints, options considered, trade-offs weighed explicitly, how you validated the decision, and what you would do differently.',
-      questionType: 'Technical' as const,
+      questionText: skill2
+        ? `I can see you have experience with both ${skill1} and ${skill2}. Walk me through a situation where you had to choose between the two — what were the trade-offs?`
+        : `Walk me through the most challenging situation you've handled using ${skill1}. What was the problem, your approach, and the outcome?`,
+      modelAnswer: 'Be specific about the context and constraints. Cover options you considered, how you made the call, and what you would do differently with hindsight.',
+      questionType: 'Competency' as const,
       difficulty: 'Hard' as const,
-      source: 'Technical',
-      competencyTags: ['architecture', 'problem-solving', 'technical depth'],
+      source: 'Role',
+      competencyTags: ['core competency', 'problem-solving', 'decision-making'],
     },
     {
       questionId: 'pq2',
       questionText: achievement
-        ? `Your CV mentions: "${wordClip(achievement, 200)}". Walk me through the technical approach you took to achieve that — what was the hardest engineering problem you had to solve?`
-        : `Tell me about the most technically challenging problem you've solved at ${company}. What was your approach and what did you learn?`,
-      modelAnswer: "Be specific about the technical problem, not just the outcome. Explain your reasoning process, what you tried that didn't work, and how you arrived at the solution.",
-      questionType: 'Technical' as const,
+        ? `Your CV mentions: "${wordClip(achievement, 200)}". Walk me through how you achieved that — what was the biggest obstacle and how did you overcome it?`
+        : `Tell me about your most significant achievement at ${company}. What was your specific contribution and how did you measure success?`,
+      modelAnswer: "Use STAR format. Focus on YOUR role specifically. Quantify the outcome and be honest about the obstacles — interviewers value self-awareness.",
+      questionType: 'Competency' as const,
       difficulty: 'Hard' as const,
-      source: 'Technical',
-      competencyTags: ['problem-solving', 'technical depth', 'resilience'],
+      source: 'Role',
+      competencyTags: ['achievement', 'problem-solving', 'resilience'],
     },
     {
       questionId: 'pq3',
-      questionText: job.responsibilities.length > 0
-        ? `This role requires: "${wordClip(job.responsibilities[0], 200)}". Walk me through how you'd technically approach that in your first 90 days.`
-        : `How do you approach system design when requirements are ambiguous? Give me a specific example from ${company}.`,
-      modelAnswer: "Show structured thinking: clarify requirements, identify constraints, propose options, validate trade-offs. Reference specific tools or patterns you'd use.",
-      questionType: 'Technical' as const,
+      questionText: responsibility
+        ? `This role involves: "${wordClip(responsibility, 200)}". Walk me through how your experience at ${company} prepares you for that — and how you'd approach it in the first 90 days.`
+        : `Where do you see the biggest challenge in this ${jobTitle} role, and how would you approach it in your first 90 days?`,
+      modelAnswer: "Show you've read the job spec carefully. Connect your specific experience to their specific need. A concrete 30/60/90 day framework shows you've thought it through.",
+      questionType: 'Competency' as const,
       difficulty: 'Medium' as const,
-      source: 'Technical',
-      competencyTags: ['system design', 'planning', 'problem-solving'],
+      source: 'Role',
+      competencyTags: ['role fit', 'planning', 'proactivity'],
     },
     {
       questionId: 'pq4',
-      questionText: `How do you ensure code quality and maintainability on a team? What specific practices have you introduced or championed at ${company}?`,
-      modelAnswer: 'Cover: code review culture, testing strategy, documentation standards, tooling choices. Be specific about what you personally drove vs what was already in place.',
-      questionType: 'Technical' as const,
+      questionText: `How do you ensure quality in your work when you're under significant time pressure? Give me a specific example from ${company}.`,
+      modelAnswer: 'Cover: what you protect vs what you flex, how you communicate risk to others, and how you recover quality after a crunch. Be honest — everyone has been here.',
+      questionType: 'Competency' as const,
       difficulty: 'Medium' as const,
-      source: 'Technical',
-      competencyTags: ['engineering practice', 'quality', 'leadership'],
+      source: 'Role',
+      competencyTags: ['quality', 'delivery', 'resilience'],
     },
     {
       questionId: 'pq5',
-      questionText: `Describe a time you had to refactor or re-architect a system at ${company}. What triggered it, how did you manage the migration, and what was the outcome?`,
-      modelAnswer: 'Cover: what the trigger was (tech debt, scaling, new requirements), your migration strategy, how you managed risk, and measurable improvement after.',
-      questionType: 'Technical' as const,
+      questionText: `Describe a time something went wrong on your watch at ${company}. How did you handle it and what did you change as a result?`,
+      modelAnswer: 'Own it clearly — don\'t deflect. Cover: what happened, your immediate response, how you communicated, and the concrete change you made to prevent a repeat.',
+      questionType: 'Competency' as const,
       difficulty: 'Hard' as const,
-      source: 'Technical',
-      competencyTags: ['architecture', 'delivery', 'technical debt'],
+      source: 'Role',
+      competencyTags: ['accountability', 'problem-solving', 'learning'],
     },
     {
       questionId: 'pq6',
       questionText: seniority === 'Lead' || seniority === 'Director' || seniority === 'Executive'
-        ? `How do you balance technical excellence with delivery speed when leading a team? Give me a specific example where you had to make that call.`
-        : `How do you keep your technical skills current while delivering day-to-day? What have you learned in the last six months?`,
-      modelAnswer: 'For seniors: show you can make pragmatic calls without sacrificing long-term quality. For all: demonstrate genuine curiosity and continuous learning.',
-      questionType: 'Technical' as const,
+        ? `How do you balance maintaining high standards with keeping your team motivated during challenging periods? Give me a specific example.`
+        : `How do you keep developing your skills in this field while delivering day-to-day? What have you learned or worked on in the last six months?`,
+      modelAnswer: 'For leaders: show you can hold the bar without burning people out. For all: demonstrate genuine curiosity and self-directed growth — not just courses your employer sent you on.',
+      questionType: 'Competency' as const,
       difficulty: 'Medium' as const,
-      source: 'Technical',
-      competencyTags: ['growth', 'leadership', 'technical currency'],
+      source: 'Role',
+      competencyTags: ['growth', 'leadership', 'self-development'],
     },
     // ── HR / team-fit questions last (Sarah asks these) ───────────────────────
     {

@@ -9,6 +9,7 @@ interface Props {
   state: AvatarState;
   active: boolean;
   videoUrl?: string | null;
+  specialistTitle?: string;
 }
 
 const PROFILES = {
@@ -23,7 +24,7 @@ const PROFILES = {
   },
   technical: {
     name: 'James Okafor',
-    title: 'Technical Lead',
+    title: 'Hiring Manager',
     initials: 'JO',
     gradient: 'linear-gradient(135deg, #1B3A6B 0%, #2563eb 100%)',
     ring: '#4F8EF7',
@@ -77,8 +78,8 @@ function WaveformBars({ active, color }: { active: boolean; color: string }) {
   );
 }
 
-export function InterviewerAvatar({ role, state, active, videoUrl }: Props) {
-  const profile = PROFILES[role];
+export function InterviewerAvatar({ role, state, active, videoUrl, specialistTitle }: Props) {
+  const profile = { ...PROFILES[role], title: role === 'technical' ? (specialistTitle ?? PROFILES.technical.title) : PROFILES.hr.title };
 
   const statusLabel =
     state === 'speaking' ? 'Speaking'

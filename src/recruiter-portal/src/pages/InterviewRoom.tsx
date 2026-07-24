@@ -18,19 +18,19 @@ const DEMO_QUESTIONS: InterviewQuestion[] = [
     questionId: 'q1',
     questionText: 'Walk me through the most technically complex system you have designed. What trade-offs did you make and what would you do differently now?',
     modelAnswer: 'Cover: context and scale, architectural decisions, trade-offs you consciously made, how you validated the design, and what you would do differently.',
-    questionType: 'Technical', difficulty: 'Hard', source: 'Technical', competencyTags: ['architecture', 'problem-solving'],
+    questionType: 'Competency', difficulty: 'Hard', source: 'Role', competencyTags: ['core competency', 'problem-solving'],
   },
   {
     questionId: 'q2',
     questionText: 'How do you ensure engineering quality when under significant time pressure? Give me a specific example.',
     modelAnswer: 'Cover: what you cut vs what is non-negotiable (security, core tests), how you communicate risk to the business, and how you pay back tech debt after.',
-    questionType: 'Technical', difficulty: 'Medium', source: 'Technical', competencyTags: ['delivery', 'quality'],
+    questionType: 'Competency', difficulty: 'Medium', source: 'Role', competencyTags: ['delivery', 'quality'],
   },
   {
     questionId: 'q3',
     questionText: 'Describe a system you had to refactor or re-architect. What triggered it, how did you manage the migration, and what was the outcome?',
     modelAnswer: 'Cover: the trigger (tech debt, scaling, new requirements), your migration strategy, how you managed risk, and measurable improvement after.',
-    questionType: 'Technical', difficulty: 'Hard', source: 'Technical', competencyTags: ['architecture', 'technical debt', 'delivery'],
+    questionType: 'Competency', difficulty: 'Hard', source: 'Role', competencyTags: ['problem-solving', 'accountability', 'delivery'],
   },
   // HR / team-fit last (Sarah asks these)
   {
@@ -77,6 +77,7 @@ interface RoomState {
   questions?: InterviewQuestion[];
   sarahIntro?: string;
   jamesIntro?: string;
+  specialistTitle?: string;
 }
 
 interface SessionAnswer {
@@ -107,6 +108,7 @@ export default function InterviewRoom() {
   const questions = ctx.questions ?? DEMO_QUESTIONS;
   const cvCtx = ctx.cvCtx;
   const jobCtx = ctx.jobCtx;
+  const specialistTitle = ctx.specialistTitle ?? 'Hiring Manager';
 
   const [phase, setPhase] = useState<RoomPhase>('intro');
   const [qIndex, setQIndex] = useState(0);
@@ -130,7 +132,7 @@ export default function InterviewRoom() {
   const pausedPhaseRef = useRef<RoomPhase>('answering');
 
   const q = questions[qIndex];
-  const isHrQuestion = q.source === 'HR' || q.questionType === 'Behavioural';
+  const isHrQuestion = q.source === 'HR';
 
   const avgScore = runningScores.length > 0
     ? Math.round(runningScores.reduce((s, v) => s + v, 0) / runningScores.length * 100)
@@ -149,7 +151,7 @@ export default function InterviewRoom() {
 
   const askQuestion = useCallback((index: number) => {
     const question = questions[index];
-    const interviewer: 'hr' | 'technical' = question.source === 'HR' || question.questionType === 'Behavioural' ? 'hr' : 'technical';
+    const interviewer: 'hr' | 'technical' = question.source === 'HR' ? 'hr' : 'technical';
     setPhase('asking');
     setHrVideoUrl(null);
     setTechVideoUrl(null);
@@ -167,7 +169,7 @@ export default function InterviewRoom() {
 
   const repeatQuestion = useCallback(() => {
     const question = questions[qIndex];
-    const interviewer: 'hr' | 'technical' = question.source === 'HR' || question.questionType === 'Behavioural' ? 'hr' : 'technical';
+    const interviewer: 'hr' | 'technical' = question.source === 'HR' ? 'hr' : 'technical';
     cancelSpeakRef.current?.();
     if (interviewer === 'hr') { setHrState('speaking'); setTechState('listening'); }
     else { setTechState('speaking'); setHrState('listening'); }
@@ -373,7 +375,7 @@ export default function InterviewRoom() {
         {/* Avatars */}
         <div style={{ display: 'flex', gap: '16px' }}>
           <InterviewerAvatar role="hr" state={hrState} active={isHrQuestion && phase !== 'answering'} videoUrl={hrVideoUrl} />
-          <InterviewerAvatar role="technical" state={techState} active={!isHrQuestion && phase !== 'answering'} videoUrl={techVideoUrl} />
+          <InterviewerAvatar role="technical" state={techState} active={!isHrQuestion && phase !== 'answering'} videoUrl={techVideoUrl} specialistTitle={specialistTitle} />
         </div>
 
         <AnimatePresence mode="wait">
@@ -383,7 +385,7 @@ export default function InterviewRoom() {
               style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '32px', textAlign: 'center' }}>
               <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text)', marginBottom: '10px' }}>Ready for your interview?</div>
               <div style={{ fontSize: '14px', color: 'var(--text-2)', lineHeight: 1.6, maxWidth: '480px', margin: '0 auto 20px' }}>
-                You'll be asked {questions.length} questions by Sarah (HR) and James (Technical). Answer by speaking or typing.
+                You'll be asked {questions.length} questions by Sarah (HR) and James ({specialistTitle}). Answer by speaking or typing.
                 The interview flows continuously — coaching leads straight to the next question, just like the real thing.
               </div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '24px', background: elevenLabsConfigured ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${elevenLabsConfigured ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '8px', padding: '6px 14px' }}>
@@ -457,7 +459,7 @@ export default function InterviewRoom() {
                     <>
                       <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                         <span style={{ fontSize: '10px', fontWeight: 700, color: isHrQuestion ? '#a78bfa' : 'var(--blue)', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', padding: '3px 8px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                          {isHrQuestion ? 'Sarah · HR' : 'James · Technical'}
+                          {isHrQuestion ? 'Sarah · HR' : `James · ${specialistTitle}`}
                         </span>
                         <span style={{ fontSize: '10px', color: 'var(--text-3)', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', padding: '3px 8px' }}>{q.difficulty}</span>
                       </div>

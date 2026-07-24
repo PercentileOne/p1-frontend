@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { buildCVContext, buildJobSpecContext, buildPersonalisedQuestions, buildSarahIntro, buildJamesIntro, type CVContext } from '../utils/contextBuilder';
+import { buildCVContext, buildJobSpecContext, buildPersonalisedQuestions, buildSarahIntro, buildJamesIntro, inferSpecialistTitle, type CVContext } from '../utils/contextBuilder';
 import { generateIntros, parseCVWithAI, generateQuestionsWithAI, aiScoringConfigured } from '../api/aiScoring';
 import { FileUpload } from '../components/FileUpload';
 
@@ -280,6 +280,7 @@ export default function InterviewIntake() {
   const [urlError, setUrlError] = useState('');
   const [cvText, setCvText] = useState(external.cvText ?? '');
   const [preparingMsg, setPreparingMsg] = useState('Analysing your CV…');
+  const [preparingSpecialistTitle, setPreparingSpecialistTitle] = useState('Hiring Manager');
 
   // Pre-parsed CV context — populated as soon as the user provides CV text
   const [cvCtxParsed, setCvCtxParsed] = useState<CVContext | null>(null);
@@ -402,6 +403,8 @@ export default function InterviewIntake() {
     );
 
     const jobCtx = buildJobSpecContext(js);
+    const specialistTitle = inferSpecialistTitle(jobCtx.title);
+    setPreparingSpecialistTitle(specialistTitle);
 
     const [introResult, questions] = await Promise.all([
       aiScoringConfigured
@@ -421,7 +424,7 @@ export default function InterviewIntake() {
     clearInterval(interval);
 
     navigate(`/interview-room/${packId}`, {
-      state: { cvCtx, jobCtx, questions, ...introResult },
+      state: { cvCtx, jobCtx, questions, ...introResult, specialistTitle: inferSpecialistTitle(jobCtx.title) },
       replace: true,
     });
   };
@@ -757,7 +760,7 @@ export default function InterviewIntake() {
               <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '40px' }}>
                 {[
                   { initials: 'SM', name: 'Sarah Mitchell', role: 'HR Director', gradient: 'linear-gradient(135deg,#667eea,#764ba2)' },
-                  { initials: 'JO', name: 'James Okafor', role: 'Technical Lead', gradient: 'linear-gradient(135deg,#1B3A6B,#2563eb)' },
+                  { initials: 'JO', name: 'James Okafor', role: preparingSpecialistTitle, gradient: 'linear-gradient(135deg,#1B3A6B,#2563eb)' },
                 ].map(p => (
                   <motion.div key={p.name} animate={{ scale: [1, 1.04, 1] }} transition={{ repeat: Infinity, duration: 3, delay: p.name === 'Sarah Mitchell' ? 0 : 1.5 }}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>

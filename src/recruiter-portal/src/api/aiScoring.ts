@@ -223,7 +223,8 @@ export async function generateQuestionsWithAI(
   const seniority = cvCtx.seniority;
 
   const systemPrompt = `You are an expert interview question generator. Generate exactly 8 interview questions for a ${seniority} candidate applying for ${role} at ${company}.
-Order: 6 technical/problem-solving questions first (source: "Technical"), then 2 HR/behavioural/team-fit questions last (source: "HR").
+Order: 6 role-specific competency questions first (source: "Role") — these should test what actually matters for THIS specific job, whether that is customer service, cooking, coding, legal reasoning, physical skill, or anything else — then 2 HR/team-fit/behavioural questions last (source: "HR").
+Do NOT default to "technical" questions for non-technical roles. A barista role needs questions about coffee, speed under pressure, and customer interaction — not system design.
 Return ONLY valid JSON — no markdown, no explanation.`;
 
   const userPrompt = `Candidate background:
@@ -239,10 +240,10 @@ Return JSON:
       "questionId": "q1",
       "questionText": "...",
       "modelAnswer": "Brief guide on what a great answer looks like (2-3 sentences).",
-      "questionType": "Behavioural",
+      "questionType": "Competency",
       "difficulty": "Medium",
-      "source": "HR",
-      "competencyTags": ["communication"]
+      "source": "Role",
+      "competencyTags": ["core skill"]
     }
   ]
 }`;
@@ -313,7 +314,7 @@ export async function generateIntros(
 ): Promise<{ sarahIntro: string; jamesIntro: string }> {
   const systemPrompt = `You are writing natural, varied spoken dialogue for two AI interviewers.
 Sarah Mitchell is the HR Director — warm, professional, observant about people and culture.
-James Okafor is the Technical Lead — direct, curious, focused on systems and problem-solving.
+James Okafor is the specialist interviewer — direct, curious, focused on role competencies and how the candidate performs in practice.
 Each session should sound slightly different — vary sentence structure, word choice, and what details they pick up on.
 
 STRICT MODE — ZERO HALLUCINATION POLICY:
@@ -357,7 +358,7 @@ ${jobSummary}
 
 ═══ RULES ═══
 - Sarah goes first. Address candidate by first name (${firstName}) once. Welcome them, briefly explain the format (click record, speak, click stop, get feedback), mention ONE specific fact from their work history above, then say "Let's begin."
-- James goes second (starts with "Thanks Sarah." or similar). Address candidate by first name once. Mention ONE specific fact from their work history (a role title, a company name, or their career span) — NEVER mention any technology, programming language, or tool. Say what he'll focus on in the technical questions.
+- James goes second (starts with "Thanks Sarah." or similar). Address candidate by first name once. Mention ONE specific fact from their work history (a role title, a company name, or their career span) — NEVER mention any technology, programming language, or tool. Say what he'll focus on — frame it around the role competencies, not "technical questions" specifically.
 - Each intro: 3–5 sentences, natural spoken pace, no bullet points, no em dashes.
 - Vary the opening — Sarah should NOT always start with "Welcome". Use "Great to have you here", "Thanks for joining us", "Good to meet you", etc.
 - Sound like real humans. Different each session.
