@@ -120,6 +120,7 @@ export default function InterviewRoom() {
   const [techVideoUrl, setTechVideoUrl] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
   const [runningScores, setRunningScores] = useState<number[]>([]);
+  const [audioCheckState, setAudioCheckState] = useState<'idle' | 'playing' | 'done'>('idle');
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cancelSpeakRef = useRef<(() => void) | null>(null);
@@ -174,6 +175,11 @@ export default function InterviewRoom() {
       setPhase('answering');
     });
   }, [qIndex, questions]);
+
+  const testAudio = useCallback(() => {
+    setAudioCheckState('playing');
+    speak("Audio check — if you can hear this, you're good to go.", 'hr', () => setAudioCheckState('done'));
+  }, []);
 
   const startInterview = useCallback(() => {
     setPhase('interviewer-intro');
@@ -376,6 +382,23 @@ export default function InterviewRoom() {
                 <span style={{ fontSize: '12px', fontWeight: 600, color: elevenLabsConfigured ? '#34D399' : 'var(--amber)' }}>
                   {elevenLabsConfigured ? 'ElevenLabs Neural Voices active' : 'Using browser voices'}
                 </span>
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <button
+                  onClick={testAudio}
+                  disabled={audioCheckState === 'playing'}
+                  style={{
+                    background: 'transparent',
+                    border: `1px solid ${audioCheckState === 'done' ? 'rgba(52,211,153,0.4)' : 'var(--border)'}`,
+                    borderRadius: '8px', padding: '7px 18px',
+                    fontSize: '13px', fontWeight: 600, cursor: audioCheckState === 'playing' ? 'default' : 'pointer',
+                    color: audioCheckState === 'done' ? '#34D399' : 'var(--text-2)',
+                    display: 'inline-flex', alignItems: 'center', gap: '7px',
+                  }}
+                >
+                  {audioCheckState === 'playing' && <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: 'var(--blue)', animation: 'pulse 1s infinite' }} />}
+                  {audioCheckState === 'done' ? '✓ Audio working' : audioCheckState === 'playing' ? 'Playing…' : '🔊 Test audio'}
+                </button>
               </div>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '20px', flexWrap: 'wrap' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-2)', cursor: 'pointer' }}>
