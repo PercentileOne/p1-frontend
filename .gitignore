@@ -1,6 +1,7 @@
 # Secrets — never commit these
 appsettings.Development.json
 appsettings.Production.json
+local.settings.json
 
 # .NET build output — may contain appsettings with secrets
 **/bin/
