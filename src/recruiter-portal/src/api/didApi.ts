@@ -1,7 +1,13 @@
 const DID_KEY = import.meta.env.VITE_DID_API_KEY as string | undefined;
+const DID_EMAIL = import.meta.env.VITE_DID_EMAIL as string | undefined;
 const DID_BASE = 'https://api.d-id.com';
 
-export const didConfigured = !!DID_KEY;
+export const didConfigured = !!(DID_KEY && DID_EMAIL);
+
+// D-ID requires Basic auth: base64("email:apikey")
+function getAuthHeader(): string {
+  return `Basic ${btoa(`${DID_EMAIL}:${DID_KEY}`)}`;
+}
 
 // Stock presenter images — swap for real photos of Sarah & James later
 const PRESENTER_IMAGES = {
@@ -24,7 +30,7 @@ async function didFetch(path: string, options: RequestInit = {}) {
   return fetch(`${DID_BASE}${path}`, {
     ...options,
     headers: {
-      Authorization: `Basic ${DID_KEY}`,
+      Authorization: getAuthHeader(),
       'Content-Type': 'application/json',
       ...(options.headers ?? {}),
     },

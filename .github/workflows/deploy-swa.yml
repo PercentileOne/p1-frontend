@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'src/recruiter-portal/**'
+      - '.github/workflows/deploy-swa.yml'
   workflow_dispatch:
 
 jobs:
@@ -41,6 +42,7 @@ jobs:
           VITE_ELEVENLABS_VOICE_HR:   ${{ secrets.VITE_ELEVENLABS_VOICE_HR }}
           VITE_ELEVENLABS_VOICE_TECH: ${{ secrets.VITE_ELEVENLABS_VOICE_TECH }}
           VITE_DID_API_KEY:           ${{ secrets.VITE_DID_API_KEY }}
+          VITE_DID_EMAIL:             ${{ secrets.VITE_DID_EMAIL }}
         run: npm run build
 
       - name: Deploy to Azure Static Web Apps
