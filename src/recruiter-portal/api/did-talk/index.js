@@ -15,7 +15,7 @@ module.exports = async function (context, req) {
   const DID_KEY = process.env.DID_API_KEY;
 
   if (!DID_KEY) {
-    context.res = { status: 503, body: 'D-ID not configured' };
+    context.res = { status: 503, body: 'D-ID not configured — DID_API_KEY env var missing' };
     return;
   }
   if (!text) {
@@ -23,8 +23,12 @@ module.exports = async function (context, req) {
     return;
   }
 
+  // DID_KEY should already be base64(email:apikey) — use directly in Basic auth
+  const authHeader = `Basic ${DID_KEY}`;
+  const keyPreview = DID_KEY.substring(0, 8) + '...' + DID_KEY.substring(DID_KEY.length - 4);
+
   const headers = {
-    Authorization: `Basic ${DID_KEY}`,
+    Authorization: authHeader,
     'Content-Type': 'application/json',
   };
 
@@ -48,7 +52,7 @@ module.exports = async function (context, req) {
 
     if (!createRes.ok) {
       const err = await createRes.text();
-      context.res = { status: createRes.status, body: `D-ID create failed: ${err}` };
+      context.res = { status: createRes.status, body: `D-ID ${createRes.status}: ${err} [key:${keyPreview}]` };
       return;
     }
 
