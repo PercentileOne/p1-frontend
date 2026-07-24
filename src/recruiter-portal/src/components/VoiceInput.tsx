@@ -37,15 +37,22 @@ async function transcribeWithWhisper(blob: Blob, _durationSeconds: number): Prom
   form.append('model', 'whisper-1');
   form.append('language', 'en');
 
-  const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${WHISPER_KEY}` },
-    body: form,
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20_000);
 
-  if (!res.ok) throw new Error(`Whisper error ${res.status}`);
-  const json = await res.json() as { text: string };
-  return { text: json.text.trim(), confidence: 0.96 };
+  try {
+    const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${WHISPER_KEY}` },
+      body: form,
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`Whisper error ${res.status}`);
+    const json = await res.json() as { text: string };
+    return { text: json.text.trim(), confidence: 0.96 };
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export function VoiceInput({ onTranscript, onInterimTranscript, disabled }: Props) {
