@@ -41,7 +41,7 @@ jobs:
           VITE_ELEVENLABS_API_KEY:    ${{ secrets.VITE_ELEVENLABS_API_KEY }}
           VITE_ELEVENLABS_VOICE_HR:   ${{ secrets.VITE_ELEVENLABS_VOICE_HR }}
           VITE_ELEVENLABS_VOICE_TECH: ${{ secrets.VITE_ELEVENLABS_VOICE_TECH }}
-          VITE_DID_API_KEY:           ${{ secrets.VITE_DID_API_KEY }}
+          # DID_API_KEY is an Azure App Setting (server-side) — not a build var
         run: npm run build
 
       - name: Deploy to Azure Static Web Apps
@@ -51,5 +51,6 @@ jobs:
           repo_token:                      ${{ secrets.GITHUB_TOKEN }}
           action:                          upload
           app_location:                    src/recruiter-portal/dist
+          api_location:                    src/recruiter-portal/api
           output_location:                 ""
           skip_app_build:                  true
