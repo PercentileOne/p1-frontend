@@ -13,35 +13,37 @@ import { scoreWithAI, coachWithAI, aiScoringConfigured } from '../api/aiScoring'
 // ── Demo questions ─────────────────────────────────────────────────────────────
 
 const DEMO_QUESTIONS: InterviewQuestion[] = [
+  // Technical first (James asks these)
   {
     questionId: 'q1',
+    questionText: 'Walk me through the most technically complex system you have designed. What trade-offs did you make and what would you do differently now?',
+    modelAnswer: 'Cover: context and scale, architectural decisions, trade-offs you consciously made, how you validated the design, and what you would do differently.',
+    questionType: 'Technical', difficulty: 'Hard', source: 'Technical', competencyTags: ['architecture', 'problem-solving'],
+  },
+  {
+    questionId: 'q2',
+    questionText: 'How do you ensure engineering quality when under significant time pressure? Give me a specific example.',
+    modelAnswer: 'Cover: what you cut vs what is non-negotiable (security, core tests), how you communicate risk to the business, and how you pay back tech debt after.',
+    questionType: 'Technical', difficulty: 'Medium', source: 'Technical', competencyTags: ['delivery', 'quality'],
+  },
+  {
+    questionId: 'q3',
+    questionText: 'Describe a system you had to refactor or re-architect. What triggered it, how did you manage the migration, and what was the outcome?',
+    modelAnswer: 'Cover: the trigger (tech debt, scaling, new requirements), your migration strategy, how you managed risk, and measurable improvement after.',
+    questionType: 'Technical', difficulty: 'Hard', source: 'Technical', competencyTags: ['architecture', 'technical debt', 'delivery'],
+  },
+  // HR / team-fit last (Sarah asks these)
+  {
+    questionId: 'q4',
     questionText: 'Tell me about yourself and what drew you to apply for this role.',
     modelAnswer: 'Structure: current role → key experience → why this company → why now. Keep to 90 seconds.',
     questionType: 'Behavioural', difficulty: 'Easy', source: 'HR', competencyTags: ['communication', 'motivation'],
   },
   {
-    questionId: 'q2',
-    questionText: 'Walk me through the most technically complex system you have designed. What trade-offs did you make?',
-    modelAnswer: 'Cover: context and scale, architectural decisions, trade-offs you consciously made, how you validated the design, and what you would do differently.',
-    questionType: 'Technical', difficulty: 'Hard', source: 'Technical', competencyTags: ['architecture', 'problem-solving'],
-  },
-  {
-    questionId: 'q3',
-    questionText: 'Describe a time you had to deliver difficult feedback to a senior stakeholder. How did you approach it?',
+    questionId: 'q5',
+    questionText: 'Describe a time you had to deliver difficult feedback to a senior stakeholder. How did you approach it and what happened?',
     modelAnswer: 'Use STAR. Show you prepared, chose the right setting, led with facts not feelings, listened to their response, and maintained the relationship.',
     questionType: 'Behavioural', difficulty: 'Medium', source: 'HR', competencyTags: ['stakeholder management', 'communication'],
-  },
-  {
-    questionId: 'q4',
-    questionText: 'How do you ensure engineering quality when under significant time pressure?',
-    modelAnswer: 'Cover: what you cut vs what is non-negotiable (security, core tests), how you communicate risk to the business, and how you pay back tech debt after.',
-    questionType: 'Technical', difficulty: 'Medium', source: 'Technical', competencyTags: ['delivery', 'quality'],
-  },
-  {
-    questionId: 'q5',
-    questionText: 'Where do you see yourself in three years, and how does this role fit that trajectory?',
-    modelAnswer: 'Show ambition that is realistic and aligned with the company\'s direction. Avoid "your job" or vague "leadership" answers — be specific about what you want to build or learn.',
-    questionType: 'Behavioural', difficulty: 'Easy', source: 'HR', competencyTags: ['motivation', 'growth'],
   },
 ];
 
@@ -345,7 +347,14 @@ export default function InterviewRoom() {
               ⏸ Pause
             </button>
           )}
-          <button onClick={() => { cancelSpeakRef.current?.(); navigate(-1); }}
+          <button onClick={() => {
+            cancelSpeakRef.current?.();
+            if (sessionAnswers.length > 0) {
+              navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx } });
+            } else {
+              navigate(-1);
+            }
+          }}
             style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '8px', padding: '7px 14px', color: 'var(--text-3)', fontSize: '12px', cursor: 'pointer' }}>
             End Session
           </button>

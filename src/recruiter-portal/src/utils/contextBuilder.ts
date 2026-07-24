@@ -336,60 +336,87 @@ export function buildPersonalisedQuestions(cv: CVContext, job: JobSpecContext) {
   const jobTitle = job.title;
 
   return [
+    // ── Technical questions first (James asks these) ──────────────────────────
     {
       questionId: 'pq1',
-      questionText: `Tell me about yourself and what specifically attracted you to the ${jobTitle}.`,
-      modelAnswer: 'Structure: current role → relevant experience → why this specific company/role → why now. Keep to 90 seconds and make the connection to this role explicit.',
-      questionType: 'Behavioural' as const,
-      difficulty: 'Easy' as const,
-      source: 'HR',
-      competencyTags: ['communication', 'motivation'],
-    },
-    {
-      questionId: 'pq2',
-      // wordClip at 200 chars — cuts at last complete word, never mid-word
-      questionText: achievement
-        ? `Your CV mentions: "${wordClip(achievement, 200)}". Can you walk me through how you achieved that, and what was the biggest obstacle?`
-        : `Tell me about a significant achievement from ${company} that you're most proud of. What was your specific contribution?`,
-      modelAnswer: "Use STAR format. Be specific about YOUR role vs the team's. Quantify the outcome and be honest about obstacles.",
-      questionType: 'Behavioural' as const,
-      difficulty: 'Medium' as const,
-      source: 'HR',
-      competencyTags: ['delivery', 'leadership', 'resilience'],
-    },
-    {
-      questionId: 'pq3',
       questionText: tech2
-        ? `I can see you have experience with both ${tech1} and ${tech2}. Walk me through a technical decision where you had to choose between approaches — what trade-offs did you weigh?`
-        : `Walk me through the most complex technical system you've designed using ${tech1}. What trade-offs did you make?`,
-      modelAnswer: 'Cover: context and constraints, options you considered, trade-offs you weighed explicitly, how you validated the decision, and what you would do differently.',
+        ? `I can see you have experience with both ${tech1} and ${tech2}. Walk me through a technical decision where you had to choose between the two — what trade-offs did you weigh?`
+        : `Walk me through the most complex technical system you've designed using ${tech1}. What trade-offs did you make and what would you do differently now?`,
+      modelAnswer: 'Cover: context and constraints, options considered, trade-offs weighed explicitly, how you validated the decision, and what you would do differently.',
       questionType: 'Technical' as const,
       difficulty: 'Hard' as const,
       source: 'Technical',
       competencyTags: ['architecture', 'problem-solving', 'technical depth'],
     },
     {
+      questionId: 'pq2',
+      questionText: achievement
+        ? `Your CV mentions: "${wordClip(achievement, 200)}". Walk me through the technical approach you took to achieve that — what was the hardest engineering problem you had to solve?`
+        : `Tell me about the most technically challenging problem you've solved at ${company}. What was your approach and what did you learn?`,
+      modelAnswer: "Be specific about the technical problem, not just the outcome. Explain your reasoning process, what you tried that didn't work, and how you arrived at the solution.",
+      questionType: 'Technical' as const,
+      difficulty: 'Hard' as const,
+      source: 'Technical',
+      competencyTags: ['problem-solving', 'technical depth', 'resilience'],
+    },
+    {
+      questionId: 'pq3',
+      questionText: job.responsibilities.length > 0
+        ? `This role requires: "${wordClip(job.responsibilities[0], 200)}". Walk me through how you'd technically approach that in your first 90 days.`
+        : `How do you approach system design when requirements are ambiguous? Give me a specific example from ${company}.`,
+      modelAnswer: "Show structured thinking: clarify requirements, identify constraints, propose options, validate trade-offs. Reference specific tools or patterns you'd use.",
+      questionType: 'Technical' as const,
+      difficulty: 'Medium' as const,
+      source: 'Technical',
+      competencyTags: ['system design', 'planning', 'problem-solving'],
+    },
+    {
       questionId: 'pq4',
+      questionText: `How do you ensure code quality and maintainability on a team? What specific practices have you introduced or championed at ${company}?`,
+      modelAnswer: 'Cover: code review culture, testing strategy, documentation standards, tooling choices. Be specific about what you personally drove vs what was already in place.',
+      questionType: 'Technical' as const,
+      difficulty: 'Medium' as const,
+      source: 'Technical',
+      competencyTags: ['engineering practice', 'quality', 'leadership'],
+    },
+    {
+      questionId: 'pq5',
+      questionText: `Describe a time you had to refactor or re-architect a system at ${company}. What triggered it, how did you manage the migration, and what was the outcome?`,
+      modelAnswer: 'Cover: what the trigger was (tech debt, scaling, new requirements), your migration strategy, how you managed risk, and measurable improvement after.',
+      questionType: 'Technical' as const,
+      difficulty: 'Hard' as const,
+      source: 'Technical',
+      competencyTags: ['architecture', 'delivery', 'technical debt'],
+    },
+    {
+      questionId: 'pq6',
       questionText: seniority === 'Lead' || seniority === 'Director' || seniority === 'Executive'
-        ? `In a leadership role, how do you balance technical quality with delivery pace? Give me a specific example from ${company} where you had to make that call.`
-        : `Describe a situation at ${company} where you had to push back on a decision you disagreed with. How did you handle it?`,
+        ? `How do you balance technical excellence with delivery speed when leading a team? Give me a specific example where you had to make that call.`
+        : `How do you keep your technical skills current while delivering day-to-day? What have you learned in the last six months?`,
+      modelAnswer: 'For seniors: show you can make pragmatic calls without sacrificing long-term quality. For all: demonstrate genuine curiosity and continuous learning.',
+      questionType: 'Technical' as const,
+      difficulty: 'Medium' as const,
+      source: 'Technical',
+      competencyTags: ['growth', 'leadership', 'technical currency'],
+    },
+    // ── HR / team-fit questions last (Sarah asks these) ───────────────────────
+    {
+      questionId: 'pq7',
+      questionText: `Tell me about yourself and what specifically attracted you to the ${jobTitle} role here.`,
+      modelAnswer: 'Structure: current role → key experience → why this specific company/role → why now. Keep to 90 seconds and make the connection to this role explicit.',
+      questionType: 'Behavioural' as const,
+      difficulty: 'Easy' as const,
+      source: 'HR',
+      competencyTags: ['communication', 'motivation'],
+    },
+    {
+      questionId: 'pq8',
+      questionText: `Describe a situation at ${company} where you had to push back on a decision you disagreed with. How did you handle it and what was the outcome?`,
       modelAnswer: 'Show you can hold a principled position while maintaining relationships. Give the context, your approach, the outcome, and what you learned.',
       questionType: 'Behavioural' as const,
       difficulty: 'Medium' as const,
       source: 'HR',
-      competencyTags: ['stakeholder management', 'leadership', 'communication'],
-    },
-    {
-      questionId: 'pq5',
-      // wordClip at 200 chars on responsibilities too
-      questionText: job.responsibilities.length > 0
-        ? `This role involves: "${wordClip(job.responsibilities[0], 200)}". How does your experience at ${company} prepare you for that specific challenge?`
-        : `Where do you see the biggest technical challenge in this ${jobTitle} role, and how would you approach it in your first 90 days?`,
-      modelAnswer: "Show you've read the job spec carefully. Connect your specific experience to their specific need. Have a concrete 30/60/90 day framework ready.",
-      questionType: 'Behavioural' as const,
-      difficulty: 'Medium' as const,
-      source: 'HR',
-      competencyTags: ['motivation', 'planning', 'adaptability'],
+      competencyTags: ['stakeholder management', 'communication', 'resilience'],
     },
   ];
 }

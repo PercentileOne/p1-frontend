@@ -222,8 +222,8 @@ export async function generateQuestionsWithAI(
   const achievement = cvCtx.achievements[0] ?? '';
   const seniority = cvCtx.seniority;
 
-  const systemPrompt = `You are an expert interview question generator. Generate exactly 5 interview questions for a ${seniority} candidate applying for ${role} at ${company}.
-Mix: 2 HR/behavioural questions (source: "HR") and 3 technical questions (source: "Technical").
+  const systemPrompt = `You are an expert interview question generator. Generate exactly 8 interview questions for a ${seniority} candidate applying for ${role} at ${company}.
+Order: 6 technical/problem-solving questions first (source: "Technical"), then 2 HR/behavioural/team-fit questions last (source: "HR").
 Return ONLY valid JSON — no markdown, no explanation.`;
 
   const userPrompt = `Candidate background:
