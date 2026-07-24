@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { buildCVContext, buildJobSpecContext, buildPersonalisedQuestions, buildSarahIntro, buildJamesIntro, inferSpecialistTitle, type CVContext } from '../utils/contextBuilder';
 import { generateIntros, parseCVWithAI, generateQuestionsWithAI, aiScoringConfigured } from '../api/aiScoring';
+import { SendToClientModal } from '../components/SendToClientModal';
 import { FileUpload } from '../components/FileUpload';
 
 type HubTab = 'interview' | 'learn' | 'coming-soon';
@@ -281,6 +282,11 @@ export default function InterviewIntake() {
   const [cvText, setCvText] = useState(external.cvText ?? '');
   const [preparingMsg, setPreparingMsg] = useState('Analysing your CV…');
   const [preparingSpecialistTitle, setPreparingSpecialistTitle] = useState('Hiring Manager');
+  const [clientPortalData, setClientPortalData] = useState<{
+    cvCtx: CVContext;
+    jobCtx: import('../utils/contextBuilder').JobSpecContext;
+    questions: import('../api/explainApi').InterviewQuestion[];
+  } | null>(null);
 
   // Pre-parsed CV context — populated as soon as the user provides CV text
   const [cvCtxParsed, setCvCtxParsed] = useState<CVContext | null>(null);
@@ -375,6 +381,24 @@ export default function InterviewIntake() {
       setUrlError(e instanceof Error ? e.message : 'Failed to fetch URL.');
       setUrlFetching(false);
     }
+  };
+
+  const sendToClient = async (js: string, cv: string, preComputedCvCtx: CVContext | null) => {
+    setStep('preparing');
+    setClientPortalData(null);
+    const msgs = ['Parsing CV…', 'Building candidate profile…', 'Generating interview questions…', 'Preparing client brief…'];
+    let i = 0;
+    const interval = setInterval(() => { i++; if (i < msgs.length) setPreparingMsg(msgs[i]); }, 900);
+
+    const cvCtx = preComputedCvCtx ?? (cv.trim() ? aiScoringConfigured ? await parseCVWithAI(cv).catch(() => buildCVContext(cv)) : buildCVContext(cv) : buildCVContext(''));
+    const jobCtx = buildJobSpecContext(js);
+    const questions = aiScoringConfigured
+      ? await generateQuestionsWithAI(cvCtx, jobCtx).catch(() => buildPersonalisedQuestions(cvCtx, jobCtx))
+      : buildPersonalisedQuestions(cvCtx, jobCtx);
+
+    clearInterval(interval);
+    setClientPortalData({ cvCtx, jobCtx, questions });
+    setStep('inputs');
   };
 
   const prepare = async (js: string, cv: string, preComputedCvCtx: CVContext | null) => {
@@ -728,11 +752,17 @@ export default function InterviewIntake() {
                 const effectiveCv = cvOk ? cvText : '';
                 const effectiveCvCtx = cvOk ? cvCtxParsed : null;
                 return (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', marginTop: '24px', flexWrap: 'wrap' }}>
                     {anyToggled && !canStart && (
                       <span style={{ fontSize: '12px', color: 'var(--text-3)', flex: 1 }}>
                         {hasTitle && !titleOk ? 'Enter a job title to continue' : hasSpec && !specOk ? 'Add more of the job spec to continue' : 'Add your CV text to continue'}
                       </span>
+                    )}
+                    {canStart && (
+                      <button onClick={() => sendToClient(effectiveSpec, effectiveCv, effectiveCvCtx)}
+                        style={{ background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '13px 22px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                        Send to Client
+                      </button>
                     )}
                     <button onClick={() => prepare(effectiveSpec, effectiveCv, effectiveCvCtx)} disabled={!canStart}
                       style={{ background: canStart ? 'var(--blue)' : 'rgba(79,142,247,0.3)', color: '#fff', border: 'none', borderRadius: '10px', padding: '13px 32px', fontSize: '14px', fontWeight: 700, cursor: canStart ? 'pointer' : 'default', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
@@ -779,6 +809,16 @@ export default function InterviewIntake() {
         )}
 
       </AnimatePresence>
+
+      {/* Send to Client modal — appears once questions are ready */}
+      {clientPortalData && (
+        <SendToClientModal
+          cvCtx={clientPortalData.cvCtx}
+          jobCtx={clientPortalData.jobCtx}
+          questions={clientPortalData.questions}
+          onClose={() => setClientPortalData(null)}
+        />
+      )}
     </div>
   );
 }

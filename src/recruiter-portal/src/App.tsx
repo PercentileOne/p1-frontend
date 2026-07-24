@@ -8,6 +8,7 @@ import InterviewRoom from './pages/InterviewRoom'
 import InterviewSummary from './pages/InterviewSummary'
 import InterviewIntake from './pages/InterviewIntake'
 import LeagueTable from './pages/LeagueTable'
+import ClientPortal from './pages/client/ClientPortal'
 
 export default function App() {
   return (
@@ -23,6 +24,8 @@ export default function App() {
         <Route path="/interview-room/:packId" element={<InterviewRoom />} />
         <Route path="/interview-summary/:sessionId" element={<InterviewSummary />} />
         <Route path="/league" element={<LeagueTable />} />
+        {/* Client Portal — hiring manager facing, token encoded in URL hash */}
+        <Route path="/client" element={<ClientPortal />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
