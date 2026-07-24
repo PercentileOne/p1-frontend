@@ -8,7 +8,6 @@ import { speak, elevenLabsConfigured } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
 import { generateCoachingMessage, type CoachingMessage } from '../utils/coachingEngine';
-import { createTalk, didConfigured } from '../api/didApi';
 import { scoreWithAI, coachWithAI, aiScoringConfigured } from '../api/aiScoring';
 
 // ── Demo questions ─────────────────────────────────────────────────────────────
@@ -153,13 +152,6 @@ export default function InterviewRoom() {
     setTechVideoUrl(null);
     if (interviewer === 'hr') { setHrState('speaking'); setTechState('listening'); }
     else { setTechState('speaking'); setHrState('listening'); }
-
-    if (didConfigured) {
-      createTalk(question.questionText, interviewer).then(({ videoUrl, role }) => {
-        if (role === 'hr') setHrVideoUrl(videoUrl);
-        else setTechVideoUrl(videoUrl);
-      }).catch(() => {});
-    }
 
     console.log(`[Explain AI] Q${index + 1} [${interviewer.toUpperCase()}]:`, question.questionText);
 
