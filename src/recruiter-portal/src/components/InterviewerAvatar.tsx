@@ -10,6 +10,7 @@ interface Props {
   active: boolean;
   videoUrl?: string | null;
   specialistTitle?: string;
+  onVideoEnded?: () => void;
 }
 
 const PROFILES = {
@@ -78,7 +79,7 @@ function WaveformBars({ active, color }: { active: boolean; color: string }) {
   );
 }
 
-export function InterviewerAvatar({ role, state, active, videoUrl, specialistTitle }: Props) {
+export function InterviewerAvatar({ role, state, active, videoUrl, specialistTitle, onVideoEnded }: Props) {
   const profile = { ...PROFILES[role], title: role === 'technical' ? (specialistTitle ?? PROFILES.technical.title) : PROFILES.hr.title };
 
   const statusLabel =
@@ -157,6 +158,7 @@ export function InterviewerAvatar({ role, state, active, videoUrl, specialistTit
               src={videoUrl}
               autoPlay
               playsInline
+              onEnded={onVideoEnded}
               style={{
                 width: '96px', height: '96px', borderRadius: '50%',
                 objectFit: 'cover',

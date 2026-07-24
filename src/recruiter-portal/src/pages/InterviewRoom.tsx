@@ -9,6 +9,7 @@ import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
 import { generateCoachingMessage, type CoachingMessage } from '../utils/coachingEngine';
 import { scoreWithAI, coachWithAI, aiScoringConfigured } from '../api/aiScoring';
+import { createTalk, didConfigured } from '../api/didApi';
 
 // ── Demo questions ─────────────────────────────────────────────────────────────
 
@@ -130,6 +131,8 @@ export default function InterviewRoom() {
   const cancelSpeakRef = useRef<(() => void) | null>(null);
   const thinkStartRef = useRef<number>(0);
   const pausedPhaseRef = useRef<RoomPhase>('answering');
+  const onDoneRef = useRef<(() => void) | null>(null);
+  const didCacheRef = useRef<Map<number, string>>(new Map());
 
   const q = questions[qIndex];
   const isHrQuestion = q.source === 'HR';
@@ -149,45 +152,71 @@ export default function InterviewRoom() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [phase, paused]);
 
-  const askQuestion = useCallback((index: number) => {
+  const prefetchDid = useCallback(async (index: number) => {
+    if (!didConfigured || didCacheRef.current.has(index)) return;
+    const question = questions[index];
+    if (!question) return;
+    const role: 'hr' | 'technical' = question.source === 'HR' ? 'hr' : 'technical';
+    try {
+      const { videoUrl } = await createTalk(question.questionText, role);
+      didCacheRef.current.set(index, videoUrl);
+    } catch { /* silent — ElevenLabs fallback will be used */ }
+  }, [questions]);
+
+  const askQuestion = useCallback(async (index: number) => {
     const question = questions[index];
     const interviewer: 'hr' | 'technical' = question.source === 'HR' ? 'hr' : 'technical';
     setPhase('asking');
     setHrVideoUrl(null);
     setTechVideoUrl(null);
-    if (interviewer === 'hr') { setHrState('speaking'); setTechState('listening'); }
-    else { setTechState('speaking'); setHrState('listening'); }
 
-    console.log(`[Explain AI] Q${index + 1} [${interviewer.toUpperCase()}]:`, question.questionText);
-
-    cancelSpeakRef.current = speak(question.questionText, interviewer, () => {
+    const onDone = () => {
+      onDoneRef.current = null;
       setHrState('idle'); setTechState('idle');
       thinkStartRef.current = Date.now();
       setPhase('answering');
-    });
-  }, [questions]);
+    };
+
+    if (didConfigured) {
+      // Show thinking while we wait for D-ID to render the video
+      if (interviewer === 'hr') { setHrState('thinking'); setTechState('listening'); }
+      else { setTechState('thinking'); setHrState('listening'); }
+      try {
+        let videoUrl = didCacheRef.current.get(index);
+        if (!videoUrl) {
+          const result = await createTalk(question.questionText, interviewer);
+          videoUrl = result.videoUrl;
+          didCacheRef.current.set(index, videoUrl);
+        }
+        onDoneRef.current = onDone;
+        if (interviewer === 'hr') { setHrVideoUrl(videoUrl); setHrState('speaking'); }
+        else { setTechVideoUrl(videoUrl); setTechState('speaking'); }
+        // Pre-warm next question's video in background
+        prefetchDid(index + 1);
+        return;
+      } catch { /* fall through to ElevenLabs */ }
+    }
+
+    // ElevenLabs / Web Speech fallback
+    if (interviewer === 'hr') { setHrState('speaking'); setTechState('listening'); }
+    else { setTechState('speaking'); setHrState('listening'); }
+    cancelSpeakRef.current = speak(question.questionText, interviewer, onDone);
+  }, [questions, prefetchDid]);
 
   const repeatQuestion = useCallback(() => {
-    const question = questions[qIndex];
-    const interviewer: 'hr' | 'technical' = question.source === 'HR' ? 'hr' : 'technical';
     cancelSpeakRef.current?.();
-    if (interviewer === 'hr') { setHrState('speaking'); setTechState('listening'); }
-    else { setTechState('speaking'); setHrState('listening'); }
-    cancelSpeakRef.current = speak(question.questionText, interviewer, () => {
-      setHrState('idle'); setTechState('idle');
-      thinkStartRef.current = Date.now();
-      setPhase('answering');
-    });
-  }, [qIndex, questions]);
+    askQuestion(qIndex);
+  }, [qIndex, askQuestion]);
 
   const testAudio = useCallback(() => {
     setAudioCheckState('playing');
-    speak("Audio check — if you can hear this, you're good to go.", 'hr', () => setAudioCheckState('done'));
+    speak("Hi there! I'm Sarah, and I'll be your interviewer today. If you can hear me clearly, you're all set — let's have a great session.", 'hr', () => setAudioCheckState('done'));
   }, []);
 
   const startInterview = useCallback(() => {
     setPhase('interviewer-intro');
     setHrState('speaking');
+    prefetchDid(0); // pre-render Q1 video during Sarah's intro
     const sarahText = ctx.sarahIntro ??
       "Welcome to your interview. When you're ready to answer, click the record button, speak naturally, then click Stop. You'll get instant feedback after each answer. Let's begin.";
 
@@ -203,7 +232,7 @@ export default function InterviewRoom() {
         setTimeout(() => askQuestion(0), 300);
       }
     });
-  }, [askQuestion, ctx.sarahIntro, ctx.jamesIntro]);
+  }, [askQuestion, prefetchDid, ctx.sarahIntro, ctx.jamesIntro]);
 
   useEffect(() => {
     return () => { cancelSpeakRef.current?.(); };
@@ -293,7 +322,8 @@ export default function InterviewRoom() {
 
     setCoachingMessage(coaching);
     setPhase('coaching');
-  }, [q, cvCtx, jobCtx]);
+    prefetchDid(qIndex + 1); // pre-render next question's video while user reads feedback
+  }, [q, qIndex, cvCtx, jobCtx, prefetchDid]);
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   const progress = (qIndex + (phase === 'scoring' ? 1 : 0)) / questions.length;
@@ -374,8 +404,8 @@ export default function InterviewRoom() {
 
         {/* Avatars */}
         <div style={{ display: 'flex', gap: '16px' }}>
-          <InterviewerAvatar role="hr" state={hrState} active={isHrQuestion && phase !== 'answering'} videoUrl={hrVideoUrl} />
-          <InterviewerAvatar role="technical" state={techState} active={!isHrQuestion && phase !== 'answering'} videoUrl={techVideoUrl} specialistTitle={specialistTitle} />
+          <InterviewerAvatar role="hr" state={hrState} active={isHrQuestion && phase !== 'answering'} videoUrl={hrVideoUrl} onVideoEnded={() => onDoneRef.current?.()} />
+          <InterviewerAvatar role="technical" state={techState} active={!isHrQuestion && phase !== 'answering'} videoUrl={techVideoUrl} specialistTitle={specialistTitle} onVideoEnded={() => onDoneRef.current?.()} />
         </div>
 
         <AnimatePresence mode="wait">
@@ -388,11 +418,19 @@ export default function InterviewRoom() {
                 You'll be asked {questions.length} questions by Sarah (HR) and James ({specialistTitle}). Answer by speaking or typing.
                 The interview flows continuously — coaching leads straight to the next question, just like the real thing.
               </div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '24px', background: elevenLabsConfigured ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${elevenLabsConfigured ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '8px', padding: '6px 14px' }}>
-                <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: elevenLabsConfigured ? '#34D399' : 'var(--amber)' }} />
-                <span style={{ fontSize: '12px', fontWeight: 600, color: elevenLabsConfigured ? '#34D399' : 'var(--amber)' }}>
-                  {elevenLabsConfigured ? 'ElevenLabs Neural Voices active' : 'Using browser voices'}
-                </span>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: didConfigured ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${didConfigured ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '8px', padding: '6px 14px' }}>
+                  <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: didConfigured ? '#34D399' : 'var(--amber)' }} />
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: didConfigured ? '#34D399' : 'var(--amber)' }}>
+                    {didConfigured ? 'D-ID Talking Faces active' : 'Faces unavailable'}
+                  </span>
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: elevenLabsConfigured ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${elevenLabsConfigured ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '8px', padding: '6px 14px' }}>
+                  <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: elevenLabsConfigured ? '#34D399' : 'var(--amber)' }} />
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: elevenLabsConfigured ? '#34D399' : 'var(--amber)' }}>
+                    {elevenLabsConfigured ? 'ElevenLabs Neural Voices active' : 'Using browser voices'}
+                  </span>
+                </div>
               </div>
               <div style={{ marginBottom: '20px' }}>
                 <button
