@@ -216,22 +216,40 @@ export async function generateQuestionsWithAI(
   jobCtx: JobSpecContext,
 ): Promise<InterviewQuestion[]> {
   const role = jobCtx.title;
-  const company = jobCtx.company ?? 'the company';
+  const company = jobCtx.company;
+  const industry = jobCtx.industry;
   const skills = cvCtx.skills.slice(0, 6).join(', ');
   const experience = cvCtx.experience?.slice(0, 3).map(e => `${e.role} at ${e.company} (${e.period})`).join('; ') ?? cvCtx.roles.slice(0, 2).join(', ');
   const achievement = cvCtx.achievements[0] ?? '';
   const seniority = cvCtx.seniority;
+  const responsibilities = jobCtx.responsibilities.slice(0, 3).join('; ');
 
-  const systemPrompt = `You are an expert interview question generator. Generate exactly 8 interview questions for a ${seniority} candidate applying for ${role} at ${company}.
-Order: 6 role-specific competency questions first (source: "Role") — these should test what actually matters for THIS specific job, whether that is customer service, cooking, coding, legal reasoning, physical skill, or anything else — then 2 HR/team-fit/behavioural questions last (source: "HR").
-Do NOT default to "technical" questions for non-technical roles. A barista role needs questions about coffee, speed under pressure, and customer interaction — not system design.
-Return ONLY valid JSON — no markdown, no explanation.`;
+  const companyLine = company
+    ? `Company: ${company}${industry ? ` — operating in: ${industry}` : ''}`
+    : 'Company: not specified';
 
-  const userPrompt = `Candidate background:
-- Skills: ${skills}
-- Recent experience: ${experience}
-- Notable achievement: ${achievement}
+  const systemPrompt = `You are an expert interview question generator for a global hiring platform.
+Generate exactly 8 interview questions for a ${seniority} candidate applying for the role below.
+
+CRITICAL RULES:
+1. Questions must be tailored to BOTH the role AND the company — a Barista at Starbucks is different from a Barista at Costa; a Software Engineer at NASA is different from one at a startup.
+2. Order: 6 role+company-specific competency questions first (source: "Role"), then 2 HR/culture-fit questions last (source: "HR").
+3. Do NOT default to "technical" questions for non-technical roles. Match the question type to what the job actually requires — speed and customer service for hospitality, safety and precision for aerospace, craft and creativity for design roles, etc.
+4. Where a company has known values, culture, or ways of working (e.g. Amazon Leadership Principles, NHS patient-centred care, McDonald's QSR standards), weave those into the questions naturally.
+5. Return ONLY valid JSON — no markdown, no explanation.`;
+
+  const userPrompt = `═══ ROLE ═══
+Title: ${role}
+${companyLine}
+${responsibilities ? `Key responsibilities: ${responsibilities}` : ''}
+
+═══ CANDIDATE ═══
+- Skills: ${skills || 'not specified'}
+- Recent experience: ${experience || 'not specified'}
+- Notable achievement: ${achievement || 'not specified'}
 - Years of experience: ${cvCtx.yearsOfExperience ?? 'unknown'}
+
+${company ? `Generate questions that would genuinely differentiate a strong candidate for ${role} at ${company} specifically — not generic questions that could apply to any ${role} anywhere.` : `Generate questions that would differentiate a strong ${role} candidate.`}
 
 Return JSON:
 {
@@ -337,10 +355,11 @@ Return ONLY valid JSON.`;
     expLines ? `Work history:\n${expLines}` : null,
   ].filter(Boolean).join('\n');
 
-  // Job summary: title and company only — no responsibility slice that could truncate mid-word
+  // Job summary: title, company, and industry sector for context
   const jobSummary = [
     `Role: ${jobCtx.title}`,
     jobCtx.company ? `Company: ${jobCtx.company}` : null,
+    jobCtx.industry ? `Industry/sector: ${jobCtx.industry}` : null,
   ].filter(Boolean).join('\n');
 
   const firstName = cvCtx.firstName || 'there';

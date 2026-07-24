@@ -33,6 +33,7 @@ export interface JobSpecContext {
   rawText: string;
   title: string;
   company?: string;
+  industry?: string;
   requiredSkills: string[];
   techStack: string[];
   responsibilities: string[];
@@ -262,15 +263,61 @@ export function buildCVContext(cvText: string): CVContext {
   };
 }
 
+export function inferIndustry(jobTitle: string, companyName?: string, rawText?: string): string | undefined {
+  const t = (jobTitle + ' ' + (companyName ?? '') + ' ' + (rawText ?? '')).toLowerCase();
+
+  // Well-known companies — specific industry context beats generic inference
+  const KNOWN: [RegExp, string][] = [
+    [/\bmcdonald'?s\b/, 'quick-service restaurant (QSR) — fast food, speed of service, food safety, customer throughput'],
+    [/\bstarbucks\b/, 'specialty coffee retail — beverage craft, customer connection, Starbucks brand standards'],
+    [/\bcosta\b/, 'coffee shop retail — espresso, speed of service, customer experience'],
+    [/\btesco\b/, 'UK grocery retail — large-scale operations, customer service, supply chain'],
+    [/\baldi\b/, 'discount grocery retail — efficiency, stock management, lean operations'],
+    [/\bamazon\b/, 'global e-commerce and logistics — leadership principles, scale, data-driven decisions'],
+    [/\bnasa\b/, 'aerospace and space exploration — safety-critical systems, mission planning, zero-defect culture'],
+    [/\bnhs\b|national health service/, 'UK public healthcare — patient care, clinical governance, multidisciplinary teams'],
+    [/\bvirgin active\b/, 'premium health and fitness — member experience, personal training, club culture'],
+    [/\bpwc\b|pricewaterhousecoopers/, 'professional services and audit — client advisory, governance, regulatory compliance'],
+    [/\bdeloitte\b/, 'professional services consulting — strategy, transformation, client delivery'],
+    [/\bbarclays\b|lloyds|natwest|hsbc/, 'UK banking and financial services — compliance, risk, customer trust'],
+    [/\bmks\b|marks (&|and) spencer/, 'UK premium retail — quality, customer experience, brand values'],
+    [/\bjohn lewis\b/, 'employee-owned UK retail — partnership values, customer service excellence'],
+    [/\bdyson\b/, 'engineering and product innovation — invention, quality, global manufacturing'],
+    [/\bbmw\b|mercedes|jaguar|land rover/, 'premium automotive — precision engineering, quality standards, brand heritage'],
+  ];
+  for (const [pattern, industry] of KNOWN) {
+    if (pattern.test(t)) return industry;
+  }
+
+  // Fallback by role/keyword
+  if (/software|engineer|developer|architect|devops|cloud|sre/.test(t)) return 'technology and software engineering';
+  if (/barista|coffee|café|cafe/.test(t)) return 'coffee retail and hospitality';
+  if (/chef|cook|kitchen|restaurant|hospitality|hotel/.test(t)) return 'hospitality and food service';
+  if (/retail|store|shop|sales assistant/.test(t)) return 'retail';
+  if (/nurse|doctor|clinician|gp |hospital|nhs/.test(t)) return 'healthcare';
+  if (/teacher|lecturer|school|university|college|education/.test(t)) return 'education';
+  if (/lawyer|solicitor|legal|barrister/.test(t)) return 'legal services';
+  if (/accountant|finance|audit|bookkeeper/.test(t)) return 'finance and accounting';
+  if (/logistics|warehouse|driver|delivery|hgv/.test(t)) return 'logistics and supply chain';
+  if (/fitness|gym|trainer|coach|sport/.test(t)) return 'health and fitness';
+  if (/childcare|nursery|nanny|early years/.test(t)) return 'early years and childcare';
+  if (/construction|site|electrician|plumber|builder|trades/.test(t)) return 'construction and trades';
+  if (/marketing|brand|content|social media/.test(t)) return 'marketing and communications';
+  if (/design|ux|creative|animator/.test(t)) return 'creative and design';
+  return undefined;
+}
+
 export function buildJobSpecContext(jobSpecText: string): JobSpecContext {
   const lines = extractLines(jobSpecText);
   const titleLine = lines[0] ?? '';
   const companyMatch = jobSpecText.match(/(?:at|@|–|-)\s*([A-Z][A-Za-z0-9\s&.]{2,30}?)(?:\s*[·,\n]|$)/);
+  const company = companyMatch?.[1]?.trim();
 
   return {
     rawText: jobSpecText,
     title: titleLine.length < 80 ? titleLine : 'the role',
-    company: companyMatch?.[1]?.trim(),
+    company,
+    industry: inferIndustry(titleLine, company, jobSpecText),
     requiredSkills: findMatches(jobSpecText, TECH_KEYWORDS).slice(0, 8),
     techStack: findMatches(jobSpecText, TECH_KEYWORDS).slice(0, 6),
     responsibilities: lines.filter(l =>
@@ -365,13 +412,16 @@ function getRoleFocus(jobTitle: string): string {
 // ── Personalised question generation ─────────────────────────────────────────
 
 export function buildPersonalisedQuestions(cv: CVContext, job: JobSpecContext) {
-  const company = cv.experience?.[0]?.company ?? cv.companies[0] ?? 'your previous company';
-  const skill1 = cv.skills[0] ?? job.techStack[0] ?? 'your core skill';
-  const skill2 = cv.skills[1] ?? job.techStack[1];
+  const cvCompany = cv.experience?.[0]?.company ?? cv.companies[0] ?? 'your previous company';
+  const targetCompany = job.company;
+  const company = cvCompany; // candidate's background company
+  const skill1 = cv.skills[0] ?? job.requiredSkills[0] ?? 'your core skill';
+  const skill2 = cv.skills[1] ?? job.requiredSkills[1];
   const achievement = cv.achievements[0];
   const seniority = cv.seniority;
   const jobTitle = job.title;
   const responsibility = job.responsibilities[0];
+  const targetCtx = targetCompany ? `at ${targetCompany}` : 'in this role';
 
   return [
     // ── Role-specific questions first (James / specialist asks these) ─────────
@@ -400,8 +450,8 @@ export function buildPersonalisedQuestions(cv: CVContext, job: JobSpecContext) {
     {
       questionId: 'pq3',
       questionText: responsibility
-        ? `This role involves: "${wordClip(responsibility, 200)}". Walk me through how your experience at ${company} prepares you for that — and how you'd approach it in the first 90 days.`
-        : `Where do you see the biggest challenge in this ${jobTitle} role, and how would you approach it in your first 90 days?`,
+        ? `This role involves: "${wordClip(responsibility, 200)}". Walk me through how your experience at ${company} prepares you for that — and how you'd approach it in your first 90 days ${targetCtx}.`
+        : `Where do you see the biggest challenge in this ${jobTitle} role${targetCompany ? ` at ${targetCompany}` : ''}, and how would you approach it in your first 90 days?`,
       modelAnswer: "Show you've read the job spec carefully. Connect your specific experience to their specific need. A concrete 30/60/90 day framework shows you've thought it through.",
       questionType: 'Competency' as const,
       difficulty: 'Medium' as const,
@@ -440,7 +490,7 @@ export function buildPersonalisedQuestions(cv: CVContext, job: JobSpecContext) {
     // ── HR / team-fit questions last (Sarah asks these) ───────────────────────
     {
       questionId: 'pq7',
-      questionText: `Tell me about yourself and what specifically attracted you to the ${jobTitle} role here.`,
+      questionText: `Tell me about yourself and what specifically attracted you to the ${jobTitle} role${targetCompany ? ` at ${targetCompany}` : ' here'}.`,
       modelAnswer: 'Structure: current role → key experience → why this specific company/role → why now. Keep to 90 seconds and make the connection to this role explicit.',
       questionType: 'Behavioural' as const,
       difficulty: 'Easy' as const,
