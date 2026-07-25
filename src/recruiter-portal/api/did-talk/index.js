@@ -1,8 +1,8 @@
 const DID_BASE = 'https://api.d-id.com';
 
 const PRESENTER_IMAGES = {
-  hr: 'https://randomuser.me/api/portraits/women/44.jpg',
-  technical: 'https://randomuser.me/api/portraits/men/32.jpg',
+  hr: 'https://recruiter.explain.global/images/sarah.png',
+  technical: 'https://recruiter.explain.global/images/james.png',
 };
 
 const DID_VOICES = {
