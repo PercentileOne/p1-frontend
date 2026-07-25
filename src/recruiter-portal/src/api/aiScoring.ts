@@ -549,3 +549,74 @@ Write the feedback as three clear paragraphs. Open the first paragraph with a wa
 
   return raw.feedback ?? '';
 }
+
+// ── Agent Briefing (Mike) ─────────────────────────────────────────────────────
+
+export interface AgentBriefingResult {
+  mikeScript: string;          // What Mike says out loud
+  companyFacts: string[];      // 3-4 key facts Mike mentions (used to score company knowledge answers)
+  companyQuestions: InterviewQuestion[]; // 2 questions that test what Mike told them
+}
+
+export async function generateAgentBriefing(
+  cvCtx: CVContext,
+  jobCtx: JobSpecContext,
+): Promise<AgentBriefingResult> {
+  const systemPrompt = `You are Mike, a friendly and professional interview preparation consultant at Explain.
+You brief candidates before their interview — giving them a personalised overview of the company and role so they walk in prepared.
+Your tone is warm, encouraging, and concise. You speak naturally — no bullet points, no lists out loud.
+You always mention 3-4 specific company facts (culture, size, mission, recent news, or values) that the interviewers are likely to probe on.
+After the briefing, you generate 2 interview questions that test whether the candidate absorbed those facts.`;
+
+  const jobSummary = [
+    `Role: ${jobCtx.title}`,
+    jobCtx.company ? `Company: ${jobCtx.company}` : null,
+    jobCtx.industry ? `Industry: ${jobCtx.industry}` : null,
+    jobCtx.rawText ? `Job description excerpt: ${jobCtx.rawText.slice(0, 400)}` : null,
+  ].filter(Boolean).join('\n');
+
+  const firstName = cvCtx.firstName || 'there';
+
+  const userPrompt = `Generate Mike's pre-interview briefing for ${firstName}, who is interviewing for: ${jobCtx.title}${jobCtx.company ? ` at ${jobCtx.company}` : ''}.
+
+Job context:
+${jobSummary}
+
+Mike's briefing should:
+- Open with: "Hi ${firstName}, I'm Mike — I've set up today's interview for you."
+- Mention the company name, what they do, their size/culture, and 1-2 things they're known for or proud of
+- Briefly explain the interview format (two interviewers, Sarah and James)
+- Give 1-2 quick tips based on the role
+- Close warmly and wish them luck
+- Be 60-90 words total — spoken naturally, no lists
+
+Then generate exactly 2 company knowledge questions the interviewers might ask, with model answers that reference the specific facts you mentioned.
+
+Return JSON:
+{
+  "mikeScript": "...",
+  "companyFacts": ["fact1", "fact2", "fact3"],
+  "companyQuestions": [
+    {
+      "questionId": "cq1",
+      "questionText": "...",
+      "modelAnswer": "...",
+      "questionType": "Company Knowledge",
+      "difficulty": "Easy",
+      "source": "HR",
+      "competencyTags": ["research", "motivation"]
+    },
+    {
+      "questionId": "cq2",
+      "questionText": "...",
+      "modelAnswer": "...",
+      "questionType": "Company Knowledge",
+      "difficulty": "Easy",
+      "source": "HR",
+      "competencyTags": ["research", "motivation"]
+    }
+  ]
+}`;
+
+  return chatJSON<AgentBriefingResult>(systemPrompt, userPrompt, 0.8);
+}

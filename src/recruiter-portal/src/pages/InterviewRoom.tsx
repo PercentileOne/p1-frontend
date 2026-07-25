@@ -79,6 +79,8 @@ interface RoomState {
   sarahIntro?: string;
   jamesIntro?: string;
   specialistTitle?: string;
+  mikeScript?: string | null;
+  companyFacts?: string[];
 }
 
 interface SessionAnswer {
@@ -92,6 +94,7 @@ interface SessionAnswer {
 
 type RoomPhase =
   | 'intro'
+  | 'agent-briefing'
   | 'prerendering'
   | 'interviewer-intro'
   | 'asking'
@@ -124,6 +127,7 @@ export default function InterviewRoom() {
   const [coachingMessage, setCoachingMessage] = useState<CoachingMessage | null>(null);
   const [hrVideoUrl, setHrVideoUrl] = useState<string | null>(null);
   const [techVideoUrl, setTechVideoUrl] = useState<string | null>(null);
+  const [mikeVideoUrl, setMikeVideoUrl] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
   const [runningScores, setRunningScores] = useState<number[]>([]);
   const [audioCheckState, setAudioCheckState] = useState<'idle' | 'playing' | 'done'>('idle');
@@ -215,29 +219,11 @@ export default function InterviewRoom() {
     });
   }, []);
 
-  const startInterview = useCallback(async () => {
-    if (didConfigured) {
-      // Pre-render all question videos before starting so they play instantly
-      setPhase('prerendering');
-      setPrerenderProgress(0);
-      const total = questions.length;
-      await Promise.all(questions.map(async (q, i) => {
-        const role: 'hr' | 'technical' = q.source === 'HR' ? 'hr' : 'technical';
-        try {
-          if (!didCacheRef.current.has(i)) {
-            const { videoUrl } = await createTalk(q.questionText, role);
-            didCacheRef.current.set(i, videoUrl);
-          }
-        } catch { /* fall through — ElevenLabs will cover this question */ }
-        setPrerenderProgress(p => p + (100 / total));
-      }));
-    }
-
+  const beginInterviewIntro = useCallback(() => {
     setPhase('interviewer-intro');
     setHrState('speaking');
     const sarahText = ctx.sarahIntro ??
       "Welcome to your interview. When you're ready to answer, click the record button, speak naturally, then click Stop. You'll get instant feedback after each answer. Let's begin.";
-
     cancelSpeakRef.current = speak(sarahText, 'hr', () => {
       setHrState('idle');
       if (ctx.jamesIntro) {
@@ -250,7 +236,62 @@ export default function InterviewRoom() {
         setTimeout(() => askQuestion(0), 300);
       }
     });
-  }, [askQuestion, questions, ctx.sarahIntro, ctx.jamesIntro]);
+  }, [askQuestion, ctx.sarahIntro, ctx.jamesIntro]);
+
+  const startInterview = useCallback(async () => {
+    const mikeScript = ctx.mikeScript;
+
+    if (didConfigured) {
+      // Pre-render all question videos in the background
+      const prerenderAll = async () => {
+        setPrerenderProgress(0);
+        const total = questions.length;
+        await Promise.all(questions.map(async (q, i) => {
+          const role: 'hr' | 'technical' = q.source === 'HR' ? 'hr' : 'technical';
+          try {
+            if (!didCacheRef.current.has(i)) {
+              const { videoUrl } = await createTalk(q.questionText, role);
+              didCacheRef.current.set(i, videoUrl);
+            }
+          } catch { /* ElevenLabs fallback */ }
+          setPrerenderProgress(p => p + (100 / total));
+        }));
+      };
+
+      if (mikeScript) {
+        // Show Mike's briefing while pre-rendering happens in background
+        setPhase('agent-briefing');
+        // Play Mike's voice immediately via ElevenLabs while D-ID renders
+        speak(mikeScript, 'hr', () => {
+          // Audio finished — if D-ID video is already ready it will have auto-played;
+          // if still rendering, we just wait for it (progress bar shows state)
+        });
+        try {
+          const [{ videoUrl }] = await Promise.all([
+            createTalk(mikeScript, 'agent'),
+            prerenderAll(),
+          ]);
+          setMikeVideoUrl(videoUrl);
+          // Video will autoplay via <video autoPlay> and call beginInterviewIntro on end
+        } catch {
+          // D-ID failed for Mike — audio is already playing; transition when pre-render done
+          await prerenderAll();
+          beginInterviewIntro();
+        }
+      } else {
+        setPhase('prerendering');
+        await prerenderAll();
+        beginInterviewIntro();
+      }
+    } else {
+      if (mikeScript) {
+        setPhase('agent-briefing');
+        speak(mikeScript, 'hr', () => beginInterviewIntro());
+      } else {
+        beginInterviewIntro();
+      }
+    }
+  }, [askQuestion, questions, ctx.mikeScript, beginInterviewIntro]);
 
   useEffect(() => {
     return () => { cancelSpeakRef.current?.(); };
@@ -444,6 +485,52 @@ export default function InterviewRoom() {
                 />
               </div>
               <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>{Math.round(Math.min(prerenderProgress, 100))}% ready</div>
+            </motion.div>
+          )}
+
+          {phase === 'agent-briefing' && (
+            <motion.div key="agent-briefing" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '32px', textAlign: 'center', maxWidth: '560px', margin: '0 auto' }}>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blue)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '16px' }}>Your Interview Consultant</div>
+              <div style={{ position: 'relative', width: '200px', height: '200px', margin: '0 auto 20px', borderRadius: '50%', overflow: 'hidden', background: 'var(--bg3)', border: '3px solid var(--blue)' }}>
+                {mikeVideoUrl ? (
+                  <video
+                    src={mikeVideoUrl}
+                    autoPlay
+                    muted
+                    playsInline
+                    onEnded={beginInterviewIntro}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <img src="/images/mike.png" alt="Mike" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )}
+              </div>
+              <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Mike</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-3)', marginBottom: '20px' }}>Interview Consultant</div>
+              <div style={{ fontSize: '14px', color: 'var(--text-2)', lineHeight: 1.7, marginBottom: '24px', minHeight: '48px' }}>
+                {ctx.mikeScript ? (
+                  <em>"{ctx.mikeScript}"</em>
+                ) : (
+                  'Preparing your interview briefing…'
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center', marginBottom: '16px' }}>
+                <div style={{ background: 'var(--bg3)', borderRadius: '99px', height: '4px', width: '180px', overflow: 'hidden' }}>
+                  <motion.div
+                    animate={{ width: `${Math.min(prerenderProgress, 100)}%` }}
+                    transition={{ duration: 0.4 }}
+                    style={{ height: '100%', background: 'linear-gradient(90deg, var(--blue), #a78bfa)', borderRadius: '99px' }}
+                  />
+                </div>
+                <span style={{ fontSize: '12px', color: 'var(--text-3)', minWidth: '36px' }}>{Math.round(Math.min(prerenderProgress, 100))}%</span>
+              </div>
+              <button
+                onClick={beginInterviewIntro}
+                style={{ fontSize: '13px', color: 'var(--text-3)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                Skip briefing →
+              </button>
             </motion.div>
           )}
 
