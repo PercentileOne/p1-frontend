@@ -460,23 +460,21 @@ export default function InterviewIntake() {
     const specialistTitle = inferSpecialistTitle(jobCtx.title);
     setPreparingSpecialistTitle(specialistTitle);
 
-    const [introResult, baseQuestions, agentBriefing] = await Promise.all([
-      aiScoringConfigured
-        ? generateIntros(cvCtx, jobCtx).catch(() => ({
-            sarahIntro: buildSarahIntro(cvCtx, jobCtx),
-            jamesIntro: buildJamesIntro(cvCtx, jobCtx),
-          }))
-        : Promise.resolve({
-            sarahIntro: buildSarahIntro(cvCtx, jobCtx),
-            jamesIntro: buildJamesIntro(cvCtx, jobCtx),
-          }),
-      aiScoringConfigured
-        ? generateQuestionsWithAI(cvCtx, jobCtx).catch(() => buildPersonalisedQuestions(cvCtx, jobCtx))
-        : Promise.resolve(buildPersonalisedQuestions(cvCtx, jobCtx)),
-      aiScoringConfigured
-        ? generateAgentBriefing(cvCtx, jobCtx).catch(() => null)
-        : Promise.resolve(null),
-    ]);
+    // Sequential OpenAI calls to avoid 429 rate limits
+    const baseQuestions = aiScoringConfigured
+      ? await generateQuestionsWithAI(cvCtx, jobCtx).catch(() => buildPersonalisedQuestions(cvCtx, jobCtx))
+      : buildPersonalisedQuestions(cvCtx, jobCtx);
+
+    const introResult = aiScoringConfigured
+      ? await generateIntros(cvCtx, jobCtx).catch(() => ({
+          sarahIntro: buildSarahIntro(cvCtx, jobCtx),
+          jamesIntro: buildJamesIntro(cvCtx, jobCtx),
+        }))
+      : { sarahIntro: buildSarahIntro(cvCtx, jobCtx), jamesIntro: buildJamesIntro(cvCtx, jobCtx) };
+
+    const agentBriefing = aiScoringConfigured
+      ? await generateAgentBriefing(cvCtx, jobCtx).catch(() => null)
+      : null;
 
     // Append company knowledge questions after the main questions
     const questions = agentBriefing
