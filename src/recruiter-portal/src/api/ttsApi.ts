@@ -78,6 +78,7 @@ async function speakElevenLabs(
   text: string,
   voiceId: string,
   onEnd: () => void,
+  volume = 1.0,
 ): Promise<() => void> {
   const res = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
@@ -101,6 +102,7 @@ async function speakElevenLabs(
   if (blob.size < 100) throw new Error('ElevenLabs returned empty audio');
   const url  = URL.createObjectURL(blob);
   const audio = new Audio(url);
+  audio.volume = volume;
 
   let ended = false;
   const done = () => { if (!ended) { ended = true; URL.revokeObjectURL(url); onEnd(); } };
@@ -165,7 +167,7 @@ export function speak(
 
     speakElevenLabs(text, voiceId, () => {
       if (!cancelled) onEnd();
-    })
+    }, role === 'technical' ? 0.75 : 1.0)
       .then(cancel => { cancelAudio = cancel; })
       .catch(() => {
         // ElevenLabs failed — fall back to Web Speech
