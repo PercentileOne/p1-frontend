@@ -467,9 +467,9 @@ export default function InterviewRoom() {
           {phase === 'prerendering' && (
             <motion.div key="prerendering" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '40px 32px', textAlign: 'center' }}>
-              <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)', marginBottom: '12px' }}>Preparing your interview…</div>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)', marginBottom: '12px' }}>Almost ready…</div>
               <div style={{ fontSize: '14px', color: 'var(--text-2)', marginBottom: '28px' }}>
-                Generating video for all {questions.length} questions so they play instantly. This takes about {questions.length * 5} seconds.
+                Generating your first interviewer video. This takes about 20 seconds.
               </div>
               <div style={{ background: 'var(--bg3)', borderRadius: '99px', height: '8px', width: '100%', maxWidth: '360px', margin: '0 auto 16px', overflow: 'hidden' }}>
                 <motion.div
