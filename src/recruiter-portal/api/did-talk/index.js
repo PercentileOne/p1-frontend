@@ -3,11 +3,13 @@ const DID_BASE = 'https://api.d-id.com';
 const PRESENTER_IMAGES = {
   hr: 'https://recruiter.explain.global/images/sarah.png',
   technical: 'https://recruiter.explain.global/images/james.png',
+  agent: 'https://recruiter.explain.global/images/mike.png',
 };
 
 const DID_VOICES = {
   hr: 'en-GB-SoniaNeural',
   technical: 'en-GB-RyanNeural',
+  agent: 'en-GB-OliverNeural',
 };
 
 module.exports = async function (context, req) {

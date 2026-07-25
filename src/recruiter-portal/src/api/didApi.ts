@@ -2,7 +2,7 @@ export const didConfigured = true; // key lives server-side in Azure App Setting
 
 interface TalkResult {
   videoUrl: string;
-  role: 'hr' | 'technical';
+  role: 'hr' | 'technical' | 'agent';
 }
 
 async function pollTalk(talkId: string, attempts = 40): Promise<string> {
@@ -21,7 +21,7 @@ async function pollTalk(talkId: string, attempts = 40): Promise<string> {
   throw new Error('D-ID timed out');
 }
 
-export async function createTalk(text: string, role: 'hr' | 'technical'): Promise<TalkResult> {
+export async function createTalk(text: string, role: 'hr' | 'technical' | 'agent'): Promise<TalkResult> {
   // Phase 1: submit the job (returns immediately with talkId)
   const createRes = await fetch('/api/did-talk', {
     method: 'POST',

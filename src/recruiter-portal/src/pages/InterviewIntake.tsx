@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { buildCVContext, buildJobSpecContext, buildPersonalisedQuestions, buildSarahIntro, buildJamesIntro, inferSpecialistTitle, type CVContext } from '../utils/contextBuilder';
-import { generateIntros, parseCVWithAI, generateQuestionsWithAI, aiScoringConfigured } from '../api/aiScoring';
+import { generateIntros, parseCVWithAI, generateQuestionsWithAI, generateAgentBriefing, aiScoringConfigured } from '../api/aiScoring';
 import { SendToClientModal } from '../components/SendToClientModal';
 import { FileUpload } from '../components/FileUpload';
 import { buildCandidatePrepUrl, type CandidatePrepSession } from '../utils/clientSession';
@@ -460,7 +460,7 @@ export default function InterviewIntake() {
     const specialistTitle = inferSpecialistTitle(jobCtx.title);
     setPreparingSpecialistTitle(specialistTitle);
 
-    const [introResult, questions] = await Promise.all([
+    const [introResult, baseQuestions, agentBriefing] = await Promise.all([
       aiScoringConfigured
         ? generateIntros(cvCtx, jobCtx).catch(() => ({
             sarahIntro: buildSarahIntro(cvCtx, jobCtx),
@@ -473,12 +473,25 @@ export default function InterviewIntake() {
       aiScoringConfigured
         ? generateQuestionsWithAI(cvCtx, jobCtx).catch(() => buildPersonalisedQuestions(cvCtx, jobCtx))
         : Promise.resolve(buildPersonalisedQuestions(cvCtx, jobCtx)),
+      aiScoringConfigured
+        ? generateAgentBriefing(cvCtx, jobCtx).catch(() => null)
+        : Promise.resolve(null),
     ]);
+
+    // Append company knowledge questions after the main questions
+    const questions = agentBriefing
+      ? [...baseQuestions, ...agentBriefing.companyQuestions]
+      : baseQuestions;
 
     clearInterval(interval);
 
     navigate(`/interview-room/${packId}`, {
-      state: { cvCtx, jobCtx, questions, ...introResult, specialistTitle: inferSpecialistTitle(jobCtx.title) },
+      state: {
+        cvCtx, jobCtx, questions, ...introResult,
+        specialistTitle: inferSpecialistTitle(jobCtx.title),
+        mikeScript: agentBriefing?.mikeScript ?? null,
+        companyFacts: agentBriefing?.companyFacts ?? [],
+      },
       replace: true,
     });
   };
