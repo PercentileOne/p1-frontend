@@ -167,7 +167,7 @@ export function speak(
 
     speakElevenLabs(text, voiceId, () => {
       if (!cancelled) onEnd();
-    }, role === 'technical' ? 0.75 : 1.0)
+    }, role === 'technical' ? 0.5 : 1.0)
       .then(cancel => { cancelAudio = cancel; })
       .catch(() => {
         // ElevenLabs failed — fall back to Web Speech

@@ -92,6 +92,7 @@ interface SessionAnswer {
 
 type RoomPhase =
   | 'intro'
+  | 'prerendering'
   | 'interviewer-intro'
   | 'asking'
   | 'answering'
@@ -126,6 +127,7 @@ export default function InterviewRoom() {
   const [paused, setPaused] = useState(false);
   const [runningScores, setRunningScores] = useState<number[]>([]);
   const [audioCheckState, setAudioCheckState] = useState<'idle' | 'playing' | 'done'>('idle');
+  const [prerenderProgress, setPrerenderProgress] = useState(0);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cancelSpeakRef = useRef<(() => void) | null>(null);
@@ -191,8 +193,6 @@ export default function InterviewRoom() {
         onDoneRef.current = onDone;
         if (interviewer === 'hr') { setHrVideoUrl(videoUrl); setHrState('speaking'); }
         else { setTechVideoUrl(videoUrl); setTechState('speaking'); }
-        // Pre-warm next question's video in background
-        prefetchDid(index + 1);
         return;
       } catch { /* fall through to ElevenLabs */ }
     }
@@ -215,10 +215,26 @@ export default function InterviewRoom() {
     });
   }, []);
 
-  const startInterview = useCallback(() => {
+  const startInterview = useCallback(async () => {
+    if (didConfigured) {
+      // Pre-render all question videos before starting so they play instantly
+      setPhase('prerendering');
+      setPrerenderProgress(0);
+      const total = questions.length;
+      await Promise.all(questions.map(async (q, i) => {
+        const role: 'hr' | 'technical' = q.source === 'HR' ? 'hr' : 'technical';
+        try {
+          if (!didCacheRef.current.has(i)) {
+            const { videoUrl } = await createTalk(q.questionText, role);
+            didCacheRef.current.set(i, videoUrl);
+          }
+        } catch { /* fall through — ElevenLabs will cover this question */ }
+        setPrerenderProgress(p => p + (100 / total));
+      }));
+    }
+
     setPhase('interviewer-intro');
     setHrState('speaking');
-    prefetchDid(0); // pre-render Q1 video during Sarah's intro
     const sarahText = ctx.sarahIntro ??
       "Welcome to your interview. When you're ready to answer, click the record button, speak naturally, then click Stop. You'll get instant feedback after each answer. Let's begin.";
 
@@ -234,7 +250,7 @@ export default function InterviewRoom() {
         setTimeout(() => askQuestion(0), 300);
       }
     });
-  }, [askQuestion, prefetchDid, ctx.sarahIntro, ctx.jamesIntro]);
+  }, [askQuestion, questions, ctx.sarahIntro, ctx.jamesIntro]);
 
   useEffect(() => {
     return () => { cancelSpeakRef.current?.(); };
@@ -413,6 +429,24 @@ export default function InterviewRoom() {
 
         <AnimatePresence mode="wait">
           {/* Intro screen */}
+          {phase === 'prerendering' && (
+            <motion.div key="prerendering" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '40px 32px', textAlign: 'center' }}>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)', marginBottom: '12px' }}>Preparing your interview…</div>
+              <div style={{ fontSize: '14px', color: 'var(--text-2)', marginBottom: '28px' }}>
+                Generating video for all {questions.length} questions so they play instantly. This takes about {questions.length * 5} seconds.
+              </div>
+              <div style={{ background: 'var(--bg3)', borderRadius: '99px', height: '8px', width: '100%', maxWidth: '360px', margin: '0 auto 16px', overflow: 'hidden' }}>
+                <motion.div
+                  animate={{ width: `${Math.min(prerenderProgress, 100)}%` }}
+                  transition={{ duration: 0.4 }}
+                  style={{ height: '100%', background: 'linear-gradient(90deg, var(--blue), #a78bfa)', borderRadius: '99px' }}
+                />
+              </div>
+              <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>{Math.round(Math.min(prerenderProgress, 100))}% ready</div>
+            </motion.div>
+          )}
+
           {phase === 'intro' && (
             <motion.div key="intro" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
               style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '32px', textAlign: 'center' }}>
