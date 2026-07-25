@@ -14,38 +14,29 @@ export const aiScoringConfigured = !!OPENAI_KEY;
 async function chatJSON<T>(systemPrompt: string, userPrompt: string, temperature = 0.3): Promise<T> {
   if (!OPENAI_KEY) throw new Error('OpenAI key not configured');
 
-  const res = await fetch(OPENAI_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${OPENAI_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      temperature,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
+  const body = JSON.stringify({
+    model: MODEL,
+    temperature,
+    response_format: { type: 'json_object' },
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
   });
+  const headers = { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' };
 
-  if (res.status === 429) {
-    // Rate limited — wait and retry once
-    await new Promise(r => setTimeout(r, 3000));
-    const retry = await fetch(OPENAI_URL, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: MODEL, temperature, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }] }),
-    });
-    if (!retry.ok) throw new Error(`OpenAI error ${retry.status}`);
-    const retryData = await retry.json() as { choices: { message: { content: string } }[] };
-    return JSON.parse(retryData.choices[0].message.content) as T;
+  // Retry up to 3 times on 429 with exponential backoff: 4s, 8s, 16s
+  for (let attempt = 0; attempt <= 3; attempt++) {
+    const res = await fetch(OPENAI_URL, { method: 'POST', headers, body });
+    if (res.status === 429 && attempt < 3) {
+      await new Promise(r => setTimeout(r, 4000 * Math.pow(2, attempt)));
+      continue;
+    }
+    if (!res.ok) throw new Error(`OpenAI error ${res.status}`);
+    const data = await res.json() as { choices: { message: { content: string } }[] };
+    return JSON.parse(data.choices[0].message.content) as T;
   }
-  if (!res.ok) throw new Error(`OpenAI error ${res.status}`);
-  const data = await res.json() as { choices: { message: { content: string } }[] };
-  return JSON.parse(data.choices[0].message.content) as T;
+  throw new Error('OpenAI rate limited after retries');
 }
 
 // ── CV Parsing ────────────────────────────────────────────────────────────────
