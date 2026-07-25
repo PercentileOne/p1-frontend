@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_EXPLAIN_API_URL ?? 'http://localhost:7071/api';
+const BASE_URL = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net';
 
 export interface QuickGenerateRequest {
   jobDescriptionText: string;
@@ -75,11 +75,11 @@ async function post<T>(path: string, body: unknown, token?: string): Promise<T> 
 
 export const explainApi = {
   quickGenerate: (req: QuickGenerateRequest) =>
-    post<QuickGenerateResponse>('v1/interview-pack/quick-generate', req),
+    post<QuickGenerateResponse>('questions/generate', req),
 
   scoreResponse: (req: ScoreRequest, token: string) =>
-    post<ScoreResponse>('v1/response/score', req, token),
+    post<ScoreResponse>('answers/score', req, token),
 
   exportPack: (req: ExportRequest, token: string) =>
-    post<ExportResponse>(`v1/interview-pack/${req.packId}/export`, { recipientEmail: req.recipientEmail }, token),
+    post<ExportResponse>(`interview-pack/${req.packId}/export`, { recipientEmail: req.recipientEmail }, token),
 };
