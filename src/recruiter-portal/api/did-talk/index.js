@@ -23,8 +23,9 @@ module.exports = async function (context, req) {
     return;
   }
 
-  // DID_KEY should already be base64(email:apikey) — use directly in Basic auth
-  const authHeader = `Basic ${DID_KEY}`;
+  // DID_KEY is the raw key from studio.d-id.com (format: base64email:secret)
+  // We base64-encode it to form the Basic auth header
+  const authHeader = `Basic ${Buffer.from(DID_KEY).toString('base64')}`;
   const keyPreview = DID_KEY.substring(0, 8) + '...' + DID_KEY.substring(DID_KEY.length - 4);
 
   const headers = {
