@@ -11,27 +11,44 @@ const DID_VOICES = {
 };
 
 module.exports = async function (context, req) {
-  const { text, role = 'technical' } = req.body ?? {};
+  const { text, role = 'technical', talkId } = req.body ?? {};
   const DID_KEY = process.env.DID_API_KEY;
 
   if (!DID_KEY) {
-    context.res = { status: 503, body: 'D-ID not configured — DID_API_KEY env var missing' };
+    context.res = { status: 503, body: 'D-ID not configured' };
     return;
   }
+
+  const authHeader = `Basic ${Buffer.from(DID_KEY).toString('base64')}`;
+  const headers = { Authorization: authHeader, 'Content-Type': 'application/json' };
+
+  // Phase 2: poll for existing talk
+  if (talkId) {
+    const pollRes = await fetch(`${DID_BASE}/talks/${talkId}`, { headers });
+    const data = await pollRes.json();
+    if (data.status === 'done' && data.result_url) {
+      context.res = {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'done', videoUrl: data.result_url }),
+      };
+    } else if (data.status === 'error') {
+      context.res = { status: 500, body: JSON.stringify({ status: 'error' }) };
+    } else {
+      context.res = {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: data.status ?? 'pending' }),
+      };
+    }
+    return;
+  }
+
+  // Phase 1: create the talk
   if (!text) {
     context.res = { status: 400, body: 'Missing text' };
     return;
   }
-
-  // DID_KEY is the raw key from studio.d-id.com (format: base64email:secret)
-  // We base64-encode it to form the Basic auth header
-  const authHeader = `Basic ${Buffer.from(DID_KEY).toString('base64')}`;
-  const keyPreview = DID_KEY.substring(0, 8) + '...' + DID_KEY.substring(DID_KEY.length - 4);
-
-  const headers = {
-    Authorization: authHeader,
-    'Content-Type': 'application/json',
-  };
 
   try {
     const createRes = await fetch(`${DID_BASE}/talks`, {
@@ -53,31 +70,16 @@ module.exports = async function (context, req) {
 
     if (!createRes.ok) {
       const err = await createRes.text();
-      context.res = { status: createRes.status, body: `D-ID ${createRes.status}: ${err} [key:${keyPreview}]` };
+      context.res = { status: createRes.status, body: `D-ID ${createRes.status}: ${err}` };
       return;
     }
 
     const { id } = await createRes.json();
-
-    for (let i = 0; i < 20; i++) {
-      await new Promise(r => setTimeout(r, 1500));
-      const pollRes = await fetch(`${DID_BASE}/talks/${id}`, { headers });
-      const data = await pollRes.json();
-      if (data.status === 'done' && data.result_url) {
-        context.res = {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoUrl: data.result_url }),
-        };
-        return;
-      }
-      if (data.status === 'error') {
-        context.res = { status: 500, body: 'D-ID render failed' };
-        return;
-      }
-    }
-
-    context.res = { status: 504, body: 'D-ID timed out' };
+    context.res = {
+      status: 202,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ talkId: id }),
+    };
   } catch (err) {
     context.res = { status: 500, body: String(err) };
   }
