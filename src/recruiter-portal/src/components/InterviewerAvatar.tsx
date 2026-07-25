@@ -34,12 +34,9 @@ const PROFILES = {
   },
 };
 
-// Natural-shape factors — determines each bar's max relative height
 const BAR_SHAPES = [0.45, 0.72, 0.88, 1.0, 0.95, 0.78, 0.92, 0.65, 0.82, 0.50];
 
 function WaveformBars({ active, color }: { active: boolean; color: string }) {
-  // Random-walk state — each bar independently drifts toward a new random target every 80 ms.
-  // Gives organic, non-repetitive speech-rhythm animation without needing real audio data.
   const [heights, setHeights] = useState<number[]>(() => BAR_SHAPES.map(() => 0.12));
 
   useEffect(() => {
@@ -51,7 +48,6 @@ function WaveformBars({ active, color }: { active: boolean; color: string }) {
       setHeights(prev =>
         prev.map((h, i) => {
           const target = 0.18 + Math.random() * BAR_SHAPES[i] * 0.82;
-          // Smooth interpolation toward target — 35% per tick ≈ natural damping
           return h + (target - h) * 0.35;
         })
       );
@@ -67,11 +63,9 @@ function WaveformBars({ active, color }: { active: boolean; color: string }) {
           animate={{ scaleY: active ? h : 0.1 }}
           transition={{ duration: 0.07, ease: 'linear' }}
           style={{
-            width: '3px',
-            height: '100%',
+            width: '3px', height: '100%',
             background: active ? color : 'rgba(255,255,255,0.12)',
-            borderRadius: '2px',
-            transformOrigin: 'center',
+            borderRadius: '2px', transformOrigin: 'center',
           }}
         />
       ))}
@@ -102,15 +96,13 @@ export function InterviewerAvatar({ role, state, active, videoUrl, specialistTit
       border: `1px solid ${active
         ? (role === 'hr' ? 'rgba(167,139,250,0.4)' : 'rgba(79,142,247,0.4)')
         : 'rgba(255,255,255,0.06)'}`,
-      padding: '28px 20px 20px',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      gap: '16px',
       position: 'relative',
       overflow: 'hidden',
       transition: 'border-color 0.4s',
-      minHeight: '260px',
+      minHeight: '280px',
     }}>
 
       {/* Active glow */}
@@ -123,115 +115,134 @@ export function InterviewerAvatar({ role, state, active, videoUrl, specialistTit
               background: role === 'hr'
                 ? 'radial-gradient(ellipse at 50% 0%, rgba(167,139,250,0.08) 0%, transparent 70%)'
                 : 'radial-gradient(ellipse at 50% 0%, rgba(79,142,247,0.08) 0%, transparent 70%)',
-              pointerEvents: 'none',
+              pointerEvents: 'none', zIndex: 1,
             }}
           />
         )}
       </AnimatePresence>
 
-      {/* Avatar */}
-      <div style={{ position: 'relative' }}>
-        {/* Speaking ring */}
-        <AnimatePresence>
-          {state === 'speaking' && (
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0.2, 0.6] }}
-              exit={{ opacity: 0 }}
-              transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-              style={{
-                position: 'absolute', inset: -8, borderRadius: '50%',
-                border: `2px solid ${profile.ring}`,
-              }}
-            />
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence mode="wait">
-          {videoUrl ? (
-            <motion.video
-              key="video"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
+      <AnimatePresence mode="wait">
+        {videoUrl ? (
+          /* ── Full-card video (Zoom-call style) ── */
+          <motion.div
+            key="video-card"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            style={{ position: 'absolute', inset: 0 }}
+          >
+            <video
               src={videoUrl}
               autoPlay
               playsInline
               onEnded={onVideoEnded}
               style={{
-                width: '96px', height: '96px', borderRadius: '50%',
-                objectFit: 'cover',
-                boxShadow: active ? `0 0 32px ${profile.ring}60` : 'none',
-                border: `2px solid ${profile.ring}44`,
+                width: '100%', height: '100%',
+                objectFit: 'cover', objectPosition: 'center top',
+                display: 'block',
               }}
             />
-          ) : (
-            <motion.div
-              key="initials"
-              animate={{ scale: [1, 1.012, 1] }}
-              transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
-              style={{
-                width: '96px', height: '96px', borderRadius: '50%',
-                background: profile.gradient,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '28px', fontWeight: 800, color: '#fff',
-                letterSpacing: '-0.02em',
-                boxShadow: active ? `0 0 32px ${profile.ring}40` : 'none',
-                transition: 'box-shadow 0.4s',
-                position: 'relative', overflow: 'hidden',
-              }}
-            >
-              {profile.initials}
+            {/* Name badge overlay at bottom */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0,
+              background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)',
+              padding: '32px 16px 14px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{profile.name}</div>
+                <div style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>{profile.title}</div>
+              </div>
+              <WaveformBars active color={profile.barColor} />
+            </div>
+          </motion.div>
+        ) : (
+          /* ── Avatar + status (idle/listening/thinking) ── */
+          <motion.div
+            key="avatar-card"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              width: '100%', height: '100%',
+              padding: '28px 20px 20px',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', gap: '16px',
+            }}
+          >
+            {/* Avatar circle */}
+            <div style={{ position: 'relative' }}>
               <AnimatePresence>
-                {state === 'thinking' && (
+                {state === 'speaking' && (
                   <motion.div
-                    initial={{ x: '-100%' }} animate={{ x: '200%' }} exit={{ opacity: 0 }}
-                    transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
-                    style={{
-                      position: 'absolute', top: 0, bottom: 0, width: '40%',
-                      background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent)',
-                      pointerEvents: 'none',
-                    }}
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0.2, 0.6] }}
+                    exit={{ opacity: 0 }}
+                    transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+                    style={{ position: 'absolute', inset: -8, borderRadius: '50%', border: `2px solid ${profile.ring}` }}
                   />
                 )}
               </AnimatePresence>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
-        {/* Status dot */}
-        <div style={{
-          position: 'absolute', bottom: 4, right: 4,
-          width: '14px', height: '14px', borderRadius: '50%',
-          background: statusColor, border: '2px solid var(--bg)',
-          transition: 'background 0.3s',
-        }} />
-      </div>
+              <motion.div
+                animate={{ scale: [1, 1.012, 1] }}
+                transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+                style={{
+                  width: '96px', height: '96px', borderRadius: '50%',
+                  background: profile.gradient,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '28px', fontWeight: 800, color: '#fff',
+                  letterSpacing: '-0.02em',
+                  boxShadow: active ? `0 0 32px ${profile.ring}40` : 'none',
+                  transition: 'box-shadow 0.4s',
+                  position: 'relative', overflow: 'hidden',
+                }}
+              >
+                {profile.initials}
+                <AnimatePresence>
+                  {state === 'thinking' && (
+                    <motion.div
+                      initial={{ x: '-100%' }} animate={{ x: '200%' }} exit={{ opacity: 0 }}
+                      transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+                      style={{
+                        position: 'absolute', top: 0, bottom: 0, width: '40%',
+                        background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent)',
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+              </motion.div>
 
-      {/* Name + role */}
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)', marginBottom: '2px' }}>
-          {profile.name}
-        </div>
-        <div style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>
-          {profile.title}
-        </div>
-      </div>
+              {/* Status dot */}
+              <div style={{
+                position: 'absolute', bottom: 4, right: 4,
+                width: '14px', height: '14px', borderRadius: '50%',
+                background: statusColor, border: '2px solid var(--bg)',
+                transition: 'background 0.3s',
+              }} />
+            </div>
 
-      {/* Waveform / status label */}
-      <div style={{ height: '28px', display: 'flex', alignItems: 'center' }}>
-        {state === 'speaking' ? (
-          <WaveformBars active color={profile.barColor} />
-        ) : (
-          <div style={{
-            fontSize: '11px', fontWeight: 600, color: statusColor,
-            letterSpacing: '0.05em', transition: 'color 0.3s',
-          }}>
-            {statusLabel}
-          </div>
+            {/* Name + role */}
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)', marginBottom: '2px' }}>{profile.name}</div>
+              <div style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>{profile.title}</div>
+            </div>
+
+            {/* Waveform / status label */}
+            <div style={{ height: '28px', display: 'flex', alignItems: 'center' }}>
+              {state === 'speaking' ? (
+                <WaveformBars active color={profile.barColor} />
+              ) : (
+                <div style={{ fontSize: '11px', fontWeight: 600, color: statusColor, letterSpacing: '0.05em', transition: 'color 0.3s' }}>
+                  {statusLabel}
+                </div>
+              )}
+            </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 }
