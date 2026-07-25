@@ -242,20 +242,21 @@ export default function InterviewRoom() {
     const mikeScript = ctx.mikeScript;
 
     if (didConfigured) {
-      // Pre-render all question videos in the background
+      // Pre-render question videos sequentially to avoid D-ID rate limits (429)
       const prerenderAll = async () => {
         setPrerenderProgress(0);
         const total = questions.length;
-        await Promise.all(questions.map(async (q, i) => {
+        for (let i = 0; i < total; i++) {
+          const q = questions[i];
           const role: 'hr' | 'technical' = q.source === 'HR' ? 'hr' : 'technical';
           try {
             if (!didCacheRef.current.has(i)) {
               const { videoUrl } = await createTalk(q.questionText, role);
               didCacheRef.current.set(i, videoUrl);
             }
-          } catch { /* ElevenLabs fallback */ }
-          setPrerenderProgress(p => p + (100 / total));
-        }));
+          } catch { /* ElevenLabs fallback for this question */ }
+          setPrerenderProgress(((i + 1) / total) * 100);
+        }
       };
 
       if (mikeScript) {
