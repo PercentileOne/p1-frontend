@@ -262,7 +262,7 @@ export default function InterviewRoom() {
         // Show Mike's briefing while pre-rendering happens in background
         setPhase('agent-briefing');
         // Play Mike's voice immediately via ElevenLabs while D-ID renders
-        speak(mikeScript, 'hr', () => {
+        speak(mikeScript, 'technical', () => {
           // Audio finished — if D-ID video is already ready it will have auto-played;
           // if still rendering, we just wait for it (progress bar shows state)
         });
@@ -286,7 +286,7 @@ export default function InterviewRoom() {
     } else {
       if (mikeScript) {
         setPhase('agent-briefing');
-        speak(mikeScript, 'hr', () => beginInterviewIntro());
+        speak(mikeScript, 'technical', () => beginInterviewIntro());
       } else {
         beginInterviewIntro();
       }
