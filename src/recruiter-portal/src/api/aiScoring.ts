@@ -7,7 +7,7 @@ import type { CoachingMessage } from '../utils/coachingEngine';
 
 const OPENAI_KEY = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
-const MODEL = 'gpt-4o';
+const MODEL = 'gpt-4o-mini';
 
 export const aiScoringConfigured = !!OPENAI_KEY;
 
