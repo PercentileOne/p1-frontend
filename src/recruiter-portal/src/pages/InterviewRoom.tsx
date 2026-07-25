@@ -210,7 +210,9 @@ export default function InterviewRoom() {
 
   const testAudio = useCallback(() => {
     setAudioCheckState('playing');
-    speak("Hi there! I'm Sarah, and I'll be your interviewer today. If you can hear me clearly, you're all set — let's have a great session.", 'hr', () => setAudioCheckState('done'));
+    speak("Hi there! I'm Sarah, your HR interviewer.", 'hr', () => {
+      speak("And I'm James, the technical interviewer. Great — you can hear us both clearly!", 'technical', () => setAudioCheckState('done'));
+    });
   }, []);
 
   const startInterview = useCallback(() => {
@@ -338,6 +340,7 @@ export default function InterviewRoom() {
       minHeight: '100vh', background: 'var(--bg)',
       fontFamily: '-apple-system,"Segoe UI",sans-serif',
       display: 'flex', flexDirection: 'column',
+      userSelect: 'none',
     }}>
       {/* Top bar */}
       <div style={{
