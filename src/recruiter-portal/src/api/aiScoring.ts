@@ -25,11 +25,13 @@ async function chatJSON<T>(systemPrompt: string, userPrompt: string, temperature
   });
   const headers = { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' };
 
-  // Retry up to 3 times on 429 with exponential backoff: 4s, 8s, 16s
+  // Retry up to 3 times on 429, honouring the Retry-After header
   for (let attempt = 0; attempt <= 3; attempt++) {
     const res = await fetch(OPENAI_URL, { method: 'POST', headers, body });
     if (res.status === 429 && attempt < 3) {
-      await new Promise(r => setTimeout(r, 4000 * Math.pow(2, attempt)));
+      const retryAfter = parseInt(res.headers.get('Retry-After') ?? '10', 10);
+      const wait = Math.min((isNaN(retryAfter) ? 10 : retryAfter) * 1000, 30000);
+      await new Promise(r => setTimeout(r, wait));
       continue;
     }
     if (!res.ok) throw new Error(`OpenAI error ${res.status}`);
@@ -129,7 +131,16 @@ Return JSON:
   console.groupEnd();
 
   try {
-    const raw = await chatJSON<Record<string, unknown>>(systemPrompt, userPrompt, 0);
+    // Single attempt only — if rate limited, fall through to heuristic immediately
+    // rather than retrying and burning budget needed for questions + intros.
+    const res = await fetch(OPENAI_URL, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: MODEL, temperature: 0, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }] }),
+    });
+    if (!res.ok) throw new Error(`OpenAI error ${res.status}`);
+    const resData = await res.json() as { choices: { message: { content: string } }[] };
+    const raw = JSON.parse(resData.choices[0].message.content) as Record<string, unknown>;
 
     console.group('[Explain AI] CV PARSE — RAW GPT RESPONSE');
     console.log(JSON.stringify(raw, null, 2));
