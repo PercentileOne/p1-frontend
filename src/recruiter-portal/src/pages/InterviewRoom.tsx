@@ -242,46 +242,39 @@ export default function InterviewRoom() {
     const mikeScript = ctx.mikeScript;
 
     if (didConfigured) {
-      // Pre-render question videos sequentially to avoid D-ID rate limits (429)
-      const prerenderAll = async () => {
+      // Pre-render only question 0 before starting — subsequent questions are
+      // prefetched by prefetchDid() during coaching/scoring after each answer.
+      const prerenderFirst = async () => {
         setPrerenderProgress(0);
-        const total = questions.length;
-        for (let i = 0; i < total; i++) {
-          const q = questions[i];
+        const q = questions[0];
+        if (q && !didCacheRef.current.has(0)) {
           const role: 'hr' | 'technical' = q.source === 'HR' ? 'hr' : 'technical';
           try {
-            if (!didCacheRef.current.has(i)) {
-              const { videoUrl } = await createTalk(q.questionText, role);
-              didCacheRef.current.set(i, videoUrl);
-            }
-          } catch { /* ElevenLabs fallback for this question */ }
-          setPrerenderProgress(((i + 1) / total) * 100);
+            const { videoUrl } = await createTalk(q.questionText, role);
+            didCacheRef.current.set(0, videoUrl);
+          } catch { /* ElevenLabs fallback */ }
         }
+        setPrerenderProgress(100);
       };
 
       if (mikeScript) {
-        // Show Mike's briefing while pre-rendering happens in background
+        // Show Mike's briefing while question 0 renders in the background
         setPhase('agent-briefing');
-        // Play Mike's voice immediately via ElevenLabs while D-ID renders
-        speak(mikeScript, 'technical', () => {
-          // Audio finished — if D-ID video is already ready it will have auto-played;
-          // if still rendering, we just wait for it (progress bar shows state)
-        });
+        speak(mikeScript, 'technical', () => {});
         try {
           const [{ videoUrl }] = await Promise.all([
             createTalk(mikeScript, 'agent'),
-            prerenderAll(),
+            prerenderFirst(),
           ]);
           setMikeVideoUrl(videoUrl);
-          // Video will autoplay via <video autoPlay> and call beginInterviewIntro on end
+          // Video autoplays (muted) and calls beginInterviewIntro on end
         } catch {
-          // D-ID failed for Mike — audio is already playing; transition when pre-render done
-          await prerenderAll();
+          await prerenderFirst();
           beginInterviewIntro();
         }
       } else {
         setPhase('prerendering');
-        await prerenderAll();
+        await prerenderFirst();
         beginInterviewIntro();
       }
     } else {
