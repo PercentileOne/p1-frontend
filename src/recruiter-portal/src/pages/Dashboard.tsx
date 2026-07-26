@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Package, Users, Briefcase, FileText, BarChart2, CalendarCheck, Settings, History, Zap } from 'lucide-react'
+import { LayoutDashboard, Package, Users, Briefcase, FileText, BarChart2, CalendarCheck, Settings, History, Zap, Filter } from 'lucide-react'
 import { ExplainLogo } from '../components/LogoMark'
 import InterviewPacks from './InterviewPacks'
 import Candidates from './Candidates'
@@ -10,12 +10,14 @@ import Interviews from './Interviews'
 import CVsPage from './CVs'
 import PackBuilder from './PackBuilder'
 import PackHistory from './PackHistory'
+import ScreenCandidates from './ScreenCandidates'
 
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: 'Dashboard' },
   { Icon: Briefcase,       label: 'Job Specs' },
   { Icon: FileText,        label: 'CVs' },
   { Icon: Users,           label: 'Candidates' },
+  { Icon: Filter,          label: 'Screen' },
   { Icon: CalendarCheck,   label: 'Interviews' },
   { Icon: Package,         label: 'Interview Packs' },
   { Icon: History,         label: 'Pack History' },
@@ -245,6 +247,7 @@ export default function Dashboard() {
         {/* ── SUB-PAGES ── */}
         {activeNav === 'Interview Packs' && <InterviewPacks />}
         {activeNav === 'Candidates' && <Candidates />}
+        {activeNav === 'Screen' && <ScreenCandidates />}
         {activeNav === 'Analytics' && <Analytics />}
         {activeNav === 'Job Specs' && !packBuilderSpec && <JobPositions onViewSpec={title => setPackBuilderSpec(title)} />}
         {activeNav === 'Job Specs' && packBuilderSpec && <PackBuilder specTitle={packBuilderSpec} onBack={() => setPackBuilderSpec(null)} />}

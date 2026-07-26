@@ -10,6 +10,7 @@ import InterviewRoom from './pages/InterviewRoom'
 import InterviewSummary from './pages/InterviewSummary'
 import InterviewIntake from './pages/InterviewIntake'
 import InterviewPackStart from './pages/InterviewPackStart'
+import ScreenCandidates from './pages/ScreenCandidates'
 import LeagueTable from './pages/LeagueTable'
 import ClientPortal from './pages/client/ClientPortal'
 import CandidateFeedbackPortal from './pages/candidate/CandidateFeedbackPortal'
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/demo/vallum-job-paid" element={<DemoVallumPaid />} />
         <Route path="/candidate/practice/:packId" element={<CandidatePractice />} />
         <Route path="/interview-pack/start" element={<InterviewPackStart />} />
+        <Route path="/screen-candidates" element={<ScreenCandidates />} />
         <Route path="/interview-intake/:packId" element={<InterviewIntake />} />
         <Route path="/interview-room/:packId" element={<InterviewRoom />} />
         <Route path="/interview-summary/:sessionId" element={<InterviewSummary />} />
