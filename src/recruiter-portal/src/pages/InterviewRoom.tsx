@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { InterviewerAvatar, type AvatarState } from '../components/InterviewerAvatar';
 import { VoiceInput, type TranscriptMeta } from '../components/VoiceInput';
 import type { InterviewQuestion, ScoreResponse } from '../api/explainApi';
+import { explainApi } from '../api/explainApi';
 import { speak, elevenLabsConfigured } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
@@ -93,7 +94,11 @@ interface RoomState {
   jamesIntro?: string;
   specialistTitle?: string;
   mikeScript?: string | null;
-  companyFacts?: string[];  // keywords for scoring company knowledge questions
+  companyFacts?: string[];
+  // Candidate self-serve flow — raw inputs for background session prep
+  jobSpecText?: string;
+  cvText?: string;
+  autoStart?: boolean;
 }
 
 interface SessionAnswer {
@@ -129,8 +134,17 @@ export default function InterviewRoom() {
 
   // Pick a random company once per session (stable across re-renders)
   const demoCompany = useMemo(() => pickRandomCompany(), []);
-  const questions = ctx.questions ?? buildDemoQuestions(demoCompany);
+
+  // Background session prep — loaded while Mike briefs in agent-briefing phase
+  const [bgQuestions, setBgQuestions] = useState<InterviewQuestion[] | null>(null);
+  const [bgSarahIntro, setBgSarahIntro] = useState<string | null>(null);
+  const [bgJamesIntro, setBgJamesIntro] = useState<string | null>(null);
+  const bgLoadRef = useRef(false);
+
+  const questions = ctx.questions ?? bgQuestions ?? buildDemoQuestions(demoCompany);
   const companyKeywords = ctx.questions ? (ctx.companyFacts ?? []) : demoCompany.companyKnowledgeKeywords;
+  const effectiveSarahIntro = ctx.sarahIntro ?? bgSarahIntro ?? undefined;
+  const effectiveJamesIntro = ctx.jamesIntro ?? bgJamesIntro ?? undefined;
 
   const mikeScript = ctx.mikeScript ?? demoCompany.mikeLines;
 
@@ -241,13 +255,13 @@ export default function InterviewRoom() {
   const beginInterviewIntro = useCallback(() => {
     setPhase('interviewer-intro');
     setHrState('speaking');
-    const sarahText = ctx.sarahIntro ??
+    const sarahText = effectiveSarahIntro ??
       "Welcome to your interview. When you're ready to answer, click the record button, speak naturally, then click Stop. You'll get instant feedback after each answer. Let's begin.";
     cancelSpeakRef.current = speak(sarahText, 'hr', () => {
       setHrState('idle');
-      if (ctx.jamesIntro) {
+      if (effectiveJamesIntro) {
         setTechState('speaking');
-        cancelSpeakRef.current = speak(ctx.jamesIntro!, 'technical', () => {
+        cancelSpeakRef.current = speak(effectiveJamesIntro, 'technical', () => {
           setTechState('idle');
           setTimeout(() => askQuestion(0), 300);
         });
@@ -255,7 +269,11 @@ export default function InterviewRoom() {
         setTimeout(() => askQuestion(0), 300);
       }
     });
-  }, [askQuestion, ctx.sarahIntro, ctx.jamesIntro]);
+  }, [askQuestion, effectiveSarahIntro, effectiveJamesIntro]);
+
+  // Keep a ref so the ElevenLabs speak() callback always calls the latest version
+  const beginInterviewIntroRef = useRef(beginInterviewIntro);
+  useEffect(() => { beginInterviewIntroRef.current = beginInterviewIntro; }, [beginInterviewIntro]);
 
   const startInterview = useCallback(async () => {
     if (didConfigured) {
@@ -289,7 +307,7 @@ export default function InterviewRoom() {
           cancelSpeakRef.current?.();
           cancelSpeakRef.current = speak(mikeScript, 'technical', () => {
             cancelSpeakRef.current = null;
-            beginInterviewIntro();
+            beginInterviewIntroRef.current();
           });
           await prerenderFirst();
         }
@@ -301,7 +319,7 @@ export default function InterviewRoom() {
     } else {
       if (mikeScript) {
         setPhase('agent-briefing');
-        speak(mikeScript, 'technical', () => beginInterviewIntro());
+        speak(mikeScript, 'technical', () => beginInterviewIntroRef.current());
       } else {
         beginInterviewIntro();
       }
@@ -311,6 +329,32 @@ export default function InterviewRoom() {
   useEffect(() => {
     return () => { cancelSpeakRef.current?.(); };
   }, []);
+
+  // Background session prep — fires once on mount when coming from candidate self-serve flow.
+  // Questions, Sarah intro, and James intro load while Mike is briefing.
+  useEffect(() => {
+    if (ctx.questions || bgLoadRef.current || !ctx.jobSpecText) return;
+    bgLoadRef.current = true;
+    explainApi.sessionPrepare({
+      jobSpecText: ctx.jobSpecText,
+      cvText: ctx.cvText,
+    }).then(result => {
+      setBgQuestions(result.questions);
+      if (result.sarahIntro) setBgSarahIntro(result.sarahIntro);
+      if (result.jamesIntro) setBgJamesIntro(result.jamesIntro);
+    }).catch(() => { /* silently fall back to demo questions */ });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-start — skip intro screen and go straight to Mike when coming from /interview-pack/start.
+  const autoStartFiredRef = useRef(false);
+  useEffect(() => {
+    if (!ctx.autoStart || autoStartFiredRef.current) return;
+    autoStartFiredRef.current = true;
+    const timer = setTimeout(() => { startInterview(); }, 400);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startInterview]);
 
   const handlePause = useCallback(() => {
     pausedPhaseRef.current = phase;

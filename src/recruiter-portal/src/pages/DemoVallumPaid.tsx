@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { PackPopup } from '../components/PackPopup';
+import { useNavigate } from 'react-router-dom';
 
 const JOB_DESCRIPTION = `
 Head of Engineering – Digital Transformation
@@ -44,8 +43,6 @@ function ExplainLogo() {
 }
 
 function PremiumCard({ onOpen }: { onOpen: () => void }) {
-  const [hovered, setHovered] = useState(false);
-
   return (
     <div style={{
       borderRadius: '14px',
@@ -94,12 +91,10 @@ function PremiumCard({ onOpen }: { onOpen: () => void }) {
         {/* CTA */}
         <button
           onClick={onOpen}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
           style={{
             width: '100%',
             height: '52px',
-            background: hovered ? '#004182' : '#0A66C2',
+            background: '#0A66C2',
             color: '#fff',
             border: 'none',
             borderRadius: '10px',
@@ -108,8 +103,10 @@ function PremiumCard({ onOpen }: { onOpen: () => void }) {
             cursor: 'pointer',
             fontFamily: 'inherit',
             boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
-            transition: 'all 0.2s ease',
+            transition: 'background 0.2s ease',
           }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#004182'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#0A66C2'; }}
         >
           Get Interview Pack — £1
         </button>
@@ -132,7 +129,17 @@ function PremiumCard({ onOpen }: { onOpen: () => void }) {
 }
 
 export default function DemoVallumPaid() {
-  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleGetPack = () => {
+    navigate('/interview-pack/start', {
+      state: {
+        jobSpec: JOB_DESCRIPTION,
+        jobTitle: 'Head of Engineering – Digital Transformation',
+        company: 'Vallum Associates',
+      },
+    });
+  };
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: '"Segoe UI", Arial, sans-serif', color: '#1a1a2e' }}>
@@ -204,7 +211,7 @@ export default function DemoVallumPaid() {
             Save this job <span>→</span>
           </button>
 
-          <PremiumCard onOpen={() => setOpen(true)} />
+          <PremiumCard onOpen={handleGetPack} />
 
           {/* Consultant */}
           <div style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: '8px', padding: '20px' }}>
@@ -231,7 +238,6 @@ export default function DemoVallumPaid() {
         </div>
       </div>
 
-      {open && <PackPopup jobDescriptionText={JOB_DESCRIPTION} onClose={() => setOpen(false)} />}
     </div>
   );
 }
