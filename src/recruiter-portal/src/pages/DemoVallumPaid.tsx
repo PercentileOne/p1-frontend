@@ -1,4 +1,5 @@
-import { MagicButton, EXPLAIN_CTA_LONG } from '../components/MagicButton';
+import { useState } from 'react';
+import { PackPopup } from '../components/PackPopup';
 
 const JOB_DESCRIPTION = `
 Head of Engineering – Digital Transformation
@@ -21,52 +22,115 @@ Experience Required:
 - Lean/Agile transformation experience
 `.trim();
 
-// ── £1 Practice Pack card — demo only, no backend, no payment ────────────────
+function ExplainLogo() {
+  return (
+    <img
+      src="/assets/explain-logo.svg"
+      alt="Explain"
+      width={28}
+      height={28}
+      style={{ borderRadius: '50%', flexShrink: 0 }}
+    />
+  );
+}
 
-function PracticePack() {
+function PremiumCard({ onOpen }: { onOpen: () => void }) {
+  const [hovered, setHovered] = useState(false);
+
   return (
     <div style={{
-      background: '#f0f4ff',
-      border: '1px solid #c7d4f0',
-      borderRadius: '8px',
-      padding: '16px',
+      borderRadius: '14px',
+      boxShadow: '0 6px 20px rgba(0,0,0,0.12)',
+      overflow: 'hidden',
+      fontFamily: '"Segoe UI", Arial, sans-serif',
     }}>
-      <div style={{ fontSize: '13px', fontWeight: 700, color: '#1B3A6B', marginBottom: '6px' }}>
-        Prepare for this interview
+      {/* Header */}
+      <div style={{
+        background: 'linear-gradient(135deg, #0A66C2, #004182)',
+        height: '52px',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 20px',
+        gap: '8px',
+      }}>
+        <ExplainLogo />
+        <span style={{ color: '#fff', fontWeight: 600, fontSize: '14px' }}>Prepare for this interview</span>
       </div>
-      <div style={{ fontSize: '12px', color: '#555', lineHeight: 1.5, marginBottom: '14px' }}>
-        Get 20 AI-generated practice interview questions tailored to this exact role and your CV — £1, no login needed.
+
+      {/* Body */}
+      <div style={{ background: '#fff', padding: '28px' }}>
+        {/* Hero row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+          <div style={{ fontSize: '20px', fontWeight: 600, color: '#1A1A1A', lineHeight: 1.4, flex: 1 }}>
+            Get your tailored Interview Pack for this exact role — only £1
+          </div>
+          <div style={{
+            background: '#FFE8A3',
+            color: '#7A5A00',
+            fontWeight: 700,
+            fontSize: '15px',
+            padding: '4px 10px',
+            borderRadius: '6px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+            flexShrink: 0,
+          }}>£1</div>
+        </div>
+
+        {/* Sub text */}
+        <div style={{ fontSize: '15px', color: '#4A4A4A', lineHeight: 1.5, marginBottom: '20px' }}>
+          20 AI‑generated practice questions<br />
+          Tailored to your CV • Tailored to this job • Instant access
+        </div>
+
+        {/* CTA */}
+        <button
+          onClick={onOpen}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          style={{
+            width: '100%',
+            height: '52px',
+            background: hovered ? '#004182' : '#0A66C2',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '10px',
+            fontSize: '15px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          Get Interview Pack — £1
+        </button>
       </div>
-      <button
-        onClick={() => {}}
-        style={{
-          width: '100%',
-          background: '#1B3A6B',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '6px',
-          padding: '12px 16px',
-          fontSize: '13px',
-          fontWeight: 700,
-          cursor: 'default',
-          fontFamily: 'inherit',
-          textAlign: 'center',
-        }}
-      >
-        Get Practice Pack — £1
-      </button>
+
+      {/* Footer */}
+      <div style={{
+        background: '#fff',
+        borderTop: '1px solid #f0f0f0',
+        padding: '12px 28px 16px',
+        fontSize: '12px',
+        color: '#7A7A7A',
+        textAlign: 'center',
+      }}>
+        <div>No login needed • Instant access</div>
+        <div style={{ marginTop: '6px' }}>Powered by Explain.global</div>
+      </div>
     </div>
   );
 }
 
 export default function DemoVallumPaid() {
+  const [open, setOpen] = useState(false);
+
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: '"Segoe UI", Arial, sans-serif', color: '#1a1a2e' }}>
 
-      {/* Vallum nav — matches real site */}
+      {/* Vallum nav */}
       <nav style={{ background: '#fff', borderBottom: '1px solid #e8e8e8', padding: '0 40px', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', height: '70px', gap: '32px' }}>
-          {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginRight: '16px', flexShrink: 0 }}>
             <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
               <rect width="44" height="44" rx="6" fill="#1B3A6B"/>
@@ -78,7 +142,9 @@ export default function DemoVallumPaid() {
             </div>
           </div>
           {['About us', 'Industries', 'Employers', 'Candidates', 'Resources', 'Contact us'].map(n => (
-            <span key={n} style={{ fontSize: '14px', color: '#333', cursor: 'pointer', whiteSpace: 'nowrap' }}>{n} {['About us','Industries','Employers','Candidates','Resources'].includes(n) ? '▾' : ''}</span>
+            <span key={n} style={{ fontSize: '14px', color: '#333', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              {n} {['About us','Industries','Employers','Candidates','Resources'].includes(n) ? '▾' : ''}
+            </span>
           ))}
           <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px' }}>
             <button style={{ background: '#1B3A6B', color: '#fff', border: 'none', borderRadius: '6px', padding: '10px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>Search jobs</button>
@@ -91,21 +157,15 @@ export default function DemoVallumPaid() {
 
         {/* Main content */}
         <div style={{ flex: 1 }}>
-          {/* Breadcrumb */}
           <div style={{ fontSize: '13px', color: '#666', marginBottom: '20px' }}>
             <span style={{ color: '#1B3A6B', cursor: 'pointer' }}>← Back to jobs</span>
           </div>
-
-          {/* Featured badge */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#FFF3CD', border: '1px solid #FFCD39', borderRadius: '4px', padding: '4px 10px', marginBottom: '16px', fontSize: '12px', fontWeight: 700, color: '#856404' }}>
             ★ Featured
           </div>
-
           <h1 style={{ fontSize: '32px', fontWeight: 800, color: '#1a1a2e', margin: '0 0 24px', lineHeight: 1.2 }}>
             Head of Engineering – Digital Transformation
           </h1>
-
-          {/* Job details grid */}
           <div style={{ background: '#f8f9fa', border: '1px solid #e8e8e8', borderRadius: '8px', padding: '20px', marginBottom: '28px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
               {[
@@ -122,8 +182,6 @@ export default function DemoVallumPaid() {
               ))}
             </div>
           </div>
-
-          {/* Job description */}
           <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#1a1a2e', marginBottom: '12px' }}>Job description</h2>
           <pre style={{ fontFamily: 'inherit', fontSize: '14px', color: '#444', lineHeight: 1.75, whiteSpace: 'pre-wrap', margin: '0 0 32px' }}>{JOB_DESCRIPTION}</pre>
         </div>
@@ -137,17 +195,7 @@ export default function DemoVallumPaid() {
             Save this job <span>→</span>
           </button>
 
-          {/* Magic Button card */}
-          <div style={{ background: '#f0f4ff', border: '1px solid #c7d4f0', borderRadius: '8px', padding: '16px' }}>
-            <div style={{ fontSize: '13px', fontWeight: 700, color: '#1B3A6B', marginBottom: '6px' }}>Prepare for this interview</div>
-            <div style={{ fontSize: '12px', color: '#555', lineHeight: 1.5, marginBottom: '14px' }}>
-              {EXPLAIN_CTA_LONG}
-            </div>
-            <MagicButton jobDescriptionText={JOB_DESCRIPTION} />
-          </div>
-
-          {/* £1 Practice Pack card — demo only */}
-          <PracticePack />
+          <PremiumCard onOpen={() => setOpen(true)} />
 
           {/* Consultant */}
           <div style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: '8px', padding: '20px' }}>
@@ -173,6 +221,8 @@ export default function DemoVallumPaid() {
           </div>
         </div>
       </div>
+
+      {open && <PackPopup jobDescriptionText={JOB_DESCRIPTION} onClose={() => setOpen(false)} />}
     </div>
   );
 }
