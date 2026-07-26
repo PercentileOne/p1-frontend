@@ -2,10 +2,36 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { buildCVContext, buildJobSpecContext, buildPersonalisedQuestions, buildSarahIntro, buildJamesIntro, inferSpecialistTitle, type CVContext } from '../utils/contextBuilder';
-import { explainApi } from '../api/explainApi';
+import { explainApi, type CvParseResponse } from '../api/explainApi';
 import { SendToClientModal } from '../components/SendToClientModal';
 import { FileUpload } from '../components/FileUpload';
 import { buildCandidatePrepUrl, type CandidatePrepSession } from '../utils/clientSession';
+
+// Maps the server-side ParseCVResponse to the CVContext shape used throughout the app
+function cvParseResponseToCvContext(rawText: string, parsed: CvParseResponse): CVContext {
+  return {
+    rawText,
+    firstName: parsed.firstName,
+    lastName: parsed.lastName,
+    candidateName: parsed.firstName && parsed.lastName ? `${parsed.firstName} ${parsed.lastName}` : undefined,
+    roles: parsed.roles,
+    companies: parsed.companies,
+    dates: [],
+    skills: parsed.skills,
+    technologies: parsed.skills,
+    achievements: parsed.achievements,
+    certifications: parsed.certifications,
+    education: parsed.education,
+    responsibilities: parsed.experience.flatMap(e => e.responsibilities).slice(0, 8),
+    leadershipSignals: [],
+    seniority: (['Junior','Mid','Senior','Lead','Director','Executive'].includes(parsed.seniority)
+      ? parsed.seniority : 'Unknown') as CVContext['seniority'],
+    yearsOfExperience: parsed.yearsOfExperience ?? undefined,
+    experience: parsed.experience.map(e => ({ role: e.role, company: e.company, period: e.period })),
+    summary: parsed.summary ?? undefined,
+    _source: 'ai' as const,
+  };
+}
 
 type HubTab = 'interview' | 'learn' | 'coming-soon';
 type Step = 'inputs' | 'preparing';
@@ -337,7 +363,7 @@ export default function InterviewIntake() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Parse CV with AI immediately whenever CV text changes (debounced 800ms)
+  // Parse CV with AI whenever CV text changes (debounced 800ms) — server-side Anthropic call
   useEffect(() => {
     if (cvText.trim().length < 50) {
       setCvCtxParsed(null);
@@ -346,14 +372,24 @@ export default function InterviewIntake() {
     }
 
     setParsingCv(true);
-    const timer = setTimeout(() => {
-      Promise.resolve(buildCVContext(cvText)).then(ctx => {
-        setCvCtxParsed(ctx);
-        setParsingCv(false);
-      });
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const parsed = await explainApi.cvParse({ cvText });
+        if (!controller.signal.aborted) {
+          setCvCtxParsed(cvParseResponseToCvContext(cvText, parsed));
+          setParsingCv(false);
+        }
+      } catch {
+        // API unavailable — fall back to heuristic so preview still works
+        if (!controller.signal.aborted) {
+          setCvCtxParsed({ ...buildCVContext(cvText), _source: 'heuristic' as const });
+          setParsingCv(false);
+        }
+      }
     }, 800);
 
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); controller.abort(); };
   }, [cvText]);
 
   const fetchFromUrl = async () => {

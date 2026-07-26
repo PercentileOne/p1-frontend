@@ -72,6 +72,38 @@ export interface SessionCvSummary {
   skills: string[];
 }
 
+export interface CvExperienceEntry {
+  role: string;
+  company: string;
+  period: string;
+  responsibilities: string[];
+  achievements: string[];
+  technologies: string[];
+  seniority: string;
+}
+
+export interface CvParseRequest {
+  cvText: string;
+}
+
+export interface CvParseResponse {
+  candidateId: string;
+  firstName: string;
+  lastName: string;
+  summary: string | null;
+  yearsOfExperience: number | null;
+  seniority: string;
+  roles: string[];
+  companies: string[];
+  experience: CvExperienceEntry[];
+  skills: string[];
+  achievements: string[];
+  education: string[];
+  certifications: string[];
+  industries: string[];
+  keywords: string[];
+}
+
 export interface SessionPrepareRequest {
   jobSpecText: string;
   cvText?: string;
@@ -117,4 +149,7 @@ export const explainApi = {
 
   sessionPrepare: (req: SessionPrepareRequest) =>
     post<SessionPrepareResponse>('session/prepare', req),
+
+  cvParse: (req: CvParseRequest) =>
+    post<CvParseResponse>('cv/parse', req),
 };
