@@ -55,6 +55,38 @@ export interface ExportResponse {
   emailSent: boolean;
 }
 
+export interface SessionQuestion {
+  questionId: string;
+  questionText: string;
+  modelAnswer: string;
+  questionType: string;
+  difficulty: string;
+  source: string;
+  competencyTags: string[];
+}
+
+export interface SessionCvSummary {
+  name: string;
+  currentRole: string;
+  experienceYears: number;
+  skills: string[];
+}
+
+export interface SessionPrepareRequest {
+  jobSpecText: string;
+  cvText?: string;
+}
+
+export interface SessionPrepareResponse {
+  questions: SessionQuestion[];
+  sarahIntro: string;
+  jamesIntro: string;
+  mikeScript: string | null;
+  companyFacts: string[];
+  specialistTitle: string;
+  cvSummary: SessionCvSummary | null;
+}
+
 async function post<T>(path: string, body: unknown, token?: string): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -82,4 +114,7 @@ export const explainApi = {
 
   exportPack: (req: ExportRequest, token: string) =>
     post<ExportResponse>(`interview-pack/${req.packId}/export`, { recipientEmail: req.recipientEmail }, token),
+
+  sessionPrepare: (req: SessionPrepareRequest) =>
+    post<SessionPrepareResponse>('session/prepare', req),
 };

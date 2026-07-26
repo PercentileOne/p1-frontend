@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { buildCVContext, buildJobSpecContext, buildPersonalisedQuestions, buildSarahIntro, buildJamesIntro, inferSpecialistTitle, type CVContext } from '../utils/contextBuilder';
-import { generateIntros, parseCVWithAI, generateQuestionsWithAI, generateAgentBriefing, aiScoringConfigured } from '../api/aiScoring';
+import { explainApi } from '../api/explainApi';
 import { SendToClientModal } from '../components/SendToClientModal';
 import { FileUpload } from '../components/FileUpload';
 import { buildCandidatePrepUrl, type CandidatePrepSession } from '../utils/clientSession';
@@ -347,11 +347,7 @@ export default function InterviewIntake() {
 
     setParsingCv(true);
     const timer = setTimeout(() => {
-      const parse = aiScoringConfigured
-        ? parseCVWithAI(cvText).catch(() => buildCVContext(cvText))
-        : Promise.resolve(buildCVContext(cvText));
-
-      parse.then(ctx => {
+      Promise.resolve(buildCVContext(cvText)).then(ctx => {
         setCvCtxParsed(ctx);
         setParsingCv(false);
       });
@@ -392,11 +388,15 @@ export default function InterviewIntake() {
     let i = 0;
     const interval = setInterval(() => { i++; if (i < msgs.length) setPreparingMsg(msgs[i]); }, 900);
 
-    const cvCtx = preComputedCvCtx ?? (cv.trim() ? aiScoringConfigured ? await parseCVWithAI(cv).catch(() => buildCVContext(cv)) : buildCVContext(cv) : buildCVContext(''));
+    const cvCtx = preComputedCvCtx ?? buildCVContext(cv);
     const jobCtx = buildJobSpecContext(js);
-    const questions = aiScoringConfigured
-      ? await generateQuestionsWithAI(cvCtx, jobCtx).catch(() => buildPersonalisedQuestions(cvCtx, jobCtx))
-      : buildPersonalisedQuestions(cvCtx, jobCtx);
+    let questions;
+    try {
+      const session = await explainApi.sessionPrepare({ jobSpecText: js, cvText: cv.trim() || undefined });
+      questions = session.questions;
+    } catch {
+      questions = buildPersonalisedQuestions(cvCtx, jobCtx);
+    }
 
     clearInterval(interval);
     setClientPortalData({ cvCtx, jobCtx, questions });
@@ -410,11 +410,14 @@ export default function InterviewIntake() {
     let cvCtx = clientPortalData?.cvCtx;
 
     if (!questions) {
-      cvCtx = preComputedCvCtx ?? (cv.trim() ? aiScoringConfigured ? await parseCVWithAI(cv).catch(() => buildCVContext(cv)) : buildCVContext(cv) : buildCVContext(''));
+      cvCtx = preComputedCvCtx ?? buildCVContext(cv);
       jobCtx = buildJobSpecContext(js);
-      questions = aiScoringConfigured
-        ? await generateQuestionsWithAI(cvCtx, jobCtx).catch(() => buildPersonalisedQuestions(cvCtx!, jobCtx!))
-        : buildPersonalisedQuestions(cvCtx, jobCtx);
+      try {
+        const session = await explainApi.sessionPrepare({ jobSpecText: js, cvText: cv.trim() || undefined });
+        questions = session.questions;
+      } catch {
+        questions = buildPersonalisedQuestions(cvCtx, jobCtx);
+      }
     }
 
     const session: CandidatePrepSession = {
@@ -447,51 +450,57 @@ export default function InterviewIntake() {
       if (i < msgs.length) setPreparingMsg(msgs[i]);
     }, 900);
 
-    // Use pre-parsed context if available — avoids a second API call
-    const cvCtx = preComputedCvCtx ?? (
-      cv.trim()
-        ? aiScoringConfigured
-          ? await parseCVWithAI(cv).catch(() => buildCVContext(cv))
-          : buildCVContext(cv)
-        : buildCVContext('')
-    );
-
-    const jobCtx = buildJobSpecContext(js);
-    const specialistTitle = inferSpecialistTitle(jobCtx.title);
-    setPreparingSpecialistTitle(specialistTitle);
-
-    // Sequential OpenAI calls to avoid 429 rate limits
-    const baseQuestions = aiScoringConfigured
-      ? await generateQuestionsWithAI(cvCtx, jobCtx).catch(() => buildPersonalisedQuestions(cvCtx, jobCtx))
-      : buildPersonalisedQuestions(cvCtx, jobCtx);
-
-    const introResult = aiScoringConfigured
-      ? await generateIntros(cvCtx, jobCtx).catch(() => ({
-          sarahIntro: buildSarahIntro(cvCtx, jobCtx),
-          jamesIntro: buildJamesIntro(cvCtx, jobCtx),
-        }))
-      : { sarahIntro: buildSarahIntro(cvCtx, jobCtx), jamesIntro: buildJamesIntro(cvCtx, jobCtx) };
-
-    const agentBriefing = aiScoringConfigured
-      ? await generateAgentBriefing(cvCtx, jobCtx).catch(() => null)
-      : null;
-
-    // Append company knowledge questions after the main questions
-    const questions = agentBriefing
-      ? [...baseQuestions, ...agentBriefing.companyQuestions]
-      : baseQuestions;
+    // Single server-side call — all AI work done in explain-api (Anthropic), no browser API keys
+    let sessionResult: Awaited<ReturnType<typeof explainApi.sessionPrepare>> | null = null;
+    try {
+      sessionResult = await explainApi.sessionPrepare({
+        jobSpecText: js,
+        cvText: cv.trim() || undefined,
+      });
+    } catch (err) {
+      console.warn('[SessionPrepare] API call failed, using local fallback', err);
+    }
 
     clearInterval(interval);
 
-    navigate(`/interview-room/${packId}`, {
-      state: {
-        cvCtx, jobCtx, questions, ...introResult,
-        specialistTitle: inferSpecialistTitle(jobCtx.title),
-        mikeScript: agentBriefing?.mikeScript ?? null,
-        companyFacts: agentBriefing?.companyFacts ?? [],
-      },
-      replace: true,
-    });
+    if (sessionResult) {
+      // Happy path — backend returned full session payload
+      const cvCtx = preComputedCvCtx ?? buildCVContext(cv);
+      const jobCtx = buildJobSpecContext(js);
+      setPreparingSpecialistTitle(sessionResult.specialistTitle);
+      navigate(`/interview-room/${packId}`, {
+        state: {
+          cvCtx,
+          jobCtx,
+          questions: sessionResult.questions,
+          sarahIntro: sessionResult.sarahIntro,
+          jamesIntro: sessionResult.jamesIntro,
+          specialistTitle: sessionResult.specialistTitle,
+          mikeScript: sessionResult.mikeScript,
+          companyFacts: sessionResult.companyFacts,
+        },
+        replace: true,
+      });
+    } else {
+      // Fallback — local heuristic (no AI, no API calls)
+      const cvCtx = preComputedCvCtx ?? buildCVContext(cv);
+      const jobCtx = buildJobSpecContext(js);
+      const specialistTitle = inferSpecialistTitle(jobCtx.title);
+      setPreparingSpecialistTitle(specialistTitle);
+      navigate(`/interview-room/${packId}`, {
+        state: {
+          cvCtx,
+          jobCtx,
+          questions: buildPersonalisedQuestions(cvCtx, jobCtx),
+          sarahIntro: buildSarahIntro(cvCtx, jobCtx),
+          jamesIntro: buildJamesIntro(cvCtx, jobCtx),
+          specialistTitle,
+          mikeScript: null,
+          companyFacts: [],
+        },
+        replace: true,
+      });
+    }
   };
 
   const Field = ({ value, onChange, placeholder, rows = 10 }: {
