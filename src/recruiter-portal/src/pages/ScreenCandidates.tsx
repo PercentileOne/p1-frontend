@@ -6,42 +6,71 @@ import { FileUpload } from '../components/FileUpload';
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Step = 'setup' | 'generating' | 'screening' | 'result';
+type OptionKey = 'A' | 'B' | 'C' | 'D' | 'E';
+type Signal = 'strong' | 'partial' | 'weak' | 'redflag';
 
 interface AnsweredQ {
   question: InterviewQuestion;
-  answer: string;
+  selected: OptionKey | null;
+  signal: Signal | null;
   score: number | null;
-  signal: 'strong' | 'partial' | 'weak' | null;
-  expanded: boolean;
+  summary: string | null;
 }
 
-// ── Local scorer ──────────────────────────────────────────────────────────────
+// ── Option config ─────────────────────────────────────────────────────────────
 
-function quickScore(q: InterviewQuestion, answer: string): { score: number; signal: 'strong' | 'partial' | 'weak' } {
-  const lower = answer.toLowerCase().trim();
-  if (lower.length < 8) return { score: 0.1, signal: 'weak' };
+const OPTIONS: Record<OptionKey, { label: string; color: string; bg: string; border: string }> = {
+  A: { label: 'Strong',             color: '#34D399', bg: 'rgba(52,211,153,0.10)', border: 'rgba(52,211,153,0.35)' },
+  B: { label: 'Partial',            color: '#F59E0B', bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.35)' },
+  C: { label: 'Weak',               color: '#EF4444', bg: 'rgba(239,68,68,0.09)',  border: 'rgba(239,68,68,0.30)' },
+  D: { label: 'Red Flag',           color: '#DC2626', bg: 'rgba(220,38,38,0.12)',  border: 'rgba(220,38,38,0.45)' },
+  E: { label: 'None of the above',  color: '#6B7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.30)' },
+};
 
-  const modelWords = q.modelAnswer
-    .toLowerCase()
-    .split(/\W+/)
-    .filter(w => w.length > 4);
+// ── Interpretation engine ─────────────────────────────────────────────────────
 
-  const hits = modelWords.filter(w => lower.includes(w)).length;
-  const density = modelWords.length > 0 ? hits / modelWords.length : 0;
-  const lengthBonus = Math.min(lower.length / 200, 0.15);
-  const raw = Math.min(density * 0.85 + lengthBonus, 1);
+function interpretOption(
+  q: InterviewQuestion,
+  key: OptionKey,
+): { signal: Signal; score: number; summary: string } {
+  const topic = q.competencyTags?.join(' / ') ?? q.questionType;
 
-  const signal: 'strong' | 'partial' | 'weak' =
-    raw >= 0.55 ? 'strong' : raw >= 0.28 ? 'partial' : 'weak';
+  const templates: Record<OptionKey, { signal: Signal; score: number; summary: string }> = {
+    A: {
+      signal: 'strong',
+      score: 0.90,
+      summary: `Candidate gave a strong, well-structured response demonstrating clear competency in ${topic}. The answer was specific, confident, and aligned with what a high-performing candidate in this role would say.`,
+    },
+    B: {
+      signal: 'partial',
+      score: 0.55,
+      summary: `Candidate showed some understanding of ${topic} but the response lacked depth or concrete examples. There is potential, though further probing or development would be needed.`,
+    },
+    C: {
+      signal: 'weak',
+      score: 0.22,
+      summary: `Candidate's response was vague or incomplete regarding ${topic}. The answer did not adequately demonstrate the expected competency for this level of role.`,
+    },
+    D: {
+      signal: 'redflag',
+      score: 0.05,
+      summary: `Candidate's response raised a concern around ${topic}. The answer was evasive, contradictory, or revealed a significant gap that could pose a risk if this candidate is progressed to interview.`,
+    },
+    E: {
+      signal: 'weak',
+      score: 0.10,
+      summary: `Candidate's response did not align with any expected pattern for this question about ${topic}. The answer was off-topic or unclear — proceed with caution and consider probing further.`,
+    },
+  };
 
-  return { score: raw, signal };
+  return templates[key];
 }
 
-// ── Fallback questions (if API is unavailable) ────────────────────────────────
+// ── Fallback questions ────────────────────────────────────────────────────────
 
 function makeFallbackQuestions(jobSpec: string): InterviewQuestion[] {
-  const istech = /engineer|developer|software|cloud|devops|architect/i.test(jobSpec);
-  const isleader = /manager|director|head of|lead|vp |cto|cio/i.test(jobSpec);
+  const istech    = /engineer|developer|software|cloud|devops|architect/i.test(jobSpec);
+  const isleader  = /manager|director|head of|lead|vp |cto|cio/i.test(jobSpec);
 
   const base: InterviewQuestion[] = [
     {
@@ -53,7 +82,7 @@ function makeFallbackQuestions(jobSpec: string): InterviewQuestion[] {
     },
     {
       questionId: 'sq2',
-      questionText: "What's one major challenge you've solved in the last 12 months? What did you do and what was the outcome?",
+      questionText: "What is one major challenge you have solved in the last 12 months — what did you do and what was the outcome?",
       modelAnswer: 'Specific challenge, actions taken, measurable outcome, learning.',
       questionType: 'Behavioural', difficulty: 'Medium', source: 'HR',
       competencyTags: ['problem-solving', 'delivery'],
@@ -89,22 +118,23 @@ function makeFallbackQuestions(jobSpec: string): InterviewQuestion[] {
 
 // ── Signal chip ───────────────────────────────────────────────────────────────
 
-function SignalChip({ signal, score }: { signal: 'strong' | 'partial' | 'weak'; score: number }) {
-  const cfg = {
-    strong:  { label: '✓ Strong',   bg: 'rgba(52,211,153,0.12)',  border: 'rgba(52,211,153,0.3)',  color: '#34D399' },
-    partial: { label: '~ Partial',  bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.3)',  color: '#F59E0B' },
-    weak:    { label: '✗ Weak',     bg: 'rgba(239,68,68,0.10)',   border: 'rgba(239,68,68,0.25)',  color: '#EF4444' },
-  }[signal];
-
+function SignalChip({ signal, score }: { signal: Signal; score: number }) {
+  const cfg: Record<Signal, { label: string; color: string; bg: string; border: string }> = {
+    strong:  { label: '✓ Strong',    color: '#34D399', bg: 'rgba(52,211,153,0.12)',  border: 'rgba(52,211,153,0.3)'  },
+    partial: { label: '~ Partial',   color: '#F59E0B', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.3)'  },
+    weak:    { label: '✗ Weak',      color: '#EF4444', bg: 'rgba(239,68,68,0.10)',   border: 'rgba(239,68,68,0.25)'  },
+    redflag: { label: '⚑ Red Flag',  color: '#DC2626', bg: 'rgba(220,38,38,0.12)',   border: 'rgba(220,38,38,0.4)'   },
+  };
+  const c = cfg[signal];
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <div style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
-        background: cfg.bg, border: `1px solid ${cfg.border}`,
+        background: c.bg, border: `1px solid ${c.border}`,
         borderRadius: 6, padding: '3px 10px',
-        fontSize: 12, fontWeight: 700, color: cfg.color,
+        fontSize: 12, fontWeight: 700, color: c.color,
       }}>
-        {cfg.label}
+        {c.label}
       </div>
       <span style={{ fontSize: 12, color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>
         {Math.round(score * 100)}%
@@ -113,15 +143,63 @@ function SignalChip({ signal, score }: { signal: 'strong' | 'partial' | 'weak'; 
   );
 }
 
+// ── Option button ─────────────────────────────────────────────────────────────
+
+function OptionBtn({
+  optKey, selected, onSelect,
+}: {
+  optKey: OptionKey;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const opt = OPTIONS[optKey];
+  return (
+    <button
+      onClick={onSelect}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        width: '100%', textAlign: 'left',
+        padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
+        fontFamily: 'inherit', transition: 'all 0.15s',
+        background: selected ? opt.bg : 'rgba(255,255,255,0.03)',
+        border: `1.5px solid ${selected ? opt.border : 'var(--border)'}`,
+        outline: 'none',
+      }}
+    >
+      <div style={{
+        width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+        background: selected ? opt.bg : 'rgba(255,255,255,0.06)',
+        border: `1.5px solid ${selected ? opt.color : 'var(--border)'}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 12, fontWeight: 800,
+        color: selected ? opt.color : 'var(--text-3)',
+        transition: 'all 0.15s',
+      }}>
+        {optKey}
+      </div>
+      <span style={{
+        fontSize: 13, fontWeight: selected ? 700 : 500,
+        color: selected ? opt.color : 'var(--text-2)',
+        transition: 'color 0.15s',
+      }}>
+        {opt.label}
+      </span>
+      {selected && (
+        <span style={{ marginLeft: 'auto', fontSize: 14, color: opt.color }}>●</span>
+      )}
+    </button>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function ScreenCandidates() {
-  const [step, setStep] = useState<Step>('setup');
-  const [jobSpec, setJobSpec] = useState('');
+  const [step, setStep]               = useState<Step>('setup');
+  const [jobSpec, setJobSpec]         = useState('');
   const [candidateName, setCandidateName] = useState('');
-  const [questions, setQuestions] = useState<AnsweredQ[]>([]);
-  const [error, setError] = useState('');
-  const [activeQ, setActiveQ] = useState(0);
+  const [questions, setQuestions]     = useState<AnsweredQ[]>([]);
+  const [error, setError]             = useState('');
+  const [activeQ, setActiveQ]         = useState(0);
 
   const generate = useCallback(async () => {
     if (!jobSpec.trim()) return;
@@ -130,50 +208,56 @@ export default function ScreenCandidates() {
     try {
       const result = await explainApi.quickGenerate({ jobDescriptionText: jobSpec });
       setQuestions(result.questions.slice(0, 5).map(q => ({
-        question: q, answer: '', score: null, signal: null, expanded: false,
+        question: q, selected: null, signal: null, score: null, summary: null,
       })));
     } catch {
-      // API unavailable — fall back to role-specific heuristic questions
       const fallback = makeFallbackQuestions(jobSpec);
       setQuestions(fallback.map(q => ({
-        question: q, answer: '', score: null, signal: null, expanded: false,
+        question: q, selected: null, signal: null, score: null, summary: null,
       })));
     }
     setActiveQ(0);
     setStep('screening');
   }, [jobSpec]);
 
-  const scoreQuestion = useCallback((idx: number) => {
-    setQuestions(qs => qs.map((q, i) => {
-      if (i !== idx) return q;
-      const { score, signal } = quickScore(q.question, q.answer);
-      return { ...q, score, signal };
-    }));
+  const selectOption = useCallback((qIdx: number, key: OptionKey) => {
+    setQuestions(qs => qs.map((q, i) =>
+      i === qIdx ? { ...q, selected: key, signal: null, score: null, summary: null } : q,
+    ));
   }, []);
 
-  const allScored = questions.every(q => q.signal !== null);
-  const avgScore = allScored && questions.length > 0
+  const scoreQuestion = useCallback((idx: number) => {
+    setQuestions(qs => qs.map((q, i) => {
+      if (i !== idx || !q.selected) return q;
+      const { signal, score, summary } = interpretOption(q.question, q.selected);
+      return { ...q, signal, score, summary };
+    }));
+    // Auto-advance to next unscored question
+    setActiveQ(idx < questions.length - 1 ? idx + 1 : idx);
+  }, [questions.length]);
+
+  const allScored = questions.length > 0 && questions.every(q => q.signal !== null);
+
+  const hasRedFlag = questions.some(q => q.signal === 'redflag');
+  const avgScore = allScored
     ? questions.reduce((s, q) => s + (q.score ?? 0), 0) / questions.length
     : null;
 
   const overallSignal = avgScore === null ? null
-    : avgScore >= 0.55 ? 'proceed'
-    : avgScore >= 0.30 ? 'borderline'
+    : hasRedFlag       ? 'pass'
+    : avgScore >= 0.60 ? 'proceed'
+    : avgScore >= 0.35 ? 'borderline'
     : 'pass';
 
   const overallCfg = {
     proceed:    { label: '✓ Proceed to Interview', color: '#34D399', bg: 'rgba(52,211,153,0.08)', border: 'rgba(52,211,153,0.25)' },
     borderline: { label: '~ Borderline — use judgement', color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)' },
-    pass:       { label: '✗ Pass — not a strong fit', color: '#EF4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.2)' },
+    pass:       { label: hasRedFlag ? '⚑ Pass — red flag raised' : '✗ Pass — not a strong fit', color: hasRedFlag ? '#DC2626' : '#EF4444', bg: hasRedFlag ? 'rgba(220,38,38,0.10)' : 'rgba(239,68,68,0.08)', border: hasRedFlag ? 'rgba(220,38,38,0.35)' : 'rgba(239,68,68,0.2)' },
   };
 
   const reset = () => {
-    setStep('setup');
-    setJobSpec('');
-    setCandidateName('');
-    setQuestions([]);
-    setError('');
-    setActiveQ(0);
+    setStep('setup'); setJobSpec(''); setCandidateName('');
+    setQuestions([]); setError(''); setActiveQ(0);
   };
 
   return (
@@ -186,7 +270,7 @@ export default function ScreenCandidates() {
           Filter Candidate by Job Spec
         </h1>
         <p style={{ fontSize: 13, color: 'var(--text-2)', margin: 0, lineHeight: 1.6 }}>
-          Paste or upload a job spec, generate screening questions, then score a candidate's answers live on the phone.
+          Generate role-specific screening questions. Select how the candidate responded on the call — AI scores and recommends.
         </p>
       </div>
 
@@ -199,24 +283,20 @@ export default function ScreenCandidates() {
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 14 }}>
                 Job Spec
               </div>
-
               <FileUpload label="job spec" onExtracted={(text) => setJobSpec(text)} />
-
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '14px 0' }}>
                 <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
                 <span style={{ fontSize: 12, color: 'var(--text-3)' }}>or paste below</span>
                 <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
               </div>
-
               <textarea
                 value={jobSpec}
                 onChange={e => setJobSpec(e.target.value)}
                 placeholder="Paste the full job description here…"
                 rows={8}
                 style={{
-                  width: '100%', background: 'var(--bg3)',
-                  border: '1px solid var(--border)', borderRadius: 10,
-                  padding: 14, color: 'var(--text)', fontSize: 13,
+                  width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+                  borderRadius: 10, padding: 14, color: 'var(--text)', fontSize: 13,
                   lineHeight: 1.65, resize: 'vertical', outline: 'none',
                   fontFamily: 'inherit', boxSizing: 'border-box',
                 }}
@@ -225,16 +305,15 @@ export default function ScreenCandidates() {
 
             <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: 24, marginBottom: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 12 }}>
-                Candidate (optional)
+                Candidate Name (optional)
               </div>
               <input
                 value={candidateName}
                 onChange={e => setCandidateName(e.target.value)}
                 placeholder="e.g. James Okafor"
                 style={{
-                  width: '100%', background: 'var(--bg3)',
-                  border: '1px solid var(--border)', borderRadius: 10,
-                  padding: '11px 14px', color: 'var(--text)', fontSize: 13,
+                  width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+                  borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 13,
                   outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
                 }}
               />
@@ -281,25 +360,32 @@ export default function ScreenCandidates() {
           <motion.div key="screening" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
 
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
                   {candidateName ? `Screening: ${candidateName}` : 'Phone Screen'}
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>
-                  {questions.filter(q => q.signal !== null).length} of {questions.length} questions scored
+                  {questions.filter(q => q.signal !== null).length} of {questions.length} scored
                 </div>
               </div>
-              <button
-                onClick={reset}
-                style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 8, padding: '7px 14px', fontSize: 12, color: 'var(--text-3)', cursor: 'pointer', fontFamily: 'inherit' }}
-              >
-                ← New screen
-              </button>
+
+              {/* Legend */}
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {(Object.entries(OPTIONS) as [OptionKey, typeof OPTIONS[OptionKey]][]).map(([k, o]) => (
+                  <span key={k} style={{
+                    fontSize: 10, fontWeight: 700, color: o.color,
+                    background: o.bg, border: `1px solid ${o.border}`,
+                    borderRadius: 20, padding: '2px 8px',
+                  }}>
+                    {k} — {o.label}
+                  </span>
+                ))}
+              </div>
             </div>
 
             {/* Progress bar */}
-            <div style={{ background: 'var(--bg3)', borderRadius: 99, height: 4, marginBottom: 24, overflow: 'hidden' }}>
+            <div style={{ background: 'var(--bg3)', borderRadius: 99, height: 4, marginBottom: 20, overflow: 'hidden' }}>
               <motion.div
                 animate={{ width: `${(questions.filter(q => q.signal !== null).length / questions.length) * 100}%` }}
                 transition={{ duration: 0.4 }}
@@ -308,43 +394,48 @@ export default function ScreenCandidates() {
             </div>
 
             {/* Questions */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {questions.map((aq, idx) => (
-                <motion.div
-                  key={aq.question.questionId}
-                  layout
+                <motion.div key={aq.question.questionId} layout
                   style={{
-                    background: 'var(--bg2)',
-                    border: `1px solid ${activeQ === idx ? 'rgba(79,142,247,0.4)' : aq.signal ? 'var(--border)' : 'var(--border)'}`,
-                    borderRadius: 14,
-                    overflow: 'hidden',
-                    opacity: activeQ !== idx && !aq.signal ? 0.6 : 1,
+                    background: 'var(--bg2)', border: `1px solid ${activeQ === idx ? 'rgba(79,142,247,0.4)' : 'var(--border)'}`,
+                    borderRadius: 14, overflow: 'hidden',
+                    opacity: activeQ !== idx && !aq.signal ? 0.55 : 1,
                     transition: 'opacity 0.2s',
                   }}
                 >
                   {/* Q header */}
                   <div
-                    style={{ padding: '14px 18px', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 12 }}
                     onClick={() => setActiveQ(activeQ === idx ? -1 : idx)}
+                    style={{ padding: '14px 18px', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 12 }}
                   >
+                    {/* Number / signal badge */}
                     <div style={{
-                      width: 24, height: 24, borderRadius: 7, flexShrink: 0, marginTop: 1,
-                      background: aq.signal === 'strong' ? 'rgba(52,211,153,0.15)'
-                        : aq.signal === 'partial' ? 'rgba(245,158,11,0.12)'
-                        : aq.signal === 'weak' ? 'rgba(239,68,68,0.12)'
-                        : 'rgba(79,142,247,0.1)',
-                      border: `1px solid ${aq.signal === 'strong' ? 'rgba(52,211,153,0.3)'
-                        : aq.signal === 'partial' ? 'rgba(245,158,11,0.3)'
-                        : aq.signal === 'weak' ? 'rgba(239,68,68,0.25)'
-                        : 'rgba(79,142,247,0.25)'}`,
+                      width: 26, height: 26, borderRadius: 8, flexShrink: 0, marginTop: 1,
+                      background: aq.signal === 'strong'  ? 'rgba(52,211,153,0.15)'
+                               : aq.signal === 'partial' ? 'rgba(245,158,11,0.12)'
+                               : aq.signal === 'redflag' ? 'rgba(220,38,38,0.15)'
+                               : aq.signal === 'weak'    ? 'rgba(239,68,68,0.12)'
+                               : 'rgba(79,142,247,0.1)',
+                      border: `1px solid ${
+                        aq.signal === 'strong'  ? 'rgba(52,211,153,0.3)'
+                      : aq.signal === 'partial' ? 'rgba(245,158,11,0.3)'
+                      : aq.signal === 'redflag' ? 'rgba(220,38,38,0.4)'
+                      : aq.signal === 'weak'    ? 'rgba(239,68,68,0.25)'
+                      : 'rgba(79,142,247,0.25)'}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 11, fontWeight: 800,
-                      color: aq.signal ? (aq.signal === 'strong' ? '#34D399' : aq.signal === 'partial' ? '#F59E0B' : '#EF4444') : 'var(--blue)',
+                      color: aq.signal === 'strong'  ? '#34D399'
+                           : aq.signal === 'partial' ? '#F59E0B'
+                           : aq.signal === 'redflag' ? '#DC2626'
+                           : aq.signal === 'weak'    ? '#EF4444'
+                           : 'var(--blue)',
                     }}>
-                      {aq.signal === 'strong' ? '✓' : aq.signal === 'weak' ? '✗' : idx + 1}
+                      {aq.selected && aq.signal ? aq.selected : idx + 1}
                     </div>
+
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: 7, marginBottom: 4, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--blue)', background: 'rgba(79,142,247,0.1)', borderRadius: 4, padding: '2px 7px' }}>
                           {aq.question.questionType}
                         </span>
@@ -355,11 +446,18 @@ export default function ScreenCandidates() {
                       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', lineHeight: 1.5 }}>
                         {aq.question.questionText}
                       </div>
+                      {/* Scored summary preview */}
+                      {aq.summary && (
+                        <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 5, lineHeight: 1.5, fontStyle: 'italic' }}>
+                          {aq.summary.slice(0, 90)}…
+                        </div>
+                      )}
                     </div>
+
                     {aq.signal && <SignalChip signal={aq.signal} score={aq.score!} />}
                   </div>
 
-                  {/* Expanded: answer + score */}
+                  {/* Expanded panel */}
                   <AnimatePresence>
                     {activeQ === idx && (
                       <motion.div
@@ -369,8 +467,9 @@ export default function ScreenCandidates() {
                         style={{ overflow: 'hidden' }}
                       >
                         <div style={{ padding: '0 18px 18px', borderTop: '1px solid var(--border)' }}>
-                          {/* Model answer (collapsed hint) */}
-                          <details style={{ marginTop: 14, marginBottom: 14 }}>
+
+                          {/* Model answer hint */}
+                          <details style={{ marginTop: 14, marginBottom: 16 }}>
                             <summary style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', cursor: 'pointer', userSelect: 'none', listStyle: 'none' }}>
                               💡 What to listen for ↓
                             </summary>
@@ -379,54 +478,58 @@ export default function ScreenCandidates() {
                             </div>
                           </details>
 
-                          {/* Answer input */}
-                          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 8 }}>
-                            Candidate's answer — type a summary
+                          {/* Option selector */}
+                          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 10 }}>
+                            How did the candidate respond?
                           </div>
-                          <textarea
-                            value={aq.answer}
-                            onChange={e => setQuestions(qs => qs.map((q, i) => i === idx ? { ...q, answer: e.target.value, signal: null, score: null } : q))}
-                            placeholder="e.g. Mentioned leading a 12-person team through Azure migration, reduced deployment time by 60%…"
-                            rows={3}
-                            style={{
-                              width: '100%', background: 'var(--bg3)',
-                              border: '1px solid var(--border)', borderRadius: 10,
-                              padding: 12, color: 'var(--text)', fontSize: 13,
-                              lineHeight: 1.6, resize: 'vertical', outline: 'none',
-                              fontFamily: 'inherit', boxSizing: 'border-box',
-                              marginBottom: 12,
-                            }}
-                          />
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
+                            {(Object.keys(OPTIONS) as OptionKey[]).map(key => (
+                              <OptionBtn
+                                key={key}
+                                optKey={key}
+                                selected={aq.selected === key}
+                                onSelect={() => selectOption(idx, key)}
+                              />
+                            ))}
+                          </div>
 
+                          {/* Score + result */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                             <button
-                              onClick={() => {
-                                scoreQuestion(idx);
-                                if (idx < questions.length - 1) setActiveQ(idx + 1);
-                              }}
-                              disabled={aq.answer.trim().length < 5}
+                              onClick={() => scoreQuestion(idx)}
+                              disabled={!aq.selected}
                               style={{
-                                background: aq.answer.trim().length >= 5 ? 'var(--blue)' : 'rgba(79,142,247,0.25)',
+                                background: aq.selected ? 'var(--blue)' : 'rgba(79,142,247,0.25)',
                                 color: '#fff', border: 'none', borderRadius: 9,
                                 padding: '10px 22px', fontSize: 13, fontWeight: 700,
-                                cursor: aq.answer.trim().length >= 5 ? 'pointer' : 'default',
+                                cursor: aq.selected ? 'pointer' : 'default',
                                 fontFamily: 'inherit',
                               }}
                             >
-                              Score Answer →
+                              Score &amp; Continue →
                             </button>
-
                             {aq.signal && <SignalChip signal={aq.signal} score={aq.score!} />}
-
-                            {idx < questions.length - 1 && (
-                              <button
-                                onClick={() => setActiveQ(idx + 1)}
-                                style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', marginLeft: 'auto' }}
-                              >
-                                Skip →
-                              </button>
-                            )}
                           </div>
+
+                          {/* Generated summary */}
+                          {aq.summary && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              style={{
+                                marginTop: 14, padding: '12px 16px',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid var(--border)',
+                                borderRadius: 10, fontSize: 12,
+                                color: 'var(--text-2)', lineHeight: 1.7,
+                              }}
+                            >
+                              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', display: 'block', marginBottom: 5 }}>
+                                AI Summary
+                              </span>
+                              {aq.summary}
+                            </motion.div>
+                          )}
                         </div>
                       </motion.div>
                     )}
@@ -435,7 +538,7 @@ export default function ScreenCandidates() {
               ))}
             </div>
 
-            {/* Finish button */}
+            {/* Finish */}
             {allScored && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: 20 }}>
                 <button
@@ -457,13 +560,15 @@ export default function ScreenCandidates() {
         {/* ── RESULT ── */}
         {step === 'result' && overallSignal && (
           <motion.div key="result" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+
+            {/* Overall verdict */}
             <div style={{
               background: overallCfg[overallSignal].bg,
               border: `1.5px solid ${overallCfg[overallSignal].border}`,
               borderRadius: 14, padding: '28px 32px', marginBottom: 24, textAlign: 'center',
             }}>
-              <div style={{ fontSize: 32, marginBottom: 12 }}>
-                {overallSignal === 'proceed' ? '✅' : overallSignal === 'borderline' ? '⚖️' : '❌'}
+              <div style={{ fontSize: 34, marginBottom: 12 }}>
+                {overallSignal === 'proceed' ? '✅' : overallSignal === 'borderline' ? '⚖️' : hasRedFlag ? '🚩' : '❌'}
               </div>
               <div style={{ fontSize: 22, fontWeight: 900, color: overallCfg[overallSignal].color, marginBottom: 8 }}>
                 {overallCfg[overallSignal].label}
@@ -477,24 +582,71 @@ export default function ScreenCandidates() {
 
             {/* Q-by-Q breakdown */}
             <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', marginBottom: 20 }}>
-              <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', fontSize: 12, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              <div style={{ padding: '13px 20px', borderBottom: '1px solid var(--border)', fontSize: 11, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.07em', textTransform: 'uppercase' }}>
                 Question Breakdown
               </div>
               {questions.map((aq, idx) => (
                 <div key={aq.question.questionId} style={{
-                  padding: '14px 20px',
+                  padding: '16px 20px',
                   borderBottom: idx < questions.length - 1 ? '1px solid var(--border)' : 'none',
-                  display: 'flex', alignItems: 'flex-start', gap: 14,
                 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-3)', minWidth: 20 }}>Q{idx + 1}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.5, marginBottom: 4 }}>{aq.question.questionText}</div>
-                    {aq.answer && <div style={{ fontSize: 12, color: 'var(--text-3)', fontStyle: 'italic', lineHeight: 1.5 }}>"{aq.answer}"</div>}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: aq.summary ? 8 : 0 }}>
+                    {/* Option badge */}
+                    {aq.selected && (
+                      <div style={{
+                        width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                        background: OPTIONS[aq.selected].bg,
+                        border: `1.5px solid ${OPTIONS[aq.selected].border}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 12, fontWeight: 800, color: OPTIONS[aq.selected].color,
+                      }}>
+                        {aq.selected}
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-3)', marginBottom: 3 }}>Q{idx + 1}</div>
+                      <div style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.5 }}>{aq.question.questionText}</div>
+                    </div>
+                    {aq.signal && <SignalChip signal={aq.signal} score={aq.score!} />}
                   </div>
-                  {aq.signal && <SignalChip signal={aq.signal} score={aq.score!} />}
+                  {aq.summary && (
+                    <div style={{
+                      marginLeft: 42, fontSize: 12, color: 'var(--text-2)',
+                      lineHeight: 1.65, fontStyle: 'italic',
+                    }}>
+                      {aq.summary}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
+
+            {/* Structured data — copy-ready */}
+            <details style={{ marginBottom: 20 }}>
+              <summary style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.07em', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none', listStyle: 'none', marginBottom: 8 }}>
+                Structured Data (JSON) ↓
+              </summary>
+              <pre style={{
+                background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 10,
+                padding: 14, fontSize: 11, color: 'var(--text-2)', overflow: 'auto',
+                lineHeight: 1.6, marginTop: 8,
+              }}>
+                {JSON.stringify({
+                  candidate: candidateName || 'Unknown',
+                  date: new Date().toISOString().split('T')[0],
+                  recommendation: overallSignal,
+                  averageScore: Math.round((avgScore ?? 0) * 100),
+                  questions: questions.map((q, i) => ({
+                    q: i + 1,
+                    question: q.question.questionText,
+                    option: q.selected,
+                    signal: q.signal,
+                    score: Math.round((q.score ?? 0) * 100),
+                    summary: q.summary,
+                  })),
+                }, null, 2)}
+              </pre>
+            </details>
 
             {/* Actions */}
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -530,4 +682,3 @@ export default function ScreenCandidates() {
     </div>
   );
 }
-
