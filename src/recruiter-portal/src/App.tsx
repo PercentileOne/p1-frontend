@@ -2,7 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import DemoLinkedIn from './pages/DemoLinkedIn'
+import DemoLinkedInPaid from './pages/DemoLinkedInPaid'
 import DemoVallum from './pages/DemoVallum'
+import DemoVallumPaid from './pages/DemoVallumPaid'
 import CandidatePractice from './pages/CandidatePractice'
 import InterviewRoom from './pages/InterviewRoom'
 import InterviewSummary from './pages/InterviewSummary'
@@ -21,7 +23,9 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/demo/linkedin-job" element={<DemoLinkedIn />} />
+        <Route path="/demo/linkedin-job-paid" element={<DemoLinkedInPaid />} />
         <Route path="/demo/vallum-job" element={<DemoVallum />} />
+        <Route path="/demo/vallum-job-paid" element={<DemoVallumPaid />} />
         <Route path="/candidate/practice/:packId" element={<CandidatePractice />} />
         <Route path="/interview-intake/:packId" element={<InterviewIntake />} />
         <Route path="/interview-room/:packId" element={<InterviewRoom />} />
