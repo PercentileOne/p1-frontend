@@ -1,6 +1,7 @@
 import { useState, useRef, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Upload, Mail } from 'lucide-react'
+import { CVInsightsModal } from '../components/CVInsightsModal'
 
 const CVS = [
   {
@@ -91,6 +92,7 @@ export default function CVsPage() {
   const [selected, setSelected] = useState<typeof CVS[0] | null>(null)
   const [dragging, setDragging] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
+  const [insightsCandidate, setInsightsCandidate] = useState<typeof CVS[0] | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const visible = CVS.filter(c => {
@@ -271,7 +273,12 @@ export default function CVsPage() {
                     <span style={{ fontSize: 11, fontWeight: 700, color: STATUS_COLORS[c.status], background: `${STATUS_COLORS[c.status]}18`, padding: '4px 10px', borderRadius: 20, whiteSpace: 'nowrap' }}>{c.status}</span>
                   </td>
                   <td style={{ padding: '13px 16px' }}>
-                    <span style={{ fontSize: 11, color: '#4F8EF7', fontWeight: 600 }}>View →</span>
+                    <button
+                      onClick={e => { e.stopPropagation(); setInsightsCandidate(c); }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
+                    >
+                      <span style={{ fontSize: 11, color: '#4F8EF7', fontWeight: 600 }}>View →</span>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -282,6 +289,19 @@ export default function CVsPage() {
           )}
         </div>
       </div>
+
+      {/* CV Insights modal */}
+      <AnimatePresence>
+        {insightsCandidate && (
+          <CVInsightsModal
+            candidateId={insightsCandidate.id}
+            candidateName={insightsCandidate.candidate}
+            candidateRole={insightsCandidate.role}
+            candidateInitials={insightsCandidate.initials}
+            onClose={() => setInsightsCandidate(null)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Right panel — CV detail */}
       <AnimatePresence>
@@ -366,6 +386,17 @@ export default function CVsPage() {
 
               {/* Actions */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4 }}>
+                <button
+                  onClick={() => setInsightsCandidate(selected)}
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: 8,
+                    background: 'linear-gradient(135deg,var(--blue),#7C3AED)',
+                    border: 'none', color: '#fff',
+                    fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                  }}
+                >
+                  ✦ View AI CV Insights →
+                </button>
                 <ActionBtn primary label="+ Generate Interview Pack" />
                 <ActionBtn label="Shortlist Candidate" />
                 <ActionBtn label="Download CV" />
