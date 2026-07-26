@@ -36,9 +36,9 @@ const DEMO_QUESTIONS: InterviewQuestion[] = [
   // HR / team-fit last (Sarah asks these)
   {
     questionId: 'q4',
-    questionText: 'Tell me about yourself and what drew you to apply for this role.',
-    modelAnswer: 'Structure: current role → key experience → why this company → why now. Keep to 90 seconds.',
-    questionType: 'Behavioural', difficulty: 'Easy', source: 'HR', competencyTags: ['communication', 'motivation'],
+    questionText: 'What do you know about Vallum Associates and why does this role appeal to you specifically?',
+    modelAnswer: 'Mention: specialist executive recruitment firm in financial services; 40-person engineering team; core banking platform modernisation from monolith to microservices; £8m budget; Azure cloud migration. Tie to your own experience and motivations.',
+    questionType: 'Behavioural', difficulty: 'Easy', source: 'HR', competencyTags: ['company knowledge', 'motivation', 'research'],
   },
   {
     questionId: 'q5',
@@ -50,6 +50,8 @@ const DEMO_QUESTIONS: InterviewQuestion[] = [
 
 // ── Local scoring fallback ────────────────────────────────────────────────────
 
+const VALLUM_FACTS = ['microservice', 'monolith', 'core banking', 'azure', 'eight million', '£8m', '8m', 'forty', '40', 'financial service', 'regulated', 'executive recruitment', 'vallum'];
+
 function localScore(q: InterviewQuestion, answer: string): ScoreResponse {
   const words = answer.trim().split(/\s+/).filter(Boolean);
   const len = words.length;
@@ -59,14 +61,25 @@ function localScore(q: InterviewQuestion, answer: string): ScoreResponse {
   const depth = /\d+/.test(answer) ? 0.7 : lower.includes('result') || lower.includes('outcome') ? 0.6 : 0.4;
   const confidence = lower.includes('i led') || lower.includes('i built') || lower.includes('i delivered') ? 0.8
     : lower.includes('i think') || lower.includes('maybe') ? 0.35 : 0.55;
-  const overall = Math.round((clarity * 0.25 + relevance * 0.35 + depth * 0.25 + confidence * 0.15) * 10000) / 10000;
+
+  // Company knowledge bonus — rewards candidates who researched Vallum facts
+  const isCompanyKnowledgeQ = q.competencyTags.includes('company knowledge');
+  const factsHit = isCompanyKnowledgeQ ? VALLUM_FACTS.filter(f => lower.includes(f)).length : 0;
+  const companyBonus = isCompanyKnowledgeQ ? Math.min(0.2, factsHit * 0.05) : 0;
+
+  const overall = Math.min(1, Math.round((clarity * 0.25 + relevance * 0.35 + depth * 0.25 + confidence * 0.15 + companyBonus) * 10000) / 10000);
   return {
     clarity, relevance, depth, confidence, overallScore: overall,
     feedback: [
       { dimension: 'clarity', message: len < 40 ? 'Your answer is quite short — aim for at least 60 words.' : 'Good length and structure.', severity: len < 40 ? 'high' : 'low' },
-      { dimension: 'depth', message: depth < 0.5 ? 'Add a concrete metric or named outcome to strengthen your answer.' : 'Good use of specifics.', severity: depth < 0.5 ? 'medium' : 'low' },
+      { dimension: 'depth', message: isCompanyKnowledgeQ
+          ? factsHit >= 3 ? 'Excellent research — you clearly know the business.' : factsHit >= 1 ? 'Good start — mention the core banking modernisation and Azure migration for full marks.' : 'Show your research: mention the microservices modernisation, Azure, and the £8m budget.'
+          : depth < 0.5 ? 'Add a concrete metric or named outcome to strengthen your answer.' : 'Good use of specifics.',
+        severity: isCompanyKnowledgeQ ? (factsHit >= 3 ? 'low' : factsHit >= 1 ? 'medium' : 'high') : depth < 0.5 ? 'medium' : 'low' },
     ],
-    suggestions: len < 40 ? ['Use the STAR format to structure your answer.'] : [],
+    suggestions: isCompanyKnowledgeQ && factsHit < 3
+      ? ['Name at least 3 specific facts: core banking monolith-to-microservices migration, Azure cloud, £8m programme budget, 40-person team.']
+      : len < 40 ? ['Use the STAR format to structure your answer.'] : [],
   };
 }
 
@@ -114,6 +127,9 @@ export default function InterviewRoom() {
   const cvCtx = ctx.cvCtx;
   const jobCtx = ctx.jobCtx;
   const specialistTitle = ctx.specialistTitle ?? 'Hiring Manager';
+
+  const mikeScript = ctx.mikeScript ??
+    "Hi, I'm Mike — your interview consultant for today. Quick company brief before you go in. Vallum Associates is a specialist executive recruitment firm based in London, known for placing senior leaders into financial services and regulated industries. They've been growing fast — the digital transformation programme you'd be leading has a forty-person engineering team and an eight-million-pound annual budget. The CTO you'd report to built the current platform, so he'll probe deeply on architecture decisions. Key things they care about: cloud migration experience — Azure specifically — stakeholder management at C-level, and how you balance speed with engineering quality. If they ask what you know about the company, mention the core banking modernisation from monolith to microservices — that's the heart of the role. Right — Sarah and James are ready. Good luck.";
 
   const [phase, setPhase] = useState<RoomPhase>('intro');
   const [qIndex, setQIndex] = useState(0);
@@ -239,8 +255,6 @@ export default function InterviewRoom() {
   }, [askQuestion, ctx.sarahIntro, ctx.jamesIntro]);
 
   const startInterview = useCallback(async () => {
-    const mikeScript = ctx.mikeScript;
-
     if (didConfigured) {
       // Pre-render only question 0 before starting — subsequent questions are
       // prefetched by prefetchDid() during coaching/scoring after each answer.
@@ -260,17 +274,21 @@ export default function InterviewRoom() {
       if (mikeScript) {
         // Show Mike's briefing while question 0 renders in the background
         setPhase('agent-briefing');
-        speak(mikeScript, 'technical', () => {});
         try {
           const [{ videoUrl }] = await Promise.all([
             createTalk(mikeScript, 'agent'),
             prerenderFirst(),
           ]);
           setMikeVideoUrl(videoUrl);
-          // Video autoplays (muted) and calls beginInterviewIntro on end
+          // Video autoplays with its own audio — do NOT also call speak() here
         } catch {
+          // D-ID failed: fall back to voice-only Mike, then chain into intro
+          cancelSpeakRef.current?.();
+          cancelSpeakRef.current = speak(mikeScript, 'technical', () => {
+            cancelSpeakRef.current = null;
+            beginInterviewIntro();
+          });
           await prerenderFirst();
-          beginInterviewIntro();
         }
       } else {
         setPhase('prerendering');
@@ -503,11 +521,7 @@ export default function InterviewRoom() {
               <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Mike</div>
               <div style={{ fontSize: '13px', color: 'var(--text-3)', marginBottom: '20px' }}>Interview Consultant</div>
               <div style={{ fontSize: '14px', color: 'var(--text-2)', lineHeight: 1.7, marginBottom: '24px', minHeight: '48px' }}>
-                {ctx.mikeScript ? (
-                  <em>"{ctx.mikeScript}"</em>
-                ) : (
-                  'Preparing your interview briefing…'
-                )}
+                <em>"{mikeScript}"</em>
               </div>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center', marginBottom: '16px' }}>
                 <div style={{ background: 'var(--bg3)', borderRadius: '99px', height: '4px', width: '180px', overflow: 'hidden' }}>
