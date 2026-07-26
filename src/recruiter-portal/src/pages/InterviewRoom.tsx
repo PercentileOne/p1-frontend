@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InterviewerAvatar, type AvatarState } from '../components/InterviewerAvatar';
@@ -10,10 +10,12 @@ import { CoachingOverlay } from '../components/CoachingOverlay';
 import { generateCoachingMessage, type CoachingMessage } from '../utils/coachingEngine';
 import { scoreWithAI, coachWithAI, aiScoringConfigured } from '../api/aiScoring';
 import { createTalk, didConfigured } from '../api/didApi';
+import { pickRandomCompany, type Company } from '../data/companyBank';
 
 // ── Demo questions ─────────────────────────────────────────────────────────────
 
-const DEMO_QUESTIONS: InterviewQuestion[] = [
+function buildDemoQuestions(company: Company): InterviewQuestion[] {
+  return [
   // Technical first (James asks these)
   {
     questionId: 'q1',
@@ -36,8 +38,8 @@ const DEMO_QUESTIONS: InterviewQuestion[] = [
   // HR / team-fit last (Sarah asks these)
   {
     questionId: 'q4',
-    questionText: 'What do you know about Vallum Associates and why does this role appeal to you specifically?',
-    modelAnswer: 'Mention: specialist executive recruitment firm in financial services; 40-person engineering team; core banking platform modernisation from monolith to microservices; £8m budget; Azure cloud migration. Tie to your own experience and motivations.',
+    questionText: `What do you know about ${company.name} and why does this role appeal to you specifically?`,
+    modelAnswer: `Mention key facts about ${company.name}: ${company.keyFacts.slice(0, 3).join('; ')}. Tie their research to your own experience and motivations.`,
     questionType: 'Behavioural', difficulty: 'Easy', source: 'HR', competencyTags: ['company knowledge', 'motivation', 'research'],
   },
   {
@@ -46,13 +48,11 @@ const DEMO_QUESTIONS: InterviewQuestion[] = [
     modelAnswer: 'Use STAR. Show you prepared, chose the right setting, led with facts not feelings, listened to their response, and maintained the relationship.',
     questionType: 'Behavioural', difficulty: 'Medium', source: 'HR', competencyTags: ['stakeholder management', 'communication'],
   },
-];
+];}
 
 // ── Local scoring fallback ────────────────────────────────────────────────────
 
-const VALLUM_FACTS = ['microservice', 'monolith', 'core banking', 'azure', 'eight million', '£8m', '8m', 'forty', '40', 'financial service', 'regulated', 'executive recruitment', 'vallum'];
-
-function localScore(q: InterviewQuestion, answer: string): ScoreResponse {
+function localScore(q: InterviewQuestion, answer: string, companyKeywords: string[] = []): ScoreResponse {
   const words = answer.trim().split(/\s+/).filter(Boolean);
   const len = words.length;
   const lower = answer.toLowerCase();
@@ -62,9 +62,9 @@ function localScore(q: InterviewQuestion, answer: string): ScoreResponse {
   const confidence = lower.includes('i led') || lower.includes('i built') || lower.includes('i delivered') ? 0.8
     : lower.includes('i think') || lower.includes('maybe') ? 0.35 : 0.55;
 
-  // Company knowledge bonus — rewards candidates who researched Vallum facts
+  // Company knowledge bonus — rewards candidates who cite facts from Mike's briefing
   const isCompanyKnowledgeQ = q.competencyTags.includes('company knowledge');
-  const factsHit = isCompanyKnowledgeQ ? VALLUM_FACTS.filter(f => lower.includes(f)).length : 0;
+  const factsHit = isCompanyKnowledgeQ ? companyKeywords.filter(f => lower.includes(f)).length : 0;
   const companyBonus = isCompanyKnowledgeQ ? Math.min(0.2, factsHit * 0.05) : 0;
 
   const overall = Math.min(1, Math.round((clarity * 0.25 + relevance * 0.35 + depth * 0.25 + confidence * 0.15 + companyBonus) * 10000) / 10000);
@@ -93,7 +93,7 @@ interface RoomState {
   jamesIntro?: string;
   specialistTitle?: string;
   mikeScript?: string | null;
-  companyFacts?: string[];
+  companyFacts?: string[];  // keywords for scoring company knowledge questions
 }
 
 interface SessionAnswer {
@@ -123,13 +123,16 @@ export default function InterviewRoom() {
   const navigate = useNavigate();
   const location = useLocation();
   const ctx = (location.state ?? {}) as RoomState;
-  const questions = ctx.questions ?? DEMO_QUESTIONS;
   const cvCtx = ctx.cvCtx;
   const jobCtx = ctx.jobCtx;
   const specialistTitle = ctx.specialistTitle ?? 'Hiring Manager';
 
-  const mikeScript = ctx.mikeScript ??
-    "Hi, I'm Mike — your interview consultant for today. Quick company brief before you go in. Vallum Associates is a specialist executive recruitment firm based in London, known for placing senior leaders into financial services and regulated industries. They've been growing fast — the digital transformation programme you'd be leading has a forty-person engineering team and an eight-million-pound annual budget. The CTO you'd report to built the current platform, so he'll probe deeply on architecture decisions. Key things they care about: cloud migration experience — Azure specifically — stakeholder management at C-level, and how you balance speed with engineering quality. If they ask what you know about the company, mention the core banking modernisation from monolith to microservices — that's the heart of the role. Right — Sarah and James are ready. Good luck.";
+  // Pick a random company once per session (stable across re-renders)
+  const demoCompany = useMemo(() => pickRandomCompany(), []);
+  const questions = ctx.questions ?? buildDemoQuestions(demoCompany);
+  const companyKeywords = ctx.questions ? (ctx.companyFacts ?? []) : demoCompany.companyKnowledgeKeywords;
+
+  const mikeScript = ctx.mikeScript ?? demoCompany.mikeLines;
 
   const [phase, setPhase] = useState<RoomPhase>('intro');
   const [qIndex, setQIndex] = useState(0);
@@ -372,9 +375,9 @@ export default function InterviewRoom() {
     try {
       score = aiScoringConfigured
         ? await scoreWithAI(q, text, cvCtx, jobCtx)
-        : localScore(q, text);
+        : localScore(q, text, companyKeywords);
     } catch {
-      score = localScore(q, text);
+      score = localScore(q, text, companyKeywords);
     }
 
     setCurrentScore(score);
