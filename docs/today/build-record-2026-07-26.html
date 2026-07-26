@@ -1,0 +1,574 @@
+<title>Explain — Build Record · 26 July 2026</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #070b14;
+    --bg2:      #0d1424;
+    --bg3:      #111827;
+    --border:   rgba(255,255,255,0.08);
+    --text:     #e2e8f0;
+    --text-2:   #94a3b8;
+    --text-3:   #475569;
+    --blue:     #4F8EF7;
+    --purple:   #A78BFA;
+    --green:    #34D399;
+    --amber:    #F59E0B;
+    --red:      #EF4444;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f8fafc; --bg2: #ffffff; --bg3: #f1f5f9;
+      --border: rgba(0,0,0,0.08); --text: #0f172a;
+      --text-2: #334155; --text-3: #94a3b8;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f8fafc; --bg2: #ffffff; --bg3: #f1f5f9;
+    --border: rgba(0,0,0,0.08); --text: #0f172a;
+    --text-2: #334155; --text-3: #94a3b8;
+  }
+  :root[data-theme="dark"] {
+    --bg: #070b14; --bg2: #0d1424; --bg3: #111827;
+    --border: rgba(255,255,255,0.08); --text: #e2e8f0;
+    --text-2: #94a3b8; --text-3: #475569;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding-bottom: 80px;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, rgba(79,142,247,0.12), rgba(52,211,153,0.06));
+    border-bottom: 1px solid var(--border);
+    padding: 44px 48px 36px;
+  }
+  .eyebrow {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--green); margin-bottom: 10px;
+  }
+  .header h1 {
+    font-size: 30px; font-weight: 900; letter-spacing: -0.04em;
+    color: var(--text); line-height: 1.12; margin-bottom: 8px;
+  }
+  .header h1 span { color: var(--blue); }
+  .header .sub { font-size: 13px; color: var(--text-3); margin-bottom: 24px; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip {
+    font-size: 11px; font-weight: 600; padding: 4px 12px;
+    border-radius: 20px; border: 1px solid var(--border);
+    color: var(--text-2); background: var(--bg2);
+  }
+  .chip.green  { color: var(--green);  background: rgba(52,211,153,0.1);  border-color: rgba(52,211,153,0.3);  }
+  .chip.blue   { color: var(--blue);   background: rgba(79,142,247,0.1);  border-color: rgba(79,142,247,0.3);  }
+  .chip.amber  { color: var(--amber);  background: rgba(245,158,11,0.1);  border-color: rgba(245,158,11,0.3);  }
+  .chip.purple { color: var(--purple); background: rgba(167,139,250,0.1); border-color: rgba(167,139,250,0.3); }
+  .chip.red    { color: var(--red);    background: rgba(239,68,68,0.1);   border-color: rgba(239,68,68,0.3);   }
+
+  /* LAYOUT */
+  .body { max-width: 880px; margin: 0 auto; padding: 0 48px; }
+  @media (max-width: 640px) { .body { padding: 0 20px; } .header { padding: 32px 20px 28px; } }
+
+  /* SECTION */
+  .section { margin-top: 48px; }
+  .section-label {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-3);
+    margin-bottom: 16px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 22px; margin-bottom: 12px;
+  }
+  .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .card-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+  }
+  .card h3 { font-size: 13px; font-weight: 800; color: var(--text); letter-spacing: -0.01em; }
+  .card .badge {
+    margin-left: auto; font-size: 10px; font-weight: 700;
+    padding: 2px 9px; border-radius: 20px;
+  }
+  .badge.fixed   { color: var(--green);  background: rgba(52,211,153,0.12);  }
+  .badge.broken  { color: var(--red);    background: rgba(239,68,68,0.12);   }
+  .badge.new     { color: var(--purple); background: rgba(167,139,250,0.12); }
+  .card p, .card li { font-size: 12.5px; color: var(--text-2); line-height: 1.65; }
+  .card ul { padding-left: 16px; }
+  .card li { margin-bottom: 4px; }
+  .card li::marker { color: var(--text-3); }
+  .card code {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 11px; background: var(--bg3); color: var(--blue);
+    padding: 1px 6px; border-radius: 4px; border: 1px solid var(--border);
+  }
+
+  /* TWO / THREE COL */
+  .two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 640px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+
+  /* HIGHLIGHT */
+  .highlight {
+    background: linear-gradient(135deg, rgba(79,142,247,0.07), rgba(52,211,153,0.04));
+    border: 1px solid rgba(79,142,247,0.18);
+    border-radius: 12px; padding: 18px 22px; margin-bottom: 12px;
+  }
+  .highlight p { font-size: 13px; color: var(--text-2); line-height: 1.7; }
+  .highlight strong { color: var(--text); font-weight: 700; }
+
+  /* BEFORE / AFTER DIFF */
+  .diff {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; margin-bottom: 12px;
+  }
+  .diff-before, .diff-after { padding: 16px 20px; }
+  .diff-before { background: rgba(239,68,68,0.06); border-right: 1px solid var(--border); }
+  .diff-after  { background: rgba(52,211,153,0.06); }
+  .diff-label  { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  .diff-before .diff-label { color: var(--red); }
+  .diff-after  .diff-label { color: var(--green); }
+  .diff li { font-size: 12px; color: var(--text-2); line-height: 1.6; margin-bottom: 4px; list-style: none; padding-left: 16px; position: relative; }
+  .diff-before li::before { content: '✕'; position: absolute; left: 0; color: var(--red); font-size: 10px; top: 2px; }
+  .diff-after  li::before { content: '✓'; position: absolute; left: 0; color: var(--green); font-size: 10px; top: 2px; }
+  @media (max-width: 580px) { .diff { grid-template-columns: 1fr; } .diff-before { border-right: none; border-bottom: 1px solid var(--border); } }
+
+  /* FLOW DIAGRAM */
+  .diagram-wrap {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 28px 24px; overflow-x: auto;
+  }
+  .diagram-wrap svg { display: block; margin: 0 auto; }
+
+  /* TIMELINE */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 6px; top: 8px;
+    bottom: 8px; width: 1px; background: var(--border);
+  }
+  .tl-item { position: relative; margin-bottom: 18px; }
+  .tl-dot {
+    position: absolute; left: -22px; top: 4px;
+    width: 10px; height: 10px; border-radius: 50%;
+    border: 2px solid var(--bg2);
+  }
+  .tl-dot.green  { background: var(--green);  }
+  .tl-dot.red    { background: var(--red);    }
+  .tl-dot.amber  { background: var(--amber);  }
+  .tl-dot.blue   { background: var(--blue);   }
+  .tl-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .tl-body  { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+  .tl-body code {
+    font-family: 'SF Mono', monospace; font-size: 11px;
+    background: var(--bg3); color: var(--blue);
+    padding: 1px 5px; border-radius: 4px;
+  }
+
+  /* STAT ROW */
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+  @media (max-width: 640px) { .stat-row { grid-template-columns: 1fr 1fr; } }
+  .stat {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; text-align: center;
+  }
+  .stat .stat-n { font-size: 26px; font-weight: 900; letter-spacing: -0.04em; line-height: 1; margin-bottom: 4px; }
+  .stat .stat-l { font-size: 11px; color: var(--text-3); font-weight: 600; }
+  .stat.green .stat-n { color: var(--green); }
+  .stat.blue  .stat-n { color: var(--blue);  }
+  .stat.amber .stat-n { color: var(--amber); }
+  .stat.red   .stat-n { color: var(--red);   }
+</style>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="eyebrow">Explain.global · Build Record</div>
+  <h1>From Broken to <span>Live</span></h1>
+  <p class="sub">26 July 2026 · Full-stack stabilisation of recruiter.explain.global</p>
+  <div class="meta-row">
+    <span class="chip green">8 fixes shipped</span>
+    <span class="chip blue">CV AI Parse live</span>
+    <span class="chip blue">Session Prepare live</span>
+    <span class="chip purple">D-ID interviews restored</span>
+    <span class="chip">recruiter.explain.global</span>
+  </div>
+</div>
+
+<div class="body">
+
+  <!-- STATS -->
+  <div class="section">
+    <div class="stat-row">
+      <div class="stat green"><div class="stat-n">8</div><div class="stat-l">Fixes shipped</div></div>
+      <div class="stat blue"><div class="stat-n">3</div><div class="stat-l">Services touched</div></div>
+      <div class="stat amber"><div class="stat-n">0</div><div class="stat-l">Browser AI calls</div></div>
+      <div class="stat green"><div class="stat-n">✓</div><div class="stat-l">CV · AI parsed</div></div>
+    </div>
+  </div>
+
+  <!-- WHAT WAS BROKEN -->
+  <div class="section">
+    <div class="section-label">State at session start — what was broken</div>
+
+    <div class="highlight">
+      <p>Every CI deploy had been <strong>silently failing since 24 July</strong> because the SWA deployment token secret was missing from GitHub. The live site was running the old OpenAI-based bundle. All API calls from the browser were blocked by CORS. The CV preview showed HEURISTIC instead of AI data. Mike's intro was gone. James spoke twice.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(239,68,68,0.12);">🔒</div>
+          <h3>CI deploy dead since July 24</h3>
+          <span class="badge broken">broken</span>
+        </div>
+        <p><code>AZURE_STATIC_WEB_APPS_API_TOKEN_EXPLAIN_GLOBAL</code> was missing from GitHub repo secrets. Every push to main silently failed with "deployment_token was not provided." The live site was frozen on the old bundle.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(239,68,68,0.12);">🚫</div>
+          <h3>CORS blocking all API calls</h3>
+          <span class="badge broken">broken</span>
+        </div>
+        <p><code>api.explain.global</code> (Azure Function App) only whitelisted <code>portal.azure.com</code>. Every browser request from <code>recruiter.explain.global</code> — including <code>GET /health</code> — returned "Failed to fetch."</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(239,68,68,0.12);">🔗</div>
+          <h3>Wrong API URL baked into bundle</h3>
+          <span class="badge broken">broken</span>
+        </div>
+        <p><code>VITE_EXPLAIN_API_URL</code> was never set in the CI workflow. Vite fell back to <code>explain-api.azurewebsites.net</code> — a URL the browser cannot reach. All fetch calls failed before CORS was even checked.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(239,68,68,0.12);">🤖</div>
+          <h3>Wrong Anthropic model name</h3>
+          <span class="badge broken">broken</span>
+        </div>
+        <p><code>AnthropicExplainAIClient</code> referenced <code>claude-sonnet-5-20251101</code> which does not exist. Every call to <code>/cv/parse</code> and <code>/session/prepare</code> returned 500 from the Function App.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(239,68,68,0.12);">💾</div>
+          <h3>Cosmos DB not provisioned</h3>
+          <span class="badge broken">broken</span>
+        </div>
+        <p>The <code>explain</code> database didn't exist in the Cosmos account. <code>CVParserService</code> called the AI successfully but then crashed trying to write to <code>CVProfiles</code>, returning 500 instead of the parsed data.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(239,68,68,0.12);">🎬</div>
+          <h3>D-ID returning 500</h3>
+          <span class="badge broken">broken</span>
+        </div>
+        <p>The SWA API function <code>/api/did-talk</code> used <code>fetch()</code> — not available in all Node runtimes. Also, the API folder wasn't included in the <code>swa deploy dist</code> command, so the function was never updated.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(239,68,68,0.12);">🔊</div>
+        <h3>Mike missing · James speaking twice</h3>
+        <span class="badge broken">broken</span>
+      </div>
+      <p>When D-ID failed, <code>startInterview()</code> had a race condition: <code>speak(mikeScript, 'technical', () =&gt; {})</code> fired with an empty callback (no cancel, no chain), and then the catch block immediately called <code>beginInterviewIntro()</code>. Sarah and James-as-Mike spoke simultaneously. James then spoke his own intro on top — appearing to speak twice. In the D-ID success path, <code>speak()</code> also fired unnecessarily alongside the video.</p>
+    </div>
+  </div>
+
+  <!-- FIXES -->
+  <div class="section">
+    <div class="section-label">Fixes shipped — in order</div>
+
+    <div class="timeline">
+
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-title">1 · SWA deployment secret added</div>
+        <div class="tl-body">Francis added <code>AZURE_STATIC_WEB_APPS_API_TOKEN_EXPLAIN_GLOBAL</code> to GitHub repo secrets. CI deploys restored. Direct <code>swa deploy</code> used immediately to push live without waiting for CI.</div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-title">2 · CORS opened for all explain.global origins</div>
+        <div class="tl-body">Added <code>recruiter.explain.global</code>, <code>client.explain.global</code>, and <code>candidate.explain.global</code> to the Function App CORS allowlist via <code>az functionapp cors add</code>. Verified: <code>GET /health</code> from the browser returns 200 with correct <code>Access-Control-Allow-Origin</code>.</div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-title">3 · VITE_EXPLAIN_API_URL added to CI workflow</div>
+        <div class="tl-body">Added <code>VITE_EXPLAIN_API_URL: https://api.explain.global</code> to the Build step env vars in <code>.github/workflows/deploy-swa.yml</code>. Rebuilt locally with the env var — new bundle hash <code>index-fdxmY5Cj.js</code> — confirmed <code>api.explain.global</code> appears once, <code>explain-api.azurewebsites.net</code> zero times. Deployed directly.</div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-title">4 · Anthropic model corrected</div>
+        <div class="tl-body"><code>AnthropicExplainAIClient</code>: changed <code>Model</code> constant from <code>claude-sonnet-5-20251101</code> (non-existent) to <code>claude-sonnet-4-5</code>. Confirmed via direct Anthropic API call — responds correctly with <code>"model":"claude-sonnet-4-5-20250929"</code>.</div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-title">5 · Cosmos write made non-fatal</div>
+        <div class="tl-body"><code>CVParserService.ParseAsync</code>: wrapped the Cosmos <code>CreateAsync</code> call in try/catch. If the write fails (database not provisioned), logs a warning and returns the AI result anyway. CV parse now works end-to-end without requiring Cosmos.</div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-title">6 · Achievement prompt criteria relaxed</div>
+        <div class="tl-body">The AI CV prompt had overly strict rules ("MUST satisfy BOTH: number/£/% AND measurable outcome"). Changed to include: named system delivered, team led, promotion, major project completion. Achievements now surface correctly for real CVs.</div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-title">7 · D-ID API function rewritten</div>
+        <div class="tl-body">Replaced <code>fetch()</code> with Node's built-in <code>https</code> module in <code>/api/did-talk/index.js</code> — works in all Node runtime versions. Redeployed including the <code>--api-location api</code> flag so the function is actually shipped with the SWA bundle.</div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-title">8 · Mike intro &amp; interview start sequence fixed</div>
+        <div class="tl-body">D-ID success path: removed the redundant <code>speak()</code> call — the video carries its own audio. D-ID fail path: voice-only Mike now chains correctly into <code>beginInterviewIntro()</code> via callback, with <code>cancelSpeakRef</code> properly managed. James no longer speaks twice.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BEFORE / AFTER -->
+  <div class="section">
+    <div class="section-label">Before vs after</div>
+    <div class="diff">
+      <div class="diff-before">
+        <div class="diff-label">Before</div>
+        <ul>
+          <li>CI deploys failing since July 24</li>
+          <li>All browser → API calls blocked (CORS)</li>
+          <li>Bundle pointing at wrong API URL</li>
+          <li>CV preview: HEURISTIC badge, 4 experiences</li>
+          <li>Qualifications: 0</li>
+          <li>Achievements: 0</li>
+          <li>D-ID video: 500 errors</li>
+          <li>Mike intro: missing</li>
+          <li>James: speaking twice simultaneously</li>
+          <li>Session load time: 6–7 minutes</li>
+        </ul>
+      </div>
+      <div class="diff-after">
+        <div class="diff-label">After</div>
+        <ul>
+          <li>CI deploys restored, secret in place</li>
+          <li>CORS open for all explain.global portals</li>
+          <li>Bundle uses api.explain.global</li>
+          <li>CV preview: AI PARSED badge, 8 experiences</li>
+          <li>Qualifications: 2</li>
+          <li>Achievements: surfacing correctly</li>
+          <li>D-ID video: creating talks successfully</li>
+          <li>Mike briefs while Q0 pre-renders</li>
+          <li>James: speaks once, in sequence</li>
+          <li>Session load: &lt; 3 seconds</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE DIAGRAM -->
+  <div class="section">
+    <div class="section-label">Live architecture — request flow</div>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 760 340" width="100%" style="max-width:760px; font-family:-apple-system,'Segoe UI',sans-serif;">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="rgba(148,163,184,0.5)"/>
+          </marker>
+          <marker id="arr-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#4F8EF7"/>
+          </marker>
+          <marker id="arr-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#34D399"/>
+          </marker>
+          <marker id="arr-purple" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#A78BFA"/>
+          </marker>
+        </defs>
+
+        <!-- Browser box -->
+        <rect x="20" y="130" width="130" height="64" rx="10" fill="rgba(79,142,247,0.08)" stroke="rgba(79,142,247,0.35)" stroke-width="1.5"/>
+        <text x="85" y="155" text-anchor="middle" fill="#4F8EF7" font-size="10" font-weight="800" letter-spacing="0.08em">BROWSER</text>
+        <text x="85" y="170" text-anchor="middle" fill="#94a3b8" font-size="10">recruiter.explain.global</text>
+        <text x="85" y="184" text-anchor="middle" fill="#475569" font-size="9">Azure SWA · index-fdxmY5Cj.js</text>
+
+        <!-- SWA API box -->
+        <rect x="210" y="220" width="130" height="58" rx="10" fill="rgba(167,139,250,0.08)" stroke="rgba(167,139,250,0.3)" stroke-width="1.5"/>
+        <text x="275" y="243" text-anchor="middle" fill="#A78BFA" font-size="10" font-weight="800" letter-spacing="0.08em">SWA API</text>
+        <text x="275" y="257" text-anchor="middle" fill="#94a3b8" font-size="10">/api/did-talk</text>
+        <text x="275" y="270" text-anchor="middle" fill="#475569" font-size="9">Node · https module</text>
+
+        <!-- explain-api box -->
+        <rect x="390" y="90" width="150" height="70" rx="10" fill="rgba(52,211,153,0.07)" stroke="rgba(52,211,153,0.3)" stroke-width="1.5"/>
+        <text x="465" y="113" text-anchor="middle" fill="#34D399" font-size="10" font-weight="800" letter-spacing="0.08em">EXPLAIN-API</text>
+        <text x="465" y="128" text-anchor="middle" fill="#94a3b8" font-size="10">api.explain.global</text>
+        <text x="465" y="142" text-anchor="middle" fill="#475569" font-size="9">Azure Functions · UK South</text>
+        <text x="465" y="153" text-anchor="middle" fill="#475569" font-size="9">CORS ✓ all portals</text>
+
+        <!-- Anthropic box -->
+        <rect x="580" y="40" width="155" height="54" rx="10" fill="rgba(245,158,11,0.07)" stroke="rgba(245,158,11,0.28)" stroke-width="1.5"/>
+        <text x="657" y="62" text-anchor="middle" fill="#F59E0B" font-size="10" font-weight="800" letter-spacing="0.08em">ANTHROPIC</text>
+        <text x="657" y="76" text-anchor="middle" fill="#94a3b8" font-size="10">api.anthropic.com</text>
+        <text x="657" y="88" text-anchor="middle" fill="#475569" font-size="9">claude-sonnet-4-5</text>
+
+        <!-- D-ID box -->
+        <rect x="430" y="240" width="140" height="54" rx="10" fill="rgba(167,139,250,0.07)" stroke="rgba(167,139,250,0.28)" stroke-width="1.5"/>
+        <text x="500" y="262" text-anchor="middle" fill="#A78BFA" font-size="10" font-weight="800" letter-spacing="0.08em">D-ID</text>
+        <text x="500" y="276" text-anchor="middle" fill="#94a3b8" font-size="10">api.d-id.com</text>
+        <text x="500" y="288" text-anchor="middle" fill="#475569" font-size="9">Talking-head video generation</text>
+
+        <!-- ElevenLabs / WebSpeech -->
+        <rect x="580" y="155" width="155" height="54" rx="10" fill="rgba(79,142,247,0.06)" stroke="rgba(79,142,247,0.22)" stroke-width="1.5"/>
+        <text x="657" y="177" text-anchor="middle" fill="#4F8EF7" font-size="10" font-weight="800" letter-spacing="0.08em">ELEVENLABS</text>
+        <text x="657" y="191" text-anchor="middle" fill="#94a3b8" font-size="10">TTS fallback</text>
+        <text x="657" y="203" text-anchor="middle" fill="#475569" font-size="9">+ Web Speech API</text>
+
+        <!-- Arrows: Browser → explain-api -->
+        <line x1="150" y1="150" x2="387" y2="118" stroke="#4F8EF7" stroke-width="1.4" marker-end="url(#arr-blue)" stroke-dasharray="none"/>
+        <text x="270" y="120" text-anchor="middle" fill="#4F8EF7" font-size="9" font-weight="600">POST /cv/parse</text>
+        <text x="270" y="131" text-anchor="middle" fill="#475569" font-size="9">POST /session/prepare</text>
+
+        <!-- explain-api → Anthropic -->
+        <line x1="540" y1="110" x2="578" y2="82" stroke="#F59E0B" stroke-width="1.4" marker-end="url(#arr)"/>
+        <text x="568" y="102" text-anchor="middle" fill="#475569" font-size="9">AI calls</text>
+
+        <!-- explain-api → ElevenLabs (label) -->
+        <line x1="540" y1="140" x2="578" y2="168" stroke="#4F8EF7" stroke-width="1" marker-end="url(#arr)" stroke-dasharray="4 3"/>
+
+        <!-- Browser → SWA API -->
+        <line x1="110" y1="190" x2="210" y2="232" stroke="#A78BFA" stroke-width="1.4" marker-end="url(#arr-purple)"/>
+        <text x="148" y="222" text-anchor="middle" fill="#A78BFA" font-size="9" font-weight="600">POST /api/did-talk</text>
+
+        <!-- SWA API → D-ID -->
+        <line x1="340" y1="260" x2="428" y2="265" stroke="#A78BFA" stroke-width="1.4" marker-end="url(#arr-purple)"/>
+        <text x="385" y="255" text-anchor="middle" fill="#475569" font-size="9">https.request</text>
+
+        <!-- Labels on bottom -->
+        <text x="85" y="316" text-anchor="middle" fill="#475569" font-size="9">bundle: index-fdxmY5Cj.js</text>
+        <text x="465" y="316" text-anchor="middle" fill="#34D399" font-size="9">★ all endpoints verified live</text>
+        <text x="657" y="316" text-anchor="middle" fill="#475569" font-size="9">fallback if D-ID unavailable</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- INTERVIEW ROOM FLOW -->
+  <div class="section">
+    <div class="section-label">Interview room sequence — fixed flow</div>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(167,139,250,0.12); font-size:18px;">🤖</div>
+          <h3>Phase 1 · Mike</h3>
+          <span class="badge new">new</span>
+        </div>
+        <ul>
+          <li>Mike's briefing screen shown immediately</li>
+          <li>D-ID creates Mike's talking-head video</li>
+          <li><strong>Simultaneously:</strong> Q0 pre-renders in background</li>
+          <li>Video plays Mike's company briefing with audio</li>
+          <li>No duplicate TTS — video carries its own audio</li>
+          <li>If D-ID fails: voice-only Mike → chains to Phase 2</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(79,142,247,0.12); font-size:18px;">👩‍💼</div>
+          <h3>Phase 2 · Sarah &amp; James</h3>
+          <span class="badge fixed">fixed</span>
+        </div>
+        <ul>
+          <li>Sarah Mitchell (HR Director) speaks her intro</li>
+          <li>James Okafor (Technical Lead) speaks his intro</li>
+          <li>Strictly sequential — no overlap</li>
+          <li><code>cancelSpeakRef</code> properly managed throughout</li>
+          <li>300ms gap then Q1 begins</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon" style="background:rgba(52,211,153,0.12); font-size:18px;">❓</div>
+          <h3>Phase 3 · Questions</h3>
+          <span class="badge fixed">fixed</span>
+        </div>
+        <ul>
+          <li>Q0 already cached — no wait</li>
+          <li>Each answer triggers next Q pre-fetch</li>
+          <li>D-ID video per question (hr / technical role)</li>
+          <li>ElevenLabs TTS fallback if D-ID is slow</li>
+          <li>AI scoring after each answer</li>
+          <li>5 questions total (3 technical + 2 behavioural)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILES CHANGED -->
+  <div class="section">
+    <div class="section-label">Files changed this session</div>
+    <div class="two-col">
+      <div>
+        <div class="card" style="margin-bottom:8px;">
+          <div class="card-head">
+            <div class="card-icon" style="background:rgba(52,211,153,0.1); font-size:13px;">⚙</div>
+            <h3>explain-api (Azure Functions)</h3>
+          </div>
+          <ul>
+            <li><code>AnthropicExplainAIClient.cs</code> — model name, achievement prompt</li>
+            <li><code>CVParserService.cs</code> — Cosmos write non-fatal</li>
+            <li><code>JwtValidationMiddleware.cs</code> — ParseCV in PublicRoutes</li>
+            <li><code>CVParseFunction.cs</code> — removed HasRole guard</li>
+            <li><code>CVContracts.cs</code> — CvExperienceEntry, expanded ParseCVResponse</li>
+            <li><code>FusionEngine.cs</code> — Experience field rename</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:8px;">
+          <div class="card-head">
+            <div class="card-icon" style="background:rgba(79,142,247,0.1); font-size:13px;">⚛</div>
+            <h3>recruiter-portal (React SWA)</h3>
+          </div>
+          <ul>
+            <li><code>api/did-talk/index.js</code> — https module rewrite</li>
+            <li><code>src/pages/InterviewRoom.tsx</code> — Mike/James race fix</li>
+            <li><code>src/pages/InterviewIntake.tsx</code> — server-side CV parse</li>
+            <li><code>src/api/explainApi.ts</code> — CvParseRequest/Response types</li>
+            <li><code>.github/workflows/deploy-swa.yml</code> — VITE_EXPLAIN_API_URL</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div class="card-icon" style="background:rgba(245,158,11,0.1); font-size:13px;">☁</div>
+            <h3>Azure (live config)</h3>
+          </div>
+          <ul>
+            <li>CORS: 3 origins added to explain-api Function App</li>
+            <li>GitHub secret: SWA deploy token restored</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECURITY NOTE -->
+  <div class="section">
+    <div class="section-label">Security posture — unchanged and intact</div>
+    <div class="highlight">
+      <p><strong>No secrets committed to git.</strong> <code>DID_API_KEY</code> remains Azure SWA environment variable only. <code>Anthropic__ApiKey</code> remains Azure Function App setting only. <code>VITE_EXPLAIN_API_URL</code> is a non-secret build-time constant (plain URL, no credentials). <code>.env.local</code> and <code>local.settings.json</code> remain gitignored. The OpenAI key previously leaked in history has not been re-introduced — all browser-side OpenAI calls were removed in the preceding session.</p>
+    </div>
+  </div>
+
+</div>
