@@ -24,13 +24,22 @@ Experience Required:
 
 function ExplainLogo() {
   return (
-    <img
-      src="/assets/explain-logo.svg"
-      alt="Explain"
-      width={28}
-      height={28}
-      style={{ borderRadius: '50%', flexShrink: 0 }}
-    />
+    <div style={{
+      width: 28, height: 28, borderRadius: '50%',
+      background: '#fff',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0,
+      boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
+      overflow: 'hidden',
+    }}>
+      <img
+        src="/assets/explain-logo.svg"
+        alt="Explain"
+        width={22}
+        height={22}
+        style={{ display: 'block' }}
+      />
+    </div>
   );
 }
 
@@ -116,7 +125,7 @@ function PremiumCard({ onOpen }: { onOpen: () => void }) {
         textAlign: 'center',
       }}>
         <div>No login needed • Instant access</div>
-        <div style={{ marginTop: '6px' }}>Powered by Explain.global</div>
+        <div style={{ marginTop: '6px' }}>Powered by <span style={{ fontWeight: 700, color: '#555' }}>Explain</span>.global</div>
       </div>
     </div>
   );

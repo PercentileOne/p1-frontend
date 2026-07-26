@@ -261,14 +261,15 @@ export default function Dashboard() {
               {[
                 { title: 'LinkedIn-style Job Page', url: '/demo/linkedin-job', desc: 'Standard job board layout with Magic Button in the apply row.' },
                 { title: 'Vallum Associates Career Page', url: '/demo/vallum-job', desc: 'Branded career page matching the real Vallum site, with Magic Button in the sidebar.' },
+                { title: '💳 Vallum — Practice Pack £1', url: '/demo/vallum-job-paid', desc: 'Same Vallum page with a £1 upsell card — 20 AI‑generated practice questions tailored to this exact role and your CV, for £1, no login needed.', accent: true },
                 { title: '⚡ Interview Room', url: '/interview-room/demo', desc: 'Two AI interviewers, voice input, real-time scoring — the full simulation experience.' },
               ].map(d => (
-                <div key={d.url} style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div key={d.url} style={{ background: 'var(--bg2)', border: `1px solid ${'accent' in d && d.accent ? 'rgba(167,139,250,0.35)' : 'var(--border)'}`, borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', marginBottom: '4px' }}>{d.title}</div>
                     <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>{d.desc}</div>
                   </div>
-                  <button onClick={() => window.open(d.url, '_blank')} style={{ background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 18px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+                  <button onClick={() => window.open(d.url, '_blank')} style={{ background: 'accent' in d && d.accent ? 'rgba(167,139,250,0.15)' : 'var(--blue)', color: 'accent' in d && d.accent ? 'var(--purple)' : '#fff', border: 'accent' in d && d.accent ? '1px solid rgba(167,139,250,0.4)' : 'none', borderRadius: '8px', padding: '9px 18px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
                     Open Demo
                   </button>
                 </div>

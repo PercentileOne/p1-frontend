@@ -1,4 +1,6 @@
-const DID_BASE = 'https://api.d-id.com';
+const https = require('https');
+
+const DID_BASE_HOST = 'api.d-id.com';
 
 const PRESENTER_IMAGES = {
   hr: 'https://recruiter.explain.global/images/sarah.png',
@@ -12,6 +14,30 @@ const DID_VOICES = {
   agent: 'en-GB-OliverNeural',
 };
 
+function didRequest(method, path, body, authHeader) {
+  return new Promise((resolve, reject) => {
+    const payload = body ? JSON.stringify(body) : null;
+    const options = {
+      hostname: DID_BASE_HOST,
+      path,
+      method,
+      headers: {
+        Authorization: authHeader,
+        'Content-Type': 'application/json',
+        ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
+      },
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => resolve({ status: res.statusCode, body: data }));
+    });
+    req.on('error', reject);
+    if (payload) req.write(payload);
+    req.end();
+  });
+}
+
 module.exports = async function (context, req) {
   const { text, role = 'technical', talkId } = req.body ?? {};
   const DID_KEY = process.env.DID_API_KEY;
@@ -22,26 +48,29 @@ module.exports = async function (context, req) {
   }
 
   const authHeader = `Basic ${Buffer.from(DID_KEY).toString('base64')}`;
-  const headers = { Authorization: authHeader, 'Content-Type': 'application/json' };
 
   // Phase 2: poll for existing talk
   if (talkId) {
-    const pollRes = await fetch(`${DID_BASE}/talks/${talkId}`, { headers });
-    const data = await pollRes.json();
-    if (data.status === 'done' && data.result_url) {
-      context.res = {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'done', videoUrl: data.result_url }),
-      };
-    } else if (data.status === 'error') {
-      context.res = { status: 500, body: JSON.stringify({ status: 'error' }) };
-    } else {
-      context.res = {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: data.status ?? 'pending' }),
-      };
+    try {
+      const { status, body } = await didRequest('GET', `/talks/${talkId}`, null, authHeader);
+      const data = JSON.parse(body);
+      if (data.status === 'done' && data.result_url) {
+        context.res = {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'done', videoUrl: data.result_url }),
+        };
+      } else if (data.status === 'error') {
+        context.res = { status: 500, body: JSON.stringify({ status: 'error' }) };
+      } else {
+        context.res = {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: data.status ?? 'pending' }),
+        };
+      }
+    } catch (err) {
+      context.res = { status: 500, body: String(err) };
     }
     return;
   }
@@ -53,30 +82,25 @@ module.exports = async function (context, req) {
   }
 
   try {
-    const createRes = await fetch(`${DID_BASE}/talks`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        source_url: PRESENTER_IMAGES[role] ?? PRESENTER_IMAGES.technical,
-        script: {
-          type: 'text',
-          input: text,
-          provider: {
-            type: 'microsoft',
-            voice_id: DID_VOICES[role] ?? DID_VOICES.technical,
-          },
+    const { status, body } = await didRequest('POST', '/talks', {
+      source_url: PRESENTER_IMAGES[role] ?? PRESENTER_IMAGES.technical,
+      script: {
+        type: 'text',
+        input: text,
+        provider: {
+          type: 'microsoft',
+          voice_id: DID_VOICES[role] ?? DID_VOICES.technical,
         },
-        config: { fluent: true, pad_audio: 0 },
-      }),
-    });
+      },
+      config: { fluent: true, pad_audio: 0 },
+    }, authHeader);
 
-    if (!createRes.ok) {
-      const err = await createRes.text();
-      context.res = { status: createRes.status, body: `D-ID ${createRes.status}: ${err}` };
+    if (status < 200 || status >= 300) {
+      context.res = { status, body: `D-ID ${status}: ${body}` };
       return;
     }
 
-    const { id } = await createRes.json();
+    const { id } = JSON.parse(body);
     context.res = {
       status: 202,
       headers: { 'Content-Type': 'application/json' },
