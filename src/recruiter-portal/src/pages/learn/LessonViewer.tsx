@@ -18,7 +18,7 @@ export default function LessonViewer() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [savedLesson, setSavedLesson] = useState<SavedLesson | null>(null);
+  const [, setSavedLesson] = useState<SavedLesson | null>(null);
   const [lesson, setLesson] = useState<LessonData | null>((location.state as any)?.lesson ?? null);
   const [language, setLanguage] = useState<string>((location.state as any)?.language ?? 'English');
   const [loading, setLoading] = useState(!lesson);
@@ -171,7 +171,7 @@ export default function LessonViewer() {
             {/* KEY CONCEPTS */}
             <SectionHead label="KEY CONCEPTS" count={lesson.keyConcepts.length} extra={conceptsDone > 0 ? `${conceptsDone}/${lesson.keyConcepts.length} understood` : undefined} extraColour="#2D9E6A" />
             {lesson.keyConcepts.map((c, i) => (
-              <ConceptCard key={i} concept={c} index={i} catColour={catColour}
+              <ConceptCard key={i} concept={c} catColour={catColour}
                 isExpanded={expandedConcept === i}
                 isUnderstood={conceptsUnderstood[i] ?? false}
                 onToggleExpand={() => toggleExpand(i)}
@@ -295,8 +295,8 @@ function CheckBox({ checked }: { checked: boolean }) {
   );
 }
 
-function ConceptCard({ concept, index, catColour, isExpanded, isUnderstood, onToggleExpand, onToggleUnderstood }: {
-  concept: KeyConcept; index: number; catColour: string;
+function ConceptCard({ concept, catColour, isExpanded, isUnderstood, onToggleExpand, onToggleUnderstood }: {
+  concept: KeyConcept; catColour: string;
   isExpanded: boolean; isUnderstood: boolean;
   onToggleExpand: () => void; onToggleUnderstood: () => void;
 }) {

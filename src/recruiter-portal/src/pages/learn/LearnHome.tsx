@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateLesson, saveLesson, getLessons } from '../../api/learnApi';
 import { logFlowEvent } from '../../api/flowLogger';
@@ -29,7 +29,6 @@ type RecentLesson = { id: string; subject: string; category: string; emoji: stri
 
 export default function LearnHome() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [subject, setSubject] = useState('');
   const [language, setLanguage] = useState('English');
   const [loading, setLoading] = useState(false);
@@ -70,7 +69,7 @@ export default function LearnHome() {
       const lesson: LessonData = await generateLesson(trimmed, language);
       logFlowEvent('LESSON_GENERATED', { subject: trimmed, category: lesson.category, language });
 
-      const { id, createdAt } = await saveLesson(lesson, language);
+      const { id } = await saveLesson(lesson, language);
       logFlowEvent('LESSON_SAVED', { id, subject: trimmed });
 
       navigate(`/learn/lesson/${id}`, { state: { lesson, language } });
