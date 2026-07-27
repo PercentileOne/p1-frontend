@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { PackPopup } from './PackPopup';
+import { logFlowEvent } from '../api/flowLogger';
 
 interface Props {
   jobDescriptionText: string;
@@ -32,7 +33,7 @@ export function MagicButton({ jobDescriptionText, exampleCvText, workspaceId, la
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => { logFlowEvent('ENTRY_CLICK', { source: 'MagicButton', label }); setOpen(true); }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
