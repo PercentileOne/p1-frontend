@@ -36,6 +36,9 @@ export function generateCoachingMessage(
     : 'this role';
   const topSkill = jobCtx?.requiredSkills?.[0] ?? jobCtx?.techStack?.[0] ?? null;
 
+  // Without a job spec we can't meaningfully judge relevance
+  const hasJobContext = !!(jobCtx?.title || jobCtx?.requiredSkills?.length);
+
   if (overall >= 0.70) {
     // Strong answer
     tone = 'strong';
@@ -50,8 +53,8 @@ export function generateCoachingMessage(
     tone = 'delivery';
     lines.push(`Your content was actually solid — but your delivery felt a little hesitant.`);
     lines.push(`Try speaking a little slower, and put more weight on your key points. Confidence is contagious — own what you know.`);
-  } else if (relevance < 0.45) {
-    // Off-topic
+  } else if (relevance < 0.45 && hasJobContext) {
+    // Off-topic — only flag this when we actually have a job spec to compare against
     tone = 'relevance';
     lines.push(`This one didn't quite land as well as it could.`);
     const answerLower = answerText.toLowerCase();

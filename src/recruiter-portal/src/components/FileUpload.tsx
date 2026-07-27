@@ -72,11 +72,13 @@ export function FileUpload({ onExtracted, label = 'CV' }: Props) {
             onDrop={onDrop}
             onClick={() => inputRef.current?.click()}
             style={{
+              cursor: 'pointer',
+              caretColor: 'transparent',
+              userSelect: 'none',
               border: `2px dashed ${dragging ? 'var(--blue)' : 'var(--border)'}`,
               borderRadius: '12px',
               padding: '32px 24px',
               textAlign: 'center',
-              cursor: 'pointer',
               background: dragging ? 'rgba(79,142,247,0.06)' : 'transparent',
               transition: 'all 0.2s',
             }}

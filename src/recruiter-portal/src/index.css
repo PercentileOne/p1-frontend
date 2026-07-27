@@ -32,3 +32,14 @@ body {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+/* No blinking cursor on non-text interactive elements */
+select, button, input[type="file"], input[type="radio"], input[type="checkbox"], label {
+  caret-color: transparent;
+  outline: none;
+}
+
+/* Keep caret only in actual text inputs and textareas */
+input[type="text"], input[type="email"], input[type="password"], input[type="search"], textarea {
+  caret-color: var(--blue);
+}

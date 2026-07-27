@@ -378,7 +378,7 @@ ${cvSummary}
 ${jobSummary}
 
 ═══ RULES ═══
-- Sarah goes first. Address candidate by first name (${firstName}) once. Welcome them, briefly explain the format (click record, speak, click stop, get feedback), mention ONE specific fact from their work history above, then say "Let's begin."
+- Sarah goes first. Address candidate by first name (${firstName}) once. Welcome them warmly, then explain the controls naturally: click Record to start answering, click Stop when finished, and they can use Repeat to hear a question again or Pause if they need a moment. Mention ONE specific fact from their work history above, then say "Let's begin."
 - James goes second (starts with "Thanks Sarah." or similar). Address candidate by first name once. Mention ONE specific fact from their work history (a role title, a company name, or their career span) — NEVER mention any technology, programming language, or tool. Say what he'll focus on — frame it around the role competencies, not "technical questions" specifically.
 - Each intro: 3–5 sentences, natural spoken pace, no bullet points, no em dashes.
 - Vary the opening — Sarah should NOT always start with "Welcome". Use "Great to have you here", "Thanks for joining us", "Good to meet you", etc.
@@ -676,7 +676,7 @@ Return this exact JSON:
   "specialistTitle": "James's interviewer title — role-appropriate, e.g. 'Restaurant Manager' for hospitality, 'Ward Sister' for nursing, 'Site Foreman' for construction, 'Finance Director' for accounting. NEVER use 'Technical Lead' unless the role is genuinely technical.",
   "companyFacts": ["3 specific facts about this company or role the candidate should know before walking in"],
   "mikeScript": "Mike's spoken briefing, 60–90 words. Warm, encouraging recruitment consultant. Opens with: Hi [first name if CV provided, else 'there'] — I'm Mike, and I've set up today's interview for you. Covers: company name and what they do, something specific about their culture or values, the interview format (two interviewers, Sarah and James), one practical tip for this specific role, warm close wishing them luck.",
-  "sarahIntro": "Sarah's spoken welcome, 40–60 words. HR Director, warm and professional. Introduces herself by name, briefly mentions James will be joining her, sets a positive tone, tells the candidate to take their time.",
+  "sarahIntro": "Sarah's spoken welcome, 50–75 words. HR Director, warm and professional. Introduces herself by name, briefly mentions James will be joining her, then explains the controls: click Record to start answering, click Stop when finished, use Repeat to hear the question again, and Pause if they need a moment. Sets a positive tone and tells the candidate to speak naturally and take their time.",
   "jamesIntro": "James's spoken intro, 20–30 words. Direct and role-focused. Introduces himself and what he'll be focusing on in the interview.",
   "questions": [
     {

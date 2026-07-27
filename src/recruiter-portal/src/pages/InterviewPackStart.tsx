@@ -33,12 +33,14 @@ export default function InterviewPackStart() {
   const location = useLocation();
   const incoming = (location.state ?? {}) as IncomingState;
 
+  const [interviewType, setInterviewType] = useState('job');
   const [cvText, setCvText] = useState('');
   const [cvFileName, setCvFileName] = useState('');
   const [jobSpec, setJobSpec] = useState(incoming.jobSpec ?? '');
   const [jobSpecFileName, setJobSpecFileName] = useState('');
   const [showJobSpec, setShowJobSpec] = useState(!incoming.jobSpec);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('Medium');
 
   useEffect(() => {
     logFlowEvent('UPLOAD_SCREEN_VIEW', { hasIncomingJobSpec: Boolean(incoming.jobSpec) });
@@ -106,6 +108,34 @@ export default function InterviewPackStart() {
           <p style={{ fontSize: '15px', color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>
             Upload a job spec and/or CV — we'll tailor the entire interview to match
           </p>
+        </div>
+
+        {/* Interview Type */}
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 28px', marginBottom: '16px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '14px' }}>
+            Interview Type
+          </div>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            {[
+              { value: 'job', label: '💼 Job Interview', desc: 'Professional role assessment' },
+              { value: 'visa', label: '🛂 Visa Application', desc: 'Immigration & consular interview' },
+              { value: 'university', label: '🎓 University Interview', desc: 'Admissions & academic assessment' },
+              { value: 'other', label: '✦ Other', desc: 'Custom interview scenario' },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setInterviewType(opt.value)}
+                style={{
+                  flex: '1 1 160px', background: interviewType === opt.value ? 'rgba(79,142,247,0.1)' : 'var(--bg3)',
+                  border: `1px solid ${interviewType === opt.value ? 'rgba(79,142,247,0.4)' : 'var(--border)'}`,
+                  borderRadius: '12px', padding: '14px 16px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
+                }}
+              >
+                <div style={{ fontSize: '13px', fontWeight: 700, color: interviewType === opt.value ? 'var(--blue)' : 'var(--text)', marginBottom: '3px' }}>{opt.label}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-3)' }}>{opt.desc}</div>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Job Spec Upload */}
@@ -226,36 +256,60 @@ export default function InterviewPackStart() {
           )}
         </div>
 
-        {/* Language */}
-        <div style={{
-          background: 'var(--bg2)', border: '1px solid var(--border)',
-          borderRadius: '16px', padding: '24px 28px', marginBottom: '20px',
-        }}>
-          <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '14px' }}>
-            Interview Language
+        {/* Language + Difficulty — side by side */}
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+
+          {/* Language */}
+          <div style={{ flex: 1, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '14px' }}>
+              Interview Language
+            </div>
+            <select
+              value={selectedLanguage}
+              onChange={e => { setSelectedLanguage(e.target.value); logFlowEvent('LANGUAGE_SELECTED', { language: e.target.value }); }}
+              style={{
+                width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+                borderRadius: '10px', padding: '12px 14px', color: 'var(--text)', fontSize: '14px',
+                fontFamily: 'inherit', outline: 'none', cursor: 'pointer', appearance: 'none',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
+              }}
+            >
+              {LANGUAGES.map(l => (
+                <option key={l.code} value={l.code}>{l.name}</option>
+              ))}
+            </select>
+            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '8px', lineHeight: 1.5 }}>
+              Mike, Sarah, and James will speak in the selected language.
+            </div>
           </div>
-          <select
-            value={selectedLanguage}
-            onChange={e => {
-              setSelectedLanguage(e.target.value);
-              logFlowEvent('LANGUAGE_SELECTED', { language: e.target.value });
-            }}
-            style={{
-              width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
-              borderRadius: '10px', padding: '12px 14px', color: 'var(--text)', fontSize: '14px',
-              fontFamily: 'inherit', outline: 'none', cursor: 'pointer', appearance: 'none',
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 14px center',
-            }}
-          >
-            {LANGUAGES.map(l => (
-              <option key={l.code} value={l.code}>{l.name}</option>
-            ))}
-          </select>
-          <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '8px' }}>
-            Mike, Sarah, and James will speak in the selected language. Questions will be generated in this language.
+
+          {/* Difficulty */}
+          <div style={{ flex: 1, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '14px' }}>
+              Question Difficulty
+            </div>
+            <select
+              value={selectedDifficulty}
+              onChange={e => setSelectedDifficulty(e.target.value)}
+              style={{
+                width: '100%', background: 'var(--bg3)', border: `1px solid ${selectedDifficulty === 'Hard' ? 'rgba(239,68,68,0.3)' : selectedDifficulty === 'Medium' ? 'rgba(245,158,11,0.3)' : 'rgba(52,211,153,0.25)'}`,
+                borderRadius: '10px', padding: '12px 14px',
+                color: selectedDifficulty === 'Hard' ? '#EF4444' : selectedDifficulty === 'Medium' ? '#F59E0B' : '#34D399',
+                fontSize: '14px', fontWeight: 700, fontFamily: 'inherit', outline: 'none', cursor: 'pointer', appearance: 'none',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
+              }}
+            >
+              <option value="Easy" style={{ color: '#34D399', background: '#0c1220' }}>Easy</option>
+              <option value="Medium" style={{ color: '#F59E0B', background: '#0c1220' }}>Medium</option>
+              <option value="Hard" style={{ color: '#EF4444', background: '#0c1220' }}>Hard</option>
+            </select>
+            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '8px', lineHeight: 1.5 }}>
+              Sets the complexity of questions asked by Sarah and James.
+            </div>
           </div>
+
         </div>
 
         {/* CTA */}

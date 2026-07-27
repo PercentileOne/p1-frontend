@@ -5,6 +5,7 @@ interface Props {
   onTranscript: (text: string, meta: TranscriptMeta) => void;
   onInterimTranscript?: (text: string) => void;
   disabled?: boolean;
+  highlightRecord?: boolean;
 }
 
 export interface TranscriptMeta {
@@ -55,7 +56,7 @@ async function transcribeWithWhisper(blob: Blob, _durationSeconds: number): Prom
   }
 }
 
-export function VoiceInput({ onTranscript, onInterimTranscript, disabled }: Props) {
+export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false, highlightRecord = false }: Props) {
   const [micState, setMicState] = useState<MicState>('idle');
   const [interim, setInterim] = useState('');
   const [processingLabel, setProcessingLabel] = useState('Processing…');
@@ -250,33 +251,50 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled }: Prop
 
       {/* Waveform + mic button row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <motion.button
-          onClick={isListening ? stopListening : startListening}
-          disabled={disabled || isProcessing}
-          whileTap={{ scale: 0.92 }}
-          style={{
-            width: '56px', height: '56px', borderRadius: '50%', border: 'none',
-            cursor: disabled || isProcessing ? 'default' : 'pointer',
-            background: isListening
-              ? 'linear-gradient(135deg,#EF4444,#dc2626)'
-              : 'linear-gradient(135deg,#4F8EF7,#2563eb)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            boxShadow: isListening ? '0 0 20px rgba(239,68,68,0.4)' : '0 0 16px rgba(79,142,247,0.3)',
-            transition: 'background 0.3s, box-shadow 0.3s',
-            opacity: disabled || isProcessing ? 0.5 : 1,
-          }}
-        >
-          {isListening ? (
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-              <rect x="6" y="6" width="12" height="12" rx="2" fill="#fff"/>
-            </svg>
-          ) : (
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-              <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" fill="#fff"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M9 22h6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
+        <div style={{ position: 'relative', flexShrink: 0, width: '56px', height: '56px' }}>
+          {highlightRecord && !isListening && (
+            <>
+              <motion.div
+                animate={{ scale: [1, 1.8], opacity: [0.7, 0] }}
+                transition={{ repeat: Infinity, duration: 1.2, ease: 'easeOut' }}
+                style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(79,142,247,0.5)', pointerEvents: 'none' }}
+              />
+              <motion.div
+                animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
+                transition={{ repeat: Infinity, duration: 1.2, delay: 0.3, ease: 'easeOut' }}
+                style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(79,142,247,0.35)', pointerEvents: 'none' }}
+              />
+            </>
           )}
-        </motion.button>
+          <motion.button
+            onClick={isListening ? stopListening : startListening}
+            disabled={disabled || isProcessing}
+            whileTap={{ scale: 0.92 }}
+            style={{
+              position: 'relative', zIndex: 1,
+              width: '56px', height: '56px', borderRadius: '50%', border: 'none',
+              cursor: disabled || isProcessing ? 'default' : 'pointer',
+              background: isListening
+                ? 'linear-gradient(135deg,#EF4444,#dc2626)'
+                : 'linear-gradient(135deg,#4F8EF7,#2563eb)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: isListening ? '0 0 20px rgba(239,68,68,0.4)' : highlightRecord ? '0 0 28px rgba(79,142,247,0.7)' : '0 0 16px rgba(79,142,247,0.3)',
+              transition: 'background 0.3s, box-shadow 0.3s',
+              opacity: disabled || isProcessing ? 0.5 : 1,
+            }}
+          >
+            {isListening ? (
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                <rect x="6" y="6" width="12" height="12" rx="2" fill="#fff"/>
+              </svg>
+            ) : (
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" fill="#fff"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M9 22h6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            )}
+          </motion.button>
+        </div>
 
         {/* Waveform */}
         <div style={{ flex: 1, height: '48px', display: 'flex', alignItems: 'center', gap: '2px', overflow: 'hidden' }}>

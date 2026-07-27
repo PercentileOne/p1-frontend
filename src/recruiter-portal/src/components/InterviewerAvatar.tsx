@@ -19,7 +19,7 @@ const PROFILES = {
     name: 'Sarah Mitchell',
     title: 'HR Director',
     initials: 'SM',
-    photo: '/images/sarah.png',
+    photo: '/images/sarah.jpg',
     gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     ring: '#a78bfa',
     barColor: '#a78bfa',
@@ -115,8 +115,7 @@ export function InterviewerAvatar({ role, state, active, videoUrl, specialistTit
       position: 'relative',
       overflow: 'hidden',
       transition: 'border-color 0.4s',
-      padding: '28px 20px 20px',
-      gap: '16px',
+      padding: 0,
       minHeight: '300px',
     }}>
 
@@ -136,112 +135,69 @@ export function InterviewerAvatar({ role, state, active, videoUrl, specialistTit
         )}
       </AnimatePresence>
 
-      {/* Face circle — photo always visible; D-ID video overlays when speaking */}
-      <div style={{ position: 'relative', display: 'inline-block' }}>
-        {/* Speaking ring */}
+      {/* Full-frame photo — fills the card, vignette overlay for name/status */}
+      <div style={{ position: 'absolute', inset: 0 }}>
+        <img
+          src={profile.photo}
+          alt={profile.name}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', display: 'block' }}
+        />
+        {/* D-ID video overlay */}
         <AnimatePresence>
-          {active && state === 'speaking' && (
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: [1, 1.06, 1], opacity: [0.7, 0.2, 0.7] }}
-              exit={{ opacity: 0 }}
-              transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-              style={{
-                position: 'absolute', inset: -10, borderRadius: '50%',
-                border: `2px solid ${profile.ring}`, pointerEvents: 'none',
-              }}
+          {videoUrl && (
+            <motion.video
+              key={videoUrl}
+              src={videoUrl}
+              autoPlay playsInline muted
+              onEnded={onVideoEnded}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
             />
           )}
         </AnimatePresence>
-
-        {/* Circle container */}
-        <div style={{
-          width: '180px', height: '180px', borderRadius: '50%',
-          overflow: 'hidden', position: 'relative',
-          background: profile.gradient, flexShrink: 0,
-        }}>
-          {/* Static photo — always rendered as the base layer */}
-          <img
-            src={profile.photo}
-            alt={profile.name}
-            style={{
-              position: 'absolute', inset: 0,
-              width: '100%', height: '100%',
-              objectFit: 'cover', objectPosition: 'center top',
-              display: 'block',
-            }}
-          />
-
-          {/* D-ID video — fades in on top when speaking, fades out when done */}
-          <AnimatePresence>
-            {videoUrl && (
-              <motion.video
-                key={videoUrl}
-                src={videoUrl}
-                autoPlay
-                playsInline
-                muted
-                onEnded={onVideoEnded}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                style={{
-                  position: 'absolute', inset: 0,
-                  width: '100%', height: '100%',
-                  objectFit: 'cover', objectPosition: 'center top',
-                  display: 'block',
-                }}
-              />
-            )}
-          </AnimatePresence>
-
-          {/* Thinking shimmer overlay */}
-          <AnimatePresence>
-            {state === 'thinking' && (
+        {/* Thinking shimmer */}
+        <AnimatePresence>
+          {state === 'thinking' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
               <motion.div
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
-              >
-                <motion.div
-                  initial={{ x: '-100%' }} animate={{ x: '200%' }}
-                  transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
-                  style={{
-                    position: 'absolute', top: 0, bottom: 0, width: '40%',
-                    background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent)',
-                  }}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
+                initial={{ x: '-100%' }} animate={{ x: '200%' }}
+                transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+                style={{ position: 'absolute', top: 0, bottom: 0, width: '40%', background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent)' }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        {/* Bottom vignette */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%)', pointerEvents: 'none' }} />
+        {/* Speaking ring border */}
+        <AnimatePresence>
+          {active && state === 'speaking' && (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: [0.4, 0.9, 0.4] }} exit={{ opacity: 0 }}
+              transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+              style={{ position: 'absolute', inset: 0, borderRadius: '16px', border: `2px solid ${profile.ring}`, pointerEvents: 'none' }}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Name + status — overlaid bottom */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 18px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>{profile.name}</div>
+          <div style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>{profile.title}</div>
         </div>
-
-        {/* Status dot */}
-        <div style={{
-          position: 'absolute', bottom: 8, right: 8,
-          width: '14px', height: '14px', borderRadius: '50%',
-          background: dotColor,
-          border: '2px solid rgba(0,0,0,0.6)',
-          transition: 'background 0.3s',
-          boxShadow: active ? `0 0 8px ${profile.ring}80` : 'none',
-        }} />
-      </div>
-
-      {/* Name + role */}
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)', marginBottom: '2px' }}>{profile.name}</div>
-        <div style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>{profile.title}</div>
-      </div>
-
-      {/* Waveform / status label */}
-      <div style={{ height: '28px', display: 'flex', alignItems: 'center' }}>
-        {state === 'speaking' ? (
-          <WaveformBars active color={profile.barColor} />
-        ) : (
-          <div style={{ fontSize: '11px', fontWeight: 600, color: statusColor, letterSpacing: '0.05em', transition: 'color 0.3s' }}>
-            {statusLabel}
-          </div>
-        )}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+          {state === 'speaking' ? (
+            <WaveformBars active color={profile.barColor} />
+          ) : (
+            <div style={{ fontSize: '10px', fontWeight: 600, color: statusColor, letterSpacing: '0.05em' }}>{statusLabel}</div>
+          )}
+          {/* Status dot */}
+          <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: dotColor, border: '2px solid rgba(0,0,0,0.5)', boxShadow: active ? `0 0 6px ${profile.ring}` : 'none', transition: 'background 0.3s' }} />
+        </div>
       </div>
     </div>
   );
