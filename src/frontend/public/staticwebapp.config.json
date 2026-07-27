@@ -1,4 +1,11 @@
 {
+  "routes": [
+    {
+      "route": "/coming-soon.html",
+      "redirect": "/",
+      "statusCode": 301
+    }
+  ],
   "navigationFallback": {
     "rewrite": "/index.html",
     "exclude": ["/assets/*", "/*.css", "/*.js"]
