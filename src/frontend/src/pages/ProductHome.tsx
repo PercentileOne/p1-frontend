@@ -143,7 +143,8 @@ export default function ProductHome() {
     @keyframes ph-blink{0%,100%{opacity:1}50%{opacity:.3}}
 
     .ph-lbl{font-size:10px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#4F8EF7;margin-bottom:16px}
-    .ph-h-xl{font-size:clamp(36px,5vw,60px);font-weight:900;line-height:1.08;letter-spacing:-.03em;color:#F0F4FF}
+    .ph-h-xl{font-size:clamp(36px,5vw,60px);font-weight:900;line-height:1.08;letter-spacing:-.03em;color:#F0F4FF;user-select:none}
+    .ph-h-xl span,.ph-hero-hl,.ph-hero-hl span,.ph-nav-logo,.ph-global-hl,.ph-global-hl span{user-select:none}
 
     .ph-btn-primary{display:inline-flex;align-items:center;gap:8px;padding:15px 32px;border-radius:12px;background:#4F8EF7;color:#fff;font-size:15px;font-weight:700;text-decoration:none;box-shadow:0 8px 32px rgba(79,142,247,.35);transition:all .25s;border:none;cursor:pointer;font-family:inherit}
     .ph-btn-primary:hover{background:#2D5BFF;box-shadow:0 12px 40px rgba(79,142,247,.5);transform:translateY(-1px)}
