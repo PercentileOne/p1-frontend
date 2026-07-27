@@ -19,7 +19,7 @@ const GATEWAYS = [
     title: 'Learn any skill — instantly',
     body: 'Browse LEARN modules matched to your role, explore improvement areas, and build interview confidence one topic at a time.',
     cta: 'Explore LEARN Modules →',
-    path: '/candidate/prep?mode=learn',
+    path: '/learn',
     accent: '#34D399',
     bg: 'rgba(52,211,153,0.06)',
     border: 'rgba(52,211,153,0.15)',

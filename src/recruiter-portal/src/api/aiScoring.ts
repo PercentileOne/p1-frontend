@@ -622,3 +622,101 @@ Return JSON:
 
   return chatJSON<AgentBriefingResult>(systemPrompt, userPrompt, 0.8);
 }
+
+// ── Client-side session prepare ───────────────────────────────────────────────
+// Single AI call — no regex, no English keyword lists.
+// Works for any role, industry, language, or country worldwide.
+
+export interface ClientSessionResult {
+  questions: InterviewQuestion[];
+  sarahIntro: string;
+  jamesIntro: string;
+  mikeScript: string | null;
+  companyFacts: string[];
+  specialistTitle: string;
+}
+
+export async function sessionPrepareClient(
+  jobSpecText: string,
+  cvText?: string,
+  selectedLanguage?: string,
+): Promise<ClientSessionResult> {
+  const cvSection = cvText?.trim()
+    ? `\n\n═══ CANDIDATE CV ═══\n${cvText.slice(0, 3000)}`
+    : '';
+
+  const languageOverride = selectedLanguage && selectedLanguage !== 'en'
+    ? `\nIMPORTANT LANGUAGE OVERRIDE: The user has explicitly selected "${selectedLanguage}" as the interview language. Generate ALL output in that language regardless of the job spec language.`
+    : '';
+
+  const systemPrompt = `You are an AI interview preparation system for a global hiring platform called Explain.
+Generate a complete, personalised interview session based on the job specification and (optionally) the candidate's CV.
+
+CRITICAL RULES — READ CAREFULLY:
+1. DETECT THE LANGUAGE of the job specification. Generate ALL text output (questions, scripts, intros) in THAT SAME LANGUAGE. A French job spec → French output. A Spanish job spec → Spanish output.${languageOverride}
+2. NEVER assume any industry or role type. Read the job spec and base EVERYTHING on what it actually says.
+3. NEVER generate IT or software engineering questions unless the job spec explicitly requires them. A barista needs questions about coffee craft and customer service. A nurse needs questions about patient care and clinical judgement. A lorry driver needs questions about road safety and logistics.
+4. Questions must be specific to THIS role at THIS company — not generic questions that could fit any employer.
+5. All spoken scripts (Mike, Sarah, James) must sound natural when read aloud. No bullet points, no lists, no asterisks.
+6. Return ONLY valid JSON — no markdown, no explanation, no code fences.`;
+
+  const userPrompt = `Generate a complete interview session for the job specification below.
+${cvSection ? 'A candidate CV is also provided — use it to personalise questions and intros.' : 'No CV provided — base questions purely on the role requirements.'}
+
+═══ JOB SPECIFICATION ═══
+${jobSpecText.slice(0, 4000)}${cvSection}
+
+Return this exact JSON:
+{
+  "language": "ISO 639-1 code (e.g. en, fr, de, es, pt, nl, pl, ar, zh)",
+  "jobTitle": "job title from the spec",
+  "company": "company name, or null if not mentioned",
+  "country": "country or region this role is based in",
+  "industry": "industry sector (e.g. Fast Food, Healthcare, Construction, Finance, Education)",
+  "specialistTitle": "James's interviewer title — role-appropriate, e.g. 'Restaurant Manager' for hospitality, 'Ward Sister' for nursing, 'Site Foreman' for construction, 'Finance Director' for accounting. NEVER use 'Technical Lead' unless the role is genuinely technical.",
+  "companyFacts": ["3 specific facts about this company or role the candidate should know before walking in"],
+  "mikeScript": "Mike's spoken briefing, 60–90 words. Warm, encouraging recruitment consultant. Opens with: Hi [first name if CV provided, else 'there'] — I'm Mike, and I've set up today's interview for you. Covers: company name and what they do, something specific about their culture or values, the interview format (two interviewers, Sarah and James), one practical tip for this specific role, warm close wishing them luck.",
+  "sarahIntro": "Sarah's spoken welcome, 40–60 words. HR Director, warm and professional. Introduces herself by name, briefly mentions James will be joining her, sets a positive tone, tells the candidate to take their time.",
+  "jamesIntro": "James's spoken intro, 20–30 words. Direct and role-focused. Introduces himself and what he'll be focusing on in the interview.",
+  "questions": [
+    {
+      "questionId": "q1",
+      "questionText": "...",
+      "modelAnswer": "what a strong answer covers — specific to this role",
+      "questionType": "Competency",
+      "difficulty": "Medium",
+      "source": "Role",
+      "competencyTags": ["relevant tag"]
+    }
+  ]
+}
+
+Generate exactly 7 questions total:
+- 5 role/competency questions (source: "Role") — based on what this job actually requires day-to-day
+- 2 HR/culture questions (source: "HR") — the last one must ask what the candidate knows about the company and why this role appeals to them specifically`;
+
+  type RawResult = {
+    language: string;
+    jobTitle: string;
+    company: string | null;
+    country: string;
+    industry: string;
+    specialistTitle: string;
+    companyFacts: string[];
+    mikeScript: string;
+    sarahIntro: string;
+    jamesIntro: string;
+    questions: InterviewQuestion[];
+  };
+
+  const result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.7);
+
+  return {
+    questions: result.questions ?? [],
+    sarahIntro: result.sarahIntro ?? '',
+    jamesIntro: result.jamesIntro ?? '',
+    mikeScript: result.mikeScript ?? null,
+    companyFacts: result.companyFacts ?? [],
+    specialistTitle: result.specialistTitle ?? 'Hiring Manager',
+  };
+}

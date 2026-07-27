@@ -16,6 +16,10 @@ import ClientPortal from './pages/client/ClientPortal'
 import CandidateFeedbackPortal from './pages/candidate/CandidateFeedbackPortal'
 import CandidateHome from './pages/candidate/CandidateHome'
 import CandidatePrep from './pages/candidate/CandidatePrep'
+import FlowViewer from './pages/FlowViewer'
+import LearnHome from './pages/learn/LearnHome'
+import LessonViewer from './pages/learn/LessonViewer'
+import LearnBookshelf from './pages/learn/LearnBookshelf'
 
 export default function App() {
   return (
@@ -41,6 +45,11 @@ export default function App() {
         <Route path="/candidate" element={<CandidateHome />} />
         <Route path="/candidate/prep" element={<CandidatePrep />} />
         <Route path="/candidate/feedback" element={<CandidateFeedbackPortal />} />
+        <Route path="/flow-viewer" element={<FlowViewer />} />
+        {/* Learn Engine */}
+        <Route path="/learn" element={<LearnHome />} />
+        <Route path="/learn/lesson/:lessonId" element={<LessonViewer />} />
+        <Route path="/learn/bookshelf" element={<LearnBookshelf />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

@@ -112,10 +112,9 @@ async function speakElevenLabs(
 
   // Safety: force-advance after duration + 5s so interview never hangs
   audio.onloadedmetadata = () => {
-    const safetyMs = (isFinite(audio.duration) ? audio.duration * 1000 : 30000) + 5000;
+    const safetyMs = (isFinite(audio.duration) ? audio.duration * 1000 : 60000) + 5000;
     setTimeout(done, safetyMs);
   };
-  setTimeout(done, 45000);
 
   // Await play() — if browser blocks autoplay this throws, causing speak()'s
   // .catch() to trigger Web Speech fallback instead of silently doing nothing.
