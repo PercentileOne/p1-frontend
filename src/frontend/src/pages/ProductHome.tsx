@@ -151,7 +151,7 @@ export default function ProductHome() {
     .ph-btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:15px 32px;border-radius:12px;background:rgba(79,142,247,.06);color:#4F8EF7;font-size:15px;font-weight:700;text-decoration:none;border:1px solid rgba(79,142,247,.25);transition:all .25s;cursor:pointer;font-family:inherit}
     .ph-btn-ghost:hover{background:rgba(79,142,247,.12);border-color:rgba(79,142,247,.5)}
 
-    #ph-hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 32px 80px;overflow:hidden;position:relative;z-index:1}
+    #ph-hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 32px 80px;margin-top:-40px;overflow:hidden;position:relative;z-index:1}
     .ph-hero-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:900px;height:700px;background:radial-gradient(ellipse,rgba(30,80,255,.18) 0%,rgba(79,142,247,.06) 40%,transparent 70%);pointer-events:none}
     .ph-hero-hl{font-size:clamp(52px,8vw,96px);font-weight:900;line-height:1.0;letter-spacing:-.04em;max-width:900px;color:#F0F4FF;text-shadow:0 0 60px rgba(79,142,247,.2)}
     .ph-hero-scroll{margin-top:72px;display:flex;flex-direction:column;align-items:center;gap:8px;color:rgba(240,244,255,.35);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;animation:ph-float 2.5s ease-in-out infinite}
@@ -256,6 +256,32 @@ export default function ProductHome() {
     .ph-footer-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
     .ph-footer-links a{font-size:12px;color:rgba(240,244,255,.35);text-decoration:none;margin:0 10px;transition:color .2s}
     .ph-footer-links a:hover{color:#4F8EF7}
+
+    /* ── Interview Practice hook section ───────────────────────────────── */
+    #ph-practice{background:#070B18;padding:80px 0 100px}
+    .ph-practice-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;max-width:1100px;margin:0 auto;padding:0 32px}
+    .ph-practice-hook{font-size:clamp(32px,4.5vw,54px);font-weight:900;line-height:1.08;letter-spacing:-.03em;color:#F0F4FF;margin-bottom:20px}
+    .ph-practice-hook em{font-style:normal;color:#4F8EF7}
+    .ph-practice-sub{font-size:clamp(16px,2vw,19px);line-height:1.7;color:rgba(240,244,255,.6);margin-bottom:32px}
+    .ph-practice-sub strong{color:#F0F4FF;font-weight:700}
+    .ph-practice-stats{display:flex;gap:32px;margin-top:36px;flex-wrap:wrap}
+    .ph-practice-stat{display:flex;flex-direction:column;gap:4px}
+    .ph-practice-stat-val{font-size:clamp(28px,3.5vw,42px);font-weight:900;letter-spacing:-.04em;color:#4F8EF7}
+    .ph-practice-stat-lbl{font-size:12px;font-weight:600;color:rgba(240,244,255,.4);letter-spacing:.05em;text-transform:uppercase}
+
+    /* Pack card */
+    .ph-pack-card{background:#fff;border-radius:20px;box-shadow:0 32px 80px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.06);overflow:hidden;max-width:340px;width:100%}
+    .ph-pack-card-header{background:linear-gradient(135deg,#3B4FCF 0%,#5B6FEF 100%);padding:20px 24px;display:flex;align-items:center;gap:14px}
+    .ph-pack-card-icon{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+    .ph-pack-card-title{font-size:15px;font-weight:700;color:#fff}
+    .ph-pack-card-body{padding:24px 24px 20px}
+    .ph-pack-card-hl{font-size:22px;font-weight:900;color:#111827;line-height:1.25;margin-bottom:10px}
+    .ph-pack-card-price{float:right;margin-top:-4px;background:#FEF3C7;color:#92400E;font-size:18px;font-weight:900;padding:10px 16px;border-radius:12px;letter-spacing:-.01em}
+    .ph-pack-card-desc{font-size:13px;color:#6B7280;line-height:1.6;clear:both;margin-bottom:20px}
+    .ph-pack-card-btn{display:block;width:100%;padding:16px;border-radius:14px;background:#3B4FCF;color:#fff;font-size:15px;font-weight:700;text-align:center;border:none;font-family:inherit;cursor:pointer;margin-bottom:14px;transition:background .2s}
+    .ph-pack-card-btn:hover{background:#2D3DB8}
+    .ph-pack-card-footer{text-align:center;font-size:12px;color:#9CA3AF;padding-bottom:4px}
+    .ph-pack-card-footer strong{color:#3B4FCF}
 
     /* Interview Chair mockup — two interviewers + stats panel */
     .ph-irm{background:#070b14;border-radius:16px;overflow:hidden;font-family:-apple-system,system-ui,sans-serif;border:1px solid rgba(255,255,255,0.07)}
@@ -375,6 +401,46 @@ export default function ProductHome() {
         <div className="ph-hero-scroll ph-r" data-ph="" data-d="4">
           <span>Scroll</span>
           <svg width="14" height="20" viewBox="0 0 14 20" fill="none"><path d="M7 2v16M1 12l6 6 6-6" stroke="rgba(79,142,247,.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </div>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* INTERVIEW PRACTICE HOOK */}
+      <section id="ph-practice">
+        <div className="ph-practice-grid">
+          <div>
+            <div className="ph-lbl ph-r" data-ph="">Interview Practice</div>
+            <h2 className="ph-practice-hook ph-r" data-ph="" data-d="1">
+              One interview.<br /><em>One pound.</em><br />Life-changing.
+            </h2>
+            <p className="ph-practice-sub ph-r" data-ph="" data-d="2">
+              The average UK professional salary is <strong>£35,000</strong>. A senior tech role pays <strong>£100,000–£150,000</strong>. The difference between getting it and missing it? Being prepared.
+            </p>
+            <p className="ph-practice-sub ph-r" data-ph="" data-d="3" style={{marginTop:-16}}>
+              An Explain Interview Pack costs <strong>£1</strong>. Twenty AI-generated practice questions, tailored to your CV and the exact job spec — ready instantly. No login. No faff. Just preparation.
+            </p>
+            <div className="ph-practice-stats ph-r" data-ph="" data-d="4">
+              <div className="ph-practice-stat"><span className="ph-practice-stat-val">£1</span><span className="ph-practice-stat-lbl">per pack</span></div>
+              <div className="ph-practice-stat"><span className="ph-practice-stat-val">20</span><span className="ph-practice-stat-lbl">practice questions</span></div>
+              <div className="ph-practice-stat"><span className="ph-practice-stat-val">50+</span><span className="ph-practice-stat-lbl">languages</span></div>
+            </div>
+          </div>
+          <div className="ph-r" data-ph="" data-d="3" style={{display:"flex",justifyContent:"center"}}>
+            <div className="ph-pack-card">
+              <div className="ph-pack-card-header">
+                <div className="ph-pack-card-icon">⚡</div>
+                <span className="ph-pack-card-title">Prepare for this interview</span>
+              </div>
+              <div className="ph-pack-card-body">
+                <span className="ph-pack-card-price">£1</span>
+                <p className="ph-pack-card-hl">Get your tailored Interview Pack for this exact role — only £1</p>
+                <p className="ph-pack-card-desc">20 AI-generated practice questions · Tailored to your CV · Tailored to this job · Instant access</p>
+                <button className="ph-pack-card-btn">Get Interview Pack — £1</button>
+                <div className="ph-pack-card-footer">No login needed · Instant access<br />Powered by <strong>Explain.global</strong></div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
