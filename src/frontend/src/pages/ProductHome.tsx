@@ -349,7 +349,7 @@ export default function ProductHome() {
           <li><a href="#ph-why">Why Explain</a></li>
           <li><a href="#ph-global">Global</a></li>
           <li><a href="#ph-learn">Learn Engine</a></li>
-          <li><a href="#ph-ir">Interview Chair</a></li>
+          <li><a href="#ph-ir">The Interview Chair</a></li>
           <li><a href="#ph-eco">Ecosystem</a></li>
           <li><a href="#ph-road">Roadmap</a></li>
         </ul>
