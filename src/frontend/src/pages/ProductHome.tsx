@@ -415,10 +415,10 @@ export default function ProductHome() {
               One interview.<br /><em>One pound.</em><br />Life-changing.
             </h2>
             <p className="ph-practice-sub ph-r" data-ph="" data-d="2">
-              The average UK professional salary is <strong>£35,000</strong>. A senior tech role pays <strong>£100,000–£150,000</strong>. The difference between getting it and missing it? Being prepared.
+              The average UK professional salary is <strong>£35,000</strong>. A senior tech role pays <strong>£100,000–£150,000</strong>. The difference between getting it and missing it? <strong>Being prepared.</strong>
             </p>
             <p className="ph-practice-sub ph-r" data-ph="" data-d="3" style={{marginTop:-16}}>
-              An Explain Interview Pack costs <strong>£1</strong>. Twenty AI-generated practice questions, tailored to your CV and the exact job spec — ready instantly. No login. No faff. Just preparation.
+              An Explain Interview Pack costs <strong>£1</strong>. Twenty AI-generated practice questions, tailored to <strong>your CV</strong> and the <strong>exact job spec</strong> — ready instantly. No login. No faff. Just preparation.
             </p>
             <div className="ph-practice-stats ph-r" data-ph="" data-d="4">
               <div className="ph-practice-stat"><span className="ph-practice-stat-val">£1</span><span className="ph-practice-stat-lbl">per pack</span></div>
