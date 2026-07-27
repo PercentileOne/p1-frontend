@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+:root {
+  --bg: #070b14;
+  --bg2: #0c1220;
+  --bg3: #111827;
+  --border: rgba(255,255,255,0.08);
+  --blue: #4F8EF7;
+  --blue-dim: rgba(79,142,247,0.12);
+  --blue-border: rgba(79,142,247,0.3);
+  --green: #34D399;
+  --amber: #F59E0B;
+  --red: #EF4444;
+  --text: #f1f5f9;
+  --text-2: rgba(241,245,249,0.6);
+  --text-3: rgba(241,245,249,0.35);
+}
+
 body {
   background-color: #0a0b10;
   color: #e2e8f0;

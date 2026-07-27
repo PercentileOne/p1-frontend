@@ -1,4 +1,10 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import ProductHome from "./pages/ProductHome";
+import ExplainPrep from "./pages/ExplainPrep";
+import ExplainFeedback from "./pages/ExplainFeedback";
+import LearnHome from "./pages/LearnHome";
+import LessonViewer from "./pages/LessonViewer";
+import LearnBookshelf from "./pages/LearnBookshelf";
 import LoginPage from "./pages/LoginPage";
 import CockpitShell from "./pages/CockpitShell";
 import LearningShell from "./pages/LearningShell";
@@ -73,7 +79,15 @@ import UniversityShell from "./pages/UniversityShell";
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      {/* Explain public-facing routes */}
+      <Route path="/" element={<ProductHome />} />
+      <Route path="/prep" element={<ExplainPrep />} />
+      <Route path="/feedback" element={<ExplainFeedback />} />
+      <Route path="/learn" element={<LearnHome />} />
+      <Route path="/learn/lesson/:lessonId" element={<LessonViewer />} />
+      <Route path="/learn/bookshelf" element={<LearnBookshelf />} />
+
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/cockpit" element={<CockpitShell />} />
       <Route path="/home" element={<PersonalisedHomePage />} />

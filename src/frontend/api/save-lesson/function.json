@@ -1,0 +1,26 @@
+{
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": ["post", "options"]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
+      "type": "cosmosDB",
+      "direction": "out",
+      "name": "outputDocument",
+      "databaseName": "ExplainLearn",
+      "containerName": "Lessons",
+      "partitionKey": "/userId",
+      "createIfNotExists": true,
+      "connectionStringSetting": "COSMOS_CONNECTION_STRING"
+    }
+  ]
+}
