@@ -359,7 +359,7 @@ export default function ProductHome() {
       {/* HERO */}
       <section id="ph-hero">
         <div className="ph-hero-glow" />
-        <div className="ph-r" data-ph="" style={{marginBottom:24}}><span className="ph-badge-gold">Coming Soon · product.explain.global</span></div>
+        <div className="ph-r" data-ph="" style={{marginBottom:24}}><span className="ph-badge-gold">Coming Soon</span></div>
         <div className="ph-r ph-nav-logo" data-ph="" data-d="0" style={{fontSize:36,marginBottom:28,fontWeight:900,letterSpacing:"-.04em",textShadow:"0 0 60px rgba(79,142,247,.7)"}}>
           <span className="ph-ex">Explain</span><span className="ph-gl">.global</span>
         </div>
