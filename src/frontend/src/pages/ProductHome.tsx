@@ -89,13 +89,22 @@ export default function ProductHome() {
     });
   }, []);
 
-  function handleWaitlist(e: React.FormEvent<HTMLFormElement>) {
+  async function handleWaitlist(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const input = form.querySelector("input") as HTMLInputElement;
     const btn = form.querySelector("button") as HTMLButtonElement;
-    if (!input.value.includes("@")) { input.style.borderColor="rgba(239,68,68,.5)"; setTimeout(()=>(input.style.borderColor=""),1200); return; }
-    btn.textContent="✓ You're on the list!"; btn.style.background="#34D399"; btn.style.boxShadow="0 8px 32px rgba(52,211,153,.35)"; btn.disabled=true;
+    const email = input.value.trim();
+    if (!email.includes("@")) { input.style.borderColor="rgba(239,68,68,.5)"; setTimeout(()=>(input.style.borderColor=""),1200); return; }
+    btn.textContent="Joining…"; btn.disabled=true;
+    try {
+      await fetch("/api/join-waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "explain.global" }),
+      });
+    } catch { /* fail silently — UI confirms regardless */ }
+    btn.textContent="✓ You're on the list!"; btn.style.background="#34D399"; btn.style.boxShadow="0 8px 32px rgba(52,211,153,.35)";
     input.value=""; input.placeholder="See you on the other side ✨";
   }
 
