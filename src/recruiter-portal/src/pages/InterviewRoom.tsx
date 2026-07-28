@@ -242,6 +242,49 @@ export default function InterviewRoom() {
   const fallbackMikeScript = `Hi there — I'm Mike, your recruitment consultant. I've set up your interview today and I want to give you a quick briefing before you meet the panel. Your interviewers today are Sarah, who heads up HR, and James, who'll be assessing you on the role itself. They'll guide you through everything — just follow Sarah's instructions on the controls and you'll be absolutely fine. I'll be here throughout if you need anything. The best thing you can do is be specific: use real examples from your experience. Back yourself — you've got this. Good luck!`;
   const mikeScript = ctx.mikeScript ?? bgMikeScript ?? fallbackMikeScript;
 
+  // ── Session recording ────────────────────────────────────────────────────────
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordingChunksRef = useRef<Blob[]>([]);
+  const recordingStreamRef = useRef<MediaStream | null>(null);
+
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recordingStreamRef.current = stream;
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      recordingChunksRef.current = [];
+      recorder.ondataavailable = e => { if (e.data.size > 0) recordingChunksRef.current.push(e.data); };
+      recorder.start(1000);
+      setIsRecording(true);
+    } catch {
+      // mic denied — silently ignore, recording is opt-in
+    }
+  }, []);
+
+  const saveRecording = useCallback(() => {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === 'inactive') return;
+    recorder.onstop = () => {
+      const blob = new Blob(recordingChunksRef.current, { type: 'audio/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `explain-interview-${new Date().toISOString().slice(0, 10)}.webm`;
+      a.click();
+      URL.revokeObjectURL(url);
+      recordingStreamRef.current?.getTracks().forEach(t => t.stop());
+      setIsRecording(false);
+    };
+    recorder.stop();
+  }, []);
+
+  // Auto-save if component unmounts (e.g. browser back)
+  useEffect(() => () => { saveRecording(); }, [saveRecording]);
+
+  const [cameraOn, setCameraOn] = useState(true);
+
   const [phase, setPhase] = useState<RoomPhase>('intro');
   const [qIndex, setQIndex] = useState(0);
   const [typedAnswer, setTypedAnswer] = useState('');
@@ -558,6 +601,60 @@ export default function InterviewRoom() {
           {phase === 'answering' && (
             <div style={{ fontSize: '13px', fontWeight: 700, color: elapsed > 120 ? 'var(--amber)' : 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>{fmt(elapsed)}</div>
           )}
+          {/* Camera toggle */}
+          {phase !== 'intro' && (
+            <button
+              onClick={() => setCameraOn(v => !v)}
+              title={cameraOn ? 'Turn camera off' : 'Turn camera on'}
+              style={{
+                background: cameraOn ? 'none' : 'rgba(239,68,68,0.15)',
+                border: `1px solid ${cameraOn ? 'var(--border)' : 'rgba(239,68,68,0.5)'}`,
+                borderRadius: '8px', padding: '7px 10px',
+                color: cameraOn ? 'var(--text-3)' : '#EF4444',
+                fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+                transition: 'all 0.2s',
+              }}
+            >
+              {cameraOn ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 10l4.553-2.069A1 1 0 0121 8.876v6.248a1 1 0 01-1.447.894L15 14M4 8h11a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/>
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 10l4.553-2.069A1 1 0 0121 8.876v6.248a1 1 0 01-1.447.894L15 14M4 8h11a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/>
+                  <line x1="3" y1="3" x2="21" y2="21"/>
+                </svg>
+              )}
+              {cameraOn ? 'Camera' : 'Cam Off'}
+            </button>
+          )}
+
+          {/* Save Session (audio recording) */}
+          {phase !== 'intro' && phase !== 'mike' && (
+            <button
+              onClick={startRecording}
+              disabled={isRecording}
+              title={isRecording ? 'Recording in progress' : 'Record this session'}
+              style={{
+                background: isRecording ? 'rgba(239,68,68,0.12)' : 'none',
+                border: `1px solid ${isRecording ? 'rgba(239,68,68,0.4)' : 'var(--border)'}`,
+                borderRadius: '8px', padding: '7px 12px',
+                color: isRecording ? '#EF4444' : 'var(--text-3)',
+                fontSize: '12px', cursor: isRecording ? 'default' : 'pointer',
+                display: 'flex', alignItems: 'center', gap: '6px',
+                transition: 'all 0.2s',
+              }}
+            >
+              {isRecording ? (
+                <>
+                  <motion.span animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}
+                    style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#EF4444', flexShrink: 0 }} />
+                  Recording
+                </>
+              ) : '⏺ Save Session'}
+            </button>
+          )}
+
           {phase !== 'intro' && phase !== 'done' && (
             <button
               onClick={handlePause}
@@ -601,7 +698,7 @@ export default function InterviewRoom() {
             >
               <InterviewerAvatar role="hr" state={hrState} active={hrState === 'speaking'} onVideoEnded={() => onDoneRef.current?.()} />
               <InterviewerAvatar role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} onVideoEnded={() => onDoneRef.current?.()} />
-              <YouCamera />
+              <YouCamera cameraOn={cameraOn} onToggle={() => setCameraOn(v => !v)} />
             </motion.div>
           )}
         </AnimatePresence>
