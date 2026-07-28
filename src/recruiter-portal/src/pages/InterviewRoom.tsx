@@ -758,42 +758,45 @@ export default function InterviewRoom() {
 
           {/* ── ASKING / ANSWERING / SCORING ─────────────────────────────── */}
           {(phase === 'asking' || phase === 'answering' || phase === 'scoring') && q && (
-            <motion.div key={`q-${qIndex}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <div>
 
-              {/* Question card */}
-              <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '22px 24px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
-                  {phase === 'asking' && (
-                    <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.4 }}
-                      style={{ width: '7px', height: '7px', borderRadius: '50%', background: isHrQuestion ? '#a78bfa' : 'var(--blue)', flexShrink: 0 }} />
-                  )}
-                  <span style={{ fontSize: '10px', fontWeight: 700, color: isHrQuestion ? '#a78bfa' : 'var(--blue)', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', padding: '3px 8px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                    {isHrQuestion ? 'Sarah · HR' : `James · ${specialistTitle}`}
-                  </span>
-                  <span style={{ fontSize: '10px', color: 'var(--text-3)', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', padding: '3px 8px' }}>{selectedDifficulty}</span>
-                  {phase === 'answering' && (
-                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
-                      <button onClick={repeatQuestion} style={{ background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.35)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: 'var(--blue)', cursor: 'pointer' }}>
-                        ↩ Repeat
-                      </button>
-                      <button onClick={handlePause} style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.30)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: '#34D399', cursor: 'pointer' }}>
-                        ⏸ Pause
-                      </button>
-                      <button onClick={handlePass} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', cursor: 'pointer' }}>
-                        Pass →
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <div style={{ fontSize: '17px', fontWeight: 600, color: 'var(--text)', lineHeight: 1.55, minHeight: '28px' }}>
-                  {displayedQuestion}
-                  {phase === 'asking' && displayedQuestion.length < (q.questionText?.length ?? 0) && (
-                    <motion.span animate={{ opacity: [1, 0] }} transition={{ repeat: Infinity, duration: 0.5 }} style={{ marginLeft: '2px', color: isHrQuestion ? '#a78bfa' : 'var(--blue)' }}>▌</motion.span>
-                  )}
-                </div>
-              </div>
+              {/* Question card — animates per question, independent of answer panel */}
+              <AnimatePresence mode="sync">
+                <motion.div key={`q-${qIndex}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
+                  style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '22px 24px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
+                    {phase === 'asking' && (
+                      <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.4 }}
+                        style={{ width: '7px', height: '7px', borderRadius: '50%', background: isHrQuestion ? '#a78bfa' : 'var(--blue)', flexShrink: 0 }} />
+                    )}
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: isHrQuestion ? '#a78bfa' : 'var(--blue)', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', padding: '3px 8px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                      {isHrQuestion ? 'Sarah · HR' : `James · ${specialistTitle}`}
+                    </span>
+                    <span style={{ fontSize: '10px', color: 'var(--text-3)', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', padding: '3px 8px' }}>{selectedDifficulty}</span>
+                    {phase === 'answering' && (
+                      <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
+                        <button onClick={repeatQuestion} style={{ background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.35)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: 'var(--blue)', cursor: 'pointer' }}>
+                          ↩ Repeat
+                        </button>
+                        <button onClick={handlePause} style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.30)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: '#34D399', cursor: 'pointer' }}>
+                          ⏸ Pause
+                        </button>
+                        <button onClick={handlePass} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', cursor: 'pointer' }}>
+                          Pass →
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '17px', fontWeight: 600, color: 'var(--text)', lineHeight: 1.55, minHeight: '28px' }}>
+                    {displayedQuestion}
+                    {phase === 'asking' && displayedQuestion.length < (q.questionText?.length ?? 0) && (
+                      <motion.span animate={{ opacity: [1, 0] }} transition={{ repeat: Infinity, duration: 0.5 }} style={{ marginLeft: '2px', color: isHrQuestion ? '#a78bfa' : 'var(--blue)' }}>▌</motion.span>
+                    )}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
 
-              {/* Answer area */}
+              {/* Answer area — always mounted, never animates between questions */}
               {(phase === 'asking' || phase === 'answering') && (
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
 
@@ -964,7 +967,7 @@ export default function InterviewRoom() {
                   <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Analysing your answer…</div>
                 </div>
               )}
-            </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </div>
