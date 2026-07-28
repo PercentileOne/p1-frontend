@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScoringDisplay } from '../components/ScoringDisplay';
+import { ShareModal } from '../components/ShareModal';
 import type { InterviewQuestion, ScoreResponse } from '../api/explainApi';
 import type { TranscriptMeta } from '../components/VoiceInput';
 import type { CVContext, JobSpecContext } from '../utils/contextBuilder';
@@ -461,6 +462,7 @@ export default function InterviewSummary() {
   const cvCtx: CVContext | undefined = location.state?.cvCtx;
   const jobCtx: JobSpecContext | undefined = location.state?.jobCtx;
   const [activeTab, setActiveTab] = useState<Tab>('interview');
+  const [showShare, setShowShare] = useState(false);
 
   const overall = overallAvg(answers);
   const strengths = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) >= 0.65);
@@ -567,6 +569,13 @@ ${questionsHtml}
           <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>Session Complete</div>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={() => setShowShare(true)} style={{ background: 'linear-gradient(135deg, #a78bfa, #4F8EF7)', color: '#fff', border: 'none', borderRadius: '9px', padding: '10px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            Share
+          </button>
           <button onClick={downloadPdf} style={{ background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9px', padding: '10px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
             Download PDF
           </button>
@@ -760,6 +769,17 @@ ${questionsHtml}
         )}
 
       </div>
+
+      {/* Share modal */}
+      {showShare && (
+        <ShareModal
+          role={jobCtx?.title}
+          company={jobCtx?.company}
+          score={Math.round(overall * 100)}
+          shareUrl={`https://candidate.explain.global/shared/demo-${Date.now()}`}
+          onClose={() => setShowShare(false)}
+        />
+      )}
     </div>
   );
 }
