@@ -20,6 +20,7 @@ import FlowViewer from './pages/FlowViewer'
 import LearnHome from './pages/learn/LearnHome'
 import LessonViewer from './pages/learn/LessonViewer'
 import LearnBookshelf from './pages/learn/LearnBookshelf'
+import CandidatePrepLanding from './pages/CandidatePrepLanding'
 
 export default function App() {
   return (
@@ -50,6 +51,8 @@ export default function App() {
         <Route path="/learn" element={<LearnHome />} />
         <Route path="/learn/lesson/:lessonId" element={<LessonViewer />} />
         <Route path="/learn/bookshelf" element={<LearnBookshelf />} />
+        {/* Candidate prep invite — token in URL, no login required */}
+        <Route path="/prep/:token" element={<CandidatePrepLanding />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
