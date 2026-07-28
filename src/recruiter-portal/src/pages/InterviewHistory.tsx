@@ -381,6 +381,7 @@ function InterviewRow({
       style={{
         background: highlighted ? 'rgba(251,191,36,0.04)' : 'var(--bg2)',
         border: `1px solid ${highlighted ? 'rgba(251,191,36,0.18)' : 'var(--border)'}`,
+        borderLeft: `3px solid ${iv.type === 'video' ? '#4F8EF7' : '#a78bfa'}`,
         borderRadius: '14px',
         overflow: 'hidden',
       }}
@@ -421,12 +422,14 @@ function InterviewRow({
         </div>
 
         {/* Score */}
-        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', justifyContent: 'flex-end' }}>
-            <span style={{ fontSize: '26px', fontWeight: 900, color: scoreColor(iv.score), fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
-              {iv.score}
-            </span>
-            <span style={{ fontSize: '13px', color: 'var(--text-3)', fontWeight: 700 }}>%</span>
+        <div style={{ textAlign: 'right', flexShrink: 0, minWidth: '110px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end', marginBottom: '3px' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '1px' }}>
+              <span style={{ fontSize: '28px', fontWeight: 900, color: scoreColor(iv.score), fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
+                {iv.score}
+              </span>
+              <span style={{ fontSize: '14px', color: 'var(--text-3)', fontWeight: 700 }}>%</span>
+            </div>
             <DeltaBadge current={iv.score} previous={iv.previousScore} />
           </div>
           <div style={{ fontSize: '10px', fontWeight: 700, color: scoreColor(iv.score), textTransform: 'uppercase', letterSpacing: '0.05em' }}>
