@@ -90,11 +90,12 @@ export function ShareModal({ role, company, score, shareUrl, onClose }: Props) {
         exit={{ opacity: 0, scale: 0.95, y: 8 }}
         transition={{ duration: 0.2 }}
         style={{
-          position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-          zIndex: 101, width: '100%', maxWidth: '440px', padding: '0 16px',
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 101, padding: '24px 16px', pointerEvents: 'none',
         }}
       >
-        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '20px', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '20px', overflow: 'hidden', width: '100%', maxWidth: '440px', pointerEvents: 'auto' }}>
 
           {/* Score card hero */}
           <div style={{
