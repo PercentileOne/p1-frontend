@@ -794,7 +794,7 @@ export default function InterviewRoom() {
               </div>
 
               {/* Answer area */}
-              {phase === 'answering' && (
+              {(phase === 'asking' || phase === 'answering') && (
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
 
                   {/* Left — answer input (3/4) */}
