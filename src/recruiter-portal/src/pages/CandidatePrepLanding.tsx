@@ -157,7 +157,7 @@ export default function CandidatePrepLanding() {
             <span style={{ background: 'linear-gradient(90deg, #4F8EF7, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               {invite.role}
             </span>
-            <br />interview
+            <br />private interview practice
           </h1>
           <div style={{ fontSize: '16px', color: 'rgba(255,255,255,0.45)', marginTop: '10px' }}>
             at <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>{invite.company}</span>
