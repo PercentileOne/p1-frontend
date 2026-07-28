@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Package, Users, Briefcase, FileText, BarChart2, CalendarCheck, Settings, History, Zap, Filter } from 'lucide-react'
+import { LayoutDashboard, Package, Users, Briefcase, FileText, BarChart2, CalendarCheck, Settings, History, Zap, Filter, Video } from 'lucide-react'
 import { ExplainLogo } from '../components/LogoMark'
 import InterviewPacks from './InterviewPacks'
 import Candidates from './Candidates'
@@ -11,6 +11,7 @@ import CVsPage from './CVs'
 import PackBuilder from './PackBuilder'
 import PackHistory from './PackHistory'
 import ScreenCandidates from './ScreenCandidates'
+import InterviewHistory from './InterviewHistory'
 
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: 'Dashboard' },
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   { Icon: History,         label: 'Pack History' },
   { Icon: BarChart2,       label: 'Analytics' },
   { Icon: Zap,             label: 'Demos' },
+  { Icon: Video,           label: 'My Interviews' },
   { Icon: Settings,        label: 'Settings' },
 ]
 
@@ -254,6 +256,7 @@ export default function Dashboard() {
         {activeNav === 'Interviews' && <Interviews />}
         {activeNav === 'CVs' && <CVsPage />}
         {activeNav === 'Pack History' && <PackHistory />}
+        {activeNav === 'My Interviews' && <InterviewHistory />}
         {activeNav === 'Demos' && (
           <div style={{ padding: '32px', maxWidth: '600px' }}>
             <div style={{ marginBottom: '28px' }}>
@@ -280,7 +283,7 @@ export default function Dashboard() {
             </div>
           </div>
         )}
-        {activeNav !== 'Dashboard' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && activeNav !== 'Pack History' && activeNav !== 'Demos' && (
+        {activeNav !== 'Dashboard' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && activeNav !== 'Pack History' && activeNav !== 'Demos' && activeNav !== 'My Interviews' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--text-3)', fontSize: 14 }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
             <div style={{ fontWeight: 700, color: 'var(--text-2)' }}>{activeNav}</div>
