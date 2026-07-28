@@ -598,8 +598,8 @@ export default function InterviewRoom() {
               transition={{ duration: 0.6 }}
               style={{ display: 'flex', gap: '16px' }}
             >
-              <InterviewerAvatar role="hr" state={hrState} active={hrState === 'speaking' || (isHrQuestion && phase === 'asking')} onVideoEnded={() => onDoneRef.current?.()} />
-              <InterviewerAvatar role="technical" state={techState} active={techState === 'speaking' || (!isHrQuestion && phase === 'asking')} specialistTitle={specialistTitle} onVideoEnded={() => onDoneRef.current?.()} />
+              <InterviewerAvatar role="hr" state={hrState} active={hrState === 'speaking'} onVideoEnded={() => onDoneRef.current?.()} />
+              <InterviewerAvatar role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} onVideoEnded={() => onDoneRef.current?.()} />
             </motion.div>
           )}
         </AnimatePresence>
