@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InterviewerAvatar, type AvatarState } from '../components/InterviewerAvatar';
+import { YouCamera } from '../components/YouCamera';
 import { VoiceInput, type TranscriptMeta } from '../components/VoiceInput';
 import type { InterviewQuestion, ScoreResponse } from '../api/explainApi';
 import { speak, elevenLabsConfigured } from '../api/ttsApi';
@@ -600,6 +601,7 @@ export default function InterviewRoom() {
             >
               <InterviewerAvatar role="hr" state={hrState} active={hrState === 'speaking'} onVideoEnded={() => onDoneRef.current?.()} />
               <InterviewerAvatar role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} onVideoEnded={() => onDoneRef.current?.()} />
+              <YouCamera />
             </motion.div>
           )}
         </AnimatePresence>
