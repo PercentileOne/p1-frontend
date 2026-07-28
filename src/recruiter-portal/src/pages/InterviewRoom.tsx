@@ -687,7 +687,8 @@ export default function InterviewRoom() {
           {phase === 'interviewer-intro' && (
             <motion.div key="int-intro" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '22px 24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                {/* Header row */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.4 }}
                       style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#a78bfa', flexShrink: 0 }} />
@@ -699,6 +700,27 @@ export default function InterviewRoom() {
                   >
                     Skip Intro →
                   </button>
+                </div>
+                {/* Animated bullet points */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {[
+                    { icon: '🎙️', text: 'When a question appears, click Record to start your answer' },
+                    { icon: '⏹️', text: 'Click Stop when you\'ve finished speaking' },
+                    { icon: '↩️', text: 'Use Repeat if you\'d like to hear the question again' },
+                    { icon: '⏸️', text: 'Hit Pause anytime you need a moment to collect your thoughts' },
+                    { icon: '✨', text: 'Speak naturally — take your time and don\'t worry about being perfect' },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -16 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.6 + i * 0.55, duration: 0.45, ease: 'easeOut' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', borderRadius: '10px', background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.12)' }}
+                    >
+                      <span style={{ fontSize: '16px', flexShrink: 0 }}>{item.icon}</span>
+                      <span style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.45 }}>{item.text}</span>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
             </motion.div>
