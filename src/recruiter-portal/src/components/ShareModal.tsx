@@ -105,14 +105,14 @@ export function ShareModal({ role, company, score, shareUrl, onClose }: Props) {
           }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div>
-                <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(167,139,250,0.7)', marginBottom: '6px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(167,139,250,0.7)', marginBottom: '8px' }}>
                   Explain · Interview Score
                 </div>
-                <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff', lineHeight: 1.3 }}>
+                <div style={{ fontSize: '22px', fontWeight: 900, color: '#fff', lineHeight: 1.25, marginBottom: company ? '4px' : 0 }}>
                   {role ?? 'Interview Session'}
                 </div>
                 {company && (
-                  <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginTop: '3px' }}>{company}</div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>{company}</div>
                 )}
               </div>
               <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', flexShrink: 0 }}>
