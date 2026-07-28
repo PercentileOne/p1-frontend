@@ -691,8 +691,8 @@ Return this exact JSON:
   ]
 }
 
-Generate exactly 7 questions total:
-- 5 role/competency questions (source: "Role") — based on what this job actually requires day-to-day
+Generate exactly 10 questions total:
+- 8 role/competency questions (source: "Role") — based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover different competencies
 - 2 HR/culture questions (source: "HR") — the last one must ask what the candidate knows about the company and why this role appeals to them specifically`;
 
   type RawResult = {

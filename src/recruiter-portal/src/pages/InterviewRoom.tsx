@@ -52,15 +52,45 @@ function buildDemoQuestions(company: Company): InterviewQuestion[] {
     },
     {
       questionId: 'q4',
-      questionText: `What do you know about ${company.name} and why does this role specifically appeal to you?`,
-      modelAnswer: `Show genuine research into ${company.name}. Connect their mission to your own motivations and experience.`,
-      questionType: 'Behavioural', difficulty: 'Easy', source: 'HR', competencyTags: ['company knowledge', 'motivation'],
+      questionText: 'Tell me about a time you disagreed with a decision made by your manager or leadership. How did you handle it?',
+      modelAnswer: 'Cover: the nature of the disagreement, how you raised it professionally, whether you escalated or accepted the outcome, and what you learned.',
+      questionType: 'Competency', difficulty: 'Medium', source: 'Role', competencyTags: ['communication', 'professional judgement'],
     },
     {
       questionId: 'q5',
+      questionText: 'Give me an example of when you had to adapt quickly to a significant change at work. What did you do?',
+      modelAnswer: 'Cover: what changed, how you responded, what you prioritised, and how you helped others if relevant.',
+      questionType: 'Competency', difficulty: 'Medium', source: 'Role', competencyTags: ['adaptability', 'change management'],
+    },
+    {
+      questionId: 'q6',
+      questionText: 'Describe a time you identified a problem that others had missed. How did you spot it and what did you do?',
+      modelAnswer: 'Cover: what the problem was, how you identified it, the action you took, and the impact of catching it early.',
+      questionType: 'Competency', difficulty: 'Hard', source: 'Role', competencyTags: ['initiative', 'analytical thinking'],
+    },
+    {
+      questionId: 'q7',
+      questionText: 'Tell me about a time you had to manage competing priorities with limited resources. How did you decide what to focus on?',
+      modelAnswer: 'Cover: the competing demands, your prioritisation framework, trade-offs you made, and the outcome.',
+      questionType: 'Competency', difficulty: 'Hard', source: 'Role', competencyTags: ['prioritisation', 'decision-making'],
+    },
+    {
+      questionId: 'q8',
+      questionText: 'Describe an achievement you are genuinely proud of from your career so far. What made it significant?',
+      modelAnswer: 'Cover: what you did, the scale or difficulty involved, your personal contribution, and why it matters to you.',
+      questionType: 'Competency', difficulty: 'Easy', source: 'Role', competencyTags: ['achievement', 'motivation'],
+    },
+    {
+      questionId: 'q9',
       questionText: 'Describe a time you delivered difficult feedback to someone. How did you approach it?',
       modelAnswer: 'Use STAR. Emphasise empathy, specificity, listening to the response, and the relationship outcome.',
       questionType: 'Behavioural', difficulty: 'Medium', source: 'HR', competencyTags: ['communication', 'stakeholder management'],
+    },
+    {
+      questionId: 'q10',
+      questionText: `What do you know about ${company.name} and why does this role specifically appeal to you?`,
+      modelAnswer: `Show genuine research into ${company.name}. Connect their mission to your own motivations and experience.`,
+      questionType: 'Behavioural', difficulty: 'Easy', source: 'HR', competencyTags: ['company knowledge', 'motivation'],
     },
   ];
 }
