@@ -604,7 +604,7 @@ export default function InterviewRoom() {
           )}
         </AnimatePresence>
 
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="sync">
 
           {/* ── INTRO — only shown when NOT autoStart ─────────────────────── */}
           {phase === 'intro' && (
@@ -758,7 +758,7 @@ export default function InterviewRoom() {
 
           {/* ── ASKING / ANSWERING / SCORING ─────────────────────────────── */}
           {(phase === 'asking' || phase === 'answering' || phase === 'scoring') && q && (
-            <motion.div key={`q-${qIndex}-${phase}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <motion.div key={`q-${qIndex}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
 
               {/* Question card */}
               <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '22px 24px', marginBottom: '16px' }}>
