@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { login, type UserRole, type AuthError } from '../lib/mockAuth';
-import { MiniInterviewRoom } from '../components/MiniInterviewRoom';
 
 const ROLES: { value: UserRole; label: string; description: string; icon: string }[] = [
   { value: 'Candidate', label: 'Candidate',  description: 'Practice interviews & track progress', icon: '🎯' },
@@ -157,9 +156,13 @@ export default function Login() {
             </motion.div>
           </AnimatePresence>
 
-          {/* Mini interview room */}
+          {/* Interview room preview */}
           <div style={{ marginTop: 32 }}>
-            <MiniInterviewRoom />
+            <img
+              src="/assets/interview-room-preview.png"
+              alt="Explain Interview Room"
+              style={{ width: '100%', borderRadius: 14, border: '1px solid rgba(120,80,255,0.18)', boxShadow: '0 12px 60px rgba(0,0,0,0.6)' }}
+            />
           </div>
         </div>
 
