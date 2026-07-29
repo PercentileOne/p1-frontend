@@ -97,7 +97,7 @@ export default function Login() {
           padding: '48px 56px',
           background: 'linear-gradient(160deg, #0d0b1e 0%, #080812 100%)',
           borderRight: '1px solid rgba(120,80,255,0.12)',
-          position: 'relative', overflow: 'hidden',
+          position: 'relative', overflow: 'visible',
         }}
         className="auth-left-panel"
       >

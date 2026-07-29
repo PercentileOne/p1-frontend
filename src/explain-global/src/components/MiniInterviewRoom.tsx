@@ -46,7 +46,7 @@ export function MiniInterviewRoom() {
   }, []);
 
   return (
-    <div style={{ width: '100%', maxWidth: 300, position: 'relative' }}>
+    <div style={{ width: '100%', maxWidth: 420, position: 'relative' }}>
       {/* Outer glow frame */}
       <div style={{
         background: 'linear-gradient(160deg, #100c22 0%, #080812 100%)',
@@ -78,7 +78,7 @@ export function MiniInterviewRoom() {
                 background: iv.bg,
                 border: `1px solid ${speaking ? iv.ring + '55' : 'rgba(255,255,255,0.06)'}`,
                 boxShadow: speaking ? `0 0 14px ${iv.ring}22` : 'none',
-                minHeight: 100,
+                minHeight: 160,
                 transition: 'border-color 0.15s, box-shadow 0.15s',
               }}>
                 {/* Photo */}
@@ -103,8 +103,8 @@ export function MiniInterviewRoom() {
                 {/* Name + dot */}
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '6px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                   <div>
-                    <div style={{ fontSize: 9, fontWeight: 700, color: '#fff' }}>{iv.name}</div>
-                    <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{iv.title}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{iv.name}</div>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{iv.title}</div>
                   </div>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: speaking ? iv.ring : 'rgba(255,255,255,0.15)', boxShadow: speaking ? `0 0 5px ${iv.ring}` : 'none', transition: 'all 0.2s', flexShrink: 0 }} />
                 </div>
@@ -114,7 +114,7 @@ export function MiniInterviewRoom() {
 
           {/* YOU tile */}
           <div style={{
-            width: 68, flexShrink: 0, borderRadius: 10, overflow: 'hidden', position: 'relative',
+            width: 100, flexShrink: 0, borderRadius: 10, overflow: 'hidden', position: 'relative',
             background: 'linear-gradient(160deg, #111118 0%, #0a0a12 100%)',
             border: `1px solid ${phase === 'answering' ? 'rgba(52,211,153,0.5)' : 'rgba(255,255,255,0.06)'}`,
             boxShadow: phase === 'answering' ? '0 0 12px rgba(52,211,153,0.12)' : 'none',
@@ -122,26 +122,26 @@ export function MiniInterviewRoom() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'border-color 0.15s, box-shadow 0.15s',
           }}>
-            <svg width="28" height="36" viewBox="0 0 48 60" fill="none">
+            <svg width="40" height="50" viewBox="0 0 48 60" fill="none">
               <ellipse cx="24" cy="17" rx="13" ry="14" fill="rgba(255,255,255,0.08)" />
               <path d="M2 58c0-12.15 9.85-22 22-22s22 9.85 22 22" stroke="rgba(255,255,255,0.08)" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
             </svg>
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%)', pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '6px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-              <div style={{ fontSize: 9, fontWeight: 700, color: '#fff' }}>You</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>You</div>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: phase === 'answering' ? '#34D399' : 'rgba(255,255,255,0.15)', boxShadow: phase === 'answering' ? '0 0 5px #34D399' : 'none', transition: 'all 0.2s' }} />
             </div>
           </div>
         </div>
 
         {/* Question strip */}
-        <div style={{ margin: '8px 10px 10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '8px 12px', minHeight: 40, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(120,80,255,0.6)', flexShrink: 0 }}>Q{qIdx + 1}</div>
+        <div style={{ margin: '8px 10px 10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '10px 14px', minHeight: 48, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(120,80,255,0.6)', flexShrink: 0 }}>Q{qIdx + 1}</div>
           <AnimatePresence mode="wait">
             <motion.div key={`${qIdx}-${phase}`}
               initial={{ opacity: 0, y: 3 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -3 }}
               transition={{ duration: 0.2 }}
-              style={{ fontSize: 10, color: phase === 'answering' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.75)', lineHeight: 1.45, fontStyle: phase === 'answering' ? 'italic' : 'normal' }}
+              style={{ fontSize: 12, color: phase === 'answering' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.75)', lineHeight: 1.45, fontStyle: phase === 'answering' ? 'italic' : 'normal' }}
             >
               {phase === 'answering' ? 'Listening to your answer…' : phase === 'scoring' ? 'Scoring your response…' : QUESTIONS[qIdx]}
             </motion.div>
