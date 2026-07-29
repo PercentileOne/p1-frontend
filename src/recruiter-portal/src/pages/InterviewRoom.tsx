@@ -229,18 +229,16 @@ export default function InterviewRoom() {
   const bgLoadRef = useRef(false);
   const bgLoadedRef = useRef(false); // true once AI results arrive
 
-  // Derived values — prefer AI results, fall back to demo
-  const questions = ctx.questions ?? bgQuestions ?? buildDemoQuestions(demoCompany);
-  const companyKeywords = ctx.questions
-    ? (ctx.companyFacts ?? [])
-    : (bgCompanyFacts.length ? bgCompanyFacts : demoCompany.companyKnowledgeKeywords);
-  const specialistTitle = ctx.specialistTitle ?? bgSpecialistTitle ?? 'Hiring Manager';
-  const effectiveSarahIntro = ctx.sarahIntro ?? bgSarahIntro ?? undefined;
-  const effectiveJamesIntro = ctx.jamesIntro ?? bgJamesIntro ?? undefined;
+  // Derived values — fresh AI results ALWAYS win over anything pre-passed via route state
+  const questions = bgQuestions ?? buildDemoQuestions(demoCompany);
+  const companyKeywords = bgCompanyFacts.length ? bgCompanyFacts : demoCompany.companyKnowledgeKeywords;
+  const specialistTitle = bgSpecialistTitle ?? 'Hiring Manager';
+  const effectiveSarahIntro = bgSarahIntro ?? undefined;
+  const effectiveJamesIntro = bgJamesIntro ?? undefined;
 
-  // Mike's fallback script — used if AI hasn't loaded yet (it usually finishes before Mike)
+  // Mike's fallback script — used if AI hasn't loaded yet (it usually finishes before Mike speaks)
   const fallbackMikeScript = `Hi there — I'm Mike, your recruitment consultant. I've set up your interview today and I want to give you a quick briefing before you meet the panel. Your interviewers today are Sarah, who heads up HR, and James, who'll be assessing you on the role itself. They'll guide you through everything — just follow Sarah's instructions on the controls and you'll be absolutely fine. I'll be here throughout if you need anything. The best thing you can do is be specific: use real examples from your experience. Back yourself — you've got this. Good luck!`;
-  const mikeScript = ctx.mikeScript ?? bgMikeScript ?? fallbackMikeScript;
+  const mikeScript = bgMikeScript ?? fallbackMikeScript;
 
   // ── Session recording ────────────────────────────────────────────────────────
   const [isRecording, setIsRecording] = useState(false);
