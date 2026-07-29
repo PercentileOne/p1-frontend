@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { InterviewShowcase } from '../components/InterviewShowcase';
 import { MOCK_JOBS } from '../data/mockJobs';
 import { JobCard } from '../components/JobCard';
 import type { Job } from '../data/mockJobs';
@@ -128,7 +129,10 @@ export default function Home() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 24px' }}>
+      {/* Interview Room Showcase */}
+      <InterviewShowcase />
+
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 64px' }}>
 
         {/* Featured jobs */}
         <SectionHeader
