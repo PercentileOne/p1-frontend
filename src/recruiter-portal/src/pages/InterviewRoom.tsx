@@ -295,6 +295,8 @@ export default function InterviewRoom() {
   const [sessionAnswers, setSessionAnswers] = useState<SessionAnswer[]>([]);
   const [hrState, setHrState] = useState<AvatarState>('idle');
   const [techState, setTechState] = useState<AvatarState>('idle');
+  const [hrAnalyser, setHrAnalyser] = useState<AnalyserNode | null>(null);
+  const [techAnalyser, setTechAnalyser] = useState<AnalyserNode | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [coachingMessage, setCoachingMessage] = useState<CoachingMessage | null>(null);
   const [paused, setPaused] = useState(false);
@@ -340,7 +342,10 @@ export default function InterviewRoom() {
       thinkStartRef.current = Date.now();
       setPhase('answering');
     };
-    cancelSpeakRef.current = speak(question.questionText, interviewer, onDone);
+    cancelSpeakRef.current = speak(question.questionText, interviewer, onDone, (a) => {
+      if (interviewer === 'hr') setHrAnalyser(a);
+      else setTechAnalyser(a);
+    });
   }, [questions]);
 
   const repeatQuestion = useCallback(() => {
@@ -386,8 +391,8 @@ export default function InterviewRoom() {
         cancelSpeakRef.current = speak(jamesText, 'technical', () => {
           setTechState('idle');
           setTimeout(() => askQuestion(0), 500);
-        });
-      });
+        }, (a) => setTechAnalyser(a));
+      }, (a) => setHrAnalyser(a));
     }, 600);
   }, [askQuestion, effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage]);
 
@@ -401,7 +406,7 @@ export default function InterviewRoom() {
       cancelSpeakRef.current = null;
       logFlowEvent('MIKE_INTRO_COMPLETED', {});
       beginInterviewIntroRef.current();
-    });
+    }, (a) => setTechAnalyser(a));
   }, [mikeScript, ctx.jobSpecText, ctx.cvText, ctx.selectedLanguage]);
 
   const startInterview = useCallback(() => {
@@ -696,8 +701,8 @@ export default function InterviewRoom() {
               transition={{ duration: 0.6 }}
               style={{ display: 'flex', gap: '16px' }}
             >
-              <InterviewerAvatar role="hr" state={hrState} active={hrState === 'speaking'} onVideoEnded={() => onDoneRef.current?.()} />
-              <InterviewerAvatar role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} onVideoEnded={() => onDoneRef.current?.()} />
+              <InterviewerAvatar role="hr" state={hrState} active={hrState === 'speaking'} analyserNode={hrAnalyser} onVideoEnded={() => onDoneRef.current?.()} />
+              <InterviewerAvatar role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} analyserNode={techAnalyser} onVideoEnded={() => onDoneRef.current?.()} />
               <YouCamera cameraOn={cameraOn} onToggle={() => setCameraOn(v => !v)} />
             </motion.div>
           )}

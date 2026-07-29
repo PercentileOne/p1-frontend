@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export type AvatarState = 'idle' | 'speaking' | 'listening' | 'thinking';
@@ -11,6 +11,7 @@ interface Props {
   videoUrl?: string | null;
   posterUrl?: string | null;   // kept for API compat, unused now
   specialistTitle?: string;
+  analyserNode?: AnalyserNode | null;
   onVideoEnded?: () => void;
 }
 
@@ -37,37 +38,67 @@ const PROFILES = {
   },
 };
 
+const BAR_COUNT = 10;
 const BAR_SHAPES = [0.45, 0.72, 0.88, 1.0, 0.95, 0.78, 0.92, 0.65, 0.82, 0.50];
 
-function WaveformBars({ active, color }: { active: boolean; color: string }) {
+function WaveformBars({ active, color, analyserNode }: {
+  active: boolean;
+  color: string;
+  analyserNode?: AnalyserNode | null;
+}) {
   const [heights, setHeights] = useState<number[]>(() => BAR_SHAPES.map(() => 0.12));
+  const rafRef = useRef<number>(0);
+  const dataRef = useRef<Uint8Array | null>(null);
 
   useEffect(() => {
+    cancelAnimationFrame(rafRef.current);
+
     if (!active) {
       setHeights(BAR_SHAPES.map(() => 0.12));
       return;
     }
-    const id = setInterval(() => {
-      setHeights(prev =>
-        prev.map((h, i) => {
-          const target = 0.18 + Math.random() * BAR_SHAPES[i] * 0.82;
-          return h + (target - h) * 0.35;
-        })
-      );
-    }, 80);
-    return () => clearInterval(id);
-  }, [active]);
+
+    if (analyserNode) {
+      // ── Real audio path: read frequency bins every frame ──────────────────
+      const bufLen = analyserNode.frequencyBinCount; // fftSize/2 = 32
+      dataRef.current = new Uint8Array(bufLen);
+      const step = Math.max(1, Math.floor(bufLen / BAR_COUNT));
+
+      const tick = () => {
+        analyserNode.getByteFrequencyData(dataRef.current!);
+        const d = dataRef.current!;
+        setHeights(BAR_SHAPES.map((_, i) => {
+          const raw = d[Math.min(i * step, bufLen - 1)] / 255;
+          return Math.max(0.08, raw);
+        }));
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      rafRef.current = requestAnimationFrame(tick);
+      return () => cancelAnimationFrame(rafRef.current);
+    } else {
+      // ── Simulation fallback (Web Speech / no analyser) ─────────────────────
+      const id = setInterval(() => {
+        setHeights(prev =>
+          prev.map((h, i) => {
+            const target = 0.18 + Math.random() * BAR_SHAPES[i] * 0.82;
+            return h + (target - h) * 0.35;
+          })
+        );
+      }, 80);
+      return () => clearInterval(id);
+    }
+  }, [active, analyserNode]);
 
   return (
-    <div style={{ display: 'flex', gap: '3px', alignItems: 'center', height: '28px' }}>
+    <div style={{ display: 'flex', gap: '3px', alignItems: 'center', height: '40px' }}>
       {heights.map((h, i) => (
         <motion.div
           key={i}
-          animate={{ scaleY: active ? h : 0.1 }}
-          transition={{ duration: 0.07, ease: 'linear' }}
+          animate={{ scaleY: active ? h : 0.08 }}
+          transition={{ duration: analyserNode ? 0.04 : 0.07, ease: 'linear' }}
           style={{
-            width: '3px', height: '100%',
-            background: active ? color : 'rgba(255,255,255,0.12)',
+            width: '4px', height: '100%',
+            background: active ? color : 'rgba(255,255,255,0.10)',
             borderRadius: '2px', transformOrigin: 'center',
           }}
         />
@@ -76,7 +107,7 @@ function WaveformBars({ active, color }: { active: boolean; color: string }) {
   );
 }
 
-export function InterviewerAvatar({ role, state, active, videoUrl, specialistTitle, onVideoEnded }: Props) {
+export function InterviewerAvatar({ role, state, active, videoUrl, specialistTitle, analyserNode, onVideoEnded }: Props) {
   const profile = {
     ...PROFILES[role],
     title: role === 'technical' ? (specialistTitle ?? PROFILES.technical.title) : PROFILES.hr.title,
@@ -191,7 +222,7 @@ export function InterviewerAvatar({ role, state, active, videoUrl, specialistTit
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
           {state === 'speaking' ? (
-            <WaveformBars active color={profile.barColor} />
+            <WaveformBars active color={profile.barColor} analyserNode={analyserNode} />
           ) : (
             <div style={{ fontSize: '10px', fontWeight: 600, color: statusColor, letterSpacing: '0.05em' }}>{statusLabel}</div>
           )}

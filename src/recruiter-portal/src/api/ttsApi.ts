@@ -74,11 +74,20 @@ const VOICE_TECH     = import.meta.env.VITE_ELEVENLABS_VOICE_TECH as string | un
 
 const ELEVENLABS_MODEL = 'eleven_turbo_v2'; // lowest latency, high quality
 
+// Shared AudioContext — created once, reused across all TTS calls
+let _audioCtx: AudioContext | null = null;
+function getAudioContext(): AudioContext {
+  if (!_audioCtx || _audioCtx.state === 'closed') _audioCtx = new AudioContext();
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
+}
+
 async function speakElevenLabs(
   text: string,
   voiceId: string,
   onEnd: () => void,
   volume = 1.0,
+  onAnalyser?: (a: AnalyserNode) => void,
 ): Promise<() => void> {
   const res = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
@@ -101,8 +110,28 @@ async function speakElevenLabs(
   const blob = await res.blob();
   if (blob.size < 100) throw new Error('ElevenLabs returned empty audio');
   const url  = URL.createObjectURL(blob);
-  const audio = new Audio(url);
+
+  // Use explicit src assignment so crossOrigin is set before load
+  const audio = new Audio();
+  audio.crossOrigin = 'anonymous';
+  audio.src = url;
   audio.volume = volume;
+
+  // Wire real-time frequency analyser if caller wants it
+  if (onAnalyser) {
+    try {
+      const ctx = getAudioContext();
+      const source = ctx.createMediaElementSource(audio);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 64;              // 32 bins — fast, plenty for 10 bars
+      analyser.smoothingTimeConstant = 0.75;
+      source.connect(analyser);
+      analyser.connect(ctx.destination);
+      onAnalyser(analyser);
+    } catch {
+      // Web Audio unavailable — WaveformBars will use simulation fallback
+    }
+  }
 
   let ended = false;
   const done = () => { if (!ended) { ended = true; URL.revokeObjectURL(url); onEnd(); } };
@@ -127,6 +156,7 @@ function speakWebSpeech(
   text: string,
   role: 'hr' | 'technical',
   onEnd: () => void,
+  onWordBoundary?: (charIndex: number) => void,
 ): () => void {
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(sanitiseForTTS(text));
@@ -143,6 +173,13 @@ function speakWebSpeech(
     ) ?? voices.find(v => v.lang.startsWith('en')) ?? null;
   if (preferred) utterance.voice = preferred;
 
+  // Word boundary events — fire on each spoken word so callers can sync animations
+  if (onWordBoundary) {
+    utterance.onboundary = (e) => {
+      if (e.name === 'word') onWordBoundary(e.charIndex);
+    };
+  }
+
   utterance.onend   = onEnd;
   utterance.onerror = onEnd;
   window.speechSynthesis.speak(utterance);
@@ -152,11 +189,14 @@ function speakWebSpeech(
 /**
  * Speak text using ElevenLabs if configured, otherwise Web Speech API.
  * Returns a cancel function.
+ * onAnalyser: called with a live AnalyserNode (ElevenLabs) or null (Web Speech).
+ * onWordBoundary: called on each spoken word boundary (Web Speech only).
  */
 export function speak(
   text: string,
   role: 'hr' | 'technical',
   onEnd: () => void,
+  onAnalyser?: (a: AnalyserNode | null) => void,
 ): () => void {
   const voiceId = role === 'hr' ? VOICE_HR : VOICE_TECH;
 
@@ -166,11 +206,14 @@ export function speak(
 
     speakElevenLabs(text, voiceId, () => {
       if (!cancelled) onEnd();
-    }, role === 'technical' ? 0.5 : 1.0)
+    }, role === 'technical' ? 0.5 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined)
       .then(cancel => { cancelAudio = cancel; })
       .catch(() => {
         // ElevenLabs failed — fall back to Web Speech
-        if (!cancelled) speakWebSpeech(text, role, onEnd);
+        if (!cancelled) {
+          onAnalyser?.(null);
+          speakWebSpeech(text, role, onEnd);
+        }
       });
 
     return () => {
@@ -179,6 +222,8 @@ export function speak(
     };
   }
 
+  // Web Speech path — no real analyser, pass null so caller uses simulation
+  onAnalyser?.(null);
   return speakWebSpeech(text, role, onEnd);
 }
 
