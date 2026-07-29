@@ -453,10 +453,10 @@ export default function ProductHome() {
             <div className="ph-manifesto">
               <div className="ph-lbl ph-r" data-ph="">Why Explain Exists</div>
               <p className="ph-r" data-ph="" data-d="1">People don't fail interviews because they're not good enough.</p>
-              <p className="ph-r" data-ph="" data-d="2">They fail because the process is <strong style={{color:"#F0F4FF"}}>unclear, unpredictable, and unstructured</strong>. Because they're unprepared.</p>
-              <p className="ph-em1 ph-r" data-ph="" data-d="3">Not unprepared in skill.<br />Not in talent.<br />Not in capability.</p>
-              <p className="ph-em2 ph-r" data-ph="" data-d="4">Unprepared in clarity.</p>
-              <div className="ph-tagline ph-r" data-ph="" data-d="5"><p>This is the world's first <strong>interview clarity engine</strong>. Built for every candidate. Every role. Every industry.</p></div>
+              <p className="ph-r" data-ph="" data-d="2">They fail because they've never actually <strong style={{color:"#F0F4FF"}}>practised</strong>. Not once. Not properly. Most people walk into the most important conversation of their career having rehearsed nothing — because there was nowhere to rehearse.</p>
+              <p className="ph-em1 ph-r" data-ph="" data-d="3">The first time they sit<br />in the chair —<br />is the real interview.</p>
+              <p className="ph-em2 ph-r" data-ph="" data-d="4">That ends now.</p>
+              <div className="ph-tagline ph-r" data-ph="" data-d="5"><p>Explain is the world's first <strong>AI interview practice platform</strong> that feels like the real thing. So when the real thing comes — you're already ready.</p></div>
             </div>
             <div>
               <div className="ph-pillars">
