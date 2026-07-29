@@ -104,16 +104,6 @@ export default function Login() {
         <div style={{ position: 'absolute', top: -100, left: -100, width: 400, height: 400, borderRadius: '50%', background: `radial-gradient(ellipse, ${accent}18 0%, transparent 70%)`, pointerEvents: 'none', transition: 'background 0.6s' }} />
         <div style={{ position: 'absolute', bottom: -80, right: -80, width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(79,142,247,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        {/* Logo */}
-        <div>
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <img src="/assets/explain-logo.svg" width={36} height={36} alt="Explain" style={{ borderRadius: '50%' }} />
-            <span style={{ fontWeight: 800, fontSize: 20, color: '#fff', letterSpacing: '-0.02em' }}>
-              explain<span style={{ color: '#7b5cf5' }}>.global</span>
-            </span>
-          </Link>
-        </div>
-
         {/* Central message */}
         <div>
           <AnimatePresence mode="wait">
