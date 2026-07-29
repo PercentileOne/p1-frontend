@@ -5,6 +5,8 @@ import Jobs from './pages/Jobs';
 import Learn from './pages/Learn';
 import Community from './pages/Community';
 import MyInterviews from './pages/MyInterviews';
+import Portals from './pages/Portals';
+import Pricing from './pages/Pricing';
 
 export default function App() {
   return (
@@ -16,6 +18,8 @@ export default function App() {
         <Route path="/learn" element={<Learn />} />
         <Route path="/community" element={<Community />} />
         <Route path="/my-interviews" element={<MyInterviews />} />
+        <Route path="/portals" element={<Portals />} />
+        <Route path="/pricing" element={<Pricing />} />
       </Routes>
     </div>
   );

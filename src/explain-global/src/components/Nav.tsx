@@ -6,6 +6,8 @@ const LINKS = [
   { to: '/learn', label: 'Learn' },
   { to: '/community', label: 'Community' },
   { to: '/my-interviews', label: 'My Interviews' },
+  { to: '/portals', label: 'Portals' },
+  { to: '/pricing', label: 'Pricing' },
 ];
 
 export function Nav() {
