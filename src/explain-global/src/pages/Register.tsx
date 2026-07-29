@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { register, type UserRole, type AuthError } from '../lib/mockAuth';
 
@@ -337,7 +337,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function inputStyle(accent: string, hasError: boolean): React.CSSProperties {
+function inputStyle(_accent: string, hasError: boolean): React.CSSProperties {
   return {
     width: '100%', boxSizing: 'border-box',
     background: 'rgba(255,255,255,0.04)',

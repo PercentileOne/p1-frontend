@@ -74,7 +74,7 @@ export function InterviewShowcase() {
   const [qIdx, setQIdx] = useState(0);
   const [showScore, setShowScore] = useState(false);
   const [phase, setPhase] = useState<'asking' | 'answering' | 'scoring'>('asking');
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     // Cycle: Sarah asks → You answer → James asks → You answer → Score reveal → next question

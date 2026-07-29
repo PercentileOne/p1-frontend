@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { login, type UserRole, type AuthError } from '../lib/mockAuth';
 
@@ -16,7 +16,6 @@ const ROLE_ACCENT: Record<UserRole, string> = {
 };
 
 export default function Login() {
-  const navigate = useNavigate();
   const [role, setRole]         = useState<UserRole>('Candidate');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
