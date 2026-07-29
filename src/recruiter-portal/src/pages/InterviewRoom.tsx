@@ -419,9 +419,15 @@ export default function InterviewRoom() {
 
   // Background AI session prep — fires immediately on mount, independent of Mike
   useEffect(() => {
-    if (ctx.questions || bgLoadRef.current || !ctx.jobSpecText) return;
+    if (ctx.questions || bgLoadRef.current) return;
     bgLoadRef.current = true;
-    sessionPrepareClient(ctx.jobSpecText!, ctx.cvText, ctx.selectedLanguage).then(result => {
+    const jobSpec = ctx.jobSpecText || `Job Title: Senior Professional
+Company: ${demoCompany.name}
+Industry: ${demoCompany.industry ?? 'Professional Services'}
+Location: United Kingdom
+
+We are looking for an experienced professional to join our team. The successful candidate will bring strong problem-solving ability, excellent communication skills, and a track record of delivering results under pressure. This role requires collaboration across teams, sound judgement, adaptability to change, and the ability to manage competing priorities effectively. The candidate should demonstrate initiative, professional integrity, and a commitment to continuous improvement.`;
+    sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage).then(result => {
       bgLoadedRef.current = true;
       setBgQuestions(result.questions);
       if (result.sarahIntro) setBgSarahIntro(result.sarahIntro);
