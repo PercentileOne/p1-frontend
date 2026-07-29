@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { login, type UserRole, type AuthError } from '../lib/mockAuth';
+import { MiniInterviewRoom } from '../components/MiniInterviewRoom';
 
 const ROLES: { value: UserRole; label: string; description: string; icon: string }[] = [
   { value: 'Candidate', label: 'Candidate',  description: 'Practice interviews & track progress', icon: '🎯' },
@@ -134,14 +135,9 @@ export default function Login() {
             </motion.div>
           </AnimatePresence>
 
-          {/* Stats */}
-          <div style={{ display: 'flex', gap: 32, marginTop: 40 }}>
-            {[['12,400+','Interviews run'],['94%','Satisfaction'],['340+','Roles filled']].map(([v,l]) => (
-              <div key={l}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: accent, letterSpacing: '-0.02em' }}>{v}</div>
-                <div style={{ fontSize: 11, color: '#4a4a80', marginTop: 2 }}>{l}</div>
-              </div>
-            ))}
+          {/* Mini interview room */}
+          <div style={{ marginTop: 36 }}>
+            <MiniInterviewRoom />
           </div>
         </div>
 
