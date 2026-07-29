@@ -118,7 +118,7 @@ export default function Login() {
         <div>
           <AnimatePresence mode="wait">
             <motion.div key={role} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: accent, marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: accent, marginBottom: 16, marginTop: 24 }}>
                 ✦ {role.toUpperCase()} PORTAL
               </div>
               <h2 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', fontWeight: 900, color: '#fff', lineHeight: 1.15, marginBottom: 20, letterSpacing: '-0.03em' }}>
@@ -179,16 +179,6 @@ export default function Login() {
         transition={{ duration: 0.5 }}
         style={{ width: '100%', maxWidth: 480, margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', padding: '48px 32px' }}
       >
-        {/* Mobile logo */}
-        <div style={{ marginBottom: 40 }}>
-          <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-            <img src="/assets/explain-logo.svg" width={28} height={28} alt="Explain" style={{ borderRadius: '50%' }} />
-            <span style={{ fontWeight: 800, fontSize: 16, color: '#fff', letterSpacing: '-0.02em' }}>
-              explain<span style={{ color: '#7b5cf5' }}>.global</span>
-            </span>
-          </Link>
-        </div>
-
         <h1 style={{ fontSize: 26, fontWeight: 900, color: '#fff', marginBottom: 6, letterSpacing: '-0.02em' }}>Welcome back</h1>
         <p style={{ fontSize: 14, color: '#6060a0', marginBottom: 32 }}>
           Sign in to your account · <Link to="/register" style={{ color: accent, textDecoration: 'none', fontWeight: 600, transition: 'color 0.2s' }}>Create one instead</Link>
