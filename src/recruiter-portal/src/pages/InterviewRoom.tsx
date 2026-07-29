@@ -703,7 +703,7 @@ export default function InterviewRoom() {
             >
               <InterviewerAvatar role="hr" state={hrState} active={hrState === 'speaking'} analyserNode={hrAnalyser} onVideoEnded={() => onDoneRef.current?.()} />
               <InterviewerAvatar role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} analyserNode={techAnalyser} onVideoEnded={() => onDoneRef.current?.()} />
-              <YouCamera cameraOn={cameraOn} onToggle={() => setCameraOn(v => !v)} />
+              <YouCamera cameraOn={cameraOn} speaking={phase === 'answering'} onToggle={() => setCameraOn(v => !v)} />
             </motion.div>
           )}
         </AnimatePresence>

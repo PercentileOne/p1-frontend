@@ -4,10 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface Props {
   label?: string;
   cameraOn: boolean;
+  speaking?: boolean;
   onToggle: () => void;
 }
 
-export function YouCamera({ label = 'You', cameraOn, onToggle }: Props) {
+export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [camState, setCamState] = useState<'requesting' | 'active' | 'denied'>('requesting');
@@ -42,11 +43,13 @@ export function YouCamera({ label = 'You', cameraOn, onToggle }: Props) {
         width: '160px', flexShrink: 0,
         background: '#0a0a12',
         borderRadius: '16px',
-        border: '1px solid rgba(255,255,255,0.06)',
+        border: `1px solid ${speaking ? 'rgba(52,211,153,0.55)' : 'rgba(255,255,255,0.06)'}`,
+        boxShadow: speaking ? '0 0 0 2px rgba(52,211,153,0.20)' : 'none',
         overflow: 'hidden',
         position: 'relative',
         minHeight: '120px',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'border-color 0.1s, box-shadow 0.1s',
       }}
     >
       {/* Live webcam feed */}
@@ -93,8 +96,8 @@ export function YouCamera({ label = 'You', cameraOn, onToggle }: Props) {
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 12px' }}>
         <div style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>{label}</div>
         {camState === 'active' && (
-          <div style={{ fontSize: '9px', fontWeight: 600, marginTop: '1px', letterSpacing: '0.05em', textTransform: 'uppercase', color: cameraOn ? 'rgba(52,211,153,0.9)' : 'rgba(255,255,255,0.3)' }}>
-            {cameraOn ? 'Live' : 'Off'}
+          <div style={{ fontSize: '9px', fontWeight: 600, marginTop: '1px', letterSpacing: '0.05em', textTransform: 'uppercase', color: speaking ? '#34D399' : cameraOn ? 'rgba(52,211,153,0.6)' : 'rgba(255,255,255,0.3)' }}>
+            {speaking ? '● Speaking' : cameraOn ? 'Live' : 'Off'}
           </div>
         )}
       </div>

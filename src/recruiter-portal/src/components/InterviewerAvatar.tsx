@@ -145,7 +145,7 @@ export function InterviewerAvatar({ role, state, active, videoUrl, specialistTit
       justifyContent: 'center',
       position: 'relative',
       overflow: 'hidden',
-      transition: 'border-color 0.4s',
+      transition: 'border-color 0.1s',
       padding: 0,
       minHeight: '300px',
     }}>
