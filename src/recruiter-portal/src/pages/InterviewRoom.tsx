@@ -418,8 +418,9 @@ export default function InterviewRoom() {
   }, []);
 
   // Background AI session prep — fires immediately on mount, independent of Mike
+  // Always regenerate fresh — never reuse pre-passed questions so every session is unique
   useEffect(() => {
-    if (ctx.questions || bgLoadRef.current) return;
+    if (bgLoadRef.current) return;
     bgLoadRef.current = true;
     const jobSpec = ctx.jobSpecText || `Job Title: Senior Professional
 Company: ${demoCompany.name}
