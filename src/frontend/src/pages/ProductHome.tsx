@@ -380,23 +380,23 @@ export default function ProductHome() {
           <li><a href="#ph-eco">Ecosystem</a></li>
           <li><a href="#ph-road">Roadmap</a></li>
         </ul>
-        <a href="#ph-wait" className="ph-nav-cta">Join Waitlist</a>
+        <a href="https://explain.global/login" className="ph-nav-cta">Get Started →</a>
       </nav>
 
       {/* HERO */}
       <section id="ph-hero">
         <div className="ph-hero-glow" />
-        <div className="ph-r" data-ph="" style={{marginBottom:24}}><span className="ph-badge-gold">Coming Soon</span></div>
+        <div className="ph-r" data-ph="" style={{marginBottom:24}}><span className="ph-badge-blue">✦ Now Live</span></div>
         <div className="ph-r ph-nav-logo" data-ph="" data-d="0" style={{fontSize:36,marginBottom:28,fontWeight:900,letterSpacing:"-.04em",textShadow:"0 0 60px rgba(79,142,247,.7)"}}>
           <span className="ph-ex">Explain</span><span className="ph-gl">.global</span>
         </div>
         <h1 className="ph-hero-hl ph-r" data-ph="" data-d="1">The Interview<br /><span style={{color:"#4F8EF7"}}>Intelligence Platform</span></h1>
         <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:"rgba(240,244,255,.65)",textAlign:"center",maxWidth:620,margin:"24px auto 0"}}>
-          A new world where candidates learn, prepare, practice, and succeed — powered by AI, clarity, and cinematic coaching.
+          Every candidate deserves the preparation that only the privileged have had access to.<br />That changes now.
         </p>
         <div className="ph-r" data-ph="" data-d="3" style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap",marginTop:44}}>
-          <a href="#ph-why" className="ph-btn-primary">Explore What's Coming ↓</a>
-          <a href="#ph-wait" className="ph-btn-ghost">Join the Waitlist</a>
+          <a href="https://explain.global/login" className="ph-btn-primary">Get Started →</a>
+          <a href="#ph-ir" className="ph-btn-ghost">See the Interview Chair</a>
         </div>
         <div className="ph-hero-scroll ph-r" data-ph="" data-d="4">
           <span>Scroll</span>
@@ -460,10 +460,23 @@ export default function ProductHome() {
             </div>
             <div>
               <div className="ph-pillars">
-                {[["💡","Clarity","Know exactly what to expect, every time"],["📐","Structure","A framework that turns chaos into confidence"],["🎯","Coaching","AI-powered guidance at every step"],["⚡","Confidence","Walk in ready. Walk out proud."],["🏆","Mastery","Own your narrative. Own the room."]].map(([icon,name,sub],i) => (
-                  <div className="ph-pillar ph-r" data-ph="" data-d={String(i+1)} key={name}>
-                    <div className="ph-pillar-icon">{icon}</div>
-                    <div><div style={{fontSize:16,fontWeight:700,color:"#F0F4FF",letterSpacing:"-.01em"}}>{name}</div><div style={{fontSize:12,color:"rgba(240,244,255,.35)",marginTop:1}}>{sub}</div></div>
+                {[
+                  ["💡","Clarity","Know exactly what to expect","We remove the mystery of interviews. You see the question structure, the competencies being assessed, and the benchmark before you walk in. Clarity is the most underrated competitive advantage.","Prepared minds perform."],
+                  ["📐","Structure","A framework that turns pressure into performance","Every session follows a proven architecture — opening, competency questions, HR questions, debrief. You learn to map your experience to what interviewers actually need. No more guessing.","Structure beats talent in the room."],
+                  ["🎯","Coaching","Real-time guidance, not post-match analysis","While you answer, Explain's coaching engine watches your delivery, flags hesitations, and surfaces cues in real time. You don't just practice — you improve with every question.","The best coaches speak during the game."],
+                  ["📊","Scoring","Honest scores. No vanity metrics.","After each answer, you receive a breakdown across Clarity, Depth, Confidence, and Delivery — calibrated against the Top 5% benchmark for your specific role and industry.","You can't improve what you can't measure."],
+                  ["⚡","Confidence","Walk in ready. Walk out proud.","Confidence isn't fake it till you make it. It's the natural result of genuine preparation. After enough sessions with Explain, you don't just feel ready — you are ready.","Confidence is a skill. We build it."],
+                ].map(([icon,name,hl,body,micro],i) => (
+                  <div className="ph-pillar ph-r" data-ph="" data-d={String(i+1)} key={name} style={{flexDirection:"column",alignItems:"flex-start",gap:10}}>
+                    <div style={{display:"flex",alignItems:"center",gap:12}}>
+                      <div className="ph-pillar-icon">{icon}</div>
+                      <div>
+                        <div style={{fontSize:15,fontWeight:800,color:"#F0F4FF",letterSpacing:"-.01em"}}>{name}</div>
+                        <div style={{fontSize:11,fontWeight:700,color:"#4F8EF7",marginTop:1}}>{hl}</div>
+                      </div>
+                    </div>
+                    <div style={{fontSize:12,color:"rgba(240,244,255,.5)",lineHeight:1.65,paddingLeft:0}}>{body}</div>
+                    <div style={{fontSize:11,fontWeight:700,color:"rgba(79,142,247,.6)",fontStyle:"italic"}}>{micro}</div>
                   </div>
                 ))}
               </div>
@@ -836,10 +849,35 @@ export default function ProductHome() {
       {/* FOUNDER */}
       <section id="ph-founder">
         <div className="ph-c">
-          <div className="ph-founder-card ph-r" data-ph="">
-            <p style={{fontSize:17,fontStyle:"italic",color:"rgba(240,244,255,.65)",lineHeight:1.75,marginBottom:24,position:"relative",zIndex:1}}>"Explain.global is built with one mission: to give every candidate clarity, confidence, and mastery. For too long, the interview process has been a black box that advantages those with insider knowledge. We are opening that box — for everyone. This is the future of interview preparation."</p>
-            <div style={{fontSize:13,fontWeight:700,color:"#4F8EF7"}}>Francis Cobbinah</div>
-            <div style={{fontSize:11,color:"rgba(240,244,255,.35)",marginTop:2}}>Founder · Explain.global · Percentile.One</div>
+          <div className="ph-lbl ph-r" data-ph="" style={{textAlign:"center",marginBottom:32}}>A Message from the Founder</div>
+          <div className="ph-founder-card ph-r" data-ph="" style={{maxWidth:760}}>
+            <p style={{fontSize:16,color:"rgba(240,244,255,.5)",lineHeight:1.85,marginBottom:20,position:"relative",zIndex:1,fontWeight:500}}>
+              I built Explain because I lived the problem.
+            </p>
+            <p style={{fontSize:16,color:"rgba(240,244,255,.6)",lineHeight:1.85,marginBottom:20,position:"relative",zIndex:1}}>
+              I have sat in interview rooms and watched people who were brilliant — genuinely brilliant — walk out empty-handed. Not because they weren't good enough. Because the process was a black box. It rewarded those who had been coached, those who had insider knowledge, those who had simply <em style={{fontStyle:"normal",color:"#F0F4FF",fontWeight:700}}>done it before</em>.
+            </p>
+            <p style={{fontSize:16,color:"rgba(240,244,255,.6)",lineHeight:1.85,marginBottom:20,position:"relative",zIndex:1}}>
+              Traditional interviews were never designed to find the best person. They were designed to find the most <em style={{fontStyle:"normal",color:"#F0F4FF",fontWeight:700}}>familiar</em> person — familiar with the format, the language, the unspoken rules. That is not a merit system. That is a privilege system.
+            </p>
+            <p style={{fontSize:16,color:"rgba(240,244,255,.6)",lineHeight:1.85,marginBottom:20,position:"relative",zIndex:1}}>
+              The Interview Chair is our answer. A place where every candidate — regardless of background, country, or connections — sits across from two AI interviewers who know the role, the industry, and the exact job spec. Where the coaching is honest. Where the scoring is real. Where the preparation is fair.
+            </p>
+            <p style={{fontSize:17,fontWeight:700,color:"#F0F4FF",lineHeight:1.7,marginBottom:28,position:"relative",zIndex:1}}>
+              Our mission is simple: clarity for every candidate, everywhere. The nurse in Lagos. The engineer in Warsaw. The graduate in Birmingham who never had a mentor. Every one of them deserves to walk in prepared.
+            </p>
+            <div style={{padding:"20px 24px",borderLeft:"3px solid #4F8EF7",background:"rgba(79,142,247,.05)",borderRadius:"0 12px 12px 0",marginBottom:28,position:"relative",zIndex:1}}>
+              <p style={{fontSize:18,fontWeight:800,color:"#F0F4FF",lineHeight:1.5,margin:0,letterSpacing:"-.02em"}}>
+                "Every seat at that table should be earned on merit.<br />The Interview Chair is how we get you there."
+              </p>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:14,position:"relative",zIndex:1}}>
+              <div style={{width:44,height:44,borderRadius:"50%",background:"linear-gradient(135deg,#4F8EF7,#2D5BFF)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:16,color:"#fff",flexShrink:0}}>FC</div>
+              <div>
+                <div style={{fontSize:14,fontWeight:800,color:"#F0F4FF"}}>Francis Cobbinah</div>
+                <div style={{fontSize:11,color:"rgba(240,244,255,.35)",marginTop:2}}>Founder · Explain.global · Percentile.One</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
