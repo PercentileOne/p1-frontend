@@ -132,11 +132,33 @@ export default function Login() {
                 {role === 'Recruiter' && 'Send candidates a prep link. Review scores before the real interview. Close faster.'}
                 {role === 'Client'    && 'Commission interview packs. Review pre-screened candidates. Hire with confidence.'}
               </p>
+
+              {/* Stats row */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginTop: 32 }}>
+                {(role === 'Candidate' ? [
+                  { value: '2,400+', label: 'Practice interviews run' },
+                  { value: '+23pts', label: 'Avg. score improvement' },
+                  { value: '89%',    label: 'Report higher confidence' },
+                ] : role === 'Recruiter' ? [
+                  { value: '3×',     label: 'Faster time-to-shortlist' },
+                  { value: '100k+',  label: 'Candidate CVs processed' },
+                  { value: '94%',    label: 'Interview pack accuracy' },
+                ] : [
+                  { value: '40%',    label: 'Reduction in bad hires' },
+                  { value: '8 days', label: 'Avg. time to hire' },
+                  { value: '98%',    label: 'Client satisfaction rate' },
+                ]).map(stat => (
+                  <div key={stat.label} style={{ padding: '14px 16px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: `1px solid ${accent}18` }}>
+                    <div style={{ fontSize: 22, fontWeight: 900, color: accent, letterSpacing: '-0.02em', lineHeight: 1 }}>{stat.value}</div>
+                    <div style={{ fontSize: 11, color: '#5a5a8a', lineHeight: 1.4, marginTop: 5 }}>{stat.label}</div>
+                  </div>
+                ))}
+              </div>
             </motion.div>
           </AnimatePresence>
 
           {/* Mini interview room */}
-          <div style={{ marginTop: 36 }}>
+          <div style={{ marginTop: 32 }}>
             <MiniInterviewRoom />
           </div>
         </div>
