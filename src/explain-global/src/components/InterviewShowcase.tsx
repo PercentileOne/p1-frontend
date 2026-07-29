@@ -77,12 +77,13 @@ export function InterviewShowcase() {
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
-    // Cycle: Sarah asks (3s) → You answer (3s) → James asks (3s) → You answer (3s) → Score (4s) → repeat
+    // Cycle: Sarah asks → You answer → James asks → You answer → Score reveal → next question
     const seq = [
-      { speaker: 0, ph: 'asking' as const, duration: 3200 },
-      { speaker: 2, ph: 'answering' as const, duration: 3000 },
-      { speaker: 1, ph: 'asking' as const, duration: 3400 },
-      { speaker: 2, ph: 'answering' as const, duration: 2800 },
+      { speaker: 0, ph: 'asking' as const,   duration: 3200, score: false },
+      { speaker: 2, ph: 'answering' as const, duration: 3000, score: false },
+      { speaker: 1, ph: 'asking' as const,   duration: 3400, score: false },
+      { speaker: 2, ph: 'answering' as const, duration: 2600, score: false },
+      { speaker: 2, ph: 'scoring' as const,  duration: 4200, score: true  },
     ];
     let step = 0;
 
@@ -90,15 +91,10 @@ export function InterviewShowcase() {
       const s = seq[step % seq.length];
       setSpeakerIdx(s.speaker);
       setPhase(s.ph);
-      setShowScore(false);
+      setShowScore(s.score);
 
       if (step > 0 && step % seq.length === 0) {
         setQIdx(q => (q + 1) % DEMO_QUESTIONS.length);
-      }
-
-      // Show score card briefly at end of answering phases
-      if (s.ph === 'answering') {
-        timerRef.current = setTimeout(() => setShowScore(true), s.duration - 800);
       }
 
       step++;
@@ -212,8 +208,8 @@ export function InterviewShowcase() {
             <div style={{
               width: 140, flexShrink: 0, borderRadius: 14, overflow: 'hidden', position: 'relative',
               background: 'linear-gradient(160deg, #111118 0%, #0a0a12 100%)',
-              border: `1px solid ${speakerIdx === 2 ? 'rgba(52,211,153,0.55)' : 'rgba(255,255,255,0.06)'}`,
-              boxShadow: speakerIdx === 2 ? '0 0 16px rgba(52,211,153,0.15)' : 'none',
+              border: `1px solid ${phase === 'answering' ? 'rgba(52,211,153,0.55)' : 'rgba(255,255,255,0.06)'}`,
+              boxShadow: phase === 'answering' ? '0 0 16px rgba(52,211,153,0.15)' : 'none',
               minHeight: 200,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               transition: 'border-color 0.1s, box-shadow 0.1s',
@@ -231,11 +227,11 @@ export function InterviewShowcase() {
               <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>You</div>
-                  <div style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: speakerIdx === 2 ? '#34D399' : 'rgba(255,255,255,0.3)' }}>
-                    {speakerIdx === 2 ? '● Speaking' : 'Ready'}
+                  <div style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: phase === 'answering' ? '#34D399' : 'rgba(255,255,255,0.3)' }}>
+                    {phase === 'answering' ? '● Speaking' : phase === 'scoring' ? 'Done' : 'Ready'}
                   </div>
                 </div>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: speakerIdx === 2 ? '#34D399' : 'rgba(255,255,255,0.2)', boxShadow: speakerIdx === 2 ? '0 0 6px #34D399' : 'none', transition: 'all 0.2s' }} />
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: phase === 'answering' ? '#34D399' : 'rgba(255,255,255,0.2)', boxShadow: phase === 'answering' ? '0 0 6px #34D399' : 'none', transition: 'all 0.2s' }} />
               </div>
             </div>
           </div>
