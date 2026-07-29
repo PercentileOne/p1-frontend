@@ -7,6 +7,8 @@ import Community from './pages/Community';
 import MyInterviews from './pages/MyInterviews';
 import Portals from './pages/Portals';
 import Pricing from './pages/Pricing';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 export default function App() {
   return (
@@ -20,6 +22,8 @@ export default function App() {
         <Route path="/my-interviews" element={<MyInterviews />} />
         <Route path="/portals" element={<Portals />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </div>
   );

@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 const LINKS = [
   { to: '/', label: 'Home' },
@@ -12,6 +12,8 @@ const LINKS = [
 
 export function Nav() {
   const loc = useLocation();
+  const navigate = useNavigate();
+  const isAuthPage = loc.pathname === '/login' || loc.pathname === '/register';
 
   return (
     <nav style={{
@@ -60,20 +62,32 @@ export function Nav() {
           })}
         </div>
 
-        {/* Sign in CTA */}
-        <button style={{
-          background: 'linear-gradient(135deg, #7b5cf5, #5b8ff7)',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 8,
-          padding: '8px 18px',
-          fontSize: 13,
-          fontWeight: 700,
-          cursor: 'pointer',
-          flexShrink: 0,
-        }}>
-          Sign in
-        </button>
+        {/* Auth CTAs */}
+        {!isAuthPage && (
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <button
+              onClick={() => navigate('/login')}
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                color: '#c0c0e0',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: 8, padding: '7px 16px',
+                fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              }}>
+              Sign in
+            </button>
+            <button
+              onClick={() => navigate('/register')}
+              style={{
+                background: 'linear-gradient(135deg, #7b5cf5, #5b8ff7)',
+                color: '#fff', border: 'none',
+                borderRadius: 8, padding: '7px 16px',
+                fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              }}>
+              Register
+            </button>
+          </div>
+        )}
       </div>
     </nav>
   );
