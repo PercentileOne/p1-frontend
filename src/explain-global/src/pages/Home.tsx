@@ -1,236 +1,691 @@
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { InterviewShowcase } from '../components/InterviewShowcase';
-import { MOCK_JOBS } from '../data/mockJobs';
-import { JobCard } from '../components/JobCard';
-import type { Job } from '../data/mockJobs';
-
-const STORIES = [
-  {
-    avatar: 'SJ',
-    name: 'Sofía J.',
-    role: 'Software Engineer → Senior Engineer',
-    body: 'I bombed three interviews before I found Explain. Ran through 20 practice questions the night before my Amazon loop. Got the offer.',
-    tag: 'Win',
-    tagColor: '#1a3d2e',
-    tagText: '#5ecb8e',
-  },
-  {
-    avatar: 'MT',
-    name: 'Marcus T.',
-    role: 'Finance Analyst',
-    body: 'Got rejected for a VP role and felt devastated. The LEARN recommendations showed me exactly what to fix. Interview 2 went differently.',
-    tag: 'Lesson',
-    tagColor: '#2a1e3a',
-    tagText: '#c47ef7',
-  },
-  {
-    avatar: 'PK',
-    name: 'Priya K.',
-    role: 'Product Manager',
-    body: 'Mike\'s briefing on the company before the practice panel was gold. I walked in knowing their Q3 challenges. Interviewer was visibly impressed.',
-    tag: 'Advice',
-    tagColor: '#1e2a3a',
-    tagText: '#7eb8f7',
-  },
-];
-
-const STATS = [
-  { value: '12,400+', label: 'Interviews run' },
-  { value: '8,200+', label: 'Interview packs generated' },
-  { value: '340+', label: 'LEARN modules completed' },
-  { value: '94%', label: 'Would recommend' },
-];
 
 export default function Home() {
+  const particlesRef = useRef<HTMLCanvasElement>(null);
   const navigate = useNavigate();
-  const featured = MOCK_JOBS.filter(j => j.featured).slice(0, 3);
 
-  function handlePrepare(job: Job) {
-    if (job.id === 'j1') {
-      window.open('https://recruiter.explain.global/demo/vallum-job-paid', '_blank');
-    } else {
-      navigate('/jobs');
+  /* ── Particle background ── */
+  useEffect(() => {
+    const canvas = particlesRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d')!;
+    let W = 0, H = 0, raf = 0;
+    interface P { x:number;y:number;r:number;vx:number;vy:number;a:number;p:number;ps:number }
+    const pts: P[] = [];
+    function resize() { W = canvas!.width = window.innerWidth; H = canvas!.height = window.innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+    for (let i = 0; i < 90; i++) pts.push({ x:Math.random()*window.innerWidth, y:Math.random()*window.innerHeight, r:Math.random()*1.6+.3, vx:(Math.random()-.5)*.15, vy:(Math.random()-.5)*.15, a:Math.random()*.4+.05, p:Math.random()*Math.PI*2, ps:Math.random()*.01+.005 });
+    function draw() {
+      ctx.clearRect(0,0,W,H);
+      for (const p of pts) { p.x+=p.vx;p.y+=p.vy;p.p+=p.ps; if(p.x<-5)p.x=W+5; if(p.x>W+5)p.x=-5; if(p.y<-5)p.y=H+5; if(p.y>H+5)p.y=-5; const a=p.a*(0.6+0.4*Math.sin(p.p)); ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(79,142,247,${a})`;ctx.fill(); }
+      raf = requestAnimationFrame(draw);
     }
+    raf = requestAnimationFrame(draw);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
+  }, []);
+
+  /* ── Scroll reveal ── */
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('ph-vis'); }),
+      { threshold: 0.12 }
+    );
+    document.querySelectorAll('[data-ph]').forEach((el) => io.observe(el));
+    document.querySelectorAll('#ph-hero [data-ph]').forEach((el) => {
+      setTimeout(() => el.classList.add('ph-vis'), 100 + parseInt(el.getAttribute('data-d') || '0') * 150);
+    });
+    return () => io.disconnect();
+  }, []);
+
+  /* ── Ecosystem constellation ── */
+  useEffect(() => {
+    const lG = document.getElementById('ph-eco-lines');
+    const nG = document.getElementById('ph-eco-nodes');
+    if (!lG || !nG) return;
+    const ns = 'http://www.w3.org/2000/svg';
+    const nodes = [
+      { id:'hub',   label:'Explain.global',    x:400, y:250, r:28, main:true },
+      { id:'cand',  label:'Candidate Portal',   x:180, y:130, r:18, main:false },
+      { id:'rec',   label:'Recruiter Portal',   x:620, y:130, r:18, main:false },
+      { id:'learn', label:'Learn Engine',       x:120, y:300, r:18, main:false },
+      { id:'iv',    label:'Interview Engine',   x:680, y:300, r:18, main:false },
+      { id:'flow',  label:'Flow Viewer',        x:200, y:420, r:16, main:false },
+      { id:'packs', label:'Interview Packs',    x:600, y:420, r:16, main:false },
+      { id:'ai',    label:'Explain AI',         x:400, y:420, r:16, main:false },
+      { id:'p1',    label:'Percentile.One',     x:400, y:100, r:14, main:false },
+    ];
+    const edges: [string,string][] = [['hub','cand'],['hub','rec'],['hub','learn'],['hub','iv'],['hub','flow'],['hub','packs'],['hub','ai'],['hub','p1'],['cand','learn'],['cand','flow'],['rec','packs'],['rec','iv'],['ai','learn'],['ai','iv'],['p1','hub']];
+    edges.forEach(([a,b],i) => {
+      const na=nodes.find(n=>n.id===a)!, nb=nodes.find(n=>n.id===b)!;
+      const len=Math.hypot(nb.x-na.x,nb.y-na.y);
+      const line=document.createElementNS(ns,'line');
+      ['x1',String(na.x),'y1',String(na.y),'x2',String(nb.x),'y2',String(nb.y),'stroke','rgba(79,142,247,0.2)','stroke-width','1','stroke-dasharray',String(len),'stroke-dashoffset',String(len)].forEach((_,idx,arr)=>{ if(idx%2===0) line.setAttribute(arr[idx],arr[idx+1]); });
+      const an=document.createElementNS(ns,'animate');
+      ['attributeName','stroke-dashoffset','from',String(len),'to','0','dur','1.5s','begin',`${i*0.08}s`,'fill','freeze','calcMode','spline','keySplines','0.16 1 0.3 1'].forEach((_,idx,arr)=>{ if(idx%2===0) an.setAttribute(arr[idx],arr[idx+1]); });
+      line.appendChild(an); lG.appendChild(line);
+      if (i<8) {
+        const dot=document.createElementNS(ns,'circle'); dot.setAttribute('r','2'); dot.setAttribute('fill','rgba(79,142,247,0.8)');
+        const am=document.createElementNS(ns,'animateMotion'); am.setAttribute('dur',`${2+i*0.3}s`); am.setAttribute('repeatCount','indefinite'); am.setAttribute('begin',`${1.5+i*0.2}s`); am.setAttribute('path',`M${na.x},${na.y} L${nb.x},${nb.y}`);
+        dot.appendChild(am); nG.appendChild(dot);
+      }
+    });
+    nodes.forEach((n,i) => {
+      const g=document.createElementNS(ns,'g');
+      const ring=document.createElementNS(ns,'circle'); ring.setAttribute('cx',String(n.x)); ring.setAttribute('cy',String(n.y)); ring.setAttribute('r',String(n.r)); ring.setAttribute('fill','none'); ring.setAttribute('stroke','rgba(79,142,247,0.3)'); ring.setAttribute('stroke-width','1');
+      const pr=document.createElementNS(ns,'animate'); pr.setAttribute('attributeName','r'); pr.setAttribute('values',`${n.r};${n.r*1.8};${n.r}`); pr.setAttribute('dur',`${2.5+i*0.2}s`); pr.setAttribute('repeatCount','indefinite');
+      const pa=document.createElementNS(ns,'animate'); pa.setAttribute('attributeName','opacity'); pa.setAttribute('values','0.4;0;0.4'); pa.setAttribute('dur',`${2.5+i*0.2}s`); pa.setAttribute('repeatCount','indefinite');
+      ring.appendChild(pr); ring.appendChild(pa); g.appendChild(ring);
+      const c=document.createElementNS(ns,'circle'); c.setAttribute('cx',String(n.x)); c.setAttribute('cy',String(n.y)); c.setAttribute('r',String(n.r)); c.setAttribute('fill',n.main?'rgba(45,91,255,0.25)':'rgba(79,142,247,0.1)'); c.setAttribute('stroke',n.main?'#4F8EF7':'rgba(79,142,247,0.4)'); c.setAttribute('stroke-width',n.main?'1.5':'1');
+      const ao=document.createElementNS(ns,'animate'); ao.setAttribute('attributeName','opacity'); ao.setAttribute('from','0'); ao.setAttribute('to','1'); ao.setAttribute('dur','.6s'); ao.setAttribute('begin',`${i*0.1}s`); ao.setAttribute('fill','freeze');
+      c.appendChild(ao); g.appendChild(c);
+      const tx=document.createElementNS(ns,'text'); tx.setAttribute('x',String(n.x)); tx.setAttribute('y',String(n.y+n.r+14)); tx.setAttribute('text-anchor','middle'); tx.setAttribute('font-size',n.main?'9':'8'); tx.setAttribute('font-weight',n.main?'800':'700'); tx.setAttribute('fill',n.main?'#4F8EF7':'rgba(79,142,247,0.7)'); tx.setAttribute('font-family','-apple-system,system-ui,sans-serif'); tx.textContent=n.label;
+      g.appendChild(tx); nG.appendChild(g);
+    });
+  }, []);
+
+  async function handleWaitlist(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const input = form.querySelector('input') as HTMLInputElement;
+    const btn = form.querySelector('button') as HTMLButtonElement;
+    const email = input.value.trim();
+    if (!email.includes('@')) { input.style.borderColor='rgba(239,68,68,.5)'; setTimeout(()=>(input.style.borderColor=''),1200); return; }
+    btn.textContent='Joining…'; btn.disabled=true;
+    try {
+      await Promise.all([
+        fetch('https://formspree.io/f/mzdldjzz', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ email, source: 'explain.global' }),
+        }),
+        fetch('/api/join-waitlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, source: 'explain.global' }),
+        }).catch(() => {}),
+      ]);
+    } catch { /* fail silently */ }
+    btn.textContent="✓ You're on the list!"; btn.style.background='#34D399'; btn.style.boxShadow='0 8px 32px rgba(52,211,153,.35)';
+    input.value=''; input.placeholder='See you on the other side ✨';
   }
 
+  const css = `
+    .ph-r{opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
+    .ph-r.ph-vis{opacity:1;transform:none}
+    .ph-r[data-d="1"]{transition-delay:.1s}.ph-r[data-d="2"]{transition-delay:.2s}
+    .ph-r[data-d="3"]{transition-delay:.3s}.ph-r[data-d="4"]{transition-delay:.4s}
+    .ph-r[data-d="5"]{transition-delay:.5s}.ph-r[data-d="6"]{transition-delay:.6s}
+
+    .ph-ex{color:#4F8EF7}.ph-gl{color:#F0F4FF}
+
+    .ph-c{max-width:1100px;margin:0 auto;padding:0 32px}
+    .ph-gl-line{height:1px;background:linear-gradient(to right,transparent,#4F8EF7,transparent);opacity:.2}
+
+    .ph-badge-gold{display:inline-flex;align-items:center;gap:8px;padding:5px 16px;border:1px solid rgba(200,169,110,.35);border-radius:100px;background:rgba(200,169,110,.06);font-size:9px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:#C8A96E}
+    .ph-badge-gold::before{content:'';width:6px;height:6px;border-radius:50%;background:#C8A96E;animation:ph-blink 2s ease-in-out infinite}
+    .ph-badge-blue{display:inline-flex;align-items:center;gap:8px;padding:5px 16px;border:1px solid rgba(79,142,247,.3);border-radius:100px;background:rgba(79,142,247,.08);font-size:9px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:#4F8EF7}
+    @keyframes ph-blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+    .ph-lbl{font-size:10px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#4F8EF7;margin-bottom:16px}
+    .ph-h-xl{font-size:clamp(36px,5vw,60px);font-weight:900;line-height:1.08;letter-spacing:-.03em;color:#F0F4FF;user-select:none}
+
+    .ph-btn-primary{display:inline-flex;align-items:center;gap:8px;padding:15px 32px;border-radius:12px;background:#4F8EF7;color:#fff;font-size:15px;font-weight:700;text-decoration:none;box-shadow:0 8px 32px rgba(79,142,247,.35);transition:all .25s;border:none;cursor:pointer;font-family:inherit}
+    .ph-btn-primary:hover{background:#2D5BFF;box-shadow:0 12px 40px rgba(79,142,247,.5);transform:translateY(-1px)}
+    .ph-btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:15px 32px;border-radius:12px;background:rgba(79,142,247,.06);color:#4F8EF7;font-size:15px;font-weight:700;text-decoration:none;border:1px solid rgba(79,142,247,.25);transition:all .25s;cursor:pointer;font-family:inherit}
+    .ph-btn-ghost:hover{background:rgba(79,142,247,.12);border-color:rgba(79,142,247,.5)}
+
+    #ph-hero{min-height:calc(100vh - 60px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 32px;overflow:hidden;position:relative;z-index:1}
+    .ph-hero-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:900px;height:700px;background:radial-gradient(ellipse,rgba(30,80,255,.18) 0%,rgba(79,142,247,.06) 40%,transparent 70%);pointer-events:none}
+    .ph-hero-hl{font-size:clamp(48px,7vw,88px);font-weight:900;line-height:1.0;letter-spacing:-.04em;max-width:900px;color:#F0F4FF;text-shadow:0 0 60px rgba(79,142,247,.2)}
+    .ph-hero-scroll{margin-top:72px;display:flex;flex-direction:column;align-items:center;gap:8px;color:rgba(240,244,255,.35);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;animation:ph-float 2.5s ease-in-out infinite}
+    @keyframes ph-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+    #ph-why{background:#070C1A;padding:120px 0}
+    .ph-why-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+    .ph-manifesto p{font-size:clamp(18px,2.5vw,26px);font-weight:500;line-height:1.65;color:rgba(240,244,255,.65);margin-bottom:20px}
+    .ph-em1{font-size:clamp(24px,3.5vw,38px)!important;font-weight:800!important;color:#F0F4FF!important;letter-spacing:-.02em;line-height:1.2!important}
+    .ph-em2{font-size:clamp(24px,3.5vw,38px)!important;font-weight:800!important;color:#4F8EF7!important;letter-spacing:-.02em;line-height:1.2!important}
+    .ph-pillars{display:flex;flex-direction:column;gap:10px}
+    .ph-pillar{display:flex;align-items:center;gap:16px;padding:18px 20px;border:1px solid rgba(79,142,247,.14);border-radius:14px;background:rgba(79,142,247,.04);transition:all .3s}
+    .ph-pillar:hover{border-color:rgba(79,142,247,.3);background:rgba(79,142,247,.08)}
+    .ph-pillar-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,rgba(79,142,247,.2),rgba(45,91,255,.1));border:1px solid rgba(79,142,247,.2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .ph-tagline{margin-top:40px;padding:20px 24px;border-left:3px solid #4F8EF7;background:rgba(79,142,247,.05);border-radius:0 12px 12px 0}
+    .ph-tagline p{font-size:17px;font-weight:600;color:rgba(240,244,255,.65);line-height:1.55}
+    .ph-tagline strong{color:#4F8EF7}
+
+    #ph-global{background:#03060F;padding:100px 0;overflow:hidden}
+    .ph-global-hl{font-size:clamp(36px,5.5vw,72px);font-weight:900;line-height:1.05;letter-spacing:-.04em;text-align:center;max-width:800px;margin:0 auto 16px}
+    .ph-lang-ticker{overflow:hidden;height:44px;margin:40px 0 0}
+    .ph-lang-inner{display:flex;gap:12px;animation:ph-tick 22s linear infinite;width:max-content}
+    @keyframes ph-tick{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+    .ph-lang-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;border-radius:100px;border:1px solid rgba(79,142,247,.25);background:rgba(79,142,247,.06);white-space:nowrap;font-size:13px;font-weight:700;color:rgba(240,244,255,.65)}
+    .ph-job-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:800px;margin:40px auto 0}
+    .ph-job-chip{padding:8px 18px;border-radius:10px;border:1px solid rgba(79,142,247,.2);background:rgba(79,142,247,.05);font-size:13px;font-weight:700;color:rgba(240,244,255,.65);transition:all .2s;cursor:default}
+    .ph-job-chip:hover{border-color:rgba(79,142,247,.5);background:rgba(79,142,247,.12);color:#F0F4FF}
+    .ph-global-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:700px;margin:60px auto 0;text-align:center}
+    .ph-stat-num{font-size:clamp(40px,6vw,72px);font-weight:900;letter-spacing:-.04em;color:#4F8EF7;line-height:1}
+    .ph-stat-lbl{font-size:13px;color:rgba(240,244,255,.35);margin-top:6px;font-weight:600}
+
+    .ph-feat{padding:100px 0}.ph-feat.ph-dark{background:#070C1A}
+    .ph-feat-head{text-align:center;margin-bottom:64px}
+
+    .ph-learn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .ph-card{background:#0A1020;border:1px solid rgba(79,142,247,.14);border-radius:18px;padding:24px;transition:all .3s;position:relative;overflow:hidden}
+    .ph-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,#4F8EF7,#2D5BFF);opacity:.6}
+    .ph-card:hover{border-color:rgba(79,142,247,.35);transform:translateY(-3px);box-shadow:0 20px 40px rgba(79,142,247,.1)}
+    .ph-chip{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.2);color:#4F8EF7}
+    .ph-prog{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-top:16px}
+    .ph-prog-fill{height:100%;border-radius:2px;background:linear-gradient(to right,#4F8EF7,#2D5BFF)}
+    .ph-quiz-opt{font-size:11px;padding:6px 10px;border-radius:7px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);color:rgba(240,244,255,.35);margin-top:5px}
+    .ph-quiz-opt.ok{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:#34D399}
+    .ph-shelf{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.12);margin-top:8px}
+
+    #ph-ir{background:#03060F;padding:100px 0}
+    .ph-ir-layout{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+    .ph-ir-list{margin-top:24px;list-style:none;padding:0;display:flex;flex-direction:column;gap:10px}
+    .ph-ir-list li{display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(240,244,255,.65)}
+    .ph-ir-list li::before{content:'→';color:#4F8EF7;font-weight:700;flex-shrink:0}
+    .ph-ir-preview{border-radius:20px;overflow:hidden;border:1px solid rgba(79,142,247,.2);box-shadow:0 0 60px rgba(79,142,247,.12),0 40px 80px rgba(0,0,0,.5)}
+    .ph-rec-card{padding:10px 20px;border-radius:10px;border:1px solid rgba(79,142,247,.2);background:rgba(79,142,247,.05);font-size:13px;font-weight:700;color:#4F8EF7;transition:all .2s;cursor:default}
+    .ph-rec-card:hover{border-color:rgba(79,142,247,.5);background:rgba(79,142,247,.12)}
+
+    .ph-packs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .ph-pack{border-radius:18px;overflow:hidden;border:1px solid rgba(79,142,247,.14);background:#0A1020;transition:all .3s}
+    .ph-pack:hover{border-color:rgba(79,142,247,.35);transform:translateY(-4px);box-shadow:0 20px 40px rgba(79,142,247,.1)}
+    .ph-pack-feat{font-size:12px;color:rgba(240,244,255,.65);display:flex;align-items:center;gap:8px;margin-top:6px}
+    .ph-pack-feat::before{content:'✓';color:#4F8EF7;font-weight:800;font-size:11px;flex-shrink:0}
+
+    .ph-portals-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    .ph-portal{border-radius:20px;border:1px solid rgba(79,142,247,.14);background:#0A1020;padding:32px;transition:all .3s;position:relative;overflow:hidden}
+    .ph-portal:hover{border-color:rgba(79,142,247,.3);box-shadow:0 0 40px rgba(79,142,247,.08)}
+    .ph-portal::after{content:'';position:absolute;bottom:0;right:0;width:200px;height:200px;background:radial-gradient(circle,rgba(79,142,247,.08) 0%,transparent 70%);pointer-events:none}
+    .ph-portal-feat{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(240,244,255,.65);margin-top:8px}
+    .ph-dot{width:6px;height:6px;border-radius:50%;background:#4F8EF7;flex-shrink:0}
+    .ph-mockup{margin-top:24px;background:rgba(79,142,247,.05);border:1px solid rgba(79,142,247,.1);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+    .ph-mock-row{height:8px;border-radius:4px;background:rgba(79,142,247,.15)}
+    .ph-mock-card{height:40px;border-radius:8px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.12)}
+
+    #ph-flow{background:#070C1A;padding:100px 0}
+    .ph-flow-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:60px;align-items:start}
+    .ph-flow-tl{position:relative;padding-left:32px}
+    .ph-flow-tl::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,#4F8EF7,rgba(79,142,247,.1))}
+    .ph-flow-ev{position:relative;margin-bottom:20px;padding:14px 20px;border-radius:12px;background:#0A1020;border:1px solid rgba(79,142,247,.14);transition:all .3s}
+    .ph-flow-ev:hover{border-color:rgba(79,142,247,.3);transform:translateX(4px)}
+    .ph-flow-ev::before{content:'';position:absolute;left:-27px;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;background:#4F8EF7;box-shadow:0 0 8px #4F8EF7}
+
+    #ph-eco{background:#03060F;padding:100px 0}
+    #ph-road{background:#070C1A;padding:100px 0}
+    .ph-road-list{display:flex;flex-direction:column;max-width:700px;margin:40px auto 0;position:relative}
+    .ph-road-list::before{content:'';position:absolute;left:20px;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,#4F8EF7,rgba(79,142,247,.1))}
+    .ph-road-item{display:flex;gap:24px;align-items:flex-start;padding:24px 0}
+    .ph-road-num{width:40px;height:40px;border-radius:50%;border:1px solid rgba(79,142,247,.35);background:rgba(79,142,247,.08);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#4F8EF7;flex-shrink:0;position:relative;z-index:1}
+    .ph-road-num.done{background:rgba(79,142,247,.2);border-color:#4F8EF7}
+    .ph-rbadge{display:inline-flex;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700;margin-top:8px}
+    .ph-rbadge.live{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:#34D399}
+    .ph-rbadge.coming{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);color:#4F8EF7}
+
+    #ph-wait{background:#03060F;padding:120px 0;text-align:center;position:relative;overflow:hidden}
+    .ph-wait-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:600px;background:radial-gradient(ellipse,rgba(30,80,255,.15) 0%,transparent 65%);pointer-events:none}
+    .ph-wait-input{padding:14px 20px;border-radius:10px;border:1px solid rgba(79,142,247,.25);background:rgba(79,142,247,.06);color:#F0F4FF;font-size:15px;outline:none;width:300px;font-family:inherit;transition:border-color .2s}
+    .ph-wait-input:focus{border-color:rgba(79,142,247,.5)}.ph-wait-input::placeholder{color:rgba(240,244,255,.35)}
+
+    #ph-founder{background:#070C1A;padding:80px 0;text-align:center}
+    .ph-founder-card{max-width:640px;margin:0 auto;padding:40px;border-radius:24px;border:1px solid rgba(79,142,247,.14);background:rgba(79,142,247,.04);position:relative}
+    .ph-founder-card::before{content:'"';position:absolute;top:-20px;left:40px;font-size:120px;color:rgba(79,142,247,.08);font-family:Georgia,serif;line-height:1;pointer-events:none}
+
+    .ph-footer{background:#03060F;border-top:1px solid rgba(79,142,247,.08);padding:32px}
+    .ph-footer-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+    .ph-footer-links a{font-size:12px;color:rgba(240,244,255,.35);text-decoration:none;margin:0 10px;transition:color .2s}
+    .ph-footer-links a:hover{color:#4F8EF7}
+
+    #ph-practice{background:#070B18;padding:80px 0 100px}
+    .ph-practice-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;max-width:1100px;margin:0 auto;padding:0 32px}
+    .ph-practice-hook{font-size:clamp(32px,4.5vw,54px);font-weight:900;line-height:1.08;letter-spacing:-.03em;color:#F0F4FF;margin-bottom:20px}
+    .ph-practice-hook em{font-style:normal;color:#4F8EF7}
+    .ph-practice-sub{font-size:clamp(16px,2vw,19px);line-height:1.7;color:rgba(240,244,255,.6);margin-bottom:32px}
+    .ph-practice-sub strong{color:#F0F4FF;font-weight:700}
+    .ph-practice-stats{display:flex;gap:32px;margin-top:36px;flex-wrap:wrap}
+    .ph-practice-stat{display:flex;flex-direction:column;gap:4px}
+    .ph-practice-stat-val{font-size:clamp(28px,3.5vw,42px);font-weight:900;letter-spacing:-.04em;color:#4F8EF7}
+    .ph-practice-stat-lbl{font-size:12px;font-weight:600;color:rgba(240,244,255,.4);letter-spacing:.05em;text-transform:uppercase}
+
+    .ph-pack-card{background:#fff;border-radius:20px;box-shadow:0 32px 80px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.06);overflow:hidden;max-width:340px;width:100%}
+    .ph-pack-card-header{background:linear-gradient(135deg,#3B4FCF 0%,#5B6FEF 100%);padding:20px 24px;display:flex;align-items:center;gap:14px}
+    .ph-pack-card-icon{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+    .ph-pack-card-title{font-size:15px;font-weight:700;color:#fff}
+    .ph-pack-card-body{padding:24px 24px 20px}
+    .ph-pack-card-hl{font-size:22px;font-weight:900;color:#111827;line-height:1.25;margin-bottom:10px}
+    .ph-pack-card-price{float:right;margin-top:-4px;background:#FEF3C7;color:#92400E;font-size:18px;font-weight:900;padding:10px 16px;border-radius:12px;letter-spacing:-.01em}
+    .ph-pack-card-desc{font-size:13px;color:#6B7280;line-height:1.6;clear:both;margin-bottom:20px}
+    .ph-pack-card-btn{display:block;width:100%;padding:16px;border-radius:14px;background:#3B4FCF;color:#fff;font-size:15px;font-weight:700;text-align:center;border:none;font-family:inherit;cursor:pointer;margin-bottom:14px;transition:background .2s}
+    .ph-pack-card-btn:hover{background:#2D3DB8}
+    .ph-pack-card-footer{text-align:center;font-size:12px;color:#9CA3AF;padding-bottom:4px}
+    .ph-pack-card-footer strong{color:#3B4FCF}
+
+    @media(max-width:900px){
+      .ph-why-grid,.ph-ir-layout,.ph-portals-grid,.ph-flow-grid{grid-template-columns:1fr}
+      .ph-learn-grid,.ph-packs-grid{grid-template-columns:1fr 1fr}
+      .ph-c{padding:0 20px}.ph-global-stats{grid-template-columns:1fr 1fr}
+      .ph-practice-grid{grid-template-columns:1fr;gap:40px}
+    }
+    @media(max-width:600px){
+      .ph-learn-grid,.ph-packs-grid,.ph-global-stats{grid-template-columns:1fr}
+    }
+  `;
+
+  const LANGS = ['🇬🇧 English','🇫🇷 Français','🇩🇪 Deutsch','🇪🇸 Español','🇵🇹 Português','🇮🇹 Italiano','🇨🇳 中文','🇯🇵 日本語','🇰🇷 한국어','🇸🇦 العربية','🇮🇳 हिन्दी','🇳🇱 Nederlands','🇵🇱 Polski','🇸🇪 Svenska','🇧🇷 Português BR'];
+  const JOBS = ['🏦 Investment Banking','💻 Software Engineering','🏥 Healthcare & Nursing','⚖️ Law & Legal','📊 Finance & Accounting','🏗️ Engineering','🎓 Education','🛒 Retail & Operations','🚀 Start-ups & Scale-ups','🏛️ Public Sector','🎨 Creative & Design','📦 Logistics & Supply Chain'];
+
   return (
-    <div>
-      {/* Hero */}
-      <div style={{
-        background: 'radial-gradient(ellipse at 60% 0%, rgba(120,80,255,0.22) 0%, transparent 60%), radial-gradient(ellipse at 10% 80%, rgba(60,100,255,0.12) 0%, transparent 60%)',
-        padding: '80px 24px 72px',
-        textAlign: 'center',
-      }}>
-        <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: 'rgba(120,80,255,0.12)',
-            border: '1px solid rgba(120,80,255,0.3)',
-            borderRadius: 20, padding: '4px 14px',
-            fontSize: 12, fontWeight: 700, color: '#b09fff',
-            letterSpacing: '0.06em', marginBottom: 28,
-          }}>
-            ✦ HOME OF INTERVIEWEES
-          </div>
+    <>
+      <style>{css}</style>
+      <canvas ref={particlesRef} style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0 }} />
 
-          <h1 style={{
-            fontSize: 'clamp(2.2rem, 5vw, 3.8rem)',
-            fontWeight: 900,
-            lineHeight: 1.1,
-            color: '#fff',
-            marginBottom: 20,
-            letterSpacing: '-0.03em',
-          }}>
-            Practice interviews.<br />
-            <span style={{ background: 'linear-gradient(90deg, #7b5cf5, #5b8ff7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Become an expert in your field.
-            </span>
-          </h1>
-
-          <p style={{ fontSize: 18, color: '#9090b8', lineHeight: 1.7, marginBottom: 36, maxWidth: 560, margin: '0 auto 36px' }}>
-            Social stories. Real jobs. AI-powered interview prep. LEARN modules.
-            Everything you need — from first application to final offer.
-          </p>
-
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => navigate('/jobs')}
-              style={{
-                background: 'linear-gradient(135deg, #7b5cf5, #5b8ff7)',
-                color: '#fff', border: 'none',
-                borderRadius: 10, padding: '14px 28px',
-                fontSize: 15, fontWeight: 700, cursor: 'pointer',
-              }}>
-              Browse Jobs →
-            </button>
-            <button
-              onClick={() => navigate('/learn')}
-              style={{
-                background: 'rgba(255,255,255,0.06)',
-                color: '#c0c0e0', border: '1px solid rgba(255,255,255,0.12)',
-                borderRadius: 10, padding: '14px 28px',
-                fontSize: 15, fontWeight: 600, cursor: 'pointer',
-              }}>
-              Explore LEARN
-            </button>
-            <a
-              href="https://product.explain.global"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                background: 'transparent',
-                color: '#a78bfa', border: '1px solid rgba(167,139,250,0.35)',
-                borderRadius: 10, padding: '14px 28px',
-                fontSize: 15, fontWeight: 600, cursor: 'pointer',
-                textDecoration: 'none', display: 'inline-flex', alignItems: 'center',
-              }}>
-              How it works →
-            </a>
-          </div>
+      {/* HERO */}
+      <section id="ph-hero">
+        <div className="ph-hero-glow" />
+        <div className="ph-r" data-ph="" style={{marginBottom:24}}><span className="ph-badge-blue">✦ Now Live</span></div>
+        <h1 className="ph-hero-hl ph-r" data-ph="" data-d="1">
+          Practice interviews.<br />
+          <span style={{background:'linear-gradient(90deg,#4F8EF7,#a78bfa)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>
+            Become an expert in your field.
+          </span>
+        </h1>
+        <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',textAlign:'center',maxWidth:620,margin:'24px auto 0'}}>
+          Every candidate deserves the preparation that only the privileged have had access to.<br />That changes now.
+        </p>
+        <div className="ph-r" data-ph="" data-d="3" style={{display:'flex',gap:14,justifyContent:'center',flexWrap:'wrap',marginTop:44}}>
+          <button className="ph-btn-primary" onClick={() => navigate('/login')}>Get Started →</button>
+          <a href="#ph-ir" className="ph-btn-ghost">See the Interview Chair</a>
+          <a href="https://product.explain.global" target="_blank" rel="noopener noreferrer" className="ph-btn-ghost" style={{borderColor:'rgba(167,139,250,.35)',color:'#a78bfa'}}>How it works →</a>
         </div>
-      </div>
-
-      {/* Stats strip */}
-      <div style={{ background: 'rgba(255,255,255,0.03)', borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto', padding: '24px', display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: 20 }}>
-          {STATS.map(s => (
-            <div key={s.label} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24, fontWeight: 900, color: '#b09fff', letterSpacing: '-0.02em' }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: '#6060a0', marginTop: 2 }}>{s.label}</div>
-            </div>
-          ))}
+        <div className="ph-hero-scroll ph-r" data-ph="" data-d="4">
+          <span>Scroll</span>
+          <svg width="14" height="20" viewBox="0 0 14 20" fill="none"><path d="M7 2v16M1 12l6 6 6-6" stroke="rgba(79,142,247,.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </div>
-      </div>
+      </section>
 
-      {/* Interview Room Showcase */}
-      <InterviewShowcase />
+      <div className="ph-gl-line" />
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 64px' }}>
-
-        {/* Featured jobs */}
-        <SectionHeader
-          tag="JOBS"
-          title="Featured roles this week"
-          cta="View all jobs"
-          onCta={() => navigate('/jobs')}
-        />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20, marginBottom: 64 }}>
-          {featured.map(job => (
-            <JobCard key={job.id} job={job} onPrepare={handlePrepare} />
-          ))}
-        </div>
-
-        {/* Social feed preview */}
-        <SectionHeader tag="COMMUNITY" title="Interview stories" cta="Join the conversation" onCta={() => navigate('/community')} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20, marginBottom: 64 }}>
-          {STORIES.map(s => (
-            <div key={s.name} style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 14, padding: '20px 22px',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                <div style={{
-                  width: 38, height: 38, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #7b5cf5, #5b8ff7)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 12, fontWeight: 800, color: '#fff',
-                }}>{s.avatar}</div>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#e0dcff' }}>{s.name}</div>
-                  <div style={{ fontSize: 11, color: '#6060a0' }}>{s.role}</div>
-                </div>
-                <div style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: s.tagColor, color: s.tagText }}>{s.tag}</div>
-              </div>
-              <p style={{ fontSize: 14, color: '#9090b8', lineHeight: 1.65 }}>"{s.body}"</p>
-            </div>
-          ))}
-        </div>
-
-        {/* LEARN teaser */}
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(120,80,255,0.12), rgba(60,100,255,0.08))',
-          border: '1px solid rgba(120,80,255,0.25)',
-          borderRadius: 18, padding: '40px 36px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24,
-        }}>
+      {/* INTERVIEW PRACTICE HOOK */}
+      <section id="ph-practice">
+        <div className="ph-practice-grid">
           <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#7b5cf5', letterSpacing: '0.06em', marginBottom: 8 }}>✦ LEARN ENGINE</div>
-            <h2 style={{ fontSize: 24, fontWeight: 800, color: '#fff', marginBottom: 10 }}>
-              Turn signals into skills.
+            <div className="ph-lbl ph-r" data-ph="">Interview Practice</div>
+            <h2 className="ph-practice-hook ph-r" data-ph="" data-d="1">
+              One interview.<br /><em>One pound.</em><br />Life-changing.
             </h2>
-            <p style={{ fontSize: 15, color: '#8080b0', maxWidth: 500, lineHeight: 1.65 }}>
-              Every interview you run feeds personalised LEARN modules — mapped to your real gaps, not generic courses.
+            <p className="ph-practice-sub ph-r" data-ph="" data-d="2">
+              The average UK professional salary is <strong>£35,000</strong>. A senior tech role pays <strong>£100,000–£150,000</strong>. The difference between getting it and missing it? <strong>Being prepared.</strong>
+            </p>
+            <p className="ph-practice-sub ph-r" data-ph="" data-d="3" style={{marginTop:-16}}>
+              An Explain Interview Pack costs <strong>£1</strong>. Twenty AI-generated practice questions, tailored to <strong>your CV</strong> and the <strong>exact job spec</strong> — ready instantly. No login. No faff. Just preparation.
+            </p>
+            <div className="ph-practice-stats ph-r" data-ph="" data-d="4">
+              <div className="ph-practice-stat"><span className="ph-practice-stat-val">£1</span><span className="ph-practice-stat-lbl">per pack</span></div>
+              <div className="ph-practice-stat"><span className="ph-practice-stat-val">20</span><span className="ph-practice-stat-lbl">practice questions</span></div>
+              <div className="ph-practice-stat"><span className="ph-practice-stat-val">50+</span><span className="ph-practice-stat-lbl">languages</span></div>
+            </div>
+          </div>
+          <div className="ph-r" data-ph="" data-d="3" style={{display:'flex',justifyContent:'center'}}>
+            <div className="ph-pack-card">
+              <div className="ph-pack-card-header">
+                <div className="ph-pack-card-icon">⚡</div>
+                <span className="ph-pack-card-title">Prepare for this interview</span>
+              </div>
+              <div className="ph-pack-card-body">
+                <span className="ph-pack-card-price">£1</span>
+                <p className="ph-pack-card-hl">Get your tailored Interview Pack for this exact role — only £1</p>
+                <p className="ph-pack-card-desc">20 AI-generated practice questions · Tailored to your CV · Tailored to this job · Instant access</p>
+                <button className="ph-pack-card-btn">Get Interview Pack — £1</button>
+                <div className="ph-pack-card-footer">No login needed · Instant access<br />Powered by <strong>Explain.global</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* WHY */}
+      <section id="ph-why">
+        <div className="ph-c">
+          <div className="ph-why-grid">
+            <div className="ph-manifesto">
+              <div className="ph-lbl ph-r" data-ph="">Why Explain Exists</div>
+              <p className="ph-r" data-ph="" data-d="1">People don't fail interviews because they're not good enough.</p>
+              <p className="ph-r" data-ph="" data-d="2">They fail because they've never actually <strong style={{color:'#F0F4FF'}}>practised</strong>. Not once. Not properly. Most people walk into the most important conversation of their career having rehearsed nothing — because there was nowhere to rehearse.</p>
+              <p className="ph-em1 ph-r" data-ph="" data-d="3">The first time they sit<br />in the chair —<br />is the real interview.</p>
+              <p className="ph-em2 ph-r" data-ph="" data-d="4">That ends now.</p>
+              <div className="ph-tagline ph-r" data-ph="" data-d="5"><p>Explain is the world's first <strong>AI interview practice platform</strong> that feels like the real thing. So when the real thing comes — you're already ready.</p></div>
+            </div>
+            <div>
+              <div className="ph-pillars">
+                {[
+                  ['💡','Clarity','Know exactly what to expect','We remove the mystery of interviews. You see the question structure, the competencies being assessed, and the benchmark before you walk in. Clarity is the most underrated competitive advantage.','Prepared minds perform.'],
+                  ['📐','Structure','A framework that turns pressure into performance','Every session follows a proven architecture — opening, competency questions, HR questions, debrief. You learn to map your experience to what interviewers actually need. No more guessing.','Structure beats talent in the room.'],
+                  ['🎯','Coaching','Real-time guidance, not post-match analysis',"While you answer, Explain's coaching engine watches your delivery, flags hesitations, and surfaces cues in real time. You don't just practice — you improve with every question.",'The best coaches speak during the game.'],
+                  ['📊','Scoring','Honest scores. No vanity metrics.',"After each answer, you receive a breakdown across Clarity, Depth, Confidence, and Delivery — calibrated against the Top 5% benchmark for your specific role and industry.",'You can\'t improve what you can\'t measure.'],
+                  ['⚡','Confidence','Walk in ready. Walk out proud.',"Confidence isn't fake it till you make it. It's the natural result of genuine preparation. After enough sessions with Explain, you don't just feel ready — you are ready.",'Confidence is a skill. We build it.'],
+                ].map(([icon,name,hl,body,micro],i) => (
+                  <div className="ph-pillar ph-r" data-ph="" data-d={String(i+1)} key={name} style={{flexDirection:'column',alignItems:'flex-start',gap:10}}>
+                    <div style={{display:'flex',alignItems:'center',gap:12}}>
+                      <div className="ph-pillar-icon">{icon}</div>
+                      <div>
+                        <div style={{fontSize:15,fontWeight:800,color:'#F0F4FF',letterSpacing:'-.01em'}}>{name}</div>
+                        <div style={{fontSize:11,fontWeight:700,color:'#4F8EF7',marginTop:1}}>{hl}</div>
+                      </div>
+                    </div>
+                    <div style={{fontSize:12,color:'rgba(240,244,255,.5)',lineHeight:1.65}}>{body}</div>
+                    <div style={{fontSize:11,fontWeight:700,color:'rgba(79,142,247,.6)',fontStyle:'italic'}}>{micro}</div>
+                  </div>
+                ))}
+              </div>
+              <p className="ph-r" data-ph="" data-d="6" style={{marginTop:24,fontSize:14,color:'#4F8EF7',fontWeight:700,textAlign:'center'}}>Explain.global gives every candidate all five.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* GLOBAL */}
+      <section id="ph-global">
+        <div className="ph-c">
+          <div className="ph-feat-head">
+            <div className="ph-lbl ph-r" data-ph="">Global by Design</div>
+            <h2 className="ph-global-hl ph-r" data-ph="" data-d="1">Any language.<br /><span style={{color:'#4F8EF7'}}>Any job.</span><br />Any job spec.</h2>
+            <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:540,margin:'0 auto'}}>
+              Explain.global works in any language, for any role, in any industry — anywhere in the world. Upload a job spec in Portuguese. Interview in French. Get coached in Mandarin. We handle the rest.
             </p>
           </div>
-          <button
-            onClick={() => navigate('/learn')}
-            style={{
-              background: 'rgba(120,80,255,0.2)',
-              color: '#c0aaff',
-              border: '1px solid rgba(120,80,255,0.4)',
-              borderRadius: 10, padding: '13px 24px',
-              fontSize: 14, fontWeight: 700, cursor: 'pointer',
-              flexShrink: 0,
-            }}>
-            Explore LEARN →
-          </button>
+          <div className="ph-lang-ticker ph-r" data-ph="" data-d="2">
+            <div className="ph-lang-inner">
+              {[...LANGS,...LANGS].map((l,i)=><span className="ph-lang-pill" key={i}>{l}</span>)}
+            </div>
+          </div>
+          <div className="ph-job-grid ph-r" data-ph="" data-d="3">
+            {JOBS.map(j=><div className="ph-job-chip" key={j}>{j}</div>)}
+          </div>
+          <div className="ph-global-stats ph-r" data-ph="" data-d="4">
+            <div><div className="ph-stat-num">50+</div><div className="ph-stat-lbl">Languages supported</div></div>
+            <div><div className="ph-stat-num">∞</div><div className="ph-stat-lbl">Job specs. Any industry.</div></div>
+            <div><div className="ph-stat-num">Any</div><div className="ph-stat-lbl">Role. Level. Market.</div></div>
+          </div>
         </div>
-      </div>
-    </div>
-  );
-}
+      </section>
 
-function SectionHeader({ tag, title, cta, onCta }: { tag: string; title: string; cta: string; onCta: () => void }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 8 }}>
-      <div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#7b5cf5', letterSpacing: '0.08em', marginBottom: 4 }}>✦ {tag}</div>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: '#f0edff' }}>{title}</h2>
-      </div>
-      <button onClick={onCta} style={{ background: 'none', border: 'none', color: '#7b5cf5', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
-        {cta} →
-      </button>
-    </div>
+      <div className="ph-gl-line" />
+
+      {/* LEARN ENGINE */}
+      <section id="ph-learn" className="ph-feat">
+        <div className="ph-c">
+          <div className="ph-feat-head">
+            <div className="ph-lbl ph-r" data-ph="">Live Now</div>
+            <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">The <span style={{color:'#4F8EF7'}}>Learn Engine</span></h2>
+            <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:520,margin:'16px auto 0'}}>Enter any subject. Receive a full structured lesson — concepts, glossary, exam questions, and a quiz — generated by AI in seconds.</p>
+            <div className="ph-r" data-ph="" data-d="3" style={{marginTop:24,display:'flex',justifyContent:'center'}}>
+              <button className="ph-btn-primary" onClick={() => navigate('/learn')}>Try the Learn Engine →</button>
+            </div>
+          </div>
+          <div className="ph-learn-grid ph-r" data-ph="" data-d="2">
+            <div className="ph-card">
+              <div style={{fontSize:28,marginBottom:14}}>⚛️</div>
+              <div style={{fontSize:10,fontWeight:800,letterSpacing:'.15em',textTransform:'uppercase',color:'#4F8EF7',marginBottom:8}}>Science · Advanced</div>
+              <div style={{fontSize:16,fontWeight:800,color:'#F0F4FF',marginBottom:8,lineHeight:1.3,letterSpacing:'-.01em'}}>Quantum Entanglement &amp; Superposition</div>
+              <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:14}}>{["Wave function","Decoherence","Bell's theorem"].map(c=><span className="ph-chip" key={c}>{c}</span>)}</div>
+              <div className="ph-prog"><div className="ph-prog-fill" style={{width:'68%'}} /></div>
+              <div style={{fontSize:11,color:'rgba(240,244,255,.35)',marginTop:6,display:'flex',justifyContent:'space-between'}}><span>Progress</span><span>68%</span></div>
+            </div>
+            <div className="ph-card">
+              <div style={{fontSize:28,marginBottom:14}}>🧠</div>
+              <div style={{fontSize:10,fontWeight:800,letterSpacing:'.15em',textTransform:'uppercase',color:'#4F8EF7',marginBottom:8}}>Multiple Choice Quiz</div>
+              <div style={{fontSize:16,fontWeight:800,color:'#F0F4FF',marginBottom:8,lineHeight:1.3}}>Which statement best describes quantum entanglement?</div>
+              {['A — Particles share the same physical location','B — Measurement of one particle instantly determines the other ✓','C — Particles move faster than light','D — Superposition requires observation'].map((o,i)=><div className={`ph-quiz-opt${i===1?' ok':''}`} key={o}>{o}</div>)}
+            </div>
+            <div className="ph-card">
+              <div style={{fontSize:28,marginBottom:14}}>📚</div>
+              <div style={{fontSize:10,fontWeight:800,letterSpacing:'.15em',textTransform:'uppercase',color:'#4F8EF7',marginBottom:8}}>Your Bookshelf · 14 Lessons</div>
+              <div style={{fontSize:16,fontWeight:800,color:'#F0F4FF',marginBottom:0}}>Saved Lessons</div>
+              {[['⚛️','Quantum Entanglement','Science · 68% complete'],['💰','Compound Interest','Mathematics · 100% ✓'],['🏛️','The Roman Empire','History · 24% complete']].map(([icon,title,meta])=>(
+                <div className="ph-shelf" key={title}><span>{icon}</span><div><div style={{fontSize:12,fontWeight:700,color:'#F0F4FF'}}>{title}</div><div style={{fontSize:10,color:'rgba(240,244,255,.35)'}}>{meta}</div></div></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* INTERVIEW CHAIR — real screenshot */}
+      <section id="ph-ir">
+        <div className="ph-c">
+          <div className="ph-ir-layout">
+            <div>
+              <div className="ph-lbl ph-r" data-ph="">Coming Soon</div>
+              <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">The <span style={{color:'#4F8EF7'}}>Interview Chair</span></h2>
+              <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',marginTop:20}}>A cinematic AI-powered interview experience. Face an intelligent interviewer, receive real-time coaching, and get scored — before you ever sit in the real room.</p>
+              <ul className="ph-ir-list ph-r" data-ph="" data-d="3">
+                {['AI interviewer with voice and presence','Live waveform & speech detection','Real-time coaching overlay','Behavioural scoring engine','Instant post-interview debrief','Recruiter-shareable results'].map(li=><li key={li}>{li}</li>)}
+              </ul>
+              <div style={{marginTop:32}} className="ph-r" data-ph="" data-d="4"><span className="ph-badge-gold">Coming to Explain.global</span></div>
+              <div style={{marginTop:48}} className="ph-r" data-ph="" data-d="5">
+                <p style={{fontSize:15,fontWeight:600,color:'rgba(240,244,255,.65)',fontStyle:'italic',marginBottom:16}}>"Coming to your favourite job board soon…"</p>
+                <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+                  {['Vallum','Adecco','Harrington Starr','Next Ventures','Electus','Toba'].map(r=><div className="ph-rec-card" key={r}>{r}</div>)}
+                </div>
+              </div>
+            </div>
+            <div className="ph-ir-preview ph-r" data-ph="" data-d="2">
+              <img src="/assets/interview-room-preview.png" alt="Explain Interview Room" style={{width:'100%',display:'block'}} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* INTERVIEW PACKS */}
+      <section className="ph-feat ph-dark">
+        <div className="ph-c">
+          <div className="ph-feat-head">
+            <div className="ph-lbl ph-r" data-ph="">Coming Soon · Global Distribution</div>
+            <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">Interview <span style={{color:'#4F8EF7'}}>Packs</span></h2>
+            <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:520,margin:'16px auto 0'}}>Complete role-specific preparation bundles — lessons, practice questions, live simulations, AI scoring, and coaching — in one place.</p>
+            <div className="ph-r" data-ph="" data-d="3" style={{marginTop:20}}><span className="ph-badge-gold">Global Distribution</span></div>
+          </div>
+          <div className="ph-packs-grid ph-r" data-ph="" data-d="2">
+            {[
+              {icon:'🏦',title:'Investment Banking',meta:'Goldman Sachs · J.P. Morgan · Barclays',spine:'linear-gradient(to right,#4F8EF7,#2D5BFF)',feats:['12 structured lessons','48 practice questions','3 live simulations','Behavioural scoring','AI coaching debrief']},
+              {icon:'🏥',title:'NHS Nursing & Healthcare',meta:'NHS · Nuffield · Bupa · CQC-ready',spine:'linear-gradient(to right,#2D9E6A,#34D399)',feats:['10 clinical competency lessons','36 interview questions','Safeguarding simulation','Values & behaviours scoring','CQC standards guidance']},
+              {icon:'💻',title:'Software Engineering',meta:'FAANG · Scale-up · Deep tech',spine:'linear-gradient(to right,#7C3AED,#A855F7)',feats:['15 technical + behavioural lessons','60 coding & competency questions','System design simulation','Technical depth scoring','Senior engineer coaching']},
+            ].map(p=>(
+              <div className="ph-pack" key={p.title}>
+                <div style={{height:4,background:p.spine}} />
+                <div style={{padding:22}}>
+                  <div style={{fontSize:32,marginBottom:12}}>{p.icon}</div>
+                  <div style={{fontSize:17,fontWeight:800,color:'#F0F4FF',marginBottom:6,letterSpacing:'-.01em'}}>{p.title}</div>
+                  <div style={{fontSize:12,color:'rgba(240,244,255,.35)'}}>{p.meta}</div>
+                  {p.feats.map(f=><div className="ph-pack-feat" key={f}>{f}</div>)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* PORTALS */}
+      <section className="ph-feat">
+        <div className="ph-c">
+          <div className="ph-feat-head">
+            <div className="ph-lbl ph-r" data-ph="">Platform</div>
+            <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">Two <span style={{color:'#4F8EF7'}}>Portals</span>, one ecosystem</h2>
+          </div>
+          <div className="ph-portals-grid">
+            {[
+              {badge:'Candidate Portal',title:'Your preparation\ncommand centre',sub:'Everything a candidate needs — in one space.',feats:['Personal dashboard','Learn Engine access','Interview Chair sessions','Flow Viewer timeline','Saved lessons & interviews','Personalised LEARN plan'],cols:'repeat(3,1fr)'},
+              {badge:'Recruiter Portal',title:'Candidate intelligence\nat a glance',sub:'Everything a recruiter needs to place better candidates, faster.',feats:['Interview pack builder','Candidate flow management','AI scoring & insights','Feedback delivery tools','Candidate preparation links','Placement intelligence'],cols:'1fr 1fr'},
+            ].map((p,i)=>(
+              <div className="ph-portal ph-r" data-ph="" data-d={String(i)} key={p.badge}>
+                <span className="ph-badge-blue">{p.badge}</span>
+                <div style={{fontSize:24,fontWeight:800,letterSpacing:'-.02em',margin:'14px 0 8px',color:'#F0F4FF',whiteSpace:'pre-line'}}>{p.title}</div>
+                <div style={{fontSize:13,color:'rgba(240,244,255,.35)'}}>{p.sub}</div>
+                {p.feats.map(f=><div className="ph-portal-feat" key={f}><div className="ph-dot" />{f}</div>)}
+                <div className="ph-mockup">
+                  <div className="ph-mock-row" style={{width:'70%'}} />
+                  <div style={{display:'grid',gridTemplateColumns:p.cols,gap:8,marginTop:6}}>
+                    {Array.from({length:p.cols.includes('3')?3:2}).map((_,j)=><div className="ph-mock-card" key={j} />)}
+                  </div>
+                  <div className="ph-mock-row" style={{width:'80%'}} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* FLOW VIEWER */}
+      <section id="ph-flow">
+        <div className="ph-c">
+          <div className="ph-flow-grid">
+            <div>
+              <div className="ph-lbl ph-r" data-ph="">Flow Viewer</div>
+              <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">Every click.<br /><span style={{color:'#4F8EF7'}}>Every moment.</span><br />Visualised.</h2>
+              <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',marginTop:20}}>A cinematic timeline of every candidate interaction — from first click to final placement.</p>
+              <p className="ph-r" data-ph="" data-d="3" style={{fontSize:15,lineHeight:1.7,color:'rgba(240,244,255,.65)',marginTop:16}}>Recruiters see the full story. Candidates own their journey.</p>
+            </div>
+            <div className="ph-flow-tl ph-r" data-ph="" data-d="2">
+              {[['09:14 · Session Start','Candidate opened Interview Prep Pack','Role: Senior Software Engineer · Company: DeepMind'],['09:17 · Learn Engine','Generated lesson: System Design Fundamentals','7 concepts · 5 exam questions · quiz started'],['09:34 · Interview Room','Practice session completed — 6 questions','Strong: 4 · OK: 1 · Needs work: 1'],['09:41 · LEARN Plan','3 modules recommended from weak areas','Stakeholder Management · System Design · Communication'],['10:02 · Session End','Candidate marked prep as complete','48 min session · full flow captured']].map(([time,title,sub])=>(
+                <div className="ph-flow-ev" key={time}>
+                  <div style={{fontSize:10,fontWeight:700,letterSpacing:'.1em',color:'#4F8EF7',textTransform:'uppercase',marginBottom:4}}>{time}</div>
+                  <div style={{fontSize:13,fontWeight:700,color:'#F0F4FF'}}>{title}</div>
+                  <div style={{fontSize:12,color:'rgba(240,244,255,.35)'}}>{sub}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* ECOSYSTEM */}
+      <section id="ph-eco">
+        <div className="ph-c" style={{textAlign:'center'}}>
+          <div className="ph-lbl ph-r" data-ph="">The Ecosystem</div>
+          <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">One <span style={{color:'#4F8EF7'}}>constellation</span></h2>
+          <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:480,margin:'16px auto 0'}}>Every product connects. One unified ecosystem for the world of work.</p>
+          <svg id="ph-eco-svg" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" style={{width:'100%',maxWidth:800,display:'block',margin:'40px auto 0',overflow:'visible'}} role="img" aria-label="Explain.global ecosystem constellation">
+            <title>Explain.global Ecosystem</title>
+            <g id="ph-eco-lines" /><g id="ph-eco-nodes" />
+          </svg>
+        </div>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* ROADMAP */}
+      <section id="ph-road">
+        <div className="ph-c" style={{textAlign:'center'}}>
+          <div className="ph-lbl ph-r" data-ph="">Roadmap</div>
+          <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">Built in <span style={{color:'#4F8EF7'}}>phases</span></h2>
+          <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:480,margin:'16px auto 0'}}>Each phase unlocks the next. The full picture is already designed.</p>
+          <div className="ph-road-list ph-r" data-ph="" data-d="2">
+            {[
+              {n:1,done:true,phase:'Phase 1 — Active',title:'Learn Engine',sub:'AI-generated lessons on any subject. Key concepts, glossary, exam questions, quiz. 50+ languages.',badge:'live',label:'Live Now'},
+              {n:2,done:true,phase:'Phase 2 — Active',title:'Interview Prep Engine',sub:'AI-generated interview questions, model answers, self-assessment, and LEARN recommendations — for any role.',badge:'live',label:'Live Now'},
+              {n:3,done:false,phase:'Phase 3 — Coming Soon',title:'Interview Chair',sub:'Live AI voice interviewer with real-time scoring, coaching overlays, and full session recording.',badge:'coming',label:'In Development'},
+              {n:4,done:false,phase:'Phase 4 — Coming Soon',title:'Interview Packs',sub:'Role-specific preparation bundles distributed through partner recruitment agencies globally.',badge:'coming',label:'Planned'},
+              {n:5,done:false,phase:'Phase 5 — Coming Soon',title:'Recruiter Portal',sub:'Full recruiter intelligence suite — pack builder, candidate flow management, scoring, and insights.',badge:'coming',label:'Planned'},
+              {n:6,done:false,phase:'Phase 6 — Vision',title:'Global Distribution',sub:"Explain Interview Packs available through the world's leading recruitment agencies and job boards.",badge:'coming',label:'Vision'},
+              {n:7,done:false,phase:'Phase 7 — Vision',title:'Explain AI + Percentile.One',sub:'The full Percentile.One ecosystem: Learn, Work, Grow — unified under one AI intelligence layer.',badge:'coming',label:'Vision'},
+            ].map(r=>(
+              <div className="ph-road-item" key={r.n}>
+                <div className={`ph-road-num${r.done?' done':''}`}>{r.n}</div>
+                <div style={{textAlign:'left'}}>
+                  <div style={{fontSize:10,fontWeight:800,letterSpacing:'.15em',textTransform:'uppercase',color:'#4F8EF7',marginBottom:4}}>{r.phase}</div>
+                  <div style={{fontSize:18,fontWeight:800,color:'#F0F4FF',letterSpacing:'-.01em',marginBottom:4}}>{r.title}</div>
+                  <div style={{fontSize:13,color:'rgba(240,244,255,.35)',lineHeight:1.55}}>{r.sub}</div>
+                  <span className={`ph-rbadge ${r.badge}`}>{r.label}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* WAITLIST */}
+      <section id="ph-wait">
+        <div className="ph-wait-glow" />
+        <div className="ph-c" style={{position:'relative',zIndex:1}}>
+          <div className="ph-r" data-ph="" style={{marginBottom:20}}><span className="ph-badge-gold">Be First</span></div>
+          <h2 className="ph-h-xl ph-r" data-ph="" data-d="1" style={{textAlign:'center'}}>Join the <span style={{color:'#4F8EF7'}}>waitlist</span></h2>
+          <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',textAlign:'center',maxWidth:480,margin:'16px auto 0'}}>Get early access to the Learn Engine, Interview Chair, and Packs — before they go public.</p>
+          <form style={{display:'flex',gap:10,justifyContent:'center',flexWrap:'wrap',marginTop:40}} className="ph-r" data-ph="" data-d="3" onSubmit={handleWaitlist}>
+            <input className="ph-wait-input" type="email" placeholder="Your email address" />
+            <button type="submit" className="ph-btn-primary">Join the Waitlist →</button>
+          </form>
+          <p className="ph-r" data-ph="" data-d="4" style={{fontSize:13,lineHeight:1.65,color:'rgba(240,244,255,.35)',textAlign:'center',marginTop:16}}>We'll email you when each phase launches. Unsubscribe any time.</p>
+        </div>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* FOUNDER */}
+      <section id="ph-founder">
+        <div className="ph-c">
+          <div className="ph-lbl ph-r" data-ph="" style={{textAlign:'center',marginBottom:32}}>A Message from the Founder</div>
+          <div className="ph-founder-card ph-r" data-ph="" style={{maxWidth:760}}>
+            <p style={{fontSize:16,color:'rgba(240,244,255,.5)',lineHeight:1.85,marginBottom:20,position:'relative',zIndex:1,fontWeight:500}}>
+              I built Explain because I lived the problem.
+            </p>
+            <p style={{fontSize:16,color:'rgba(240,244,255,.6)',lineHeight:1.85,marginBottom:20,position:'relative',zIndex:1}}>
+              I have sat in interview rooms and watched people who were brilliant — genuinely brilliant — walk out empty-handed. Not because they weren't good enough. Because the process was a black box. It rewarded those who had been coached, those who had insider knowledge, those who had simply <em style={{fontStyle:'normal',color:'#F0F4FF',fontWeight:700}}>done it before</em>.
+            </p>
+            <p style={{fontSize:16,color:'rgba(240,244,255,.6)',lineHeight:1.85,marginBottom:20,position:'relative',zIndex:1}}>
+              Traditional interviews were never designed to find the best person. They were designed to find the most <em style={{fontStyle:'normal',color:'#F0F4FF',fontWeight:700}}>familiar</em> person — familiar with the format, the language, the unspoken rules. That is not a merit system. That is a privilege system.
+            </p>
+            <p style={{fontSize:16,color:'rgba(240,244,255,.6)',lineHeight:1.85,marginBottom:20,position:'relative',zIndex:1}}>
+              The Interview Chair is our answer. A place where every candidate — regardless of background, country, or connections — sits across from two AI interviewers who know the role, the industry, and the exact job spec. Where the coaching is honest. Where the scoring is real. Where the preparation is fair.
+            </p>
+            <p style={{fontSize:17,fontWeight:700,color:'#F0F4FF',lineHeight:1.7,marginBottom:28,position:'relative',zIndex:1}}>
+              Our mission is simple: clarity for every candidate, everywhere. The nurse in Lagos. The engineer in Warsaw. The graduate in Birmingham who never had a mentor. Every one of them deserves to walk in prepared.
+            </p>
+            <div style={{padding:'20px 24px',borderLeft:'3px solid #4F8EF7',background:'rgba(79,142,247,.05)',borderRadius:'0 12px 12px 0',marginBottom:28,position:'relative',zIndex:1}}>
+              <p style={{fontSize:18,fontWeight:800,color:'#F0F4FF',lineHeight:1.5,margin:0,letterSpacing:'-.02em'}}>
+                "Every seat at that table should be earned on merit.<br />The Interview Chair is how we get you there."
+              </p>
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:14,position:'relative',zIndex:1}}>
+              <div style={{width:44,height:44,borderRadius:'50%',background:'linear-gradient(135deg,#4F8EF7,#2D5BFF)',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:16,color:'#fff',flexShrink:0}}>FC</div>
+              <div>
+                <div style={{fontSize:14,fontWeight:800,color:'#F0F4FF'}}>Francis Cobbinah</div>
+                <div style={{fontSize:11,color:'rgba(240,244,255,.35)',marginTop:2}}>Founder · Explain.global · Percentile.One</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="ph-footer">
+        <div className="ph-footer-inner">
+          <div style={{fontSize:15,fontWeight:900,letterSpacing:'-.03em'}}><span className="ph-ex">Explain</span><span className="ph-gl">.global</span></div>
+          <div className="ph-footer-links">
+            <a href="#ph-why">Why Explain</a><a href="#ph-global">Global</a>
+            <a href="#ph-learn">Learn Engine</a><a href="#ph-eco">Ecosystem</a>
+            <a href="#ph-wait">Waitlist</a>
+          </div>
+          <div style={{fontSize:11,color:'rgba(240,244,255,.35)'}}>© 2026 Percentile.One · explain.global · All rights reserved</div>
+        </div>
+      </footer>
+    </>
   );
 }
