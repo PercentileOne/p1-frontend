@@ -83,7 +83,7 @@ export default function Home() {
           }}>
             Practice interviews.<br />
             <span style={{ background: 'linear-gradient(90deg, #7b5cf5, #5b8ff7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Become the expert in your field.
+              Become an expert in your field.
             </span>
           </h1>
 
