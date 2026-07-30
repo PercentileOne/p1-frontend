@@ -113,6 +113,19 @@ export default function Home() {
               }}>
               Explore LEARN
             </button>
+            <a
+              href="https://product.explain.global"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: 'transparent',
+                color: '#a78bfa', border: '1px solid rgba(167,139,250,0.35)',
+                borderRadius: 10, padding: '14px 28px',
+                fontSize: 15, fontWeight: 600, cursor: 'pointer',
+                textDecoration: 'none', display: 'inline-flex', alignItems: 'center',
+              }}>
+              How it works →
+            </a>
           </div>
         </div>
       </div>

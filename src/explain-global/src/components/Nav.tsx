@@ -65,6 +65,18 @@ export function Nav() {
         {/* Auth CTAs */}
         {!isAuthPage && (
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <a
+              href="mailto:francis@percentile.one?subject=Register Interest — Explain.Global"
+              style={{
+                background: 'rgba(167,139,250,0.10)',
+                color: '#a78bfa',
+                border: '1px solid rgba(167,139,250,0.3)',
+                borderRadius: 8, padding: '7px 16px',
+                fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                textDecoration: 'none', whiteSpace: 'nowrap',
+              }}>
+              Register Interest
+            </a>
             <button
               onClick={() => navigate('/login')}
               style={{
