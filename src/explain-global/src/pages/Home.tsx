@@ -81,9 +81,9 @@ export default function Home() {
             marginBottom: 20,
             letterSpacing: '-0.03em',
           }}>
-            Get the interview.<br />
+            Practice interviews.<br />
             <span style={{ background: 'linear-gradient(90deg, #7b5cf5, #5b8ff7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Keep learning.
+              Become the expert in your field.
             </span>
           </h1>
 
