@@ -146,7 +146,7 @@ export function Nav() {
               {t('nav.registerInterest')}
             </button>
             <button
-              onClick={() => window.location.href = 'https://candidate.explain.global/login'}
+              onClick={() => window.location.href = 'https://candidate.explain.global'}
               style={{
                 background: 'rgba(255,255,255,0.05)',
                 color: '#c0c0e0',

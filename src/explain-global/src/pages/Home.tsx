@@ -357,7 +357,7 @@ export default function Home() {
               {heroFeatures.map(li => <li key={li}>{li}</li>)}
             </ul>
             <div className="ph-r" data-ph="" data-d="4" style={{display:'flex',gap:14,flexWrap:'wrap',marginTop:36}}>
-              <a className="ph-btn-primary" href="https://candidate.explain.global/login">{t('hero.cta1')}</a>
+              <a className="ph-btn-primary" href="https://candidate.explain.global">{t('hero.cta1')}</a>
               <a href="https://product.explain.global" target="_blank" rel="noopener noreferrer" className="ph-btn-ghost" style={{borderColor:'rgba(167,139,250,.35)',color:'#a78bfa'}}>{t('hero.cta2')}</a>
             </div>
           </div>

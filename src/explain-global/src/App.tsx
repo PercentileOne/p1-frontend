@@ -10,7 +10,12 @@ import Portals from './pages/Portals';
 import Pricing from './pages/Pricing';
 
 function ExternalRedirect({ to }: { to: string }) {
-  useEffect(() => { window.location.replace(to); }, [to]);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const returnUrl = params.get('return');
+    const dest = (returnUrl && returnUrl.startsWith('https://')) ? returnUrl : to;
+    window.location.replace(dest);
+  }, [to]);
   return null;
 }
 
