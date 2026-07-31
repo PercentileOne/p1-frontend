@@ -1,0 +1,767 @@
+<title>Explain — Azure SQL Auth Architecture</title>
+<style>
+  :root {
+    --bg:        #070C1A;
+    --bg2:       #0D1526;
+    --bg3:       #111D33;
+    --border:    rgba(79,142,247,.15);
+    --border2:   rgba(79,142,247,.25);
+    --blue:      #4F8EF7;
+    --purple:    #a78bfa;
+    --green:     #34D399;
+    --amber:     #F59E0B;
+    --red:       #F87171;
+    --text:      #F0F4FF;
+    --muted:     rgba(240,244,255,.55);
+    --faint:     rgba(240,244,255,.25);
+    --mono:      'Courier New', 'Consolas', monospace;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg:     #f4f6fb; --bg2: #ffffff; --bg3: #e8edf8;
+      --border: rgba(79,142,247,.18); --border2: rgba(79,142,247,.35);
+      --text:   #0f1829; --muted: #4a5878; --faint: #8898bb;
+    }
+  }
+  :root[data-theme="dark"]  { --bg:#070C1A; --bg2:#0D1526; --bg3:#111D33; --border:rgba(79,142,247,.15); --border2:rgba(79,142,247,.25); --text:#F0F4FF; --muted:rgba(240,244,255,.55); --faint:rgba(240,244,255,.25); }
+  :root[data-theme="light"] { --bg:#f4f6fb; --bg2:#ffffff; --bg3:#e8edf8; --border:rgba(79,142,247,.18); --border2:rgba(79,142,247,.35); --text:#0f1829; --muted:#4a5878; --faint:#8898bb; }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ── */
+  .shell { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 28px 0;
+  }
+  .sidebar-logo {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .sidebar-logo .ex  { color: var(--blue); font-weight: 900; font-size: 16px; letter-spacing: -.03em; }
+  .sidebar-logo .gl  { color: var(--text); font-weight: 900; font-size: 16px; letter-spacing: -.03em; }
+  .sidebar-logo .sub { font-size: 10px; color: var(--faint); letter-spacing: .06em; text-transform: uppercase; margin-top: 2px; }
+  .nav-group { margin-bottom: 6px; }
+  .nav-group-label { font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); padding: 6px 20px 4px; }
+  .nav-link {
+    display: block; padding: 6px 20px; font-size: 12.5px; font-weight: 500;
+    color: var(--muted); text-decoration: none; border-left: 2px solid transparent;
+    transition: all .15s;
+  }
+  .nav-link:hover, .nav-link.active { color: var(--blue); border-color: var(--blue); background: rgba(79,142,247,.06); }
+
+  .content { flex: 1; padding: 40px 48px 80px; max-width: 860px; }
+
+  @media (max-width: 800px) {
+    .sidebar { display: none; }
+    .content { padding: 24px 20px 60px; }
+  }
+
+  /* ── Typography ── */
+  h1 { font-size: 28px; font-weight: 900; letter-spacing: -.04em; color: var(--text); line-height: 1.1; margin-bottom: 8px; }
+  h2 { font-size: 18px; font-weight: 800; letter-spacing: -.02em; color: var(--text); margin: 48px 0 16px; }
+  h3 { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--blue); margin: 28px 0 10px; }
+  p  { color: var(--muted); margin-bottom: 12px; }
+  code { font-family: var(--mono); font-size: 11.5px; background: var(--bg3); padding: 2px 6px; border-radius: 4px; color: var(--purple); border: 1px solid var(--border); }
+  strong { color: var(--text); font-weight: 600; }
+
+  .page-intro { font-size: 15px; line-height: 1.7; color: var(--muted); max-width: 600px; margin-bottom: 36px; }
+
+  .divider { height: 1px; background: linear-gradient(to right, var(--blue), transparent); opacity: .2; margin: 40px 0; }
+
+  /* ── Chips ── */
+  .chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .chip-blue   { background: rgba(79,142,247,.1);  color: var(--blue);   border: 1px solid rgba(79,142,247,.25); }
+  .chip-purple { background: rgba(167,139,250,.1); color: var(--purple); border: 1px solid rgba(167,139,250,.25); }
+  .chip-green  { background: rgba(52,211,153,.1);  color: var(--green);  border: 1px solid rgba(52,211,153,.25); }
+  .chip-amber  { background: rgba(245,158,11,.1);  color: var(--amber);  border: 1px solid rgba(245,158,11,.25); }
+  .chip-red    { background: rgba(248,113,113,.1); color: var(--red);    border: 1px solid rgba(248,113,113,.25); }
+
+  /* ── Table group cards ── */
+  .table-group {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .table-group-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+  .table-group-header .tname {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .table-group-body { padding: 16px 20px; }
+
+  /* ── Column table ── */
+  .col-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .col-table th {
+    text-align: left; padding: 6px 10px;
+    font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--faint); border-bottom: 1px solid var(--border);
+  }
+  .col-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .col-table tr:last-child td { border-bottom: none; }
+  .col-table tr:hover td { background: rgba(79,142,247,.04); }
+  .col-name  { font-family: var(--mono); font-size: 11.5px; color: var(--text); font-weight: 600; }
+  .col-type  { font-family: var(--mono); font-size: 11px; color: var(--purple); }
+  .col-note  { color: var(--muted); font-size: 11.5px; }
+  .pk-badge  { display: inline-block; font-size: 8px; font-weight: 800; padding: 1px 5px; border-radius: 3px; background: rgba(245,158,11,.15); color: var(--amber); border: 1px solid rgba(245,158,11,.3); margin-right: 4px; vertical-align: middle; }
+  .fk-badge  { display: inline-block; font-size: 8px; font-weight: 800; padding: 1px 5px; border-radius: 3px; background: rgba(79,142,247,.1); color: var(--blue); border: 1px solid rgba(79,142,247,.25); margin-right: 4px; vertical-align: middle; }
+
+  /* ── Flow diagrams ── */
+  .flow { display: flex; flex-direction: column; gap: 0; margin: 8px 0 16px; }
+  .flow-step {
+    display: flex; align-items: flex-start; gap: 16px;
+    position: relative; padding-bottom: 0;
+  }
+  .flow-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 15px; top: 32px;
+    width: 1px; bottom: -1px;
+    background: linear-gradient(to bottom, var(--blue), rgba(79,142,247,.1));
+    min-height: 24px;
+  }
+  .flow-num {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(79,142,247,.12); border: 1px solid rgba(79,142,247,.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: var(--blue);
+    position: relative; z-index: 1;
+  }
+  .flow-body { padding: 4px 0 20px; flex: 1; }
+  .flow-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .flow-desc  { font-size: 12px; color: var(--muted); line-height: 1.55; }
+  .flow-tables { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .flow-table-tag {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    padding: 3px 8px; border-radius: 5px;
+    background: var(--bg3); border: 1px solid var(--border2);
+    color: var(--green);
+  }
+
+  /* ── Principle cards ── */
+  .principle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  @media (max-width: 600px) { .principle-grid { grid-template-columns: 1fr; } }
+  .principle-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px;
+  }
+  .principle-card .p-icon { font-size: 20px; margin-bottom: 8px; }
+  .principle-card .p-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .principle-card .p-body  { font-size: 12px; color: var(--muted); line-height: 1.55; }
+
+  /* ── Guardrail banner ── */
+  .guardrail {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 16px 20px; border-radius: 12px;
+    background: rgba(248,113,113,.06);
+    border: 1px solid rgba(248,113,113,.2);
+    margin: 20px 0;
+  }
+  .guardrail-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .guardrail-title { font-size: 13px; font-weight: 700; color: var(--red); margin-bottom: 4px; }
+  .guardrail-body  { font-size: 12px; color: var(--muted); line-height: 1.55; }
+
+  /* ── SP table ── */
+  .sp-list { display: flex; flex-direction: column; gap: 10px; }
+  .sp-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 18px;
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .sp-name { font-family: var(--mono); font-size: 12px; color: var(--green); font-weight: 700; flex-shrink: 0; min-width: 260px; }
+  .sp-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  @media (max-width: 620px) { .sp-card { flex-direction: column; gap: 6px; } .sp-name { min-width: 0; } }
+
+  /* ── Section label ── */
+  .section-eyebrow {
+    font-size: 9px; font-weight: 800; letter-spacing: .15em;
+    text-transform: uppercase; color: var(--blue);
+    margin-bottom: 6px;
+  }
+</style>
+
+<div class="shell">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div><span class="ex">explain</span><span class="gl">.global</span></div>
+      <div class="sub">Auth Architecture</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Overview</div>
+      <a class="nav-link" href="#principles">Principles</a>
+      <a class="nav-link" href="#guardrail">Guardrail</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Schema</div>
+      <a class="nav-link" href="#region">Language &amp; Region</a>
+      <a class="nav-link" href="#tenants">Tenants</a>
+      <a class="nav-link" href="#users">Users &amp; Profiles</a>
+      <a class="nav-link" href="#auth">Auth &amp; Security</a>
+      <a class="nav-link" href="#roles">Roles &amp; Permissions</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Flows</div>
+      <a class="nav-link" href="#flow-register">Registration</a>
+      <a class="nav-link" href="#flow-login">Login</a>
+      <a class="nav-link" href="#flow-session">Session Validation</a>
+      <a class="nav-link" href="#flow-authz">Authorisation</a>
+      <a class="nav-link" href="#flow-2fa">Two-Factor</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Procedures</div>
+      <a class="nav-link" href="#sprocs">Stored Procedures</a>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="content">
+
+    <div class="section-eyebrow">Azure SQL · Identity &amp; Auth</div>
+    <h1>Auth Architecture<br><span style="color:var(--blue)">Explain.global</span></h1>
+    <p class="page-intro">
+      Full Azure SQL schema and behavioural spec for identity, authentication, session management,
+      role-based access, and locale resolution across all Explain portals.
+      No transactional auth data lives in Cosmos DB.
+    </p>
+
+    <!-- GUARDRAIL -->
+    <div class="guardrail" id="guardrail">
+      <div class="guardrail-icon">🔒</div>
+      <div>
+        <div class="guardrail-title">Guardrail — Cosmos DB is off-limits for auth</div>
+        <div class="guardrail-body">
+          All identity, session, role, permission, and audit data lives in <strong>Azure SQL</strong>.
+          Cosmos DB is reserved for interview transcripts, lesson content, careers data, and
+          non-transactional document blobs. This boundary is permanent and non-negotiable for
+          YC-level data integrity and audit compliance.
+        </div>
+      </div>
+    </div>
+
+    <!-- PRINCIPLES -->
+    <h2 id="principles">Core Principles</h2>
+    <div class="principle-grid">
+      <div class="principle-card">
+        <div class="p-icon">🏛️</div>
+        <div class="p-title">Single identity, multi-portal</div>
+        <div class="p-body">One <code>Users</code> row grants access to Candidate, Recruiter, Admin, and future portals — controlled by <code>UserRoles</code>, not separate user tables.</div>
+      </div>
+      <div class="principle-card">
+        <div class="p-icon">🌍</div>
+        <div class="p-title">Multi-language by design</div>
+        <div class="p-body"><code>PreferredLanguageCode</code> and <code>PreferredCountryCode</code> live on <code>Users</code>. <code>RegionContext</code> reads from the session first, browser second.</div>
+      </div>
+      <div class="principle-card">
+        <div class="p-icon">🔐</div>
+        <div class="p-title">SSO-ready from day one</div>
+        <div class="p-body"><code>UserLogins</code> decouples identity providers from local credentials. Add LinkedIn, Google, or Microsoft OAuth without touching the user table.</div>
+      </div>
+      <div class="principle-card">
+        <div class="p-icon">📋</div>
+        <div class="p-title">Full audit trail</div>
+        <div class="p-body">Every login attempt — success or failure — is written to <code>UserLoginAttempts</code>. Lockout logic, IP rate-limiting, and forensics are all SQL-native.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- LANGUAGE & REGION -->
+    <h2 id="region">Language &amp; Region</h2>
+    <p>Created first — <code>Users</code> holds foreign keys to both tables.</p>
+
+    <div class="table-group">
+      <div class="table-group-header">
+        <span class="tname">Languages</span>
+        <span class="chip chip-green">Reference</span>
+      </div>
+      <div class="table-group-body">
+        <table class="col-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name"><span class="pk-badge">PK</span>LanguageCode</td><td class="col-type">NCHAR(5)</td><td class="col-note">BCP-47 tag — <code>en</code>, <code>zh-TW</code>, <code>ar</code></td></tr>
+            <tr><td class="col-name">Name</td><td class="col-type">NVARCHAR(100)</td><td class="col-note">English display name</td></tr>
+            <tr><td class="col-name">NativeName</td><td class="col-type">NVARCHAR(100)</td><td class="col-note">e.g. <em>日本語</em>, <em>العربية</em></td></tr>
+            <tr><td class="col-name">IsRTL</td><td class="col-type">BIT</td><td class="col-note">1 for Arabic — drives <code>dir="rtl"</code> in the UI</td></tr>
+            <tr><td class="col-name">IsActive / SortOrder</td><td class="col-type">BIT / SMALLINT</td><td class="col-note">Controls language picker visibility and order</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:10px;font-size:12px;">Pre-seeded with all 15 Explain languages: EN FR DE ES PT IT NL PL AR ZH JA KO HI TR RU.</p>
+      </div>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-header">
+        <span class="tname">Countries</span>
+        <span class="chip chip-green">Reference</span>
+      </div>
+      <div class="table-group-body">
+        <table class="col-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name"><span class="pk-badge">PK</span>CountryCode</td><td class="col-type">NCHAR(2)</td><td class="col-note">ISO 3166-1 alpha-2 — <code>GB</code>, <code>JP</code>, <code>NG</code></td></tr>
+            <tr><td class="col-name"><span class="fk-badge">FK</span>DefaultLanguageCode</td><td class="col-type">NCHAR(5)</td><td class="col-note">→ Languages. Used when user hasn't set a preference.</td></tr>
+            <tr><td class="col-name">PhonePrefix</td><td class="col-type">NVARCHAR(10)</td><td class="col-note">e.g. <code>+44</code> — for SMS 2FA formatting</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- App interaction -->
+    <h3>How the app uses it</h3>
+    <p>On every authenticated request, <code>usp_ValidateSession</code> returns <code>PreferredLanguageCode</code> and <code>PreferredCountryCode</code> alongside the session. <code>RegionContext</code> reads these first; only falls back to <code>navigator.language</code> if the user has no preference set. The <code>IsRTL</code> flag is read directly from the session payload to set <code>document.documentElement.dir</code>.</p>
+
+    <div class="divider"></div>
+
+    <!-- TENANTS -->
+    <h2 id="tenants">Tenants</h2>
+    <p>Every user belongs to a tenant. The system tenant (<code>explain-global</code>) is always present. Recruitment agencies and enterprise clients get their own tenant row.</p>
+
+    <div class="table-group">
+      <div class="table-group-header">
+        <span class="tname">Tenants</span>
+        <span class="chip chip-blue">Core</span>
+      </div>
+      <div class="table-group-body">
+        <table class="col-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name"><span class="pk-badge">PK</span>TenantId</td><td class="col-type">UNIQUEIDENTIFIER</td><td class="col-note">NEWSEQUENTIALID() — index-friendly GUIDs</td></tr>
+            <tr><td class="col-name">Slug</td><td class="col-type">NVARCHAR(100)</td><td class="col-note">URL-safe identifier — unique. e.g. <code>goldman-sachs</code></td></tr>
+            <tr><td class="col-name">Domain</td><td class="col-type">NVARCHAR(255)</td><td class="col-note">Optional custom domain for white-labelling</td></tr>
+            <tr><td class="col-name">PlanTier</td><td class="col-type">NVARCHAR(50)</td><td class="col-note">Free · Pro · Enterprise</td></tr>
+            <tr><td class="col-name">Status</td><td class="col-type">NVARCHAR(20)</td><td class="col-note">Active · Suspended · Deleted</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- USERS & PROFILES -->
+    <h2 id="users">Users &amp; Profiles</h2>
+
+    <div class="table-group">
+      <div class="table-group-header">
+        <span class="tname">Users</span>
+        <span class="chip chip-blue">Core</span>
+      </div>
+      <div class="table-group-body">
+        <table class="col-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name"><span class="pk-badge">PK</span>UserId</td><td class="col-type">UNIQUEIDENTIFIER</td><td class="col-note"></td></tr>
+            <tr><td class="col-name"><span class="fk-badge">FK</span>TenantId</td><td class="col-type">UNIQUEIDENTIFIER</td><td class="col-note">→ Tenants</td></tr>
+            <tr><td class="col-name">Email / NormalisedEmail</td><td class="col-type">NVARCHAR(320)</td><td class="col-note">Raw + <code>UPPER(TRIM(Email))</code>. Unique per tenant. All lookups use <code>NormalisedEmail</code>.</td></tr>
+            <tr><td class="col-name">PasswordHash / Salt</td><td class="col-type">NVARCHAR(500/200)</td><td class="col-note">NULL for SSO-only users. Use Argon2id in application layer.</td></tr>
+            <tr><td class="col-name">IsEmailVerified</td><td class="col-type">BIT</td><td class="col-note">Flipped via <code>EmailVerificationTokens</code> flow</td></tr>
+            <tr><td class="col-name">PreferredLanguageCode</td><td class="col-type">NCHAR(5)</td><td class="col-note">→ Languages. Default <code>en</code>.</td></tr>
+            <tr><td class="col-name">PreferredCountryCode</td><td class="col-type">NCHAR(2)</td><td class="col-note">→ Countries. Default <code>GB</code>.</td></tr>
+            <tr><td class="col-name">IsLocked / LockedUntil</td><td class="col-type">BIT / DATETIME2</td><td class="col-note">Set by <code>usp_RecordLoginResult</code> after 5 consecutive failures. Auto-lifts after 15 min.</td></tr>
+            <tr><td class="col-name">FailedLoginCount</td><td class="col-type">SMALLINT</td><td class="col-note">Reset to 0 on successful login.</td></tr>
+            <tr><td class="col-name">DeletedAt</td><td class="col-type">DATETIME2</td><td class="col-note">Soft-delete — all queries filter <code>WHERE DeletedAt IS NULL</code>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-header">
+        <span class="tname">UserProfiles</span>
+        <span class="chip chip-blue">Core</span>
+      </div>
+      <div class="table-group-body">
+        <table class="col-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name"><span class="pk-badge">PK</span>UserProfileId</td><td class="col-type">UNIQUEIDENTIFIER</td><td class="col-note"></td></tr>
+            <tr><td class="col-name"><span class="fk-badge">FK</span>UserId</td><td class="col-type">UNIQUEIDENTIFIER</td><td class="col-note">Unique — 1-to-1 with Users. Cascade delete.</td></tr>
+            <tr><td class="col-name">FirstName / LastName / DisplayName</td><td class="col-type">NVARCHAR</td><td class="col-note">DisplayName auto-composed at registration</td></tr>
+            <tr><td class="col-name">Headline</td><td class="col-type">NVARCHAR(300)</td><td class="col-note">e.g. "Senior SWE at DeepMind" — shown on recruiter card</td></tr>
+            <tr><td class="col-name">PrimaryRole</td><td class="col-type">NVARCHAR(50)</td><td class="col-note">Candidate · Recruiter · Admin · Student. Used for portal routing.</td></tr>
+            <tr><td class="col-name">LinkedInUrl / GitHubUrl</td><td class="col-type">NVARCHAR(500)</td><td class="col-note">Optional social links — shown in recruiter portal</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- AUTH & SECURITY -->
+    <h2 id="auth">Auth &amp; Security Tables</h2>
+
+    <div class="table-group">
+      <div class="table-group-header">
+        <span class="tname">UserLogins</span>
+        <span class="chip chip-purple">SSO</span>
+      </div>
+      <div class="table-group-body">
+        <p style="font-size:12px;margin-bottom:10px;">One row per OAuth provider per user. A user with both Google and LinkedIn linked has two rows. <code>LoginProvider = 'local'</code> is used for password-based accounts.</p>
+        <table class="col-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">LoginProvider</td><td class="col-type">NVARCHAR(50)</td><td class="col-note">local · google · linkedin · microsoft · github</td></tr>
+            <tr><td class="col-name">ProviderKey</td><td class="col-type">NVARCHAR(500)</td><td class="col-note">Provider's unique user ID / <code>sub</code> claim. Unique constraint on (Provider, Key).</td></tr>
+            <tr><td class="col-name">AccessToken / RefreshToken</td><td class="col-type">NVARCHAR(2000)</td><td class="col-note">Encrypted at rest. Used to refresh provider sessions.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-header">
+        <span class="tname">UserSessions</span>
+        <span class="chip chip-blue">Core</span>
+      </div>
+      <div class="table-group-body">
+        <p style="font-size:12px;margin-bottom:10px;">Each login creates a new session row. The raw bearer token is returned to the client (httpOnly cookie or Authorization header) — only the SHA-256 hash is stored here.</p>
+        <table class="col-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">TokenHash</td><td class="col-type">NVARCHAR(500)</td><td class="col-note">SHA-256 of the raw bearer token. Unique constraint.</td></tr>
+            <tr><td class="col-name">Portal</td><td class="col-type">NVARCHAR(30)</td><td class="col-note">candidate · recruiter · admin — used for per-portal session scoping</td></tr>
+            <tr><td class="col-name">RevokedAt / RevokedReason</td><td class="col-type">DATETIME2 / NVARCHAR</td><td class="col-note">logout · password_change · admin · expired</td></tr>
+            <tr><td class="col-name">LastActivityAt</td><td class="col-type">DATETIME2</td><td class="col-note">Updated on every <code>usp_ValidateSession</code> call — enables sliding expiry</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-header">
+        <span class="tname">UserLoginAttempts</span>
+        <span class="chip chip-amber">Audit</span>
+      </div>
+      <div class="table-group-body">
+        <p style="font-size:12px;margin-bottom:10px;">Append-only audit log. <code>UserId</code> is nullable (NULL = email not found). Indexed on <code>(IpAddress, CreatedAt)</code> for IP rate-limiting and <code>(Email, CreatedAt)</code> for lockout checks.</p>
+        <table class="col-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">Success</td><td class="col-type">BIT</td><td class="col-note">0 = failed attempt. 1 = successful login or registration.</td></tr>
+            <tr><td class="col-name">FailureReason</td><td class="col-type">NVARCHAR(200)</td><td class="col-note">invalid_password · account_locked · email_not_verified · user_not_found</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-header">
+        <span class="tname">UserTwoFactor</span>
+        <span class="chip chip-purple">Security</span>
+      </div>
+      <div class="table-group-body">
+        <p style="font-size:12px;margin-bottom:10px;">One row per user (PK = UserId). Created disabled at registration. <code>SecretKey</code> is encrypted at rest. Backup codes are stored as a JSON array of hashed values.</p>
+        <table class="col-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">Method</td><td class="col-type">NVARCHAR(20)</td><td class="col-note">app (TOTP) · sms · email</td></tr>
+            <tr><td class="col-name">SecretKey</td><td class="col-type">NVARCHAR(500)</td><td class="col-note">TOTP shared secret — encrypted with Azure Key Vault key</td></tr>
+            <tr><td class="col-name">BackupCodesJson</td><td class="col-type">NVARCHAR(2000)</td><td class="col-note">JSON array of one-time hashed backup codes</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ROLES & PERMISSIONS -->
+    <h2 id="roles">Roles &amp; Permissions</h2>
+
+    <div class="table-group">
+      <div class="table-group-header">
+        <span class="tname">Roles</span>
+        <span class="chip chip-blue">RBAC</span>
+      </div>
+      <div class="table-group-body">
+        <p style="font-size:12px;margin-bottom:10px;"><code>TenantId = NULL</code> means a global system role (Candidate, Recruiter, Admin). Tenant-scoped roles can be created per organisation.</p>
+        <table class="col-table">
+          <thead><tr><th>Seeded Role</th><th>Slug</th><th>Portal Access</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">Candidate</td>   <td class="col-type">candidate</td>   <td class="col-note">candidate.explain.global</td></tr>
+            <tr><td class="col-name">Recruiter</td>   <td class="col-type">recruiter</td>   <td class="col-note">recruiter.explain.global</td></tr>
+            <tr><td class="col-name">Admin</td>       <td class="col-type">admin</td>       <td class="col-note">admin portal</td></tr>
+            <tr><td class="col-name">Super Admin</td> <td class="col-type">super-admin</td> <td class="col-note">all portals + tenant management</td></tr>
+            <tr><td class="col-name">Student</td>     <td class="col-type">student</td>     <td class="col-note">Learn Engine only</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-header">
+        <span class="tname">Permissions · RolePermissions · UserRoles</span>
+        <span class="chip chip-blue">RBAC</span>
+      </div>
+      <div class="table-group-body">
+        <p style="font-size:12px;margin-bottom:10px;">Permission codes are checked in application middleware. A user's full permission set is resolved once via <code>usp_GetUserPermissions</code> and cached in the session JWT / Redis for the session lifetime.</p>
+        <table class="col-table">
+          <thead><tr><th>Permission Code</th><th>Category</th><th>Default Role</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">CAN_ACCESS_CANDIDATE_PORTAL</td><td class="col-note">Candidate</td><td class="col-note">Candidate</td></tr>
+            <tr><td class="col-name">CAN_BOOK_INTERVIEW</td><td class="col-note">Candidate</td><td class="col-note">Candidate</td></tr>
+            <tr><td class="col-name">CAN_VIEW_OWN_RESULTS</td><td class="col-note">Candidate</td><td class="col-note">Candidate</td></tr>
+            <tr><td class="col-name">CAN_ACCESS_RECRUITER_PORTAL</td><td class="col-note">Recruiter</td><td class="col-note">Recruiter</td></tr>
+            <tr><td class="col-name">CAN_VIEW_CANDIDATE_RESULTS</td><td class="col-note">Recruiter</td><td class="col-note">Recruiter</td></tr>
+            <tr><td class="col-name">CAN_MANAGE_INTERVIEW_PACKS</td><td class="col-note">Recruiter</td><td class="col-note">Recruiter</td></tr>
+            <tr><td class="col-name">CAN_ACCESS_LEARN_ENGINE</td><td class="col-note">Learn</td><td class="col-note">Candidate + Recruiter</td></tr>
+            <tr><td class="col-name">CAN_MANAGE_USERS</td><td class="col-note">Admin</td><td class="col-note">Admin</td></tr>
+            <tr><td class="col-name">CAN_MANAGE_TENANTS</td><td class="col-note">Admin</td><td class="col-note">Super Admin only</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- FLOWS -->
+    <h2 id="flow-register">Flow: Registration</h2>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <div class="flow-title">Validate input &amp; check uniqueness</div>
+          <div class="flow-desc">Application layer normalises email (<code>UPPER(TRIM(email))</code>), validates format, hashes password with Argon2id. Query <code>Users</code> to confirm email not already registered for this tenant.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <div class="flow-title">Call usp_RegisterUser (single transaction)</div>
+          <div class="flow-desc">One stored procedure, one transaction. Writes in order:</div>
+          <div class="flow-tables">
+            <span class="flow-table-tag">Users</span>
+            <span class="flow-table-tag">UserProfiles</span>
+            <span class="flow-table-tag">UserRoles (Candidate)</span>
+            <span class="flow-table-tag">UserSessions</span>
+            <span class="flow-table-tag">UserLoginAttempts</span>
+            <span class="flow-table-tag">UserTwoFactor</span>
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <div class="flow-title">Issue email verification token</div>
+          <div class="flow-desc">Application generates a cryptographically random token, hashes it, writes to <code>EmailVerificationTokens</code>. Raw token is emailed to the user.</div>
+          <div class="flow-tables"><span class="flow-table-tag">EmailVerificationTokens</span></div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <div class="flow-title">Return session token to client</div>
+          <div class="flow-desc">The raw session token (from step 2) is set as an httpOnly cookie. The user is logged in immediately — email verification is enforced at feature level, not login level.</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 id="flow-login">Flow: Login</h2>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <div class="flow-title">Fetch user record</div>
+          <div class="flow-desc">Call <code>usp_ValidateLogin</code> — returns user row including <code>PasswordHash</code>, <code>IsLocked</code>, <code>LockedUntil</code>, <code>TwoFactorEnabled</code>.</div>
+          <div class="flow-tables"><span class="flow-table-tag">Users</span><span class="flow-table-tag">UserTwoFactor</span></div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <div class="flow-title">Check lockout</div>
+          <div class="flow-desc">If <code>IsLocked = 1</code> and <code>LockedUntil &gt; NOW</code>, reject immediately. Record the attempt with <code>FailureReason = 'account_locked'</code>.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <div class="flow-title">Verify password (application layer)</div>
+          <div class="flow-desc">Argon2id verify in application code — never in SQL. Result passed to step 4.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <div class="flow-title">Call usp_RecordLoginResult</div>
+          <div class="flow-desc">On success: resets <code>FailedLoginCount</code>, creates <code>UserSessions</code> row, records attempt. On failure: increments counter, locks after 5 failures.</div>
+          <div class="flow-tables"><span class="flow-table-tag">Users</span><span class="flow-table-tag">UserSessions</span><span class="flow-table-tag">UserLoginAttempts</span></div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-body">
+          <div class="flow-title">2FA gate (if enabled)</div>
+          <div class="flow-desc">If <code>TwoFactorEnabled = 1</code>, session is created in a pending state. TOTP/SMS code must be verified before full access is granted. See 2FA flow below.</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 id="flow-session">Flow: Session Validation</h2>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <div class="flow-title">Extract &amp; hash bearer token</div>
+          <div class="flow-desc">Application middleware reads the httpOnly cookie or <code>Authorization: Bearer</code> header, SHA-256 hashes the raw token.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <div class="flow-title">Call usp_ValidateSession</div>
+          <div class="flow-desc">Returns full user + profile + locale in one query. Returns empty if token is expired, revoked, or user is inactive. Also updates <code>LastActivityAt</code>.</div>
+          <div class="flow-tables"><span class="flow-table-tag">UserSessions</span><span class="flow-table-tag">Users</span><span class="flow-table-tag">UserProfiles</span></div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <div class="flow-title">Inject into request context</div>
+          <div class="flow-desc">UserId, TenantId, Portal, permissions, and locale are attached to the request context. No further SQL calls needed for auth on that request.</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 id="flow-authz">Flow: Authorisation</h2>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <div class="flow-title">On session create — resolve permissions</div>
+          <div class="flow-desc">Call <code>usp_GetUserPermissions</code> once. Returns all <code>Code</code> values the user holds across all their roles.</div>
+          <div class="flow-tables"><span class="flow-table-tag">UserRoles</span><span class="flow-table-tag">RolePermissions</span><span class="flow-table-tag">Permissions</span></div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <div class="flow-title">Cache in session / JWT</div>
+          <div class="flow-desc">Permission codes array is stored in the session token payload (or Redis). No SQL hit per request. Cache is invalidated when roles change or session is revoked.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <div class="flow-title">Middleware permission check</div>
+          <div class="flow-desc">Each API route declares required permissions. Middleware checks <code>permissions.includes('CAN_BOOK_INTERVIEW')</code> — no SQL. 403 if missing.</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 id="flow-2fa">Flow: Two-Factor Auth</h2>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <div class="flow-title">Enable 2FA</div>
+          <div class="flow-desc">App generates TOTP secret via <code>otplib</code>, encrypts with Azure Key Vault key, writes to <code>UserTwoFactor</code>. User scans QR code and confirms with first code.</div>
+          <div class="flow-tables"><span class="flow-table-tag">UserTwoFactor</span></div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <div class="flow-title">Login gate</div>
+          <div class="flow-desc">After password verified, if <code>IsEnabled = 1</code>: issue a short-lived pre-auth token (5 min), return <code>{"requires2FA": true}</code>. Full session not yet created.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <div class="flow-title">Verify TOTP / backup code</div>
+          <div class="flow-desc">App decrypts <code>SecretKey</code>, verifies code via <code>otplib</code>. On success: create full session, update <code>LastUsedAt</code> in <code>UserTwoFactor</code>.</div>
+          <div class="flow-tables"><span class="flow-table-tag">UserTwoFactor</span><span class="flow-table-tag">UserSessions</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- STORED PROCEDURES -->
+    <h2 id="sprocs">Stored Procedures</h2>
+    <div class="sp-list">
+      <div class="sp-card">
+        <div class="sp-name">usp_RegisterUser</div>
+        <div class="sp-desc">Single transaction: creates Users, UserProfiles, UserRoles (Candidate), UserSessions, UserLoginAttempts, UserTwoFactor. Returns new UserId and SessionId.</div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-name">usp_ValidateLogin</div>
+        <div class="sp-desc">Fetches user row + 2FA config for password verification in application code. Does not record the attempt — that happens in usp_RecordLoginResult.</div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-name">usp_RecordLoginResult</div>
+        <div class="sp-desc">Records attempt, creates session on success, increments failure counter and applies lockout on failure. Always called after application-layer password verification.</div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-name">usp_ValidateSession</div>
+        <div class="sp-desc">Called on every authenticated API request. Returns user + profile + locale. Updates LastActivityAt. Returns empty set if session is invalid, expired, or revoked.</div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-name">usp_GetUserPermissions</div>
+        <div class="sp-desc">Returns all permission Code values for a user via UserRoles → RolePermissions → Permissions join. Called once at session create; result cached for session lifetime.</div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-name">usp_RevokeSession</div>
+        <div class="sp-desc">Soft-revokes a single session by SessionId. Used on explicit logout.</div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-name">usp_RevokeAllUserSessions</div>
+        <div class="sp-desc">Revokes all sessions for a user — used on password change, account suspension, or admin action. Accepts an optional ExceptSessionId to keep current session alive.</div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-name">usp_PurgeExpiredSessions</div>
+        <div class="sp-desc">Maintenance proc — run daily via SQL Agent. Deletes sessions expired more than @RetentionDays (default 30) ago.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <p style="font-size:11px;color:var(--faint);text-align:center;">
+      Explain.global · Azure SQL Auth Schema · Percentile.One · 2026
+    </p>
+
+  </main>
+</div>
+
+<script>
+  // Active nav link on scroll
+  const links = document.querySelectorAll('.nav-link');
+  const sections = [...links].map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
