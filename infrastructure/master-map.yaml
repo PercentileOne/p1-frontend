@@ -1,0 +1,616 @@
+# ============================================================
+# EXPLAIN.GLOBAL — MASTER INFRASTRUCTURE REGISTRY
+# ============================================================
+# Single source of truth for all domains, SWAs, APIs,
+# databases, workflows, and resource mappings.
+#
+# IMMUTABLE: Update only on explicit instruction from Francis.
+# Claude must read this file before any deployment or
+# configuration change. Never assume — always verify here.
+# ============================================================
+
+meta:
+  version: "1.0.0"
+  last_updated: "2026-07-31"
+  updated_by: "Francis Cobbinah"
+  purpose: >
+    Canonical infrastructure registry for the Explain.global /
+    Percentile.One ecosystem. Prevents accidental overwrites,
+    wrong workflow triggers, and domain confusion.
+
+# ============================================================
+# 1. DOMAINS
+# ============================================================
+domains:
+
+  # --- Explain.global ecosystem ---
+  - domain: explain.global
+    product: Explain
+    description: Hub / landing site
+    swa: explain-global-hub
+    source_folder: src/explain-global
+    workflow: .github/workflows/azure-static-web-apps-ambitious-stone-07fe1b90f.yml
+    status: live
+
+  - domain: product.explain.global
+    product: Explain
+    description: Product marketing page (Interview Intelligence Platform)
+    swa: explain-global-main
+    source_folder: src/frontend
+    workflow: .github/workflows/deploy-explain-global.yml
+    notes: Custom domain on explain-global-main SWA. Same SWA as candidate.explain.global.
+    status: live
+
+  - domain: candidate.explain.global
+    product: Explain
+    description: Candidate portal — interview practice, learn engine, cockpit
+    swa: explain-global-main
+    source_folder: src/frontend
+    workflow: .github/workflows/deploy-explain-global.yml
+    notes: Primary domain on explain-global-main SWA.
+    status: live
+
+  - domain: recruiter.explain.global
+    product: Explain
+    description: Recruiter portal — job posting, applicant management, interview room
+    swa: recruiter-portal
+    source_folder: src/recruiter-portal
+    workflow: .github/workflows/deploy-swa.yml
+    status: live
+
+  - domain: client.explain.global
+    product: Explain
+    description: Client portal — read-only hiring manager view (DNS ready, not yet live)
+    swa: TBD
+    source_folder: TBD
+    workflow: TBD
+    status: dns_ready
+
+  - domain: admin.explain.global
+    product: Explain
+    description: Admin portal — role/permission management, system settings
+    swa: TBD
+    source_folder: TBD
+    workflow: TBD
+    status: planned
+
+  - domain: api.explain.global
+    product: Explain
+    description: .NET REST API — identity, auth, RBAC, lessons, scoring
+    resource_type: azure_app_service
+    source_folder: src/backend/Explain.Api
+    workflow: manual_publish
+    notes: Deployed via dotnet publish + zip deploy to Azure App Service.
+    status: live
+
+  # --- Percentile.One ecosystem ---
+  - domain: percentile.one
+    product: P1 Cockpit
+    description: Percentile.One main domain
+    swa: TBD
+    source_folder: TBD
+    workflow: TBD
+    status: planned
+
+  - domain: product.percentile.one
+    product: P1 Cockpit
+    description: Product page for P1 Cockpit (separate product from Explain)
+    swa: TBD
+    source_folder: src/p1-product
+    workflow: none — no CI/CD yet
+    notes: >
+      DO NOT confuse with product.explain.global.
+      This is the P1 Cockpit product page, not the Explain marketing page.
+      src/p1-product was previously deployed manually. Coming Soon redirect
+      removed from staticwebapp.config.json on 2026-07-31.
+    status: manual_only
+
+  - domain: cockpit.percentile.one
+    product: P1 Cockpit
+    description: P1 Cockpit application
+    swa: TBD
+    source_folder: src/cockpit
+    workflow: TBD
+    status: planned
+
+# ============================================================
+# 2. STATIC WEB APPS
+# ============================================================
+static_web_apps:
+
+  - name: explain-global-main
+    azure_resource_name: explain-global-main
+    azure_subscription: "Azure subscription 1"
+    custom_domains:
+      - product.explain.global
+      - candidate.explain.global
+    auto_domain: wonderful-mud-0b1f9cd03.7.azurestaticapps.net
+    source_folder: src/frontend
+    api_folder: src/frontend/api
+    workflow: .github/workflows/deploy-explain-global.yml
+    workflow_secret: AZURE_STATIC_WEB_APPS_API_TOKEN_EXPLAIN_GLOBAL_MAIN
+    build_command: npm run build
+    output_folder: src/frontend/dist
+    skip_app_build: true
+    node_version: "22"
+    notes: >
+      Hosts both product.explain.global (ProductHome route at /)
+      and candidate.explain.global (full SPA). Both are custom
+      domains on the same SWA resource.
+
+  - name: explain-global-hub
+    azure_resource_name: ambitious-stone-07fe1b90f
+    azure_subscription: "Azure subscription 1"
+    custom_domains:
+      - explain.global
+    auto_domain: ambitious-stone-07fe1b90f.azurestaticapps.net
+    source_folder: src/explain-global
+    api_folder: none
+    workflow: .github/workflows/azure-static-web-apps-ambitious-stone-07fe1b90f.yml
+    workflow_secret: AZURE_STATIC_WEB_APPS_API_TOKEN_AMBITIOUS_STONE_07FE1B90F
+    build_command: npm run build
+    output_folder: dist
+    node_version: "20"
+    notes: >
+      Triggers on every push to main (no path filter) —
+      rebuilds on any commit. Consider adding path filter:
+      src/explain-global/** to prevent unnecessary deploys.
+
+  - name: recruiter-portal
+    azure_resource_name: TBD
+    azure_subscription: "Azure subscription 1"
+    custom_domains:
+      - recruiter.explain.global
+    source_folder: src/recruiter-portal
+    api_folder: src/recruiter-portal/api
+    workflow: .github/workflows/deploy-swa.yml
+    workflow_secret: AZURE_STATIC_WEB_APPS_API_TOKEN_EXPLAIN_GLOBAL
+    build_command: npm run build
+    output_folder: src/recruiter-portal/dist
+    skip_app_build: true
+    node_version: "22"
+
+  - name: p1-product
+    azure_resource_name: TBD
+    azure_subscription: "Azure subscription 1"
+    custom_domains:
+      - product.percentile.one
+    source_folder: src/p1-product
+    api_folder: none
+    workflow: none
+    notes: >
+      No CI/CD pipeline exists yet. Previously deployed manually.
+      MUST NOT be confused with product.explain.global.
+      Needs a dedicated workflow before next deployment.
+    status: manual_only
+
+# ============================================================
+# 3. APIs
+# ============================================================
+apis:
+
+  - name: Explain.Api
+    type: dotnet_app_service
+    framework: "ASP.NET Core / .NET 10"
+    source_folder: src/backend/Explain.Api
+    previous_name: TalkToLearn.Api
+    renamed_on: "2026-07-31"
+    base_url: https://api.explain.global
+    azure_resource: TBD
+    deployment: manual — dotnet publish + zip deploy
+    auth: JWT Bearer (HMAC-SHA256, Jwt:Secret in Azure App Settings)
+    key_endpoints:
+      - POST /auth/register
+      - POST /auth/login
+      - GET  /auth/session
+      - POST /auth/logout
+      - POST /lessons/generate
+      - POST /lessons/score
+      - POST /lessons/expand
+      - POST /lessons/go-deeper
+
+  - name: explain-api
+    type: azure_function_app
+    runtime: Node.js
+    azure_resource: explain-api
+    notes: >
+      Existing Azure Function App resource in Azure.
+      Target for future consolidation of all Node glue functions.
+      Currently separate from the two api/ folders.
+
+  - name: frontend-cosmos-functions
+    type: azure_functions_node
+    runtime: "Node.js 20"
+    source_folder: src/frontend/api
+    deployed_via: deploy-explain-global.yml (api_location)
+    functions:
+      - name: join-waitlist
+        route: POST /api/join-waitlist
+        auth: none — public
+        cosmos_db: ExplainInterviewLogs / WaitlistSignups
+      - name: log-event
+        route: POST /api/log-event
+        auth: JWT Bearer required
+        cosmos_db: ExplainInterviewLogs / FlowLogs
+      - name: save-lesson
+        route: POST /api/save-lesson
+        auth: JWT Bearer required
+        cosmos_db: ExplainLearn / Lessons
+      - name: get-lessons
+        route: GET /api/get-lessons
+        auth: JWT Bearer required
+        cosmos_db: ExplainLearn / Lessons
+      - name: get-lesson
+        route: GET /api/get-lesson
+        auth: JWT Bearer required
+        cosmos_db: ExplainLearn / Lessons
+      - name: update-lesson-progress
+        route: PATCH /api/update-lesson-progress
+        auth: JWT Bearer required
+        cosmos_db: ExplainLearn / Lessons
+    required_app_settings:
+      - COSMOS_ENDPOINT
+      - COSMOS_KEY
+      - JWT__SECRET  # must match Explain.Api Jwt:Secret
+
+  - name: recruiter-cosmos-functions
+    type: azure_functions_node
+    runtime: "Node.js 20"
+    source_folder: src/recruiter-portal/api
+    deployed_via: deploy-swa.yml (api_location)
+    functions:
+      - name: did-talk
+        route: POST /api/did-talk
+        auth: JWT Bearer required
+        external: D-ID API proxy
+      - name: flow-logs
+        route: GET /api/flow-logs
+        auth: JWT Bearer + CAN_VIEW_ANALYTICS permission
+        cosmos_db: ExplainInterviewLogs / FlowLogs
+      - name: log-event
+        route: POST /api/log-event
+        auth: JWT Bearer required
+        cosmos_db: ExplainInterviewLogs / FlowLogs
+      - name: save-lesson
+        route: POST /api/save-lesson
+        auth: JWT Bearer required
+        cosmos_db: ExplainLearn / Lessons
+      - name: get-lessons
+        route: GET /api/get-lessons
+        auth: JWT Bearer required
+        cosmos_db: ExplainLearn / Lessons
+      - name: get-lesson
+        route: GET /api/get-lesson
+        auth: JWT Bearer required
+        cosmos_db: ExplainLearn / Lessons
+      - name: update-lesson-progress
+        route: PATCH /api/update-lesson-progress
+        auth: JWT Bearer required
+        cosmos_db: ExplainLearn / Lessons
+    required_app_settings:
+      - COSMOS_ENDPOINT
+      - COSMOS_KEY
+      - JWT__SECRET
+      - DID_API_KEY
+
+# ============================================================
+# 4. DATABASES
+# ============================================================
+databases:
+
+  - name: ExplainGlobalDb
+    type: azure_sql
+    server: talktolearn-server.database.windows.net
+    engine: SQL Server / Azure SQL
+    orm: EF Core 10 (code-first)
+    source_folder: src/backend/Explain.Api/Migrations
+    connection_string_key: ConnectionStrings__DefaultConnection
+    location: Azure App Settings (never in repo)
+    tables:
+      identity_and_auth:
+        - Users
+        - LoginHistory
+        - Sessions (planned)
+        - MagicLinkTokens (planned)
+      rbac:
+        - Roles
+        - Permissions
+        - RolePermissions
+        - UserRoles
+      organisation:
+        - Organisations
+        - OrganisationMembers
+      billing:
+        - Subscriptions
+        - PaymentRecords
+      social:
+        - Follows
+    pending_migrations:
+      - name: AddRbacRolesAndPermissions
+        file: 20260731170031_AddRbacRolesAndPermissions.cs
+        status: generated — NOT YET applied to production
+        action_required: >
+          Run: cd src/backend/Explain.Api && dotnet ef database update
+          against production connection string.
+
+  - name: percentileone-cosmos
+    type: azure_cosmos_db
+    azure_resource: percentileone-cosmos
+    api: Core (NoSQL)
+    connection_string_key: COSMOS_ENDPOINT + COSMOS_KEY
+    location: Azure Function App Settings (never in repo)
+    databases:
+      - name: ExplainLearn
+        containers:
+          - name: Lessons
+            partition_key: /userId
+            used_by:
+              - frontend-cosmos-functions
+              - recruiter-cosmos-functions
+      - name: ExplainInterviewLogs
+        containers:
+          - name: FlowLogs
+            partition_key: /sessionId
+            used_by:
+              - frontend-cosmos-functions
+              - recruiter-cosmos-functions
+          - name: WaitlistSignups
+            partition_key: /id
+            used_by:
+              - frontend-cosmos-functions (join-waitlist)
+
+# ============================================================
+# 5. CI/CD WORKFLOWS
+# ============================================================
+workflows:
+
+  - file: .github/workflows/deploy-explain-global.yml
+    name: Deploy explain.global (candidate + learn) → Azure SWA
+    triggers:
+      - push to main — paths: src/frontend/**
+      - pull_request to main
+      - workflow_dispatch
+    deploys_to: explain-global-main
+    domains_affected:
+      - product.explain.global
+      - candidate.explain.global
+    source: src/frontend
+    api_source: src/frontend/api
+    secret: AZURE_STATIC_WEB_APPS_API_TOKEN_EXPLAIN_GLOBAL_MAIN
+    node_version: "22"
+
+  - file: .github/workflows/deploy-swa.yml
+    name: Deploy Explain.global Platform → Azure SWA (recruiter)
+    triggers:
+      - push to main — paths: src/recruiter-portal/**
+      - pull_request to main
+      - workflow_dispatch
+    deploys_to: recruiter-portal
+    domains_affected:
+      - recruiter.explain.global
+    source: src/recruiter-portal
+    api_source: src/recruiter-portal/api
+    secret: AZURE_STATIC_WEB_APPS_API_TOKEN_EXPLAIN_GLOBAL
+    node_version: "22"
+
+  - file: .github/workflows/azure-static-web-apps-ambitious-stone-07fe1b90f.yml
+    name: Azure Static Web Apps CI/CD (explain.global hub)
+    triggers:
+      - push to main — ALL paths (no filter — triggers on every commit)
+      - pull_request to main
+    deploys_to: explain-global-hub
+    domains_affected:
+      - explain.global
+    source: src/explain-global
+    secret: AZURE_STATIC_WEB_APPS_API_TOKEN_AMBITIOUS_STONE_07FE1B90F
+    node_version: "20"
+    warning: >
+      No path filter — fires on every push to main regardless of
+      what changed. Consider adding paths: [src/explain-global/**]
+      to prevent unnecessary rebuilds.
+
+  - file: none — planned
+    name: deploy-p1-product.yml
+    triggers: TBD
+    deploys_to: p1-product
+    domains_affected:
+      - product.percentile.one
+    source: src/p1-product
+    status: >
+      Not yet created. src/p1-product has no CI/CD pipeline.
+      Must be created before next deployment to product.percentile.one.
+
+# ============================================================
+# 6. RESOURCE → FOLDER MAPPING (Critical Reference)
+# ============================================================
+# Read this table before ANY deployment or config change.
+# ============================================================
+resource_map:
+
+  - resource: explain-global-main (SWA)
+    domains:
+      - product.explain.global
+      - candidate.explain.global
+    source_folder: src/frontend
+    api_folder: src/frontend/api
+    workflow: .github/workflows/deploy-explain-global.yml
+    staticwebapp_config: src/frontend/public/staticwebapp.config.json
+
+  - resource: explain-global-hub (SWA)
+    domains:
+      - explain.global
+    source_folder: src/explain-global
+    api_folder: none
+    workflow: .github/workflows/azure-static-web-apps-ambitious-stone-07fe1b90f.yml
+    staticwebapp_config: src/explain-global/public/staticwebapp.config.json
+
+  - resource: recruiter-portal (SWA)
+    domains:
+      - recruiter.explain.global
+    source_folder: src/recruiter-portal
+    api_folder: src/recruiter-portal/api
+    workflow: .github/workflows/deploy-swa.yml
+    staticwebapp_config: src/recruiter-portal/staticwebapp.config.json
+
+  - resource: p1-product (SWA)
+    domains:
+      - product.percentile.one
+    source_folder: src/p1-product
+    api_folder: none
+    workflow: none — manual only
+    staticwebapp_config: src/p1-product/public/staticwebapp.config.json
+    warning: DO NOT confuse with product.explain.global
+
+  - resource: Explain.Api (App Service)
+    domains:
+      - api.explain.global
+    source_folder: src/backend/Explain.Api
+    workflow: manual — dotnet publish
+    previous_name: TalkToLearn.Api
+
+  - resource: percentileone-cosmos (Cosmos DB)
+    domains: none — internal
+    source_folder: src/frontend/api, src/recruiter-portal/api
+    workflow: n/a
+
+  - resource: ExplainGlobalDb (Azure SQL)
+    domains: none — internal
+    source_folder: src/backend/Explain.Api/Migrations
+    workflow: manual — dotnet ef database update
+
+# ============================================================
+# 7. ENVIRONMENTS
+# ============================================================
+environments:
+
+  - name: production
+    description: Live — public traffic
+    domains:
+      - explain.global
+      - product.explain.global
+      - candidate.explain.global
+      - recruiter.explain.global
+      - api.explain.global
+    branch: main
+    secrets_location: Azure Portal — App Settings / Environment Variables
+    notes: Never commit secrets. All keys in Azure App Settings only.
+
+  - name: staging
+    description: Pre-production validation
+    status: not yet configured
+    planned_branch: staging
+
+  - name: development
+    description: Local development
+    frontend_port: 5173
+    hub_port: 5175
+    api_port: 5130
+    api_url: http://localhost:5130
+    env_file: src/frontend/.env.local (gitignored)
+
+  - name: preview
+    description: PR preview environments (auto-created by Azure SWA)
+    status: available on pull requests to main
+    url_pattern: "https://<auto-domain>-<pr-number>.azurestaticapps.net"
+
+# ============================================================
+# 8. CONNECTION STRINGS & APP SETTINGS REFERENCE
+# ============================================================
+# These are REFERENCE NAMES only. Secrets never stored here.
+# Actual values live in Azure Portal → App Settings only.
+# ============================================================
+app_settings_reference:
+
+  explain_api:
+    resource: Explain.Api (Azure App Service)
+    settings:
+      - key: ConnectionStrings__DefaultConnection
+        description: Azure SQL connection string for ExplainGlobalDb
+        example_format: "Server=talktolearn-server.database.windows.net;Database=...;Encrypt=True;"
+      - key: Jwt__Secret
+        description: HMAC-SHA256 signing secret for session JWTs
+        notes: Must match JWT__SECRET in all Azure Function Apps
+      - key: Jwt__MagicSecret
+        description: Separate secret for magic-link JWTs (15-min expiry)
+      - key: Anthropic__ApiKey
+        description: Claude API key for lesson generation and scoring
+      - key: COSMOS_ENDPOINT
+        description: Cosmos DB endpoint URL
+      - key: COSMOS_KEY
+        description: Cosmos DB primary key
+
+  frontend_functions:
+    resource: explain-global-main (Azure Function App — src/frontend/api)
+    settings:
+      - key: COSMOS_ENDPOINT
+        description: Cosmos DB endpoint URL
+      - key: COSMOS_KEY
+        description: Cosmos DB primary key
+      - key: JWT__SECRET
+        description: Must match Explain.Api Jwt:Secret exactly
+
+  recruiter_functions:
+    resource: recruiter-portal (Azure Function App — src/recruiter-portal/api)
+    settings:
+      - key: COSMOS_ENDPOINT
+        description: Cosmos DB endpoint URL
+      - key: COSMOS_KEY
+        description: Cosmos DB primary key
+      - key: JWT__SECRET
+        description: Must match Explain.Api Jwt:Secret exactly
+      - key: DID_API_KEY
+        description: D-ID API key for talking-head video generation
+
+  github_secrets:
+    resource: GitHub repository secrets
+    secrets:
+      - key: AZURE_STATIC_WEB_APPS_API_TOKEN_EXPLAIN_GLOBAL_MAIN
+        used_by: deploy-explain-global.yml
+      - key: AZURE_STATIC_WEB_APPS_API_TOKEN_EXPLAIN_GLOBAL
+        used_by: deploy-swa.yml
+      - key: AZURE_STATIC_WEB_APPS_API_TOKEN_AMBITIOUS_STONE_07FE1B90F
+        used_by: azure-static-web-apps-ambitious-stone-07fe1b90f.yml
+      - key: VITE_OPENAI_API_KEY
+        used_by: deploy-explain-global.yml, deploy-swa.yml
+      - key: VITE_ELEVENLABS_API_KEY
+        used_by: deploy-swa.yml
+      - key: VITE_ELEVENLABS_VOICE_HR
+        used_by: deploy-swa.yml
+      - key: VITE_ELEVENLABS_VOICE_TECH
+        used_by: deploy-swa.yml
+
+# ============================================================
+# KNOWN ISSUES & PENDING ACTIONS
+# ============================================================
+pending_actions:
+
+  - priority: CRITICAL
+    action: Run EF migration on production Azure SQL
+    command: "cd src/backend/Explain.Api && dotnet ef database update"
+    reason: >
+      AddRbacRolesAndPermissions migration generated but not applied.
+      Login and register will fail on production until complete.
+
+  - priority: HIGH
+    action: Add JWT__SECRET to Azure Function App Settings
+    resources:
+      - explain-global-main function app
+      - recruiter-portal function app
+    reason: >
+      JWT validation added to all Cosmos functions on 2026-07-31.
+      Functions will return 500 if JWT__SECRET is not set.
+
+  - priority: MEDIUM
+    action: Create deploy-p1-product.yml workflow
+    reason: src/p1-product has no CI/CD — manual deploys only.
+
+  - priority: MEDIUM
+    action: Add path filter to azure-static-web-apps-ambitious-stone workflow
+    reason: Currently fires on every push to main, not just src/explain-global changes.
+
+  - priority: LOW
+    action: Consolidate duplicate Azure Functions
+    reason: >
+      6 functions duplicated across src/frontend/api and
+      src/recruiter-portal/api. Consolidate into explain-api
+      Function App resource when ready.
