@@ -1,6 +1,24 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import ContactModal from './ContactModal';
+
+const LANGUAGES = [
+  { code: 'EN', label: 'English' },
+  { code: 'FR', label: 'French' },
+  { code: 'DE', label: 'German' },
+  { code: 'ES', label: 'Spanish' },
+  { code: 'PT', label: 'Portuguese' },
+  { code: 'IT', label: 'Italian' },
+  { code: 'NL', label: 'Dutch' },
+  { code: 'PL', label: 'Polish' },
+  { code: 'AR', label: 'Arabic' },
+  { code: 'ZH', label: 'Chinese' },
+  { code: 'JA', label: 'Japanese' },
+  { code: 'KO', label: 'Korean' },
+  { code: 'HI', label: 'Hindi' },
+  { code: 'TR', label: 'Turkish' },
+  { code: 'RU', label: 'Russian' },
+];
 
 const LINKS = [
   { to: '/', label: 'Home' },
@@ -16,6 +34,17 @@ export function Nav() {
   const loc = useLocation();
   const isAuthPage = loc.pathname === '/login' || loc.pathname === '/register';
   const [showContact, setShowContact] = useState(false);
+  const [lang, setLang] = useState(LANGUAGES[0]);
+  const [showLang, setShowLang] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) setShowLang(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   return (
     <nav style={{
@@ -67,7 +96,30 @@ export function Nav() {
         {/* Auth CTAs */}
         {showContact && <ContactModal onClose={() => setShowContact(false)} defaultSubject="Early access to Explain.global" />}
         {!isAuthPage && (
-          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>
+
+            {/* Language picker */}
+            <div ref={langRef} style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowLang(v => !v)}
+                style={{ background: 'rgba(255,255,255,0.05)', color: '#9090b0', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 8, padding: '7px 12px', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
+              >
+                🌐 {lang.label} ({lang.code}) <span style={{ fontSize: 10, opacity: 0.5 }}>▾</span>
+              </button>
+              {showLang && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: '#0d1020', border: '1px solid rgba(120,80,255,0.2)', borderRadius: 10, minWidth: 200, zIndex: 200, boxShadow: '0 16px 48px rgba(0,0,0,0.6)', overflow: 'hidden' }}>
+                  {LANGUAGES.map(l => (
+                    <button
+                      key={l.code}
+                      onClick={() => { setLang(l); setShowLang(false); }}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 16px', background: l.code === lang.code ? 'rgba(120,80,255,0.15)' : 'transparent', color: l.code === lang.code ? '#fff' : '#9090b0', border: 'none', fontSize: 13, fontWeight: l.code === lang.code ? 700 : 400, cursor: 'pointer' }}
+                    >
+                      {l.label} ({l.code})
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button
               onClick={() => setShowContact(true)}
               style={{
