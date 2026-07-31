@@ -1,4 +1,5 @@
 const https = require('https');
+const { requireAuth, CORS_HEADERS } = require('../_shared/verifyToken');
 
 const DID_BASE_HOST = 'api.d-id.com';
 
@@ -39,6 +40,14 @@ function didRequest(method, path, body, authHeader) {
 }
 
 module.exports = async function (context, req) {
+  if (req.method === 'OPTIONS') {
+    context.res = { status: 204, headers: CORS_HEADERS };
+    return;
+  }
+
+  const caller = requireAuth(context, req);
+  if (!caller) return;
+
   const { text, role = 'technical', talkId } = req.body ?? {};
   const DID_KEY = process.env.DID_API_KEY;
 
@@ -49,35 +58,25 @@ module.exports = async function (context, req) {
 
   const authHeader = `Basic ${Buffer.from(DID_KEY).toString('base64')}`;
 
-  // Phase 2: poll for existing talk
   if (talkId) {
     try {
       const { status, body } = await didRequest('GET', `/talks/${talkId}`, null, authHeader);
       const data = JSON.parse(body);
       if (data.status === 'done' && data.result_url) {
-        context.res = {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'done', videoUrl: data.result_url }),
-        };
+        context.res = { status: 200, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }, body: JSON.stringify({ status: 'done', videoUrl: data.result_url }) };
       } else if (data.status === 'error') {
-        context.res = { status: 500, body: JSON.stringify({ status: 'error' }) };
+        context.res = { status: 500, headers: CORS_HEADERS, body: JSON.stringify({ status: 'error' }) };
       } else {
-        context.res = {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: data.status ?? 'pending' }),
-        };
+        context.res = { status: 200, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }, body: JSON.stringify({ status: data.status ?? 'pending' }) };
       }
     } catch (err) {
-      context.res = { status: 500, body: String(err) };
+      context.res = { status: 500, headers: CORS_HEADERS, body: String(err) };
     }
     return;
   }
 
-  // Phase 1: create the talk
   if (!text) {
-    context.res = { status: 400, body: 'Missing text' };
+    context.res = { status: 400, headers: CORS_HEADERS, body: 'Missing text' };
     return;
   }
 
@@ -87,26 +86,19 @@ module.exports = async function (context, req) {
       script: {
         type: 'text',
         input: text,
-        provider: {
-          type: 'microsoft',
-          voice_id: DID_VOICES[role] ?? DID_VOICES.technical,
-        },
+        provider: { type: 'microsoft', voice_id: DID_VOICES[role] ?? DID_VOICES.technical },
       },
       config: { fluent: true, pad_audio: 0 },
     }, authHeader);
 
     if (status < 200 || status >= 300) {
-      context.res = { status, body: `D-ID ${status}: ${body}` };
+      context.res = { status, headers: CORS_HEADERS, body: `D-ID ${status}: ${body}` };
       return;
     }
 
     const { id } = JSON.parse(body);
-    context.res = {
-      status: 202,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ talkId: id }),
-    };
+    context.res = { status: 202, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }, body: JSON.stringify({ talkId: id }) };
   } catch (err) {
-    context.res = { status: 500, body: String(err) };
+    context.res = { status: 500, headers: CORS_HEADERS, body: String(err) };
   }
 };

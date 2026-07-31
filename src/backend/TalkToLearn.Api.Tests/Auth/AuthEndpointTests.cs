@@ -4,7 +4,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 
-namespace TalkToLearn.Api.Tests.Auth;
+namespace Explain.Api.Tests.Auth;
 
 // ── Shared factory ────────────────────────────────────────────────────────────
 public class ApiFactory : WebApplicationFactory<Program>

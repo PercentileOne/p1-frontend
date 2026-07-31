@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, ChevronDown, Loader2, Lock, User } from "lucide-react";
 import { authApi, type ApiError } from "../api/authApi";
@@ -270,6 +270,14 @@ export default function LoginPage() {
               Continue as Demo User
             </motion.button>
           </div>
+
+          {/* Register link */}
+          <p className="text-center text-[12px] text-slate-600 mt-1">
+            Don't have an account?{" "}
+            <Link to="/register" style={{ color: "#818cf8", fontWeight: 600, textDecoration: "none" }}>
+              Create account
+            </Link>
+          </p>
 
           {/* Footer note */}
           <p className="text-center text-[10px] text-slate-700 mt-1">

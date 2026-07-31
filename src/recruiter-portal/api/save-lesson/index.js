@@ -1,23 +1,25 @@
 // Azure Function — POST /api/save-lesson
-// Saves a generated lesson to ExplainLearn/Lessons in Cosmos DB.
-
 const { v4: uuidv4 } = require('uuid');
+const { requireAuth, CORS_HEADERS } = require('../_shared/verifyToken');
 
 module.exports = async function (context, req) {
   if (req.method === 'OPTIONS') {
-    context.res = { status: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'Content-Type' } };
+    context.res = { status: 204, headers: CORS_HEADERS };
     return;
   }
 
+  const caller = requireAuth(context, req);
+  if (!caller) return;
+
   const body = req.body;
-  if (!body?.userId || !body?.lesson) {
-    context.res = { status: 400, body: { ok: false, error: 'userId and lesson are required' } };
+  if (!body?.lesson) {
+    context.res = { status: 400, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }, body: JSON.stringify({ ok: false, error: 'lesson is required' }) };
     return;
   }
 
   const doc = {
     id: uuidv4(),
-    userId: body.userId,
+    userId: caller.userId,
     subject: body.lesson.subject ?? body.lesson.title ?? 'Unknown',
     language: body.language ?? 'English',
     createdAt: new Date().toISOString(),
@@ -32,7 +34,7 @@ module.exports = async function (context, req) {
 
   context.res = {
     status: 200,
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
     body: JSON.stringify({ ok: true, id: doc.id, createdAt: doc.createdAt }),
   };
 };

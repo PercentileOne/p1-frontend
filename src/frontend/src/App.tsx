@@ -7,6 +7,7 @@ import LearnHome from "./pages/LearnHome";
 import LessonViewer from "./pages/LessonViewer";
 import LearnBookshelf from "./pages/LearnBookshelf";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import CockpitShell from "./pages/CockpitShell";
 import LearningShell from "./pages/LearningShell";
 import LearningCards from "./pages/LearningCards";
@@ -89,7 +90,7 @@ export default function App() {
       <Route path="/learn/bookshelf" element={<LearnBookshelf />} />
 
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route path="/cockpit" element={<CockpitShell />} />
       <Route path="/home" element={<PersonalisedHomePage />} />
       <Route path="/today" element={<TodayPage />} />

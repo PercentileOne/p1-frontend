@@ -1,26 +1,15 @@
 {
   "routes": [
     {
-      "route": "/explain-brief.html",
-      "redirect": "/coming-soon.html?ref=brief",
-      "statusCode": 302
-    },
-    {
-      "route": "/explain-landing.html",
-      "redirect": "/coming-soon.html?ref=landing",
-      "statusCode": 302
-    },
-    {
-      "route": "/explain.html",
-      "redirect": "/coming-soon.html?ref=explain",
-      "statusCode": 302
-    },
-    {
       "route": "/*",
-      "redirect": "/coming-soon.html",
-      "statusCode": 302
+      "serve": "/index.html",
+      "statusCode": 200
     }
   ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/images/*", "/icons.svg", "/favicon.svg", "/*.css", "/*.js", "/*.json", "/*.png", "/*.jpg", "/*.svg"]
+  },
   "globalHeaders": {
     "Cache-Control": "public, max-age=0, must-revalidate",
     "X-Frame-Options": "DENY",
