@@ -28,7 +28,7 @@ jobs:
       - name: Install and build
         run: |
           cd src/explain-global
-          npm ci
+          npm install
           npm run build
       - name: Build And Deploy
         id: builddeploy
