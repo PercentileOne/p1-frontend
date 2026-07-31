@@ -264,7 +264,7 @@ export default function Home() {
         <div className="ph-hero-inner">
           {/* LEFT: headline + features + CTAs */}
           <div>
-            <div className="ph-r" data-ph="" style={{marginBottom:20}}><span className="ph-badge-blue">✦ Now Live</span></div>
+            <div className="ph-r" data-ph="" style={{marginBottom:20}}><span className="ph-badge-gold">✦ Beta</span></div>
             <h1 className="ph-hero-hl ph-r" data-ph="" data-d="1">
               The <span style={{color:'#4F8EF7'}}>Interview Chair</span><br />
               <span style={{background:'linear-gradient(90deg,#4F8EF7,#a78bfa)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>
@@ -278,7 +278,7 @@ export default function Home() {
               {['AI interviewer with voice and presence','Live waveform & speech detection','Real-time coaching overlay','Behavioural scoring engine','Instant post-interview debrief','Recruiter-shareable results'].map(li=><li key={li}>{li}</li>)}
             </ul>
             <div className="ph-r" data-ph="" data-d="4" style={{display:'flex',gap:14,flexWrap:'wrap',marginTop:36}}>
-              <button className="ph-btn-primary" onClick={() => navigate('/login')}>Start Practising →</button>
+              <a className="ph-btn-primary" href="https://candidate.explain.global/login">Start Practising →</a>
               <a href="https://product.explain.global" target="_blank" rel="noopener noreferrer" className="ph-btn-ghost" style={{borderColor:'rgba(167,139,250,.35)',color:'#a78bfa'}}>How it works →</a>
             </div>
           </div>
@@ -555,7 +555,7 @@ export default function Home() {
             {[
               {n:1,done:true,phase:'Phase 1 — Active',title:'Learn Engine',sub:'AI-generated lessons on any subject. Key concepts, glossary, exam questions, quiz. 50+ languages.',badge:'live',label:'Live Now'},
               {n:2,done:true,phase:'Phase 2 — Active',title:'Interview Prep Engine',sub:'AI-generated interview questions, model answers, self-assessment, and LEARN recommendations — for any role.',badge:'live',label:'Live Now'},
-              {n:3,done:true,phase:'Phase 3 — Active',title:'Interview Chair',sub:'Live AI voice interviewer with real-time scoring, coaching overlays, and full session recording.',badge:'live',label:'Live Now'},
+              {n:3,done:false,phase:'Phase 3 — Beta',title:'Interview Chair',sub:'Live AI voice interviewer with real-time scoring, coaching overlays, and full session recording.',badge:'coming',label:'In Beta'},
               {n:4,done:false,phase:'Phase 4 — Coming Soon',title:'Interview Packs',sub:'Role-specific preparation bundles distributed through partner recruitment agencies globally.',badge:'coming',label:'Planned'},
               {n:5,done:false,phase:'Phase 5 — Coming Soon',title:'Recruiter Portal',sub:'Full recruiter intelligence suite — pack builder, candidate flow management, scoring, and insights.',badge:'coming',label:'Planned'},
               {n:6,done:false,phase:'Phase 6 — Vision',title:'Global Distribution',sub:"Explain Interview Packs available through the world's leading recruitment agencies and job boards.",badge:'coming',label:'Vision'},

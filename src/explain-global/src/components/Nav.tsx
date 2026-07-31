@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import ContactModal from './ContactModal';
 
 const LINKS = [
@@ -14,7 +14,6 @@ const LINKS = [
 
 export function Nav() {
   const loc = useLocation();
-  const navigate = useNavigate();
   const isAuthPage = loc.pathname === '/login' || loc.pathname === '/register';
   const [showContact, setShowContact] = useState(false);
 
@@ -82,7 +81,7 @@ export function Nav() {
               Register Interest
             </button>
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => window.location.href = 'https://candidate.explain.global/login'}
               style={{
                 background: 'rgba(255,255,255,0.05)',
                 color: '#c0c0e0',
@@ -93,7 +92,7 @@ export function Nav() {
               Sign in
             </button>
             <button
-              onClick={() => navigate('/register')}
+              onClick={() => window.location.href = 'https://candidate.explain.global/register'}
               style={{
                 background: 'linear-gradient(135deg, #7b5cf5, #5b8ff7)',
                 color: '#fff', border: 'none',
