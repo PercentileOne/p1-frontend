@@ -135,11 +135,10 @@ export default function Home() {
     .ph-btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:15px 32px;border-radius:12px;background:rgba(79,142,247,.06);color:#4F8EF7;font-size:15px;font-weight:700;text-decoration:none;border:1px solid rgba(79,142,247,.25);transition:all .25s;cursor:pointer;font-family:inherit}
     .ph-btn-ghost:hover{background:rgba(79,142,247,.12);border-color:rgba(79,142,247,.5)}
 
-    #ph-hero{min-height:calc(100vh - 60px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 32px;overflow:hidden;position:relative;z-index:1}
-    .ph-hero-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:900px;height:700px;background:radial-gradient(ellipse,rgba(30,80,255,.18) 0%,rgba(79,142,247,.06) 40%,transparent 70%);pointer-events:none}
-    .ph-hero-hl{font-size:clamp(48px,7vw,88px);font-weight:900;line-height:1.0;letter-spacing:-.04em;max-width:900px;color:#F0F4FF;text-shadow:0 0 60px rgba(79,142,247,.2)}
-    .ph-hero-scroll{margin-top:72px;display:flex;flex-direction:column;align-items:center;gap:8px;color:rgba(240,244,255,.35);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;animation:ph-float 2.5s ease-in-out infinite}
-    @keyframes ph-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+    #ph-hero{min-height:calc(100vh - 60px);display:flex;align-items:center;padding:60px 32px;overflow:hidden;position:relative;z-index:1}
+    .ph-hero-inner{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+    .ph-hero-glow{position:absolute;top:50%;left:30%;transform:translate(-50%,-60%);width:900px;height:700px;background:radial-gradient(ellipse,rgba(30,80,255,.18) 0%,rgba(79,142,247,.06) 40%,transparent 70%);pointer-events:none}
+    .ph-hero-hl{font-size:clamp(36px,4vw,64px);font-weight:900;line-height:1.05;letter-spacing:-.04em;color:#F0F4FF;text-shadow:0 0 60px rgba(79,142,247,.2)}
 
     #ph-why{background:#070C1A;padding:120px 0}
     .ph-why-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
@@ -264,7 +263,7 @@ export default function Home() {
     .ph-pack-card-footer strong{color:#3B4FCF}
 
     @media(max-width:900px){
-      .ph-why-grid,.ph-ir-layout,.ph-portals-grid,.ph-flow-grid{grid-template-columns:1fr}
+      .ph-why-grid,.ph-ir-layout,.ph-portals-grid,.ph-flow-grid,.ph-hero-inner{grid-template-columns:1fr}
       .ph-learn-grid,.ph-packs-grid{grid-template-columns:1fr 1fr}
       .ph-c{padding:0 20px}.ph-global-stats{grid-template-columns:1fr 1fr}
       .ph-practice-grid{grid-template-columns:1fr;gap:40px}
@@ -282,27 +281,35 @@ export default function Home() {
       <style>{css}</style>
       <canvas ref={particlesRef} style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0 }} />
 
-      {/* HERO */}
+      {/* HERO — two column: text left, interview room right */}
       <section id="ph-hero">
         <div className="ph-hero-glow" />
-        <div className="ph-r" data-ph="" style={{marginBottom:24}}><span className="ph-badge-blue">✦ Now Live</span></div>
-        <h1 className="ph-hero-hl ph-r" data-ph="" data-d="1">
-          Practice interviews.<br />
-          <span style={{background:'linear-gradient(90deg,#4F8EF7,#a78bfa)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>
-            Become an expert in your field.
-          </span>
-        </h1>
-        <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',textAlign:'center',maxWidth:620,margin:'24px auto 0'}}>
-          Every candidate deserves the preparation that only the privileged have had access to.<br />That changes now.
-        </p>
-        <div className="ph-r" data-ph="" data-d="3" style={{display:'flex',gap:14,justifyContent:'center',flexWrap:'wrap',marginTop:44}}>
-          <button className="ph-btn-primary" onClick={() => navigate('/login')}>Get Started →</button>
-          <a href="#ph-ir" className="ph-btn-ghost">See the Interview Chair</a>
-          <a href="https://product.explain.global" target="_blank" rel="noopener noreferrer" className="ph-btn-ghost" style={{borderColor:'rgba(167,139,250,.35)',color:'#a78bfa'}}>How it works →</a>
-        </div>
-        <div className="ph-hero-scroll ph-r" data-ph="" data-d="4">
-          <span>Scroll</span>
-          <svg width="14" height="20" viewBox="0 0 14 20" fill="none"><path d="M7 2v16M1 12l6 6 6-6" stroke="rgba(79,142,247,.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <div className="ph-hero-inner">
+          {/* LEFT: headline + features + CTAs */}
+          <div>
+            <div className="ph-r" data-ph="" style={{marginBottom:20}}><span className="ph-badge-blue">✦ Now Live</span></div>
+            <h1 className="ph-hero-hl ph-r" data-ph="" data-d="1">
+              The <span style={{color:'#4F8EF7'}}>Interview Chair</span><br />
+              <span style={{background:'linear-gradient(90deg,#4F8EF7,#a78bfa)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>
+                is open.
+              </span>
+            </h1>
+            <p className="ph-r" data-ph="" data-d="2" style={{fontSize:17,lineHeight:1.75,color:'rgba(240,244,255,.65)',marginTop:20,maxWidth:460}}>
+              A cinematic AI-powered interview experience. Face an intelligent interviewer, receive real-time coaching, and get scored — before you ever sit in the real room.
+            </p>
+            <ul className="ph-ir-list ph-r" data-ph="" data-d="3" style={{marginTop:20}}>
+              {['AI interviewer with voice and presence','Live waveform & speech detection','Real-time coaching overlay','Behavioural scoring engine','Instant post-interview debrief','Recruiter-shareable results'].map(li=><li key={li}>{li}</li>)}
+            </ul>
+            <div className="ph-r" data-ph="" data-d="4" style={{display:'flex',gap:14,flexWrap:'wrap',marginTop:36}}>
+              <button className="ph-btn-primary" onClick={() => navigate('/login')}>Start Practising →</button>
+              <a href="https://product.explain.global" target="_blank" rel="noopener noreferrer" className="ph-btn-ghost" style={{borderColor:'rgba(167,139,250,.35)',color:'#a78bfa'}}>How it works →</a>
+            </div>
+          </div>
+          {/* RIGHT: interview room mockup */}
+          <div className="ph-ir-preview ph-r" data-ph="" data-d="2" style={{position:'relative'}}>
+            <div style={{position:'absolute',inset:'-30px',background:'radial-gradient(ellipse at center,rgba(79,142,247,.18) 0%,transparent 70%)',pointerEvents:'none',borderRadius:40}} />
+            <img src="/assets/interview-room-preview.png" alt="Explain Interview Room — AI interviewer Sarah Mitchell" style={{width:'100%',display:'block',position:'relative'}} />
+          </div>
         </div>
       </section>
 
@@ -458,34 +465,6 @@ export default function Home() {
 
       <div className="ph-gl-line" />
 
-      {/* INTERVIEW CHAIR — real screenshot */}
-      <section id="ph-ir">
-        <div className="ph-c">
-          <div className="ph-ir-layout">
-            <div>
-              <div className="ph-lbl ph-r" data-ph="">Coming Soon</div>
-              <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">The <span style={{color:'#4F8EF7'}}>Interview Chair</span></h2>
-              <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',marginTop:20}}>A cinematic AI-powered interview experience. Face an intelligent interviewer, receive real-time coaching, and get scored — before you ever sit in the real room.</p>
-              <ul className="ph-ir-list ph-r" data-ph="" data-d="3">
-                {['AI interviewer with voice and presence','Live waveform & speech detection','Real-time coaching overlay','Behavioural scoring engine','Instant post-interview debrief','Recruiter-shareable results'].map(li=><li key={li}>{li}</li>)}
-              </ul>
-              <div style={{marginTop:32}} className="ph-r" data-ph="" data-d="4"><span className="ph-badge-gold">Coming to Explain.global</span></div>
-              <div style={{marginTop:48}} className="ph-r" data-ph="" data-d="5">
-                <p style={{fontSize:15,fontWeight:600,color:'rgba(240,244,255,.65)',fontStyle:'italic',marginBottom:16}}>"Coming to your favourite job board soon…"</p>
-                <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-                  {['Vallum','Adecco','Harrington Starr','Next Ventures','Electus','Toba'].map(r=><div className="ph-rec-card" key={r}>{r}</div>)}
-                </div>
-              </div>
-            </div>
-            <div className="ph-ir-preview ph-r" data-ph="" data-d="2">
-              <img src="/assets/interview-room-preview.png" alt="Explain Interview Room" style={{width:'100%',display:'block'}} />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="ph-gl-line" />
-
       {/* INTERVIEW PACKS */}
       <section className="ph-feat ph-dark">
         <div className="ph-c">
@@ -599,7 +578,7 @@ export default function Home() {
             {[
               {n:1,done:true,phase:'Phase 1 — Active',title:'Learn Engine',sub:'AI-generated lessons on any subject. Key concepts, glossary, exam questions, quiz. 50+ languages.',badge:'live',label:'Live Now'},
               {n:2,done:true,phase:'Phase 2 — Active',title:'Interview Prep Engine',sub:'AI-generated interview questions, model answers, self-assessment, and LEARN recommendations — for any role.',badge:'live',label:'Live Now'},
-              {n:3,done:false,phase:'Phase 3 — Coming Soon',title:'Interview Chair',sub:'Live AI voice interviewer with real-time scoring, coaching overlays, and full session recording.',badge:'coming',label:'In Development'},
+              {n:3,done:true,phase:'Phase 3 — Active',title:'Interview Chair',sub:'Live AI voice interviewer with real-time scoring, coaching overlays, and full session recording.',badge:'live',label:'Live Now'},
               {n:4,done:false,phase:'Phase 4 — Coming Soon',title:'Interview Packs',sub:'Role-specific preparation bundles distributed through partner recruitment agencies globally.',badge:'coming',label:'Planned'},
               {n:5,done:false,phase:'Phase 5 — Coming Soon',title:'Recruiter Portal',sub:'Full recruiter intelligence suite — pack builder, candidate flow management, scoring, and insights.',badge:'coming',label:'Planned'},
               {n:6,done:false,phase:'Phase 6 — Vision',title:'Global Distribution',sub:"Explain Interview Packs available through the world's leading recruitment agencies and job boards.",badge:'coming',label:'Vision'},
