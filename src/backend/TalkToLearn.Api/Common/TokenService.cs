@@ -40,19 +40,28 @@ public class TokenService(IConfiguration config)
         catch { return null; }
     }
 
-    public string CreateSessionToken(string userId, string email, string name, string role)
+    public string CreateSessionToken(string userId, string email, string name, string role, IEnumerable<string>? permissions = null)
     {
         var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new List<Claim>
+        {
+            new("sub",   userId),
+            new("email", email),
+            new("name",  name),
+            new("role",  role),
+        };
+
+        // Each permission is a separate claim so standard ClaimsPrincipal helpers work
+        foreach (var perm in permissions ?? [])
+            claims.Add(new Claim("perm", perm));
+
         var token = new JwtSecurityToken(
-            claims: [
-                new Claim("sub",   userId),
-                new Claim("email", email),
-                new Claim("name",  name),
-                new Claim("role",  role),
-            ],
-            expires: DateTime.UtcNow.AddDays(30),
+            claims:             claims,
+            expires:            DateTime.UtcNow.AddDays(30),
             signingCredentials: creds);
+
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

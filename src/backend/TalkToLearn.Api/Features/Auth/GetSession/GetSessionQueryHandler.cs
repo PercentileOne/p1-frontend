@@ -29,14 +29,16 @@ public class GetSessionQueryHandler(
                 ValidateAudience         = false,
             }, out _);
 
-            var name      = result.FindFirst("name")?.Value ?? "";
-            var firstName = name.Contains(' ') ? name.Split(' ')[0] : name;
-            var session   = new SessionDto(
+            var name        = result.FindFirst("name")?.Value ?? "";
+            var firstName   = name.Contains(' ') ? name.Split(' ')[0] : name;
+            var permissions = result.FindAll("perm").Select(c => c.Value).ToList();
+            var session     = new SessionDto(
                 result.FindFirst("sub")?.Value   ?? "",
                 result.FindFirst("email")?.Value ?? "",
                 name,
                 firstName,
-                result.FindFirst("role")?.Value  ?? "");
+                result.FindFirst("role")?.Value  ?? "",
+                permissions);
 
             logger.LogInformation("Session valid for {Email}", session.Email);
             return Task.FromResult(Result<SessionDto>.Success(session));

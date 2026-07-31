@@ -5,6 +5,7 @@ using TalkToLearn.Api.Common;
 using TalkToLearn.Api.Domain.Profile;
 using TalkToLearn.Api.Infrastructure.Cosmos;
 using TalkToLearn.Api.Infrastructure.Sql;
+using TalkToLearn.Api.Infrastructure.Sql.Models;
 using SqlUser = TalkToLearn.Api.Infrastructure.Sql.Models.User;
 
 namespace TalkToLearn.Api.Features.Auth.Register;
@@ -13,6 +14,7 @@ public class RegisterCommandHandler(
     AppDbContext db,
     CosmosService cosmos,
     TokenService tokens,
+    PermissionLoader permissions,
     ILogger<RegisterCommandHandler> logger)
     : IRequestHandler<RegisterCommand, Result<AuthResponse>>
 {
@@ -51,7 +53,9 @@ public class RegisterCommandHandler(
             Role         = "user",
         };
 
+        // Assign default Candidate role (id = 1, seeded)
         db.Users.Add(sqlUser);
+        db.UserRoles.Add(new UserRole { UserId = sqlUser.Id, RoleId = 1 });
 
         try
         {
@@ -82,8 +86,9 @@ public class RegisterCommandHandler(
 
         var name     = $"{sqlUser.FirstName} {sqlUser.LastName}".Trim();
         var username = $"{sqlUser.FirstName}{sqlUser.LastName}".ToLower().Replace(" ", "");
-        var token    = tokens.CreateSessionToken(sqlUser.Id, sqlUser.Email, name, sqlUser.Role);
-        var response = new AuthResponse(token, new UserDto(sqlUser.Id, sqlUser.Email, name, sqlUser.FirstName, username, sqlUser.Role));
+        var perms    = await permissions.LoadAsync(sqlUser.Id, ct);
+        var token    = tokens.CreateSessionToken(sqlUser.Id, sqlUser.Email, name, "Candidate", perms);
+        var response = new AuthResponse(token, new UserDto(sqlUser.Id, sqlUser.Email, name, sqlUser.FirstName, username, "Candidate"));
 
         return Result<AuthResponse>.Success(response);
     }

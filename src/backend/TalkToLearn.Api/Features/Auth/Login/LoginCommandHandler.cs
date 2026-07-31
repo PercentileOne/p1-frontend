@@ -10,6 +10,7 @@ namespace TalkToLearn.Api.Features.Auth.Login;
 public class LoginCommandHandler(
     AppDbContext db,
     TokenService tokens,
+    PermissionLoader permissions,
     ILogger<LoginCommandHandler> logger)
     : IRequestHandler<LoginCommand, Result<AuthResponse>>
 {
@@ -38,8 +39,13 @@ public class LoginCommandHandler(
 
         var name     = $"{user.FirstName} {user.LastName}".Trim();
         var username = $"{user.FirstName}{user.LastName}".ToLower().Replace(" ", "");
-        var token    = tokens.CreateSessionToken(user.Id, user.Email, name, user.Role);
-        var response = new AuthResponse(token, new UserDto(user.Id, user.Email, name, user.FirstName, username, user.Role));
+        var perms    = await permissions.LoadAsync(user.Id, ct);
+        var role     = perms.Contains("CAN_VIEW_ADMIN_PORTAL")  ? "Admin"
+                     : perms.Contains("CAN_VIEW_RECRUITER_PORTAL") ? "Recruiter"
+                     : perms.Contains("CAN_VIEW_CLIENT_PORTAL")    ? "Client"
+                     : "Candidate";
+        var token    = tokens.CreateSessionToken(user.Id, user.Email, name, role, perms);
+        var response = new AuthResponse(token, new UserDto(user.Id, user.Email, name, user.FirstName, username, role));
 
         return Result<AuthResponse>.Success(response);
     }
