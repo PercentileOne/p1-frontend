@@ -1,15 +1,22 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git -C *)",
-      "Bash(npx tsc *)",
-      "Bash(npx tsc)",
-      "Bash(dotnet build *)",
-      "Bash(dotnet build)",
-      "Bash(find . *)",
-      "Bash(git diff *)",
-      "Bash(git diff)",
-      "mcp__ccd_session__mark_chapter"
+      "Bash(git *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(dotnet *)",
+      "Bash(find *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(grep *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(rm *)",
+      "mcp__ccd_session__mark_chapter",
+      "mcp__ccd_session__spawn_task",
+      "mcp__ccd_session__dismiss_task"
     ]
   }
 }

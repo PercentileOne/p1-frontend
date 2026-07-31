@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
@@ -48,7 +49,7 @@ export default function ContactModal({ onClose, defaultSubject = '' }: Props) {
     letterSpacing: '.08em', textTransform: 'uppercase', display: 'block', marginBottom: 6,
   };
 
-  return (
+  return createPortal(
     <div
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', overflowY: 'auto' }}
@@ -119,6 +120,7 @@ export default function ContactModal({ onClose, defaultSubject = '' }: Props) {
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
