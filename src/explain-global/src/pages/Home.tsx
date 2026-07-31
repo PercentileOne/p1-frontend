@@ -1,9 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ContactModal from '../components/ContactModal';
 
 export default function Home() {
   const particlesRef = useRef<HTMLCanvasElement>(null);
   const navigate = useNavigate();
+  const [showContact, setShowContact] = useState(false);
 
   /* ── Particle background ── */
   useEffect(() => {
@@ -83,32 +85,6 @@ export default function Home() {
       g.appendChild(tx); nG.appendChild(g);
     });
   }, []);
-
-  async function handleWaitlist(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const input = form.querySelector('input') as HTMLInputElement;
-    const btn = form.querySelector('button') as HTMLButtonElement;
-    const email = input.value.trim();
-    if (!email.includes('@')) { input.style.borderColor='rgba(239,68,68,.5)'; setTimeout(()=>(input.style.borderColor=''),1200); return; }
-    btn.textContent='Joining…'; btn.disabled=true;
-    try {
-      await Promise.all([
-        fetch('https://formspree.io/f/mzdldjzz', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ email, source: 'explain.global' }),
-        }),
-        fetch('/api/join-waitlist', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, source: 'explain.global' }),
-        }).catch(() => {}),
-      ]);
-    } catch { /* fail silently */ }
-    btn.textContent="✓ You're on the list!"; btn.style.background='#34D399'; btn.style.boxShadow='0 8px 32px rgba(52,211,153,.35)';
-    input.value=''; input.placeholder='See you on the other side ✨';
-  }
 
   const css = `
     .ph-r{opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
@@ -278,6 +254,7 @@ export default function Home() {
 
   return (
     <>
+      {showContact && <ContactModal onClose={() => setShowContact(false)} defaultSubject="Early access to Explain.global" />}
       <style>{css}</style>
       <canvas ref={particlesRef} style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0 }} />
 
@@ -603,15 +580,14 @@ export default function Home() {
       {/* WAITLIST */}
       <section id="ph-wait">
         <div className="ph-wait-glow" />
-        <div className="ph-c" style={{position:'relative',zIndex:1}}>
+        <div className="ph-c" style={{position:'relative',zIndex:1,textAlign:'center'}}>
           <div className="ph-r" data-ph="" style={{marginBottom:20}}><span className="ph-badge-gold">Be First</span></div>
           <h2 className="ph-h-xl ph-r" data-ph="" data-d="1" style={{textAlign:'center'}}>Join the <span style={{color:'#4F8EF7'}}>waitlist</span></h2>
-          <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',textAlign:'center',maxWidth:480,margin:'16px auto 0'}}>Get early access to the Learn Engine, Interview Chair, and Packs — before they go public.</p>
-          <form style={{display:'flex',gap:10,justifyContent:'center',flexWrap:'wrap',marginTop:40}} className="ph-r" data-ph="" data-d="3" onSubmit={handleWaitlist}>
-            <input className="ph-wait-input" type="email" placeholder="Your email address" />
-            <button type="submit" className="ph-btn-primary">Join the Waitlist →</button>
-          </form>
-          <p className="ph-r" data-ph="" data-d="4" style={{fontSize:13,lineHeight:1.65,color:'rgba(240,244,255,.35)',textAlign:'center',marginTop:16}}>We'll email you when each phase launches. Unsubscribe any time.</p>
+          <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',textAlign:'center',maxWidth:480,margin:'16px auto 0'}}>Get early access to the Interview Chair, Interview Packs, and more — before they go public.</p>
+          <div className="ph-r" data-ph="" data-d="3" style={{marginTop:40}}>
+            <button className="ph-btn-primary" onClick={() => setShowContact(true)} style={{fontSize:16,padding:'16px 40px'}}>Register Your Interest →</button>
+          </div>
+          <p className="ph-r" data-ph="" data-d="4" style={{fontSize:13,lineHeight:1.65,color:'rgba(240,244,255,.35)',textAlign:'center',marginTop:16}}>Francis replies personally to every message.</p>
         </div>
       </section>
 

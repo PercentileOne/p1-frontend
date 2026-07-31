@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import ContactModal from './ContactModal';
 
 const LINKS = [
   { to: '/', label: 'Home' },
@@ -14,6 +16,7 @@ export function Nav() {
   const loc = useLocation();
   const navigate = useNavigate();
   const isAuthPage = loc.pathname === '/login' || loc.pathname === '/register';
+  const [showContact, setShowContact] = useState(false);
 
   return (
     <nav style={{
@@ -63,20 +66,21 @@ export function Nav() {
         </div>
 
         {/* Auth CTAs */}
+        {showContact && <ContactModal onClose={() => setShowContact(false)} defaultSubject="Early access to Explain.global" />}
         {!isAuthPage && (
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-            <a
-              href="mailto:francis@percentile.one?subject=Register Interest — Explain.Global"
+            <button
+              onClick={() => setShowContact(true)}
               style={{
                 background: 'rgba(167,139,250,0.10)',
                 color: '#a78bfa',
                 border: '1px solid rgba(167,139,250,0.3)',
                 borderRadius: 8, padding: '7px 16px',
                 fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                textDecoration: 'none', whiteSpace: 'nowrap',
+                whiteSpace: 'nowrap',
               }}>
               Register Interest
-            </a>
+            </button>
             <button
               onClick={() => navigate('/login')}
               style={{
