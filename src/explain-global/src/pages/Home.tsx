@@ -632,7 +632,19 @@ export default function Home() {
       {/* FOOTER */}
       <footer className="ph-footer">
         <div className="ph-footer-inner">
-          <div style={{fontSize:15,fontWeight:900,letterSpacing:'-.03em'}}><span className="ph-ex">Explain</span><span className="ph-gl">.global</span></div>
+          <div>
+            <div style={{fontSize:15,fontWeight:900,letterSpacing:'-.03em',marginBottom:6}}><span className="ph-ex">Explain</span><span className="ph-gl">.global</span></div>
+            <div style={{display:'flex',flexDirection:'column',gap:3}}>
+              <a href="mailto:francis@explain.global" style={{fontSize:11,color:'rgba(240,244,255,.35)',textDecoration:'none',transition:'color .2s'}}
+                onMouseEnter={e=>(e.currentTarget.style.color='#4F8EF7')} onMouseLeave={e=>(e.currentTarget.style.color='rgba(240,244,255,.35)')}>
+                francis@explain.global
+              </a>
+              <a href="tel:+447346814898" style={{fontSize:11,color:'rgba(240,244,255,.35)',textDecoration:'none',transition:'color .2s'}}
+                onMouseEnter={e=>(e.currentTarget.style.color='#4F8EF7')} onMouseLeave={e=>(e.currentTarget.style.color='rgba(240,244,255,.35)')}>
+                +44 7346 814898
+              </a>
+            </div>
+          </div>
           <div className="ph-footer-links">
             <a href="#ph-why">Why Explain</a><a href="#ph-global">Global</a>
             <a href="#ph-learn">Learn Engine</a><a href="#ph-eco">Ecosystem</a>

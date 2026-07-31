@@ -67,7 +67,7 @@ export default function ContactModal({ onClose }: { onClose: () => void }) {
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <div style={{ width: 60, height: 60, borderRadius: 18, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 26 }}>!</div>
             <p style={{ fontSize: 16, fontWeight: 800, color: '#F1F5F9', marginBottom: 6 }}>Something went wrong</p>
-            <p style={{ fontSize: 13, color: '#64748B', marginBottom: 20 }}>Please try again or email us at francis@percentile.one</p>
+            <p style={{ fontSize: 13, color: '#64748B', marginBottom: 20 }}>Please try again, email francis@explain.global or call +44 7346 814898</p>
             <button onClick={() => setStatus('idle')} style={{ padding: '10px 28px', borderRadius: 50, background: 'var(--accent)', color: '#fff', fontWeight: 800, border: 'none', cursor: 'pointer', fontSize: 14 }}>Try Again</button>
           </div>
         ) : (

@@ -85,7 +85,7 @@ export default function ContactModal({ onClose, defaultSubject = '' }: Props) {
           <div style={{ textAlign: 'center', padding: '28px 0' }}>
             <div style={{ width: 64, height: 64, borderRadius: 18, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px', fontSize: 28 }}>!</div>
             <p style={{ fontSize: 17, fontWeight: 800, color: '#F0F4FF', marginBottom: 8 }}>Something went wrong</p>
-            <p style={{ fontSize: 13, color: 'rgba(240,244,255,.5)', marginBottom: 24 }}>Please try again or email us at <strong style={{ color: '#4F8EF7' }}>francis@explain.global</strong></p>
+            <p style={{ fontSize: 13, color: 'rgba(240,244,255,.5)', marginBottom: 24 }}>Please try again, email <strong style={{ color: '#4F8EF7' }}>francis@explain.global</strong> or call <strong style={{ color: '#4F8EF7' }}>+44 7346 814898</strong></p>
             <button onClick={() => setStatus('idle')} style={{ padding: '11px 32px', borderRadius: 50, background: '#4F8EF7', color: '#fff', fontWeight: 800, border: 'none', cursor: 'pointer', fontSize: 14 }}>Try Again</button>
           </div>
         ) : (
