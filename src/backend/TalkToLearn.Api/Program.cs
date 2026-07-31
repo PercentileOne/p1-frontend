@@ -35,7 +35,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             NameClaimType    = "sub",
         };
     });
-builder.Services.AddAuthorization();
+builder.Services.AddPermissionPolicies();
 
 builder.Services.AddCors(options =>
 {
