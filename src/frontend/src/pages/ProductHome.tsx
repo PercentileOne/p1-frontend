@@ -151,11 +151,14 @@ export default function ProductHome() {
     .ph-btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:15px 32px;border-radius:12px;background:rgba(79,142,247,.06);color:#4F8EF7;font-size:15px;font-weight:700;text-decoration:none;border:1px solid rgba(79,142,247,.25);transition:all .25s;cursor:pointer;font-family:inherit}
     .ph-btn-ghost:hover{background:rgba(79,142,247,.12);border-color:rgba(79,142,247,.5)}
 
-    #ph-hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 32px 80px;margin-top:-40px;overflow:hidden;position:relative;z-index:1}
-    .ph-hero-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:900px;height:700px;background:radial-gradient(ellipse,rgba(30,80,255,.18) 0%,rgba(79,142,247,.06) 40%,transparent 70%);pointer-events:none}
-    .ph-hero-hl{font-size:clamp(52px,8vw,96px);font-weight:900;line-height:1.0;letter-spacing:-.04em;max-width:900px;color:#F0F4FF;text-shadow:0 0 60px rgba(79,142,247,.2)}
+    #ph-hero{min-height:calc(100vh - 68px);display:flex;align-items:center;padding:80px 32px;overflow:hidden;position:relative;z-index:1}
+    .ph-hero-inner{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+    .ph-hero-glow{position:absolute;top:50%;left:30%;transform:translate(-50%,-60%);width:900px;height:700px;background:radial-gradient(ellipse,rgba(30,80,255,.18) 0%,rgba(79,142,247,.06) 40%,transparent 70%);pointer-events:none}
+    .ph-hero-hl{font-size:clamp(36px,4vw,64px);font-weight:900;line-height:1.05;letter-spacing:-.04em;color:#F0F4FF;text-shadow:0 0 60px rgba(79,142,247,.2)}
     .ph-hero-scroll{margin-top:72px;display:flex;flex-direction:column;align-items:center;gap:8px;color:rgba(240,244,255,.35);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;animation:ph-float 2.5s ease-in-out infinite}
     @keyframes ph-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+    #ph-mission{background:#070C1A;padding:100px 0;text-align:center}
+    .ph-mission-hl{font-size:clamp(40px,6vw,80px);font-weight:900;line-height:1.0;letter-spacing:-.04em;color:#F0F4FF;text-shadow:0 0 60px rgba(79,142,247,.2);max-width:900px;margin:0 auto}
 
     #ph-why{background:#070C1A;padding:120px 0}
     .ph-why-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
@@ -380,27 +383,158 @@ export default function ProductHome() {
           <li><a href="#ph-eco">Ecosystem</a></li>
           <li><a href="#ph-road">Roadmap</a></li>
         </ul>
-        <a href="https://explain.global/login" className="ph-nav-cta">Get Started →</a>
+        <a href="https://candidate.explain.global" className="ph-nav-cta">Get Started →</a>
       </nav>
 
-      {/* HERO */}
+      {/* HERO — Interview Chair two-column */}
       <section id="ph-hero">
         <div className="ph-hero-glow" />
-        <div className="ph-r" data-ph="" style={{marginBottom:24}}><span className="ph-badge-blue">✦ Now Live</span></div>
-        <div className="ph-r ph-nav-logo" data-ph="" data-d="0" style={{fontSize:36,marginBottom:28,fontWeight:900,letterSpacing:"-.04em",textShadow:"0 0 60px rgba(79,142,247,.7)"}}>
-          <span className="ph-ex">Explain</span><span className="ph-gl">.global</span>
+        <div className="ph-hero-inner">
+          {/* LEFT */}
+          <div>
+            <div className="ph-r" data-ph="" style={{marginBottom:20}}><span className="ph-badge-gold">✦ In Beta</span></div>
+            <h1 className="ph-hero-hl ph-r" data-ph="" data-d="1">
+              The <span style={{color:"#4F8EF7"}}>Interview Chair</span><br />
+              <span style={{background:"linear-gradient(90deg,#4F8EF7,#a78bfa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
+                is open.
+              </span>
+            </h1>
+            <p className="ph-r" data-ph="" data-d="2" style={{fontSize:17,lineHeight:1.75,color:"rgba(240,244,255,.65)",marginTop:20,maxWidth:460}}>
+              A cinematic AI-powered interview experience. Face an intelligent interviewer, receive real-time coaching, and get scored — before you ever sit in the real room.
+            </p>
+            <ul className="ph-ir-list ph-r" data-ph="" data-d="3" style={{marginTop:20}}>
+              {["AI interviewer with voice and presence","Live waveform & speech detection","Real-time coaching overlay","Behavioural scoring engine","Instant post-interview debrief","Recruiter-shareable results"].map(li=><li key={li}>{li}</li>)}
+            </ul>
+            <div className="ph-r" data-ph="" data-d="4" style={{display:"flex",gap:14,flexWrap:"wrap",marginTop:36}}>
+              <a href="https://candidate.explain.global" className="ph-btn-primary">Start Practising →</a>
+              <a href="#ph-mission" className="ph-btn-ghost" style={{borderColor:"rgba(167,139,250,.35)",color:"#a78bfa"}}>Our Mission →</a>
+            </div>
+          </div>
+          {/* RIGHT — chair mockup */}
+          <div className="ph-ir-preview ph-r" data-ph="" data-d="2">
+            <div className="ph-irm">
+              <div className="ph-irm-chair">
+                <img src="/images/mastermind-chair.png" alt="" />
+                <div className="ph-irm-chair-overlay" />
+                <div className="ph-irm-chair-text">
+                  <div className="ph-irm-chair-eyebrow">Your interview awaits</div>
+                  <div className="ph-irm-chair-headline">The seat is yours.<br /><span style={{color:"rgba(167,139,250,0.9)"}}>Make every answer count.</span></div>
+                </div>
+              </div>
+              <div className="ph-irm-tiles">
+                <div className="ph-irm-tile ph-irm-tile-active">
+                  <img src="/images/sarah.jpg" alt="Sarah Mitchell" />
+                  <div className="ph-irm-tile-vignette" />
+                  <div className="ph-irm-tile-wave">
+                    {[14,22,18,26,20,16,24,18].map((h,i)=><span key={i} style={{height:h}} />)}
+                  </div>
+                  <div className="ph-irm-tile-name"><strong>Sarah Mitchell</strong><span>HR Director</span></div>
+                </div>
+                <div className="ph-irm-tile ph-irm-tile-james">
+                  <img src="/images/james.png" alt="James Okafor" />
+                  <div className="ph-irm-tile-vignette" />
+                  <div className="ph-irm-tile-status">Ready</div>
+                  <div className="ph-irm-tile-name"><strong>James Okafor</strong><span>Hiring Manager</span></div>
+                </div>
+              </div>
+              <div className="ph-irm-qcard">
+                <div className="ph-irm-qtags">
+                  <span className="ph-irm-qtag-blue">JAMES · HIRING MANAGER</span>
+                  <span className="ph-irm-qtag-grey">Medium</span>
+                  <div className="ph-irm-qbtns">
+                    <button className="ph-irm-qbtn">↩ Repeat</button>
+                    <button className="ph-irm-qbtn ph-irm-qbtn-green">⏸ Pause</button>
+                  </div>
+                </div>
+                <div className="ph-irm-qtext">Walk me through the most complex challenge you have faced in this type of role. What did you do and what was the outcome?</div>
+              </div>
+              <div className="ph-irm-body">
+                <div className="ph-irm-answer">
+                  <div className="ph-irm-whisper">
+                    <span style={{width:6,height:6,borderRadius:"50%",background:"#34D399",display:"inline-block"}} />
+                    Whisper STT active
+                  </div>
+                  <div className="ph-irm-mic-row">
+                    <div className="ph-irm-mic">
+                      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 2a3 3 0 013 3v7a3 3 0 01-6 0V5a3 3 0 013-3z" fill="#fff"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v3M9 22h6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    </div>
+                    <div className="ph-irm-bars">
+                      {Array(18).fill(0).map((_,i)=><span key={i} style={{height:`${8+Math.round(Math.sin(i*0.8)*10+12)}px`}} />)}
+                    </div>
+                    <span className="ph-irm-mic-label">Speak or type</span>
+                  </div>
+                  <textarea className="ph-irm-textarea" placeholder="Type your answer here…" readOnly />
+                  <button className="ph-irm-pass">Pass →</button>
+                  <div className="ph-irm-prev">
+                    <div className="ph-irm-prev-label">Previous Answers</div>
+                    {[
+                      {q:"Tell me about yourself and your background.",score:8,hi:true},
+                      {q:"Why are you interested in this particular role?",score:7,hi:true},
+                      {q:"Describe a time you handled a difficult stakeholder.",score:6,hi:false,mid:true},
+                      {q:"What's your biggest professional achievement to date?",score:9,hi:true},
+                    ].map(({q,score,hi,mid},i)=>(
+                      <div className="ph-irm-prev-item" key={i}>
+                        <span className={`ph-irm-prev-score ${hi?"ph-irm-prev-score-hi":mid?"ph-irm-prev-score-mid":"ph-irm-prev-score-lo"}`}>{score}<span style={{fontSize:8,fontWeight:500,color:"rgba(240,244,255,0.3)"}}>/10</span></span>
+                        <span className="ph-irm-prev-q">{q}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="ph-irm-stats">
+                  <div>
+                    <div className="ph-irm-stat-label">Progress</div>
+                    <div className="ph-irm-progress-pips">
+                      {[true,false,false,false,false].map((done,i)=>(
+                        <div key={i} className={`ph-irm-pip-dot${done?" ph-irm-pip-dot-done":""}`} />
+                      ))}
+                    </div>
+                    <div style={{fontSize:9,color:"rgba(240,244,255,0.3)",marginTop:3}}>Q1 of 5</div>
+                  </div>
+                  <div>
+                    <div className="ph-irm-stat-label">Time on Answer</div>
+                    <div className="ph-irm-timer-val">0:11</div>
+                  </div>
+                  <div>
+                    <div className="ph-irm-stat-label">Coach</div>
+                    <div className="ph-irm-coach-cue">Stay calm — you've got this 💪</div>
+                  </div>
+                  <div className="ph-irm-benchmark">
+                    <div className="ph-irm-stat-label" style={{color:"rgba(79,142,247,0.7)"}}>Benchmark</div>
+                    <div className="ph-irm-bench-text">Top 5% scored <em>8/10</em> for this role</div>
+                    <div className="ph-irm-bench-bar"><div className="ph-irm-bench-fill" /></div>
+                    <div className="ph-irm-bench-sub">Top 5th percentile</div>
+                  </div>
+                  <div>
+                    <div className="ph-irm-stat-label">Difficulty</div>
+                    <div className="ph-irm-diff-badge">Medium</div>
+                  </div>
+                  <div className="ph-irm-pause-btn">⏸ Pause</div>
+                </div>
+              </div>
+            </div>
+            <div className="ph-ir-badge"><span className="ph-badge-gold">Live Preview</span></div>
+          </div>
         </div>
-        <h1 className="ph-hero-hl ph-r" data-ph="" data-d="1">The Interview<br /><span style={{color:"#4F8EF7"}}>Intelligence Platform</span></h1>
-        <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:"rgba(240,244,255,.65)",textAlign:"center",maxWidth:620,margin:"24px auto 0"}}>
-          Every candidate deserves the preparation that only the privileged have had access to.<br />That changes now.
-        </p>
-        <div className="ph-r" data-ph="" data-d="3" style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap",marginTop:44}}>
-          <a href="https://explain.global/login" className="ph-btn-primary">Get Started →</a>
-          <a href="#ph-ir" className="ph-btn-ghost">See the Interview Chair</a>
-        </div>
-        <div className="ph-hero-scroll ph-r" data-ph="" data-d="4">
-          <span>Scroll</span>
-          <svg width="14" height="20" viewBox="0 0 14 20" fill="none"><path d="M7 2v16M1 12l6 6 6-6" stroke="rgba(79,142,247,.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* MISSION — "Every candidate deserves…" */}
+      <section id="ph-mission">
+        <div className="ph-c" style={{textAlign:"center"}}>
+          <div className="ph-r" data-ph="" style={{marginBottom:24}}>
+            <div className="ph-r ph-nav-logo" data-ph="" style={{fontSize:32,fontWeight:900,letterSpacing:"-.04em",textShadow:"0 0 60px rgba(79,142,247,.7)"}}>
+              <span className="ph-ex">Explain</span><span className="ph-gl">.global</span>
+            </div>
+          </div>
+          <h2 className="ph-mission-hl ph-r" data-ph="" data-d="1">The Interview<br /><span style={{color:"#4F8EF7"}}>Intelligence Platform</span></h2>
+          <p className="ph-r" data-ph="" data-d="2" style={{fontSize:20,lineHeight:1.75,color:"rgba(240,244,255,.65)",maxWidth:620,margin:"28px auto 0"}}>
+            Every candidate deserves the preparation that only the privileged have had access to.<br /><strong style={{color:"#F0F4FF"}}>That changes now.</strong>
+          </p>
+          <div className="ph-r" data-ph="" data-d="3" style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap",marginTop:44}}>
+            <a href="https://candidate.explain.global" className="ph-btn-primary">Get Started →</a>
+            <a href="#ph-why" className="ph-btn-ghost">Why Explain</a>
+          </div>
         </div>
       </section>
 
@@ -547,146 +681,6 @@ export default function ProductHome() {
               {[["⚛️","Quantum Entanglement","Science · 68% complete"],["💰","Compound Interest","Mathematics · 100% ✓"],["🏛️","The Roman Empire","History · 24% complete"]].map(([icon,title,meta])=>(
                 <div className="ph-shelf" key={title}><span>{icon}</span><div><div style={{fontSize:12,fontWeight:700,color:"#F0F4FF"}}>{title}</div><div style={{fontSize:10,color:"rgba(240,244,255,.35)"}}>{meta}</div></div></div>
               ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="ph-gl-line" />
-
-      {/* INTERVIEW ROOM */}
-      <section id="ph-ir">
-        <div className="ph-c">
-          <div className="ph-ir-layout">
-            <div>
-              <div className="ph-lbl ph-r" data-ph="">Coming Soon</div>
-              <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">The <span style={{color:"#4F8EF7"}}>Interview Chair</span></h2>
-              <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:"rgba(240,244,255,.65)",marginTop:20}}>A cinematic AI-powered interview experience. Face an intelligent interviewer, receive real-time coaching, and get scored — before you ever sit in the real room.</p>
-              <ul className="ph-ir-list ph-r" data-ph="" data-d="3">
-                {["AI interviewer with voice and presence","Live waveform & speech detection","Real-time coaching overlay","Behavioural scoring engine","Instant post-interview debrief","Recruiter-shareable results"].map(li=><li key={li}>{li}</li>)}
-              </ul>
-              <div style={{marginTop:32}} className="ph-r" data-ph="" data-d="4"><span className="ph-badge-gold">Coming to Explain.global</span></div>
-              <div style={{marginTop:48}} className="ph-r" data-ph="" data-d="5">
-                <p style={{fontSize:15,fontWeight:600,color:"rgba(240,244,255,.65)",fontStyle:"italic",marginBottom:16}}>"Coming to your favourite job board soon…"</p>
-                <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                  {["Vallum","Adecco","Harrington Starr","Next Ventures","Electus","Toba"].map(r=><div className="ph-rec-card" key={r}>{r}</div>)}
-                </div>
-              </div>
-            </div>
-            <div className="ph-ir-preview ph-r" data-ph="" data-d="2">
-              <div className="ph-irm">
-                {/* Cinematic chair header */}
-                <div className="ph-irm-chair">
-                  <img src="/images/mastermind-chair.png" alt="" />
-                  <div className="ph-irm-chair-overlay" />
-                  <div className="ph-irm-chair-text">
-                    <div className="ph-irm-chair-eyebrow">Your interview awaits</div>
-                    <div className="ph-irm-chair-headline">The seat is yours.<br /><span style={{color:"rgba(167,139,250,0.9)"}}>Make every answer count.</span></div>
-                  </div>
-                </div>
-                {/* Interviewer tiles */}
-                <div className="ph-irm-tiles">
-                  {/* Sarah — speaking, purple ring */}
-                  <div className="ph-irm-tile ph-irm-tile-active">
-                    <img src="/images/sarah.jpg" alt="Sarah Mitchell" />
-                    <div className="ph-irm-tile-vignette" />
-                    <div className="ph-irm-tile-wave">
-                      {[14,22,18,26,20,16,24,18].map((h,i)=><span key={i} style={{height:h}} />)}
-                    </div>
-                    <div className="ph-irm-tile-name"><strong>Sarah Mitchell</strong><span>HR Director</span></div>
-                  </div>
-                  {/* James — ready */}
-                  <div className="ph-irm-tile ph-irm-tile-james">
-                    <img src="/images/james.png" alt="James Okafor" />
-                    <div className="ph-irm-tile-vignette" />
-                    <div className="ph-irm-tile-status">Ready</div>
-                    <div className="ph-irm-tile-name"><strong>James Okafor</strong><span>Hiring Manager</span></div>
-                  </div>
-                </div>
-
-                {/* Question card */}
-                <div className="ph-irm-qcard">
-                  <div className="ph-irm-qtags">
-                    <span className="ph-irm-qtag-blue">JAMES · HIRING MANAGER</span>
-                    <span className="ph-irm-qtag-grey">Medium</span>
-                    <div className="ph-irm-qbtns">
-                      <button className="ph-irm-qbtn">↩ Repeat</button>
-                      <button className="ph-irm-qbtn ph-irm-qbtn-green">⏸ Pause</button>
-                    </div>
-                  </div>
-                  <div className="ph-irm-qtext">Walk me through the most complex challenge you have faced in this type of role. What did you do and what was the outcome?</div>
-                </div>
-
-                {/* Answer area + stats panel */}
-                <div className="ph-irm-body">
-                  {/* Answer area */}
-                  <div className="ph-irm-answer">
-                    <div className="ph-irm-whisper">
-                      <span style={{width:6,height:6,borderRadius:"50%",background:"#34D399",display:"inline-block"}} />
-                      Whisper STT active
-                    </div>
-                    <div className="ph-irm-mic-row">
-                      <div className="ph-irm-mic">
-                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 2a3 3 0 013 3v7a3 3 0 01-6 0V5a3 3 0 013-3z" fill="#fff"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v3M9 22h6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                      </div>
-                      <div className="ph-irm-bars">
-                        {Array(18).fill(0).map((_,i)=><span key={i} style={{height:`${8+Math.round(Math.sin(i*0.8)*10+12)}px`}} />)}
-                      </div>
-                      <span className="ph-irm-mic-label">Speak or type</span>
-                    </div>
-                    <textarea className="ph-irm-textarea" placeholder="Type your answer here…" readOnly />
-                    <button className="ph-irm-pass">Pass →</button>
-                    {/* Scrollable previous answers */}
-                    <div className="ph-irm-prev">
-                      <div className="ph-irm-prev-label">Previous Answers</div>
-                      {[
-                        {q:"Tell me about yourself and your background.",score:8,hi:true},
-                        {q:"Why are you interested in this particular role?",score:7,hi:true},
-                        {q:"Describe a time you handled a difficult stakeholder.",score:6,hi:false,mid:true},
-                        {q:"What's your biggest professional achievement to date?",score:9,hi:true},
-                      ].map(({q,score,hi,mid},i)=>(
-                        <div className="ph-irm-prev-item" key={i}>
-                          <span className={`ph-irm-prev-score ${hi?"ph-irm-prev-score-hi":mid?"ph-irm-prev-score-mid":"ph-irm-prev-score-lo"}`}>{score}<span style={{fontSize:8,fontWeight:500,color:"rgba(240,244,255,0.3)"}}>/10</span></span>
-                          <span className="ph-irm-prev-q">{q}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Stats panel */}
-                  <div className="ph-irm-stats">
-                    <div>
-                      <div className="ph-irm-stat-label">Progress</div>
-                      <div className="ph-irm-progress-pips">
-                        {[true,false,false,false,false].map((done,i)=>(
-                          <div key={i} className={`ph-irm-pip-dot${done?" ph-irm-pip-dot-done":""}`} />
-                        ))}
-                      </div>
-                      <div style={{fontSize:9,color:"rgba(240,244,255,0.3)",marginTop:3}}>Q1 of 5</div>
-                    </div>
-                    <div>
-                      <div className="ph-irm-stat-label">Time on Answer</div>
-                      <div className="ph-irm-timer-val">0:11</div>
-                    </div>
-                    <div>
-                      <div className="ph-irm-stat-label">Coach</div>
-                      <div className="ph-irm-coach-cue">Stay calm — you've got this 💪</div>
-                    </div>
-                    <div className="ph-irm-benchmark">
-                      <div className="ph-irm-stat-label" style={{color:"rgba(79,142,247,0.7)"}}>Benchmark</div>
-                      <div className="ph-irm-bench-text">Top 5% scored <em>8/10</em> for this role</div>
-                      <div className="ph-irm-bench-bar"><div className="ph-irm-bench-fill" /></div>
-                      <div className="ph-irm-bench-sub">Top 5th percentile</div>
-                    </div>
-                    <div>
-                      <div className="ph-irm-stat-label">Difficulty</div>
-                      <div className="ph-irm-diff-badge">Medium</div>
-                    </div>
-                    <div className="ph-irm-pause-btn">⏸ Pause</div>
-                  </div>
-                </div>
-              </div>
-              <div className="ph-ir-badge"><span className="ph-badge-gold">Live Preview</span></div>
             </div>
           </div>
         </div>
