@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ContactModal from '../components/ContactModal';
 
 export default function Home() {
   const particlesRef = useRef<HTMLCanvasElement>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [showContact, setShowContact] = useState(false);
 
   /* ── Particle background ── */
@@ -252,37 +254,52 @@ export default function Home() {
   const LANGS = ['🇬🇧 English','🇫🇷 Français','🇩🇪 Deutsch','🇪🇸 Español','🇵🇹 Português','🇮🇹 Italiano','🇨🇳 中文','🇯🇵 日本語','🇰🇷 한국어','🇸🇦 العربية','🇮🇳 हिन्दी','🇳🇱 Nederlands','🇵🇱 Polski','🇸🇪 Svenska','🇧🇷 Português BR'];
   const JOBS = ['🏦 Investment Banking','💻 Software Engineering','🏥 Healthcare & Nursing','⚖️ Law & Legal','📊 Finance & Accounting','🏗️ Engineering','🎓 Education','🛒 Retail & Operations','🚀 Start-ups & Scale-ups','🏛️ Public Sector','🎨 Creative & Design','📦 Logistics & Supply Chain'];
 
+  const heroFeatures = t('hero.features', { returnObjects: true }) as string[];
+  const whyPillars = t('why.pillars', { returnObjects: true }) as { name: string; hl: string; body: string; micro: string }[];
+  const roadPhases = t('road.phases', { returnObjects: true }) as { phase: string; title: string; sub: string }[];
+  const candidateFeats = t('portals.candidate.feats', { returnObjects: true }) as string[];
+  const recruiterFeats = t('portals.recruiter.feats', { returnObjects: true }) as string[];
+
+  const PILLAR_ICONS = ['💡','📐','🎯','📊','⚡'];
+  const ROAD_STATUS = [
+    { badge: 'live', done: true },
+    { badge: 'live', done: true },
+    { badge: 'coming', done: false },
+    { badge: 'coming', done: false },
+    { badge: 'coming', done: false },
+    { badge: 'coming', done: false },
+    { badge: 'coming', done: false },
+  ];
+
   return (
     <>
       {showContact && <ContactModal onClose={() => setShowContact(false)} defaultSubject="Early access to Explain.global" />}
       <style>{css}</style>
       <canvas ref={particlesRef} style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0 }} />
 
-      {/* HERO — two column: text left, interview room right */}
+      {/* HERO */}
       <section id="ph-hero">
         <div className="ph-hero-glow" />
         <div className="ph-hero-inner">
-          {/* LEFT: headline + features + CTAs */}
           <div>
-            <div className="ph-r" data-ph="" style={{marginBottom:20}}><span className="ph-badge-gold">✦ Beta</span></div>
+            <div className="ph-r" data-ph="" style={{marginBottom:20}}><span className="ph-badge-gold">✦ {t('hero.badge')}</span></div>
             <h1 className="ph-hero-hl ph-r" data-ph="" data-d="1">
-              The <span style={{color:'#4F8EF7'}}>Interview Chair</span><br />
+              {t('hero.line1')} <span style={{color:'#4F8EF7'}}>Interview Chair</span><br />
               <span style={{background:'linear-gradient(90deg,#4F8EF7,#a78bfa)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>
-                is open.
+                {t('hero.line3')}
               </span>
             </h1>
             <p className="ph-r" data-ph="" data-d="2" style={{fontSize:17,lineHeight:1.75,color:'rgba(240,244,255,.65)',marginTop:20,maxWidth:460}}>
-              A cinematic AI-powered interview experience. Face an intelligent interviewer, receive real-time coaching, and get scored — before you ever sit in the real room.
+              {t('hero.desc')}
             </p>
             <ul className="ph-ir-list ph-r" data-ph="" data-d="3" style={{marginTop:20}}>
-              {['AI interviewer with voice and presence','Live waveform & speech detection','Real-time coaching overlay','Behavioural scoring engine','Instant post-interview debrief','Recruiter-shareable results'].map(li=><li key={li}>{li}</li>)}
+              {heroFeatures.map(li => <li key={li}>{li}</li>)}
             </ul>
             <div className="ph-r" data-ph="" data-d="4" style={{display:'flex',gap:14,flexWrap:'wrap',marginTop:36}}>
-              <a className="ph-btn-primary" href="https://candidate.explain.global/login">Start Practising →</a>
-              <a href="https://product.explain.global" target="_blank" rel="noopener noreferrer" className="ph-btn-ghost" style={{borderColor:'rgba(167,139,250,.35)',color:'#a78bfa'}}>How it works →</a>
+              <a className="ph-btn-primary" href="https://candidate.explain.global/login">{t('hero.cta1')}</a>
+              <a href="https://product.explain.global" target="_blank" rel="noopener noreferrer" className="ph-btn-ghost" style={{borderColor:'rgba(167,139,250,.35)',color:'#a78bfa'}}>{t('hero.cta2')}</a>
             </div>
           </div>
-          {/* RIGHT: interview room mockup */}
           <div className="ph-ir-preview ph-r" data-ph="" data-d="2" style={{position:'relative'}}>
             <div style={{position:'absolute',inset:'-30px',background:'radial-gradient(ellipse at center,rgba(79,142,247,.18) 0%,transparent 70%)',pointerEvents:'none',borderRadius:40}} />
             <img src="/assets/interview-room-preview.png" alt="Explain Interview Room — AI interviewer Sarah Mitchell" style={{width:'100%',display:'block',position:'relative'}} />
@@ -296,34 +313,32 @@ export default function Home() {
       <section id="ph-practice">
         <div className="ph-practice-grid">
           <div>
-            <div className="ph-lbl ph-r" data-ph="">Interview Practice</div>
-            <h2 className="ph-practice-hook ph-r" data-ph="" data-d="1">
-              One interview.<br /><em>One pound.</em><br />Life-changing.
+            <div className="ph-lbl ph-r" data-ph="">{t('practice.label')}</div>
+            <h2 className="ph-practice-hook ph-r" data-ph="" data-d="1" style={{whiteSpace:'pre-line'}}>
+              {t('practice.headline').split('\n').map((line, i, arr) => (
+                <span key={i}>{i === 1 ? <em>{line}</em> : line}{i < arr.length - 1 && <br />}</span>
+              ))}
             </h2>
-            <p className="ph-practice-sub ph-r" data-ph="" data-d="2">
-              The average UK professional salary is <strong>£35,000</strong>. A senior tech role pays <strong>£100,000–£150,000</strong>. The difference between getting it and missing it? <strong>Being prepared.</strong>
-            </p>
-            <p className="ph-practice-sub ph-r" data-ph="" data-d="3" style={{marginTop:-16}}>
-              An Explain Interview Pack costs <strong>£1</strong>. Twenty AI-generated practice questions, tailored to <strong>your CV</strong> and the <strong>exact job spec</strong> — ready instantly. No login. No faff. Just preparation.
-            </p>
+            <p className="ph-practice-sub ph-r" data-ph="" data-d="2" dangerouslySetInnerHTML={{__html: t('practice.body1').replace(/<s>/g,'<strong>').replace(/<\/s>/g,'</strong>')}} />
+            <p className="ph-practice-sub ph-r" data-ph="" data-d="3" style={{marginTop:-16}} dangerouslySetInnerHTML={{__html: t('practice.body2').replace(/<s>/g,'<strong>').replace(/<\/s>/g,'</strong>')}} />
             <div className="ph-practice-stats ph-r" data-ph="" data-d="4">
-              <div className="ph-practice-stat"><span className="ph-practice-stat-val">£1</span><span className="ph-practice-stat-lbl">per pack</span></div>
-              <div className="ph-practice-stat"><span className="ph-practice-stat-val">20</span><span className="ph-practice-stat-lbl">practice questions</span></div>
-              <div className="ph-practice-stat"><span className="ph-practice-stat-val">50+</span><span className="ph-practice-stat-lbl">languages</span></div>
+              <div className="ph-practice-stat"><span className="ph-practice-stat-val">{t('practice.stat1val')}</span><span className="ph-practice-stat-lbl">{t('practice.stat1lbl')}</span></div>
+              <div className="ph-practice-stat"><span className="ph-practice-stat-val">{t('practice.stat2val')}</span><span className="ph-practice-stat-lbl">{t('practice.stat2lbl')}</span></div>
+              <div className="ph-practice-stat"><span className="ph-practice-stat-val">{t('practice.stat3val')}</span><span className="ph-practice-stat-lbl">{t('practice.stat3lbl')}</span></div>
             </div>
           </div>
           <div className="ph-r" data-ph="" data-d="3" style={{display:'flex',justifyContent:'center'}}>
             <div className="ph-pack-card">
               <div className="ph-pack-card-header">
                 <div className="ph-pack-card-icon">⚡</div>
-                <span className="ph-pack-card-title">Prepare for this interview</span>
+                <span className="ph-pack-card-title">{t('practice.cardTitle')}</span>
               </div>
               <div className="ph-pack-card-body">
                 <span className="ph-pack-card-price">£1</span>
-                <p className="ph-pack-card-hl">Get your tailored Interview Pack for this exact role — only £1</p>
-                <p className="ph-pack-card-desc">20 AI-generated practice questions · Tailored to your CV · Tailored to this job · Instant access</p>
-                <button className="ph-pack-card-btn">Get Interview Pack — £1</button>
-                <div className="ph-pack-card-footer">No login needed · Instant access<br />Powered by <strong>Explain.global</strong></div>
+                <p className="ph-pack-card-hl">{t('practice.cardHeadline')}</p>
+                <p className="ph-pack-card-desc">{t('practice.cardDesc')}</p>
+                <button className="ph-pack-card-btn">{t('practice.cardBtn')}</button>
+                <div className="ph-pack-card-footer">{t('practice.cardFooter1')}<br />{t('practice.cardFooter2')}</div>
               </div>
             </div>
           </div>
@@ -337,36 +352,30 @@ export default function Home() {
         <div className="ph-c">
           <div className="ph-why-grid">
             <div className="ph-manifesto">
-              <div className="ph-lbl ph-r" data-ph="">Why Explain Exists</div>
-              <p className="ph-r" data-ph="" data-d="1">People don't fail interviews because they're not good enough.</p>
-              <p className="ph-r" data-ph="" data-d="2">They fail because they've never actually <strong style={{color:'#F0F4FF'}}>practised</strong>. Not once. Not properly. Most people walk into the most important conversation of their career having rehearsed nothing — because there was nowhere to rehearse.</p>
-              <p className="ph-em1 ph-r" data-ph="" data-d="3">The first time they sit<br />in the chair —<br />is the real interview.</p>
-              <p className="ph-em2 ph-r" data-ph="" data-d="4">That ends now.</p>
-              <div className="ph-tagline ph-r" data-ph="" data-d="5"><p>Explain is the world's first <strong>AI interview practice platform</strong> that feels like the real thing. So when the real thing comes — you're already ready.</p></div>
+              <div className="ph-lbl ph-r" data-ph="">{t('why.label')}</div>
+              <p className="ph-r" data-ph="" data-d="1">{t('why.p1')}</p>
+              <p className="ph-r" data-ph="" data-d="2">{t('why.p2')}</p>
+              <p className="ph-em1 ph-r" data-ph="" data-d="3" style={{whiteSpace:'pre-line'}}>{t('why.em1')}</p>
+              <p className="ph-em2 ph-r" data-ph="" data-d="4">{t('why.em2')}</p>
+              <div className="ph-tagline ph-r" data-ph="" data-d="5"><p>{t('why.tagline')}</p></div>
             </div>
             <div>
               <div className="ph-pillars">
-                {[
-                  ['💡','Clarity','Know exactly what to expect','We remove the mystery of interviews. You see the question structure, the competencies being assessed, and the benchmark before you walk in. Clarity is the most underrated competitive advantage.','Prepared minds perform.'],
-                  ['📐','Structure','A framework that turns pressure into performance','Every session follows a proven architecture — opening, competency questions, HR questions, debrief. You learn to map your experience to what interviewers actually need. No more guessing.','Structure beats talent in the room.'],
-                  ['🎯','Coaching','Real-time guidance, not post-match analysis',"While you answer, Explain's coaching engine watches your delivery, flags hesitations, and surfaces cues in real time. You don't just practice — you improve with every question.",'The best coaches speak during the game.'],
-                  ['📊','Scoring','Honest scores. No vanity metrics.',"After each answer, you receive a breakdown across Clarity, Depth, Confidence, and Delivery — calibrated against the Top 5% benchmark for your specific role and industry.",'You can\'t improve what you can\'t measure.'],
-                  ['⚡','Confidence','Walk in ready. Walk out proud.',"Confidence isn't fake it till you make it. It's the natural result of genuine preparation. After enough sessions with Explain, you don't just feel ready — you are ready.",'Confidence is a skill. We build it.'],
-                ].map(([icon,name,hl,body,micro],i) => (
-                  <div className="ph-pillar ph-r" data-ph="" data-d={String(i+1)} key={name} style={{flexDirection:'column',alignItems:'flex-start',gap:10}}>
+                {whyPillars.map((pillar, i) => (
+                  <div className="ph-pillar ph-r" data-ph="" data-d={String(i+1)} key={pillar.name} style={{flexDirection:'column',alignItems:'flex-start',gap:10}}>
                     <div style={{display:'flex',alignItems:'center',gap:12}}>
-                      <div className="ph-pillar-icon">{icon}</div>
+                      <div className="ph-pillar-icon">{PILLAR_ICONS[i]}</div>
                       <div>
-                        <div style={{fontSize:15,fontWeight:800,color:'#F0F4FF',letterSpacing:'-.01em'}}>{name}</div>
-                        <div style={{fontSize:11,fontWeight:700,color:'#4F8EF7',marginTop:1}}>{hl}</div>
+                        <div style={{fontSize:15,fontWeight:800,color:'#F0F4FF',letterSpacing:'-.01em'}}>{pillar.name}</div>
+                        <div style={{fontSize:11,fontWeight:700,color:'#4F8EF7',marginTop:1}}>{pillar.hl}</div>
                       </div>
                     </div>
-                    <div style={{fontSize:12,color:'rgba(240,244,255,.5)',lineHeight:1.65}}>{body}</div>
-                    <div style={{fontSize:11,fontWeight:700,color:'rgba(79,142,247,.6)',fontStyle:'italic'}}>{micro}</div>
+                    <div style={{fontSize:12,color:'rgba(240,244,255,.5)',lineHeight:1.65}}>{pillar.body}</div>
+                    <div style={{fontSize:11,fontWeight:700,color:'rgba(79,142,247,.6)',fontStyle:'italic'}}>{pillar.micro}</div>
                   </div>
                 ))}
               </div>
-              <p className="ph-r" data-ph="" data-d="6" style={{marginTop:24,fontSize:14,color:'#4F8EF7',fontWeight:700,textAlign:'center'}}>Explain.global gives every candidate all five.</p>
+              <p className="ph-r" data-ph="" data-d="6" style={{marginTop:24,fontSize:14,color:'#4F8EF7',fontWeight:700,textAlign:'center'}}>{t('why.allFive')}</p>
             </div>
           </div>
         </div>
@@ -378,10 +387,10 @@ export default function Home() {
       <section id="ph-global">
         <div className="ph-c">
           <div className="ph-feat-head">
-            <div className="ph-lbl ph-r" data-ph="">Global by Design</div>
-            <h2 className="ph-global-hl ph-r" data-ph="" data-d="1">Any language.<br /><span style={{color:'#4F8EF7'}}>Any job.</span><br />Any job spec.</h2>
+            <div className="ph-lbl ph-r" data-ph="">{t('global.label')}</div>
+            <h2 className="ph-global-hl ph-r" data-ph="" data-d="1">{t('global.headline1')}<br /><span style={{color:'#4F8EF7'}}>{t('global.headline2')}</span><br />{t('global.headline3')}</h2>
             <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:540,margin:'0 auto'}}>
-              Explain.global works in any language, for any role, in any industry — anywhere in the world. Upload a job spec in Portuguese. Interview in French. Get coached in Mandarin. We handle the rest.
+              {t('global.desc')}
             </p>
           </div>
           <div className="ph-lang-ticker ph-r" data-ph="" data-d="2">
@@ -393,9 +402,9 @@ export default function Home() {
             {JOBS.map(j=><div className="ph-job-chip" key={j}>{j}</div>)}
           </div>
           <div className="ph-global-stats ph-r" data-ph="" data-d="4">
-            <div><div className="ph-stat-num">50+</div><div className="ph-stat-lbl">Languages supported</div></div>
-            <div><div className="ph-stat-num">∞</div><div className="ph-stat-lbl">Job specs. Any industry.</div></div>
-            <div><div className="ph-stat-num">Any</div><div className="ph-stat-lbl">Role. Level. Market.</div></div>
+            <div><div className="ph-stat-num">50+</div><div className="ph-stat-lbl">{t('global.stat1lbl')}</div></div>
+            <div><div className="ph-stat-num">∞</div><div className="ph-stat-lbl">{t('global.stat2lbl')}</div></div>
+            <div><div className="ph-stat-num">Any</div><div className="ph-stat-lbl">{t('global.stat3lbl')}</div></div>
           </div>
         </div>
       </section>
@@ -406,11 +415,11 @@ export default function Home() {
       <section id="ph-learn" className="ph-feat">
         <div className="ph-c">
           <div className="ph-feat-head">
-            <div className="ph-lbl ph-r" data-ph="">Live Now</div>
-            <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">The <span style={{color:'#4F8EF7'}}>Learn Engine</span></h2>
-            <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:520,margin:'16px auto 0'}}>Enter any subject. Receive a full structured lesson — concepts, glossary, exam questions, and a quiz — generated by AI in seconds.</p>
+            <div className="ph-lbl ph-r" data-ph="">{t('learn.label')}</div>
+            <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">The <span style={{color:'#4F8EF7'}}>{t('learn.headline')}</span></h2>
+            <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:520,margin:'16px auto 0'}}>{t('learn.desc')}</p>
             <div className="ph-r" data-ph="" data-d="3" style={{marginTop:24,display:'flex',justifyContent:'center'}}>
-              <button className="ph-btn-primary" onClick={() => navigate('/learn')}>Try the Learn Engine →</button>
+              <button className="ph-btn-primary" onClick={() => navigate('/learn')}>{t('learn.cta')}</button>
             </div>
           </div>
           <div className="ph-learn-grid ph-r" data-ph="" data-d="2">
@@ -446,9 +455,9 @@ export default function Home() {
       <section className="ph-feat ph-dark">
         <div className="ph-c">
           <div className="ph-feat-head">
-            <div className="ph-lbl ph-r" data-ph="">Coming Soon · Global Distribution</div>
-            <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">Interview <span style={{color:'#4F8EF7'}}>Packs</span></h2>
-            <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:520,margin:'16px auto 0'}}>Complete role-specific preparation bundles — lessons, practice questions, live simulations, AI scoring, and coaching — in one place.</p>
+            <div className="ph-lbl ph-r" data-ph="">{t('packs.label')}</div>
+            <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">{t('packs.headline').split(' ').slice(0,-1).join(' ')} <span style={{color:'#4F8EF7'}}>{t('packs.headline').split(' ').slice(-1)}</span></h2>
+            <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:520,margin:'16px auto 0'}}>{t('packs.desc')}</p>
             <div className="ph-r" data-ph="" data-d="3" style={{marginTop:20}}><span className="ph-badge-gold">Global Distribution</span></div>
           </div>
           <div className="ph-packs-grid ph-r" data-ph="" data-d="2">
@@ -477,18 +486,18 @@ export default function Home() {
       <section className="ph-feat">
         <div className="ph-c">
           <div className="ph-feat-head">
-            <div className="ph-lbl ph-r" data-ph="">Platform</div>
-            <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">Two <span style={{color:'#4F8EF7'}}>Portals</span>, one ecosystem</h2>
+            <div className="ph-lbl ph-r" data-ph="">{t('portals.label')}</div>
+            <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">{t('portals.headline').replace('Portals','').trim()} <span style={{color:'#4F8EF7'}}>Portals</span>{t('portals.headline').includes(',') ? ', ' + t('portals.headline').split(',').slice(1).join(',') : ''}</h2>
           </div>
           <div className="ph-portals-grid">
-            {[
-              {badge:'Candidate Portal',title:'Your preparation\ncommand centre',sub:'Everything a candidate needs — in one space.',feats:['Personal dashboard','Learn Engine access','Interview Chair sessions','Flow Viewer timeline','Saved lessons & interviews','Personalised LEARN plan'],cols:'repeat(3,1fr)'},
-              {badge:'Recruiter Portal',title:'Candidate intelligence\nat a glance',sub:'Everything a recruiter needs to place better candidates, faster.',feats:['Interview pack builder','Candidate flow management','AI scoring & insights','Feedback delivery tools','Candidate preparation links','Placement intelligence'],cols:'1fr 1fr'},
-            ].map((p,i)=>(
+            {([
+              { badge: 'Candidate Portal', titleKey: 'portals.candidate.title', subKey: 'portals.candidate.sub', feats: candidateFeats, cols: 'repeat(3,1fr)' },
+              { badge: 'Recruiter Portal', titleKey: 'portals.recruiter.title', subKey: 'portals.recruiter.sub', feats: recruiterFeats, cols: '1fr 1fr' },
+            ] as const).map((p, i) => (
               <div className="ph-portal ph-r" data-ph="" data-d={String(i)} key={p.badge}>
                 <span className="ph-badge-blue">{p.badge}</span>
-                <div style={{fontSize:24,fontWeight:800,letterSpacing:'-.02em',margin:'14px 0 8px',color:'#F0F4FF',whiteSpace:'pre-line'}}>{p.title}</div>
-                <div style={{fontSize:13,color:'rgba(240,244,255,.35)'}}>{p.sub}</div>
+                <div style={{fontSize:24,fontWeight:800,letterSpacing:'-.02em',margin:'14px 0 8px',color:'#F0F4FF',whiteSpace:'pre-line'}}>{t(p.titleKey)}</div>
+                <div style={{fontSize:13,color:'rgba(240,244,255,.35)'}}>{t(p.subKey)}</div>
                 {p.feats.map(f=><div className="ph-portal-feat" key={f}><div className="ph-dot" />{f}</div>)}
                 <div className="ph-mockup">
                   <div className="ph-mock-row" style={{width:'70%'}} />
@@ -510,10 +519,10 @@ export default function Home() {
         <div className="ph-c">
           <div className="ph-flow-grid">
             <div>
-              <div className="ph-lbl ph-r" data-ph="">Flow Viewer</div>
-              <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">Every click.<br /><span style={{color:'#4F8EF7'}}>Every moment.</span><br />Visualised.</h2>
-              <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',marginTop:20}}>A cinematic timeline of every candidate interaction — from first click to final placement.</p>
-              <p className="ph-r" data-ph="" data-d="3" style={{fontSize:15,lineHeight:1.7,color:'rgba(240,244,255,.65)',marginTop:16}}>Recruiters see the full story. Candidates own their journey.</p>
+              <div className="ph-lbl ph-r" data-ph="">{t('flow.label')}</div>
+              <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">{t('flow.headline1')}<br /><span style={{color:'#4F8EF7'}}>{t('flow.headline2')}</span><br />{t('flow.headline3')}</h2>
+              <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',marginTop:20}}>{t('flow.desc1')}</p>
+              <p className="ph-r" data-ph="" data-d="3" style={{fontSize:15,lineHeight:1.7,color:'rgba(240,244,255,.65)',marginTop:16}}>{t('flow.desc2')}</p>
             </div>
             <div className="ph-flow-tl ph-r" data-ph="" data-d="2">
               {[['09:14 · Session Start','Candidate opened Interview Prep Pack','Role: Senior Software Engineer · Company: DeepMind'],['09:17 · Learn Engine','Generated lesson: System Design Fundamentals','7 concepts · 5 exam questions · quiz started'],['09:34 · Interview Room','Practice session completed — 6 questions','Strong: 4 · OK: 1 · Needs work: 1'],['09:41 · LEARN Plan','3 modules recommended from weak areas','Stakeholder Management · System Design · Communication'],['10:02 · Session End','Candidate marked prep as complete','48 min session · full flow captured']].map(([time,title,sub])=>(
@@ -533,9 +542,9 @@ export default function Home() {
       {/* ECOSYSTEM */}
       <section id="ph-eco">
         <div className="ph-c" style={{textAlign:'center'}}>
-          <div className="ph-lbl ph-r" data-ph="">The Ecosystem</div>
-          <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">One <span style={{color:'#4F8EF7'}}>constellation</span></h2>
-          <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:480,margin:'16px auto 0'}}>Every product connects. One unified ecosystem for the world of work.</p>
+          <div className="ph-lbl ph-r" data-ph="">{t('eco.label')}</div>
+          <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">One <span style={{color:'#4F8EF7'}}>{t('eco.headline').replace('One ','').replace('Одно ','').replace('Ein ','').replace('Un ','').replace('Uma ','').replace('Een ','').replace('Jedna ','')}</span></h2>
+          <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:480,margin:'16px auto 0'}}>{t('eco.desc')}</p>
           <svg id="ph-eco-svg" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" style={{width:'100%',maxWidth:800,display:'block',margin:'40px auto 0',overflow:'visible'}} role="img" aria-label="Explain.global ecosystem constellation">
             <title>Explain.global Ecosystem</title>
             <g id="ph-eco-lines" /><g id="ph-eco-nodes" />
@@ -548,26 +557,18 @@ export default function Home() {
       {/* ROADMAP */}
       <section id="ph-road">
         <div className="ph-c" style={{textAlign:'center'}}>
-          <div className="ph-lbl ph-r" data-ph="">Roadmap</div>
-          <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">Built in <span style={{color:'#4F8EF7'}}>phases</span></h2>
-          <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:480,margin:'16px auto 0'}}>Each phase unlocks the next. The full picture is already designed.</p>
+          <div className="ph-lbl ph-r" data-ph="">{t('road.label')}</div>
+          <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">{t('road.headline').split(' ').slice(0,-1).join(' ')} <span style={{color:'#4F8EF7'}}>{t('road.headline').split(' ').slice(-1)}</span></h2>
+          <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:480,margin:'16px auto 0'}}>{t('road.desc')}</p>
           <div className="ph-road-list ph-r" data-ph="" data-d="2">
-            {[
-              {n:1,done:true,phase:'Phase 1 — Active',title:'Learn Engine',sub:'AI-generated lessons on any subject. Key concepts, glossary, exam questions, quiz. 50+ languages.',badge:'live',label:'Live Now'},
-              {n:2,done:true,phase:'Phase 2 — Active',title:'Interview Prep Engine',sub:'AI-generated interview questions, model answers, self-assessment, and LEARN recommendations — for any role.',badge:'live',label:'Live Now'},
-              {n:3,done:false,phase:'Phase 3 — Beta',title:'Interview Chair',sub:'Live AI voice interviewer with real-time scoring, coaching overlays, and full session recording.',badge:'coming',label:'In Beta'},
-              {n:4,done:false,phase:'Phase 4 — Coming Soon',title:'Interview Packs',sub:'Role-specific preparation bundles distributed through partner recruitment agencies globally.',badge:'coming',label:'Planned'},
-              {n:5,done:false,phase:'Phase 5 — Coming Soon',title:'Recruiter Portal',sub:'Full recruiter intelligence suite — pack builder, candidate flow management, scoring, and insights.',badge:'coming',label:'Planned'},
-              {n:6,done:false,phase:'Phase 6 — Vision',title:'Global Distribution',sub:"Explain Interview Packs available through the world's leading recruitment agencies and job boards.",badge:'coming',label:'Vision'},
-              {n:7,done:false,phase:'Phase 7 — Vision',title:'Explain AI + Percentile.One',sub:'The full Percentile.One ecosystem: Learn, Work, Grow — unified under one AI intelligence layer.',badge:'coming',label:'Vision'},
-            ].map(r=>(
-              <div className="ph-road-item" key={r.n}>
-                <div className={`ph-road-num${r.done?' done':''}`}>{r.n}</div>
+            {roadPhases.map((r, i) => (
+              <div className="ph-road-item" key={i}>
+                <div className={`ph-road-num${ROAD_STATUS[i].done?' done':''}`}>{i+1}</div>
                 <div style={{textAlign:'left'}}>
                   <div style={{fontSize:10,fontWeight:800,letterSpacing:'.15em',textTransform:'uppercase',color:'#4F8EF7',marginBottom:4}}>{r.phase}</div>
                   <div style={{fontSize:18,fontWeight:800,color:'#F0F4FF',letterSpacing:'-.01em',marginBottom:4}}>{r.title}</div>
                   <div style={{fontSize:13,color:'rgba(240,244,255,.35)',lineHeight:1.55}}>{r.sub}</div>
-                  <span className={`ph-rbadge ${r.badge}`}>{r.label}</span>
+                  <span className={`ph-rbadge ${ROAD_STATUS[i].badge}`}>{ROAD_STATUS[i].done ? t('road.liveNow') : i === 2 ? t('road.inBeta') : i >= 5 ? t('road.vision') : t('road.planned')}</span>
                 </div>
               </div>
             ))}
@@ -581,13 +582,13 @@ export default function Home() {
       <section id="ph-wait">
         <div className="ph-wait-glow" />
         <div className="ph-c" style={{position:'relative',zIndex:1,textAlign:'center'}}>
-          <div className="ph-r" data-ph="" style={{marginBottom:20}}><span className="ph-badge-gold">Be First</span></div>
-          <h2 className="ph-h-xl ph-r" data-ph="" data-d="1" style={{textAlign:'center'}}>Join the <span style={{color:'#4F8EF7'}}>waitlist</span></h2>
-          <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',textAlign:'center',maxWidth:480,margin:'16px auto 0'}}>Get early access to the Interview Chair, Interview Packs, and more — before they go public.</p>
+          <div className="ph-r" data-ph="" style={{marginBottom:20}}><span className="ph-badge-gold">{t('wait.badge')}</span></div>
+          <h2 className="ph-h-xl ph-r" data-ph="" data-d="1" style={{textAlign:'center'}}>{t('wait.headline').split(' ').slice(0,-1).join(' ')} <span style={{color:'#4F8EF7'}}>{t('wait.headline').split(' ').slice(-1)}</span></h2>
+          <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',textAlign:'center',maxWidth:480,margin:'16px auto 0'}}>{t('wait.desc')}</p>
           <div className="ph-r" data-ph="" data-d="3" style={{marginTop:40}}>
-            <button className="ph-btn-primary" onClick={() => setShowContact(true)} style={{fontSize:16,padding:'16px 40px'}}>Register Your Interest →</button>
+            <button className="ph-btn-primary" onClick={() => setShowContact(true)} style={{fontSize:16,padding:'16px 40px'}}>{t('wait.cta')}</button>
           </div>
-          <p className="ph-r" data-ph="" data-d="4" style={{fontSize:13,lineHeight:1.65,color:'rgba(240,244,255,.35)',textAlign:'center',marginTop:16}}>Francis replies personally to every message.</p>
+          <p className="ph-r" data-ph="" data-d="4" style={{fontSize:13,lineHeight:1.65,color:'rgba(240,244,255,.35)',textAlign:'center',marginTop:16}}>{t('wait.footnote')}</p>
         </div>
       </section>
 
@@ -596,33 +597,33 @@ export default function Home() {
       {/* FOUNDER */}
       <section id="ph-founder">
         <div className="ph-c">
-          <div className="ph-lbl ph-r" data-ph="" style={{textAlign:'center',marginBottom:32}}>A Message from the Founder</div>
+          <div className="ph-lbl ph-r" data-ph="" style={{textAlign:'center',marginBottom:32}}>{t('founder.label')}</div>
           <div className="ph-founder-card ph-r" data-ph="" style={{maxWidth:760}}>
             <p style={{fontSize:16,color:'rgba(240,244,255,.5)',lineHeight:1.85,marginBottom:20,position:'relative',zIndex:1,fontWeight:500}}>
-              I built Explain because I lived the problem.
+              {t('founder.p1')}
             </p>
             <p style={{fontSize:16,color:'rgba(240,244,255,.6)',lineHeight:1.85,marginBottom:20,position:'relative',zIndex:1}}>
-              I have sat in interview rooms and watched people who were brilliant — genuinely brilliant — walk out empty-handed. Not because they weren't good enough. Because the process was a black box. It rewarded those who had been coached, those who had insider knowledge, those who had simply <em style={{fontStyle:'normal',color:'#F0F4FF',fontWeight:700}}>done it before</em>.
+              {t('founder.p2')}
             </p>
             <p style={{fontSize:16,color:'rgba(240,244,255,.6)',lineHeight:1.85,marginBottom:20,position:'relative',zIndex:1}}>
-              Traditional interviews were never designed to find the best person. They were designed to find the most <em style={{fontStyle:'normal',color:'#F0F4FF',fontWeight:700}}>familiar</em> person — familiar with the format, the language, the unspoken rules. That is not a merit system. That is a privilege system.
+              {t('founder.p3')}
             </p>
             <p style={{fontSize:16,color:'rgba(240,244,255,.6)',lineHeight:1.85,marginBottom:20,position:'relative',zIndex:1}}>
-              The Interview Chair is our answer. A place where every candidate — regardless of background, country, or connections — sits across from two AI interviewers who know the role, the industry, and the exact job spec. Where the coaching is honest. Where the scoring is real. Where the preparation is fair.
+              {t('founder.p4')}
             </p>
             <p style={{fontSize:17,fontWeight:700,color:'#F0F4FF',lineHeight:1.7,marginBottom:28,position:'relative',zIndex:1}}>
-              Our mission is simple: clarity for every candidate, everywhere. The nurse in Lagos. The engineer in Warsaw. The graduate in Birmingham who never had a mentor. Every one of them deserves to walk in prepared.
+              {t('founder.p5')}
             </p>
             <div style={{padding:'20px 24px',borderLeft:'3px solid #4F8EF7',background:'rgba(79,142,247,.05)',borderRadius:'0 12px 12px 0',marginBottom:28,position:'relative',zIndex:1}}>
               <p style={{fontSize:18,fontWeight:800,color:'#F0F4FF',lineHeight:1.5,margin:0,letterSpacing:'-.02em'}}>
-                "Every seat at that table should be earned on merit.<br />The Interview Chair is how we get you there."
+                "{t('founder.quote')}"
               </p>
             </div>
             <div style={{display:'flex',alignItems:'center',gap:14,position:'relative',zIndex:1}}>
               <div style={{width:44,height:44,borderRadius:'50%',background:'linear-gradient(135deg,#4F8EF7,#2D5BFF)',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:16,color:'#fff',flexShrink:0}}>FC</div>
               <div>
-                <div style={{fontSize:14,fontWeight:800,color:'#F0F4FF'}}>Francis Cobbinah</div>
-                <div style={{fontSize:11,color:'rgba(240,244,255,.35)',marginTop:2}}>Founder · Explain.global · Percentile.One</div>
+                <div style={{fontSize:14,fontWeight:800,color:'#F0F4FF'}}>{t('founder.name')}</div>
+                <div style={{fontSize:11,color:'rgba(240,244,255,.35)',marginTop:2}}>{t('founder.founderTitle')}</div>
               </div>
             </div>
           </div>
@@ -646,11 +647,11 @@ export default function Home() {
             </div>
           </div>
           <div className="ph-footer-links">
-            <a href="#ph-why">Why Explain</a><a href="#ph-global">Global</a>
-            <a href="#ph-learn">Learn Engine</a><a href="#ph-eco">Ecosystem</a>
-            <a href="#ph-wait">Waitlist</a>
+            <a href="#ph-why">{t('footer.whyExplain')}</a><a href="#ph-global">{t('footer.global')}</a>
+            <a href="#ph-learn">{t('footer.learnEngine')}</a><a href="#ph-eco">{t('footer.ecosystem')}</a>
+            <a href="#ph-wait">{t('footer.waitlist')}</a>
           </div>
-          <div style={{fontSize:11,color:'rgba(240,244,255,.35)'}}>© 2026 Percentile.One · explain.global · All rights reserved</div>
+          <div style={{fontSize:11,color:'rgba(240,244,255,.35)'}}>{t('footer.copy')}</div>
         </div>
       </footer>
     </>

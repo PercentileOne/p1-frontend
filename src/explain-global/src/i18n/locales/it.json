@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "home": "Home", "jobs": "Lavori", "learn": "Imparare", "community": "Comunità",
+    "myInterviews": "I Miei Colloqui", "portals": "Portali", "pricing": "Prezzi",
+    "registerInterest": "Registra interesse", "signIn": "Accedi", "register": "Registrati"
+  },
+  "hero": {
+    "badge": "Beta",
+    "line1": "La", "line2": "Sedia del Colloquio", "line3": "è aperta.",
+    "desc": "Un'esperienza di colloquio cinematografica alimentata dall'IA. Affronta un intervistatore intelligente, ricevi coaching in tempo reale e vieni valutato — prima di sederti nella stanza reale.",
+    "features": ["Intervistatore IA con voce e presenza", "Forma d'onda dal vivo e rilevamento vocale", "Coaching in tempo reale", "Motore di punteggio comportamentale", "Debriefing post-colloquio istantaneo", "Risultati condivisibili con i recruiter"],
+    "cta1": "Inizia a praticare →", "cta2": "Come funziona →"
+  },
+  "practice": {
+    "label": "Pratica per i Colloqui",
+    "headline": "Un colloquio.\nUna sterlina.\nCambia la vita.",
+    "body1": "Lo stipendio professionale medio nel Regno Unito è di <s>£35.000</s>. Un ruolo tecnico senior paga <s>£100.000–£150.000</s>. La differenza tra ottenerlo e perderlo? <s>Essere preparati.</s>",
+    "body2": "Un Pack di Colloquio Explain costa <s>£1</s>. Venti domande di pratica generate dall'IA, adattate al <s>tuo CV</s> e all'<s>offerta di lavoro esatta</s> — disponibili all'istante. Nessun accesso. Nessuna complicazione. Solo preparazione.",
+    "stat1val": "£1", "stat1lbl": "per pack",
+    "stat2val": "20", "stat2lbl": "domande di pratica",
+    "stat3val": "50+", "stat3lbl": "lingue",
+    "cardTitle": "Preparati per questo colloquio",
+    "cardHeadline": "Ottieni il tuo Pack di Colloquio personalizzato per questo ruolo esatto — solo £1",
+    "cardDesc": "20 domande generate dall'IA · Adattate al tuo CV · Adattate a questo lavoro · Accesso immediato",
+    "cardBtn": "Ottieni il Pack di Colloquio — £1",
+    "cardFooter1": "Nessun accesso necessario · Accesso immediato",
+    "cardFooter2": "Sviluppato da Explain.global"
+  },
+  "why": {
+    "label": "Perché Esiste Explain",
+    "p1": "Le persone non falliscono i colloqui perché non sono abbastanza brave.",
+    "p2": "Falliscono perché non hanno mai veramente praticato. Nemmeno una volta. Non correttamente. La maggior parte entra nella conversazione più importante della propria carriera senza aver provato nulla — perché non c'era un posto dove farlo.",
+    "em1": "La prima volta che si siedono\nsulla sedia —\nè il vero colloquio.",
+    "em2": "Questo finisce ora.",
+    "tagline": "Explain è la prima piattaforma mondiale di pratica per colloqui con IA che sembra la cosa reale. Quando arriva il momento reale — sei già pronto.",
+    "pillars": [
+      { "name": "Chiarezza", "hl": "Sapere esattamente cosa aspettarsi", "body": "Rimuoviamo il mistero dei colloqui. Vedi la struttura delle domande, le competenze valutate e il benchmark prima di entrare. La chiarezza è il vantaggio competitivo più sottovalutato.", "micro": "Le menti preparate performano meglio." },
+      { "name": "Struttura", "hl": "Un framework che trasforma la pressione in performance", "body": "Ogni sessione segue un'architettura collaudata — apertura, domande di competenza, domande HR, debriefing. Impari a mappare la tua esperienza su ciò che gli intervistatori hanno realmente bisogno.", "micro": "La struttura batte il talento nella stanza." },
+      { "name": "Coaching", "hl": "Guida in tempo reale, non analisi post-partita", "body": "Mentre rispondi, il motore di coaching di Explain osserva la tua prestazione, segnala esitazioni e mette in evidenza spunti in tempo reale. Non pratichi solo — migliori con ogni domanda.", "micro": "I migliori coach parlano durante la partita." },
+      { "name": "Punteggio", "hl": "Punteggi onesti. Nessuna metrica di vanità.", "body": "Dopo ogni risposta, ricevi un'analisi di Chiarezza, Profondità, Sicurezza e Consegna — calibrata rispetto al benchmark Top 5% per il tuo ruolo e settore specifici.", "micro": "Non puoi migliorare ciò che non misuri." },
+      { "name": "Sicurezza", "hl": "Entra pronto. Esci orgoglioso.", "body": "La sicurezza non è fingere finché non ce la fai. È il risultato naturale di una preparazione genuina. Dopo abbastanza sessioni con Explain, non ti senti solo pronto — lo sei.", "micro": "La sicurezza è un'abilità. Noi la costruiamo." }
+    ],
+    "allFive": "Explain.global dà tutte e cinque a ogni candidato."
+  },
+  "global": {
+    "label": "Globale per Design",
+    "headline1": "Qualsiasi lingua.", "headline2": "Qualsiasi lavoro.", "headline3": "Qualsiasi offerta.",
+    "desc": "Explain.global funziona in qualsiasi lingua, per qualsiasi ruolo, in qualsiasi settore — ovunque nel mondo. Carica un'offerta in portoghese. Fai il colloquio in francese. Ricevi coaching in mandarino. Pensiamo noi al resto.",
+    "stat1lbl": "Lingue supportate", "stat2lbl": "Offerte di lavoro. Qualsiasi settore.", "stat3lbl": "Ruolo. Livello. Mercato."
+  },
+  "learn": {
+    "label": "Disponibile Ora",
+    "headline": "Il Motore di Apprendimento",
+    "desc": "Inserisci qualsiasi argomento. Ricevi una lezione strutturata completa — concetti, glossario, domande d'esame e un quiz — generata dall'IA in secondi.",
+    "cta": "Prova il Motore di Apprendimento →"
+  },
+  "packs": {
+    "label": "Prossimamente · Distribuzione Globale",
+    "headline": "Pack di Colloquio",
+    "desc": "Pacchetti di preparazione completi specifici per ogni ruolo — lezioni, domande di pratica, simulazioni live, punteggio IA e coaching — in un unico posto."
+  },
+  "portals": {
+    "label": "Piattaforma",
+    "headline": "Due Portali, un ecosistema",
+    "candidate": {
+      "title": "Il tuo centro di comando\ndella preparazione", "sub": "Tutto ciò di cui un candidato ha bisogno — in un unico spazio.",
+      "feats": ["Dashboard personale", "Accesso al Motore di Apprendimento", "Sessioni Interview Chair", "Timeline Flow Viewer", "Lezioni e colloqui salvati", "Piano LEARN personalizzato"]
+    },
+    "recruiter": {
+      "title": "Intelligenza dei candidati\nin un colpo d'occhio", "sub": "Tutto ciò di cui un recruiter ha bisogno per piazzare candidati migliori, più velocemente.",
+      "feats": ["Costruttore di pack di colloquio", "Gestione del flusso candidati", "Punteggio IA e insight", "Strumenti di feedback", "Link di preparazione candidati", "Intelligenza di placement"]
+    }
+  },
+  "flow": {
+    "label": "Flow Viewer",
+    "headline1": "Ogni clic.", "headline2": "Ogni momento.", "headline3": "Visualizzato.",
+    "desc1": "Una timeline cinematografica di ogni interazione del candidato — dal primo clic al placement finale.",
+    "desc2": "I recruiter vedono tutta la storia. I candidati sono i proprietari del loro percorso."
+  },
+  "eco": {
+    "label": "L'Ecosistema", "headline": "Una costellazione",
+    "desc": "Ogni prodotto è connesso. Un ecosistema unificato per il mondo del lavoro."
+  },
+  "road": {
+    "label": "Roadmap", "headline": "Costruito in fasi",
+    "desc": "Ogni fase sblocca la successiva. Il quadro completo è già progettato.",
+    "liveNow": "Live Ora", "inBeta": "In Beta", "planned": "Pianificato", "vision": "Visione",
+    "phases": [
+      { "phase": "Fase 1 — Attiva", "title": "Motore di Apprendimento", "sub": "Lezioni generate dall'IA su qualsiasi argomento. Concetti chiave, glossario, domande d'esame, quiz. 50+ lingue." },
+      { "phase": "Fase 2 — Attiva", "title": "Motore di Preparazione Colloqui", "sub": "Domande di colloquio generate dall'IA, risposte modello, autovalutazione e raccomandazioni LEARN — per qualsiasi ruolo." },
+      { "phase": "Fase 3 — Beta", "title": "Interview Chair", "sub": "Intervistatore vocale IA live con punteggio in tempo reale, overlay di coaching e registrazione completa della sessione." },
+      { "phase": "Fase 4 — Prossimamente", "title": "Pack di Colloquio", "sub": "Pacchetti di preparazione specifici distribuiti attraverso agenzie di reclutamento partner a livello globale." },
+      { "phase": "Fase 5 — Prossimamente", "title": "Portale Recruiter", "sub": "Suite completa di intelligenza per recruiter — costruttore di pack, gestione del flusso candidati, punteggio e insight." },
+      { "phase": "Fase 6 — Visione", "title": "Distribuzione Globale", "sub": "Pack di Colloquio Explain disponibili attraverso le principali agenzie di reclutamento e bacheche di lavoro del mondo." },
+      { "phase": "Fase 7 — Visione", "title": "Explain AI + Percentile.One", "sub": "L'ecosistema completo Percentile.One: Imparare, Lavorare, Crescere — unificato sotto un unico livello di intelligenza IA." }
+    ]
+  },
+  "wait": {
+    "badge": "Sii il Primo", "headline": "Unisciti alla lista d'attesa",
+    "desc": "Ottieni accesso anticipato alla Interview Chair, ai Pack di Colloquio e altro ancora — prima che diventino pubblici.",
+    "cta": "Registra il mio interesse →",
+    "footnote": "Francis risponde personalmente a ogni messaggio."
+  },
+  "founder": {
+    "label": "Un Messaggio dal Fondatore",
+    "p1": "Ho creato Explain perché ho vissuto il problema.",
+    "p2": "Ho assistito a colloqui in cui persone brillanti — genuinamente brillanti — uscivano a mani vuote. Non perché non fossero abbastanza brave. Perché il processo era una scatola nera. Premiava chi era stato formato, chi aveva conoscenze privilegiate, chi lo aveva semplicemente già fatto prima.",
+    "p3": "I colloqui tradizionali non sono mai stati progettati per trovare la persona migliore. Sono stati progettati per trovare la persona più familiare — familiare con il formato, il linguaggio, le regole non dette. Non è un sistema di merito. È un sistema di privilegi.",
+    "p4": "La Interview Chair è la nostra risposta. Un posto dove ogni candidato — indipendentemente dal background, dal paese o dalle connessioni — si siede di fronte a due intervistatori IA che conoscono il ruolo, il settore e l'offerta esatta. Dove il coaching è onesto. Dove il punteggio è reale. Dove la preparazione è equa.",
+    "p5": "La nostra missione è semplice: chiarezza per ogni candidato, ovunque. L'infermiera a Lagos. L'ingegnere a Varsavia. Il laureato a Birmingham che non ha mai avuto un mentore. Ognuno di loro merita di entrare preparato.",
+    "quote": "Ogni posto a quel tavolo dovrebbe essere guadagnato per merito. La Interview Chair è il modo in cui ti ci portiamo.",
+    "name": "Francis Cobbinah",
+    "founderTitle": "Fondatore · Explain.global · Percentile.One"
+  },
+  "footer": {
+    "whyExplain": "Perché Explain", "global": "Globale", "learnEngine": "Motore di Apprendimento",
+    "ecosystem": "Ecosistema", "waitlist": "Lista d'attesa",
+    "copy": "© 2026 Percentile.One · explain.global · Tutti i diritti riservati"
+  }
+}

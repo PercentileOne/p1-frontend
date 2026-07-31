@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "home": "Strona główna", "jobs": "Praca", "learn": "Nauka", "community": "Społeczność",
+    "myInterviews": "Moje Rozmowy", "portals": "Portale", "pricing": "Cennik",
+    "registerInterest": "Wyraź zainteresowanie", "signIn": "Zaloguj się", "register": "Zarejestruj się"
+  },
+  "hero": {
+    "badge": "Beta",
+    "line1": "Krzesło", "line2": "Rekrutacyjne", "line3": "jest otwarte.",
+    "desc": "Kinematyczne doświadczenie rozmowy kwalifikacyjnej napędzane przez AI. Zmierz się z inteligentnym rozmówcą, otrzymaj coaching w czasie rzeczywistym i zdobądź ocenę — zanim usiądziesz w prawdziwej sali.",
+    "features": ["Rozmówca AI z głosem i obecnością", "Analiza głosu na żywo", "Coaching w czasie rzeczywistym", "Silnik oceny zachowania", "Natychmiastowy debriefing po rozmowie", "Wyniki do udostępnienia rekruterom"],
+    "cta1": "Zacznij ćwiczyć →", "cta2": "Jak to działa →"
+  },
+  "practice": {
+    "label": "Ćwiczenie Rozmów Kwalifikacyjnych",
+    "headline": "Jedna rozmowa.\nJeden funt.\nZmienia życie.",
+    "body1": "Średnia pensja zawodowa w Wielkiej Brytanii wynosi <s>35 000 £</s>. Stanowisko starszego specjalisty tech płaci <s>100 000–150 000 £</s>. Różnica między uzyskaniem a przegraną? <s>Przygotowanie.</s>",
+    "body2": "Pakiet Rozmowy Explain kosztuje <s>1 £</s>. Dwadzieścia pytań ćwiczeniowych wygenerowanych przez AI, dopasowanych do <s>Twojego CV</s> i <s>konkretnej oferty pracy</s> — dostępnych natychmiast. Bez logowania. Bez komplikacji. Tylko przygotowanie.",
+    "stat1val": "1 £", "stat1lbl": "za pakiet",
+    "stat2val": "20", "stat2lbl": "pytania ćwiczeniowe",
+    "stat3val": "50+", "stat3lbl": "języki",
+    "cardTitle": "Przygotuj się na tę rozmowę",
+    "cardHeadline": "Pobierz swój spersonalizowany Pakiet Rozmowy dla tej roli — tylko 1 £",
+    "cardDesc": "20 pytań wygenerowanych przez AI · Dopasowane do Twojego CV · Dopasowane do tej pracy · Natychmiastowy dostęp",
+    "cardBtn": "Pobierz Pakiet Rozmowy — 1 £",
+    "cardFooter1": "Bez logowania · Natychmiastowy dostęp",
+    "cardFooter2": "Obsługiwane przez Explain.global"
+  },
+  "why": {
+    "label": "Dlaczego Explain Istnieje",
+    "p1": "Ludzie nie obliewają rozmów kwalifikacyjnych, bo nie są wystarczająco dobrzy.",
+    "p2": "Oblewają, bo nigdy tak naprawdę nie ćwiczyli. Ani razu. Nie prawidłowo. Większość wchodzi w najważniejszą rozmowę swojej kariery bez żadnych prób — bo nie było gdzie ćwiczyć.",
+    "em1": "Pierwszy raz, gdy siadają\nna krześle —\nto jest prawdziwa rozmowa.",
+    "em2": "To się teraz kończy.",
+    "tagline": "Explain to pierwsza na świecie platforma ćwiczeń rozmów kwalifikacyjnych z AI, która czuje się jak prawdziwa. Kiedy nadejdzie prawdziwy moment — będziesz już gotowy.",
+    "pillars": [
+      { "name": "Jasność", "hl": "Wiedz dokładnie, czego się spodziewać", "body": "Usuwamy tajemnicę rozmów kwalifikacyjnych. Widzisz strukturę pytań, oceniane kompetencje i punkt odniesienia przed wejściem. Jasność to najbardziej niedoceniany atut konkurencyjny.", "micro": "Przygotowane umysły osiągają lepsze wyniki." },
+      { "name": "Struktura", "hl": "Ramy, które zamieniają presję w wyniki", "body": "Każda sesja podąża za sprawdzoną architekturą — otwarcie, pytania o kompetencje, pytania HR, debriefing. Uczysz się mapować swoje doświadczenie na to, czego rekruterzy naprawdę potrzebują.", "micro": "Struktura bije talent w sali." },
+      { "name": "Coaching", "hl": "Wskazówki w czasie rzeczywistym, nie analiza po meczu", "body": "Gdy odpowiadasz, silnik coachingowy Explain obserwuje Twoją prezentację, oznacza wahania i wyświetla wskazówki w czasie rzeczywistym. Nie tylko ćwiczysz — poprawiasz się z każdym pytaniem.", "micro": "Najlepsi trenerzy mówią podczas gry." },
+      { "name": "Ocenianie", "hl": "Uczciwe oceny. Żadnych próżnych wskaźników.", "body": "Po każdej odpowiedzi otrzymujesz analizę Jasności, Głębi, Pewności siebie i Prezentacji — skalibrowaną wobec benchmarku Top 5% dla Twojej konkretnej roli i branży.", "micro": "Nie możesz poprawić tego, czego nie mierzysz." },
+      { "name": "Pewność siebie", "hl": "Wejdź gotowy. Wyjdź dumny.", "body": "Pewność siebie to nie udawanie, dopóki ci się nie uda. To naturalny wynik prawdziwego przygotowania. Po wystarczającej liczbie sesji z Explain nie tylko czujesz się gotowy — jesteś.", "micro": "Pewność siebie to umiejętność. My ją budujemy." }
+    ],
+    "allFive": "Explain.global daje każdemu kandydatowi wszystkie pięć."
+  },
+  "global": {
+    "label": "Globalny z Założenia",
+    "headline1": "Dowolny język.", "headline2": "Dowolna praca.", "headline3": "Dowolna oferta.",
+    "desc": "Explain.global działa w dowolnym języku, dla dowolnej roli, w dowolnej branży — gdziekolwiek na świecie. Prześlij ofertę po portugalsku. Przeprowadź rozmowę po francusku. Otrzymaj coaching po mandaryńsku. Resztą się zajmujemy.",
+    "stat1lbl": "Obsługiwane języki", "stat2lbl": "Oferty pracy. Każda branża.", "stat3lbl": "Rola. Poziom. Rynek."
+  },
+  "learn": {
+    "label": "Dostępne Teraz",
+    "headline": "Silnik Nauki",
+    "desc": "Wpisz dowolny temat. Otrzymaj w pełni ustrukturyzowaną lekcję — pojęcia, słowniczek, pytania egzaminacyjne i quiz — wygenerowaną przez AI w sekundach.",
+    "cta": "Wypróbuj Silnik Nauki →"
+  },
+  "packs": {
+    "label": "Wkrótce · Dystrybucja Globalna",
+    "headline": "Pakiety Rozmów",
+    "desc": "Kompletne pakiety przygotowawcze dla konkretnych ról — lekcje, pytania ćwiczeniowe, symulacje na żywo, ocenianie AI i coaching — w jednym miejscu."
+  },
+  "portals": {
+    "label": "Platforma",
+    "headline": "Dwa Portale, jeden ekosystem",
+    "candidate": {
+      "title": "Twoje centrum dowodzenia\nprzygotowaniem", "sub": "Wszystko, czego potrzebuje kandydat — w jednym miejscu.",
+      "feats": ["Osobisty pulpit", "Dostęp do Silnika Nauki", "Sesje Interview Chair", "Oś czasu Flow Viewer", "Zapisane lekcje i rozmowy", "Spersonalizowany plan LEARN"]
+    },
+    "recruiter": {
+      "title": "Inteligencja kandydatów\nna pierwszy rzut oka", "sub": "Wszystko, czego rekruter potrzebuje, by szybciej plasować lepszych kandydatów.",
+      "feats": ["Kreator pakietów rozmów", "Zarządzanie przepływem kandydatów", "Ocenianie AI i wglądy", "Narzędzia feedbacku", "Linki do przygotowania kandydatów", "Inteligencja plasowania"]
+    }
+  },
+  "flow": {
+    "label": "Flow Viewer",
+    "headline1": "Każde kliknięcie.", "headline2": "Każdy moment.", "headline3": "Zwizualizowane.",
+    "desc1": "Kinematyczna oś czasu każdej interakcji kandydata — od pierwszego kliknięcia do ostatecznego plasowania.",
+    "desc2": "Rekruterzy widzą całą historię. Kandydaci są właścicielami swojej drogi."
+  },
+  "eco": {
+    "label": "Ekosystem", "headline": "Jedna konstelacja",
+    "desc": "Każdy produkt jest połączony. Jeden zunifikowany ekosystem dla świata pracy."
+  },
+  "road": {
+    "label": "Mapa drogowa", "headline": "Budowane etapami",
+    "desc": "Każdy etap odblokowuje następny. Pełny obraz jest już zaprojektowany.",
+    "liveNow": "Na żywo", "inBeta": "W Beta", "planned": "Planowane", "vision": "Wizja",
+    "phases": [
+      { "phase": "Etap 1 — Aktywny", "title": "Silnik Nauki", "sub": "Lekcje generowane przez AI na dowolny temat. Kluczowe pojęcia, słowniczek, pytania egzaminacyjne, quiz. 50+ języków." },
+      { "phase": "Etap 2 — Aktywny", "title": "Silnik Przygotowania do Rozmów", "sub": "Pytania rekrutacyjne generowane przez AI, wzorcowe odpowiedzi, samoocena i rekomendacje LEARN — dla dowolnej roli." },
+      { "phase": "Etap 3 — Beta", "title": "Interview Chair", "sub": "Rozmówca głosowy AI na żywo z ocenianiem w czasie rzeczywistym, nakładkami coachingowymi i pełnym nagraniem sesji." },
+      { "phase": "Etap 4 — Wkrótce", "title": "Pakiety Rozmów", "sub": "Pakiety przygotowawcze dla konkretnych ról dystrybuowane przez partnerskie agencje rekrutacyjne na całym świecie." },
+      { "phase": "Etap 5 — Wkrótce", "title": "Portal Rekrutera", "sub": "Kompletny zestaw inteligencji dla rekruterów — kreator pakietów, zarządzanie przepływem kandydatów, ocenianie i wglądy." },
+      { "phase": "Etap 6 — Wizja", "title": "Dystrybucja Globalna", "sub": "Pakiety Rozmów Explain dostępne przez wiodące agencje rekrutacyjne i portale pracy na świecie." },
+      { "phase": "Etap 7 — Wizja", "title": "Explain AI + Percentile.One", "sub": "Pełny ekosystem Percentile.One: Nauka, Praca, Rozwój — zunifikowane pod jedną warstwą inteligencji AI." }
+    ]
+  },
+  "wait": {
+    "badge": "Bądź pierwszy", "headline": "Dołącz do listy oczekujących",
+    "desc": "Uzyskaj wczesny dostęp do Interview Chair, Pakietów Rozmów i nie tylko — zanim staną się publiczne.",
+    "cta": "Wyraź swoje zainteresowanie →",
+    "footnote": "Francis odpowiada osobiście na każdą wiadomość."
+  },
+  "founder": {
+    "label": "Wiadomość od Założyciela",
+    "p1": "Stworzyłem Explain, bo sam przeżyłem ten problem.",
+    "p2": "Siedziałem w salach rekrutacyjnych i patrzyłem, jak brillantni ludzie — naprawdę brillantni — wychodzą z pustymi rękami. Nie dlatego, że nie byli wystarczająco dobrzy. Bo proces był czarną skrzynką. Nagradzał tych, którzy byli szkoleni, tych z wewnętrznymi kontaktami, tych, którzy po prostu już to robili.",
+    "p3": "Tradycyjne rozmowy kwalifikacyjne nigdy nie były zaprojektowane, by znaleźć najlepszą osobę. Były zaprojektowane, by znaleźć osobę najbardziej znajomą — znajomą z formatem, językiem, niepisanymi zasadami. To nie jest system merytokracji. To system przywilejów.",
+    "p4": "Interview Chair to nasza odpowiedź. Miejsce, gdzie każdy kandydat — niezależnie od pochodzenia, kraju czy znajomości — siada naprzeciwko dwóch rozmówców AI, którzy znają rolę, branżę i dokładną ofertę. Gdzie coaching jest uczciwy. Gdzie ocena jest realna. Gdzie przygotowanie jest sprawiedliwe.",
+    "p5": "Nasza misja jest prosta: jasność dla każdego kandydata, wszędzie. Pielęgniarka w Lagos. Inżynier w Warszawie. Absolwent w Birmingham, który nigdy nie miał mentora. Każdy z nich zasługuje na wejście przygotowanym.",
+    "quote": "Każde miejsce przy tym stole powinno być zdobyte na podstawie zasług. Interview Chair to sposób, w jaki Cię tam dowozimy.",
+    "name": "Francis Cobbinah",
+    "founderTitle": "Założyciel · Explain.global · Percentile.One"
+  },
+  "footer": {
+    "whyExplain": "Dlaczego Explain", "global": "Globalny", "learnEngine": "Silnik Nauki",
+    "ecosystem": "Ekosystem", "waitlist": "Lista oczekujących",
+    "copy": "© 2026 Percentile.One · explain.global · Wszelkie prawa zastrzeżone"
+  }
+}

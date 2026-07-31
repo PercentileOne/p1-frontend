@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "home": "Thuis", "jobs": "Vacatures", "learn": "Leren", "community": "Gemeenschap",
+    "myInterviews": "Mijn Interviews", "portals": "Portalen", "pricing": "Prijzen",
+    "registerInterest": "Interesse tonen", "signIn": "Inloggen", "register": "Registreren"
+  },
+  "hero": {
+    "badge": "Beta",
+    "line1": "De", "line2": "Interviewstoel", "line3": "is open.",
+    "desc": "Een cinematische AI-aangedreven interviewervaring. Ga in gesprek met een intelligente interviewer, ontvang realtime coaching en word beoordeeld — voordat je ooit in de echte kamer zit.",
+    "features": ["AI-interviewer met stem en aanwezigheid", "Live golfvorm & spraakdetectie", "Realtime coaching-overlay", "Gedragsbeoordelingsmotor", "Direct post-interview debriefing", "Deelbare resultaten voor recruiters"],
+    "cta1": "Begin met oefenen →", "cta2": "Hoe het werkt →"
+  },
+  "practice": {
+    "label": "Interviewoefening",
+    "headline": "Eén interview.\nEén pond.\nLevensveranderend.",
+    "body1": "Het gemiddelde professionele salaris in het VK is <s>£35.000</s>. Een senior technische rol betaalt <s>£100.000–£150.000</s>. Het verschil tussen het krijgen en missen? <s>Voorbereid zijn.</s>",
+    "body2": "Een Explain Interviewpakket kost <s>£1</s>. Twintig AI-gegenereerde oefenvragen, afgestemd op <s>jouw CV</s> en de <s>exacte vacature</s> — direct beschikbaar. Geen login. Geen gedoe. Gewoon voorbereiding.",
+    "stat1val": "£1", "stat1lbl": "per pakket",
+    "stat2val": "20", "stat2lbl": "oefenvragen",
+    "stat3val": "50+", "stat3lbl": "talen",
+    "cardTitle": "Bereid je voor op dit interview",
+    "cardHeadline": "Krijg je op maat gemaakte Interviewpakket voor precies deze rol — slechts £1",
+    "cardDesc": "20 AI-gegenereerde oefenvragen · Afgestemd op jouw CV · Afgestemd op deze baan · Direct toegang",
+    "cardBtn": "Interviewpakket krijgen — £1",
+    "cardFooter1": "Geen login nodig · Direct toegang",
+    "cardFooter2": "Aangedreven door Explain.global"
+  },
+  "why": {
+    "label": "Waarom Explain Bestaat",
+    "p1": "Mensen zakken niet voor interviews omdat ze niet goed genoeg zijn.",
+    "p2": "Ze zakken omdat ze nooit echt geoefend hebben. Geen enkele keer. Niet goed. De meeste mensen lopen het belangrijkste gesprek van hun carrière in zonder iets geoefend te hebben — omdat er nergens was om te oefenen.",
+    "em1": "De eerste keer dat ze\nin de stoel zitten —\nis het echte interview.",
+    "em2": "Dat eindigt nu.",
+    "tagline": "Explain is 's werelds eerste AI-interviewoefenplatform dat aanvoelt als het echte. Zodat wanneer het echte moment komt — je er al klaar voor bent.",
+    "pillars": [
+      { "name": "Duidelijkheid", "hl": "Weet precies wat je kunt verwachten", "body": "We verwijderen het mysterie van interviews. Je ziet de vraagstructuur, de beoordeelde competenties en de benchmark voordat je binnenkomt. Duidelijkheid is het meest onderschatte concurrentievoordeel.", "micro": "Voorbereide geesten presteren beter." },
+      { "name": "Structuur", "hl": "Een raamwerk dat druk omzet in prestatie", "body": "Elke sessie volgt een bewezen architectuur — opening, competentievragen, HR-vragen, debriefing. Je leert je ervaring te koppelen aan wat interviewers echt nodig hebben.", "micro": "Structuur verslaat talent in de kamer." },
+      { "name": "Coaching", "hl": "Realtime begeleiding, geen nabeschouwing", "body": "Terwijl je antwoordt, observeert Explains coachingmotor je presentatie, markeert aarzeling en geeft hints in realtime. Je oefent niet alleen — je verbetert met elke vraag.", "micro": "De beste coaches spreken tijdens het spel." },
+      { "name": "Beoordeling", "hl": "Eerlijke scores. Geen ijdelheidscijfers.", "body": "Na elk antwoord ontvang je een analyse van Duidelijkheid, Diepte, Vertrouwen en Presentatie — gekalibreerd tegen de Top 5%-benchmark voor jouw specifieke rol en industrie.", "micro": "Je kunt niet verbeteren wat je niet meet." },
+      { "name": "Vertrouwen", "hl": "Ga bereid naar binnen. Kom trots naar buiten.", "body": "Vertrouwen is niet nep totdat het echt is. Het is het natuurlijke resultaat van echte voorbereiding. Na genoeg sessies met Explain voel je je niet alleen klaar — je bent het.", "micro": "Vertrouwen is een vaardigheid. Wij bouwen het op." }
+    ],
+    "allFive": "Explain.global geeft elke kandidaat alle vijf."
+  },
+  "global": {
+    "label": "Globaal by Design",
+    "headline1": "Elke taal.", "headline2": "Elke baan.", "headline3": "Elke vacature.",
+    "desc": "Explain.global werkt in elke taal, voor elke rol, in elke industrie — overal ter wereld. Upload een vacature in het Portugees. Interview in het Frans. Ontvang coaching in het Mandarijn. Wij regelen de rest.",
+    "stat1lbl": "Ondersteunde talen", "stat2lbl": "Vacatures. Elke industrie.", "stat3lbl": "Rol. Niveau. Markt."
+  },
+  "learn": {
+    "label": "Nu Beschikbaar",
+    "headline": "De Leermotor",
+    "desc": "Voer een onderwerp in. Ontvang een volledig gestructureerde les — concepten, glossarium, examenvragen en een quiz — in seconden gegenereerd door AI.",
+    "cta": "Probeer de Leermotor →"
+  },
+  "packs": {
+    "label": "Binnenkort · Wereldwijde Distributie",
+    "headline": "Interviewpakketten",
+    "desc": "Volledige rolspecifieke voorbereidingsbundels — lessen, oefenvragen, live simulaties, AI-beoordeling en coaching — op één plek."
+  },
+  "portals": {
+    "label": "Platform",
+    "headline": "Twee Portalen, één ecosysteem",
+    "candidate": {
+      "title": "Jouw voorbereidings-\ncommandocentrum", "sub": "Alles wat een kandidaat nodig heeft — op één plek.",
+      "feats": ["Persoonlijk dashboard", "Toegang tot Leermotor", "Interview Chair-sessies", "Flow Viewer-tijdlijn", "Opgeslagen lessen & interviews", "Gepersonaliseerd LEARN-plan"]
+    },
+    "recruiter": {
+      "title": "Kandidatenintelligentie\nin één oogopslag", "sub": "Alles wat een recruiter nodig heeft om betere kandidaten sneller te plaatsen.",
+      "feats": ["Interviewpakketbouwer", "Kandidaatstroombeheer", "AI-beoordeling & inzichten", "Feedbacktools", "Kandidaatvoorbereidingslinks", "Plaatsingsintelligentie"]
+    }
+  },
+  "flow": {
+    "label": "Flow Viewer",
+    "headline1": "Elke klik.", "headline2": "Elk moment.", "headline3": "Gevisualiseerd.",
+    "desc1": "Een cinematische tijdlijn van elke kandidaatinteractie — van de eerste klik tot de definitieve plaatsing.",
+    "desc2": "Recruiters zien het volledige verhaal. Kandidaten bezitten hun reis."
+  },
+  "eco": {
+    "label": "Het Ecosysteem", "headline": "Eén constellatie",
+    "desc": "Elk product is verbonden. Eén verenigd ecosysteem voor de arbeidswereld."
+  },
+  "road": {
+    "label": "Roadmap", "headline": "Gebouwd in fasen",
+    "desc": "Elke fase ontgrendelt de volgende. Het volledige beeld is al ontworpen.",
+    "liveNow": "Nu Live", "inBeta": "In Beta", "planned": "Gepland", "vision": "Visie",
+    "phases": [
+      { "phase": "Fase 1 — Actief", "title": "Leermotor", "sub": "AI-gegenereerde lessen over elk onderwerp. Sleutelconcepten, glossarium, examenvragen, quiz. 50+ talen." },
+      { "phase": "Fase 2 — Actief", "title": "Interviewvoorbereidingsmotor", "sub": "AI-gegenereerde interviewvragen, modelantwoorden, zelfbeoordeling en LEARN-aanbevelingen — voor elke rol." },
+      { "phase": "Fase 3 — Beta", "title": "Interview Chair", "sub": "Live AI-spraakinterviewer met realtime beoordeling, coaching-overlays en volledige sessieopname." },
+      { "phase": "Fase 4 — Binnenkort", "title": "Interviewpakketten", "sub": "Rolspecifieke voorbereidingsbundels gedistribueerd via partner-recruitmentbureaus wereldwijd." },
+      { "phase": "Fase 5 — Binnenkort", "title": "Recruiterportaal", "sub": "Volledige recruiters-intelligentiesuite — pakketbouwer, kandidaatstroombeheer, beoordeling en inzichten." },
+      { "phase": "Fase 6 — Visie", "title": "Wereldwijde Distributie", "sub": "Explain Interviewpakketten beschikbaar via de wereldwijd toonaangevende recruitmentbureaus en vacaturesites." },
+      { "phase": "Fase 7 — Visie", "title": "Explain AI + Percentile.One", "sub": "Het volledige Percentile.One-ecosysteem: Leren, Werken, Groeien — verenigd onder één AI-intelligentielaag." }
+    ]
+  },
+  "wait": {
+    "badge": "Wees Eerste", "headline": "Schrijf je in op de wachtlijst",
+    "desc": "Krijg vroege toegang tot de Interview Chair, Interviewpakketten en meer — voordat ze openbaar worden.",
+    "cta": "Mijn interesse registreren →",
+    "footnote": "Francis antwoordt persoonlijk op elk bericht."
+  },
+  "founder": {
+    "label": "Een Bericht van de Oprichter",
+    "p1": "Ik heb Explain gebouwd omdat ik het probleem zelf heb meegemaakt.",
+    "p2": "Ik heb in interviewruimtes gezeten en mensen gezien die briljant waren — werkelijk briljant — die met lege handen weggingen. Niet omdat ze niet goed genoeg waren. Omdat het proces een zwarte doos was. Het beloonde degenen die gecoacht waren, degenen met voorkennis, degenen die het simpelweg al eerder hadden gedaan.",
+    "p3": "Traditionele interviews waren nooit ontworpen om de beste persoon te vinden. Ze waren ontworpen om de meest vertrouwde persoon te vinden — vertrouwd met het format, de taal, de onuitgesproken regels. Dat is geen verdienste-systeem. Dat is een privilege-systeem.",
+    "p4": "De Interview Chair is ons antwoord. Een plek waar elke kandidaat — ongeacht achtergrond, land of connecties — tegenover twee AI-interviewers zit die de rol, de industrie en de exacte vacature kennen. Waar de coaching eerlijk is. Waar de beoordeling echt is. Waar de voorbereiding eerlijk is.",
+    "p5": "Onze missie is eenvoudig: duidelijkheid voor elke kandidaat, overal. De verpleegster in Lagos. De ingenieur in Warschau. De afgestudeerde in Birmingham die nooit een mentor had. Elk van hen verdient het om voorbereid naar binnen te gaan.",
+    "quote": "Elke stoel aan die tafel moet worden verdiend op verdienste. De Interview Chair is hoe we je daar brengen.",
+    "name": "Francis Cobbinah",
+    "founderTitle": "Oprichter · Explain.global · Percentile.One"
+  },
+  "footer": {
+    "whyExplain": "Waarom Explain", "global": "Globaal", "learnEngine": "Leermotor",
+    "ecosystem": "Ecosysteem", "waitlist": "Wachtlijst",
+    "copy": "© 2026 Percentile.One · explain.global · Alle rechten voorbehouden"
+  }
+}

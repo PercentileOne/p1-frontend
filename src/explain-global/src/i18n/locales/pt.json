@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "home": "Início", "jobs": "Empregos", "learn": "Aprender", "community": "Comunidade",
+    "myInterviews": "Minhas Entrevistas", "portals": "Portais", "pricing": "Preços",
+    "registerInterest": "Registrar interesse", "signIn": "Entrar", "register": "Registrar-se"
+  },
+  "hero": {
+    "badge": "Beta",
+    "line1": "A", "line2": "Cadeira de Entrevista", "line3": "está aberta.",
+    "desc": "Uma experiência de entrevista cinematográfica movida por IA. Enfrente um entrevistador inteligente, receba coaching em tempo real e seja pontuado — antes de se sentar na sala real.",
+    "features": ["Entrevistador IA com voz e presença", "Forma de onda ao vivo e deteção de voz", "Coaching em tempo real", "Motor de pontuação comportamental", "Resumo pós-entrevista instantâneo", "Resultados partilháveis com recrutadores"],
+    "cta1": "Começar a praticar →", "cta2": "Como funciona →"
+  },
+  "practice": {
+    "label": "Prática de Entrevistas",
+    "headline": "Uma entrevista.\nUma libra.\nMuda a vida.",
+    "body1": "O salário profissional médio no Reino Unido é de <s>£35.000</s>. Uma vaga sénior em tecnologia paga <s>£100.000–£150.000</s>. A diferença entre conseguir ou não? <s>Estar preparado.</s>",
+    "body2": "Um Pack de Entrevista Explain custa <s>£1</s>. Vinte perguntas de prática geradas por IA, adaptadas ao <s>seu CV</s> e ao <s>cargo exato</s> — disponíveis instantaneamente. Sem login. Sem complicações. Só preparação.",
+    "stat1val": "£1", "stat1lbl": "por pack",
+    "stat2val": "20", "stat2lbl": "perguntas de prática",
+    "stat3val": "50+", "stat3lbl": "idiomas",
+    "cardTitle": "Prepare-se para esta entrevista",
+    "cardHeadline": "Obtenha o seu Pack de Entrevista personalizado para este cargo exato — apenas £1",
+    "cardDesc": "20 perguntas geradas por IA · Adaptadas ao seu CV · Adaptadas a este emprego · Acesso imediato",
+    "cardBtn": "Obter Pack de Entrevista — £1",
+    "cardFooter1": "Sem login · Acesso imediato",
+    "cardFooter2": "Desenvolvido por Explain.global"
+  },
+  "why": {
+    "label": "Por Que o Explain Existe",
+    "p1": "As pessoas não falham em entrevistas porque não são boas o suficiente.",
+    "p2": "Falham porque nunca praticaram de verdade. Nem uma vez. Não corretamente. A maioria entra na conversa mais importante da sua carreira sem ter ensaiado nada — porque não havia onde ensaiar.",
+    "em1": "A primeira vez que se sentam\nna cadeira —\né a entrevista real.",
+    "em2": "Isso acaba agora.",
+    "tagline": "O Explain é a primeira plataforma mundial de prática de entrevistas com IA que parece a coisa real. Quando o momento real chegar — você já estará pronto.",
+    "pillars": [
+      { "name": "Clareza", "hl": "Saber exatamente o que esperar", "body": "Removemos o mistério das entrevistas. Você vê a estrutura das perguntas, as competências avaliadas e o benchmark antes de entrar. A clareza é a vantagem competitiva mais subestimada.", "micro": "Mentes preparadas têm melhor desempenho." },
+      { "name": "Estrutura", "hl": "Uma estrutura que transforma pressão em desempenho", "body": "Cada sessão segue uma arquitetura comprovada — abertura, perguntas de competência, perguntas de RH, debriefing. Você aprende a alinhar a sua experiência ao que os entrevistadores realmente precisam.", "micro": "A estrutura supera o talento na sala." },
+      { "name": "Coaching", "hl": "Orientação em tempo real, não análise pós-jogo", "body": "Enquanto você responde, o motor de coaching do Explain observa a sua entrega, sinaliza hesitações e exibe pistas em tempo real. Você não só pratica — melhora a cada pergunta.", "micro": "Os melhores treinadores falam durante o jogo." },
+      { "name": "Pontuação", "hl": "Pontuações honestas. Sem métricas de vaidade.", "body": "Após cada resposta, você recebe uma análise de Clareza, Profundidade, Confiança e Entrega — calibrada contra o benchmark Top 5% para o seu papel e setor específicos.", "micro": "Não se pode melhorar o que não se mede." },
+      { "name": "Confiança", "hl": "Entre preparado. Saia orgulhoso.", "body": "Confiança não é fingir até conseguir. É o resultado natural de uma preparação genuína. Após sessões suficientes com o Explain, você não se sente apenas pronto — você está.", "micro": "Confiança é uma habilidade. Nós a construímos." }
+    ],
+    "allFive": "O Explain.global dá as cinco a cada candidato."
+  },
+  "global": {
+    "label": "Global por Design",
+    "headline1": "Qualquer idioma.", "headline2": "Qualquer emprego.", "headline3": "Qualquer vaga.",
+    "desc": "O Explain.global funciona em qualquer idioma, para qualquer função, em qualquer setor — em qualquer lugar do mundo. Carregue uma vaga em português. Entreviste-se em francês. Receba coaching em mandarim. Nós tratamos do resto.",
+    "stat1lbl": "Idiomas suportados", "stat2lbl": "Vagas de emprego. Qualquer setor.", "stat3lbl": "Cargo. Nível. Mercado."
+  },
+  "learn": {
+    "label": "Disponível Agora",
+    "headline": "O Motor de Aprendizagem",
+    "desc": "Insira qualquer tema. Receba uma lição estruturada completa — conceitos, glossário, perguntas de exame e um quiz — gerada por IA em segundos.",
+    "cta": "Experimentar o Motor de Aprendizagem →"
+  },
+  "packs": {
+    "label": "Em Breve · Distribuição Global",
+    "headline": "Packs de Entrevista",
+    "desc": "Pacotes completos de preparação específicos para cada função — lições, perguntas de prática, simulações ao vivo, pontuação IA e coaching — num só lugar."
+  },
+  "portals": {
+    "label": "Plataforma",
+    "headline": "Dois Portais, um ecossistema",
+    "candidate": {
+      "title": "O seu centro de comando\nde preparação", "sub": "Tudo o que um candidato precisa — num só espaço.",
+      "feats": ["Painel pessoal", "Acesso ao Motor de Aprendizagem", "Sessões de Interview Chair", "Linha do tempo Flow Viewer", "Lições e entrevistas guardadas", "Plano LEARN personalizado"]
+    },
+    "recruiter": {
+      "title": "Inteligência de candidatos\nde relance", "sub": "Tudo o que um recrutador precisa para colocar melhores candidatos, mais rápido.",
+      "feats": ["Construtor de packs de entrevista", "Gestão do fluxo de candidatos", "Pontuação IA e insights", "Ferramentas de feedback", "Links de preparação de candidatos", "Inteligência de colocação"]
+    }
+  },
+  "flow": {
+    "label": "Flow Viewer",
+    "headline1": "Cada clique.", "headline2": "Cada momento.", "headline3": "Visualizado.",
+    "desc1": "Uma linha do tempo cinematográfica de cada interação do candidato — desde o primeiro clique até à colocação final.",
+    "desc2": "Os recrutadores veem a história completa. Os candidatos são donos da sua jornada."
+  },
+  "eco": {
+    "label": "O Ecossistema", "headline": "Uma constelação",
+    "desc": "Cada produto está conectado. Um ecossistema unificado para o mundo do trabalho."
+  },
+  "road": {
+    "label": "Roteiro", "headline": "Construído em fases",
+    "desc": "Cada fase desbloqueia a seguinte. O quadro completo já está desenhado.",
+    "liveNow": "Ao Vivo", "inBeta": "Em Beta", "planned": "Planeado", "vision": "Visão",
+    "phases": [
+      { "phase": "Fase 1 — Ativa", "title": "Motor de Aprendizagem", "sub": "Lições geradas por IA sobre qualquer tema. Conceitos-chave, glossário, perguntas de exame, quiz. 50+ idiomas." },
+      { "phase": "Fase 2 — Ativa", "title": "Motor de Preparação de Entrevistas", "sub": "Perguntas de entrevista geradas por IA, respostas modelo, autoavaliação e recomendações LEARN — para qualquer função." },
+      { "phase": "Fase 3 — Beta", "title": "Interview Chair", "sub": "Entrevistador de voz IA ao vivo com pontuação em tempo real, overlays de coaching e gravação completa da sessão." },
+      { "phase": "Fase 4 — Em Breve", "title": "Packs de Entrevista", "sub": "Pacotes de preparação específicos distribuídos através de agências de recrutamento parceiras globalmente." },
+      { "phase": "Fase 5 — Em Breve", "title": "Portal de Recrutadores", "sub": "Suite completa de inteligência de recrutadores — construtor de packs, gestão do fluxo de candidatos, pontuação e insights." },
+      { "phase": "Fase 6 — Visão", "title": "Distribuição Global", "sub": "Packs de Entrevista Explain disponíveis nas principais agências de recrutamento e portais de emprego do mundo." },
+      { "phase": "Fase 7 — Visão", "title": "Explain AI + Percentile.One", "sub": "O ecossistema completo Percentile.One: Aprender, Trabalhar, Crescer — unificado sob uma camada de inteligência IA." }
+    ]
+  },
+  "wait": {
+    "badge": "Seja o Primeiro", "headline": "Junte-se à lista de espera",
+    "desc": "Obtenha acesso antecipado ao Interview Chair, aos Packs de Entrevista e mais — antes de serem públicos.",
+    "cta": "Registar o meu interesse →",
+    "footnote": "Francis responde pessoalmente a cada mensagem."
+  },
+  "founder": {
+    "label": "Uma Mensagem do Fundador",
+    "p1": "Criei o Explain porque vivi o problema.",
+    "p2": "Sentei-me em salas de entrevista e vi pessoas brilhantes — genuinamente brilhantes — saírem de mãos vazias. Não porque não fossem boas o suficiente. Porque o processo era uma caixa negra. Recompensava quem tinha sido treinado, quem tinha conhecimentos privilegiados, quem simplesmente já o tinha feito antes.",
+    "p3": "As entrevistas tradicionais nunca foram concebidas para encontrar a melhor pessoa. Foram concebidas para encontrar a pessoa mais familiar — familiar com o formato, a linguagem, as regras não ditas. Isso não é um sistema de mérito. É um sistema de privilégios.",
+    "p4": "A Interview Chair é a nossa resposta. Um lugar onde cada candidato — independentemente da origem, país ou conexões — se senta em frente a dois entrevistadores IA que conhecem a função, o setor e a vaga exata. Onde o coaching é honesto. Onde a pontuação é real. Onde a preparação é justa.",
+    "p5": "A nossa missão é simples: clareza para cada candidato, em todo o lado. A enfermeira em Lagos. O engenheiro em Varsóvia. O licenciado em Birmingham que nunca teve um mentor. Cada um deles merece entrar preparado.",
+    "quote": "Cada lugar nessa mesa deve ser conquistado pelo mérito. A Interview Chair é como chegamos lá.",
+    "name": "Francis Cobbinah",
+    "founderTitle": "Fundador · Explain.global · Percentile.One"
+  },
+  "footer": {
+    "whyExplain": "Porquê Explain", "global": "Global", "learnEngine": "Motor de Aprendizagem",
+    "ecosystem": "Ecossistema", "waitlist": "Lista de espera",
+    "copy": "© 2026 Percentile.One · explain.global · Todos os direitos reservados"
+  }
+}

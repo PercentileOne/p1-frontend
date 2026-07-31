@@ -1,42 +1,55 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ContactModal from './ContactModal';
 
 const LANGUAGES = [
-  { code: 'EN', label: 'English' },
-  { code: 'FR', label: 'French' },
-  { code: 'DE', label: 'German' },
-  { code: 'ES', label: 'Spanish' },
-  { code: 'PT', label: 'Portuguese' },
-  { code: 'IT', label: 'Italian' },
-  { code: 'NL', label: 'Dutch' },
-  { code: 'PL', label: 'Polish' },
-  { code: 'AR', label: 'Arabic' },
-  { code: 'ZH', label: 'Chinese' },
-  { code: 'JA', label: 'Japanese' },
-  { code: 'KO', label: 'Korean' },
-  { code: 'HI', label: 'Hindi' },
-  { code: 'TR', label: 'Turkish' },
-  { code: 'RU', label: 'Russian' },
+  { code: 'en', label: 'English', display: 'EN' },
+  { code: 'fr', label: 'French', display: 'FR' },
+  { code: 'de', label: 'German', display: 'DE' },
+  { code: 'es', label: 'Spanish', display: 'ES' },
+  { code: 'pt', label: 'Portuguese', display: 'PT' },
+  { code: 'it', label: 'Italian', display: 'IT' },
+  { code: 'nl', label: 'Dutch', display: 'NL' },
+  { code: 'pl', label: 'Polish', display: 'PL' },
+  { code: 'ar', label: 'Arabic', display: 'AR' },
+  { code: 'zh', label: 'Chinese', display: 'ZH' },
+  { code: 'ja', label: 'Japanese', display: 'JA' },
+  { code: 'ko', label: 'Korean', display: 'KO' },
+  { code: 'hi', label: 'Hindi', display: 'HI' },
+  { code: 'tr', label: 'Turkish', display: 'TR' },
+  { code: 'ru', label: 'Russian', display: 'RU' },
 ];
 
-const LINKS = [
-  { to: '/', label: 'Home' },
-  { to: '/jobs', label: 'Jobs' },
-  { to: '/learn', label: 'Learn' },
-  { to: '/community', label: 'Community' },
-  { to: '/my-interviews', label: 'My Interviews' },
-  { to: '/portals', label: 'Portals' },
-  { to: '/pricing', label: 'Pricing' },
+const NAV_KEYS = [
+  { to: '/', key: 'nav.home' },
+  { to: '/jobs', key: 'nav.jobs' },
+  { to: '/learn', key: 'nav.learn' },
+  { to: '/community', key: 'nav.community' },
+  { to: '/my-interviews', key: 'nav.myInterviews' },
+  { to: '/portals', key: 'nav.portals' },
+  { to: '/pricing', key: 'nav.pricing' },
 ];
 
 export function Nav() {
   const loc = useLocation();
+  const { t, i18n } = useTranslation();
   const isAuthPage = loc.pathname === '/login' || loc.pathname === '/register';
   const [showContact, setShowContact] = useState(false);
-  const [lang, setLang] = useState(LANGUAGES[0]);
   const [showLang, setShowLang] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
+
+  const currentLang = LANGUAGES.find(l => l.code === i18n.language) ?? LANGUAGES[0];
+
+  function selectLanguage(lang: typeof LANGUAGES[0]) {
+    i18n.changeLanguage(lang.code);
+    document.documentElement.dir = lang.code === 'ar' ? 'rtl' : 'ltr';
+    setShowLang(false);
+  }
+
+  useEffect(() => {
+    document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+  }, [i18n.language]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -69,7 +82,7 @@ export function Nav() {
 
         {/* Links */}
         <div style={{ display: 'flex', gap: 4, flex: 1 }}>
-          {LINKS.map(({ to, label }) => {
+          {NAV_KEYS.map(({ to, key }) => {
             const active = to === '/' ? loc.pathname === '/' : loc.pathname.startsWith(to);
             return (
               <NavLink
@@ -87,7 +100,7 @@ export function Nav() {
                   whiteSpace: 'nowrap',
                 }}
               >
-                {label}
+                {t(key)}
               </NavLink>
             );
           })}
@@ -104,17 +117,17 @@ export function Nav() {
                 onClick={() => setShowLang(v => !v)}
                 style={{ background: 'rgba(255,255,255,0.05)', color: '#9090b0', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 8, padding: '7px 12px', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
               >
-                🌐 {lang.label} ({lang.code}) <span style={{ fontSize: 10, opacity: 0.5 }}>▾</span>
+                🌐 {currentLang.label} ({currentLang.display}) <span style={{ fontSize: 10, opacity: 0.5 }}>▾</span>
               </button>
               {showLang && (
                 <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: '#0d1020', border: '1px solid rgba(120,80,255,0.2)', borderRadius: 10, minWidth: 200, zIndex: 200, boxShadow: '0 16px 48px rgba(0,0,0,0.6)', overflow: 'hidden' }}>
                   {LANGUAGES.map(l => (
                     <button
                       key={l.code}
-                      onClick={() => { setLang(l); setShowLang(false); }}
-                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 16px', background: l.code === lang.code ? 'rgba(120,80,255,0.15)' : 'transparent', color: l.code === lang.code ? '#fff' : '#9090b0', border: 'none', fontSize: 13, fontWeight: l.code === lang.code ? 700 : 400, cursor: 'pointer' }}
+                      onClick={() => selectLanguage(l)}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 16px', background: l.code === currentLang.code ? 'rgba(120,80,255,0.15)' : 'transparent', color: l.code === currentLang.code ? '#fff' : '#9090b0', border: 'none', fontSize: 13, fontWeight: l.code === currentLang.code ? 700 : 400, cursor: 'pointer' }}
                     >
-                      {l.label} ({l.code})
+                      {l.label} ({l.display})
                     </button>
                   ))}
                 </div>
@@ -130,7 +143,7 @@ export function Nav() {
                 fontSize: 13, fontWeight: 600, cursor: 'pointer',
                 whiteSpace: 'nowrap',
               }}>
-              Register Interest
+              {t('nav.registerInterest')}
             </button>
             <button
               onClick={() => window.location.href = 'https://candidate.explain.global/login'}
@@ -141,7 +154,7 @@ export function Nav() {
                 borderRadius: 8, padding: '7px 16px',
                 fontSize: 13, fontWeight: 600, cursor: 'pointer',
               }}>
-              Sign in
+              {t('nav.signIn')}
             </button>
             <button
               onClick={() => window.location.href = 'https://candidate.explain.global/register'}
@@ -151,7 +164,7 @@ export function Nav() {
                 borderRadius: 8, padding: '7px 16px',
                 fontSize: 13, fontWeight: 700, cursor: 'pointer',
               }}>
-              Register
+              {t('nav.register')}
             </button>
           </div>
         )}

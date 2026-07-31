@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "home": "Ana Sayfa", "jobs": "İşler", "learn": "Öğren", "community": "Topluluk",
+    "myInterviews": "Mülakatlarım", "portals": "Portallar", "pricing": "Fiyatlandırma",
+    "registerInterest": "İlgi Kaydet", "signIn": "Giriş Yap", "register": "Kayıt Ol"
+  },
+  "hero": {
+    "badge": "Beta",
+    "line1": "Mülakat", "line2": "Koltuğu", "line3": "açık.",
+    "desc": "Sinematik bir AI destekli mülakat deneyimi. Akıllı bir görüşmeciye karşı çık, gerçek zamanlı koçluk al ve puanlan — gerçek odaya oturmadan önce.",
+    "features": ["Ses ve varlığa sahip AI görüşmeci", "Canlı ses dalgası ve konuşma algılama", "Gerçek zamanlı koçluk katmanı", "Davranış puanlama motoru", "Anında mülacat sonrası brifing", "İşe alımcıyla paylaşılabilir sonuçlar"],
+    "cta1": "Pratik Yapmaya Başla →", "cta2": "Nasıl Çalışır →"
+  },
+  "practice": {
+    "label": "Mülakat Pratiği",
+    "headline": "Bir mülakat.\nBir sterlin.\nHayat değiştiriyor.",
+    "body1": "Birleşik Krallık'ta ortalama profesyonel maaş <s>£35.000</s>. Üst düzey bir teknoloji pozisyonu <s>£100.000–£150.000</s> ödiyor. Almak ile kaçırmak arasındaki fark? <s>Hazırlıklı olmak.</s>",
+    "body2": "Bir Explain Mülakat Paketi <s>£1</s> tutar. <s>CV'nize</s> ve <s>tam iş ilanına</s> göre özelleştirilmiş, AI tarafından oluşturulmuş yirmi pratik soru — anında hazır. Giriş yok. Zahmetsiz. Sadece hazırlık.",
+    "stat1val": "£1", "stat1lbl": "paket başına",
+    "stat2val": "20", "stat2lbl": "pratik soru",
+    "stat3val": "50+", "stat3lbl": "dil",
+    "cardTitle": "Bu mülakat için hazırlan",
+    "cardHeadline": "Bu pozisyon için özelleştirilmiş Mülakat Paketini al — sadece £1",
+    "cardDesc": "20 AI tarafından oluşturulmuş soru · CV'ne göre özelleştirilmiş · Bu işe göre özelleştirilmiş · Anında erişim",
+    "cardBtn": "Mülakat Paketini Al — £1",
+    "cardFooter1": "Giriş gerekmez · Anında erişim",
+    "cardFooter2": "Explain.global tarafından desteklenmektedir"
+  },
+  "why": {
+    "label": "Explain Neden Var",
+    "p1": "İnsanlar mülakata yeterince iyi olmadıkları için başarısız olmaz.",
+    "p2": "Gerçek anlamda hiç pratik yapmadıkları için başarısız olurlar. Hiç. Düzgün değil. Çoğu insan kariyerlerinin en önemli konuşmasına hiçbir şey prova etmeden girer — çünkü prova yapacak bir yer yoktu.",
+    "em1": "O koltuğa ilk kez oturduklarında —\ngercek mülakattır.",
+    "em2": "Bu artık bitiyor.",
+    "tagline": "Explain, gerçek gibi hissettiren dünyanın ilk AI mülakat pratik platformudur. Gerçek an geldiğinde — sen zaten hazırsın.",
+    "pillars": [
+      { "name": "Netlik", "hl": "Tam olarak ne bekleneceğini bil", "body": "Mülakatların gizemini ortadan kaldırıyoruz. İçeri girmeden önce soru yapısını, değerlendirilen yetkinlikleri ve kıyaslamayı görürsün. Netlik, en çok hafife alınan rekabet avantajıdır.", "micro": "Hazırlıklı zihinler daha iyi performans gösterir." },
+      { "name": "Yapı", "hl": "Baskıyı performansa dönüştüren bir çerçeve", "body": "Her oturum kanıtlanmış bir mimariyi izler — açılış, yetkinlik soruları, İK soruları, brifing. Deneyimini görüşmecilerin gerçekten ihtiyaç duyduğuyla eşleştirmeyi öğrenirsin.", "micro": "Yapı, odada yeteneği geçer." },
+      { "name": "Koçluk", "hl": "Gerçek zamanlı rehberlik, maç sonrası analiz değil", "body": "Cevap verirken Explain'in koçluk motoru sunumunu izler, tereddütleri işaretler ve gerçek zamanlı ipuçlarını gösterir. Sadece pratik yapmıyorsun — her soruyla gelişiyorsun.", "micro": "En iyi koçlar maç sırasında konuşur." },
+      { "name": "Puanlama", "hl": "Dürüst puanlar. Sahte metrikler yok.", "body": "Her cevaptan sonra, belirli rolün ve sektörün için İlk %5 kıyaslamasına göre kalibre edilmiş Netlik, Derinlik, Güven ve Sunum analizini alırsın.", "micro": "Ölçemediğinizi geliştiremezsiniz." },
+      { "name": "Güven", "hl": "Hazır gir. Gururla çık.", "body": "Güven, başarana kadar sahte yapmak değildir. Gerçek hazırlığın doğal sonucudur. Explain ile yeterli oturum sonrasında sadece hazır hissetmekle kalmaz — gerçekten hazır olursun.", "micro": "Güven bir beceridir. Biz onu inşa ederiz." }
+    ],
+    "allFive": "Explain.global her adaya beşini de verir."
+  },
+  "global": {
+    "label": "Tasarımıyla Global",
+    "headline1": "Her dil.", "headline2": "Her iş.", "headline3": "Her iş ilanı.",
+    "desc": "Explain.global her dilde, her rol için, her sektörde — dünyanın her yerinde çalışır. Portekizce iş ilanı yükle. Fransızca mülakat yap. Mandarin'de koçluk al. Gerisini biz hallederiz.",
+    "stat1lbl": "Desteklenen diller", "stat2lbl": "İş ilanları. Her sektör.", "stat3lbl": "Rol. Seviye. Pazar."
+  },
+  "learn": {
+    "label": "Şimdi Mevcut",
+    "headline": "Öğrenme Motoru",
+    "desc": "Herhangi bir konu gir. Saniyeler içinde AI tarafından oluşturulan kavramlar, sözlük, sınav soruları ve sınav içeren tam yapılandırılmış bir ders al.",
+    "cta": "Öğrenme Motorunu Dene →"
+  },
+  "packs": {
+    "label": "Yakında · Küresel Dağıtım",
+    "headline": "Mülakat Paketleri",
+    "desc": "Role özgü tam hazırlık paketleri — dersler, pratik sorular, canlı simülasyonlar, AI puanlaması ve koçluk — tek bir yerde."
+  },
+  "portals": {
+    "label": "Platform",
+    "headline": "İki Portal, bir ekosistem",
+    "candidate": {
+      "title": "Hazırlık komuta\nmerkezin", "sub": "Bir adayın ihtiyacı olan her şey — tek bir alanda.",
+      "feats": ["Kişisel gösterge paneli", "Öğrenme Motoru erişimi", "Interview Chair oturumları", "Flow Viewer zaman çizelgesi", "Kaydedilmiş dersler ve mülakatlar", "Kişiselleştirilmiş LEARN planı"]
+    },
+    "recruiter": {
+      "title": "Bir bakışta\naday zekası", "sub": "Bir işe alımcının daha iyi adayları daha hızlı yerleştirmesi için ihtiyacı olan her şey.",
+      "feats": ["Mülakat paketi oluşturucu", "Aday akış yönetimi", "AI puanlama ve içgörüler", "Geri bildirim araçları", "Aday hazırlık bağlantıları", "Yerleştirme zekası"]
+    }
+  },
+  "flow": {
+    "label": "Flow Viewer",
+    "headline1": "Her tıklama.", "headline2": "Her an.", "headline3": "Görselleştirilmiş.",
+    "desc1": "İlk tıklamadan son yerleştirmeye kadar her aday etkileşiminin sinematik zaman çizelgesi.",
+    "desc2": "İşe alımcılar tüm hikayeyi görür. Adaylar kendi yolculuklarına sahiptir."
+  },
+  "eco": {
+    "label": "Ekosistem", "headline": "Bir takımyıldızı",
+    "desc": "Her ürün bağlı. İş dünyası için birleşik bir ekosistem."
+  },
+  "road": {
+    "label": "Yol haritası", "headline": "Aşamalar halinde inşa edildi",
+    "desc": "Her aşama bir sonrakini açar. Tam resim zaten tasarlandı.",
+    "liveNow": "Şimdi Canlı", "inBeta": "Beta'da", "planned": "Planlandı", "vision": "Vizyon",
+    "phases": [
+      { "phase": "Aşama 1 — Aktif", "title": "Öğrenme Motoru", "sub": "Herhangi bir konuda AI tarafından oluşturulan dersler. Temel kavramlar, sözlük, sınav soruları, quiz. 50+ dil." },
+      { "phase": "Aşama 2 — Aktif", "title": "Mülakat Hazırlık Motoru", "sub": "AI tarafından oluşturulan mülakat soruları, model yanıtlar, öz değerlendirme ve LEARN önerileri — her rol için." },
+      { "phase": "Aşama 3 — Beta", "title": "Interview Chair", "sub": "Gerçek zamanlı puanlama, koçluk katmanları ve tam oturum kaydı ile canlı AI sesli görüşmeci." },
+      { "phase": "Aşama 4 — Yakında", "title": "Mülakat Paketleri", "sub": "Dünya genelindeki ortak işe alım ajansları aracılığıyla dağıtılan role özgü hazırlık paketleri." },
+      { "phase": "Aşama 5 — Yakında", "title": "İşe Alımcı Portalı", "sub": "Tam işe alımcı zeka paketi — paket oluşturucu, aday akış yönetimi, puanlama ve içgörüler." },
+      { "phase": "Aşama 6 — Vizyon", "title": "Küresel Dağıtım", "sub": "Dünyanın önde gelen işe alım ajansları ve iş ilanı siteleri aracılığıyla Explain Mülakat Paketleri." },
+      { "phase": "Aşama 7 — Vizyon", "title": "Explain AI + Percentile.One", "sub": "Tam Percentile.One ekosistemi: Öğren, Çalış, Büyü — tek bir AI zeka katmanı altında birleştirildi." }
+    ]
+  },
+  "wait": {
+    "badge": "İlk Sen Ol", "headline": "Bekleme listesine katıl",
+    "desc": "Interview Chair, Mülakat Paketleri ve daha fazlasına erken erişim sağla — herkese açılmadan önce.",
+    "cta": "İlgimi Kaydet →",
+    "footnote": "Francis her mesaja kişisel olarak yanıt verir."
+  },
+  "founder": {
+    "label": "Kurucudan Bir Mesaj",
+    "p1": "Explain'i kurdum çünkü sorunu kendim yaşadım.",
+    "p2": "Mülakat odalarında oturdum ve parlak insanları — gerçekten parlak insanları — eli boş çıkarken izledim. Yeterince iyi olmadıkları için değil. Süreç bir kara kutuydu. Koçluk almış olanları, içeriden bilgiye sahip olanları, bunu daha önce yapmış olanları ödüllendirdi.",
+    "p3": "Geleneksel mülakatlar hiçbir zaman en iyi insanı bulmak için tasarlanmamıştı. Format, dil, söylenmemiş kurallarla en tanıdık kişiyi bulmak için tasarlandılar. Bu bir liyakat sistemi değil. Bu bir ayrıcalık sistemidir.",
+    "p4": "Interview Chair bizim cevabımızdır. Her adayın — arka plan, ülke veya bağlantılardan bağımsız olarak — rolü, sektörü ve tam iş ilanını bilen iki AI görüşmecinin karşısına oturduğu bir yer. Koçluğun dürüst olduğu. Puanlamanın gerçek olduğu. Hazırlığın adil olduğu.",
+    "p5": "Misyonumuz basit: her adaya, her yerde netlik. Lagos'taki hemşire. Varşova'daki mühendis. Hiç mentoru olmamış Birmingham'daki mezun. Hepsinin hazırlıklı olarak içeri girmeyi hak ediyor.",
+    "quote": "O masadaki her koltuk liyakate göre kazanılmalıdır. Interview Chair seni oraya götürme yöntemimizdir.",
+    "name": "Francis Cobbinah",
+    "founderTitle": "Kurucu · Explain.global · Percentile.One"
+  },
+  "footer": {
+    "whyExplain": "Neden Explain", "global": "Küresel", "learnEngine": "Öğrenme Motoru",
+    "ecosystem": "Ekosistem", "waitlist": "Bekleme listesi",
+    "copy": "© 2026 Percentile.One · explain.global · Tüm hakları saklıdır"
+  }
+}

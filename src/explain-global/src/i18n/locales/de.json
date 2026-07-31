@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "home": "Startseite", "jobs": "Jobs", "learn": "Lernen", "community": "Gemeinschaft",
+    "myInterviews": "Meine Interviews", "portals": "Portale", "pricing": "Preise",
+    "registerInterest": "Interesse bekunden", "signIn": "Anmelden", "register": "Registrieren"
+  },
+  "hero": {
+    "badge": "Beta",
+    "line1": "Der", "line2": "Interview-Stuhl", "line3": "ist geöffnet.",
+    "desc": "Ein cinematisches KI-gestütztes Vorstellungsgespräch. Steh einem intelligenten Interviewer gegenüber, erhalte Echtzeit-Coaching und werde bewertet — bevor du jemals im echten Raum sitzt.",
+    "features": ["KI-Interviewer mit Stimme und Präsenz", "Live-Wellenform & Spracherkennung", "Echtzeit-Coaching-Overlay", "Verhaltens-Bewertungsmotor", "Sofortiges Post-Interview-Briefing", "Ergebnisse für Recruiter teilbar"],
+    "cta1": "Jetzt üben →", "cta2": "So funktioniert es →"
+  },
+  "practice": {
+    "label": "Interview-Training",
+    "headline": "Ein Interview.\nEin Pfund.\nLebensverändernd.",
+    "body1": "Das durchschnittliche Gehalt eines UK-Fachmanns beträgt <s>35.000 £</s>. Eine Senior-Tech-Stelle zahlt <s>100.000–150.000 £</s>. Der Unterschied zwischen Erfolg und Misserfolg? <s>Vorbereitung.</s>",
+    "body2": "Ein Explain Interview-Paket kostet <s>1 £</s>. Zwanzig KI-generierte Übungsfragen, zugeschnitten auf <s>deinen Lebenslauf</s> und die <s>genaue Stellenbeschreibung</s> — sofort verfügbar. Kein Login. Kein Aufwand. Nur Vorbereitung.",
+    "stat1val": "1 £", "stat1lbl": "pro Paket",
+    "stat2val": "20", "stat2lbl": "Übungsfragen",
+    "stat3val": "50+", "stat3lbl": "Sprachen",
+    "cardTitle": "Bereite dich auf dieses Interview vor",
+    "cardHeadline": "Hol dir dein maßgeschneidertes Interview-Paket für genau diese Stelle — nur 1 £",
+    "cardDesc": "20 KI-generierte Übungsfragen · Auf deinen Lebenslauf zugeschnitten · Auf diese Stelle zugeschnitten · Sofortzugang",
+    "cardBtn": "Interview-Paket holen — 1 £",
+    "cardFooter1": "Kein Login nötig · Sofortzugang",
+    "cardFooter2": "Betrieben von Explain.global"
+  },
+  "why": {
+    "label": "Warum Explain Existiert",
+    "p1": "Menschen scheitern nicht bei Vorstellungsgesprächen, weil sie nicht gut genug sind.",
+    "p2": "Sie scheitern, weil sie nie wirklich geübt haben. Kein einziges Mal. Nicht richtig. Die meisten Menschen gehen in das wichtigste Gespräch ihrer Karriere, ohne irgendetwas geprobt zu haben — weil es keinen Ort zum Üben gab.",
+    "em1": "Das erste Mal, dass sie\nim Stuhl sitzen —\nist das echte Interview.",
+    "em2": "Das endet jetzt.",
+    "tagline": "Explain ist die weltweit erste KI-Interview-Übungsplattform, die sich wie das Echte anfühlt. Wenn der echte Moment kommt — bist du bereits bereit.",
+    "pillars": [
+      { "name": "Klarheit", "hl": "Wisse genau, was dich erwartet", "body": "Wir entmystifizieren Interviews. Du siehst die Fragenstruktur, die bewerteten Kompetenzen und den Maßstab, bevor du eintrittst. Klarheit ist der am meisten unterschätzte Wettbewerbsvorteil.", "micro": "Vorbereitete Köpfe performen besser." },
+      { "name": "Struktur", "hl": "Ein Rahmen, der Druck in Leistung verwandelt", "body": "Jede Session folgt einer bewährten Architektur — Eröffnung, Kompetenzfragen, HR-Fragen, Debriefing. Du lernst, deine Erfahrung auf das zu mappen, was Interviewer wirklich brauchen.", "micro": "Struktur schlägt Talent im Raum." },
+      { "name": "Coaching", "hl": "Echtzeit-Führung, keine Nachspiel-Analyse", "body": "Während du antwortest, beobachtet Explains Coaching-Motor deine Lieferung, markiert Zögerlichkeiten und zeigt Hinweise in Echtzeit. Du übst nicht nur — du verbesserst dich mit jeder Frage.", "micro": "Die besten Trainer sprechen während des Spiels." },
+      { "name": "Bewertung", "hl": "Ehrliche Punkte. Keine Eitelkeitsmetriken.", "body": "Nach jeder Antwort erhältst du eine Aufschlüsselung über Klarheit, Tiefe, Selbstvertrauen und Präsentation — kalibriert gegen die Top-5%-Benchmark für deine spezifische Rolle und Branche.", "micro": "Du kannst nicht verbessern, was du nicht misst." },
+      { "name": "Selbstvertrauen", "hl": "Geh bereit rein. Komm stolz raus.", "body": "Selbstvertrauen ist kein 'Fake it till you make it'. Es ist das natürliche Ergebnis echter Vorbereitung. Nach genug Sessions mit Explain fühlst du dich nicht nur bereit — du bist es.", "micro": "Selbstvertrauen ist eine Fähigkeit. Wir bauen sie auf." }
+    ],
+    "allFive": "Explain.global gibt jedem Kandidaten alle fünf."
+  },
+  "global": {
+    "label": "Global von Grund auf",
+    "headline1": "Jede Sprache.", "headline2": "Jeder Job.", "headline3": "Jede Stellenbeschreibung.",
+    "desc": "Explain.global funktioniert in jeder Sprache, für jede Rolle, in jeder Branche — überall auf der Welt. Lade eine Stellenbeschreibung auf Portugiesisch hoch. Führe das Interview auf Französisch. Lass dich auf Mandarin coachen. Wir kümmern uns um den Rest.",
+    "stat1lbl": "Unterstützte Sprachen", "stat2lbl": "Stellenbeschreibungen. Jede Branche.", "stat3lbl": "Rolle. Level. Markt."
+  },
+  "learn": {
+    "label": "Jetzt Verfügbar",
+    "headline": "Die Lern-Engine",
+    "desc": "Gib ein beliebiges Thema ein. Erhalte eine vollständig strukturierte Lektion — Konzepte, Glossar, Prüfungsfragen und Quiz — in Sekunden von KI generiert.",
+    "cta": "Lern-Engine ausprobieren →"
+  },
+  "packs": {
+    "label": "Demnächst · Weltweite Verteilung",
+    "headline": "Interview-Pakete",
+    "desc": "Vollständige rollenspezifische Vorbereitungspakete — Lektionen, Übungsfragen, Live-Simulationen, KI-Bewertung und Coaching — an einem Ort."
+  },
+  "portals": {
+    "label": "Plattform",
+    "headline": "Zwei Portale, ein Ökosystem",
+    "candidate": {
+      "title": "Dein Vorbereitungs-\nKommandozentrum", "sub": "Alles, was ein Kandidat braucht — an einem Ort.",
+      "feats": ["Persönliches Dashboard", "Zugang zur Lern-Engine", "Interview-Chair-Sessions", "Flow-Viewer-Zeitleiste", "Gespeicherte Lektionen & Interviews", "Personalisierter LEARN-Plan"]
+    },
+    "recruiter": {
+      "title": "Kandidaten-Intelligenz\nauf einen Blick", "sub": "Alles, was ein Recruiter braucht, um bessere Kandidaten schneller zu platzieren.",
+      "feats": ["Interview-Paket-Builder", "Kandidaten-Flow-Management", "KI-Bewertung & Einblicke", "Feedback-Tools", "Kandidaten-Vorbereitungslinks", "Platzierungs-Intelligenz"]
+    }
+  },
+  "flow": {
+    "label": "Flow Viewer",
+    "headline1": "Jeder Klick.", "headline2": "Jeder Moment.", "headline3": "Visualisiert.",
+    "desc1": "Eine cinematische Zeitleiste jeder Kandidateninteraktion — vom ersten Klick bis zur endgültigen Platzierung.",
+    "desc2": "Recruiter sehen die ganze Geschichte. Kandidaten besitzen ihre Reise."
+  },
+  "eco": {
+    "label": "Das Ökosystem", "headline": "Eine Konstellation",
+    "desc": "Jedes Produkt ist verbunden. Ein einheitliches Ökosystem für die Arbeitswelt."
+  },
+  "road": {
+    "label": "Fahrplan", "headline": "In Phasen aufgebaut",
+    "desc": "Jede Phase schaltet die nächste frei. Das vollständige Bild ist bereits entworfen.",
+    "liveNow": "Jetzt Live", "inBeta": "In Beta", "planned": "Geplant", "vision": "Vision",
+    "phases": [
+      { "phase": "Phase 1 — Aktiv", "title": "Lern-Engine", "sub": "KI-generierte Lektionen zu jedem Thema. Schlüsselkonzepte, Glossar, Prüfungsfragen, Quiz. 50+ Sprachen." },
+      { "phase": "Phase 2 — Aktiv", "title": "Interview-Vorbereitungs-Engine", "sub": "KI-generierte Interviewfragen, Musterantworten, Selbsteinschätzung und LEARN-Empfehlungen — für jede Rolle." },
+      { "phase": "Phase 3 — Beta", "title": "Interview Chair", "sub": "Live-KI-Sprachinterviewer mit Echtzeit-Bewertung, Coaching-Overlays und vollständiger Sitzungsaufzeichnung." },
+      { "phase": "Phase 4 — Demnächst", "title": "Interview-Pakete", "sub": "Rollenspezifische Vorbereitungspakete, die über Partner-Personalagenturen weltweit vertrieben werden." },
+      { "phase": "Phase 5 — Demnächst", "title": "Recruiter-Portal", "sub": "Vollständige Recruiter-Intelligenz-Suite — Paket-Builder, Kandidaten-Flow-Management, Bewertung und Einblicke." },
+      { "phase": "Phase 6 — Vision", "title": "Weltweite Verteilung", "sub": "Explain Interview-Pakete verfügbar über die weltweit führenden Personalagenturen und Jobbörsen." },
+      { "phase": "Phase 7 — Vision", "title": "Explain AI + Percentile.One", "sub": "Das vollständige Percentile.One-Ökosystem: Lernen, Arbeiten, Wachsen — vereint unter einer KI-Intelligenzschicht." }
+    ]
+  },
+  "wait": {
+    "badge": "Sei Dabei", "headline": "Warteliste beitreten",
+    "desc": "Erhalte frühzeitigen Zugang zum Interview Chair, zu Interview-Paketen und mehr — bevor sie öffentlich werden.",
+    "cta": "Interesse bekunden →",
+    "footnote": "Francis antwortet persönlich auf jede Nachricht."
+  },
+  "founder": {
+    "label": "Eine Nachricht vom Gründer",
+    "p1": "Ich habe Explain gebaut, weil ich das Problem selbst erlebt habe.",
+    "p2": "Ich habe in Vorstellungsgesprächen gesessen und zugesehen, wie brillante Menschen — wirklich brillante Menschen — mit leeren Händen herausgingen. Nicht weil sie nicht gut genug waren. Weil der Prozess eine schwarze Box war. Er belohnte diejenigen, die gecoacht worden waren, die Insiderwissen hatten, die es einfach schon einmal gemacht hatten.",
+    "p3": "Traditionelle Vorstellungsgespräche wurden nie darauf ausgelegt, die beste Person zu finden. Sie wurden entwickelt, um die vertrauteste Person zu finden — vertraut mit dem Format, der Sprache, den unausgesprochenen Regeln. Das ist kein Verdienst-System. Das ist ein Privileg-System.",
+    "p4": "Der Interview Chair ist unsere Antwort. Ein Ort, an dem jeder Kandidat — unabhängig von Hintergrund, Land oder Verbindungen — zwei KI-Interviewern gegenübersitzt, die die Rolle, die Branche und die genaue Stellenbeschreibung kennen. Wo das Coaching ehrlich ist. Wo die Bewertung real ist. Wo die Vorbereitung fair ist.",
+    "p5": "Unsere Mission ist einfach: Klarheit für jeden Kandidaten, überall. Die Krankenschwester in Lagos. Der Ingenieur in Warschau. Der Absolvent in Birmingham, der nie einen Mentor hatte. Jeder von ihnen verdient es, vorbereitet einzutreten.",
+    "quote": "Jeder Platz an diesem Tisch sollte durch Verdienst erworben werden. Der Interview Chair ist der Weg, wie wir dich dorthin bringen.",
+    "name": "Francis Cobbinah",
+    "founderTitle": "Gründer · Explain.global · Percentile.One"
+  },
+  "footer": {
+    "whyExplain": "Warum Explain", "global": "Global", "learnEngine": "Lern-Engine",
+    "ecosystem": "Ökosystem", "waitlist": "Warteliste",
+    "copy": "© 2026 Percentile.One · explain.global · Alle Rechte vorbehalten"
+  }
+}
