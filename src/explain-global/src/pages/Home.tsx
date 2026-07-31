@@ -114,7 +114,7 @@ export default function Home() {
     .ph-btn-ghost:hover{background:rgba(79,142,247,.12);border-color:rgba(79,142,247,.5)}
 
     #ph-hero{min-height:calc(100vh - 60px);display:flex;align-items:center;padding:60px 32px;overflow:hidden;position:relative;z-index:1}
-    .ph-hero-inner{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+    .ph-hero-inner{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
     .ph-hero-glow{position:absolute;top:50%;left:30%;transform:translate(-50%,-60%);width:900px;height:700px;background:radial-gradient(ellipse,rgba(30,80,255,.18) 0%,rgba(79,142,247,.06) 40%,transparent 70%);pointer-events:none}
     .ph-hero-hl{font-size:clamp(36px,4vw,64px);font-weight:900;line-height:1.05;letter-spacing:-.04em;color:#F0F4FF;text-shadow:0 0 60px rgba(79,142,247,.2)}
 
