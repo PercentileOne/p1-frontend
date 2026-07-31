@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { RequirePermission, UnauthorizedPage } from "./auth/RequirePermission";
 import ProductHome from "./pages/ProductHome";
 import ExplainPrep from "./pages/ExplainPrep";
 import ExplainFeedback from "./pages/ExplainFeedback";
@@ -171,11 +172,11 @@ export default function App() {
       <Route path="/events" element={<EventsDashboard />} />
       <Route path="/events/:id" element={<EventWorkspacePage />} />
 
-      {/* Recruiter */}
-      <Route path="/recruiter" element={<RecruiterDashboard />} />
-      <Route path="/recruiter/jobs/:id" element={<RecruiterJobPage />} />
-      <Route path="/recruiter/jobs/post" element={<RecruiterPostPage />} />
-      <Route path="/recruiter/applicants/:id" element={<RecruiterApplicantPage />} />
+      {/* Recruiter — requires CAN_VIEW_RECRUITER_PORTAL */}
+      <Route path="/recruiter" element={<RequirePermission permission="CAN_VIEW_RECRUITER_PORTAL"><RecruiterDashboard /></RequirePermission>} />
+      <Route path="/recruiter/jobs/:id" element={<RequirePermission permission="CAN_VIEW_RECRUITER_PORTAL"><RecruiterJobPage /></RequirePermission>} />
+      <Route path="/recruiter/jobs/post" element={<RequirePermission permission="CAN_MANAGE_INTERVIEWS"><RecruiterPostPage /></RequirePermission>} />
+      <Route path="/recruiter/applicants/:id" element={<RequirePermission permission="CAN_VIEW_CANDIDATE_PROFILE"><RecruiterApplicantPage /></RequirePermission>} />
 
       {/* Role shells */}
       <Route path="/student/*" element={<StudentShell />} />
@@ -183,11 +184,16 @@ export default function App() {
       <Route path="/teacher/*" element={<TeacherShell />} />
       <Route path="/university/*" element={<UniversityShell />} />
 
+      {/* Admin — requires CAN_VIEW_ADMIN_PORTAL */}
+      <Route path="/admin" element={<RequirePermission permission="CAN_VIEW_ADMIN_PORTAL"><AdminPage /></RequirePermission>} />
+
       {/* Misc */}
       <Route path="/shop" element={<ShopPage />} />
       <Route path="/chat" element={<ChatPage />} />
       <Route path="/settings" element={<SettingsPage />} />
-      <Route path="/admin" element={<AdminPage />} />
+
+      {/* Access denied */}
+      <Route path="/unauthorized" element={<UnauthorizedPage />} />
     </Routes>
   );
 }

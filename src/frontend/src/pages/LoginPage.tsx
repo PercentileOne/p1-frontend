@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, ChevronDown, Loader2, Lock, User } from "lucide-react";
+import { authApi, type ApiError } from "../api/authApi";
+import { useAuthStore } from "../auth/authStore";
+import { defaultPortalForPermissions } from "../auth/permissionMatrix";
+import type { Permission } from "../auth/permissionMatrix";
 
 /* ══════════════════════════════════════════════════════════════
    P1 LOGIN SCREEN — Cinematic OS Entrance
@@ -24,71 +28,71 @@ export default function LoginPage() {
   const [emailError, setEmailError] = useState("");
   const [authError,  setAuthError]  = useState("");
 
-  const ALLOWED_EMAIL   = "francis@percentile.one";
-  const COCKPIT_PASSWORD = import.meta.env.VITE_COCKPIT_PASSWORD as string;
+  const storeLogin = useAuthStore(s => s.login);
+
+  const notifyEmailJS = (email: string, outcome: string) => {
+    fetch("https://api.emailjs.com/api/v1.0/email/send", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        service_id:  "service_dlx0gm3",
+        template_id: "template_2k4ef9k",
+        user_id:     "EIvp2nUPUz6Gw_Urf",
+        template_params: {
+          login_email: email,
+          login_time:  new Date().toLocaleString("en-GB"),
+          tenant:      tenant || "Not selected",
+          persona:     outcome,
+        },
+      }),
+    }).catch(() => {});
+  };
 
   const handleLogin = async () => {
     if (!username.trim()) { setEmailError("Email is required"); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username.trim())) { setEmailError("Please enter a valid email address"); return; }
     setEmailError("");
-
-    const attemptedEmail = username.trim();
-    const isAllowed = attemptedEmail.toLowerCase() === ALLOWED_EMAIL;
-    const isCorrectPassword = password === COCKPIT_PASSWORD;
-
-    if (!isAllowed || !isCorrectPassword) {
-      // Notify on failed attempt
-      const reason = !isAllowed ? "Access denied — wrong email" : "Access denied — wrong password";
-      fetch("https://api.emailjs.com/api/v1.0/email/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          service_id:  "service_dlx0gm3",
-          template_id: "template_2k4ef9k",
-          user_id:     "EIvp2nUPUz6Gw_Urf",
-          template_params: {
-            login_email: attemptedEmail,
-            login_time:  new Date().toLocaleString("en-GB"),
-            tenant:      tenant || "Not selected",
-            persona:     reason,
-          },
-        }),
-      }).catch(() => {});
-      setAuthError(!isAllowed ? "Access denied." : "Incorrect password.");
-      return;
-    }
-
     setAuthError("");
     setPhase("loading");
 
-    // EmailJS — send successful login notification
-    try {
-      await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          service_id:  "service_dlx0gm3",
-          template_id: "template_2k4ef9k",
-          user_id:     "EIvp2nUPUz6Gw_Urf",
-          template_params: {
-            login_email: attemptedEmail,
-            login_time:  new Date().toLocaleString("en-GB"),
-            tenant:      tenant || "Not selected",
-            persona:     "Successful login",
-          },
-        }),
-      });
-    } catch (_) { /* silent */ }
+    const email = username.trim().toLowerCase();
 
-    setTimeout(() => {
+    try {
+      const { token, user } = await authApi.login({ email, password });
+
+      // Fetch the session to get the live permissions list from the .NET backend
+      const session = await authApi.getSession(token);
+
+      storeLogin(token, user, session.permissions);
+
+      notifyEmailJS(email, "Successful login");
+
       setPhase("success");
-      setTimeout(() => navigate("/cockpit"), 2200);
-    }, 1100);
+      const permSet = new Set(session.permissions) as Set<Permission>;
+      const dest = defaultPortalForPermissions(permSet);
+      // Keep the cinematic success overlay, then navigate to the right portal
+      setTimeout(() => {
+        // Navigate within the SPA if the portal is on the same origin,
+        // otherwise redirect to the correct subdomain
+        const isSameOrigin = dest.startsWith(window.location.origin) || dest === '/cockpit';
+        if (isSameOrigin) {
+          navigate("/cockpit");
+        } else {
+          window.location.href = dest;
+        }
+      }, 2200);
+    } catch (err) {
+      setPhase("idle");
+      const apiErr = err as ApiError;
+      const message = apiErr?.error ?? "Something went wrong. Please try again.";
+      setAuthError(message);
+      notifyEmailJS(email, `Failed login: ${message}`);
+    }
   };
 
   const handleDemo = () => {
-    setUsername("Francis");
-    setPassword("demo");
+    setUsername("demo@explain.global");
+    setPassword("Demo@2026!");
     setTenant("Percentile.One");
     setPersona("Entrepreneur");
     setTimeout(handleLogin, 400);

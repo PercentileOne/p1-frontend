@@ -1,97 +1,89 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // usePermissions — React hooks for permission-based rendering and routing.
 //
+// The PermissionProvider bootstraps on mount by validating the stored token
+// against the .NET /auth/session endpoint. All downstream hooks and guards
+// read from the Zustand auth store — no prop drilling required.
+//
 // Usage:
 //   const can = usePermissions();
-//   if (!can('CAN_VIEW_ADMIN_PORTAL')) return <Redirect />;
+//   if (!can('CAN_VIEW_ADMIN_PORTAL')) return <Navigate to="/" />;
 //
 //   <PortalGate permission="CAN_START_INTERVIEW">
 //     <InterviewButton />
 //   </PortalGate>
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { createContext, useContext, useMemo } from 'react';
+import { useEffect } from 'react';
 import type { ReactNode } from 'react';
-import {
-  resolvePermissions,
-  defaultPortalForPermissions,
-  type Permission,
-  type Role,
-} from './permissionMatrix';
-
-// ── Context ───────────────────────────────────────────────────────────────────
-
-interface PermissionContextValue {
-  permissions: Set<Permission>;
-  roles: Role[];
-  isAuthenticated: boolean;
-}
-
-const PermissionContext = createContext<PermissionContextValue>({
-  permissions: new Set(),
-  roles: [],
-  isAuthenticated: false,
-});
+import { useAuthStore } from './authStore';
+import { defaultPortalForPermissions, type Permission } from './permissionMatrix';
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 
 interface PermissionProviderProps {
-  roles: Role[];
-  isAuthenticated: boolean;
   children: ReactNode;
 }
 
-export function PermissionProvider({ roles, isAuthenticated, children }: PermissionProviderProps) {
-  const permissions = useMemo(() => resolvePermissions(roles), [roles]);
-  return (
-    <PermissionContext.Provider value={{ permissions, roles, isAuthenticated }}>
-      {children}
-    </PermissionContext.Provider>
-  );
+/**
+ * Mount at the root of the app (wrapping <Routes>).
+ * Validates the stored JWT against /auth/session on first render and
+ * hydrates the store with live permissions from the .NET backend.
+ */
+export function PermissionProvider({ children }: PermissionProviderProps) {
+  const bootstrap = useAuthStore(s => s.bootstrap);
+
+  useEffect(() => {
+    bootstrap();
+  }, [bootstrap]);
+
+  return <>{children}</>;
 }
 
 // ── Hooks ─────────────────────────────────────────────────────────────────────
 
-/** Returns a function that checks a single permission. */
+/** Returns a function that checks whether the current user has a permission. */
 export function usePermissions() {
-  const { permissions } = useContext(PermissionContext);
+  const permissions = useAuthStore(s => s.permissions);
   return (permission: Permission) => permissions.has(permission);
 }
 
 /** Returns true if the user has ALL of the given permissions. */
 export function useHasAllPermissions(required: Permission[]): boolean {
-  const { permissions } = useContext(PermissionContext);
+  const permissions = useAuthStore(s => s.permissions);
   return required.every(p => permissions.has(p));
 }
 
-/** Returns the full permission set (for advanced checks). */
-export function usePermissionSet(): Set<Permission> {
-  return useContext(PermissionContext).permissions;
+/** Returns the full permission set for advanced checks. */
+export function usePermissionSet(): Set<string> {
+  return useAuthStore(s => s.permissions);
 }
 
 export function useIsAuthenticated(): boolean {
-  return useContext(PermissionContext).isAuthenticated;
+  return useAuthStore(s => s.isAuthenticated);
 }
 
-/** Returns where to send a user when they hit a portal they can't access. */
+export function useIsAuthLoading(): boolean {
+  return useAuthStore(s => s.isLoading);
+}
+
+/** Returns the default portal URL for the current user's permissions. */
 export function useDefaultPortal(): string {
-  const { permissions } = useContext(PermissionContext);
-  return defaultPortalForPermissions(permissions);
+  const permissions = useAuthStore(s => s.permissions);
+  return defaultPortalForPermissions(permissions as Set<Permission>);
 }
 
 // ── Gate component ────────────────────────────────────────────────────────────
 
 interface PortalGateProps {
-  /** Permission required to render children. */
   permission: Permission;
-  /** Rendered when permission is missing. Defaults to null (renders nothing). */
-  fallback?: ReactNode;
-  children: ReactNode;
+  fallback?:  ReactNode;
+  children:   ReactNode;
 }
 
 /**
  * Renders children only if the current user has the required permission.
- * Use this for feature-level UI gating within a portal.
+ * Removes the element from the DOM entirely when denied — not just hidden.
  *
  *   <PortalGate permission="CAN_VIEW_ANALYTICS">
  *     <AnalyticsDashboard />
