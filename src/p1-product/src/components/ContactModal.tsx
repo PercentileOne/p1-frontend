@@ -13,7 +13,7 @@ export default function ContactModal({ onClose }: { onClose: () => void }) {
     e.preventDefault()
     setStatus('sending')
     try {
-      const res = await fetch('https://formspree.io/f/mykqrrow', {
+      const res = await fetch('https://formspree.io/f/maqrzpvk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ name, email, subject, message }),

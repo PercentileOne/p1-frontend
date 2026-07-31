@@ -99,7 +99,7 @@ export default function ProductHome() {
     btn.textContent="Joining…"; btn.disabled=true;
     try {
       await Promise.all([
-        fetch("https://formspree.io/f/mzdldjzz", {
+        fetch("https://formspree.io/f/maqrzpvk", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "application/json" },
           body: JSON.stringify({ email, source: "explain.global" }),
