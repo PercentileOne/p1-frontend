@@ -7,9 +7,6 @@ import Community from './pages/Community';
 import MyInterviews from './pages/MyInterviews';
 import Portals from './pages/Portals';
 import Pricing from './pages/Pricing';
-import Login from './pages/Login';
-import Register from './pages/Register';
-
 export default function App() {
   return (
     <div style={{ minHeight: '100vh', background: '#05040f' }}>
@@ -22,8 +19,8 @@ export default function App() {
         <Route path="/my-interviews" element={<MyInterviews />} />
         <Route path="/portals" element={<Portals />} />
         <Route path="/pricing" element={<Pricing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<>{window.location.replace('https://candidate.explain.global/login')}</>} />
+        <Route path="/register" element={<>{window.location.replace('https://candidate.explain.global/register')}</>} />
       </Routes>
     </div>
   );
