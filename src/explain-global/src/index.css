@@ -1,4 +1,16 @@
 @import "tailwindcss";
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Segoe UI', Arial, sans-serif; background: #05040f; color: #e8e4ff; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #05040f; color: #e8e4ff; cursor: default; }
+
+/* Non-editable elements should never show the text I-beam cursor */
+h1, h2, h3, h4, h5, h6,
+p, span, div, section, header, footer, nav, aside, article,
+label, li, ul, ol, blockquote, figure, figcaption,
+td, th, tr, table, caption { cursor: default; user-select: none; }
+
+/* Restore correct cursors for interactive and selectable elements */
+a, button, [role="button"], summary { cursor: pointer; }
+input, textarea, select, [contenteditable] { cursor: text; user-select: text; }
+input[type="checkbox"], input[type="radio"], input[type="range"] { cursor: pointer; }
+input[type="submit"], input[type="button"], input[type="reset"] { cursor: pointer; }
