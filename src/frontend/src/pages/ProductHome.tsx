@@ -152,7 +152,7 @@ export default function ProductHome() {
     .ph-btn-ghost:hover{background:rgba(79,142,247,.12);border-color:rgba(79,142,247,.5)}
 
     #ph-hero{min-height:calc(100vh - 68px);display:flex;align-items:center;padding:80px 32px;overflow:hidden;position:relative;z-index:1}
-    .ph-hero-inner{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+    .ph-hero-inner{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
     .ph-hero-glow{position:absolute;top:50%;left:30%;transform:translate(-50%,-60%);width:900px;height:700px;background:radial-gradient(ellipse,rgba(30,80,255,.18) 0%,rgba(79,142,247,.06) 40%,transparent 70%);pointer-events:none}
     .ph-hero-hl{font-size:clamp(36px,4vw,64px);font-weight:900;line-height:1.05;letter-spacing:-.04em;color:#F0F4FF;text-shadow:0 0 60px rgba(79,142,247,.2)}
     .ph-hero-scroll{margin-top:72px;display:flex;flex-direction:column;align-items:center;gap:8px;color:rgba(240,244,255,.35);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;animation:ph-float 2.5s ease-in-out infinite}
