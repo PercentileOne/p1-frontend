@@ -216,6 +216,67 @@ export default function Home() {
     .ph-footer-links a{font-size:12px;color:rgba(240,244,255,.35);text-decoration:none;margin:0 10px;transition:color .2s}
     .ph-footer-links a:hover{color:#4F8EF7}
 
+    .ph-ir-badge{position:absolute;top:14px;left:50%;transform:translateX(-50%)}
+    .ph-irm{background:#070b14;border-radius:16px;overflow:hidden;font-family:-apple-system,system-ui,sans-serif;border:1px solid rgba(255,255,255,0.07)}
+    .ph-irm-chair{position:relative;height:160px;overflow:hidden;background:#000}
+    .ph-irm-chair img{position:absolute;right:0;top:0;width:60%;height:100%;object-fit:cover;object-position:center 30%;display:block}
+    .ph-irm-chair-overlay{position:absolute;inset:0;background:linear-gradient(to right,rgba(7,11,20,1) 0%,rgba(7,11,20,0.97) 35%,rgba(7,11,20,0.6) 55%,rgba(0,0,0,0) 100%)}
+    .ph-irm-chair-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;padding:0 24px}
+    .ph-irm-chair-eyebrow{font-size:8px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(167,139,250,0.7)}
+    .ph-irm-chair-headline{font-size:16px;font-weight:800;color:#fff;text-align:left;letter-spacing:-.01em}
+    .ph-irm-tiles{display:flex;gap:10px;padding:12px 12px 0}
+    .ph-irm-tile{flex:1;border-radius:12px;overflow:hidden;position:relative;aspect-ratio:4/3}
+    .ph-irm-tile img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+    .ph-irm-tile-vignette{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 55%)}
+    .ph-irm-tile-name{position:absolute;bottom:0;left:0;right:0;padding:10px 12px}
+    .ph-irm-tile-name strong{display:block;font-size:11px;font-weight:700;color:#fff}
+    .ph-irm-tile-name span{font-size:8px;font-weight:600;color:rgba(255,255,255,0.45);letter-spacing:.07em;text-transform:uppercase}
+    .ph-irm-tile-status{position:absolute;top:8px;right:10px;font-size:9px;font-weight:600;color:rgba(255,255,255,0.4)}
+    .ph-irm-tile-wave{position:absolute;bottom:32px;right:10px;display:flex;align-items:center;gap:2px;height:20px}
+    .ph-irm-tile-wave span{display:block;width:3px;background:#a78bfa;border-radius:2px}
+    .ph-irm-tile-active{border:2px solid rgba(167,139,250,0.55);box-shadow:0 0 0 1px rgba(167,139,250,0.15)}
+    .ph-irm-tile-james{border:1px solid rgba(255,255,255,0.06)}
+    .ph-irm-qcard{margin:10px 12px 0;padding:12px 14px;background:#0c1220;border:1px solid rgba(255,255,255,0.07);border-radius:12px}
+    .ph-irm-qtags{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+    .ph-irm-qtag-blue{font-size:8px;font-weight:700;letter-spacing:.08em;padding:3px 9px;border-radius:5px;background:rgba(79,142,247,0.15);color:#4F8EF7;border:1px solid rgba(79,142,247,0.25)}
+    .ph-irm-qtag-grey{font-size:8px;font-weight:600;padding:3px 9px;border-radius:5px;background:rgba(255,255,255,0.05);color:rgba(240,244,255,0.4);border:1px solid rgba(255,255,255,0.08)}
+    .ph-irm-qbtns{margin-left:auto;display:flex;gap:6px}
+    .ph-irm-qbtn{font-size:9px;font-weight:600;padding:3px 10px;border-radius:6px;border:1px solid rgba(79,142,247,0.35);background:rgba(79,142,247,0.1);color:#4F8EF7;cursor:pointer}
+    .ph-irm-qbtn-green{border-color:rgba(52,211,153,0.3);background:rgba(52,211,153,0.08);color:#34D399}
+    .ph-irm-qtext{font-size:12px;font-weight:600;color:#F0F4FF;line-height:1.55}
+    .ph-irm-body{display:flex;gap:10px;padding:10px 12px 12px}
+    .ph-irm-answer{flex:3;background:#0c1220;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+    .ph-irm-whisper{display:inline-flex;align-items:center;gap:5px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:5px;padding:3px 8px;font-size:9px;font-weight:700;color:#34D399}
+    .ph-irm-mic-row{display:flex;align-items:center;gap:10px}
+    .ph-irm-mic{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#4F8EF7,#2563eb);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 14px rgba(79,142,247,0.35)}
+    .ph-irm-bars{flex:1;display:flex;align-items:center;gap:2px;height:32px}
+    .ph-irm-bars span{flex:1;background:rgba(255,255,255,0.08);border-radius:2px}
+    .ph-irm-mic-label{font-size:10px;color:rgba(240,244,255,0.3)}
+    .ph-irm-textarea{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:8px 10px;font-size:11px;color:rgba(240,244,255,0.35);font-family:inherit;width:100%;box-sizing:border-box;resize:none;height:52px}
+    .ph-irm-pass{font-size:10px;font-weight:600;padding:5px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(240,244,255,0.45);cursor:pointer;align-self:flex-start}
+    .ph-irm-prev{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:0}
+    .ph-irm-prev::-webkit-scrollbar{width:3px}.ph-irm-prev::-webkit-scrollbar-track{background:transparent}.ph-irm-prev::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+    .ph-irm-prev-label{font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(240,244,255,0.25);margin-bottom:2px}
+    .ph-irm-prev-item{padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;display:flex;align-items:flex-start;gap:8px;flex-shrink:0}
+    .ph-irm-prev-score{font-size:11px;font-weight:800;flex-shrink:0;min-width:28px;text-align:right;font-variant-numeric:tabular-nums;line-height:1.4}
+    .ph-irm-prev-score-hi{color:#34D399}.ph-irm-prev-score-mid{color:#F59E0B}.ph-irm-prev-score-lo{color:#EF4444}
+    .ph-irm-prev-q{font-size:10px;color:rgba(240,244,255,0.45);line-height:1.5;flex:1}
+    .ph-irm-stats{flex:1;background:#0c1220;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
+    .ph-irm-stat-label{font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(240,244,255,0.3);margin-bottom:2px}
+    .ph-irm-progress-pips{display:flex;gap:4px}
+    .ph-irm-pip-dot{height:4px;flex:1;border-radius:2px;background:rgba(255,255,255,0.08)}
+    .ph-irm-pip-dot-done{background:#4F8EF7}
+    .ph-irm-timer-val{font-size:20px;font-weight:800;color:#f1f5f9;font-variant-numeric:tabular-nums}
+    .ph-irm-coach-cue{font-size:10px;line-height:1.5;color:rgba(167,139,250,0.9);background:rgba(167,139,250,0.07);border:1px solid rgba(167,139,250,0.15);border-radius:7px;padding:7px 9px}
+    .ph-irm-benchmark{background:linear-gradient(135deg,rgba(79,142,247,0.10),rgba(167,139,250,0.08));border:1px solid rgba(79,142,247,0.22);border-radius:8px;padding:8px 10px}
+    .ph-irm-bench-text{font-size:9px;font-weight:700;color:#f1f5f9;line-height:1.5;margin:3px 0 5px}
+    .ph-irm-bench-text em{color:#34D399;font-style:normal}
+    .ph-irm-bench-bar{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-bottom:3px}
+    .ph-irm-bench-fill{height:100%;width:5%;background:linear-gradient(90deg,#4F8EF7,#a78bfa);border-radius:2px}
+    .ph-irm-bench-sub{font-size:8px;color:rgba(240,244,255,0.3)}
+    .ph-irm-diff-badge{font-size:10px;font-weight:700;padding:6px 10px;border-radius:7px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#F59E0B;text-align:center}
+    .ph-irm-pause-btn{font-size:10px;font-weight:700;padding:7px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:rgba(240,244,255,0.4);cursor:pointer;text-align:center;margin-top:auto}
+
     #ph-practice{background:#070B18;padding:80px 0 100px}
     .ph-practice-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;max-width:1100px;margin:0 auto;padding:0 32px}
     .ph-practice-hook{font-size:clamp(32px,4.5vw,54px);font-weight:900;line-height:1.08;letter-spacing:-.03em;color:#F0F4FF;margin-bottom:20px}
@@ -301,8 +362,106 @@ export default function Home() {
             </div>
           </div>
           <div className="ph-ir-preview ph-r" data-ph="" data-d="2" style={{position:'relative'}}>
-            <div style={{position:'absolute',inset:'-30px',background:'radial-gradient(ellipse at center,rgba(79,142,247,.18) 0%,transparent 70%)',pointerEvents:'none',borderRadius:40}} />
-            <img src="/assets/interview-room-preview.png" alt="Explain Interview Room — AI interviewer Sarah Mitchell" style={{width:'100%',display:'block',position:'relative'}} />
+            <div className="ph-irm">
+              <div className="ph-irm-chair">
+                <img src="/images/mastermind-chair.png" alt="" />
+                <div className="ph-irm-chair-overlay" />
+                <div className="ph-irm-chair-text">
+                  <div className="ph-irm-chair-eyebrow">Your interview awaits</div>
+                  <div className="ph-irm-chair-headline">The seat is yours.<br /><span style={{color:'rgba(167,139,250,0.9)'}}>Make every answer count.</span></div>
+                </div>
+              </div>
+              <div className="ph-irm-tiles">
+                <div className="ph-irm-tile ph-irm-tile-active">
+                  <img src="/images/sarah.jpg" alt="Sarah Mitchell" />
+                  <div className="ph-irm-tile-vignette" />
+                  <div className="ph-irm-tile-wave">
+                    {[14,22,18,26,20,16,24,18].map((h,i)=><span key={i} style={{height:h}} />)}
+                  </div>
+                  <div className="ph-irm-tile-name"><strong>Sarah Mitchell</strong><span>HR Director</span></div>
+                </div>
+                <div className="ph-irm-tile ph-irm-tile-james">
+                  <img src="/images/james.png" alt="James Okafor" />
+                  <div className="ph-irm-tile-vignette" />
+                  <div className="ph-irm-tile-status">Ready</div>
+                  <div className="ph-irm-tile-name"><strong>James Okafor</strong><span>Hiring Manager</span></div>
+                </div>
+              </div>
+              <div className="ph-irm-qcard">
+                <div className="ph-irm-qtags">
+                  <span className="ph-irm-qtag-blue">JAMES · HIRING MANAGER</span>
+                  <span className="ph-irm-qtag-grey">Medium</span>
+                  <div className="ph-irm-qbtns">
+                    <button className="ph-irm-qbtn">↩ Repeat</button>
+                    <button className="ph-irm-qbtn ph-irm-qbtn-green">⏸ Pause</button>
+                  </div>
+                </div>
+                <div className="ph-irm-qtext">Walk me through the most complex challenge you have faced in this type of role. What did you do and what was the outcome?</div>
+              </div>
+              <div className="ph-irm-body">
+                <div className="ph-irm-answer">
+                  <div className="ph-irm-whisper">
+                    <span style={{width:6,height:6,borderRadius:'50%',background:'#34D399',display:'inline-block'}} />
+                    Whisper STT active
+                  </div>
+                  <div className="ph-irm-mic-row">
+                    <div className="ph-irm-mic">
+                      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 2a3 3 0 013 3v7a3 3 0 01-6 0V5a3 3 0 013-3z" fill="#fff"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v3M9 22h6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    </div>
+                    <div className="ph-irm-bars">
+                      {Array(18).fill(0).map((_,i)=><span key={i} style={{height:`${8+Math.round(Math.sin(i*0.8)*10+12)}px`}} />)}
+                    </div>
+                    <span className="ph-irm-mic-label">Speak or type</span>
+                  </div>
+                  <textarea className="ph-irm-textarea" placeholder="Type your answer here…" readOnly />
+                  <button className="ph-irm-pass">Pass →</button>
+                  <div className="ph-irm-prev">
+                    <div className="ph-irm-prev-label">Previous Answers</div>
+                    {[
+                      {q:'Tell me about yourself and your background.',score:8,hi:true},
+                      {q:'Why are you interested in this particular role?',score:7,hi:true},
+                      {q:'Describe a time you handled a difficult stakeholder.',score:6,hi:false,mid:true},
+                    ].map(({q,score,hi,mid},i)=>(
+                      <div className="ph-irm-prev-item" key={i}>
+                        <span className={`ph-irm-prev-score ${hi?'ph-irm-prev-score-hi':mid?'ph-irm-prev-score-mid':'ph-irm-prev-score-lo'}`}>{score}<span style={{fontSize:8,fontWeight:500,color:'rgba(240,244,255,0.3)'}}>/10</span></span>
+                        <span className="ph-irm-prev-q">{q}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="ph-irm-stats">
+                  <div>
+                    <div className="ph-irm-stat-label">Progress</div>
+                    <div className="ph-irm-progress-pips">
+                      {[true,false,false,false,false].map((done,i)=>(
+                        <div key={i} className={`ph-irm-pip-dot${done?' ph-irm-pip-dot-done':''}`} />
+                      ))}
+                    </div>
+                    <div style={{fontSize:9,color:'rgba(240,244,255,0.3)',marginTop:3}}>Q1 of 5</div>
+                  </div>
+                  <div>
+                    <div className="ph-irm-stat-label">Time on Answer</div>
+                    <div className="ph-irm-timer-val">0:11</div>
+                  </div>
+                  <div>
+                    <div className="ph-irm-stat-label">Coach</div>
+                    <div className="ph-irm-coach-cue">Stay calm — you've got this 💪</div>
+                  </div>
+                  <div className="ph-irm-benchmark">
+                    <div className="ph-irm-stat-label" style={{color:'rgba(79,142,247,0.7)'}}>Benchmark</div>
+                    <div className="ph-irm-bench-text">Top 5% scored <em>8/10</em> for this role</div>
+                    <div className="ph-irm-bench-bar"><div className="ph-irm-bench-fill" /></div>
+                    <div className="ph-irm-bench-sub">Top 5th percentile</div>
+                  </div>
+                  <div>
+                    <div className="ph-irm-stat-label">Difficulty</div>
+                    <div className="ph-irm-diff-badge">Medium</div>
+                  </div>
+                  <div className="ph-irm-pause-btn">⏸ Pause</div>
+                </div>
+              </div>
+            </div>
+            <div className="ph-ir-badge"><span className="ph-badge-gold">Live Preview</span></div>
           </div>
         </div>
       </section>
