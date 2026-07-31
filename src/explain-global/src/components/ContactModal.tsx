@@ -51,7 +51,7 @@ export default function ContactModal({ onClose, defaultSubject = '' }: Props) {
   return (
     <div
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 20px 20px' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '14vh 20px 20px', overflowY: 'auto' }}
     >
       <style>{`
         @keyframes eg-modal-in{from{opacity:0;transform:scale(.94) translateY(14px)}to{opacity:1;transform:none}}
