@@ -1513,62 +1513,175 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
 
   'govt': () => <>
     <SectionHead
-      label="Market · Institutional & Government"
-      h1="The silent giant."
-      h2="Government employability."
-      sub="Governments worldwide spend billions annually preparing unemployed citizens for work. Explain is the modern platform they've been waiting for — and the contracts are larger than any individual recruiter."
+      label="Market · Government & Institutional"
+      h1="National interview readiness"
+      h2="infrastructure."
+      sub="Governments, councils, job centres, and employability programmes deal with the most interview-anxious candidates in society. Explain.Global gives them exactly what they need — at scale, in any language, for any cohort."
     />
-    <Callout icon="🏛️" title="Why government is a major revenue engine" body="A single local authority employability contract can be worth £50K–£500K annually. Councils, job centres, and return-to-work programmes are actively seeking technology platforms. Explain's mission — preparing people for the interview — is exactly what these programmes fund." color="#22c55e" />
-    <Grid cols={3}>
-      <Stat value="£7B+" label="UK employability spend / year" sub="DWP, councils, ESF-funded programmes" color="#22c55e" />
-      <Stat value="2.5M" label="UC claimants seeking work" sub="Primary target group for Job Centre rollout" />
-      <Stat value="£50K–£500K" label="Contract value range" sub="Per council / programme per year" color={A2} />
+
+    {/* §1 Why Government Matters */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>§1 — Why Government Matters</div>
+    <Grid cols={2}>
+      <Card style={{ background: 'rgba(34,197,94,0.04)', border: '1px solid rgba(34,197,94,0.15)' }}>
+        <div style={{ fontSize: 13, color: '#c0c8e0', lineHeight: 1.85, marginBottom: 16 }}>
+          Government programmes deal with the most interview-anxious candidates in society. These groups need <span style={{ color: '#22c55e', fontWeight: 700 }}>clarity, confidence, and structure</span> more than anyone.
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+          {[
+            '🔴 Unemployed individuals',
+            '🟠 People returning to work',
+            '🟡 Young people entering work',
+            '🟢 Refugees and migrants',
+            '🔵 People with disabilities',
+            '🟣 Veterans',
+            '⚫ People leaving prison',
+            '⚪ People recovering from illness',
+          ].map(item => (
+            <div key={item} style={{ fontSize: 12, color: '#9090b0', padding: '5px 0' }}>{item}</div>
+          ))}
+        </div>
+      </Card>
+      <div>
+        <Grid cols={1} gap={12}>
+          <Stat value="£7B+" label="UK employability spend / year" sub="DWP, councils, ESF-funded programmes" color="#22c55e" />
+          <Stat value="2.5M" label="Universal Credit claimants" sub="Seeking work — primary target cohort" color={A} />
+          <Stat value="£50K–£500K" label="Per contract value" sub="Council / programme / year" color={A2} />
+        </Grid>
+      </div>
     </Grid>
+
+    {/* §2 The Institutional Problem */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16, marginTop: 8 }}>§2 — The Institutional Problem</div>
     <Grid cols={2}>
       {[
-        { icon: '🏢', title: 'Job Centres & DWP', body: 'Department for Work and Pensions manages 900+ job centres. Universal Credit claimants are mandated to engage with employability activities. Explain is the ideal digital platform for this cohort — low cost, high impact, measurable outcomes.' },
-        { icon: '🏙️', title: 'Local Councils', body: 'Every local authority runs employability programmes funded by the DWP, UKSPF, or Levelling Up. Councils actively procure digital platforms that demonstrate employment outcomes. Explain\'s outcome data (interview success rates) is procurement gold.' },
-        { icon: '🎓', title: 'Return-to-Work Programmes', body: 'Parents returning after parental leave. Long-term sick returning after illness. Carers re-entering the workforce. These cohorts are chronically underprepared for modern interviews — and fully funded by government to get support.' },
-        { icon: '⚡', title: 'Youth Employment', body: 'NEET (Not in Education, Employment or Training) programmes, Kickstart legacy schemes, Youth Hubs. Young people have the highest interview anxiety and the least interview experience. Explain changes this completely.' },
-        { icon: '🌍', title: 'Refugee Integration', body: 'Home Office and UNHCR-funded integration programmes need candidates to navigate UK recruitment culture. Language support + cultural context + interview practice = Explain\'s exact product for this cohort.' },
-        { icon: '⚖️', title: 'Prison-to-Work & Veterans', body: 'MoJ, HMPPS, and veterans employment charities (RFEA, Career Transition Partnership) fund interview preparation as part of rehabilitation and transition programmes. The social impact story here is profound — and fundable.' },
-      ].map(f => <Card key={f.title}><Feature icon={f.icon} title={f.title} body={f.body} /></Card>)}
+        { n: '1', title: 'Interview anxiety is extremely high', body: 'Candidates freeze, panic, or withdraw. There is no structured preparation at the point of interview.' },
+        { n: '2', title: 'Preparation is inconsistent or non-existent', body: 'Job centres cannot provide personalised interview coaching at scale. The gap is structural and unfilled.' },
+        { n: '3', title: 'Feedback is rare or unclear', body: 'Candidates often never hear why they failed. Without feedback, they repeat the same mistakes indefinitely.' },
+        { n: '4', title: 'Recruiters and employers ghost candidates', body: 'This destroys confidence and motivation — and leaves government programmes unable to show outcome data.' },
+        { n: '5', title: 'Government programmes lack digital tools', body: 'Most employability support is outdated, generic, and manual. The technology infrastructure has not kept pace.' },
+        { n: '6', title: 'No personalised interview readiness exists today', body: 'Until Explain.Global. There is no platform combining personalisation, simulation, coaching, and scoring for this cohort.', highlight: true },
+      ].map(p => (
+        <Card key={p.n} accent={p.highlight ? '#22c55e' : undefined}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', background: p.highlight ? 'rgba(34,197,94,0.15)' : `${A}15`, border: `1px solid ${p.highlight ? 'rgba(34,197,94,0.4)' : `${A}30`}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: p.highlight ? '#22c55e' : A, flexShrink: 0 }}>{p.n}</div>
+            <div>
+              <div style={{ fontWeight: 700, color: p.highlight ? '#22c55e' : '#fff', fontSize: 13, marginBottom: 4 }}>{p.title}</div>
+              <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.6 }}>{p.body}</div>
+            </div>
+          </div>
+        </Card>
+      ))}
     </Grid>
-    <Card style={{ marginTop: 8 }}>
-      <div className="inv-2col">
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 14 }}>Revenue Model — Government</div>
-          {[
-            { label: 'Per-user licence (council)',     value: '£8–15/user/month' },
-            { label: 'Annual programme contract',      value: '£50K–£500K' },
-            { label: 'DWP national rollout potential', value: '£5M–£50M' },
-            { label: 'Outcome-based payment model',    value: 'Available on request' },
-            { label: 'White-label (DWP branding)',     value: 'Available' },
-          ].map(r => (
-            <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 13 }}>
-              <span style={{ color: '#9090b0' }}>{r.label}</span>
-              <span style={{ color: '#ddd', fontWeight: 600 }}>{r.value}</span>
-            </div>
-          ))}
+
+    {/* §3 The Explain Solution */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16, marginTop: 8 }}>§3 — The Explain Solution</div>
+    <Callout icon="🏛️" title="Explain.Global becomes the digital interview readiness layer for government" body="One platform. Every cohort. Every language. Every programme. Measurable outcomes at every level." color="#22c55e" />
+    <Grid cols={3}>
+      <Card accent="#22c55e">
+        <div style={{ fontSize: 11, fontWeight: 800, color: '#22c55e', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>Government & Job Centres Get</div>
+        {['Bulk access licences','Structured interview packs','Personalised coaching','Readiness scores & analytics','Learning modules','Multi-language support','Accessibility compliance','Placement tracking','Employer feedback tools'].map(i => (
+          <div key={i} style={{ display: 'flex', gap: 6, fontSize: 12, color: '#9090b0', marginBottom: 6 }}>
+            <span style={{ color: '#22c55e', flexShrink: 0 }}>✓</span> {i}
+          </div>
+        ))}
+      </Card>
+      <Card accent={A}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: A, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>Candidates Get</div>
+        {['Clarity','Confidence','Structure','Personalised guidance','Personalised questions','Personalised model answers','Real-time coaching','Personalised learning','Readiness scores'].map(i => (
+          <div key={i} style={{ display: 'flex', gap: 6, fontSize: 12, color: '#9090b0', marginBottom: 6 }}>
+            <span style={{ color: A, flexShrink: 0 }}>✓</span> {i}
+          </div>
+        ))}
+      </Card>
+      <Card accent={A2}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: A2, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>Employers Get</div>
+        {['Better-prepared candidates','Higher interview pass rates','Clearer communication','Structured feedback tools','Pre-assessed candidate profiles','Outcome data for procurement'].map(i => (
+          <div key={i} style={{ display: 'flex', gap: 6, fontSize: 12, color: '#9090b0', marginBottom: 6 }}>
+            <span style={{ color: A2, flexShrink: 0 }}>✓</span> {i}
+          </div>
+        ))}
+        <div style={{ marginTop: 16, padding: '10px 12px', background: `${A2}08`, border: `1px solid ${A2}20`, borderRadius: 8, fontSize: 11, color: A2, fontWeight: 700, textAlign: 'center' }}>
+          This is national-scale interview readiness.
         </div>
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A2, marginBottom: 14 }}>Why Explain Wins Government Procurement</div>
-          {[
-            { icon: '📊', label: 'Measurable outcomes', body: 'Interview scores, session completion, confidence ratings — the data councils need for ERDF/UKSPF reporting.' },
-            { icon: '🌍', label: '50+ languages', body: 'Refugee programmes need multilingual platforms. Explain is built global from day one — no one else is.' },
-            { icon: '💷', label: 'Cost-effective', body: 'At £8–15 per user per month, Explain is cheaper than any alternative — including the cost of reprocessing a failed job placement.' },
-            { icon: '📱', label: 'Accessible', body: 'Web + mobile. No install required. Works on any device. Essential for cohorts without dedicated hardware.' },
-          ].map(r => (
-            <div key={r.label} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-              <span style={{ fontSize: 18 }}>{r.icon}</span>
-              <div>
-                <div style={{ fontSize: 13, color: '#ddd', fontWeight: 600 }}>{r.label}</div>
-                <div style={{ fontSize: 12, color: '#6060a0' }}>{r.body}</div>
-              </div>
+      </Card>
+    </Grid>
+
+    {/* §4 Institutional Use Cases */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16, marginTop: 8 }}>§4 — Institutional Use Cases</div>
+    <Grid cols={2}>
+      {[
+        { icon: '🏢', title: 'Job Centres', body: 'Offer Explain to every candidate preparing for interviews. DWP manages 900+ job centres. Universal Credit claimants are mandated to engage with employability activities — Explain is the ideal digital layer.' },
+        { icon: '🏙️', title: 'Local Councils', body: 'Integrate Explain into employability programmes funded by DWP, UKSPF, or Levelling Up. Councils actively procure digital platforms that demonstrate employment outcomes. Explain outcome data is procurement gold.' },
+        { icon: '🌐', title: 'National Employment Schemes', body: 'Roll out Explain across entire regions or countries. The architecture is built for scale — one contract can serve thousands of candidates simultaneously, with full analytics dashboards.' },
+        { icon: '⚡', title: 'Youth Employment Initiatives', body: 'Support young people entering the workforce. NEET programmes, Youth Hubs, and Kickstart legacy schemes. Young people have the highest interview anxiety and the least interview experience.' },
+        { icon: '🌍', title: 'Refugee Integration Programmes', body: 'Provide multi-language interview readiness. Home Office and UNHCR-funded programmes need candidates to navigate UK recruitment culture. 50+ languages makes Explain uniquely qualified.' },
+        { icon: '🔒', title: 'Prison-to-Work Programmes', body: 'Help individuals re-enter the workforce with confidence. MoJ, HMPPS, and rehabilitation charities fund interview preparation as part of transition programmes. The social impact story is profound — and fundable.' },
+        { icon: '♿', title: 'Disability Employment Support', body: 'Offer structured, accessible interview preparation. Web-based, device-agnostic, no install required. Explain works on any device and supports adjustable learning pacing for all users.' },
+        { icon: '🎖️', title: 'Veterans Employment Support', body: 'Provide personalised coaching for career transitions. RFEA, Career Transition Partnership, and veterans employment charities fund this directly. Veterans have exceptional skills but often struggle with civilian interview structure.' },
+      ].map(f => (
+        <Card key={f.title}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <span style={{ fontSize: 24, flexShrink: 0 }}>{f.icon}</span>
+            <div>
+              <div style={{ fontWeight: 700, color: '#fff', fontSize: 13, marginBottom: 5 }}>{f.title}</div>
+              <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.65 }}>{f.body}</div>
             </div>
-          ))}
-        </div>
+          </div>
+        </Card>
+      ))}
+    </Grid>
+
+    {/* §5 Revenue Model */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 16, marginTop: 8 }}>§5 — Institutional Revenue Model</div>
+    <div style={{ marginBottom: 8, fontSize: 13, color: '#7070a0', lineHeight: 1.7 }}>Government & institutional contracts generate revenue across six independent streams — making this one of Explain's largest long-term revenue engines.</div>
+    <Grid cols={3}>
+      {[
+        { n: '①', label: 'Bulk Access Licences',      value: '£499–£4,999',    sub: 'Per programme', color: A },
+        { n: '②', label: 'Annual Council Contracts',   value: '£10K–£50K',      sub: 'Per council / year', color: A2 },
+        { n: '③', label: 'Regional/National Contracts',value: '£100K+',         sub: 'Per region', color: '#22c55e' },
+        { n: '④', label: 'Learn Engine Subscriptions', value: '£9–£19/month',   sub: 'Per candidate', color: A },
+        { n: '⑤', label: 'Premium Packs',              value: '£5–£10',         sub: 'Per candidate', color: A2 },
+        { n: '⑥', label: 'Multi-language Packs',       value: 'Global revenue', sub: 'Expansion engine', color: '#22c55e' },
+      ].map(r => (
+        <Card key={r.n} accent={r.color}>
+          <div style={{ fontSize: 11, fontWeight: 900, color: r.color, marginBottom: 4 }}>{r.n} {r.label}</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', marginBottom: 2 }}>{r.value}</div>
+          <div style={{ fontSize: 11, color: '#505070' }}>{r.sub}</div>
+        </Card>
+      ))}
+    </Grid>
+
+    {/* §6 Why Government Will Adopt */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16, marginTop: 8 }}>§6 — Why Government Will Adopt Explain</div>
+    <Card style={{ marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {[
+          '✔ It reduces unemployment',
+          '✔ It increases interview success',
+          '✔ It improves candidate confidence',
+          '✔ It provides measurable outcomes',
+          '✔ It is low-cost and high-impact',
+          '✔ It is scalable and digital',
+          '✔ It supports vulnerable groups',
+          '✔ It aligns with government priorities',
+          '✔ It is easy to deploy',
+          '✔ It is personalised and modern',
+        ].map(item => (
+          <div key={item} style={{ fontSize: 13, color: '#22c55e', fontWeight: 600, padding: '6px 0', borderBottom: '1px solid rgba(34,197,94,0.08)' }}>{item}</div>
+        ))}
       </div>
+      <div style={{ marginTop: 16, padding: '14px 16px', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#22c55e', textAlign: 'center' }}>
+        Explain.Global becomes infrastructure — not just a product.
+      </div>
+    </Card>
+
+    {/* §7 Social Impact Statement */}
+    <Card style={{ background: `linear-gradient(135deg, ${A}08, ${A2}08)`, border: `1px solid ${A}20`, textAlign: 'center', padding: '32px 28px' }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: A2, marginBottom: 16 }}>§7 — Social Impact Statement</div>
+      <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', lineHeight: 1.5, marginBottom: 16, letterSpacing: '-0.02em' }}>
+        "Explain.Global is built to give every person — regardless of background, circumstance, or challenge — the clarity and confidence to succeed in interviews."
+      </div>
+      <div style={{ fontSize: 13, color: '#6060a0' }}>This is the heart of the mission.</div>
     </Card>
   </>,
 
@@ -1862,56 +1975,202 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
   'founder': () => <>
     <SectionHead
       label="Founder · Francis Cobbinah"
-      h1="Built by someone who"
-      h2="lived the problem."
-      sub="Francis Cobbinah is the founder of Percentile.One and Explain.Global. He built Explain because he has sat in interview rooms, watched brilliant people fail, and decided to do something about it."
+      h1="A mission born from"
+      h2="lived experience."
+      sub="Francis Cobbinah built Explain.Global because he has lived the problem — felt the anxiety, seen the ghosting, and watched brilliant people fail interviews they should have won. This platform is the answer he wished existed."
     />
-    <Grid cols={1}>
-      <Card style={{ background: 'rgba(79,142,247,0.04)', border: '1px solid rgba(79,142,247,0.15)' }}>
-        <div style={{ fontStyle: 'italic', fontSize: 15, color: '#c0c8e0', lineHeight: 1.85, marginBottom: 20, borderLeft: `3px solid ${A}`, paddingLeft: 20 }}>
-          "I built Explain because I've sat in interview rooms and watched people who were brilliant — genuinely brilliant — walk out looking broken. Not because they weren't good enough. Because they'd never actually practised. Not once. Not properly. The first time they sat in the chair was the real interview. That ends now."
+
+    {/* §1 The Beginning */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>§1 — The Beginning</div>
+    <Grid cols={2}>
+      <Card style={{ background: `${A}05`, border: `1px solid ${A}18` }}>
+        <div style={{ fontSize: 14, color: '#c0c8e0', lineHeight: 1.85, marginBottom: 16 }}>
+          Francis grew up seeing people struggle with interviews — not because they lacked ability, but because they lacked <span style={{ color: A, fontWeight: 700 }}>clarity, confidence, and support.</span>
         </div>
-        <div style={{ fontSize: 13, color: '#4F8EF7', fontWeight: 700 }}>— Francis Cobbinah, Founder · Explain.Global · Percentile.One</div>
+        <div style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.8, marginBottom: 4 }}>He saw talented people fail interviews simply because:</div>
+        {[
+          "they didn't know what to say",
+          "they didn't know how to structure answers",
+          "they didn't understand what recruiters wanted",
+          "they didn't receive feedback",
+          "they were ghosted after interviews",
+          "they were left confused and anxious",
+        ].map(item => (
+          <div key={item} style={{ display: 'flex', gap: 8, fontSize: 12, color: '#9090b0', marginBottom: 6 }}>
+            <span style={{ color: '#ef4444', flexShrink: 0 }}>✗</span> {item}
+          </div>
+        ))}
+        <div style={{ marginTop: 14, fontSize: 13, fontWeight: 700, color: A }}>
+          This frustration planted the seed for Explain.Global.
+        </div>
+      </Card>
+      <Card style={{ background: 'rgba(79,142,247,0.04)', border: '1px solid rgba(79,142,247,0.15)' }}>
+        <div style={{ fontStyle: 'italic', fontSize: 14, color: '#c0c8e0', lineHeight: 1.9, marginBottom: 16, borderLeft: `3px solid ${A}`, paddingLeft: 18 }}>
+          "I built Explain because I have sat in interview rooms and watched people who were brilliant — genuinely brilliant — walk out looking broken. Not because they were not good enough. Because they had never actually practised. Not once. Not properly. The first time they sat in the chair was the real interview. That ends now."
+        </div>
+        <div style={{ fontSize: 12, color: A, fontWeight: 700 }}>— Francis Cobbinah, Founder · Explain.Global</div>
       </Card>
     </Grid>
+
+    {/* §2 Dialysis & Determination */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A2, marginBottom: 16, marginTop: 8 }}>§2 — Dialysis & Determination</div>
     <Grid cols={2}>
-      <div>
-        {[
-          { icon: '🏗️', title: '7 Products Built', body: 'Explain.Global, Candidate Portal, Recruiter Portal, Learn Engine, Interview Chair, TalkToLearn, Percentile.One — all interconnected, all live or in development.' },
-          { icon: '💪', title: 'Built Through Adversity', body: 'Francis builds from dialysis. Not as a limitation — as a demonstration of what genuine commitment looks like. This platform exists because one person refused to stop.' },
-          { icon: '🌍', title: 'Global Ambition', body: 'The nurse in Lagos. The engineer in Manila. The accountant in Warsaw. Explain was designed globally from the first line of code. Every architectural decision serves this mission.' },
-          { icon: '🎯', title: 'Category Vision', body: 'Francis identified PIR — Personalised Interview Readiness — as an unclaimed $50B category before building a single line of product. The thesis drove the architecture. Not the other way around.' },
-        ].map(f => <Feature key={f.title} {...f} />)}
-      </div>
-      <div>
-        <Card>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>The Percentile.One Ecosystem</div>
-          {[
-            { name: 'Explain.Global',      desc: 'Personalised Interview Readiness hub', status: 'Live' },
-            { name: 'Candidate Portal',    desc: 'Personal prep command centre',         status: 'Live' },
-            { name: 'Recruiter Portal',    desc: 'Placement intelligence',              status: 'Beta' },
-            { name: 'Learn Engine',        desc: 'AI-structured lessons, 50+ languages', status: 'Live' },
-            { name: 'Interview Chair',     desc: 'Cinematic AI interview simulation',   status: 'Beta' },
-            { name: 'Interview Packs',     desc: 'Personalised prep bundles, from £1',  status: 'Live' },
-            { name: 'TalkToLearn',         desc: 'Mobile learning companion',           status: 'Dev' },
-          ].map(p => (
-            <div key={p.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-              <div>
-                <div style={{ fontSize: 13, color: '#ddd', fontWeight: 600 }}>{p.name}</div>
-                <div style={{ fontSize: 11, color: '#505070' }}>{p.desc}</div>
-              </div>
-              <Tag color={p.status === 'Live' ? '#22c55e' : p.status === 'Beta' ? A : '#f59e0b'}>{p.status}</Tag>
+      <Card accent={A2}>
+        <div style={{ fontSize: 13, color: '#c0c8e0', lineHeight: 1.85, marginBottom: 16 }}>
+          Francis spent years on dialysis — fighting through exhaustion, pain, and uncertainty — yet still <span style={{ color: A2, fontWeight: 700 }}>building, learning, and dreaming.</span>
+        </div>
+        <div style={{ fontSize: 12, color: '#7070a0', marginBottom: 10 }}>Dialysis teaches you:</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+          {['Patience','Resilience','Discipline','Clarity','Perspective','Empathy','The value of helping others','What anxiety feels like'].map(item => (
+            <div key={item} style={{ display: 'flex', gap: 6, fontSize: 12, color: '#9090b0', marginBottom: 4 }}>
+              <span style={{ color: A2, flexShrink: 0 }}>◆</span> {item}
             </div>
           ))}
-        </Card>
-      </div>
+        </div>
+      </Card>
+      <Card style={{ background: `${A2}06`, border: `1px solid ${A2}20` }}>
+        <div style={{ fontSize: 12, color: '#7070a0', marginBottom: 14 }}>Explain.Global is built from that experience.</div>
+        {[
+          { label: 'Built to reduce anxiety', color: '#22c55e' },
+          { label: 'Built to give clarity', color: A },
+          { label: 'Built to help people succeed', color: A2 },
+          { label: 'Built to make interviews fairer', color: '#22c55e' },
+          { label: 'Built to give people a chance', color: A },
+        ].map(item => (
+          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: '#ddd', fontWeight: 600 }}>{item.label}</span>
+          </div>
+        ))}
+        <div style={{ marginTop: 14, padding: '12px 14px', background: `${A2}08`, border: `1px solid ${A2}25`, borderRadius: 10, fontSize: 12, color: A2, fontWeight: 700, textAlign: 'center' }}>
+          Building from dialysis — not as a limitation, but as a demonstration of what genuine commitment looks like.
+        </div>
+      </Card>
     </Grid>
-    <div style={{ marginTop: 32, padding: '24px 28px', background: 'rgba(79,142,247,0.06)', border: `1px solid ${A}25`, borderRadius: 14, textAlign: 'center' }}>
-      <div style={{ fontSize: 14, color: '#9090b0', marginBottom: 4 }}>To speak with Francis directly:</div>
-      <a href="mailto:francis@percentile.one" style={{ fontSize: 16, fontWeight: 800, color: A, textDecoration: 'none' }}>francis@percentile.one</a>
-      <span style={{ color: '#404060', margin: '0 12px' }}>·</span>
-      <a href="tel:+447346814898" style={{ fontSize: 16, fontWeight: 800, color: A, textDecoration: 'none' }}>+44 7346 814898</a>
-    </div>
+
+    {/* §3 The Ghosting Problem */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#ef4444', marginBottom: 16, marginTop: 8 }}>§3 — The Ghosting Problem</div>
+    <Card style={{ border: '1px solid rgba(239,68,68,0.2)', marginBottom: 24 }}>
+      <div className="inv-2col">
+        <div>
+          <div style={{ fontSize: 13, color: '#c0c8e0', lineHeight: 1.85, marginBottom: 16 }}>
+            Francis experienced the same thing millions of candidates experience: <span style={{ color: '#ef4444', fontWeight: 700 }}>recruiters ghosting candidates after interviews.</span>
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            {['No feedback.','No explanation.','No guidance.','No clarity.','Just silence.'].map(line => (
+              <div key={line} style={{ fontSize: 14, color: '#9090b0', fontWeight: 600, marginBottom: 4 }}>{line}</div>
+            ))}
+          </div>
+          <div style={{ fontSize: 13, color: '#ef4444', fontWeight: 700, lineHeight: 1.8 }}>
+            This destroys confidence. This destroys motivation. This destroys hope.
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 800, color: '#22c55e', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>Explain.Global fixes this.</div>
+          {[
+            { who: 'Recruiters', action: 'can now send structured feedback' },
+            { who: 'Candidates', action: 'can understand what went wrong' },
+            { who: 'Agencies',   action: 'can improve placement rates' },
+            { who: 'Employers',  action: 'can improve interview quality' },
+          ].map(r => (
+            <div key={r.who} style={{ display: 'flex', gap: 10, padding: '9px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12 }}>
+              <span style={{ color: '#22c55e', fontWeight: 700, minWidth: 80 }}>{r.who}</span>
+              <span style={{ color: '#9090b0' }}>{r.action}</span>
+            </div>
+          ))}
+          <div style={{ marginTop: 14, fontSize: 12, color: '#7070a0', fontStyle: 'italic', lineHeight: 1.7 }}>
+            This is one of the most important parts of the mission — and one of the most defensible parts of the product.
+          </div>
+        </div>
+      </div>
+    </Card>
+
+    {/* §4 The Vision */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>§4 — The Vision</div>
+    <Grid cols={2}>
+      <Card>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 14 }}>
+          Interview clarity should not be a privilege. It should be accessible to everyone.
+        </div>
+        <div style={{ fontSize: 12, color: '#7070a0', marginBottom: 12 }}>Explain.Global is built to:</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {[
+            {label:'Reduce anxiety',color:'#22c55e'},
+            {label:'Increase confidence',color:A},
+            {label:'Increase clarity',color:A2},
+            {label:'Increase fairness',color:'#22c55e'},
+            {label:'Increase opportunity',color:A},
+            {label:'Increase success',color:A2},
+            {label:'Increase social mobility',color:'#22c55e'},
+          ].map(item => (
+            <div key={item.label} style={{ display: 'flex', gap: 6, fontSize: 12, color: item.color, fontWeight: 600, alignItems: 'center' }}>
+              <span style={{ fontSize: 8 }}>◆</span> {item.label}
+            </div>
+          ))}
+        </div>
+      </Card>
+      {/* §5 The Promise */}
+      <Card style={{ background: `linear-gradient(135deg, ${A}08, ${A2}08)`, border: `1px solid ${A}20` }}>
+        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A2, marginBottom: 14 }}>§5 — The Founder's Promise</div>
+        <div style={{ fontStyle: 'italic', fontSize: 13, color: '#c0c8e0', lineHeight: 1.9, marginBottom: 16, borderLeft: `3px solid ${A2}`, paddingLeft: 16 }}>
+          "I am building Explain.Global to help people succeed — not just in interviews, but in life.<br /><br />
+          No one should fail because they did not know what to say. No one should be left anxious and confused. No one should be ghosted without feedback.<br /><br />
+          Everyone deserves clarity. Everyone deserves confidence. Everyone deserves a chance."
+        </div>
+        <div style={{ fontSize: 12, color: A2, fontWeight: 700 }}>— Francis Cobbinah</div>
+        <div style={{ fontSize: 10, color: '#404060', marginTop: 2 }}>Founder · Explain.Global · Percentile.One</div>
+      </Card>
+    </Grid>
+
+    {/* §6 Why This Matters to Investors */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16, marginTop: 8 }}>§6 — Why This Matters to Investors</div>
+    <Card style={{ marginBottom: 24 }}>
+      <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, marginBottom: 20 }}>
+        Investors do not just invest in products. They invest in founders with:
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+        {[
+          {icon:'💪',label:'Resilience',color:A},
+          {icon:'🎯',label:'Mission',color:'#22c55e'},
+          {icon:'💡',label:'Clarity',color:A2},
+          {icon:'❤️',label:'Empathy',color:'#ef4444'},
+          {icon:'🌍',label:'Vision',color:A},
+          {icon:'🔥',label:'Determination',color:'#f59e0b'},
+          {icon:'🏥',label:'Lived experience',color:A2},
+          {icon:'⭐',label:'Purpose',color:'#22c55e'},
+        ].map(item => (
+          <div key={item.label} style={{ textAlign: 'center', padding: '16px 8px', background: `${item.color}08`, border: `1px solid ${item.color}20`, borderRadius: 10 }}>
+            <div style={{ fontSize: 24, marginBottom: 6 }}>{item.icon}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: item.color }}>{item.label}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+        {[
+          {label:'Your story is powerful.',color:A},
+          {label:'Your mission is real.',color:'#22c55e'},
+          {label:'Your product is inevitable.',color:A2},
+        ].map(s => (
+          <div key={s.label} style={{ padding: '12px 14px', background: `${s.color}08`, border: `1px solid ${s.color}25`, borderRadius: 10, fontSize: 13, fontWeight: 800, color: s.color, textAlign: 'center' }}>{s.label}</div>
+        ))}
+      </div>
+    </Card>
+
+    {/* §7 Closing Statement */}
+    <Card style={{ background: `linear-gradient(135deg, rgba(79,142,247,0.08), rgba(123,92,245,0.08))`, border: `1px solid ${A}25`, textAlign: 'center', padding: '40px 32px' }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: A2, marginBottom: 20 }}>§7 — Closing Statement</div>
+      <div style={{ fontSize: 17, fontWeight: 700, color: '#e0e0f0', lineHeight: 1.75, maxWidth: 600, margin: '0 auto 24px' }}>
+        Explain.Global is not just a platform. It is the result of a founder who has lived the problem, felt the anxiety, and built the solution the world needs.
+      </div>
+      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <a href="mailto:francis@percentile.one" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: `linear-gradient(135deg, ${A}, ${A2})`, color: '#fff', textDecoration: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 14, fontWeight: 700, boxShadow: `0 8px 32px ${A}40` }}>
+          francis@percentile.one →
+        </a>
+        <a href="tel:+447346814898" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', color: '#c0c0e0', textDecoration: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 14, fontWeight: 700, border: '1px solid rgba(255,255,255,0.12)' }}>
+          +44 7346 814898
+        </a>
+      </div>
+    </Card>
   </>,
 };
 
