@@ -383,7 +383,7 @@ export default function ProductHome() {
           <li><a href="#ph-eco">Ecosystem</a></li>
           <li><a href="#ph-road">Roadmap</a></li>
         </ul>
-        <a href="https://candidate.explain.global" className="ph-nav-cta">Get Started →</a>
+        <a href="/register" className="ph-nav-cta">Get Started →</a>
       </nav>
 
       {/* HERO — Interview Chair two-column */}
@@ -406,7 +406,7 @@ export default function ProductHome() {
               {["AI interviewer with voice and presence","Live waveform & speech detection","Real-time coaching overlay","Behavioural scoring engine","Instant post-interview debrief","Recruiter-shareable results"].map(li=><li key={li}>{li}</li>)}
             </ul>
             <div className="ph-r" data-ph="" data-d="4" style={{display:"flex",gap:14,flexWrap:"wrap",marginTop:36}}>
-              <a href="https://candidate.explain.global" className="ph-btn-primary">Start Practising →</a>
+              <a href="/register" className="ph-btn-primary">Start Practising →</a>
               <a href="#ph-mission" className="ph-btn-ghost" style={{borderColor:"rgba(167,139,250,.35)",color:"#a78bfa"}}>Our Mission →</a>
             </div>
           </div>
@@ -532,7 +532,7 @@ export default function ProductHome() {
             Every candidate deserves the preparation that only the privileged have had access to.<br /><strong style={{color:"#F0F4FF"}}>That changes now.</strong>
           </p>
           <div className="ph-r" data-ph="" data-d="3" style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap",marginTop:44}}>
-            <a href="https://candidate.explain.global" className="ph-btn-primary">Get Started →</a>
+            <a href="/register" className="ph-btn-primary">Get Started →</a>
             <a href="#ph-why" className="ph-btn-ghost">Why Explain</a>
           </div>
         </div>
