@@ -14,6 +14,13 @@
       "Bash(cp *)",
       "Bash(mv *)",
       "Bash(rm *)",
+      "PowerShell(cd *)",
+      "PowerShell(npm *)",
+      "PowerShell(npx *)",
+      "PowerShell(git *)",
+      "PowerShell(node *)",
+      "PowerShell(dotnet *)",
+      "PowerShell(*)",
       "mcp__ccd_session__mark_chapter",
       "mcp__ccd_session__spawn_task",
       "mcp__ccd_session__dismiss_task"

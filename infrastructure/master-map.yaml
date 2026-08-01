@@ -300,7 +300,11 @@ databases:
 
   - name: ExplainGlobalDb
     type: azure_sql
-    server: talktolearn-server.database.windows.net
+    azure_database_name: explain-global-sql
+    server: explain-global-db.database.windows.net
+    resource_group: p1-core
+    location_region: UK South
+    pricing_tier: "Hyperscale Gen5 2 vCores — NOTE: over-spec, consider downgrade to General Purpose Serverless"
     engine: SQL Server / Azure SQL
     orm: EF Core 10 (code-first)
     source_folder: src/backend/Explain.Api/Migrations
