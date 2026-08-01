@@ -164,16 +164,6 @@ export default function Register() {
         transition={{ duration: 0.5 }}
         style={{ width: '100%', maxWidth: 520, margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '40px 32px' }}
       >
-        {/* Mobile logo */}
-        <div style={{ marginBottom: 36 }}>
-          <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-            <img src="/assets/explain-logo.svg" width={28} height={28} alt="Explain" style={{ borderRadius: '50%' }} />
-            <span style={{ fontWeight: 800, fontSize: 16, color: '#fff', letterSpacing: '-0.02em' }}>
-              explain<span style={{ color: '#7b5cf5' }}>.global</span>
-            </span>
-          </Link>
-        </div>
-
         <h1 style={{ fontSize: 26, fontWeight: 900, color: '#fff', marginBottom: 6, letterSpacing: '-0.02em' }}>Create your account</h1>
         <p style={{ fontSize: 14, color: '#6060a0', marginBottom: 28 }}>
           Already registered?{' '}
