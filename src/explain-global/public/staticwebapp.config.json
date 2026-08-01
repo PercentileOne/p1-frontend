@@ -1,4 +1,8 @@
 {
+  "routes": [
+    { "route": "/investor", "rewrite": "/index.html" },
+    { "route": "/investor/*", "rewrite": "/index.html" }
+  ],
   "navigationFallback": {
     "rewrite": "/index.html",
     "exclude": [
