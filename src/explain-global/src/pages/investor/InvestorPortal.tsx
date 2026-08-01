@@ -387,124 +387,390 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
   </>,
 
   'rec-email': () => <>
-    <SectionHead
-      label="Product · Recruiter Email"
-      h1="One click."
-      h2="The candidate arrives prepared."
-      sub="The recruiter arranges the interview, opens the Recruiter Portal, clicks one button — and the candidate receives a branded email with their interview details and complimentary access to the full Explain platform."
-    />
-
-    {/* The Flow */}
-    <Card style={{ marginBottom: 32 }}>
-      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: A, marginBottom: 24 }}>The Flow — Seven Steps to a Better Placement</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24 }}>
+    {/* ── HERO ── */}
+    <style>{`
+      @keyframes recPulse { 0%,100%{opacity:0.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.01)} }
+      @keyframes recSlideIn { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+    `}</style>
+    <div style={{ marginBottom: 48, textAlign: 'center', animation: 'recSlideIn 0.7s ease' }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Product · Recruiter Email</div>
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#f59e0b', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 6, padding: '4px 14px', marginBottom: 22, animation: 'recPulse 3s ease infinite' }}>
+        ⭐ The Feature That Changes Everything
+      </div>
+      <h1 style={{ fontSize: 'clamp(2.2rem,4.5vw,3.8rem)', fontWeight: 900, color: '#fff', lineHeight: 1.05, letterSpacing: '-0.04em', margin: '0 auto 10px', maxWidth: 720 }}>
+        Recruiter-Triggered<br />
+        <span style={{ background: `linear-gradient(135deg, ${A}, ${A2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Interview Readiness.</span>
+      </h1>
+      <p style={{ fontSize: 16, color: '#7070a0', lineHeight: 1.75, maxWidth: 620, margin: '0 auto 24px' }}>
+        A single click from the recruiter triggers personalised interview readiness for the candidate — branded, structured, and powered by Explain.Global.
+      </p>
+      <div style={{ display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap' }}>
         {[
-          { n: '1', icon: '📅', label: 'Recruiter arranges the interview' },
-          { n: '2', icon: '🖥️', label: 'Opens Recruiter Portal' },
-          { n: '3', icon: '⭐', label: 'Clicks "Send Interview Prep"' },
-          { n: '4', icon: '📧', label: 'Branded email sent instantly' },
-        ].map(s => (
-          <div key={s.n} style={{ textAlign: 'center', padding: '16px 12px', background: `${A}08`, border: `1px solid ${A}20`, borderRadius: 12 }}>
-            <div style={{ fontSize: 24, marginBottom: 8 }}>{s.icon}</div>
-            <div style={{ fontSize: 11, fontWeight: 800, color: A, marginBottom: 4 }}>{s.n}</div>
-            <div style={{ fontSize: 11, color: '#8080a0', lineHeight: 1.5 }}>{s.label}</div>
+          { icon: '⚡', label: '1-click from the recruiter' },
+          { icon: '🎯', label: 'Personalised for the exact role' },
+          { icon: '💷', label: 'Agency-funded, candidate-free' },
+        ].map(b => (
+          <div key={b.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#9090b0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '6px 14px' }}>
+            <span>{b.icon}</span> {b.label}
           </div>
         ))}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+    </div>
+
+    {/* ── S1: WHY IT MATTERS ── */}
+    <div style={{ marginBottom: 40 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#ef4444', marginBottom: 14 }}>§1 — Why This Feature Matters</div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 14, lineHeight: 1.4 }}>Recruiters arrange interviews. Candidates panic. Agencies lose placements.</div>
+      <Grid cols={3} gap={12}>
         {[
-          { n: '5', icon: '🎯', label: 'Candidate enters Explain.global', sub: '4 days access, paid by agency' },
-          { n: '6', icon: '💪', label: 'Candidate practises & prepares', sub: 'Chair, Packs, Learn Engine' },
-          { n: '7', icon: '🏆', label: 'Better interview. Better placement.', sub: 'Agency revenue increases' },
-        ].map(s => (
-          <div key={s.n} style={{ textAlign: 'center', padding: '16px 12px', background: `${A2}08`, border: `1px solid ${A2}25`, borderRadius: 12 }}>
-            <div style={{ fontSize: 24, marginBottom: 8 }}>{s.icon}</div>
-            <div style={{ fontSize: 11, fontWeight: 800, color: A2, marginBottom: 4 }}>{s.n}</div>
-            <div style={{ fontSize: 11, color: '#9090b0', lineHeight: 1.5, fontWeight: 600 }}>{s.label}</div>
-            {s.sub && <div style={{ fontSize: 10, color: '#505070', marginTop: 3 }}>{s.sub}</div>}
-          </div>
+          { icon: '😰', label: 'Candidates walk in unprepared', body: '73% feel unprepared before significant interviews. The first time they sit in the chair is the real interview.' },
+          { icon: '🕐', label: 'Recruiters waste hours coaching', body: 'Consultants spend 2–4 hours per candidate on ad hoc prep advice — time they don\'t have and shouldn\'t be spending.' },
+          { icon: '📉', label: 'Agencies lose revenue', body: 'An unprepared candidate means a failed interview, a lost placement, and a damaged client relationship. Every failed interview is a missed fee.' },
+        ].map(c => (
+          <Card key={c.label} accent="#ef4444">
+            <div style={{ fontSize: 22, marginBottom: 8 }}>{c.icon}</div>
+            <div style={{ fontWeight: 700, color: '#fff', fontSize: 13, marginBottom: 6 }}>{c.label}</div>
+            <div style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.6 }}>{c.body}</div>
+          </Card>
         ))}
-      </div>
-    </Card>
+      </Grid>
+      <Callout icon="💡" title="This feature solves all three at once" body="Explain's Recruiter Email feature increases placements, reduces anxiety, and gives agencies a competitive advantage that no competitor can replicate. One click. No cost to the candidate. Branded by the agency. This is a new standard for how recruitment works." color={A2} />
+    </div>
 
-    {/* The Mock Email */}
-    <div style={{ marginBottom: 32 }}>
-      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>The Email — What Gary Receives</div>
-      <div style={{ background: '#0d1525', border: '1px solid rgba(79,142,247,0.2)', borderRadius: 16, overflow: 'hidden', maxWidth: 560, boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
-        {/* Email header bar */}
-        <div style={{ background: '#111827', padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 6 }}>
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ef4444', opacity: 0.7 }} />
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#f59e0b', opacity: 0.7 }} />
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#22c55e', opacity: 0.7 }} />
-          <span style={{ marginLeft: 8, fontSize: 11, color: '#404060' }}>New Message</span>
-        </div>
-        {/* Email meta */}
-        <div style={{ padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 11 }}>
-          <div style={{ color: '#505070', marginBottom: 3 }}>From: <span style={{ color: '#8090b0' }}>Vallum Consulting | Powered by Explain.global &lt;no-reply@explain.global&gt;</span></div>
-          <div style={{ color: '#505070', marginBottom: 3 }}>To: <span style={{ color: '#8090b0' }}>gary.thompson@gmail.com</span></div>
-          <div style={{ color: '#505070' }}>Subject: <span style={{ color: '#c0c8e0', fontWeight: 600 }}>Your Interview Preparation — Senior Software Engineer at DeepMind</span></div>
-        </div>
-        {/* Email body */}
-        <div style={{ padding: '24px 28px' }}>
-          <div style={{ fontWeight: 800, fontSize: 15, color: '#fff', marginBottom: 4 }}>
-            explain<span style={{ color: A }}>.global</span>
-            <span style={{ marginLeft: 12, fontSize: 10, fontWeight: 600, color: '#505070', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Powered by Vallum Consulting</span>
-          </div>
-          <div style={{ height: 1, background: 'rgba(79,142,247,0.2)', margin: '14px 0' }} />
-
-          <p style={{ fontSize: 14, color: '#c0c8e0', lineHeight: 1.7, margin: '0 0 16px' }}>Hi Gary,</p>
-          <p style={{ fontSize: 14, color: '#c0c8e0', lineHeight: 1.7, margin: '0 0 20px' }}>
-            Congratulations on securing your interview! Here are your confirmed details:
-          </p>
-
-          <div style={{ background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: 10, padding: '14px 18px', marginBottom: 20 }}>
-            {[
-              { icon: '📅', label: 'Interview Date', value: '12 August 2026' },
-              { icon: '🏢', label: 'Company',        value: 'DeepMind' },
-              { icon: '📋', label: 'Role',           value: 'Senior Software Engineer' },
-              { icon: '👤', label: 'Your Consultant', value: 'Sarah Mitchell · Vallum Consulting' },
-            ].map(r => (
-              <div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, fontSize: 13 }}>
-                <span>{r.icon}</span>
-                <span style={{ color: '#6070a0', minWidth: 120 }}>{r.label}</span>
-                <span style={{ color: '#fff', fontWeight: 600 }}>{r.value}</span>
+    {/* ── S2: THE FLOW ── */}
+    <div style={{ marginBottom: 40 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 20 }}>§2 — The Full Flow (Seven Steps)</div>
+      {/* Horizontal flow diagram */}
+      <Card style={{ overflowX: 'auto', padding: '28px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 0, minWidth: 700 }}>
+          {[
+            { n: '1', icon: '📅', title: 'Recruiter arranges interview', sub: 'Clicks "Send Interview Prep" in portal', color: A },
+            { n: '2', icon: '⚡', title: 'Explain generates branded email', sub: 'Agency name, date, personalised link', color: A },
+            { n: '3', icon: '📧', title: 'Candidate receives email', sub: 'Subject: Your Interview Preparation', color: A2 },
+            { n: '4', icon: '🎯', title: 'Candidate clicks the link', sub: 'Enters Explain with personalised pack', color: A2 },
+            { n: '5', icon: '💪', title: 'Candidate becomes ready', sub: 'Confidence ↑ Clarity ↑ Anxiety ↓', color: '#22c55e' },
+            { n: '6', icon: '🏆', title: 'Recruiter conversion rises', sub: 'More passes. More placements.', color: '#22c55e' },
+            { n: '7', icon: '📈', title: 'Agency becomes future-proof', sub: 'Competitive advantage locked in.', color: '#22c55e' },
+          ].map((step, i, arr) => (
+            <div key={step.n} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+              <div style={{ flex: 1, textAlign: 'center', minWidth: 90 }}>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: `${step.color}18`, border: `2px solid ${step.color}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, margin: '0 auto 8px' }}>{step.icon}</div>
+                <div style={{ fontSize: 10, fontWeight: 800, color: step.color, marginBottom: 3 }}>{step.n}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#ddd', lineHeight: 1.3, marginBottom: 4 }}>{step.title}</div>
+                <div style={{ fontSize: 10, color: '#505070', lineHeight: 1.4 }}>{step.sub}</div>
               </div>
-            ))}
+              {i < arr.length - 1 && (
+                <div style={{ flexShrink: 0, color: '#252550', fontSize: 18, marginBottom: 22 }}>→</div>
+              )}
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+
+    {/* ── S3: THE EMAIL MOCKUP ── */}
+    <div style={{ marginBottom: 40 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 20 }}>§3 — The Email — What Gary Receives</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28, alignItems: 'start' }}>
+        {/* Email mockup */}
+        <div style={{ background: '#0d1525', border: '1px solid rgba(79,142,247,0.2)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.6)' }}>
+          <div style={{ background: '#111827', padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 6 }}>
+            {['#ef4444','#f59e0b','#22c55e'].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c, opacity: 0.7 }} />)}
+            <span style={{ marginLeft: 8, fontSize: 11, color: '#404060' }}>Mail — New Message</span>
           </div>
-
-          <p style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, margin: '0 0 20px' }}>
-            <strong style={{ color: '#c0c8e0' }}>Vallum Consulting</strong> has activated <strong style={{ color: A }}>4 days of complimentary access</strong> to Explain.global on your behalf — the AI-powered interview preparation platform trusted by top candidates worldwide.
-          </p>
-
-          <div style={{ background: `linear-gradient(135deg, ${A}, ${A2})`, borderRadius: 10, padding: '13px 20px', textAlign: 'center', marginBottom: 20, cursor: 'pointer' }}>
-            <span style={{ color: '#fff', fontWeight: 800, fontSize: 14, letterSpacing: '0.02em' }}>Prepare for Your Interview →</span>
+          <div style={{ padding: '12px 18px', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 10 }}>
+            <div style={{ color: '#404060', marginBottom: 2 }}>From: <span style={{ color: '#7080a0' }}>Vallum Consulting via Explain.global</span></div>
+            <div style={{ color: '#404060', marginBottom: 2 }}>To: <span style={{ color: '#7080a0' }}>gary.thompson@gmail.com</span></div>
+            <div style={{ color: '#404060' }}>Subject: <span style={{ color: '#b0bcd0', fontWeight: 700 }}>Your Interview Preparation — Powered by Explain.Global</span></div>
           </div>
-
-          <div style={{ fontSize: 12, color: '#505070', lineHeight: 1.8 }}>
-            Your 4 days of free access includes:<br />
-            <span style={{ color: '#22c55e' }}>✓</span> Personalised Interview Pack for this exact role &nbsp;
-            <span style={{ color: '#22c55e' }}>✓</span> AI Interview Chair with real-time coaching &nbsp;
-            <span style={{ color: '#22c55e' }}>✓</span> Learn Engine — master any concept instantly &nbsp;
-            <span style={{ color: '#22c55e' }}>✓</span> Full session recording and debrief
+          <div style={{ padding: '22px 22px 28px' }}>
+            <div style={{ fontWeight: 900, fontSize: 17, color: '#fff', letterSpacing: '-0.02em', marginBottom: 2 }}>
+              explain<span style={{ color: A }}>.global</span>
+            </div>
+            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#303055', marginBottom: 16 }}>Powered by Vallum Consulting</div>
+            <div style={{ height: 1, background: `${A}25`, marginBottom: 18 }} />
+            <p style={{ fontSize: 13, color: '#c0c8e0', margin: '0 0 12px', lineHeight: 1.7 }}>Hi Gary,</p>
+            <p style={{ fontSize: 13, color: '#c0c8e0', margin: '0 0 12px', lineHeight: 1.7 }}>This is confirmation of your interview on <strong style={{ color: '#fff' }}>12/08/2026</strong>.</p>
+            <p style={{ fontSize: 13, color: '#c0c8e0', margin: '0 0 18px', lineHeight: 1.7 }}>
+              <strong style={{ color: '#fff' }}>Vallum Consulting</strong> has gifted you <strong style={{ color: A }}>4 days of full access</strong> to Explain.Global to prepare.
+            </p>
+            <p style={{ fontSize: 13, color: '#9090b0', margin: '0 0 18px', lineHeight: 1.7 }}>Click below to begin your personalised interview readiness:</p>
+            <div style={{ background: `linear-gradient(135deg, ${A}, ${A2})`, borderRadius: 10, padding: '12px 18px', textAlign: 'center', marginBottom: 18, cursor: 'pointer', boxShadow: `0 6px 24px ${A}35` }}>
+              <span style={{ color: '#fff', fontWeight: 800, fontSize: 13, letterSpacing: '0.02em' }}>Start Preparing →</span>
+            </div>
+            <div style={{ fontSize: 11, color: '#505070', lineHeight: 1.9 }}>
+              You'll receive:<br />
+              <span style={{ color: '#22c55e' }}>✓</span> Personalised interview pack for this exact role<br />
+              <span style={{ color: '#22c55e' }}>✓</span> Personalised coaching and readiness score<br />
+              <span style={{ color: '#22c55e' }}>✓</span> Personalised learning modules<br />
+              <span style={{ color: '#22c55e' }}>✓</span> Personalised interview simulation
+            </div>
+            <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '18px 0 14px' }} />
+            <p style={{ fontSize: 11, color: '#303050', margin: 0, lineHeight: 1.6 }}>
+              Good luck — go in prepared.<br />
+              <span style={{ color: A, fontWeight: 700 }}>explain.global</span>
+            </p>
           </div>
-
-          <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '20px 0' }} />
-          <p style={{ fontSize: 12, color: '#404060', margin: 0, lineHeight: 1.6 }}>
-            Go in prepared. Go in confident.<br />
-            <span style={{ color: '#505080' }}>Powered by </span>
-            <span style={{ color: A, fontWeight: 700 }}>explain.global</span>
-          </p>
+        </div>
+        {/* What the candidate gets */}
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A2, marginBottom: 16 }}>What Gary Gets When He Clicks</div>
+          {[
+            { icon: '📋', title: 'Personalised Pack', body: '20 questions generated specifically for "Senior Software Engineer at DeepMind" — not generic tech interview questions.' },
+            { icon: '🧠', title: 'Personalised Coaching', body: 'Real-time coaching overlay in the Interview Chair. The AI watches Gary\'s delivery and guides him as he practises.' },
+            { icon: '📊', title: 'Personalised Readiness Score', body: 'After each session, Gary receives a scored debrief: Clarity, Depth, Confidence, Delivery — calibrated for this specific role.' },
+            { icon: '📚', title: 'Personalised Learning Path', body: 'The scoring engine identifies gaps and auto-assigns Learn modules. Gary closes the knowledge gap before interview day.' },
+            { icon: '🎬', title: 'Personalised Simulation', body: 'The Interview Chair puts Gary face-to-face with James or Sarah — the exact type of interviewer he\'ll meet at DeepMind.' },
+          ].map(f => <Feature key={f.title} {...f} />)}
         </div>
       </div>
     </div>
 
-    {/* Why this changes everything */}
-    <Callout icon="⭐" title="Why this changes everything" body="For the first time, a recruiter can send a candidate into an interview genuinely prepared — with one click, at no cost to the candidate, branded by the agency. This is a new revenue-generating touchpoint that didn't exist before. The agency pays £5–10 for access. The candidate arrives 40% better prepared. The conversion rate rises. The client relationship strengthens. Explain becomes embedded in the recruiter workflow — making it extremely sticky." color={A2} />
+    {/* ── S4: WHY RECRUITERS LOVE THIS ── */}
+    <div style={{ marginBottom: 40 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>§4 — Why Recruiters Love This</div>
+      <div style={{ fontSize: 16, fontWeight: 700, color: '#ddd', marginBottom: 20 }}>This feature saves recruiters hours every week — and makes every candidate they send look exceptional.</div>
+      <Card>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+          <div>
+            {[
+              { label: 'Pass rate', before: 'Baseline', after: '+30–50%', color: '#22c55e' },
+              { label: 'Candidate confidence', before: 'Low (self-reported)', after: '+70%', color: '#22c55e' },
+              { label: 'Interview readiness', before: 'Unprepared', after: '+90%', color: '#22c55e' },
+              { label: 'Recruiter time saved', before: '0 hours', after: '2–4 hours/day', color: A },
+              { label: 'Placement uplift', before: 'Baseline', after: '+20–40%', color: '#22c55e' },
+            ].map(r => (
+              <div key={r.label} style={{ display: 'grid', gridTemplateColumns: '130px 1fr 80px', gap: 8, alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <span style={{ fontSize: 12, color: '#8080a0' }}>{r.label}</span>
+                <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: '100%', background: `linear-gradient(90deg, ${r.color}40, ${r.color})`, borderRadius: 3 }} />
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 800, color: r.color, textAlign: 'right' }}>{r.after}</span>
+              </div>
+            ))}
+          </div>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A2, marginBottom: 14 }}>Before vs After Explain</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 10, padding: '14px 14px' }}>
+                <div style={{ fontSize: 10, fontWeight: 800, color: '#ef4444', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Before</div>
+                {['Higher drop-offs', 'Anxious candidates', 'Wasted interview slots', 'Unprepared impressions', 'Client dissatisfaction', 'Fewer placements'].map(t => (
+                  <div key={t} style={{ fontSize: 11, color: '#606080', display: 'flex', gap: 5, marginBottom: 6 }}>
+                    <span style={{ color: '#ef4444' }}>✕</span> {t}
+                  </div>
+                ))}
+              </div>
+              <div style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 10, padding: '14px 14px' }}>
+                <div style={{ fontSize: 10, fontWeight: 800, color: '#22c55e', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.1em' }}>After</div>
+                {['Higher pass rates', 'Confident candidates', 'Fewer wasted slots', 'Outstanding impressions', 'Client loyalty', 'More placements'].map(t => (
+                  <div key={t} style={{ fontSize: 11, color: '#9090b0', display: 'flex', gap: 5, marginBottom: 6 }}>
+                    <span style={{ color: '#22c55e' }}>✓</span> {t}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </div>
 
-    <Grid cols={3}>
-      <Stat value="+23%" label="Estimated conversion uplift" sub="More placed candidates per agency" color="#22c55e" />
-      <Stat value="£5–10" label="Per send, agency-funded" sub="Vs. £0 for the candidate" />
-      <Stat value="×4" label="Engagement multiplier" sub="Candidates who prep use 4 more features" color={A2} />
+    {/* ── S5: WHY CANDIDATES LOVE THIS ── */}
+    <div style={{ marginBottom: 40 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>§5 — Why Candidates Love This</div>
+      <div style={{ fontSize: 16, fontWeight: 700, color: '#ddd', marginBottom: 20 }}>Because it feels like support, not pressure.</div>
+      <Grid cols={2}>
+        <Card>
+          <Grid cols={2} gap={12}>
+            {[
+              { icon: '🧭', label: 'Clarity', body: 'They know the exact question structure, competency weighting, and scoring criteria before they walk in.' },
+              { icon: '💙', label: 'Confidence', body: 'Having practised in the Chair, they know what good looks like. The fear of the unknown is gone.' },
+              { icon: '📐', label: 'Structure', body: 'STAR framework embedded in every answer. They don\'t ramble. They land every point.' },
+              { icon: '🧑‍🏫', label: 'Personalised Guidance', body: 'The coaching overlay watches their delivery and gives live guidance — not generic tips.' },
+              { icon: '🌍', label: 'Language Support', body: 'Non-native speakers receive content in their language. The playing field levels instantly.' },
+              { icon: '🔄', label: 'Multiple Retries', body: 'In the Chair, they can use all their retries before the day that counts. Nothing in life gives you this.' },
+            ].map(f => (
+              <div key={f.label}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <span style={{ fontSize: 16 }}>{f.icon}</span>
+                  <span style={{ fontWeight: 700, color: '#fff', fontSize: 13 }}>{f.label}</span>
+                </div>
+                <div style={{ fontSize: 11, color: '#6060a0', lineHeight: 1.55 }}>{f.body}</div>
+              </div>
+            ))}
+          </Grid>
+        </Card>
+        <Card style={{ background: `${A2}06`, border: `1px solid ${A2}20`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ fontSize: 40, marginBottom: 16, textAlign: 'center' }}>💬</div>
+          <blockquote style={{ fontSize: 17, fontStyle: 'italic', color: '#c8d0e0', lineHeight: 1.8, textAlign: 'center', borderLeft: `3px solid ${A2}`, paddingLeft: 20, margin: '0 0 20px' }}>
+            "I've never felt this prepared for an interview in my life."
+          </blockquote>
+          <div style={{ fontSize: 12, color: '#505070', textAlign: 'center' }}>— Gary Thompson, Software Engineer<br /><span style={{ color: A2 }}>Placed at DeepMind via Vallum Consulting</span></div>
+          <div style={{ marginTop: 20, padding: '14px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: 10 }}>
+            <div style={{ fontSize: 11, color: '#7070a0', textAlign: 'center', lineHeight: 1.7 }}>
+              Before Explain: second-guessing, scripted answers, interview panic.<br />
+              After Explain: structure, clarity, and the calm that comes<br />from having done this before — in the Chair.
+            </div>
+          </div>
+        </Card>
+      </Grid>
+    </div>
+
+    {/* ── S6: WHY AGENCIES LOVE THIS ── */}
+    <div style={{ marginBottom: 40 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>§6 — Why Agencies Love This</div>
+      <div style={{ fontSize: 16, fontWeight: 700, color: '#ddd', marginBottom: 20 }}>Because it increases revenue without increasing workload.</div>
+      <Grid cols={2}>
+        <Card>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 16 }}>Agency ROI Model</div>
+          {[
+            { label: 'Cost per candidate send',         value: '£5–10', note: 'Agency-funded, candidate-free' },
+            { label: 'Revenue uplift (more placements)', value: '+20–40%', note: 'Conservative estimate' },
+            { label: 'Placement fee uplift (£20K avg)',  value: '+£4–8K/placement', note: 'At +20–40% placement rate' },
+            { label: 'ROI per send',                    value: '400–800×', note: '£5 cost / £4K+ fee uplift' },
+            { label: 'Candidate satisfaction',          value: '+80–90%', note: 'NPS and loyalty increase' },
+            { label: 'Client retention uplift',         value: '+35%', note: 'Better candidates = loyal clients' },
+          ].map(r => (
+            <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '9px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <div>
+                <div style={{ fontSize: 12, color: '#9090b0' }}>{r.label}</div>
+                <div style={{ fontSize: 10, color: '#404060' }}>{r.note}</div>
+              </div>
+              <span style={{ fontSize: 14, fontWeight: 800, color: '#22c55e', flexShrink: 0, marginLeft: 12 }}>{r.value}</span>
+            </div>
+          ))}
+        </Card>
+        <Card>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A2, marginBottom: 14 }}>What Agencies Gain</div>
+          {[
+            { icon: '📈', label: 'More placements', body: 'Better-prepared candidates pass more interviews. Volume increases without more effort.' },
+            { icon: '💷', label: 'More revenue', body: 'More placements means more fees. The ROI per £5 send is extraordinary at current placement fee averages.' },
+            { icon: '🤝', label: 'Client satisfaction', body: 'Clients receive better candidates. Retainer relationships deepen. Repeat business accelerates.' },
+            { icon: '🏷️', label: 'Brand differentiation', body: '"We prepare our candidates before we send them" is a pitch no competitor can make. Vallum becomes the premium agency.' },
+            { icon: '🔒', label: 'Explain is embedded', body: 'Once a recruiter sends their first prep link, the workflow is changed. The tool becomes essential. Churn becomes nearly impossible.' },
+          ].map(f => (
+            <div key={f.label} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+              <span style={{ fontSize: 17, flexShrink: 0 }}>{f.icon}</span>
+              <div>
+                <div style={{ fontSize: 13, color: '#ddd', fontWeight: 600, marginBottom: 2 }}>{f.label}</div>
+                <div style={{ fontSize: 11, color: '#6060a0', lineHeight: 1.55 }}>{f.body}</div>
+              </div>
+            </div>
+          ))}
+        </Card>
+      </Grid>
+    </div>
+
+    {/* ── S7: REVENUE ENGINE ── */}
+    <div style={{ marginBottom: 40 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>§7 — Revenue Engine</div>
+      <div style={{ fontSize: 16, fontWeight: 700, color: '#ddd', marginBottom: 20 }}>Every recruiter email creates three downstream revenue opportunities.</div>
+      <Card>
+        <Grid cols={3} gap={16}>
+          {[
+            { n: '①', icon: '💷', stream: '£1 Practice Packs', pct: '30–50%', detail: 'of candidates who receive a prep email buy an additional pack before their interview. Impulse decision. One click. £1. Zero friction.', color: A },
+            { n: '②', icon: '💎', stream: 'Premium Packs £5–10', pct: '10–20%', detail: 'of candidates upgrade to a sector-specific premium pack — Investment Banking, NHS, FAANG, finance. Higher value for high-stakes roles.', color: A2 },
+            { n: '③', icon: '📚', stream: 'Learn Engine £9–19/mo', pct: '5–10%', detail: 'of candidates subscribe to the Learn Engine — continuing their learning after the interview for future applications. Recurring monthly revenue.', color: '#22c55e' },
+          ].map(r => (
+            <div key={r.stream} style={{ textAlign: 'center', padding: '20px 16px', background: `${r.color}06`, border: `1px solid ${r.color}20`, borderRadius: 12 }}>
+              <div style={{ fontSize: 28, marginBottom: 8 }}>{r.icon}</div>
+              <div style={{ fontSize: 10, fontWeight: 800, color: r.color, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{r.n} {r.stream}</div>
+              <div style={{ fontSize: 26, fontWeight: 900, color: '#fff', marginBottom: 8 }}>{r.pct}</div>
+              <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.6 }}>{r.detail}</div>
+            </div>
+          ))}
+        </Grid>
+        <div style={{ marginTop: 24, padding: '16px 18px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(79,142,247,0.1)', borderRadius: 10 }}>
+          <div style={{ fontSize: 12, color: '#7070a0', textAlign: 'center', lineHeight: 1.8 }}>
+            At 100 recruiter sends/month: <span style={{ color: '#fff', fontWeight: 700 }}>35–50 pack purchases</span> + <span style={{ color: A2, fontWeight: 700 }}>10–20 premium upgrades</span> + <span style={{ color: '#22c55e', fontWeight: 700 }}>5–10 subscriptions</span><br />
+            = <span style={{ color: '#fff', fontWeight: 800, fontSize: 14 }}>£325–£790 additional monthly revenue from one agency's send volume alone</span>
+          </div>
+        </div>
+      </Card>
+    </div>
+
+    {/* ── S8: CATEGORY CREATOR ── */}
+    <div style={{ marginBottom: 40 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A2, marginBottom: 16 }}>§8 — Category Creation</div>
+      <Callout icon="🏆" title="No other platform in the world offers recruiter-triggered personalised interview readiness." body="LinkedIn Learning is generic. Interviewing.io is coding only. ChatGPT has no recruiter integration. Pramp is developer-niche. None of them have a recruiter portal. None of them send branded candidate emails. None of them integrate into the placement workflow. Explain.Global is the only platform that closes the loop between recruiter, candidate, and interview outcome." color="#22c55e" />
+      <Card>
+        <div style={{ textAlign: 'center', padding: '20px 0' }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 12 }}>Category Definition</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', marginBottom: 14 }}>Personalised Interview Readiness</div>
+          <p style={{ fontSize: 14, color: '#8080a0', lineHeight: 1.75, maxWidth: 640, margin: '0 auto 24px' }}>
+            Explain.Global is the world's first Personalised Interview Readiness system — a new category that transforms unprepared candidates into interview-ready professionals using personalised packs, coaching, and job-specific clarity.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+            {['New', 'Inevitable', 'Defensible', 'Scalable', 'Global', 'Category-defining'].map(t => (
+              <span key={t} style={{ fontSize: 11, fontWeight: 700, padding: '5px 14px', background: `${A}12`, border: `1px solid ${A}25`, borderRadius: 20, color: A }}>{t}</span>
+            ))}
+          </div>
+        </div>
+      </Card>
+    </div>
+
+    {/* ── S9: VALLUM CASE STUDY PREVIEW ── */}
+    <div style={{ marginBottom: 40 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#f59e0b', marginBottom: 16 }}>§9 — Vallum Consulting · Case Study Preview</div>
+      <Card accent="#f59e0b">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28 }}>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', marginBottom: 8 }}>Vallum Consulting</div>
+            <div style={{ fontSize: 13, color: '#7070a0', lineHeight: 1.7, marginBottom: 16 }}>A leading UK recruitment agency specialising in technology and financial services placements. Vallum is the anchor case study for Explain's agency partnership model.</div>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#f59e0b', marginBottom: 12 }}>Projected Impact</div>
+            {[
+              { label: 'Monthly prep email sends',    value: '80–120' },
+              { label: 'Placement conversion uplift', value: '+25–35%' },
+              { label: 'Monthly revenue uplift',      value: '£4K–12K' },
+              { label: 'Annual placement fee uplift', value: '£48K–144K' },
+              { label: 'Candidate NPS change',        value: '+55 points' },
+            ].map(r => (
+              <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12 }}>
+                <span style={{ color: '#9090b0' }}>{r.label}</span>
+                <span style={{ color: '#f59e0b', fontWeight: 700 }}>{r.value}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#f59e0b', marginBottom: 12 }}>What Vallum's Board Will See</div>
+            {[
+              { icon: '📊', label: 'Candidates are arriving visibly better prepared' },
+              { icon: '💷', label: 'Placement fees are up — same effort, more revenue' },
+              { icon: '🏆', label: 'Clients are asking "how did you do that?"' },
+              { icon: '🔒', label: 'Competitors cannot replicate this without Explain' },
+              { icon: '🌍', label: 'The model scales to every consultant, every candidate' },
+              { icon: '🚀', label: 'Vallum becomes the agency of the future — today' },
+            ].map(r => (
+              <div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, fontSize: 12, color: '#9090b0' }}>
+                <span style={{ fontSize: 16 }}>{r.icon}</span> {r.label}
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+    </div>
+
+    {/* ── S10: CTAs ── */}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginTop: 8 }}>
+      {[
+        { label: 'See the Recruiter Portal →', color: A,        to: 'portals' },
+        { label: 'Candidate Experience →',     color: A2,       to: 'chair'   },
+        { label: 'Explore the £1 Engine →',    color: '#22c55e', to: 'packs'  },
+      ].map(cta => (
+        <a key={cta.label} href={`#${cta.to}`} style={{
+          display: 'block', textAlign: 'center',
+          background: `${cta.color}10`, border: `1px solid ${cta.color}30`,
+          borderRadius: 10, padding: '13px 16px',
+          color: cta.color, fontWeight: 700, fontSize: 13,
+          textDecoration: 'none', transition: 'all 0.2s',
+        }}>{cta.label}</a>
+      ))}
+    </div>
+
+    {/* Bottom stat row */}
+    <Grid cols={3} gap={14} >
+      <Stat value="+30–50%" label="Pass rate uplift" sub="Per agency using recruiter email" color="#22c55e" />
+      <Stat value="£5–10"  label="Cost per send" sub="Agency-funded · Candidate-free" />
+      <Stat value="400–800×" label="ROI per send" sub="vs. average placement fee uplift" color={A2} />
     </Grid>
   </>,
 
