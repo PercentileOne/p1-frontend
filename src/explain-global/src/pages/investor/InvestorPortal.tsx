@@ -196,7 +196,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     />
     <Grid cols={2}>
       {[
-        { icon: '🎯', title: 'Every job spec', body: '→ A personalised pack in seconds. 20 tailored questions, model answers, coaching context — generated from the exact role and the candidate's CV.' },
+        { icon: '🎯', title: 'Every job spec', body: "→ A personalised pack in seconds. 20 tailored questions, model answers, coaching context — generated from the exact role and the candidate's CV." },
         { icon: '🧑‍💼', title: 'Every candidate', body: '→ Walks in with clarity. They know the question structure, the competencies, the scoring. The first time they sit in the chair is not the real interview.' },
         { icon: '🤝', title: 'Every recruiter', body: '→ Sends one email and unlocks a new revenue stream. Candidate prep becomes a billable touchpoint. Conversion rates rise. Clients get better hires.' },
         { icon: '🏢', title: 'Every company', body: '→ Receives pre-assessed candidates who arrive prepared. First-interview quality improves. Time-to-hire shortens. The placement relationship strengthens.' },
@@ -243,12 +243,12 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     <Callout icon="⚠️" title="The core problem in one sentence" body="Candidates prepare for interviews the same way they prepared for exams in school — by reading. But interviews are performances. You don't get good at performing by reading about it." color="#f59e0b" />
     <Grid cols={2}>
       {[
-        { icon: '😨', label: 'Anxiety from the Unknown', body: 'When you don't know what's coming, anxiety fills the gap. Explain removes the unknown entirely — question structure, competency weighting, scoring criteria.' },
-        { icon: '📚', label: 'Generic Preparation', body: 'YouTube videos and interview guides are written for everyone — which means they're written for no one. No job spec. No CV context. No employer-specific framing.' },
+        { icon: '😨', label: 'Anxiety from the Unknown', body: "When you don't know what's coming, anxiety fills the gap. Explain removes the unknown entirely — question structure, competency weighting, scoring criteria." },
+        { icon: '📚', label: 'Generic Preparation', body: "YouTube videos and interview guides are written for everyone — which means they're written for no one. No job spec. No CV context. No employer-specific framing." },
         { icon: '🚫', label: 'No Feedback Loop', body: 'Practising in your bedroom mirror gives you no data. No scores. No coaching. No sense of whether your answer was strong, weak, or missed the point entirely.' },
-        { icon: '🎲', label: 'Unpredictable Questions', body: 'Candidates often don't know what kind of questions to expect — competency, HR, technical, values-based. Explain generates the exact type and mix for the role.' },
+        { icon: '🎲', label: 'Unpredictable Questions', body: "Candidates often don't know what kind of questions to expect — competency, HR, technical, values-based. Explain generates the exact type and mix for the role." },
         { icon: '📉', label: 'Structural Weakness', body: 'Most candidates have no framework for answering. They ramble, omit key context, or fail to land a point. Structure beats talent in the room. We teach it.' },
-        { icon: '🔄', label: 'No Second Chance', body: 'In a real interview, every answer is live. There's no retry. Explain is the place where you use all your retries before the day that counts.' },
+        { icon: '🔄', label: 'No Second Chance', body: "In a real interview, every answer is live. There's no retry. Explain is the place where you use all your retries before the day that counts." },
       ].map(f => <Card key={f.label}><Feature icon={f.icon} title={f.label} body={f.body} /></Card>)}
     </Grid>
   </>,
@@ -343,7 +343,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         { icon: '📖', title: 'Structured Lessons', body: 'Every lesson follows a proven format: core concepts → key definitions → exam-style questions → multiple-choice quiz. Depth without overwhelm.' },
         { icon: '📚', title: 'Personal Bookshelf', body: 'Save lessons, track progress, return to incomplete modules. The bookshelf builds a record of everything a candidate has studied before their interview.' },
         { icon: '🔗', title: 'Pack Integration', body: 'When the scoring engine identifies weak areas in an interview session, those topics auto-assign as Learn modules. Practice and learning close the loop.' },
-        { icon: '🌍', title: 'Global by Design', body: 'Lessons generate in the user's preferred language. The nurse in Lagos prepares in Yoruba. The engineer in Warsaw reads in Polish. Same platform, every market.' },
+        { icon: '🌍', title: 'Global by Design', body: "Lessons generate in the user's preferred language. The nurse in Lagos prepares in Yoruba. The engineer in Warsaw reads in Polish. Same platform, every market." },
       ].map(f => <Card key={f.title}><Feature icon={f.icon} title={f.title} body={f.body} /></Card>)}
     </Grid>
   </>,
@@ -819,7 +819,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       {[
         {
           icon: '🎯', title: 'Candidate Portal', color: A,
-          desc: 'The candidate's personal preparation command centre.',
+          desc: "The candidate's personal preparation command centre.",
           features: ['Personal dashboard', 'Interview Pack library', 'Interview Chair access', 'Learn Engine & bookshelf', 'Flow Viewer — personal timeline', 'Session recordings & debriefs'],
         },
         {
