@@ -41,8 +41,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("frontend", policy =>
     {
-        policy.WithOrigins(
-                builder.Configuration["AppUrl"] ?? "http://localhost:5173")
+        var raw = builder.Configuration["AppUrl"] ?? "http://localhost:5173";
+        var origins = raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        policy.WithOrigins(origins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
