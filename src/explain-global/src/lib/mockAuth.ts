@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+const API = 'https://api.explain.global';
 
 export type UserRole = 'Candidate' | 'Recruiter' | 'Client';
 
