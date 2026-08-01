@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Nav } from './components/Nav';
 import Home from './pages/Home';
@@ -8,16 +7,8 @@ import Community from './pages/Community';
 import MyInterviews from './pages/MyInterviews';
 import Portals from './pages/Portals';
 import Pricing from './pages/Pricing';
-
-function ExternalRedirect({ to }: { to: string }) {
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const returnUrl = params.get('return');
-    const dest = (returnUrl && returnUrl.startsWith('https://')) ? returnUrl : to;
-    window.location.replace(dest);
-  }, [to]);
-  return null;
-}
+import Register from './pages/Register';
+import Login from './pages/Login';
 
 export default function App() {
   return (
@@ -31,8 +22,8 @@ export default function App() {
         <Route path="/my-interviews" element={<MyInterviews />} />
         <Route path="/portals" element={<Portals />} />
         <Route path="/pricing" element={<Pricing />} />
-        <Route path="/login" element={<ExternalRedirect to="https://candidate.explain.global/login" />} />
-        <Route path="/register" element={<ExternalRedirect to="https://candidate.explain.global/register" />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </div>
   );
