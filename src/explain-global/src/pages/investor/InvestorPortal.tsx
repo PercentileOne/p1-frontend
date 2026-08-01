@@ -16,6 +16,7 @@ const NAV_GROUPS = [
     { id: 'learn',      label: 'Learn Engine' },
     { id: 'packs',      label: 'Interview Packs' },
     { id: 'rec-email',  label: '⭐ Recruiter Email' },
+    { id: 'screens',    label: '🖥️ What It Looks Like' },
     { id: 'flow',       label: 'Flow Viewer' },
     { id: 'portals',    label: 'Portals' },
   ]},
@@ -61,7 +62,11 @@ function SectionHead({ label, h1, h2, sub }: { label:string; h1:string; h2?:stri
 }
 
 function Grid({ cols = 2, gap = 16, children }: { cols?:number; gap?:number; children:React.ReactNode }) {
-  return <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols},1fr)`, gap, marginBottom: 32 }}>{children}</div>;
+  return (
+    <div className={`inv-grid inv-grid-${cols}`} style={{ display: 'grid', gap, marginBottom: 32 }}>
+      {children}
+    </div>
+  );
 }
 
 function Card({ children, accent, style }: { children:React.ReactNode; accent?:string; style?:React.CSSProperties }) {
@@ -262,7 +267,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     />
     <Grid cols={1}>
       <Card>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+        <div className="inv-2col" style={{ gap: 0 }}>
           <div style={{ padding: 20, borderRight: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#ef4444', marginBottom: 14 }}>Before Explain</div>
             {['Generic YouTube prep', 'No practice environment', 'No feedback or scores', 'Unknown question format', 'Anxiety from uncertainty', 'One shot at the real thing'].map(t => (
@@ -441,7 +446,8 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     <div style={{ marginBottom: 40 }}>
       <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 20 }}>§2 — The Full Flow (Seven Steps)</div>
       {/* Horizontal flow diagram */}
-      <Card style={{ overflowX: 'auto', padding: '28px 24px' }}>
+      <Card style={{ padding: '28px 8px' }}>
+        <div className="inv-scroll" style={{ padding: '0 16px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 0, minWidth: 700 }}>
           {[
             { n: '1', icon: '📅', title: 'Recruiter arranges interview', sub: 'Clicks "Send Interview Prep" in portal', color: A },
@@ -471,7 +477,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     {/* ── S3: THE EMAIL MOCKUP ── */}
     <div style={{ marginBottom: 40 }}>
       <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 20 }}>§3 — The Email — What Gary Receives</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28, alignItems: 'start' }}>
+      <div className="inv-2col" style={{ alignItems: 'start' }}>
         {/* Email mockup */}
         <div style={{ background: '#0d1525', border: '1px solid rgba(79,142,247,0.2)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.6)' }}>
           <div style={{ background: '#111827', padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 6 }}>
@@ -531,7 +537,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>§4 — Why Recruiters Love This</div>
       <div style={{ fontSize: 16, fontWeight: 700, color: '#ddd', marginBottom: 20 }}>This feature saves recruiters hours every week — and makes every candidate they send look exceptional.</div>
       <Card>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+        <div className="inv-2col">
           <div>
             {[
               { label: 'Pass rate', before: 'Baseline', after: '+30–50%', color: '#22c55e' },
@@ -551,7 +557,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
           </div>
           <div>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A2, marginBottom: 14 }}>Before vs After Explain</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div className="inv-2col" style={{ gap: 10 }}>
               <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 10, padding: '14px 14px' }}>
                 <div style={{ fontSize: 10, fontWeight: 800, color: '#ef4444', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Before</div>
                 {['Higher drop-offs', 'Anxious candidates', 'Wasted interview slots', 'Unprepared impressions', 'Client dissatisfaction', 'Fewer placements'].map(t => (
@@ -712,7 +718,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     <div style={{ marginBottom: 40 }}>
       <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#f59e0b', marginBottom: 16 }}>§9 — Vallum Consulting · Case Study Preview</div>
       <Card accent="#f59e0b">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28 }}>
+        <div className="inv-2col">
           <div>
             <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', marginBottom: 8 }}>Vallum Consulting</div>
             <div style={{ fontSize: 13, color: '#7070a0', lineHeight: 1.7, marginBottom: 16 }}>A leading UK recruitment agency specialising in technology and financial services placements. Vallum is the anchor case study for Explain's agency partnership model.</div>
@@ -773,6 +779,514 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       <Stat value="400–800×" label="ROI per send" sub="vs. average placement fee uplift" color={A2} />
     </Grid>
   </>,
+
+  'screens': (nav) => {
+    // Shared chrome frame wrapper
+    function Screen({ title, children, caption, wide }: { title: string; children: React.ReactNode; caption: string; wide?: boolean }) {
+      return (
+        <div style={{ marginBottom: 40 }}>
+          <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(79,142,247,0.18)', boxShadow: '0 24px 80px rgba(0,0,0,0.7)', maxWidth: wide ? '100%' : 680 }}>
+            {/* Chrome bar */}
+            <div style={{ background: '#111827', padding: '9px 14px', display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              {['#ef4444','#f59e0b','#22c55e'].map(c => <div key={c} style={{ width: 9, height: 9, borderRadius: '50%', background: c, opacity: 0.7 }} />)}
+              <div style={{ flex: 1, marginLeft: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 5, padding: '3px 10px', fontSize: 10, color: '#404060', maxWidth: 260 }}>
+                explain.global{title ? ` · ${title}` : ''}
+              </div>
+            </div>
+            {children}
+          </div>
+          <p style={{ fontSize: 12, color: '#505075', lineHeight: 1.65, marginTop: 10, fontStyle: 'italic', maxWidth: 620 }}>{caption}</p>
+        </div>
+      );
+    }
+
+    function ScreenNav({ items, active, onSelect }: { items: string[]; active: number; onSelect: (i: number) => void }) {
+      return (
+        <div style={{ display: 'flex', gap: 0, background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(79,142,247,0.1)', overflowX: 'auto' }}>
+          {items.map((label, i) => (
+            <button key={label} onClick={() => onSelect(i)} style={{
+              padding: '8px 16px', border: 'none', cursor: 'pointer',
+              background: active === i ? 'rgba(79,142,247,0.12)' : 'transparent',
+              color: active === i ? A : '#404060',
+              fontSize: 11, fontWeight: active === i ? 700 : 400,
+              borderBottom: active === i ? `2px solid ${A}` : '2px solid transparent',
+              whiteSpace: 'nowrap', fontFamily: 'inherit', flexShrink: 0,
+            }}>{label}</button>
+          ))}
+        </div>
+      );
+    }
+
+    // ── Screen 1: Vallum Intro ──
+    function S1Vallum() {
+      return (
+        <div style={{ background: '#07060f', minHeight: 320, padding: 0 }}>
+          {/* Vallum-branded nav */}
+          <div style={{ background: 'rgba(5,4,15,0.95)', borderBottom: '1px solid rgba(120,80,255,0.2)', padding: '10px 24px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ fontWeight: 800, fontSize: 14, color: '#fff' }}>explain<span style={{ color: '#7b5cf5' }}>.global</span></div>
+            <div style={{ fontSize: 9, color: '#404060', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 4, padding: '2px 8px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Powered by Vallum Consulting</div>
+          </div>
+          {/* Hero */}
+          <div style={{ padding: '40px 32px 32px', textAlign: 'center' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(123,92,245,0.12)', border: '1px solid rgba(123,92,245,0.3)', borderRadius: 20, padding: '4px 14px', fontSize: 10, color: '#a78bfa', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 20 }}>
+              🎯 Interview Preparation · Exclusive Access
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', marginBottom: 8, lineHeight: 1.2 }}>
+              Your interview is on<br /><span style={{ color: A }}>12 August 2026.</span>
+            </div>
+            <div style={{ fontSize: 12, color: '#7070a0', marginBottom: 24, lineHeight: 1.7 }}>
+              Vallum Consulting has activated 4 days of complimentary access to Explain.Global on your behalf.<br />Your personalised interview preparation is ready.
+            </div>
+            <div style={{ display: 'inline-flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 28 }}>
+              {[['📅','Interview', '12 Aug 2026'], ['🏢','Company','DeepMind'], ['📋','Role','Senior SWE']].map(([icon, label, val]) => (
+                <div key={label} style={{ background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.18)', borderRadius: 10, padding: '10px 16px', textAlign: 'center', minWidth: 100 }}>
+                  <div style={{ fontSize: 16, marginBottom: 3 }}>{icon}</div>
+                  <div style={{ fontSize: 9, color: '#5060a0', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{label}</div>
+                  <div style={{ fontSize: 11, color: '#ddd', fontWeight: 700, marginTop: 1 }}>{val}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'inline-block', background: 'linear-gradient(135deg,#4F8EF7,#7b5cf5)', borderRadius: 10, padding: '11px 28px', fontSize: 12, fontWeight: 800, color: '#fff', cursor: 'pointer', letterSpacing: '0.02em' }}>
+              Start Your Preparation →
+            </div>
+            <div style={{ marginTop: 18, fontSize: 10, color: '#303050' }}>
+              Powered by <span style={{ color: A, fontWeight: 700 }}>explain.global</span> · Personalised Interview Readiness
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Screen 2: Interview Chair ──
+    function S2Chair({ view }: { view: number }) {
+      const views = [
+        // 0: Main chair
+        <div key="chair" style={{ background: '#050410', minHeight: 320, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, background: 'linear-gradient(180deg,#0a0820 0%,#050410 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 220, position: 'relative' }}>
+            {/* AI interviewer avatar */}
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: 88, height: 88, borderRadius: '50%', background: 'linear-gradient(135deg,#1a1560,#2a2080)', border: '2px solid rgba(79,142,247,0.4)', margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>👩‍💼</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>Sarah Mitchell</div>
+              <div style={{ fontSize: 10, color: '#4060a0' }}>HR Director · Interviewing you now</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center', marginTop: 6 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', animation: 'pulse 1.5s infinite' }} />
+                <span style={{ fontSize: 9, color: '#22c55e', fontWeight: 700 }}>LIVE SESSION</span>
+              </div>
+            </div>
+            {/* Waveform */}
+            <div style={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 3, alignItems: 'center' }}>
+              {[3,6,10,14,9,5,12,8,4,11,7,3,9,13,6].map((h, i) => (
+                <div key={i} style={{ width: 3, height: h, background: `${A}${i % 3 === 0 ? 'aa' : '55'}`, borderRadius: 2 }} />
+              ))}
+            </div>
+          </div>
+          {/* Bottom bar */}
+          <div style={{ background: 'rgba(5,4,16,0.98)', borderTop: '1px solid rgba(79,142,247,0.1)', padding: '10px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10, color: '#404060', marginBottom: 2 }}>Current question</div>
+              <div style={{ fontSize: 11, color: '#c0c8e0', lineHeight: 1.4 }}>Tell me about a time you led a cross-functional project under pressure.</div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {['🎙️','⏸️','📊'].map(ic => <button key={ic} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.25)', fontSize: 14, cursor: 'pointer' }}>{ic}</button>)}
+            </div>
+          </div>
+        </div>,
+        // 1: Coaching overlay
+        <div key="coach" style={{ background: '#050410', minHeight: 320, display: 'grid', gridTemplateColumns: '1fr 240px' }}>
+          <div style={{ background: 'linear-gradient(180deg,#0a0820,#050410)', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 220 }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg,#1a1560,#2a2080)', border: '2px solid rgba(79,142,247,0.3)', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26 }}>👩‍💼</div>
+              <div style={{ fontSize: 10, color: '#6080a0' }}>Sarah Mitchell · Active</div>
+            </div>
+          </div>
+          {/* Coaching panel */}
+          <div style={{ background: 'rgba(4,3,14,0.98)', borderLeft: '1px solid rgba(79,142,247,0.12)', padding: 14, overflow: 'hidden' }}>
+            <div style={{ fontSize: 9, fontWeight: 800, color: A, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>🧠 Live Coaching</div>
+            {[
+              { type: '✅', label: 'Strong opener', color: '#22c55e' },
+              { type: '⚡', label: 'Add impact metric', color: '#f59e0b' },
+              { type: '💡', label: 'Land with outcome', color: A },
+            ].map(c => (
+              <div key={c.label} style={{ display: 'flex', gap: 6, padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: 10 }}>
+                <span>{c.type}</span>
+                <span style={{ color: c.color }}>{c.label}</span>
+              </div>
+            ))}
+            <div style={{ marginTop: 12, fontSize: 9, fontWeight: 800, color: '#404060', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Your Answer</div>
+            <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 6, padding: 8, fontSize: 10, color: '#8090b0', lineHeight: 1.6 }}>
+              "In Q3 2024, I led a team of six across eng and product to deliver our payments integration..."
+            </div>
+            <div style={{ marginTop: 10, display: 'flex', gap: 6 }}>
+              {['Clarity','Depth','Confidence'].map((s, i) => (
+                <div key={s} style={{ flex: 1, textAlign: 'center' }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: [A, '#22c55e', A2][i] }}>{[7.8, 8.4, 6.9][i]}</div>
+                  <div style={{ fontSize: 8, color: '#404060' }}>{s}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>,
+        // 2: Scoring engine
+        <div key="score" style={{ background: '#07060f', padding: 20, minHeight: 320 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: A, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 16 }}>Session Debrief — Senior Software Engineer · DeepMind</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 18 }}>
+            {[['Overall','8.2',A],['Clarity','8.5','#22c55e'],['Depth','7.9',A2],['Confidence','8.4','#22c55e']].map(([l,v,c]) => (
+              <div key={l} style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${c}25`, borderRadius: 10, padding: '12px 8px', textAlign: 'center' }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: c as string }}>{v}</div>
+                <div style={{ fontSize: 9, color: '#505070', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{l}</div>
+              </div>
+            ))}
+          </div>
+          {[
+            { q: 'Q1 — Leadership under pressure', score: 8.8, color: '#22c55e' },
+            { q: 'Q2 — Stakeholder management', score: 7.4, color: '#f59e0b' },
+            { q: 'Q3 — Technical decision making', score: 8.9, color: '#22c55e' },
+            { q: 'Q4 — Handling ambiguity', score: 7.1, color: '#f59e0b' },
+          ].map(r => (
+            <div key={r.q} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+              <span style={{ fontSize: 10, color: '#7080a0', flex: 1 }}>{r.q}</span>
+              <div style={{ width: 80, height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${r.score * 10}%`, background: r.color, borderRadius: 2 }} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 800, color: r.color, minWidth: 28, textAlign: 'right' }}>{r.score}</span>
+            </div>
+          ))}
+        </div>,
+      ];
+      return <>{views[view]}</>;
+    }
+
+    // ── Screen 3: Candidate Portal ──
+    function S3Candidate({ view }: { view: number }) {
+      const views = [
+        // 0: Dashboard
+        <div key="dash" style={{ background: '#07060f', padding: 18, minHeight: 300 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>Good morning, <span style={{ color: A }}>Gary</span></div>
+            <div style={{ marginLeft: 'auto', fontSize: 9, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e', borderRadius: 20, padding: '2px 10px', fontWeight: 700 }}>4 days access · Vallum</div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 16 }}>
+            {[['🎯','Ready','Interview in 3 days',[A]],['📋','1 Pack','Senior SWE · DeepMind',[A2]],['📚','3 Lessons','Queued for you',['#22c55e']]].map(([icon, val, sub, [color]]) => (
+              <div key={val as string} style={{ background: `${color}08`, border: `1px solid ${color}20`, borderRadius: 10, padding: '12px 10px' }}>
+                <div style={{ fontSize: 18, marginBottom: 4 }}>{icon}</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: color }}>{val}</div>
+                <div style={{ fontSize: 9, color: '#505070' }}>{sub as string}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(79,142,247,0.1)', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ fontSize: 9, fontWeight: 800, color: A, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Your Preparation Timeline</div>
+            {[['Today','Complete Interview Pack','📋'],['Tomorrow','Practice Session 1 — Interview Chair','🎬'],['Day 3','Learn Engine — System Design','📚'],['Interview Day','Ready ✓','🏆']].map(([day,task,ic]) => (
+              <div key={day as string} style={{ display: 'flex', gap: 10, marginBottom: 8, fontSize: 10 }}>
+                <span style={{ color: '#404060', minWidth: 72 }}>{day}</span>
+                <span style={{ fontSize: 12 }}>{ic}</span>
+                <span style={{ color: '#9090b0' }}>{task}</span>
+              </div>
+            ))}
+          </div>
+        </div>,
+        // 1: Practice Pack
+        <div key="pack" style={{ background: '#07060f', padding: 18, minHeight: 300 }}>
+          <div style={{ fontSize: 9, fontWeight: 800, color: A, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>Interview Pack · Personalised</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', marginBottom: 2 }}>Senior Software Engineer</div>
+          <div style={{ fontSize: 11, color: '#5060a0', marginBottom: 16 }}>DeepMind · London · Technical + Behavioural Mix</div>
+          {[
+            { n: 1, type: 'Behavioural', q: 'Describe a time you led a complex cross-functional project under significant time pressure.' },
+            { n: 2, type: 'Technical',   q: 'How would you design a distributed rate-limiting system for a high-traffic API?' },
+            { n: 3, type: 'Values',      q: "Tell me about a time your technical judgment conflicted with a teammate's — how did you resolve it?" },
+          ].map(r => (
+            <div key={r.n} style={{ border: '1px solid rgba(79,142,247,0.1)', borderRadius: 10, padding: '11px 14px', marginBottom: 8, background: 'rgba(255,255,255,0.02)' }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 5 }}>
+                <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: `${A}20`, border: `1px solid ${A}30`, borderRadius: 4, padding: '1px 6px' }}>Q{r.n}</span>
+                <span style={{ fontSize: 9, fontWeight: 700, color: A2 }}>{r.type}</span>
+              </div>
+              <div style={{ fontSize: 11, color: '#c0c8e0', lineHeight: 1.5 }}>{r.q}</div>
+            </div>
+          ))}
+          <div style={{ fontSize: 9, color: '#303050', marginTop: 8 }}>20 questions total · Model answers included · STAR format</div>
+        </div>,
+        // 2: Readiness Score
+        <div key="score" style={{ background: '#07060f', padding: 18, minHeight: 300 }}>
+          <div style={{ fontSize: 9, fontWeight: 800, color: '#22c55e', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 16 }}>Readiness Score · After 2 Sessions</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 20 }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 48, fontWeight: 900, color: '#22c55e', letterSpacing: '-0.04em', lineHeight: 1 }}>84</div>
+              <div style={{ fontSize: 10, color: '#505070' }}>/ 100 · Interview Ready</div>
+            </div>
+            <div style={{ flex: 1 }}>
+              {[['Clarity','92','#22c55e'],['Depth','81',A],['Confidence','78',A2],['Structure','88','#22c55e'],['Delivery','82',A]].map(([l,v,c]) => (
+                <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 10, color: '#7080a0', minWidth: 70 }}>{l}</span>
+                  <div style={{ flex: 1, height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${v}%`, background: c, borderRadius: 3 }} />
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: c as string, minWidth: 24 }}>{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10, padding: '10px 14px', fontSize: 11, color: '#9090b0', lineHeight: 1.6 }}>
+            <span style={{ color: '#22c55e', fontWeight: 700 }}>You are interview-ready.</span> Your score places you in the top 15% of candidates for this role type. Focus areas: Confidence under follow-up questioning.
+          </div>
+        </div>,
+      ];
+      return <>{views[view]}</>;
+    }
+
+    // ── Screen 4: Recruiter Portal ──
+    function S4Recruiter({ view }: { view: number }) {
+      const views = [
+        // 0: Dashboard
+        <div key="rdash" style={{ background: '#07060f', padding: 18, minHeight: 300 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 16 }}>Recruiter Portal · <span style={{ color: A }}>Vallum Consulting</span></div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 16 }}>
+            {[['👥','24','Active Candidates',A],['📧','18','Prep Sent',A2],['✅','11','Placed This Month','#22c55e'],['📈','68%','Pass Rate','#22c55e']].map(([icon,v,l,c]) => (
+              <div key={l as string} style={{ background: `${c}08`, border: `1px solid ${c}20`, borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
+                <div style={{ fontSize: 14 }}>{icon}</div>
+                <div style={{ fontSize: 16, fontWeight: 900, color: c as string }}>{v}</div>
+                <div style={{ fontSize: 8, color: '#404060' }}>{l}</div>
+              </div>
+            ))}
+          </div>
+          {[
+            { name: 'Gary Thompson', role: 'Senior SWE · DeepMind', date: '12 Aug', status: 'Prep Sent', score: '84%' },
+            { name: 'Priya Sharma', role: 'Data Engineer · Palantir', date: '15 Aug', status: 'Preparing', score: '71%' },
+            { name: 'James Walker', role: 'DevOps Lead · Stripe', date: '18 Aug', status: 'Not Sent', score: '—' },
+          ].map(r => (
+            <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: 11 }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: `${A}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0 }}>{r.name[0]}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ color: '#ddd', fontWeight: 600, fontSize: 12 }}>{r.name}</div>
+                <div style={{ color: '#505070', fontSize: 10 }}>{r.role} · {r.date}</div>
+              </div>
+              <div style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: r.status === 'Prep Sent' ? 'rgba(79,142,247,0.12)' : r.status === 'Preparing' ? 'rgba(123,92,245,0.12)' : 'rgba(255,255,255,0.04)', color: r.status === 'Prep Sent' ? A : r.status === 'Preparing' ? A2 : '#404060', border: `1px solid ${r.status === 'Prep Sent' ? A : r.status === 'Preparing' ? A2 : '#303050'}25` }}>{r.status}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: r.score !== '—' ? '#22c55e' : '#303050', minWidth: 28, textAlign: 'right' }}>{r.score}</div>
+            </div>
+          ))}
+        </div>,
+        // 1: Send Interview Prep (the magic button)
+        <div key="sendprep" style={{ background: '#07060f', padding: 24, minHeight: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '100%', maxWidth: 380, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(79,142,247,0.15)', borderRadius: 16, padding: 24 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: A, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 16 }}>Send Interview Preparation</div>
+            {[['Candidate','Gary Thompson'],['Interview Date','12 August 2026'],['Role','Senior Software Engineer'],['Company','DeepMind'],['Access Period','4 days (agency-funded)'],['Agency Branding','Vallum Consulting']].map(([l,v]) => (
+              <div key={l} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: 11 }}>
+                <span style={{ color: '#505070' }}>{l}</span>
+                <span style={{ color: '#ddd', fontWeight: 600 }}>{v}</span>
+              </div>
+            ))}
+            <div style={{ marginTop: 20, background: 'linear-gradient(135deg,#4F8EF7,#7b5cf5)', borderRadius: 10, padding: '13px 16px', textAlign: 'center', cursor: 'pointer', boxShadow: '0 8px 32px rgba(79,142,247,0.35)' }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>⭐ Send Interview Prep Email</div>
+              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>Gary receives branded email instantly · 1 click</div>
+            </div>
+          </div>
+        </div>,
+      ];
+      return <>{views[view]}</>;
+    }
+
+    // ── Screen 5: Client Portal ──
+    function S5Client() {
+      return (
+        <div style={{ background: '#07060f', padding: 18, minHeight: 280 }}>
+          <div style={{ fontSize: 9, fontWeight: 800, color: A, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>Company Portal · DeepMind</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', marginBottom: 16 }}>Upcoming Interviews · Senior Software Engineer</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 16 }}>
+            {[['12 Shortlisted',A],['8 Preparing',A2],['4 Interview-Ready','#22c55e']].map(([v,c]) => (
+              <div key={v as string} style={{ background: `${c}08`, border: `1px solid ${c}20`, borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+                <div style={{ fontSize: 16, fontWeight: 900, color: c as string }}>{v}</div>
+              </div>
+            ))}
+          </div>
+          {[
+            { name: 'Gary Thompson', readiness: 84, status: 'Ready', agency: 'Vallum' },
+            { name: 'Priya Sharma', readiness: 71, status: 'Preparing', agency: 'Vallum' },
+            { name: 'Marcus Cole', readiness: 91, status: 'Ready', agency: 'Harrington Starr' },
+          ].map(r => (
+            <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: 11 }}>
+              <div style={{ width: 26, height: 26, borderRadius: '50%', background: `${A}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, flexShrink: 0 }}>{r.name[0]}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ color: '#ddd', fontWeight: 600 }}>{r.name}</div>
+                <div style={{ fontSize: 9, color: '#404060' }}>via {r.agency}</div>
+              </div>
+              <div style={{ width: 50, height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${r.readiness}%`, background: r.readiness >= 80 ? '#22c55e' : A, borderRadius: 2 }} />
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 700, color: r.readiness >= 80 ? '#22c55e' : A, minWidth: 28 }}>{r.readiness}%</span>
+              <span style={{ fontSize: 9, color: r.status === 'Ready' ? '#22c55e' : A2 }}>{r.status}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // ── Screen 6: Magic Button ──
+    function S6Magic() {
+      return (
+        <div style={{ background: '#07060f', padding: 24, minHeight: 280, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '100%', maxWidth: 400, textAlign: 'center' }}>
+            <div style={{ fontSize: 9, fontWeight: 800, color: A2, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 16 }}>Magic Button · Instant Pack Generation</div>
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(79,142,247,0.1)', borderRadius: 12, padding: 16, marginBottom: 16, textAlign: 'left', fontSize: 11, color: '#7080a0', lineHeight: 1.6 }}>
+              <div style={{ fontSize: 9, color: '#404060', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 6 }}>Pasted Job Specification</div>
+              Senior Software Engineer — DeepMind, London. We are looking for a technically exceptional engineer with experience in distributed systems, machine learning infrastructure, and cross-functional leadership. The ideal candidate will have 5+ years...
+            </div>
+            <div style={{ background: `linear-gradient(135deg,${A2},${A})`, borderRadius: 14, padding: '16px 20px', cursor: 'pointer', boxShadow: `0 12px 48px ${A2}40`, marginBottom: 20 }}>
+              <div style={{ fontSize: 18, marginBottom: 4 }}>✨</div>
+              <div style={{ fontSize: 14, fontWeight: 900, color: '#fff' }}>Generate Interview Pack</div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>20 personalised questions · Model answers · Coaching context</div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 6, fontSize: 9, color: '#303050' }}>
+              <span style={{ color: '#22c55e' }}>✓</span> Ready in under 10 seconds &nbsp;·&nbsp; <span style={{ color: '#22c55e' }}>✓</span> 90% gross margin
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Screen 7: Learn Engine ──
+    function S7Learn() {
+      return (
+        <div style={{ background: '#07060f', padding: 18, minHeight: 280 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 9, fontWeight: 800, color: A, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Learn Engine · Lesson</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', marginTop: 2 }}>Distributed Systems Design</div>
+            </div>
+            <div style={{ fontSize: 9, background: `${A}15`, border: `1px solid ${A}30`, color: A, borderRadius: 20, padding: '3px 10px', fontWeight: 700 }}>🌍 EN</div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 14, overflowX: 'auto' }}>
+            {['Concepts','Glossary','Exam Qs','Quiz','Bookshelf'].map((t, i) => (
+              <button key={t} style={{ padding: '5px 12px', borderRadius: 20, border: `1px solid ${i === 0 ? A : 'rgba(255,255,255,0.08)'}`, background: i === 0 ? `${A}15` : 'transparent', color: i === 0 ? A : '#404060', fontSize: 9, fontWeight: i === 0 ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit' }}>{t}</button>
+            ))}
+          </div>
+          {[
+            { title: 'CAP Theorem', body: 'Every distributed system must choose two of three properties: Consistency, Availability, Partition Tolerance. In practice, partition tolerance is mandatory — so the real choice is between CP and AP systems.' },
+            { title: 'Eventual Consistency', body: 'A consistency model where updates propagate to all nodes eventually but may not be immediately visible. Common in high-availability systems like DynamoDB and Cassandra.' },
+          ].map(c => (
+            <div key={c.title} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(79,142,247,0.08)', borderRadius: 10, padding: '11px 14px', marginBottom: 8 }}>
+              <div style={{ fontWeight: 700, color: '#ddd', fontSize: 12, marginBottom: 4 }}>{c.title}</div>
+              <div style={{ fontSize: 10, color: '#7080a0', lineHeight: 1.6 }}>{c.body}</div>
+            </div>
+          ))}
+          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <div style={{ flex: 1, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.15)', borderRadius: 8, padding: '8px 10px', textAlign: 'center', cursor: 'pointer', fontSize: 10, color: A, fontWeight: 700 }}>Take Quiz →</div>
+            <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '8px 12px', textAlign: 'center', cursor: 'pointer', fontSize: 10, color: '#505070' }}>📚 Save</div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Screen 8: Global Hub ──
+    function S8Global() {
+      return (
+        <div style={{ background: '#07060f', padding: 18, minHeight: 280 }}>
+          <div style={{ fontSize: 9, fontWeight: 800, color: A, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>Explain.Global · Language Selection</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', marginBottom: 16 }}>Choose your language to begin</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8, marginBottom: 16 }}>
+            {[['🇬🇧','English',true],['🇫🇷','Français',false],['🇩🇪','Deutsch',false],['🇪🇸','Español',false],['🇵🇱','Polski',false],['🇮🇳','Hindi',false],['🇧🇷','Português',false],['🇸🇦','العربية',false],['🇯🇵','日本語',false],['🇰🇷','한국어',false]].map(([flag, lang, active]) => (
+              <div key={lang as string} style={{ background: active ? `${A}15` : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? A : 'rgba(255,255,255,0.06)'}`, borderRadius: 8, padding: '8px 4px', textAlign: 'center', cursor: 'pointer' }}>
+                <div style={{ fontSize: 16 }}>{flag}</div>
+                <div style={{ fontSize: 8, color: active ? A : '#404060', fontWeight: active ? 700 : 400, marginTop: 2, lineHeight: 1.2 }}>{lang}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(79,142,247,0.08)', borderRadius: 10, padding: '10px 14px', fontSize: 10, color: '#7080a0', lineHeight: 1.7 }}>
+            <span style={{ color: A, fontWeight: 700 }}>50+ languages available.</span> Interview packs, Learn Engine lessons, and coaching overlay available in your chosen language. The same personalised experience, everywhere in the world.
+          </div>
+        </div>
+      );
+    }
+
+    // ── Tab-stateful wrappers ──
+    const [chairTab, setChairTab] = (useState as typeof useState<number>)(0);
+    const [candTab, setCandTab] = (useState as typeof useState<number>)(0);
+    const [recTab, setRecTab] = (useState as typeof useState<number>)(0);
+
+    const SectionLabel = ({ n, label, sub }: { n: string; label: string; sub: string }) => (
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: A, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 4 }}>
+          {n} — {label}
+        </div>
+        <div style={{ fontSize: 12, color: '#505070', fontStyle: 'italic' }}>{sub}</div>
+      </div>
+    );
+
+    return <>
+      <SectionHead
+        label="Product · What It Looks Like"
+        h1="A visual walkthrough"
+        h2="of the Explain experience."
+        sub="Every screen is live product. Every interface is built, deployed, and working today. This is not a prototype — it is a platform."
+      />
+
+      {/* §1 Vallum Intro */}
+      <SectionLabel n="§1" label="Vallum-Branded Intro Page" sub="The page that triggered Vallum's immediate interest." />
+      <Screen title="interview-prep · Vallum" caption="This is the page that triggered Vallum's immediate interest. Agencies instantly understand the value when they see their brand integrated into Explain — their name, their candidate, their interview. One click sent this. That's it.">
+        <S1Vallum />
+      </Screen>
+
+      {/* §2 Interview Chair */}
+      <SectionLabel n="§2" label="Interview Chair" sub="The cinematic AI interview simulation environment." />
+      <Screen title="Interview Chair · DeepMind" caption="The Interview Chair is Explain's cinematic interview simulation environment — personalised, structured, and powered by AI coaching. Candidates face Sarah or James in full-screen, answer with voice, and receive real-time coaching on every response.">
+        <ScreenNav items={['Live Session','Coaching Overlay','Scoring Engine']} active={chairTab} onSelect={setChairTab} />
+        <S2Chair view={chairTab} />
+      </Screen>
+
+      {/* §3 Candidate Portal */}
+      <SectionLabel n="§3" label="Candidate Portal" sub="Personalised interview readiness — packs, coaching, learning, simulation." />
+      <Screen title="Candidate Portal · Gary Thompson" caption="The Candidate Portal delivers personalised interview readiness — packs, coaching, learning, and simulation. From the moment a candidate receives the recruiter email, everything they need is here, in one place, structured for their specific interview.">
+        <ScreenNav items={['Dashboard','Interview Pack','Readiness Score']} active={candTab} onSelect={setCandTab} />
+        <S3Candidate view={candTab} />
+      </Screen>
+
+      {/* §4 Recruiter Portal */}
+      <SectionLabel n="§4" label="Recruiter Portal" sub="One-click interview preparation — transforming how agencies place candidates." />
+      <Screen title="Recruiter Portal · Vallum Consulting" caption="The Recruiter Portal transforms interview preparation into a one-click workflow — increasing placements and reducing drop-off. Recruiters see every candidate's readiness score, send prep with one click, and track engagement before the interview day.">
+        <ScreenNav items={['Dashboard','⭐ Send Interview Prep']} active={recTab} onSelect={setRecTab} />
+        <S4Recruiter view={recTab} />
+      </Screen>
+
+      {/* §5 Client Portal */}
+      <SectionLabel n="§5" label="Client Portal (Company View)" sub="Enterprise hiring intelligence — pre-assessed candidates, structured packs, readiness analytics." />
+      <Screen title="Client Portal · DeepMind" caption="The Client Portal gives companies structured interview packs, readiness analytics, and personalised preparation for every candidate — before they even walk in the room. Hiring managers see who is interview-ready and who needs more time.">
+        <S5Client />
+      </Screen>
+
+      {/* §6 Magic Button */}
+      <SectionLabel n="§6" label="Magic Button" sub="Job spec in. Personalised pack out. Under 10 seconds." />
+      <Screen title="Magic Button · Pack Generation" caption="The Magic Button converts job specifications into personalised interview packs — instantly. Paste the job spec, press the button, receive 20 tailored questions with model answers and coaching context. 90% gross margin. The single highest-value action in the product.">
+        <S6Magic />
+      </Screen>
+
+      {/* §7 Learn Engine */}
+      <SectionLabel n="§7" label="Learn Engine" sub="Structured, personalised learning — any subject, any language." />
+      <Screen title="Learn Engine · Lesson" caption="The Learn Engine delivers structured, personalised learning — preparing candidates for long-term success. Generate a lesson on any topic in any language. Concepts, glossary, exam questions, quiz, bookshelf. The scoring engine auto-assigns lessons based on weak areas identified in the Interview Chair.">
+        <S7Learn />
+      </Screen>
+
+      {/* §8 Global Hub */}
+      <SectionLabel n="§8" label="Global Hub" sub="Multi-language, multi-country interview readiness — built global from day one." />
+      <Screen title="explain.global · Language Hub" caption="The Global Hub powers multi-language, multi-country interview readiness — enabling global scale. 50+ languages available at launch. The architecture was built global from the first line of code. Adding a new language costs near-zero. The same experience, everywhere.">
+        <S8Global />
+      </Screen>
+
+      {/* §9 CTAs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginTop: 8 }}>
+        {[
+          { label: 'View the Recruiter Email Feature →', color: A,         to: 'rec-email' },
+          { label: 'Explore the £1 Engine →',           color: '#22c55e',  to: 'packs'    },
+          { label: 'See the Roadmap →',                 color: A2,         to: 'roadmap'  },
+        ].map(cta => (
+          <button key={cta.label} onClick={() => nav(cta.to)} style={{
+            display: 'block', width: '100%', textAlign: 'center',
+            background: `${cta.color}10`, border: `1px solid ${cta.color}30`,
+            borderRadius: 10, padding: '13px 12px',
+            color: cta.color, fontWeight: 700, fontSize: 12,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>{cta.label}</button>
+        ))}
+      </div>
+    </>;
+  },
 
   'flow': () => <>
     <SectionHead
@@ -1080,7 +1594,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       ].map(f => <Card key={f.title}><Feature icon={f.icon} title={f.title} body={f.body} /></Card>)}
     </Grid>
     <Card style={{ marginTop: 8 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+      <div className="inv-2col">
         <div>
           <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 14 }}>Revenue Model — Government</div>
           {[
@@ -1126,8 +1640,8 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     />
     <Grid cols={1}>
       <Card>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+        <div className="inv-scroll">
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, minWidth: 500 }}>
             <thead>
               <tr>
                 {['Capability', 'Explain.Global', 'LinkedIn Learning', 'Interviewing.io', 'Pramp', 'ChatGPT'].map((h, i) => (
@@ -1516,6 +2030,32 @@ export default function InvestorPortal() {
         .inv-item:hover { background: rgba(79,142,247,0.08) !important; color: #b0b0d0 !important; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(79,142,247,0.2); border-radius: 2px; }
+
+        /* Responsive grids — collapse to 1 col on mobile */
+        .inv-grid-1 { grid-template-columns: 1fr; }
+        .inv-grid-2 { grid-template-columns: repeat(2,1fr); }
+        .inv-grid-3 { grid-template-columns: repeat(3,1fr); }
+        .inv-grid-4 { grid-template-columns: repeat(4,1fr); }
+
+        @media (max-width: 640px) {
+          .inv-grid-2,
+          .inv-grid-3,
+          .inv-grid-4 { grid-template-columns: 1fr !important; }
+        }
+
+        /* Two-column content blocks inside sections */
+        .inv-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 640px) {
+          .inv-2col { grid-template-columns: 1fr !important; }
+        }
+
+        /* Horizontal scroll for tables / flow diagrams on mobile */
+        .inv-scroll { overflow-x: auto; }
+
+        /* Section head titles — scale down on mobile */
+        @media (max-width: 480px) {
+          .inv-section-h1 { font-size: 1.8rem !important; }
+        }
       `}</style>
 
       {/* Logo */}
