@@ -2952,14 +2952,15 @@ export default function InvestorPortal() {
               const isActive = item.id === active;
               return (
                 <button key={item.id} className="inv-item" onClick={() => go(item.id)} style={{
-                  display: 'block', width: '100%', textAlign: 'left',
-                  padding: '8px 20px', border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  width: '100%', padding: '8px 20px', border: 'none', cursor: 'pointer',
                   background: isActive ? 'rgba(79,142,247,0.12)' : 'transparent',
                   color: isActive ? A : '#a0a0c8',
                   fontSize: 13, fontWeight: isActive ? 700 : 400,
                   borderLeft: `2px solid ${isActive ? A : 'transparent'}`,
-                  transition: 'all 0.15s', fontFamily: 'inherit',
+                  transition: 'all 0.15s', fontFamily: 'inherit', textAlign: 'left',
                 }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: isActive ? A : 'rgba(160,160,200,0.35)', flexShrink: 0, display: 'inline-block' }} />
                   {item.label}
                 </button>
               );
