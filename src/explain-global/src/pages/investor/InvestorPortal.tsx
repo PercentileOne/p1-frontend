@@ -2769,9 +2769,9 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Field of the Invention</div>
     <Card style={{ marginBottom: 28 }}>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {['Computational linguistic processing', 'AI-driven interview preparation', 'Job advert parsing', 'CV analysis', 'Personalised question generation', 'Candidate scoring', 'Employer feedback systems', 'Recruiter workflow automation', 'Multi-portal SaaS architecture', 'Interview simulation', 'Readiness scoring', 'Structured feedback loops'].map(f => <Tag key={f} color={A2}>{f}</Tag>)}
+        {['Computational linguistic processing', 'AI-driven interview preparation', 'Job advert parsing', 'CV analysis', 'Personalised question generation', 'Candidate scoring', 'Employer feedback systems', 'Recruiter workflow automation', 'Multi-portal SaaS architecture', 'Interview simulation', 'Readiness scoring', 'Structured feedback loops'].map(f => <Tag key={f} color={A}>{f}</Tag>)}
       </div>
-      <p style={{ fontSize: 13, color: '#6060a0', lineHeight: 1.7, marginTop: 16, marginBottom: 0 }}>The invention produces a technical effect by transforming unstructured text inputs and multi-party workflow triggers into structured, personalised interview readiness outputs.</p>
+      <p style={{ fontSize: 14, color: '#c0c0d8', lineHeight: 1.75, marginTop: 16, marginBottom: 0 }}>The invention produces a technical effect by transforming unstructured text inputs and multi-party workflow triggers into structured, personalised interview readiness outputs.</p>
     </Card>
 
     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>The 14 Patentable Components</div>
@@ -2796,8 +2796,8 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
           <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
             <div style={{ fontSize: 10, fontWeight: 800, color: A, background: `${A}18`, border: `1px solid ${A}30`, borderRadius: 6, padding: '4px 8px', flexShrink: 0, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.06em' }}>{c.n}</div>
             <div>
-              <div style={{ fontWeight: 700, color: '#ddd', fontSize: 13, marginBottom: 5 }}>{c.title}</div>
-              <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.6 }}>{c.body}</div>
+              <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 6 }}>{c.title}</div>
+              <div style={{ fontSize: 13, color: '#b0b0c8', lineHeight: 1.7 }}>{c.body}</div>
             </div>
           </div>
         </Card>
@@ -2822,10 +2822,10 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         ].map(c => (
           <div key={c.n} style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 16, padding: '13px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', alignItems: 'flex-start' }}>
             <div>
-              <div style={{ fontSize: 10, fontWeight: 800, color: A2, letterSpacing: '0.06em' }}>{c.n}</div>
-              <div style={{ fontSize: 10, color: '#404060', marginTop: 2 }}>{c.title}</div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: A, letterSpacing: '0.06em' }}>{c.n}</div>
+              <div style={{ fontSize: 11, color: '#8888aa', marginTop: 3 }}>{c.title}</div>
             </div>
-            <div style={{ fontSize: 13, color: '#a0a0c0', lineHeight: 1.65 }}>{c.body}</div>
+            <div style={{ fontSize: 14, color: '#d0d0e8', lineHeight: 1.75 }}>{c.body}</div>
           </div>
         ))}
       </Card>
@@ -2833,7 +2833,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
 
     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 16, marginTop: 8 }}>Novelty Statement</div>
     <Card style={{ marginBottom: 28 }}>
-      <p style={{ fontSize: 13, color: '#7070a0', lineHeight: 1.75, marginBottom: 16 }}>No known system combines all of the following in a single integrated pipeline:</p>
+      <p style={{ fontSize: 14, color: '#c0c0d8', lineHeight: 1.75, marginBottom: 16 }}>No known system combines all of the following in a single integrated pipeline:</p>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         {['Fuses job advert + CV data', 'Generates personalised readiness packs', 'Multi-portal readiness visibility', 'Integrates employer feedback', 'Triggers preparation from job listings', 'Magic Button — preparation at point of job discovery', 'Triggers preparation from recruiter actions', 'Branded tokenised email distribution pipeline', 'Real-time multi-portal engagement signals', 'Structured readiness scoring', 'Interview simulation with scoring overlays', 'Career pathway generation', 'Interview readiness infrastructure'].map(n => <Tag key={n} color="#22c55e">{n}</Tag>)}
       </div>
