@@ -15,6 +15,7 @@ const NAV_GROUPS = [
     { id: 'chair',              label: 'Interview Chair' },
     { id: 'learn',              label: 'Learn Engine' },
     { id: 'packs',              label: 'Interview Packs' },
+    { id: 'multi-stage',        label: '🔄 Multi-Stage Intelligence' },
     { id: 'rec-email',          label: '⭐ Recruiter Email' },
     { id: 'screens',            label: '🖥️ What It Looks Like' },
     { id: 'flow',               label: 'Flow Viewer' },
@@ -22,7 +23,6 @@ const NAV_GROUPS = [
     { id: 'career-tools',       label: 'Career Tools' },
     { id: 'skills-map',         label: '🗺️ Skills Map' },
     { id: 'candidate-services', label: 'Candidate Services' },
-    { id: 'multi-stage',        label: '🔄 Multi-Stage Intelligence' },
   ]},
   { title: 'Business Model', items: [
     { id: 'revenue',    label: 'Revenue Streams' },
@@ -1075,6 +1075,15 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         ))}
       </Card>
     </Grid>
+
+    <div style={{ marginTop: 8, background: 'rgba(123,92,245,0.06)', border: '1px solid rgba(123,92,245,0.2)', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{ fontSize: 22, flexShrink: 0 }}>🔄</div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#e0e0f0', marginBottom: 3 }}>Multi-Stage Intelligence — packs that evolve across rounds</div>
+        <div style={{ fontSize: 13, color: '#8080a8', lineHeight: 1.6 }}>Every platform generates one pack for one interview. Explain generates a new pack for each round — calibrated to the stage, and informed by what happened in previous rounds. Second interview? Tell us what was asked in Round 1. The AI uses that context to predict what comes next.</div>
+      </div>
+      <button onClick={() => {}} style={{ background: 'rgba(123,92,245,0.15)', border: '1px solid rgba(123,92,245,0.3)', borderRadius: 8, padding: '8px 14px', fontSize: 11, fontWeight: 700, color: '#A78BFA', cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}>See full spec →</button>
+    </div>
   </>,
 
   'rec-email': () => <>
