@@ -58,10 +58,10 @@ const A2 = '#7b5cf5';
 function SectionHead({ label, h1, h2, sub }: { label:string; h1:string; h2?:string; sub?:string }) {
   return (
     <div style={{ marginBottom: 40 }}>
-      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: A, marginBottom: 14 }}>{label}</div>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: A, marginBottom: 14 }}>{label}</div>
       <h1 style={{ fontSize: 'clamp(2rem,3.5vw,2.8rem)', fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.03em', margin: 0, marginBottom: h2 ? 4 : sub ? 16 : 0 }}>{h1}</h1>
       {h2 && <h2 style={{ fontSize: 'clamp(1.6rem,2.8vw,2.2rem)', fontWeight: 900, color: A, lineHeight: 1.1, letterSpacing: '-0.02em', margin: 0, marginBottom: sub ? 16 : 0 }}>{h2}</h2>}
-      {sub && <p style={{ fontSize: 15, color: '#7070a0', lineHeight: 1.75, maxWidth: 680, margin: 0 }}>{sub}</p>}
+      {sub && <p style={{ fontSize: 16, color: '#a0a0c0', lineHeight: 1.8, maxWidth: 680, margin: 0 }}>{sub}</p>}
     </div>
   );
 }
@@ -89,7 +89,7 @@ function Stat({ value, label, sub, color = A }: { value:string; label:string; su
     <Card>
       <div style={{ fontSize: 34, fontWeight: 900, color, letterSpacing: '-0.02em', marginBottom: 4 }}>{value}</div>
       <div style={{ fontSize: 13, fontWeight: 700, color: '#ddd', marginBottom: sub ? 3 : 0 }}>{label}</div>
-      {sub && <div style={{ fontSize: 11, color: '#505080' }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 14, color: '#a0a0c0' }}>{sub}</div>}
     </Card>
   );
 }
@@ -103,8 +103,8 @@ function Callout({ icon, title, body, color = A }: { icon:string; title:string; 
     }}>
       <span style={{ fontSize: 22, flexShrink: 0, lineHeight: 1.4 }}>{icon}</span>
       <div>
-        <div style={{ fontWeight: 700, color: '#fff', marginBottom: 5, fontSize: 14 }}>{title}</div>
-        <div style={{ fontSize: 13, color: '#8080a0', lineHeight: 1.65 }}>{body}</div>
+        <div style={{ fontWeight: 700, color: '#fff', marginBottom: 6, fontSize: 15 }}>{title}</div>
+        <div style={{ fontSize: 14, color: '#b0b0c8', lineHeight: 1.75 }}>{body}</div>
       </div>
     </div>
   );
@@ -115,8 +115,8 @@ function Feature({ icon, title, body }: { icon:string; title:string; body:string
     <div style={{ display: 'flex', gap: 14, marginBottom: 20 }}>
       <div style={{ width: 38, height: 38, borderRadius: 10, background: `${A}18`, border: `1px solid ${A}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{icon}</div>
       <div>
-        <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 3 }}>{title}</div>
-        <div style={{ fontSize: 13, color: '#7070a0', lineHeight: 1.6 }}>{body}</div>
+        <div style={{ fontWeight: 700, color: '#fff', fontSize: 15, marginBottom: 4 }}>{title}</div>
+        <div style={{ fontSize: 14, color: '#a0a0c0', lineHeight: 1.7 }}>{body}</div>
       </div>
     </div>
   );
@@ -124,7 +124,7 @@ function Feature({ icon, title, body }: { icon:string; title:string; body:string
 
 function Tag({ children, color = A }: { children:React.ReactNode; color?:string }) {
   return (
-    <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: `${color}18`, border: `1px solid ${color}35`, color }}>{children}</span>
+    <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 11px', borderRadius: 20, background: `${color}18`, border: `1px solid ${color}35`, color }}>{children}</span>
   );
 }
 
@@ -138,8 +138,8 @@ function StatusRow({ label, status }: { label:string; status:'live'|'beta'|'prog
   const s = map[status];
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-      <span style={{ fontSize: 13, color: '#ccc' }}>{label}</span>
-      <span style={{ fontSize: 11, fontWeight: 700, color: s.color, background: `${s.color}18`, border: `1px solid ${s.color}35`, borderRadius: 6, padding: '2px 10px' }}>{s.label}</span>
+      <span style={{ fontSize: 14, color: '#ddd' }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 700, color: s.color, background: `${s.color}18`, border: `1px solid ${s.color}35`, borderRadius: 6, padding: '3px 11px' }}>{s.label}</span>
     </div>
   );
 }
@@ -148,10 +148,10 @@ function BarRow({ year, arr, pct, agencies }: { year:string; arr:string; pct:num
   return (
     <div style={{ marginBottom: 18 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-        <span style={{ fontSize: 13, color: '#9090b0', fontWeight: 600 }}>{year}</span>
+        <span style={{ fontSize: 14, color: '#b0b0c8', fontWeight: 600 }}>{year}</span>
         <div style={{ display: 'flex', gap: 16 }}>
-          <span style={{ fontSize: 13, color: '#aaa' }}>{agencies} agencies</span>
-          <span style={{ fontSize: 13, fontWeight: 800, color: A }}>{arr}</span>
+          <span style={{ fontSize: 14, color: '#bbb' }}>{agencies} agencies</span>
+          <span style={{ fontSize: 14, fontWeight: 800, color: A }}>{arr}</span>
         </div>
       </div>
       <div style={{ height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden' }}>
@@ -206,7 +206,7 @@ function SkillsMapSection() {
 
     {/* Live demo */}
     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Live Demo — Candidate Skills Map</div>
-    <div style={{ fontSize: 12, color: '#505070', marginBottom: 20, display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+    <div style={{ fontSize: 14, color: '#8888a8', marginBottom: 20, display: 'flex', gap: 20, flexWrap: 'wrap' }}>
       {[['#22c55e','Strong (71–100%)'],['#f59e0b','Developing (41–70%)'],['#ef4444','Beginner (0–40%)']].map(([c,l]) => (
         <span key={l as string} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ width: 10, height: 10, borderRadius: 3, background: c as string, display: 'inline-block' }} />
@@ -246,11 +246,11 @@ function SkillsMapSection() {
     ) : (
       <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: 12, padding: 20, marginBottom: 32, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
         <div style={{ flex: '1 1 180px' }}>
-          <div style={{ fontSize: 11, color: '#505070', marginBottom: 6, fontWeight: 700 }}>Skill name</div>
+          <div style={{ fontSize: 13, color: '#8888a8', marginBottom: 6, fontWeight: 700 }}>Skill name</div>
           <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. React, Leadership, SQL…" style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'inherit' }} />
         </div>
         <div style={{ flex: '0 0 200px' }}>
-          <div style={{ fontSize: 11, color: '#505070', marginBottom: 6, fontWeight: 700 }}>Confidence level — <span style={{ color: skillColour(pct).text }}>{pct}% ({skillColour(pct).label})</span></div>
+          <div style={{ fontSize: 13, color: '#8888a8', marginBottom: 6, fontWeight: 700 }}>Confidence level — <span style={{ color: skillColour(pct).text }}>{pct}% ({skillColour(pct).label})</span></div>
           <input type="range" min={1} max={100} value={pct} onChange={e => setPct(+e.target.value)} style={{ width: '100%', accentColor: skillColour(pct).text }} />
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -324,7 +324,7 @@ function ScreensSection({ nav }: { nav: Nav }) {
     return (
       <div style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 10, fontWeight: 800, color: A, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 4 }}>{n} — {label}</div>
-        <div style={{ fontSize: 12, color: '#505070', fontStyle: 'italic' }}>{sub}</div>
+        <div style={{ fontSize: 14, color: '#8888a8', fontStyle: 'italic' }}>{sub}</div>
       </div>
     );
   }
@@ -343,7 +343,7 @@ function ScreensSection({ nav }: { nav: Nav }) {
           <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', marginBottom: 8, lineHeight: 1.2 }}>
             Your interview is on<br /><span style={{ color: A }}>12 August 2026.</span>
           </div>
-          <div style={{ fontSize: 12, color: '#7070a0', marginBottom: 24, lineHeight: 1.7 }}>
+          <div style={{ fontSize: 14, color: '#9090b0', marginBottom: 24, lineHeight: 1.7 }}>
             Vallum Consulting has activated 4 days of complimentary access to Explain.Global on your behalf.<br />Your personalised interview preparation is ready.
           </div>
           <div style={{ display: 'inline-flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 28 }}>
@@ -808,7 +808,7 @@ function SuccessCounter() {
       <div style={{ fontSize: 15, color: '#c0c8e0', fontWeight: 600, marginBottom: 8, lineHeight: 1.6 }}>
         candidates have found work after preparing with <span style={{ color: '#22c55e' }}>Explain.Global</span>
       </div>
-      <div style={{ fontSize: 13, color: '#6060a0', fontStyle: 'italic' }}>
+      <div style={{ fontSize: 14, color: '#9090b0', fontStyle: 'italic' }}>
         Most recently: <span style={{ color: A, fontWeight: 700 }}>{SUCCESS_NAMES[nameIdx]} from {SUCCESS_CITIES[cityIdx]}</span> — interview passed, offer received.
       </div>
     </div>
@@ -952,7 +952,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     {/* Employer Benefits subsection */}
     <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 16 }}>Employer Benefits — The Other Side of the Equation</div>
     <Card style={{ border: '1px solid rgba(34,197,94,0.2)', marginBottom: 24 }}>
-      <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, marginBottom: 18 }}>
+      <div style={{ fontSize: 14, color: '#a0a0c0', lineHeight: 1.7, marginBottom: 18 }}>
         Explain does not only serve candidates. Employers and hiring managers gain direct, structured value — improving the quality of every interview they run.
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -1009,7 +1009,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         ].map((s, i) => (
           <div key={s} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
             <div style={{ width: 22, height: 22, borderRadius: '50%', background: `${A}20`, border: `1px solid ${A}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: A, flexShrink: 0 }}>{i + 1}</div>
-            <span style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.5, paddingTop: 2 }}>{s}</span>
+            <span style={{ fontSize: 14, color: '#a0a0c0', lineHeight: 1.5, paddingTop: 2 }}>{s}</span>
           </div>
         ))}
       </Card>
@@ -1100,7 +1100,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
           { icon: '🎯', label: 'Personalised for the exact role' },
           { icon: '💷', label: 'Agency-funded, candidate-free' },
         ].map(b => (
-          <div key={b.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#9090b0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '6px 14px' }}>
+          <div key={b.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: '#a0a0c0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '6px 14px' }}>
             <span>{b.icon}</span> {b.label}
           </div>
         ))}
@@ -1120,7 +1120,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
           <Card key={c.label} accent="#ef4444">
             <div style={{ fontSize: 22, marginBottom: 8 }}>{c.icon}</div>
             <div style={{ fontWeight: 700, color: '#fff', fontSize: 13, marginBottom: 6 }}>{c.label}</div>
-            <div style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.6 }}>{c.body}</div>
+            <div style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.6 }}>{c.body}</div>
           </Card>
         ))}
       </Grid>
@@ -1186,11 +1186,11 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
             <p style={{ fontSize: 13, color: '#c0c8e0', margin: '0 0 18px', lineHeight: 1.7 }}>
               <strong style={{ color: '#fff' }}>Vallum Consulting</strong> has gifted you <strong style={{ color: A }}>4 days of full access</strong> to Explain.Global to prepare.
             </p>
-            <p style={{ fontSize: 13, color: '#9090b0', margin: '0 0 18px', lineHeight: 1.7 }}>Click below to begin your personalised interview readiness:</p>
+            <p style={{ fontSize: 14, color: '#a0a0c0', margin: '0 0 18px', lineHeight: 1.7 }}>Click below to begin your personalised interview readiness:</p>
             <div style={{ background: `linear-gradient(135deg, ${A}, ${A2})`, borderRadius: 10, padding: '12px 18px', textAlign: 'center', marginBottom: 18, cursor: 'pointer', boxShadow: `0 6px 24px ${A}35` }}>
               <span style={{ color: '#fff', fontWeight: 800, fontSize: 13, letterSpacing: '0.02em' }}>Start Preparing →</span>
             </div>
-            <div style={{ fontSize: 11, color: '#505070', lineHeight: 1.9 }}>
+            <div style={{ fontSize: 13, color: '#8888a8', lineHeight: 1.9 }}>
               You'll receive:<br />
               <span style={{ color: '#22c55e' }}>✓</span> Personalised interview pack for this exact role<br />
               <span style={{ color: '#22c55e' }}>✓</span> Personalised coaching and readiness score<br />
@@ -1296,7 +1296,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
           <blockquote style={{ fontSize: 17, fontStyle: 'italic', color: '#c8d0e0', lineHeight: 1.8, textAlign: 'center', borderLeft: `3px solid ${A2}`, paddingLeft: 20, margin: '0 0 20px' }}>
             "I've never felt this prepared for an interview in my life."
           </blockquote>
-          <div style={{ fontSize: 12, color: '#505070', textAlign: 'center' }}>— Gary Thompson, Software Engineer<br /><span style={{ color: A2 }}>Placed at DeepMind via Vallum Consulting</span></div>
+          <div style={{ fontSize: 14, color: '#8888a8', textAlign: 'center' }}>— Gary Thompson, Software Engineer<br /><span style={{ color: A2 }}>Placed at DeepMind via Vallum Consulting</span></div>
           <div style={{ marginTop: 20, padding: '14px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: 10 }}>
             <div style={{ fontSize: 11, color: '#7070a0', textAlign: 'center', lineHeight: 1.7 }}>
               Before Explain: second-guessing, scripted answers, interview panic.<br />
@@ -1367,12 +1367,12 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
               <div style={{ fontSize: 28, marginBottom: 8 }}>{r.icon}</div>
               <div style={{ fontSize: 10, fontWeight: 800, color: r.color, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{r.n} {r.stream}</div>
               <div style={{ fontSize: 26, fontWeight: 900, color: '#fff', marginBottom: 8 }}>{r.pct}</div>
-              <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.6 }}>{r.detail}</div>
+              <div style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.6 }}>{r.detail}</div>
             </div>
           ))}
         </Grid>
         <div style={{ marginTop: 24, padding: '16px 18px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(79,142,247,0.1)', borderRadius: 10 }}>
-          <div style={{ fontSize: 12, color: '#7070a0', textAlign: 'center', lineHeight: 1.8 }}>
+          <div style={{ fontSize: 14, color: '#9090b0', textAlign: 'center', lineHeight: 1.8 }}>
             At 100 recruiter sends/month: <span style={{ color: '#fff', fontWeight: 700 }}>35–50 pack purchases</span> + <span style={{ color: A2, fontWeight: 700 }}>10–20 premium upgrades</span> + <span style={{ color: '#22c55e', fontWeight: 700 }}>5–10 subscriptions</span><br />
             = <span style={{ color: '#fff', fontWeight: 800, fontSize: 14 }}>£325–£790 additional monthly revenue from one agency's send volume alone</span>
           </div>
@@ -1407,7 +1407,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         <div className="inv-2col">
           <div>
             <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', marginBottom: 8 }}>Vallum Consulting</div>
-            <div style={{ fontSize: 13, color: '#7070a0', lineHeight: 1.7, marginBottom: 16 }}>A leading UK recruitment agency specialising in technology and financial services placements. Vallum is the anchor case study for Explain's agency partnership model.</div>
+            <div style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.7, marginBottom: 16 }}>A leading UK recruitment agency specialising in technology and financial services placements. Vallum is the anchor case study for Explain's agency partnership model.</div>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#f59e0b', marginBottom: 12 }}>Projected Impact</div>
             {[
               { label: 'Monthly prep email sends',    value: '80–120' },
@@ -1532,7 +1532,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
             <div>
               <div style={{ fontSize: 30, marginBottom: 10 }}>{p.icon}</div>
               <div style={{ fontWeight: 800, fontSize: 16, color: '#fff', marginBottom: 6 }}>{p.title}</div>
-              <p style={{ fontSize: 13, color: '#7070a0', lineHeight: 1.6, margin: 0 }}>{p.desc}</p>
+              <p style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.6, margin: 0 }}>{p.desc}</p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               {p.features.map(f => (
@@ -1571,7 +1571,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
             <div>
               <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 2 }}>{r.stream}</div>
               <div style={{ fontSize: 11, fontWeight: 700, color: r.highlight ? '#22c55e' : A, marginBottom: 6 }}>{r.model}</div>
-              <div style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.6 }}>{r.detail}</div>
+              <div style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.6 }}>{r.detail}</div>
             </div>
           </div>
         </Card>
@@ -1708,7 +1708,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
             <div key={m.label} style={{ textAlign: 'center', padding: '20px 16px', background: `${A}06`, borderRadius: 12, border: `1px solid ${A}15` }}>
               <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 8 }}>{m.label}</div>
               <div style={{ fontSize: 30, fontWeight: 900, color: '#fff', marginBottom: 8 }}>{m.value}</div>
-              <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.6 }}>{m.desc}</div>
+              <div style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.6 }}>{m.desc}</div>
             </div>
           ))}
         </div>
@@ -1741,8 +1741,8 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
               <span style={{ marginLeft: 8 }}><Tag>{s.priority}</Tag></span>
             </div>
           </div>
-          <p style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.65, margin: '0 0 12px' }}>{s.body}</p>
-          <div style={{ display: 'flex', gap: 16, fontSize: 11, color: '#505070' }}>
+          <p style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.65, margin: '0 0 12px' }}>{s.body}</p>
+          <div style={{ display: 'flex', gap: 16, fontSize: 13, color: '#8888a8' }}>
             <span><span style={{ color: A }}>ARR</span> {s.arr}</span>
             <span><span style={{ color: A }}>Path</span> {s.path}</span>
           </div>
@@ -1806,7 +1806,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
             <div style={{ width: 28, height: 28, borderRadius: '50%', background: p.highlight ? 'rgba(34,197,94,0.15)' : `${A}15`, border: `1px solid ${p.highlight ? 'rgba(34,197,94,0.4)' : `${A}30`}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: p.highlight ? '#22c55e' : A, flexShrink: 0 }}>{p.n}</div>
             <div>
               <div style={{ fontWeight: 700, color: p.highlight ? '#22c55e' : '#fff', fontSize: 13, marginBottom: 4 }}>{p.title}</div>
-              <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.6 }}>{p.body}</div>
+              <div style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.6 }}>{p.body}</div>
             </div>
           </div>
         </Card>
@@ -1864,7 +1864,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
             <span style={{ fontSize: 24, flexShrink: 0 }}>{f.icon}</span>
             <div>
               <div style={{ fontWeight: 700, color: '#fff', fontSize: 13, marginBottom: 5 }}>{f.title}</div>
-              <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.65 }}>{f.body}</div>
+              <div style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.65 }}>{f.body}</div>
             </div>
           </div>
         </Card>
@@ -1873,7 +1873,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
 
     {/* §5 Revenue Model */}
     <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 16, marginTop: 8 }}>§5 — Institutional Revenue Model</div>
-    <div style={{ marginBottom: 8, fontSize: 13, color: '#7070a0', lineHeight: 1.7 }}>Government & institutional contracts generate revenue across six independent streams — making this one of Explain's largest long-term revenue engines.</div>
+    <div style={{ marginBottom: 8, fontSize: 14, color: '#9090b0', lineHeight: 1.7 }}>Government & institutional contracts generate revenue across six independent streams — making this one of Explain's largest long-term revenue engines.</div>
     <Grid cols={3}>
       {[
         { n: '①', label: 'Bulk Access Licences',      value: '£499–£4,999',    sub: 'Per programme', color: A },
@@ -1886,7 +1886,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         <Card key={r.n} accent={r.color}>
           <div style={{ fontSize: 11, fontWeight: 900, color: r.color, marginBottom: 4 }}>{r.n} {r.label}</div>
           <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', marginBottom: 2 }}>{r.value}</div>
-          <div style={{ fontSize: 11, color: '#505070' }}>{r.sub}</div>
+          <div style={{ fontSize: 13, color: '#8888a8' }}>{r.sub}</div>
         </Card>
       ))}
     </Grid>
@@ -1921,7 +1921,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', lineHeight: 1.5, marginBottom: 16, letterSpacing: '-0.02em' }}>
         "Explain.Global is built to give every person — regardless of background, circumstance, or challenge — the clarity and confidence to succeed in interviews."
       </div>
-      <div style={{ fontSize: 13, color: '#6060a0' }}>This is the heart of the mission.</div>
+      <div style={{ fontSize: 14, color: '#9090b0' }}>This is the heart of the mission.</div>
     </Card>
 
     {/* §8 The Displaced Worker Dataset */}
@@ -1983,7 +1983,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       <div style={{ fontSize: 14, color: '#c0c0e0', lineHeight: 1.8, marginBottom: 16 }}>
         The data Explain captures will reveal a pattern governments and employers have never been able to quantify: <span style={{ color: A2, fontWeight: 700 }}>many people are not out of work because of skill gaps — they are out of work because life broke first.</span>
       </div>
-      <div style={{ fontSize: 13, color: '#7070a0', lineHeight: 1.75 }}>
+      <div style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.75 }}>
         Burnout from working 17-hour days. A health crisis that forced a stop. A caring responsibility that took everything. These are not CV gaps — they are human stories. Cockpit's Work-Life Balance coaching module is built to meet people at this level: not with a tick-box assessment, but with a genuine, personalised framework for rebuilding a sustainable career on their own terms.
       </div>
     </Card>
@@ -2044,7 +2044,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         { label: 'Defensible Moat', body: 'Recruiter network effects. Once an agency embeds Explain in their workflow, switching cost is extremely high.' },
         { label: 'Category Creation', body: 'PIR does not yet have a named category. The first to name it, owns it. Explain names it.' },
         { label: 'Globalisation Architecture', body: '50+ languages from day one. Competitors built English-first and retro-fit localisation. We built global.' },
-      ].map(m => <Card key={m.label}><div style={{ fontWeight: 700, color: A, fontSize: 13, marginBottom: 6 }}>{m.label}</div><div style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.65 }}>{m.body}</div></Card>)}
+      ].map(m => <Card key={m.label}><div style={{ fontWeight: 700, color: A, fontSize: 13, marginBottom: 6 }}>{m.label}</div><div style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.65 }}>{m.body}</div></Card>)}
     </Grid>
   </>,
 
@@ -2090,7 +2090,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
           <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: 20 }}>
             <div>
               <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: p.color, marginBottom: 4 }}>{p.phase}</div>
-              <div style={{ fontSize: 12, color: '#505070', marginBottom: 8 }}>{p.period}</div>
+              <div style={{ fontSize: 14, color: '#8888a8', marginBottom: 8 }}>{p.period}</div>
               <div style={{ fontWeight: 800, color: '#fff', fontSize: 14, lineHeight: 1.3 }}>{p.title}</div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, alignContent: 'start' }}>
@@ -2152,7 +2152,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
               <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{c.title}</div>
             </div>
           </div>
-          <p style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.65, margin: 0 }}>{c.body}</p>
+          <p style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.65, margin: 0 }}>{c.body}</p>
         </Card>
       ))}
     </Grid>
@@ -2211,7 +2211,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     {/* §5 Revenue Streams */}
     <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>§5 — Investor Return Potential</div>
     <Card style={{ marginBottom: 28 }}>
-      <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, marginBottom: 16 }}>
+      <div style={{ fontSize: 14, color: '#a0a0c0', lineHeight: 1.7, marginBottom: 16 }}>
         This investment accelerates <span style={{ color: '#fff', fontWeight: 700 }}>all 8 revenue streams simultaneously</span>:
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -2299,7 +2299,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         <div style={{ fontSize: 14, color: '#c0c8e0', lineHeight: 1.85, marginBottom: 16 }}>
           Francis grew up seeing people struggle with interviews — not because they lacked ability, but because they lacked <span style={{ color: A, fontWeight: 700 }}>clarity, confidence, and support.</span>
         </div>
-        <div style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.8, marginBottom: 4 }}>He saw talented people fail interviews simply because:</div>
+        <div style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.8, marginBottom: 4 }}>He saw talented people fail interviews simply because:</div>
         {[
           "they didn't know what to say",
           "they didn't know how to structure answers",
@@ -2331,7 +2331,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         <div style={{ fontSize: 13, color: '#c0c8e0', lineHeight: 1.85, marginBottom: 16 }}>
           Francis spent years on dialysis — fighting through exhaustion, pain, and uncertainty — yet still <span style={{ color: A2, fontWeight: 700 }}>building, learning, and dreaming.</span>
         </div>
-        <div style={{ fontSize: 12, color: '#7070a0', marginBottom: 10 }}>Dialysis teaches you:</div>
+        <div style={{ fontSize: 14, color: '#9090b0', marginBottom: 10 }}>Dialysis teaches you:</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
           {['Patience','Resilience','Discipline','Clarity','Perspective','Empathy','The value of helping others','What anxiety feels like'].map(item => (
             <div key={item} style={{ display: 'flex', gap: 6, fontSize: 12, color: '#9090b0', marginBottom: 4 }}>
@@ -2341,7 +2341,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         </div>
       </Card>
       <Card style={{ background: `${A2}06`, border: `1px solid ${A2}20` }}>
-        <div style={{ fontSize: 12, color: '#7070a0', marginBottom: 14 }}>Explain.Global is built from that experience.</div>
+        <div style={{ fontSize: 14, color: '#9090b0', marginBottom: 14 }}>Explain.Global is built from that experience.</div>
         {[
           { label: 'Built to reduce anxiety', color: '#22c55e' },
           { label: 'Built to give clarity', color: A },
@@ -2390,7 +2390,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
               <span style={{ color: '#9090b0' }}>{r.action}</span>
             </div>
           ))}
-          <div style={{ marginTop: 14, fontSize: 12, color: '#7070a0', fontStyle: 'italic', lineHeight: 1.7 }}>
+          <div style={{ marginTop: 14, fontSize: 14, color: '#9090b0', fontStyle: 'italic', lineHeight: 1.7 }}>
             This is one of the most important parts of the mission — and one of the most defensible parts of the product.
           </div>
         </div>
@@ -2436,7 +2436,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 14 }}>
           Interview clarity should not be a privilege. It should be accessible to everyone.
         </div>
-        <div style={{ fontSize: 12, color: '#7070a0', marginBottom: 12 }}>Explain.Global is built to:</div>
+        <div style={{ fontSize: 14, color: '#9090b0', marginBottom: 12 }}>Explain.Global is built to:</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           {[
             {label:'Reduce anxiety',color:'#22c55e'},
@@ -2469,7 +2469,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     {/* §6 Why This Matters to Investors */}
     <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16, marginTop: 8 }}>§6 — Why This Matters to Investors</div>
     <Card style={{ marginBottom: 24 }}>
-      <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, marginBottom: 20 }}>
+      <div style={{ fontSize: 14, color: '#a0a0c0', lineHeight: 1.7, marginBottom: 20 }}>
         Investors do not just invest in products. They invest in founders with:
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
@@ -2551,7 +2551,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
           { from: 'Marketing Executive', to: ['Growth Manager', 'Product Analyst', 'Brand Strategist'], fit: 79 },
         ].map(p => (
           <div key={p.from} style={{ marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            <div style={{ fontSize: 12, color: '#7070a0', marginBottom: 6 }}>Starting from: <span style={{ color: '#ccc', fontWeight: 700 }}>{p.from}</span></div>
+            <div style={{ fontSize: 14, color: '#9090b0', marginBottom: 6 }}>Starting from: <span style={{ color: '#ccc', fontWeight: 700 }}>{p.from}</span></div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
               {p.to.map(r => <Tag key={r} color={A2}>{r}</Tag>)}
             </div>
@@ -2663,19 +2663,19 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
           <div style={{ fontSize: 22, marginBottom: 10 }}>🎯</div>
           <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', marginBottom: 6 }}>Explain.Global</div>
           <Tag color="#22c55e">Product 1 — Live Now</Tag>
-          <p style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.65, marginTop: 12 }}>Interview readiness, career tools, recruiter workflows, employer portals. The world's most comprehensive interview preparation and hiring intelligence platform.</p>
+          <p style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.65, marginTop: 12 }}>Interview readiness, career tools, recruiter workflows, employer portals. The world's most comprehensive interview preparation and hiring intelligence platform.</p>
         </Card>
         <Card accent={A2}>
           <div style={{ fontSize: 22, marginBottom: 10 }}>🧠</div>
           <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', marginBottom: 6 }}>Cockpit</div>
           <Tag color={A2}>Product 2 — In Design</Tag>
-          <p style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.65, marginTop: 12 }}>A life and career operating system. Goals, habits, learning, career history, interview records, recruiter interactions — all in one personal dashboard.</p>
+          <p style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.65, marginTop: 12 }}>A life and career operating system. Goals, habits, learning, career history, interview records, recruiter interactions — all in one personal dashboard.</p>
         </Card>
         <Card>
           <div style={{ fontSize: 22, marginBottom: 10 }}>🌍</div>
           <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', marginBottom: 6 }}>Future Products</div>
           <Tag color="#f59e0b">Horizon</Tag>
-          <p style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.65, marginTop: 12 }}>Further products within the Percentile.One ecosystem will be announced as the platform matures. The infrastructure being built today is designed to support them.</p>
+          <p style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.65, marginTop: 12 }}>Further products within the Percentile.One ecosystem will be announced as the platform matures. The infrastructure being built today is designed to support them.</p>
         </Card>
       </Grid>
     </div>
@@ -2844,17 +2844,17 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       <Card accent="#22c55e">
         <div style={{ fontSize: 22, marginBottom: 8 }}>🛡️</div>
         <div style={{ fontWeight: 700, color: '#22c55e', fontSize: 13, marginBottom: 6 }}>Defensibility</div>
-        <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.6 }}>Patent-pending status makes the core pipeline legally defensible against copycat platforms — creating a structural moat no amount of engineering spend can quickly replicate.</div>
+        <div style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.6 }}>Patent-pending status makes the core pipeline legally defensible against copycat platforms — creating a structural moat no amount of engineering spend can quickly replicate.</div>
       </Card>
       <Card accent={A2}>
         <div style={{ fontSize: 22, marginBottom: 8 }}>💷</div>
         <div style={{ fontWeight: 700, color: A2, fontSize: 13, marginBottom: 6 }}>R&D Tax Relief</div>
-        <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.6 }}>The qualifying R&D activity behind these inventions makes Explain eligible for HMRC R&D Tax Credit claims — reducing net development cost. Lawyers will advise on the Patent Box regime once patents are granted.</div>
+        <div style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.6 }}>The qualifying R&D activity behind these inventions makes Explain eligible for HMRC R&D Tax Credit claims — reducing net development cost. Lawyers will advise on the Patent Box regime once patents are granted.</div>
       </Card>
       <Card accent={A}>
         <div style={{ fontSize: 22, marginBottom: 8 }}>🌍</div>
         <div style={{ fontWeight: 700, color: A, fontSize: 13, marginBottom: 6 }}>Licensing Potential</div>
-        <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.6 }}>Granted patents create a licensing revenue stream — government platforms, enterprise HR systems, and international job boards may license the pipeline rather than build their own.</div>
+        <div style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.6 }}>Granted patents create a licensing revenue stream — government platforms, enterprise HR systems, and international job boards may license the pipeline rather than build their own.</div>
       </Card>
     </Grid>
 
