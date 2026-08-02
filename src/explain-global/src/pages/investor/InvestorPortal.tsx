@@ -20,6 +20,7 @@ const NAV_GROUPS = [
     { id: 'flow',               label: 'Flow Viewer' },
     { id: 'portals',            label: 'Portals' },
     { id: 'career-tools',       label: 'Career Tools' },
+    { id: 'skills-map',         label: '🗺️ Skills Map' },
     { id: 'candidate-services', label: 'Candidate Services' },
   ]},
   { title: 'Business Model', items: [
@@ -158,6 +159,122 @@ function BarRow({ year, arr, pct, agencies }: { year:string; arr:string; pct:num
       </div>
     </div>
   );
+}
+
+// ── SkillsMapSection — interactive competency map ────────────────────────────
+const DEMO_SKILLS = [
+  { name: 'C# / .NET',         pct: 95, wide: true  },
+  { name: 'SQL Server',         pct: 88, wide: false },
+  { name: 'Azure',              pct: 35, wide: false },
+  { name: 'React',              pct: 76, wide: false },
+  { name: 'TypeScript',         pct: 73, wide: false },
+  { name: 'System Architecture',pct: 91, wide: true  },
+  { name: 'Docker',             pct: 44, wide: false },
+  { name: 'Cloud Infra',        pct: 32, wide: false },
+  { name: 'Leadership',         pct: 87, wide: false },
+  { name: 'Communication',      pct: 94, wide: false },
+  { name: 'Project Mgmt',       pct: 79, wide: false },
+  { name: 'DevOps',             pct: 43, wide: false },
+  { name: 'Python',             pct: 28, wide: false },
+  { name: 'Agile / Scrum',      pct: 83, wide: false },
+];
+function skillColour(pct: number) {
+  if (pct >= 71) return { bg: 'rgba(34,197,94,0.10)', border: 'rgba(34,197,94,0.38)', text: '#22c55e', label: 'Strong' };
+  if (pct >= 41) return { bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.38)', text: '#f59e0b', label: 'Developing' };
+  return { bg: 'rgba(239,68,68,0.10)', border: 'rgba(239,68,68,0.38)', text: '#ef4444', label: 'Beginner' };
+}
+function SkillsMapSection() {
+  const [skills, setSkills] = useState(DEMO_SKILLS);
+  const [name, setName] = useState('');
+  const [pct, setPct] = useState(60);
+  const [adding, setAdding] = useState(false);
+  function addSkill() {
+    if (!name.trim()) return;
+    setSkills(s => [...s, { name: name.trim(), pct, wide: false }]);
+    setName(''); setPct(60); setAdding(false);
+  }
+  return <>
+    <SectionHead
+      label="Product · Skills Map"
+      h1="Your skills."
+      h2="One glance. Total clarity."
+      sub="Every candidate has a story their CV cannot tell. The Skills Map makes it visible in two seconds — colour-coded by strength, honest by design, and updated by the candidate themselves."
+    />
+
+    <Callout icon="🎯" title="The Problem This Solves" color={A}
+      body={'Every developer has said "I\'ve used Azure, but I\'m no expert — I\'ve only updated a permission." Every employer has wasted an interview finding that out. The Skills Map ends that conversation before it starts — with a single honest tile.'} />
+
+    {/* Live demo */}
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Live Demo — Candidate Skills Map</div>
+    <div style={{ fontSize: 12, color: '#505070', marginBottom: 20, display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+      {[['#22c55e','Strong (71–100%)'],['#f59e0b','Developing (41–70%)'],['#ef4444','Beginner (0–40%)']].map(([c,l]) => (
+        <span key={l as string} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 10, height: 10, borderRadius: 3, background: c as string, display: 'inline-block' }} />
+          <span style={{ color: '#7070a0' }}>{l as string}</span>
+        </span>
+      ))}
+    </div>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 24 }}>
+      {skills.map((s, i) => {
+        const c = skillColour(s.pct);
+        return (
+          <div key={i} style={{
+            gridColumn: s.wide ? 'span 2' : 'span 1',
+            background: c.bg, border: `1px solid ${c.border}`,
+            borderRadius: 12, padding: '14px 16px',
+            display: 'flex', flexDirection: 'column', gap: 6,
+            transition: 'transform 0.15s',
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#ddd', lineHeight: 1.3 }}>{s.name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ flex: 1, height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3 }}>
+                <div style={{ height: '100%', width: `${s.pct}%`, background: c.text, borderRadius: 3, transition: 'width 0.6s ease' }} />
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 900, color: c.text, minWidth: 34, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{s.pct}%</span>
+            </div>
+            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: c.text, opacity: 0.7 }}>{c.label}</div>
+          </div>
+        );
+      })}
+    </div>
+
+    {/* Add skill */}
+    {!adding ? (
+      <button onClick={() => setAdding(true)} style={{ background: `${A}12`, border: `1px solid ${A}30`, borderRadius: 10, padding: '11px 20px', color: A, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 32 }}>
+        + Add a skill to this map
+      </button>
+    ) : (
+      <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: 12, padding: 20, marginBottom: 32, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div style={{ flex: '1 1 180px' }}>
+          <div style={{ fontSize: 11, color: '#505070', marginBottom: 6, fontWeight: 700 }}>Skill name</div>
+          <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. React, Leadership, SQL…" style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'inherit' }} />
+        </div>
+        <div style={{ flex: '0 0 200px' }}>
+          <div style={{ fontSize: 11, color: '#505070', marginBottom: 6, fontWeight: 700 }}>Confidence level — <span style={{ color: skillColour(pct).text }}>{pct}% ({skillColour(pct).label})</span></div>
+          <input type="range" min={1} max={100} value={pct} onChange={e => setPct(+e.target.value)} style={{ width: '100%', accentColor: skillColour(pct).text }} />
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={addSkill} style={{ background: `linear-gradient(135deg,${A},${A2})`, border: 'none', borderRadius: 8, padding: '10px 18px', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Add</button>
+          <button onClick={() => setAdding(false)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '10px 14px', color: '#6060a0', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
+        </div>
+      </div>
+    )}
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 16 }}>Why the Skills Map Changes Everything</div>
+    <Grid cols={3}>
+      {[
+        { icon: '⚡', title: 'Two-Second Profile', body: 'Employers see the full picture in a glance. No CV digging. No assumptions. Just an honest, visual competency snapshot.' },
+        { icon: '🎯', title: 'Candidate Honesty', body: '"I know Azure but only at permission level." That nuance — currently invisible on CVs — is now visible. Honest candidates get better-matched roles.' },
+        { icon: '🔄', title: 'Self-Managed & Live', body: 'Candidates add and update their own skills. The map updates their profile instantly — across every portal that can see it.' },
+        { icon: '🏢', title: 'Employer Intelligence', body: 'Hiring managers filter by skill strength, not keyword. A recruiter sees 20 candidates mapped by Azure expertise — instantly sorted.' },
+        { icon: '🏛️', title: 'Government Ready', body: 'Job centres can see where a returning worker is strong and where they need support — in seconds, not after a 40-minute assessment.' },
+        { icon: '🧠', title: 'Cockpit Integration', body: 'In Cockpit, the Skills Map extends to life areas — health, finance, relationships, career — giving a full human competency picture.' },
+      ].map(f => <Card key={f.title}><Feature icon={f.icon} title={f.title} body={f.body} /></Card>)}
+    </Grid>
+
+    <Callout icon="🗺️" title="Beyond Skills — The Life Map" color={A2}
+      body="In Cockpit, the same map concept expands beyond professional skills into life areas: Work-Life Balance, Health, Finance, Family, Learning, Goals. A candidate who burned out working 17-hour days gets a Life Map that shows it — and gets coached on what to change. This is the bridge between interview readiness and human flourishing." />
+  </>;
 }
 
 // ── Section renderers ─────────────────────────────────────────────────────────
@@ -1799,13 +1916,84 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     </Card>
 
     {/* §7 Social Impact Statement */}
-    <Card style={{ background: `linear-gradient(135deg, ${A}08, ${A2}08)`, border: `1px solid ${A}20`, textAlign: 'center', padding: '32px 28px' }}>
+    <Card style={{ background: `linear-gradient(135deg, ${A}08, ${A2}08)`, border: `1px solid ${A}20`, textAlign: 'center', padding: '32px 28px', marginBottom: 32 }}>
       <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: A2, marginBottom: 16 }}>§7 — Social Impact Statement</div>
       <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', lineHeight: 1.5, marginBottom: 16, letterSpacing: '-0.02em' }}>
         "Explain.Global is built to give every person — regardless of background, circumstance, or challenge — the clarity and confidence to succeed in interviews."
       </div>
       <div style={{ fontSize: 13, color: '#6060a0' }}>This is the heart of the mission.</div>
     </Card>
+
+    {/* §8 The Displaced Worker Dataset */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 16 }}>§8 — The Displaced Worker Dataset: A Strategic Asset</div>
+    <Card style={{ background: 'rgba(34,197,94,0.04)', border: '1px solid rgba(34,197,94,0.18)', marginBottom: 24 }}>
+      <div style={{ fontSize: 14, color: '#c0d0c0', lineHeight: 1.8, marginBottom: 20 }}>
+        If Explain.Global secures contracts with job centres and local government, it will accumulate something no private platform has ever captured at scale: <span style={{ color: '#22c55e', fontWeight: 700 }}>outcome-correlated readiness data for people returning to work after life-altering events.</span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {[
+          'Long-term illness — including dialysis, cancer, chronic conditions',
+          'Caring responsibilities — returning after years out of the workforce',
+          'Disability — navigating hiring processes not designed for them',
+          'Redundancy — often after decades of unbroken employment',
+          'Bereavement — loss that forced a complete career reset',
+          'Mental health — returning with rebuilt confidence, no track record',
+          'Long-term unemployment — skills intact, confidence destroyed',
+          'Prison rehabilitation — re-entry with exceptional motivation and no pathway',
+        ].map(item => (
+          <div key={item} style={{ display: 'flex', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(34,197,94,0.07)', fontSize: 12 }}>
+            <span style={{ color: '#22c55e', flexShrink: 0 }}>→</span>
+            <span style={{ color: '#8090a0' }}>{item}</span>
+          </div>
+        ))}
+      </div>
+    </Card>
+
+    <Grid cols={2}>
+      <Card>
+        <div style={{ fontSize: 12, fontWeight: 800, color: A, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>What the Data Captures</div>
+        {[
+          'Preparation type vs. interview outcome — what actually works',
+          'Time-to-readiness by circumstance and starting point',
+          'Which employers and sectors are genuinely accessible',
+          'What preparation barriers exist for each population group',
+          'Government spend effectiveness — cost per successful placement',
+          'Question prediction accuracy over time — real-world validation',
+          'Ghosting patterns — when, why, and for whom they occur',
+          'Work-Life Balance indicators — burnout risk pre- and post-placement',
+        ].map(item => (
+          <div key={item} style={{ display: 'flex', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: 12 }}>
+            <span style={{ color: '#22c55e', flexShrink: 0 }}>✓</span>
+            <span style={{ color: '#8080a0' }}>{item}</span>
+          </div>
+        ))}
+      </Card>
+      <Card>
+        <div style={{ fontSize: 12, fontWeight: 800, color: '#22c55e', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>Why This Dataset is Irreplaceable</div>
+        <Feature icon="🛡️" title="No competitor can replicate it" body="Private platforms will never have access to this population at this scale. Government trust is earned, not bought — and Explain is building it now." />
+        <Feature icon="📊" title="Government has never had this data" body="Billions spent on employability annually with almost no outcome data. Explain closes the loop for the first time — preparation inputs mapped to real employment outcomes." />
+        <Feature icon="💰" title="The data itself has commercial value" body="Anonymised, aggregated, ethically governed — this dataset is valuable to researchers, policy makers, insurers, and training providers worldwide." />
+        <Feature icon="🔒" title="Patentable as a system" body="The outcome-correlated employability intelligence pipeline — capturing preparation data, interview outcome, and post-placement signals — is a distinct patentable claim." />
+      </Card>
+    </Grid>
+
+    {/* §9 Work-Life Balance Coaching */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A2, marginBottom: 16, marginTop: 8 }}>§9 — Work-Life Balance Coaching: The Human Layer</div>
+    <Card style={{ background: `linear-gradient(135deg, ${A2}06, rgba(34,197,94,0.04))`, border: `1px solid ${A2}20`, marginBottom: 24 }}>
+      <div style={{ fontSize: 14, color: '#c0c0e0', lineHeight: 1.8, marginBottom: 16 }}>
+        The data Explain captures will reveal a pattern governments and employers have never been able to quantify: <span style={{ color: A2, fontWeight: 700 }}>many people are not out of work because of skill gaps — they are out of work because life broke first.</span>
+      </div>
+      <div style={{ fontSize: 13, color: '#7070a0', lineHeight: 1.75 }}>
+        Burnout from working 17-hour days. A health crisis that forced a stop. A caring responsibility that took everything. These are not CV gaps — they are human stories. Cockpit's Work-Life Balance coaching module is built to meet people at this level: not with a tick-box assessment, but with a genuine, personalised framework for rebuilding a sustainable career on their own terms.
+      </div>
+    </Card>
+    <Grid cols={3}>
+      {[
+        { icon: '⚖️', title: 'Burnout Prevention', body: 'Coaching built on real outcome data — identifying the patterns that led to displacement and building safeguards against repetition.', color: A2 },
+        { icon: '🔄', title: 'Re-entry Confidence', body: 'Structured coaching for people returning after long absence — addressing the specific confidence and identity challenges of career re-entry.', color: A },
+        { icon: '🗺️', title: 'Life Map Integration', body: 'The Skills Map extends into the Life Map — health, finance, relationships, work, learning — giving a complete picture of where support is needed.', color: '#22c55e' },
+      ].map(f => <Card key={f.title} accent={f.color}><Feature icon={f.icon} title={f.title} body={f.body} /></Card>)}
+    </Grid>
   </>,
 
   'edge': () => <>
@@ -2395,6 +2583,8 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       body="Career Finder is the bridge between Explain and Cockpit — Percentile.One's second product. In Cockpit, career pathways, goals, habits, learning history, and interview records live in one unified life dashboard. Career Finder is where that journey begins." />
   </>,
 
+  'skills-map': () => <SkillsMapSection />,
+
   // ── Candidate Services ────────────────────────────────────────────────────────
   'candidate-services': () => <>
     <SectionHead
@@ -2627,6 +2817,8 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
           { n: 'Claim 7', title: 'Career Finder Claim', body: 'A method for generating personalised career pathways using competency mapping and readiness scoring.' },
           { n: 'Claim 8', title: 'Distribution Engine Claim', body: 'A computational method for delivering personalised interview preparation via a multi-step distribution pipeline: triggering from a recruiter action in a multi-tenant portal; simultaneously retrieving candidate profile and job specification; generating a personalised pack via a Fusion Algorithm; composing and dispatching a branded, agency-specific email; embedding a tokenised, time-limited candidate access link; pre-seeding the candidate account upon link activation; and transmitting real-time engagement signals to the originating recruiter portal and associated employer portal.' },
           { n: 'Claim 9', title: 'Magic Button — Job Board Embed Claim', body: 'A method for initiating a personalised interview preparation pipeline from within a third-party job listing, comprising: embedding an interactive trigger element within a live job listing on an external job board or careers page; extracting the full job specification from the listing URL upon activation by a candidate; retrieving or receiving the candidate\'s CV or profile data; generating a personalised interview readiness pack via a Fusion Algorithm; and delivering immediate preparation access to the candidate at the point of job discovery, prior to any application or recruiter involvement.' },
+          { n: 'Claim 10', title: 'Visual Competency Map Claim', body: 'A method for generating and displaying a visual, colour-coded competency map from candidate-supplied skill and confidence data, comprising: receiving skill name and confidence percentage inputs from a candidate; classifying each skill into a strength tier; rendering each skill as a visually distinct tile with colour encoding, percentage display, and strength label; aggregating all tiles into a structured visual map; and making that map available to candidates, recruiters, and employers through a multi-portal architecture as a real-time profile representation.' },
+          { n: 'Claim 11', title: 'Displaced Worker Outcome Intelligence Claim', body: 'A system for capturing, correlating, and aggregating outcome data from interview preparation sessions conducted for displaced worker populations, comprising: recording candidate circumstance at intake; tracking preparation type, session depth, and readiness score; correlating preparation data with interview outcome signals and employer feedback; generating anonymised outcome intelligence reports for government, institutional, and research use; and continuously refining preparation recommendations based on closed-loop outcome data — forming a proprietary employability intelligence dataset unavailable to any other platform.' },
         ].map(c => (
           <div key={c.n} style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 16, padding: '13px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', alignItems: 'flex-start' }}>
             <div>
