@@ -1517,44 +1517,175 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       label="Product · Portals"
       h1="Three portals."
       h2="One ecosystem."
-      sub="Candidate, Recruiter, and Company portals each serve a different stakeholder — but share one unified data layer. Everything connects."
+      sub="Candidate, Recruiter, and Employer portals serve three distinct stakeholders — but share one unified data layer. Every action in one portal creates a signal in another. Everything connects."
     />
-    <Grid cols={1} gap={20}>
-      {[
-        {
-          icon: '🎯', title: 'Candidate Portal', color: A,
-          desc: "The candidate's personal preparation command centre.",
-          features: ['Personal dashboard', 'Interview Pack library', 'Interview Chair access', 'Learn Engine & bookshelf', 'Flow Viewer — personal timeline', 'Session recordings & debriefs'],
-        },
-        {
-          icon: '🤝', title: 'Recruiter Portal', color: A2,
-          desc: 'Conversion intelligence for recruitment consultants.',
-          features: ['Candidate management', 'Send Interview Prep email (1-click)', 'Candidate prep analytics', 'Interview Pack builder', 'Agency branding controls', 'Placement pipeline tracker'],
-        },
-        {
-          icon: '🏢', title: 'Client / Employer Portal', color: '#22c55e',
-          desc: 'Structured hiring intelligence for HR teams and hiring managers. Clients see clearly who is coming to interview — and how prepared they are.',
-          features: ['Structured candidate profiles', 'Candidate readiness scores', 'Practice session scores', 'Structured feedback submission', 'Interview structure & question view', 'Candidate comparison view', 'Interview recording viewer (roadmap)', 'ATS integration (roadmap)'],
-        },
-      ].map(p => (
-        <Card key={p.title} accent={p.color}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 24 }}>
-            <div>
-              <div style={{ fontSize: 30, marginBottom: 10 }}>{p.icon}</div>
-              <div style={{ fontWeight: 800, fontSize: 16, color: '#fff', marginBottom: 6 }}>{p.title}</div>
-              <p style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.6, margin: 0 }}>{p.desc}</p>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-              {p.features.map(f => (
-                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#9090b0' }}>
-                  <span style={{ color: p.color }}>✓</span> {f}
-                </div>
-              ))}
-            </div>
+
+    {/* ── Recruiter Portal ──────────────────────────────────────────────────── */}
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: A2, marginBottom: 16 }}>Recruiter Portal</div>
+    <Callout icon="🤝" title="The world's most intelligent recruiter tool for interview preparation" color={A2}
+      body="Recruiters don't just send a prep link anymore. They trigger stage-specific preparation, capture previous interview context, send branded packs calibrated to the exact round, and receive structured employer feedback — all from one dashboard. No equivalent exists in any recruitment platform." />
+
+    <Grid cols={2} gap={16}>
+      <Card accent={A2}>
+        <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 12 }}>Dashboard — Total Visibility</div>
+        <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.65, marginBottom: 14 }}>Every candidate, every stage, every score — in one view. Recruiters see the full multi-round picture at a glance.</div>
+        {['All candidates & interview stages (1–6)', 'Readiness score per stage', 'Practice score per stage', 'Employer feedback received', 'Multi-stage progress timeline', 'Candidate history & session log', 'Interview-to-placement conversion rate'].map(f => (
+          <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#9090b0', padding: '4px 0' }}>
+            <span style={{ color: A2, flexShrink: 0 }}>✓</span>{f}
           </div>
-        </Card>
-      ))}
+        ))}
+      </Card>
+
+      <Card accent={A2}>
+        <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 12 }}>Multi-Stage Interview Trigger — New</div>
+        <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.65, marginBottom: 14 }}>Recruiters trigger stage-specific preparation with one action. The platform generates a pack calibrated precisely to that round.</div>
+        {[
+          { stage: 'Stage 1', desc: 'Screening — culture fit, motivation, narrative' },
+          { stage: 'Stage 2', desc: 'Technical — deeper knowledge, domain expertise' },
+          { stage: 'Stage 3', desc: 'Assessment — live coding, case study, presentation' },
+          { stage: 'Stage 4', desc: 'Senior — strategy, leadership, budget ownership' },
+          { stage: 'Stage 5+', desc: 'Board / executive — vision, executive presence' },
+        ].map(s => (
+          <div key={s.stage} style={{ display: 'flex', gap: 10, padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: 10, fontWeight: 800, color: A2, background: `${A2}18`, border: `1px solid ${A2}28`, borderRadius: 4, padding: '2px 6px', flexShrink: 0 }}>{s.stage}</span>
+            <span style={{ fontSize: 12, color: '#9090b0' }}>{s.desc}</span>
+          </div>
+        ))}
+      </Card>
     </Grid>
+
+    <Card style={{ marginBottom: 20 }}>
+      <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 6 }}>Multi-Stage Wizard — New</div>
+      <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.65, marginBottom: 16 }}>When triggering preparation, recruiters step through a four-stage wizard that captures everything the AI needs to build a round-specific pack.</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        {[
+          { step: '01', label: 'Select Stage', detail: 'Choose interview number (1–6). Everything downstream changes based on this.' },
+          { step: '02', label: 'Previous Round Notes', detail: 'If Stage > 1: recruiter enters questions asked, topics covered, candidate performance, feedback received, and difficulty level from prior rounds.' },
+          { step: '03', label: 'Confirm Role & Company', detail: 'Auto-extracted from the job specification. Company culture and sector influence pack style and depth.' },
+          { step: '04', label: 'AI Pack Generation', detail: 'Fusion Algorithm generates stage-specific questions, coaching, scoring rubric, simulation calibration, and a readiness score.' },
+        ].map(s => (
+          <div key={s.step} style={{ background: `${A2}08`, border: `1px solid ${A2}20`, borderRadius: 10, padding: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: A2, letterSpacing: '0.06em', marginBottom: 8 }}>STEP {s.step}</div>
+            <div style={{ fontWeight: 700, color: '#e0e0f0', fontSize: 13, marginBottom: 6 }}>{s.label}</div>
+            <div style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.6 }}>{s.detail}</div>
+          </div>
+        ))}
+      </div>
+    </Card>
+
+    <Grid cols={2} gap={16}>
+      <Card accent={A2}>
+        <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 12 }}>Employer Feedback Loop — New</div>
+        <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.65, marginBottom: 12 }}>Recruiters request structured feedback from employers after every interview. That feedback flows back into the candidate's next-stage pack.</div>
+        {['Request feedback from employer (1-click)', 'View structured feedback in dashboard', 'Send feedback summary to candidate', 'Integrate feedback into Stage N+1 pack', 'Track feedback response rate per employer', 'Eliminate ghosting — structured loop closes every round'].map(f => (
+          <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#9090b0', padding: '4px 0' }}>
+            <span style={{ color: A2, flexShrink: 0 }}>✓</span>{f}
+          </div>
+        ))}
+      </Card>
+
+      <Card accent={A2}>
+        <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 12 }}>Multi-Stage Readiness Analytics — New</div>
+        <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.65, marginBottom: 12 }}>Per-stage readiness scores give recruiters predictive intelligence before every round.</div>
+        {[
+          { label: 'Stage 1 Readiness', value: '82%', color: '#22c55e' },
+          { label: 'Stage 2 Readiness', value: '74%', color: A },
+          { label: 'Stage 3 Readiness', value: '61%', color: '#f59e0b' },
+          { label: 'Stage 4 Readiness', value: '—', color: '#5050a0' },
+          { label: 'Stage 5 Readiness', value: '—', color: '#5050a0' },
+        ].map(r => (
+          <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12 }}>
+            <span style={{ color: '#9090b0' }}>{r.label}</span>
+            <span style={{ fontWeight: 800, color: r.color }}>{r.value}</span>
+          </div>
+        ))}
+        <div style={{ fontSize: 12, color: '#6060a0', marginTop: 10, lineHeight: 1.55 }}>Helps recruiters predict pass likelihood, prepare candidates better, and reduce placement drop-off.</div>
+      </Card>
+    </Grid>
+
+    <Card style={{ marginBottom: 28 }}>
+      <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 6 }}>Updated Recruiter Email</div>
+      <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.65, marginBottom: 12 }}>The branded prep email — already a world-first — now includes stage-specific intelligence in every send.</div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {['Interview stage (e.g. "Your 3rd interview")', 'Stage-specific pack', 'Stage-specific coaching', 'Stage-specific readiness score', 'Employer feedback (if received)', 'Previous interview summary (if Stage > 1)', 'Time-limited tokenised access link'].map(t => <Tag key={t} color={A2}>{t}</Tag>)}
+      </div>
+    </Card>
+
+    {/* ── Employer / Client Portal ──────────────────────────────────────────── */}
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 16, marginTop: 8 }}>Employer / Client Portal</div>
+    <Callout icon="🏢" title="The first employer portal that shows interview readiness at every stage — not just a name on a shortlist" color="#22c55e"
+      body="Hiring managers have always received CVs. Explain gives them something far more valuable: a structured picture of how prepared each candidate is, at every stage of the process — with the ability to submit feedback that feeds directly into the next round." />
+
+    <Grid cols={2} gap={16}>
+      <Card accent="#22c55e">
+        <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 12 }}>Employer Dashboard — Updated</div>
+        {['All candidates & interview stages', 'Readiness score per stage', 'Practice score per stage', 'Structured interview packs', 'Feedback history per candidate', 'Simulation recordings (future)', 'Candidate comparison view', 'Stage-specific coaching summary'].map(f => (
+          <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#9090b0', padding: '4px 0' }}>
+            <span style={{ color: '#22c55e', flexShrink: 0 }}>✓</span>{f}
+          </div>
+        ))}
+      </Card>
+
+      <Card accent="#22c55e">
+        <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 12 }}>Multi-Stage Candidate Viewer — New</div>
+        <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.65, marginBottom: 12 }}>Employers click any candidate and see a stage-by-stage preparation profile:</div>
+        {['Stage 1', 'Stage 2', 'Stage 3', 'Stage 4', 'Stage 5'].map((s, i) => (
+          <div key={s} style={{ display: 'grid', gridTemplateColumns: '60px 1fr', gap: 10, padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: 10, fontWeight: 800, color: i < 3 ? '#22c55e' : '#404060', background: i < 3 ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.03)', border: `1px solid ${i < 3 ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.06)'}`, borderRadius: 4, padding: '2px 6px', textAlign: 'center' }}>{s}</span>
+            <span style={{ fontSize: 11, color: i < 3 ? '#9090b0' : '#404060' }}>{i < 3 ? 'Readiness · Practice · Pack · Coaching · Simulation' : 'Not yet triggered'}</span>
+          </div>
+        ))}
+      </Card>
+    </Grid>
+
+    <Card style={{ marginBottom: 20 }}>
+      <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 6 }}>Employer Feedback Submission — New</div>
+      <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.65, marginBottom: 16 }}>After every interview, employers submit structured feedback across eight dimensions. This feedback flows to the recruiter, to the candidate, and into the next-stage pack generation.</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
+        {['Clarity', 'Confidence', 'Relevance', 'Technical Depth', 'Cultural Fit', 'Communication', 'Strengths', 'Weaknesses'].map(d => (
+          <div key={d} style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.18)', borderRadius: 8, padding: '8px 10px', fontSize: 11, fontWeight: 700, color: '#22c55e', textAlign: 'center' }}>{d}</div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {['Pass / Fail decision', 'Next-stage recommendation', 'Flows to recruiter instantly', 'Flows to candidate (controlled)', 'Feeds into Stage N+1 pack', 'Eliminates ghosting', 'Reduces recruiter stress', 'Improves hiring decision quality'].map(t => <Tag key={t} color="#22c55e">{t}</Tag>)}
+      </div>
+    </Card>
+
+    <Grid cols={3} gap={16}>
+      <Card accent="#22c55e">
+        <div style={{ fontSize: 20, marginBottom: 10 }}>📊</div>
+        <div style={{ fontWeight: 700, color: '#22c55e', fontSize: 13, marginBottom: 6 }}>Practice Score Viewer</div>
+        <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.6 }}>Employers see candidates' practice session scores, readiness scores, and coaching feedback — making hiring decisions more objective and evidence-based.</div>
+      </Card>
+      <Card accent="#22c55e">
+        <div style={{ fontSize: 20, marginBottom: 10 }}>⚖️</div>
+        <div style={{ fontWeight: 700, color: '#22c55e', fontSize: 13, marginBottom: 6 }}>Candidate Comparison Tool</div>
+        <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.6 }}>Compare candidates side-by-side across readiness, practice scores, competencies, gap analysis, and simulation performance. Reduces bias. Improves shortlisting.</div>
+      </Card>
+      <Card accent="#22c55e" style={{ border: '1px dashed rgba(34,197,94,0.25)' }}>
+        <div style={{ fontSize: 20, marginBottom: 10 }}>🎥</div>
+        <div style={{ fontWeight: 700, color: '#22c55e', fontSize: 13, marginBottom: 6 }}>Interview Recording Viewer <Tag color="#f59e0b">Roadmap</Tag></div>
+        <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.6 }}>Employers will soon be able to watch candidate-approved simulation recordings. The hiring manager sees the candidate perform before the interview. A category-defining feature.</div>
+      </Card>
+    </Grid>
+
+    {/* ── Candidate Portal (brief) ──────────────────────────────────────────── */}
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: A, marginBottom: 16, marginTop: 8 }}>Candidate Portal</div>
+    <Card accent={A}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 24 }}>
+        <div>
+          <div style={{ fontWeight: 800, fontSize: 15, color: '#fff', marginBottom: 8 }}>Personal preparation command centre</div>
+          <p style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.65, margin: 0 }}>The candidate's home for every preparation session — past, present, and future. Multi-stage aware from day one.</p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+          {['Personal dashboard & session history', 'Interview Pack library (all rounds)', 'Interview Chair — AI simulation', 'Learn Engine & bookshelf', 'Flow Viewer — multi-stage timeline', 'Stage-specific readiness scores', 'Multi-stage wizard entry point', 'Previous round context capture'].map(f => (
+            <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#9090b0', padding: '3px 0' }}>
+              <span style={{ color: A, flexShrink: 0 }}>✓</span>{f}
+            </div>
+          ))}
+        </div>
+      </div>
+    </Card>
   </>,
 
   'revenue': () => <>
