@@ -575,7 +575,7 @@ export default function Home() {
         <div className="ph-c">
           <div className="ph-feat-head">
             <div className="ph-lbl ph-r" data-ph="">{t('learn.label')}</div>
-            <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">The <span style={{color:'#4F8EF7'}}>{t('learn.headline')}</span></h2>
+            <h2 className="ph-h-xl ph-r" data-ph="" data-d="1"><span style={{color:'#4F8EF7'}}>{t('learn.headline')}</span></h2>
             <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:'rgba(240,244,255,.65)',maxWidth:520,margin:'16px auto 0'}}>{t('learn.desc')}</p>
             <div className="ph-r" data-ph="" data-d="3" style={{marginTop:24,display:'flex',justifyContent:'center'}}>
               <button className="ph-btn-primary" onClick={() => navigate('/learn')}>{t('learn.cta')}</button>
