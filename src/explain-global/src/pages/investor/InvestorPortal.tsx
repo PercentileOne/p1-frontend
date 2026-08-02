@@ -2929,7 +2929,7 @@ export default function InvestorPortal() {
       {/* Logo */}
       <div style={{ padding: '22px 20px 18px' }}>
         <div style={{ fontWeight: 800, fontSize: 16, color: '#fff', letterSpacing: '-0.02em', marginBottom: 2 }}>
-          explain<span style={{ color: A }}>.global</span>
+          Explain<span style={{ color: A }}>.global</span>
         </div>
         <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#303055', marginBottom: 12 }}>
           Investor Portal
