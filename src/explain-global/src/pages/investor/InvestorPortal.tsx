@@ -22,6 +22,7 @@ const NAV_GROUPS = [
     { id: 'career-tools',       label: 'Career Tools' },
     { id: 'skills-map',         label: '🗺️ Skills Map' },
     { id: 'candidate-services', label: 'Candidate Services' },
+    { id: 'multi-stage',        label: '🔄 Multi-Stage Intelligence' },
   ]},
   { title: 'Business Model', items: [
     { id: 'revenue',    label: 'Revenue Streams' },
@@ -2647,6 +2648,123 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     </Grid>
   </>,
 
+  // ── Multi-Stage Interview Intelligence ────────────────────────────────────────
+  'multi-stage': () => <>
+    <SectionHead
+      label="Product · Innovation"
+      h1="Every platform prepares candidates for the interview."
+      h2="Explain prepares them for the process."
+      sub="Modern hiring is not a single event. Tech roles run 3–4 rounds. Senior roles run 4–5. VP and C-suite roles run 5–6. Government, banking, and consulting processes are often longer still. No platform has ever built for this reality — until now."
+    />
+
+    <Callout icon="🔄" title="The World's First Multi-Stage Interview Preparation Platform" color={A}
+      body="Explain.Global will be the only platform that prepares candidates for each individual interview round — using the context of what happened in previous rounds to predict what comes next, calibrate difficulty, and focus preparation precisely where it needs to be." />
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>What Each Stage Actually Tests</div>
+    <Grid cols={2}>
+      {[
+        { stage: '1st Interview', name: 'Screening / HR', tags: ['Culture fit', 'Motivation', 'Work history', 'Salary alignment'], focus: 'First impressions, narrative, and motivation. The interviewer is deciding if you belong in the process.' },
+        { stage: '2nd Interview', name: 'Technical / Panel', tags: ['Deep knowledge', 'Domain expertise', 'Problem-solving', 'Stack specifics'], focus: 'Depth replaces breadth. Topics from Round 1 are revisited — harder, more specific, with less room to generalise.' },
+        { stage: '3rd Interview', name: 'Practical / Assessment', tags: ['Live coding', 'Case study', 'Presentation', 'System design'], focus: 'Execution under pressure. Can you actually do the job — live, in the room, with someone watching the clock?' },
+        { stage: '4th Interview', name: 'Senior / Director', tags: ['Strategic thinking', 'Budget ownership', 'Team leadership', 'Commercial acumen'], focus: 'Vision and ownership. You are being evaluated on whether you can run something, not just contribute to it.' },
+        { stage: '5th Interview', name: 'Board / Executive Final', tags: ['Executive presence', 'Culture at scale', 'Negotiation', 'Regulatory fit'], focus: 'The final buy-in. Often the most political and least predictable — judgement, presence, and gravitas matter most.' },
+        { stage: '6th Interview', name: 'Panel / Extended Process', tags: ['Endurance', 'Consistency', 'Stakeholder alignment', 'Cross-functional fit'], focus: 'Usually reserved for senior hires in financial services, government, and regulated industries. The question is whether you are the same person in every room.' },
+      ].map(s => (
+        <Card key={s.stage}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 10 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: A, background: `${A}18`, border: `1px solid ${A}30`, borderRadius: 6, padding: '4px 10px', flexShrink: 0, whiteSpace: 'nowrap' }}>{s.stage}</div>
+            <div style={{ fontWeight: 700, color: '#fff', fontSize: 13 }}>{s.name}</div>
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+            {s.tags.map(t => <Tag key={t}>{t}</Tag>)}
+          </div>
+          <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.65 }}>{s.focus}</div>
+        </Card>
+      ))}
+    </Grid>
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>The Wizard Flow</div>
+    <Card style={{ marginBottom: 28 }}>
+      {[
+        { step: 'Step 1', label: 'Which interview is this?', detail: 'Candidate selects: 1st / 2nd / 3rd / 4th / 5th / 6th interview. This single input immediately changes everything that follows.' },
+        { step: 'Step 1.5', label: 'Previous round context', detail: 'Appears only if Stage > 1. Captures: what questions were asked, what topics came up, what the candidate struggled with, what feedback was given, who interviewed them, and what the format was. Any signal that "they said they\'d go deeper on X next time" is gold.' },
+        { step: 'Step 2', label: 'Company', detail: 'Usually pre-filled from the job specification. Company culture and sector directly influence question style, expected depth, and interviewer behaviour.' },
+        { step: 'Step 3', label: 'Role / Job Spec / CV', detail: 'The existing Explain Fusion inputs — job specification and candidate CV. Now fused alongside stage and prior context.' },
+        { step: 'Step 4', label: 'AI Fusion Call', detail: 'The AI receives everything: stage ordinal, previous round signals, company, role, job spec, CV, seniority. It generates a pack that is calibrated specifically to this stage of this process — not a generic interview pack.' },
+      ].map(s => (
+        <div key={s.step} style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: 16, padding: '13px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', alignItems: 'flex-start' }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 800, color: A, letterSpacing: '0.06em' }}>{s.step}</div>
+            <div style={{ fontSize: 11, color: '#8888aa', marginTop: 3 }}>{s.label}</div>
+          </div>
+          <div style={{ fontSize: 14, color: '#d0d0e8', lineHeight: 1.75 }}>{s.detail}</div>
+        </div>
+      ))}
+    </Card>
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 16 }}>The Data Asset Nobody Else Can Build</div>
+    <Card accent="#22c55e" style={{ marginBottom: 28 }}>
+      <p style={{ fontSize: 14, color: '#c0c0d8', lineHeight: 1.75, marginBottom: 16 }}>Every time a candidate tells Explain what was asked in their previous interview round, the platform adds to a proprietary, anonymised dataset that no other company has:</p>
+      <Grid cols={2} gap={12}>
+        {[
+          { icon: '📊', title: 'Stage-Question Mapping', body: 'Which specific questions appear at Stage 2 vs Stage 4, for a Senior Developer role at a FTSE 100 bank.' },
+          { icon: '📈', title: 'Competency Escalation Patterns', body: 'How interview difficulty and focus escalate from round to round, by role type and seniority level.' },
+          { icon: '🏢', title: 'Company Behaviour Intelligence', body: 'What Barclays\'s Stage 3 actually looks like vs KPMG vs a Series B startup — built from real candidate reports.' },
+          { icon: '⚠️', title: 'Struggle Correlation', body: 'Where candidates consistently struggle at Stage 3 becomes a predictive signal that improves coaching for all future candidates at that stage.' },
+          { icon: '🔮', title: 'Predictive Question Model', body: 'The Question Likelihood Model becomes more accurate over time — a self-reinforcing moat that grows with every session.' },
+          { icon: '🏛️', title: 'Sector Intelligence', body: 'Financial services processes look different to government, which look different to consulting. The dataset captures all of it.' },
+        ].map(f => (
+          <div key={f.title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <div style={{ fontSize: 20, flexShrink: 0 }}>{f.icon}</div>
+            <div>
+              <div style={{ fontWeight: 700, color: '#22c55e', fontSize: 13, marginBottom: 4 }}>{f.title}</div>
+              <div style={{ fontSize: 13, color: '#8888aa', lineHeight: 1.6 }}>{f.body}</div>
+            </div>
+          </div>
+        ))}
+      </Grid>
+      <div style={{ marginTop: 16, padding: '12px 16px', background: 'rgba(34,197,94,0.06)', borderRadius: 10, border: '1px solid rgba(34,197,94,0.2)' }}>
+        <div style={{ fontSize: 13, color: '#22c55e', fontWeight: 700, marginBottom: 4 }}>This data is impossible to replicate without candidates.</div>
+        <div style={{ fontSize: 13, color: '#8888aa', lineHeight: 1.6 }}>A competitor building this feature today starts with zero data. Explain starts building the dataset from day one. The longer the platform runs, the more accurate the predictions — and the wider the moat.</div>
+      </div>
+    </Card>
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Stage-Specific Readiness Scoring</div>
+    <Card style={{ marginBottom: 28 }}>
+      <p style={{ fontSize: 14, color: '#c0c0d8', lineHeight: 1.75, marginBottom: 16 }}>Readiness is no longer a single score. Multi-stage creates a per-round profile:</p>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        {['Stage 1 Readiness', 'Stage 2 Readiness', 'Stage 3 Readiness', 'Stage 4 Readiness', 'Stage 5 Readiness', 'Stage 6 Readiness'].map((s) => (
+          <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8, background: `${A}0a`, border: `1px solid ${A}25`, borderRadius: 8, padding: '8px 14px' }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: A }}>{s}</div>
+            <div style={{ fontSize: 11, color: '#7070a0' }}>→ score, gaps, coaching</div>
+          </div>
+        ))}
+      </div>
+      <p style={{ fontSize: 13, color: '#7070a0', lineHeight: 1.65, marginTop: 14, marginBottom: 0 }}>Recruiters see stage-specific readiness before forwarding a candidate. Employers see stage-by-stage preparation depth. Candidates see exactly where they need to improve before their next round.</p>
+    </Card>
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Business Impact</div>
+    <Grid cols={3}>
+      <Card accent="#22c55e">
+        <div style={{ fontSize: 22, marginBottom: 8 }}>💰</div>
+        <div style={{ fontWeight: 700, color: '#22c55e', fontSize: 13, marginBottom: 6 }}>More Revenue Per Candidate</div>
+        <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.6 }}>One hire process = 3–6 revenue events instead of 1. A candidate who reaches Round 5 at Barclays buys 5 separate packs.</div>
+      </Card>
+      <Card accent={A}>
+        <div style={{ fontSize: 22, marginBottom: 8 }}>🔒</div>
+        <div style={{ fontWeight: 700, color: A, fontSize: 13, marginBottom: 6 }}>Retained Across the Process</div>
+        <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.6 }}>A candidate who gets a Stage 2 invitation is anxious and has nowhere else to go. Explain is the only platform that meets them there.</div>
+      </Card>
+      <Card accent={A2}>
+        <div style={{ fontSize: 22, marginBottom: 8 }}>📡</div>
+        <div style={{ fontWeight: 700, color: A2, fontSize: 13, marginBottom: 6 }}>Recruiter & Employer Signal</div>
+        <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.6 }}>A candidate who prepared for Stage 3 is a serious candidate. Stage-specific preparation depth becomes a recruiter-visible signal of commitment.</div>
+      </Card>
+    </Grid>
+
+    <Callout icon="⚔️" title="Explain.Global is the world's first platform that prepares candidates for multi-stage interview processes — using previous round context to predict what comes next, and building a proprietary question intelligence dataset that no competitor can replicate without years of candidate data." color={A2} body="" />
+  </>,
+
   // ── Future Plans ──────────────────────────────────────────────────────────────
   'future-plans': () => <>
     <SectionHead
@@ -2774,7 +2892,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       <p style={{ fontSize: 14, color: '#c0c0d8', lineHeight: 1.75, marginTop: 16, marginBottom: 0 }}>The invention produces a technical effect by transforming unstructured text inputs and multi-party workflow triggers into structured, personalised interview readiness outputs.</p>
     </Card>
 
-    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>The 14 Patentable Components</div>
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>The 15 Patentable Components</div>
     <Grid cols={2}>
       {[
         { n: '01', title: 'Job Advert Parsing Engine', body: 'Extracts competencies, responsibilities, and seniority from job URLs or raw specs — generating structured competency maps.' },
@@ -2791,6 +2909,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         { n: '12', title: 'Multi-Portal Architecture', body: 'Candidate, Recruiter, and Employer portals share structured readiness data through a unified multi-tenant SaaS system.' },
         { n: '13', title: 'Career Finder Engine', body: 'Uses competency mapping to suggest career pathways, roles, and personalised learning modules beyond the immediate role.' },
         { n: '14', title: 'Cockpit Integration Layer', body: 'Future integration with Percentile.One\'s Cockpit operating system for multi-product ecosystem expansion and lifelong career intelligence.' },
+        { n: '15', title: 'Multi-Stage Interview Intelligence Engine', body: 'A pipeline that generates stage-aware, context-cumulative interview preparation packs for multi-round hiring processes. Receives the interview stage ordinal (1st through 6th); conditionally captures structured data about previous interview rounds when stage > 1 (questions asked, topics covered, candidate struggles, interviewer focus, format, feedback received); fuses all prior context with job specification, CV, seniority, and company profile; generates a pack calibrated to the specific demands of the stated stage — suppressing questions appropriate to earlier stages, amplifying depth and difficulty in proportion to stage number, and predicting escalated competency areas. All candidate-reported previous interview data is aggregated into a proprietary, anonymised multi-stage intelligence dataset — a continuously self-improving corpus of which questions appear at which stage, for which role, in which sector — unavailable to any other platform.' },
       ].map(c => (
         <Card key={c.n}>
           <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
@@ -2819,6 +2938,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
           { n: 'Claim 9', title: 'Magic Button — Job Board Embed Claim', body: 'A method for initiating a personalised interview preparation pipeline from within a third-party job listing, comprising: embedding an interactive trigger element within a live job listing on an external job board or careers page; extracting the full job specification from the listing URL upon activation by a candidate; retrieving or receiving the candidate\'s CV or profile data; generating a personalised interview readiness pack via a Fusion Algorithm; and delivering immediate preparation access to the candidate at the point of job discovery, prior to any application or recruiter involvement.' },
           { n: 'Claim 10', title: 'Visual Competency Map Claim', body: 'A method for generating and displaying a visual, colour-coded competency map from candidate-supplied skill and confidence data, comprising: receiving skill name and confidence percentage inputs from a candidate; classifying each skill into a strength tier; rendering each skill as a visually distinct tile with colour encoding, percentage display, and strength label; aggregating all tiles into a structured visual map; and making that map available to candidates, recruiters, and employers through a multi-portal architecture as a real-time profile representation.' },
           { n: 'Claim 11', title: 'Displaced Worker Outcome Intelligence Claim', body: 'A system for capturing, correlating, and aggregating outcome data from interview preparation sessions conducted for displaced worker populations, comprising: recording candidate circumstance at intake; tracking preparation type, session depth, and readiness score; correlating preparation data with interview outcome signals and employer feedback; generating anonymised outcome intelligence reports for government, institutional, and research use; and continuously refining preparation recommendations based on closed-loop outcome data — forming a proprietary employability intelligence dataset unavailable to any other platform.' },
+          { n: 'Claim 12', title: 'Multi-Stage Interview Preparation Engine', body: 'A computational method for generating stage-aware, context-cumulative interview readiness packs for multi-round hiring processes, comprising: receiving a candidate-specified interview stage ordinal; conditionally receiving structured and unstructured data describing prior interview interactions when the stage ordinal exceeds one, including question topics, interviewer focus areas, candidate-reported struggles, format type, and any feedback received; fusing the interview stage, prior interaction data, job specification, candidate profile, and company context using a weighted intelligence model; generating a preparation pack calibrated to the specific demands of the specified interview stage; suppressing questions and content appropriate to earlier stages; amplifying preparation depth, specificity, and difficulty in proportion to the stage ordinal; predicting escalated competency areas based on prior round signals; and aggregating all candidate-reported prior interview data into a continuously self-improving, anonymised multi-stage intelligence corpus that increases question-prediction accuracy across role types and sectors over time.' },
         ].map(c => (
           <div key={c.n} style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 16, padding: '13px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', alignItems: 'flex-start' }}>
             <div>
@@ -2835,7 +2955,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     <Card style={{ marginBottom: 28 }}>
       <p style={{ fontSize: 14, color: '#c0c0d8', lineHeight: 1.75, marginBottom: 16 }}>No known system combines all of the following in a single integrated pipeline:</p>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {['Fuses job advert + CV data', 'Generates personalised readiness packs', 'Multi-portal readiness visibility', 'Integrates employer feedback', 'Triggers preparation from job listings', 'Magic Button — preparation at point of job discovery', 'Triggers preparation from recruiter actions', 'Branded tokenised email distribution pipeline', 'Real-time multi-portal engagement signals', 'Structured readiness scoring', 'Interview simulation with scoring overlays', 'Career pathway generation', 'Interview readiness infrastructure'].map(n => <Tag key={n} color="#22c55e">{n}</Tag>)}
+        {['Fuses job advert + CV data', 'Generates personalised readiness packs', 'Multi-portal readiness visibility', 'Integrates employer feedback', 'Triggers preparation from job listings', 'Magic Button — preparation at point of job discovery', 'Triggers preparation from recruiter actions', 'Branded tokenised email distribution pipeline', 'Real-time multi-portal engagement signals', 'Structured readiness scoring', 'Interview simulation with scoring overlays', 'Career pathway generation', 'Interview readiness infrastructure', 'Multi-stage interview intelligence', 'Previous round context capture', 'Stage-escalating question prediction', 'Proprietary multi-stage question dataset'].map(n => <Tag key={n} color="#22c55e">{n}</Tag>)}
       </div>
     </Card>
 

@@ -14,6 +14,7 @@
       "Bash(cp *)",
       "Bash(mv *)",
       "Bash(rm *)",
+      "Bash(*)",
       "PowerShell(cd *)",
       "PowerShell(npm *)",
       "PowerShell(npx *)",

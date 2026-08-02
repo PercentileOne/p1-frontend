@@ -23,5 +23,19 @@
       "port": 5175,
       "cwd": "src/explain-global"
     }
+  ,{
+      "name": "explain-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5176,
+      "cwd": "src/frontend"
+    }
+  ,{
+      "name": "explain-global-platform",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5177,
+      "cwd": "C:\\Develop\\PercentileOne\\explain-global-platform"
+    }
   ]
 }

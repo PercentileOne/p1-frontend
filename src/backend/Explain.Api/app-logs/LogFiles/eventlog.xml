@@ -1,0 +1,102 @@
+<Events><Event><System><Provider Name=".NET Runtime"/><EventID>1000</EventID><Level>2</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T21:30:15Z"/><EventRecordID>34168546</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Category: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager
+EventId: 35
+
+No XML encryptor configured. Key {a01a3cb9-6897-494c-a99f-6a991b47cfb2} may be persisted to storage in unencrypted form.
+</Data></EventData></Event><Event><System><Provider Name="IIS AspNetCore Module V2"/><EventID>1032</EventID><Level>4</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T21:30:15Z"/><EventRecordID>34169062</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Application 'C:\Program Files (x86)\SiteExtensions\ApplicationInsightsAgent\2.8.47\ExtensionManager\' started successfully.</Data><Data>Process Id: 2940.</Data><Data>File Version: 13.1.22321.32. Description: IIS ASP.NET Core Module V2 Request Handler. Commit: 3eeb12e106b9e913c3a4dec1a7d16da7b74149eb</Data></EventData></Event><Event><System><Provider Name="IIS AspNetCore Module V2"/><EventID>1033</EventID><Level>4</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T21:37:20Z"/><EventRecordID>34593296</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Application 'MACHINE/WEBROOT/APPHOST/~1EXPLAIN-GLOBAL-API/APPLICATIONINSIGHTS' has shutdown.</Data><Data>Process Id: 2940.</Data><Data>File Version: 13.1.22321.32. Description: IIS ASP.NET Core Module V2 Request Handler. Commit: 3eeb12e106b9e913c3a4dec1a7d16da7b74149eb</Data></EventData></Event><Event><System><Provider Name="IIS AspNetCore Module V2"/><EventID>1032</EventID><Level>4</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T21:37:23Z"/><EventRecordID>34596687</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Application 'C:\Program Files (x86)\SiteExtensions\ApplicationInsightsAgent\2.8.47\ExtensionManager\' started successfully.</Data><Data>Process Id: 4808.</Data><Data>File Version: 13.1.22321.32. Description: IIS ASP.NET Core Module V2 Request Handler. Commit: 3eeb12e106b9e913c3a4dec1a7d16da7b74149eb</Data></EventData></Event><Event><System><Provider Name="IIS AspNetCore Module V2"/><EventID>1033</EventID><Level>4</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T21:38:55Z"/><EventRecordID>34688359</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Application 'MACHINE/WEBROOT/APPHOST/~1EXPLAIN-GLOBAL-API/APPLICATIONINSIGHTS' has shutdown.</Data><Data>Process Id: 4808.</Data><Data>File Version: 13.1.22321.32. Description: IIS ASP.NET Core Module V2 Request Handler. Commit: 3eeb12e106b9e913c3a4dec1a7d16da7b74149eb</Data></EventData></Event><Event><System><Provider Name="IIS AspNetCore Module V2"/><EventID>1032</EventID><Level>4</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T21:38:58Z"/><EventRecordID>34691359</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Application 'C:\Program Files (x86)\SiteExtensions\ApplicationInsightsAgent\2.8.47\ExtensionManager\' started successfully.</Data><Data>Process Id: 1644.</Data><Data>File Version: 13.1.22321.32. Description: IIS ASP.NET Core Module V2 Request Handler. Commit: 3eeb12e106b9e913c3a4dec1a7d16da7b74149eb</Data></EventData></Event><Event><System><Provider Name="IIS AspNetCore Module V2"/><EventID>1033</EventID><Level>4</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T21:46:35Z"/><EventRecordID>35149000</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Application 'MACHINE/WEBROOT/APPHOST/~1EXPLAIN-GLOBAL-API/APPLICATIONINSIGHTS' has shutdown.</Data><Data>Process Id: 1644.</Data><Data>File Version: 13.1.22321.32. Description: IIS ASP.NET Core Module V2 Request Handler. Commit: 3eeb12e106b9e913c3a4dec1a7d16da7b74149eb</Data></EventData></Event><Event><System><Provider Name="IIS AspNetCore Module V2"/><EventID>1032</EventID><Level>4</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T21:46:38Z"/><EventRecordID>35151843</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Application 'C:\Program Files (x86)\SiteExtensions\ApplicationInsightsAgent\2.8.47\ExtensionManager\' started successfully.</Data><Data>Process Id: 7124.</Data><Data>File Version: 13.1.22321.32. Description: IIS ASP.NET Core Module V2 Request Handler. Commit: 3eeb12e106b9e913c3a4dec1a7d16da7b74149eb</Data></EventData></Event><Event><System><Provider Name=".NET Runtime"/><EventID>1026</EventID><Level>1</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T22:16:23Z"/><EventRecordID>36936500</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Application: w3wp.exe
+CoreCLR Version: 10.0.1026.32716
+.NET Version: 10.0.10
+Description: The process was terminated due to an unhandled exception.
+Exception Info: System.ArgumentNullException: Value cannot be null. (Parameter 'authKeyOrResourceToken')
+   at Microsoft.Azure.Cosmos.AuthorizationTokenProvider.CreateWithResourceTokenOrAuthKey(String authKeyOrResourceToken)
+   at Microsoft.Azure.Cosmos.CosmosClient..ctor(String accountEndpoint, String authKeyOrResourceToken, CosmosClientOptions clientOptions)
+   at Explain.Api.Infrastructure.Cosmos.CosmosService..ctor(IConfiguration config) in C:\Develop\PercentileOne\P1\src\backend\Explain.Api\Infrastructure\Cosmos\CosmosService.cs:line 13
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitRootCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.CreateServiceAccessor(ServiceIdentifier serviceIdentifier)
+   at System.Collections.Concurrent.ConcurrentDictionary`2.GetOrAdd(TKey key, Func`2 valueFactory)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService(IServiceProvider provider, Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService[T](IServiceProvider provider)
+   at Program.&lt;Main&gt;$(String[] args) in C:\Develop\PercentileOne\P1\src\backend\Explain.Api\Program.cs:line 59
+   at Program.&lt;Main&gt;(String[] args)
+</Data></EventData></Event><Event><System><Provider Name="IIS AspNetCore Module V2"/><EventID>1018</EventID><Level>1</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T22:16:23Z"/><EventRecordID>36936500</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Application '/LM/W3SVC/1205343104/ROOT' with physical root 'C:\home\site\wwwroot\' hit unexpected managed exception, exception code = '0xe0434352'. First 30KB characters of captured stdout and stderr logs:
+Unhandled exception. System.ArgumentNullException: Value cannot be null. (Parameter 'authKeyOrResourceToken')
+   at Microsoft.Azure.Cosmos.AuthorizationTokenProvider.CreateWithResourceTokenOrAuthKey(String authKeyOrResourceToken)
+   at Microsoft.Azure.Cosmos.CosmosClient..ctor(String accountEndpoint, String authKeyOrResourceToken, CosmosClientOptions clientOptions)
+   at Explain.Api.Infrastructure.Cosmos.CosmosService..ctor(IConfiguration config) in C:\Develop\PercentileOne\P1\src\backend\Explain.Api\Infrastructure\Cosmos\CosmosService.cs:line 13
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitRootCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.CreateServiceAccessor(ServiceIdentifier serviceIdentifier)
+   at System.Collections.Concurrent.ConcurrentDictionary`2.GetOrAdd(TKey key, Func`2 valueFactory)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService(IServiceProvider provider, Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService[T](IServiceProvider provider)
+   at Program.&lt;Main&gt;$(String[] args) in C:\Develop\PercentileOne\P1\src\backend\Explain.Api\Program.cs:line 59
+   at Program.&lt;Main&gt;(String[] args)
+</Data><Data>Process Id: 2392.</Data><Data>File Version: 20.0.26177.10. Description: IIS ASP.NET Core Module V2 Request Handler. Commit: </Data></EventData></Event><Event><System><Provider Name="IIS AspNetCore Module V2"/><EventID>1007</EventID><Level>1</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T22:16:23Z"/><EventRecordID>36936500</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Application '/LM/W3SVC/1205343104/ROOT' with physical root 'C:\home\site\wwwroot\' failed to load coreclr. Exception message:
+CLR worker thread exited prematurely</Data><Data>Process Id: 2392.</Data><Data>File Version: 20.0.26177.10. Description: IIS ASP.NET Core Module V2 Request Handler. Commit: </Data></EventData></Event><Event><System><Provider Name="W3SVC-WP"/><EventID>2299</EventID><Level>1</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T22:21:49Z"/><EventRecordID>37262750</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Worker Process requested recycle due to 'Startup Failures' limit.
+</Data></EventData></Event><Event><System><Provider Name=".NET Runtime"/><EventID>1026</EventID><Level>1</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T22:21:50Z"/><EventRecordID>37263578</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Application: w3wp.exe
+CoreCLR Version: 10.0.1026.32716
+.NET Version: 10.0.10
+Description: The process was terminated due to an unhandled exception.
+Exception Info: System.ArgumentNullException: Value cannot be null. (Parameter 'authKeyOrResourceToken')
+   at Microsoft.Azure.Cosmos.AuthorizationTokenProvider.CreateWithResourceTokenOrAuthKey(String authKeyOrResourceToken)
+   at Microsoft.Azure.Cosmos.CosmosClient..ctor(String accountEndpoint, String authKeyOrResourceToken, CosmosClientOptions clientOptions)
+   at Explain.Api.Infrastructure.Cosmos.CosmosService..ctor(IConfiguration config) in C:\Develop\PercentileOne\P1\src\backend\Explain.Api\Infrastructure\Cosmos\CosmosService.cs:line 13
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitRootCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.CreateServiceAccessor(ServiceIdentifier serviceIdentifier)
+   at System.Collections.Concurrent.ConcurrentDictionary`2.GetOrAdd(TKey key, Func`2 valueFactory)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService(IServiceProvider provider, Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService[T](IServiceProvider provider)
+   at Program.&lt;Main&gt;$(String[] args) in C:\Develop\PercentileOne\P1\src\backend\Explain.Api\Program.cs:line 59
+   at Program.&lt;Main&gt;(String[] args)
+</Data></EventData></Event><Event><System><Provider Name="IIS AspNetCore Module V2"/><EventID>1018</EventID><Level>1</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T22:21:50Z"/><EventRecordID>37263578</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Application '/LM/W3SVC/1205343104/ROOT' with physical root 'C:\home\site\wwwroot\' hit unexpected managed exception, exception code = '0xe0434352'. First 30KB characters of captured stdout and stderr logs:
+Unhandled exception. System.ArgumentNullException: Value cannot be null. (Parameter 'authKeyOrResourceToken')
+   at Microsoft.Azure.Cosmos.AuthorizationTokenProvider.CreateWithResourceTokenOrAuthKey(String authKeyOrResourceToken)
+   at Microsoft.Azure.Cosmos.CosmosClient..ctor(String accountEndpoint, String authKeyOrResourceToken, CosmosClientOptions clientOptions)
+   at Explain.Api.Infrastructure.Cosmos.CosmosService..ctor(IConfiguration config) in C:\Develop\PercentileOne\P1\src\backend\Explain.Api\Infrastructure\Cosmos\CosmosService.cs:line 13
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitRootCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.CreateServiceAccessor(ServiceIdentifier serviceIdentifier)
+   at System.Collections.Concurrent.ConcurrentDictionary`2.GetOrAdd(TKey key, Func`2 valueFactory)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService(IServiceProvider provider, Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService[T](IServiceProvider provider)
+   at Program.&lt;Main&gt;$(String[] args) in C:\Develop\PercentileOne\P1\src\backend\Explain.Api\Program.cs:line 59
+   at Program.&lt;Main&gt;(String[] args)
+</Data><Data>Process Id: 7552.</Data><Data>File Version: 20.0.26177.10. Description: IIS ASP.NET Core Module V2 Request Handler. Commit: </Data></EventData></Event><Event><System><Provider Name="IIS AspNetCore Module V2"/><EventID>1007</EventID><Level>1</Level><Task>0</Task><Keywords>Keywords</Keywords><TimeCreated SystemTime="2026-07-31T22:21:50Z"/><EventRecordID>37263578</EventRecordID><Channel>Application</Channel><Computer>wo1xsdwk00001U</Computer><Security/></System><EventData><Data>Application '/LM/W3SVC/1205343104/ROOT' with physical root 'C:\home\site\wwwroot\' failed to load coreclr. Exception message:
+CLR worker thread exited prematurely</Data><Data>Process Id: 7552.</Data><Data>File Version: 20.0.26177.10. Description: IIS ASP.NET Core Module V2 Request Handler. Commit: </Data></EventData></Event></Events>
