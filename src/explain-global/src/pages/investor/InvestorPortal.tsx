@@ -2945,7 +2945,7 @@ export default function InvestorPortal() {
       <div style={{ flex: 1, overflow: 'auto', padding: '6px 0' }}>
         {NAV_GROUPS.map(group => (
           <div key={group.title}>
-            <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#353560', padding: '10px 20px 4px' }}>
+            <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#6868a0', padding: '10px 20px 4px' }}>
               {group.title}
             </div>
             {group.items.map(item => {
@@ -2955,8 +2955,8 @@ export default function InvestorPortal() {
                   display: 'block', width: '100%', textAlign: 'left',
                   padding: '8px 20px', border: 'none', cursor: 'pointer',
                   background: isActive ? 'rgba(79,142,247,0.12)' : 'transparent',
-                  color: isActive ? A : '#606090',
-                  fontSize: 12.5, fontWeight: isActive ? 700 : 400,
+                  color: isActive ? A : '#a0a0c8',
+                  fontSize: 13, fontWeight: isActive ? 700 : 400,
                   borderLeft: `2px solid ${isActive ? A : 'transparent'}`,
                   transition: 'all 0.15s', fontFamily: 'inherit',
                 }}>
@@ -3025,7 +3025,7 @@ export default function InvestorPortal() {
 
         {/* Desktop breadcrumb */}
         {!isMobile && (
-          <div style={{ padding: '22px 48px 0', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#353560' }}>
+          <div style={{ padding: '22px 48px 0', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6868a0' }}>
             {currentGroup?.title} · {currentItem?.label}
           </div>
         )}
