@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+declare global { interface Window { gtag?: (...args: unknown[]) => void; } }
+
 const PASSCODE = '@Horizon31585';
 
 export default function InvestorGate({ onAuth }: { onAuth: () => void }) {
@@ -11,6 +13,10 @@ export default function InvestorGate({ onAuth }: { onAuth: () => void }) {
     e.preventDefault();
     if (value === PASSCODE) {
       sessionStorage.setItem('investor_auth', '1');
+      const ref = new URLSearchParams(window.location.search).get('ref') ?? 'direct';
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', 'investor_login', { visitor: ref, event_category: 'investor' });
+      }
       onAuth();
     } else {
       setError(true);
