@@ -12,13 +12,15 @@ const NAV_GROUPS = [
     { id: 'answer',     label: 'The Explain Answer' },
   ]},
   { title: 'Product', items: [
-    { id: 'chair',      label: 'Interview Chair' },
-    { id: 'learn',      label: 'Learn Engine' },
-    { id: 'packs',      label: 'Interview Packs' },
-    { id: 'rec-email',  label: '⭐ Recruiter Email' },
-    { id: 'screens',    label: '🖥️ What It Looks Like' },
-    { id: 'flow',       label: 'Flow Viewer' },
-    { id: 'portals',    label: 'Portals' },
+    { id: 'chair',              label: 'Interview Chair' },
+    { id: 'learn',              label: 'Learn Engine' },
+    { id: 'packs',              label: 'Interview Packs' },
+    { id: 'rec-email',          label: '⭐ Recruiter Email' },
+    { id: 'screens',            label: '🖥️ What It Looks Like' },
+    { id: 'flow',               label: 'Flow Viewer' },
+    { id: 'portals',            label: 'Portals' },
+    { id: 'career-tools',       label: 'Career Tools' },
+    { id: 'candidate-services', label: 'Candidate Services' },
   ]},
   { title: 'Business Model', items: [
     { id: 'revenue',    label: 'Revenue Streams' },
@@ -32,12 +34,14 @@ const NAV_GROUPS = [
     { id: 'govt',       label: '⭐ Institutional & Government' },
   ]},
   { title: 'Traction', items: [
-    { id: 'live',       label: "What's Live Today" },
-    { id: 'roadmap',    label: 'Roadmap' },
+    { id: 'live',         label: "What's Live Today" },
+    { id: 'roadmap',      label: 'Roadmap' },
+    { id: 'future-plans', label: '🌍 Future Plans' },
   ]},
   { title: 'Financials', items: [
     { id: 'projections', label: 'Projections' },
     { id: 'ask',         label: 'The Ask' },
+    { id: 'patent',      label: '🔒 Patent & IP' },
   ]},
   { title: 'Founder', items: [
     { id: 'founder',    label: 'Francis Cobbinah' },
@@ -2323,6 +2327,345 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         </a>
       </div>
     </Card>
+  </>,
+
+  // ── Career Tools ─────────────────────────────────────────────────────────────
+  'career-tools': () => <>
+    <SectionHead
+      label="Product · Career Tools"
+      h1="Beyond the interview."
+      h2="A career engine for life."
+      sub="Explain's Career Finder takes the same competency intelligence that powers interview preparation and turns it outward — mapping candidates to roles, pathways, and learning modules they had never considered."
+    />
+
+    <Callout icon="🧭" title="The Career Finder Engine" color={A}
+      body="Most candidates know the job they applied for. Few know the full range of roles their skills actually qualify them for. Career Finder changes that — surfacing pathways, lateral moves, and stretch roles based on real competency data, not keyword matching." />
+
+    <Grid cols={2}>
+      <Card>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 18 }}>How Career Finder Works</div>
+        {[
+          ['📋', 'CV Upload', 'Candidate uploads or pastes their CV — structured competency extraction runs automatically.'],
+          ['🔍', 'Competency Mapping', 'Skills, experience, and gaps are mapped against a live competency framework.'],
+          ['🎯', 'Role Matching', 'Roles are ranked by fit score — including roles the candidate had not considered.'],
+          ['📈', 'Gap Analysis', 'For each suggested role, a clear gap report shows what is missing and how to close it.'],
+          ['📚', 'Learning Modules', 'Auto-assigned Learn Engine modules target the exact gaps identified.'],
+          ['🔁', 'Continuous Update', 'As candidates complete sessions and packs, their career profile updates in real time.'],
+        ].map(([icon, title, body]) => (
+          <Feature key={title as string} icon={icon as string} title={title as string} body={body as string} />
+        ))}
+      </Card>
+      <Card>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A2, marginBottom: 18 }}>Career Pathways Explained</div>
+        {[
+          { from: 'Customer Service Manager', to: ['Account Manager', 'Operations Lead', 'L&D Coordinator'], fit: 87 },
+          { from: 'Junior Software Engineer', to: ['DevOps Engineer', 'QA Lead', 'Technical PM'], fit: 91 },
+          { from: 'Marketing Executive', to: ['Growth Manager', 'Product Analyst', 'Brand Strategist'], fit: 79 },
+        ].map(p => (
+          <div key={p.from} style={{ marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ fontSize: 12, color: '#7070a0', marginBottom: 6 }}>Starting from: <span style={{ color: '#ccc', fontWeight: 700 }}>{p.from}</span></div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+              {p.to.map(r => <Tag key={r} color={A2}>{r}</Tag>)}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2 }}>
+                <div style={{ height: '100%', width: `${p.fit}%`, background: `linear-gradient(90deg, ${A2}, ${A})`, borderRadius: 2 }} />
+              </div>
+              <span style={{ fontSize: 11, color: '#22c55e', fontWeight: 700 }}>{p.fit}% fit</span>
+            </div>
+          </div>
+        ))}
+        <div style={{ fontSize: 12, color: '#404060', fontStyle: 'italic', marginTop: 8 }}>Pathways generated from real competency data — not guesswork.</div>
+      </Card>
+    </Grid>
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 16 }}>Why Career Tools Expand the Business</div>
+    <Grid cols={3}>
+      {[
+        { icon: '💷', title: 'New Revenue Layer', body: 'Career Finder unlocks a subscription tier above standard interview prep — candidates pay monthly for ongoing career intelligence.' },
+        { icon: '📊', title: 'Longer Retention', body: 'Interview prep ends when the interview happens. Career tools keep the candidate in the ecosystem for months or years.' },
+        { icon: '🏛️', title: 'Government Ready', body: 'Job centres and councils do not just need interview prep — they need career pathways for displaced workers. Career Finder is built for this.' },
+        { icon: '🤝', title: 'Employer Value', body: 'Employers can use Career Finder to identify internal mobility opportunities — reducing churn and redeployment costs.' },
+        { icon: '🌍', title: 'Global Scalability', body: 'Competency frameworks are language-agnostic. Career Finder scales across markets with minimal localisation cost.' },
+        { icon: '🔗', title: 'Cockpit Integration', body: 'Career Finder feeds directly into the future Cockpit life and career operating system — creating a lifelong user relationship.' },
+      ].map(f => <Card key={f.title}><Feature icon={f.icon} title={f.title} body={f.body} /></Card>)}
+    </Grid>
+
+    <Callout icon="🔭" title="Future: Cockpit Integration" color={A2}
+      body="Career Finder is the bridge between Explain and Cockpit — Percentile.One's second product. In Cockpit, career pathways, goals, habits, learning history, and interview records live in one unified life dashboard. Career Finder is where that journey begins." />
+  </>,
+
+  // ── Candidate Services ────────────────────────────────────────────────────────
+  'candidate-services': () => <>
+    <SectionHead
+      label="Product · Candidate Services"
+      h1="The candidate's corner."
+      h2="Beyond interview prep."
+      sub="Explain is building a comprehensive candidate services layer — not just interview preparation, but the full support ecosystem every job-seeker needs and no platform currently provides."
+    />
+
+    <Grid cols={2}>
+      <Card>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 18 }}>Core Candidate Services</div>
+        {[
+          ['📄', 'CV Advice', 'Structured CV review, formatting guidance, and gap analysis aligned to target roles.'],
+          ['🧭', 'Career Advice', 'Personalised career pathway guidance powered by the Career Finder engine.'],
+          ['⚖️', 'Workplace Rights', 'Clear, plain-English guidance on employment law, contracts, and ACAS processes.'],
+          ['📬', 'Interview Feedback', 'Post-interview structured feedback tools — helping candidates understand outcomes.'],
+          ['💬', 'Recruiter Communication', 'Templates and tools for professional recruiter communication at every stage.'],
+          ['🏢', 'Employer Communication', 'Structured tools for candidates to communicate directly with hiring managers.'],
+        ].map(([icon, title, body]) => (
+          <Feature key={title as string} icon={icon as string} title={title as string} body={body as string} />
+        ))}
+      </Card>
+      <Card>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A2, marginBottom: 18 }}>Commercial Opportunities</div>
+        {[
+          ['🛍️', 'Shop Tab', 'Curated equipment, laptops, stationery, and professional tools — affiliate and direct revenue.'],
+          ['📣', 'Advertising', 'Relevant employer, recruiter, and career-service advertising within the candidate portal.'],
+          ['🤝', 'Partnerships', 'Partnerships with training providers, universities, professional bodies, and employers.'],
+          ['🌐', 'Candidate Marketplace', 'Candidates can publish their readiness profile to a recruiter-facing talent marketplace.'],
+          ['🎓', 'Collaborations', 'Co-branded content and tools with careers services, universities, and councils.'],
+          ['📞', 'ACAS Guidance', 'Partnership-ready ACAS and legal guidance integration for workplace dispute support.'],
+        ].map(([icon, title, body]) => (
+          <Feature key={title as string} icon={icon as string} title={title as string} body={body as string} />
+        ))}
+      </Card>
+    </Grid>
+
+    <Callout icon="📊" title="Why This Matters to Investors" color="#22c55e"
+      body="Candidate services transform Explain from a single-use interview tool into a career companion platform. Each service layer adds a monetisation stream, increases session frequency, and deepens the data moat. A candidate who uses CV advice, career tools, and interview prep is five times more likely to convert to a paid subscription than one using interview prep alone." />
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Revenue Potential by Service Layer</div>
+    <Grid cols={1}>
+      <Card>
+        {[
+          { service: 'CV & Career Advice (subscription add-on)', model: 'Monthly subscription', arr: '£3–8/month per user' },
+          { service: 'Shop Tab (affiliate + direct)', model: 'Commission / margin', arr: '£15–40 per transaction' },
+          { service: 'Portal Advertising', model: 'CPM / CPC', arr: '£2–8 CPM' },
+          { service: 'Candidate Marketplace', model: 'Recruiter subscription', arr: '£99–299/month per recruiter' },
+          { service: 'Partnerships & Collaborations', model: 'Revenue share / licence', arr: '£5K–50K per partner' },
+          { service: 'ACAS / Legal Guidance', model: 'Referral / partnership', arr: 'TBC — partnership dependent' },
+        ].map(r => (
+          <div key={r.service} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12, padding: '11px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12, alignItems: 'center' }}>
+            <span style={{ color: '#ddd', fontWeight: 600 }}>{r.service}</span>
+            <span style={{ color: '#7070a0' }}>{r.model}</span>
+            <span style={{ color: '#22c55e', fontWeight: 700, textAlign: 'right' }}>{r.arr}</span>
+          </div>
+        ))}
+      </Card>
+    </Grid>
+  </>,
+
+  // ── Future Plans ──────────────────────────────────────────────────────────────
+  'future-plans': () => <>
+    <SectionHead
+      label="Roadmap · Future Plans"
+      h1="Explain is the beginning."
+      h2="Percentile.One is the vision."
+      sub="We are not building an interview tool. We are building the operating system for careers — starting with Explain, extending into Cockpit, and ultimately creating the world's first integrated life and career platform."
+    />
+
+    <div style={{ marginBottom: 32 }}>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 20 }}>Percentile.One — The Umbrella Brand</div>
+      <Grid cols={3}>
+        <Card accent={A}>
+          <div style={{ fontSize: 22, marginBottom: 10 }}>🎯</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', marginBottom: 6 }}>Explain.Global</div>
+          <Tag color="#22c55e">Product 1 — Live Now</Tag>
+          <p style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.65, marginTop: 12 }}>Interview readiness, career tools, recruiter workflows, employer portals. The world's most comprehensive interview preparation and hiring intelligence platform.</p>
+        </Card>
+        <Card accent={A2}>
+          <div style={{ fontSize: 22, marginBottom: 10 }}>🧠</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', marginBottom: 6 }}>Cockpit</div>
+          <Tag color={A2}>Product 2 — In Design</Tag>
+          <p style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.65, marginTop: 12 }}>A life and career operating system. Goals, habits, learning, career history, interview records, recruiter interactions — all in one personal dashboard.</p>
+        </Card>
+        <Card>
+          <div style={{ fontSize: 22, marginBottom: 10 }}>🌍</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', marginBottom: 6 }}>Future Products</div>
+          <Tag color="#f59e0b">Horizon</Tag>
+          <p style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.65, marginTop: 12 }}>Further products within the Percentile.One ecosystem will be announced as the platform matures. The infrastructure being built today is designed to support them.</p>
+        </Card>
+      </Grid>
+    </div>
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A2, marginBottom: 16 }}>Cockpit — Life & Career Operating System</div>
+    <Grid cols={2}>
+      <Card>
+        <div style={{ fontSize: 12, fontWeight: 700, color: '#ddd', marginBottom: 14 }}>Personal Dashboard Modules</div>
+        {['Life dashboard', 'Career dashboard', 'Goals & milestones', 'Habits & streaks', 'Learning history', 'Interview history', 'Readiness history', 'Recruiter interactions', 'Employer interactions', 'Multi-product integration'].map(item => (
+          <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: 13 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: A2, flexShrink: 0 }} />
+            <span style={{ color: '#c0c0e0' }}>{item}</span>
+          </div>
+        ))}
+      </Card>
+      <Card>
+        <div style={{ fontSize: 12, fontWeight: 700, color: '#ddd', marginBottom: 14 }}>Why Cockpit Changes Everything</div>
+        {[
+          ['🔗', 'Unified Identity', 'One profile spans every product. Your career, your habits, your goals — all connected.'],
+          ['📊', 'Longitudinal Data', 'Years of readiness, learning, and career data create a profile no CV can match.'],
+          ['💰', 'New Revenue Model', 'Cockpit operates on a premium subscription above and beyond Explain — a second ARR stream.'],
+          ['🌍', 'Global Reach', 'A life operating system is culturally universal. Explain opens the door; Cockpit keeps users forever.'],
+        ].map(([icon, title, body]) => <Feature key={title as string} icon={icon as string} title={title as string} body={body as string} />)}
+      </Card>
+    </Grid>
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 16, marginTop: 8 }}>Future Explain Features</div>
+    <Grid cols={2}>
+      <Card>
+        <div style={{ fontSize: 12, fontWeight: 700, color: '#ddd', marginBottom: 14 }}>Platform Expansions</div>
+        {[
+          'Employer interview viewer (live session monitoring)',
+          'Public interview recordings (candidate-consented, anonymised)',
+          'Multi-language interview packs (10 languages by 2028)',
+          'Globalisation — UK, US, Canada, Australia, UAE (Phase 4)',
+          'Government integrations — job centre dashboards',
+          'Recruiter analytics — placement intelligence suite',
+          'Employer analytics — hiring quality & readiness reporting',
+        ].map(item => (
+          <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: 12 }}>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', flexShrink: 0, marginTop: 5 }} />
+            <span style={{ color: '#a0a0c0' }}>{item}</span>
+          </div>
+        ))}
+      </Card>
+      <Card>
+        <div style={{ fontSize: 12, fontWeight: 700, color: '#ddd', marginBottom: 14 }}>Commercial Expansions</div>
+        {[
+          'Candidate marketplace — recruiter-facing talent discovery',
+          'Portal advertising — contextual, career-relevant',
+          'Shop tab — equipment, laptops, stationery, professional tools',
+          'Brand collaborations — employers, training providers, universities',
+          'Enterprise HR integration — ATS and HRIS connectors',
+          'Job board embedding — preparation triggers inside listings',
+          'White-label licensing — agencies, councils, universities',
+        ].map(item => (
+          <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: 12 }}>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: A, flexShrink: 0, marginTop: 5 }} />
+            <span style={{ color: '#a0a0c0' }}>{item}</span>
+          </div>
+        ))}
+      </Card>
+    </Grid>
+
+    <Callout icon="🚀" title="The Long-Term Vision" color={A}
+      body="By 2030, Percentile.One operates two flagship products — Explain.Global and Cockpit — serving candidates, employers, recruiters, governments, and educational institutions across 10+ countries. The infrastructure being built today, including the patent-pending Fusion Algorithm and multi-portal architecture, forms the foundation of a defensible, multi-product technology company." />
+  </>,
+
+  // ── Patent & IP ───────────────────────────────────────────────────────────────
+  'patent': () => <>
+    <SectionHead
+      label="Financials · Intellectual Property"
+      h1="Patent-pending."
+      h2="Infrastructure-level innovation."
+      sub="Explain.Global has filed for provisional patent protection in the UK and the United States. The inventions described below cover the core technical pipeline — from job advert parsing to multi-portal readiness delivery — and represent a defensible technology moat at the infrastructure layer."
+    />
+
+    <Callout icon="🔒" title="Status: Patent Pending — UK & US Provisional Applications" color={A}
+      body="Provisional applications establish the priority date for the inventions described below. Full applications are in preparation with qualified patent attorneys. The provisional status allows Explain to operate under 'Patent Pending' designation immediately." />
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Title of the Invention</div>
+    <Card style={{ marginBottom: 28 }}>
+      <div style={{ fontSize: 14, fontWeight: 700, color: '#e0e0f0', lineHeight: 1.65 }}>
+        System and Computational Method for Generating Personalised Interview Readiness Packs, Multi-Portal Interview Workflows, Candidate Scoring, Employer Feedback Integration, and Triggering Preparation from Job Listings, Recruiter Actions, and Employer Systems
+      </div>
+      <div style={{ marginTop: 14, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {['UK Provisional', 'US Provisional', 'Patent Pending', 'August 2026'].map(t => <Tag key={t}>{t}</Tag>)}
+      </div>
+    </Card>
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Field of the Invention</div>
+    <Card style={{ marginBottom: 28 }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {['Computational linguistic processing', 'AI-driven interview preparation', 'Job advert parsing', 'CV analysis', 'Personalised question generation', 'Candidate scoring', 'Employer feedback systems', 'Recruiter workflow automation', 'Multi-portal SaaS architecture', 'Interview simulation', 'Readiness scoring', 'Structured feedback loops'].map(f => <Tag key={f} color={A2}>{f}</Tag>)}
+      </div>
+      <p style={{ fontSize: 13, color: '#6060a0', lineHeight: 1.7, marginTop: 16, marginBottom: 0 }}>The invention produces a technical effect by transforming unstructured text inputs and multi-party workflow triggers into structured, personalised interview readiness outputs.</p>
+    </Card>
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>The 14 Patentable Components</div>
+    <Grid cols={2}>
+      {[
+        { n: '01', title: 'Job Advert Parsing Engine', body: 'Extracts competencies, responsibilities, and seniority from job URLs or raw specs — generating structured competency maps.' },
+        { n: '02', title: 'CV Analysis Engine', body: 'Extracts candidate skills, experience, and gaps — mapping CV content to job competency requirements.' },
+        { n: '03', title: 'Fusion Algorithm', body: 'Compares job competency map with candidate profile using weighted similarity scoring and semantic distance metrics.' },
+        { n: '04', title: 'Question Likelihood Model', body: 'Predicts likely interview questions using pattern recognition and historical job description data.' },
+        { n: '05', title: 'Interview Pack Generator', body: 'Produces structured packs containing questions, suggested answers, scoring rubrics, difficulty levels, and competency tags.' },
+        { n: '06', title: 'Candidate Scoring Engine', body: 'Evaluates spoken or written responses using clarity, confidence, relevance, and depth metrics.' },
+        { n: '07', title: 'Interview Simulation Engine', body: 'Conducts full interview simulations with AI avatars, question display, scoring overlays, and coaching feedback.' },
+        { n: '08', title: 'Recruiter-Triggered Workflow', body: 'A technical method that initiates personalised pack generation when a recruiter arranges an interview — one click, full preparation.' },
+        { n: '09', title: 'Employer Feedback Integration', body: 'Captures structured employer feedback and integrates it into candidate readiness scoring, reducing ghosting and recruiter workload.' },
+        { n: '10', title: 'Employer Readiness Viewer', body: 'Employers view candidate readiness scores, practice scores, structured packs, and future simulation recordings.' },
+        { n: '11', title: 'Job Board Trigger Mechanism', body: 'Embeds scripts or API calls within job listings to initiate personalised pack generation directly from third-party platforms.' },
+        { n: '12', title: 'Multi-Portal Architecture', body: 'Candidate, Recruiter, and Employer portals share structured readiness data through a unified multi-tenant SaaS system.' },
+        { n: '13', title: 'Career Finder Engine', body: 'Uses competency mapping to suggest career pathways, roles, and personalised learning modules beyond the immediate role.' },
+        { n: '14', title: 'Cockpit Integration Layer', body: 'Future integration with Percentile.One\'s Cockpit operating system for multi-product ecosystem expansion and lifelong career intelligence.' },
+      ].map(c => (
+        <Card key={c.n}>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: A, background: `${A}18`, border: `1px solid ${A}30`, borderRadius: 6, padding: '4px 8px', flexShrink: 0, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.06em' }}>{c.n}</div>
+            <div>
+              <div style={{ fontWeight: 700, color: '#ddd', fontSize: 13, marginBottom: 5 }}>{c.title}</div>
+              <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.6 }}>{c.body}</div>
+            </div>
+          </div>
+        </Card>
+      ))}
+    </Grid>
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Draft Claims</div>
+    <Grid cols={1}>
+      <Card>
+        {[
+          { n: 'Claim 1', title: 'Core Technical Claim', body: 'A computational method for generating personalised interview readiness packs by parsing job advertisements, analysing candidate CVs, and fusing both using weighted similarity scoring.' },
+          { n: 'Claim 2', title: 'Multi-Portal Workflow Claim', body: 'A method for distributing readiness outputs across candidate, recruiter, and employer portals with structured scoring and feedback loops.' },
+          { n: 'Claim 3', title: 'Recruiter Trigger Claim', body: 'A method for initiating personalised interview preparation workflows when a recruiter arranges an interview.' },
+          { n: 'Claim 4', title: 'Employer Feedback Claim', body: 'A method for capturing structured employer feedback and integrating it into candidate readiness scoring.' },
+          { n: 'Claim 5', title: 'Job Board Trigger Claim', body: 'A method for embedding preparation triggers within third-party job listings.' },
+          { n: 'Claim 6', title: 'Simulation Claim', body: 'A method for conducting AI-driven interview simulations with scoring overlays and coaching feedback.' },
+          { n: 'Claim 7', title: 'Career Finder Claim', body: 'A method for generating personalised career pathways using competency mapping and readiness scoring.' },
+        ].map(c => (
+          <div key={c.n} style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 16, padding: '13px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', alignItems: 'flex-start' }}>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 800, color: A2, letterSpacing: '0.06em' }}>{c.n}</div>
+              <div style={{ fontSize: 10, color: '#404060', marginTop: 2 }}>{c.title}</div>
+            </div>
+            <div style={{ fontSize: 13, color: '#a0a0c0', lineHeight: 1.65 }}>{c.body}</div>
+          </div>
+        ))}
+      </Card>
+    </Grid>
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 16, marginTop: 8 }}>Novelty Statement</div>
+    <Card style={{ marginBottom: 28 }}>
+      <p style={{ fontSize: 13, color: '#7070a0', lineHeight: 1.75, marginBottom: 16 }}>No known system combines all of the following in a single integrated pipeline:</p>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {['Fuses job advert + CV data', 'Generates personalised readiness packs', 'Multi-portal readiness visibility', 'Integrates employer feedback', 'Triggers preparation from job listings', 'Triggers preparation from recruiter actions', 'Structured readiness scoring', 'Interview simulation with scoring overlays', 'Career pathway generation', 'Interview readiness infrastructure'].map(n => <Tag key={n} color="#22c55e">{n}</Tag>)}
+      </div>
+    </Card>
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Commercial Value of the IP</div>
+    <Grid cols={3}>
+      <Card accent="#22c55e">
+        <div style={{ fontSize: 22, marginBottom: 8 }}>🛡️</div>
+        <div style={{ fontWeight: 700, color: '#22c55e', fontSize: 13, marginBottom: 6 }}>Defensibility</div>
+        <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.6 }}>Patent-pending status makes the core pipeline legally defensible against copycat platforms — creating a structural moat no amount of engineering spend can quickly replicate.</div>
+      </Card>
+      <Card accent={A2}>
+        <div style={{ fontSize: 22, marginBottom: 8 }}>💷</div>
+        <div style={{ fontWeight: 700, color: A2, fontSize: 13, marginBottom: 6 }}>R&D Tax Relief</div>
+        <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.6 }}>The qualifying R&D activity behind these inventions makes Explain eligible for HMRC R&D Tax Credit claims — reducing net development cost. Lawyers will advise on the Patent Box regime once patents are granted.</div>
+      </Card>
+      <Card accent={A}>
+        <div style={{ fontSize: 22, marginBottom: 8 }}>🌍</div>
+        <div style={{ fontWeight: 700, color: A, fontSize: 13, marginBottom: 6 }}>Licensing Potential</div>
+        <div style={{ fontSize: 12, color: '#6060a0', lineHeight: 1.6 }}>Granted patents create a licensing revenue stream — government platforms, enterprise HR systems, and international job boards may license the pipeline rather than build their own.</div>
+      </Card>
+    </Grid>
+
+    <Callout icon="📋" title="Note for Investors" color="#f59e0b"
+      body="These are provisional patent applications — they establish priority dates but do not yet grant enforceable rights. Full patent examination is underway. IP valuations and Patent Box tax calculations will be confirmed once grants are received. All IP claims should be verified with qualified patent counsel before reliance." />
   </>,
 };
 
