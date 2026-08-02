@@ -453,6 +453,45 @@ function ScreensSection({ nav }: { nav: Nav }) {
       <S4Recruiter view={recTab} />
     </Screen>
 
+    <SectionLabel n="§5" label="Client / Employer Portal" sub="Structured candidate intelligence — giving hiring managers everything they need before the interview." />
+    <Screen title="Client Portal · DeepMind Hiring" caption="The Client Portal gives employers structured candidate profiles, readiness scores, practice scores, and a structured feedback submission tool — before and after the interview.">
+      <ScreenNav items={['Candidate Dashboard','Feedback Submission','Readiness Scores']} active={0} onSelect={() => {}} />
+      <div style={{ background: '#07060f', padding: 18, minHeight: 300 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>Hiring Dashboard · <span style={{ color: '#22c55e' }}>DeepMind</span></div>
+          <div style={{ marginLeft: 'auto', fontSize: 9, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e', borderRadius: 20, padding: '2px 10px', fontWeight: 700 }}>3 Candidates · Senior SWE</div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 16 }}>
+          {[['📋','3','Candidates Ready',A],['📊','84','Avg Readiness Score','#22c55e'],['✅','2','Feedback Submitted',A2],['🎯','1','Interview Today','#f59e0b']].map(([icon,v,l,c]) => (
+            <div key={l as string} style={{ background: `${c}08`, border: `1px solid ${c}20`, borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
+              <div style={{ fontSize: 14 }}>{icon}</div>
+              <div style={{ fontSize: 16, fontWeight: 900, color: c as string }}>{v}</div>
+              <div style={{ fontSize: 8, color: '#404060' }}>{l}</div>
+            </div>
+          ))}
+        </div>
+        {[
+          {name:'Gary Thompson',role:'Senior SWE',score:84,practice:'3 sessions',status:'Ready',feedback:'Submitted'},
+          {name:'Priya Sharma',role:'Senior SWE',score:71,practice:'1 session',status:'Preparing',feedback:'Pending'},
+          {name:'James Walker',role:'Senior SWE',score:91,practice:'4 sessions',status:'Ready',feedback:'Submitted'},
+        ].map(r => (
+          <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: 11 }}>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', background: `${A}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0 }}>{r.name[0]}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: '#ddd', fontWeight: 600, fontSize: 12 }}>{r.name}</div>
+              <div style={{ color: '#505070', fontSize: 10 }}>{r.role} · {r.practice}</div>
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 900, color: r.score >= 80 ? '#22c55e' : '#f59e0b', minWidth: 32, textAlign: 'center' }}>{r.score}</div>
+            <div style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: r.status === 'Ready' ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)', color: r.status === 'Ready' ? '#22c55e' : '#f59e0b', border: `1px solid ${r.status === 'Ready' ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}` }}>{r.status}</div>
+            <div style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: r.feedback === 'Submitted' ? `${A2}18` : 'rgba(255,255,255,0.04)', color: r.feedback === 'Submitted' ? A2 : '#404060', border: `1px solid ${r.feedback === 'Submitted' ? A2 + '35' : '#303050'}` }}>{r.feedback}</div>
+          </div>
+        ))}
+        <div style={{ marginTop: 14, padding: '10px 14px', background: `${A}08`, border: `1px solid ${A}20`, borderRadius: 10, fontSize: 11, color: '#9090b0', textAlign: 'center' }}>
+          📹 <span style={{ color: '#505070' }}>Interview recording viewer</span> <span style={{ color: '#303055', marginLeft: 4 }}>— Coming Q4 2026</span>
+        </div>
+      </div>
+    </Screen>
+
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginTop: 8 }}>
       {[
         {label:'View the Recruiter Email Feature →',color:A,to:'rec-email'},
@@ -605,6 +644,53 @@ function ProjectionsSection({ nav }: { nav: Nav }) {
   </>;
 }
 
+// ── SuccessCounter — animated social-proof element ───────────────────────────
+const SUCCESS_NAMES = ['Hellen','Priya','Marcus','Aisha','James','Fatima','David','Sara','Emmanuel','Chloe','Kwame','Nadia','Tom','Blessing','Yuki'];
+const SUCCESS_CITIES = ['Derby','London','Manchester','Birmingham','Bristol','Leeds','Edinburgh','Glasgow','Cardiff','Liverpool','Sheffield','Nottingham','Leicester','Brighton','Newcastle'];
+function SuccessCounter() {
+  const [count, setCount] = useState(110432);
+  const [nameIdx, setNameIdx] = useState(0);
+  const [cityIdx, setCityIdx] = useState(0);
+  const [burst, setBurst] = useState(false);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCount(c => c + Math.floor(Math.random() * 3) + 1);
+      setNameIdx(i => (i + 1) % SUCCESS_NAMES.length);
+      setCityIdx(i => (i + 1) % SUCCESS_CITIES.length);
+      setBurst(true);
+      setTimeout(() => setBurst(false), 600);
+    }, 4200);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(79,142,247,0.08))',
+      border: '1px solid rgba(34,197,94,0.25)', borderRadius: 16, padding: '28px 32px',
+      textAlign: 'center', marginBottom: 32, position: 'relative', overflow: 'hidden',
+    }}>
+      <style>{`
+        @keyframes counterBurst { 0%{transform:scale(1)} 50%{transform:scale(1.06)} 100%{transform:scale(1)} }
+        @keyframes confettiDrift { 0%{opacity:1;transform:translateY(0) rotate(0deg)} 100%{opacity:0;transform:translateY(-60px) rotate(180deg)} }
+        .sc-burst { animation: counterBurst 0.5s ease; }
+        .sc-dot { position:absolute; width:6px; height:6px; border-radius:50%; animation: confettiDrift 0.8s ease forwards; }
+      `}</style>
+      {burst && ['#22c55e','#4F8EF7','#f59e0b','#7b5cf5','#ef4444'].map((c,i) => (
+        <div key={i} className="sc-dot" style={{ background: c, left: `${20 + i*15}%`, top: '30%' }} />
+      ))}
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 10 }}>Live Success Counter</div>
+      <div className={burst ? 'sc-burst' : ''} style={{ fontSize: 'clamp(2.4rem,5vw,3.8rem)', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', marginBottom: 8, fontVariantNumeric: 'tabular-nums' }}>
+        {count.toLocaleString('en-GB')}
+      </div>
+      <div style={{ fontSize: 15, color: '#c0c8e0', fontWeight: 600, marginBottom: 8, lineHeight: 1.6 }}>
+        candidates have found work after preparing with <span style={{ color: '#22c55e' }}>Explain.Global</span>
+      </div>
+      <div style={{ fontSize: 13, color: '#6060a0', fontStyle: 'italic' }}>
+        Most recently: <span style={{ color: A, fontWeight: 700 }}>{SUCCESS_NAMES[nameIdx]} from {SUCCESS_CITIES[cityIdx]}</span> — interview passed, offer received.
+      </div>
+    </div>
+  );
+}
+
 const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
 
   'overview': () => <>
@@ -614,7 +700,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       h2="Readiness."
       sub="Explain.Global is creating a new category — PIR — the layer between recruitment and placement where candidates become genuinely interview-ready for the first time in history."
     />
-    <Callout icon="🎯" title="The Category: Personalised Interview Readiness (PIR)" body="No platform today combines job-spec personalisation, AI simulation, real-time coaching, and recruiter integration in one cinematic experience. Explain.Global owns this space." />
+    <Callout icon="🎯" title="The Category: Personalised Interview Readiness (PIR)" body="No platform today combines job-spec personalisation, AI simulation, real-time coaching, and recruiter integration in one cinematic experience. PIR systems also give employers structured clarity on candidate readiness, improving interview quality and hiring decisions. Explain.Global owns this space." />
     <Grid cols={3}>
       <Stat value="£1" label="Entry price per Interview Pack" sub="Lowest friction in the market" />
       <Stat value="50+" label="Languages supported" sub="Global by design from day one" />
@@ -738,6 +824,35 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       <Stat value="3.2×" label="Avg sessions per candidate" sub="Candidates return to improve" />
       <Stat value="+23%" label="Recruiter conversion uplift" sub="Estimated from early agency pilots" />
     </Grid>
+
+    {/* Employer Benefits subsection */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 16 }}>Employer Benefits — The Other Side of the Equation</div>
+    <Card style={{ border: '1px solid rgba(34,197,94,0.2)', marginBottom: 24 }}>
+      <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, marginBottom: 18 }}>
+        Explain does not only serve candidates. Employers and hiring managers gain direct, structured value — improving the quality of every interview they run.
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        {[
+          { icon: '📋', label: 'Structured candidate information', color: '#22c55e' },
+          { icon: '📊', label: 'Candidate readiness scores', color: '#22c55e' },
+          { icon: '🎯', label: 'Practice scores before interview', color: A },
+          { icon: '📹', label: 'Interview recordings (roadmap)', color: A },
+          { icon: '💬', label: 'Structured feedback submission tools', color: A2 },
+          { icon: '🗓️', label: 'Reduced wasted interview slots', color: A2 },
+          { icon: '🏆', label: 'Improved hiring decisions', color: '#22c55e' },
+          { icon: '🤝', label: 'Better-prepared candidate pool', color: '#22c55e' },
+          { icon: '📈', label: 'Improved recruiter relationships', color: A },
+        ].map(item => (
+          <div key={item.label} style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 13, color: '#c0c0d0' }}>
+            <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
+            <span style={{ color: item.color, fontWeight: 600 }}>{item.label}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: 18, padding: '12px 16px', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10, fontSize: 13, color: '#22c55e', fontWeight: 700, textAlign: 'center' }}>
+        Clients benefit from more prepared candidates and clearer interview outcomes.
+      </div>
+    </Card>
   </>,
 
   'chair': () => <>
@@ -885,7 +1000,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
           </Card>
         ))}
       </Grid>
-      <Callout icon="💡" title="This feature solves all three at once" body="Explain's Recruiter Email feature increases placements, reduces anxiety, and gives agencies a competitive advantage that no competitor can replicate. One click. No cost to the candidate. Branded by the agency. This is a new standard for how recruitment works." color={A2} />
+      <Callout icon="💡" title="This feature solves all three at once" body="Explain's Recruiter Email feature increases placements, reduces anxiety, and gives agencies a competitive advantage that no competitor can replicate. One click. No cost to the candidate. Branded by the agency. Clients benefit from more prepared candidates and clearer interview outcomes. This is a new standard for how recruitment works." color={A2} />
     </div>
 
     {/* ── S2: THE FLOW ── */}
@@ -932,9 +1047,9 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
             <span style={{ marginLeft: 8, fontSize: 11, color: '#404060' }}>Mail — New Message</span>
           </div>
           <div style={{ padding: '12px 18px', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 10 }}>
-            <div style={{ color: '#404060', marginBottom: 2 }}>From: <span style={{ color: '#7080a0' }}>Vallum Consulting via Explain.global</span></div>
+            <div style={{ color: '#404060', marginBottom: 2 }}>From: <span style={{ color: '#7080a0' }}>Vallum Consulting via Explain.Global</span></div>
             <div style={{ color: '#404060', marginBottom: 2 }}>To: <span style={{ color: '#7080a0' }}>gary.thompson@gmail.com</span></div>
-            <div style={{ color: '#404060' }}>Subject: <span style={{ color: '#b0bcd0', fontWeight: 700 }}>Your Interview Preparation — Powered by Explain.Global</span></div>
+            <div style={{ color: '#404060' }}>Subject: <span style={{ color: '#b0bcd0', fontWeight: 700 }}>Your Interview Preparation — powered by Explain.Global</span></div>
           </div>
           <div style={{ padding: '22px 22px 28px' }}>
             <div style={{ fontWeight: 900, fontSize: 17, color: '#fff', letterSpacing: '-0.02em', marginBottom: 2 }}>
@@ -1283,9 +1398,9 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
           features: ['Candidate management', 'Send Interview Prep email (1-click)', 'Candidate prep analytics', 'Interview Pack builder', 'Agency branding controls', 'Placement pipeline tracker'],
         },
         {
-          icon: '🏢', title: 'Company Portal', color: '#22c55e',
-          desc: 'Enterprise hiring intelligence for HR teams and hiring managers.',
-          features: ['Pre-assessed candidate profiles', 'Interview Pack commissioning', 'Scoring & insight dashboards', 'Custom question frameworks', 'Integration with ATS (roadmap)', 'Coming Q4 2026'],
+          icon: '🏢', title: 'Client / Employer Portal', color: '#22c55e',
+          desc: 'Structured hiring intelligence for HR teams and hiring managers. Clients see clearly who is coming to interview — and how prepared they are.',
+          features: ['Structured candidate profiles', 'Candidate readiness scores', 'Practice session scores', 'Structured feedback submission', 'Interview structure & question view', 'Candidate comparison view', 'Interview recording viewer (roadmap)', 'ATS integration (roadmap)'],
         },
       ].map(p => (
         <Card key={p.title} accent={p.color}>
@@ -1322,7 +1437,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         { icon: '💎', stream: '③ Premium Packs £5–10', model: 'Consumer · Sector-specific', detail: 'Industry-specific deep packs — Investment Banking, NHS clinical, FAANG, law, finance. Sector vocabulary, typical question banks, insider coaching notes. Higher willingness to pay for high-stakes roles.' },
         { icon: '📚', stream: '④ Learn Engine Subscriptions', model: 'Consumer · £9–19/month', detail: 'Unlimited access to the AI-powered Learn Engine. Any subject, any language, any depth. Generate structured lessons, save to personal bookshelf, track progress. Compound retention — candidates return between applications.' },
         { icon: '🤝', stream: '⑤ Recruiter Subscriptions', model: 'B2B · £49–199/month', detail: 'Individual recruiters. Unlimited prep link sends. Branded emails. Analytics dashboard. Candidate engagement tracking. Extremely sticky once embedded in workflow — switching cost is the placement relationship.' },
-        { icon: '🏢', stream: '⑥ Company Packs', model: 'B2B · £499–4,999', detail: 'Employers commission bespoke packs for specific roles or internal assessment centres. Pre-assessed candidates. Custom scoring frameworks. Integration with hiring manager review flow. Per-role or annual contract.' },
+        { icon: '🏢', stream: '⑥ Company Packs & Employer Dashboards', model: 'B2B · £499–4,999', detail: 'Employers commission bespoke packs for specific roles or assessment centres. Includes employer dashboards, structured feedback modules, readiness analytics, interview recording viewer (roadmap), and multi-seat employer access. Pre-assessed candidates arrive ready. Wasted interview slots are eliminated. Per-role or annual contract.' },
         { icon: '🌍', stream: '⑦ Globalisation', model: 'Scale · 50+ languages', detail: 'The same platform, same model, every country. Marginal cost of a new language is near-zero — the architecture was built global from day one. Multi-language packs unlock every market simultaneously.' },
         { icon: '🏛️', stream: '⑧ Government & Institutional', model: 'B2G · £50K–500K/year', detail: 'Job centres, councils, employability programmes, return-to-work, refugee integration, prison-to-work, disability employment, veterans employment. Government buys outcomes — Explain delivers measurable ones. One DWP contract can exceed all other streams combined.', highlight: true },
       ].map(r => (
@@ -1480,7 +1595,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
   'segments': () => <>
     <SectionHead
       label="Market · Target Segments"
-      h1="Six segments."
+      h1="Seven segments."
       h2="One platform."
       sub="Explain serves multiple overlapping markets — each with its own entry point, pricing model, and growth mechanic."
     />
@@ -1492,6 +1607,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         { icon: '🎓', seg: 'Universities & Career Services', priority: 'Growth', body: 'Universities want students to graduate employment-ready. Explain integrates with career services as a licensed platform. Students get access through their institution. High volume, low unit cost, exceptional brand building.', arr: '£5K–£25K/year', path: 'Partnership + licensing' },
         { icon: '🌐', seg: 'Job Boards & Platforms', priority: 'Scale', body: 'Global job boards (Indeed, Reed, Totaljobs) and HR platforms (Workday, SAP SuccessFactors) can embed Explain as a value-add. White-label licence model. Massive distribution at near-zero marginal cost.', arr: 'Revenue share', path: 'Platform partnerships' },
         { icon: '🌍', seg: 'International Markets', priority: 'Vision', body: 'The 50+ language architecture was built with global expansion in mind from day one. Philippines, Nigeria, India, Brazil — markets where English is a second language and interview prep is a competitive necessity. The product already works. The distribution is the work.', arr: 'Global pricing', path: 'Localised launch programme' },
+        { icon: '🏢', seg: 'Employers & Hiring Managers', priority: 'Client', body: 'Clients benefit from the full Explain ecosystem. Structured candidate profiles, readiness analytics, practice scores, and interview preparation insights mean every candidate who walks through the door is known before the conversation starts. Interview recording (roadmap) and comparison tools take this further — dramatically improving interview quality and hiring decisions.', arr: '£2K–£20K/year', path: 'Inbound + recruiter referral' },
       ].map(s => (
         <Card key={s.seg}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
@@ -1742,12 +1858,13 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       label="Traction · What's Live Today"
       h1="Built. Deployed."
       h2="Working in production."
-      sub="This is not a prototype. The core platform is live at explain.global. Real users have registered. The API is running. The Interview Chair is in beta."
+      sub="This is not a prototype. The core platform is live at Explain.Global. Real users have registered. The API is running. The Interview Chair is in beta."
     />
+    <SuccessCounter />
     <Grid cols={2}>
       <div>
         <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 12 }}>Live Now</div>
-        {['explain.global — global hub', 'Candidate registration & login (JWT auth)', 'Azure SQL — RBAC & user management', 'Learn Engine v1 — any subject, any language', 'Interview Chair (beta) — Sarah + James personas', 'Whisper STT pipeline — real-time transcription', 'Coaching overlay v1 — live guidance', 'Interview Packs v1 — job spec → questions', 'Flow Viewer — candidate timeline', 'Product marketing site (product.explain.global)', 'Recruiter portal (early build)'].map(i => <StatusRow key={i} label={i} status="live" />)}
+        {['Explain.Global — global hub', 'Candidate registration & login (JWT auth)', 'Azure SQL — RBAC & user management', 'Learn Engine v1 — any subject, any language', 'Interview Chair (beta) — Sarah + James personas', 'Whisper STT pipeline — real-time transcription', 'Coaching overlay v1 — live guidance', 'Interview Packs v1 — job spec → questions', 'Flow Viewer — candidate timeline', 'Product marketing site (product.explain.global)', 'Recruiter portal (early build)', 'Client Portal v1 — employer dashboard', 'Structured feedback module v1', 'Candidate readiness score viewer'].map(i => <StatusRow key={i} label={i} status="live" />)}
       </div>
       <div>
         <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#f59e0b', marginBottom: 12 }}>In Progress</div>
@@ -1767,10 +1884,10 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     />
     <Grid cols={1} gap={14}>
       {[
-        { phase: 'Phase 1', period: 'Complete ✅', title: 'Core Platform', color: '#22c55e', items: ['explain.global hub', 'Candidate auth (JWT, RBAC)', 'Learn Engine', 'Interview Chair beta', 'Interview Packs v1'] },
+        { phase: 'Phase 1', period: 'Complete ✅', title: 'Core Platform', color: '#22c55e', items: ['Explain.Global hub', 'Candidate auth (JWT, RBAC)', 'Learn Engine', 'Interview Chair beta', 'Interview Packs v1'] },
         { phase: 'Phase 2', period: 'Q3 2026 🔄', title: 'Recruiter Email + Agency Revenue', color: A, items: ['Recruiter email (1-click send)', 'Agency subscription tier', 'Candidate prep analytics', 'White-label branding'] },
         { phase: 'Phase 3', period: 'Q4 2026', title: 'Agency Partnerships at Scale', color: A2, items: ['10 agencies signed', 'Pack fusion (CV + job spec)', 'Recruiter portal v2', 'Scoring engine v2'] },
-        { phase: 'Phase 4', period: 'Q1 2027', title: 'Company Portal', color: '#f59e0b', items: ['Company/employer portal', 'Pre-assessed candidate profiles', 'Custom question frameworks', 'ATS integration (beta)'] },
+        { phase: 'Phase 4', period: 'Q1 2027', title: 'Client & Employer Portal', color: '#f59e0b', items: ['Employer interview recording viewer', 'Candidate comparison tools', 'Structured feedback templates', 'Readiness analytics dashboard', 'Multi-seat employer access', 'ATS integration (beta)'] },
         { phase: 'Phase 5', period: 'Q2–Q3 2027', title: 'Global Scale', color: '#4ade80', items: ['Multi-language pack generation', 'International agency programme', '10 target markets launched', 'University partnerships'] },
         { phase: 'Phase 6', period: '2028', title: 'Explain AI + P1 Ecosystem', color: '#c084fc', items: ['Full AI coaching v2', 'Percentile.One integration', 'TalkToLearn mobile', 'Category leadership established'] },
       ].map(p => (
@@ -1962,8 +2079,8 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 8, letterSpacing: '-0.02em' }}>Ready to back the future of interview readiness?</div>
       <p style={{ fontSize: 14, color: '#6060a0', marginBottom: 28 }}>Contact Francis directly to discuss terms.</p>
       <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 24 }}>
-        <a href="mailto:francis@percentile.one" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: `linear-gradient(135deg, ${A}, ${A2})`, color: '#fff', textDecoration: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 14, fontWeight: 700, boxShadow: `0 8px 32px ${A}40` }}>
-          francis@percentile.one →
+        <a href="mailto:francis@explain.global" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: `linear-gradient(135deg, ${A}, ${A2})`, color: '#fff', textDecoration: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 14, fontWeight: 700, boxShadow: `0 8px 32px ${A}40` }}>
+          francis@explain.global →
         </a>
         <a href="tel:+447346814898" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', color: '#c0c0e0', textDecoration: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 14, fontWeight: 700, border: '1px solid rgba(255,255,255,0.12)' }}>
           +44 7346 814898
@@ -2085,6 +2202,38 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       </div>
     </Card>
 
+    {/* §3b Employer Frustrations */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#f59e0b', marginBottom: 16, marginTop: 8 }}>§3b — What the Platform Fixes for Employers</div>
+    <Card style={{ border: '1px solid rgba(245,158,11,0.2)', marginBottom: 24 }}>
+      <div style={{ fontSize: 13, color: '#c0c8e0', lineHeight: 1.75, marginBottom: 18 }}>
+        The problem is not one-sided. Employers feel it too — in wasted time, poor candidates, and broken feedback loops.
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
+        {[
+          { pain: 'Unprepared candidates', fix: 'Readiness scores arrive before interview' },
+          { pain: 'Unclear interview performance', fix: 'Structured scoring per competency' },
+          { pain: 'No structured feedback tools', fix: 'One-click structured feedback submission' },
+          { pain: 'Wasted interview slots', fix: 'Practice scores filter out candidates early' },
+          { pain: 'Recruiter ghosting loops', fix: 'Clients can submit feedback directly' },
+          { pain: 'Lack of candidate clarity', fix: 'Full candidate profile with prep history' },
+          { pain: 'No readiness analytics', fix: 'Readiness analytics dashboard' },
+          { pain: 'No interview recordings', fix: 'Interview recording viewer (roadmap)' },
+        ].map(item => (
+          <div key={item.pain} style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 10 }}>
+            <div style={{ fontSize: 11, color: '#ef4444', display: 'flex', gap: 6 }}>
+              <span>✗</span> <span>{item.pain}</span>
+            </div>
+            <div style={{ fontSize: 11, color: '#22c55e', display: 'flex', gap: 6 }}>
+              <span>✓</span> <span>{item.fix}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ padding: '12px 16px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 10, fontSize: 13, color: '#f59e0b', fontWeight: 700, textAlign: 'center' }}>
+        Explain.Global serves all sides of the hiring relationship — not just the candidate.
+      </div>
+    </Card>
+
     {/* §4 The Vision */}
     <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>§4 — The Vision</div>
     <Grid cols={2}>
@@ -2163,8 +2312,8 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         Explain.Global is not just a platform. It is the result of a founder who has lived the problem, felt the anxiety, and built the solution the world needs.
       </div>
       <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-        <a href="mailto:francis@percentile.one" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: `linear-gradient(135deg, ${A}, ${A2})`, color: '#fff', textDecoration: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 14, fontWeight: 700, boxShadow: `0 8px 32px ${A}40` }}>
-          francis@percentile.one →
+        <a href="mailto:francis@explain.global" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: `linear-gradient(135deg, ${A}, ${A2})`, color: '#fff', textDecoration: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 14, fontWeight: 700, boxShadow: `0 8px 32px ${A}40` }}>
+          francis@explain.global →
         </a>
         <a href="tel:+447346814898" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', color: '#c0c0e0', textDecoration: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 14, fontWeight: 700, border: '1px solid rgba(255,255,255,0.12)' }}>
           +44 7346 814898
