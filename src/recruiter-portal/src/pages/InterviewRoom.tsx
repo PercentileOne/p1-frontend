@@ -422,7 +422,7 @@ export default function InterviewRoom() {
     bgLoadRef.current = true;
     const jobSpec = ctx.jobSpecText || `Job Title: Senior Professional
 Company: ${demoCompany.name}
-Industry: ${demoCompany.industry ?? 'Professional Services'}
+Industry: ${'sector' in demoCompany ? demoCompany.sector : 'Professional Services'}
 Location: United Kingdom
 
 We are looking for an experienced professional to join our team. The successful candidate will bring strong problem-solving ability, excellent communication skills, and a track record of delivering results under pressure. This role requires collaboration across teams, sound judgement, adaptability to change, and the ability to manage competing priorities effectively. The candidate should demonstrate initiative, professional integrity, and a commitment to continuous improvement.`;

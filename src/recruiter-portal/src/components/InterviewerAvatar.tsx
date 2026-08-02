@@ -48,7 +48,7 @@ function WaveformBars({ active, color, analyserNode }: {
 }) {
   const [heights, setHeights] = useState<number[]>(() => BAR_SHAPES.map(() => 0.12));
   const rafRef = useRef<number>(0);
-  const dataRef = useRef<Uint8Array | null>(null);
+  const dataRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
 
   useEffect(() => {
     cancelAnimationFrame(rafRef.current);
@@ -61,7 +61,7 @@ function WaveformBars({ active, color, analyserNode }: {
     if (analyserNode) {
       // ── Real audio path: read frequency bins every frame ──────────────────
       const bufLen = analyserNode.frequencyBinCount; // fftSize/2 = 32
-      dataRef.current = new Uint8Array(bufLen);
+      dataRef.current = new Uint8Array(bufLen) as Uint8Array<ArrayBuffer>;
       const step = Math.max(1, Math.floor(bufLen / BAR_COUNT));
 
       const tick = () => {
