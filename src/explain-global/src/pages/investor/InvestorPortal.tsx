@@ -2945,7 +2945,7 @@ export default function InvestorPortal() {
       <div style={{ flex: 1, overflow: 'auto', padding: '6px 0' }}>
         {NAV_GROUPS.map(group => (
           <div key={group.title}>
-            <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#6868a0', padding: '10px 20px 4px' }}>
+            <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#f59e0b', padding: '10px 20px 4px' }}>
               {group.title}
             </div>
             {group.items.map(item => {
