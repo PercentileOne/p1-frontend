@@ -435,10 +435,13 @@ function ScreensSection({ nav }: { nav: Nav }) {
       <S1Vallum />
     </Screen>
 
-    <SectionLabel n="§2" label="Interview Chair" sub="The cinematic AI interview simulation environment." />
-    <Screen title="Interview Chair · DeepMind" caption="The Interview Chair is Explain's cinematic interview simulation environment — personalised, structured, and powered by AI coaching.">
-      <ScreenNav items={['Live Session','Coaching Overlay','Scoring Engine']} active={chairTab} onSelect={setChairTab} />
-      <S2Chair view={chairTab} />
+    <SectionLabel n="§2" label="Interview Chair" sub="The cinematic AI interview simulation environment — live product, live today." />
+    <Screen title="Interview Chair · Live Product" caption="This is the real Explain Interview Chair — live product, running today. Sarah Mitchell and James Okafor are AI interviewers. The candidate speaks or types, the coach responds in real time, and every answer is benchmarked against top performers in the role.">
+      <ScreenNav items={['📸 Live Screenshot','Live Session','Coaching Overlay','Scoring Engine']} active={chairTab} onSelect={setChairTab} />
+      {chairTab === 0
+        ? <img src="/assets/interview-room-preview.png" alt="Explain Interview Chair — live product screenshot" style={{ width: '100%', display: 'block' }} />
+        : <S2Chair view={chairTab - 1} />
+      }
     </Screen>
 
     <SectionLabel n="§3" label="Candidate Portal" sub="Personalised interview readiness — packs, coaching, learning, simulation." />
