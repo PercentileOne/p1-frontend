@@ -76,15 +76,39 @@ function WaveformBars({ active, color, analyserNode }: {
       rafRef.current = requestAnimationFrame(tick);
       return () => cancelAnimationFrame(rafRef.current);
     } else {
-      // ── Simulation fallback (Web Speech / no analyser) ─────────────────────
+      // ── Simulation fallback: natural syllable-burst pattern ────────────────
+      // Alternates between brief "utterance" bursts and short silence gaps
+      // to mimic real speech rhythm rather than continuous random noise.
+      let phase: 'speaking' | 'silent' = 'speaking';
+      let phaseMs = 200 + Math.random() * 250;
+      let elapsed = 0;
+      const TICK = 60;
+
       const id = setInterval(() => {
-        setHeights(prev =>
-          prev.map((h, i) => {
-            const target = 0.18 + Math.random() * BAR_SHAPES[i] * 0.82;
-            return h + (target - h) * 0.35;
-          })
-        );
-      }, 80);
+        elapsed += TICK;
+        if (elapsed >= phaseMs) {
+          elapsed = 0;
+          if (phase === 'speaking') {
+            phase = 'silent';
+            phaseMs = 60 + Math.random() * 120; // 60–180 ms pause
+          } else {
+            phase = 'speaking';
+            phaseMs = 180 + Math.random() * 320; // 180–500 ms syllable burst
+          }
+        }
+
+        if (phase === 'speaking') {
+          const energy = 0.45 + Math.random() * 0.55;
+          setHeights(prev =>
+            prev.map((h, i) => {
+              const target = 0.22 + energy * BAR_SHAPES[i] * 0.78;
+              return h + (target - h) * 0.4;
+            })
+          );
+        } else {
+          setHeights(prev => prev.map(h => h + (0.06 - h) * 0.5));
+        }
+      }, TICK);
       return () => clearInterval(id);
     }
   }, [active, analyserNode]);
