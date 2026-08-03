@@ -5,15 +5,13 @@ import type { ScoreResponse, InterviewQuestion } from './explainApi';
 import { buildCVContext, type CVContext, type CVExperience, type JobSpecContext } from '../utils/contextBuilder';
 import type { CoachingMessage } from '../utils/coachingEngine';
 
-const OPENAI_KEY = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const MODEL = 'gpt-4o-mini';
 
-export const aiScoringConfigured = !!OPENAI_KEY;
+// AI is always available — calls go through the server-side /api/ai-proxy function
+// which holds the key securely and avoids browser CORS issues.
+export const aiScoringConfigured = true;
 
 async function chatJSON<T>(systemPrompt: string, userPrompt: string, temperature = 0.3): Promise<T> {
-  if (!OPENAI_KEY) throw new Error('OpenAI key not configured');
-
   const body = JSON.stringify({
     model: MODEL,
     temperature,
@@ -23,18 +21,17 @@ async function chatJSON<T>(systemPrompt: string, userPrompt: string, temperature
       { role: 'user', content: userPrompt },
     ],
   });
-  const headers = { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' };
 
-  // Retry up to 3 times on 429, honouring the Retry-After header
+  // Retry up to 3 times on 429
   for (let attempt = 0; attempt <= 3; attempt++) {
-    const res = await fetch(OPENAI_URL, { method: 'POST', headers, body });
+    const res = await fetch('/api/ai-proxy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
     if (res.status === 429 && attempt < 3) {
       const retryAfter = parseInt(res.headers.get('Retry-After') ?? '10', 10);
       const wait = Math.min((isNaN(retryAfter) ? 10 : retryAfter) * 1000, 30000);
       await new Promise(r => setTimeout(r, wait));
       continue;
     }
-    if (!res.ok) throw new Error(`OpenAI error ${res.status}`);
+    if (!res.ok) throw new Error(`AI proxy error ${res.status}`);
     const data = await res.json() as { choices: { message: { content: string } }[] };
     return JSON.parse(data.choices[0].message.content) as T;
   }
