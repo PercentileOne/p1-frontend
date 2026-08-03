@@ -130,12 +130,12 @@ Return JSON:
   try {
     // Single attempt only — if rate limited, fall through to heuristic immediately
     // rather than retrying and burning budget needed for questions + intros.
-    const res = await fetch(OPENAI_URL, {
+    const res = await fetch('/api/ai-proxy', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: MODEL, temperature: 0, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }] }),
     });
-    if (!res.ok) throw new Error(`OpenAI error ${res.status}`);
+    if (!res.ok) throw new Error(`AI proxy error ${res.status}`);
     const resData = await res.json() as { choices: { message: { content: string } }[] };
     const raw = JSON.parse(resData.choices[0].message.content) as Record<string, unknown>;
 
