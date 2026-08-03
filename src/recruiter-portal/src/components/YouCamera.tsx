@@ -13,7 +13,7 @@ const BAR_COUNT = 8;
 function MicWaveform({ speaking, analyserNode }: { speaking: boolean; analyserNode: AnalyserNode | null }) {
   const [heights, setHeights] = useState<number[]>(() => Array(BAR_COUNT).fill(0.08));
   const rafRef = useRef<number>(0);
-  const dataRef = useRef<Uint8Array | null>(null);
+  const dataRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
 
   useEffect(() => {
     cancelAnimationFrame(rafRef.current);
