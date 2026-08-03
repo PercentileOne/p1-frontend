@@ -229,6 +229,10 @@ export default function InterviewRoom() {
   const bgLoadRef = useRef(false);
   const bgLoadedRef = useRef(false); // true once AI results arrive
 
+  // Session-prep readiness — Mike waits for AI to return (max 8 s) before speaking
+  const sessionReadyRef = useRef(false);
+  const sessionWaitersRef = useRef<Array<() => void>>([]);
+
   // Derived values — fresh AI results ALWAYS win over anything pre-passed via route state
   const questions = bgQuestions ?? buildDemoQuestions(demoCompany);
   const companyKeywords = bgCompanyFacts.length ? bgCompanyFacts : demoCompany.companyKnowledgeKeywords;
@@ -397,6 +401,9 @@ export default function InterviewRoom() {
   const beginInterviewIntroRef = useRef(beginInterviewIntro);
   useEffect(() => { beginInterviewIntroRef.current = beginInterviewIntro; }, [beginInterviewIntro]);
 
+  // Always hold a ref to the latest startMike so session-prep waiters call the right version
+  const startMikeRef = useRef<() => void>(() => {});
+
   const startMike = useCallback(() => {
     setPhase('mike');
     logFlowEvent('MIKE_INTRO_STARTED', { hasJobSpec: Boolean(ctx.jobSpecText), hasCv: Boolean(ctx.cvText), selectedLanguage: ctx.selectedLanguage });
@@ -406,6 +413,8 @@ export default function InterviewRoom() {
       beginInterviewIntroRef.current();
     }, (a) => setTechAnalyser(a));
   }, [mikeScript, ctx.jobSpecText, ctx.cvText, ctx.selectedLanguage]);
+
+  useEffect(() => { startMikeRef.current = startMike; }, [startMike]);
 
   const startInterview = useCallback(() => {
     startMike();
@@ -426,7 +435,17 @@ Industry: ${'sector' in demoCompany ? demoCompany.sector : 'Professional Service
 Location: United Kingdom
 
 We are looking for an experienced professional to join our team. The successful candidate will bring strong problem-solving ability, excellent communication skills, and a track record of delivering results under pressure. This role requires collaboration across teams, sound judgement, adaptability to change, and the ability to manage competing priorities effectively. The candidate should demonstrate initiative, professional integrity, and a commitment to continuous improvement.`;
+    // 8-second fallback so Mike is never blocked if AI is slow or key is missing
+    const prepTimeout = setTimeout(() => {
+      if (!sessionReadyRef.current) {
+        sessionReadyRef.current = true;
+        sessionWaitersRef.current.forEach(cb => cb());
+        sessionWaitersRef.current = [];
+      }
+    }, 8000);
+
     sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage).then(result => {
+      clearTimeout(prepTimeout);
       bgLoadedRef.current = true;
       setBgQuestions(result.questions);
       if (result.sarahIntro) setBgSarahIntro(result.sarahIntro);
@@ -435,19 +454,41 @@ We are looking for an experienced professional to join our team. The successful 
       if (result.companyFacts?.length) setBgCompanyFacts(result.companyFacts);
       if (result.specialistTitle) setBgSpecialistTitle(result.specialistTitle);
       logFlowEvent('QUESTION_GENERATED', { count: result.questions.length, specialistTitle: result.specialistTitle });
-    }).catch(() => {
-      bgLoadedRef.current = true; // still mark done so we know it finished
+      // Let React flush state updates first, then unblock Mike
+      setTimeout(() => {
+        if (!sessionReadyRef.current) {
+          sessionReadyRef.current = true;
+          sessionWaitersRef.current.forEach(cb => cb());
+          sessionWaitersRef.current = [];
+        }
+      }, 0);
+    }).catch((err) => {
+      clearTimeout(prepTimeout);
+      bgLoadedRef.current = true;
+      console.error('[InterviewRoom] AI session prep failed — using demo fallback:', err);
+      setTimeout(() => {
+        if (!sessionReadyRef.current) {
+          sessionReadyRef.current = true;
+          sessionWaitersRef.current.forEach(cb => cb());
+          sessionWaitersRef.current = [];
+        }
+      }, 0);
     });
+    return () => clearTimeout(prepTimeout);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-start — go straight to Mike IMMEDIATELY, no waiting
+  // Auto-start — wait for AI session prep (max 8 s via prepTimeout), then start Mike
+  // This ensures Mike always uses AI-generated script when the key is valid
   const autoStartFiredRef = useRef(false);
   useEffect(() => {
     if (!ctx.autoStart || autoStartFiredRef.current) return;
     autoStartFiredRef.current = true;
-    const timer = setTimeout(() => startMike(), 300);
-    return () => clearTimeout(timer);
+    if (sessionReadyRef.current) {
+      startMikeRef.current();
+    } else {
+      sessionWaitersRef.current.push(() => startMikeRef.current());
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -527,7 +568,8 @@ We are looking for an experienced professional to join our team. The successful 
       coaching = aiScoringConfigured
         ? await coachWithAI(q, text, score, cvCtx, jobCtx, thinkTimeMs)
         : generateCoachingMessage(score, q, text, cvCtx, jobCtx);
-    } catch {
+    } catch (err) {
+      console.error('[InterviewRoom] AI coaching failed — using template fallback:', err);
       coaching = generateCoachingMessage(score, q, text, cvCtx, jobCtx);
     }
 
