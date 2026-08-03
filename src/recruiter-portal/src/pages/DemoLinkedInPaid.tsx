@@ -39,52 +39,123 @@ const sections = [
 
 // ── £1 Practice Pack card — demo only, no backend, no payment ────────────────
 
-function CinematicChair() {
+function MastermindChairHeroLi() {
   return (
     <div style={{
       position: 'relative',
       width: '100%',
-      height: 160,
-      background: 'linear-gradient(180deg, #060518 0%, #08061a 60%, #07060f 100%)',
+      height: 174,
+      background: 'linear-gradient(180deg, #06102a 0%, #050d20 65%, #040a18 100%)',
       overflow: 'hidden',
       borderRadius: '14px 14px 0 0',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     }}>
+      {/* Overhead interrogation spotlight */}
       <div style={{
-        position: 'absolute', top: '50%', left: '50%',
-        transform: 'translate(-50%, -55%)',
-        width: 180, height: 180, borderRadius: '50%',
-        background: 'radial-gradient(ellipse, rgba(79,142,247,0.11) 0%, rgba(123,92,245,0.05) 40%, transparent 72%)',
+        position: 'absolute',
+        top: 0, left: '50%',
+        transform: 'translateX(-50%)',
+        width: '100%', height: '100%',
+        background: 'radial-gradient(ellipse 55% 90% at 50% -5%, rgba(160,190,255,0.32) 0%, rgba(90,130,220,0.14) 28%, rgba(30,60,130,0.04) 58%, transparent 78%)',
         pointerEvents: 'none',
       }} />
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.04 }} viewBox="0 0 300 160" preserveAspectRatio="none">
-        {[0,60,120,180,240,300].map(x => <line key={x} x1={x} y1="0" x2={x} y2="160" stroke="white" strokeWidth="0.5"/>)}
-        {[0,40,80,120,160].map(y => <line key={y} x1="0" y1={y} x2="300" y2={y} stroke="white" strokeWidth="0.5"/>)}
+
+      {/* Mastermind chair */}
+      <svg viewBox="0 0 185 228" style={{ height: 130, width: 'auto', display: 'block', flexShrink: 0, position: 'relative', zIndex: 1 }} aria-label="Interview Chair">
+        <defs>
+          <linearGradient id="liPad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stopColor="#bcc4d6"/>
+            <stop offset="8%"   stopColor="#5a5270"/>
+            <stop offset="22%"  stopColor="#1a1630"/>
+            <stop offset="100%" stopColor="#050310"/>
+          </linearGradient>
+          <linearGradient id="liChr" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stopColor="#dce0ee"/>
+            <stop offset="28%"  stopColor="#888ca8"/>
+            <stop offset="62%"  stopColor="#b8bcd0"/>
+            <stop offset="100%" stopColor="#606478"/>
+          </linearGradient>
+          <linearGradient id="liHr" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stopColor="#d0d8e8"/>
+            <stop offset="14%"  stopColor="#504868"/>
+            <stop offset="35%"  stopColor="#18142c"/>
+            <stop offset="100%" stopColor="#050310"/>
+          </linearGradient>
+          <linearGradient id="liSt" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stopColor="#181430"/>
+            <stop offset="100%" stopColor="#040210"/>
+          </linearGradient>
+        </defs>
+        <rect x="33" y="16" width="9"   height="111" rx="3"   fill="#a0a8c4"/>
+        <rect x="33" y="16" width="2.5" height="111" rx="1"   fill="rgba(240,246,255,0.72)"/>
+        <rect x="143" y="16" width="9"  height="111" rx="3"   fill="#4a4e66"/>
+        <rect x="33" y="11" width="119" height="8"   rx="3"   fill="url(#liChr)"/>
+        <rect x="33" y="11" width="119" height="2.5" rx="1"   fill="rgba(240,248,255,0.8)"/>
+        <rect x="42" y="19" width="101" height="18"  rx="4"   fill="url(#liHr)"/>
+        <rect x="42" y="19" width="101" height="4.5" rx="2"   fill="rgba(210,220,240,0.34)"/>
+        <rect x="42" y="34" width="101" height="3"           fill="rgba(0,0,0,0.65)"/>
+        <rect x="33" y="37" width="119" height="8"   rx="1.5" fill="url(#liChr)"/>
+        <rect x="33" y="37" width="119" height="2.5" rx="1"   fill="rgba(230,238,255,0.65)"/>
+        <rect x="33" y="43" width="119" height="2"           fill="rgba(0,0,0,0.4)"/>
+        <rect x="42" y="45" width="101" height="24"  rx="3"   fill="url(#liPad)"/>
+        <rect x="42" y="45" width="101" height="5.5" rx="2"   fill="rgba(190,200,220,0.28)"/>
+        <rect x="42" y="66" width="101" height="3"           fill="rgba(0,0,0,0.65)"/>
+        <rect x="33" y="69" width="119" height="8"   rx="1.5" fill="url(#liChr)"/>
+        <rect x="33" y="69" width="119" height="2.5" rx="1"   fill="rgba(220,230,250,0.6)"/>
+        <rect x="33" y="75" width="119" height="2"           fill="rgba(0,0,0,0.38)"/>
+        <rect x="42" y="77" width="101" height="24"  rx="3"   fill="url(#liPad)"/>
+        <rect x="42" y="77" width="101" height="5"   rx="2"   fill="rgba(170,180,205,0.23)"/>
+        <rect x="42" y="98" width="101" height="3"           fill="rgba(0,0,0,0.62)"/>
+        <rect x="33" y="101" width="119" height="8"  rx="1.5" fill="url(#liChr)"/>
+        <rect x="33" y="101" width="119" height="2.5" rx="1"  fill="rgba(210,222,248,0.55)"/>
+        <rect x="33" y="107" width="119" height="2"          fill="rgba(0,0,0,0.36)"/>
+        <rect x="42" y="109" width="101" height="22" rx="3"   fill="url(#liPad)"/>
+        <rect x="42" y="109" width="101" height="4.5" rx="2"  fill="rgba(150,162,192,0.2)"/>
+        <rect x="42" y="128" width="101" height="3"          fill="rgba(0,0,0,0.6)"/>
+        <rect x="33" y="131" width="119" height="8"  rx="1.5" fill="url(#liChr)"/>
+        <rect x="33" y="131" width="119" height="2.5" rx="1"  fill="rgba(200,214,244,0.5)"/>
+        <rect x="14"  y="119" width="23" height="7"  rx="3.5" fill="url(#liChr)"/>
+        <rect x="14"  y="119" width="23" height="2.5" rx="1"  fill="rgba(230,238,255,0.56)"/>
+        <rect x="17"  y="126" width="8"  height="20" rx="2"   fill="#7880a0"/>
+        <rect x="148" y="119" width="23" height="7"  rx="3.5" fill="#606480"/>
+        <rect x="160" y="126" width="8"  height="20" rx="2"   fill="#484862"/>
+        <rect x="17"  y="139" width="151" height="7" rx="3"   fill="url(#liChr)"/>
+        <rect x="17"  y="139" width="151" height="2.5" rx="1" fill="rgba(210,222,248,0.47)"/>
+        <rect x="19"  y="146" width="147" height="27" rx="4"  fill="url(#liSt)"/>
+        <rect x="19"  y="146" width="147" height="6"  rx="3"  fill="rgba(80,90,130,0.22)"/>
+        <rect x="19"  y="170" width="147" height="3"         fill="rgba(0,0,0,0.6)"/>
+        <rect x="17"  y="173" width="151" height="5"  rx="2"  fill="url(#liChr)"/>
+        <rect x="78"  y="177" width="29"  height="8"  rx="3.5" fill="url(#liChr)"/>
+        <rect x="83"  y="185" width="19"  height="14" rx="4"  fill="#131028"/>
+        <rect x="86"  y="197" width="13"  height="7"  rx="3"  fill="url(#liChr)"/>
+        <circle cx="92" cy="208" r="6"   fill="url(#liChr)"/>
+        <circle cx="92" cy="208" r="2"   fill="rgba(240,248,255,0.7)"/>
+        <g stroke="#9298b2" strokeWidth="5.5" strokeLinecap="round">
+          <line x1="92" y1="208" x2="92" y2="220" transform="rotate(36,92,208)"/>
+          <line x1="92" y1="208" x2="92" y2="220" transform="rotate(108,92,208)"/>
+          <line x1="92" y1="208" x2="92" y2="220" transform="rotate(180,92,208)"/>
+          <line x1="92" y1="208" x2="92" y2="220" transform="rotate(252,92,208)"/>
+          <line x1="92" y1="208" x2="92" y2="220" transform="rotate(324,92,208)"/>
+        </g>
+        <g fill="#8890a4">
+          <circle cx="92" cy="220" r="4" transform="rotate(36,92,208)"/>
+          <circle cx="92" cy="220" r="4" transform="rotate(108,92,208)"/>
+          <circle cx="92" cy="220" r="4" transform="rotate(180,92,208)"/>
+          <circle cx="92" cy="220" r="4" transform="rotate(252,92,208)"/>
+          <circle cx="92" cy="220" r="4" transform="rotate(324,92,208)"/>
+        </g>
+        <ellipse cx="92" cy="226" rx="56" ry="4.5" fill="rgba(0,0,0,0.4)"/>
       </svg>
+
+      {/* Bottom gradient fade */}
       <div style={{
-        position: 'absolute', top: '46%', left: '50%',
-        transform: 'translate(-50%, -52%)', textAlign: 'center',
-      }}>
-        <div style={{
-          width: 52, height: 52, borderRadius: '50%',
-          background: 'linear-gradient(145deg, #0f0d2a, #1a1560)',
-          border: '1.5px solid rgba(79,142,247,0.4)',
-          margin: '0 auto 8px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
-          boxShadow: '0 0 0 4px rgba(79,142,247,0.05), 0 0 28px rgba(79,142,247,0.13)',
-        }}>👩‍💼</div>
-        <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.85)', marginBottom: 2 }}>Sarah Mitchell</div>
-        <div style={{ fontSize: 9, color: 'rgba(160,168,192,0.65)', marginBottom: 8 }}>HR Director · AI Interviewer</div>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 20, padding: '2px 9px' }}>
-          <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 4px #22c55e' }} />
-          <span style={{ fontSize: 8, fontWeight: 700, color: 'rgba(34,197,94,0.8)', letterSpacing: '0.08em' }}>LIVE SESSION</span>
-        </div>
-      </div>
-      <div style={{ position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 2, alignItems: 'center' }}>
-        {[2,4,7,11,6,4,9,5,3,8,4].map((h, i) => (
-          <div key={i} style={{ width: 2, height: h, background: i % 3 === 0 ? 'rgba(79,142,247,0.65)' : 'rgba(79,142,247,0.22)', borderRadius: 2 }} />
-        ))}
-      </div>
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 44, background: 'linear-gradient(transparent, #07060f)', pointerEvents: 'none' }} />
+        position: 'absolute',
+        bottom: 0, left: 0, right: 0, height: 40,
+        background: 'linear-gradient(transparent, #040a18)',
+        pointerEvents: 'none',
+      }} />
     </div>
   );
 }
@@ -92,35 +163,30 @@ function CinematicChair() {
 function PracticePack() {
   return (
     <div style={{
-      background: '#07060f',
-      border: '1px solid rgba(79,142,247,0.15)',
+      background: 'linear-gradient(180deg, #07112a 0%, #050d20 60%, #040a18 100%)',
+      border: '1px solid rgba(79,142,247,0.2)',
       borderRadius: '14px',
       overflow: 'hidden',
       marginBottom: '12px',
-      boxShadow: '0 10px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(79,142,247,0.07)',
+      boxShadow: '0 10px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(79,142,247,0.1)',
       fontFamily: '-apple-system, "Segoe UI", sans-serif',
     }}>
-      <CinematicChair />
+      <MastermindChairHeroLi />
 
       {/* Brand strip */}
-      <div style={{ padding: '0 16px 12px', display: 'flex', alignItems: 'center', gap: 7, borderBottom: '1px solid rgba(79,142,247,0.07)', marginTop: -2 }}>
-        <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-            <rect x="1.5" y="1" width="9" height="12" rx="1.5" stroke="rgba(255,255,255,0.6)" strokeWidth="1.25" fill="none"/>
-            <path d="M13 6.5L11.2 10h2.3L11.8 14" stroke="rgba(79,142,247,0.9)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
-        <div style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(79,142,247,0.6)' }}>
-          Explain.Global · Interview Preparation
-        </div>
+      <div style={{ padding: '10px 16px 12px', borderBottom: '1px solid rgba(79,142,247,0.1)', marginTop: -2 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.01em' }}>
+          <span style={{ color: '#4F8EF7' }}>www</span>
+          <span style={{ color: '#ffffff' }}>.Explain.global</span>
+        </span>
       </div>
 
       <div style={{ padding: '16px 16px 0' }}>
         <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', lineHeight: 1.35, letterSpacing: '-0.02em', marginBottom: 4 }}>
           Get your tailored Interview Pack for this exact role
         </div>
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 12 }}>only £1</div>
-        <div style={{ fontSize: 12, color: '#555070', lineHeight: 1.65, marginBottom: 16 }}>
+        <div style={{ fontSize: 13, color: '#22c55e', fontWeight: 700, marginBottom: 12 }}>only £1</div>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.72)', lineHeight: 1.65, marginBottom: 16 }}>
           20 AI-generated practice questions · Tailored to your CV · Tailored to this job · Instant access
         </div>
         <button style={{
@@ -134,9 +200,9 @@ function PracticePack() {
         </button>
       </div>
 
-      <div style={{ padding: '10px 16px 14px', fontSize: 10, color: '#252340', textAlign: 'center', lineHeight: 1.6 }}>
+      <div style={{ padding: '10px 16px 14px', fontSize: 10, color: 'rgba(255,255,255,0.55)', textAlign: 'center', lineHeight: 1.6 }}>
         No login needed · Instant access<br />
-        <span style={{ color: 'rgba(79,142,247,0.45)', fontWeight: 600 }}>Powered by Explain.Global</span>
+        <span style={{ color: '#4F8EF7', fontWeight: 700 }}>Powered by Explain.Global</span>
       </div>
     </div>
   );
