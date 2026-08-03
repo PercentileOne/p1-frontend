@@ -226,16 +226,14 @@ export function InterviewerAvatar({ role, state, active, videoUrl, specialistTit
         </AnimatePresence>
         {/* Bottom vignette */}
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%)', pointerEvents: 'none' }} />
-        {/* Speaking ring border */}
-        <AnimatePresence>
-          {active && state === 'speaking' && (
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: [0.4, 0.9, 0.4] }} exit={{ opacity: 0 }}
-              transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-              style={{ position: 'absolute', inset: 0, borderRadius: '16px', border: `2px solid ${profile.ring}`, pointerEvents: 'none' }}
-            />
-          )}
-        </AnimatePresence>
+        {/* Speaking ring border — always rendered, opacity driven by state to avoid flash on mount/unmount */}
+        <motion.div
+          animate={active && state === 'speaking' ? { opacity: [0.35, 0.85, 0.35] } : { opacity: 0 }}
+          transition={active && state === 'speaking'
+            ? { repeat: Infinity, duration: 2.2, ease: 'easeInOut' }
+            : { duration: 0.4, ease: 'easeOut' }}
+          style={{ position: 'absolute', inset: 0, borderRadius: '16px', border: `2px solid ${profile.ring}`, pointerEvents: 'none' }}
+        />
       </div>
 
       {/* Name + status — overlaid bottom */}

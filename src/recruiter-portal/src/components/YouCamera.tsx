@@ -8,22 +8,97 @@ interface Props {
   onToggle: () => void;
 }
 
+const BAR_COUNT = 8;
+
+function MicWaveform({ speaking, analyserNode }: { speaking: boolean; analyserNode: AnalyserNode | null }) {
+  const [heights, setHeights] = useState<number[]>(() => Array(BAR_COUNT).fill(0.08));
+  const rafRef = useRef<number>(0);
+  const dataRef = useRef<Uint8Array | null>(null);
+
+  useEffect(() => {
+    cancelAnimationFrame(rafRef.current);
+    if (!speaking) { setHeights(Array(BAR_COUNT).fill(0.08)); return; }
+
+    if (analyserNode) {
+      const bufLen = analyserNode.frequencyBinCount;
+      dataRef.current = new Uint8Array(bufLen);
+      const step = Math.max(1, Math.floor(bufLen / BAR_COUNT));
+      const tick = () => {
+        analyserNode.getByteFrequencyData(dataRef.current!);
+        setHeights(Array.from({ length: BAR_COUNT }, (_, i) =>
+          Math.max(0.08, dataRef.current![Math.min(i * step, bufLen - 1)] / 255)
+        ));
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      rafRef.current = requestAnimationFrame(tick);
+      return () => cancelAnimationFrame(rafRef.current);
+    }
+
+    // Fallback: simple speaking pulse when no analyser
+    const id = setInterval(() => {
+      setHeights(Array.from({ length: BAR_COUNT }, () => 0.2 + Math.random() * 0.7));
+    }, 80);
+    return () => clearInterval(id);
+  }, [speaking, analyserNode]);
+
+  return (
+    <div style={{ display: 'flex', gap: '2px', alignItems: 'center', height: '28px' }}>
+      {heights.map((h, i) => (
+        <motion.div
+          key={i}
+          animate={{ scaleY: speaking ? h : 0.08 }}
+          transition={{ duration: 0.05, ease: 'linear' }}
+          style={{
+            width: '3px', height: '100%',
+            background: speaking ? '#34D399' : 'rgba(255,255,255,0.10)',
+            borderRadius: '2px', transformOrigin: 'center',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const micAnalyserRef = useRef<AnalyserNode | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
   const [camState, setCamState] = useState<'requesting' | 'active' | 'denied'>('requesting');
+  const [micReady, setMicReady] = useState(false);
 
+  // Request camera + mic together so we get real audio levels
   useEffect(() => {
+    let mounted = true;
     navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: 'user', width: 320, height: 240 }, audio: false })
+      .getUserMedia({ video: { facingMode: 'user', width: 320, height: 240 }, audio: true })
       .then(stream => {
+        if (!mounted) return;
         streamRef.current = stream;
         if (videoRef.current) videoRef.current.srcObject = stream;
         setCamState('active');
-      })
-      .catch(() => setCamState('denied'));
 
-    return () => { streamRef.current?.getTracks().forEach(t => t.stop()); };
+        // Wire mic to AnalyserNode for live waveform
+        try {
+          const ctx = new AudioContext();
+          audioCtxRef.current = ctx;
+          const source = ctx.createMediaStreamSource(stream);
+          const analyser = ctx.createAnalyser();
+          analyser.fftSize = 64;
+          analyser.smoothingTimeConstant = 0.7;
+          source.connect(analyser);
+          // Do NOT connect analyser to destination — we don't want mic playback
+          micAnalyserRef.current = analyser;
+          setMicReady(true);
+        } catch { /* Web Audio unavailable */ }
+      })
+      .catch(() => { if (mounted) setCamState('denied'); });
+
+    return () => {
+      mounted = false;
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      audioCtxRef.current?.close();
+    };
   }, []);
 
   // Enable/disable video track when cameraOn changes
@@ -31,6 +106,13 @@ export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle 
     const track = streamRef.current?.getVideoTracks()[0];
     if (track) track.enabled = cameraOn;
   }, [cameraOn]);
+
+  // Resume AudioContext on user interaction (browser autoplay policy)
+  useEffect(() => {
+    if (speaking && audioCtxRef.current?.state === 'suspended') {
+      audioCtxRef.current.resume();
+    }
+  }, [speaking]);
 
   const showVideo = camState === 'active' && cameraOn;
 
@@ -49,7 +131,7 @@ export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle 
         position: 'relative',
         minHeight: '120px',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'border-color 0.1s, box-shadow 0.1s',
+        transition: 'border-color 0.15s, box-shadow 0.15s',
       }}
     >
       {/* Live webcam feed */}
@@ -93,15 +175,21 @@ export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle 
       </AnimatePresence>
 
       {/* Bottom vignette */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 50%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 55%)', pointerEvents: 'none' }} />
 
-      {/* Name + status */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 12px' }}>
-        <div style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>{label}</div>
-        {camState === 'active' && (
-          <div style={{ fontSize: '9px', fontWeight: 600, marginTop: '1px', letterSpacing: '0.05em', textTransform: 'uppercase', color: speaking ? '#34D399' : cameraOn ? 'rgba(52,211,153,0.6)' : 'rgba(255,255,255,0.3)' }}>
-            {speaking ? '● Speaking' : cameraOn ? 'Live' : 'Off'}
-          </div>
+      {/* Name + mic waveform / status */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 12px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>{label}</div>
+          {camState === 'active' && !speaking && (
+            <div style={{ fontSize: '9px', fontWeight: 600, marginTop: '1px', letterSpacing: '0.05em', textTransform: 'uppercase', color: cameraOn ? 'rgba(52,211,153,0.6)' : 'rgba(255,255,255,0.3)' }}>
+              {cameraOn ? 'Live' : 'Off'}
+            </div>
+          )}
+        </div>
+        {/* Live mic waveform when it's the user's turn */}
+        {speaking && (
+          <MicWaveform speaking={speaking} analyserNode={micReady ? micAnalyserRef.current : null} />
         )}
       </div>
 
