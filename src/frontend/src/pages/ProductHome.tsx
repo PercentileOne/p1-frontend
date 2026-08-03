@@ -358,9 +358,20 @@ export default function ProductHome() {
       .ph-learn-grid,.ph-packs-grid{grid-template-columns:1fr 1fr}
       .ph-nav{padding:0 20px}.ph-nav-links{display:none}
       .ph-c{padding:0 20px}.ph-global-stats{grid-template-columns:1fr 1fr}
+      .ph-hero-inner{grid-template-columns:1fr;gap:40px}
+      #ph-hero{padding:60px 20px 40px}
+      .ph-practice-grid{grid-template-columns:1fr;gap:48px;padding:0 20px}
+      .ph-pack-card{max-width:100%}
+      .ph-nav-cta{padding:8px 14px;font-size:12px}
     }
     @media(max-width:600px){
       .ph-learn-grid,.ph-packs-grid,.ph-global-stats{grid-template-columns:1fr}
+      #ph-hero{padding:48px 16px 32px}
+      .ph-hero-inner{gap:28px}
+      .ph-practice-grid{padding:0 16px}
+      .ph-c{padding:0 16px}
+      .ph-practice-stats{gap:20px}
+      .ph-btn-primary,.ph-btn-ghost{padding:13px 22px;font-size:14px}
     }
   `;
 
