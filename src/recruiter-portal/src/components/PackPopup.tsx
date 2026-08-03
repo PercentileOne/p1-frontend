@@ -212,7 +212,9 @@ export function PackPopup({ jobDescriptionText, exampleCvText, workspaceId, onCl
           <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
             {step === 'idle' && (
               <div style={{ textAlign: 'center', padding: '32px 0' }}>
-                <div style={{ fontSize: '40px', marginBottom: '16px' }}>⚡</div>
+                <div style={{ marginBottom: '18px', display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(145deg, #0f0d2a, #1a1560)', border: '1.5px solid rgba(79,142,247,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 6px rgba(79,142,247,0.06), 0 0 28px rgba(79,142,247,0.15)', fontSize: 22 }}>👩‍💼</div>
+                </div>
                 <div style={{ fontSize: '15px', color: 'var(--text-2)', marginBottom: '24px', maxWidth: '380px', margin: '0 auto 24px' }}>
                   Generate a tailored interview pack from the job description in seconds — no login required.
                 </div>
