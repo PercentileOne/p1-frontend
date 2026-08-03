@@ -66,25 +66,28 @@ export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle 
         }}
       />
 
-      {/* Camera off — silhouette */}
+      {/* Camera off — empty chair */}
       <AnimatePresence>
         {!showVideo && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              background: 'linear-gradient(160deg, #111118 0%, #0a0a12 100%)',
-            }}
+            style={{ position: 'absolute', inset: 0 }}
           >
-            <svg width="52" height="64" viewBox="0 0 52 64" fill="none">
-              <ellipse cx="26" cy="18" rx="14" ry="16" fill="rgba(255,255,255,0.10)" />
-              <path d="M2 62c0-13.255 10.745-24 24-24s24 10.745 24 24" stroke="rgba(255,255,255,0.10)" strokeWidth="4" strokeLinecap="round" fill="none"/>
-            </svg>
-            <div style={{ fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.25)', marginTop: '8px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              {camState === 'denied' ? 'No camera' : 'Camera off'}
-            </div>
+            <img
+              src="/images/mastermind-chair.png"
+              alt=""
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center bottom', opacity: 0.7 }}
+            />
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(160deg, rgba(5,8,20,0.5) 0%, rgba(5,8,20,0.2) 100%)',
+            }} />
+            {camState === 'denied' && (
+              <div style={{ position: 'absolute', bottom: 32, left: 0, right: 0, textAlign: 'center', fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                No camera
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -102,31 +105,35 @@ export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle 
         )}
       </div>
 
-      {/* Camera toggle button — prominent, bottom-right of tile */}
+      {/* Camera toggle button */}
       {camState === 'active' && (
         <button
           onClick={onToggle}
           title={cameraOn ? 'Turn camera off' : 'Turn camera on'}
           style={{
-            position: 'absolute', top: '10px', right: '10px',
-            background: cameraOn ? 'rgba(0,0,0,0.5)' : 'rgba(239,68,68,0.7)',
-            border: `1px solid ${cameraOn ? 'rgba(255,255,255,0.2)' : 'rgba(239,68,68,0.9)'}`,
-            borderRadius: '8px', padding: '6px 8px',
-            cursor: 'pointer', backdropFilter: 'blur(4px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            position: 'absolute', top: '8px', right: '8px',
+            background: cameraOn ? 'rgba(0,0,0,0.6)' : 'rgba(239,68,68,0.9)',
+            border: `2px solid ${cameraOn ? 'rgba(255,255,255,0.25)' : '#ef4444'}`,
+            borderRadius: '10px', padding: '7px 10px',
+            cursor: 'pointer', backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', gap: '5px',
             transition: 'all 0.2s',
+            boxShadow: cameraOn ? 'none' : '0 0 12px rgba(239,68,68,0.5)',
           }}
         >
           {cameraOn ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 10l4.553-2.069A1 1 0 0121 8.876v6.248a1 1 0 01-1.447.894L15 14M4 8h11a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/>
             </svg>
           ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.95)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 10l4.553-2.069A1 1 0 0121 8.876v6.248a1 1 0 01-1.447.894L15 14M4 8h11a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/>
               <line x1="3" y1="3" x2="21" y2="21"/>
             </svg>
           )}
+          <span style={{ fontSize: '9px', fontWeight: 700, color: '#fff', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            {cameraOn ? 'Cam' : 'Off'}
+          </span>
         </button>
       )}
     </motion.div>
