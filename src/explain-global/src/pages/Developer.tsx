@@ -473,7 +473,7 @@ export default function Developer() {
               { title: 'ATS Integration', desc: 'Trigger pack generation when a candidate progresses to interview stage.', tag: 'Enterprise' },
               { title: 'Job Board', desc: 'Lazy generation with caching — serve millions of listings efficiently.', tag: 'Scale' },
               { title: 'White-Label Guide', desc: 'Full attribution-free white-labelling. Your brand, your product name.', tag: 'Enterprise' },
-              { title: 'Hosted UI Flow', desc: 'Redirect candidates to Explain's hosted experience under your brand.', tag: 'Fast launch' },
+              { title: 'Hosted UI Flow', desc: "Redirect candidates to Explain's hosted experience under your brand.", tag: 'Fast launch' },
             ].map(({ title, desc, tag }) => (
               <div key={title} style={{ background: SURF, border: `1px solid ${BORD}`, borderRadius: 12, padding: '18px 18px 16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8, gap: 8 }}>
