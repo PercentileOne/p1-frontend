@@ -522,17 +522,17 @@ export default function Home() {
               boxShadow:'0 12px 48px rgba(0,0,0,0.55),0 2px 8px rgba(79,142,247,0.1)',
               width:300,flexShrink:0,
             }}>
-              {/* Chair hero */}
-              <div style={{width:'100%',background:'linear-gradient(180deg,#0d1f45 0%,#07112a 65%,#050d20 100%)',borderRadius:'16px 16px 0 0',textAlign:'center',padding:'16px 0 8px'}}>
-                <img src="/images/MastermindChair2.png" alt="" style={{width:'60%',height:'auto',display:'inline-block'}} />
-              </div>
               {/* Brand header */}
-              <div style={{padding:'14px 20px 16px',borderBottom:'1px solid rgba(79,142,247,0.1)',textAlign:'center'}}>
+              <div style={{padding:'14px 20px 12px',borderBottom:'1px solid rgba(79,142,247,0.1)',textAlign:'center',borderRadius:'16px 16px 0 0'}}>
                 <span style={{fontSize:20,fontWeight:900,letterSpacing:'-0.02em',lineHeight:1}}>
                   <span style={{color:'#4F8EF7'}}>www.</span>
                   <span style={{color:'#ffffff'}}>Explain</span>
                   <span style={{color:'#4F8EF7'}}>.global</span>
                 </span>
+              </div>
+              {/* Chair hero */}
+              <div style={{width:'100%',background:'linear-gradient(180deg,#0d1f45 0%,#07112a 65%,#050d20 100%)',textAlign:'center',padding:'16px 0 8px'}}>
+                <img src="/images/MastermindChair2.png" alt="" style={{width:'60%',height:'auto',display:'inline-block'}} />
               </div>
               {/* Body */}
               <div style={{padding:'20px 20px 0'}}>

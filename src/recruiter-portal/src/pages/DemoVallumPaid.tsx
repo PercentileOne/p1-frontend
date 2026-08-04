@@ -49,14 +49,12 @@ function PremiumCard({ onOpen }: { onOpen: () => void }) {
       border: '1px solid rgba(79,142,247,0.2)',
       boxShadow: '0 12px 48px rgba(0,0,0,0.55), 0 2px 8px rgba(79,142,247,0.1)',
     }}>
-      {/* Mastermind chair hero */}
-      <MastermindChairHero />
-
       {/* Brand strip */}
       <div style={{
-        padding: '14px 20px 16px',
+        padding: '14px 20px 12px',
         borderBottom: '1px solid rgba(79,142,247,0.1)',
         textAlign: 'center',
+        borderRadius: '16px 16px 0 0',
       }}>
         <span style={{ fontSize: 20, fontWeight: 900, letterSpacing: '-0.02em', lineHeight: 1 }}>
           <span style={{ color: '#4F8EF7' }}>www.</span>
@@ -64,6 +62,9 @@ function PremiumCard({ onOpen }: { onOpen: () => void }) {
           <span style={{ color: '#4F8EF7' }}>.global</span>
         </span>
       </div>
+
+      {/* Mastermind chair hero */}
+      <MastermindChairHero />
 
       {/* Body */}
       <div style={{ padding: '20px 20px 0' }}>
