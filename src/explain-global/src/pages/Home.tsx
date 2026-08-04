@@ -191,6 +191,33 @@ export default function Home() {
     .ph-flow-ev:hover{border-color:rgba(79,142,247,.3);transform:translateX(4px)}
     .ph-flow-ev::before{content:'';position:absolute;left:-27px;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;background:#4F8EF7;box-shadow:0 0 8px #4F8EF7}
 
+    #ph-mastery{background:#03060F;padding:120px 0}
+    .ph-mastery-grid{display:grid;grid-template-columns:1fr 1fr;gap:96px;align-items:start}
+    .ph-mastery-hl{font-size:clamp(38px,5.5vw,68px);font-weight:900;line-height:1.04;letter-spacing:-.04em;color:#F0F4FF}
+    .ph-mastery-divider{width:48px;height:2px;background:#4F8EF7;margin:28px 0}
+    .ph-mastery-body{font-size:clamp(16px,1.6vw,19px);line-height:1.85;color:rgba(240,244,255,.65);margin-bottom:0}
+    .ph-mastery-body strong{color:#F0F4FF;font-weight:700}
+    .ph-mastery-pillars{margin-top:40px;display:flex;flex-direction:column;gap:0}
+    .ph-mastery-pillar{padding:18px 0;border-top:1px solid rgba(79,142,247,.12);display:flex;justify-content:space-between;align-items:center}
+    .ph-mastery-pillar:last-child{border-bottom:1px solid rgba(79,142,247,.12)}
+    .ph-mastery-pillar-name{font-size:15px;font-weight:800;color:#F0F4FF;letter-spacing:-.01em}
+    .ph-mastery-pillar-desc{font-size:12px;color:rgba(240,244,255,.35);font-weight:500;text-align:right;max-width:180px;line-height:1.5}
+
+    #ph-stages{background:#070C1A;padding:120px 0;text-align:center}
+    .ph-stages-emblem{display:inline-flex;flex-direction:column;align-items:center;border:1px solid rgba(79,142,247,.4);padding:40px 64px;margin:48px auto 0;position:relative}
+    .ph-stages-emblem::before{content:'';position:absolute;top:8px;left:8px;right:8px;bottom:8px;border:1px solid rgba(79,142,247,.12)}
+    .ph-stages-num{font-size:clamp(80px,12vw,120px);font-weight:900;letter-spacing:-.05em;color:#4F8EF7;line-height:1;font-variant-numeric:tabular-nums}
+    .ph-stages-unit{font-size:10px;font-weight:800;letter-spacing:.35em;text-transform:uppercase;color:rgba(79,142,247,.5);margin-top:2px}
+    .ph-stages-claim{font-size:clamp(13px,1.4vw,16px);font-weight:600;color:rgba(240,244,255,.55);margin-top:16px;line-height:1.6;max-width:280px;text-align:center}
+    .ph-stages-list{display:flex;max-width:660px;margin:48px auto 0;border:1px solid rgba(79,142,247,.15);border-radius:14px;overflow:hidden}
+    .ph-stages-step{flex:1;padding:20px 8px;text-align:center;border-right:1px solid rgba(79,142,247,.12);transition:background .25s}
+    .ph-stages-step:last-child{border-right:none}
+    .ph-stages-step:hover{background:rgba(79,142,247,.06)}
+    .ph-stages-step-n{font-size:9px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#4F8EF7;margin-bottom:6px}
+    .ph-stages-step-name{font-size:13px;font-weight:800;color:#F0F4FF;line-height:1.3}
+    .ph-stages-sub{font-size:clamp(14px,1.5vw,17px);line-height:1.8;color:rgba(240,244,255,.55);max-width:580px;margin:40px auto 0}
+    .ph-stages-sub strong{color:#F0F4FF;font-weight:700}
+
     #ph-eco{background:#03060F;padding:100px 0}
     #ph-road{background:#070C1A;padding:100px 0}
     .ph-road-list{display:flex;flex-direction:column;max-width:700px;margin:40px auto 0;position:relative}
@@ -537,6 +564,81 @@ export default function Home() {
               <p className="ph-r" data-ph="" data-d="6" style={{marginTop:24,fontSize:14,color:'#4F8EF7',fontWeight:700,textAlign:'center'}}>{t('why.allFive')}</p>
             </div>
           </div>
+        </div>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* CONTINUOUS MASTERY */}
+      <section id="ph-mastery">
+        <div className="ph-c">
+          <div className="ph-mastery-grid">
+            <div>
+              <div className="ph-lbl ph-r" data-ph="">Continuous Mastery</div>
+              <h2 className="ph-mastery-hl ph-r" data-ph="" data-d="1">
+                Get the Job.<br />Keep the Job.
+              </h2>
+              <div className="ph-mastery-divider ph-r" data-ph="" data-d="2" />
+              <p className="ph-mastery-body ph-r" data-ph="" data-d="3">
+                People work incredibly hard to secure a role — but once they're hired, they relax, stop learning, and slowly become stale. <strong>Explain.Global is the only platform built to prevent that.</strong> Daily coaching, Push Questions, continuous learning, and structured mastery keep your skills sharp long after the interview is over.
+              </p>
+            </div>
+            <div className="ph-r" data-ph="" data-d="2">
+              <div className="ph-mastery-pillars">
+                {[
+                  { name: 'Daily Coaching', desc: 'A structured question, every day' },
+                  { name: 'Push Questions', desc: 'Role-specific prompts sent to you' },
+                  { name: 'Continuous Learning', desc: 'Micro-lessons that compound over time' },
+                  { name: 'Structured Mastery', desc: 'Tracked progress across every skill' },
+                ].map(p => (
+                  <div className="ph-mastery-pillar" key={p.name}>
+                    <span className="ph-mastery-pillar-name">{p.name}</span>
+                    <span className="ph-mastery-pillar-desc">{p.desc}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="ph-tagline" style={{marginTop:32}}>
+                <p>Most platforms prepare you for the interview. <strong style={{color:'#4F8EF7'}}>Explain.Global prepares you for the career.</strong></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* 5-STAGE INTERVIEW */}
+      <section id="ph-stages">
+        <div className="ph-c">
+          <div className="ph-lbl ph-r" data-ph="" style={{textAlign:'center'}}>Built for Real Hiring Processes</div>
+          <h2 className="ph-h-xl ph-r" data-ph="" data-d="1" style={{textAlign:'center'}}>
+            Most platforms prepare you for <span style={{color:'#4F8EF7'}}>one stage.</span><br />
+            We prepare you for <span style={{color:'#F0F4FF'}}>all five.</span>
+          </h2>
+          <div className="ph-r" data-ph="" data-d="2" style={{display:'flex',justifyContent:'center'}}>
+            <div className="ph-stages-emblem">
+              <div className="ph-stages-num">5</div>
+              <div className="ph-stages-unit">Interview Stages</div>
+              <div className="ph-stages-claim">The only platform that supports up to 5 interview stages.</div>
+            </div>
+          </div>
+          <div className="ph-stages-list ph-r" data-ph="" data-d="3">
+            {[
+              { n: '01', name: 'HR Screen' },
+              { n: '02', name: 'Hiring Manager' },
+              { n: '03', name: 'Technical' },
+              { n: '04', name: 'Panel' },
+              { n: '05', name: 'Final' },
+            ].map(s => (
+              <div className="ph-stages-step" key={s.n}>
+                <div className="ph-stages-step-n">{s.n}</div>
+                <div className="ph-stages-step-name">{s.name}</div>
+              </div>
+            ))}
+          </div>
+          <p className="ph-stages-sub ph-r" data-ph="" data-d="4">
+            Most platforms only prepare you for one stage. <strong>Explain.Global prepares you for all five</strong> — HR, Hiring Manager, Technical, Panel, and Final.
+          </p>
         </div>
       </section>
 
