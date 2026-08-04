@@ -87,7 +87,7 @@ function PremiumCard({ onOpen }: { onOpen: () => void }) {
       {/* Body */}
       <div style={{ padding: '20px 20px 0' }}>
         <div style={{ fontSize: 17, fontWeight: 800, color: '#fff', lineHeight: 1.35, letterSpacing: '-0.02em', marginBottom: 5 }}>
-          Get your tailored Interview Pack for this exact role
+          Get your tailored Interview Practice Pack for this exact role
         </div>
         <div style={{ fontSize: 14, color: '#22c55e', fontWeight: 700, marginBottom: 14, letterSpacing: '0.01em' }}>
           only £1
@@ -116,7 +116,7 @@ function PremiumCard({ onOpen }: { onOpen: () => void }) {
           onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.85'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}
         >
-          Get Interview Pack — £1
+          Get Interview Practice Pack — £1
         </button>
       </div>
 
