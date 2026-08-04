@@ -108,7 +108,7 @@ export default function Register() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
         style={{
-          flex: 1, display: 'none', flexDirection: 'column', justifyContent: 'space-between',
+          flex: 1, display: 'none', flexDirection: 'column', justifyContent: 'flex-start', gap: 32,
           padding: '48px 56px',
           background: BG_LEFT,
           borderRight: '1px solid rgba(79,142,247,0.15)',
@@ -145,7 +145,7 @@ export default function Register() {
           </AnimatePresence>
 
           {/* Cinematic chair silhouette */}
-          <div style={{ margin: '40px 0 0', display: 'flex', justifyContent: 'center', opacity: 0.13, pointerEvents: 'none', userSelect: 'none' }}>
+          <div style={{ margin: '40px 0 0', display: 'flex', justifyContent: 'center', opacity: 0.19, pointerEvents: 'none', userSelect: 'none' }}>
             <img src="/images/MastermindChair2.png" alt="" style={{ width: '62%', height: 'auto', display: 'block' }} />
           </div>
 
@@ -167,7 +167,7 @@ export default function Register() {
           </div>
         </div>
 
-        <div style={{ fontSize: 11, color: 'rgba(160,200,255,0.3)' }}>© 2026 Explain Global Ltd · All rights reserved</div>
+        <div style={{ fontSize: 11, color: 'rgba(160,200,255,0.3)', marginTop: 'auto' }}>© 2026 Explain Global Ltd · All rights reserved</div>
       </motion.div>
 
       {/* Right panel — form */}
@@ -175,7 +175,7 @@ export default function Register() {
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
-        style={{ width: '100%', maxWidth: 520, margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '28px 32px' }}
+        style={{ width: '100%', maxWidth: 520, margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 32px' }}
       >
         <h1 style={{ fontSize: 26, fontWeight: 900, color: '#fff', marginBottom: 4, letterSpacing: '-0.02em' }}>Create your account</h1>
         <p style={{ fontSize: 14, color: 'rgba(160,200,255,0.65)', marginBottom: 18 }}>
