@@ -11,27 +11,33 @@ const ROLES: { value: UserRole; label: string; description: string; icon: string
 
 const ROLE_ACCENT: Record<UserRole, string> = {
   Candidate: '#34D399',
-  Recruiter: '#a78bfa',
+  Recruiter: '#60a5fa',
   Client:    '#4F8EF7',
 };
 
+const BG        = '#07112a';
+const BG_LEFT   = 'linear-gradient(160deg, #07112a 0%, #050d20 100%)';
+const LABEL_COL = 'rgba(200,220,255,0.80)';
+const PH_COL    = 'rgba(160,200,255,0.45)';
+
 export default function Register() {
-  const [role, setRole]             = useState<UserRole>('Candidate');
-  const [fullName, setFullName]     = useState('');
-  const [email, setEmail]           = useState('');
-  const [company, setCompany]       = useState('');
-  const [password, setPassword]     = useState('');
-  const [confirm, setConfirm]       = useState('');
-  const [showPass, setShowPass]     = useState(false);
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState<string | null>(null);
+  const [role, setRole]         = useState<UserRole>('Candidate');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName]   = useState('');
+  const [email, setEmail]         = useState('');
+  const [company, setCompany]     = useState('');
+  const [password, setPassword]   = useState('');
+  const [confirm, setConfirm]     = useState('');
+  const [showPass, setShowPass]   = useState(false);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState<string | null>(null);
   const [redirecting, setRedirecting] = useState(false);
   const [redirectTarget, setRedirectTarget] = useState('');
 
   const accent = ROLE_ACCENT[role];
   const needsCompany = ROLES.find(r => r.value === role)?.needsCompany ?? false;
 
-  useEffect(() => { setError(null); }, [role, email, password, fullName]);
+  useEffect(() => { setError(null); }, [role, email, password, firstName, lastName]);
 
   function passwordStrength(p: string): { score: number; label: string; color: string } {
     if (!p) return { score: 0, label: '', color: 'transparent' };
@@ -48,6 +54,7 @@ export default function Register() {
 
   const strength = passwordStrength(password);
   const passwordMismatch = confirm.length > 0 && password !== confirm;
+  const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,7 +66,7 @@ export default function Register() {
     setError(null);
 
     try {
-      const result = await register(email.trim(), password, role, fullName.trim(), needsCompany ? company.trim() : null);
+      const result = await register(email.trim(), password, role, fullName, needsCompany ? company.trim() : null);
       setRedirecting(true);
       setRedirectTarget(result.redirectTo);
       setTimeout(() => { window.location.href = result.redirectTo; }, 1800);
@@ -72,14 +79,14 @@ export default function Register() {
 
   if (redirecting) {
     return (
-      <div style={{ minHeight: '100vh', background: '#05040f', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 24 }}>
+      <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 24 }}>
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 200 }}>
-          <div style={{ width: 64, height: 64, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}33, ${accent}11)`, border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>✓</div>
+          <div style={{ width: 64, height: 64, borderRadius: '50%', background: `${accent}22`, border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>✓</div>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 8 }}>Account created!</div>
-          <div style={{ fontSize: 13, color: '#6060a0' }}>Setting up your portal…</div>
-          <div style={{ fontSize: 11, color: '#3a3a60', marginTop: 4 }}>{redirectTarget}</div>
+          <div style={{ fontSize: 13, color: LABEL_COL }}>Setting up your portal…</div>
+          <div style={{ fontSize: 11, color: 'rgba(160,200,255,0.3)', marginTop: 4 }}>{redirectTarget}</div>
         </motion.div>
         <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.4 }} style={{ display: 'flex', gap: 6 }}>
           {[0,1,2].map(i => (
@@ -92,7 +99,7 @@ export default function Register() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#05040f', display: 'flex' }}>
+    <div style={{ minHeight: '100vh', background: BG, display: 'flex' }}>
 
       {/* Left panel */}
       <motion.div
@@ -102,8 +109,8 @@ export default function Register() {
         style={{
           flex: 1, display: 'none', flexDirection: 'column', justifyContent: 'space-between',
           padding: '48px 56px',
-          background: 'linear-gradient(160deg, #0d0b1e 0%, #080812 100%)',
-          borderRight: '1px solid rgba(120,80,255,0.12)',
+          background: BG_LEFT,
+          borderRight: '1px solid rgba(79,142,247,0.15)',
           position: 'relative', overflow: 'hidden',
         }}
         className="auth-left-panel"
@@ -114,7 +121,7 @@ export default function Register() {
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
             <img src="/assets/explain-logo.svg" width={36} height={36} alt="Explain" style={{ borderRadius: '50%' }} />
             <span style={{ fontWeight: 800, fontSize: 20, color: '#fff', letterSpacing: '-0.02em' }}>
-              explain<span style={{ color: '#7b5cf5' }}>.global</span>
+              Explain<span style={{ color: '#4F8EF7' }}>.global</span>
             </span>
           </Link>
         </div>
@@ -128,7 +135,7 @@ export default function Register() {
                 {role === 'Recruiter' && <>Win more<br /><span style={{ color: accent }}>placements.</span></>}
                 {role === 'Client'    && <>Hire smarter,<br /><span style={{ color: accent }}>faster.</span></>}
               </h2>
-              <p style={{ fontSize: 15, color: '#7070a0', lineHeight: 1.75 }}>
+              <p style={{ fontSize: 15, color: 'rgba(160,200,255,0.65)', lineHeight: 1.75 }}>
                 {role === 'Candidate' && 'Free to get started. Practice with AI. See real scores. LEARN from every session.'}
                 {role === 'Recruiter' && 'Send candidates a prep link in 30 seconds. They practice. You see their scores before the real interview.'}
                 {role === 'Client'    && 'Commission bespoke interview packs. Review pre-assessed talent. Make confident hire decisions.'}
@@ -146,15 +153,15 @@ export default function Register() {
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                 <div style={{ width: 26, height: 26, borderRadius: '50%', background: `${accent}18`, border: `1px solid ${accent}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: accent, flexShrink: 0 }}>{i + 1}</div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#c0c0e0', marginBottom: 2 }}>{title}</div>
-                  <div style={{ fontSize: 12, color: '#5050a0' }}>{sub}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#d0e4ff', marginBottom: 2 }}>{title}</div>
+                  <div style={{ fontSize: 12, color: 'rgba(160,200,255,0.55)' }}>{sub}</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div style={{ fontSize: 11, color: '#3a3a60' }}>© 2026 Explain Global Ltd · All rights reserved</div>
+        <div style={{ fontSize: 11, color: 'rgba(160,200,255,0.3)' }}>© 2026 Explain Global Ltd · All rights reserved</div>
       </motion.div>
 
       {/* Right panel — form */}
@@ -165,14 +172,14 @@ export default function Register() {
         style={{ width: '100%', maxWidth: 520, margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '40px 32px' }}
       >
         <h1 style={{ fontSize: 26, fontWeight: 900, color: '#fff', marginBottom: 6, letterSpacing: '-0.02em' }}>Create your account</h1>
-        <p style={{ fontSize: 14, color: '#6060a0', marginBottom: 28 }}>
+        <p style={{ fontSize: 14, color: 'rgba(160,200,255,0.65)', marginBottom: 28 }}>
           Already registered?{' '}
           <Link to="/login" style={{ color: accent, textDecoration: 'none', fontWeight: 600 }}>Sign in instead</Link>
         </p>
 
         {/* Role selector */}
         <div style={{ marginBottom: 24 }}>
-          <label style={{ fontSize: 11, fontWeight: 700, color: '#5050a0', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 10, display: 'block' }}>I am a…</label>
+          <label style={{ fontSize: 12, fontWeight: 700, color: LABEL_COL, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 10, display: 'block' }}>I am a…</label>
           <div style={{ display: 'flex', gap: 8 }}>
             {ROLES.map(r => {
               const active = role === r.value;
@@ -184,21 +191,21 @@ export default function Register() {
                   onClick={() => setRole(r.value)}
                   style={{
                     flex: 1, padding: '12px 8px', borderRadius: 10, cursor: 'pointer',
-                    border: `1px solid ${active ? ac + '55' : 'rgba(255,255,255,0.08)'}`,
-                    background: active ? `${ac}12` : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${active ? ac + '55' : 'rgba(79,142,247,0.15)'}`,
+                    background: active ? `${ac}12` : 'rgba(79,142,247,0.04)',
                     transition: 'all 0.2s',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
                   }}
                 >
                   <span style={{ fontSize: 20 }}>{r.icon}</span>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: active ? ac : '#6060a0' }}>{r.label}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: active ? ac : 'rgba(160,200,255,0.6)' }}>{r.label}</span>
                 </button>
               );
             })}
           </div>
           <AnimatePresence mode="wait">
             <motion.p key={role} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
-              style={{ fontSize: 12, color: '#5050a0', marginTop: 8 }}>
+              style={{ fontSize: 12, color: 'rgba(160,200,255,0.55)', marginTop: 8 }}>
               {ROLES.find(r => r.value === role)?.description}
             </motion.p>
           </AnimatePresence>
@@ -207,11 +214,19 @@ export default function Register() {
         {/* Form */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-          <Field label="Full name">
-            <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
-              placeholder="Your full name" required autoComplete="name"
-              style={inputStyle(accent, !!error)} />
-          </Field>
+          {/* First / Last name row */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <Field label="First name">
+              <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)}
+                placeholder="First name" required autoComplete="given-name"
+                style={inputStyle(accent, !!error)} />
+            </Field>
+            <Field label="Last name">
+              <input type="text" value={lastName} onChange={e => setLastName(e.target.value)}
+                placeholder="Last name" required autoComplete="family-name"
+                style={inputStyle(accent, !!error)} />
+            </Field>
+          </div>
 
           <Field label="Email address">
             <input type="email" value={email} onChange={e => setEmail(e.target.value)}
@@ -239,7 +254,7 @@ export default function Register() {
                 placeholder="Min. 8 characters" required autoComplete="new-password"
                 style={{ ...inputStyle(accent, !!error), paddingRight: 44 }} />
               <button type="button" onClick={() => setShowPass(s => !s)}
-                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#5050a0', padding: 4 }}>
+                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(160,200,255,0.5)', padding: 4 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   {showPass
                     ? <><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></>
@@ -251,7 +266,7 @@ export default function Register() {
             {/* Strength meter */}
             {password && (
               <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+                <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'rgba(79,142,247,0.12)', overflow: 'hidden' }}>
                   <motion.div animate={{ width: `${(strength.score / 5) * 100}%` }} transition={{ duration: 0.3 }}
                     style={{ height: '100%', background: strength.color, borderRadius: 2 }} />
                 </div>
@@ -280,11 +295,11 @@ export default function Register() {
 
           <motion.button
             type="submit"
-            disabled={loading || !email || !password || !fullName || passwordMismatch}
+            disabled={loading || !email || !password || !firstName || !lastName || passwordMismatch}
             whileTap={!loading ? { scale: 0.98 } : {}}
             style={{
               width: '100%', padding: '13px 24px', marginTop: 4,
-              background: loading ? 'rgba(120,80,255,0.3)' : `linear-gradient(135deg, #7b5cf5, ${accent})`,
+              background: loading ? 'rgba(79,142,247,0.3)' : 'linear-gradient(135deg, #4F8EF7, #2563eb)',
               border: 'none', borderRadius: 10,
               fontSize: 15, fontWeight: 700, color: '#fff',
               cursor: loading ? 'not-allowed' : 'pointer',
@@ -301,17 +316,17 @@ export default function Register() {
             ) : `Create ${role} account`}
           </motion.button>
 
-          <p style={{ textAlign: 'center', fontSize: 11, color: '#3a3a60', lineHeight: 1.6 }}>
+          <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(160,200,255,0.35)', lineHeight: 1.6 }}>
             By creating an account you agree to our{' '}
-            <span style={{ color: '#5050a0', cursor: 'pointer' }}>Terms of Service</span> and{' '}
-            <span style={{ color: '#5050a0', cursor: 'pointer' }}>Privacy Policy</span>.
+            <span style={{ color: 'rgba(79,142,247,0.7)', cursor: 'pointer' }}>Terms of Service</span> and{' '}
+            <span style={{ color: 'rgba(79,142,247,0.7)', cursor: 'pointer' }}>Privacy Policy</span>.
           </p>
         </form>
       </motion.div>
 
       <style>{`
         @media (min-width: 900px) { .auth-left-panel { display: flex !important; } }
-        input::placeholder { color: rgba(150,150,200,0.35); }
+        input::placeholder { color: ${PH_COL}; }
         input:focus { outline: none; }
       `}</style>
     </div>
@@ -321,7 +336,7 @@ export default function Register() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label style={{ fontSize: 11, fontWeight: 700, color: '#5050a0', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>{label}</label>
+      <label style={{ fontSize: 12, fontWeight: 700, color: 'rgba(200,220,255,0.80)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>{label}</label>
       {children}
     </div>
   );
@@ -330,8 +345,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function inputStyle(_accent: string, hasError: boolean): React.CSSProperties {
   return {
     width: '100%', boxSizing: 'border-box',
-    background: 'rgba(255,255,255,0.04)',
-    border: `1px solid ${hasError ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.10)'}`,
+    background: 'rgba(79,142,247,0.06)',
+    border: `1px solid ${hasError ? 'rgba(239,68,68,0.5)' : 'rgba(79,142,247,0.22)'}`,
     borderRadius: 10, padding: '12px 16px',
     fontSize: 14, color: '#fff',
     outline: 'none', transition: 'border-color 0.2s',
