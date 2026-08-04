@@ -525,7 +525,7 @@ export default function Home() {
               {/* Chair hero */}
               <div style={{position:'relative',width:'100%',background:'linear-gradient(180deg,#0d1f45 0%,#07112a 65%,#050d20 100%)',overflow:'hidden',borderRadius:'16px 16px 0 0'}}>
                 <div style={{position:'absolute',top:0,left:'50%',transform:'translateX(-50%)',width:'100%',height:'100%',background:'radial-gradient(ellipse 55% 90% at 50% -5%,rgba(160,190,255,0.32) 0%,rgba(90,130,220,0.14) 28%,rgba(30,60,130,0.04) 58%,transparent 78%)',pointerEvents:'none'}} />
-                <img src="/images/MastermindChair2.png" alt="" style={{width:'100%',display:'block',position:'relative',zIndex:1}} />
+                <img src="/images/MastermindChair2.png" alt="" style={{width:'100%',height:200,objectFit:'cover',objectPosition:'center 35%',display:'block',position:'relative',zIndex:1}} />
                 <div style={{position:'absolute',bottom:0,left:0,right:0,height:44,background:'linear-gradient(transparent,#050d20)',pointerEvents:'none'}} />
               </div>
               {/* Brand header */}
