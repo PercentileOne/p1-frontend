@@ -99,7 +99,8 @@ export default function Register() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: BG, display: 'flex' }}>
+    <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'stretch', justifyContent: 'center' }}>
+    <div style={{ width: '100%', maxWidth: 1040, display: 'flex', position: 'relative' }}>
 
       {/* Left panel */}
       <motion.div
@@ -143,8 +144,13 @@ export default function Register() {
             </motion.div>
           </AnimatePresence>
 
+          {/* Cinematic chair silhouette */}
+          <div style={{ margin: '40px 0 0', display: 'flex', justifyContent: 'center', opacity: 0.13, pointerEvents: 'none', userSelect: 'none' }}>
+            <img src="/images/MastermindChair2.png" alt="" style={{ width: '62%', height: 'auto', display: 'block' }} />
+          </div>
+
           {/* Steps preview */}
-          <div style={{ marginTop: 40, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 14 }}>
             {[
               ['Create your account', 'Takes under 2 minutes'],
               ['Set up your profile',  role === 'Candidate' ? 'Add your target role and CV' : 'Tell us about your organisation'],
@@ -169,16 +175,16 @@ export default function Register() {
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
-        style={{ width: '100%', maxWidth: 520, margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '40px 32px' }}
+        style={{ width: '100%', maxWidth: 520, margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '28px 32px' }}
       >
-        <h1 style={{ fontSize: 26, fontWeight: 900, color: '#fff', marginBottom: 6, letterSpacing: '-0.02em' }}>Create your account</h1>
-        <p style={{ fontSize: 14, color: 'rgba(160,200,255,0.65)', marginBottom: 28 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 900, color: '#fff', marginBottom: 4, letterSpacing: '-0.02em' }}>Create your account</h1>
+        <p style={{ fontSize: 14, color: 'rgba(160,200,255,0.65)', marginBottom: 18 }}>
           Already registered?{' '}
           <Link to="/login" style={{ color: accent, textDecoration: 'none', fontWeight: 600 }}>Sign in instead</Link>
         </p>
 
         {/* Role selector */}
-        <div style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 16 }}>
           <label style={{ fontSize: 12, fontWeight: 700, color: LABEL_COL, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 10, display: 'block' }}>I am a…</label>
           <div style={{ display: 'flex', gap: 8 }}>
             {ROLES.map(r => {
@@ -329,6 +335,7 @@ export default function Register() {
         input::placeholder { color: ${PH_COL}; }
         input:focus { outline: none; }
       `}</style>
+    </div>
     </div>
   );
 }
