@@ -45,7 +45,7 @@ function MastermindChairHero() {
       <img
         src="/images/MastermindChair2.png"
         alt="Mastermind Interview Chair"
-        style={{ width: '100%', height: 200, objectFit: 'cover', objectPosition: 'center 35%', display: 'block', position: 'relative', zIndex: 1 }}
+        style={{ width: '55%', height: 'auto', display: 'block', margin: '0 auto', position: 'relative', zIndex: 1 }}
       />
       {/* Bottom gradient fade */}
       <div style={{
