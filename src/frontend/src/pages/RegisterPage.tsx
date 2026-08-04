@@ -131,26 +131,26 @@ export default function RegisterPage() {
   return (
     <div
       className="relative min-h-screen w-screen overflow-hidden flex items-center justify-center"
-      style={{ background: "linear-gradient(135deg, #060a12 0%, #080d1a 50%, #0a0f1c 100%)" }}
+      style={{ background: "#07112a" }}
       onKeyDown={handleKeyDown}
     >
       <style>{`
-        .reg-input::placeholder { color: #3d4451 !important; }
+        .reg-input::placeholder { color: rgba(140,180,255,0.45) !important; }
         .reg-input:-webkit-autofill,
         .reg-input:-webkit-autofill:focus {
-          -webkit-box-shadow: 0 0 0 1000px #111111 inset !important;
+          -webkit-box-shadow: 0 0 0 1000px #0a1a3a inset !important;
           -webkit-text-fill-color: #ffffff !important;
         }
       `}</style>
 
       {/* Ambient orbs */}
-      <Orb cls="w-[500px] h-[500px] top-[-12%] left-[-8%]"   color="59,130,246"  delay={0}  dur={20} />
-      <Orb cls="w-[350px] h-[350px] bottom-[-8%] right-[-6%]" color="139,92,246"  delay={5}  dur={24} />
-      <Orb cls="w-[250px] h-[250px] top-[45%]   right-[12%]"  color="52,211,153"  delay={11} dur={28} />
+      <Orb cls="w-[500px] h-[500px] top-[-12%] left-[-8%]"   color="79,142,247"  delay={0}  dur={20} />
+      <Orb cls="w-[350px] h-[350px] bottom-[-8%] right-[-6%]" color="37,99,235"   delay={5}  dur={24} />
+      <Orb cls="w-[250px] h-[250px] top-[45%]   right-[12%]"  color="79,142,247"  delay={11} dur={28} />
 
       {/* Radial glow */}
       <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[420px] h-[420px] rounded-full"
-           style={{ background: "radial-gradient(ellipse, rgba(99,102,241,0.10) 0%, transparent 70%)" }} />
+           style={{ background: "radial-gradient(ellipse, rgba(79,142,247,0.12) 0%, transparent 70%)" }} />
 
       <div className="relative z-10 w-full max-w-sm px-4 flex flex-col items-center gap-6">
 
@@ -163,12 +163,12 @@ export default function RegisterPage() {
         >
           <div style={{
             width: 48, height: 48, borderRadius: "50%",
-            background: "linear-gradient(135deg,#4f46e5,#7c3aed)",
+            background: "linear-gradient(135deg,#4F8EF7,#2563eb)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <svg width="26" height="26" viewBox="0 0 44 44" fill="none">
               <clipPath id="rg-clip"><circle cx="22" cy="22" r="18"/></clipPath>
-              <circle cx="22" cy="22" r="20" fill="#0a0818"/>
+              <circle cx="22" cy="22" r="20" fill="#061228"/>
               <g clipPath="url(#rg-clip)">
                 <path d="M8,31 L8,27 L17,27 L17,22 L26,22 L26,16 L35,16 L35,31 Z" fill="#a5b4fc"/>
               </g>
@@ -176,7 +176,7 @@ export default function RegisterPage() {
             </svg>
           </div>
           <span style={{ fontWeight: 800, fontSize: 17, color: "#fff", letterSpacing: "-.02em" }}>
-            explain<span style={{ color: "#7c3aed" }}>.global</span>
+            explain<span style={{ color: "#2563eb" }}>.global</span>
           </span>
         </motion.div>
 
@@ -206,8 +206,8 @@ export default function RegisterPage() {
             <div key={n} style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{
                 width: 26, height: 26, borderRadius: "50%",
-                background: step >= n ? "#4f46e5" : "rgba(255,255,255,.06)",
-                border: `1px solid ${step >= n ? "#4f46e5" : "rgba(255,255,255,.12)"}`,
+                background: step >= n ? "#4F8EF7" : "rgba(255,255,255,.06)",
+                border: `1px solid ${step >= n ? "#4F8EF7" : "rgba(255,255,255,.12)"}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: 11, fontWeight: 700,
                 color: step >= n ? "#fff" : "rgba(255,255,255,.3)",
@@ -218,7 +218,7 @@ export default function RegisterPage() {
               {n < 2 && (
                 <div style={{
                   width: 32, height: 1,
-                  background: step > 1 ? "#4f46e5" : "rgba(255,255,255,.10)",
+                  background: step > 1 ? "#4F8EF7" : "rgba(255,255,255,.10)",
                   transition: "background .3s",
                 }} />
               )}
@@ -387,7 +387,7 @@ export default function RegisterPage() {
           {/* Sign in link */}
           <p style={{ textAlign: "center", fontSize: 12, color: "rgba(240,244,255,.3)", margin: 0 }}>
             Already have an account?{" "}
-            <Link to="/login" style={{ color: "#818cf8", fontWeight: 600, textDecoration: "none" }}>
+            <Link to="/login" style={{ color: "#4F8EF7", fontWeight: 600, textDecoration: "none" }}>
               Sign in
             </Link>
           </p>
@@ -417,7 +417,7 @@ function RegInput({
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 8,
-      background: "#111111", border: "1px solid rgba(148,163,184,.16)",
+      background: "rgba(79,142,247,0.07)", border: "1px solid rgba(79,142,247,0.22)",
       borderRadius: 8, padding: "10px 14px",
     }}>
       <input
@@ -429,7 +429,7 @@ function RegInput({
         onChange={e => onChange(e.target.value)}
         style={{
           flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none",
-          fontSize: 13, color: "#cbd5e1", fontWeight: 350, caretColor: "#818cf8",
+          fontSize: 13, color: "#cbd5e1", fontWeight: 350, caretColor: "#4F8EF7",
         }}
       />
       {suffix}
@@ -449,15 +449,15 @@ function RegSelect({
         onChange={e => onChange(e.target.value)}
         style={{
           width: "100%", appearance: "none", WebkitAppearance: "none",
-          background: "#111111", border: "1px solid rgba(148,163,184,.16)",
+          background: "rgba(79,142,247,0.07)", border: "1px solid rgba(79,142,247,0.22)",
           borderRadius: 8, padding: "10px 32px 10px 14px",
-          fontSize: 13, color: value ? "#cbd5e1" : "#3d4451",
+          fontSize: 13, color: value ? "#cbd5e1" : "rgba(140,180,255,0.45)",
           fontWeight: 350, outline: "none", cursor: "pointer",
         }}
       >
-        <option value="" style={{ color: "#3d4451", background: "#111318" }}>{placeholder}</option>
+        <option value="" style={{ color: "#3d4451", background: "#071228" }}>{placeholder}</option>
         {options.map(o => (
-          <option key={o} value={o} style={{ background: "#111318", color: "#cbd5e1" }}>{o}</option>
+          <option key={o} value={o} style={{ background: "#071228", color: "#cbd5e1" }}>{o}</option>
         ))}
       </select>
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
@@ -479,7 +479,7 @@ function PrimaryButton({
       disabled={phase !== "idle"}
       style={{
         width: "100%", height: 44, borderRadius: 12, border: "none",
-        background: "linear-gradient(135deg,#4f46e5,#7c3aed)",
+        background: "linear-gradient(135deg,#4F8EF7,#2563eb)",
         boxShadow: "0 4px 24px rgba(99,102,241,.35)",
         color: "#fff", fontSize: 14, fontWeight: 700,
         display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
@@ -515,7 +515,7 @@ function SuccessOverlay({ name }: { name: string }) {
         position: "fixed", inset: 0, zIndex: 50,
         display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center", gap: 20,
-        background: "rgba(6,10,18,.96)", backdropFilter: "blur(8px)",
+        background: "rgba(5,13,32,.96)", backdropFilter: "blur(8px)",
       }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -524,7 +524,7 @@ function SuccessOverlay({ name }: { name: string }) {
       <motion.div
         style={{
           width: 72, height: 72, borderRadius: "50%",
-          background: "linear-gradient(135deg,#4f46e5,#7c3aed)",
+          background: "linear-gradient(135deg,#4F8EF7,#2563eb)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}
         initial={{ scale: 0.5, opacity: 0 }}
