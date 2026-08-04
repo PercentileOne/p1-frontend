@@ -12,6 +12,7 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import InvestorGate from './pages/investor/InvestorGate';
 import InvestorPortal from './pages/investor/InvestorPortal';
+import Developer from './pages/Developer';
 
 function InvestorApp() {
   const [authed, setAuthed] = useState(sessionStorage.getItem('investor_auth') === '1');
@@ -23,6 +24,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/investor" element={<InvestorApp />} />
+      <Route path="/developer" element={<Developer />} />
       <Route path="*" element={
         <div style={{ minHeight: '100vh', background: '#05040f' }}>
           <Nav />
