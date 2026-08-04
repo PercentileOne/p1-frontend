@@ -514,17 +514,47 @@ export default function Home() {
             </div>
           </div>
           <div className="ph-r" data-ph="" data-d="3" style={{display:'flex',justifyContent:'center'}}>
-            <div className="ph-pack-card">
-              <div className="ph-pack-card-header">
-                <div className="ph-pack-card-icon">⚡</div>
-                <span className="ph-pack-card-title">{t('practice.cardTitle')}</span>
+            <div style={{
+              borderRadius:16,overflow:'hidden',
+              fontFamily:'"Segoe UI",Arial,sans-serif',
+              background:'linear-gradient(180deg,#07112a 0%,#061228 60%,#050d20 100%)',
+              border:'1px solid rgba(79,142,247,0.2)',
+              boxShadow:'0 12px 48px rgba(0,0,0,0.55),0 2px 8px rgba(79,142,247,0.1)',
+              width:300,flexShrink:0,
+            }}>
+              {/* Chair hero */}
+              <div style={{position:'relative',width:'100%',background:'linear-gradient(180deg,#0d1f45 0%,#07112a 65%,#050d20 100%)',overflow:'hidden',borderRadius:'16px 16px 0 0'}}>
+                <div style={{position:'absolute',top:0,left:'50%',transform:'translateX(-50%)',width:'100%',height:'100%',background:'radial-gradient(ellipse 55% 90% at 50% -5%,rgba(160,190,255,0.32) 0%,rgba(90,130,220,0.14) 28%,rgba(30,60,130,0.04) 58%,transparent 78%)',pointerEvents:'none'}} />
+                <img src="/images/MastermindChair2.png" alt="" style={{width:'100%',display:'block',position:'relative',zIndex:1}} />
+                <div style={{position:'absolute',bottom:0,left:0,right:0,height:44,background:'linear-gradient(transparent,#050d20)',pointerEvents:'none'}} />
               </div>
-              <div className="ph-pack-card-body">
-                <span className="ph-pack-card-price">£1</span>
-                <p className="ph-pack-card-hl">{t('practice.cardHeadline')}</p>
-                <p className="ph-pack-card-desc">{t('practice.cardDesc')}</p>
-                <button className="ph-pack-card-btn">{t('practice.cardBtn')}</button>
-                <div className="ph-pack-card-footer">{t('practice.cardFooter1')}<br />{t('practice.cardFooter2')}</div>
+              {/* Brand header */}
+              <div style={{padding:'14px 20px 16px',borderBottom:'1px solid rgba(79,142,247,0.1)',textAlign:'center'}}>
+                <span style={{fontSize:20,fontWeight:900,letterSpacing:'-0.02em',lineHeight:1}}>
+                  <span style={{color:'#4F8EF7'}}>www.</span>
+                  <span style={{color:'#ffffff'}}>Explain</span>
+                  <span style={{color:'#4F8EF7'}}>.global</span>
+                </span>
+              </div>
+              {/* Body */}
+              <div style={{padding:'20px 20px 0'}}>
+                <div style={{fontSize:17,fontWeight:800,color:'#fff',lineHeight:1.35,letterSpacing:'-0.02em',marginBottom:5}}>
+                  Get your tailored Interview Practice Pack for this exact role
+                </div>
+                <div style={{fontSize:14,color:'#22c55e',fontWeight:700,marginBottom:14}}>only £1</div>
+                <div style={{fontSize:13,color:'rgba(255,255,255,0.72)',lineHeight:1.65,marginBottom:20}}>
+                  20 AI-generated practice questions · Tailored to your CV · Tailored to this job · Instant access
+                </div>
+                <button
+                  onClick={() => window.location.href='/register'}
+                  style={{width:'100%',height:50,background:'linear-gradient(135deg,#4F8EF7 0%,#7b5cf5 100%)',color:'#fff',border:'none',borderRadius:10,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'inherit',letterSpacing:'-0.01em',boxShadow:'0 4px 20px rgba(79,142,247,0.3)'}}>
+                  Get Interview Practice Pack — £1
+                </button>
+              </div>
+              {/* Footer */}
+              <div style={{padding:'12px 20px 16px',fontSize:11,color:'rgba(255,255,255,0.55)',textAlign:'center',lineHeight:1.7,marginTop:4}}>
+                No login needed · Instant access<br />
+                <span style={{color:'#4F8EF7',fontWeight:700}}>Powered by Explain.Global</span>
               </div>
             </div>
           </div>
