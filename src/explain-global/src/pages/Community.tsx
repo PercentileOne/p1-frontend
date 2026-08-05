@@ -6,7 +6,7 @@ export default function Community() {
       <div style={{ fontSize: 48, marginBottom: 20 }}>💬</div>
       <div style={{ fontSize: 12, fontWeight: 700, color: '#7b5cf5', letterSpacing: '0.06em', marginBottom: 12 }}>✦ COMMUNITY</div>
       <h1 style={{ fontSize: 32, fontWeight: 900, color: '#fff', marginBottom: 16 }}>
-        Where interviewees meet
+        Where candidates meet
       </h1>
       <p style={{ fontSize: 16, color: '#8080b0', lineHeight: 1.7, marginBottom: 40, maxWidth: 520, margin: '0 auto 40px' }}>
         Share your interview story. Read lessons from others.

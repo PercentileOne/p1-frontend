@@ -77,7 +77,7 @@ const PORTALS = [
     id: 'home',
     url: 'https://explain.global',
     badge: 'EXPLAIN HOME',
-    heading: 'The home of the interviewee.',
+    heading: 'The home of the candidate.',
     sub: 'Real jobs. Interview stories. LEARN modules. Everything from first application to final offer.',
     bullets: [
       '💼  Real job listings — apply directly',
