@@ -123,10 +123,10 @@ export default function ProductHome() {
     .ph-r[data-d="3"]{transition-delay:.3s}.ph-r[data-d="4"]{transition-delay:.4s}
     .ph-r[data-d="5"]{transition-delay:.5s}.ph-r[data-d="6"]{transition-delay:.6s}
 
-    .ph-ex{color:#ffffff}.ph-gl{color:#4F8EF7}
+    .ph-ex{color:#ffffff !important}.ph-gl{color:#7b5cf5 !important}
 
     .ph-nav{position:fixed;top:0;left:0;right:0;z-index:100;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;background:rgba(3,6,15,.7);backdrop-filter:blur(16px);border-bottom:1px solid rgba(79,142,247,.08)}
-    .ph-nav-logo{font-size:20px;font-weight:900;letter-spacing:-.04em;text-shadow:0 0 20px rgba(79,142,247,.4)}
+    .ph-nav-logo{font-size:20px;font-weight:900;letter-spacing:-.04em;color:#ffffff}
     .ph-nav-by{font-style:normal;color:rgba(240,244,255,.3);font-weight:300;font-size:12px;letter-spacing:.04em;margin-left:6px;vertical-align:middle}
     .ph-nav-links{display:flex;gap:28px;list-style:none}
     .ph-nav-links a{font-size:13px;font-weight:600;color:rgba(240,244,255,.35);text-decoration:none;transition:color .2s}
