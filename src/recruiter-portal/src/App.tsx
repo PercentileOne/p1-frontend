@@ -26,7 +26,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to={window.location.hostname === 'candidate.explain.global' ? '/candidate' : '/login'} replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/demo/linkedin-job" element={<DemoLinkedIn />} />

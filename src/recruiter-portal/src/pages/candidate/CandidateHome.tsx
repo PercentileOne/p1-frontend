@@ -125,7 +125,7 @@ export default function CandidateHome() {
             }}>E</div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em' }}>
-                Explain<span style={{ color: BLUE }}>.global</span>
+                Explain<span style={{ color: '#7b5cf5' }}>.global</span>
               </div>
               <div style={{ fontSize: 10, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: 1 }}>
                 Candidate Portal
