@@ -160,7 +160,7 @@ export default function Dashboard() {
         <div style={{ padding: '24px 20px 18px', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, cursor: 'default' }}>
           <ExplainLogo size={72} withAnimation={false} cometDuration={8} />
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', lineHeight: 1.2 }}>
+            <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: '-0.02em', color: '#ffffff', lineHeight: 1.2 }}>
               Explain<span style={{ color: '#4F8EF7' }}>.global</span>
             </div>
             <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)', marginTop: 3 }}>
