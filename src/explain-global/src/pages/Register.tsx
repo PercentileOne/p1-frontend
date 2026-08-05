@@ -39,6 +39,9 @@ export default function Register() {
 
   useEffect(() => { setError(null); }, [role, email, password, firstName, lastName]);
 
+  // Warm up the API on mount so the backend isn't cold when the user submits
+  useEffect(() => { fetch('https://api.explain.global/health').catch(() => {}); }, []);
+
   function passwordStrength(p: string): { score: number; label: string; color: string } {
     if (!p) return { score: 0, label: '', color: 'transparent' };
     let score = 0;
