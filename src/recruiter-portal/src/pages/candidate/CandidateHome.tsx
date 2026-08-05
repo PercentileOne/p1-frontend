@@ -124,7 +124,7 @@ export default function CandidateHome() {
               fontSize: 14, fontWeight: 900, color: '#fff', flexShrink: 0,
             }}>E</div>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: TEXT1, letterSpacing: '-0.01em' }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em' }}>
                 Explain<span style={{ color: BLUE }}>.global</span>
               </div>
               <div style={{ fontSize: 10, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: 1 }}>
