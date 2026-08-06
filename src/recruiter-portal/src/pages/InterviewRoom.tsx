@@ -457,7 +457,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     // Phase 1: Mike's script only — fast
     generateMikeScriptOnly({
       jobTitle: ctx.jobTitle,
-      companyName: demoCompany.name,
+      companyName: ctx.company || undefined,
       jobSpecText: ctx.jobSpecText,
       cvText: ctx.cvText,
       selectedDifficulty: ctx.selectedDifficulty,

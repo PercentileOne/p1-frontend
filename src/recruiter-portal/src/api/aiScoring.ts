@@ -664,7 +664,7 @@ ${nameInstruction}
 ${cvSnippet ? `\nCANDIDATE CV (extract first name from here):\n${cvSnippet}\n` : ''}
 CONTEXT:
 - Job title: ${jobTitle || 'not specified'}
-- Company: ${companyName || 'not specified'}
+- Company: ${companyName || '(extract from job title or job spec if possible, otherwise omit)'}
 - Difficulty level: ${difficultyFrame}
 ${jobSpecSnippet ? `- Job spec excerpt: ${jobSpecSnippet}` : ''}
 
