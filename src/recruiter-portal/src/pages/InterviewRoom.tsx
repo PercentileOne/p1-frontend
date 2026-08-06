@@ -227,6 +227,7 @@ export default function InterviewRoom() {
   const [bgSarahIntro, setBgSarahIntro] = useState<string | null>(null);
   const [bgJamesIntro, setBgJamesIntro] = useState<string | null>(null);
   const [bgMikeScript, setBgMikeScript] = useState<string | null>(null);
+  const bgMikeScriptRef = useRef<string | null>(null); // sync ref — always current when startMike fires
   const [bgCompanyFacts, setBgCompanyFacts] = useState<string[]>([]);
   const [bgSpecialistTitle, setBgSpecialistTitle] = useState<string | null>(null);
   const bgLoadRef = useRef(false);
@@ -411,7 +412,7 @@ export default function InterviewRoom() {
   const startMike = useCallback(() => {
     setPhase('mike');
     logFlowEvent('MIKE_INTRO_STARTED', { hasJobSpec: Boolean(ctx.jobSpecText), hasCv: Boolean(ctx.cvText), selectedLanguage: ctx.selectedLanguage });
-    cancelSpeakRef.current = speak(mikeScript, 'technical', () => {
+    cancelSpeakRef.current = speak(bgMikeScriptRef.current ?? fallbackMikeScript, 'technical', () => {
       cancelSpeakRef.current = null;
       logFlowEvent('MIKE_INTRO_COMPLETED', {});
       beginInterviewIntroRef.current();
@@ -462,7 +463,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       selectedLanguage: ctx.selectedLanguage,
     }).then(script => {
       clearTimeout(mikeTimeout);
-      if (script) setBgMikeScript(script);
+      if (script) { bgMikeScriptRef.current = script; setBgMikeScript(script); }
       logFlowEvent('MIKE_SCRIPT_READY', { chars: script?.length ?? 0 });
 
       // setTimeout(0) gives React one tick to flush setBgMikeScript so that
