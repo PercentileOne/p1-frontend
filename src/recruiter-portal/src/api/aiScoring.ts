@@ -756,8 +756,8 @@ Return this exact JSON:
   "industry": "industry sector (e.g. Fast Food, Healthcare, Construction, Finance, Education)",
   "specialistTitle": "James's interviewer title — role-appropriate, e.g. 'Restaurant Manager' for hospitality, 'Ward Sister' for nursing, 'Site Foreman' for construction, 'Finance Director' for accounting. NEVER use 'Technical Lead' unless the role is genuinely technical.",
   "companyFacts": ["3 specific facts about this company or role the candidate should know before walking in"],
-  "sarahIntro": "Sarah's spoken welcome, 50–75 words. HR Director, warm and professional. Introduces herself by name, briefly mentions James will be joining her, then explains the controls: click Record to start answering, click Stop when finished, use Repeat to hear the question again, and Pause if they need a moment. Sets a positive tone and tells the candidate to speak naturally and take their time.",
-  "jamesIntro": "James's spoken intro, 20–30 words. Direct and role-focused. Introduces himself and what he'll be focusing on in the interview.",
+  "sarahIntro": "Sarah's spoken welcome, 50–75 words. HR Director, warm and professional. If a CV is provided, extract the candidate's first name and address them by it exactly once at the start. Introduces herself by name, briefly mentions James will be joining her, then explains the controls: click Record to start answering, click Stop when finished, use Repeat to hear the question again, and Pause if they need a moment. Sets a positive tone and tells the candidate to speak naturally and take their time.",
+  "jamesIntro": "James's spoken intro, 20–30 words. Direct and role-focused. If a CV is provided, address the candidate by first name once. Introduces himself and what he'll be focusing on in the interview.",
   "questions": [
     {
       "questionId": "q1",
