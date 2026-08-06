@@ -92,7 +92,7 @@ export default function InterviewPackStart() {
   };
 
   const difficulty = DIFFICULTIES.find(d => d.value === selectedDifficulty) ?? DIFFICULTIES[0];
-  const hasEnough = jobTitle.trim().length > 2 || jobSpec.trim().length > 20 || cvText.trim().length > 20 || (incoming.jobSpec?.length ?? 0) > 20;
+  const hasEnough = jobTitle.trim().length > 2;
 
   const tabStyle = (active: boolean) => ({
     flex: 1,
@@ -156,8 +156,9 @@ export default function InterviewPackStart() {
 
         {/* Job Title */}
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 28px', marginBottom: '16px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '12px' }}>
-            Job Title
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Job Title</span>
+            <span style={{ fontSize: '11px', color: '#EF4444', fontWeight: 600 }}>* required</span>
           </div>
           <input
             type="text"
