@@ -672,10 +672,23 @@ STRUCTURE (spoken naturally as one flowing paragraph — no lists):
 
 Return JSON: { "mikeScript": "..." }`;
 
+  console.group('[Explain AI] MIKE SCRIPT — INPUT');
+  console.log('jobTitle:', jobTitle ?? '(none)');
+  console.log('companyName:', companyName ?? '(none)');
+  console.log('selectedDifficulty:', selectedDifficulty ?? '(none)');
+  console.log('selectedLanguage:', selectedLanguage ?? '(none)');
+  console.log('cvText length:', cvText?.length ?? 0, 'chars');
+  console.log('cvSnippet sent:', cvSnippet || '(empty — no CV provided)');
+  console.groupEnd();
+
   try {
     const result = await chatJSON<{ mikeScript: string }>(systemPrompt, userPrompt, 0.8);
+    console.group('[Explain AI] MIKE SCRIPT — OUTPUT');
+    console.log(result.mikeScript);
+    console.groupEnd();
     return result.mikeScript ?? '';
-  } catch {
+  } catch (e) {
+    console.error('[Explain AI] MIKE SCRIPT — FAILED:', e);
     return '';
   }
 }
