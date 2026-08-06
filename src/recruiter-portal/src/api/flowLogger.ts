@@ -24,9 +24,12 @@ export function logFlowEvent(
     payload,
   };
 
+  const token = localStorage.getItem('explain_token');
+  if (!token) return; // unauthenticated (demo flow) — skip logging
+
   fetch('/api/log-event', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
     body: JSON.stringify(body),
   }).catch(() => {
     // Logging must never break the interview — silent fail
