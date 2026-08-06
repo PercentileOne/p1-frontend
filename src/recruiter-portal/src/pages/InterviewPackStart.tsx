@@ -61,7 +61,7 @@ export default function InterviewPackStart() {
   const [cvFileName, setCvFileName] = useState('');
   const [jobSpec, setJobSpec] = useState(incoming.jobSpec ?? '');
   const [jobSpecFileName, setJobSpecFileName] = useState('');
-  const [activeTab, setActiveTab] = useState<'jobspec' | 'cv'>(incoming.jobSpec ? 'jobspec' : 'cv');
+  const [activeTab, setActiveTab] = useState<'jobspec' | 'cv'>('cv');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Standard');
 
@@ -180,11 +180,11 @@ export default function InterviewPackStart() {
 
           {/* Tab bar */}
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
-            <button style={tabStyle(activeTab === 'jobspec')} onClick={() => setActiveTab('jobspec')}>
-              📄 Job Spec {incoming.jobSpec ? '✓' : '(optional)'}
-            </button>
             <button style={tabStyle(activeTab === 'cv')} onClick={() => setActiveTab('cv')}>
               👤 Your CV {cvText || cvFileName ? '✓' : '(recommended)'}
+            </button>
+            <button style={tabStyle(activeTab === 'jobspec')} onClick={() => setActiveTab('jobspec')}>
+              📄 Job Spec {incoming.jobSpec ? '✓' : '(optional)'}
             </button>
           </div>
 
