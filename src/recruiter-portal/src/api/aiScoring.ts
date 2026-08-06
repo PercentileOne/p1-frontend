@@ -647,10 +647,10 @@ export async function generateMikeScriptOnly(params: {
   const cvSnippet = cvText?.trim() ? cvText.slice(0, 800) : '';
   const jobSpecSnippet = jobSpecText?.trim() ? jobSpecText.slice(0, 400) : '';
   const nameInstruction = preferredName?.trim()
-    ? `Address the candidate as "${preferredName.trim()}" — this is their preferred name, use it instead of anything from the CV.`
+    ? `CANDIDATE NAME: "${preferredName.trim()}" — explicitly set. Use this EXACT name. Do NOT use any other name.`
     : cvSnippet
-    ? `Extract the candidate's first name from the CV below and address them by it.`
-    : `Address the candidate as "there" (no name known).`;
+    ? `CANDIDATE NAME: Read the CV below and extract the candidate's first name. Use it in the opening greeting. NEVER say "Hi there" — always use the actual name.`
+    : `CANDIDATE NAME: Unknown — use "there" only as a last resort.`;
 
   const systemPrompt = `You are Mike, a warm and encouraging recruitment consultant at Explain.
 Write a short spoken briefing for a candidate about to start their interview.
@@ -660,14 +660,13 @@ Return ONLY valid JSON.`;
 
   const userPrompt = `Write Mike's spoken briefing (70–100 words) for this candidate.${langNote}
 
+${nameInstruction}
+${cvSnippet ? `\nCANDIDATE CV (extract first name from here):\n${cvSnippet}\n` : ''}
 CONTEXT:
 - Job title: ${jobTitle || 'not specified'}
 - Company: ${companyName || 'not specified'}
 - Difficulty level: ${difficultyFrame}
 ${jobSpecSnippet ? `- Job spec excerpt: ${jobSpecSnippet}` : ''}
-${cvSnippet ? `\nCANDIDATE CV:\n${cvSnippet}` : ''}
-
-NAME INSTRUCTION: ${nameInstruction}
 
 STRUCTURE (spoken naturally as one flowing paragraph — no lists):
 1. "Hi [candidate name] — I'm Mike, and I've set up today's interview for you."
@@ -732,7 +731,9 @@ export async function sessionPrepareClient(
 
   const jobTitleLine = jobTitle ? `\nJob Title (explicitly confirmed by candidate): ${jobTitle}` : '';
   const difficultyLine = selectedDifficulty ? `\nSession Difficulty: ${difficultyLabel}` : '';
-  const preferredNameLine = preferredName?.trim() ? `\nPreferred Name: "${preferredName.trim()}" — the candidate has explicitly set this as their preferred name. Use it in ALL spoken scripts (Sarah, James) instead of anything from the CV.` : '';
+  const preferredNameLine = preferredName?.trim()
+    ? `\nCandidate Name: "${preferredName.trim()}" — explicitly set by the candidate. Use this name in ALL spoken scripts (Mike, Sarah, James). Do NOT use any other name.`
+    : `\nCandidate Name: NOT explicitly set — you MUST extract the candidate's first name from the CV and use it in ALL spoken scripts (Mike, Sarah, James). NEVER say "there" or omit the name when a CV is provided.`;
 
   const languageOverride = selectedLanguage && selectedLanguage !== 'en'
     ? `\nIMPORTANT LANGUAGE OVERRIDE: The user has explicitly selected "${selectedLanguage}" as the interview language. Generate ALL output in that language regardless of the job spec language.`
