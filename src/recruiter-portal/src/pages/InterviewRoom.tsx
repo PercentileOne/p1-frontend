@@ -465,14 +465,17 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       if (script) setBgMikeScript(script);
       logFlowEvent('MIKE_SCRIPT_READY', { chars: script?.length ?? 0 });
 
-      // Unblock Mike immediately — he starts speaking now
-      if (!sessionReadyRef.current) {
-        sessionReadyRef.current = true;
-        sessionWaitersRef.current.forEach(cb => cb());
-        sessionWaitersRef.current = [];
-      }
+      // setTimeout(0) gives React one tick to flush setBgMikeScript so that
+      // startMikeRef.current captures the updated script before Mike speaks
+      setTimeout(() => {
+        if (!sessionReadyRef.current) {
+          sessionReadyRef.current = true;
+          sessionWaitersRef.current.forEach(cb => cb());
+          sessionWaitersRef.current = [];
+        }
+      }, 0);
 
-      // Phase 2: Full interview — fires right after Mike starts, runs while he speaks
+      // Phase 2: fires in parallel — doesn't wait for the setTimeout above
       return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty);
 
     }).then(result => {
