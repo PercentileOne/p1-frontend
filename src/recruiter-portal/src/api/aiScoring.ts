@@ -629,8 +629,9 @@ export async function generateMikeScriptOnly(params: {
   cvText?: string;
   selectedDifficulty?: string;
   selectedLanguage?: string;
+  preferredName?: string;
 }): Promise<string> {
-  const { jobTitle, companyName, jobSpecText, cvText, selectedDifficulty, selectedLanguage } = params;
+  const { jobTitle, companyName, jobSpecText, cvText, selectedDifficulty, selectedLanguage, preferredName } = params;
 
   const difficultyFrame =
     selectedDifficulty === 'Expert'
@@ -645,6 +646,11 @@ export async function generateMikeScriptOnly(params: {
 
   const cvSnippet = cvText?.trim() ? cvText.slice(0, 800) : '';
   const jobSpecSnippet = jobSpecText?.trim() ? jobSpecText.slice(0, 400) : '';
+  const nameInstruction = preferredName?.trim()
+    ? `Address the candidate as "${preferredName.trim()}" — this is their preferred name, use it instead of anything from the CV.`
+    : cvSnippet
+    ? `Extract the candidate's first name from the CV below and address them by it.`
+    : `Address the candidate as "there" (no name known).`;
 
   const systemPrompt = `You are Mike, a warm and encouraging recruitment consultant at Explain.
 Write a short spoken briefing for a candidate about to start their interview.
@@ -659,10 +665,12 @@ CONTEXT:
 - Company: ${companyName || 'not specified'}
 - Difficulty level: ${difficultyFrame}
 ${jobSpecSnippet ? `- Job spec excerpt: ${jobSpecSnippet}` : ''}
-${cvSnippet ? `\nCANDIDATE CV (extract first name only — use it to address them personally):\n${cvSnippet}` : ''}
+${cvSnippet ? `\nCANDIDATE CV:\n${cvSnippet}` : ''}
+
+NAME INSTRUCTION: ${nameInstruction}
 
 STRUCTURE (spoken naturally as one flowing paragraph — no lists):
-1. "Hi [first name from CV, or 'there' if no CV] — I'm Mike, and I've set up today's interview for you."
+1. "Hi [candidate name] — I'm Mike, and I've set up today's interview for you."
 2. "You're here for the [job title] position at [company name]."
 3. One warm sentence about the company or role.
 4. Difficulty framing (use the exact framing given above, naturally worded).
@@ -712,6 +720,7 @@ export async function sessionPrepareClient(
   selectedLanguage?: string,
   jobTitle?: string,
   selectedDifficulty?: string,
+  preferredName?: string,
 ): Promise<ClientSessionResult> {
   const cvSection = cvText?.trim()
     ? `\n\n═══ CANDIDATE CV ═══\n${cvText.slice(0, 3000)}`
@@ -723,6 +732,7 @@ export async function sessionPrepareClient(
 
   const jobTitleLine = jobTitle ? `\nJob Title (explicitly confirmed by candidate): ${jobTitle}` : '';
   const difficultyLine = selectedDifficulty ? `\nSession Difficulty: ${difficultyLabel}` : '';
+  const preferredNameLine = preferredName?.trim() ? `\nPreferred Name: "${preferredName.trim()}" — the candidate has explicitly set this as their preferred name. Use it in ALL spoken scripts (Sarah, James) instead of anything from the CV.` : '';
 
   const languageOverride = selectedLanguage && selectedLanguage !== 'en'
     ? `\nIMPORTANT LANGUAGE OVERRIDE: The user has explicitly selected "${selectedLanguage}" as the interview language. Generate ALL output in that language regardless of the job spec language.`
@@ -742,7 +752,7 @@ CRITICAL RULES — READ CAREFULLY:
   const userPrompt = `Generate a complete interview session for the job specification below.
 ${cvSection ? 'A candidate CV is also provided — use it to personalise questions and intros.' : 'No CV provided — base questions purely on the role requirements.'}
 
-═══ SESSION CONTEXT ═══${jobTitleLine}${difficultyLine}
+═══ SESSION CONTEXT ═══${jobTitleLine}${difficultyLine}${preferredNameLine}
 
 ═══ JOB SPECIFICATION ═══
 ${jobSpecText.slice(0, 4000)}${cvSection}
@@ -756,8 +766,8 @@ Return this exact JSON:
   "industry": "industry sector (e.g. Fast Food, Healthcare, Construction, Finance, Education)",
   "specialistTitle": "James's interviewer title — role-appropriate, e.g. 'Restaurant Manager' for hospitality, 'Ward Sister' for nursing, 'Site Foreman' for construction, 'Finance Director' for accounting. NEVER use 'Technical Lead' unless the role is genuinely technical.",
   "companyFacts": ["3 specific facts about this company or role the candidate should know before walking in"],
-  "sarahIntro": "Sarah's spoken welcome, 50–75 words. HR Director, warm and professional. If a CV is provided, extract the candidate's first name and address them by it exactly once at the start. Introduces herself by name, briefly mentions James will be joining her, then explains the controls: click Record to start answering, click Stop when finished, use Repeat to hear the question again, and Pause if they need a moment. Sets a positive tone and tells the candidate to speak naturally and take their time.",
-  "jamesIntro": "James's spoken intro, 20–30 words. Direct and role-focused. If a CV is provided, address the candidate by first name once. Introduces himself and what he'll be focusing on in the interview.",
+  "sarahIntro": "Sarah's spoken welcome, 50–75 words. HR Director, warm and professional. Address the candidate by their Preferred Name if set, otherwise extract their first name from the CV, otherwise use no name. Introduces herself by name, briefly mentions James will be joining her, then explains the controls: click Record to start answering, click Stop when finished, use Repeat to hear the question again, and Pause if they need a moment. Sets a positive tone and tells the candidate to speak naturally and take their time.",
+  "jamesIntro": "James's spoken intro, 20–30 words. Direct and role-focused. Address the candidate by their Preferred Name if set, otherwise by first name from CV if available. Introduces himself and what he'll be focusing on in the interview.",
   "questions": [
     {
       "questionId": "q1",

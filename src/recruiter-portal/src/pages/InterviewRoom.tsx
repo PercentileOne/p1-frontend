@@ -139,6 +139,7 @@ interface RoomState {
   autoStart?: boolean;
   selectedLanguage?: string;
   selectedDifficulty?: string;
+  preferredName?: string;
 }
 
 interface SessionAnswer {
@@ -461,6 +462,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       cvText: ctx.cvText,
       selectedDifficulty: ctx.selectedDifficulty,
       selectedLanguage: ctx.selectedLanguage,
+      preferredName: ctx.preferredName,
     }).then(script => {
       clearTimeout(mikeTimeout);
       if (script) { bgMikeScriptRef.current = script; setBgMikeScript(script); }
@@ -477,7 +479,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       }, 0);
 
       // Phase 2: fires in parallel — doesn't wait for the setTimeout above
-      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty);
+      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, ctx.preferredName);
 
     }).then(result => {
       bgLoadedRef.current = true;

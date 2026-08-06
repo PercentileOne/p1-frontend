@@ -59,6 +59,7 @@ export default function InterviewPackStart() {
   const [jobTitle, setJobTitle] = useState(incoming.jobTitle ?? '');
   const [cvText, setCvText] = useState('');
   const [cvFileName, setCvFileName] = useState('');
+  const [preferredName, setPreferredName] = useState('');
   const [jobSpec, setJobSpec] = useState(incoming.jobSpec ?? '');
   const [jobSpecFileName, setJobSpecFileName] = useState('');
   const [activeTab, setActiveTab] = useState<'jobspec' | 'cv'>('cv');
@@ -84,6 +85,7 @@ export default function InterviewPackStart() {
         company: incoming.company || '',
         jobSpecText: jobSpec.trim() || incoming.jobSpec || '',
         cvText: cvText.trim() || undefined,
+        preferredName: preferredName.trim() || undefined,
         selectedLanguage,
         selectedDifficulty,
         autoStart: true,
@@ -231,6 +233,28 @@ export default function InterviewPackStart() {
 
             {activeTab === 'cv' && (
               <>
+                {/* Known As */}
+                <div style={{ marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Known As</span>
+                    <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 400 }}>(optional — overrides your CV name)</span>
+                  </div>
+                  <input
+                    type="text"
+                    value={preferredName}
+                    onChange={e => setPreferredName(e.target.value)}
+                    placeholder="e.g. Clifford, Alex, Dr. Patel…"
+                    style={{
+                      width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+                      borderRadius: '10px', padding: '13px 16px', color: 'var(--text)', fontSize: '14px',
+                      fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+                      transition: 'border-color 0.15s',
+                    }}
+                    onFocus={e => { e.target.style.borderColor = 'rgba(79,142,247,0.5)'; }}
+                    onBlur={e => { e.target.style.borderColor = 'var(--border)'; }}
+                  />
+                </div>
+
                 <FileUpload
                   label="CV"
                   onExtracted={(text, name) => {
