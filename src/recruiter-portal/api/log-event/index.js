@@ -9,8 +9,13 @@ module.exports = async function (context, req) {
     return;
   }
 
-  const caller = requireAuth(context, req);
-  if (!caller) return;
+  // Auth is optional — unauthenticated callers (e.g. demo flow) still log but without a userId
+  const authHeader = req.headers['authorization'] ?? req.headers['Authorization'] ?? '';
+  let caller = null;
+  if (authHeader.startsWith('Bearer ')) {
+    caller = requireAuth(context, req);
+    if (!caller) return; // token present but invalid — reject
+  }
 
   const body = req.body;
   if (!body?.sessionId || !body?.flowStage) {
@@ -20,7 +25,7 @@ module.exports = async function (context, req) {
 
   const doc = {
     id: uuidv4(),
-    userId: caller.userId,
+    userId: caller?.userId ?? 'anonymous',
     sessionId: body.sessionId,
     timestamp: body.timestamp ?? new Date().toISOString(),
     flowStage: body.flowStage,
