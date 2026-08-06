@@ -92,7 +92,8 @@ export default function InterviewPackStart() {
   };
 
   const difficulty = DIFFICULTIES.find(d => d.value === selectedDifficulty) ?? DIFFICULTIES[0];
-  const hasEnough = jobTitle.trim().length > 2;
+  const hasCV = cvText.trim().length > 20 || cvFileName.length > 0;
+  const hasEnough = jobTitle.trim().length > 2 && hasCV;
 
   const tabStyle = (active: boolean) => ({
     flex: 1,
@@ -182,7 +183,7 @@ export default function InterviewPackStart() {
           {/* Tab bar */}
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
             <button style={tabStyle(activeTab === 'cv')} onClick={() => setActiveTab('cv')}>
-              👤 Your CV {cvText || cvFileName ? '✓' : '(recommended)'}
+              👤 Your CV {cvText || cvFileName ? '✓' : '* required'}
             </button>
             <button style={tabStyle(activeTab === 'jobspec')} onClick={() => setActiveTab('jobspec')}>
               📄 Job Spec {incoming.jobSpec ? '✓' : '(optional)'}
