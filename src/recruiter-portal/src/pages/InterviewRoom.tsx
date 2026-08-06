@@ -9,7 +9,7 @@ import { speak, elevenLabsConfigured } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
 import { generateCoachingMessage, type CoachingMessage } from '../utils/coachingEngine';
-import { scoreWithAI, coachWithAI, aiScoringConfigured, sessionPrepareClient } from '../api/aiScoring';
+import { scoreWithAI, coachWithAI, aiScoringConfigured, sessionPrepareClient, generateMikeScriptOnly } from '../api/aiScoring';
 import { pickRandomCompany, type Company } from '../data/companyBank';
 import { logFlowEvent } from '../api/flowLogger';
 
@@ -307,6 +307,7 @@ export default function InterviewRoom() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>(ctx.selectedDifficulty ?? 'Standard');
   const [runningScores, setRunningScores] = useState<number[]>([]);
   const [audioCheckState, setAudioCheckState] = useState<'idle' | 'playing' | 'done'>('idle');
+  const [waitingForSession, setWaitingForSession] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cancelSpeakRef = useRef<(() => void) | null>(null);
@@ -426,11 +427,13 @@ export default function InterviewRoom() {
     return () => { cancelSpeakRef.current?.(); };
   }, []);
 
-  // Background AI session prep — fires immediately on mount, independent of Mike
-  // Always regenerate fresh — never reuse pre-passed questions so every session is unique
+  // ── Two-phase AI loading ──────────────────────────────────────────────────────
+  // Phase 1 (fast ~2s): Mike's script only — unblocks Mike immediately
+  // Phase 2 (while Mike speaks ~8s): full interview — questions, intros, facts
   useEffect(() => {
     if (bgLoadRef.current) return;
     bgLoadRef.current = true;
+
     const resolvedJobTitle = ctx.jobTitle || 'Senior Professional';
     const jobSpec = ctx.jobSpecText || `Job Title: ${resolvedJobTitle}
 Company: ${demoCompany.name}
@@ -438,46 +441,61 @@ Industry: ${'sector' in demoCompany ? demoCompany.sector : 'Professional Service
 Location: United Kingdom
 
 We are looking for an experienced ${resolvedJobTitle} to join our team. The successful candidate will bring strong problem-solving ability, excellent communication skills, and a track record of delivering results under pressure. This role requires collaboration across teams, sound judgement, adaptability to change, and the ability to manage competing priorities effectively. The candidate should demonstrate initiative, professional integrity, and a commitment to continuous improvement.`;
-    // 8-second fallback so Mike is never blocked if AI is slow or key is missing
-    const prepTimeout = setTimeout(() => {
+
+    // 5s fallback — Mike never waits longer than this even if Phase 1 is slow
+    const mikeTimeout = setTimeout(() => {
       if (!sessionReadyRef.current) {
         sessionReadyRef.current = true;
         sessionWaitersRef.current.forEach(cb => cb());
         sessionWaitersRef.current = [];
       }
-    }, 8000);
+    }, 5000);
 
-    sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty).then(result => {
-      clearTimeout(prepTimeout);
+    // Phase 1: Mike's script only — fast
+    generateMikeScriptOnly({
+      jobTitle: ctx.jobTitle,
+      companyName: demoCompany.name,
+      jobSpecText: ctx.jobSpecText,
+      cvText: ctx.cvText,
+      selectedDifficulty: ctx.selectedDifficulty,
+      selectedLanguage: ctx.selectedLanguage,
+    }).then(script => {
+      clearTimeout(mikeTimeout);
+      if (script) setBgMikeScript(script);
+      logFlowEvent('MIKE_SCRIPT_READY', { chars: script?.length ?? 0 });
+
+      // Unblock Mike immediately — he starts speaking now
+      if (!sessionReadyRef.current) {
+        sessionReadyRef.current = true;
+        sessionWaitersRef.current.forEach(cb => cb());
+        sessionWaitersRef.current = [];
+      }
+
+      // Phase 2: Full interview — fires right after Mike starts, runs while he speaks
+      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty);
+
+    }).then(result => {
       bgLoadedRef.current = true;
+      if (!result) return;
       setBgQuestions(result.questions);
       if (result.sarahIntro) setBgSarahIntro(result.sarahIntro);
       if (result.jamesIntro) setBgJamesIntro(result.jamesIntro);
-      if (result.mikeScript) setBgMikeScript(result.mikeScript);
       if (result.companyFacts?.length) setBgCompanyFacts(result.companyFacts);
       if (result.specialistTitle) setBgSpecialistTitle(result.specialistTitle);
       logFlowEvent('QUESTION_GENERATED', { count: result.questions.length, specialistTitle: result.specialistTitle });
-      // Let React flush state updates first, then unblock Mike
-      setTimeout(() => {
-        if (!sessionReadyRef.current) {
-          sessionReadyRef.current = true;
-          sessionWaitersRef.current.forEach(cb => cb());
-          sessionWaitersRef.current = [];
-        }
-      }, 0);
-    }).catch((err) => {
-      clearTimeout(prepTimeout);
+
+    }).catch(err => {
+      clearTimeout(mikeTimeout);
       bgLoadedRef.current = true;
-      console.error('[InterviewRoom] AI session prep failed — using demo fallback:', err);
-      setTimeout(() => {
-        if (!sessionReadyRef.current) {
-          sessionReadyRef.current = true;
-          sessionWaitersRef.current.forEach(cb => cb());
-          sessionWaitersRef.current = [];
-        }
-      }, 0);
+      console.error('[InterviewRoom] AI prep failed — using demo fallback:', err);
+      if (!sessionReadyRef.current) {
+        sessionReadyRef.current = true;
+        sessionWaitersRef.current.forEach(cb => cb());
+        sessionWaitersRef.current = [];
+      }
     });
-    return () => clearTimeout(prepTimeout);
+
+    return () => clearTimeout(mikeTimeout);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -859,11 +877,42 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 <span style={{ fontSize: '13px', color: 'var(--text-3)' }}>Speaking…</span>
               </div>
               <button
-                onClick={() => { cancelSpeakRef.current?.(); beginInterviewIntroRef.current(); }}
-                style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline' }}
+                onClick={() => {
+                  cancelSpeakRef.current?.();
+                  if (bgLoadedRef.current) {
+                    beginInterviewIntroRef.current();
+                  } else {
+                    setWaitingForSession(true);
+                    const poll = setInterval(() => {
+                      if (bgLoadedRef.current) {
+                        clearInterval(poll);
+                        setWaitingForSession(false);
+                        beginInterviewIntroRef.current();
+                      }
+                    }, 300);
+                  }
+                }}
+                style={{
+                  background: 'var(--bg3)', border: '1px solid var(--border)',
+                  borderRadius: '10px', padding: '10px 28px',
+                  color: 'var(--text-2)', fontSize: '13px', fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '0.01em',
+                  transition: 'border-color 0.15s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(79,142,247,0.5)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
               >
-                Skip briefing →
+                Skip Intro →
               </button>
+
+              {/* Spinner shown only if user skips before Phase 2 finishes */}
+              {waitingForSession && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginTop: '20px' }}>
+                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                    style={{ width: '24px', height: '24px', border: '2px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%', margin: '0 auto 10px' }} />
+                  <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Preparing your interview…</div>
+                </motion.div>
+              )}
             </motion.div>
           )}
 

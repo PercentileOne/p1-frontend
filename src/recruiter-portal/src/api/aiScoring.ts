@@ -620,6 +620,66 @@ Return JSON:
   return chatJSON<AgentBriefingResult>(systemPrompt, userPrompt, 0.8);
 }
 
+// ── Phase 1: Mike's script only — fast call, unblocks Mike immediately ───────
+
+export async function generateMikeScriptOnly(params: {
+  jobTitle?: string;
+  companyName?: string;
+  jobSpecText?: string;
+  cvText?: string;
+  selectedDifficulty?: string;
+  selectedLanguage?: string;
+}): Promise<string> {
+  const { jobTitle, companyName, jobSpecText, cvText, selectedDifficulty, selectedLanguage } = params;
+
+  const difficultyFrame =
+    selectedDifficulty === 'Expert'
+      ? "This is an Expert-level session — tell them the panel will treat them as the leading authority in their field, and to be ready to go deep."
+      : selectedDifficulty === 'Pro'
+      ? "This is a Pro-level session — tell them to expect sharper, more probing questions that go beyond the basics."
+      : "This is a Standard session — tell them you've put together a solid set of questions to help them perform at their best.";
+
+  const langNote = selectedLanguage && selectedLanguage !== 'en'
+    ? `\nIMPORTANT: Write the script entirely in the language with ISO code "${selectedLanguage}".`
+    : '';
+
+  const cvSnippet = cvText?.trim() ? cvText.slice(0, 800) : '';
+  const jobSpecSnippet = jobSpecText?.trim() ? jobSpecText.slice(0, 400) : '';
+
+  const systemPrompt = `You are Mike, a warm and encouraging recruitment consultant at Explain.
+Write a short spoken briefing for a candidate about to start their interview.
+Sound natural and personal — like you genuinely know them.
+No bullet points, no lists. Spoken prose only.
+Return ONLY valid JSON.`;
+
+  const userPrompt = `Write Mike's spoken briefing (70–100 words) for this candidate.${langNote}
+
+CONTEXT:
+- Job title: ${jobTitle || 'not specified'}
+- Company: ${companyName || 'not specified'}
+- Difficulty level: ${difficultyFrame}
+${jobSpecSnippet ? `- Job spec excerpt: ${jobSpecSnippet}` : ''}
+${cvSnippet ? `\nCANDIDATE CV (extract first name only — use it to address them personally):\n${cvSnippet}` : ''}
+
+STRUCTURE (spoken naturally as one flowing paragraph — no lists):
+1. "Hi [first name from CV, or 'there' if no CV] — I'm Mike, and I've set up today's interview for you."
+2. "You're here for the [job title] position at [company name]."
+3. One warm sentence about the company or role.
+4. Difficulty framing (use the exact framing given above, naturally worded).
+5. "You'll be meeting Sarah from HR and James, who'll be leading the role-specific questions."
+6. One specific tip for this role.
+7. Warm close: "You've got this. Good luck."
+
+Return JSON: { "mikeScript": "..." }`;
+
+  try {
+    const result = await chatJSON<{ mikeScript: string }>(systemPrompt, userPrompt, 0.8);
+    return result.mikeScript ?? '';
+  } catch {
+    return '';
+  }
+}
+
 // ── Client-side session prepare ───────────────────────────────────────────────
 // Single AI call — no regex, no English keyword lists.
 // Works for any role, industry, language, or country worldwide.
@@ -683,7 +743,6 @@ Return this exact JSON:
   "industry": "industry sector (e.g. Fast Food, Healthcare, Construction, Finance, Education)",
   "specialistTitle": "James's interviewer title — role-appropriate, e.g. 'Restaurant Manager' for hospitality, 'Ward Sister' for nursing, 'Site Foreman' for construction, 'Finance Director' for accounting. NEVER use 'Technical Lead' unless the role is genuinely technical.",
   "companyFacts": ["3 specific facts about this company or role the candidate should know before walking in"],
-  "mikeScript": "Mike's spoken briefing, 70–100 words. Warm, encouraging recruitment consultant. MUST follow this structure: (1) Open with 'Hi [candidate first name from CV, or 'there' if no CV] — I'm Mike, and I've set up today's interview for you.' (2) Name the role explicitly: 'You're here for the [exact job title] position at [company name].' (3) Briefly mention what the company does or stands for. (4) State the difficulty level naturally: Standard = 'I've put together a solid set of questions to help you perform at your best', Pro = 'I've set this up as a Pro-level session — expect some sharper, more probing questions', Expert = 'This is an Expert-level session — the panel will treat you as the leading authority in your field, so be ready to go deep.' (5) Explain the format: two interviewers, Sarah and James. (6) One specific tip for this role. (7) Warm close.",
   "sarahIntro": "Sarah's spoken welcome, 50–75 words. HR Director, warm and professional. Introduces herself by name, briefly mentions James will be joining her, then explains the controls: click Record to start answering, click Stop when finished, use Repeat to hear the question again, and Pause if they need a moment. Sets a positive tone and tells the candidate to speak naturally and take their time.",
   "jamesIntro": "James's spoken intro, 20–30 words. Direct and role-focused. Introduces himself and what he'll be focusing on in the interview.",
   "questions": [
