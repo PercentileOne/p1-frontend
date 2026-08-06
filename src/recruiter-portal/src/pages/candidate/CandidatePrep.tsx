@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChairSpinner } from '../../components/ChairSpinner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { readPrepSessionFromHash, type CandidatePrepSession } from '../../utils/clientSession';
 import { mapImprovementAreasToLearnModules } from '../../utils/learnModules';
@@ -538,11 +539,7 @@ export default function CandidatePrep() {
       {/* Generating state */}
       {phase === 'generating' && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '20px' }}>
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }}
-            style={{ width: '48px', height: '48px', border: '3px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%' }}
-          />
+          <ChairSpinner size={130} />
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>
               Building your prep pack…

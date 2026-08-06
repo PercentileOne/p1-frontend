@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChairSpinner } from '../../components/ChairSpinner';
 import type { ClientSession, FeedbackOutcome } from '../../utils/clientSession';
 import { getRoleImprovementAreas } from '../../utils/clientSession';
 import { generateFeedbackWithAI } from '../../api/aiScoring';
@@ -228,11 +229,7 @@ export default function ClientFeedback({ session }: Props) {
         {step === 'generating' && (
           <Fade key="generating">
             <div style={{ textAlign: 'center', padding: '48px 0' }}>
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }}
-                style={{ width: '44px', height: '44px', border: '3px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%', margin: '0 auto 24px' }}
-              />
+              <ChairSpinner size={110} />
               <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>
                 Writing feedback…
               </div>

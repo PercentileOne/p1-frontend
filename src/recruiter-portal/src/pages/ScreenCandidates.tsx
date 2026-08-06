@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChairSpinner } from '../components/ChairSpinner';
 import { explainApi, type InterviewQuestion } from '../api/explainApi';
 import { FileUpload } from '../components/FileUpload';
 
@@ -341,11 +342,7 @@ export default function ScreenCandidates() {
         {step === 'generating' && (
           <motion.div key="generating" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             style={{ textAlign: 'center', padding: '64px 0' }}>
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-              style={{ width: 40, height: 40, border: '3px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%', margin: '0 auto 20px' }}
-            />
+            <ChairSpinner size={110} />
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>
               Analysing job spec…
             </div>

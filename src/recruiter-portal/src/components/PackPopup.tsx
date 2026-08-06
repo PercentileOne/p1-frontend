@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChairSpinner } from './ChairSpinner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { explainApi, type QuickGenerateResponse, type InterviewQuestion } from '../api/explainApi';
 
@@ -228,13 +229,9 @@ export function PackPopup({ jobDescriptionText, exampleCvText, workspaceId, onCl
             )}
 
             {step === 'generating' && (
-              <div style={{ textAlign: 'center', padding: '48px 0' }}>
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                  style={{ width: '36px', height: '36px', border: '3px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%', margin: '0 auto 20px' }}
-                />
-                <div style={{ color: 'var(--text-2)', fontSize: '14px' }}>Analysing job spec and building your pack…</div>
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <ChairSpinner label="Analysing job spec and building your pack…" size={110} />
+                <div style={{ color: 'var(--text-2)', fontSize: '14px', display: 'none' }}></div>
               </div>
             )}
 

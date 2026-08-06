@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { ChairSpinner } from '../components/ChairSpinner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScoringDisplay } from '../components/ScoringDisplay';
 import { ShareModal } from '../components/ShareModal';
@@ -197,12 +198,7 @@ function LearnTab({
         {loading && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '32px', textAlign: 'center' }}>
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-              style={{ width: '28px', height: '28px', border: '3px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%', margin: '0 auto 14px' }}
-            />
-            <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Generating your lesson on <strong>{subject}</strong>…</div>
+            <ChairSpinner label={`Generating your lesson on ${subject}…`} size={100} />
           </motion.div>
         )}
       </AnimatePresence>

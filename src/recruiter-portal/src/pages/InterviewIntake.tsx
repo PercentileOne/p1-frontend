@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { ChairSpinner } from '../components/ChairSpinner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { buildCVContext, buildJobSpecContext, buildPersonalisedQuestions, buildSarahIntro, buildJamesIntro, inferSpecialistTitle, type CVContext } from '../utils/contextBuilder';
 import { explainApi, type CvParseResponse } from '../api/explainApi';
@@ -627,10 +628,8 @@ export default function InterviewIntake() {
               </div>
               {learnError && <div style={{ fontSize: '13px', color: 'var(--red)' }}>{learnError}</div>}
               {learnLoading && (
-                <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '28px', textAlign: 'center' }}>
-                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                    style={{ width: '24px', height: '24px', border: '3px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%', margin: '0 auto 12px' }} />
-                  <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Generating lesson on <strong>{learnSubject}</strong>…</div>
+                <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '8px' }}>
+                  <ChairSpinner label={`Generating lesson on ${learnSubject}…`} size={90} />
                 </div>
               )}
               {learnLesson && !learnLoading && (
@@ -888,12 +887,8 @@ export default function InterviewIntake() {
 
           {/* Step: Preparing */}
           {step === 'preparing' && (
-            <motion.div key="preparing" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'center', padding: '48px 0' }}>
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }}
-                style={{ width: '48px', height: '48px', border: '3px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%', margin: '0 auto 24px' }}
-              />
+            <motion.div key="preparing" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'center', padding: '24px 0' }}>
+              <ChairSpinner label="Preparing your session…" size={130} />
               <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>Preparing your session</div>
               <motion.div key={preparingMsg} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                 style={{ fontSize: '14px', color: 'var(--text-3)' }}>

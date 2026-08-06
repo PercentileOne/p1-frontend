@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ChairSpinner } from '../components/ChairSpinner';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Mock token → invite data (real version: API call to /api/prep-invites/:token)
@@ -261,11 +262,7 @@ export default function CandidatePrepLanding() {
               </motion.div>
             ) : (
               <motion.div key="loading" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'center', padding: '20px 0' }}>
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                  style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid rgba(79,142,247,0.2)', borderTopColor: '#4F8EF7', margin: '0 auto 20px' }}
-                />
+                <ChairSpinner size={110} />
                 <div style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>
                   Setting up your session…
                 </div>

@@ -10,6 +10,7 @@ import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
 import { generateCoachingMessage, type CoachingMessage } from '../utils/coachingEngine';
 import { scoreWithAI, coachWithAI, aiScoringConfigured, sessionPrepareClient, generateMikeScriptOnly } from '../api/aiScoring';
+import { ChairSpinner } from '../components/ChairSpinner';
 import { pickRandomCompany, type Company } from '../data/companyBank';
 import { logFlowEvent } from '../api/flowLogger';
 
@@ -905,12 +906,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 Skip Intro →
               </button>
 
-              {/* Spinner shown only if user skips before Phase 2 finishes */}
+              {/* Chair spinner — shown only if user skips before Phase 2 finishes */}
               {waitingForSession && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginTop: '20px' }}>
-                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                    style={{ width: '24px', height: '24px', border: '2px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%', margin: '0 auto 10px' }} />
-                  <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Preparing your interview…</div>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginTop: '8px' }}>
+                  <ChairSpinner label="Preparing your interview…" size={80} />
                 </motion.div>
               )}
             </motion.div>
@@ -1164,10 +1163,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
               {/* Scoring spinner */}
               {phase === 'scoring' && (
-                <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '28px', textAlign: 'center' }}>
-                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                    style={{ width: '32px', height: '32px', border: '3px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%', margin: '0 auto 14px' }} />
-                  <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Analysing your answer…</div>
+                <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '8px 28px' }}>
+                  <ChairSpinner label="Analysing your answer…" size={100} />
                 </div>
               )}
             </div>

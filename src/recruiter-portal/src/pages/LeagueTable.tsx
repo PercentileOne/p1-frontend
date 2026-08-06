@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChairSpinner } from '../components/ChairSpinner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getLeague, addLeagueEntry, type LeagueEntry } from '../utils/leagueStore';
 
@@ -460,9 +461,7 @@ export default function LeagueTable() {
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 16px' }}>
               {!qReady ? (
                 <div style={{ textAlign: 'center' }}>
-                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                    style={{ width: '32px', height: '32px', border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#2563eb', borderRadius: '50%', margin: '0 auto 16px' }} />
-                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)' }}>Loading questions…</div>
+                  <ChairSpinner label="Loading questions…" size={100} />
                 </div>
               ) : (
                 <div style={{ width: '100%', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -503,9 +502,7 @@ export default function LeagueTable() {
         {phase === 'scoring' && (
           <motion.div key="scoring" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', gap: '20px' }}>
-            <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }}
-              style={{ width: '48px', height: '48px', border: '3px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%' }} />
-            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)' }}>Calculating your score…</div>
+            <ChairSpinner label="Calculating your score…" size={130} />
             <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>Analysing relevance, clarity, depth and confidence</div>
           </motion.div>
         )}
