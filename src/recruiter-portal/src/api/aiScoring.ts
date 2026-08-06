@@ -637,10 +637,19 @@ export async function sessionPrepareClient(
   jobSpecText: string,
   cvText?: string,
   selectedLanguage?: string,
+  jobTitle?: string,
+  selectedDifficulty?: string,
 ): Promise<ClientSessionResult> {
   const cvSection = cvText?.trim()
     ? `\n\n═══ CANDIDATE CV ═══\n${cvText.slice(0, 3000)}`
     : '';
+
+  const difficultyLabel = selectedDifficulty === 'Expert' ? 'Expert-level — we treat the candidate as the leading authority in their field'
+    : selectedDifficulty === 'Pro' ? 'Pro-level — challenging questions that probe beyond the basics'
+    : 'Standard — well-rounded questions to build confidence and preparation';
+
+  const jobTitleLine = jobTitle ? `\nJob Title (explicitly confirmed by candidate): ${jobTitle}` : '';
+  const difficultyLine = selectedDifficulty ? `\nSession Difficulty: ${difficultyLabel}` : '';
 
   const languageOverride = selectedLanguage && selectedLanguage !== 'en'
     ? `\nIMPORTANT LANGUAGE OVERRIDE: The user has explicitly selected "${selectedLanguage}" as the interview language. Generate ALL output in that language regardless of the job spec language.`
@@ -660,6 +669,8 @@ CRITICAL RULES — READ CAREFULLY:
   const userPrompt = `Generate a complete interview session for the job specification below.
 ${cvSection ? 'A candidate CV is also provided — use it to personalise questions and intros.' : 'No CV provided — base questions purely on the role requirements.'}
 
+═══ SESSION CONTEXT ═══${jobTitleLine}${difficultyLine}
+
 ═══ JOB SPECIFICATION ═══
 ${jobSpecText.slice(0, 4000)}${cvSection}
 
@@ -672,7 +683,7 @@ Return this exact JSON:
   "industry": "industry sector (e.g. Fast Food, Healthcare, Construction, Finance, Education)",
   "specialistTitle": "James's interviewer title — role-appropriate, e.g. 'Restaurant Manager' for hospitality, 'Ward Sister' for nursing, 'Site Foreman' for construction, 'Finance Director' for accounting. NEVER use 'Technical Lead' unless the role is genuinely technical.",
   "companyFacts": ["3 specific facts about this company or role the candidate should know before walking in"],
-  "mikeScript": "Mike's spoken briefing, 60–90 words. Warm, encouraging recruitment consultant. Opens with: Hi [first name if CV provided, else 'there'] — I'm Mike, and I've set up today's interview for you. Covers: company name and what they do, something specific about their culture or values, the interview format (two interviewers, Sarah and James), one practical tip for this specific role, warm close wishing them luck.",
+  "mikeScript": "Mike's spoken briefing, 70–100 words. Warm, encouraging recruitment consultant. MUST follow this structure: (1) Open with 'Hi [candidate first name from CV, or 'there' if no CV] — I'm Mike, and I've set up today's interview for you.' (2) Name the role explicitly: 'You're here for the [exact job title] position at [company name].' (3) Briefly mention what the company does or stands for. (4) State the difficulty level naturally: Standard = 'I've put together a solid set of questions to help you perform at your best', Pro = 'I've set this up as a Pro-level session — expect some sharper, more probing questions', Expert = 'This is an Expert-level session — the panel will treat you as the leading authority in your field, so be ready to go deep.' (5) Explain the format: two interviewers, Sarah and James. (6) One specific tip for this role. (7) Warm close.",
   "sarahIntro": "Sarah's spoken welcome, 50–75 words. HR Director, warm and professional. Introduces herself by name, briefly mentions James will be joining her, then explains the controls: click Record to start answering, click Stop when finished, use Repeat to hear the question again, and Pause if they need a moment. Sets a positive tone and tells the candidate to speak naturally and take their time.",
   "jamesIntro": "James's spoken intro, 20–30 words. Direct and role-focused. Introduces himself and what he'll be focusing on in the interview.",
   "questions": [

@@ -134,8 +134,10 @@ interface RoomState {
   companyFacts?: string[];
   jobSpecText?: string;
   cvText?: string;
+  jobTitle?: string;
   autoStart?: boolean;
   selectedLanguage?: string;
+  selectedDifficulty?: string;
 }
 
 interface SessionAnswer {
@@ -302,7 +304,7 @@ export default function InterviewRoom() {
   const [elapsed, setElapsed] = useState(0);
   const [coachingMessage, setCoachingMessage] = useState<CoachingMessage | null>(null);
   const [paused, setPaused] = useState(false);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('Medium');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>(ctx.selectedDifficulty ?? 'Standard');
   const [runningScores, setRunningScores] = useState<number[]>([]);
   const [audioCheckState, setAudioCheckState] = useState<'idle' | 'playing' | 'done'>('idle');
 
@@ -429,12 +431,13 @@ export default function InterviewRoom() {
   useEffect(() => {
     if (bgLoadRef.current) return;
     bgLoadRef.current = true;
-    const jobSpec = ctx.jobSpecText || `Job Title: Senior Professional
+    const resolvedJobTitle = ctx.jobTitle || 'Senior Professional';
+    const jobSpec = ctx.jobSpecText || `Job Title: ${resolvedJobTitle}
 Company: ${demoCompany.name}
 Industry: ${'sector' in demoCompany ? demoCompany.sector : 'Professional Services'}
 Location: United Kingdom
 
-We are looking for an experienced professional to join our team. The successful candidate will bring strong problem-solving ability, excellent communication skills, and a track record of delivering results under pressure. This role requires collaboration across teams, sound judgement, adaptability to change, and the ability to manage competing priorities effectively. The candidate should demonstrate initiative, professional integrity, and a commitment to continuous improvement.`;
+We are looking for an experienced ${resolvedJobTitle} to join our team. The successful candidate will bring strong problem-solving ability, excellent communication skills, and a track record of delivering results under pressure. This role requires collaboration across teams, sound judgement, adaptability to change, and the ability to manage competing priorities effectively. The candidate should demonstrate initiative, professional integrity, and a commitment to continuous improvement.`;
     // 8-second fallback so Mike is never blocked if AI is slow or key is missing
     const prepTimeout = setTimeout(() => {
       if (!sessionReadyRef.current) {
@@ -444,7 +447,7 @@ We are looking for an experienced professional to join our team. The successful 
       }
     }, 8000);
 
-    sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage).then(result => {
+    sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty).then(result => {
       clearTimeout(prepTimeout);
       bgLoadedRef.current = true;
       setBgQuestions(result.questions);
@@ -1082,15 +1085,15 @@ We are looking for an experienced professional to join our team. The successful 
                         style={{
                           width: '100%', appearance: 'none', WebkitAppearance: 'none',
                           fontSize: '11px', fontWeight: 700, padding: '6px 10px', borderRadius: '8px',
-                          background: selectedDifficulty === 'Hard' ? 'rgba(239,68,68,0.12)' : selectedDifficulty === 'Medium' ? 'rgba(245,158,11,0.12)' : 'rgba(52,211,153,0.1)',
-                          color: selectedDifficulty === 'Hard' ? '#EF4444' : selectedDifficulty === 'Medium' ? '#F59E0B' : '#34D399',
-                          border: `1px solid ${selectedDifficulty === 'Hard' ? 'rgba(239,68,68,0.3)' : selectedDifficulty === 'Medium' ? 'rgba(245,158,11,0.3)' : 'rgba(52,211,153,0.25)'}`,
+                          background: selectedDifficulty === 'Expert' ? 'rgba(239,68,68,0.12)' : selectedDifficulty === 'Pro' ? 'rgba(245,158,11,0.12)' : 'rgba(52,211,153,0.1)',
+                          color: selectedDifficulty === 'Expert' ? '#EF4444' : selectedDifficulty === 'Pro' ? '#F59E0B' : '#34D399',
+                          border: `1px solid ${selectedDifficulty === 'Expert' ? 'rgba(239,68,68,0.3)' : selectedDifficulty === 'Pro' ? 'rgba(245,158,11,0.3)' : 'rgba(52,211,153,0.25)'}`,
                           cursor: 'pointer', outline: 'none',
                         }}
                       >
-                        <option value="Hard" style={{ background: '#1a1e2e', color: '#EF4444' }}>Hard</option>
-                        <option value="Medium" style={{ background: '#1a1e2e', color: '#F59E0B' }}>Medium</option>
-                        <option value="Easy" style={{ background: '#1a1e2e', color: '#34D399' }}>Easy</option>
+                        <option value="Expert" style={{ background: '#1a1e2e', color: '#EF4444' }}>Expert</option>
+                        <option value="Pro" style={{ background: '#1a1e2e', color: '#F59E0B' }}>Pro</option>
+                        <option value="Standard" style={{ background: '#1a1e2e', color: '#34D399' }}>Standard</option>
                       </select>
                     </div>
 
