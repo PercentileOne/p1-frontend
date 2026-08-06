@@ -140,6 +140,7 @@ interface RoomState {
   selectedLanguage?: string;
   selectedDifficulty?: string;
   preferredName?: string;
+  company?: string;
 }
 
 interface SessionAnswer {
