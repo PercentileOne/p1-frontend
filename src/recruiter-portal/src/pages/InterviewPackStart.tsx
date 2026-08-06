@@ -95,7 +95,8 @@ export default function InterviewPackStart() {
 
   const difficulty = DIFFICULTIES.find(d => d.value === selectedDifficulty) ?? DIFFICULTIES[0];
   const hasCV = cvText.trim().length > 20 || cvFileName.length > 0;
-  const hasEnough = jobTitle.trim().length > 2 && hasCV;
+  const hasRole = jobTitle.trim().length > 2 || jobSpec.trim().length > 20;
+  const hasEnough = hasRole && hasCV;
 
   const tabStyle = (active: boolean) => ({
     flex: 1,
@@ -160,8 +161,8 @@ export default function InterviewPackStart() {
         {/* Job Title */}
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 28px', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Job Title</span>
-            <span style={{ fontSize: '11px', color: '#EF4444', fontWeight: 600 }}>* required</span>
+            <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Job Title</span>
+            <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 400 }}>(or upload a Job Spec)</span>
           </div>
           <input
             type="text"
@@ -236,7 +237,7 @@ export default function InterviewPackStart() {
                 {/* Known As */}
                 <div style={{ marginBottom: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Known As</span>
+                    <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Known As</span>
                     <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 400 }}>(optional — overrides your CV name)</span>
                   </div>
                   <input
@@ -297,7 +298,7 @@ export default function InterviewPackStart() {
 
           {/* Language */}
           <div style={{ flex: 1, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '14px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
               Interview Language
             </div>
             <select
@@ -322,7 +323,7 @@ export default function InterviewPackStart() {
 
           {/* Difficulty */}
           <div style={{ flex: 1, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '14px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
               Question Difficulty
             </div>
             <select
