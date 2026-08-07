@@ -351,7 +351,9 @@ export default function TheProblemPage() {
       {/* FOOTER */}
       <footer className="tp-footer" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '24px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg,#3B7EF7,#8B5CF6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 900, color: '#fff' }}>E</div>
+          <div style={{ width: 28, height: 28, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: '#060a12', border: '1px solid rgba(255,255,255,0.10)', boxShadow: '0 0 0 1px rgba(79,142,247,0.15)' }}>
+            <img src="/images/mastermind-chair.png" alt="Explain" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 30%', display: 'block' }} />
+          </div>
           <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>Explain<span style={{ color: '#4F8EF7' }}>.global</span></span>
         </div>
         <p style={{ fontSize: 12, color: '#334155' }}>© 2026 Explain — Percentile.One Ltd. All rights reserved.</p>
