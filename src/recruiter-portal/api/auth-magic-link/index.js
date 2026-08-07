@@ -51,7 +51,7 @@ module.exports = async function (context, req) {
   const link = `${portalUrl}/auth/verify?token=${token}`;
 
   const sgKey = process.env.SENDGRID_API_KEY;
-  const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'hello@explain.global';
+  const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'francis@percentile.one';
 
   let sgDebug = 'not_called';
   if (sgKey) {
