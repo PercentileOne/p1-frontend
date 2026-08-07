@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChairLogo } from '../components/LogoMark'
@@ -12,6 +12,7 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [phase, setPhase] = useState<Phase>('idle')
   const [error, setError] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
@@ -27,8 +28,8 @@ export default function Login() {
       })
       const data = await res.json()
       if (!data.ok) { setError(data.error || 'Failed to send link.'); setPhase('idle'); return; }
-      setPhase('sent');
-      (document.activeElement as HTMLElement)?.blur()
+      inputRef.current?.blur()
+      setPhase('sent')
     } catch {
       setError('Network error — please try again.')
       setPhase('idle')
@@ -179,6 +180,7 @@ export default function Login() {
                 }}>
                   <span style={{ fontSize: 13, color: '#4b5563', flexShrink: 0 }}>✉</span>
                   <input
+                    ref={inputRef}
                     type="email"
                     className="ex-input"
                     placeholder="your@email.com"
