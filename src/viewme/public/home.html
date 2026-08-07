@@ -320,22 +320,42 @@
   </div>
 </nav>
 
-<!-- LIVE CANDIDATE BANNER -->
-<div id="liveBanner" style="background:linear-gradient(90deg,rgba(52,211,153,0.08),rgba(61,126,246,0.08));border-bottom:1px solid rgba(52,211,153,0.15);padding:10px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:77px">
-  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <span style="display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#34D399;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.25);border-radius:20px;padding:3px 10px">
-      <span style="width:6px;height:6px;border-radius:50%;background:#34D399;animation:pulse 1.5s infinite"></span> Live on <span style="color:#fff">Interview</span><span style="color:#3D7EF6">Me</span>
-    </span>
-    <span style="font-size:13px;color:var(--pearl)">
-      <strong>Francis Cobbinah</strong> interviewed for <strong>Head of Engineering</strong> using Explain and scored
-      <span style="color:#34D399;font-weight:800">91 · A+</span> —
-      <a href="#" onclick="showStep(3);document.querySelector('.demo-wrap').scrollIntoView({behavior:'smooth'});return false" style="color:var(--blue);font-weight:700;text-decoration:none">Watch his interview</a>
-      or
-      <a href="#" onclick="showStep(3);document.querySelector('.demo-wrap').scrollIntoView({behavior:'smooth'});return false" style="color:var(--blue);font-weight:700;text-decoration:none">invite him to chat →</a>
-    </span>
+<!-- LIVE CANDIDATE TICKER -->
+<div id="liveBanner" style="background:linear-gradient(90deg,rgba(52,211,153,0.08),rgba(61,126,246,0.08));border-bottom:1px solid rgba(52,211,153,0.15);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:77px;overflow:hidden">
+  <span style="display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#34D399;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.25);border-radius:20px;padding:3px 10px;white-space:nowrap;flex-shrink:0">
+    <span style="width:6px;height:6px;border-radius:50%;background:#34D399;animation:pulse 1.5s infinite"></span> Live on <span style="color:#fff;margin:0 2px">Interview</span><span style="color:#3D7EF6">Me</span>
+  </span>
+  <div style="flex:1;overflow:hidden;position:relative">
+    <div id="tickerTrack" style="display:flex;transition:opacity 0.4s;font-size:13px;color:var(--pearl)"></div>
   </div>
-  <button onclick="document.getElementById('liveBanner').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;padding:0 4px">×</button>
+  <button onclick="document.getElementById('liveBanner').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;padding:0 4px;flex-shrink:0">×</button>
 </div>
+<script>
+(function(){
+  var ticks = [
+    { name:'Francis Cobbinah', role:'Head of Engineering', score:'91 · A+', pronoun:'his' },
+    { name:'Priya Sharma', role:'Senior Product Manager', score:'88 · A', pronoun:'her' },
+    { name:'Grace Nwosu', role:'Babysitter', score:'96 · A+', pronoun:'her' },
+    { name:'James Okafor', role:'DevOps Lead', score:'93 · A+', pronoun:'his' },
+    { name:'Sophie Clarke', role:'Retail Assistant', score:'85 · A', pronoun:'her' },
+    { name:'Daniel Mensah', role:'Principal Architect', score:'94 · A+', pronoun:'his' },
+    { name:'Amy Mitchell', role:'Chef', score:'89 · A', pronoun:'her' },
+  ];
+  var i = 0;
+  var track = document.getElementById('tickerTrack');
+  function show() {
+    var t = ticks[i % ticks.length];
+    track.style.opacity = '0';
+    setTimeout(function() {
+      track.innerHTML = '<strong>' + t.name + '</strong>&nbsp;interviewed for&nbsp;<strong>' + t.role + '</strong>&nbsp;and scored&nbsp;<span style="color:#34D399;font-weight:800">' + t.score + '</span>&nbsp;—&nbsp;<a href="#" onclick="showStep&&showStep(3);document.querySelector(\'.demo-wrap\')&&document.querySelector(\'.demo-wrap\').scrollIntoView({behavior:\'smooth\'});return false" style="color:var(--blue);font-weight:700;text-decoration:none">Watch ' + t.pronoun + ' interview</a>&nbsp;or&nbsp;<a href="#" style="color:var(--blue);font-weight:700;text-decoration:none">invite ' + t.pronoun.replace('his','him').replace('her','her') + ' to chat →</a>';
+      track.style.opacity = '1';
+      i++;
+    }, 400);
+  }
+  show();
+  setInterval(show, 4000);
+})();
+</script>
 
 <!-- HERO -->
 <div class="hero" style="padding-top:60px">
