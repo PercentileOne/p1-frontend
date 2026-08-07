@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import QRCode from 'qrcode'
 
 const DEMO: Record<string, CandidateData> = {
   'francis-cobbinah-head-of-engineering': {
@@ -54,8 +55,19 @@ export default function Profile() {
   const candidate = slug ? DEMO[slug] ?? DEMO['francis-cobbinah-head-of-engineering'] : DEMO['francis-cobbinah-head-of-engineering']
   const [inviteClicked, setInviteClicked] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [qrDataUrl, setQrDataUrl] = useState('')
 
-  const shareText = `I just interviewed for ${candidate.role} on Explain.global and scored ${candidate.score} · ${candidate.grade} 🎯\n\nWatch my full AI-verified interview and contact me directly — no application needed.\n\nhttps://interviewme.global/${slug ?? 'francis-cobbinah-head-of-engineering'}\n\nLet's make CVs redundant. ✊\n\n#InterviewMe #MakeCVsRedundant #OpenToWork`
+  const profileUrl = `https://interviewme.global/${slug ?? 'francis-cobbinah-head-of-engineering'}`
+
+  useEffect(() => {
+    QRCode.toDataURL(profileUrl, {
+      width: 200,
+      margin: 2,
+      color: { dark: '#ffffff', light: '#060A12' },
+    }).then(setQrDataUrl)
+  }, [profileUrl])
+
+  const shareText = `I just interviewed for ${candidate.role} on Explain.global and scored ${candidate.score} · ${candidate.grade} 🎯\n\nWatch my full AI-verified interview and contact me directly — no application needed.\n\n${profileUrl}\n\nLet's make CVs redundant. ✊\n\n#InterviewMe #MakeCVsRedundant #OpenToWork`
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareText).then(() => {
@@ -189,6 +201,32 @@ export default function Profile() {
           )}
           <div style={{ fontSize: 11, color: '#334155', marginTop: 14 }}>
             Already subscribed? <Link to="/login" style={{ color: '#4F8EF7', textDecoration: 'none' }}>Sign in</Link>
+          </div>
+        </motion.div>
+
+        {/* QR CODE CARD */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.48, duration: 0.5 }}
+          style={{ marginTop: 24, background: 'rgba(79,142,247,0.04)', border: '1px solid rgba(79,142,247,0.15)', borderRadius: 24, padding: '28px 32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 28, flexWrap: 'wrap' }}>
+            {qrDataUrl && (
+              <div style={{ flexShrink: 0, borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(79,142,247,0.2)', padding: 10, background: '#060A12' }}>
+                <img src={qrDataUrl} alt="QR code" style={{ width: 120, height: 120, display: 'block' }} />
+              </div>
+            )}
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#4F8EF7', marginBottom: 6 }}>Your interview · anywhere</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', marginBottom: 8, lineHeight: 1.3 }}>Put this QR code on your CV, PDF, or printed leaflet</div>
+              <div style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, marginBottom: 16 }}>
+                Anyone who scans it — phone, tablet, laptop — lands directly on your verified interview profile. Works on paper <em style={{ fontStyle: 'normal', color: '#94a3b8' }}>and</em> electronic CVs, Word docs, PDFs, email signatures, WhatsApp, anywhere.
+              </div>
+              <a
+                href={qrDataUrl}
+                download={`interviewme-qr-${slug ?? 'profile'}.png`}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 22px', borderRadius: 10, background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.3)', color: '#4F8EF7', fontSize: 13, fontWeight: 800, textDecoration: 'none' }}
+              >
+                ↓ Download QR code
+              </a>
+            </div>
           </div>
         </motion.div>
 
