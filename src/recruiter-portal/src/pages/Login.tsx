@@ -109,7 +109,7 @@ export default function Login() {
           transition={{ delay: 1.9, duration: 0.8, ease: 'easeOut' }}
         >
           <div style={{ fontSize: 19, fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.25 }}>
-            Recruiter Portal
+            The Problem
           </div>
           <div style={{ fontSize: 14, color: '#64748b', marginTop: 6, lineHeight: 1.5 }}>
             The platform that turns every interview<br />into data your competitors don't have.
