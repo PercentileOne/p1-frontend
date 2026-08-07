@@ -88,6 +88,6 @@ module.exports = async function (context, req) {
   context.res = {
     status: 200,
     headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
-    body: JSON.stringify({ ok: true, message: 'Magic link sent — check your email.' }),
+    body: JSON.stringify({ ok: true, message: 'Magic link sent — check your email.', _debug: { hasSgKey: !!sgKey, sgKeyLen: (sgKey||'').length, fromEmail } }),
   };
 };
