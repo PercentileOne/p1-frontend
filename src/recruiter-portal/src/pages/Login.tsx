@@ -139,7 +139,7 @@ export default function Login() {
                 animate={{ opacity: 1, scale: 1 }}
                 style={{ textAlign: 'center', padding: '8px 0' }}
               >
-                <div style={{ fontSize: 36, marginBottom: 16 }}>📬</div>
+                <div style={{ fontSize: 36, marginBottom: 16, caretColor: 'transparent' }}>📬</div>
                 <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 8 }}>Check your inbox</div>
                 <div style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>
                   We sent a sign-in link to<br />
@@ -184,7 +184,6 @@ export default function Login() {
                     placeholder="your@email.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    autoFocus
                     style={{
                       flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none',
                       color: '#cbd5e1', fontSize: 13, fontFamily: 'inherit', caretColor: '#4F8EF7',

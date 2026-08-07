@@ -31,7 +31,7 @@ module.exports = async function (context, req) {
 
   if (sgKey) {
     try {
-      await fetch('https://api.sendgrid.com/v3/mail/send', {
+      const sgRes = await fetch('https://api.sendgrid.com/v3/mail/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sgKey}` },
         body: JSON.stringify({
@@ -52,6 +52,10 @@ module.exports = async function (context, req) {
           }],
         }),
       });
+      if (!sgRes.ok) {
+        const errBody = await sgRes.text();
+        context.log.error(`SendGrid ${sgRes.status}:`, errBody);
+      }
     } catch (err) {
       context.log.error('SendGrid error:', err.message);
     }
