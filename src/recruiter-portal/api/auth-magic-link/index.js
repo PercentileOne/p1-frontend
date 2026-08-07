@@ -53,8 +53,8 @@ module.exports = async function (context, req) {
   const sgKey = process.env.SENDGRID_API_KEY;
   const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'hello@explain.global';
 
+  let sgDebug = 'not_called';
   if (sgKey) {
-    let sgDebug = 'not_called';
     try {
       const result = await sendgridSend(sgKey, {
         personalizations: [{ to: [{ email }] }],
