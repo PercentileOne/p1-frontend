@@ -218,6 +218,47 @@ export default function TheProblemPage() {
               Interview preparation is one of the fastest-growing segments in HR tech — and it's still waiting for a product people actually want to use every day.
             </p>
           </div>
+
+          {/* WHY EXPLAIN IS DIFFERENT */}
+          <div style={{ maxWidth: 780, margin: '0 auto 48px', background: 'rgba(52,211,153,0.04)', border: '1px solid rgba(52,211,153,0.12)', borderRadius: 24, padding: '36px 40px' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', color: '#34D399', textTransform: 'uppercase', marginBottom: 18 }}>Why Explain is different</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
+              {[
+                { name: 'HireVue', does: 'scores candidates' },
+                { name: 'Metaview', does: 'transcribes interviews' },
+                { name: 'Interviewer.AI', does: 'flags red flags' },
+              ].map(c => (
+                <div key={c.name} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#cbd5e1', minWidth: 110 }}>{c.name}</span>
+                  <span style={{ fontSize: 13, color: '#475569' }}>{c.does}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: 12, color: '#ef4444', fontWeight: 600, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 20, padding: '3px 10px', whiteSpace: 'nowrap' }}>loop never closes</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ borderTop: '1px solid rgba(52,211,153,0.12)', paddingTop: 20 }}>
+              <p style={{ fontSize: 15, color: '#e2e8f0', lineHeight: 1.65 }}>
+                None of them close the loop. The hiring manager still sits blind. The candidate still walks out not knowing where they stood. And the data disappears.
+              </p>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#34D399', marginTop: 12, lineHeight: 1.5 }}>
+                Explain is the first platform where every party — recruiter, candidate, client — walks away with something.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 20 }}>
+                {[
+                  { portal: 'Recruiter Portal', detail: 'AI interviewers run structured sessions, score every answer, surface the data that matters.' },
+                  { portal: 'Candidate Portal', detail: 'Real interview practice with instant feedback, scoring, and a results breakdown to learn from.' },
+                  { portal: 'Client Portal', detail: 'Hiring managers see ranked candidates, tailored questions, and full interview intelligence — read-only, no login friction.' },
+                ].map(p => (
+                  <div key={p.portal} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                    <span style={{ color: '#34D399', fontSize: 14, marginTop: 2, flexShrink: 0 }}>→</span>
+                    <span style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.55 }}>
+                      <strong style={{ color: '#e2e8f0', fontWeight: 700 }}>{p.portal}</strong> — {p.detail}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div className="market-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
             {[
               { value: '$5.3B', label: 'Interview prep market size in 2024', sub: 'Growing to $7.3B by 2032' },
