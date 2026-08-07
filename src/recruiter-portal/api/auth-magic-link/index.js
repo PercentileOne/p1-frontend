@@ -53,7 +53,6 @@ module.exports = async function (context, req) {
   const sgKey = process.env.SENDGRID_API_KEY;
   const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'francis@percentile.one';
 
-  let sgDebug = 'not_called';
   if (sgKey) {
     try {
       const result = await sendgridSend(sgKey, {
@@ -74,14 +73,12 @@ module.exports = async function (context, req) {
         }],
       });
 
-      sgDebug = `${result.status}: ${result.body.slice(0, 120)}`;
       if (result.status >= 300) {
         context.log.error(`SendGrid ${result.status}:`, result.body);
       } else {
         context.log.info(`Magic link sent to ${email} via SendGrid (${result.status})`);
       }
     } catch (err) {
-      sgDebug = `error: ${err.message}`;
       context.log.error('SendGrid https error:', err.message);
     }
   } else {
@@ -91,6 +88,6 @@ module.exports = async function (context, req) {
   context.res = {
     status: 200,
     headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
-    body: JSON.stringify({ ok: true, message: 'Magic link sent — check your email.', _debug: { hasSgKey: !!sgKey, sgKeyLen: (sgKey||'').length, fromEmail, sgDebug } }),
+    body: JSON.stringify({ ok: true, message: 'Magic link sent — check your email.' }),
   };
 };
