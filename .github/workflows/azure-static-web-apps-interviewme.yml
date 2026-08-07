@@ -17,18 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: src/viewme/package-lock.json
-
-      - name: Install and build
+      - name: Prepare static output
         run: |
-          cd src/viewme
-          npm install
-          npm run build
+          mkdir -p deploy
+          cp src/viewme/public/home.html deploy/index.html
+          cp src/viewme/public/mastermind-chair.png deploy/mastermind-chair.png
 
       - name: Deploy to Azure SWA
         uses: Azure/static-web-apps-deploy@v1
@@ -36,5 +29,5 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_INTERVIEWME }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
-          app_location: src/viewme/dist
+          app_location: deploy
           skip_app_build: true
