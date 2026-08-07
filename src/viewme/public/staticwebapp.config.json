@@ -1,10 +1,11 @@
 {
   "routes": [
-    { "route": "/", "serve": "/home.html", "statusCode": 200 }
+    { "route": "/", "serve": "/home.html", "statusCode": 200 },
+    { "route": "/index.html", "serve": "/home.html", "statusCode": 200 }
   ],
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/", "/home.html", "/*.{css,js,png,jpg,svg,ico,woff,woff2}"]
+    "exclude": ["/home.html", "/mastermind-chair.png", "/*.{css,js,png,jpg,svg,ico,woff,woff2}"]
   },
   "globalHeaders": {
     "X-Frame-Options": "SAMEORIGIN",
