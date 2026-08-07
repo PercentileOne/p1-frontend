@@ -53,6 +53,16 @@ export default function Profile() {
   const { slug } = useParams<{ slug: string }>()
   const candidate = slug ? DEMO[slug] ?? DEMO['francis-cobbinah-head-of-engineering'] : DEMO['francis-cobbinah-head-of-engineering']
   const [inviteClicked, setInviteClicked] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const shareText = `I just interviewed for ${candidate.role} on Explain.global and scored ${candidate.score} · ${candidate.grade} 🎯\n\nWatch my full AI-verified interview and contact me directly — no application needed.\n\nhttps://interviewme.global/${slug ?? 'francis-cobbinah-head-of-engineering'}\n\nLet's make CVs redundant. ✊\n\n#InterviewMe #MakeCVsRedundant #OpenToWork`
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(shareText).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    })
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#060A12' }}>
@@ -180,6 +190,24 @@ export default function Profile() {
           <div style={{ fontSize: 11, color: '#334155', marginTop: 14 }}>
             Already subscribed? <Link to="/login" style={{ color: '#4F8EF7', textDecoration: 'none' }}>Sign in</Link>
           </div>
+        </motion.div>
+
+        {/* SHARE CARD */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }}
+          style={{ marginTop: 24, background: 'rgba(251,191,36,0.04)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 24, padding: '28px 32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#FBBF24', marginBottom: 4 }}>Share your interview</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>Help us make CVs redundant ✊</div>
+            </div>
+            <button onClick={handleCopy} style={{ padding: '10px 22px', borderRadius: 10, background: copied ? 'rgba(52,211,153,0.15)' : 'rgba(251,191,36,0.12)', border: `1px solid ${copied ? 'rgba(52,211,153,0.4)' : 'rgba(251,191,36,0.35)'}`, color: copied ? '#34D399' : '#FBBF24', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
+              {copied ? '✓ Copied!' : 'Copy share text →'}
+            </button>
+          </div>
+          <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: 12, padding: '14px 16px', fontSize: 13, color: '#94a3b8', lineHeight: 1.6, whiteSpace: 'pre-line', fontFamily: 'inherit' }}>
+            {shareText}
+          </div>
+          <div style={{ fontSize: 11, color: '#475569', marginTop: 12 }}>Paste this on LinkedIn, in an email, on WhatsApp — anywhere. Every share brings employers directly to you.</div>
         </motion.div>
 
         {/* FOOTER */}
