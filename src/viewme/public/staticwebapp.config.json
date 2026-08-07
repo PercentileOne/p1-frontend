@@ -1,6 +1,10 @@
 {
+  "routes": [
+    { "route": "/", "serve": "/home.html", "statusCode": 200 }
+  ],
   "navigationFallback": {
-    "rewrite": "/index.html"
+    "rewrite": "/index.html",
+    "exclude": ["/", "/home.html", "/*.{css,js,png,jpg,svg,ico,woff,woff2}"]
   },
   "globalHeaders": {
     "X-Frame-Options": "SAMEORIGIN",
