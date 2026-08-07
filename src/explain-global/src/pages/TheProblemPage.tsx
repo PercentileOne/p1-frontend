@@ -52,10 +52,15 @@ export default function TheProblemPage() {
         <a href="https://explain.global" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
           <div style={{
             width: 34, height: 34, borderRadius: 10,
-            background: 'linear-gradient(135deg,#3B7EF7,#8B5CF6)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, fontWeight: 900, color: '#fff',
-          }}>E</div>
+            overflow: 'hidden', flexShrink: 0, position: 'relative',
+            background: '#060a12',
+            border: '1px solid rgba(255,255,255,0.10)',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.5), 0 0 0 1px rgba(79,142,247,0.15)',
+          }}>
+            <img src="/images/mastermind-chair.png" alt="Explain" style={{
+              width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 30%', display: 'block',
+            }} />
+          </div>
           <span style={{ fontSize: 17, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
             Explain<span style={{ color: '#4F8EF7' }}>.global</span>
           </span>
