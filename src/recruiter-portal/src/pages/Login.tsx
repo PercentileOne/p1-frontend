@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ExplainLogo } from '../components/LogoMark'
+import { ChairLogo } from '../components/LogoMark'
 import { useAuth } from '../context/AuthContext'
 
 type Phase = 'idle' | 'sending' | 'sent' | 'demo'
@@ -86,7 +86,7 @@ export default function Login() {
         margin: '0 20px',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20,
       }}>
-        <ExplainLogo />
+        <ChairLogo size={80} showText={false} />
 
         <motion.div
           style={{ textAlign: 'center', marginTop: -8 }}
