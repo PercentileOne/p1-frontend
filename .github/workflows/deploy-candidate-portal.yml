@@ -1,11 +1,6 @@
 name: Deploy Candidate Portal → Azure SWA (orange-island)
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'src/recruiter-portal/**'
-      - '.github/workflows/deploy-candidate-portal.yml'
   workflow_dispatch:
 
 jobs:
