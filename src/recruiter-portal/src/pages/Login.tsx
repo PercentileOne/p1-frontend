@@ -27,7 +27,8 @@ export default function Login() {
       })
       const data = await res.json()
       if (!data.ok) { setError(data.error || 'Failed to send link.'); setPhase('idle'); return; }
-      setPhase('sent')
+      setPhase('sent');
+      (document.activeElement as HTMLElement)?.blur()
     } catch {
       setError('Network error — please try again.')
       setPhase('idle')
@@ -67,6 +68,7 @@ export default function Login() {
           caret-color: #4F8EF7 !important;
           transition: background-color 5000s ease-in-out 0s;
         }
+        @keyframes exSpin { to { transform: rotate(360deg); } }
       `}</style>
 
       <Orb style={{ width: 560, height: 560, top: '-14%', left: '-9%' }}  color="79,142,247" delay={0}  dur={18} />
