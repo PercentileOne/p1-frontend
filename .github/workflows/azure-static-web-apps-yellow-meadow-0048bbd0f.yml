@@ -34,7 +34,6 @@ jobs:
         run: npm install -g @azure/static-web-apps-cli
 
       - name: Deploy with SWA CLI
-        run: swa deploy src/viewme/dist --deployment-token ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_YELLOW_MEADOW_0048BBD0F }} --env production
-        env:
-          SWA_CLI_DEPLOYMENT_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_YELLOW_MEADOW_0048BBD0F }}
+        working-directory: src/viewme
+        run: swa deploy dist --deployment-token ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_YELLOW_MEADOW_0048BBD0F }} --env production
 
