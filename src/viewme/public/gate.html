@@ -198,6 +198,56 @@
   .feature-text strong { display: block; font-size: 13px; font-weight: 700; color: var(--pearl); margin-bottom: 1px; }
   .feature-text span { font-size: 12px; color: var(--muted); line-height: 1.5; }
 
+  /* ── HOW IT WORKS FLOW ── */
+  .flow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; max-width: 620px; }
+  .flow-step {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px; position: relative;
+  }
+  .flow-step.candidate-step { border-color: rgba(52,211,153,0.18); }
+  .flow-step.employer-step  { border-color: rgba(61,126,246,0.18); }
+  .flow-step.shared-step    { border-color: rgba(167,139,250,0.18); }
+  .flow-num {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 900; letter-spacing: -0.02em; margin-top: 1px;
+  }
+  .flow-num-candidate { background: rgba(52,211,153,0.15); color: var(--green); }
+  .flow-num-employer  { background: rgba(61,126,246,0.15);  color: var(--blue); }
+  .flow-num-shared    { background: rgba(167,139,250,0.15); color: var(--violet); }
+  .flow-body strong { display: block; font-size: 13px; font-weight: 800; color: var(--pearl); margin-bottom: 2px; }
+  .flow-body span   { font-size: 11px; color: var(--muted); line-height: 1.45; }
+  .flow-punch { font-size: 11px; font-weight: 700; font-style: italic; margin-top: 2px; }
+  .flow-punch-green  { color: var(--green); }
+  .flow-punch-blue   { color: var(--blue); }
+  .flow-punch-violet { color: var(--violet); }
+  .flow-connector {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--muted); padding: 0 4px;
+  }
+  .flow-legend { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .flow-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+  .flow-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* pause pill */
+  .pause-pill {
+    position: absolute; top: 28px; left: 64px;
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+    border-radius: 20px; padding: 4px 12px 4px 8px;
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    cursor: pointer; z-index: 10; transition: all 0.2s;
+    user-select: none;
+  }
+  .pause-pill:hover { background: rgba(255,255,255,0.1); color: var(--pearl); }
+  .pause-pill svg { width: 12px; height: 12px; fill: currentColor; flex-shrink: 0; }
+  .paused-indicator {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none; z-index: 5;
+    outline: 2px solid rgba(255,255,255,0.06) inset;
+  }
+
   /* general slide punchlines */
   .punchlines { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 600px; }
   .punch { background: rgba(255,255,255,0.03); border: 1px solid rgba(167,139,250,0.15); border-radius: 12px; padding: 16px 18px; }
@@ -355,7 +405,83 @@
       </div>
     </div>
 
-    <!-- ─ SLIDE 2: EMPLOYER ─ -->
+    <!-- ─ SLIDE 2: HOW IT WORKS ─ -->
+    <div class="slide slide-general" data-audience="general">
+      <div class="slide-inner">
+        <div class="slide-eyebrow eyebrow-general"><span class="pulse pulse-violet"></span>How It Works</div>
+        <h1 class="slide-headline">One interview.<br><span class="hl-violet">Infinite opportunities.</span></h1>
+        <p class="slide-sub">No CV required. Record once, be seen everywhere — by employers and recruiters searching right now.</p>
+        <div class="flow-legend">
+          <div class="flow-legend-item"><div class="flow-legend-dot" style="background:var(--green)"></div>Candidate</div>
+          <div class="flow-legend-item"><div class="flow-legend-dot" style="background:var(--blue)"></div>Employer / Recruiter</div>
+          <div class="flow-legend-item"><div class="flow-legend-dot" style="background:var(--violet)"></div>Platform</div>
+        </div>
+        <div class="flow">
+          <div class="flow-step candidate-step">
+            <div class="flow-num flow-num-candidate">1</div>
+            <div class="flow-body">
+              <strong>Create your profile</strong>
+              <span>Name, role, experience. Two minutes. Done.</span>
+            </div>
+          </div>
+          <div class="flow-step candidate-step">
+            <div class="flow-num flow-num-candidate">2</div>
+            <div class="flow-body">
+              <strong>Record your interview</strong>
+              <span>Sarah and James ask the questions. You perform. One take.</span>
+              <div class="flow-punch flow-punch-green">"Your best self. On record."</div>
+            </div>
+          </div>
+          <div class="flow-step candidate-step">
+            <div class="flow-num flow-num-candidate">3</div>
+            <div class="flow-body">
+              <strong>Get your score &amp; go public</strong>
+              <span>Rated on communication, depth, and culture fit. Your interview goes live — searchable by any employer.</span>
+            </div>
+          </div>
+          <div class="flow-step candidate-step">
+            <div class="flow-num flow-num-candidate">4</div>
+            <div class="flow-body">
+              <strong>Share on social</strong>
+              <span>Post your profile link anywhere. LinkedIn, WhatsApp, X. Employers find you — you don't chase them.</span>
+              <div class="flow-punch flow-punch-green">"Recorded once. Seen by thousands."</div>
+            </div>
+          </div>
+          <div class="flow-step employer-step">
+            <div class="flow-num flow-num-employer">5</div>
+            <div class="flow-body">
+              <strong>Employer or recruiter searches</strong>
+              <span>Filter by role, score, location. Watch 4-minute interviews. No phone screens. No scheduling.</span>
+              <div class="flow-punch flow-punch-blue">"4 minutes to shortlist."</div>
+            </div>
+          </div>
+          <div class="flow-step employer-step">
+            <div class="flow-num flow-num-employer">6</div>
+            <div class="flow-body">
+              <strong>They like you</strong>
+              <span>A ♥ notification lands in your inbox. You know someone's watching.</span>
+            </div>
+          </div>
+          <div class="flow-step shared-step">
+            <div class="flow-num flow-num-shared">7</div>
+            <div class="flow-body">
+              <strong>They inbox you</strong>
+              <span>No emails or numbers ever shared. All contact on-platform. Privacy first — always.</span>
+            </div>
+          </div>
+          <div class="flow-step shared-step">
+            <div class="flow-num flow-num-shared">8</div>
+            <div class="flow-body">
+              <strong>You get hired</strong>
+              <span>Zero CVs required. Just your performance — and the confidence to show it.</span>
+              <div class="flow-punch flow-punch-violet">"CVs are redundant. You're not."</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─ SLIDE 3: EMPLOYER ─ -->
     <div class="slide slide-employer" data-audience="employer">
       <div class="slide-inner">
         <div class="slide-eyebrow eyebrow-employer"><span class="pulse pulse-blue"></span>For Employers</div>
@@ -553,15 +679,22 @@
       </div>
     </div>
 
+    <!-- PAUSE PILL -->
+    <button class="pause-pill" id="pauseBtn" onclick="togglePause()">
+      <svg id="pauseIcon" viewBox="0 0 10 10"><rect x="1" y="1" width="3" height="8" rx="1"/><rect x="6" y="1" width="3" height="8" rx="1"/></svg>
+      <span id="pauseLabel">Pause</span>
+    </button>
+
     <!-- DOTS -->
     <div class="carousel-dots" id="dots">
       <button class="dot dot-candidate active" onclick="goTo(0)"></button>
-      <button class="dot dot-employer" onclick="goTo(1)"></button>
-      <button class="dot dot-recruiter" onclick="goTo(2)"></button>
-      <button class="dot dot-candidate" onclick="goTo(3)"></button>
-      <button class="dot dot-employer" onclick="goTo(4)"></button>
-      <button class="dot dot-recruiter" onclick="goTo(5)"></button>
-      <button class="dot dot-general" onclick="goTo(6)"></button>
+      <button class="dot dot-general" onclick="goTo(1)"></button>
+      <button class="dot dot-employer" onclick="goTo(2)"></button>
+      <button class="dot dot-recruiter" onclick="goTo(3)"></button>
+      <button class="dot dot-candidate" onclick="goTo(4)"></button>
+      <button class="dot dot-employer" onclick="goTo(5)"></button>
+      <button class="dot dot-recruiter" onclick="goTo(6)"></button>
+      <button class="dot dot-general" onclick="goTo(7)"></button>
     </div>
 
     <!-- ARROWS -->
@@ -656,16 +789,27 @@
   const dots = document.querySelectorAll('.dot');
   const counter = document.getElementById('counter');
   const progress = document.getElementById('progress');
-  const audiences = ['candidate','employer','recruiter','candidate','employer','recruiter','general'];
+  const carousel = document.getElementById('carousel');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const pauseIcon = document.getElementById('pauseIcon');
+  const pauseLabel = document.getElementById('pauseLabel');
+
+  const audiences = ['candidate','general','employer','recruiter','candidate','employer','recruiter','general'];
   const accentColors = {
     candidate: '#34D399',
     employer:  '#3D7EF6',
     recruiter: '#FBBF24',
     general:   '#A78BFA'
   };
+
+  const PLAY_ICON = '<rect x="1" y="1" width="3" height="8" rx="1"/><rect x="6" y="1" width="3" height="8" rx="1"/>';
+  const PAUSE_ICON = '<polygon points="2,1 9,5 2,9"/>';
+
   let current = 0;
   let timer, progTimer, progVal = 0;
-  const DURATION = 6000;
+  let paused = false;
+  let hovered = false;
+  const DURATION = 7000; // slightly longer for the flow slide
 
   function goTo(n) {
     slides[current].classList.remove('active');
@@ -675,7 +819,8 @@
     dots[current].classList.add('active');
     counter.textContent = (current + 1) + ' / ' + slides.length;
     progress.style.background = accentColors[audiences[current]];
-    resetTimer();
+    if (!paused && !hovered) resetTimer();
+    else { clearInterval(timer); clearInterval(progTimer); }
   }
 
   function next() { goTo(current + 1); }
@@ -693,13 +838,45 @@
     timer = setInterval(next, DURATION);
   }
 
+  function stopTimer() {
+    clearInterval(timer);
+    clearInterval(progTimer);
+  }
+
+  function togglePause() {
+    paused = !paused;
+    if (paused) {
+      stopTimer();
+      pauseIcon.innerHTML = PAUSE_ICON;
+      pauseLabel.textContent = 'Resume';
+      pauseBtn.style.color = 'var(--pearl)';
+    } else {
+      pauseIcon.innerHTML = PLAY_ICON;
+      pauseLabel.textContent = 'Pause';
+      pauseBtn.style.color = '';
+      resetTimer();
+    }
+  }
+
+  // hover pause
+  carousel.addEventListener('mouseenter', () => {
+    hovered = true;
+    if (!paused) stopTimer();
+  });
+  carousel.addEventListener('mouseleave', () => {
+    hovered = false;
+    if (!paused) resetTimer();
+  });
+
   // keyboard nav
   document.addEventListener('keydown', e => {
     if (e.key === 'ArrowRight') next();
     if (e.key === 'ArrowLeft')  prev();
+    if (e.key === ' ') { e.preventDefault(); togglePause(); }
   });
 
   // init
+  pauseIcon.innerHTML = PLAY_ICON;
   progress.style.background = accentColors[audiences[0]];
   resetTimer();
 
