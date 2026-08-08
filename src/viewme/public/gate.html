@@ -362,12 +362,21 @@
   /* ── RESPONSIVE ── */
   @media (max-width: 900px) {
     .gate { grid-template-columns: 1fr; }
-    .carousel-wrap { min-height: 80vh; }
-    .slide { padding: 44px 28px; }
-    .carousel-dots { left: 28px; }
+    .carousel-wrap { height: auto; min-height: 100svh; overflow: visible; border-right: none; border-bottom: 1px solid var(--border); }
+    .slide { position: relative; inset: auto; opacity: 1; pointer-events: auto; padding: 48px 28px 80px; overflow-y: visible; display: none; }
+    .slide.active { display: flex; }
+    .carousel-dots { left: 28px; bottom: 24px; }
+    .carousel-arrows { right: 20px; bottom: 18px; }
+    .pause-pill { left: 28px; top: 20px; }
+    .slide-counter { top: 24px; right: 20px; }
     .auth-panel { position: static; height: auto; padding: 44px 28px; }
     .auth-box { max-width: 100%; }
     .visual-stats { grid-template-columns: 1fr 1fr; }
+    .flow { grid-template-columns: 1fr; }
+    .pipeline { grid-template-columns: 1fr; }
+    .punchlines { grid-template-columns: 1fr; }
+    .visual-room img { max-height: 280px; object-fit: cover; object-position: top; }
+    .slide-headline { font-size: clamp(1.8rem, 7vw, 2.4rem); }
   }
 </style>
 </head>
