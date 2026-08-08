@@ -205,10 +205,108 @@
     position: sticky; top: 0; height: 100vh;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    padding: 48px 40px;
+    padding: 32px 40px;
     overflow-y: auto;
+    gap: 24px;
   }
-  .auth-box { width: 100%; max-width: 300px; }
+  .auth-box { width: 100%; max-width: 340px; }
+
+  /* live preview card */
+  .live-preview {
+    width: 100%; max-width: 340px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+  }
+  .lp-header {
+    padding: 16px 18px 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .lp-copy { }
+  .lp-eyebrow {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 4px;
+  }
+  .lp-headline {
+    font-size: 15px; font-weight: 900; letter-spacing: -0.03em; color: var(--pearl); line-height: 1.1;
+  }
+  .lp-headline span { color: #A78BFA; }
+  .lp-badge {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #A78BFA; background: rgba(167,139,250,0.12);
+    border: 1px solid rgba(167,139,250,0.2);
+    border-radius: 20px; padding: 4px 10px; white-space: nowrap; flex-shrink: 0;
+  }
+  .lp-dot { width: 5px; height: 5px; border-radius: 50%; background: #A78BFA; animation: pulse 2s infinite; }
+
+  /* chair strip */
+  .lp-chair {
+    display: flex; align-items: center; justify-content: flex-end;
+    padding: 0 18px 0 0;
+    height: 60px;
+    position: relative;
+  }
+  .lp-chair img {
+    height: 70px; width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 20px rgba(167,139,250,0.3));
+    position: absolute; right: 18px; bottom: 0;
+  }
+
+  /* video tiles */
+  .lp-tiles {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; padding: 0 14px 14px;
+  }
+  .lp-tile {
+    border-radius: 10px; overflow: hidden;
+    aspect-ratio: 4/3;
+    position: relative;
+    display: flex; align-items: flex-end;
+  }
+  .lp-tile-bg {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 900; color: rgba(255,255,255,0.15);
+    letter-spacing: -0.04em;
+  }
+  .lp-tile-bg.sarah { background: linear-gradient(160deg, #1a1f35 0%, #0f1525 100%); border: 1px solid rgba(167,139,250,0.2); }
+  .lp-tile-bg.james { background: linear-gradient(160deg, #0f1a20 0%, #0a1218 100%); border: 1px solid rgba(61,126,246,0.2); }
+  /* waveform on sarah */
+  .lp-wave {
+    position: absolute; bottom: 8px; right: 8px;
+    display: flex; align-items: flex-end; gap: 2px; height: 18px;
+  }
+  .lp-wave span {
+    width: 2px; background: #A78BFA; border-radius: 2px; opacity: 0.8;
+    animation: wave 1.2s ease-in-out infinite;
+  }
+  .lp-wave span:nth-child(1) { height: 6px; animation-delay: 0s; }
+  .lp-wave span:nth-child(2) { height: 14px; animation-delay: 0.1s; }
+  .lp-wave span:nth-child(3) { height: 10px; animation-delay: 0.2s; }
+  .lp-wave span:nth-child(4) { height: 16px; animation-delay: 0.3s; }
+  .lp-wave span:nth-child(5) { height: 8px; animation-delay: 0.4s; }
+  @keyframes wave {
+    0%,100% { transform: scaleY(1); }
+    50% { transform: scaleY(0.4); }
+  }
+  /* ready badge on james */
+  .lp-ready {
+    position: absolute; top: 6px; right: 6px;
+    font-size: 9px; font-weight: 700; color: var(--green);
+    background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.25);
+    border-radius: 4px; padding: 2px 6px;
+  }
+  .lp-name {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 16px 8px 7px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+  }
+  .lp-name strong { display: block; font-size: 11px; font-weight: 700; color: var(--pearl); }
+  .lp-name span { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
 
   .auth-tagline { font-size: 21px; font-weight: 900; letter-spacing: -0.03em; color: var(--pearl); margin-bottom: 4px; }
   .auth-sub { font-size: 12px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
@@ -442,6 +540,43 @@
 
   <!-- ══ RIGHT: sticky auth ══ -->
   <div class="auth-panel">
+
+    <!-- LIVE PREVIEW CARD -->
+    <div class="live-preview">
+      <div class="lp-header">
+        <div class="lp-copy">
+          <div class="lp-eyebrow">Your interview awaits</div>
+          <div class="lp-headline">The seat is yours.<br><span>Make every answer count.</span></div>
+        </div>
+        <div class="lp-badge"><span class="lp-dot"></span>Live Preview</div>
+      </div>
+
+      <div class="lp-chair">
+        <img src="mastermind-chair.png" alt="The Chair">
+      </div>
+
+      <div class="lp-tiles">
+        <div class="lp-tile">
+          <div class="lp-tile-bg sarah">S</div>
+          <div class="lp-wave">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="lp-name">
+            <strong>Sarah Mitchell</strong>
+            <span>HR Director</span>
+          </div>
+        </div>
+        <div class="lp-tile">
+          <div class="lp-tile-bg james">J</div>
+          <div class="lp-ready">Ready</div>
+          <div class="lp-name">
+            <strong>James Okafor</strong>
+            <span>Hiring Manager</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="auth-box">
 
       <div class="auth-tagline">Welcome back.</div>
