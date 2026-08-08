@@ -150,6 +150,68 @@
   .work-period { font-size: 11px; color: var(--muted); }
   .work-badge { font-size: 10px; font-weight: 700; background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.2); border-radius: 20px; padding: 2px 8px; }
 
+  /* VIDEO MODAL */
+  .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(12px);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity 0.25s; }
+  .modal-overlay.open { opacity:1;pointer-events:all; }
+  .modal { background:#080e1a;border:1px solid rgba(255,255,255,0.1);border-radius:24px;width:100%;max-width:900px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;transform:translateY(20px);transition:transform 0.25s; }
+  .modal-overlay.open .modal { transform:translateY(0); }
+
+  /* Modal header */
+  .modal-header { display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0; }
+  .modal-header-left { display:flex;align-items:center;gap:12px; }
+  .modal-candidate-avatar { width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#3D7EF6);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff; }
+  .modal-candidate-name { font-size:14px;font-weight:800;color:var(--pearl); }
+  .modal-interview-title { font-size:11px;color:var(--muted); }
+  .modal-close { width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.06);border:none;color:var(--muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font);transition:all 0.15s; }
+  .modal-close:hover { background:rgba(255,255,255,0.12);color:var(--pearl); }
+
+  /* Interview room */
+  .interview-room { background:#050810;position:relative;aspect-ratio:16/9;flex-shrink:0; }
+  .main-video { width:100%;height:100%;object-fit:cover;background:linear-gradient(135deg,#0a1628,#0d0a2e); }
+  .main-video-content { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px; }
+  .candidate-video-avatar { width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#3D7EF6);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff;border:3px solid rgba(61,126,246,0.4);box-shadow:0 0 40px rgba(61,126,246,0.25); }
+  .candidate-speaking-label { font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:0.06em;text-transform:uppercase; }
+
+  /* Interviewer tiles */
+  .interviewer-tiles { position:absolute;bottom:12px;left:12px;display:flex;gap:8px; }
+  .interviewer-tile { width:100px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);background:#0a1020;position:relative; }
+  .tile-video { width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:22px; }
+  .tile-sarah { background:linear-gradient(135deg,#1a0a2e,#2d1152); }
+  .tile-james { background:linear-gradient(135deg,#0a1a0a,#0d2e1a); }
+  .tile-label { position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);padding:3px 6px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.8);text-align:center; }
+  .tile-speaking-ring { position:absolute;inset:0;border-radius:12px;border:2px solid var(--blue);animation:speaking 1.5s ease-in-out infinite; }
+  @keyframes speaking { 0%,100%{opacity:0.4}50%{opacity:1} }
+
+  /* Question overlay */
+  .question-overlay { position:absolute;top:12px;left:12px;right:12px;background:rgba(6,10,18,0.85);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:12px 16px; }
+  .q-eyebrow { font-size:9px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;display:flex;align-items:center;gap:6px; }
+  .q-ai-dot { width:6px;height:6px;border-radius:50%;background:var(--blue);animation:pulse 2s infinite; }
+  .q-text { font-size:13px;font-weight:600;color:var(--pearl);line-height:1.5; }
+
+  /* Modal controls */
+  .modal-controls { padding:14px 20px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:12px;flex-shrink:0;background:#080e1a; }
+  .q-nav { display:flex;align-items:center;gap:8px; }
+  .q-nav-btn { width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font);transition:all 0.15s; }
+  .q-nav-btn:hover:not(:disabled) { background:rgba(255,255,255,0.12);color:var(--pearl); }
+  .q-nav-btn:disabled { opacity:0.3;cursor:not-allowed; }
+  .q-counter { font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;min-width:60px;text-align:center; }
+  .q-progress { flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden; }
+  .q-progress-fill { height:100%;background:var(--blue);border-radius:2px;transition:width 0.3s; }
+  .play-pause-btn { width:40px;height:40px;border-radius:50%;background:var(--blue);border:none;color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font);flex-shrink:0;box-shadow:0 4px 16px rgba(61,126,246,0.4); }
+
+  /* Modal action bar */
+  .modal-actions { padding:14px 20px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;background:#060a12; }
+  .modal-social { display:flex;gap:8px; }
+  .modal-action-btn { display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;border-radius:20px;padding:8px 16px;cursor:pointer;font-family:var(--font);border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);transition:all 0.15s; }
+  .modal-action-btn:hover { color:var(--pearl);border-color:rgba(255,255,255,0.15); }
+  .modal-action-btn.connect { color:#a78bfa;border-color:rgba(139,92,246,0.3);background:rgba(139,92,246,0.06); }
+  .btn-send-invite { font-size:13px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--blue),#8B5CF6);border:none;border-radius:12px;padding:11px 24px;cursor:pointer;font-family:var(--font);box-shadow:0 4px 20px rgba(61,126,246,0.35);white-space:nowrap;transition:transform 0.15s; }
+  .btn-send-invite:hover { transform:translateY(-1px); }
+  .sent-confirm { display:none;font-size:13px;font-weight:700;color:var(--green);background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:11px 20px; }
+
+  /* Score badge on modal header */
+  .modal-score-badge { background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:3px 10px;font-size:12px;font-weight:800;color:var(--green); }
+
   /* STICKY INVITE BAR */
   .sticky-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(6,10,18,0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; z-index: 100; gap: 12px; }
   .sticky-left { display: flex; align-items: center; gap: 12px; }
@@ -271,12 +333,12 @@
   <div class="section-card">
     <div class="section-title">About</div>
     <div class="about-text">
-      I'm Francis — a builder, founder, and full-stack engineer obsessed with creating products that matter. I've been writing code for 15+ years and leading engineering teams for the last 8. I believe the best software gets out of the way and lets the human moment happen.<br><br>
-      Outside of work I'm a die-hard Manchester United fan (the good days will return 🔴), a gym regular, an amateur chef, and a morning routine enthusiast. I genuinely believe how you start your morning is how you run your business.
+      I\u2019m Francis — a builder, founder, and full-stack engineer obsessed with creating products that matter. I\u2019ve been writing code for 15+ years and leading engineering teams for the last 8. I believe the best software gets out of the way and lets the human moment happen.<br><br>
+      Outside of work I\u2019m a die-hard Manchester United fan (the good days will return 🔴), a gym regular, an amateur chef, and a morning routine enthusiast. I genuinely believe how you start your morning is how you run your business.
     </div>
     <div class="looking-for-box">
-      <div class="lf-label">🎯 What I'm looking for</div>
-      <div class="lf-text">A senior engineering leadership role where I can shape product strategy, build a world-class team, and ship things people love. I thrive in fast-moving, mission-driven environments. I'm not interested in roles where engineering is an afterthought.</div>
+      <div class="lf-label">🎯 What I\u2019m looking for</div>
+      <div class="lf-text">A senior engineering leadership role where I can shape product strategy, build a world-class team, and ship things people love. I thrive in fast-moving, mission-driven environments. I\u2019m not interested in roles where engineering is an afterthought.</div>
       <div class="pref-chips">
         <span class="chip chip-green">✓ Hybrid — 2 days office max</span>
         <span class="chip chip-blue">London or Remote</span>
@@ -354,7 +416,7 @@
         <div class="tl-dot-col"><div class="tl-dot gold"></div><div class="tl-line"></div></div>
         <div class="tl-content">
           <div class="tl-title"><span class="tl-emoji">🧘</span>10 minutes meditation + journalling</div>
-          <div class="tl-sub">3 things I'm grateful for, 1 intention for the day. Takes 10 minutes, changes everything.</div>
+          <div class="tl-sub">3 things I\u2019m grateful for, 1 intention for the day. Takes 10 minutes, changes everything.</div>
           <span class="tl-tag tl-tag-gold">Mindset</span>
         </div>
       </div>
@@ -372,7 +434,7 @@
         <div class="tl-dot-col"><div class="tl-dot gold"></div><div class="tl-line"></div></div>
         <div class="tl-content">
           <div class="tl-title"><span class="tl-emoji">🍳</span>Cook a proper breakfast</div>
-          <div class="tl-sub">Eggs, avocado, sourdough. I don't do protein shakes — I cook. It sets the tone.</div>
+          <div class="tl-sub">Eggs, avocado, sourdough. I don\u2019t do protein shakes — I cook. It sets the tone.</div>
           <span class="tl-tag tl-tag-gold">Nutrition</span>
         </div>
       </div>
@@ -399,7 +461,7 @@
         <div class="tl-dot-col"><div class="tl-dot muted"></div><div class="tl-line"></div></div>
         <div class="tl-content">
           <div class="tl-title"><span class="tl-emoji">🥗</span>Lunch — always away from the desk</div>
-          <div class="tl-sub">Even if it's 20 minutes. Screens off. Brain needs the break.</div>
+          <div class="tl-sub">Even if it\u2019s 20 minutes. Screens off. Brain needs the break.</div>
         </div>
       </div>
       <div class="tl-item">
@@ -424,7 +486,7 @@
         <div class="tl-dot-col"><div class="tl-dot gold"></div><div class="tl-line"></div></div>
         <div class="tl-content">
           <div class="tl-title"><span class="tl-emoji">🧑‍🍳</span>Cook dinner — proper meal</div>
-          <div class="tl-sub">This is my unwind. Music on, cooking from scratch. West African food, Italian, whatever I'm feeling.</div>
+          <div class="tl-sub">This is my unwind. Music on, cooking from scratch. West African food, Italian, whatever I\u2019m feeling.</div>
           <span class="tl-tag tl-tag-gold">Cooking</span>
         </div>
       </div>
@@ -488,7 +550,7 @@
         <div class="tl-dot-col"><div class="tl-dot muted"></div><div class="tl-line"></div></div>
         <div class="tl-content">
           <div class="tl-title"><span class="tl-emoji">⚽</span>Match day or watch ManU</div>
-          <div class="tl-sub">If United are playing, everything stops. I'm not ashamed. It's character-building (mostly in patience).</div>
+          <div class="tl-sub">If United are playing, everything stops. I\u2019m not ashamed. it\u2019s character-building (mostly in patience).</div>
         </div>
       </div>
       <div class="tl-item">
@@ -518,7 +580,7 @@
     <div class="section-title">My Interviews · Ordered by Score</div>
     <div class="interview-cards">
 
-      <div class="icard">
+      <div class="icard" onclick="openModal(0)">
         <div class="icard-score">
           <div class="icard-score-num" style="color:#34D399">91</div>
           <div class="icard-score-grade" style="color:#34D399">A+</div>
@@ -535,7 +597,7 @@
         <div class="icard-play">▶</div>
       </div>
 
-      <div class="icard">
+      <div class="icard" onclick="openModal(1)">
         <div class="icard-score">
           <div class="icard-score-num" style="color:#3D7EF6">87</div>
           <div class="icard-score-grade" style="color:#3D7EF6">A</div>
@@ -552,7 +614,7 @@
         <div class="icard-play">▶</div>
       </div>
 
-      <div class="icard">
+      <div class="icard" onclick="openModal(2)">
         <div class="icard-score">
           <div class="icard-score-num" style="color:#a78bfa">83</div>
           <div class="icard-score-grade" style="color:#a78bfa">B+</div>
@@ -619,6 +681,92 @@
   </div>
 </div>
 
+<!-- VIDEO INTERVIEW MODAL -->
+<div class="modal-overlay" id="videoModal" onclick="handleOverlayClick(event)">
+  <div class="modal">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-candidate-avatar">FC</div>
+        <div>
+          <div class="modal-candidate-name">Francis Cobbinah</div>
+          <div class="modal-interview-title" id="modalInterviewTitle">Head of Engineering Interview</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="modal-score-badge" id="modalScoreBadge">91 A+</div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+
+    <!-- Interview Room -->
+    <div class="interview-room">
+      <!-- Ambient background -->
+      <div style="position:absolute;inset:0;background:linear-gradient(135deg,#0a1628 0%,#0d0a2e 100%)"></div>
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,rgba(61,126,246,0.1) 0%,transparent 60%)"></div>
+
+      <!-- Question overlay -->
+      <div class="question-overlay">
+        <div class="q-eyebrow"><div class="q-ai-dot"></div> Sarah · AI Interviewer · Question <span id="qNumLabel">1</span> of <span id="qTotalLabel">15</span></div>
+        <div class="q-text" id="qText">Can you walk me through how you approach building and scaling an engineering team from scratch?</div>
+      </div>
+
+      <!-- Candidate main video (centre) -->
+      <div class="main-video-content">
+        <div class="candidate-video-avatar">FC</div>
+        <div class="candidate-speaking-label">Francis is answering...</div>
+      </div>
+
+      <!-- Interviewer tiles (bottom left) -->
+      <div class="interviewer-tiles">
+        <div class="interviewer-tile">
+          <div class="tile-video tile-sarah">👩‍💼</div>
+          <div class="tile-speaking-ring"></div>
+          <div class="tile-label">Sarah · AI</div>
+        </div>
+        <div class="interviewer-tile">
+          <div class="tile-video tile-james">👨‍💼</div>
+          <div class="tile-label">James · Evaluator</div>
+        </div>
+      </div>
+
+      <!-- Live badge -->
+      <div style="position:absolute;top:12px;right:12px;background:rgba(6,10,18,0.8);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:4px 10px;font-size:10px;font-weight:700;color:var(--pearl);display:flex;align-items:center;gap:5px">
+        <div style="width:6px;height:6px;border-radius:50%;background:#ef4444;animation:pulse 1.5s infinite"></div>
+        Recorded interview
+      </div>
+    </div>
+
+    <!-- Playback controls -->
+    <div class="modal-controls">
+      <div class="q-nav">
+        <button class="q-nav-btn" id="btnPrev" onclick="changeQ(-1)" disabled>‹</button>
+        <span class="q-counter" id="qCounter">Q1 / 15</span>
+        <button class="q-nav-btn" id="btnNext" onclick="changeQ(1)">›</button>
+      </div>
+      <div class="q-progress">
+        <div class="q-progress-fill" id="qProgressFill" style="width:6.67%"></div>
+      </div>
+      <button class="play-pause-btn" id="playPauseBtn" onclick="togglePlay()">▶</button>
+    </div>
+
+    <!-- Action bar -->
+    <div class="modal-actions">
+      <div class="modal-social">
+        <button class="modal-action-btn" id="modalLikeBtn" onclick="toggleModalLike()">❤️ Like</button>
+        <button class="modal-action-btn" id="modalFollowBtn" onclick="toggleModalFollow()">👤 Follow</button>
+        <button class="modal-action-btn connect" id="modalConnectBtn" onclick="toggleModalConnect()">🤝 Connect</button>
+      </div>
+      <div>
+        <button class="btn-send-invite" id="sendInviteBtn" onclick="sendInvite()">✉ Send Invitation</button>
+        <div class="sent-confirm" id="sentConfirm">✓ Invitation sent to Francis</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- STICKY INVITE BAR -->
 <div class="sticky-bar">
   <div class="sticky-left">
@@ -636,20 +784,15 @@
 </div>
 
 <script>
-  let liked = false;
-  let followed = false;
+  // Profile actions
+  let liked = false, followed = false;
 
   function toggleLike() {
     liked = !liked;
     const btn = document.getElementById('likeBtn');
     const count = document.getElementById('likeCount');
-    if (liked) {
-      btn.classList.add('liked');
-      count.textContent = '248';
-    } else {
-      btn.classList.remove('liked');
-      count.textContent = '247';
-    }
+    btn.classList.toggle('liked', liked);
+    count.textContent = liked ? '248' : '247';
   }
 
   function toggleFollow() {
@@ -666,6 +809,184 @@
     document.getElementById('btnWeekday').classList.toggle('active', mode === 'weekday');
     document.getElementById('btnWeekend').classList.toggle('active', mode === 'weekend');
   }
+
+  // Interview data
+  const interviews = [
+    {
+      title: 'Head of Engineering Interview',
+      score: '91 A+',
+      scoreColor: '#34D399',
+      total: 15,
+      questions: [
+        'Can you walk me through how you approach building and scaling an engineering team from scratch?',
+        'Tell me about a time you had to make a difficult technical decision under pressure. What was the outcome?',
+        'How do you balance shipping fast with maintaining code quality and technical debt?',
+        'Describe your approach to 1-to-1s and performance reviews. What makes a great engineering manager?',
+        'What’s your philosophy on hiring? What do you look for beyond technical skills?',
+        'How do you handle disagreements between product and engineering priorities?',
+        'Walk me through the most complex system you\u2019ve ever designed. What would you do differently?',
+        'How do you keep your team motivated during long, difficult projects?',
+        'Describe a time you had to let someone go. How did you handle it?',
+        'What does great engineering culture look like to you?',
+        'How do you stay current with new technologies without getting distracted by hype?',
+        'Tell me about a product you\u2019re genuinely proud of. What made it special?',
+        'How do you think about remote vs in-office for engineering teams?',
+        'What’s the hardest feedback you’ve ever received, and how did you respond?',
+        'Where do you see yourself in 5 years, and what kind of company do you want to be building?'
+      ]
+    },
+    {
+      title: 'Product Manager Interview',
+      score: '87 A',
+      scoreColor: '#3D7EF6',
+      total: 15,
+      questions: [
+        'How do you decide what to build next when everyone has a different priority?',
+        'Walk me through how you would launch a new feature from idea to shipped.',
+        'Tell me about a product decision you got wrong. What did you learn?',
+        'How do you work with engineering teams to keep delivery on track?',
+        'Describe a time you had to say no to a senior stakeholder. How did you handle it?',
+        'How do you define and measure product success?',
+        'What’s your approach to user research and how does it shape your roadmap?',
+        'Tell me about the most impactful product you\u2019ve shipped.',
+        'How do you prioritise between fixing bugs and shipping new features?',
+        'Describe how you handle competing stakeholder requirements.',
+        'What tools and frameworks do you use for product discovery?',
+        'How do you communicate product vision to the whole company?',
+        'Tell me about a time you had to pivot based on data.',
+        'How do you balance short-term wins with long-term strategy?',
+        'What kind of product are you most excited to build next?'
+      ]
+    },
+    {
+      title: 'CTO / Tech Lead Interview',
+      score: '83 B+',
+      scoreColor: '#a78bfa',
+      total: 15,
+      questions: [
+        'How do you translate business strategy into a technical roadmap?',
+        'Describe how you’ve built and evolved a technology stack over time.',
+        'What’s your approach to vendor selection and build vs buy decisions?',
+        'How do you manage technical risk in a fast-moving startup?',
+        'Tell me about a major architectural decision you made. What were the trade-offs?',
+        'How do you approach cloud infrastructure and cost optimisation?',
+        'Describe your relationship with the CEO or board on technical matters.',
+        'How do you communicate complex technical concepts to non-technical stakeholders?',
+        'What’s your approach to security and compliance at the platform level?',
+        'How do you build a culture of engineering excellence?',
+        'Tell me about the biggest technical failure you’ve overseen.',
+        'How do you think about AI and machine learning in your product strategy?',
+        'What does your ideal engineering team structure look like at 50 people?',
+        'How do you handle technical interviews and hiring at senior levels?',
+        'What’s the technology bet you’re most excited about right now?'
+      ]
+    }
+  ];
+
+  let currentInterview = 0;
+  let currentQ = 0;
+  let playing = false;
+  let playTimer = null;
+  let modalLiked = false, modalFollowed = false, modalConnected = false, inviteSent = false;
+
+  function openModal(interviewIndex) {
+    currentInterview = interviewIndex;
+    currentQ = 0;
+    inviteSent = false;
+    document.getElementById('sendInviteBtn').style.display = '';
+    document.getElementById('sentConfirm').style.display = 'none';
+    updateModal();
+    document.getElementById('videoModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('videoModal').classList.remove('open');
+    document.body.style.overflow = '';
+    clearInterval(playTimer);
+    playing = false;
+    document.getElementById('playPauseBtn').textContent = '▶';
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('videoModal')) closeModal();
+  }
+
+  function updateModal() {
+    const iv = interviews[currentInterview];
+    const total = iv.total;
+    document.getElementById('modalInterviewTitle').textContent = iv.title;
+    document.getElementById('modalScoreBadge').textContent = iv.score;
+    document.getElementById('modalScoreBadge').style.color = iv.scoreColor;
+    document.getElementById('modalScoreBadge').style.borderColor = iv.scoreColor + '40';
+    document.getElementById('modalScoreBadge').style.background = iv.scoreColor + '18';
+    document.getElementById('qText').textContent = iv.questions[currentQ];
+    document.getElementById('qNumLabel').textContent = currentQ + 1;
+    document.getElementById('qTotalLabel').textContent = total;
+    document.getElementById('qCounter').textContent = 'Q' + (currentQ + 1) + ' / ' + total;
+    document.getElementById('qProgressFill').style.width = ((currentQ + 1) / total * 100) + '%';
+    document.getElementById('btnPrev').disabled = currentQ === 0;
+    document.getElementById('btnNext').disabled = currentQ === total - 1;
+  }
+
+  function changeQ(dir) {
+    const iv = interviews[currentInterview];
+    currentQ = Math.max(0, Math.min(iv.total - 1, currentQ + dir));
+    updateModal();
+  }
+
+  function togglePlay() {
+    playing = !playing;
+    document.getElementById('playPauseBtn').textContent = playing ? '⏸' : '▶';
+    if (playing) {
+      playTimer = setInterval(() => {
+        const iv = interviews[currentInterview];
+        if (currentQ < iv.total - 1) { currentQ++; updateModal(); }
+        else { clearInterval(playTimer); playing = false; document.getElementById('playPauseBtn').textContent = '▶'; }
+      }, 4000);
+    } else {
+      clearInterval(playTimer);
+    }
+  }
+
+  function toggleModalLike() {
+    modalLiked = !modalLiked;
+    const btn = document.getElementById('modalLikeBtn');
+    btn.textContent = modalLiked ? '❤️ Liked' : '❤️ Like';
+    btn.style.color = modalLiked ? '#f43f5e' : '';
+    btn.style.borderColor = modalLiked ? 'rgba(244,63,94,0.3)' : '';
+    btn.style.background = modalLiked ? 'rgba(244,63,94,0.06)' : '';
+  }
+
+  function toggleModalFollow() {
+    modalFollowed = !modalFollowed;
+    const btn = document.getElementById('modalFollowBtn');
+    btn.textContent = modalFollowed ? '✓ Following' : '👤 Follow';
+    btn.style.color = modalFollowed ? 'var(--green)' : '';
+    btn.style.borderColor = modalFollowed ? 'rgba(34,197,94,0.3)' : '';
+  }
+
+  function toggleModalConnect() {
+    modalConnected = !modalConnected;
+    const btn = document.getElementById('modalConnectBtn');
+    btn.textContent = modalConnected ? '✓ Connected' : '🤝 Connect';
+    btn.style.color = modalConnected ? 'var(--green)' : '';
+  }
+
+  function sendInvite() {
+    inviteSent = true;
+    document.getElementById('sendInviteBtn').style.display = 'none';
+    document.getElementById('sentConfirm').style.display = 'block';
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('videoModal').classList.contains('open')) return;
+    if (e.key === 'Escape') closeModal();
+    if (e.key === 'ArrowRight') changeQ(1);
+    if (e.key === 'ArrowLeft') changeQ(-1);
+    if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+  });
 </script>
 
 </body>
