@@ -3,6 +3,8 @@ name: Deploy interviewme.global → Azure SWA
 on:
   push:
     branches: [main]
+    paths:
+      - 'src/viewme/public/**'
   workflow_dispatch:
 
 jobs:
