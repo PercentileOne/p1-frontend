@@ -464,35 +464,10 @@
           </div>
         </div>
 
-        <!-- Services quick results -->
-        <div style="margin-top:20px;max-width:600px;margin-left:auto;margin-right:auto">
-          <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;text-align:left">3 tradespeople near you</div>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px">
-              <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#b45309,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0">DT</div>
-              <div style="flex:1">
-                <div style="font-size:13px;font-weight:700;color:var(--pearl)">Dave Thompson</div>
-                <div style="font-size:11px;color:var(--muted)">Plumber · 2.1 miles · Gas Safe · Emergency callouts</div>
-              </div>
-              <div style="background:#34D399;color:#050810;font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;white-space:nowrap">▶ Watch</div>
-            </div>
-            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px">
-              <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#60a5fa);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0">MO</div>
-              <div style="flex:1">
-                <div style="font-size:13px;font-weight:700;color:var(--pearl)">Marcus Osei</div>
-                <div style="font-size:11px;color:var(--muted)">Plumber · 4.8 miles · 47 reviews</div>
-              </div>
-              <div style="background:rgba(61,126,246,0.15);color:var(--blue);font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;white-space:nowrap">▶ Watch</div>
-            </div>
-            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px">
-              <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0">SN</div>
-              <div style="flex:1">
-                <div style="font-size:13px;font-weight:700;color:var(--pearl)">Sarah Nwosu</div>
-                <div style="font-size:11px;color:var(--muted)">Babysitter · 1.3 miles · DBS checked</div>
-              </div>
-              <div style="background:rgba(61,126,246,0.15);color:var(--blue);font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;white-space:nowrap">▶ Watch</div>
-            </div>
-          </div>
+        <!-- Services dynamic results -->
+        <div style="margin-top:20px;max-width:600px;margin-left:auto;margin-right:auto;opacity:0;transition:opacity 0.4s ease" id="svcResults">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;text-align:left" id="svcResultsLabel">3 tradespeople near you</div>
+          <div style="display:flex;flex-direction:column;gap:8px" id="svcResultRows"></div>
         </div>
       </div>
 
@@ -1335,6 +1310,63 @@
   }
   type();
 
+  // Services results data
+  const svcData = {
+    'Plumber': [
+      { init:'DT', name:'Dave Thompson',   detail:'Plumber · 2.1 miles · Gas Safe · Emergency callouts', grad:'#b45309,#f59e0b', top:true },
+      { init:'MO', name:'Marcus Osei',     detail:'Plumber · 4.8 miles · 47 reviews',                    grad:'#1e40af,#60a5fa' },
+      { init:'RB', name:'Ray Barnes',      detail:'Plumber · 6.2 miles · Bathroom specialist',            grad:'#065f46,#34d399' },
+    ],
+    'Electrician': [
+      { init:'JK', name:'James Kofi',      detail:'Electrician · 1.8 miles · NICEIC certified',           grad:'#92400e,#fbbf24', top:true },
+      { init:'PW', name:'Paula Wright',    detail:'Electrician · 3.5 miles · Smart home installs',        grad:'#1e40af,#60a5fa' },
+      { init:'TN', name:'Theo Nkosi',      detail:'Electrician · 5.1 miles · EV charger specialist',      grad:'#4c1d95,#a78bfa' },
+    ],
+    'Babysitter': [
+      { init:'SN', name:'Sarah Nwosu',     detail:'Babysitter · 1.3 miles · DBS checked · 5★',           grad:'#7c3aed,#a855f7', top:true },
+      { init:'AM', name:'Amara Mensah',    detail:'Babysitter · 2.7 miles · First aid trained',           grad:'#b45309,#f59e0b' },
+      { init:'LC', name:'Lucy Chen',       detail:'Babysitter · 4.0 miles · OFSTED registered',           grad:'#065f46,#34d399' },
+    ],
+    'Dog Walker': [
+      { init:'BT', name:'Ben Taylor',      detail:'Dog Walker · 0.9 miles · GPS tracked walks',           grad:'#1e40af,#60a5fa', top:true },
+      { init:'FO', name:'Fiona Okafor',    detail:'Dog Walker · 2.2 miles · Up to 4 dogs',               grad:'#7c3aed,#a855f7' },
+      { init:'MH', name:'Mike Harris',     detail:'Dog Walker · 3.8 miles · Vet tech background',         grad:'#b45309,#f59e0b' },
+    ],
+    'Gardener': [
+      { init:'CP', name:'Carl Peters',     detail:'Gardener · 2.0 miles · Landscaping & maintenance',     grad:'#065f46,#34d399', top:true },
+      { init:'YA', name:'Yemi Adeyemi',    detail:'Gardener · 3.3 miles · Lawn care specialist',          grad:'#1e40af,#60a5fa' },
+      { init:'HB', name:'Helen Burke',     detail:'Gardener · 5.5 miles · Garden design',                 grad:'#b45309,#f59e0b' },
+    ],
+    'Cleaner': [
+      { init:'ND', name:'Nadia Diallo',    detail:'Cleaner · 1.1 miles · End-of-tenancy specialist',      grad:'#4c1d95,#a78bfa', top:true },
+      { init:'GS', name:'Grace Sekibo',    detail:'Cleaner · 2.6 miles · Eco products only',              grad:'#065f46,#34d399' },
+      { init:'EV', name:'Eva Vasquez',     detail:'Cleaner · 4.2 miles · Commercial & domestic',          grad:'#b45309,#f59e0b' },
+    ],
+  };
+
+  function showSvcResults(phrase) {
+    const trade = phrase.split(' · ')[0];
+    const rows = svcData[trade];
+    if (!rows) return;
+    const container = document.getElementById('svcResultRows');
+    const label = document.getElementById('svcResultsLabel');
+    label.textContent = '3 ' + trade + 's near you';
+    container.innerHTML = rows.map((r, i) => `
+      <div style="background:${i===0?'rgba(251,191,36,0.06)':'rgba(255,255,255,0.02)'};border:1px solid ${i===0?'rgba(251,191,36,0.2)':'rgba(255,255,255,0.07)'};border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,${r.grad});display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0">${r.init}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:var(--pearl)">${r.name}</div>
+          <div style="font-size:11px;color:var(--muted)">${r.detail}</div>
+        </div>
+        <div style="background:${i===0?'#34D399;color:#050810':'rgba(61,126,246,0.15);color:var(--blue)'};font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;white-space:nowrap">▶ Watch</div>
+      </div>`).join('');
+    document.getElementById('svcResults').style.opacity = '1';
+  }
+
+  function hideSvcResults() {
+    document.getElementById('svcResults').style.opacity = '0';
+  }
+
   // Typewriter — Services mode
   const svcPhrases = ['Plumber · Ilford, Essex', 'Electrician · Manchester', 'Babysitter · London N1', 'Dog Walker · Bristol', 'Gardener · Leeds', 'Cleaner · Birmingham'];
   let spi = 0, sci = 0, sdel = false, svcCycles = 0;
@@ -1345,10 +1377,10 @@
     const phrase = svcPhrases[spi % svcPhrases.length];
     if (!sdel) {
       sel2.textContent = phrase.slice(0, ++sci);
-      if (sci === phrase.length) { sdel = true; setTimeout(typeServices, 2000); return; }
+      if (sci === phrase.length) { showSvcResults(phrase); sdel = true; setTimeout(typeServices, 2000); return; }
     } else {
       sel2.textContent = phrase.slice(0, --sci);
-      if (sci === 0) {
+      if (sci === 0) { hideSvcResults();
         sdel = false; spi++; svcCycles++;
         if (svcCycles >= 3 + Math.round(Math.random())) {
           svcCycles = 0;
