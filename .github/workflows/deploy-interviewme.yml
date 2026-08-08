@@ -21,10 +21,11 @@ jobs:
           cp src/viewme/public/gate.html deploy/index.html
           cp src/viewme/public/mastermind-chair.png deploy/mastermind-chair.png
           cp src/viewme/public/interview-preview.png deploy/interview-preview.png
-          [ -f src/viewme/public/candidate-1.jpg ] && cp src/viewme/public/candidate-1.jpg deploy/candidate-1.jpg || true
-          [ -f src/viewme/public/candidate-2.jpg ] && cp src/viewme/public/candidate-2.jpg deploy/candidate-2.jpg || true
-          [ -f src/viewme/public/candidate-3.jpg ] && cp src/viewme/public/candidate-3.jpg deploy/candidate-3.jpg || true
-          [ -f src/viewme/public/candidate-4.jpg ] && cp src/viewme/public/candidate-4.jpg deploy/candidate-4.jpg || true
+          cp src/viewme/public/candidate-1.jpg deploy/candidate-1.jpg
+          cp src/viewme/public/candidate-2.jpg deploy/candidate-2.jpg
+          cp src/viewme/public/candidate-3.jpg deploy/candidate-3.jpg
+          cp src/viewme/public/candidate-4.jpg deploy/candidate-4.jpg
+          cp src/viewme/public/candidate5.jpg deploy/candidate5.jpg
           cp src/viewme/public/staticwebapp.config.json deploy/staticwebapp.config.json
 
       - name: Deploy to Azure SWA
