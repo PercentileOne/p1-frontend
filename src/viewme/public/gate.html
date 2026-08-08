@@ -104,9 +104,21 @@
   .visual-room {
     border-radius: 12px; overflow: hidden;
     max-width: 100%;
-    height: calc(100vh + 50px);
   }
   .visual-room img { width: 100%; height: auto; display: block; }
+
+  /* slide 1: stack top-to-bottom, image fills remaining space */
+  .slide-candidate {
+    justify-content: flex-start;
+  }
+  .slide-candidate .visual-room {
+    flex: 1;
+    min-height: 0;
+    border-radius: 12px;
+  }
+  .slide-candidate .visual-room img {
+    width: 100%; height: 100%; object-fit: cover; object-position: top; display: block;
+  }
 
   /* candidate search cards */
   .visual-search { max-width: 100%; }
