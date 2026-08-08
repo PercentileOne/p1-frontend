@@ -236,6 +236,7 @@
     .demo-panel { padding:18px; min-height:auto; }
     .results-header { flex-direction:column; gap:8px; }
     .profile-layout { gap:16px; }
+    .comparison-grid, .trades-grid, .general-social-grid { grid-template-columns:1fr !important; }
   }
 
   @media (max-width:600px) {
@@ -840,7 +841,7 @@
     </div>
 
     <!-- Two-col: Upload your video + Search example -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:960px;margin:0 auto 64px;align-items:start">
+    <div class="trades-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:960px;margin:0 auto 64px;align-items:start">
 
       <!-- LEFT: Tradesperson uploads -->
       <div style="background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:32px">
