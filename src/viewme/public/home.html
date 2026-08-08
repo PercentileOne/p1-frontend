@@ -85,7 +85,8 @@
   .big-search { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); border-radius: 16px; padding: 16px 20px; max-width: 600px; margin: 0 auto 16px; cursor: pointer; transition: border-color 0.2s; }
   .big-search:hover { border-color: var(--blue); }
   .search-typed { font-size: 15px; color: var(--pearl); font-weight: 600; }
-  .search-cursor { display: inline-block; width: 2px; height: 18px; background: var(--blue); margin-left: 0px; animation: blink 1s infinite; vertical-align: middle; }
+  .search-input-wrap { display: flex; align-items: center; flex: 1; }
+  .search-cursor { display: inline-block; width: 2px; height: 18px; background: var(--blue); margin-left: 1px; animation: blink 1s infinite; vertical-align: middle; }
   @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
   @keyframes bar1 { from{height:20%}to{height:85%} }
   @keyframes bar2 { from{height:50%}to{height:100%} }
@@ -375,7 +376,7 @@
         <p>Search across thousands of verified, AI-interviewed candidates</p>
         <div class="big-search" onclick="showStep(2)" style="margin-top:20px">
           <span style="font-size:18px;color:var(--muted)">🔍</span>
-          <span class="search-typed" id="typetext"></span><span class="search-cursor"></span>
+          <span class="search-input-wrap"><span class="search-typed" id="typetext"></span><span class="search-cursor"></span></span>
         </div>
         <!-- Location filters -->
         <div style="max-width:600px;margin:0 auto">
@@ -429,7 +430,7 @@
         <p>Watch short intro videos from local tradespeople and services near you</p>
         <div class="big-search" style="margin-top:20px;cursor:default">
           <span style="font-size:18px;color:var(--muted)">🔍</span>
-          <span class="search-typed" id="typetext-services"></span><span class="search-cursor"></span>
+          <span class="search-input-wrap"><span class="search-typed" id="typetext-services"></span><span class="search-cursor"></span></span>
         </div>
         <!-- Services filters -->
         <div style="max-width:600px;margin:0 auto">
