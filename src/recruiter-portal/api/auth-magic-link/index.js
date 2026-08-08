@@ -62,7 +62,7 @@ module.exports = async function (context, req) {
         content: [{
           type: 'text/html',
           value: `
-            <div style="font-family:-apple-system,sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;background:#080812;color:#fff;border-radius:16px;">
+            <div style="font-family:-apple-system,sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;background:#0a1628;color:#fff;border-radius:16px;">
               <div style="font-size:22px;font-weight:800;margin-bottom:8px;">explain<span style="color:#4F8EF7">.global</span></div>
               <div style="font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:32px;">Recruiter Portal</div>
               <p style="font-size:16px;line-height:1.6;color:rgba(255,255,255,0.85);">Click the button below to sign in. This link expires in <strong>15 minutes</strong> and can only be used once.</p>
