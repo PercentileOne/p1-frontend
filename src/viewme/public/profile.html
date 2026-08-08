@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Francis Cobbinah · Head of Engineering · InterviewMe</title>
+<style>
+  :root {
+    --bg: #060A12;
+    --bg2: #0C1220;
+    --bg3: #111827;
+    --card: #0f172a;
+    --border: rgba(255,255,255,0.07);
+    --pearl: #F0F4FF;
+    --muted: #64748b;
+    --blue: #3D7EF6;
+    --green: #34D399;
+    --gold: #FBBF24;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--pearl); font-family: var(--font); min-height: 100vh; padding-bottom: 100px; }
+
+  /* NAV */
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 14px 32px; background: rgba(6,10,18,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+  .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+  .nav-wordmark { font-size: 15px; font-weight: 900; color: var(--pearl); letter-spacing: -0.02em; }
+  .nav-wordmark span { color: var(--blue); }
+  .nav-back { font-size: 13px; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
+  .nav-back:hover { color: var(--pearl); }
+  .nav-actions { display: flex; gap: 10px; align-items: center; }
+  .btn-share { font-size: 12px; font-weight: 700; color: var(--muted); background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 20px; padding: 7px 16px; cursor: pointer; font-family: var(--font); transition: all 0.15s; }
+  .btn-share:hover { color: var(--pearl); border-color: rgba(255,255,255,0.15); }
+
+  /* HERO VIDEO SECTION */
+  .hero-video { position: relative; width: 100%; max-height: 480px; overflow: hidden; background: #060A12; margin-top: 57px; }
+  .video-poster { width: 100%; height: 420px; object-fit: cover; display: block; background: linear-gradient(135deg, #0d1b3e 0%, #1a0533 50%, #0a1a2e 100%); position: relative; }
+  .video-poster-content { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
+  .video-avatar-large { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #1e40af, #3D7EF6); display: flex; align-items: center; justify-content: center; font-size: 42px; font-weight: 900; color: #fff; border: 4px solid rgba(61,126,246,0.4); box-shadow: 0 0 60px rgba(61,126,246,0.3); }
+  .play-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .play-btn { width: 72px; height: 72px; border-radius: 50%; background: rgba(61,126,246,0.9); display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 8px 40px rgba(61,126,246,0.5); transition: transform 0.2s, box-shadow 0.2s; border: 2px solid rgba(255,255,255,0.2); }
+  .play-btn:hover { transform: scale(1.08); box-shadow: 0 12px 60px rgba(61,126,246,0.7); }
+  .video-label { position: absolute; top: 16px; left: 16px; background: rgba(6,10,18,0.75); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 4px 12px; font-size: 11px; font-weight: 700; color: var(--pearl); letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px; }
+  .rec-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+  .video-gradient { position: absolute; bottom: 0; left: 0; right: 0; height: 200px; background: linear-gradient(to top, var(--bg) 0%, transparent 100%); pointer-events: none; }
+
+  /* PROFILE IDENTITY */
+  .profile-identity { max-width: 860px; margin: -40px auto 0; padding: 0 24px; position: relative; z-index: 10; }
+  .identity-row { display: flex; align-items: flex-end; gap: 20px; margin-bottom: 20px; }
+  .profile-pic { width: 96px; height: 96px; border-radius: 50%; background: linear-gradient(135deg, #1e40af, #3D7EF6); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; color: #fff; border: 4px solid var(--bg); flex-shrink: 0; box-shadow: 0 4px 24px rgba(0,0,0,0.6); }
+  .identity-info { flex: 1; padding-bottom: 4px; }
+  .identity-name { font-size: 28px; font-weight: 900; color: var(--pearl); letter-spacing: -0.03em; margin-bottom: 4px; }
+  .identity-role { font-size: 15px; color: var(--muted); margin-bottom: 8px; }
+  .verified-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--blue); background: rgba(61,126,246,0.1); border: 1px solid rgba(61,126,246,0.25); border-radius: 20px; padding: 3px 10px; }
+  .identity-actions { display: flex; gap: 10px; align-items: center; padding-bottom: 4px; }
+  .btn-like { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--muted); background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 9px 18px; cursor: pointer; font-family: var(--font); transition: all 0.15s; }
+  .btn-like:hover, .btn-like.liked { color: #f43f5e; border-color: rgba(244,63,94,0.3); background: rgba(244,63,94,0.06); }
+  .btn-follow { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--pearl); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 9px 18px; cursor: pointer; font-family: var(--font); transition: all 0.15s; }
+  .btn-follow:hover { background: rgba(255,255,255,0.1); }
+
+  /* STATS STRIP */
+  .stats-strip { max-width: 860px; margin: 0 auto 28px; padding: 0 24px; }
+  .stats-inner { display: flex; gap: 0; background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .stat { flex: 1; padding: 14px 10px; text-align: center; border-right: 1px solid var(--border); }
+  .stat:last-child { border-right: none; }
+  .stat-num { font-size: 20px; font-weight: 900; color: var(--pearl); letter-spacing: -0.03em; }
+  .stat-num.blue { color: var(--blue); }
+  .stat-num.green { color: var(--green); }
+  .stat-num.gold { color: var(--gold); }
+  .stat-num.pink { color: #f43f5e; }
+  .stat-lbl { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+  /* SECTIONS */
+  .section { max-width: 860px; margin: 0 auto 24px; padding: 0 24px; }
+  .section-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px; }
+  .section-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--blue); margin-bottom: 14px; }
+
+  /* ABOUT */
+  .about-text { font-size: 14px; color: #94a3b8; line-height: 1.75; margin-bottom: 20px; }
+  .looking-for-box { background: linear-gradient(135deg, rgba(61,126,246,0.08), rgba(139,92,246,0.06)); border: 1px solid rgba(61,126,246,0.2); border-radius: 14px; padding: 16px 20px; }
+  .lf-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .lf-text { font-size: 13px; color: var(--pearl); line-height: 1.6; margin-bottom: 12px; }
+  .pref-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip { font-size: 11px; font-weight: 700; border-radius: 20px; padding: 4px 12px; }
+  .chip-green { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+  .chip-blue { background: rgba(61,126,246,0.1); color: var(--blue); border: 1px solid rgba(61,126,246,0.2); }
+  .chip-gold { background: rgba(251,191,36,0.1); color: var(--gold); border: 1px solid rgba(251,191,36,0.2); }
+  .chip-muted { background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid var(--border); }
+
+  /* VITALS */
+  .vitals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .vital-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #94a3b8; }
+  .vital-row a { color: var(--blue); text-decoration: none; }
+  .vital-row a:hover { text-decoration: underline; }
+  .vital-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+  .social-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .social-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--muted); background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 7px 13px; text-decoration: none; transition: all 0.15s; }
+  .social-btn:hover { color: var(--pearl); border-color: rgba(255,255,255,0.15); }
+
+  /* HOBBIES */
+  .hobbies-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .hobby-chip { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #94a3b8; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 7px 13px; }
+
+  /* DAY IN THE LIFE */
+  .day-toggle { display: flex; gap: 0; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; width: fit-content; }
+  .day-toggle-btn { font-size: 12px; font-weight: 700; padding: 8px 20px; cursor: pointer; font-family: var(--font); background: none; border: none; color: var(--muted); transition: all 0.15s; }
+  .day-toggle-btn.active { background: var(--blue); color: #fff; }
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .tl-item { display: flex; gap: 16px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .tl-item:last-child { border-bottom: none; }
+  .tl-time { font-size: 11px; font-weight: 800; color: var(--blue); width: 48px; flex-shrink: 0; padding-top: 3px; font-variant-numeric: tabular-nums; }
+  .tl-dot-col { display: flex; flex-direction: column; align-items: center; gap: 0; flex-shrink: 0; }
+  .tl-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--blue); flex-shrink: 0; margin-top: 4px; }
+  .tl-dot.gold { background: var(--gold); }
+  .tl-dot.green { background: var(--green); }
+  .tl-dot.muted { background: #334155; }
+  .tl-line { width: 1px; flex: 1; background: rgba(255,255,255,0.06); margin-top: 4px; }
+  .tl-content { flex: 1; }
+  .tl-title { font-size: 13px; font-weight: 700; color: var(--pearl); margin-bottom: 2px; }
+  .tl-sub { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .tl-emoji { font-size: 14px; margin-right: 4px; }
+  .tl-tag { display: inline-block; font-size: 10px; font-weight: 700; border-radius: 6px; padding: 1px 7px; margin-top: 4px; }
+  .tl-tag-blue { background: rgba(61,126,246,0.12); color: var(--blue); }
+  .tl-tag-gold { background: rgba(251,191,36,0.12); color: var(--gold); }
+  .tl-tag-green { background: rgba(34,197,94,0.12); color: var(--green); }
+
+  /* INTERVIEWS */
+  .interview-cards { display: flex; flex-direction: column; gap: 10px; }
+  .icard { display: flex; align-items: center; gap: 16px; background: rgba(255,255,255,0.025); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; cursor: pointer; transition: all 0.2s; }
+  .icard:hover { border-color: var(--blue); background: rgba(61,126,246,0.04); }
+  .icard-score { text-align: center; width: 54px; flex-shrink: 0; }
+  .icard-score-num { font-size: 24px; font-weight: 900; line-height: 1; }
+  .icard-score-grade { font-size: 11px; font-weight: 700; margin-top: 1px; }
+  .icard-info { flex: 1; }
+  .icard-role { font-size: 14px; font-weight: 700; color: var(--pearl); margin-bottom: 3px; }
+  .icard-meta { font-size: 12px; color: var(--muted); }
+  .icard-tags { display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap; }
+  .icard-play { width: 36px; height: 36px; border-radius: 50%; background: rgba(61,126,246,0.12); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--blue); flex-shrink: 0; transition: all 0.15s; }
+  .icard:hover .icard-play { background: var(--blue); color: #fff; }
+
+  /* WORK HISTORY */
+  .work-list { display: flex; flex-direction: column; gap: 14px; }
+  .work-item { display: flex; gap: 14px; align-items: flex-start; }
+  .work-logo { width: 44px; height: 44px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .work-info { flex: 1; }
+  .work-role { font-size: 14px; font-weight: 700; color: var(--pearl); margin-bottom: 2px; }
+  .work-company { font-size: 13px; color: var(--blue); font-weight: 600; margin-bottom: 2px; }
+  .work-period { font-size: 11px; color: var(--muted); }
+  .work-badge { font-size: 10px; font-weight: 700; background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.2); border-radius: 20px; padding: 2px 8px; }
+
+  /* STICKY INVITE BAR */
+  .sticky-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(6,10,18,0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; z-index: 100; gap: 12px; }
+  .sticky-left { display: flex; align-items: center; gap: 12px; }
+  .sticky-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #1e40af, #3D7EF6); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; color: #fff; flex-shrink: 0; }
+  .sticky-name { font-size: 13px; font-weight: 700; color: var(--pearl); }
+  .sticky-role { font-size: 11px; color: var(--muted); }
+  .sticky-actions { display: flex; gap: 8px; align-items: center; }
+  .btn-invite { font-size: 14px; font-weight: 800; color: #fff; background: linear-gradient(135deg, var(--blue), #8B5CF6); border: none; border-radius: 12px; padding: 12px 28px; cursor: pointer; font-family: var(--font); box-shadow: 0 4px 20px rgba(61,126,246,0.35); transition: transform 0.15s; }
+  .btn-invite:hover { transform: translateY(-1px); }
+  .btn-icon { width: 42px; height: 42px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: all 0.15s; }
+  .btn-icon:hover { background: rgba(255,255,255,0.1); }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    nav { padding: 12px 16px; }
+    .hero-video .video-poster { height: 280px; }
+    .profile-identity { padding: 0 16px; }
+    .identity-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .identity-actions { width: 100%; }
+    .btn-like, .btn-follow { flex: 1; justify-content: center; }
+    .section { padding: 0 16px; }
+    .vitals-grid { grid-template-columns: 1fr; }
+    .stats-inner { flex-wrap: wrap; }
+    .stat { min-width: 50%; border-bottom: 1px solid var(--border); }
+    .sticky-bar { flex-direction: column; padding: 12px 16px; }
+    .sticky-actions { width: 100%; }
+    .btn-invite { flex: 1; text-align: center; }
+    .identity-name { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="home.html">
+    <span class="nav-wordmark">interview<span>me</span>.global</span>
+  </a>
+  <a class="nav-back" href="home.html">← Back to search</a>
+  <div class="nav-actions">
+    <button class="btn-share" onclick="navigator.clipboard?.writeText(location.href);this.textContent='✓ Copied!'">🔗 Share profile</button>
+  </div>
+</nav>
+
+<!-- HERO VIDEO -->
+<div class="hero-video">
+  <div class="video-poster" style="height:420px;position:relative">
+    <div style="position:absolute;inset:0;background:linear-gradient(135deg,#0d1b3e 0%,#1a0533 50%,#0a1a2e 100%)"></div>
+    <!-- Ambient glow -->
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 40% 60%,rgba(61,126,246,0.15) 0%,transparent 60%)"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(139,92,246,0.1) 0%,transparent 50%)"></div>
+    <!-- Large avatar in background -->
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.12">
+      <div style="width:300px;height:300px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#3D7EF6)"></div>
+    </div>
+    <!-- Play button -->
+    <div class="play-overlay">
+      <div class="play-btn" onclick="alert('In the live platform, this would play Francis\'s video introduction')">▶</div>
+    </div>
+    <!-- Duration badge -->
+    <div style="position:absolute;bottom:80px;right:20px;background:rgba(6,10,18,0.8);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--pearl)">2:34</div>
+    <!-- Live badge -->
+    <div class="video-label">
+      <div class="rec-dot"></div>
+      Profile Video · Recorded 3 weeks ago
+    </div>
+  </div>
+  <div class="video-gradient"></div>
+</div>
+
+<!-- PROFILE IDENTITY -->
+<div class="profile-identity">
+  <div class="identity-row">
+    <div class="profile-pic">FC</div>
+    <div class="identity-info">
+      <div class="identity-name">Francis Cobbinah</div>
+      <div class="identity-role">Head of Engineering · Founder · Full-Stack Architect</div>
+      <div class="verified-badge">✓ AI-Verified Interview</div>
+    </div>
+    <div class="identity-actions">
+      <button class="btn-like" id="likeBtn" onclick="toggleLike()">❤️ Like <span id="likeCount">247</span></button>
+      <button class="btn-follow" id="followBtn" onclick="toggleFollow()">+ Follow</button>
+    </div>
+  </div>
+</div>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div class="stat">
+      <div class="stat-num blue">91</div>
+      <div class="stat-lbl">Top Score</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num green">A+</div>
+      <div class="stat-lbl">Grade</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num gold">247</div>
+      <div class="stat-lbl">Likes</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" style="color:#a78bfa">1.4k</div>
+      <div class="stat-lbl">Views</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" style="color:#fb923c">83</div>
+      <div class="stat-lbl">Followers</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" style="color:#f43f5e">3</div>
+      <div class="stat-lbl">Interviews</div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-title">About</div>
+    <div class="about-text">
+      I'm Francis — a builder, founder, and full-stack engineer obsessed with creating products that matter. I've been writing code for 15+ years and leading engineering teams for the last 8. I believe the best software gets out of the way and lets the human moment happen.<br><br>
+      Outside of work I'm a die-hard Manchester United fan (the good days will return 🔴), a gym regular, an amateur chef, and a morning routine enthusiast. I genuinely believe how you start your morning is how you run your business.
+    </div>
+    <div class="looking-for-box">
+      <div class="lf-label">🎯 What I'm looking for</div>
+      <div class="lf-text">A senior engineering leadership role where I can shape product strategy, build a world-class team, and ship things people love. I thrive in fast-moving, mission-driven environments. I'm not interested in roles where engineering is an afterthought.</div>
+      <div class="pref-chips">
+        <span class="chip chip-green">✓ Hybrid — 2 days office max</span>
+        <span class="chip chip-blue">London or Remote</span>
+        <span class="chip chip-gold">£120k–£160k</span>
+        <span class="chip chip-green">✓ Series A–C preferred</span>
+        <span class="chip chip-muted">Not open to agency work</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VITALS -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-title">Details</div>
+    <div class="vitals-grid">
+      <div class="vital-row"><span class="vital-icon">📍</span> Ilford, Essex, UK</div>
+      <div class="vital-row"><span class="vital-icon">🌐</span> Open to remote globally</div>
+      <div class="vital-row"><span class="vital-icon">💼</span> 15+ years experience</div>
+      <div class="vital-row"><span class="vital-icon">🎓</span> BSc Computer Science</div>
+      <div class="vital-row"><span class="vital-icon">🗣️</span> English (native), French (conversational)</div>
+      <div class="vital-row"><span class="vital-icon">⏰</span> Available from March 2025</div>
+    </div>
+    <div class="social-row">
+      <a class="social-btn" href="#">🔗 LinkedIn</a>
+      <a class="social-btn" href="#">🐙 GitHub</a>
+      <a class="social-btn" href="#">🐦 X / Twitter</a>
+      <a class="social-btn" href="#">🌍 percentile.one</a>
+      <a class="social-btn" href="#">▶ YouTube</a>
+    </div>
+  </div>
+</div>
+
+<!-- HOBBIES & INTERESTS -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-title">Hobbies & Interests</div>
+    <div class="hobbies-grid">
+      <div class="hobby-chip">⚽ Manchester United</div>
+      <div class="hobby-chip">🏋️ Gym & fitness</div>
+      <div class="hobby-chip">🧑‍🍳 Cooking</div>
+      <div class="hobby-chip">🌅 Morning routines</div>
+      <div class="hobby-chip">🎙️ Podcasts</div>
+      <div class="hobby-chip">📚 Tech books</div>
+      <div class="hobby-chip">✈️ Travel</div>
+      <div class="hobby-chip">🎮 Gaming</div>
+      <div class="hobby-chip">🎵 Afrobeats</div>
+      <div class="hobby-chip">📱 Building apps</div>
+    </div>
+  </div>
+</div>
+
+<!-- DAY IN THE LIFE -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-title">A Day in the Life</div>
+    <div class="day-toggle">
+      <button class="day-toggle-btn active" id="btnWeekday" onclick="showDay('weekday')">Weekday</button>
+      <button class="day-toggle-btn" id="btnWeekend" onclick="showDay('weekend')">Weekend</button>
+    </div>
+
+    <!-- WEEKDAY -->
+    <div class="timeline" id="tlWeekday">
+      <div class="tl-item">
+        <div class="tl-time">05:30</div>
+        <div class="tl-dot-col"><div class="tl-dot gold"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">⏰</span>Wake up — no alarm needed</div>
+          <div class="tl-sub">Body clock is set. First thing: no phone for 20 minutes. Just water and quiet.</div>
+          <span class="tl-tag tl-tag-gold">Morning Routine</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">05:45</div>
+        <div class="tl-dot-col"><div class="tl-dot gold"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">🧘</span>10 minutes meditation + journalling</div>
+          <div class="tl-sub">3 things I'm grateful for, 1 intention for the day. Takes 10 minutes, changes everything.</div>
+          <span class="tl-tag tl-tag-gold">Mindset</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">06:15</div>
+        <div class="tl-dot-col"><div class="tl-dot green"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">🏋️</span>Gym session — 45 mins</div>
+          <div class="tl-sub">Weights 4x per week. Cardio the other 3. I listen to tech podcasts while I train.</div>
+          <span class="tl-tag tl-tag-green">Fitness</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">07:30</div>
+        <div class="tl-dot-col"><div class="tl-dot gold"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">🍳</span>Cook a proper breakfast</div>
+          <div class="tl-sub">Eggs, avocado, sourdough. I don't do protein shakes — I cook. It sets the tone.</div>
+          <span class="tl-tag tl-tag-gold">Nutrition</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">08:30</div>
+        <div class="tl-dot-col"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">💻</span>Deep work block — no meetings</div>
+          <div class="tl-sub">This is my best thinking time. Architecture decisions, hard problems, writing. Phone on DND.</div>
+          <span class="tl-tag tl-tag-blue">Focus</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">11:00</div>
+        <div class="tl-dot-col"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">📞</span>Team standup + 1:1s</div>
+          <div class="tl-sub">I keep standups to 15 minutes. 1:1s are weekly, 30 minutes, no agenda — just honest conversation.</div>
+          <span class="tl-tag tl-tag-blue">Leadership</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">13:00</div>
+        <div class="tl-dot-col"><div class="tl-dot muted"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">🥗</span>Lunch — always away from the desk</div>
+          <div class="tl-sub">Even if it's 20 minutes. Screens off. Brain needs the break.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">14:00</div>
+        <div class="tl-dot-col"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">🚀</span>Build / ship / review PRs</div>
+          <div class="tl-sub">Afternoon is for execution. Code reviews, shipping features, unblocking the team.</div>
+          <span class="tl-tag tl-tag-blue">Engineering</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">17:30</div>
+        <div class="tl-dot-col"><div class="tl-dot muted"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">🔌</span>Hard stop — laptop closes</div>
+          <div class="tl-sub">No Slack after 6pm. I protect recovery time like a training session.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">18:30</div>
+        <div class="tl-dot-col"><div class="tl-dot gold"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">🧑‍🍳</span>Cook dinner — proper meal</div>
+          <div class="tl-sub">This is my unwind. Music on, cooking from scratch. West African food, Italian, whatever I'm feeling.</div>
+          <span class="tl-tag tl-tag-gold">Cooking</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">20:00</div>
+        <div class="tl-dot-col"><div class="tl-dot muted"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">📖</span>Read or watch something that teaches me</div>
+          <div class="tl-sub">30 mins of a tech book, a documentary, or a YouTube deep-dive. No doom-scrolling.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">22:00</div>
+        <div class="tl-dot-col"><div class="tl-dot muted"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">💤</span>Lights out</div>
+          <div class="tl-sub">8 hours non-negotiable. Sleep is the real productivity hack.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEKEND -->
+    <div class="timeline" id="tlWeekend" style="display:none">
+      <div class="tl-item">
+        <div class="tl-time">07:00</div>
+        <div class="tl-dot-col"><div class="tl-dot gold"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">☀️</span>Slower start — still early though</div>
+          <div class="tl-sub">Weekend wake-up is 7, not 5:30. But no lie-ins past 8. Rhythm is everything.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">08:00</div>
+        <div class="tl-dot-col"><div class="tl-dot green"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">🏃</span>Long outdoor run</div>
+          <div class="tl-sub">Weekend is for longer cardio. 10k along the canal, podcast in ears. One of my favourite times of the week.</div>
+          <span class="tl-tag tl-tag-green">Fitness</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">10:00</div>
+        <div class="tl-dot-col"><div class="tl-dot gold"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">🍳</span>Big breakfast — full cook-up</div>
+          <div class="tl-sub">Saturday morning is sacred. Full English or jollof rice breakfast. Family time around the table.</div>
+          <span class="tl-tag tl-tag-gold">Family</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">12:00</div>
+        <div class="tl-dot-col"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">🔨</span>Side project time — 2 hours</div>
+          <div class="tl-sub">Always building something. Currently: Percentile.One. This is when I get the best ideas.</div>
+          <span class="tl-tag tl-tag-blue">Building</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">15:00</div>
+        <div class="tl-dot-col"><div class="tl-dot muted"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">⚽</span>Match day or watch ManU</div>
+          <div class="tl-sub">If United are playing, everything stops. I'm not ashamed. It's character-building (mostly in patience).</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">18:00</div>
+        <div class="tl-dot-col"><div class="tl-dot gold"></div><div class="tl-line"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">🎉</span>Dinner with family or friends</div>
+          <div class="tl-sub">I love hosting. Cooking for people is one of the ways I show care. Big table, loud music, good food.</div>
+          <span class="tl-tag tl-tag-gold">Social</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">21:00</div>
+        <div class="tl-dot-col"><div class="tl-dot muted"></div></div>
+        <div class="tl-content">
+          <div class="tl-title"><span class="tl-emoji">🎬</span>Film or documentary</div>
+          <div class="tl-sub">Wind down properly. Usually something on tech, sport, or history. Or a good thriller.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MY INTERVIEWS -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-title">My Interviews · Ordered by Score</div>
+    <div class="interview-cards">
+
+      <div class="icard">
+        <div class="icard-score">
+          <div class="icard-score-num" style="color:#34D399">91</div>
+          <div class="icard-score-grade" style="color:#34D399">A+</div>
+        </div>
+        <div class="icard-info">
+          <div class="icard-role">Head of Engineering</div>
+          <div class="icard-meta">15 questions · 5 dimensions · Completed 3 weeks ago</div>
+          <div class="icard-tags">
+            <span class="chip chip-green" style="font-size:10px;padding:2px 8px">Technical 94</span>
+            <span class="chip chip-blue" style="font-size:10px;padding:2px 8px">Leadership 91</span>
+            <span class="chip chip-muted" style="font-size:10px;padding:2px 8px">Strategy 88</span>
+          </div>
+        </div>
+        <div class="icard-play">▶</div>
+      </div>
+
+      <div class="icard">
+        <div class="icard-score">
+          <div class="icard-score-num" style="color:#3D7EF6">87</div>
+          <div class="icard-score-grade" style="color:#3D7EF6">A</div>
+        </div>
+        <div class="icard-info">
+          <div class="icard-role">Product Manager</div>
+          <div class="icard-meta">15 questions · 5 dimensions · Completed 5 weeks ago</div>
+          <div class="icard-tags">
+            <span class="chip chip-blue" style="font-size:10px;padding:2px 8px">Vision 90</span>
+            <span class="chip chip-muted" style="font-size:10px;padding:2px 8px">Execution 85</span>
+            <span class="chip chip-muted" style="font-size:10px;padding:2px 8px">Stakeholders 82</span>
+          </div>
+        </div>
+        <div class="icard-play">▶</div>
+      </div>
+
+      <div class="icard">
+        <div class="icard-score">
+          <div class="icard-score-num" style="color:#a78bfa">83</div>
+          <div class="icard-score-grade" style="color:#a78bfa">B+</div>
+        </div>
+        <div class="icard-info">
+          <div class="icard-role">CTO / Tech Lead</div>
+          <div class="icard-meta">15 questions · 5 dimensions · Completed 8 weeks ago</div>
+          <div class="icard-tags">
+            <span class="chip chip-green" style="font-size:10px;padding:2px 8px">Architecture 89</span>
+            <span class="chip chip-blue" style="font-size:10px;padding:2px 8px">Team Build 84</span>
+            <span class="chip chip-muted" style="font-size:10px;padding:2px 8px">Commercial 76</span>
+          </div>
+        </div>
+        <div class="icard-play">▶</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- WORK HISTORY -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-title">Work History</div>
+    <div class="work-list">
+
+      <div class="work-item">
+        <div class="work-logo">💡</div>
+        <div class="work-info">
+          <div class="work-role" style="display:flex;align-items:center;gap:8px">Founder & CEO <span class="work-badge">Current</span></div>
+          <div class="work-company">Percentile.One / Explain.global</div>
+          <div class="work-period">2023 – Present · 2 years</div>
+        </div>
+      </div>
+
+      <div class="work-item">
+        <div class="work-logo">🏗️</div>
+        <div class="work-info">
+          <div class="work-role">Head of Engineering</div>
+          <div class="work-company">FinTech Scale-up (NDA)</div>
+          <div class="work-period">2019 – 2023 · 4 years</div>
+        </div>
+      </div>
+
+      <div class="work-item">
+        <div class="work-logo">⚡</div>
+        <div class="work-info">
+          <div class="work-role">Senior Software Engineer</div>
+          <div class="work-company">Global Consulting Firm</div>
+          <div class="work-period">2015 – 2019 · 4 years</div>
+        </div>
+      </div>
+
+      <div class="work-item">
+        <div class="work-logo">🎓</div>
+        <div class="work-info">
+          <div class="work-role">Software Developer</div>
+          <div class="work-company">Digital Agency, London</div>
+          <div class="work-period">2010 – 2015 · 5 years</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- STICKY INVITE BAR -->
+<div class="sticky-bar">
+  <div class="sticky-left">
+    <div class="sticky-avatar">FC</div>
+    <div>
+      <div class="sticky-name">Francis Cobbinah</div>
+      <div class="sticky-role">Head of Engineering · Score 91 A+</div>
+    </div>
+  </div>
+  <div class="sticky-actions">
+    <div class="btn-icon" title="Like" onclick="toggleLike()">❤️</div>
+    <div class="btn-icon" title="Follow" onclick="toggleFollow()">👤</div>
+    <button class="btn-invite">✉ Send Invitation</button>
+  </div>
+</div>
+
+<script>
+  let liked = false;
+  let followed = false;
+
+  function toggleLike() {
+    liked = !liked;
+    const btn = document.getElementById('likeBtn');
+    const count = document.getElementById('likeCount');
+    if (liked) {
+      btn.classList.add('liked');
+      count.textContent = '248';
+    } else {
+      btn.classList.remove('liked');
+      count.textContent = '247';
+    }
+  }
+
+  function toggleFollow() {
+    followed = !followed;
+    const btn = document.getElementById('followBtn');
+    btn.textContent = followed ? '✓ Following' : '+ Follow';
+    btn.style.color = followed ? 'var(--green)' : '';
+    btn.style.borderColor = followed ? 'rgba(34,197,94,0.3)' : '';
+  }
+
+  function showDay(mode) {
+    document.getElementById('tlWeekday').style.display = mode === 'weekday' ? 'flex' : 'none';
+    document.getElementById('tlWeekend').style.display = mode === 'weekend' ? 'flex' : 'none';
+    document.getElementById('btnWeekday').classList.toggle('active', mode === 'weekday');
+    document.getElementById('btnWeekend').classList.toggle('active', mode === 'weekend');
+  }
+</script>
+
+</body>
+</html>
