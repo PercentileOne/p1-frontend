@@ -3007,28 +3007,48 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     <SectionHead
       label="Financials · Intellectual Property"
       h1="Patent-pending."
-      h2="Infrastructure-level innovation."
-      sub="Explain.Global has filed for provisional patent protection in the UK and the United States. The inventions described below cover the core technical pipeline — from job advert parsing to multi-portal readiness delivery — and represent a defensible technology moat at the infrastructure layer."
+      h2="Infrastructure-level innovation across two platforms."
+      sub="The Percentile.One ecosystem holds provisional patent applications covering two distinct and independently patentable inventions: the Explain.Global interview readiness pipeline (16 claims, 3 families) and the InterviewMe discovery platform (6 claims, 6 families). Together they represent a defensible technology moat at the infrastructure layer of the global hiring market."
     />
 
-    <Callout icon="🔒" title="Status: Patent Pending — UK & US Provisional Applications · 16 Claims · 3 Families" color={A}
-      body="16 claims across 3 independent families: (1) Core AI pipeline — question generation through multi-portal distribution; (2) Recording and overlay engine — tamper-evident session capture with AI scoring overlays; (3) Interview credential and portfolio — verifiable session record, Interview Portfolio curation, and embeddable CV credential. Full PCT international application in preparation. The provisional status allows Explain to operate under 'Patent Pending' designation immediately." />
+    <Callout icon="🔒" title="Status: Patent Pending — UK & US Provisional Applications · 22 Claims · 9 Families · 2 Products" color={A}
+      body="Explain.Global: 16 claims across 3 families — Core AI pipeline, Recording & overlay engine, Interview credential & portfolio. InterviewMe: 6 claims across 6 families — AI-Generated Talent Identity Object, Universal Distribution, Search & Matching Engine, Direct Hiring Pipeline (ATS bypass), Cinematic Interview Chair, Cross-Platform Identity Graph. Full PCT international application in preparation. The provisional status allows both products to operate under 'Patent Pending' designation immediately." />
 
-    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Title of the Invention</div>
-    <Card style={{ marginBottom: 28 }}>
-      <div style={{ fontSize: 14, fontWeight: 700, color: '#e0e0f0', lineHeight: 1.65 }}>
-        System and Computational Method for Generating Personalised Interview Readiness Packs, AI-Generated Verifiable Interview Credentials, Interview Portfolio Curation, Embeddable Credential Distribution, Multi-Portal Interview Workflows, Candidate Scoring, Employer Feedback Integration, and Triggering Preparation from Job Listings, Recruiter Actions, and Employer Systems
-      </div>
-      <div style={{ marginTop: 14, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {['UK Provisional', 'US Provisional', 'PCT Filing Planned', 'Patent Pending', 'August 2026', '16 Claims · 3 Families'].map(t => <Tag key={t}>{t}</Tag>)}
-      </div>
-    </Card>
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Patent Portfolio Overview</div>
 
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 28 }}>
+    {/* Explain.Global families */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9090b0', marginBottom: 10 }}>Explain.Global — Interview Readiness Pipeline · 16 Claims · 3 Families</div>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 20 }}>
       {[
         { family: 'Family 1', claims: 'Claims 1–10', title: 'Core AI Pipeline', body: 'Job advert parsing, CV analysis, personalised question generation, multi-portal distribution, recruiter-triggered workflows, real-time scoring, and coaching.', color: A },
         { family: 'Family 2', claims: 'Claims 11–12', title: 'Recording & Overlay Engine', body: 'Tamper-evident media recording of interview sessions with synchronised AI scoring overlays on playback — independently verifiable evidence of performance.', color: A2 },
         { family: 'Family 3', claims: 'Claims 13–16', title: 'Interview Credential & Portfolio', body: 'Longitudinal Interview Portfolio, best-session curation, shareable verified credential link, and embeddable credential for CVs, LinkedIn, and job applications.', color: '#22c55e' },
+      ].map(f => (
+        <Card key={f.family} accent={f.color}>
+          <div style={{ fontSize: 10, fontWeight: 800, color: f.color, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{f.family} · {f.claims}</div>
+          <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 8 }}>{f.title}</div>
+          <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7 }}>{f.body}</div>
+        </Card>
+      ))}
+    </div>
+
+    {/* InterviewMe families */}
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9090b0', marginBottom: 10 }}>InterviewMe.Global — AI-Verified Candidate Discovery · 6 Claims · 6 Families</div>
+    <div style={{ background: 'rgba(37,99,235,0.04)', border: '1px solid rgba(37,99,235,0.15)', borderRadius: 12, padding: '16px 20px', marginBottom: 12 }}>
+      <div style={{ fontSize: 12, fontWeight: 800, color: '#2563EB', marginBottom: 10, letterSpacing: '0.04em' }}>The Core Innovation: Search → Score → Watch → Invite</div>
+      <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, marginBottom: 12 }}>A four-step discovery sequence that inverts the traditional hiring model. The candidate is AI-interviewed before any employer sees them. The employer searches, sees the score, watches the interview, and contacts — without scheduling, without a CV, without an ATS.</div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {['🔍 Search by role, score, personality', '📊 Score visible before contact', '▶ Watch AI interview in full', '✉ Direct inbox — ATS bypassed'].map(s => <Tag key={s} color='#2563EB'>{s}</Tag>)}
+      </div>
+    </div>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 28 }}>
+      {[
+        { family: 'Family 4', claims: 'Claim 17', title: 'Talent Identity Object', body: 'The atomic unit: video, transcript, behavioural signals, communication metrics, confidence metrics, personality markers, verified score, shareable URL, QR code, and recruiter contact interface — all in one structured AI-verified object.', color: '#2563EB' },
+        { family: 'Family 5', claims: 'Claim 18', title: 'Universal Distribution', body: 'Distribution of Talent Identity Objects across social networks, CVs, PDFs, email signatures, job applications, QR codes, and public profiles — each embedding a persistent link to the live watchable interview.', color: A2 },
+        { family: 'Family 6', claims: 'Claim 19', title: 'Search & Matching Engine', body: 'Multi-dimensional search by role, location, communication style, personality traits, confidence metrics, presence, and AI-derived behavioural signals — returning ranked watchable profiles, not CVs.', color: A },
+        { family: 'Family 7', claims: 'Claim 20', title: 'Direct Hiring Pipeline', body: 'Watch → evaluate → message → hire, without a CV, without an ATS, without scheduling. A complete end-to-end hiring flow that bypasses every traditional gating mechanism.', color: '#22c55e' },
+        { family: 'Family 8', claims: 'Claim 21', title: 'Cinematic Interview Chair', body: 'AI-led structured interview generation — intake, dynamic question generation, named AI personas, video capture, multi-dimensional scoring, coaching feedback — producing a Talent Identity Object published to the discovery index.', color: A },
+        { family: 'Family 9', claims: 'Claim 22', title: 'Cross-Platform Identity Graph', body: 'A unified talent graph linking InterviewMe, Explain.Global, and Percentile.One under a single candidate identity — enabling cross-platform discovery, improvement trajectory tracking, and personalised coaching at scale.', color: '#2563EB' },
       ].map(f => (
         <Card key={f.family} accent={f.color}>
           <div style={{ fontSize: 10, fontWeight: 800, color: f.color, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{f.family} · {f.claims}</div>
