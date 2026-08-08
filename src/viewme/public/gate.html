@@ -170,14 +170,11 @@
     border-radius: 12px 12px 0 0;
   }
   .cavatar {
-    width: 40px; height: 40px; border-radius: 50%;
-    font-size: 13px; font-weight: 800; color: #fff;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 42px; height: 42px; border-radius: 50%;
+    overflow: hidden; flex-shrink: 0;
+    border: 2px solid var(--border);
   }
-  .c1 { background: linear-gradient(135deg,#3D7EF6,#6366F1); }
-  .c2 { background: linear-gradient(135deg,#34D399,#059669); }
-  .c3 { background: linear-gradient(135deg,#A855F7,#7C3AED); }
-  .c4 { background: linear-gradient(135deg,#F59E0B,#D97706); }
+  .cavatar img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
   .cinfo { flex: 1; min-width: 0; }
   .cname { font-size: 14px; font-weight: 700; color: var(--pearl); }
   .crole { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -414,7 +411,7 @@
           </div>
           <div class="cards">
             <div class="ccard">
-              <div class="cavatar c1">JA</div>
+              <div class="cavatar"><img src="candidate-1.jpg" alt="Jordan Ashford"></div>
               <div class="cinfo">
                 <div class="cname">Jordan Ashford</div>
                 <div class="crole">Senior Software Engineer · 6 yrs</div>
@@ -426,7 +423,7 @@
               <span class="clike">♥</span>
             </div>
             <div class="ccard">
-              <div class="cavatar c2">SK</div>
+              <div class="cavatar"><img src="candidate-2.jpg" alt="Sophia Kamara"></div>
               <div class="cinfo">
                 <div class="cname">Sophia Kamara</div>
                 <div class="crole">Full-Stack Developer · 4 yrs</div>
@@ -438,7 +435,7 @@
               <span class="clike">♥</span>
             </div>
             <div class="ccard">
-              <div class="cavatar c3">MP</div>
+              <div class="cavatar"><img src="candidate-3.jpg" alt="Marcus Patel"></div>
               <div class="cinfo">
                 <div class="cname">Marcus Patel</div>
                 <div class="crole">Backend Engineer · 8 yrs</div>
@@ -450,7 +447,7 @@
               <span class="clike">♥</span>
             </div>
             <div class="ccard blurred">
-              <div class="cavatar c4">RC</div>
+              <div class="cavatar"><img src="candidate-4.jpg" alt="Rachel Chen"></div>
               <div class="cinfo">
                 <div class="cname">Rachel Chen</div>
                 <div class="crole">DevOps Engineer · 5 yrs</div>
