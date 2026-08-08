@@ -3039,11 +3039,11 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, marginBottom: 12 }}>A seven-step, two-phase sequence that inverts the traditional hiring model. Phase 1: the candidate records, saves and publishes a verified AI interview object. Phase 2: the employer searches, scores, watches and invites — without scheduling, without a CV, without an ATS.</div>
       <div style={{ fontSize: 10, fontWeight: 800, color: '#9090b0', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Phase 1 · Candidate Publishes</div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
-        {['🎬 Record AI-conducted interview', '💾 Save verified Talent Identity Object', '🔗 Share to searchable talent index'].map(s => <Tag key={s} color='#2563EB'>{s}</Tag>)}
+        {['🎬 Record AI-conducted interview', '📊 Score generated instantly', '💾 Save verified Talent Identity Object', '🔗 Share to searchable talent index'].map(s => <Tag key={s} color='#2563EB'>{s}</Tag>)}
       </div>
       <div style={{ fontSize: 10, fontWeight: 800, color: '#9090b0', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Phase 2 · Employer Discovers</div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {['🔍 Search by role, score, personality', '📊 Score visible before contact', '▶ Watch AI interview in full', '✉ Direct inbox — ATS bypassed'].map(s => <Tag key={s} color='#2563EB'>{s}</Tag>)}
+        {['🔍 Search by role, score, personality', '▶ Watch AI interview in full', '✉ Direct inbox — ATS bypassed'].map(s => <Tag key={s} color='#2563EB'>{s}</Tag>)}
       </div>
     </div>
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 28 }}>
