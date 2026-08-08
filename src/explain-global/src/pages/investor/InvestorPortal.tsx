@@ -3035,11 +3035,11 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     {/* InterviewMe families */}
     <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9090b0', marginBottom: 10 }}>InterviewMe.Global — AI-Verified Candidate Discovery · 8 Claims · 8 Families</div>
     <div style={{ background: 'rgba(37,99,235,0.04)', border: '1px solid rgba(37,99,235,0.15)', borderRadius: 12, padding: '16px 20px', marginBottom: 12 }}>
-      <div style={{ fontSize: 12, fontWeight: 800, color: '#2563EB', marginBottom: 6, letterSpacing: '0.04em' }}>The Core Innovation: A Two-Phase Talent Discovery System</div>
-      <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, marginBottom: 12 }}>A seven-step, two-phase sequence that inverts the traditional hiring model. Phase 1: the candidate records, saves and publishes a verified AI interview object. Phase 2: the employer searches, scores, watches and invites — without scheduling, without a CV, without an ATS.</div>
+      <div style={{ fontSize: 12, fontWeight: 800, color: '#2563EB', marginBottom: 6, letterSpacing: '0.04em' }}>The Core Innovation: Record Interview · Score · Save · Share → Search · Watch · Invite</div>
+      <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, marginBottom: 12 }}>A seven-step, two-phase sequence. Phase 1: the candidate records a structured AI-conducted interview, it is scored instantly, saved as a verified Talent Identity Object, and shared to the discovery index. Phase 2: the employer searches, watches the interview, and invites — no scheduling, no CV, no ATS.</div>
       <div style={{ fontSize: 10, fontWeight: 800, color: '#9090b0', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Phase 1 · Candidate Publishes</div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
-        {['🎬 Record AI-conducted interview', '📊 Score generated instantly', '💾 Save verified Talent Identity Object', '🔗 Share to searchable talent index'].map(s => <Tag key={s} color='#2563EB'>{s}</Tag>)}
+        {['🎬 Record Interview (AI-conducted)', '📊 Score generated instantly', '💾 Save verified Talent Identity Object', '🔗 Share to searchable talent index'].map(s => <Tag key={s} color='#2563EB'>{s}</Tag>)}
       </div>
       <div style={{ fontSize: 10, fontWeight: 800, color: '#9090b0', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Phase 2 · Employer Discovers</div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
