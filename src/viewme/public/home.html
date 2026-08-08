@@ -85,7 +85,7 @@
   .big-search { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); border-radius: 16px; padding: 16px 20px; max-width: 600px; margin: 0 auto 16px; cursor: pointer; transition: border-color 0.2s; }
   .big-search:hover { border-color: var(--blue); }
   .search-typed { font-size: 15px; color: var(--pearl); font-weight: 600; }
-  .search-cursor { display: inline-block; width: 2px; height: 18px; background: var(--blue); margin-left: 2px; animation: blink 1s infinite; vertical-align: middle; }
+  .search-cursor { display: inline-block; width: 2px; height: 18px; background: var(--blue); margin-left: 0px; animation: blink 1s infinite; vertical-align: middle; }
   @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
   @keyframes bar1 { from{height:20%}to{height:85%} }
   @keyframes bar2 { from{height:50%}to{height:100%} }
@@ -727,6 +727,129 @@
       </div>
       <a class="btn-primary" href="#pricing" style="text-decoration:none;white-space:nowrap">See pricing →</a>
     </div>
+  </div>
+</div>
+
+<!-- TRADESPEOPLE SECTION -->
+<div class="section" id="tradespeople" style="background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%)">
+  <div class="section-inner">
+    <div style="text-align:center;margin-bottom:56px">
+      <div class="section-label">Not Just Recruitment</div>
+      <h2>Every skill. Every trade.<br><em>Every neighbourhood.</em></h2>
+      <p class="section-sub" style="max-width:580px;margin:0 auto">
+        <span style="color:#fff">Interview</span><span style="color:#3D7EF6">Me</span> isn't just for office jobs. Any person with a skill can record a short video, introduce themselves, and get found — by anyone, anywhere nearby.
+      </p>
+    </div>
+
+    <!-- Two-col: Upload your video + Search example -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:960px;margin:0 auto 64px;align-items:start">
+
+      <!-- LEFT: Tradesperson uploads -->
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:32px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#FBBF24;margin-bottom:16px">🔧 For Tradespeople & Locals</div>
+        <h3 style="font-size:20px;font-weight:800;color:var(--pearl);margin-bottom:12px;line-height:1.3">Record once.<br>Get found forever.</h3>
+        <p style="font-size:13px;color:#94a3b8;line-height:1.7;margin-bottom:24px">No CV needed. Just hit record, introduce yourself and your trade, and let your personality do the talking. Your profile goes live instantly — searchable by anyone in your area.</p>
+
+        <!-- Mock video card -->
+        <div style="background:#060a12;border:1px solid rgba(251,191,36,0.2);border-radius:14px;overflow:hidden;margin-bottom:20px">
+          <div style="background:linear-gradient(135deg,#1a1200,#2a1f00);padding:20px;display:flex;align-items:center;gap:14px">
+            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#b45309,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0">DT</div>
+            <div>
+              <div style="font-size:14px;font-weight:800;color:var(--pearl)">Dave Thompson</div>
+              <div style="font-size:12px;color:#f59e0b;font-weight:600">🔧 Plumber · Ilford, Essex</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">25 yrs experience · Gas Safe registered · Emergency callouts</div>
+            </div>
+          </div>
+          <div style="padding:14px 20px;background:rgba(0,0,0,0.3)">
+            <!-- Video thumbnail mockup -->
+            <div style="background:#0a0f1e;border-radius:10px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;margin-bottom:12px;border:1px solid rgba(255,255,255,0.06)">
+              <div style="width:48px;height:48px;background:rgba(61,126,246,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer">▶</div>
+              <div style="position:absolute;bottom:8px;left:10px;font-size:10px;color:rgba(255,255,255,0.5);font-weight:600">2:14</div>
+              <div style="position:absolute;top:8px;right:8px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);border-radius:6px;padding:2px 8px;font-size:9px;font-weight:800;color:#FBBF24;letter-spacing:0.06em">TRADE INTRO</div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);font-style:italic">"Hi, I'm Dave. I've been a plumber in east London for 25 years. I cover boilers, leaks, full bathroom fits — whatever you need. Give me a call..."</div>
+          </div>
+          <div style="padding:10px 20px;border-top:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;gap:16px">
+            <span style="font-size:11px;color:#34D399;font-weight:700">✓ DBS checked</span>
+            <span style="font-size:11px;color:#34D399;font-weight:700">✓ Gas Safe</span>
+            <span style="font-size:11px;color:#34D399;font-weight:700">✓ 47 reviews</span>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)"><span style="color:#FBBF24;font-size:16px">📱</span> Record on your phone — takes 3 minutes</div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)"><span style="color:#FBBF24;font-size:16px">📍</span> Searchable by anyone within 20 miles</div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)"><span style="color:#FBBF24;font-size:16px">🔗</span> Share your link on leaflets, WhatsApp, anywhere</div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)"><span style="color:#FBBF24;font-size:16px">💷</span> Always free to record and publish</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Homeowner searches -->
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:32px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#3D7EF6;margin-bottom:16px">🔍 For Homeowners & Families</div>
+        <h3 style="font-size:20px;font-weight:800;color:var(--pearl);margin-bottom:12px;line-height:1.3">Watch before you<br>pick up the phone.</h3>
+        <p style="font-size:13px;color:#94a3b8;line-height:1.7;margin-bottom:24px">Search by trade and location. Watch their intro video. Get a feel for who they are before they ever knock on your door. No middleman, no agency fee.</p>
+
+        <!-- Mock search -->
+        <div style="background:#060a12;border:1px solid var(--border);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <span style="font-size:14px">🔍</span>
+          <span style="font-size:13px;color:var(--pearl);font-weight:600">Plumber · Ilford, Essex · within 10 miles</span>
+        </div>
+
+        <!-- Search results -->
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+          <div style="background:rgba(61,126,246,0.06);border:1px solid rgba(61,126,246,0.15);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px">
+            <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#b45309,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0">DT</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:var(--pearl)">Dave Thompson</div>
+              <div style="font-size:11px;color:var(--muted)">Plumber · 2.1 miles away · Gas Safe</div>
+            </div>
+            <div style="background:#34D399;color:#050810;font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px">▶ Watch</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px">
+            <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#60a5fa);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0">MO</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:var(--pearl)">Marcus Osei</div>
+              <div style="font-size:11px;color:var(--muted)">Plumber · 4.8 miles away · Emergency callouts</div>
+            </div>
+            <div style="background:rgba(61,126,246,0.15);color:var(--blue);font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px">▶ Watch</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px">
+            <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0">SN</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:var(--pearl)">Sarah Nwosu</div>
+              <div style="font-size:11px;color:var(--muted)">Babysitter · 1.3 miles away · DBS checked</div>
+            </div>
+            <div style="background:rgba(61,126,246,0.15);color:var(--blue);font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px">▶ Watch</div>
+          </div>
+        </div>
+
+        <div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15);border-radius:12px;padding:14px 16px">
+          <div style="font-size:12px;font-weight:700;color:#34D399;margin-bottom:6px">Why this beats every other platform</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.6">CheckaTrade shows you reviews. <span style="color:#fff">Interview</span><span style="color:#3D7EF6">Me</span> shows you the <em>person</em>. Watch their video, hear their voice, decide in 2 minutes — before they're even at your door.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trade types grid -->
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:20px">Works for every trade & local service</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:720px;margin:0 auto">
+        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--pearl)">🔧 Plumber</span>
+        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--pearl)">⚡ Electrician</span>
+        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--pearl)">🍼 Babysitter</span>
+        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--pearl)">🐕 Dog Walker</span>
+        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--pearl)">🍳 Chef</span>
+        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--pearl)">🛒 Retail Assistant</span>
+        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--pearl)">🏗️ Builder</span>
+        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--pearl)">🌿 Gardener</span>
+        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--pearl)">🚗 Driver</span>
+        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--pearl)">🧹 Cleaner</span>
+        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--pearl)">✂️ Hairdresser</span>
+        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--pearl)">+ anyone with a skill</span>
+      </div>
+    </div>
+
   </div>
 </div>
 
