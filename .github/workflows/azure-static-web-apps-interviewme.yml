@@ -22,6 +22,9 @@ jobs:
           mkdir -p deploy
           cp src/viewme/public/home.html deploy/index.html
           cp src/viewme/public/mastermind-chair.png deploy/mastermind-chair.png
+          cp src/viewme/public/viewme-trade-1.png deploy/viewme-trade-1.png
+          cp src/viewme/public/viewme-trade-2.png deploy/viewme-trade-2.png
+          cp src/viewme/public/viewme-trade-3.png deploy/viewme-trade-3.png
           cp src/viewme/public/staticwebapp.config.json deploy/staticwebapp.config.json
 
       - name: Deploy to Azure SWA
