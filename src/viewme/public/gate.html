@@ -31,7 +31,7 @@
     position: relative;
     overflow: hidden;
     border-right: 1px solid var(--border);
-    min-height: 100vh;
+    height: 100vh;
   }
 
   /* slides */
@@ -43,6 +43,7 @@
     justify-content: center;
     padding: 56px 64px;
     opacity: 0;
+    overflow-y: auto;
     transition: opacity 0.7s ease;
     pointer-events: none;
   }
@@ -102,7 +103,7 @@
     border-radius: 12px; overflow: hidden;
     max-width: 100%;
   }
-  .visual-room img { width: 100%; height: auto; max-height: calc(100vh - 380px); object-fit: cover; object-position: center top; display: block; }
+  .visual-room img { width: 100%; height: auto; display: block; }
 
   /* candidate search cards */
   .visual-search { max-width: 100%; }
@@ -386,7 +387,7 @@
         <h1 class="slide-headline">Help us make CVs<br><span class="hl-green">redundant.</span></h1>
         <p class="slide-sub">For the first time ever, you can record and share your AI-driven interview. Let Sarah and James ask the questions — then let your performance speak for itself.</p>
         <div class="visual-room">
-          <img src="interview-preview.png" alt="The InterviewMe interview room">
+          <img src="interview-room-latest.png" alt="The InterviewMe interview room">
         </div>
         <div class="avatar-strip">
           <span class="strip-label">Join today</span>

@@ -21,6 +21,7 @@ jobs:
           cp src/viewme/public/gate.html deploy/index.html
           cp src/viewme/public/mastermind-chair.png deploy/mastermind-chair.png
           cp src/viewme/public/interview-preview.png deploy/interview-preview.png
+          cp src/viewme/public/interview-room-latest.png deploy/interview-room-latest.png
           cp src/viewme/public/candidate-1.jpg deploy/candidate-1.jpg
           cp src/viewme/public/candidate-2.jpg deploy/candidate-2.jpg
           cp src/viewme/public/candidate-3.jpg deploy/candidate-3.jpg
