@@ -3011,7 +3011,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       sub="The Percentile.One ecosystem holds provisional patent applications covering two distinct and independently patentable inventions: the Explain.Global interview readiness pipeline (16 claims, 3 families) and the InterviewMe discovery platform (6 claims, 6 families). Together they represent a defensible technology moat at the infrastructure layer of the global hiring market."
     />
 
-    <Callout icon="🔒" title="Status: Patent Pending — UK & US Provisional Applications · 24 Claims · 11 Families · 2 Products" color={A}
+    <Callout icon="🔒" title="Status: Patent Pending — UK & US Provisional Applications · 25 Claims · 12 Families · 2 Products" color={A}
       body="Explain.Global: 16 claims across 3 families — Core AI pipeline, Recording & overlay engine, Interview credential & portfolio. InterviewMe: 6 claims across 6 families — AI-Generated Talent Identity Object, Universal Distribution, Search & Matching Engine, Direct Hiring Pipeline (ATS bypass), Cinematic Interview Chair, Cross-Platform Identity Graph. Full PCT international application in preparation. The provisional status allows both products to operate under 'Patent Pending' designation immediately." />
 
     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Patent Portfolio Overview</div>
@@ -3033,7 +3033,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     </div>
 
     {/* InterviewMe families */}
-    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9090b0', marginBottom: 10 }}>InterviewMe.Global — AI-Verified Candidate Discovery · 8 Claims · 8 Families</div>
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9090b0', marginBottom: 10 }}>InterviewMe.Global — AI-Verified Candidate Discovery · 9 Claims · 9 Families</div>
     <div style={{ background: 'rgba(37,99,235,0.04)', border: '1px solid rgba(37,99,235,0.15)', borderRadius: 12, padding: '16px 20px', marginBottom: 12 }}>
       <div style={{ fontSize: 12, fontWeight: 800, color: '#2563EB', marginBottom: 6, letterSpacing: '0.04em' }}>The Core Innovation: Record Interview · Score · Save · Share → Search · Watch · Like · Invite</div>
       <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, marginBottom: 12 }}>An eight-step, two-phase sequence. Phase 1: the candidate records a structured AI-conducted interview, it is scored instantly, saved as a verified Talent Identity Object, and shared to the discovery index. Phase 2: the employer searches, watches the interview, likes it (notifying the candidate and driving viral sharing), and invites — no scheduling, no CV, no ATS.</div>
@@ -3056,6 +3056,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         { family: 'Family 9', claims: 'Claim 22', title: 'Cross-Platform Identity Graph', body: 'A unified talent graph linking InterviewMe, Explain.Global, and Percentile.One under a single candidate identity — enabling cross-platform discovery, improvement trajectory tracking, and personalised coaching at scale.', color: '#2563EB' },
         { family: 'Family 10', claims: 'Claim 23', title: 'Interview-to-Learn Feedback Loop', body: 'AI gap analysis from a scored interview generates a bespoke subject course on any topic — covering core concepts, Go Deeper sections, and a Bookcase of curated material — delivered via the Learn engine (Explain.Global). Candidate retakes the interview; score delta is recorded to the Talent Identity Graph. Closes the loop between evaluation and adaptive learning.', color: '#22c55e' },
         { family: 'Family 11', claims: 'Claim 24', title: 'Verified Video Trust Profile — Local & Trade Services', body: 'AI-verified pre-booking video trust profile for tradespeople and home service providers (plumbers, electricians, babysitters, cleaners). Captures warmth, personality, safety signals, and professional conduct via AI interview — entirely absent from Checkatrade, Bark.com, and TaskRabbit. Householders see and hear the person before granting home access.', color: '#f59e0b' },
+        { family: 'Family 12', claims: 'Claim 25', title: 'Verified Interview Like', body: 'A Like applied directly to a verified AI interview profile as the primary content unit — not a post or link about it. Notifies the candidate instantly, builds an employer shortlist passively, aggregates social proof alongside the AI score, and drives viral sharing. LinkedIn has existed 20+ years and still cannot Like a profile. This is the first platform where the interview itself is the content.', color: '#ec4899' },
       ].map(f => (
         <Card key={f.family} accent={f.color}>
           <div style={{ fontSize: 10, fontWeight: 800, color: f.color, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{f.family} · {f.claims}</div>
