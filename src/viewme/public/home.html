@@ -1302,7 +1302,7 @@
 
   // Typewriter — Jobs mode
   const phrases = ['Senior Software Engineer', 'Head of Engineering', 'DevOps Lead', 'Principal Architect', 'Product Manager', 'UX Designer', 'Data Scientist'];
-  let pi = 0, ci = 0, del = false;
+  let pi = 0, ci = 0, del = false, jobsCycles = 0;
   const el = document.getElementById('typetext');
   let jobsTypeActive = true;
   function type() {
@@ -1319,7 +1319,16 @@
     } else {
       if (ci === phrase.length) hideResults();
       el.textContent = phrase.slice(0, --ci);
-      if (ci === 0) { del = false; pi++; setTimeout(type, 400); return; }
+      if (ci === 0) {
+        del = false; pi++; jobsCycles++;
+        if (jobsCycles >= 3 + Math.round(Math.random())) {
+          jobsCycles = 0;
+          setTimeout(() => setMode('services'), 600);
+          return;
+        }
+        setTimeout(type, 400);
+        return;
+      }
     }
     setTimeout(type, del ? 38 : 65);
   }
@@ -1327,7 +1336,7 @@
 
   // Typewriter — Services mode
   const svcPhrases = ['Plumber · Ilford, Essex', 'Electrician · Manchester', 'Babysitter · London N1', 'Dog Walker · Bristol', 'Gardener · Leeds', 'Cleaner · Birmingham'];
-  let spi = 0, sci = 0, sdel = false;
+  let spi = 0, sci = 0, sdel = false, svcCycles = 0;
   const sel2 = document.getElementById('typetext-services');
   let svcTypeActive = false;
   function typeServices() {
@@ -1338,7 +1347,16 @@
       if (sci === phrase.length) { sdel = true; setTimeout(typeServices, 2000); return; }
     } else {
       sel2.textContent = phrase.slice(0, --sci);
-      if (sci === 0) { sdel = false; spi++; setTimeout(typeServices, 350); return; }
+      if (sci === 0) {
+        sdel = false; spi++; svcCycles++;
+        if (svcCycles >= 3 + Math.round(Math.random())) {
+          svcCycles = 0;
+          setTimeout(() => setMode('jobs'), 600);
+          return;
+        }
+        setTimeout(typeServices, 350);
+        return;
+      }
     }
     setTimeout(typeServices, sdel ? 38 : 65);
   }
