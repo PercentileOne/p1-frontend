@@ -99,12 +99,10 @@
 
   /* interview room image */
   .visual-room {
-    border-radius: 16px; overflow: hidden;
-    border: 1px solid rgba(167,139,250,0.2);
+    border-radius: 12px; overflow: hidden;
     max-width: 100%;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
   }
-  .visual-room img { width: 100%; height: auto; display: block; }
+  .visual-room img { width: 100%; height: auto; max-height: calc(100vh - 380px); object-fit: cover; object-position: center top; display: block; }
 
   /* candidate search cards */
   .visual-search { max-width: 100%; }
