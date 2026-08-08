@@ -26,6 +26,11 @@ jobs:
           cp src/viewme/public/candidate-3.jpg deploy/candidate-3.jpg
           cp src/viewme/public/candidate-4.jpg deploy/candidate-4.jpg
           cp src/viewme/public/candidate5.jpg deploy/candidate5.jpg
+          cp src/viewme/public/candidate-6.jpg deploy/candidate-6.jpg
+          cp src/viewme/public/candidate-7.jpg deploy/candidate-7.jpg
+          cp src/viewme/public/candidate-8.jpg deploy/candidate-8.jpg
+          cp src/viewme/public/candidate-9.jpg deploy/candidate-9.jpg
+          cp src/viewme/public/candidate-10.jpg deploy/candidate-10.jpg
           cp src/viewme/public/staticwebapp.config.json deploy/staticwebapp.config.json
 
       - name: Deploy to Azure SWA
