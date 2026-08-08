@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>InterviewMe — Hire the people you've actually seen perform</title>
+<title>InterviewMe — The future of hiring is here</title>
 <style>
   :root {
     --bg: #050810;
@@ -11,172 +11,124 @@
     --blue: #3D7EF6;
     --green: #34D399;
     --amber: #FBBF24;
+    --violet: #A78BFA;
     --pearl: #F0F4FF;
     --muted: #64748b;
     --border: rgba(61,126,246,0.15);
-    --card: rgba(255,255,255,0.03);
     --font: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
-  body { background: var(--bg); color: var(--pearl); font-family: var(--font); font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  body { background: var(--bg); color: var(--pearl); font-family: var(--font); -webkit-font-smoothing: antialiased; }
 
-  /* ── 2-COLUMN: left scrolls, right is fixed ── */
-  .gate {
-    display: grid;
-    grid-template-columns: 1fr 420px;
+  /* ── GATE: 2 columns ── */
+  .gate { display: grid; grid-template-columns: 1fr 420px; min-height: 100vh; }
+
+  /* ══════════════════════════
+     LEFT — CAROUSEL
+  ══════════════════════════ */
+  .carousel-wrap {
+    position: relative;
+    overflow: hidden;
+    border-right: 1px solid var(--border);
     min-height: 100vh;
   }
 
-  /* ══ LEFT: scrollable showcase + search ══ */
-  .left {
-    position: relative;
-    overflow-y: auto;
-    border-right: 1px solid var(--border);
+  /* slides */
+  .slide {
+    position: absolute;
+    inset: 0;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    padding: 56px 64px;
+    opacity: 0;
+    transition: opacity 0.7s ease;
+    pointer-events: none;
   }
-  .left::before {
+  .slide.active { opacity: 1; pointer-events: auto; }
+
+  /* per-slide ambient glow */
+  .slide::before {
     content: '';
-    position: fixed;
-    top: 0; left: 0;
-    width: calc(100vw - 360px);
-    height: 100vh;
-    background:
-      radial-gradient(ellipse 60% 50% at 15% 35%, rgba(61,126,246,0.09) 0%, transparent 65%),
-      radial-gradient(ellipse 40% 30% at 80% 75%, rgba(100,181,246,0.04) 0%, transparent 60%);
+    position: absolute; inset: 0;
     pointer-events: none;
     z-index: 0;
   }
-  .left-inner {
-    position: relative;
-    z-index: 1;
-    padding: 56px 56px 80px 64px;
-    width: 100%;
-  }
+  .slide-candidate::before  { background: radial-gradient(ellipse 70% 55% at 15% 40%, rgba(52,211,153,0.1) 0%, transparent 65%); }
+  .slide-employer::before   { background: radial-gradient(ellipse 70% 55% at 15% 40%, rgba(61,126,246,0.1) 0%, transparent 65%); }
+  .slide-recruiter::before  { background: radial-gradient(ellipse 70% 55% at 15% 40%, rgba(251,191,36,0.08) 0%, transparent 65%); }
+  .slide-general::before    { background: radial-gradient(ellipse 70% 55% at 15% 40%, rgba(167,139,250,0.1) 0%, transparent 65%); }
 
-  /* wordmark */
-  .wordmark {
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 52px; text-decoration: none;
-  }
-  .wordmark-icon {
-    width: 50px; height: 50px; border-radius: 12px;
-    border: 1px solid var(--border); overflow: hidden; flex-shrink: 0;
-  }
-  .wordmark-icon img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
-  .wordmark-text { font-size: 17px; font-weight: 900; color: var(--pearl); letter-spacing: -0.03em; }
-  .wordmark-text span { color: var(--blue); }
+  .slide-inner { position: relative; z-index: 1; width: 100%; }
 
-  /* eyebrow + headline */
-  .eyebrow {
+  /* audience eyebrow */
+  .slide-eyebrow {
     display: inline-flex; align-items: center; gap: 7px;
-    font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--blue); background: rgba(61,126,246,0.1);
-    border: 1px solid var(--border); border-radius: 20px;
-    padding: 4px 12px; margin-bottom: 22px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    border-radius: 20px; padding: 4px 12px; margin-bottom: 20px;
   }
-  .pulse { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  .eyebrow-candidate { color: var(--green); background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25); }
+  .eyebrow-employer  { color: var(--blue);  background: rgba(61,126,246,0.1);  border: 1px solid rgba(61,126,246,0.25); }
+  .eyebrow-recruiter { color: var(--amber); background: rgba(251,191,36,0.1);  border: 1px solid rgba(251,191,36,0.25); }
+  .eyebrow-general   { color: var(--violet);background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.25); }
 
-  .headline {
-    font-size: clamp(2rem, 3vw, 3.2rem);
-    font-weight: 900; letter-spacing: -0.045em; line-height: 1.04;
-    color: var(--pearl); margin-bottom: 18px; text-wrap: balance;
+  .pulse { width: 5px; height: 5px; border-radius: 50%; animation: pulse 2s infinite; flex-shrink: 0; }
+  .pulse-green  { background: var(--green); }
+  .pulse-blue   { background: var(--blue); }
+  .pulse-amber  { background: var(--amber); }
+  .pulse-violet { background: var(--violet); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .slide-headline {
+    font-size: clamp(2rem, 3.2vw, 3.2rem);
+    font-weight: 900; letter-spacing: -0.045em; line-height: 1.03;
+    color: var(--pearl); margin-bottom: 14px; text-wrap: balance;
   }
-  .headline em { font-style: normal; color: var(--blue); }
+  .slide-headline .hl-green  { color: var(--green); }
+  .slide-headline .hl-blue   { color: var(--blue); }
+  .slide-headline .hl-amber  { color: var(--amber); }
+  .slide-headline .hl-violet { color: var(--violet); }
 
-  .sub {
+  .slide-sub {
     font-size: 15px; color: var(--muted); line-height: 1.65;
-    max-width: 520px; margin-bottom: 44px;
+    max-width: 560px; margin-bottom: 36px;
   }
 
-  /* proof cards */
-  .proof-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-    margin-bottom: 44px;
-  }
-  .proof-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px 18px; position: relative; overflow: hidden;
-  }
-  .proof-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(61,126,246,0.4), transparent);
-  }
-  .proof-val { font-size: 1.6rem; font-weight: 900; letter-spacing: -0.04em; color: var(--pearl); line-height: 1; margin-bottom: 3px; }
-  .proof-val span { color: var(--blue); }
-  .proof-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+  /* ── VISUAL AREAS ── */
 
-  /* features */
-  .features { display: flex; flex-direction: column; gap: 16px; margin-bottom: 44px; }
-  .feature { display: flex; align-items: flex-start; gap: 14px; }
-  .feature-icon {
-    width: 32px; height: 32px; border-radius: 8px;
-    background: rgba(61,126,246,0.1); border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+  /* interview room image */
+  .visual-room {
+    border-radius: 16px; overflow: hidden;
+    border: 1px solid rgba(167,139,250,0.2);
+    max-width: 600px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
   }
-  .feature-icon svg { width: 15px; height: 15px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .feature-text strong { display: block; font-size: 14px; font-weight: 700; color: var(--pearl); margin-bottom: 2px; }
-  .feature-text span { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .visual-room img { width: 100%; display: block; }
 
-  /* avatar strip */
-  .preview-strip { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 56px; }
-  .preview-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap; }
-  .preview-avatars { display: flex; }
-  .avatar-ring {
-    width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 800; color: var(--pearl); margin-left: -7px;
-  }
-  .avatar-ring:first-child { margin-left: 0; }
-  .a1 { background: linear-gradient(135deg,#3D7EF6,#6366F1); }
-  .a2 { background: linear-gradient(135deg,#34D399,#059669); }
-  .a3 { background: linear-gradient(135deg,#A855F7,#7C3AED); }
-  .a4 { background: linear-gradient(135deg,#F59E0B,#D97706); }
-  .a5 { background: linear-gradient(135deg,#EC4899,#BE185D); }
-  .preview-more { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; margin-left: 6px; }
-  .preview-link {
-    font-size: 12px; font-weight: 700; color: var(--blue); text-decoration: none;
-    border-bottom: 1px solid rgba(61,126,246,0.3); padding-bottom: 1px; transition: border-color 0.2s;
-  }
-  .preview-link:hover { border-color: var(--blue); }
-
-  /* ── SEARCH SECTION (below copy) ── */
-  .search-section { border-top: 1px solid var(--border); padding-top: 40px; }
-  .section-label {
-    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 14px;
-  }
-
+  /* candidate search cards */
+  .visual-search { max-width: 600px; }
   .mock-search {
     background: rgba(255,255,255,0.04); border: 1px solid var(--border);
-    border-radius: 11px; padding: 12px 16px;
+    border-radius: 11px; padding: 11px 16px;
     display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
   }
   .mock-search svg { width: 14px; height: 14px; stroke: var(--muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
   .mock-search-text { font-size: 13px; color: var(--muted); flex: 1; }
   .stag { font-size: 11px; font-weight: 700; color: var(--blue); background: rgba(61,126,246,0.12); border: 1px solid var(--border); border-radius: 6px; padding: 2px 9px; white-space: nowrap; }
-
   .cards { display: flex; flex-direction: column; gap: 8px; }
   .ccard {
     background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-    border-radius: 12px; padding: 13px 16px;
-    display: flex; align-items: center; gap: 13px;
-    position: relative; transition: border-color 0.2s; cursor: pointer;
+    border-radius: 12px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 13px; position: relative;
   }
-  .ccard:hover { border-color: rgba(61,126,246,0.4); }
-  .ccard.blurred { filter: blur(4px); pointer-events: none; opacity: 0.4; }
   .ccard::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
     background: linear-gradient(90deg, transparent, rgba(61,126,246,0.3), transparent);
     border-radius: 12px 12px 0 0;
   }
-  .cavatar {
-    width: 42px; height: 42px; border-radius: 50%;
-    overflow: hidden; flex-shrink: 0;
-    border: 2px solid var(--border);
-  }
+  .ccard.blurred { filter: blur(4px); opacity: 0.4; pointer-events: none; }
+  .cavatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border); flex-shrink: 0; }
   .cavatar img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
   .cinfo { flex: 1; min-width: 0; }
   .cname { font-size: 14px; font-weight: 700; color: var(--pearl); }
@@ -186,366 +138,442 @@
   .score-hi { color: #34D399; background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25); }
   .score-md { color: #FBBF24; background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.2); }
   .cmeta { font-size: 11px; color: var(--muted); }
-  .clike {
-    font-size: 11px; font-weight: 700; color: var(--blue);
-    background: rgba(61,126,246,0.08); border: 1px solid var(--border);
-    border-radius: 6px; padding: 3px 9px; flex-shrink: 0;
+  .clike { font-size: 11px; font-weight: 700; color: var(--blue); background: rgba(61,126,246,0.08); border: 1px solid var(--border); border-radius: 6px; padding: 3px 9px; flex-shrink: 0; }
+  .gate-lock { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 12px; }
+  .gate-lock svg { width: 12px; height: 12px; stroke: var(--muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* proof stats grid */
+  .visual-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; max-width: 600px; }
+  .stat-card {
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 16px; position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(61,126,246,0.4), transparent);
+  }
+  .stat-val { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.04em; color: var(--pearl); line-height: 1; margin-bottom: 4px; }
+  .stat-val span { color: var(--blue); }
+  .stat-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+
+  /* profile score card */
+  .visual-profile { max-width: 600px; }
+  .profile-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(52,211,153,0.2);
+    border-radius: 16px; padding: 24px; display: flex; gap: 20px; align-items: center;
+    margin-bottom: 16px;
+  }
+  .profile-avatar { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; border: 3px solid rgba(52,211,153,0.3); flex-shrink: 0; }
+  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+  .profile-info h3 { font-size: 18px; font-weight: 900; letter-spacing: -0.02em; margin-bottom: 2px; }
+  .profile-info p { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .profile-score-row { display: flex; gap: 10px; }
+  .pscore { font-size: 22px; font-weight: 900; letter-spacing: -0.03em; color: var(--green); }
+  .pscore-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+  .profile-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ptag { font-size: 11px; font-weight: 700; color: var(--green); background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2); border-radius: 6px; padding: 3px 10px; }
+
+  /* recruiter pipeline */
+  .visual-recruiter { max-width: 600px; }
+  .pipeline { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
+  .pipeline-col { background: rgba(255,255,255,0.03); border: 1px solid rgba(251,191,36,0.15); border-radius: 12px; padding: 16px; }
+  .pipeline-col h4 { font-size: 10px; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+  .pipeline-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; margin-bottom: 7px; display: flex; align-items: center; gap: 8px; }
+  .mini-avatar { width: 26px; height: 26px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+  .mini-avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+  .mini-name { font-size: 11px; font-weight: 700; color: var(--pearl); }
+  .mini-score { font-size: 10px; font-weight: 800; color: var(--green); margin-left: auto; }
+
+  /* recruiter stats */
+  .recruiter-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+  .rstat { background: rgba(255,255,255,0.03); border: 1px solid rgba(251,191,36,0.15); border-radius: 12px; padding: 14px 16px; }
+  .rstat-val { font-size: 1.6rem; font-weight: 900; letter-spacing: -0.03em; color: var(--amber); line-height: 1; margin-bottom: 3px; }
+  .rstat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+
+  /* features list */
+  .features { display: flex; flex-direction: column; gap: 14px; margin-bottom: 32px; }
+  .feature { display: flex; align-items: flex-start; gap: 13px; }
+  .feature-icon { width: 30px; height: 30px; border-radius: 8px; background: rgba(61,126,246,0.1); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .feature-icon svg { width: 14px; height: 14px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .feature-text strong { display: block; font-size: 13px; font-weight: 700; color: var(--pearl); margin-bottom: 1px; }
+  .feature-text span { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* general slide punchlines */
+  .punchlines { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 600px; }
+  .punch { background: rgba(255,255,255,0.03); border: 1px solid rgba(167,139,250,0.15); border-radius: 12px; padding: 16px 18px; }
+  .punch-val { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.03em; color: var(--violet); line-height: 1; margin-bottom: 3px; }
+  .punch-label { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+  /* avatar strip */
+  .avatar-strip { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 28px; }
+  .strip-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap; }
+  .strip-avatars { display: flex; }
+  .aring { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--bg); overflow: hidden; margin-left: -6px; }
+  .aring:first-child { margin-left: 0; }
+  .aring img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+  .aring-fb { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; }
+  .ab1 { background: linear-gradient(135deg,#3D7EF6,#6366F1); }
+  .ab2 { background: linear-gradient(135deg,#A855F7,#7C3AED); }
+  .strip-more { font-size: 12px; font-weight: 700; color: var(--muted); margin-left: 4px; }
+
+  /* ── CAROUSEL CONTROLS ── */
+  .carousel-dots {
+    position: absolute; bottom: 32px; left: 64px;
+    display: flex; gap: 8px; z-index: 10;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.2); border: none; cursor: pointer;
+    transition: all 0.3s; padding: 0;
+  }
+  .dot.active { width: 24px; border-radius: 4px; }
+  .dot-candidate.active { background: var(--green); }
+  .dot-employer.active  { background: var(--blue); }
+  .dot-recruiter.active { background: var(--amber); }
+  .dot-general.active   { background: var(--violet); }
+
+  .carousel-arrows {
+    position: absolute; bottom: 24px; right: 32px;
+    display: flex; gap: 8px; z-index: 10;
+  }
+  .arrow {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+    color: var(--muted); font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .arrow:hover { background: rgba(255,255,255,0.12); color: var(--pearl); }
+
+  /* slide counter */
+  .slide-counter {
+    position: absolute; top: 32px; right: 32px;
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    letter-spacing: 0.08em; z-index: 10;
   }
 
-  .gate-lock {
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    font-size: 12px; font-weight: 600; color: var(--muted);
-    margin-top: 14px;
+  /* progress bar */
+  .progress-bar {
+    position: absolute; bottom: 0; left: 0; height: 2px;
+    background: var(--blue); z-index: 10;
+    transition: width 0.1s linear, background 0.5s;
   }
-  .gate-lock svg { width: 13px; height: 13px; stroke: var(--muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* ══ RIGHT: AUTH PANEL ══ */
+  /* ══════════════════════════
+     RIGHT — AUTH PANEL
+  ══════════════════════════ */
   .auth-panel {
     background: var(--bg2);
     position: sticky; top: 0; height: 100vh;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    padding: 32px 40px;
-    overflow-y: auto;
-    gap: 24px;
+    padding: 48px 40px; overflow-y: auto;
   }
   .auth-box { width: 100%; max-width: 365px; }
 
-  /* live preview card */
-  .live-preview {
-    width: 100%; max-width: 365px;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-    position: relative;
-  }
-  .lp-header {
-    padding: 16px 18px 12px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .lp-copy { }
-  .lp-eyebrow {
-    font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 4px;
-  }
-  .lp-headline {
-    font-size: 15px; font-weight: 900; letter-spacing: -0.03em; color: var(--pearl); line-height: 1.1;
-  }
-  .lp-headline span { color: #A78BFA; }
-  .lp-badge {
-    display: flex; align-items: center; gap: 5px;
-    font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-    color: #A78BFA; background: rgba(167,139,250,0.12);
-    border: 1px solid rgba(167,139,250,0.2);
-    border-radius: 20px; padding: 4px 10px; white-space: nowrap; flex-shrink: 0;
-  }
-  .lp-dot { width: 5px; height: 5px; border-radius: 50%; background: #A78BFA; animation: pulse 2s infinite; }
+  .auth-tagline { font-size: 22px; font-weight: 900; letter-spacing: -0.03em; color: var(--pearl); margin-bottom: 5px; }
+  .auth-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
 
-  /* chair strip */
-  .lp-chair {
-    display: flex; align-items: center; justify-content: flex-end;
-    padding: 0 18px 0 0;
-    height: 60px;
-    position: relative;
-  }
-  .lp-chair img {
-    height: 70px; width: auto;
-    object-fit: contain;
-    filter: drop-shadow(0 0 20px rgba(167,139,250,0.3));
-    position: absolute; right: 18px; bottom: 0;
-  }
-
-  /* video tiles */
-  .lp-tiles {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 8px; padding: 0 14px 14px;
-  }
-  .lp-tile {
-    border-radius: 10px; overflow: hidden;
-    aspect-ratio: 4/3;
-    position: relative;
-    display: flex; align-items: flex-end;
-  }
-  .lp-tile-bg {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 28px; font-weight: 900; color: rgba(255,255,255,0.15);
-    letter-spacing: -0.04em;
-  }
-  .lp-tile-bg.sarah { background: linear-gradient(160deg, #1a1f35 0%, #0f1525 100%); border: 1px solid rgba(167,139,250,0.2); }
-  .lp-tile-bg.james { background: linear-gradient(160deg, #0f1a20 0%, #0a1218 100%); border: 1px solid rgba(61,126,246,0.2); }
-  /* waveform on sarah */
-  .lp-wave {
-    position: absolute; bottom: 8px; right: 8px;
-    display: flex; align-items: flex-end; gap: 2px; height: 18px;
-  }
-  .lp-wave span {
-    width: 2px; background: #A78BFA; border-radius: 2px; opacity: 0.8;
-    animation: wave 1.2s ease-in-out infinite;
-  }
-  .lp-wave span:nth-child(1) { height: 6px; animation-delay: 0s; }
-  .lp-wave span:nth-child(2) { height: 14px; animation-delay: 0.1s; }
-  .lp-wave span:nth-child(3) { height: 10px; animation-delay: 0.2s; }
-  .lp-wave span:nth-child(4) { height: 16px; animation-delay: 0.3s; }
-  .lp-wave span:nth-child(5) { height: 8px; animation-delay: 0.4s; }
-  @keyframes wave {
-    0%,100% { transform: scaleY(1); }
-    50% { transform: scaleY(0.4); }
-  }
-  /* ready badge on james */
-  .lp-ready {
-    position: absolute; top: 6px; right: 6px;
-    font-size: 9px; font-weight: 700; color: var(--green);
-    background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.25);
-    border-radius: 4px; padding: 2px 6px;
-  }
-  .lp-name {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    padding: 16px 8px 7px;
-    background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 100%);
-  }
-  .lp-name strong { display: block; font-size: 11px; font-weight: 700; color: var(--pearl); }
-  .lp-name span { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-
-  .auth-tagline { font-size: 21px; font-weight: 900; letter-spacing: -0.03em; color: var(--pearl); margin-bottom: 4px; }
-  .auth-sub { font-size: 12px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
-
-  .auth-tabs {
-    display: flex; border: 1px solid var(--border);
-    border-radius: 9px; overflow: hidden; margin-bottom: 20px;
-  }
-  .tab {
-    flex: 1; padding: 8px 10px; font-size: 12px; font-weight: 700;
-    text-align: center; cursor: pointer; color: var(--muted);
-    background: transparent; border: none; transition: all 0.2s; font-family: var(--font);
-  }
+  .auth-tabs { display: flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 24px; }
+  .tab { flex: 1; padding: 9px 12px; font-size: 13px; font-weight: 700; text-align: center; cursor: pointer; color: var(--muted); background: transparent; border: none; transition: all 0.2s; font-family: var(--font); }
   .tab.active { color: var(--pearl); background: rgba(61,126,246,0.15); }
 
-  .auth-form { display: flex; flex-direction: column; gap: 11px; }
+  .auth-form { display: flex; flex-direction: column; gap: 12px; }
   .auth-form.hidden { display: none; }
 
-  .field { display: flex; flex-direction: column; gap: 4px; }
-  .field label { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
-  .field input, .field select {
-    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
-    border-radius: 9px; padding: 10px 13px; font-size: 13px; color: var(--pearl);
-    font-family: var(--font); outline: none; transition: border-color 0.2s; width: 100%;
-  }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .field input, .field select { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 12px 15px; font-size: 14px; color: var(--pearl); font-family: var(--font); outline: none; transition: border-color 0.2s; width: 100%; }
   .field input::placeholder { color: rgba(100,116,139,0.5); }
   .field input:focus, .field select:focus { border-color: rgba(61,126,246,0.5); }
   .field select option { background: #0a0f1e; }
-  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-  .forgot { font-size: 11px; color: var(--blue); text-decoration: none; text-align: right; display: block; margin-top: -3px; }
+  .forgot { font-size: 12px; color: var(--blue); text-decoration: none; text-align: right; display: block; margin-top: -4px; }
   .forgot:hover { text-decoration: underline; }
 
-  .btn-primary {
-    width: 100%; padding: 12px; border-radius: 10px; border: none;
-    background: var(--blue); color: #fff; font-size: 14px; font-weight: 800;
-    cursor: pointer; box-shadow: 0 4px 18px rgba(61,126,246,0.35);
-    transition: transform 0.15s, box-shadow 0.15s; font-family: var(--font); margin-top: 1px;
-  }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(61,126,246,0.45); }
+  .btn-primary { width: 100%; padding: 13px; border-radius: 11px; border: none; background: var(--blue); color: #fff; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 20px rgba(61,126,246,0.35); transition: transform 0.15s, box-shadow 0.15s; font-family: var(--font); margin-top: 2px; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 26px rgba(61,126,246,0.45); }
 
-  .auth-divider {
-    display: flex; align-items: center; gap: 8px;
-    color: var(--muted); font-size: 11px; font-weight: 600;
-  }
+  .auth-divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; font-weight: 600; }
   .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  .btn-candidate {
-    width: 100%; padding: 10px; border-radius: 10px;
-    border: 1px solid rgba(52,211,153,0.25); background: rgba(52,211,153,0.07);
-    color: var(--green); font-size: 12px; font-weight: 700; cursor: pointer;
-    transition: all 0.2s; font-family: var(--font);
-    display: flex; align-items: center; justify-content: center; gap: 7px;
-  }
+  .btn-candidate { width: 100%; padding: 11px; border-radius: 11px; border: 1px solid rgba(52,211,153,0.25); background: rgba(52,211,153,0.07); color: var(--green); font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: var(--font); display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn-candidate:hover { background: rgba(52,211,153,0.13); border-color: rgba(52,211,153,0.4); }
-  .btn-candidate svg { width: 14px; height: 14px; stroke: var(--green); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .btn-candidate svg { width: 15px; height: 15px; stroke: var(--green); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  .auth-footer { margin-top: 20px; }
-  .badge-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-  .badge { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; color: var(--muted); }
-  .badge svg { width: 11px; height: 11px; stroke: var(--green); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-  .auth-legal { font-size: 10px; color: var(--muted); text-align: center; line-height: 1.6; }
+  .auth-footer { margin-top: 22px; }
+  .badge-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 10px; flex-wrap: wrap; }
+  .badge { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--muted); }
+  .badge svg { width: 12px; height: 12px; stroke: var(--green); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .auth-legal { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.6; }
   .auth-legal a { color: var(--blue); text-decoration: none; }
   .auth-legal a:hover { text-decoration: underline; }
 
   /* ── RESPONSIVE ── */
-  @media (max-width: 860px) {
+  @media (max-width: 900px) {
     .gate { grid-template-columns: 1fr; }
-    .left::before { width: 100%; }
-    .left-inner { padding: 44px 28px 60px; max-width: 100%; }
-    .proof-grid { grid-template-columns: 1fr 1fr; }
+    .carousel-wrap { min-height: 80vh; }
+    .slide { padding: 44px 28px; }
+    .carousel-dots { left: 28px; }
     .auth-panel { position: static; height: auto; padding: 44px 28px; }
     .auth-box { max-width: 100%; }
+    .visual-stats { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
 <body>
 <div class="gate">
 
-  <!-- ══ LEFT: scrollable ══ -->
-  <div class="left">
-    <div class="left-inner">
+  <!-- ══ LEFT: CAROUSEL ══ -->
+  <div class="carousel-wrap" id="carousel">
 
-      <div class="eyebrow"><span class="pulse"></span>Live on interviewme.global</div>
-      <h1 class="headline">Hire people you've <em>actually seen</em> perform.</h1>
-      <p class="sub">InterviewMe gives every candidate a structured AI interview — scored, timestamped, and searchable. Employers watch, Like, and Invite. No guessing. No wasted hours.</p>
+    <div class="slide-counter" id="counter">1 / 7</div>
+    <div class="progress-bar" id="progress"></div>
 
-      <!-- SEARCH + STATS side by side -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start">
+    <!-- ─ SLIDE 1: CANDIDATE ─ -->
+    <div class="slide slide-candidate active" data-audience="candidate">
+      <div class="slide-inner">
+        <div class="slide-eyebrow eyebrow-candidate"><span class="pulse pulse-green"></span>For Candidates</div>
+        <h1 class="slide-headline">Help us make CVs<br><span class="hl-green">redundant.</span></h1>
+        <p class="slide-sub">For the first time ever, you can record and share your AI-driven interview. Let Sarah and James ask the questions — then let your performance speak for itself.</p>
+        <div class="visual-room">
+          <img src="interview-preview.png" alt="The InterviewMe interview room">
+        </div>
+        <div class="avatar-strip">
+          <span class="strip-label">Join today</span>
+          <div class="strip-avatars">
+            <div class="aring"><img src="candidate-1.jpg" alt=""></div>
+            <div class="aring"><img src="candidate-2.jpg" alt=""></div>
+            <div class="aring"><img src="candidate-3.jpg" alt=""></div>
+            <div class="aring"><img src="candidate-4.jpg" alt=""></div>
+            <div class="aring"><img src="candidate5.jpg" alt=""></div>
+            <div class="aring aring-fb ab1">+</div>
+          </div>
+          <span class="strip-more">2,400 candidates already recorded</span>
+        </div>
+      </div>
+    </div>
 
-        <!-- LEFT: search cards -->
-        <div class="search-section" style="border-top:none;padding-top:0">
-          <div class="section-label" style="margin-bottom:12px">Search for candidates and watch them interview live</div>
+    <!-- ─ SLIDE 2: EMPLOYER ─ -->
+    <div class="slide slide-employer" data-audience="employer">
+      <div class="slide-inner">
+        <div class="slide-eyebrow eyebrow-employer"><span class="pulse pulse-blue"></span>For Employers</div>
+        <h1 class="slide-headline">Hire people you've <span class="hl-blue">actually seen</span> perform.</h1>
+        <p class="slide-sub">Search for candidates and watch them interview live. Every candidate. Same structured AI interview. Scored, timestamped, and ready to watch before you ever pick up the phone.</p>
+        <div class="visual-search">
           <div class="mock-search">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <span class="mock-search-text">Senior Engineer · London</span>
-            <span class="stag">247</span>
+            <span class="stag">247 results</span>
           </div>
           <div class="cards">
             <div class="ccard">
               <div class="cavatar"><img src="candidate-1.jpg" alt="Jordan Ashford"></div>
-              <div class="cinfo">
-                <div class="cname">Jordan Ashford</div>
-                <div class="crole">Senior Software Engineer · 6 yrs</div>
-              </div>
-              <div class="cright">
-                <span class="cscore score-hi">94%</span>
-                <span class="cmeta">Today</span>
-              </div>
-              <span class="clike">♥</span>
+              <div class="cinfo"><div class="cname">Jordan Ashford</div><div class="crole">Senior Software Engineer · 6 yrs</div></div>
+              <div class="cright"><span class="cscore score-hi">94%</span><span class="cmeta">Today</span></div>
+              <span class="clike">♥ Like</span>
             </div>
             <div class="ccard">
               <div class="cavatar"><img src="candidate-2.jpg" alt="Sophia Kamara"></div>
-              <div class="cinfo">
-                <div class="cname">Sophia Kamara</div>
-                <div class="crole">Full-Stack Developer · 4 yrs</div>
-              </div>
-              <div class="cright">
-                <span class="cscore score-hi">91%</span>
-                <span class="cmeta">Yesterday</span>
-              </div>
-              <span class="clike">♥</span>
+              <div class="cinfo"><div class="cname">Sophia Kamara</div><div class="crole">Full-Stack Developer · 4 yrs</div></div>
+              <div class="cright"><span class="cscore score-hi">91%</span><span class="cmeta">Yesterday</span></div>
+              <span class="clike">♥ Like</span>
             </div>
             <div class="ccard">
               <div class="cavatar"><img src="candidate-3.jpg" alt="Marcus Patel"></div>
-              <div class="cinfo">
-                <div class="cname">Marcus Patel</div>
-                <div class="crole">Backend Engineer · 8 yrs</div>
-              </div>
-              <div class="cright">
-                <span class="cscore score-md">87%</span>
-                <span class="cmeta">2 days ago</span>
-              </div>
-              <span class="clike">♥</span>
-            </div>
-            <div class="ccard">
-              <div class="cavatar"><img src="candidate-4.jpg" alt="Rachel Chen"></div>
-              <div class="cinfo">
-                <div class="cname">Rachel Chen</div>
-                <div class="crole">DevOps Engineer · 5 yrs</div>
-              </div>
-              <div class="cright">
-                <span class="cscore score-hi">96%</span>
-                <span class="cmeta">3 days ago</span>
-              </div>
-              <span class="clike">♥</span>
+              <div class="cinfo"><div class="cname">Marcus Patel</div><div class="crole">Backend Engineer · 8 yrs</div></div>
+              <div class="cright"><span class="cscore score-md">87%</span><span class="cmeta">2 days ago</span></div>
+              <span class="clike">♥ Like</span>
             </div>
             <div class="ccard blurred">
-              <div class="cavatar"><img src="candidate5.jpg" alt="Liam Torres"></div>
-              <div class="cinfo">
-                <div class="cname">Liam Torres</div>
-                <div class="crole">Cloud Architect · 9 yrs</div>
-              </div>
-              <div class="cright">
-                <span class="cscore score-hi">98%</span>
-                <span class="cmeta">4 days ago</span>
-              </div>
-              <span class="clike">♥</span>
+              <div class="cavatar"><img src="candidate-4.jpg" alt="Rachel Chen"></div>
+              <div class="cinfo"><div class="cname">Rachel Chen</div><div class="crole">DevOps Engineer · 5 yrs</div></div>
+              <div class="cright"><span class="cscore score-hi">96%</span><span class="cmeta">3 days ago</span></div>
+              <span class="clike">♥ Like</span>
             </div>
           </div>
-          <div class="gate-lock">
-            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            Sign in to see all 247
-          </div>
+          <div class="gate-lock"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Sign in to see all 247 candidates</div>
         </div>
-
-        <!-- RIGHT: stats + features + avatars -->
-        <div>
-          <div class="proof-grid" style="grid-template-columns:1fr 1fr;margin-bottom:28px">
-            <div class="proof-card">
-              <div class="proof-val">4<span>min</span></div>
-              <div class="proof-label">Avg. time to shortlist</div>
-            </div>
-            <div class="proof-card">
-              <div class="proof-val">3<span>×</span></div>
-              <div class="proof-label">More accurate than CVs</div>
-            </div>
-            <div class="proof-card">
-              <div class="proof-val">100<span>%</span></div>
-              <div class="proof-label">Fairly interviewed</div>
-            </div>
-            <div class="proof-card">
-              <div class="proof-val">0</div>
-              <div class="proof-label">Phone screens wasted</div>
-            </div>
-          </div>
-
-          <div class="features" style="margin-bottom:28px">
-            <div class="feature">
-              <div class="feature-icon">
-                <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-              </div>
-              <div class="feature-text">
-                <strong>Watch real interviews, not CVs</strong>
-                <span>Same structured AI interview for every candidate — scored by question, searchable by skill.</span>
-              </div>
-            </div>
-            <div class="feature">
-              <div class="feature-icon">
-                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              </div>
-              <div class="feature-text">
-                <strong>Like, Follow, Connect, Invite</strong>
-                <span>Build your talent pipeline and reach candidates — all inside the platform.</span>
-              </div>
-            </div>
-            <div class="feature">
-              <div class="feature-icon">
-                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              </div>
-              <div class="feature-text">
-                <strong>Privacy-first, inbox-only contact</strong>
-                <span>No emails or phone numbers ever exposed. All contact via platform inbox.</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="preview-strip">
-            <span class="preview-label">Recently active</span>
-            <div class="preview-avatars">
-              <div class="avatar-ring a1">JA</div>
-              <div class="avatar-ring a2">SK</div>
-              <div class="avatar-ring a3">MP</div>
-              <div class="avatar-ring a4">RC</div>
-              <div class="avatar-ring a5">LT</div>
-            </div>
-            <span class="preview-more">+2,400</span>
-            <a href="https://product.interviewme.global" class="preview-link">How it works →</a>
-          </div>
-        </div>
-
       </div>
-
     </div>
+
+    <!-- ─ SLIDE 3: RECRUITER ─ -->
+    <div class="slide slide-recruiter" data-audience="recruiter">
+      <div class="slide-inner">
+        <div class="slide-eyebrow eyebrow-recruiter"><span class="pulse pulse-amber"></span>For Recruiters &amp; Agencies</div>
+        <h1 class="slide-headline">Find, vet, and place — <span class="hl-amber">without the screening calls.</span></h1>
+        <p class="slide-sub">Your clients want evidence. InterviewMe gives you a recorded, scored interview for every candidate. Present with confidence. Close faster. Keep more of your fee.</p>
+        <div class="visual-recruiter">
+          <div class="pipeline">
+            <div class="pipeline-col">
+              <h4>Sourced</h4>
+              <div class="pipeline-item"><div class="mini-avatar"><img src="candidate-1.jpg" alt=""></div><span class="mini-name">Jordan A.</span><span class="mini-score">94%</span></div>
+              <div class="pipeline-item"><div class="mini-avatar"><img src="candidate-2.jpg" alt=""></div><span class="mini-name">Sophia K.</span><span class="mini-score">91%</span></div>
+              <div class="pipeline-item"><div class="mini-avatar"><img src="candidate5.jpg" alt=""></div><span class="mini-name">Liam T.</span><span class="mini-score">98%</span></div>
+            </div>
+            <div class="pipeline-col">
+              <h4>Presented</h4>
+              <div class="pipeline-item"><div class="mini-avatar"><img src="candidate-3.jpg" alt=""></div><span class="mini-name">Marcus P.</span><span class="mini-score">87%</span></div>
+              <div class="pipeline-item"><div class="mini-avatar"><img src="candidate-1.jpg" alt=""></div><span class="mini-name">Jordan A.</span><span class="mini-score">94%</span></div>
+            </div>
+            <div class="pipeline-col">
+              <h4>Placed ✓</h4>
+              <div class="pipeline-item"><div class="mini-avatar"><img src="candidate-2.jpg" alt=""></div><span class="mini-name">Sophia K.</span><span class="mini-score">91%</span></div>
+            </div>
+          </div>
+          <div class="recruiter-stats">
+            <div class="rstat"><div class="rstat-val">3×</div><div class="rstat-label">Faster placement</div></div>
+            <div class="rstat"><div class="rstat-val">0</div><div class="rstat-label">Screening calls needed</div></div>
+            <div class="rstat"><div class="rstat-val">100%</div><div class="rstat-label">Evidence-based submissions</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─ SLIDE 4: CANDIDATE #2 ─ -->
+    <div class="slide slide-candidate" data-audience="candidate">
+      <div class="slide-inner">
+        <div class="slide-eyebrow eyebrow-candidate"><span class="pulse pulse-green"></span>For Candidates</div>
+        <h1 class="slide-headline">Your best interview,<br>recorded once. <span class="hl-green">Seen by thousands.</span></h1>
+        <p class="slide-sub">Practice with Sarah and James until you nail it. Get scored on every answer. Share your profile link. Employers find you — you don't have to chase them.</p>
+        <div class="visual-profile">
+          <div class="profile-card">
+            <div class="profile-avatar"><img src="candidate-1.jpg" alt="Jordan"></div>
+            <div class="profile-info">
+              <h3>Jordan Ashford</h3>
+              <p>Senior Software Engineer · London</p>
+              <div class="profile-score-row">
+                <div><div class="pscore">94%</div><div class="pscore-label">Overall score</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="profile-tags">
+            <span class="ptag">✓ System Design — 97%</span>
+            <span class="ptag">✓ Problem Solving — 95%</span>
+            <span class="ptag">✓ Communication — 91%</span>
+            <span class="ptag">✓ Technical Depth — 94%</span>
+            <span class="ptag">✓ Culture Fit — 93%</span>
+          </div>
+        </div>
+        <div class="avatar-strip" style="margin-top:24px">
+          <span class="strip-label">Viewed by</span>
+          <div class="strip-avatars">
+            <div class="aring aring-fb ab1">G</div>
+            <div class="aring aring-fb ab2">A</div>
+            <div class="aring aring-fb" style="background:linear-gradient(135deg,#F59E0B,#D97706)">M</div>
+          </div>
+          <span class="strip-more">Google · Amazon · Meta + 14 more employers</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─ SLIDE 5: EMPLOYER #2 ─ -->
+    <div class="slide slide-employer" data-audience="employer">
+      <div class="slide-inner">
+        <div class="slide-eyebrow eyebrow-employer"><span class="pulse pulse-blue"></span>For Employers</div>
+        <h1 class="slide-headline"><span class="hl-blue">4 minutes</span> to shortlist.<br>Zero phone screens wasted.</h1>
+        <p class="slide-sub">Every candidate completes the same structured AI interview — scored by question, searchable by skill. No unconscious bias. No scheduling chaos. Just performance.</p>
+        <div class="visual-stats" style="margin-bottom:28px">
+          <div class="stat-card"><div class="stat-val">4<span>min</span></div><div class="stat-label">Avg. time to shortlist</div></div>
+          <div class="stat-card"><div class="stat-val">3<span>×</span></div><div class="stat-label">More accurate than CVs</div></div>
+          <div class="stat-card"><div class="stat-val">100<span>%</span></div><div class="stat-label">Fairly interviewed</div></div>
+          <div class="stat-card"><div class="stat-val" style="color:var(--pearl)">0</div><div class="stat-label">Phone screens wasted</div></div>
+        </div>
+        <div class="features">
+          <div class="feature">
+            <div class="feature-icon"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+            <div class="feature-text"><strong>Watch real interviews, not polished CVs</strong><span>Same structured AI interview for every candidate — scored by question, searchable by skill.</span></div>
+          </div>
+          <div class="feature">
+            <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+            <div class="feature-text"><strong>Like, Follow, Connect, Invite</strong><span>Build your talent pipeline and reach candidates — all inside the platform.</span></div>
+          </div>
+          <div class="feature">
+            <div class="feature-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div class="feature-text"><strong>Privacy-first, inbox-only contact</strong><span>No emails or phone numbers ever exposed. All contact via platform inbox.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─ SLIDE 6: RECRUITER #2 ─ -->
+    <div class="slide slide-recruiter" data-audience="recruiter">
+      <div class="slide-inner">
+        <div class="slide-eyebrow eyebrow-recruiter"><span class="pulse pulse-amber"></span>For Agencies &amp; RPO</div>
+        <h1 class="slide-headline">Cut the screening calls.<br><span class="hl-amber">Your clients will thank you.</span></h1>
+        <p class="slide-sub">Stop sending CVs your clients won't read. Start sending recorded, scored InterviewMe interviews they can watch in 4 minutes. Your hit rate goes up. Your reputation goes with it.</p>
+        <div class="visual-recruiter">
+          <div class="recruiter-stats" style="margin-bottom:20px">
+            <div class="rstat"><div class="rstat-val">68%</div><div class="rstat-label">Reduction in time-to-offer</div></div>
+            <div class="rstat"><div class="rstat-val">4×</div><div class="rstat-label">More placements per month</div></div>
+            <div class="rstat"><div class="rstat-val">£0</div><div class="rstat-label">Extra cost to candidates</div></div>
+          </div>
+          <div class="features">
+            <div class="feature">
+              <div class="feature-icon" style="background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.2)"><svg viewBox="0 0 24 24" style="stroke:#FBBF24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+              <div class="feature-text"><strong>Candidates travel with their interview</strong><span>One recorded interview, shared across every client. No re-interviewing. No wasted time.</span></div>
+            </div>
+            <div class="feature">
+              <div class="feature-icon" style="background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.2)"><svg viewBox="0 0 24 24" style="stroke:#FBBF24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <div class="feature-text"><strong>Score-backed submissions your clients trust</strong><span>Send a 94% score and a recorded interview. Watch your shortlist acceptance rate soar.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─ SLIDE 7: EVERYONE ─ -->
+    <div class="slide slide-general" data-audience="general">
+      <div class="slide-inner">
+        <div class="slide-eyebrow eyebrow-general"><span class="pulse pulse-violet"></span>The Future of Hiring</div>
+        <h1 class="slide-headline">The seat is yours.<br><span class="hl-violet">Make every answer count.</span></h1>
+        <p class="slide-sub">InterviewMe — where candidates perform, employers discover, and recruiters deliver. The first platform where your interview travels with you for life.</p>
+        <div class="punchlines">
+          <div class="punch"><div class="punch-val">2,400+</div><div class="punch-label">Candidates already interviewed</div></div>
+          <div class="punch"><div class="punch-val">94%</div><div class="punch-label">Average interview score on the platform</div></div>
+          <div class="punch"><div class="punch-val">4min</div><div class="punch-label">Average employer shortlist time</div></div>
+          <div class="punch"><div class="punch-val">0</div><div class="punch-label">CVs required to get hired</div></div>
+          <div class="punch"><div class="punch-val">∞</div><div class="punch-label">Times your interview can be seen</div></div>
+          <div class="punch"><div class="punch-val">1</div><div class="punch-label">Interview. Infinite opportunities.</div></div>
+        </div>
+        <div class="avatar-strip" style="margin-top:24px">
+          <span class="strip-label">Recently active</span>
+          <div class="strip-avatars">
+            <div class="aring"><img src="candidate-1.jpg" alt=""></div>
+            <div class="aring"><img src="candidate-2.jpg" alt=""></div>
+            <div class="aring"><img src="candidate-3.jpg" alt=""></div>
+            <div class="aring"><img src="candidate-4.jpg" alt=""></div>
+            <div class="aring"><img src="candidate5.jpg" alt=""></div>
+            <div class="aring aring-fb ab2">+</div>
+          </div>
+          <span class="strip-more">+2,400 candidates</span>
+          <a href="https://product.interviewme.global" style="font-size:12px;font-weight:700;color:var(--violet);text-decoration:none;border-bottom:1px solid rgba(167,139,250,0.3);padding-bottom:1px;margin-left:auto">See how it works →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOTS -->
+    <div class="carousel-dots" id="dots">
+      <button class="dot dot-candidate active" onclick="goTo(0)"></button>
+      <button class="dot dot-employer" onclick="goTo(1)"></button>
+      <button class="dot dot-recruiter" onclick="goTo(2)"></button>
+      <button class="dot dot-candidate" onclick="goTo(3)"></button>
+      <button class="dot dot-employer" onclick="goTo(4)"></button>
+      <button class="dot dot-recruiter" onclick="goTo(5)"></button>
+      <button class="dot dot-general" onclick="goTo(6)"></button>
+    </div>
+
+    <!-- ARROWS -->
+    <div class="carousel-arrows">
+      <button class="arrow" onclick="prev()">&#8592;</button>
+      <button class="arrow" onclick="next()">&#8594;</button>
+    </div>
+
   </div>
 
-  <!-- ══ RIGHT: sticky auth ══ -->
+  <!-- ══ RIGHT: AUTH PANEL ══ -->
   <div class="auth-panel">
-
     <div class="auth-box">
 
       <div class="auth-tagline">Welcome back.</div>
@@ -556,16 +584,9 @@
         <button class="tab" onclick="switchTab('signup')">Create Account</button>
       </div>
 
-      <!-- LOGIN -->
       <form class="auth-form" id="form-login" onsubmit="return false">
-        <div class="field">
-          <label>Email address</label>
-          <input type="email" placeholder="you@company.com" autocomplete="email">
-        </div>
-        <div class="field">
-          <label>Password</label>
-          <input type="password" placeholder="••••••••" autocomplete="current-password">
-        </div>
+        <div class="field"><label>Email address</label><input type="email" placeholder="you@company.com" autocomplete="email"></div>
+        <div class="field"><label>Password</label><input type="password" placeholder="••••••••" autocomplete="current-password"></div>
         <a href="#" class="forgot">Forgot your password?</a>
         <button class="btn-primary" type="submit">Sign In</button>
         <div class="auth-divider">or</div>
@@ -575,7 +596,6 @@
         </button>
       </form>
 
-      <!-- EMPLOYER SIGNUP -->
       <form class="auth-form hidden" id="form-signup" onsubmit="return false">
         <div class="field-row">
           <div class="field"><label>First name</label><input type="text" placeholder="Alex" autocomplete="given-name"></div>
@@ -602,9 +622,8 @@
         </button>
       </form>
 
-      <!-- CANDIDATE SIGNUP -->
       <form class="auth-form hidden" id="form-candidate" onsubmit="return false">
-        <p style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:2px">Create your profile and complete your AI interview. Employers will find you.</p>
+        <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:4px">Create your profile and complete your AI interview. Employers will find you.</p>
         <div class="field-row">
           <div class="field"><label>First name</label><input type="text" placeholder="Jordan" autocomplete="given-name"></div>
           <div class="field"><label>Last name</label><input type="text" placeholder="Smith" autocomplete="family-name"></div>
@@ -612,12 +631,8 @@
         <div class="field"><label>Email</label><input type="email" placeholder="jordan@email.com" autocomplete="email"></div>
         <div class="field"><label>Job title</label><input type="text" placeholder="e.g. Senior Software Engineer"></div>
         <div class="field"><label>Password</label><input type="password" placeholder="Create a strong password" autocomplete="new-password"></div>
-        <button class="btn-primary" type="submit" style="background:linear-gradient(135deg,#34D399,#059669);box-shadow:0 4px 18px rgba(52,211,153,0.28)">
-          Start My Free Interview
-        </button>
-        <div style="text-align:center">
-          <a href="#" style="font-size:11px;color:var(--muted);text-decoration:none" onclick="switchTab('login')">Already have an account? Sign in</a>
-        </div>
+        <button class="btn-primary" type="submit" style="background:linear-gradient(135deg,#34D399,#059669);box-shadow:0 4px 18px rgba(52,211,153,0.28)">Start My Free Interview</button>
+        <div style="text-align:center"><a href="#" style="font-size:11px;color:var(--muted);text-decoration:none" onclick="switchTab('login')">Already have an account? Sign in</a></div>
       </form>
 
       <div class="auth-footer">
@@ -637,6 +652,58 @@
 
 </div>
 <script>
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.dot');
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+  const audiences = ['candidate','employer','recruiter','candidate','employer','recruiter','general'];
+  const accentColors = {
+    candidate: '#34D399',
+    employer:  '#3D7EF6',
+    recruiter: '#FBBF24',
+    general:   '#A78BFA'
+  };
+  let current = 0;
+  let timer, progTimer, progVal = 0;
+  const DURATION = 6000;
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = (n + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+    counter.textContent = (current + 1) + ' / ' + slides.length;
+    progress.style.background = accentColors[audiences[current]];
+    resetTimer();
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  function resetTimer() {
+    clearInterval(timer);
+    clearInterval(progTimer);
+    progVal = 0;
+    progress.style.width = '0%';
+    progTimer = setInterval(() => {
+      progVal += 100 / (DURATION / 100);
+      progress.style.width = Math.min(progVal, 100) + '%';
+    }, 100);
+    timer = setInterval(next, DURATION);
+  }
+
+  // keyboard nav
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') next();
+    if (e.key === 'ArrowLeft')  prev();
+  });
+
+  // init
+  progress.style.background = accentColors[audiences[0]];
+  resetTimer();
+
+  // auth tabs
   function switchTab(tab) {
     ['login','signup','candidate'].forEach(t => {
       document.getElementById('form-' + t).classList.toggle('hidden', t !== tab);
