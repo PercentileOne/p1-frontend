@@ -304,133 +304,138 @@
       <h1 class="headline">Hire people you've <em>actually seen</em> perform.</h1>
       <p class="sub">InterviewMe gives every candidate a structured AI interview — scored, timestamped, and searchable. Employers watch, Like, and Invite. No guessing. No wasted hours.</p>
 
-      <!-- SEARCH PREVIEW (directly under headline) -->
-      <div class="search-section" style="border-top:none;padding-top:0;margin-bottom:44px">
-        <div class="section-label" style="margin-bottom:12px">Live candidate search preview</div>
+      <!-- SEARCH + STATS side by side -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start">
 
-        <div class="mock-search">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span class="mock-search-text">Senior Software Engineer · London</span>
-          <span class="stag">247 results</span>
-        </div>
-
-        <div class="cards">
-          <div class="ccard">
-            <div class="cavatar c1">JA</div>
-            <div class="cinfo">
-              <div class="cname">Jordan Ashford</div>
-              <div class="crole">Senior Software Engineer · 6 yrs exp</div>
-            </div>
-            <div class="cright">
-              <span class="cscore score-hi">94%</span>
-              <span class="cmeta">Interviewed today</span>
-            </div>
-            <span class="clike">♥ Like</span>
+        <!-- LEFT: search cards -->
+        <div class="search-section" style="border-top:none;padding-top:0">
+          <div class="section-label" style="margin-bottom:12px">Live candidate search</div>
+          <div class="mock-search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span class="mock-search-text">Senior Engineer · London</span>
+            <span class="stag">247</span>
           </div>
-          <div class="ccard">
-            <div class="cavatar c2">SK</div>
-            <div class="cinfo">
-              <div class="cname">Sophia Kamara</div>
-              <div class="crole">Full-Stack Developer · 4 yrs exp</div>
+          <div class="cards">
+            <div class="ccard">
+              <div class="cavatar c1">JA</div>
+              <div class="cinfo">
+                <div class="cname">Jordan Ashford</div>
+                <div class="crole">Senior Software Engineer · 6 yrs</div>
+              </div>
+              <div class="cright">
+                <span class="cscore score-hi">94%</span>
+                <span class="cmeta">Today</span>
+              </div>
+              <span class="clike">♥</span>
             </div>
-            <div class="cright">
-              <span class="cscore score-hi">91%</span>
-              <span class="cmeta">Yesterday</span>
+            <div class="ccard">
+              <div class="cavatar c2">SK</div>
+              <div class="cinfo">
+                <div class="cname">Sophia Kamara</div>
+                <div class="crole">Full-Stack Developer · 4 yrs</div>
+              </div>
+              <div class="cright">
+                <span class="cscore score-hi">91%</span>
+                <span class="cmeta">Yesterday</span>
+              </div>
+              <span class="clike">♥</span>
             </div>
-            <span class="clike">♥ Like</span>
-          </div>
-          <div class="ccard">
-            <div class="cavatar c3">MP</div>
-            <div class="cinfo">
-              <div class="cname">Marcus Patel</div>
-              <div class="crole">Backend Engineer · 8 yrs exp</div>
+            <div class="ccard">
+              <div class="cavatar c3">MP</div>
+              <div class="cinfo">
+                <div class="cname">Marcus Patel</div>
+                <div class="crole">Backend Engineer · 8 yrs</div>
+              </div>
+              <div class="cright">
+                <span class="cscore score-md">87%</span>
+                <span class="cmeta">2 days ago</span>
+              </div>
+              <span class="clike">♥</span>
             </div>
-            <div class="cright">
-              <span class="cscore score-md">87%</span>
-              <span class="cmeta">2 days ago</span>
+            <div class="ccard blurred">
+              <div class="cavatar c4">RC</div>
+              <div class="cinfo">
+                <div class="cname">Rachel Chen</div>
+                <div class="crole">DevOps Engineer · 5 yrs</div>
+              </div>
+              <div class="cright">
+                <span class="cscore score-hi">96%</span>
+                <span class="cmeta">3 days ago</span>
+              </div>
+              <span class="clike">♥</span>
             </div>
-            <span class="clike">♥ Like</span>
           </div>
-          <div class="ccard blurred">
-            <div class="cavatar c4">RC</div>
-            <div class="cinfo">
-              <div class="cname">Rachel Chen</div>
-              <div class="crole">DevOps Engineer · 5 yrs exp</div>
-            </div>
-            <div class="cright">
-              <span class="cscore score-hi">96%</span>
-              <span class="cmeta">3 days ago</span>
-            </div>
-            <span class="clike">♥ Like</span>
-          </div>
-        </div>
-
-        <div class="gate-lock">
-          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Sign in to see all 247 candidates
-        </div>
-      </div>
-
-      <div class="proof-grid">
-        <div class="proof-card">
-          <div class="proof-val">4<span>min</span></div>
-          <div class="proof-label">Avg. time to shortlist</div>
-        </div>
-        <div class="proof-card">
-          <div class="proof-val">3<span>×</span></div>
-          <div class="proof-label">More accurate than CVs</div>
-        </div>
-        <div class="proof-card">
-          <div class="proof-val">100<span>%</span></div>
-          <div class="proof-label">Fairly interviewed</div>
-        </div>
-        <div class="proof-card">
-          <div class="proof-val">0</div>
-          <div class="proof-label">Phone screens wasted</div>
-        </div>
-      </div>
-
-      <div class="features">
-        <div class="feature">
-          <div class="feature-icon">
-            <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-          </div>
-          <div class="feature-text">
-            <strong>Watch real interviews, not polished CVs</strong>
-            <span>Every candidate completes the same structured AI interview — scored by question, searchable by skill.</span>
-          </div>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">
-            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </div>
-          <div class="feature-text">
-            <strong>Like, Follow, Connect, Invite</strong>
-            <span>A social layer built for hiring. Save talent, build a pipeline, and reach out — all inside the platform.</span>
-          </div>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">
+          <div class="gate-lock">
             <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          </div>
-          <div class="feature-text">
-            <strong>Privacy-first, inbox-only contact</strong>
-            <span>Candidates control visibility. Phone numbers and emails are never exposed — all contact via platform inbox.</span>
+            Sign in to see all 247
           </div>
         </div>
-      </div>
 
-      <div class="preview-strip">
-        <span class="preview-label">Recently active</span>
-        <div class="preview-avatars">
-          <div class="avatar-ring a1">JA</div>
-          <div class="avatar-ring a2">SK</div>
-          <div class="avatar-ring a3">MP</div>
-          <div class="avatar-ring a4">RC</div>
-          <div class="avatar-ring a5">LT</div>
+        <!-- RIGHT: stats + features + avatars -->
+        <div>
+          <div class="proof-grid" style="grid-template-columns:1fr 1fr;margin-bottom:28px">
+            <div class="proof-card">
+              <div class="proof-val">4<span>min</span></div>
+              <div class="proof-label">Avg. time to shortlist</div>
+            </div>
+            <div class="proof-card">
+              <div class="proof-val">3<span>×</span></div>
+              <div class="proof-label">More accurate than CVs</div>
+            </div>
+            <div class="proof-card">
+              <div class="proof-val">100<span>%</span></div>
+              <div class="proof-label">Fairly interviewed</div>
+            </div>
+            <div class="proof-card">
+              <div class="proof-val">0</div>
+              <div class="proof-label">Phone screens wasted</div>
+            </div>
+          </div>
+
+          <div class="features" style="margin-bottom:28px">
+            <div class="feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              </div>
+              <div class="feature-text">
+                <strong>Watch real interviews, not CVs</strong>
+                <span>Same structured AI interview for every candidate — scored by question, searchable by skill.</span>
+              </div>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </div>
+              <div class="feature-text">
+                <strong>Like, Follow, Connect, Invite</strong>
+                <span>Build your talent pipeline and reach candidates — all inside the platform.</span>
+              </div>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <div class="feature-text">
+                <strong>Privacy-first, inbox-only contact</strong>
+                <span>No emails or phone numbers ever exposed. All contact via platform inbox.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-strip">
+            <span class="preview-label">Recently active</span>
+            <div class="preview-avatars">
+              <div class="avatar-ring a1">JA</div>
+              <div class="avatar-ring a2">SK</div>
+              <div class="avatar-ring a3">MP</div>
+              <div class="avatar-ring a4">RC</div>
+              <div class="avatar-ring a5">LT</div>
+            </div>
+            <span class="preview-more">+2,400</span>
+            <a href="https://product.interviewme.global" class="preview-link">How it works →</a>
+          </div>
         </div>
-        <span class="preview-more">+2,400 candidates</span>
-        <a href="https://product.interviewme.global" class="preview-link">See how it works →</a>
+
       </div>
 
     </div>
