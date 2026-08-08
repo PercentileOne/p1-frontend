@@ -3011,7 +3011,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       sub="The Percentile.One ecosystem holds provisional patent applications covering two distinct and independently patentable inventions: the Explain.Global interview readiness pipeline (16 claims, 3 families) and the InterviewMe discovery platform (6 claims, 6 families). Together they represent a defensible technology moat at the infrastructure layer of the global hiring market."
     />
 
-    <Callout icon="🔒" title="Status: Patent Pending — UK & US Provisional Applications · 22 Claims · 9 Families · 2 Products" color={A}
+    <Callout icon="🔒" title="Status: Patent Pending — UK & US Provisional Applications · 23 Claims · 10 Families · 2 Products" color={A}
       body="Explain.Global: 16 claims across 3 families — Core AI pipeline, Recording & overlay engine, Interview credential & portfolio. InterviewMe: 6 claims across 6 families — AI-Generated Talent Identity Object, Universal Distribution, Search & Matching Engine, Direct Hiring Pipeline (ATS bypass), Cinematic Interview Chair, Cross-Platform Identity Graph. Full PCT international application in preparation. The provisional status allows both products to operate under 'Patent Pending' designation immediately." />
 
     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Patent Portfolio Overview</div>
@@ -3033,7 +3033,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     </div>
 
     {/* InterviewMe families */}
-    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9090b0', marginBottom: 10 }}>InterviewMe.Global — AI-Verified Candidate Discovery · 6 Claims · 6 Families</div>
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9090b0', marginBottom: 10 }}>InterviewMe.Global — AI-Verified Candidate Discovery · 7 Claims · 7 Families</div>
     <div style={{ background: 'rgba(37,99,235,0.04)', border: '1px solid rgba(37,99,235,0.15)', borderRadius: 12, padding: '16px 20px', marginBottom: 12 }}>
       <div style={{ fontSize: 12, fontWeight: 800, color: '#2563EB', marginBottom: 6, letterSpacing: '0.04em' }}>The Core Innovation: A Two-Phase Talent Discovery System</div>
       <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, marginBottom: 12 }}>A seven-step, two-phase sequence that inverts the traditional hiring model. Phase 1: the candidate records, saves and publishes a verified AI interview object. Phase 2: the employer searches, scores, watches and invites — without scheduling, without a CV, without an ATS.</div>
@@ -3054,6 +3054,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         { family: 'Family 7', claims: 'Claim 20', title: 'Direct Hiring Pipeline', body: 'Watch → evaluate → message → hire, without a CV, without an ATS, without scheduling. A complete end-to-end hiring flow that bypasses every traditional gating mechanism.', color: '#22c55e' },
         { family: 'Family 8', claims: 'Claim 21', title: 'Cinematic Interview Chair', body: 'AI-led structured interview generation — intake, dynamic question generation, named AI personas, video capture, multi-dimensional scoring, coaching feedback — producing a Talent Identity Object published to the discovery index.', color: A },
         { family: 'Family 9', claims: 'Claim 22', title: 'Cross-Platform Identity Graph', body: 'A unified talent graph linking InterviewMe, Explain.Global, and Percentile.One under a single candidate identity — enabling cross-platform discovery, improvement trajectory tracking, and personalised coaching at scale.', color: '#2563EB' },
+        { family: 'Family 10', claims: 'Claim 23', title: 'Interview-to-Learn Feedback Loop', body: 'AI gap analysis from a scored interview generates a bespoke subject course on any topic — covering core concepts, Go Deeper sections, and a Bookcase of curated material — delivered via the Learn engine (Explain.Global). Candidate retakes the interview; score delta is recorded to the Talent Identity Graph. Closes the loop between evaluation and adaptive learning.', color: '#22c55e' },
       ].map(f => (
         <Card key={f.family} accent={f.color}>
           <div style={{ fontSize: 10, fontWeight: 800, color: f.color, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{f.family} · {f.claims}</div>
