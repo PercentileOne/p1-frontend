@@ -57,7 +57,11 @@ const ALL_ITEMS = NAV_GROUPS.flatMap(g => g.items);
 const A = '#4F8EF7';
 const A2 = '#7b5cf5';
 
-function SectionHead({ label, h1, h2, sub }: { label:string; h1:string; h2?:string; sub?:string }) {
+function IM() {
+  return <><strong style={{ fontWeight: 900, color: '#fff' }}>Interview</strong><strong style={{ fontWeight: 900, color: '#22c55e' }}>Me</strong></>;
+}
+
+function SectionHead({ label, h1, h2, sub }: { label:string; h1:React.ReactNode; h2?:React.ReactNode; sub?:React.ReactNode }) {
   return (
     <div style={{ marginBottom: 40 }}>
       <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: A, marginBottom: 14 }}>{label}</div>
@@ -96,7 +100,7 @@ function Stat({ value, label, sub, color = A }: { value:string; label:string; su
   );
 }
 
-function Callout({ icon, title, body, color = A }: { icon:string; title:string; body:string; color?:string }) {
+function Callout({ icon, title, body, color = A }: { icon:string; title:string; body:React.ReactNode; color?:string }) {
   return (
     <div style={{
       background: `${color}0a`, border: `1px solid ${color}30`,
@@ -112,7 +116,7 @@ function Callout({ icon, title, body, color = A }: { icon:string; title:string; 
   );
 }
 
-function Feature({ icon, title, body }: { icon:string; title:string; body:string }) {
+function Feature({ icon, title, body }: { icon:string; title:string; body:React.ReactNode }) {
   return (
     <div style={{ display: 'flex', gap: 14, marginBottom: 20 }}>
       <div style={{ width: 38, height: 38, borderRadius: 10, background: `${A}18`, border: `1px solid ${A}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{icon}</div>
@@ -828,13 +832,13 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     />
 
     <Callout icon="🚀" title="The Core Insight" color={A}
-      body="Every candidate today applies to employers one at a time — writing CVs, completing applications, hoping to be called. InterviewMe flips this. One recorded interview. Broadcast to every recruiter searching for that profile. The candidate records once and is in front of 100 employers simultaneously. This is the new hiring medium." />
+      body={<><IM /> flips this. Every candidate today applies to employers one at a time — writing CVs, completing applications, hoping to be called. One recorded interview. Broadcast to every recruiter searching for that profile. The candidate records once and is in front of 100 employers simultaneously. This is the new hiring medium.</>} />
 
     {/* Three ecosystem components */}
     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>The Ecosystem — Three Products, One Platform</div>
     <Grid cols={3}>
       <Card accent="#22c55e" style={{ borderWidth: 2 }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 10 }}>① InterviewMe.Global</div>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 10 }}>① <IM />.Global</div>
         <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 8, letterSpacing: '-0.02em' }}>The Discovery Platform</div>
         <p style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, margin: '0 0 16px' }}>Candidates record a single AI-led interview — free, forever. Recruiters search, watch, and hire directly. No CV. No application. No agency fee.</p>
         <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 700 }}>Live at www.interviewme.global</div>
@@ -886,7 +890,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24 }}>
           {[
             { label: 'Mission', text: 'Make CVs redundant. Replace gatekeeping with proof. Give every candidate — regardless of background, country, or income — a fair shot at being seen.' },
-            { label: 'Category', text: 'No incumbent. LinkedIn shows CVs. Interviewing.io is coding only. InterviewMe is the first broadcast interview platform — a category we are creating and naming.' },
+            { label: 'Category', text: <><IM /> is the first broadcast interview platform — no incumbent. LinkedIn shows CVs. Interviewing.io is coding only. A category we are creating and naming.</> },
             { label: 'IP', text: 'Patent-pending across 22 claims and 12 families covering both products. Full details in the Patent & IP section of this portal.' },
           ].map(({ label, text }) => (
             <div key={label}>
@@ -2780,7 +2784,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
   'alert-engine': () => <>
     <SectionHead
       label="Product · Alert Engine"
-      h1="The InterviewMe"
+      h1={<>The <IM /></>}
       h2="Alert System."
       sub="A two-sided notification engine that connects the moment a candidate records to the recruiters already watching for them — creating a real-time talent marketplace that runs itself."
     />
@@ -2856,7 +2860,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
           {[
             { label: 'Status', text: 'Specced and ready to build. Candidate portal and recruiter portal foundations are in place. Alert engine is the next major feature post-launch.' },
             { label: 'Data Storage', text: 'Alert definitions in Azure Cosmos DB. Match events trigger Azure Functions. Toast notifications via SignalR. Email via Azure Communication Services.' },
-            { label: 'IP', text: 'The two-sided alert mechanic — recruiter criteria matching against a live candidate interview stream — is covered under the InterviewMe patent families (Universal Distribution, Search & Matching Engine).' },
+            { label: 'IP', text: <>The two-sided alert mechanic — recruiter criteria matching against a live candidate interview stream — is covered under the <IM /> patent families (Universal Distribution, Search & Matching Engine).</> },
           ].map(({ label, text }) => (
             <div key={label}>
               <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: A, marginBottom: 8 }}>{label}</div>
@@ -3150,11 +3154,11 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       label="Financials · Intellectual Property"
       h1="Patent-pending."
       h2="Infrastructure-level innovation across two platforms."
-      sub="The Percentile.One ecosystem holds provisional patent applications covering two distinct and independently patentable inventions: the Explain.Global interview readiness pipeline (16 claims, 3 families) and the InterviewMe discovery platform (6 claims, 6 families). Together they represent a defensible technology moat at the infrastructure layer of the global hiring market."
+      sub={<>The Percentile.One ecosystem holds provisional patent applications covering two distinct and independently patentable inventions: the Explain.Global interview readiness pipeline (16 claims, 3 families) and the <IM /> discovery platform (6 claims, 6 families). Together they represent a defensible technology moat at the infrastructure layer of the global hiring market.</>}
     />
 
     <Callout icon="🔒" title="Status: Patent Pending — UK & US Provisional Applications · 25 Claims · 12 Families · 2 Products" color={A}
-      body="Explain.Global: 16 claims across 3 families — Core AI pipeline, Recording & overlay engine, Interview credential & portfolio. InterviewMe: 6 claims across 6 families — AI-Generated Talent Identity Object, Universal Distribution, Search & Matching Engine, Direct Hiring Pipeline (ATS bypass), Cinematic Interview Chair, Cross-Platform Identity Graph. Full PCT international application in preparation. The provisional status allows both products to operate under 'Patent Pending' designation immediately." />
+      body={<>Explain.Global: 16 claims across 3 families — Core AI pipeline, Recording & overlay engine, Interview credential & portfolio. <IM />: 6 claims across 6 families — AI-Generated Talent Identity Object, Universal Distribution, Search & Matching Engine, Direct Hiring Pipeline (ATS bypass), Cinematic Interview Chair, Cross-Platform Identity Graph. Full PCT international application in preparation. The provisional status allows both products to operate under 'Patent Pending' designation immediately.</>} />
 
     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Patent Portfolio Overview</div>
 
@@ -3175,7 +3179,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     </div>
 
     {/* InterviewMe families */}
-    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9090b0', marginBottom: 10 }}>InterviewMe.Global — AI-Verified Candidate Discovery · 9 Claims · 9 Families</div>
+    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9090b0', marginBottom: 10 }}><IM />.Global — AI-Verified Candidate Discovery · 9 Claims · 9 Families</div>
     <div style={{ background: 'rgba(37,99,235,0.04)', border: '1px solid rgba(37,99,235,0.15)', borderRadius: 12, padding: '16px 20px', marginBottom: 12 }}>
       <div style={{ fontSize: 12, fontWeight: 800, color: '#2563EB', marginBottom: 6, letterSpacing: '0.04em' }}>The Core Innovation: Record Interview · Score · Save · Share → Search · Watch · Like · Invite</div>
       <div style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, marginBottom: 12 }}>An eight-step, two-phase sequence. Phase 1: the candidate records a structured AI-conducted interview, it is scored instantly, saved as a verified Talent Identity Object, and shared to the discovery index. Phase 2: the employer searches, watches the interview, likes it (notifying the candidate and driving viral sharing), and invites — no scheduling, no CV, no ATS.</div>
@@ -3195,7 +3199,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         { family: 'Family 6', claims: 'Claim 19', title: 'Search & Matching Engine', body: 'Multi-dimensional search by role, location, communication style, personality traits, confidence metrics, presence, and AI-derived behavioural signals — returning ranked watchable profiles, not CVs.', color: A },
         { family: 'Family 7', claims: 'Claim 20', title: 'Direct Hiring Pipeline', body: 'Watch → evaluate → message → hire, without a CV, without an ATS, without scheduling. A complete end-to-end hiring flow that bypasses every traditional gating mechanism.', color: '#22c55e' },
         { family: 'Family 8', claims: 'Claim 21', title: 'Cinematic Interview Chair', body: 'AI-led structured interview generation — intake, dynamic question generation, named AI personas, video capture, multi-dimensional scoring, coaching feedback — producing a Talent Identity Object published to the discovery index.', color: A },
-        { family: 'Family 9', claims: 'Claim 22', title: 'Cross-Platform Identity Graph', body: 'A unified talent graph linking InterviewMe, Explain.Global, and Percentile.One under a single candidate identity — enabling cross-platform discovery, improvement trajectory tracking, and personalised coaching at scale.', color: '#2563EB' },
+        { family: 'Family 9', claims: 'Claim 22', title: 'Cross-Platform Identity Graph', body: <>A unified talent graph linking <IM />, Explain.Global, and Percentile.One under a single candidate identity — enabling cross-platform discovery, improvement trajectory tracking, and personalised coaching at scale.</>, color: '#2563EB' },
         { family: 'Family 10', claims: 'Claim 23', title: 'Interview-to-Learn Feedback Loop', body: 'AI gap analysis from a scored interview generates a bespoke subject course on any topic — covering core concepts, Go Deeper sections, and a Bookcase of curated material — delivered via the Learn engine (Explain.Global). Candidate retakes the interview; score delta is recorded to the Talent Identity Graph. Closes the loop between evaluation and adaptive learning.', color: '#22c55e' },
         { family: 'Family 11', claims: 'Claim 24', title: 'Verified Video Trust Profile — Local & Trade Services', body: 'AI-verified pre-booking video trust profile for tradespeople and home service providers (plumbers, electricians, babysitters, cleaners). Captures warmth, personality, safety signals, and professional conduct via AI interview — entirely absent from Checkatrade, Bark.com, and TaskRabbit. Householders see and hear the person before granting home access.', color: '#f59e0b' },
         { family: 'Family 12', claims: 'Claim 25', title: 'Verified Interview Like', body: 'A Like applied directly to a verified AI interview profile as the primary content unit — not a post or link about it. Notifies the candidate instantly, builds an employer shortlist passively, aggregates social proof alongside the AI score, and drives viral sharing. LinkedIn has existed 20+ years and still cannot Like a profile. This is the first platform where the interview itself is the content.', color: '#ec4899' },
