@@ -23,6 +23,7 @@ jobs:
           cp src/viewme/public/the-interview-chair.png deploy/the-interview-chair.png
           cp src/viewme/public/recruiter-phone.jpg deploy/recruiter-phone.jpg
           cp src/viewme/public/recruiter-phone-2.jpg deploy/recruiter-phone-2.jpg
+          cp src/viewme/public/coffee-hero.jpg deploy/coffee-hero.jpg
           cp src/viewme/public/interview-room-latest.png deploy/interview-room-latest.png
           cp src/viewme/public/viewme-trade-1.png deploy/viewme-trade-1.png
           cp src/viewme/public/viewme-trade-2.png deploy/viewme-trade-2.png
