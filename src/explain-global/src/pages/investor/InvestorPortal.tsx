@@ -832,7 +832,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     />
 
     <Callout icon="🚀" title="The Core Insight" color={A}
-      body={<><IM /> flips this. Every candidate today applies to employers one at a time — writing CVs, completing applications, hoping to be called. One recorded interview. Broadcast to every recruiter searching for that profile. The candidate records once and is in front of 100 employers simultaneously. This is the new hiring medium.</>} />
+      body={<>Before <IM />, every candidate did the same thing: write a CV, submit an application, wait, hope, repeat — one employer at a time. If the bot didn't reject them first, they might get a call. Most never did. Now, for the very first time in the history of hiring, a candidate can record a single interview and have that interview seen by potentially thousands of recruiters and employers simultaneously — without applying to a single one of them. <IM />.global is the world's first broadcast interview platform. This is the new hiring medium.</>} />
 
     {/* Three ecosystem components */}
     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>The Ecosystem — Three Products, One Platform</div>
