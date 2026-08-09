@@ -865,7 +865,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
           {[
             { label: 'Hub', url: 'explain.global', desc: 'Central platform — candidate portal, interview room, learn engine, profile publishing.' },
             { label: 'Gate Page', url: 'interviewme.global', desc: 'Public-facing discovery portal. Candidates record. Recruiters search and hire.' },
-            { label: 'Recruiter Portal', url: 'recruiter.interviewme.global', desc: 'Dedicated recruiter dashboard — search candidates, watch interviews, send invitations.' },
+            { label: 'Recruiter Portal', url: 'recruiter.explain.global', desc: 'Dedicated recruiter dashboard — search candidates, watch interviews, send invitations.' },
             { label: 'Investor Portal', url: 'explain.global/investor', desc: 'Business plan, patent brief, financials, and ecosystem overview. Password protected.' },
           ].map(({ label, url, desc }) => (
             <div key={label}>
