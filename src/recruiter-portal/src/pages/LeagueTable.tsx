@@ -6,7 +6,7 @@ import { getLeague, addLeagueEntry, type LeagueEntry } from '../utils/leagueStor
 
 type Phase = 'table' | 'setup' | 'subject' | 'cinematic' | 'quickfire' | 'scoring' | 'results';
 
-const OPENAI_KEY = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
+const AI_CHAT_URL = `${import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net'}/api/ai/chat`;
 const EL_KEY    = import.meta.env.VITE_ELEVENLABS_API_KEY as string | undefined;
 const EL_VOICE  = import.meta.env.VITE_ELEVENLABS_VOICE_TECH as string | undefined;
 
@@ -32,11 +32,10 @@ const CHALLENGE_SUBJECTS = [
 ];
 
 async function generateQuestions(subject: string): Promise<string[]> {
-  if (!OPENAI_KEY) return FALLBACK_QUESTIONS;
   try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const res = await fetch(AI_CHAT_URL, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'gpt-4o', temperature: 0.8,
         response_format: { type: 'json_object' },
@@ -58,16 +57,11 @@ async function scoreSession(qas: { q: string; a: string }[], subject: string): P
   const answered = qas.filter(qa => qa.a.trim().length > 10);
   if (!answered.length) return { rel: 0, cla: 0, dep: 0, con: 0, overall: 0 };
 
-  if (!OPENAI_KEY) {
-    const avg = Math.min(85, Math.round(answered.reduce((s, qa) => s + Math.min(100, qa.a.split(' ').length * 2.5), 0) / answered.length));
-    return { rel: avg, cla: avg + 2, dep: avg - 8, con: avg - 4, overall: avg - 2 };
-  }
-
   try {
     const formatted = answered.map((qa, i) => `Q${i + 1}: ${qa.q}\nA: ${qa.a}`).join('\n\n');
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const res = await fetch(AI_CHAT_URL, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'gpt-4o', temperature: 0.3,
         response_format: { type: 'json_object' },

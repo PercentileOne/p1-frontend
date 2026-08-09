@@ -329,15 +329,15 @@ export default function InterviewIntake() {
   }>(null);
   const [learnError, setLearnError] = useState('');
 
-  const openAiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
+  const AI_CHAT_URL = `${import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net'}/api/ai/chat`;
 
   const runLearn = async () => {
-    if (!learnSubject.trim() || !openAiKey) return;
+    if (!learnSubject.trim()) return;
     setLearnLoading(true); setLearnError(''); setLearnLesson(null);
     try {
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      const res = await fetch(AI_CHAT_URL, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${openAiKey}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'gpt-4o', temperature: 0.7,
           response_format: { type: 'json_object' },
@@ -613,8 +613,8 @@ export default function InterviewIntake() {
                   placeholder="e.g. C# async/await, STAR method, System Design…"
                   style={{ flex: 1, background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 16px', color: 'var(--text)', fontSize: '14px', outline: 'none', fontFamily: 'inherit' }}
                 />
-                <button onClick={runLearn} disabled={!learnSubject.trim() || learnLoading || !openAiKey}
-                  style={{ background: learnSubject.trim() && !learnLoading && openAiKey ? 'var(--blue)' : 'rgba(79,142,247,0.3)', color: '#fff', border: 'none', borderRadius: '10px', padding: '12px 20px', fontSize: '13px', fontWeight: 700, cursor: learnSubject.trim() && openAiKey ? 'pointer' : 'default', whiteSpace: 'nowrap', fontFamily: 'inherit' }}>
+                <button onClick={runLearn} disabled={!learnSubject.trim() || learnLoading}
+                  style={{ background: learnSubject.trim() && !learnLoading ? 'var(--blue)' : 'rgba(79,142,247,0.3)', color: '#fff', border: 'none', borderRadius: '10px', padding: '12px 20px', fontSize: '13px', fontWeight: 700, cursor: learnSubject.trim() ? 'pointer' : 'default', whiteSpace: 'nowrap', fontFamily: 'inherit' }}>
                   {learnLoading ? 'Building…' : 'Learn →'}
                 </button>
               </div>

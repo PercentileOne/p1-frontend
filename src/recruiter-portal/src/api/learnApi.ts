@@ -1,7 +1,7 @@
 import type { LessonData, LessonProgress, SavedLesson } from '../types/learn';
 
-const OPENAI_KEY = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
+const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net';
+const AI_CHAT_URL = `${API_BASE}/api/ai/chat`;
 const MODEL = 'gpt-4o-mini';
 
 const USER_ID_KEY = 'explain_learn_user_id';
@@ -13,11 +13,10 @@ export function getLearnUserId(): string {
 }
 
 async function chatJSON<T>(system: string, user: string): Promise<T> {
-  if (!OPENAI_KEY) throw new Error('OpenAI key not configured — set VITE_OPENAI_API_KEY');
   for (let attempt = 0; attempt <= 3; attempt++) {
-    const res = await fetch(OPENAI_URL, {
+    const res = await fetch(AI_CHAT_URL, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: MODEL, temperature: 0.7, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] }),
     });
     if (res.status === 429 && attempt < 3) {
@@ -25,11 +24,11 @@ async function chatJSON<T>(system: string, user: string): Promise<T> {
       await new Promise(r => setTimeout(r, Math.min(wait, 30000)));
       continue;
     }
-    if (!res.ok) throw new Error(`OpenAI error ${res.status}`);
+    if (!res.ok) throw new Error(`AI proxy error ${res.status}`);
     const data = await res.json() as { choices: { message: { content: string } }[] };
     return JSON.parse(data.choices[0].message.content) as T;
   }
-  throw new Error('OpenAI rate limited after retries');
+  throw new Error('AI proxy rate limited after retries');
 }
 
 export async function generateLesson(subject: string, language = 'English'): Promise<LessonData> {

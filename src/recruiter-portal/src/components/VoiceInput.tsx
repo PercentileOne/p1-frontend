@@ -18,8 +18,8 @@ export interface TranscriptMeta {
 type MicState = 'idle' | 'listening' | 'processing';
 
 const FILLER_WORDS = ['um', 'uh', 'like', 'basically', 'literally', 'you know', 'i mean', 'sort of', 'kind of', 'right so'];
-const WHISPER_KEY = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
-export const whisperConfigured = !!WHISPER_KEY;
+const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net';
+export const whisperConfigured = true;
 
 function detectFillers(text: string): string[] {
   const lower = text.toLowerCase();
@@ -42,10 +42,10 @@ async function transcribeWithWhisper(blob: Blob, _durationSeconds: number): Prom
   const timeout = setTimeout(() => controller.abort(), 20_000);
 
   try {
-    const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    const res = await fetch(`${API_BASE}/api/ai/transcribe?language=en`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${WHISPER_KEY}` },
-      body: form,
+      headers: { 'Content-Type': blob.type || 'audio/webm' },
+      body: blob,
       signal: controller.signal,
     });
     if (!res.ok) throw new Error(`Whisper error ${res.status}`);

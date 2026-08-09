@@ -47,10 +47,12 @@ function scoreColor(v: number) {
 
 // ── Mini TalkToLearn engine ────────────────────────────────────────────────────
 
-async function generateLesson(subject: string, openAiKey: string): Promise<LearnLesson> {
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+const AI_CHAT_URL = `${import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net'}/api/ai/chat`;
+
+async function generateLesson(subject: string): Promise<LearnLesson> {
+  const res = await fetch(AI_CHAT_URL, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${openAiKey}`, 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'gpt-4o',
       temperature: 0.7,
@@ -95,10 +97,8 @@ const SUGGESTED_TOPICS = [
 
 function LearnTab({
   recommendedTopic,
-  openAiKey,
 }: {
   recommendedTopic: string | null;
-  openAiKey: string | undefined;
 }) {
   const [subject, setSubject] = useState(recommendedTopic ?? '');
   const [lesson, setLesson] = useState<LearnLesson | null>(null);
@@ -107,7 +107,7 @@ function LearnTab({
   const [learnEmail, setLearnEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
 
-  const canUseAI = !!openAiKey;
+  const canUseAI = true;
 
   const learn = async () => {
     if (!subject.trim() || !canUseAI) return;
@@ -115,7 +115,7 @@ function LearnTab({
     setError('');
     setLesson(null);
     try {
-      const l = await generateLesson(subject.trim(), openAiKey!);
+      const l = await generateLesson(subject.trim());
       setLesson(l);
     } catch {
       setError('Could not generate lesson. Please try again.');
@@ -487,7 +487,6 @@ export default function InterviewSummary() {
     return { tag, pct };
   });
 
-  const openAiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
 
   const downloadPdf = () => {
     const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -719,7 +718,6 @@ ${questionsHtml}
         {activeTab === 'learn' && (
           <LearnTab
             recommendedTopic={weakestTag}
-            openAiKey={openAiKey}
           />
         )}
 
