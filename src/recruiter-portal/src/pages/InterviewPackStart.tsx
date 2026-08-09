@@ -65,6 +65,7 @@ export default function InterviewPackStart() {
   const [activeTab, setActiveTab] = useState<'jobspec' | 'cv'>('cv');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Standard');
+  const [consentToRecord, setConsentToRecord] = useState(true);
 
   useEffect(() => {
     logFlowEvent('UPLOAD_SCREEN_VIEW', { hasIncomingJobSpec: Boolean(incoming.jobSpec) });
@@ -89,6 +90,7 @@ export default function InterviewPackStart() {
         selectedLanguage,
         selectedDifficulty,
         autoStart: true,
+        consentToRecord,
       },
     });
   };
@@ -349,6 +351,19 @@ export default function InterviewPackStart() {
           </div>
 
         </div>
+
+        {/* Recording consent */}
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', marginTop: '4px' }}>
+          <input
+            type="checkbox"
+            checked={consentToRecord}
+            onChange={e => setConsentToRecord(e.target.checked)}
+            style={{ marginTop: '2px', accentColor: 'var(--blue)', width: '14px', height: '14px', flexShrink: 0, cursor: 'pointer' }}
+          />
+          <span style={{ fontSize: '12px', color: 'var(--text-2)', lineHeight: 1.5 }}>
+            I consent to this interview being recorded so recruiters and employers can watch it back. Uncheck to complete the interview without recording.
+          </span>
+        </label>
 
         {/* CTA */}
         <button

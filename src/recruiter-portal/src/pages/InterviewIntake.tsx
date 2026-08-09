@@ -320,7 +320,7 @@ export default function InterviewIntake() {
   // Pre-parsed CV context — populated as soon as the user provides CV text
   const [cvCtxParsed, setCvCtxParsed] = useState<CVContext | null>(null);
   const [parsingCv, setParsingCv] = useState(false);
-  const [consentToRecord, setConsentToRecord] = useState(true);
+  const [consentToRecord] = useState(true);
 
   // Learn tab state
   const [learnSubject, setLearnSubject] = useState('');
@@ -829,20 +829,6 @@ export default function InterviewIntake() {
                 )}
               </AnimatePresence>
 
-              {/* Recording consent */}
-              <div style={{ border: '2px solid red', padding: '12px', marginTop: '20px', borderRadius: '8px' }}>
-                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={consentToRecord}
-                    onChange={e => setConsentToRecord(e.target.checked)}
-                    style={{ marginTop: '2px', accentColor: 'var(--blue)', width: '14px', height: '14px', flexShrink: 0, cursor: 'pointer' }}
-                  />
-                  <span style={{ fontSize: '13px', color: '#ffffff', lineHeight: 1.5 }}>
-                    I consent to this interview being recorded so recruiters and employers can watch it back.
-                  </span>
-                </label>
-              </div>
 
               {/* Start button */}
               {(() => {
