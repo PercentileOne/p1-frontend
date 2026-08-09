@@ -246,10 +246,16 @@
   .flow-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
   .flow-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
 
-  /* pause pill */
+  /* Tap-to-pause indicator */
+  .tap-indicator { position: absolute; top: 50%; left: 35%; transform: translate(-50%,-50%) scale(0.8); background: rgba(0,0,0,0.65); border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 20; }
+  .tap-indicator.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  .tap-indicator svg { width: 22px; height: 22px; fill: #fff; }
+
+  /* pause pill — hidden, replaced by tap-to-pause */
   .pause-pill {
+    display: none !important;
     position: absolute; top: 28px; left: 64px;
-    display: flex; align-items: center; gap: 6px;
+    align-items: center; gap: 6px;
     background: rgba(255,255,255,0.06); border: 1px solid var(--border);
     border-radius: 20px; padding: 4px 12px 4px 8px;
     font-size: 11px; font-weight: 700; color: var(--muted);
@@ -1009,11 +1015,8 @@
       </div>
     </div>
 
-    <!-- PAUSE PILL -->
-    <button class="pause-pill" id="pauseBtn" onclick="togglePause()">
-      <svg id="pauseIcon" viewBox="0 0 10 10"><rect x="1" y="1" width="3" height="8" rx="1"/><rect x="6" y="1" width="3" height="8" rx="1"/></svg>
-      <span id="pauseLabel">Pause</span>
-    </button>
+    <!-- tap-to-pause indicator (shown briefly on toggle) -->
+    <div class="tap-indicator" id="tapIndicator"></div>
 
     <!-- DOTS -->
     <div class="carousel-dots" id="dots">
@@ -1185,20 +1188,29 @@
     clearInterval(progTimer);
   }
 
+  const tapIndicator = document.getElementById('tapIndicator');
+  const PAUSE_SVG = `<svg viewBox="0 0 10 10"><rect x="1" y="1" width="3" height="8" rx="1"/><rect x="6" y="1" width="3" height="8" rx="1"/></svg>`;
+  const PLAY_SVG  = `<svg viewBox="0 0 12 12"><polygon points="2,1 11,6 2,11"/></svg>`;
+  let tapTimer;
+
+  function showTapIndicator() {
+    tapIndicator.innerHTML = paused ? PAUSE_SVG : PLAY_SVG;
+    tapIndicator.classList.add('show');
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(() => tapIndicator.classList.remove('show'), 900);
+  }
+
   function togglePause() {
     paused = !paused;
-    if (paused) {
-      stopTimer();
-      pauseIcon.innerHTML = PAUSE_ICON;
-      pauseLabel.textContent = 'Resume';
-      pauseBtn.style.color = 'var(--pearl)';
-    } else {
-      pauseIcon.innerHTML = PLAY_ICON;
-      pauseLabel.textContent = 'Pause';
-      pauseBtn.style.color = '';
-      resetTimer();
-    }
+    if (paused) { stopTimer(); } else { resetTimer(); }
+    showTapIndicator();
   }
+
+  // Click anywhere on carousel (not arrows/dots) = toggle pause
+  carousel.addEventListener('click', e => {
+    if (e.target.closest('.carousel-arrows') || e.target.closest('.carousel-dots')) return;
+    togglePause();
+  });
 
   // keyboard nav
   document.addEventListener('keydown', e => {
