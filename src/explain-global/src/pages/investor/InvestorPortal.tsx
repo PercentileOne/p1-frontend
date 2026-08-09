@@ -6,6 +6,7 @@ const NAV_GROUPS = [
     { id: 'overview',   label: 'Overview' },
     { id: 'vision',     label: 'The Vision' },
     { id: 'why-now',    label: 'Why Now' },
+    { id: 'patent',     label: '🔒 Patent & IP' },
   ]},
   { title: 'Problem & Solution', items: [
     { id: 'why-fail',   label: 'Why Candidates Fail' },
@@ -43,7 +44,6 @@ const NAV_GROUPS = [
   { title: 'Financials', items: [
     { id: 'projections', label: 'Projections' },
     { id: 'ask',         label: 'The Ask' },
-    { id: 'patent',      label: '🔒 Patent & IP' },
   ]},
   { title: 'Founder', items: [
     { id: 'founder',    label: 'Francis Cobbinah' },
@@ -821,23 +821,72 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
   'overview': () => <>
     <SectionHead
       label="Executive · Overview"
-      h1="Personalised Interview"
-      h2="Readiness."
-      sub="Explain.Global is creating a new category — PIR — the layer between recruitment and placement where candidates become genuinely interview-ready for the first time in history."
+      h1="Record once."
+      h2="Interview for 100 employers at the same time."
+      sub="Percentile.One is building the world's hiring medium — a three-product ecosystem where candidates record a single AI-led interview and are discovered by recruiters globally, while simultaneously preparing with personalised coaching and learning tools."
     />
-    <Callout icon="🎯" title="The Category: Personalised Interview Readiness (PIR)" body="No platform today combines job-spec personalisation, AI simulation, real-time coaching, and recruiter integration in one cinematic experience. PIR systems also give employers structured clarity on candidate readiness, improving interview quality and hiring decisions. Explain.Global owns this space." />
+
+    <Callout icon="🚀" title="The Core Insight" color={A}
+      body="Every candidate today applies to employers one at a time — writing CVs, completing applications, hoping to be called. InterviewMe flips this. One recorded interview. Broadcast to every recruiter searching for that profile. The candidate records once and is in front of 100 employers simultaneously. This is the new hiring medium." />
+
+    {/* Three ecosystem components */}
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>The Ecosystem — Three Products, One Platform</div>
     <Grid cols={3}>
-      <Stat value="£1" label="Entry price per Interview Pack" sub="Lowest friction in the market" />
-      <Stat value="50+" label="Languages supported" sub="Global by design from day one" />
-      <Stat value="7" label="Products in the ecosystem" sub="Candidate · Recruiter · Company · Learn · Chair · Packs · Flow" />
+      <Card accent="#22c55e" style={{ borderWidth: 2 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 10 }}>① InterviewMe.Global</div>
+        <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 8, letterSpacing: '-0.02em' }}>The Discovery Platform</div>
+        <p style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, margin: '0 0 16px' }}>Candidates record a single AI-led interview — free, forever. Recruiters search, watch, and hire directly. No CV. No application. No agency fee.</p>
+        <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 700 }}>Live at www.interviewme.global</div>
+      </Card>
+      <Card accent={A}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 10 }}>② Explain.Global</div>
+        <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 8, letterSpacing: '-0.02em' }}>Interview Readiness (PIR)</div>
+        <p style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, margin: '0 0 16px' }}>Personalised interview preparation powered by AI. A job spec + CV generates 20 tailored questions, model answers, and coaching context — from £1 per pack.</p>
+        <div style={{ fontSize: 12, color: A, fontWeight: 700 }}>Live at explain.global</div>
+      </Card>
+      <Card accent={A2}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A2, marginBottom: 10 }}>③ Learn</div>
+        <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 8, letterSpacing: '-0.02em' }}>The Career Engine</div>
+        <p style={{ fontSize: 13, color: '#9090b0', lineHeight: 1.7, margin: '0 0 16px' }}>Micro-subject learning tied to interview gaps. Every weak answer becomes a learning path. Candidates improve between interviews — tracked, scored, and visible to recruiters.</p>
+        <div style={{ fontSize: 12, color: A2, fontWeight: 700 }}>Integrated into the candidate portal</div>
+      </Card>
     </Grid>
+
+    {/* Access points */}
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>How the Ecosystem is Accessed</div>
+    <Grid cols={1}>
+      <Card>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+          {[
+            { label: 'Hub', url: 'explain.global', desc: 'Central platform — candidate portal, interview room, learn engine, profile publishing.' },
+            { label: 'Gate Page', url: 'interviewme.global', desc: 'Public-facing discovery portal. Candidates record. Recruiters search and hire.' },
+            { label: 'Recruiter Portal', url: 'recruiter.interviewme.global', desc: 'Dedicated recruiter dashboard — search candidates, watch interviews, send invitations.' },
+            { label: 'Investor Portal', url: 'explain.global/investor', desc: 'Business plan, patent brief, financials, and ecosystem overview. Password protected.' },
+          ].map(({ label, url, desc }) => (
+            <div key={label}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: A, marginBottom: 6 }}>{label}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', marginBottom: 6 }}>{url}</div>
+              <p style={{ fontSize: 13, color: '#7070a0', lineHeight: 1.6, margin: 0 }}>{desc}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </Grid>
+
+    {/* Key stats */}
+    <Grid cols={3}>
+      <Stat value="£0" label="Cost to candidates" sub="Free to record. Free forever." color="#22c55e" />
+      <Stat value="£599/mo" label="Recruiter search access" sub="+ Enterprise & Agency tiers" />
+      <Stat value="$50B+" label="Addressable market" sub="Every candidate. Every role. Every country." color={A2} />
+    </Grid>
+
     <Grid cols={1}>
       <Card>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24 }}>
           {[
-            { label: 'Product', text: 'An AI-powered interview preparation platform that feels like the real thing.' },
-            { label: 'Mission', text: 'Clarity for every candidate, everywhere — regardless of background, country, or income.' },
-            { label: 'Category', text: 'PIR — Personalised Interview Readiness. A $50B global opportunity with no direct incumbent.' },
+            { label: 'Mission', text: 'Make CVs redundant. Replace gatekeeping with proof. Give every candidate — regardless of background, country, or income — a fair shot at being seen.' },
+            { label: 'Category', text: 'No incumbent. LinkedIn shows CVs. Interviewing.io is coding only. InterviewMe is the first broadcast interview platform — a category we are creating and naming.' },
+            { label: 'IP', text: 'Patent-pending across 22 claims and 12 families covering both products. Full details in the Patent & IP section of this portal.' },
           ].map(({ label, text }) => (
             <div key={label}>
               <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: A, marginBottom: 8 }}>{label}</div>
