@@ -401,66 +401,72 @@
   .slide-quote p { font-size: 13px; font-style: italic; color: var(--pearl); line-height: 1.6; margin-bottom: 6px; }
   .slide-quote cite { font-size: 11px; color: var(--muted); font-style: normal; }
 
-  /* ── Statement slide ── */
-  .slide-statement { background: var(--bg); }
-  .slide-inner-statement { display: flex; flex-direction: column; justify-content: flex-start; min-height: 100%; padding-bottom: 48px; }
-  /* Hero two-column row */
-  .statement-hero-row { display: flex; align-items: center; gap: 24px; margin-bottom: 20px; }
-  .statement-hero-text { flex: 1; min-width: 0; }
-  .statement-hero-chair { flex-shrink: 0; width: 200px; }
-  .statement-hero-chair img { width: 100%; height: auto; display: block; border-radius: 12px; object-fit: cover; }
+  /* ══ STATEMENT SLIDE — FULL REVAMP ══ */
+  .slide-statement { background: var(--bg); overflow: hidden; }
+
+  /* Desktop: side-by-side split */
+  .slide-statement .slide-inner { padding: 0; display: flex; flex-direction: row; height: 100%; gap: 0; }
+  .statement-left { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: flex-start; padding: 72px 48px 56px; overflow-y: auto; scrollbar-width: none; }
+  .statement-left::-webkit-scrollbar { display: none; }
+  .statement-right { width: 340px; flex-shrink: 0; position: relative; overflow: hidden; }
+  .statement-right img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
 
   /* InterviewMe inline brand */
   .iname-white { color: var(--pearl); font-weight: 800; }
   .iname-green  { color: var(--green);  font-weight: 800; }
 
-  .statement-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); margin-bottom: 28px; }
-  .statement-headline { font-size: clamp(36px, 5.5vw, 58px); font-weight: 900; line-height: 1.08; letter-spacing: -0.03em; color: var(--pearl); margin-bottom: 20px; }
+  /* Typography */
+  .statement-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); margin-bottom: 18px; }
+  .statement-headline { font-size: clamp(34px, 4.2vw, 56px); font-weight: 900; line-height: 1.06; letter-spacing: -0.03em; color: var(--pearl); margin-bottom: 14px; }
   .statement-hl { color: var(--green); display: inline; }
-  .statement-sub { font-size: 15px; color: var(--muted); line-height: 1.65; max-width: 480px; margin-bottom: 36px; }
-  .statement-counter { position: relative; display: flex; align-items: center; gap: 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 20px; margin-bottom: 16px; width: fit-content; flex-wrap: wrap; }
-  .scounter-num { font-size: 26px; font-weight: 900; color: var(--green); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .statement-sub { font-size: 15px; color: var(--muted); line-height: 1.65; margin-bottom: 28px; }
+
+  /* Counter */
+  .statement-counter { position: relative; display: flex; align-items: center; gap: 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 18px; margin-bottom: 14px; width: fit-content; flex-wrap: wrap; }
+  .scounter-num { font-size: 24px; font-weight: 900; color: var(--green); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
   .scounter-label { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .scounter-update { font-size: 11px; color: var(--muted); }
   .scounter-pulse-ring { position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(74,222,128,0.6); animation: liveRing 2s ease-out infinite; }
   @keyframes liveRing { 0%{box-shadow:0 0 0 0 rgba(74,222,128,0.6)} 70%{box-shadow:0 0 0 10px rgba(74,222,128,0)} 100%{box-shadow:0 0 0 0 rgba(74,222,128,0)} }
-  .statement-cta-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-  .statement-cta-primary { display: inline-block; background: var(--green); color: #0a0f0a; font-size: 14px; font-weight: 800; padding: 13px 24px; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
-  .statement-cta-primary:hover { opacity: 0.88; }
-  .statement-cta-note { font-size: 12px; color: var(--muted); margin-top: 10px; }
-  .statement-cta-secondary { font-size: 13px; font-weight: 700; color: var(--muted); text-decoration: none; transition: color 0.2s; }
-  .statement-cta-secondary:hover { color: var(--pearl); }
 
   /* Broadcast block */
-  .statement-broadcast { background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--green); border-radius: 10px; padding: 16px 18px; margin-bottom: 24px; }
-  .sbc-title { font-size: 13px; font-weight: 800; color: var(--pearl); margin-bottom: 6px; letter-spacing: -0.01em; }
+  .statement-broadcast { background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--green); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; }
+  .sbc-title { font-size: 13px; font-weight: 800; color: var(--pearl); margin-bottom: 5px; }
   .sbc-body { font-size: 14px; color: var(--muted); line-height: 1.6; margin: 0; }
 
   /* Live demand feed */
-  .demand-feed { display: flex; flex-direction: column; gap: 0; margin-bottom: 24px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; flex-shrink: 0; }
-  .demand-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; border-bottom: 1px solid var(--border); }
+  .demand-feed { display: flex; flex-direction: column; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+  .demand-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); }
   .demand-row:last-child { border-bottom: none; }
   .demand-role { font-size: 13px; font-weight: 600; color: var(--pearl); }
-  .demand-count { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--green); }
+  .demand-count { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--green); white-space: nowrap; }
   .demand-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: liveRing 2s ease-out infinite; flex-shrink: 0; }
-  .scounter-update { font-size: 11px; color: var(--muted); margin-left: 4px; }
 
-  /* Prompt line */
-  .statement-anyrole { font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--green); margin-bottom: 20px; margin-top: 4px; }
-  .statement-prompt { font-size: 14px; font-weight: 700; color: var(--pearl); margin-bottom: 20px; }
+  /* Any role line */
+  .statement-anyrole { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green); margin-bottom: 16px; margin-top: 2px; }
+  .statement-prompt { font-size: 15px; font-weight: 700; color: var(--pearl); margin-bottom: 20px; }
+
+  /* CTAs */
+  .statement-cta-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .statement-cta-primary { display: inline-block; background: var(--green); color: #0a0f0a; font-size: 14px; font-weight: 800; padding: 13px 24px; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; white-space: nowrap; }
+  .statement-cta-primary:hover { opacity: 0.88; }
+  .statement-cta-secondary { display: inline-block; background: var(--blue); color: #fff; font-size: 14px; font-weight: 800; padding: 13px 24px; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; white-space: nowrap; }
+  .statement-cta-secondary:hover { opacity: 0.88; }
+  .statement-cta-note { font-size: 12px; color: var(--muted); }
 
   /* Why it works */
-  .statement-why { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border); }
-  .statement-why-title { font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
-  .statement-why-grid { display: flex; flex-direction: column; gap: 10px; }
-  .swhy-item { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--muted); line-height: 1.5; }
-  .swhy-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .statement-why { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .statement-why-title { font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .statement-why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+  .swhy-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--muted); line-height: 1.45; }
+  .swhy-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
   .swhy-green  { background: var(--green); }
   .swhy-blue   { background: var(--blue); }
   .swhy-amber  { background: var(--amber); }
   .swhy-violet { background: var(--violet); }
 
   /* Manifesto closer */
-  .statement-manifesto { margin-top: 28px; font-size: 16px; color: var(--muted); line-height: 1.6; }
+  .statement-manifesto { margin-top: 20px; font-size: 15px; color: var(--muted); line-height: 1.6; }
   .statement-manifesto strong { color: var(--pearl); }
   .slide-audience-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 4px; }
   .audience-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
@@ -490,6 +496,11 @@
     .demand-count { font-size: 11px; }
     .stat-grid { grid-template-columns: 1fr; }
     .statement-cta-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+    /* Statement slide mobile: stack vertically, hide right chair panel */
+    .slide-statement .slide-inner { flex-direction: column; }
+    .statement-left { padding: 48px 28px 56px; }
+    .statement-right { display: none; }
+    .statement-why-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -504,67 +515,70 @@
 
     <!-- ─ SLIDE 0: THE BIG STATEMENT ─ -->
     <div class="slide slide-statement active" data-audience="general">
-      <div class="slide-inner slide-inner-statement">
-        <div class="statement-hero-row">
-          <div class="statement-hero-text">
-            <div class="statement-eyebrow"><span class="pulse pulse-green"></span>The new way to get hired</div>
-            <h1 class="statement-headline">
-              Record once.<br>
-              <span class="statement-hl">Interview for<br>100 employers</span><br>
-              at the same time.
-            </h1>
+      <div class="slide-inner">
+
+        <!-- LEFT: all content -->
+        <div class="statement-left">
+          <div class="statement-eyebrow"><span class="pulse pulse-green"></span>The new way to get hired</div>
+          <h1 class="statement-headline">
+            Record once.<br>
+            <span class="statement-hl">Interview for<br>100 employers</span><br>
+            at the same time.
+          </h1>
+          <p class="statement-sub">One AI-driven interview. Scored, timestamped, verified, and instantly shareable. The moment you go live, every employer and recruiter on <strong class="iname-white">Interview</strong><strong class="iname-green">Me</strong> can find you — automatically. No CV. No cover letter. Just you.</p>
+
+          <div class="statement-broadcast">
+            <div class="sbc-title">Your interview becomes a broadcast.</div>
+            <p class="sbc-body">Employers subscribe to roles, scores, and locations. When you finish your interview, matching companies get notified instantly. You don't chase opportunities anymore. They come to you.</p>
           </div>
-          <div class="statement-hero-chair">
-            <img src="the-interview-chair.png" alt="The Interview Chair">
+
+          <div class="statement-counter">
+            <div class="scounter-inner">
+              <span class="scounter-num" id="liveCount">2,837</span>
+              <span class="scounter-label">employers &amp; recruiters searching right now</span>
+            </div>
+            <div class="scounter-pulse-ring"></div>
+            <span class="scounter-update">Live demand updates every 60 seconds</span>
           </div>
-        </div>
-        <p class="statement-sub">One AI-driven interview. Scored, timestamped, verified, and instantly shareable.<br>The moment you go live, every employer and recruiter on <strong class="iname-white">Interview</strong><strong class="iname-green">Me</strong> can find you — automatically. No CV. No cover letter. Just you.</p>
 
-        <div class="statement-broadcast">
-          <div class="sbc-title">Your interview becomes a broadcast.</div>
-          <p class="sbc-body">Employers subscribe to roles, scores, and locations. When you finish your interview, matching companies get notified instantly. You don't chase opportunities anymore. They come to you.</p>
-        </div>
-
-        <div class="statement-counter">
-          <div class="scounter-inner">
-            <span class="scounter-num" id="liveCount">2,837</span>
-            <span class="scounter-label">employers &amp; recruiters searching right now</span>
+          <div class="demand-feed">
+            <div class="demand-row"><span class="demand-role">Senior React Developer</span><span class="demand-count"><span class="demand-dot"></span>62 recruiters watching</span></div>
+            <div class="demand-row"><span class="demand-role">Azure Cloud Architect</span><span class="demand-count"><span class="demand-dot"></span>41 recruiters watching</span></div>
+            <div class="demand-row"><span class="demand-role">Product Manager</span><span class="demand-count"><span class="demand-dot"></span>38 recruiters watching</span></div>
+            <div class="demand-row"><span class="demand-role">C# / .NET Developer</span><span class="demand-count"><span class="demand-dot"></span>29 recruiters watching</span></div>
           </div>
-          <div class="scounter-pulse-ring"></div>
-          <span class="scounter-update">Live demand updates every 60 seconds</span>
-        </div>
 
-        <div class="demand-feed">
-          <div class="demand-row"><span class="demand-role">Senior React Developer</span><span class="demand-count"><span class="demand-dot"></span>62 recruiters watching</span></div>
-          <div class="demand-row"><span class="demand-role">Azure Cloud Architect</span><span class="demand-count"><span class="demand-dot"></span>41 recruiters watching</span></div>
-          <div class="demand-row"><span class="demand-role">Product Manager</span><span class="demand-count"><span class="demand-dot"></span>38 recruiters watching</span></div>
-          <div class="demand-row"><span class="demand-role">C# / .NET Developer</span><span class="demand-count"><span class="demand-dot"></span>29 recruiters watching</span></div>
-        </div>
+          <p class="statement-anyrole">For any role. Any level. Any industry.</p>
+          <p class="statement-prompt">Your role. Your score. Your city. Go live and get discovered.</p>
 
-        <p class="statement-anyrole">For any role. Any level. Any industry.</p>
-        <p class="statement-prompt">Your role. Your score. Your city. Go live and get discovered.</p>
+          <div class="statement-cta-row">
+            <a href="#" class="statement-cta-primary">Record my interview — it's free</a>
+            <a href="#" class="statement-cta-secondary">I'm a recruiter — show me candidates →</a>
+          </div>
+          <p class="statement-cta-note">No CV required. Works on mobile.</p>
 
-        <div class="statement-cta-row">
-          <a href="#" class="statement-cta-primary">Record my interview — it's free</a>
-          <a href="#" class="statement-cta-secondary">I'm a recruiter — show me candidates →</a>
-        </div>
-        <p class="statement-cta-note">No CV required. Works on mobile.</p>
+          <div class="statement-why">
+            <div class="statement-why-title">Why it works</div>
+            <div class="statement-why-grid">
+              <div class="swhy-item"><span class="swhy-dot swhy-green"></span><span>One interview → unlimited employers</span></div>
+              <div class="swhy-item"><span class="swhy-dot swhy-blue"></span><span>AI scoring makes your strengths visible</span></div>
+              <div class="swhy-item"><span class="swhy-dot swhy-amber"></span><span>QR code for CV, socials &amp; WhatsApp</span></div>
+              <div class="swhy-item"><span class="swhy-dot swhy-green"></span><span>Real-time alerts for recruiters</span></div>
+              <div class="swhy-item"><span class="swhy-dot swhy-violet"></span><span>Live demand feed for candidates</span></div>
+              <div class="swhy-item"><span class="swhy-dot swhy-blue"></span><span>Direct messaging — no ATS, no friction</span></div>
+            </div>
+          </div>
 
-        <div class="statement-why">
-          <div class="statement-why-title">Why it works</div>
-          <div class="statement-why-grid">
-            <div class="swhy-item"><span class="swhy-dot swhy-green"></span><span>One interview → unlimited employers</span></div>
-            <div class="swhy-item"><span class="swhy-dot swhy-blue"></span><span>AI scoring that makes your strengths visible</span></div>
-            <div class="swhy-item"><span class="swhy-dot swhy-amber"></span><span>QR code for your CV, socials, WhatsApp &amp; email signature</span></div>
-            <div class="swhy-item"><span class="swhy-dot swhy-green"></span><span>Real-time alerts for recruiters</span></div>
-            <div class="swhy-item"><span class="swhy-dot swhy-violet"></span><span>Live demand feed for candidates</span></div>
-            <div class="swhy-item"><span class="swhy-dot swhy-blue"></span><span>Direct messaging — no ATS, no forms, no friction</span></div>
+          <div class="statement-manifesto">
+            This is the new hiring medium.<br><strong>This is how the world will get hired.</strong>
           </div>
         </div>
 
-        <div class="statement-manifesto">
-          This is the new hiring medium.<br><strong>This is how the world will get hired.</strong>
+        <!-- RIGHT: cinematic chair -->
+        <div class="statement-right">
+          <img src="the-interview-chair.png" alt="The Interview Chair">
         </div>
+
       </div>
     </div>
 
