@@ -833,7 +833,6 @@
   let current = 0;
   let timer, progTimer, progVal = 0;
   let paused = false;
-  let hovered = false;
   const DURATION = 7000; // slightly longer for the flow slide
 
   function goTo(n) {
@@ -844,7 +843,7 @@
     dots[current].classList.add('active');
     counter.textContent = (current + 1) + ' / ' + slides.length;
     progress.style.background = accentColors[audiences[current]];
-    if (!paused && !hovered) resetTimer();
+    if (!paused) resetTimer();
     else { clearInterval(timer); clearInterval(progTimer); }
   }
 
@@ -882,16 +881,6 @@
       resetTimer();
     }
   }
-
-  // hover pause
-  carousel.addEventListener('mouseenter', () => {
-    hovered = true;
-    if (!paused) stopTimer();
-  });
-  carousel.addEventListener('mouseleave', () => {
-    hovered = false;
-    if (!paused) resetTimer();
-  });
 
   // keyboard nav
   document.addEventListener('keydown', e => {
