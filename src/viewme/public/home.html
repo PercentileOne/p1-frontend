@@ -319,7 +319,7 @@
     <!-- Language selector -->
     <div style="position:relative;display:inline-block" id="langMenu">
       <button onclick="document.getElementById('langDrop').style.display=document.getElementById('langDrop').style.display==='block'?'none':'block'" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--pearl);cursor:pointer;font-family:var(--font)">
-        🌐 EN <span style="font-size:10px;opacity:0.6">▾</span>
+        🌐 English <span style="font-size:10px;opacity:0.6">▾</span>
       </button>
       <div id="langDrop" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:#0f1628;border:1px solid var(--border);border-radius:14px;padding:8px;min-width:180px;z-index:200;box-shadow:0 16px 40px rgba(0,0,0,0.5)">
         <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);padding:4px 10px 8px">Language</div>
@@ -1554,7 +1554,7 @@
     });
     el.style.color = 'var(--pearl)';
     el.style.background = 'rgba(61,126,246,0.1)';
-    el.closest('#langMenu').querySelector('button').innerHTML = flag + ' ' + code + ' <span style="font-size:10px;opacity:0.6">▾</span>';
+    el.closest('#langMenu').querySelector('button').innerHTML = flag + ' ' + el.textContent.trim() + ' <span style="font-size:10px;opacity:0.6">▾</span>';
     document.getElementById('langDrop').style.display = 'none';
   }
 
