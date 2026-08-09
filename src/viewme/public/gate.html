@@ -376,6 +376,27 @@
   .auth-legal a { color: var(--blue); text-decoration: none; }
   .auth-legal a:hover { text-decoration: underline; }
 
+  /* ── SLIDE MORE (scrollable extra content) ── */
+  .slide-more { margin-top: 32px; border-top: 1px solid var(--border); padding-top: 28px; }
+  .slide-more-title { font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+  .benefit-list { display: flex; flex-direction: column; gap: 14px; }
+  .benefit { display: flex; gap: 12px; align-items: flex-start; }
+  .bcheck { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; font-weight: 800; margin-top: 1px; }
+  .bcheck-g { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); }
+  .bcheck-b { background: var(--blue-dim);  border: 1px solid var(--blue-border);  color: var(--blue); }
+  .bcheck-a { background: var(--amber-dim); border: 1px solid var(--amber-border); color: var(--amber); }
+  .bcheck-v { background: var(--violet-dim);border: 1px solid var(--violet-border);color: var(--violet); }
+  .btext strong { display: block; font-size: 13px; font-weight: 700; color: var(--pearl); margin-bottom: 1px; }
+  .btext span { font-size: 12px; color: var(--soft); line-height: 1.55; }
+  .slide-quote { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-top: 24px; }
+  .slide-quote p { font-size: 13px; font-style: italic; color: var(--pearl); line-height: 1.6; margin-bottom: 6px; }
+  .slide-quote cite { font-size: 11px; color: var(--muted); font-style: normal; }
+  .slide-audience-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 4px; }
+  .audience-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .audience-card-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .audience-card-title { font-size: 13px; font-weight: 800; color: var(--pearl); margin-bottom: 6px; line-height: 1.3; }
+  .audience-card-body { font-size: 12px; color: var(--soft); line-height: 1.55; }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 900px) {
     .gate { grid-template-columns: 1fr; }
@@ -403,7 +424,7 @@
   <!-- ══ LEFT: CAROUSEL ══ -->
   <div class="carousel-wrap" id="carousel">
 
-    <div class="slide-counter" id="counter">1 / 7</div>
+    <div class="slide-counter" id="counter">1 / 8</div>
     <div class="progress-bar" id="progress"></div>
 
     <!-- ─ SLIDE 1: CANDIDATE ─ -->
@@ -426,6 +447,21 @@
             <div class="aring aring-fb ab1">+</div>
           </div>
           <span class="strip-more">2,400 candidates already recorded</span>
+        </div>
+        <div class="slide-more">
+          <div class="slide-more-title">Why candidates choose InterviewMe</div>
+          <div class="benefit-list">
+            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>Record once — share everywhere</strong><span>LinkedIn, WhatsApp, X, email. One link. Your interview travels with you for life.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>Scored on 5 dimensions</strong><span>Communication, confidence, clarity, depth, and presence — rated question by question.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>Sarah and James ask real questions</strong><span>AI interviewers built on thousands of real hiring scenarios. Structured, fair, consistent.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>Employers find you — you don't chase them</strong><span>Your profile is searchable the moment your interview goes live. Passive hiring, active results.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>No CV required — ever</strong><span>Your performance is your application. The interview speaks louder than any bullet point.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>Free to record. Free to share.</strong><span>You keep all the value. No fees, no subscriptions, no catches for candidates.</span></div></div>
+          </div>
+          <div class="slide-quote">
+            <p>"I recorded my interview on a Sunday. By Tuesday I had three employer messages. I hadn't sent a single CV."</p>
+            <cite>— Software Engineer, landed a role at a Series B startup</cite>
+          </div>
         </div>
       </div>
     </div>
@@ -503,6 +539,26 @@
             </div>
           </div>
         </div>
+        <div class="slide-more">
+          <div class="slide-more-title">The platform's promise</div>
+          <div class="slide-audience-cards">
+            <div class="audience-card">
+              <div class="audience-card-label" style="color:var(--green)">For Candidates</div>
+              <div class="audience-card-title">Record once. Get found everywhere.</div>
+              <div class="audience-card-body">One AI interview. Infinite employers. No CV. No cold applications. Just performance.</div>
+            </div>
+            <div class="audience-card">
+              <div class="audience-card-label" style="color:var(--blue)">For Employers</div>
+              <div class="audience-card-title">Shortlist in 4 minutes, not 4 days.</div>
+              <div class="audience-card-body">Watch before you call. Score-backed. Structured. No bias. No scheduling chaos.</div>
+            </div>
+            <div class="audience-card">
+              <div class="audience-card-label" style="color:var(--amber)">For Recruiters</div>
+              <div class="audience-card-title">Place more. Screen less. Earn more.</div>
+              <div class="audience-card-body">Send recorded, scored interviews. Your clients trust the evidence. Your hit rate soars.</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -510,7 +566,7 @@
     <div class="slide slide-employer" data-audience="employer">
       <div class="slide-inner">
         <div class="slide-eyebrow eyebrow-employer"><span class="pulse pulse-blue"></span>For Employers</div>
-        <h1 class="slide-headline">Hire people you've <span class="hl-blue">actually seen</span> perform.</h1>
+        <h1 class="slide-headline">Employers — hire people you've <span class="hl-blue">actually seen</span> perform.</h1>
         <p class="slide-sub">Search for candidates and watch them interview live. Every candidate. Same structured AI interview. Scored, timestamped, and ready to watch before you ever pick up the phone.</p>
         <div class="visual-search">
           <div class="mock-search">
@@ -546,6 +602,20 @@
           </div>
           <div class="gate-lock"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Sign in to see all 247 candidates</div>
         </div>
+        <div class="slide-more">
+          <div class="slide-more-title">Why employers choose InterviewMe</div>
+          <div class="benefit-list">
+            <div class="benefit"><div class="bcheck bcheck-b">✓</div><div class="btext"><strong>Every candidate. Same structured AI interview.</strong><span>No inconsistency. No bias. Every applicant scored on the same questions, in the same order.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-b">✓</div><div class="btext"><strong>Filter by role, score, and location</strong><span>Set a score threshold and only see candidates above your bar. Search by skill, seniority, or postcode.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-b">✓</div><div class="btext"><strong>Watch a 4-minute interview — not a 30-minute phone screen</strong><span>See how they communicate, think, and present before you ever pick up the phone.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-b">✓</div><div class="btext"><strong>Set talent alerts — get notified automatically</strong><span>Tell us what you're looking for. We'll ping you the moment your ideal candidate records.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-b">✓</div><div class="btext"><strong>Privacy-first inbox — no details ever exposed</strong><span>Contact candidates directly on-platform. No emails or phone numbers shared until you're both ready.</span></div></div>
+          </div>
+          <div class="slide-quote">
+            <p>"We shortlisted 12 candidates in one afternoon. That would normally take a full week of phone screens."</p>
+            <cite>— Hiring Manager, London fintech startup</cite>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -553,7 +623,7 @@
     <div class="slide slide-recruiter" data-audience="recruiter">
       <div class="slide-inner">
         <div class="slide-eyebrow eyebrow-recruiter"><span class="pulse pulse-amber"></span>For Recruiters &amp; Agencies</div>
-        <h1 class="slide-headline">Find, vet, and place — <span class="hl-amber">without the screening calls.</span></h1>
+        <h1 class="slide-headline">Recruiters — find, vet, and place <span class="hl-amber">without the screening calls.</span></h1>
         <p class="slide-sub">Your clients want evidence. InterviewMe gives you a recorded, scored interview for every candidate. Present with confidence. Close faster. Keep more of your fee.</p>
         <div class="visual-recruiter">
           <div class="pipeline">
@@ -579,6 +649,19 @@
             <div class="rstat"><div class="rstat-val">100%</div><div class="rstat-label">Evidence-based submissions</div></div>
           </div>
         </div>
+        <div class="slide-more">
+          <div class="slide-more-title">Why agencies use InterviewMe</div>
+          <div class="benefit-list">
+            <div class="benefit"><div class="bcheck bcheck-a">✓</div><div class="btext"><strong>One interview — multiple clients, multiple roles</strong><span>A candidate records once. You share their InterviewMe link across every relevant client. No re-interviewing.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-a">✓</div><div class="btext"><strong>Score-backed submissions your clients actually trust</strong><span>Send a 94% score and a recorded interview. Watch your shortlist acceptance rate soar.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-a">✓</div><div class="btext"><strong>Build a warm talent bench — always ready</strong><span>Your searchable pool of scored candidates means you can fill a brief in hours, not weeks.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-a">✓</div><div class="btext"><strong>Your reputation goes up. Your rejection rate goes down.</strong><span>Clients remember the agency that sent them evidence, not promises.</span></div></div>
+          </div>
+          <div class="slide-quote">
+            <p>"I sent three candidates with 94%+ scores. All three were invited to final round. That's never happened before."</p>
+            <cite>— Senior Recruiter, London agency</cite>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -586,7 +669,7 @@
     <div class="slide slide-candidate" data-audience="candidate">
       <div class="slide-inner">
         <div class="slide-eyebrow eyebrow-candidate"><span class="pulse pulse-green"></span>For Candidates</div>
-        <h1 class="slide-headline">Your best interview,<br>recorded once. <span class="hl-green">Seen by thousands.</span></h1>
+        <h1 class="slide-headline">Candidates — your best interview, recorded once. <span class="hl-green">Seen by thousands.</span></h1>
         <p class="slide-sub">Practice with Sarah and James until you nail it. Get scored on every answer. Share your profile link. Employers find you — you don't have to chase them.</p>
         <div class="visual-profile">
           <div class="profile-card">
@@ -616,6 +699,20 @@
           </div>
           <span class="strip-more">Google · Amazon · Meta + 14 more employers</span>
         </div>
+        <div class="slide-more">
+          <div class="slide-more-title">What your InterviewMe profile includes</div>
+          <div class="benefit-list">
+            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>A complete recorded interview — your private link</strong><span>Share it anywhere. It lives on your profile forever. Employers can request access anytime.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>Scores broken down by question and dimension</strong><span>System Design, Problem Solving, Communication, Technical Depth, Culture Fit — all rated individually.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>Sarah handles culture and leadership</strong><span>As HR Director, Sarah probes the soft skills: leadership, collaboration, self-awareness, adaptability.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>James handles role-specific depth</strong><span>As Hiring Manager, James goes deep on technical and role-specific questions that reveal true capability.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>Notifications when employers engage</strong><span>Know the moment someone views, likes, or messages you. No guessing. No silence.</span></div></div>
+          </div>
+          <div class="slide-quote">
+            <p>"My InterviewMe profile got more attention in a week than my LinkedIn did in six months."</p>
+            <cite>— Product Manager, now at a scale-up in Berlin</cite>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -623,7 +720,7 @@
     <div class="slide slide-employer" data-audience="employer">
       <div class="slide-inner">
         <div class="slide-eyebrow eyebrow-employer"><span class="pulse pulse-blue"></span>For Employers</div>
-        <h1 class="slide-headline"><span class="hl-blue">4 minutes</span> to shortlist.<br>Zero phone screens wasted.</h1>
+        <h1 class="slide-headline">Employers — <span class="hl-blue">4 minutes</span> to shortlist. Zero phone screens wasted.</h1>
         <p class="slide-sub">Every candidate completes the same structured AI interview — scored by question, searchable by skill. No unconscious bias. No scheduling chaos. Just performance.</p>
         <div class="visual-stats" style="margin-bottom:28px">
           <div class="stat-card"><div class="stat-val">4<span>min</span></div><div class="stat-label">Avg. time to shortlist</div></div>
@@ -645,6 +742,20 @@
             <div class="feature-text"><strong>Privacy-first, inbox-only contact</strong><span>No emails or phone numbers ever exposed. All contact via platform inbox.</span></div>
           </div>
         </div>
+        <div class="slide-more">
+          <div class="slide-more-title">The InterviewMe difference</div>
+          <div class="benefit-list">
+            <div class="benefit"><div class="bcheck bcheck-b">✓</div><div class="btext"><strong>AI-scored on 5 dimensions — not gut feel</strong><span>Communication, depth, confidence, clarity, and presence. Every candidate. Every time. No exceptions.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-b">✓</div><div class="btext"><strong>Timestamped — know exactly when it was recorded</strong><span>See how recent the interview is. Freshness matters in fast-moving hiring markets.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-b">✓</div><div class="btext"><strong>Set score thresholds — only see candidates above your bar</strong><span>Never wade through unscored applicants again. Your time is worth more than that.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-b">✓</div><div class="btext"><strong>Talent alerts — passive hiring that works while you sleep</strong><span>Set your criteria once. Get notified the moment your ideal candidate records their interview.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-b">✓</div><div class="btext"><strong>GDPR compliant — zero data risk</strong><span>No candidate details ever leave the platform until both parties agree. Built for compliance from day one.</span></div></div>
+          </div>
+          <div class="slide-quote">
+            <p>"For the first time, we genuinely knew what we were getting before the first call. It changed how we hire."</p>
+            <cite>— Head of Talent, Series B startup, London</cite>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -652,7 +763,7 @@
     <div class="slide slide-recruiter" data-audience="recruiter">
       <div class="slide-inner">
         <div class="slide-eyebrow eyebrow-recruiter"><span class="pulse pulse-amber"></span>For Agencies &amp; RPO</div>
-        <h1 class="slide-headline">Cut the screening calls.<br><span class="hl-amber">Your clients will thank you.</span></h1>
+        <h1 class="slide-headline">Agencies — cut the screening calls. <span class="hl-amber">Your clients will thank you.</span></h1>
         <p class="slide-sub">Stop sending CVs your clients won't read. Start sending recorded, scored InterviewMe interviews they can watch in 4 minutes. Your hit rate goes up. Your reputation goes with it.</p>
         <div class="visual-recruiter">
           <div class="recruiter-stats" style="margin-bottom:20px">
@@ -669,6 +780,19 @@
               <div class="feature-icon" style="background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.2)"><svg viewBox="0 0 24 24" style="stroke:#FBBF24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
               <div class="feature-text"><strong>Score-backed submissions your clients trust</strong><span>Send a 94% score and a recorded interview. Watch your shortlist acceptance rate soar.</span></div>
             </div>
+          </div>
+        </div>
+        <div class="slide-more">
+          <div class="slide-more-title">Built for the way agencies actually work</div>
+          <div class="benefit-list">
+            <div class="benefit"><div class="bcheck bcheck-a">✓</div><div class="btext"><strong>One interview travels across all your clients</strong><span>Share a candidate's InterviewMe link in any client presentation, email, or pitch. Zero extra work.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-a">✓</div><div class="btext"><strong>No scheduling. No no-shows. No wasted slots.</strong><span>Candidates record in their own time. You review when it suits you. Your clients watch when they're ready.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-a">✓</div><div class="btext"><strong>Alert your clients before they even ask</strong><span>"We have a 96% scorer ready to meet you." Proactive placements that make you look exceptional.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-a">✓</div><div class="btext"><strong>Monthly performance reports</strong><span>Show your clients your hit rate, score distributions, and placement speed. Evidence-led account management.</span></div></div>
+          </div>
+          <div class="slide-quote">
+            <p>"My close rate went from 1 in 5 to 1 in 2 since using InterviewMe. My clients now ask specifically for it."</p>
+            <cite>— Agency Director, Manchester</cite>
           </div>
         </div>
       </div>
@@ -700,6 +824,19 @@
           </div>
           <span class="strip-more">+2,400 candidates</span>
           <a href="https://product.interviewme.global" style="font-size:12px;font-weight:700;color:var(--violet);text-decoration:none;border-bottom:1px solid rgba(167,139,250,0.3);padding-bottom:1px;margin-left:auto">See how it works →</a>
+        </div>
+        <div class="slide-more">
+          <div class="slide-more-title">This is the architecture of modern hiring</div>
+          <div class="benefit-list">
+            <div class="benefit"><div class="bcheck bcheck-v">✓</div><div class="btext"><strong>The first platform where your interview travels with you for life</strong><span>Not a job board. Not a CV database. A live, scored, searchable performance record that never expires.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-v">✓</div><div class="btext"><strong>Evidence over assumption — every time</strong><span>The hiring industry runs on gut feel and polished PDFs. InterviewMe runs on performance and proof.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-v">✓</div><div class="btext"><strong>Global from day one</strong><span>Candidates in London. Employers in New York. Agencies in Dubai. One platform. One standard. One score.</span></div></div>
+            <div class="benefit"><div class="bcheck bcheck-v">✓</div><div class="btext"><strong>Built on the Percentile.One ecosystem</strong><span>InterviewMe connects to Explain.Global for learning, and Percentile.One for long-term talent identity. Your career, always growing.</span></div></div>
+          </div>
+          <div class="slide-quote">
+            <p>"CVs are a summary of someone's past. InterviewMe is a window into their future. That's the difference."</p>
+            <cite>— Francis Cobbinah, Founder, InterviewMe</cite>
+          </div>
         </div>
       </div>
     </div>
