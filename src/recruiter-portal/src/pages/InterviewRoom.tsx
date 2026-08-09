@@ -141,6 +141,7 @@ interface RoomState {
   selectedDifficulty?: string;
   preferredName?: string;
   company?: string;
+  consentToRecord?: boolean;
 }
 
 interface SessionAnswer {
@@ -334,7 +335,7 @@ export default function InterviewRoom() {
   // Upload if component unmounts mid-session
   useEffect(() => () => { uploadRecording([]); }, [uploadRecording]);
 
-  const [consentToRecord, setConsentToRecord] = useState(true);
+  const consentToRecord = ctx.consentToRecord !== false;
   const [cameraOn, setCameraOn] = useState(true);
 
   const [phase, setPhase] = useState<RoomPhase>('intro');
@@ -895,25 +896,9 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   </button>
                 </motion.div>
 
-                {/* Recording consent */}
-                <motion.label
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5, duration: 0.5 }}
-                  style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', maxWidth: '380px', textAlign: 'left' }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={consentToRecord}
-                    onChange={e => setConsentToRecord(e.target.checked)}
-                    style={{ marginTop: '2px', accentColor: '#a78bfa', width: '15px', height: '15px', flexShrink: 0, cursor: 'pointer' }}
-                  />
-                  <span style={{ fontSize: '12px', color: 'rgba(240,244,255,0.55)', lineHeight: 1.5 }}>
-                    I consent to this session being recorded so recruiters and employers can watch it back. You can uncheck this to complete the interview without recording.
-                  </span>
-                </motion.label>
-
                 {/* CTA */}
                 <motion.button onClick={startInterview}
-                  initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 2.7, duration: 0.5 }}
+                  initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 2.6, duration: 0.5 }}
                   whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
                   style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)', color: '#fff', border: 'none', borderRadius: '13px', padding: '15px 48px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', letterSpacing: '0.01em', boxShadow: '0 0 40px rgba(167,139,250,0.35)' }}>
                   Begin Interview →

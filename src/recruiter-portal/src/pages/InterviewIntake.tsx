@@ -320,6 +320,7 @@ export default function InterviewIntake() {
   // Pre-parsed CV context — populated as soon as the user provides CV text
   const [cvCtxParsed, setCvCtxParsed] = useState<CVContext | null>(null);
   const [parsingCv, setParsingCv] = useState(false);
+  const [consentToRecord, setConsentToRecord] = useState(true);
 
   // Learn tab state
   const [learnSubject, setLearnSubject] = useState('');
@@ -515,6 +516,7 @@ export default function InterviewIntake() {
           specialistTitle: sessionResult.specialistTitle,
           mikeScript: sessionResult.mikeScript,
           companyFacts: sessionResult.companyFacts,
+          consentToRecord,
         },
         replace: true,
       });
@@ -534,6 +536,7 @@ export default function InterviewIntake() {
           specialistTitle,
           mikeScript: null,
           companyFacts: [],
+          consentToRecord,
         },
         replace: true,
       });
@@ -838,7 +841,20 @@ export default function InterviewIntake() {
                 const effectiveCvCtx = cvOk ? cvCtxParsed : null;
                 return (
                   <>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', marginTop: '24px', flexWrap: 'wrap' }}>
+                  {/* Recording consent */}
+                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', marginTop: '20px' }}>
+                    <input
+                      type="checkbox"
+                      checked={consentToRecord}
+                      onChange={e => setConsentToRecord(e.target.checked)}
+                      style={{ marginTop: '2px', accentColor: 'var(--blue)', width: '14px', height: '14px', flexShrink: 0, cursor: 'pointer' }}
+                    />
+                    <span style={{ fontSize: '12px', color: 'var(--text-3)', lineHeight: 1.5 }}>
+                      I consent to this interview being recorded so recruiters and employers can watch it back. Uncheck to complete the interview without recording.
+                    </span>
+                  </label>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', marginTop: '16px', flexWrap: 'wrap' }}>
                     {anyToggled && !canStart && (
                       <span style={{ fontSize: '12px', color: 'var(--text-3)', flex: 1 }}>
                         {hasTitle && !titleOk ? 'Enter a job title to continue' : hasSpec && !specOk ? 'Add more of the job spec to continue' : 'Add your CV text to continue'}
