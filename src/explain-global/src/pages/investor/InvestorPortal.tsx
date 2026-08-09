@@ -976,7 +976,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
   'why-now': () => <>
     <SectionHead
       label="Executive · Why Now"
-      h1="Six forces converging"
+      h1="Ten forces converging"
       h2="right now."
       sub="The conditions for PIR to exist at scale have only just arrived. Each of these forces is independent — together, they create an unmissable window."
     />
