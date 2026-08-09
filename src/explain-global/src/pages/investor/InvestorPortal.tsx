@@ -863,9 +863,32 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 8 }}>The Engine That Powers Everything</div>
         <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', marginBottom: 10 }}>The <IM /> Alert System</div>
-        <p style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.75, margin: '0 0 20px' }}>
-          Recruiters set a talent alert once — role, score threshold, location. The moment a matching candidate records their interview, the recruiter is notified automatically. On the candidate side, a live demand feed shows exactly how many recruiters are watching for their role right now — the most powerful motivation to record that exists. One mechanic. Two motivations. A self-filling marketplace that runs itself.
+        <p style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.75, margin: '0 0 16px' }}>
+          The world's best companies don't wait for candidates to apply — they poach from universities the moment a student graduates with the right grade. <IM /> does the same thing for every recruiter and employer on the planet. Set your criteria once. The moment a candidate hits your threshold, you're the first to know.
         </p>
+
+        {/* Alert examples */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 20 }}>
+          {[
+            { role: 'Cloud Architect', threshold: '95%+', location: 'UK / Remote', color: A,         icon: '☁️', note: 'Alert me the moment a Cloud Architect scores 95% or higher.' },
+            { role: 'Senior React Developer', threshold: '90%+', location: 'London', color: '#22c55e', icon: '⚛️', note: 'Alert me when a Senior React Developer in London hits 90%+.' },
+            { role: 'Data Scientist', threshold: '88%+', location: 'Any location', color: A2,        icon: '📊', note: 'Alert me when a Data Scientist scores 88% or higher, anywhere.' },
+            { role: 'Head of Product', threshold: '92%+', location: 'Europe', color: '#f59e0b',      icon: '🧭', note: 'Alert me as soon as a Head of Product in Europe scores 92%+.' },
+          ].map(f => (
+            <div key={f.role} style={{ background: `${f.color}08`, border: `1px solid ${f.color}25`, borderRadius: 10, padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <span style={{ fontSize: 20, flexShrink: 0, lineHeight: 1.3 }}>{f.icon}</span>
+              <div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{f.role}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: f.color, background: `${f.color}18`, border: `1px solid ${f.color}30`, borderRadius: 4, padding: '2px 8px' }}>{f.threshold}</span>
+                  <span style={{ fontSize: 11, color: '#6060a0' }}>{f.location}</span>
+                </div>
+                <p style={{ fontSize: 12, color: '#7070a0', lineHeight: 1.55, margin: 0, fontStyle: 'italic' }}>"{f.note}"</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
         <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
           {[
             { color: A,        icon: '🔔', label: 'Recruiter Alerts', body: 'Set once. Match automatically. No searching required.' },
