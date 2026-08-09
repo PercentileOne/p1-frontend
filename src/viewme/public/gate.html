@@ -400,6 +400,23 @@
   .slide-quote { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-top: 24px; }
   .slide-quote p { font-size: 13px; font-style: italic; color: var(--pearl); line-height: 1.6; margin-bottom: 6px; }
   .slide-quote cite { font-size: 11px; color: var(--muted); font-style: normal; }
+
+  /* ── Statement slide ── */
+  .slide-statement { background: var(--bg); }
+  .slide-inner-statement { display: flex; flex-direction: column; justify-content: center; min-height: 100%; padding-bottom: 48px; }
+  .statement-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); margin-bottom: 28px; }
+  .statement-headline { font-size: clamp(36px, 5.5vw, 58px); font-weight: 900; line-height: 1.08; letter-spacing: -0.03em; color: var(--pearl); margin-bottom: 20px; }
+  .statement-hl { color: var(--green); display: inline; }
+  .statement-sub { font-size: 15px; color: var(--muted); line-height: 1.65; max-width: 480px; margin-bottom: 36px; }
+  .statement-counter { position: relative; display: inline-flex; align-items: center; gap: 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 20px; margin-bottom: 32px; width: fit-content; }
+  .scounter-num { font-size: 26px; font-weight: 900; color: var(--green); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .scounter-label { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .scounter-pulse-ring { position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(74,222,128,0.6); animation: liveRing 2s ease-out infinite; }
+  @keyframes liveRing { 0%{box-shadow:0 0 0 0 rgba(74,222,128,0.6)} 70%{box-shadow:0 0 0 10px rgba(74,222,128,0)} 100%{box-shadow:0 0 0 0 rgba(74,222,128,0)} }
+  .statement-cta-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .statement-cta-primary { display: inline-block; background: var(--green); color: #0a0f0a; font-size: 14px; font-weight: 800; padding: 13px 24px; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+  .statement-cta-primary:hover { opacity: 0.88; }
+  .statement-cta-note { font-size: 12px; color: var(--muted); }
   .slide-audience-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 4px; }
   .audience-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
   .audience-card-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
@@ -436,8 +453,32 @@
     <div class="slide-counter" id="counter">1 / 8</div>
     <div class="progress-bar" id="progress"></div>
 
+    <!-- ─ SLIDE 0: THE BIG STATEMENT ─ -->
+    <div class="slide slide-statement active" data-audience="general">
+      <div class="slide-inner slide-inner-statement">
+        <div class="statement-eyebrow"><span class="pulse pulse-green"></span>The new way to get hired</div>
+        <h1 class="statement-headline">
+          Record once.<br>
+          <span class="statement-hl">Interview for<br>100 employers</span><br>
+          at the same time.
+        </h1>
+        <p class="statement-sub">One AI-driven interview. Scored, timestamped, shareable. Every employer and recruiter on InterviewMe can find you — the moment you go live.</p>
+        <div class="statement-counter">
+          <div class="scounter-inner">
+            <span class="scounter-num" id="liveCount">2,847</span>
+            <span class="scounter-label">employers &amp; recruiters searching right now</span>
+          </div>
+          <div class="scounter-pulse-ring"></div>
+        </div>
+        <div class="statement-cta-row">
+          <a href="#" class="statement-cta-primary">Record my interview — it's free</a>
+          <span class="statement-cta-note">No CV. No cover letter. Just you.</span>
+        </div>
+      </div>
+    </div>
+
     <!-- ─ SLIDE 1: CANDIDATE ─ -->
-    <div class="slide slide-candidate active" data-audience="candidate">
+    <div class="slide slide-candidate" data-audience="candidate">
       <div class="slide-inner">
         <div class="slide-eyebrow eyebrow-candidate"><span class="pulse pulse-green"></span>For Candidates</div>
         <h1 class="slide-headline">Help us make CVs<br><span class="hl-green">redundant.</span></h1>
@@ -974,6 +1015,18 @@
   const counter = document.getElementById('counter');
   const progress = document.getElementById('progress');
   const carousel = document.getElementById('carousel');
+
+  // Live employer count — gentle drift to feel real
+  const liveCount = document.getElementById('liveCount');
+  if (liveCount) {
+    let base = 2847;
+    setInterval(() => {
+      base += Math.floor(Math.random() * 5) - 2;
+      if (base < 2800) base = 2800;
+      if (base > 2900) base = 2900;
+      liveCount.textContent = base.toLocaleString();
+    }, 3000);
+  }
   const pauseBtn = document.getElementById('pauseBtn');
   const pauseIcon = document.getElementById('pauseIcon');
   const pauseLabel = document.getElementById('pauseLabel');
