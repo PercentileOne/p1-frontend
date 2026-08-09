@@ -857,6 +857,34 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
       </Card>
     </Grid>
 
+    {/* Alert Engine */}
+    <div style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.06), rgba(79,142,247,0.06))', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 16, padding: '28px 32px', marginBottom: 32, display: 'flex', gap: 32, alignItems: 'flex-start' }}>
+      <div style={{ fontSize: 36, flexShrink: 0, lineHeight: 1 }}>⚡</div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 8 }}>The Engine That Powers Everything</div>
+        <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', marginBottom: 10 }}>The <IM /> Alert System</div>
+        <p style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.75, margin: '0 0 20px' }}>
+          Recruiters set a talent alert once — role, score threshold, location. The moment a matching candidate records their interview, the recruiter is notified automatically. On the candidate side, a live demand feed shows exactly how many recruiters are watching for their role right now — the most powerful motivation to record that exists. One mechanic. Two motivations. A self-filling marketplace that runs itself.
+        </p>
+        <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+          {[
+            { color: A,        icon: '🔔', label: 'Recruiter Alerts', body: 'Set once. Match automatically. No searching required.' },
+            { color: '#22c55e', icon: '📊', label: 'Live Demand Feed', body: 'Candidates see real-time recruiter demand for their role.' },
+            { color: A2,       icon: '🔄', label: 'The Flywheel',     body: 'More candidates → more matches → more recruiters → more demand.' },
+            { color: '#f59e0b', icon: '🏆', label: 'Structural Moat', body: 'Retention is passive. Recruiters stay subscribed because alerts keep firing.' },
+          ].map(f => (
+            <div key={f.label} style={{ flex: '1 1 160px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+                <span style={{ fontSize: 16 }}>{f.icon}</span>
+                <span style={{ fontSize: 12, fontWeight: 800, color: f.color }}>{f.label}</span>
+              </div>
+              <p style={{ fontSize: 13, color: '#7070a0', lineHeight: 1.6, margin: 0 }}>{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
     {/* Access points */}
     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>How the Ecosystem is Accessed</div>
     <Grid cols={1}>
