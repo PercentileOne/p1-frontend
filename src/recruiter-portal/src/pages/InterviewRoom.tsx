@@ -250,46 +250,89 @@ export default function InterviewRoom() {
   const fallbackMikeScript = `Hi there — I'm Mike, your recruitment consultant. I've set up your interview today and I want to give you a quick briefing before you meet the panel. Your interviewers today are Sarah, who heads up HR, and James, who'll be assessing you on the role itself. They'll guide you through everything — just follow Sarah's instructions on the controls and you'll be absolutely fine. I'll be here throughout if you need anything. The best thing you can do is be specific: use real examples from your experience. Back yourself — you've got this. Good luck!`;
   const mikeScript = bgMikeScript ?? fallbackMikeScript;
 
-  // ── Session recording ────────────────────────────────────────────────────────
+    // ── Session recording ─────────────────────────────────────────────────────
   const [isRecording, setIsRecording] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingChunksRef = useRef<Blob[]>([]);
   const recordingStreamRef = useRef<MediaStream | null>(null);
+  const recordingStartTimeRef = useRef<number>(0);
+  const chapterMarkersRef = useRef<{ questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[]>([]);
+
+  const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net';
+
+  const getCandidateId = () => {
+    const key = 'explain_candidate_id';
+    let id = localStorage.getItem(key);
+    if (!id) { id = crypto.randomUUID(); localStorage.setItem(key, id); }
+    return id;
+  };
 
   const startRecording = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'audio/webm']
+        .find(t => MediaRecorder.isTypeSupported(t)) ?? '';
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       recordingStreamRef.current = stream;
-      const recorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = recorder;
       recordingChunksRef.current = [];
+      chapterMarkersRef.current = [];
+      recordingStartTimeRef.current = Date.now();
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      mediaRecorderRef.current = recorder;
       recorder.ondataavailable = e => { if (e.data.size > 0) recordingChunksRef.current.push(e.data); };
       recorder.start(1000);
       setIsRecording(true);
     } catch {
-      // mic denied — silently ignore, recording is opt-in
+      // camera/mic denied — recording unavailable, interview continues
     }
   }, []);
 
-  const saveRecording = useCallback(() => {
+  const uploadRecording = useCallback((answers: SessionAnswer[]) => {
     const recorder = mediaRecorderRef.current;
-    if (!recorder || recorder.state === 'inactive') return;
-    recorder.onstop = () => {
-      const blob = new Blob(recordingChunksRef.current, { type: 'audio/webm' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `explain-interview-${new Date().toISOString().slice(0, 10)}.webm`;
-      a.click();
-      URL.revokeObjectURL(url);
+    if (!recorder || recorder.state === 'inactive' || recordingChunksRef.current.length === 0) return;
+    setUploadStatus('uploading');
+    recorder.onstop = async () => {
       recordingStreamRef.current?.getTracks().forEach(t => t.stop());
       setIsRecording(false);
+      try {
+        const mimeType = recordingChunksRef.current[0]?.type ?? 'video/webm';
+        const blob = new Blob(recordingChunksRef.current, { type: mimeType });
+        const durationSeconds = Math.round((Date.now() - recordingStartTimeRef.current) / 1000);
+        const overallScore = answers.length
+          ? answers.reduce((s, a) => s + a.score.overallScore, 0) / answers.length
+          : 0;
+        const candidateId = getCandidateId();
+        const answerSummaries = answers.map((a, i) => ({
+          questionIndex: i,
+          questionText: a.question.questionText,
+          answerText: a.answerText,
+          score: Math.round(a.score.overallScore * 100),
+          passed: a.answerText === '',
+        }));
+        const metadata = JSON.stringify({ chapters: chapterMarkersRef.current, answers: answerSummaries });
+        const qs = new URLSearchParams({
+          candidateId,
+          candidateName: ctx.preferredName ?? 'Candidate',
+          jobTitle: ctx.jobTitle ?? 'Interview',
+          company: ctx.company ?? '',
+          durationSeconds: String(durationSeconds),
+          overallScore: String(Math.round(overallScore * 100)),
+        });
+        await fetch(`${API_BASE}/api/interviews/upload?${qs}`, {
+          method: 'POST',
+          headers: { 'Content-Type': mimeType, 'X-Interview-Metadata': metadata },
+          body: blob,
+        });
+        setUploadStatus('done');
+      } catch {
+        setUploadStatus('error');
+      }
     };
     recorder.stop();
-  }, []);
+  }, [API_BASE, ctx.preferredName, ctx.jobTitle, ctx.company]);
 
-  // Auto-save if component unmounts (e.g. browser back)
-  useEffect(() => () => { saveRecording(); }, [saveRecording]);
+  // Upload if component unmounts mid-session
+  useEffect(() => () => { uploadRecording([]); }, [uploadRecording]);
 
   const [cameraOn, setCameraOn] = useState(true);
 
@@ -340,6 +383,15 @@ export default function InterviewRoom() {
   const askQuestion = useCallback((index: number) => {
     const question = questions[index];
     if (!question) return;
+    // Record chapter marker
+    if (recordingStartTimeRef.current > 0) {
+      chapterMarkersRef.current.push({
+        questionIndex: index,
+        questionText: question.questionText,
+        competency: question.competencyTags?.[0] ?? '',
+        offsetSeconds: Math.round((Date.now() - recordingStartTimeRef.current) / 1000),
+      });
+    }
     const interviewer: 'hr' | 'technical' = question.source === 'HR' ? 'hr' : 'technical';
     setPhase('asking');
     onDoneRef.current = null;
@@ -376,6 +428,7 @@ export default function InterviewRoom() {
     introStartedRef.current = true;
     cancelSpeakRef.current?.();
     cancelSpeakRef.current = null;
+    startRecording();
     setPhase('interviewer-intro');
     logFlowEvent('INTERVIEW_PHASE_STARTED', {
       questionCount: questions.length,
@@ -403,7 +456,7 @@ export default function InterviewRoom() {
         }, (a) => setTechAnalyser(a));
       }, (a) => setHrAnalyser(a));
     }, 600);
-  }, [askQuestion, effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage]);
+  }, [askQuestion, effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage, startRecording]);
 
   const beginInterviewIntroRef = useRef(beginInterviewIntro);
   useEffect(() => { beginInterviewIntroRef.current = beginInterviewIntro; }, [beginInterviewIntro]);
@@ -541,13 +594,14 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setCoachingMessage(null);
     logFlowEvent('QUESTION_COMPLETED', { questionId: q?.questionId, index: qIndex });
     if (qIndex + 1 >= questions.length) {
+      uploadRecording(sessionAnswers);
       navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx } });
     } else {
       const next = qIndex + 1;
       setQIndex(next);
       askQuestion(next);
     }
-  }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, q, cvCtx, jobCtx]);
+  }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, q, cvCtx, jobCtx, uploadRecording]);
 
   const handlePass = useCallback(() => {
     const thinkTimeMs = thinkStartRef.current > 0 ? Date.now() - thinkStartRef.current : undefined;
@@ -710,30 +764,21 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
             </button>
           )}
 
-          {/* Save Session (audio recording) */}
+          {/* Recording status indicator */}
           {phase !== 'intro' && phase !== 'mike' && (
-            <button
-              onClick={startRecording}
-              disabled={isRecording}
-              title={isRecording ? 'Recording in progress' : 'Record this session'}
-              style={{
-                background: isRecording ? 'rgba(239,68,68,0.12)' : 'none',
-                border: `1px solid ${isRecording ? 'rgba(239,68,68,0.4)' : 'var(--border)'}`,
-                borderRadius: '8px', padding: '7px 12px',
-                color: isRecording ? '#EF4444' : 'var(--text-3)',
-                fontSize: '12px', cursor: isRecording ? 'default' : 'pointer',
-                display: 'flex', alignItems: 'center', gap: '6px',
-                transition: 'all 0.2s',
-              }}
-            >
-              {isRecording ? (
-                <>
-                  <motion.span animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}
-                    style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#EF4444', flexShrink: 0 }} />
-                  Recording
-                </>
-              ) : '⏺ Save Session'}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '7px 12px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#EF4444' }}>
+              {uploadStatus === 'uploading' ? (
+                <><motion.span animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 0.8 }} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />Saving…</>
+              ) : uploadStatus === 'done' ? (
+                <><span style={{ color: '#34D399' }}>✓</span><span style={{ color: '#34D399' }}>Saved</span></>
+              ) : uploadStatus === 'error' ? (
+                <><span>⚠</span>Save failed</>
+              ) : isRecording ? (
+                <><motion.span animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#EF4444', flexShrink: 0 }} />Recording</>
+              ) : (
+                <><span style={{ color: 'var(--text-3)' }}>⏺</span><span style={{ color: 'var(--text-3)' }}>Standby</span></>
+              )}
+            </div>
           )}
 
           {phase !== 'intro' && phase !== 'done' && (
@@ -746,6 +791,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           )}
           <button onClick={() => {
             cancelSpeakRef.current?.();
+            uploadRecording(sessionAnswers);
             if (sessionAnswers.length > 0) {
               navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx } });
             } else {
