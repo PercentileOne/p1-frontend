@@ -448,10 +448,10 @@
 
   /* CTAs */
   .statement-cta-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
-  .statement-cta-primary { display: inline-block; background: var(--green); color: #0a0f0a; font-size: 14px; font-weight: 800; padding: 13px 24px; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; white-space: nowrap; }
-  .statement-cta-primary:hover { opacity: 0.88; }
-  .statement-cta-secondary { display: inline-block; background: var(--blue); color: #fff; font-size: 14px; font-weight: 800; padding: 13px 24px; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; white-space: nowrap; }
-  .statement-cta-secondary:hover { opacity: 0.88; }
+  .statement-cta-primary, .statement-cta-secondary { display: inline-block; font-size: 14px; font-weight: 800; padding: 13px 24px; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; white-space: nowrap; flex: 1; text-align: center; }
+  .statement-cta-primary { background: var(--green); color: #0a0f0a; }
+  .statement-cta-secondary { background: var(--blue); color: #fff; }
+  .statement-cta-primary:hover, .statement-cta-secondary:hover { opacity: 0.88; }
   .statement-cta-note { font-size: 12px; color: var(--muted); }
 
   /* Why it works */
