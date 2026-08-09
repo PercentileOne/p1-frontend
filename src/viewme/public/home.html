@@ -195,8 +195,9 @@
   /* PRICING */
   .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
   .pricing-card { background: var(--card); border: 1px solid rgba(255,255,255,0.07); border-radius: 24px; padding: 36px 30px; }
-  .pricing-card.featured { background: linear-gradient(135deg,rgba(61,126,246,0.1),rgba(139,92,246,0.08)); border-color: rgba(61,126,246,0.3); position: relative; }
-  .pricing-card.featured::before { content:'Most Popular'; position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,var(--blue),#8B5CF6); color:#fff; font-size:11px; font-weight:800; padding:4px 14px; border-radius:20px; letter-spacing:0.05em; white-space:nowrap; }
+  .pricing-card.candidate { background: linear-gradient(135deg,rgba(52,211,153,0.1),rgba(16,185,129,0.06)); border-color: rgba(52,211,153,0.3); }
+  .pricing-card.featured { background: linear-gradient(135deg,rgba(61,126,246,0.14),rgba(99,102,241,0.1)); border-color: rgba(61,126,246,0.45); position: relative; box-shadow: 0 0 40px rgba(61,126,246,0.12); }
+  .pricing-card.featured::before { content:'Most Popular'; position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,var(--blue),#6366f1); color:#fff; font-size:11px; font-weight:800; padding:4px 14px; border-radius:20px; letter-spacing:0.05em; white-space:nowrap; }
   .plan-name { font-size:13px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px; }
   .plan-price { font-size:38px; font-weight:900; color:var(--pearl); letter-spacing:-0.04em; line-height:1; margin-bottom:6px; }
   .plan-price span { font-size:16px; font-weight:600; color:var(--muted); }
@@ -1002,9 +1003,9 @@
     <h2 class="section-title">Simple. Transparent.</h2>
     <p class="section-sub">Always free for candidates. Employers pay for search access.</p>
     <div class="pricing-grid">
-      <div class="pricing-card">
-        <div class="plan-name">Candidate</div>
-        <div class="plan-price">£0 <span>/ forever</span></div>
+      <div class="pricing-card candidate">
+        <div class="plan-name" style="color:var(--green)">Candidate</div>
+        <div class="plan-price" style="color:var(--green)">£0 <span style="color:#5090a0">/ forever</span></div>
         <div class="plan-desc">Complete your interview and publish your scored profile. Free, permanently.</div>
         <ul class="plan-features">
           <li>Full AI-conducted interview</li>
@@ -1016,7 +1017,7 @@
         <button class="plan-btn ghost" onclick="window.open('https://explain.global')">Start your interview →</button>
       </div>
       <div class="pricing-card featured">
-        <div class="plan-name">Employer Search</div>
+        <div class="plan-name" style="color:var(--blue)">Employer Search</div>
         <div class="plan-price">£599 <span>/ month</span></div>
         <div class="plan-desc">Full search access. Watch interviews. Send direct invitations. Cancel anytime.</div>
         <ul class="plan-features">
