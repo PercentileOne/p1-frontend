@@ -23,6 +23,7 @@ const NAV_GROUPS = [
     { id: 'portals',            label: 'Portals' },
     { id: 'career-tools',       label: 'Career Tools' },
     { id: 'skills-map',         label: '🗺️ Skills Map' },
+    { id: 'alert-engine',       label: '⚡ Alert Engine' },
     { id: 'candidate-services', label: 'Candidate Services' },
   ]},
   { title: 'Business Model', items: [
@@ -2774,6 +2775,98 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
   </>,
 
   'skills-map': () => <SkillsMapSection />,
+
+  // ── Alert Engine ─────────────────────────────────────────────────────────────
+  'alert-engine': () => <>
+    <SectionHead
+      label="Product · Alert Engine"
+      h1="The InterviewMe"
+      h2="Alert System."
+      sub="A two-sided notification engine that connects the moment a candidate records to the recruiters already watching for them — creating a real-time talent marketplace that runs itself."
+    />
+
+    <Callout icon="⚡" title="The Core Mechanic" color="#22c55e"
+      body="Recruiters set a talent alert once — role, score threshold, location. The moment a matching candidate completes their interview, the recruiter is notified automatically. On the other side, candidates see a live demand feed showing exactly how many recruiters are actively watching for their role right now. One mechanic. Two motivations. A virtuous loop that fills itself." />
+
+    <Grid cols={2}>
+      <Card accent={A}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 12 }}>Recruiter Side — Talent Alerts</div>
+        <div style={{ fontSize: 17, fontWeight: 900, color: '#fff', marginBottom: 10, letterSpacing: '-0.02em' }}>Set once. Hire automatically.</div>
+        <p style={{ fontSize: 13, color: '#8080a0', lineHeight: 1.7, marginBottom: 16 }}>
+          Recruiters define their criteria — role, minimum score, location radius — and save an alert. Every time a candidate completes an interview that matches, a toast notification fires in the portal and an email goes out. No searching. No polling. The talent comes to them.
+        </p>
+        {[
+          { icon: '🎯', text: 'Match by role, score threshold, and location' },
+          { icon: '🔔', text: 'Instant toast + email on match — links directly to interview' },
+          { icon: '💬', text: 'One click from notification to watch, like, or message' },
+          { icon: '📋', text: 'Multiple active alerts — pause, edit, or delete anytime' },
+        ].map(f => (
+          <div key={f.text} style={{ display: 'flex', gap: 10, marginBottom: 10, alignItems: 'flex-start' }}>
+            <span style={{ fontSize: 16, flexShrink: 0 }}>{f.icon}</span>
+            <span style={{ fontSize: 13, color: '#b0b0c8', lineHeight: 1.5 }}>{f.text}</span>
+          </div>
+        ))}
+        <div style={{ marginTop: 16, padding: '14px 16px', background: 'rgba(79,142,247,0.06)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: 10 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', marginBottom: 4 }}>Alert match — Senior React Developer</div>
+          <div style={{ fontSize: 12, color: '#8080a0' }}>A candidate in London just scored 94% · View their interview →</div>
+        </div>
+      </Card>
+
+      <Card accent="#22c55e">
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 12 }}>Candidate Side — Live Demand Feed</div>
+        <div style={{ fontSize: 17, fontWeight: 900, color: '#fff', marginBottom: 10, letterSpacing: '-0.02em' }}>See who's watching. Record today.</div>
+        <p style={{ fontSize: 13, color: '#8080a0', lineHeight: 1.7, marginBottom: 16 }}>
+          Candidates see a live, anonymised feed of active recruiter demand — how many recruiters are watching for their exact role and score band right now. It appears on the gate page before signup and personalises once they have a profile. The most powerful motivation to record is knowing someone is already waiting.
+        </p>
+        {[
+          { role: 'Senior React Developer', count: '62 recruiters watching', pct: 85 },
+          { role: 'Cloud Architect', count: '41 recruiters watching', pct: 68 },
+          { role: 'Data Scientist', count: '37 recruiters watching', pct: 61 },
+          { role: 'Product Manager', count: '29 recruiters watching', pct: 48 },
+        ].map(f => (
+          <div key={f.role} style={{ marginBottom: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#ddd' }}>{f.role}</span>
+              <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 700 }}>{f.count}</span>
+            </div>
+            <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2 }}>
+              <div style={{ height: '100%', width: `${f.pct}%`, background: 'linear-gradient(90deg, #22c55e, #6ee7b7)', borderRadius: 2 }} />
+            </div>
+          </div>
+        ))}
+      </Card>
+    </Grid>
+
+    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>Why This Is a Moat</div>
+    <Grid cols={3}>
+      <Card>
+        <Feature icon="🔄" title="Self-reinforcing loop" body="More candidates → more alert matches → more recruiters paying → more demand feed data → more candidates motivated to record. The flywheel accelerates with every signup on either side." />
+      </Card>
+      <Card>
+        <Feature icon="📊" title="Real-time data asset" body="Every alert saved and every match fired builds a proprietary demand graph — which roles, which scores, which locations are hottest right now. No competitor can replicate this without the users." />
+      </Card>
+      <Card>
+        <Feature icon="🏆" title="Passive revenue driver" body="Recruiters who set alerts don't need to actively log in to get value. The system notifies them. Retention is structural — not behavioural. They stay subscribed because the alerts keep working." />
+      </Card>
+    </Grid>
+
+    <Grid cols={1}>
+      <Card>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24 }}>
+          {[
+            { label: 'Status', text: 'Specced and ready to build. Candidate portal and recruiter portal foundations are in place. Alert engine is the next major feature post-launch.' },
+            { label: 'Data Storage', text: 'Alert definitions in Azure Cosmos DB. Match events trigger Azure Functions. Toast notifications via SignalR. Email via Azure Communication Services.' },
+            { label: 'IP', text: 'The two-sided alert mechanic — recruiter criteria matching against a live candidate interview stream — is covered under the InterviewMe patent families (Universal Distribution, Search & Matching Engine).' },
+          ].map(({ label, text }) => (
+            <div key={label}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: A, marginBottom: 8 }}>{label}</div>
+              <p style={{ fontSize: 14, color: '#9090b0', lineHeight: 1.7, margin: 0 }}>{text}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </Grid>
+  </>,
 
   // ── Candidate Services ────────────────────────────────────────────────────────
   'candidate-services': () => <>
