@@ -379,6 +379,15 @@
   /* ── SLIDE MORE (scrollable extra content) ── */
   .slide-more { margin-top: 32px; border-top: 1px solid var(--border); padding-top: 28px; }
   .slide-more-title { font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+  .stat-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .stat-big { font-size: 28px; font-weight: 900; line-height: 1; margin-bottom: 6px; letter-spacing: -0.02em; }
+  .stat-desc { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+  .stat-block-red    .stat-big { color: #f87171; }
+  .stat-block-amber  .stat-big { color: var(--amber); }
+  .stat-block-blue   .stat-big { color: var(--blue); }
+  .stat-block-violet .stat-big { color: var(--violet); }
+  .stat-block-green  .stat-big { color: var(--green); }
   .benefit-list { display: flex; flex-direction: column; gap: 14px; }
   .benefit { display: flex; gap: 12px; align-items: flex-start; }
   .bcheck { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; font-weight: 800; margin-top: 1px; }
@@ -449,18 +458,36 @@
           <span class="strip-more">2,400 candidates already recorded</span>
         </div>
         <div class="slide-more">
-          <div class="slide-more-title">Why candidates choose InterviewMe</div>
-          <div class="benefit-list">
-            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>Record once — share everywhere</strong><span>LinkedIn, WhatsApp, X, email. One link. Your interview travels with you for life.</span></div></div>
-            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>Scored on 5 dimensions</strong><span>Communication, confidence, clarity, depth, and presence — rated question by question.</span></div></div>
-            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>Sarah and James ask real questions</strong><span>AI interviewers built on thousands of real hiring scenarios. Structured, fair, consistent.</span></div></div>
-            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>Employers find you — you don't chase them</strong><span>Your profile is searchable the moment your interview goes live. Passive hiring, active results.</span></div></div>
-            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>No CV required — ever</strong><span>Your performance is your application. The interview speaks louder than any bullet point.</span></div></div>
-            <div class="benefit"><div class="bcheck bcheck-g">✓</div><div class="btext"><strong>Free to record. Free to share.</strong><span>You keep all the value. No fees, no subscriptions, no catches for candidates.</span></div></div>
+          <div class="slide-more-title">The hiring system is broken — and candidates pay the price</div>
+          <div class="stat-grid">
+            <div class="stat-block stat-block-red">
+              <div class="stat-big">75%</div>
+              <div class="stat-desc">of candidates are ghosted after interviews — no feedback, no closure, no reason given.</div>
+            </div>
+            <div class="stat-block stat-block-amber">
+              <div class="stat-big">250+</div>
+              <div class="stat-desc">CVs land on a recruiter's desk for every role posted. Most never get read by a human.</div>
+            </div>
+            <div class="stat-block stat-block-blue">
+              <div class="stat-big">6–8</div>
+              <div class="stat-desc">weeks. The average job search duration — most of it spent waiting, refreshing, hoping.</div>
+            </div>
+            <div class="stat-block stat-block-violet">
+              <div class="stat-big">60%</div>
+              <div class="stat-desc">of candidates say lack of interview practice is what costs them the offer — not ability.</div>
+            </div>
+            <div class="stat-block stat-block-green">
+              <div class="stat-big">1 in 3</div>
+              <div class="stat-desc">candidates are rejected at CV screen for roles they were fully qualified to do.</div>
+            </div>
+            <div class="stat-block stat-block-red">
+              <div class="stat-big">82%</div>
+              <div class="stat-desc">of hiring managers admit they've hired the wrong person because a CV looked good on paper.</div>
+            </div>
           </div>
           <div class="slide-quote">
-            <p>"I recorded my interview on a Sunday. By Tuesday I had three employer messages. I hadn't sent a single CV."</p>
-            <cite>— Software Engineer, landed a role at a Series B startup</cite>
+            <p>"The interview is the moment that matters. We built InterviewMe so yours doesn't get lost in a pile of paper."</p>
+            <cite>— Francis Cobbinah, Founder, Percentile.One</cite>
           </div>
         </div>
       </div>
