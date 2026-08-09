@@ -404,6 +404,16 @@
   /* ── Statement slide ── */
   .slide-statement { background: var(--bg); }
   .slide-inner-statement { display: flex; flex-direction: column; justify-content: flex-start; min-height: 100%; padding-bottom: 48px; }
+  /* Hero two-column row */
+  .statement-hero-row { display: flex; align-items: center; gap: 24px; margin-bottom: 20px; }
+  .statement-hero-text { flex: 1; min-width: 0; }
+  .statement-hero-chair { flex-shrink: 0; width: 200px; }
+  .statement-hero-chair img { width: 100%; height: auto; display: block; border-radius: 12px; object-fit: cover; }
+
+  /* InterviewMe inline brand */
+  .iname-white { color: var(--pearl); font-weight: 800; }
+  .iname-green  { color: var(--green);  font-weight: 800; }
+
   .statement-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); margin-bottom: 28px; }
   .statement-headline { font-size: clamp(36px, 5.5vw, 58px); font-weight: 900; line-height: 1.08; letter-spacing: -0.03em; color: var(--pearl); margin-bottom: 20px; }
   .statement-hl { color: var(--green); display: inline; }
@@ -495,13 +505,20 @@
     <!-- ─ SLIDE 0: THE BIG STATEMENT ─ -->
     <div class="slide slide-statement active" data-audience="general">
       <div class="slide-inner slide-inner-statement">
-        <div class="statement-eyebrow"><span class="pulse pulse-green"></span>The new way to get hired</div>
-        <h1 class="statement-headline">
-          Record once.<br>
-          <span class="statement-hl">Interview for<br>100 employers</span><br>
-          at the same time.
-        </h1>
-        <p class="statement-sub">One AI-driven interview. Scored, timestamped, verified, and instantly shareable.<br>The moment you go live, every employer and recruiter on InterviewMe can find you — automatically. No CV. No cover letter. Just you.</p>
+        <div class="statement-hero-row">
+          <div class="statement-hero-text">
+            <div class="statement-eyebrow"><span class="pulse pulse-green"></span>The new way to get hired</div>
+            <h1 class="statement-headline">
+              Record once.<br>
+              <span class="statement-hl">Interview for<br>100 employers</span><br>
+              at the same time.
+            </h1>
+          </div>
+          <div class="statement-hero-chair">
+            <img src="the-interview-chair.png" alt="The Interview Chair">
+          </div>
+        </div>
+        <p class="statement-sub">One AI-driven interview. Scored, timestamped, verified, and instantly shareable.<br>The moment you go live, every employer and recruiter on <strong class="iname-white">Interview</strong><strong class="iname-green">Me</strong> can find you — automatically. No CV. No cover letter. Just you.</p>
 
         <div class="statement-broadcast">
           <div class="sbc-title">Your interview becomes a broadcast.</div>
