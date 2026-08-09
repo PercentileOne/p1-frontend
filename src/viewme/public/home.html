@@ -764,6 +764,101 @@
   </div>
 </div>
 
+<!-- ALERT SYSTEM SECTION -->
+<div class="section" id="alert-system" style="background:var(--bg);">
+  <div class="section-inner">
+    <div style="text-align:center;margin-bottom:56px">
+      <div class="section-eyebrow" style="color:var(--green)">⚡ The Alert Engine</div>
+      <h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:900;color:var(--pearl);letter-spacing:-0.03em;margin-bottom:16px">Stop searching.<br><span style="color:var(--green)">Get notified.</span></h2>
+      <p style="font-size:1.1rem;color:#7080a0;max-width:600px;margin:0 auto;line-height:1.7">The world's best companies poach from universities the moment a student hits the right grade. Now every recruiter and employer on the planet can do the same — automatically, for any role, any score threshold, any location.</p>
+    </div>
+
+    <!-- Alert examples grid -->
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:900px;margin:0 auto 48px;" class="how-grid" id="alert-grid">
+      <div style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.15);border-radius:16px;padding:24px 28px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <span style="font-size:22px">🏗️</span>
+          <div>
+            <div style="font-size:14px;font-weight:800;color:var(--pearl)">Senior Architect</div>
+            <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">
+              <span style="font-size:11px;font-weight:700;background:rgba(52,211,153,0.12);color:var(--green);border-radius:100px;padding:2px 10px;">95%+ score</span>
+              <span style="font-size:11px;font-weight:700;background:rgba(255,255,255,0.06);color:#a0b0c0;border-radius:100px;padding:2px 10px;">UK / Remote</span>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:#5070a0;font-style:italic;">"Send me every candidate who scores 95% or above in a Senior Architect interview."</div>
+      </div>
+
+      <div style="background:rgba(61,126,246,0.04);border:1px solid rgba(61,126,246,0.15);border-radius:16px;padding:24px 28px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <span style="font-size:22px">⚛️</span>
+          <div>
+            <div style="font-size:14px;font-weight:800;color:var(--pearl)">Senior React Developer</div>
+            <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">
+              <span style="font-size:11px;font-weight:700;background:rgba(61,126,246,0.12);color:#6ea8fe;border-radius:100px;padding:2px 10px;">90%+ score</span>
+              <span style="font-size:11px;font-weight:700;background:rgba(255,255,255,0.06);color:#a0b0c0;border-radius:100px;padding:2px 10px;">London</span>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:#5070a0;font-style:italic;">"Alert me the moment a React Developer in London hits 90% or higher."</div>
+      </div>
+
+      <div style="background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.15);border-radius:16px;padding:24px 28px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <span style="font-size:22px">📊</span>
+          <div>
+            <div style="font-size:14px;font-weight:800;color:var(--pearl)">Data Scientist</div>
+            <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">
+              <span style="font-size:11px;font-weight:700;background:rgba(124,58,237,0.12);color:#c4b5fd;border-radius:100px;padding:2px 10px;">88%+ score</span>
+              <span style="font-size:11px;font-weight:700;background:rgba(255,255,255,0.06);color:#a0b0c0;border-radius:100px;padding:2px 10px;">Any location</span>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:#5070a0;font-style:italic;">"Alert me when a Data Scientist anywhere in the world scores 88%+."</div>
+      </div>
+
+      <div style="background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.15);border-radius:16px;padding:24px 28px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <span style="font-size:22px">🎯</span>
+          <div>
+            <div style="font-size:14px;font-weight:800;color:var(--pearl)">Head of Product</div>
+            <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">
+              <span style="font-size:11px;font-weight:700;background:rgba(245,158,11,0.12);color:#fbbf24;border-radius:100px;padding:2px 10px;">92%+ score</span>
+              <span style="font-size:11px;font-weight:700;background:rgba(255,255,255,0.06);color:#a0b0c0;border-radius:100px;padding:2px 10px;">Europe</span>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:#5070a0;font-style:italic;">"As soon as a Head of Product in Europe hits 92%, I want to be first."</div>
+      </div>
+    </div>
+
+    <!-- Notification toast -->
+    <div style="max-width:560px;margin:0 auto 48px;background:rgba(10,14,26,0.8);border:1px solid rgba(52,211,153,0.25);border-radius:16px;padding:20px 24px;display:flex;align-items:center;gap:16px;">
+      <span style="font-size:28px;flex-shrink:0;">🔔</span>
+      <div>
+        <div style="font-size:14px;font-weight:800;color:var(--pearl);margin-bottom:3px;">Alert match — Senior Architect · London</div>
+        <div style="font-size:13px;color:#5070a0;">A candidate just scored <strong style="color:var(--green)">97%</strong> — recorded 4 minutes ago. <span style="color:var(--green);font-weight:700;cursor:pointer;">Watch their interview →</span></div>
+      </div>
+    </div>
+
+    <!-- Three columns -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:900px;margin:0 auto;text-align:center;" class="how-grid">
+      <div>
+        <div style="font-size:32px;font-weight:900;color:var(--green);margin-bottom:6px;">Set once</div>
+        <div style="font-size:13px;color:#7080a0;">Define your role, score threshold, and location. Done. No logging in to check. No polling a job board.</div>
+      </div>
+      <div>
+        <div style="font-size:32px;font-weight:900;color:var(--green);margin-bottom:6px;">You're first</div>
+        <div style="font-size:13px;color:#7080a0;">The moment a candidate hits your threshold you're notified — before other recruiters even know they exist.</div>
+      </div>
+      <div>
+        <div style="font-size:32px;font-weight:900;color:var(--green);margin-bottom:6px;">Watch. Decide.</div>
+        <div style="font-size:13px;color:#7080a0;">Their full AI-conducted interview is waiting. Watch it in full before you send a single message.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- TRADESPEOPLE SECTION -->
 <div class="section" id="tradespeople" style="background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%)">
   <div class="section-inner">
