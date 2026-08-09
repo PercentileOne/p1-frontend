@@ -341,357 +341,288 @@
 </nav>
 
 
-<!-- HERO -->
-<div class="hero" style="padding-top:110px">
-  <div class="hero-top">
-    <div class="hero-eyebrow"><span class="pulse"></span> Powered by <span style="color:#3D7EF6">Explain</span><span style="color:#F0F4FF">.global</span> · AI-conducted interviews</div>
-    <h1>Watch <span style="color:#34D399">Live</span> candidate interviews.<br><em>Hire without guessing.</em></h1>
-    <p class="hero-sub">Every profile is a real, AI-led interview — scored, verified, and ready to watch. Search by role. Watch the proof. Send one invitation.</p>
-    <div style="display:inline-flex;align-items:center;gap:10px;margin-top:-16px;margin-bottom:28px;padding:10px 22px;background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:30px">
-      <span style="font-size:16px">✊</span>
-      <span style="font-size:13px;font-weight:700;color:#FBBF24;letter-spacing:-0.01em">Help us make CVs redundant.</span>
+<!-- SCROLL SECTIONS CSS -->
+<style>
+  /* Apple-style full-viewport scroll sections */
+  .scroll-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 120px 40px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .scroll-inner {
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* Scroll-in animation */
+  .reveal {
+    opacity: 0;
+    transform: translateY(48px);
+    transition: opacity 0.85s cubic-bezier(0.16,1,0.3,1), transform 0.85s cubic-bezier(0.16,1,0.3,1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.22s; }
+  .reveal-delay-3 { transition-delay: 0.34s; }
+  .reveal-delay-4 { transition-delay: 0.46s; }
+
+  /* Section 1 — Statement */
+  .s1-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--green); background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2);
+    border-radius: 20px; padding: 5px 14px; margin-bottom: 28px;
+  }
+  .s1-h1 {
+    font-size: clamp(2.8rem, 6.5vw, 5rem);
+    font-weight: 900; letter-spacing: -0.04em; line-height: 1.02;
+    color: var(--pearl); margin-bottom: 8px; text-wrap: balance;
+  }
+  .s1-h1 .hl { color: var(--green); }
+  .s1-sub {
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: #7080a0; max-width: 620px; line-height: 1.7; margin-bottom: 48px;
+  }
+  .s1-cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .s1-btn-green {
+    padding: 16px 36px; border-radius: 14px; font-size: 15px; font-weight: 800;
+    text-decoration: none; border: none; cursor: pointer; font-family: var(--font);
+    display: inline-block;
+    background: linear-gradient(180deg, #5DF09A 0%, #1db35a 100%);
+    color: #071a0f;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -3px 0 rgba(0,0,0,0.2), 0 0 22px rgba(34,192,104,0.45);
+    transition: transform 0.15s, filter 0.15s, box-shadow 0.15s;
+  }
+  .s1-btn-green:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -3px 0 rgba(0,0,0,0.2), 0 0 36px rgba(34,192,104,0.65); }
+  .s1-btn-blue {
+    padding: 16px 36px; border-radius: 14px; font-size: 15px; font-weight: 800;
+    text-decoration: none; border: none; cursor: pointer; font-family: var(--font);
+    display: inline-block;
+    background: linear-gradient(180deg, #6b9fff 0%, #1d4ed8 100%);
+    color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -3px 0 rgba(0,0,0,0.2), 0 0 22px rgba(37,99,235,0.45);
+    transition: transform 0.15s, filter 0.15s, box-shadow 0.15s;
+  }
+  .s1-btn-blue:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -3px 0 rgba(0,0,0,0.2), 0 0 36px rgba(37,99,235,0.65); }
+  .s1-cv-badge {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 32px;
+    padding: 10px 22px; background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 30px; font-size: 13px; font-weight: 700; color: #FBBF24;
+  }
+  .s1-bg-glow {
+    position: absolute; top: -20%; left: 50%; transform: translateX(-50%);
+    width: 900px; height: 600px;
+    background: radial-gradient(ellipse at 50% 50%, rgba(52,211,153,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Section divider */
+  .scroll-divider {
+    height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+    margin: 0;
+  }
+
+  /* Audience sections — two column */
+  .audience-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+  }
+  .audience-grid.reverse { direction: rtl; }
+  .audience-grid.reverse > * { direction: ltr; }
+  .aud-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .aud-h2 {
+    font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; letter-spacing: -0.035em;
+    line-height: 1.06; color: var(--pearl); margin-bottom: 20px; text-wrap: balance;
+  }
+  .aud-body {
+    font-size: 16px; color: #7080a0; line-height: 1.8; margin-bottom: 32px;
+  }
+  .aud-points { list-style: none; margin-bottom: 36px; display: flex; flex-direction: column; gap: 12px; }
+  .aud-points li { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; color: #a0aec0; line-height: 1.6; }
+  .aud-points li::before { content: '→'; font-weight: 900; flex-shrink: 0; margin-top: 1px; }
+
+  /* Visual panels */
+  .aud-visual {
+    background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 24px; padding: 32px; position: relative; overflow: hidden;
+  }
+  .aud-visual-glow {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 50% 0%, rgba(52,211,153,0.08) 0%, transparent 70%);
+  }
+  .aud-stat-row { display: flex; gap: 16px; margin-bottom: 20px; }
+  .aud-stat { flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 18px 16px; text-align: center; }
+  .aud-stat-num { font-size: 28px; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 4px; }
+  .aud-stat-label { font-size: 11px; color: #6070a0; font-weight: 600; }
+  .mock-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+  .mock-avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; color: #fff; }
+  .mock-name { font-size: 13px; font-weight: 700; color: var(--pearl); }
+  .mock-meta { font-size: 11px; color: #5060a0; margin-top: 1px; }
+  .mock-score { margin-left: auto; font-size: 18px; font-weight: 900; }
+  .mock-alert { background: rgba(52,211,153,0.06); border: 1px solid rgba(52,211,153,0.2); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; display: flex; gap: 10px; align-items: flex-start; }
+  .mock-alert-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; margin-top: 5px; animation: pulse 2s infinite; }
+  .mock-toast { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+
+  /* Mobile */
+  @media (max-width: 860px) {
+    .scroll-section { padding: 100px 24px 60px; min-height: auto; }
+    .audience-grid { grid-template-columns: 1fr; gap: 40px; }
+    .audience-grid.reverse { direction: ltr; }
+    .s1-h1 { font-size: clamp(2.2rem, 8vw, 3rem); }
+    .aud-h2 { font-size: clamp(1.8rem, 6vw, 2.4rem); }
+    .aud-visual { display: none; }
+  }
+</style>
+
+<!-- SECTION 1: STATEMENT -->
+<div class="scroll-section" id="s-statement" style="background: var(--bg);">
+  <div class="s1-bg-glow"></div>
+  <div class="scroll-inner">
+    <div class="reveal">
+      <div class="s1-eyebrow"><span class="pulse" style="background:var(--green)"></span> The world's first broadcast interview platform</div>
     </div>
-    <div class="hero-actions">
-      <a class="btn-primary" href="#pricing">Search candidates from £599/mo →</a>
-      <button class="btn-ghost" onclick="document.getElementById('demo-step-2').click(); document.querySelector('.demo-wrap').scrollIntoView({behavior:'smooth'})">See it in action ↓</button>
+    <h1 class="s1-h1 reveal reveal-delay-1">Record once.<br><span class="hl">Interview for 100 employers</span><br>at the same time.</h1>
+    <p class="s1-sub reveal reveal-delay-2">Before <strong style="color:#fff">Interview</strong><strong style="color:var(--green)">Me</strong>, candidates wrote CVs, submitted applications, travelled to interviews — and were ghosted. Now, for the very first time, one recorded interview works for you 24 hours a day, seen by thousands of recruiters and employers. Simultaneously. Without applying to a single one of them.</p>
+    <div class="s1-cta-row reveal reveal-delay-3">
+      <a href="https://explain.global" class="s1-btn-green">Record my interview — it's free →</a>
+      <a href="#employers" class="s1-btn-blue">I'm hiring — show me candidates →</a>
+    </div>
+    <div class="reveal reveal-delay-4">
+      <div class="s1-cv-badge">✊ Help us make CVs redundant.</div>
     </div>
   </div>
+</div>
 
-  <!-- INTERACTIVE DEMO -->
-  <div class="demo-wrap">
-    <div class="demo-chrome">
-      <div class="chrome-dot" style="background:#ff5f57"></div>
-      <div class="chrome-dot" style="background:#ffbd2e"></div>
-      <div class="chrome-dot" style="background:#28ca41"></div>
-      <div class="chrome-url">www.interviewme.global</div>
-    </div>
-    <div class="demo-steps">
-      <button class="demo-step-btn active" id="demo-step-1" onclick="showStep(1)">
-        <span class="demo-step-num">1</span> Search
-      </button>
-      <button class="demo-step-btn" id="demo-step-2" onclick="showStep(2)">
-        <span class="demo-step-num">2</span> Browse Candidate Interviews
-      </button>
-      <button class="demo-step-btn" id="demo-step-3" onclick="showStep(3)">
-        <span class="demo-step-num">3</span> Watch &amp; Invite
-      </button>
-    </div>
+<div class="scroll-divider"></div>
 
-    <!-- STEP 1: SEARCH -->
-    <div class="demo-panel active" id="panel-1">
-
-      <!-- MODE TOGGLE: Jobs / Services -->
-      <div style="display:flex;justify-content:center;margin-bottom:28px">
-        <div style="display:inline-flex;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:40px;padding:4px;gap:4px">
-          <button id="mode-jobs" onclick="setMode('jobs')" style="padding:8px 28px;border-radius:36px;border:none;font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;transition:all 0.2s;background:var(--blue);color:#fff">💼 Jobs</button>
-          <button id="mode-services" onclick="setMode('services')" style="padding:8px 28px;border-radius:36px;border:none;font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;transition:all 0.2s;background:transparent;color:var(--muted)">🔧 Services</button>
-        </div>
+<!-- SECTION 2: CANDIDATES -->
+<div class="scroll-section" id="s-candidates" style="background: var(--bg);">
+  <div class="scroll-inner">
+    <div class="audience-grid">
+      <div>
+        <div class="aud-eyebrow reveal" style="color: var(--green);">① For Candidates</div>
+        <h2 class="aud-h2 reveal reveal-delay-1">Your living room<br>is now your<br><span style="color:var(--green)">interview stage.</span></h2>
+        <p class="aud-body reveal reveal-delay-2">You used to prepare for days, travel across the city, give everything you had — and wait for a call that never came. No feedback. No explanation. Just silence. That ends now.</p>
+        <ul class="aud-points reveal reveal-delay-2">
+          <li>Record your AI-led interview once, from home, in your own time</li>
+          <li>Your interview is instantly visible to thousands of recruiters searching for your role</li>
+          <li>Recruiters come to you — no applications, no bots, no black holes</li>
+          <li>You get notified when a recruiter saves or watches your profile</li>
+          <li>Free. Forever. No catch.</li>
+        </ul>
+        <a href="https://explain.global" class="s1-btn-green reveal reveal-delay-3">Record my interview — it's free →</a>
       </div>
-
-      <!-- JOBS MODE -->
-      <div id="search-jobs" class="search-hero">
-        <p style="font-size:16px;font-weight:700;color:var(--pearl);margin-bottom:6px;">What role are you hiring for?</p>
-        <p>Search across thousands of verified, AI-interviewed candidates</p>
-        <div class="big-search" onclick="showStep(2)" style="margin-top:20px">
-          <span style="font-size:18px;color:var(--muted)">🔍</span>
-          <span class="search-input-wrap"><span class="search-typed" id="typetext"></span><span class="search-cursor"></span></span>
+      <div class="aud-visual reveal reveal-delay-2">
+        <div class="aud-visual-glow" style="background: radial-gradient(ellipse at 50% 0%, rgba(52,211,153,0.1) 0%, transparent 70%);"></div>
+        <div class="aud-stat-row">
+          <div class="aud-stat"><div class="aud-stat-num" style="color:var(--green)">£0</div><div class="aud-stat-label">Cost to candidates</div></div>
+          <div class="aud-stat"><div class="aud-stat-num" style="color:var(--green)">∞</div><div class="aud-stat-label">Times it works for you</div></div>
+          <div class="aud-stat"><div class="aud-stat-num" style="color:var(--green)">24/7</div><div class="aud-stat-label">Your interview is live</div></div>
         </div>
-        <!-- Jobs filter bar -->
-        <div class="filter-bar">
-          <div class="fdr" id="fd-country">
-            <button class="fdr-btn" onclick="toggleFdr('fd-country')"><span class="fdr-label">🇬🇧 United Kingdom</span><span class="fdr-chevron">▾</span></button>
-            <div class="fdr-menu">
-              <div class="fdr-opt sel" onclick="pickFdr('fd-country',this,'🇬🇧 United Kingdom')">🇬🇧 United Kingdom</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-country',this,'🇺🇸 United States')">🇺🇸 United States</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-country',this,'🇨🇦 Canada')">🇨🇦 Canada</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-country',this,'🇦🇺 Australia')">🇦🇺 Australia</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-country',this,'🌍 Anywhere')">🌍 Anywhere</div>
-            </div>
-          </div>
-          <div class="fdr" id="fd-region">
-            <button class="fdr-btn" onclick="toggleFdr('fd-region')"><span class="fdr-label">London &amp; South East</span><span class="fdr-chevron">▾</span></button>
-            <div class="fdr-menu">
-              <div class="fdr-opt sel" onclick="pickFdr('fd-region',this,'London &amp; South East')">London &amp; South East</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-region',this,'Midlands')">Midlands</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-region',this,'North West')">North West</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-region',this,'Scotland')">Scotland</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-region',this,'Remote only')">Remote only</div>
-            </div>
-          </div>
-          <div class="fdr" id="fd-town">
-            <button class="fdr-btn" onclick="toggleFdr('fd-town')"><span class="fdr-label">📍 London · 20 mi</span><span class="fdr-chevron">▾</span></button>
-            <div class="fdr-menu">
-              <div class="fdr-opt sel" onclick="pickFdr('fd-town',this,'📍 London · 20 mi')">📍 London · within 20 miles</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-town',this,'📍 Manchester')">📍 Manchester</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-town',this,'📍 Birmingham')">📍 Birmingham</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-town',this,'📍 Leeds')">📍 Leeds</div>
-            </div>
-          </div>
-          <div class="fdr" id="fd-level">
-            <button class="fdr-btn" onclick="toggleFdr('fd-level')"><span class="fdr-label">Senior</span><span class="fdr-chevron">▾</span></button>
-            <div class="fdr-menu">
-              <div class="fdr-opt" onclick="pickFdr('fd-level',this,'Any level')">Any level</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-level',this,'Mid-level')">Mid-level</div>
-              <div class="fdr-opt sel" onclick="pickFdr('fd-level',this,'Senior')">Senior</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-level',this,'Lead / Principal')">Lead / Principal</div>
-            </div>
-          </div>
-          <div class="fdr" id="fd-score">
-            <button class="fdr-btn" onclick="toggleFdr('fd-score')"><span class="fdr-label">Score 80+</span><span class="fdr-chevron">▾</span></button>
-            <div class="fdr-menu">
-              <div class="fdr-opt" onclick="pickFdr('fd-score',this,'Any score')">Any score</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-score',this,'Score 70+')">Score 70+</div>
-              <div class="fdr-opt sel" onclick="pickFdr('fd-score',this,'Score 80+')">Score 80+</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-score',this,'Score 90+')">Score 90+</div>
-            </div>
-          </div>
-        </div>
-        <div style="margin-top:24px">
-          <button class="search-go" onclick="showStep(2)">Search verified candidates →</button>
-        </div>
-      </div>
-
-      <!-- SERVICES MODE -->
-      <div id="search-services" class="search-hero" style="display:none">
-        <p style="font-size:16px;font-weight:700;color:var(--pearl);margin-bottom:6px;">What service are you looking for?</p>
-        <p>Watch short intro videos from local tradespeople and services near you</p>
-        <div class="big-search" style="margin-top:20px;cursor:default">
-          <span style="font-size:18px;color:var(--muted)">🔍</span>
-          <span class="search-input-wrap"><span class="search-typed" id="typetext-services"></span><span class="search-cursor"></span></span>
-        </div>
-        <!-- Services filter bar -->
-        <div class="filter-bar" style="--blue:#F59E0B">
-          <div class="fdr" id="fd-trade">
-            <button class="fdr-btn" onclick="toggleFdr('fd-trade')"><span class="fdr-label">🔧 Plumber</span><span class="fdr-chevron">▾</span></button>
-            <div class="fdr-menu">
-              <div class="fdr-opt sel" onclick="pickFdr('fd-trade',this,'🔧 Plumber')">🔧 Plumber</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-trade',this,'⚡ Electrician')">⚡ Electrician</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-trade',this,'🏗️ Builder')">🏗️ Builder</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-trade',this,'🌿 Gardener')">🌿 Gardener</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-trade',this,'🧹 Cleaner')">🧹 Cleaner</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-trade',this,'🐕 Dog Walker')">🐕 Dog Walker</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-trade',this,'👶 Babysitter')">👶 Babysitter</div>
-            </div>
-          </div>
-          <div class="fdr" id="fd-near">
-            <button class="fdr-btn" onclick="toggleFdr('fd-near')"><span class="fdr-label">📍 My location</span><span class="fdr-chevron">▾</span></button>
-            <div class="fdr-menu">
-              <div class="fdr-opt sel" onclick="pickFdr('fd-near',this,'📍 My location')">📍 Use my location</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-near',this,'📍 London')">📍 London</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-near',this,'📍 Manchester')">📍 Manchester</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-near',this,'📍 Birmingham')">📍 Birmingham</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-near',this,'📍 Bristol')">📍 Bristol</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-near',this,'📍 Leeds')">📍 Leeds</div>
-            </div>
-          </div>
-          <div class="fdr" id="fd-within">
-            <button class="fdr-btn" onclick="toggleFdr('fd-within')"><span class="fdr-label">Within 5 miles</span><span class="fdr-chevron">▾</span></button>
-            <div class="fdr-menu">
-              <div class="fdr-opt sel" onclick="pickFdr('fd-within',this,'Within 5 miles')">Within 5 miles</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-within',this,'Within 10 miles')">Within 10 miles</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-within',this,'Within 20 miles')">Within 20 miles</div>
-              <div class="fdr-opt" onclick="pickFdr('fd-within',this,'Any distance')">Any distance</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Services dynamic results -->
-        <div style="margin-top:20px;max-width:600px;margin-left:auto;margin-right:auto;opacity:0;transition:opacity 0.4s ease" id="svcResults">
-          <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;text-align:left" id="svcResultsLabel">3 tradespeople near you</div>
-          <div style="display:flex;flex-direction:column;gap:8px" id="svcResultRows"></div>
-        </div>
-      </div>
-
-        <!-- LIVE SEARCH RESULTS PREVIEW -->
-        <div id="searchResults" style="margin-top:20px;opacity:0;transition:opacity 0.4s ease;max-width:600px;margin-left:auto;margin-right:auto">
-          <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;text-align:left" id="resultsLabel">3 verified matches</div>
-          <div id="resultRows" style="display:flex;flex-direction:column;gap:7px"></div>
-        </div>
-      </div>
-      <div style="display:flex;gap:24px;justify-content:center;margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.05);flex-wrap:wrap">
-        <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--blue)">15+</div><div style="font-size:12px;color:#94a3b8;font-weight:700">Questions per interview</div></div>
-        <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--blue)">5</div><div style="font-size:12px;color:#94a3b8;font-weight:700">Scoring dimensions</div></div>
-        <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--blue)">4</div><div style="font-size:12px;color:#94a3b8;font-weight:700">Team fit questions</div></div>
-        <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--blue)">AI</div><div style="font-size:12px;color:#94a3b8;font-weight:700">Verified &amp; scored</div></div>
-        <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--blue)">£0</div><div style="font-size:11px;color:var(--muted)">Cost to candidates</div></div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#5060a0;margin-bottom:12px;">Recruiters watching your role right now</div>
+        <div class="mock-row"><div class="mock-avatar" style="background:linear-gradient(135deg,#1d4ed8,#3D7EF6)">SR</div><div><div class="mock-name">Senior React Developer</div><div class="mock-meta">London · Remote</div></div><div class="mock-score" style="color:var(--green)">62 👀</div></div>
+        <div class="mock-row"><div class="mock-avatar" style="background:linear-gradient(135deg,#065f46,#34d399)">CA</div><div><div class="mock-name">Cloud Architect</div><div class="mock-meta">UK · Hybrid</div></div><div class="mock-score" style="color:var(--green)">41 👀</div></div>
+        <div class="mock-row"><div class="mock-avatar" style="background:linear-gradient(135deg,#4c1d95,#8B5CF6)">DS</div><div><div class="mock-name">Data Scientist</div><div class="mock-meta">Any location</div></div><div class="mock-score" style="color:var(--green)">37 👀</div></div>
+        <div style="text-align:center;margin-top:16px;font-size:12px;color:#4060a0">Your profile works while you sleep.</div>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- STEP 2: RESULTS -->
-    <div class="demo-panel" id="panel-2">
-      <div class="results-header">
-        <div>
-          <h3 id="resultsHeading">Senior Software Engineer Interviews · London · Score 80+</h3>
-          <span id="resultsCount">247 verified candidate interviews · Sorted by score</span>
-        </div>
-        <span class="results-sort">↕ Score: High to Low</span>
-      </div>
-      <div class="candidate-list">
-        <div class="cand-row selected" onclick="showStep(3)">
-          <div class="avatar" style="background:linear-gradient(135deg,#3062d4,#3D7EF6)">FC</div>
-          <div class="cand-meta">
-            <h4>Francis Cobbinah</h4>
-            <p>Head of Engineering · London, UK · Open to opportunities</p>
-            <div class="cand-tags"><span class="tag">Azure</span><span class="tag">.NET</span><span class="tag">System Design</span><span class="tag">Leadership</span></div>
-            <div class="verified-badge" style="margin-top:5px"><span class="pulse"></span> AI Interview · 22 mins · 15 questions</div>
-          </div>
-          <div class="verified-dot"></div>
-          <div class="cand-play">▶</div>
-          <div class="cand-score-badge">
-            <div class="score-big" style="color:var(--green)">91</div>
-            <div class="score-grade" style="color:var(--green)">A+</div>
-          </div>
-        </div>
-        <div class="cand-row" onclick="showStep(3)">
-          <div class="avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7)">PR</div>
-          <div class="cand-meta">
-            <h4>Priya Rajan</h4>
-            <p>Senior Backend Engineer · Manchester · Open to relocation</p>
-            <div class="cand-tags"><span class="tag">C#</span><span class="tag">AWS</span><span class="tag">Microservices</span></div>
-            <div class="verified-badge" style="margin-top:5px"><span class="pulse"></span> AI Interview · 18 mins · 12 questions</div>
-          </div>
-          <div class="verified-dot"></div>
-          <div class="cand-play">▶</div>
-          <div class="cand-score-badge">
-            <div class="score-big" style="color:var(--green)">88</div>
-            <div class="score-grade" style="color:var(--green)">A</div>
-          </div>
-        </div>
-        <div class="cand-row" onclick="showStep(3)">
-          <div class="avatar" style="background:linear-gradient(135deg,#0f766e,#14b8a6)">JO</div>
-          <div class="cand-meta">
-            <h4>James Okafor</h4>
-            <p>Engineering Lead · Birmingham · Remote preferred</p>
-            <div class="cand-tags"><span class="tag">.NET 9</span><span class="tag">Kubernetes</span><span class="tag">Team Lead</span></div>
-            <div class="verified-badge" style="margin-top:5px"><span class="pulse"></span> AI Interview · 20 mins · 14 questions</div>
-          </div>
-          <div class="verified-dot"></div>
-          <div class="cand-play">▶</div>
-          <div class="cand-score-badge">
-            <div class="score-big" style="color:var(--green)">86</div>
-            <div class="score-grade" style="color:var(--green)">A</div>
-          </div>
-        </div>
-        <div class="cand-row" onclick="showStep(3)">
-          <div class="avatar" style="background:linear-gradient(135deg,#b45309,#f59e0b)">MZ</div>
-          <div class="cand-meta">
-            <h4>Mei Zhang</h4>
-            <p>Principal Engineer · Remote · Actively looking</p>
-            <div class="cand-tags"><span class="tag">Azure</span><span class="tag">Kafka</span><span class="tag">Go</span></div>
-            <div class="verified-badge" style="margin-top:5px"><span class="pulse"></span> AI Interview · 25 mins · 16 questions</div>
-          </div>
-          <div class="verified-dot"></div>
-          <div class="cand-play">▶</div>
-          <div class="cand-score-badge">
-            <div class="score-big" style="color:var(--green)">85</div>
-            <div class="score-grade" style="color:var(--green)">A</div>
-          </div>
-        </div>
-        <div class="cand-row" onclick="showStep(3)">
-          <div class="avatar" style="background:linear-gradient(135deg,#9f1239,#f43f5e)">SA</div>
-          <div class="cand-meta">
-            <h4>Sofia Andreou</h4>
-            <p>Senior Software Engineer · London · Open to contract</p>
-            <div class="cand-tags"><span class="tag">React</span><span class="tag">TypeScript</span><span class="tag">Node</span></div>
-            <div class="verified-badge" style="margin-top:5px"><span class="pulse"></span> AI Interview · 19 mins · 13 questions</div>
-          </div>
-          <div class="verified-dot"></div>
-          <div class="cand-play">▶</div>
-          <div class="cand-score-badge">
-            <div class="score-big" style="color:var(--cyan)">83</div>
-            <div class="score-grade" style="color:var(--cyan)">A−</div>
-          </div>
-        </div>
-        <div class="cand-row" onclick="showStep(3)" style="opacity:0.6">
-          <div class="avatar" style="background:linear-gradient(135deg,#166534,#22c55e)">DK</div>
-          <div class="cand-meta">
-            <h4>Daniel Kim</h4>
-            <p>Full Stack Engineer · London · Open to opportunities</p>
-            <div class="cand-tags"><span class="tag">Python</span><span class="tag">Django</span><span class="tag">AWS</span></div>
-            <div class="verified-badge" style="margin-top:5px"><span class="pulse"></span> AI Interview · 17 mins · 11 questions</div>
-          </div>
-          <div class="verified-dot"></div>
-          <div class="cand-play">▶</div>
-          <div class="cand-score-badge">
-            <div class="score-big" style="color:var(--cyan)">81</div>
-            <div class="score-grade" style="color:var(--cyan)">B+</div>
-          </div>
-        </div>
-      </div>
-      <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--muted)">Showing 6 of 247 · <span style="color:var(--blue);cursor:pointer">Load more →</span></div>
-    </div>
+<div class="scroll-divider"></div>
 
-    <!-- STEP 3: PROFILE -->
-    <div class="demo-panel" id="panel-3">
-      <div class="profile-layout">
-        <div class="profile-main">
-          <div class="profile-header">
-            <div class="profile-avatar" style="background:linear-gradient(135deg,#3062d4,#3D7EF6)">FC</div>
-            <div class="profile-name">
-              <h2>Francis Cobbinah</h2>
-              <p>Head of Engineering · London, UK · Open to opportunities</p>
-              <div class="verified-badge"><span class="pulse"></span> Verified AI Interview · 7 Aug 2026 · 22 mins · 15 questions</div>
-            </div>
-          </div>
-          <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:var(--muted);text-transform:uppercase;margin-bottom:10px">Score breakdown</div>
-          <div class="profile-score-row">
-            <div class="dim-card"><div class="dim-num">93</div><div class="dim-lbl">Depth</div></div>
-            <div class="dim-card"><div class="dim-num">90</div><div class="dim-lbl">Understanding</div></div>
-            <div class="dim-card"><div class="dim-num">88</div><div class="dim-lbl">Accuracy</div></div>
-            <div class="dim-card"><div class="dim-num">94</div><div class="dim-lbl">Relevance</div></div>
-            <div class="dim-card"><div class="dim-num">91</div><div class="dim-lbl">Delivery</div></div>
-          </div>
-          <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:var(--muted);text-transform:uppercase;margin-bottom:10px">Interview highlights</div>
-          <div class="qa-list">
-            <div class="qa-card">
-              <div class="qa-score" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);color:var(--green)">94</div>
-              <div class="qa-text">
-                <q>Walk me through how you'd architect a high-availability API at scale.</q>
-                <p>Strong grasp of load balancing, circuit breakers, and blue-green deployments. Referenced real Azure infrastructure experience with specific examples.</p>
-              </div>
-            </div>
-            <div class="qa-card">
-              <div class="qa-score" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);color:var(--green)">95</div>
-              <div class="qa-text">
-                <q>Tell me about a time you had to rebuild trust within an engineering team.</q>
-                <p>Specific example, clear actions, measurable outcome. Showed genuine empathy and leadership under pressure — one of the strongest answers in this session.</p>
-              </div>
-            </div>
-            <div class="qa-card">
-              <div class="qa-score" style="background:rgba(61,126,246,0.1);border:1px solid var(--border);color:var(--blue)">88</div>
-              <div class="qa-text">
-                <q>How do you handle technical debt when delivery timelines are tight?</q>
-                <p>Clear framework: triage by risk, document explicitly, schedule repayment. Balanced pragmatism with engineering discipline.</p>
-              </div>
-            </div>
-          </div>
+<!-- SECTION 3: EMPLOYERS -->
+<div class="scroll-section" id="employers" style="background: var(--bg2);">
+  <div class="scroll-inner">
+    <div class="audience-grid reverse">
+      <div>
+        <div class="aud-eyebrow reveal" style="color: var(--blue);">② For Employers</div>
+        <h2 class="aud-h2 reveal reveal-delay-1">Watch the proof.<br>Before you invite<br><span style="color:var(--blue)">anyone.</span></h2>
+        <p class="aud-body reveal reveal-delay-2">Stop reading CVs written to impress bots. Watch a real person answer real questions, scored across 5 dimensions by AI. Know your candidate before you say hello — not after two rounds of interviews.</p>
+        <ul class="aud-points reveal reveal-delay-2">
+          <li>Search by role, score threshold, location, or communication style</li>
+          <li>Watch the full AI-conducted interview before any commitment</li>
+          <li>Send one direct invitation — no job posting, no agency, no fee per hire</li>
+          <li>Every candidate is AI-scored, verified, and ready to talk</li>
+          <li>A single agency hire at £60k costs £10,500. We're £599/month.</li>
+        </ul>
+        <a href="#pricing" class="s1-btn-blue reveal reveal-delay-3">Search candidates from £599/mo →</a>
+      </div>
+      <div class="aud-visual reveal reveal-delay-2">
+        <div class="aud-visual-glow" style="background: radial-gradient(ellipse at 50% 0%, rgba(61,126,246,0.1) 0%, transparent 70%);"></div>
+        <div class="aud-stat-row">
+          <div class="aud-stat"><div class="aud-stat-num" style="color:var(--blue)">15+</div><div class="aud-stat-label">Questions per interview</div></div>
+          <div class="aud-stat"><div class="aud-stat-num" style="color:var(--blue)">5</div><div class="aud-stat-label">Scoring dimensions</div></div>
+          <div class="aud-stat"><div class="aud-stat-num" style="color:var(--blue)">£0</div><div class="aud-stat-label">Per-hire fee</div></div>
         </div>
-        <div class="profile-sidebar">
-          <div class="sidebar-score">
-            <div class="big-score">91</div>
-            <div class="big-grade">A+</div>
-            <div class="score-label">Interview Score</div>
-          </div>
-          <div class="meta-pills">
-            <div class="meta-pill">🤖 Interviewed by James (AI Technical Lead)</div>
-            <div class="meta-pill">❓ 15 questions · 22 minutes</div>
-            <div class="meta-pill">📍 London, UK · Open to opportunities</div>
-            <div class="meta-pill">🏷 Azure · .NET · System Design · Leadership</div>
-          </div>
-          <div class="invite-card">
-            <h4>Impressed by Francis?</h4>
-            <p>Send a direct chat invitation — no job posting, no application. Just a conversation with someone who's already proved it.</p>
-            <button class="invite-btn" id="inviteBtn" onclick="sendInvite()">Invite to Chat →</button>
-          </div>
-          <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--muted)">
-            ← <span style="color:var(--blue);cursor:pointer" onclick="showStep(2)">Back to results</span>
-          </div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#5060a0;margin-bottom:12px;">Top candidates — Senior React Developer · London</div>
+        <div class="mock-row"><div class="mock-avatar" style="background:linear-gradient(135deg,#0f172a,#3D7EF6)">FC</div><div><div class="mock-name">Francis C.</div><div class="mock-meta">24 yrs exp · .NET · React · Azure</div></div><div class="mock-score" style="color:var(--green)">94%</div></div>
+        <div class="mock-row"><div class="mock-avatar" style="background:linear-gradient(135deg,#134e4a,#2dd4bf)">ZO</div><div><div class="mock-name">Zara O.</div><div class="mock-meta">8 yrs exp · React · TypeScript · AWS</div></div><div class="mock-score" style="color:var(--green)">91%</div></div>
+        <div class="mock-row"><div class="mock-avatar" style="background:linear-gradient(135deg,#7c2d12,#fb923c)">LM</div><div><div class="mock-name">Liam M.</div><div class="mock-meta">6 yrs exp · Vue · Node · GCP</div></div><div class="mock-score" style="color:var(--blue)">87%</div></div>
+        <div style="text-align:center;margin-top:16px">
+          <button onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})" style="background:rgba(61,126,246,0.1);border:1px solid rgba(61,126,246,0.25);border-radius:10px;padding:10px 24px;color:var(--blue);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">Get search access →</button>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<div class="scroll-divider"></div>
+
+<!-- SECTION 4: RECRUITERS -->
+<div class="scroll-section" id="s-recruiters" style="background: var(--bg);">
+  <div class="scroll-inner">
+    <div class="audience-grid">
+      <div>
+        <div class="aud-eyebrow reveal" style="color: #a78bfa;">③ For Recruiters</div>
+        <h2 class="aud-h2 reveal reveal-delay-1">Set an alert.<br>Your next placement<br><span style="color:#a78bfa;">finds you.</span></h2>
+        <p class="aud-body reveal reveal-delay-2">The world's best companies poach from universities the moment a student graduates with the right grade. Now every recruiter on the planet can do the same thing — automatically, 24 hours a day, for any role.</p>
+        <ul class="aud-points reveal reveal-delay-2">
+          <li>Set your criteria once — role, score threshold, location</li>
+          <li>The moment a matching candidate records their interview, you're notified first</li>
+          <li>No searching, no logging in, no polling. The talent comes to you</li>
+          <li>Multi-client access, white-label portal, per-seat pricing for agencies</li>
+          <li>One placement pays for years of subscription</li>
+        </ul>
+        <a href="#pricing" class="s1-btn-blue reveal reveal-delay-3" style="background:linear-gradient(180deg,#c4b5fd 0%,#7c3aed 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.25),inset 0 -3px 0 rgba(0,0,0,0.2),0 0 22px rgba(124,58,237,0.45);">Set up my first alert →</a>
+      </div>
+      <div class="aud-visual reveal reveal-delay-2">
+        <div class="aud-visual-glow" style="background: radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.1) 0%, transparent 70%);"></div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#5060a0;margin-bottom:14px;">⚡ Your active alerts</div>
+        <div class="mock-alert"><div class="mock-alert-dot"></div><div><div style="font-size:13px;font-weight:700;color:var(--pearl)">Cloud Architect · 95%+ · UK / Remote</div><div style="font-size:12px;color:#5060a0;margin-top:3px">"Alert me the moment a Cloud Architect scores 95% or higher."</div></div></div>
+        <div class="mock-alert"><div class="mock-alert-dot"></div><div><div style="font-size:13px;font-weight:700;color:var(--pearl)">Senior React Developer · 90%+ · London</div><div style="font-size:12px;color:#5060a0;margin-top:3px">"Alert me when a Senior React Developer in London hits 90%+."</div></div></div>
+        <div class="mock-alert"><div class="mock-alert-dot"></div><div><div style="font-size:13px;font-weight:700;color:var(--pearl)">Head of Product · 92%+ · Europe</div><div style="font-size:12px;color:#5060a0;margin-top:3px">"Alert me as soon as a Head of Product in Europe scores 92%+."</div></div></div>
+        <div class="mock-toast" style="margin-top:18px;border-color:rgba(52,211,153,0.3);background:rgba(52,211,153,0.04)">
+          <span style="font-size:20px">🔔</span>
+          <div><div style="font-size:13px;font-weight:700;color:var(--pearl)">Alert match — Cloud Architect</div><div style="font-size:12px;color:#5060a0">A candidate in London just scored 96% · View interview →</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scroll-divider"></div>
+
+<!-- SCROLL OBSERVER JS -->
+<script>
+  (function(){
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  })();
+</script>
+
+<!-- END SCROLL SECTIONS -->
+
+<!-- OLD HERO REMOVED -->
 <!-- STATS -->
 <div class="stats-bar">
   <div class="stat-item"><div class="stat-num">15+</div><div class="stat-label">Questions per interview</div></div>
