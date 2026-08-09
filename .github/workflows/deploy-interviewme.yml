@@ -20,6 +20,7 @@ jobs:
           mkdir -p deploy
           cp src/viewme/public/gate.html deploy/index.html
           cp src/viewme/public/mastermind-chair.png deploy/mastermind-chair.png
+          cp src/viewme/public/the-interview-chair.png deploy/the-interview-chair.png
           cp src/viewme/public/interview-preview.png deploy/interview-preview.png
           cp src/viewme/public/interview-room-latest.png deploy/interview-room-latest.png
           cp src/viewme/public/candidate-1.jpg deploy/candidate-1.jpg
