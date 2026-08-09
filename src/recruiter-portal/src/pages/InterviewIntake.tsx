@@ -829,6 +829,19 @@ export default function InterviewIntake() {
                 )}
               </AnimatePresence>
 
+              {/* Recording consent */}
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', marginTop: '20px' }}>
+                <input
+                  type="checkbox"
+                  checked={consentToRecord}
+                  onChange={e => setConsentToRecord(e.target.checked)}
+                  style={{ marginTop: '2px', accentColor: 'var(--blue)', width: '14px', height: '14px', flexShrink: 0, cursor: 'pointer' }}
+                />
+                <span style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.5 }}>
+                  I consent to this interview being recorded so recruiters and employers can watch it back. Uncheck to complete the interview without recording.
+                </span>
+              </label>
+
               {/* Start button */}
               {(() => {
                 const titleOk = hasTitle && jobTitle.trim().length >= 2;
@@ -841,19 +854,6 @@ export default function InterviewIntake() {
                 const effectiveCvCtx = cvOk ? cvCtxParsed : null;
                 return (
                   <>
-                  {/* Recording consent */}
-                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', marginTop: '20px' }}>
-                    <input
-                      type="checkbox"
-                      checked={consentToRecord}
-                      onChange={e => setConsentToRecord(e.target.checked)}
-                      style={{ marginTop: '2px', accentColor: 'var(--blue)', width: '14px', height: '14px', flexShrink: 0, cursor: 'pointer' }}
-                    />
-                    <span style={{ fontSize: '12px', color: 'var(--text-3)', lineHeight: 1.5 }}>
-                      I consent to this interview being recorded so recruiters and employers can watch it back. Uncheck to complete the interview without recording.
-                    </span>
-                  </label>
-
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', marginTop: '16px', flexWrap: 'wrap' }}>
                     {anyToggled && !canStart && (
                       <span style={{ fontSize: '12px', color: 'var(--text-3)', flex: 1 }}>
