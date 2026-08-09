@@ -568,11 +568,15 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
   useEffect(() => {
     if (!ctx.autoStart || autoStartFiredRef.current) return;
     autoStartFiredRef.current = true;
-    if (sessionReadyRef.current) {
-      startMikeRef.current();
-    } else {
-      sessionWaitersRef.current.push(() => startMikeRef.current());
-    }
+    const fire = () => startMikeRef.current();
+    // Hold intro screen for at least 2s so it doesn't flash
+    setTimeout(() => {
+      if (sessionReadyRef.current) {
+        fire();
+      } else {
+        sessionWaitersRef.current.push(fire);
+      }
+    }, 2000);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
