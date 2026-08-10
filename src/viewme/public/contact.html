@@ -277,7 +277,7 @@
     btn.textContent = 'Sending…';
 
     try {
-      var res = await fetch('https://api.explain.global/api/contact', {
+      var res = await fetch('https://api.explain.global/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name, email: email, type: type, message: msg })
