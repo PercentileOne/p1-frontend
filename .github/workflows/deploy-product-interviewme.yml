@@ -17,24 +17,24 @@ jobs:
 
       - name: Prepare static output
         run: |
-          mkdir -p deploy
-          cp src/viewme/public/home.html deploy/index.html
-          cp src/viewme/public/mastermind-chair.png deploy/mastermind-chair.png
-          cp src/viewme/public/the-interview-chair.png deploy/the-interview-chair.png
-          cp src/viewme/public/recruiter-phone.jpg deploy/recruiter-phone.jpg
-          cp src/viewme/public/recruiter-phone-2.jpg deploy/recruiter-phone-2.jpg
-          cp src/viewme/public/coffee-hero.jpg deploy/coffee-hero.jpg
-          cp src/viewme/public/hero-1.jpg deploy/hero-1.jpg
-          cp src/viewme/public/hero-2.jpg deploy/hero-2.jpg
-          cp src/viewme/public/hero-3.jpg deploy/hero-3.jpg
-          cp src/viewme/public/interview-room-latest.png deploy/interview-room-latest.png
-          cp src/viewme/public/viewme-trade-1.png deploy/viewme-trade-1.png
-          cp src/viewme/public/viewme-trade-2.png deploy/viewme-trade-2.png
-          cp src/viewme/public/viewme-trade-3.png deploy/viewme-trade-3.png
-          cp src/viewme/public/fp.html deploy/fp.html
-          cp src/viewme/public/contact.html deploy/contact.html
-          cp src/viewme/public/profile.html deploy/profile.html
-          cp src/viewme/public/staticwebapp.config.json deploy/staticwebapp.config.json
+          mkdir -p deploy-product
+          cp src/viewme/public/home.html deploy-product/index.html
+          cp src/viewme/public/mastermind-chair.png deploy-product/mastermind-chair.png
+          cp src/viewme/public/the-interview-chair.png deploy-product/the-interview-chair.png
+          cp src/viewme/public/recruiter-phone.jpg deploy-product/recruiter-phone.jpg
+          cp src/viewme/public/recruiter-phone-2.jpg deploy-product/recruiter-phone-2.jpg
+          cp src/viewme/public/coffee-hero.jpg deploy-product/coffee-hero.jpg
+          cp src/viewme/public/hero-1.jpg deploy-product/hero-1.jpg
+          cp src/viewme/public/hero-2.jpg deploy-product/hero-2.jpg
+          cp src/viewme/public/hero-3.jpg deploy-product/hero-3.jpg
+          cp src/viewme/public/interview-room-latest.png deploy-product/interview-room-latest.png
+          cp src/viewme/public/viewme-trade-1.png deploy-product/viewme-trade-1.png
+          cp src/viewme/public/viewme-trade-2.png deploy-product/viewme-trade-2.png
+          cp src/viewme/public/viewme-trade-3.png deploy-product/viewme-trade-3.png
+          cp src/viewme/public/fp.html deploy-product/fp.html
+          cp src/viewme/public/contact.html deploy-product/contact.html
+          cp src/viewme/public/profile.html deploy-product/profile.html
+          cp src/viewme/public/staticwebapp.config.json deploy-product/staticwebapp.config.json
 
       - name: Deploy to Azure SWA
         uses: Azure/static-web-apps-deploy@v1
@@ -42,5 +42,5 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PRODUCT_INTERVIEWME }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
-          app_location: deploy
+          app_location: deploy-product
           skip_app_build: true
