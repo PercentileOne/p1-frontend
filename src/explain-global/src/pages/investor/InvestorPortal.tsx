@@ -5,6 +5,7 @@ const NAV_GROUPS = [
   { title: 'Executive', items: [
     { id: 'overview',     label: 'Overview' },
     { id: 'projections',  label: '📈 Financial Projections' },
+    { id: 'growth',       label: '🚀 Growth Engine' },
     { id: 'vision',       label: 'The Vision' },
     { id: 'why-now',      label: 'Why Now' },
     { id: 'patent',       label: '🔒 Patent & IP' },
@@ -988,6 +989,80 @@ function SuccessCounter() {
 }
 
 const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
+
+  'growth': (nav) => <>
+    <SectionHead
+      label="Executive · Growth Engine"
+      h1="The platform that markets itself."
+      h2="Candidates are the distribution channel."
+      sub="InterviewMe does not need to cold-sell employers or recruiters. The growth engine is already in motion every time a candidate applies for a job."
+    />
+
+    <Callout icon="💡" title="The Core Growth Insight" color={A} body={<>Every candidate who records an interview wants one thing: a <strong style={{color:'#fff'}}>QR code and shareable link</strong> to put on their CV, LinkedIn, and social profiles. The moment they do that, their interview is in front of every recruiter and hiring manager who opens that CV — without InterviewMe spending a single penny on employer acquisition. The candidate does our marketing for us, every time they apply for a job.</>} />
+
+    <div style={{marginBottom: 28}}>
+      <div style={{fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#64748b', marginBottom: 16}}>The Three-Stage Pull Model</div>
+      <div style={{display: 'flex', flexDirection: 'column', gap: 12}}>
+        {[
+          { n: '1', color: A,        title: 'Candidates join for the QR code',         body: 'A candidate records a single AI-led interview and receives a shareable link and QR code. They add it to their CV, LinkedIn, email signature, and portfolio. This is the value exchange — and it costs them nothing. Even if that was all we ever offered, we would still build one of the largest interview libraries in the world.' },
+          { n: '2', color: '#a855f7', title: 'Recruiters discover InterviewMe on CVs',  body: 'Every recruiter who reviews that CV sees the QR code. They scan it. They watch the interview. They have never seen anything like it. No CV has ever let them do this before. They are not a cold lead — they are already converted. They come to us.' },
+          { n: '3', color: '#34d399', title: 'Employers beg for search access',         body: 'As the candidate pool grows to thousands and then tens of thousands, employers and recruiters do not need to be sold anything. They need access to search. That is when Employer Search at £599/month becomes the easiest sale in the business. The supply creates the demand.' },
+        ].map(s => (
+          <div key={s.n} style={{display: 'flex', gap: 16, background: 'rgba(255,255,255,0.03)', border: `1px solid ${s.color}20`, borderRadius: 14, padding: '20px 22px'}}>
+            <div style={{width: 32, height: 32, borderRadius: '50%', background: `${s.color}20`, border: `1px solid ${s.color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: s.color, flexShrink: 0}}>{s.n}</div>
+            <div>
+              <div style={{fontSize: 14, fontWeight: 800, color: '#f1f5f9', marginBottom: 6}}>{s.title}</div>
+              <div style={{fontSize: 13, color: '#94a3b8', lineHeight: 1.7}}>{s.body}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <Grid cols={2}>
+      <Card>
+        <div style={{fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#64748b', marginBottom: 16}}>Platforms that grew the same way</div>
+        {[
+          { name: 'Calendly',  mechanic: 'Every meeting invite was an advert. Recipients signed up to book.' },
+          { name: 'Hotmail',   mechanic: '"Get your free email at Hotmail" — on every email sent.' },
+          { name: 'Zoom',      mechanic: 'Every meeting link pulled in a non-user who then became a user.' },
+          { name: 'Dropbox',   mechanic: 'Every shared folder converted the recipient.' },
+          { name: 'InterviewMe', mechanic: 'Every CV with a QR code converts the recruiter who opens it.' },
+        ].map((r, i) => (
+          <div key={r.name} style={{display: 'flex', gap: 12, padding: '9px 0', borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.05)' : 'none', alignItems: 'flex-start'}}>
+            <span style={{fontSize: 13, fontWeight: 800, color: i === 4 ? A : '#f1f5f9', minWidth: 100, flexShrink: 0}}>{r.name}</span>
+            <span style={{fontSize: 12, color: '#64748b', lineHeight: 1.6}}>{r.mechanic}</span>
+          </div>
+        ))}
+      </Card>
+      <Card>
+        <div style={{fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#64748b', marginBottom: 16}}>Why this model is stronger than most</div>
+        {[
+          { icon: '📄', point: 'The CV is the distribution channel', detail: 'Unlike an email signature or a Slack message, a CV is sent deliberately to a hiring decision-maker. The audience is pre-qualified.' },
+          { icon: '🔁', point: 'Every application is a marketing event', detail: 'A candidate applying to 50 jobs puts the InterviewMe QR code in front of 50 recruiters. With 10,000 active candidates, that is half a million impressions.' },
+          { icon: '🔒', point: 'The candidate has a reason to share', detail: 'The QR code makes them stand out. It is in their interest to use it on everything. We do not need to incentivise sharing — standing out is the incentive.' },
+          { icon: '💰', point: 'Zero employer acquisition cost at scale', detail: 'By the time an employer contacts us, they have already seen the product. The sales conversation starts at "how much" not "what is this".' },
+        ].map(r => (
+          <div key={r.point} style={{display: 'flex', gap: 10, padding: '9px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', alignItems: 'flex-start'}}>
+            <span style={{fontSize: 18, flexShrink: 0}}>{r.icon}</span>
+            <div>
+              <div style={{fontSize: 12, fontWeight: 700, color: '#f1f5f9', marginBottom: 3}}>{r.point}</div>
+              <div style={{fontSize: 11, color: '#64748b', lineHeight: 1.6}}>{r.detail}</div>
+            </div>
+          </div>
+        ))}
+      </Card>
+    </Grid>
+
+    <Callout icon="🎯" title="The first target is always the candidate" color="#34d399"
+      body="We do not need to worry about how to attract employers. We need to focus entirely on getting candidates to record their first interview and share their QR code. Once we have thousands of candidates doing that, employers and recruiters are already in the funnel — they just don't know it yet. The candidate pool is the product. The QR code is the acquisition engine. Everything else follows." />
+
+    <div style={{textAlign: 'center', marginTop: 8}}>
+      <button onClick={() => nav('projections')} style={{background: `linear-gradient(135deg, ${A}, ${A2})`, color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontSize: 14, fontWeight: 700, cursor: 'pointer'}}>
+        See Financial Projections →
+      </button>
+    </div>
+  </>,
 
   'overview': () => <>
     <SectionHead
