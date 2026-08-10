@@ -1775,6 +1775,45 @@
     }
   });
 
+  // ── NOTIFICATION CAROUSEL ─────────────────────────────
+  (function() {
+    var slides, dots, cur = 0, timer;
+    function init() {
+      slides = document.querySelectorAll('.notif-slide');
+      var dotWrap = document.getElementById('notif-dots');
+      if (!slides.length || !dotWrap) return;
+      dots = [];
+      for (var i = 0; i < slides.length; i++) {
+        var d = document.createElement('span');
+        d.style.cssText = 'display:inline-block;width:7px;height:7px;border-radius:50%;cursor:pointer;transition:background 0.2s;background:' + (i === 0 ? '#34D399' : 'rgba(52,211,153,0.25)');
+        (function(idx){ d.onclick = function(){ go(idx); }; })(i);
+        dotWrap.appendChild(d);
+        dots.push(d);
+      }
+      startTimer();
+    }
+    function startTimer() {
+      clearInterval(timer);
+      timer = setInterval(function(){ go((cur + 1) % slides.length); }, 4000);
+    }
+    function go(idx) {
+      slides[cur].style.display = 'none';
+      dots[cur].style.background = 'rgba(52,211,153,0.25)';
+      cur = idx;
+      slides[cur].style.display = 'block';
+      dots[cur].style.background = '#34D399';
+      startTimer();
+    }
+    window.notifGo  = go;
+    window.notifNext = function() { go((cur + 1) % slides.length); };
+    window.notifPrev = function() { go((cur - 1 + slides.length) % slides.length); };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+
   // ── REDIRECT ALL CTAs TO CONTACT PAGE ─────────────────
   // Redirect every button and link to /contact — except nav links and the logo
   var ALLOW_HREFS = ['/', '#how', '#pricing', '/contact'];
