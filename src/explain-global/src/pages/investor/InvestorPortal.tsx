@@ -933,6 +933,49 @@ function ProjectionsSection({ nav }: { nav: Nav }) {
       </table>
     </Card>
 
+    {/* Market context */}
+    <Card style={{ marginTop: 8, marginBottom: 28 }}>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#64748b', marginBottom: 20 }}>Market Context — How Much We Are Actually Asking For</div>
+      <Grid cols={2}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Employers (businesses that hire)</div>
+          {[{ market: 'United Kingdom', count: '~1.4 million', flag: '🇬🇧' }, { market: 'United States', count: '~6 million', flag: '🇺🇸' }, { market: 'Combined TAM', count: '~7.4 million', flag: '🌍' }].map((r, i) => (
+            <div key={r.market} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+              <span style={{ fontSize: 13, color: '#94a3b8' }}>{r.flag} {r.market}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: i === 2 ? A : '#f1f5f9', fontVariantNumeric: 'tabular-nums' }}>{r.count}</span>
+            </div>
+          ))}
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Recruitment Agencies</div>
+          {[{ market: 'United Kingdom', count: '~30,000', flag: '🇬🇧' }, { market: 'United States', count: '~20,000', flag: '🇺🇸' }, { market: 'Combined TAM', count: '~50,000', flag: '🌍' }].map((r, i) => (
+            <div key={r.market} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+              <span style={{ fontSize: 13, color: '#94a3b8' }}>{r.flag} {r.market}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: i === 2 ? '#a855f7' : '#f1f5f9', fontVariantNumeric: 'tabular-nums' }}>{r.count}</span>
+            </div>
+          ))}
+        </div>
+      </Grid>
+      <div style={{ marginTop: 20, padding: '16px 20px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#34d399', marginBottom: 12 }}>Our Year 3 targets vs the available market</div>
+        <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', marginBottom: 12 }}>
+          {[
+            { label: '3,500 employers', sub: 'of 7.4 million available', pct: '0.047%', color: A },
+            { label: '120 agencies', sub: 'of 50,000 available', pct: '0.24%', color: '#a855f7' },
+          ].map(r => (
+            <div key={r.label}>
+              <div style={{ fontSize: 24, fontWeight: 900, color: r.color, letterSpacing: '-0.03em' }}>{r.pct} <span style={{ fontSize: 13, fontWeight: 600, color: '#64748b' }}>market share</span></div>
+              <div style={{ fontSize: 12, color: '#f1f5f9', fontWeight: 700, marginTop: 2 }}>{r.label}</div>
+              <div style={{ fontSize: 11, color: '#64748b' }}>{r.sub}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.7 }}>
+          These are not ambitious targets. They are the floor of what a working product with a small sales team can achieve. We are asking for less than half a percent of a combined market of 7.4 million employers and 50,000 agencies — in just two countries, in just three years.
+        </div>
+      </div>
+    </Card>
+
     <div style={{ textAlign: 'center', marginTop: 28 }}>
       <button onClick={() => nav('ask')} style={{ background: `linear-gradient(135deg, ${A}, ${A2})`, color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
         See The Ask →
@@ -1053,6 +1096,48 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         ))}
       </Card>
     </Grid>
+
+    <Card style={{ marginBottom: 28 }}>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#64748b', marginBottom: 20 }}>The Market We Are Entering</div>
+      <Grid cols={2}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Employers (businesses that hire)</div>
+          {[{ market: 'United Kingdom', count: '~1.4 million', flag: '🇬🇧' }, { market: 'United States', count: '~6 million', flag: '🇺🇸' }, { market: 'Combined TAM', count: '~7.4 million', flag: '🌍' }].map((r, i) => (
+            <div key={r.market} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+              <span style={{ fontSize: 13, color: '#94a3b8' }}>{r.flag} {r.market}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: i === 2 ? A : '#f1f5f9', fontVariantNumeric: 'tabular-nums' }}>{r.count}</span>
+            </div>
+          ))}
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Recruitment Agencies</div>
+          {[{ market: 'United Kingdom', count: '~30,000', flag: '🇬🇧', note: 'most per capita globally' }, { market: 'United States', count: '~20,000', flag: '🇺🇸', note: '' }, { market: 'Combined TAM', count: '~50,000', flag: '🌍', note: '' }].map((r, i) => (
+            <div key={r.market} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none', alignItems: 'center' }}>
+              <span style={{ fontSize: 13, color: '#94a3b8' }}>{r.flag} {r.market}{r.note ? <span style={{ fontSize: 10, color: '#475569', marginLeft: 6 }}>({r.note})</span> : null}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: i === 2 ? '#a855f7' : '#f1f5f9', fontVariantNumeric: 'tabular-nums' }}>{r.count}</span>
+            </div>
+          ))}
+        </div>
+      </Grid>
+      <div style={{ marginTop: 20, padding: '16px 20px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#34d399', marginBottom: 10 }}>Our Year 3 targets vs the available market</div>
+        <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+          {[
+            { label: '3,500 employers', sub: 'of 7.4 million available', pct: '0.047%', color: A },
+            { label: '120 agencies', sub: 'of 50,000 available', pct: '0.24%', color: '#a855f7' },
+          ].map(r => (
+            <div key={r.label}>
+              <div style={{ fontSize: 22, fontWeight: 900, color: r.color, letterSpacing: '-0.03em' }}>{r.pct} <span style={{ fontSize: 13, fontWeight: 600, color: '#64748b' }}>market share</span></div>
+              <div style={{ fontSize: 12, color: '#f1f5f9', fontWeight: 700, marginTop: 2 }}>{r.label}</div>
+              <div style={{ fontSize: 11, color: '#64748b' }}>{r.sub}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 12, lineHeight: 1.7 }}>
+          These are not ambitious targets. They are the floor of what a working product with a small sales team can achieve. The market is vast. We are asking for less than half a percent of it.
+        </div>
+      </div>
+    </Card>
 
     <Callout icon="🎯" title="The first target is always the candidate" color="#34d399"
       body="We do not need to worry about how to attract employers. We need to focus entirely on getting candidates to record their first interview and share their QR code. Once we have thousands of candidates doing that, employers and recruiters are already in the funnel — they just don't know it yet. The candidate pool is the product. The QR code is the acquisition engine. Everything else follows." />
