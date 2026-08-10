@@ -31,6 +31,8 @@ export function logFlowEvent(
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
     body: JSON.stringify(body),
+  }).then(res => {
+    if (res.status === 401) localStorage.removeItem('explain_token');
   }).catch(() => {
     // Logging must never break the interview — silent fail
   });
