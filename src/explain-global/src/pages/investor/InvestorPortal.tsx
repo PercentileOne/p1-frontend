@@ -43,8 +43,9 @@ const NAV_GROUPS = [
     { id: 'future-plans', label: '🌍 Future Plans' },
   ]},
   { title: 'Financials', items: [
-    { id: 'projections', label: 'Projections' },
-    { id: 'ask',         label: 'The Ask' },
+    { id: 'projections',  label: 'Projections' },
+    { id: 'fp-model',     label: '📈 Financial Projections' },
+    { id: 'ask',          label: 'The Ask' },
   ]},
   { title: 'Founder', items: [
     { id: 'founder',    label: 'Francis Cobbinah' },
@@ -3404,7 +3405,10 @@ export default function InvestorPortal() {
     return () => { document.body.style.overflow = ''; };
   }, [drawerOpen]);
 
-  function go(id: string) { setActive(id); setDrawerOpen(false); window.scrollTo(0, 0); }
+  function go(id: string) {
+    if (id === 'fp-model') { window.open('/fp', '_blank'); return; }
+    setActive(id); setDrawerOpen(false); window.scrollTo(0, 0);
+  }
 
   const currentGroup = NAV_GROUPS.find(g => g.items.some(i => i.id === active));
   const currentItem  = ALL_ITEMS.find(i => i.id === active);
