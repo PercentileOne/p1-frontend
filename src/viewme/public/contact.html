@@ -42,7 +42,7 @@
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
     background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
   }
-  .nav-wordmark { font-size: 15px; font-weight: 900; letter-spacing: -0.03em; }
+  .nav-wordmark { font-size: 15px; font-weight: 900; letter-spacing: -0.03em; color: #f1f5f9; }
   .nav-wordmark .me { color: var(--green); }
   .nav-back {
     font-size: 13px; font-weight: 700; color: var(--muted); text-decoration: none;
@@ -195,14 +195,7 @@
       <p class="sub">Whether you're a recruiter, employer, candidate, or investor — we're building this for you. Get in touch and be among the first to access <strong style="color:#f1f5f9;">Interview</strong><strong style="color:#34d399;">Me</strong>.</p>
 
       <div class="channels">
-        <a class="channel" href="mailto:francis@percentile.one">
-          <div class="channel-icon" style="background:rgba(52,211,153,0.1);">✉️</div>
-          <div class="channel-text">
-            <div class="channel-label">Email us</div>
-            <div class="channel-val">francis@percentile.one</div>
-          </div>
-          <div class="channel-arrow">→</div>
-        </a>
+
         <a class="channel" href="https://www.linkedin.com/in/francis-cobbinah150769" target="_blank">
           <div class="channel-icon" style="background:rgba(61,126,246,0.1);">💼</div>
           <div class="channel-text">
@@ -269,21 +262,34 @@
 </div>
 
 <script>
-  function submitForm() {
+  async function submitForm() {
     var name  = document.getElementById('f-name').value.trim();
     var email = document.getElementById('f-email').value.trim();
     var type  = document.getElementById('f-type').value;
     var msg   = document.getElementById('f-msg').value.trim();
+    var btn   = document.querySelector('.submit-btn');
 
     if (!name)  { document.getElementById('f-name').focus();  return; }
     if (!email || !email.includes('@')) { document.getElementById('f-email').focus(); return; }
     if (!type)  { document.getElementById('f-type').focus();  return; }
 
-    var body = 'Name: ' + name + '%0AType: ' + type + '%0AMessage: ' + (msg || 'No message') + '%0A%0AEmail: ' + email;
-    window.location.href = 'mailto:francis@percentile.one?subject=InterviewMe Early Access — ' + encodeURIComponent(type) + '&body=' + body;
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
 
-    document.getElementById('form-wrap').style.display = 'none';
-    document.getElementById('success-msg').style.display = 'block';
+    try {
+      var res = await fetch('https://api.explain.global/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, email: email, type: type, message: msg })
+      });
+      if (!res.ok) throw new Error('Server error');
+      document.getElementById('form-wrap').style.display = 'none';
+      document.getElementById('success-msg').style.display = 'block';
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Send message →';
+      alert('Something went wrong — please email francis@percentile.one directly.');
+    }
   }
 </script>
 </body>

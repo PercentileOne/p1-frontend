@@ -99,6 +99,7 @@ Explain.Api.Features.Lessons.Export.Endpoint.Map(app);
 Explain.Api.Features.Lessons.Export.TestEmailEndpoint.Map(app);
 
 Explain.Api.Features.Search.RecordSearch.Endpoint.Map(app);
+Explain.Api.Features.Contact.Endpoint.Map(app);
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
    .AllowAnonymous();
