@@ -4,6 +4,10 @@
       "route": "/coming-soon.html",
       "redirect": "/",
       "statusCode": 301
+    },
+    {
+      "route": "/investor",
+      "rewrite": "/investor.html"
     }
   ],
   "navigationFallback": {
