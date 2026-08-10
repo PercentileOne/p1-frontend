@@ -3,6 +3,10 @@
     {
       "route": "/fp",
       "rewrite": "/fp.html"
+    },
+    {
+      "route": "/contact",
+      "rewrite": "/contact.html"
     }
   ],
   "navigationFallback": {

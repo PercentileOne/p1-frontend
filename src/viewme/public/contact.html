@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InterviewMe — Get in Touch</title>
+<!-- Google Analytics GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VWP8MJVBCH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-VWP8MJVBCH');
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #3d7ef6; --green: #34d399; --dark-green: #047857;
+    --bg: #070d1a; --bg2: #0f1829; --pearl: #f1f5f9; --muted: #64748b;
+    --border: rgba(255,255,255,0.08); --font: -apple-system,'Segoe UI',system-ui,sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--pearl); font-family: var(--font); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 40px;
+    background: rgba(7,13,26,0.85); backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--green), var(--dark-green));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 900; color: #fff; letter-spacing: -0.04em;
+    position: relative; overflow: hidden;
+  }
+  .nav-mark::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+  }
+  .nav-wordmark { font-size: 15px; font-weight: 900; letter-spacing: -0.03em; }
+  .nav-wordmark .me { color: var(--green); }
+  .nav-back {
+    font-size: 13px; font-weight: 700; color: var(--muted); text-decoration: none;
+    display: flex; align-items: center; gap: 6px; transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--pearl); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 120px 24px 80px; position: relative; overflow: hidden;
+  }
+  .glow-1 {
+    position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(52,211,153,0.10) 0%, rgba(4,120,87,0.06) 40%, transparent 70%);
+    pointer-events: none;
+  }
+  .glow-2 {
+    position: absolute; bottom: -100px; right: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(61,126,246,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .grid-bg {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(52,211,153,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(52,211,153,0.03) 1px, transparent 1px);
+    background-size: 64px 64px; pointer-events: none;
+  }
+
+  .hero-inner {
+    max-width: 960px; width: 100%; display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center; position: relative; z-index: 2;
+  }
+
+  /* ── LEFT ── */
+  .hero-left {}
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--green); background: rgba(52,211,153,0.08);
+    border: 1px solid rgba(52,211,153,0.2); border-radius: 20px;
+    padding: 5px 14px; margin-bottom: 24px;
+  }
+  .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
+
+  h1 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 20px; }
+  h1 .accent { color: var(--green); }
+  .sub { font-size: 16px; color: var(--muted); line-height: 1.7; margin-bottom: 32px; }
+
+  .channels { display: flex; flex-direction: column; gap: 12px; }
+  .channel {
+    display: flex; align-items: center; gap: 14px;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px; text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .channel:hover { border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.04); }
+  .channel-icon {
+    width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center;
+    justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .channel-text { flex: 1; }
+  .channel-label { font-size: 12px; font-weight: 800; color: var(--pearl); letter-spacing: 0.02em; }
+  .channel-val { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .channel-arrow { font-size: 14px; color: var(--muted); }
+
+  /* ── RIGHT — FORM ── */
+  .form-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 24px;
+    padding: 36px; box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+  }
+  .form-title { font-size: 18px; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 6px; }
+  .form-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+  .field input, .field textarea, .field select {
+    width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; font-size: 14px; color: var(--pearl);
+    font-family: var(--font); outline: none; transition: border-color 0.2s;
+    appearance: none;
+  }
+  .field input::placeholder, .field textarea::placeholder { color: #475569; }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: rgba(52,211,153,0.4); }
+  .field textarea { resize: none; height: 100px; }
+  .field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  .field select option { background: #0f1829; }
+
+  .submit-btn {
+    width: 100%; padding: 14px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--green), var(--dark-green));
+    border: none; color: #fff; font-size: 15px; font-weight: 800;
+    cursor: pointer; font-family: var(--font);
+    box-shadow: 0 6px 24px rgba(4,120,87,0.4); transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.01em;
+  }
+  .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 32px rgba(4,120,87,0.5); }
+
+  .success-msg {
+    display: none; text-align: center; padding: 24px 0;
+  }
+  .success-mark {
+    width: 56px; height: 56px; border-radius: 14px; margin: 0 auto 16px;
+    background: linear-gradient(135deg, var(--green), var(--dark-green));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 8px 24px rgba(4,120,87,0.4);
+  }
+  .success-msg h3 { font-size: 18px; font-weight: 900; margin-bottom: 8px; }
+  .success-msg p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* ── BOTTOM BADGE ── */
+  .bottom-strip {
+    text-align: center; padding: 32px 24px 48px; border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--muted);
+  }
+  .bottom-strip a { color: var(--green); text-decoration: none; }
+
+  @media (max-width: 768px) {
+    nav { padding: 14px 20px; }
+    .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+    h1 { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-mark">IM</div>
+    <span class="nav-wordmark">Interview<span class="me">Me</span>.global</span>
+  </a>
+  <a class="nav-back" href="/">← Back to site</a>
+</nav>
+
+<section class="hero">
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+  <div class="grid-bg"></div>
+
+  <div class="hero-inner">
+
+    <!-- LEFT -->
+    <div class="hero-left">
+      <div class="eyebrow"><div class="pulse"></div>Launching within weeks</div>
+      <h1>Let's talk.<br><span class="accent">We'd love</span><br>to hear from you.</h1>
+      <p class="sub">Whether you're a recruiter, employer, candidate, or investor — we're building this for you. Get in touch and be among the first to access InterviewMe.</p>
+
+      <div class="channels">
+        <a class="channel" href="mailto:hello@interviewme.global">
+          <div class="channel-icon" style="background:rgba(52,211,153,0.1);">✉️</div>
+          <div class="channel-text">
+            <div class="channel-label">Email us</div>
+            <div class="channel-val">hello@interviewme.global</div>
+          </div>
+          <div class="channel-arrow">→</div>
+        </a>
+        <a class="channel" href="https://www.linkedin.com/in/franciscobbinah" target="_blank">
+          <div class="channel-icon" style="background:rgba(61,126,246,0.1);">💼</div>
+          <div class="channel-text">
+            <div class="channel-label">Connect on LinkedIn</div>
+            <div class="channel-val">Francis Cobbinah — Founder</div>
+          </div>
+          <div class="channel-arrow">→</div>
+        </a>
+        <a class="channel" href="/">
+          <div class="channel-icon" style="background:rgba(168,85,247,0.1);">🌐</div>
+          <div class="channel-text">
+            <div class="channel-label">Explore the platform</div>
+            <div class="channel-val">www.interviewMe.global</div>
+          </div>
+          <div class="channel-arrow">→</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- RIGHT — FORM -->
+    <div class="form-card">
+      <div id="form-wrap">
+        <div class="form-title">Request early access</div>
+        <div class="form-sub">Tell us a little about yourself and we'll be in touch as soon as we launch.</div>
+
+        <div class="field">
+          <label>Your name</label>
+          <input type="text" id="f-name" placeholder="e.g. Sarah Mitchell" />
+        </div>
+        <div class="field">
+          <label>Email address</label>
+          <input type="email" id="f-email" placeholder="sarah@company.com" />
+        </div>
+        <div class="field">
+          <label>I am a...</label>
+          <select id="f-type">
+            <option value="">Select one</option>
+            <option>Candidate — I want to record my interview</option>
+            <option>Recruiter — I want to find candidates</option>
+            <option>Employer / Hiring Manager</option>
+            <option>Investor</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Message (optional)</label>
+          <textarea id="f-msg" placeholder="Tell us what you're looking for..."></textarea>
+        </div>
+        <button class="submit-btn" onclick="submitForm()">Send message →</button>
+      </div>
+
+      <div class="success-msg" id="success-msg">
+        <div class="success-mark">✓</div>
+        <h3>You're on the list!</h3>
+        <p>Thank you — we'll be in touch very soon. InterviewMe is launching within weeks and you'll be among the first to know.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="bottom-strip">
+  <a href="/">← Back to InterviewMe.global</a> &nbsp;·&nbsp; hello@interviewme.global &nbsp;·&nbsp; © 2026 Percentile One Ltd
+</div>
+
+<script>
+  function submitForm() {
+    var name  = document.getElementById('f-name').value.trim();
+    var email = document.getElementById('f-email').value.trim();
+    var type  = document.getElementById('f-type').value;
+    var msg   = document.getElementById('f-msg').value.trim();
+
+    if (!name)  { document.getElementById('f-name').focus();  return; }
+    if (!email || !email.includes('@')) { document.getElementById('f-email').focus(); return; }
+    if (!type)  { document.getElementById('f-type').focus();  return; }
+
+    var body = 'Name: ' + name + '%0AType: ' + type + '%0AMessage: ' + (msg || 'No message') + '%0A%0AEmail: ' + email;
+    window.location.href = 'mailto:hello@interviewme.global?subject=InterviewMe Early Access — ' + encodeURIComponent(type) + '&body=' + body;
+
+    document.getElementById('form-wrap').style.display = 'none';
+    document.getElementById('success-msg').style.display = 'block';
+  }
+</script>
+</body>
+</html>
