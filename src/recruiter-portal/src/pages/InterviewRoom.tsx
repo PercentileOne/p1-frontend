@@ -564,21 +564,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
   // Auto-start — wait for AI session prep (max 8 s via prepTimeout), then start Mike
   // This ensures Mike always uses AI-generated script when the key is valid
-  const autoStartFiredRef = useRef(false);
-  useEffect(() => {
-    if (!ctx.autoStart || autoStartFiredRef.current) return;
-    autoStartFiredRef.current = true;
-    const fire = () => startMikeRef.current();
-    // Hold intro screen for at least 2s so it doesn't flash
-    setTimeout(() => {
-      if (sessionReadyRef.current) {
-        fire();
-      } else {
-        sessionWaitersRef.current.push(fire);
-      }
-    }, 2000);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // autoStart only means the setup page was skipped — the chair screen
+  // always waits for the user to click "Begin Interview →"
 
   const handlePause = useCallback(() => {
     pausedPhaseRef.current = phase;
