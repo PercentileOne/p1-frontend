@@ -126,7 +126,8 @@
   }
   .growth-table tr.arr-row td:first-child { color: var(--text); }
   .growth-table tr:hover td { background: rgba(255,255,255,0.02); }
-  .tbl-wrapper { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .tbl-wrapper { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow-x: auto; }
+  .growth-table { min-width: 480px; }
 
   .y1 { color: var(--muted2) !important; }
   .y2 { color: #93c5fd !important; }
@@ -209,6 +210,7 @@
     .hero-grid { grid-template-columns: 1fr; }
     .two-col { grid-template-columns: 1fr; }
     .milestones { grid-template-columns: repeat(2,1fr); }
+    .hide-mobile { display: none; }
   }
 
   @media print {
@@ -384,15 +386,15 @@
             <th>Employer Count</th>
             <th>MRR</th>
             <th>ARR</th>
-            <th>Context</th>
+            <th class="hide-mobile">Context</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td>500</td><td>£299,500</td><td>£3.6M</td><td>Conservative Year 2 target</td></tr>
-          <tr><td>1,000</td><td>£599,000</td><td>£7.2M</td><td>Strong Year 2 / early Year 3</td></tr>
-          <tr><td>3,500</td><td>£2,096,500</td><td>£25.2M</td><td>Year 3 target (this model)</td></tr>
-          <tr><td>5,000</td><td>£2,995,000</td><td>£35.9M</td><td>Series A milestone</td></tr>
-          <tr class="arr-row"><td>10,000</td><td>£5,990,000</td><td>£71.9M</td><td>Full market penetration — YC scale</td></tr>
+          <tr><td>500</td><td>£299,500</td><td>£3.6M</td><td class="hide-mobile">Conservative Year 2 target</td></tr>
+          <tr><td>1,000</td><td>£599,000</td><td>£7.2M</td><td class="hide-mobile">Strong Year 2 / early Year 3</td></tr>
+          <tr><td>3,500</td><td>£2,096,500</td><td>£25.2M</td><td class="hide-mobile">Year 3 target (this model)</td></tr>
+          <tr><td>5,000</td><td>£2,995,000</td><td>£35.9M</td><td class="hide-mobile">Series A milestone</td></tr>
+          <tr class="arr-row"><td>10,000</td><td>£5,990,000</td><td>£71.9M</td><td class="hide-mobile">Full market penetration — YC scale</td></tr>
         </tbody>
       </table>
     </div>
