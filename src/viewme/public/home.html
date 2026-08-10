@@ -1578,7 +1578,7 @@
   const el = document.getElementById('typetext');
   let jobsTypeActive = true;
   function type() {
-    if (!jobsTypeActive) return;
+    if (!jobsTypeActive || !el) return;
     const phrase = phrases[pi % phrases.length];
     if (!del) {
       el.textContent = phrase.slice(0, ++ci);
