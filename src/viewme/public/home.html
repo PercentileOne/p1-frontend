@@ -399,6 +399,7 @@
     .s1-hero-text { flex: none; width: 100%; }
     .s1-hero-img { flex: none; width: 100%; }
     .s1-hero-img img { height: 260px; }
+    .hero-carousel { height: 260px; }
     .s1-sub { max-width: 100%; }
   }
   .s1-btn-green {
@@ -482,6 +483,11 @@
   .mock-alert-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink: 0; margin-top: 6px; animation: pulse 2s infinite; }
   .mock-toast { background: rgba(52,211,153,0.06); border: 1px solid rgba(52,211,153,0.35); border-radius: 14px; padding: 20px 20px; display: flex; gap: 16px; align-items: center; margin-bottom: 10px; box-shadow: 0 0 24px rgba(52,211,153,0.1); }
 
+  /* Hero carousel */
+  .hero-carousel { position: relative; width: 100%; height: 380px; border-radius: 24px; overflow: hidden; box-shadow: 0 0 60px rgba(0,0,0,0.6), 0 0 120px rgba(52,211,153,0.06); }
+  .hero-slide { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; opacity: 0; transition: opacity 1.2s ease-in-out; display: block; }
+  .hero-slide.active { opacity: 1; }
+
   /* Mobile */
   @media (max-width: 860px) {
     .scroll-section { padding: 130px 24px 60px; min-height: auto; }
@@ -506,7 +512,11 @@
         <p class="s1-sub reveal reveal-delay-2">Before <strong style="color:#fff">Interview</strong><strong style="color:var(--green)">Me</strong>, candidates wrote CVs, submitted applications, travelled to interviews — then were ghosted without a word if they didn't get the job. Now, for the very first time, one recorded interview works for you 24 hours a day, seen by <strong style="color:#fff">thousands of recruiters and employers</strong>. Simultaneously. Without applying to a single one of them.</p>
       </div><!-- /s1-hero-text -->
       <div class="s1-hero-img reveal reveal-delay-2">
-        <img src="coffee-hero.jpg" alt="Interview from anywhere — coffee in hand" />
+        <div class="hero-carousel">
+          <img class="hero-slide active" src="hero-1.jpg" alt="Interview from anywhere" />
+          <img class="hero-slide" src="hero-2.jpg" alt="Interview from your sofa" />
+          <img class="hero-slide" src="hero-3.jpg" alt="Interview from home" />
+        </div>
       </div>
     </div><!-- /s1-hero-split -->
 
@@ -714,6 +724,18 @@
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
     }, { threshold: 0.12 });
     document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  })();
+
+  // Hero carousel — crossfade every 4s
+  (function(){
+    const slides = document.querySelectorAll('.hero-slide');
+    if (!slides.length) return;
+    let current = 0;
+    setInterval(() => {
+      slides[current].classList.remove('active');
+      current = (current + 1) % slides.length;
+      slides[current].classList.add('active');
+    }, 4000);
   })();
 </script>
 
