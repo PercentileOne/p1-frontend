@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // ── Navigation structure ──────────────────────────────────────────────────────
 const NAV_GROUPS = [
@@ -43,8 +43,7 @@ const NAV_GROUPS = [
     { id: 'future-plans', label: '🌍 Future Plans' },
   ]},
   { title: 'Financials', items: [
-    { id: 'projections',  label: 'Projections' },
-    { id: 'fp-model',     label: '📈 Financial Projections' },
+    { id: 'projections',  label: '📈 Financial Projections' },
     { id: 'ask',          label: 'The Ask' },
   ]},
   { title: 'Founder', items: [
@@ -635,139 +634,312 @@ function ScreensSection({ nav }: { nav: Nav }) {
   </>;
 }
 
-// ── ProjectionsSection — proper component so useState is legal ────────────────
+// ── Financial model data ──────────────────────────────────────────────────────
+function buildMRRData() {
+  const months = Array.from({ length: 36 }, (_, i) => i + 1);
+  const newEmp = (m: number) => m <= 12 ? 10 + (m - 1) * 2.5 : m <= 24 ? 40 + (m - 13) * 5 : 100 + (m - 25) * 9;
+  const newAgy = (m: number) => m <= 12 ? (m <= 3 ? 0 : 1) : m <= 24 ? 3 : 7;
+  const churn  = (m: number) => m <= 12 ? 0.04 : m <= 24 ? 0.03 : 0.02;
+  let eC = 0, aC = 0;
+  return months.map(m => {
+    const cr = churn(m);
+    eC = Math.round(eC * (1 - cr) + newEmp(m));
+    aC = Math.round(aC * (1 - cr * 0.5) + newAgy(m));
+    const eMRR = eC * 599, aMRR = aC * 999;
+    return { m, eC, aC, eMRR, aMRR, total: eMRR + aMRR };
+  });
+}
+const MRR_DATA = buildMRRData();
+
+// ── ProjectionsSection ────────────────────────────────────────────────────────
 function ProjectionsSection({ nav }: { nav: Nav }) {
-  const [tab, setTab] = useState<'base'|'upside'>('base');
-  const isBase = tab === 'base';
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [tip, setTip] = useState<{ x: number; y: number; d: typeof MRR_DATA[0] } | null>(null);
+
+  const GRN = '#34d399';
+  const BLU = '#3d7ef6';
+  const PRP = '#a855f7';
+  const moNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const fmt = (v: number) => v >= 1e6 ? '£' + (v / 1e6).toFixed(2) + 'M' : v >= 1e3 ? '£' + Math.round(v / 1e3) + 'K' : '£' + v;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const DPR = window.devicePixelRatio || 1;
+
+    function draw() {
+      if (!canvas) return;
+      const rect = canvas.parentElement!.getBoundingClientRect();
+      canvas.width  = rect.width * DPR;
+      canvas.height = 260 * DPR;
+      canvas.style.height = '260px';
+      const ctx = canvas.getContext('2d')!;
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      const pad = { top: 20 * DPR, right: 16 * DPR, bottom: 44 * DPR, left: 68 * DPR };
+      const cW = W - pad.left - pad.right, cH = H - pad.top - pad.bottom;
+      const maxV = Math.max(...MRR_DATA.map(d => d.total)) * 1.08;
+      const xOf = (i: number) => pad.left + i * (cW / 35);
+      const yOf = (v: number) => pad.top + cH - (v / maxV) * cH;
+
+      // grid
+      ctx.setLineDash([3 * DPR, 3 * DPR]);
+      for (let g = 0; g <= 5; g++) {
+        const v = (maxV / 5) * g, y = yOf(v);
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = DPR;
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+        ctx.fillStyle = 'rgba(148,163,184,0.75)'; ctx.font = `${9 * DPR}px system-ui`; ctx.textAlign = 'right';
+        ctx.fillText(fmt(v), pad.left - 6 * DPR, y + 3 * DPR);
+      }
+      ctx.setLineDash([]);
+
+      // year dividers
+      [12, 24].forEach(mi => {
+        const x = xOf(mi);
+        ctx.strokeStyle = 'rgba(61,126,246,0.3)'; ctx.lineWidth = DPR;
+        ctx.setLineDash([5 * DPR, 3 * DPR]);
+        ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, H - pad.bottom); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(61,126,246,0.6)'; ctx.font = `bold ${9 * DPR}px system-ui`; ctx.textAlign = 'center';
+        ctx.fillText(mi === 12 ? 'End Y1' : 'End Y2', x, pad.top - 4 * DPR);
+      });
+
+      // areas + lines
+      const drawArea = (vals: number[], color: string) => {
+        ctx.beginPath(); ctx.moveTo(xOf(0), yOf(0));
+        vals.forEach((v, i) => ctx.lineTo(xOf(i), yOf(v)));
+        ctx.lineTo(xOf(vals.length - 1), yOf(0)); ctx.closePath();
+        const g = ctx.createLinearGradient(0, pad.top, 0, H - pad.bottom);
+        g.addColorStop(0, color + '40'); g.addColorStop(1, color + '05');
+        ctx.fillStyle = g; ctx.fill();
+      };
+      const drawLine = (vals: number[], color: string, lw: number) => {
+        ctx.beginPath();
+        vals.forEach((v, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v)));
+        ctx.strokeStyle = color; ctx.lineWidth = lw * DPR; ctx.lineJoin = 'round'; ctx.stroke();
+      };
+      drawArea(MRR_DATA.map(d => d.eMRR), BLU);
+      drawArea(MRR_DATA.map(d => d.aMRR), PRP);
+      drawLine(MRR_DATA.map(d => d.eMRR), BLU, 1.5);
+      drawLine(MRR_DATA.map(d => d.aMRR), PRP, 1.5);
+      drawLine(MRR_DATA.map(d => d.total), GRN, 2.5);
+
+      // x labels
+      ctx.fillStyle = 'rgba(148,163,184,0.65)'; ctx.font = `${9 * DPR}px system-ui`; ctx.textAlign = 'center';
+      [0, 5, 11, 17, 23, 29, 35].forEach(i => {
+        const yr = Math.ceil((i + 1) / 12);
+        ctx.fillText(`${moNames[i % 12]} Y${yr}`, xOf(i), H - pad.bottom + 14 * DPR);
+      });
+    }
+
+    draw();
+    window.addEventListener('resize', draw);
+    return () => window.removeEventListener('resize', draw);
+  }, []);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const cW = rect.width - 68 - 16;
+    const i = Math.round((e.clientX - rect.left - 68) / (cW / 35));
+    if (i < 0 || i >= 36) { setTip(null); return; }
+    setTip({ x: e.clientX, y: e.clientY, d: MRR_DATA[i] });
+  };
+
   return <>
     <SectionHead
-      label="Financials · Projections"
-      h1="Hybrid projections."
-      h2="Two scenarios."
-      sub="We present both a Conservative Base Case and an Ambitious Upside Case. The base case is what we commit to. The upside case is what happens when the recruiter email feature reaches escape velocity."
+      label="Financials · Financial Projections"
+      h1="£26.6M ARR."
+      h2="36 months. UK + US."
+      sub="Employer Search at £599/month drives the model. Agency Desk at £999/month adds on top. Candidates are free forever — they are the supply that makes employers pay. Churn applied monthly: 4% → 3% → 2% as the product matures."
     />
 
-    <div style={{ display: 'flex', gap: 0, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(79,142,247,0.15)', borderRadius: 12, padding: 4, marginBottom: 28, width: 'fit-content' }}>
-      {(['base','upside'] as const).map(t => (
-        <button key={t} onClick={() => setTab(t)} style={{
-          padding: '9px 24px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700,
-          background: tab === t ? (t === 'base' ? `linear-gradient(135deg, ${A}, ${A2})` : 'linear-gradient(135deg, #22c55e, #16a34a)') : 'transparent',
-          color: tab === t ? '#fff' : '#5050a0', transition: 'all 0.2s',
-        }}>
-          {t === 'base' ? '📊 Conservative Base Case' : '🚀 Ambitious Upside Case'}
-        </button>
+    {/* Hero metrics */}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 28 }}>
+      {[
+        { label: 'Year 3 ARR', value: '£26.6M', sub: 'Annual Recurring Revenue · month 36', color: GRN },
+        { label: 'Peak MRR · Month 36', value: '£2.22M', sub: 'Monthly Recurring Revenue · end of Year 3', color: BLU },
+        { label: 'Paying Customers', value: '3,620', sub: '3,500 employers + 120 agency desks', color: PRP },
+      ].map(c => (
+        <div key={c.label} style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${c.color}25`, borderRadius: 14, padding: '22px 20px', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: c.color }} />
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#64748b', marginBottom: 8 }}>{c.label}</div>
+          <div style={{ fontSize: 32, fontWeight: 900, letterSpacing: '-0.04em', color: c.color, lineHeight: 1, marginBottom: 5 }}>{c.value}</div>
+          <div style={{ fontSize: 11, color: '#94a3b8' }}>{c.sub}</div>
+        </div>
       ))}
     </div>
 
-    {isBase ? (
-      <>
-        <Card style={{ marginBottom: 28 }}>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 20 }}>ARR Trajectory — Base Case (Agency-led)</div>
-          <BarRow year="2026 (H2 launch)" arr="£48K"  pct={2}   agencies="10 agencies, modest pack sales" />
-          <BarRow year="2027"             arr="£420K" pct={9}   agencies="60 agencies + consumer growth" />
-          <BarRow year="2028"             arr="£1.8M" pct={33}  agencies="160 agencies + 2 govt contracts" />
-          <BarRow year="2029"             arr="£5.5M" pct={100} agencies="350 agencies + govt scale" />
-        </Card>
-        <Grid cols={2}>
-          <Card>
-            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 14 }}>Key Assumptions — Base Case</div>
+    {/* Chart */}
+    <Card style={{ marginBottom: 28 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: '#f1f5f9' }}>MRR Growth Curve — 36 Month Ramp</div>
+          <div style={{ fontSize: 11, color: '#64748b', marginTop: 3 }}>Employer Search (£599) + Agency Desk (£999) · churn applied monthly</div>
+        </div>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          {[{c:BLU,l:'Employer MRR'},{c:PRP,l:'Agency MRR'},{c:GRN,l:'Total MRR'}].map(({c,l}) => (
+            <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#94a3b8' }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: c, flexShrink: 0 }} />{l}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ position: 'relative' }}>
+        <canvas ref={canvasRef} style={{ display: 'block', width: '100%' }}
+          onMouseMove={handleMouseMove} onMouseLeave={() => setTip(null)} />
+        {tip && (
+          <div style={{
+            position: 'fixed', left: tip.x + 14, top: tip.y - 90, pointerEvents: 'none',
+            background: '#1e2d4a', border: '1px solid rgba(61,126,246,0.3)', borderRadius: 10,
+            padding: '10px 14px', fontSize: 12, color: '#f1f5f9', zIndex: 9999,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)', whiteSpace: 'nowrap',
+          }}>
+            <div style={{ fontWeight: 800, color: BLU, marginBottom: 6 }}>Month {tip.d.m} · {moNames[(tip.d.m - 1) % 12]} Year {Math.ceil(tip.d.m / 12)}</div>
             {[
-              {label:'Agency close rate',value:'20% of demos'},
-              {label:'Monthly packs per agency',value:'40 sends/month'},
-              {label:'Agency churn rate',value:'<5% annually'},
-              {label:'Pack price (agency-funded)',value:'£5 avg'},
-              {label:'Consumer direct packs',value:'500/month by Q2 2027'},
-              {label:'Learn Engine subs',value:'200 by end 2027'},
-              {label:'Government contracts',value:'1 by Q4 2027, 2 by 2028'},
-              {label:'Enterprise/company packs',value:'2 contracts by end 2027'},
+              { label: 'Employers',    val: tip.d.eC.toLocaleString(), color: '#93c5fd' },
+              { label: 'Agency Desks', val: String(tip.d.aC),          color: '#c084fc' },
+              { label: 'Employer MRR', val: fmt(tip.d.eMRR),           color: BLU },
+              { label: 'Agency MRR',   val: fmt(tip.d.aMRR),           color: PRP },
             ].map(r => (
-              <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12 }}>
-                <span style={{ color: '#9090b0' }}>{r.label}</span>
-                <span style={{ color: '#ddd', fontWeight: 600 }}>{r.value}</span>
+              <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', gap: 20, marginBottom: 3 }}>
+                <span style={{ color: '#94a3b8' }}>{r.label}</span>
+                <span style={{ fontWeight: 700, color: r.color }}>{r.val}</span>
               </div>
             ))}
-          </Card>
-          <Card>
-            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: A, marginBottom: 14 }}>2027 Revenue Mix — Base</div>
-            {[
-              {stream:'Agency subs (60 × £499)',value:'£359K',pct:73},
-              {stream:'Recruiter-triggered packs',value:'£30K',pct:6},
-              {stream:'Consumer packs (£1–10)',value:'£24K',pct:5},
-              {stream:'Learn Engine subs',value:'£22K',pct:4},
-              {stream:'Recruiter Pro (ind.)',value:'£18K',pct:4},
-              {stream:'Company packs',value:'£24K',pct:5},
-              {stream:'Govt contract (1)',value:'£75K',pct:15},
-            ].map(r => (
-              <div key={r.stream} style={{ marginBottom: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 3 }}>
-                  <span style={{ color: '#9090b0' }}>{r.stream}</span>
-                  <span style={{ color: '#ddd', fontWeight: 700 }}>{r.value}</span>
-                </div>
-                <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${r.pct}%`, background: `linear-gradient(90deg, ${A}, ${A2})`, borderRadius: 2 }} />
-                </div>
-              </div>
-            ))}
-          </Card>
-        </Grid>
-        <Callout icon="📈" title="Path to Series A — Base Case" body="£1M ARR is achievable by Q3 2027 on the base case. That is the UK SaaS Series A standard benchmark. With even one government contract, we reach it by Q1 2027." />
-      </>
-    ) : (
-      <>
-        <Card style={{ marginBottom: 28, border: '1px solid rgba(34,197,94,0.2)' }}>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 20 }}>ARR Trajectory — Upside Case (Escape Velocity)</div>
-          <BarRow year="2026 (H2 launch)" arr="£120K" pct={2}   agencies="25 agencies, viral £1 pack adoption begins" />
-          <BarRow year="2027"             arr="£1.6M" pct={13}  agencies="160 agencies, recruiter engine exploding" />
-          <BarRow year="2028"             arr="£6.5M" pct={53}  agencies="400 agencies, 3 govt contracts, Learn scaling" />
-          <BarRow year="2029"             arr="£22M"  pct={100} agencies="Global scale, DWP engagement, enterprise tier live" />
-        </Card>
-        <Callout icon="🚀" title="What makes the Upside Case real" body="The upside scenario activates when two things happen simultaneously: the recruiter email feature reaches 50+ agencies creating a self-reinforcing loop, and one government contract proves the institutional model. These are not independent — they compound." color="#22c55e" />
-        <Grid cols={2}>
-          <Card>
-            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 14 }}>Upside Assumptions</div>
-            {[
-              {label:'Recruiter adoption rate',value:'50–90% in target segment'},
-              {label:'Candidate conversion (rec. email)',value:'70–90% click-to-activate'},
-              {label:'£1 pack virality coefficient',value:'>1.2 (each user brings 1.2 more)'},
-              {label:'Learn Engine subscription take-up',value:'15% of pack users subscribe'},
-              {label:'Government contracts by 2028',value:'3–5 (council + DWP trial)'},
-              {label:'Premium pack penetration',value:'25% of pack users upgrade'},
-              {label:'Company pack average size',value:'£2,500 / contract'},
-              {label:'International revenue (2028)',value:'20% of total ARR'},
-            ].map(r => (
-              <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12 }}>
-                <span style={{ color: '#9090b0' }}>{r.label}</span>
-                <span style={{ color: '#22c55e', fontWeight: 600 }}>{r.value}</span>
-              </div>
-            ))}
-          </Card>
-          <Card>
-            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22c55e', marginBottom: 14 }}>2028 Revenue Mix — Upside</div>
-            {[
-              {stream:'Agency subs + triggered links',value:'£2.4M',pct:37},
-              {stream:'Consumer packs (viral £1–10)',value:'£900K',pct:14},
-              {stream:'Learn Engine subscriptions',value:'£720K',pct:11},
-              {stream:'Premium packs (£5–10)',value:'£480K',pct:7},
-              {stream:'Company packs',value:'£600K',pct:9},
-              {stream:'Govt & institutional contracts',value:'£900K',pct:14},
-              {stream:'International / multi-language',value:'£500K',pct:8},
-            ].map(r => (
-              <div key={r.stream} style={{ marginBottom: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 3 }}>
-                  <span style={{ color: '#9090b0' }}>{r.stream}</span>
-                  <span style={{ color: '#22c55e', fontWeight: 700 }}>{r.value}</span>
-                </div>
-                <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${r.pct}%`, background: 'linear-gradient(90deg, #22c55e, #16a34a)', borderRadius: 2 }} />
-                </div>
-              </div>
-            ))}
-          </Card>
-        </Grid>
-      </>
-    )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 4, marginTop: 4 }}>
+              <span style={{ color: '#94a3b8' }}>Total MRR</span>
+              <span style={{ fontWeight: 800, color: GRN }}>{fmt(tip.d.total)}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </Card>
 
-    <div style={{ textAlign: 'center', marginTop: 24 }}>
+    {/* Milestones */}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 28 }}>
+      {[
+        { month: 'Month 6',  value: '£89K',   label: 'MRR · 140 employers',   color: '#64748b' },
+        { month: 'Month 12', value: '£190K',  label: 'MRR · 300 employers',   color: '#93c5fd' },
+        { month: 'Month 24', value: '£699K',  label: 'MRR · 1,100 employers', color: '#60a5fa' },
+        { month: 'Month 36', value: '£2.22M', label: 'MRR · 3,500 employers', color: GRN },
+      ].map(ms => (
+        <div key={ms.month} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '16px 14px', textAlign: 'center' }}>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#64748b', marginBottom: 6 }}>{ms.month}</div>
+          <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: '-0.03em', color: ms.color, marginBottom: 4 }}>{ms.value}</div>
+          <div style={{ fontSize: 11, color: '#64748b' }}>{ms.label}</div>
+        </div>
+      ))}
+    </div>
+
+    {/* Year-by-year table */}
+    <Card style={{ marginBottom: 28, padding: 0, overflow: 'hidden' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            {['Metric', 'Year 1', 'Year 2', 'Year 3'].map((h, i) => (
+              <th key={h} style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '10px 16px', textAlign: i === 0 ? 'left' : 'right', background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.07)', color: i === 1 ? '#94a3b8' : i === 2 ? '#93c5fd' : i === 3 ? GRN : '#64748b' }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {[
+            { label: 'UK Employers',          y1: '200',      y2: '600',      y3: '1,500'     },
+            { label: 'US Employers',          y1: '100',      y2: '500',      y3: '2,000'     },
+            { label: 'Total Employers',       y1: '300',      y2: '1,100',    y3: '3,500'     },
+            { label: 'Agency Desks',          y1: '10',       y2: '40',       y3: '120'       },
+            { label: 'Registered Candidates', y1: '5,000',    y2: '25,000',   y3: '100,000'   },
+            { label: 'Monthly Churn',         y1: '4%',       y2: '3%',       y3: '2%'        },
+            { label: 'Employer MRR (EoY)',    y1: '£179,700', y2: '£658,900', y3: '£2,096,500'},
+            { label: 'Agency MRR (EoY)',      y1: '£9,990',   y2: '£39,960',  y3: '£119,880'  },
+          ].map((r, ri) => (
+            <tr key={r.label}>
+              {[r.label, r.y1, r.y2, r.y3].map((v, ci) => (
+                <td key={ci} style={{ padding: '11px 16px', textAlign: ci === 0 ? 'left' : 'right', fontSize: 13, fontVariantNumeric: 'tabular-nums', borderBottom: `1px solid rgba(255,255,255,${ri === 7 ? 0 : 0.05})`, color: ci === 0 ? '#94a3b8' : ci === 1 ? '#cbd5e1' : ci === 2 ? '#93c5fd' : GRN, fontWeight: ci === 0 ? 600 : 400 }}>{v}</td>
+              ))}
+            </tr>
+          ))}
+          <tr style={{ background: 'rgba(61,126,246,0.07)' }}>
+            {['Total MRR (EoY)', '£189,690', '£698,860', '£2,216,380'].map((v, ci) => (
+              <td key={ci} style={{ padding: '11px 16px', textAlign: ci === 0 ? 'left' : 'right', fontSize: 13, fontVariantNumeric: 'tabular-nums', fontWeight: 800, color: ci === 0 ? '#f1f5f9' : BLU, borderTop: '1px solid rgba(61,126,246,0.2)' }}>{v}</td>
+            ))}
+          </tr>
+          <tr style={{ background: 'rgba(52,211,153,0.07)' }}>
+            {['ARR (×12)', '£2.28M', '£8.39M', '£26.6M'].map((v, ci) => (
+              <td key={ci} style={{ padding: '13px 16px', textAlign: ci === 0 ? 'left' : 'right', fontSize: 16, fontVariantNumeric: 'tabular-nums', fontWeight: 900, color: ci === 0 ? '#f1f5f9' : GRN, borderTop: '2px solid rgba(52,211,153,0.25)' }}>{v}</td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+    </Card>
+
+    {/* Assumptions */}
+    <Grid cols={2}>
+      <Card>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#64748b', marginBottom: 14 }}>Pricing Assumptions</div>
+        {[
+          { key: 'Candidate',             val: '£0 / forever',       color: GRN },
+          { key: 'Employer Search (UK)',   val: '£599 / month',       color: BLU },
+          { key: 'Employer Search (US)',   val: '$799 / month',       color: BLU },
+          { key: 'Agency Desk',           val: '£999 / month',       color: PRP },
+          { key: 'Enterprise',            val: 'Custom / negotiated', color: '#f1f5f9' },
+          { key: 'Y1 Churn',             val: '4% / month',         color: '#f1f5f9' },
+          { key: 'Y2 Churn',             val: '3% / month',         color: '#f1f5f9' },
+          { key: 'Y3 Churn',             val: '2% / month',         color: '#f1f5f9' },
+        ].map(r => (
+          <div key={r.key} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12 }}>
+            <span style={{ color: '#94a3b8' }}>{r.key}</span>
+            <span style={{ fontWeight: 700, color: r.color }}>{r.val}</span>
+          </div>
+        ))}
+      </Card>
+      <Card>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#64748b', marginBottom: 14 }}>Growth Assumptions</div>
+        {[
+          { key: 'Launch markets',         val: 'UK + US' },
+          { key: 'Y1 new employers/mo',   val: '~28 avg' },
+          { key: 'Y2 new employers/mo',   val: '~70 avg' },
+          { key: 'Y3 new employers/mo',   val: '~200 avg' },
+          { key: 'Sales team size Y1',    val: '4–6 reps' },
+          { key: 'Revenue mix Y3',        val: '95% employer · 5% agency' },
+          { key: 'Candidate growth',       val: 'Network-driven, free' },
+          { key: 'EU / APAC expansion',   val: 'Year 4+' },
+        ].map(r => (
+          <div key={r.key} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 12 }}>
+            <span style={{ color: '#94a3b8' }}>{r.key}</span>
+            <span style={{ fontWeight: 700, color: '#f1f5f9' }}>{r.val}</span>
+          </div>
+        ))}
+      </Card>
+    </Grid>
+
+    {/* Sensitivity */}
+    <Card style={{ marginTop: 24, padding: 0, overflow: 'hidden' }}>
+      <div style={{ padding: '14px 16px 10px', fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#64748b', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        Sensitivity — What 10,000 Employers Looks Like
+      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <tbody>
+          {[
+            { emp: '500',    mrr: '£299,500',   arr: '£3.6M',  ctx: 'Conservative Year 2 target' },
+            { emp: '1,000',  mrr: '£599,000',   arr: '£7.2M',  ctx: 'Strong Year 2 / early Year 3' },
+            { emp: '3,500',  mrr: '£2,096,500', arr: '£25.2M', ctx: 'Year 3 target (this model)' },
+            { emp: '5,000',  mrr: '£2,995,000', arr: '£35.9M', ctx: 'Series A milestone' },
+            { emp: '10,000', mrr: '£5,990,000', arr: '£71.9M', ctx: 'Full market penetration — YC scale' },
+          ].map((r, i) => (
+            <tr key={r.emp} style={{ background: i === 4 ? 'rgba(52,211,153,0.07)' : 'transparent' }}>
+              <td style={{ padding: '10px 16px', fontSize: 13, fontVariantNumeric: 'tabular-nums', fontWeight: 700, color: i === 4 ? GRN : '#cbd5e1', borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>{r.emp}</td>
+              <td style={{ padding: '10px 16px', fontSize: 13, fontVariantNumeric: 'tabular-nums', textAlign: 'right', color: i === 4 ? GRN : '#94a3b8', borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>{r.mrr}</td>
+              <td style={{ padding: '10px 16px', fontSize: 13, fontVariantNumeric: 'tabular-nums', textAlign: 'right', fontWeight: 800, color: i === 4 ? GRN : BLU, borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>{r.arr}</td>
+              <td style={{ padding: '10px 16px', fontSize: 12, color: '#64748b', borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>{r.ctx}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Card>
+
+    <div style={{ textAlign: 'center', marginTop: 28 }}>
       <button onClick={() => nav('ask')} style={{ background: `linear-gradient(135deg, ${A}, ${A2})`, color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
         See The Ask →
       </button>
@@ -3405,10 +3577,7 @@ export default function InvestorPortal() {
     return () => { document.body.style.overflow = ''; };
   }, [drawerOpen]);
 
-  function go(id: string) {
-    if (id === 'fp-model') { window.open('/fp', '_blank'); return; }
-    setActive(id); setDrawerOpen(false); window.scrollTo(0, 0);
-  }
+  function go(id: string) { setActive(id); setDrawerOpen(false); window.scrollTo(0, 0); }
 
   const currentGroup = NAV_GROUPS.find(g => g.items.some(i => i.id === active));
   const currentItem  = ALL_ITEMS.find(i => i.id === active);
