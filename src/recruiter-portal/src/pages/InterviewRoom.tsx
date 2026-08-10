@@ -798,11 +798,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           <button onClick={() => {
             cancelSpeakRef.current?.();
             uploadRecording(sessionAnswers);
-            if (sessionAnswers.length > 0) {
-              navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx } });
-            } else {
-              navigate(-1);
-            }
+            navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx } });
           }}
             style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '8px', padding: '7px 14px', color: '#34D399', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>
             End Session
