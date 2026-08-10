@@ -1741,16 +1741,23 @@
   });
 
   // ── REDIRECT ALL CTAs TO CONTACT PAGE ─────────────────
-  var CTA_SELECTORS = ['.nav-cta', '.s1-btn-blue', '.s1-btn-green', '.plan-btn', '.search-go', '.invite-btn'];
+  // Redirect every button and link to /contact — except nav links and the logo
+  var ALLOW_HREFS = ['/', '#how', '#pricing', '/contact', '#'];
   document.addEventListener('click', function(e) {
     var el = e.target;
-    var matched = CTA_SELECTORS.some(function(sel) {
-      return el.matches(sel) || el.closest(sel);
-    });
-    if (matched) {
-      e.preventDefault();
-      e.stopPropagation();
-      window.location.href = '/contact';
-    }
+    // Find closest anchor or button
+    var btn = el.matches('a,button') ? el : (el.closest('a') || el.closest('button'));
+    if (!btn) return;
+    // Allow nav-logo, nav links, language selector, hamburger
+    if (btn.closest('.nav-logo') || btn.closest('.nav-links') ||
+        btn.closest('.nav-mobile-menu') || btn.closest('#langMenu') ||
+        btn.classList.contains('nav-burger')) return;
+    // Allow plain hash/page anchors by href
+    var href = btn.getAttribute('href') || '';
+    if (ALLOW_HREFS.indexOf(href) !== -1) return;
+    // Everything else → contact
+    e.preventDefault();
+    e.stopPropagation();
+    window.location.href = '/contact';
   }, true);
 </script>
