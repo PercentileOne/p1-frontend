@@ -233,6 +233,7 @@
   @media (max-width:900px) {
     nav { padding:12px 20px; }
     .nav-links { display:none; }
+    .nav-contact-mobile { display:block !important; }
     .hero { padding:90px 20px 60px; }
     .stats-bar { padding:20px; gap:0; }
     .stat-item { padding:12px 16px; }
@@ -325,6 +326,8 @@
     <a href="/contact">Contact Us</a>
   </div>
   <div style="display:flex;align-items:center;gap:12px">
+    <!-- Mobile Contact Us -->
+    <a href="/contact" class="nav-contact-mobile" style="display:none;font-size:13px;font-weight:700;color:#f1f5f9;text-decoration:none;white-space:nowrap;">Contact Us</a>
     <!-- Language selector -->
     <div style="position:relative;display:inline-block" id="langMenu">
       <button onclick="document.getElementById('langDrop').style.display=document.getElementById('langDrop').style.display==='block'?'none':'block'" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--pearl);cursor:pointer;font-family:var(--font)">
