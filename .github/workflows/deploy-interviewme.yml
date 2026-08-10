@@ -33,7 +33,7 @@ jobs:
           cp src/viewme/public/candidate-8.jpg deploy/candidate-8.jpg
           cp src/viewme/public/candidate-9.jpg deploy/candidate-9.jpg
           cp src/viewme/public/candidate-10.jpg deploy/candidate-10.jpg
-          cp src/viewme/public/staticwebapp.config.json deploy/staticwebapp.config.json
+          cp src/viewme/public/gate-staticwebapp.config.json deploy/staticwebapp.config.json
 
       - name: Deploy to Azure SWA
         uses: Azure/static-web-apps-deploy@v1

@@ -1,0 +1,9 @@
+{
+  "routes": [
+    {
+      "route": "/*",
+      "redirect": "https://product.interviewme.global",
+      "statusCode": 301
+    }
+  ]
+}
