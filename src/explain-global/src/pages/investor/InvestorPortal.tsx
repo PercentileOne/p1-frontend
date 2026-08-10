@@ -3,10 +3,11 @@ import { useState, useEffect, useRef } from 'react';
 // ── Navigation structure ──────────────────────────────────────────────────────
 const NAV_GROUPS = [
   { title: 'Executive', items: [
-    { id: 'overview',   label: 'Overview' },
-    { id: 'vision',     label: 'The Vision' },
-    { id: 'why-now',    label: 'Why Now' },
-    { id: 'patent',     label: '🔒 Patent & IP' },
+    { id: 'overview',     label: 'Overview' },
+    { id: 'projections',  label: '📈 Financial Projections' },
+    { id: 'vision',       label: 'The Vision' },
+    { id: 'why-now',      label: 'Why Now' },
+    { id: 'patent',       label: '🔒 Patent & IP' },
   ]},
   { title: 'Problem & Solution', items: [
     { id: 'why-fail',   label: 'Why Candidates Fail' },
@@ -43,7 +44,6 @@ const NAV_GROUPS = [
     { id: 'future-plans', label: '🌍 Future Plans' },
   ]},
   { title: 'Financials', items: [
-    { id: 'projections',  label: '📈 Financial Projections' },
     { id: 'ask',          label: 'The Ask' },
   ]},
   { title: 'Founder', items: [
