@@ -594,8 +594,8 @@
         </div>
       </div>
 
-      <!-- AFTER: InterviewMe notification -->
-      <div style="flex:1;min-width:280px;border-radius:18px;overflow:hidden;border:1px solid rgba(52,211,153,0.3);background:rgba(52,211,153,0.05);box-shadow:0 0 40px rgba(52,211,153,0.1);">
+      <!-- AFTER: InterviewMe notification carousel -->
+      <div id="notif-carousel" style="flex:1;min-width:280px;border-radius:18px;overflow:hidden;border:1px solid rgba(52,211,153,0.3);background:rgba(52,211,153,0.05);box-shadow:0 0 40px rgba(52,211,153,0.1);position:relative;">
         <div style="position:relative;background:linear-gradient(135deg,#050f1a,#081a10);height:180px;display:flex;align-items:center;justify-content:center;">
           <div style="text-align:center;">
             <div style="font-size:48px;margin-bottom:8px;">🔔</div>
@@ -604,10 +604,45 @@
           <div style="position:absolute;top:10px;left:12px;background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.3);border-radius:100px;padding:4px 10px;font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);">✦ The New Way</div>
           <div style="position:absolute;top:10px;right:12px;background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.3);border-radius:100px;padding:4px 10px;font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);">● Live</div>
         </div>
-        <div style="padding:18px 20px;">
+        <div style="padding:18px 20px 14px;">
           <div style="font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);margin-bottom:12px;">With <strong style="font-style:normal;color:#fff">Interview</strong><strong style="font-style:normal;color:var(--green)">Me</strong><span style="font-style:normal;color:#fff">.global</span></div>
-          <div style="font-size:17px;color:var(--pearl);font-style:italic;line-height:1.75;">"Hi Gary, I watched your interview for DevOps Lead on InterviewMe — you're exactly what we're looking for. Are you open to a chat?"</div>
-          <div style="margin-top:14px;font-size:14px;color:var(--green);">Gary never sent a CV. His interview did the work.</div>
+          <div id="notif-slides" style="min-height:110px;">
+            <div class="notif-slide">
+              <div style="font-size:16px;color:var(--pearl);font-style:italic;line-height:1.75;">&ldquo;Hi Gary, I watched your DevOps Lead interview on InterviewMe &mdash; you&rsquo;re exactly what we&rsquo;re looking for. Are you open to a chat?&rdquo;</div>
+              <div style="margin-top:10px;font-size:13px;color:var(--green);">Gary never sent a CV. His interview did the work.</div>
+            </div>
+            <div class="notif-slide" style="display:none;">
+              <div style="font-size:16px;color:var(--pearl);font-style:italic;line-height:1.75;">&ldquo;Hi Priya, your Store Manager interview on InterviewMe is brilliant &mdash; I have three retail openings right now. When can we talk?&rdquo;</div>
+              <div style="margin-top:10px;font-size:13px;color:var(--green);">Priya applied to zero jobs. Recruiters found her.</div>
+            </div>
+            <div class="notif-slide" style="display:none;">
+              <div style="font-size:16px;color:var(--pearl);font-style:italic;line-height:1.75;">&ldquo;Hi Sarah, I just watched your PA interview on InterviewMe &mdash; your communication skills are exactly what our exec team needs.&rdquo;</div>
+              <div style="margin-top:10px;font-size:13px;color:var(--green);">Sarah recorded once. Three firms reached out that week.</div>
+            </div>
+            <div class="notif-slide" style="display:none;">
+              <div style="font-size:16px;color:var(--pearl);font-style:italic;line-height:1.75;">&ldquo;Hi James, your graduate interview on InterviewMe is outstanding &mdash; we&rsquo;d love to skip you straight to the panel round.&rdquo;</div>
+              <div style="margin-top:10px;font-size:13px;color:var(--green);">James hadn&rsquo;t even started applying. He got the offer.</div>
+            </div>
+            <div class="notif-slide" style="display:none;">
+              <div style="font-size:16px;color:var(--pearl);font-style:italic;line-height:1.75;">&ldquo;Hi Marcus, saw your Operations Manager interview on InterviewMe &mdash; your leadership style is a perfect match. Are you open to relocation?&rdquo;</div>
+              <div style="margin-top:10px;font-size:13px;color:var(--green);">Marcus was headhunted. His interview found him a better role.</div>
+            </div>
+            <div class="notif-slide" style="display:none;">
+              <div style="font-size:16px;color:var(--pearl);font-style:italic;line-height:1.75;">&ldquo;Hi Nina, your newly qualified teacher interview on InterviewMe is wonderful &mdash; we have a Year 4 position starting September.&rdquo;</div>
+              <div style="margin-top:10px;font-size:13px;color:var(--green);">Nina recorded on a Sunday. She had a job offer by Wednesday.</div>
+            </div>
+            <div class="notif-slide" style="display:none;">
+              <div style="font-size:16px;color:var(--pearl);font-style:italic;line-height:1.75;">&ldquo;Hi Tom, I watched your junior lawyer interview on InterviewMe &mdash; your commercial awareness is impressive. Are you still looking?&rdquo;</div>
+              <div style="margin-top:10px;font-size:13px;color:var(--green);">Tom skipped the cover letter. The interview spoke for itself.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;">
+            <div id="notif-dots" style="display:flex;gap:5px;"></div>
+            <div style="display:flex;gap:6px;">
+              <button onclick="notifPrev()" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:50%;width:28px;height:28px;color:var(--green);cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">&#8249;</button>
+              <button onclick="notifNext()" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:50%;width:28px;height:28px;color:var(--green);cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">&#8250;</button>
+            </div>
+          </div>
         </div>
       </div>
 
