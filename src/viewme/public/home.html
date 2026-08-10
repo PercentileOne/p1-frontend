@@ -1686,4 +1686,145 @@
       document.getElementById('langDrop').style.display = 'none';
     }
   });
+
+  // ── COMING SOON MODAL ─────────────────────────────────
+  var CTA_SELECTORS = ['.nav-cta', '.s1-btn-blue', '.plan-btn', '.search-go', '.invite-btn'];
+  document.addEventListener('click', function(e) {
+    var el = e.target;
+    var matched = CTA_SELECTORS.some(function(sel) {
+      return el.matches(sel) || el.closest(sel);
+    });
+    if (matched) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('im-soon-modal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  });
+  function imCloseModal() {
+    document.getElementById('im-soon-modal').classList.remove('open');
+    document.body.style.overflow = '';
+    var conf = document.getElementById('im-notify-confirm');
+    if (conf) conf.style.display = 'none';
+    var inp = document.getElementById('im-notify-email');
+    if (inp) inp.value = '';
+  }
+  function imNotify() {
+    var email = document.getElementById('im-notify-email').value.trim();
+    if (!email || !email.includes('@')) {
+      document.getElementById('im-notify-email').style.borderColor = '#ef4444';
+      return;
+    }
+    window.location.href = 'mailto:hello@interviewme.global?subject=Early Access Request&body=Please add me to the early access list.%0A%0AEmail: ' + encodeURIComponent(email);
+    document.getElementById('im-notify-confirm').style.display = 'flex';
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') imCloseModal();
+  });
 </script>
+
+<!-- ── COMING SOON MODAL ── -->
+<div id="im-soon-modal" style="
+  display:none;position:fixed;inset:0;z-index:9999;
+  align-items:center;justify-content:center;
+  background:rgba(4,8,18,0.88);backdrop-filter:blur(20px);
+  padding:24px;
+">
+<style>
+  #im-soon-modal.open { display:flex; }
+  #im-soon-modal .card {
+    background:linear-gradient(160deg,#0d1e3a 0%,#070d1a 70%,#04110a 100%);
+    border:1px solid rgba(52,211,153,0.15);
+    border-radius:28px;max-width:480px;width:100%;
+    padding:48px 40px 40px;text-align:center;position:relative;
+    box-shadow:0 40px 120px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.04);
+    animation:imSlideUp 0.35s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes imSlideUp {
+    from { opacity:0; transform:translateY(32px) scale(0.97); }
+    to   { opacity:1; transform:translateY(0)    scale(1);    }
+  }
+  #im-soon-modal .glow {
+    position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:300px;height:200px;
+    background:radial-gradient(ellipse,rgba(52,211,153,0.12) 0%,transparent 70%);
+    pointer-events:none;border-radius:inherit;
+  }
+  #im-soon-modal .close-btn {
+    position:absolute;top:18px;right:20px;
+    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+    border-radius:50%;width:32px;height:32px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;color:#64748b;cursor:pointer;line-height:1;
+    transition:all 0.2s;
+  }
+  #im-soon-modal .close-btn:hover { background:rgba(255,255,255,0.1);color:#f1f5f9; }
+  #im-soon-modal .im-mark {
+    width:80px;height:80px;border-radius:19px;margin:0 auto 24px;
+    background:linear-gradient(135deg,#34d399 0%,#047857 100%);
+    display:flex;align-items:center;justify-content:center;
+    position:relative;overflow:hidden;
+    box-shadow:0 12px 40px rgba(4,120,87,0.45);
+  }
+  #im-soon-modal .im-mark::before {
+    content:'';position:absolute;top:0;left:0;right:0;height:50%;
+    background:linear-gradient(180deg,rgba(255,255,255,0.2) 0%,transparent 100%);
+  }
+  #im-soon-modal .im-mark span { font-size:32px;font-weight:900;color:#fff;letter-spacing:-0.05em;position:relative;z-index:1; }
+  #im-soon-modal .eyebrow {
+    font-size:10px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;
+    color:#34d399;margin-bottom:14px;
+  }
+  #im-soon-modal h2 {
+    font-size:26px;font-weight:900;letter-spacing:-0.03em;color:#f1f5f9;
+    margin-bottom:12px;line-height:1.2;
+  }
+  #im-soon-modal p {
+    font-size:14px;color:#64748b;line-height:1.7;margin-bottom:28px;
+  }
+  #im-soon-modal .notify-row {
+    display:flex;gap:8px;margin-bottom:12px;
+  }
+  #im-soon-modal input {
+    flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+    border-radius:10px;padding:11px 16px;font-size:14px;color:#f1f5f9;
+    font-family:inherit;outline:none;transition:border-color 0.2s;
+  }
+  #im-soon-modal input::placeholder { color:#475569; }
+  #im-soon-modal input:focus { border-color:rgba(52,211,153,0.4); }
+  #im-soon-modal .notify-btn {
+    padding:11px 20px;border-radius:10px;
+    background:linear-gradient(135deg,#34d399,#047857);
+    border:none;color:#fff;font-size:14px;font-weight:800;
+    cursor:pointer;font-family:inherit;white-space:nowrap;
+    box-shadow:0 4px 20px rgba(4,120,87,0.4);transition:transform 0.15s;
+  }
+  #im-soon-modal .notify-btn:hover { transform:translateY(-1px); }
+  #im-notify-confirm {
+    display:none;align-items:center;justify-content:center;gap:8px;
+    font-size:13px;font-weight:700;color:#34d399;
+    background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);
+    border-radius:10px;padding:12px;margin-bottom:12px;
+  }
+  #im-soon-modal .dismiss { font-size:12px;color:#475569;cursor:pointer;text-decoration:underline;text-underline-offset:3px; }
+  #im-soon-modal .dismiss:hover { color:#94a3b8; }
+  @media(max-width:480px){
+    #im-soon-modal .card { padding:40px 24px 32px; }
+    #im-soon-modal .notify-row { flex-direction:column; }
+  }
+</style>
+  <div class="card">
+    <div class="glow"></div>
+    <button class="close-btn" onclick="imCloseModal()">✕</button>
+    <div class="im-mark"><span>IM</span></div>
+    <div class="eyebrow">Platform launching soon</div>
+    <h2>InterviewMe is almost here.</h2>
+    <p>We're putting the finishing touches on something that will change how the world hires. The platform goes live within weeks — be among the very first to get access.</p>
+    <div class="notify-row">
+      <input id="im-notify-email" type="email" placeholder="your@email.com" />
+      <button class="notify-btn" onclick="imNotify()">Notify me</button>
+    </div>
+    <div id="im-notify-confirm">✓ &nbsp;You're on the list — we'll be in touch very soon.</div>
+    <div class="dismiss" onclick="imCloseModal()">I'll come back when you're live</div>
+  </div>
+</div>
