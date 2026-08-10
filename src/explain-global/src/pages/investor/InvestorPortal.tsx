@@ -150,22 +150,6 @@ function StatusRow({ label, status }: { label:string; status:'live'|'beta'|'prog
   );
 }
 
-function BarRow({ year, arr, pct, agencies }: { year:string; arr:string; pct:number; agencies:string }) {
-  return (
-    <div style={{ marginBottom: 18 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-        <span style={{ fontSize: 14, color: '#b0b0c8', fontWeight: 600 }}>{year}</span>
-        <div style={{ display: 'flex', gap: 16 }}>
-          <span style={{ fontSize: 14, color: '#bbb' }}>{agencies} agencies</span>
-          <span style={{ fontSize: 14, fontWeight: 800, color: A }}>{arr}</span>
-        </div>
-      </div>
-      <div style={{ height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${A}, ${A2})`, borderRadius: 4, transition: 'width 1s ease' }} />
-      </div>
-    </div>
-  );
-}
 
 // ── SkillsMapSection — interactive competency map ────────────────────────────
 const DEMO_SKILLS = [
