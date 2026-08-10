@@ -277,12 +277,22 @@
     btn.textContent = 'Sending…';
 
     try {
-      var res = await fetch('https://api.explain.global/contact', {
+      var res = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name, email: email, type: type, message: msg })
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          access_key: '4f7c2497-7947-46ce-830e-979d244f4b4d',
+          name: name,
+          email: email,
+          subject: 'InterviewMe Contact: ' + type + ' — ' + name,
+          message: 'Type: ' + type + '
+
+Message: ' + (msg || 'No message.'),
+          from_name: 'InterviewMe Contact Form'
+        })
       });
-      if (!res.ok) throw new Error('Server error');
+      var data = await res.json();
+      if (!data.success) throw new Error('Failed');
       document.getElementById('form-wrap').style.display = 'none';
       document.getElementById('success-msg').style.display = 'block';
     } catch (err) {
