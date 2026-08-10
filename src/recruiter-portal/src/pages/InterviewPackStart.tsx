@@ -353,7 +353,7 @@ export default function InterviewPackStart() {
         </div>
 
         {/* Recording consent */}
-        <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', marginTop: '4px' }}>
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', marginTop: '4px', marginBottom: '16px' }}>
           <input
             type="checkbox"
             checked={consentToRecord}
