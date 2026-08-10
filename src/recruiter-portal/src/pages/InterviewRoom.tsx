@@ -726,18 +726,18 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               color: 'var(--text-2)', cursor: 'pointer', outline: 'none',
             }}
           >
-            <option value="en">🇬🇧 EN</option>
-            <option value="fr">🇫🇷 FR</option>
-            <option value="es">🇪🇸 ES</option>
-            <option value="de">🇩🇪 DE</option>
-            <option value="pt">🇵🇹 PT</option>
-            <option value="pl">🇵🇱 PL</option>
-            <option value="nl">🇳🇱 NL</option>
-            <option value="it">🇮🇹 IT</option>
-            <option value="tr">🇹🇷 TR</option>
-            <option value="ar">🇸🇦 AR</option>
-            <option value="zh">🇨🇳 ZH</option>
-            <option value="hi">🇮🇳 HI</option>
+            <option value="en">🇬🇧 English (EN)</option>
+            <option value="fr">🇫🇷 French (FR)</option>
+            <option value="es">🇪🇸 Spanish (ES)</option>
+            <option value="de">🇩🇪 German (DE)</option>
+            <option value="pt">🇵🇹 Portuguese (PT)</option>
+            <option value="pl">🇵🇱 Polish (PL)</option>
+            <option value="nl">🇳🇱 Dutch (NL)</option>
+            <option value="it">🇮🇹 Italian (IT)</option>
+            <option value="tr">🇹🇷 Turkish (TR)</option>
+            <option value="ar">🇸🇦 Arabic (AR)</option>
+            <option value="zh">🇨🇳 Chinese (ZH)</option>
+            <option value="hi">🇮🇳 Hindi (HI)</option>
           </select>
           {phase === 'answering' && (
             <div style={{ fontSize: '13px', fontWeight: 700, color: elapsed > 120 ? 'var(--amber)' : 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>{fmt(elapsed)}</div>
