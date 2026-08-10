@@ -790,7 +790,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           {phase !== 'intro' && phase !== 'done' && (
             <button
               onClick={handlePause}
-              style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '8px', padding: '7px 12px', color: 'var(--text-3)', fontSize: '12px', cursor: 'pointer' }}
+              style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '8px', padding: '7px 12px', color: '#34D399', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s' }}
             >
               ⏸ Pause
             </button>
@@ -804,7 +804,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               navigate(-1);
             }
           }}
-            style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '8px', padding: '7px 14px', color: 'var(--text-3)', fontSize: '12px', cursor: 'pointer' }}>
+            style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '8px', padding: '7px 14px', color: '#34D399', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>
             End Session
           </button>
         </div>
