@@ -739,6 +739,15 @@ function ProjectionsSection({ nav }: { nav: Nav }) {
       sub="Employer Search at £599/month drives the model. Agency Desk at £999/month adds on top. Candidates are free forever — they are the supply that makes employers pay. Churn applied monthly: 4% → 3% → 2% as the product matures."
     />
 
+    <div style={{ maxWidth: 760, marginBottom: 36 }}>
+      <p style={{ fontSize: 15, lineHeight: 1.8, color: '#cbd5e1', marginBottom: 16 }}>
+        These projections are built on a single, verifiable unit: one employer at £599 per month. That is less than the cost of posting a job on a major board, and a fraction of what a recruitment agency charges for a single placement. The value proposition is not an assumption — it is a structural price advantage over every existing hiring channel. We have modelled churn honestly: 4% in Year 1 falling to 2% by Year 3 as the product matures and switching costs rise. We have not included Enterprise revenue, government contracts, or any platform fees. What you see below is the floor.
+      </p>
+      <p style={{ fontSize: 15, lineHeight: 1.8, color: '#94a3b8', margin: 0 }}>
+        We are launching in the United Kingdom and United States first. Both markets share a language, a legal framework, and a culture of early SaaS adoption — and the US is approximately ten times the size of the UK market. Our Year 3 target of 3,500 employers represents less than a fraction of a percent of the combined addressable market. Year 1 is deliberately conservative: 300 employers by month 12, roughly 25 net new customers per month, achievable with a focused team and a working product. The ambition is not in Year 1. The ambition is in what compounds from it.
+      </p>
+    </div>
+
     {/* Hero metrics */}
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 28 }}>
       {[
