@@ -1,0 +1,722 @@
+<title>InterviewMe — Per-User Agent Architecture</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:    #050810;
+  --bg2:   #090e1c;
+  --bg3:   #0d1426;
+  --green: #34D399;
+  --dgreen:#047857;
+  --blue:  #3D7EF6;
+  --violet:#a78bfa;
+  --amber: #FBBF24;
+  --red:   #f87171;
+  --pearl: #F0F4FF;
+  --muted: #64748b;
+  --dim:   #1e2d4a;
+  --border:rgba(52,211,153,0.18);
+  --font:  -apple-system,'SF Pro Display','Segoe UI',system-ui,sans-serif;
+  --mono:  'SF Mono','Fira Code','Consolas',monospace;
+}
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--pearl);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding: 0 0 80px;
+}
+
+/* ── HEADER ── */
+.page-header {
+  text-align: center;
+  padding: 56px 24px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.page-header::before {
+  content:'';
+  position:absolute;inset:0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(52,211,153,0.09) 0%, transparent 70%);
+  pointer-events:none;
+}
+.header-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--green); background: rgba(52,211,153,0.08);
+  border: 1px solid rgba(52,211,153,0.22); border-radius: 100px;
+  padding: 5px 16px; margin-bottom: 24px;
+}
+.pulse-dot { width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.6)} }
+
+.page-header h1 {
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 900; letter-spacing: -0.04em; line-height: 1.1;
+  margin-bottom: 16px;
+}
+.page-header h1 .g { color: var(--green); }
+.page-header h1 .b { color: var(--blue); }
+.page-header p {
+  font-size: 16px; color: var(--muted); max-width: 620px; margin: 0 auto; line-height: 1.7;
+}
+
+/* ── CANVAS ── */
+.canvas {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── SECTION LABELS ── */
+.layer-label {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 12px; padding-left: 4px;
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 24px;
+}
+.card-title {
+  font-size: 12px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.card-sub { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* ── REGISTRATION ROW ── */
+.reg-row {
+  display: flex; align-items: stretch; gap: 16px; margin-bottom: 0;
+}
+.reg-event {
+  flex: 0 0 200px;
+  background: linear-gradient(135deg, #071a10, #050810);
+  border: 1px solid rgba(52,211,153,0.3);
+  border-radius: 14px; padding: 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.reg-event .icon { font-size: 28px; margin-bottom: 4px; }
+.reg-event .title { font-size: 13px; font-weight: 800; color: var(--green); }
+.reg-event .sub { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+.arrow-h {
+  display: flex; align-items: center; color: var(--muted); flex-shrink: 0;
+  font-size: 20px; padding: 0 4px;
+}
+.arrow-label {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; flex-shrink: 0;
+}
+.arrow-label span { font-size: 10px; font-family: var(--mono); color: var(--green); white-space: nowrap; }
+
+.provision-card {
+  flex: 1;
+  background: var(--bg2);
+  border: 1px solid rgba(52,211,153,0.22);
+  border-radius: 14px; padding: 20px 24px;
+}
+.provision-card .fn {
+  font-family: var(--mono); font-size: 12px; color: var(--green);
+  background: rgba(52,211,153,0.08); border-radius: 6px;
+  padding: 3px 10px; display: inline-block; margin-bottom: 10px;
+}
+.provision-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+.provision-card p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.provision-steps {
+  display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap;
+}
+.step-pill {
+  font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px;
+  border: 1px solid; display: flex; align-items: center; gap: 5px;
+}
+
+/* ── CONNECTOR ── */
+.connector {
+  display: flex; justify-content: center; align-items: center;
+  height: 48px; position: relative;
+}
+.connector-line {
+  width: 2px; height: 100%;
+  background: linear-gradient(180deg, rgba(52,211,153,0.5), rgba(52,211,153,0.2));
+  position: relative;
+}
+.connector-line::after {
+  content: '▼'; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+  color: var(--green); font-size: 10px;
+}
+.connector-label {
+  position: absolute; right: calc(50% + 16px);
+  font-size: 10px; font-family: var(--mono); color: var(--green);
+  white-space: nowrap; background: rgba(52,211,153,0.08);
+  border: 1px solid rgba(52,211,153,0.15); border-radius: 4px; padding: 2px 7px;
+}
+
+/* ── COSMOS DOC ── */
+.cosmos-section { margin-bottom: 0; }
+.cosmos-outer {
+  border: 1px solid rgba(61,126,246,0.3);
+  border-radius: 18px;
+  background: linear-gradient(135deg, #070c1c, #06101a);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.cosmos-outer::before {
+  content:'';
+  position:absolute;top:-40px;right:-40px;width:200px;height:200px;
+  background:radial-gradient(circle,rgba(61,126,246,0.07) 0%,transparent 70%);
+  pointer-events:none;
+}
+.cosmos-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+}
+.cosmos-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: linear-gradient(135deg, #1e40af, #3D7EF6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.cosmos-header h3 { font-size: 15px; font-weight: 800; }
+.cosmos-header p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.cosmos-badge {
+  margin-left: auto; font-size: 10px; font-weight: 700; padding: 3px 9px;
+  border-radius: 100px; background: rgba(61,126,246,0.12);
+  border: 1px solid rgba(61,126,246,0.3); color: var(--blue); letter-spacing: 0.06em;
+}
+
+.doc-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+.doc-field {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px; padding: 12px 14px;
+}
+.doc-field .field-group { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.doc-field .field-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+.doc-field .field-row:last-child { margin-bottom: 0; }
+.fkey { font-family: var(--mono); font-size: 11px; color: var(--blue); }
+.fval { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.fval.green { color: var(--green); }
+.fval.amber { color: var(--amber); }
+.fval.violet { color: var(--violet); }
+
+/* ── BIDIRECTIONAL CONNECTORS to agents ── */
+.agent-connectors {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 16px;
+  position: relative; height: 52px; margin: 0;
+}
+.agent-conn {
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  height: 100%;
+}
+.agent-conn-line {
+  width: 2px; flex: 1;
+  position: relative;
+}
+.agent-conn-line.green { background: linear-gradient(180deg, rgba(52,211,153,0.4), rgba(52,211,153,0.1)); }
+.agent-conn-line.amber { background: linear-gradient(180deg, rgba(251,191,36,0.4), rgba(251,191,36,0.1)); }
+.agent-conn-line.violet { background: linear-gradient(180deg, rgba(167,139,250,0.4), rgba(167,139,250,0.1)); }
+.agent-conn-line::after {
+  content: '▼'; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+  font-size: 9px;
+}
+.agent-conn-line.green::after { color: var(--green); }
+.agent-conn-line.amber::after { color: var(--amber); }
+.agent-conn-line.violet::after { color: var(--violet); }
+.rw-label {
+  font-size: 9px; font-family: var(--mono); font-weight: 700; letter-spacing: 0.06em;
+  padding: 2px 7px; border-radius: 4px; white-space: nowrap;
+}
+.rw-label.green { color: var(--green); background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2); }
+.rw-label.amber { color: var(--amber); background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); }
+.rw-label.violet { color: var(--violet); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+
+/* ── AGENT CARDS ── */
+.agent-row {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 16px;
+}
+.agent-card {
+  border-radius: 16px; padding: 22px;
+  display: flex; flex-direction: column; gap: 14px;
+  position: relative; overflow: hidden;
+}
+.agent-card.growth {
+  background: linear-gradient(145deg, #071a10, #050e0b);
+  border: 1px solid rgba(52,211,153,0.3);
+}
+.agent-card.opportunity {
+  background: linear-gradient(145deg, #0d1120, #070b18);
+  border: 1px solid rgba(251,191,36,0.25);
+}
+.agent-card.coach {
+  background: linear-gradient(145deg, #110a1e, #0a0612);
+  border: 1px solid rgba(167,139,250,0.25);
+}
+.agent-glow {
+  position:absolute;top:-30px;right:-30px;width:120px;height:120px;
+  border-radius:50%;pointer-events:none;
+}
+.growth .agent-glow { background:radial-gradient(circle,rgba(52,211,153,0.1) 0%,transparent 70%); }
+.opportunity .agent-glow { background:radial-gradient(circle,rgba(251,191,36,0.1) 0%,transparent 70%); }
+.coach .agent-glow { background:radial-gradient(circle,rgba(167,139,250,0.1) 0%,transparent 70%); }
+
+.agent-head { display:flex; align-items:center; gap:12px; }
+.agent-icon {
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+}
+.growth .agent-icon { background:rgba(52,211,153,0.15); }
+.opportunity .agent-icon { background:rgba(251,191,36,0.15); }
+.coach .agent-icon { background:rgba(167,139,250,0.15); }
+
+.agent-name { font-size:15px;font-weight:900;letter-spacing:-0.01em; }
+.growth .agent-name { color:var(--green); }
+.opportunity .agent-name { color:var(--amber); }
+.coach .agent-name { color:var(--violet); }
+
+.agent-trigger {
+  font-size:10px;font-family:var(--mono);color:var(--muted);
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);
+  border-radius:6px;padding:3px 8px;display:inline-block;margin-top:2px;
+}
+
+.agent-divider { height:1px;background:rgba(255,255,255,0.06); }
+
+.agent-fn {
+  font-family:var(--mono);font-size:11px;border-radius:6px;
+  padding:3px 9px;display:inline-block;margin-bottom:8px;font-weight:600;
+}
+.growth .agent-fn { color:var(--green);background:rgba(52,211,153,0.08); }
+.opportunity .agent-fn { color:var(--amber);background:rgba(251,191,36,0.08); }
+.coach .agent-fn { color:var(--violet);background:rgba(167,139,250,0.08); }
+
+.agent-actions { display:flex;flex-direction:column;gap:7px; }
+.action-row { display:flex;gap:8px;align-items:flex-start; }
+.action-bullet {
+  width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px;
+}
+.growth .action-bullet { background:var(--green); }
+.opportunity .action-bullet { background:var(--amber); }
+.coach .action-bullet { background:var(--violet); }
+.action-text { font-size:12px;color:var(--muted);line-height:1.5; }
+
+.writes-section {}
+.writes-label {
+  font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+  margin-bottom:7px;
+}
+.growth .writes-label { color:var(--green); }
+.opportunity .writes-label { color:var(--amber); }
+.coach .writes-label { color:var(--violet); }
+.writes-chips { display:flex;flex-wrap:wrap;gap:5px; }
+.writes-chip {
+  font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:4px;
+}
+.growth .writes-chip { color:var(--green);background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.15); }
+.opportunity .writes-chip { color:var(--amber);background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.15); }
+.coach .writes-chip { color:var(--violet);background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.15); }
+
+/* ── COCKPIT CONNECTOR ── */
+.cockpit-connector {
+  display:flex;justify-content:center;height:52px;
+}
+.cockpit-conn-line {
+  width:2px;height:100%;
+  background:linear-gradient(180deg,rgba(61,126,246,0.5),rgba(61,126,246,0.15));
+  position:relative;
+}
+.cockpit-conn-line::after {
+  content:'▼';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
+  color:var(--blue);font-size:10px;
+}
+
+/* ── COCKPIT ── */
+.cockpit-outer {
+  border:1px solid rgba(61,126,246,0.3);
+  border-radius:18px;
+  background:linear-gradient(135deg,#06091a,#080c1e);
+  padding:24px;
+  position:relative;overflow:hidden;
+}
+.cockpit-outer::before {
+  content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+  width:400px;height:200px;
+  background:radial-gradient(ellipse,rgba(61,126,246,0.07) 0%,transparent 70%);
+  pointer-events:none;
+}
+.cockpit-header { display:flex;align-items:center;gap:12px;margin-bottom:20px; }
+.cockpit-icon {
+  width:40px;height:40px;border-radius:10px;
+  background:linear-gradient(135deg,#1d4ed8,#3D7EF6);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.cockpit-header h3 { font-size:15px;font-weight:800; }
+.cockpit-header p { font-size:11px;color:var(--muted);margin-top:2px; }
+.cockpit-badge {
+  margin-left:auto;font-size:10px;font-weight:700;padding:3px 9px;
+  border-radius:100px;background:rgba(61,126,246,0.12);
+  border:1px solid rgba(61,126,246,0.3);color:var(--blue);letter-spacing:0.06em;
+}
+
+.cockpit-panels { display:grid;grid-template-columns:repeat(3,1fr);gap:12px; }
+.cockpit-panel {
+  border-radius:12px;padding:16px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+}
+.cp-label { font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px; }
+.cp-label.green { color:var(--green); }
+.cp-label.amber { color:var(--amber); }
+.cp-label.violet { color:var(--violet); }
+.cp-row { display:flex;gap:7px;align-items:flex-start;margin-bottom:6px; }
+.cp-row:last-child { margin-bottom:0; }
+.cp-dot { width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px; }
+.cp-dot.green { background:var(--green); }
+.cp-dot.amber { background:var(--amber); }
+.cp-dot.violet { background:var(--violet); }
+.cp-text { font-size:12px;color:var(--pearl);line-height:1.5; }
+.cp-sub { font-size:11px;color:var(--muted);margin-top:1px; }
+
+/* ── PHASE 2 BANNER ── */
+.phase2-section { margin-top: 48px; }
+.phase2-header {
+  display:flex;align-items:center;gap:12px;margin-bottom:20px;
+}
+.phase2-header h2 { font-size:18px;font-weight:900;letter-spacing:-0.02em; }
+.phase2-badge {
+  font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;
+  background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.25);
+  color:var(--red);letter-spacing:0.06em;
+}
+.phase2-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:12px; }
+.phase2-card {
+  border-radius:12px;padding:16px;
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.05);
+  opacity:0.7;
+}
+.phase2-icon { font-size:22px;margin-bottom:8px; }
+.phase2-title { font-size:13px;font-weight:800;color:var(--pearl);margin-bottom:4px; }
+.phase2-sub { font-size:11px;color:var(--muted);line-height:1.5; }
+.phase2-tech {
+  margin-top:8px;font-size:10px;font-family:var(--mono);
+  color:var(--blue);background:rgba(61,126,246,0.08);
+  border:1px solid rgba(61,126,246,0.15);border-radius:4px;
+  padding:2px 7px;display:inline-block;
+}
+
+/* ── SPACERS ── */
+.gap-sm { height: 16px; }
+.gap-md { height: 32px; }
+
+/* ── FOOTER ── */
+.page-footer {
+  text-align:center;margin-top:64px;padding:0 24px;
+  font-size:12px;color:var(--muted);
+}
+.page-footer strong { color:var(--pearl); }
+
+@media (max-width: 700px) {
+  .reg-row { flex-direction: column; }
+  .doc-grid { grid-template-columns: 1fr; }
+  .agent-connectors { grid-template-columns: 1fr; height: auto; }
+  .agent-row { grid-template-columns: 1fr; }
+  .cockpit-panels { grid-template-columns: 1fr; }
+  .phase2-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<!-- ══ PAGE HEADER ══════════════════════════════════════════════════════════ -->
+<div class="page-header">
+  <div class="header-eyebrow"><div class="pulse-dot"></div>Architecture Reference · InterviewMe</div>
+  <h1>Per-User <span class="g">Agent</span> System<br>on <span class="b">Azure</span></h1>
+  <p>Every candidate gets three dedicated AI agents provisioned at registration. They run continuously — 24 hours a day — reading and writing a single shared document in Cosmos DB, surfaced as an <strong>Agent Cockpit</strong> in the candidate portal.</p>
+</div>
+
+<div class="canvas">
+
+  <!-- ══ LAYER 1: REGISTRATION ══════════════════════════════════════════ -->
+  <div class="layer-label">① Event — Candidate Registers</div>
+  <div class="reg-row">
+    <div class="reg-event">
+      <div class="icon">👤</div>
+      <div class="title">Candidate Signs Up</div>
+      <div class="sub">Submits name, target role, location, email</div>
+    </div>
+
+    <div class="arrow-label">
+      <div class="rw-label green">triggers</div>
+      <div style="font-size:24px;color:rgba(52,211,153,0.4)">→</div>
+    </div>
+
+    <div class="provision-card">
+      <div class="fn">AgentProvisionOrchestrator.ProvisionAsync()</div>
+      <h3>Agent Provisioning</h3>
+      <p>Called once at registration. Creates the shared <code style="font-size:11px;color:var(--green);font-family:var(--mono)">UserAgentDocument</code> in Cosmos and wires up all three agent schedules for this candidateId.</p>
+      <div class="provision-steps">
+        <div class="step-pill" style="color:var(--green);border-color:rgba(52,211,153,0.3)">✓ Create doc in Cosmos</div>
+        <div class="step-pill" style="color:var(--blue);border-color:rgba(61,126,246,0.3)">✓ Set partition key = candidateId</div>
+        <div class="step-pill" style="color:var(--muted);border-color:rgba(100,116,139,0.3)">✓ Log provisioned</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- connector down -->
+  <div class="connector">
+    <div class="connector-line"></div>
+    <div class="connector-label">creates one document</div>
+  </div>
+
+  <!-- ══ LAYER 2: COSMOS DOCUMENT ═══════════════════════════════════════ -->
+  <div class="layer-label">② Shared State — Cosmos DB · Container: UserAgents</div>
+  <div class="cosmos-section">
+    <div class="cosmos-outer">
+      <div class="cosmos-header">
+        <div class="cosmos-icon">🗄</div>
+        <div>
+          <h3>UserAgentDocument</h3>
+          <p>One document per candidate · partition key: <code style="font-family:var(--mono);font-size:11px;color:var(--blue)">candidateId</code> · all three agents read + write this</p>
+        </div>
+        <div class="cosmos-badge">Azure Cosmos DB</div>
+      </div>
+
+      <div class="doc-grid">
+        <!-- identity -->
+        <div class="doc-field">
+          <div class="field-group">Identity</div>
+          <div class="field-row"><span class="fkey">candidateId</span><span class="fval">"cand-001"</span></div>
+          <div class="field-row"><span class="fkey">candidateName</span><span class="fval">"Gary Moore"</span></div>
+          <div class="field-row"><span class="fkey">targetJobTitle</span><span class="fval">"DevOps Lead"</span></div>
+          <div class="field-row"><span class="fkey">targetLocation</span><span class="fval">"London"</span></div>
+          <div class="field-row"><span class="fkey">lastActiveAt</span><span class="fval">DateTimeOffset</span></div>
+        </div>
+        <!-- growth agent state -->
+        <div class="doc-field">
+          <div class="field-group" style="color:var(--green)">growth { } — written by Growth Agent</div>
+          <div class="field-row"><span class="fkey">profileScore</span><span class="fval green">84</span></div>
+          <div class="field-row"><span class="fkey">interviewScore</span><span class="fval green">91.0</span></div>
+          <div class="field-row"><span class="fkey">recruiterViews</span><span class="fval green">23</span></div>
+          <div class="field-row"><span class="fkey">recruiterSaves</span><span class="fval green">7</span></div>
+          <div class="field-row"><span class="fkey">nudges[ ]</span><span class="fval green">AgentNudge[]</span></div>
+          <div class="field-row"><span class="fkey">lastRunAt</span><span class="fval">DateTimeOffset</span></div>
+        </div>
+        <!-- opportunity + coach state -->
+        <div class="doc-field">
+          <div class="field-group" style="color:var(--amber)">opportunity { } — Opportunity Agent</div>
+          <div class="field-row"><span class="fkey">matchedRoles[ ]</span><span class="fval amber">MatchedRole[]</span></div>
+          <div class="field-row"><span class="fkey">lastScannedAt</span><span class="fval">DateTimeOffset</span></div>
+          <div style="height:10px;border-top:1px solid rgba(255,255,255,0.05);margin:10px 0;"></div>
+          <div class="field-group" style="color:var(--violet);margin-top:0;">coach { } — Push Coach</div>
+          <div class="field-row"><span class="fkey">pendingQuestion</span><span class="fval violet">string?</span></div>
+          <div class="field-row"><span class="fkey">lastAskedAt</span><span class="fval">DateTimeOffset?</span></div>
+          <div class="field-row"><span class="fkey">answeredCount</span><span class="fval violet">int</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- connectors to agents (bidirectional) -->
+  <div class="agent-connectors" style="margin:0;">
+    <div class="agent-conn">
+      <div class="rw-label green" style="margin-bottom:4px;">reads + writes</div>
+      <div class="agent-conn-line green"></div>
+    </div>
+    <div class="agent-conn">
+      <div class="rw-label amber" style="margin-bottom:4px;">reads + writes</div>
+      <div class="agent-conn-line amber"></div>
+    </div>
+    <div class="agent-conn">
+      <div class="rw-label violet" style="margin-bottom:4px;">reads + writes</div>
+      <div class="agent-conn-line violet"></div>
+    </div>
+  </div>
+
+  <!-- ══ LAYER 3: THE THREE AGENTS ═════════════════════════════════════ -->
+  <div class="layer-label">③ Agent Layer — Azure Timer-Triggered Functions</div>
+  <div class="agent-row">
+
+    <!-- GROWTH AGENT -->
+    <div class="agent-card growth">
+      <div class="agent-glow"></div>
+      <div class="agent-head">
+        <div class="agent-icon">📈</div>
+        <div>
+          <div class="agent-name">Growth Agent</div>
+          <div class="agent-trigger">⏱ Daily · 06:00 UTC</div>
+        </div>
+      </div>
+      <div class="agent-divider"></div>
+      <div>
+        <div class="agent-fn">GrowthAgentOrchestrator.RunAsync()</div>
+        <div class="agent-actions">
+          <div class="action-row"><div class="action-bullet"></div><div class="action-text">Calculates profile completeness score (0–100)</div></div>
+          <div class="action-row"><div class="action-bullet"></div><div class="action-text">Checks interview score from InterviewDocument</div></div>
+          <div class="action-row"><div class="action-bullet"></div><div class="action-text">Counts recruiter views and saves</div></div>
+          <div class="action-row"><div class="action-bullet"></div><div class="action-text">Generates actionable nudges with priority</div></div>
+        </div>
+      </div>
+      <div class="writes-section">
+        <div class="writes-label">Writes to doc.growth →</div>
+        <div class="writes-chips">
+          <span class="writes-chip">profileScore</span>
+          <span class="writes-chip">nudges[]</span>
+          <span class="writes-chip">recruiterViews</span>
+          <span class="writes-chip">lastRunAt</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPPORTUNITY AGENT -->
+    <div class="agent-card opportunity">
+      <div class="agent-glow"></div>
+      <div class="agent-head">
+        <div class="agent-icon">🔍</div>
+        <div>
+          <div class="agent-name">Opportunity Agent</div>
+          <div class="agent-trigger">⏱ Every 6 hours</div>
+        </div>
+      </div>
+      <div class="agent-divider"></div>
+      <div>
+        <div class="agent-fn">OpportunityAgentOrchestrator.RunAsync()</div>
+        <div class="agent-actions">
+          <div class="action-row"><div class="action-bullet"></div><div class="action-text">Scans job boards for matching roles (Phase 2: Azure AI Search)</div></div>
+          <div class="action-row"><div class="action-bullet"></div><div class="action-text">Scores each match 0–100 against candidateId profile</div></div>
+          <div class="action-row"><div class="action-bullet"></div><div class="action-text">Filters dismissed roles, deduplicates</div></div>
+          <div class="action-row"><div class="action-bullet"></div><div class="action-text">Updates matched roles list in shared doc</div></div>
+        </div>
+      </div>
+      <div class="writes-section">
+        <div class="writes-label">Writes to doc.opportunity →</div>
+        <div class="writes-chips">
+          <span class="writes-chip">matchedRoles[]</span>
+          <span class="writes-chip">lastScannedAt</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PUSH COACH -->
+    <div class="agent-card coach">
+      <div class="agent-glow"></div>
+      <div class="agent-head">
+        <div class="agent-icon">🎯</div>
+        <div>
+          <div class="agent-name">Push Coach</div>
+          <div class="agent-trigger">⏱ Weekly · on inactivity</div>
+        </div>
+      </div>
+      <div class="agent-divider"></div>
+      <div>
+        <div class="agent-fn">PushCoachOrchestrator.RunAsync()</div>
+        <div class="agent-actions">
+          <div class="action-row"><div class="action-bullet"></div><div class="action-text">Checks lastActiveAt — skips if &lt; 3 days ago</div></div>
+          <div class="action-row"><div class="action-bullet"></div><div class="action-text">Generates personalised re-engagement message (Phase 2: Claude API)</div></div>
+          <div class="action-row"><div class="action-bullet"></div><div class="action-text">Writes pendingQuestion to shared doc</div></div>
+          <div class="action-row"><div class="action-bullet"></div><div class="action-text">Phase 2: sends push via Azure Notification Hubs</div></div>
+        </div>
+      </div>
+      <div class="writes-section">
+        <div class="writes-label">Writes to doc.coach →</div>
+        <div class="writes-chips">
+          <span class="writes-chip">pendingQuestion</span>
+          <span class="writes-chip">lastAskedAt</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- connector down to cockpit -->
+  <div class="cockpit-connector" style="margin:0;">
+    <div class="cockpit-conn-line"></div>
+  </div>
+
+  <!-- ══ LAYER 4: CANDIDATE COCKPIT ════════════════════════════════════ -->
+  <div class="layer-label">④ Candidate Portal — Agent Cockpit (reads UserAgentDocument)</div>
+  <div class="cockpit-outer">
+    <div class="cockpit-header">
+      <div class="cockpit-icon">🖥</div>
+      <div>
+        <h3>Agent Cockpit — candidate.interviewme.global</h3>
+        <p>The portal reads the single UserAgentDocument on load — no separate API calls per agent. One doc → three panels.</p>
+      </div>
+      <div class="cockpit-badge">React SPA · Azure SWA</div>
+    </div>
+
+    <div class="cockpit-panels">
+      <!-- growth panel -->
+      <div class="cockpit-panel">
+        <div class="cp-label green">📈 Your Growth · from doc.growth</div>
+        <div class="cp-row"><div class="cp-dot green"></div><div><div class="cp-text">Profile Score: <strong>84 / 100</strong></div></div></div>
+        <div class="cp-row"><div class="cp-dot green"></div><div><div class="cp-text">Interview Score: <strong>91 · A+</strong></div></div></div>
+        <div class="cp-row"><div class="cp-dot green"></div><div><div class="cp-text"><strong>23 recruiters</strong> viewed · <strong>7 saved</strong></div></div></div>
+        <div class="cp-row"><div class="cp-dot green"></div><div>
+          <div class="cp-text">Agent nudge:</div>
+          <div class="cp-sub" style="color:var(--green);font-style:italic;">"Update your skills section to get 3× more views"</div>
+        </div></div>
+      </div>
+
+      <!-- opportunity panel -->
+      <div class="cockpit-panel">
+        <div class="cp-label amber">🔍 Your Opportunities · from doc.opportunity</div>
+        <div class="cp-row"><div class="cp-dot amber"></div><div><div class="cp-text"><strong>Monzo</strong> · Senior DevOps Engineer</div><div class="cp-sub">Match score: 94% · London</div></div></div>
+        <div class="cp-row"><div class="cp-dot amber"></div><div><div class="cp-text"><strong>HSBC</strong> · Cloud Platform Lead</div><div class="cp-sub">Match score: 88% · Canary Wharf</div></div></div>
+        <div class="cp-row"><div class="cp-dot amber"></div><div><div class="cp-text"><strong>Deliveroo</strong> · Infrastructure Lead</div><div class="cp-sub">Match score: 81% · Remote</div></div></div>
+        <div class="cp-row" style="margin-top:6px;"><div class="cp-dot amber"></div><div><div class="cp-sub">Last scanned 2 hours ago</div></div></div>
+      </div>
+
+      <!-- coach panel -->
+      <div class="cockpit-panel">
+        <div class="cp-label violet">🎯 Your Coach · from doc.coach</div>
+        <div class="cp-row"><div class="cp-dot violet"></div><div>
+          <div class="cp-text">Your coach has a question:</div>
+          <div class="cp-sub" style="color:var(--violet);font-style:italic;margin-top:4px;">"Hi Gary — 7 recruiters saved your interview this week. Want to review which companies and decide if any are worth reaching back to?"</div>
+        </div></div>
+        <div class="cp-row" style="margin-top:6px;"><div class="cp-dot violet"></div><div><div class="cp-sub">Questions answered: 12</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PHASE 2 EXPANSION ══════════════════════════════════════════════ -->
+  <div class="phase2-section">
+    <div class="phase2-header">
+      <h2>Phase 2 Expansions</h2>
+      <div class="phase2-badge">FUTURE · POST-MVP</div>
+    </div>
+    <div class="phase2-grid">
+      <div class="phase2-card">
+        <div class="phase2-icon">🚌</div>
+        <div class="phase2-title">Service Bus Fan-Out</div>
+        <div class="phase2-sub">At 1M candidates, the timer function publishes one message per candidateId to a queue. Each agent picks up its own message independently — isolated, retryable, horizontally scalable. Growth, Opportunity, and Coach all run in parallel per user.</div>
+        <div class="phase2-tech">Azure Service Bus · Topic per agent type</div>
+      </div>
+      <div class="phase2-card">
+        <div class="phase2-icon">🔎</div>
+        <div class="phase2-title">Azure AI Search Index</div>
+        <div class="phase2-sub">Opportunity Agent moves from stub to real job board scanning. An indexer runs over job board APIs (Reed, LinkedIn, Glassdoor) and populates a vector search index. The agent runs semantic search against the candidate's profile embedding.</div>
+        <div class="phase2-tech">Azure AI Search · Vector + semantic</div>
+      </div>
+      <div class="phase2-card">
+        <div class="phase2-icon">🧠</div>
+        <div class="phase2-title">Claude-Powered Coaching</div>
+        <div class="phase2-sub">Push Coach replaces the static template with a Claude API call. The prompt includes the full UserAgentDocument as context — scores, views, nudges, match history — so every question is uniquely personalised to that candidate's exact situation.</div>
+        <div class="phase2-tech">claude-sonnet-5 · Structured output</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ FOOTER ════════════════════════════════════════════════════════════ -->
+<div class="page-footer">
+  <p><strong>InterviewMe</strong> · Per-User Agent Architecture · Built with Azure Functions (.NET Isolated Worker) · Cosmos DB · Claude API</p>
+  <p style="margin-top:6px;">Three agents · One shared document · One candidate cockpit · Scales to 1M+ users</p>
+</div>
