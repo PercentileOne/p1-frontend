@@ -493,7 +493,7 @@ function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapt
     setActiveChapter(active);
   };
 
-  const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  const fmt = (s: number) => isFinite(s) && s >= 0 ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '--:--';
   const progress = duration > 0 ? currentTime / duration : 0;
 
   return (
@@ -505,7 +505,8 @@ function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapt
           src={url}
           style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
           onTimeUpdate={onTimeUpdate}
-          onLoadedMetadata={() => setDuration(videoRef.current?.duration ?? 0)}
+          onLoadedMetadata={() => { const d = videoRef.current?.duration; if (d && isFinite(d)) setDuration(d); }}
+          onDurationChange={() => { const d = videoRef.current?.duration; if (d && isFinite(d)) setDuration(d); }}
           onEnded={() => setPlaying(false)}
           playsInline
         />
@@ -588,7 +589,7 @@ function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapt
                 Q{c.questionIndex + 1}
               </span>
               <span style={{ fontSize: '12px', color: activeChapter === i ? 'var(--text)' : 'var(--text-2)', lineHeight: 1.4, flex: 1 }}>
-                {c.questionText.length > 70 ? c.questionText.slice(0, 70) + '…' : c.questionText}
+                {c.questionText}
               </span>
               {activeChapter === i && (
                 <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}
