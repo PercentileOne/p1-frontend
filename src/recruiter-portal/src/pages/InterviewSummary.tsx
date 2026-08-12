@@ -621,7 +621,7 @@ function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapt
                   {fmt(c.offsetSeconds)}
                 </span>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: badgeColor, background: badgeBg, borderRadius: '4px', padding: '2px 7px', flexShrink: 0 }}>
-                  {isMcq ? `⚡ B${c.mcqOrdinal}` : `Q${c.questionIndex + 1}`}
+                  {isMcq ? `MCQ-${c.mcqOrdinal}` : `Q${c.questionIndex + 1}`}
                 </span>
                 <span style={{ fontSize: '12px', color: isActive ? 'var(--text)' : 'var(--text-2)', lineHeight: 1.4, flex: 1 }}>
                   {c.questionText}
