@@ -507,6 +507,8 @@ function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapt
           onDurationChange={() => { const d = videoRef.current?.duration; if (d && isFinite(d)) setDuration(d); }}
           onEnded={() => setPlaying(false)}
           playsInline
+          disablePictureInPicture
+          controlsList="nodownload nofullscreen noremoteplayback"
         />
         {/* Play overlay when paused */}
         {!playing && (
