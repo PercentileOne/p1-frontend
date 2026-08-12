@@ -243,6 +243,7 @@ export default function InterviewRoom() {
   const [mcqQuestion, setMcqQuestion] = useState<MCQQuestion | null>(null);
   const [mcqActive, setMcqActive] = useState(false);
   const [mcqBonusPoints, setMcqBonusPoints] = useState(0);
+  const [mcqResult, setMcqResult] = useState<{ correct: boolean; selectedIndex: number } | null>(null);
   // MCQ fires after Q3 or Q5 — decided at mount (random coin flip)
   const mcqSlotRef = useRef<number>(Math.random() < 0.5 ? 2 : 4); // 0-based: after index 2 (Q3) or 4 (Q5)
   const mcqFiredRef = useRef(false);
@@ -608,7 +609,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
     if (qIndex + 1 >= questions.length) {
       uploadRecording(sessionAnswers);
-      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx } });
+      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqQuestion, mcqResult, mcqBonusPoints } });
     } else {
       const next = qIndex + 1;
       setQIndex(next);
@@ -616,18 +617,21 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     }
   }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, q, cvCtx, jobCtx, uploadRecording, mcqQuestion]);
 
-  const resumeAfterMCQ = useCallback((bonusEarned: boolean) => {
+  const resumeAfterMCQ = useCallback((bonusEarned: boolean, selectedIndex: number) => {
     setMcqActive(false);
+    const bonus = bonusEarned ? 10 : 0;
     if (bonusEarned) setMcqBonusPoints(10);
+    const result = { correct: bonusEarned, selectedIndex };
+    setMcqResult(result);
     const next = qIndex + 1;
     if (next >= questions.length) {
       uploadRecording(sessionAnswers);
-      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx } });
+      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqQuestion, mcqResult: result, mcqBonusPoints: bonus } });
     } else {
       setQIndex(next);
       askQuestion(next);
     }
-  }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, cvCtx, jobCtx, uploadRecording]);
+  }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, cvCtx, jobCtx, uploadRecording, mcqQuestion]);
 
   const handlePass = useCallback(() => {
     const thinkTimeMs = thinkStartRef.current > 0 ? Date.now() - thinkStartRef.current : undefined;
@@ -650,7 +654,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     }
 
     if (qIndex + 1 >= questions.length) {
-      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: [...sessionAnswers, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }], cvCtx, jobCtx } });
+      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: [...sessionAnswers, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }], cvCtx, jobCtx, mcqQuestion, mcqResult, mcqBonusPoints } });
     } else {
       const next = qIndex + 1;
       setQIndex(next);
@@ -843,7 +847,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           <button onClick={() => {
             cancelSpeakRef.current?.();
             uploadRecording(sessionAnswers);
-            navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx } });
+            navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqQuestion, mcqResult, mcqBonusPoints } });
           }}
             style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '8px', padding: '7px 14px', color: '#34D399', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>
             End Session

@@ -12,7 +12,7 @@ export interface MCQQuestion {
 interface Props {
   mcq: MCQQuestion;
   candidateName?: string;
-  onComplete: (bonusEarned: boolean) => void;
+  onComplete: (bonusEarned: boolean, selectedIndex: number) => void;
 }
 
 // ── Canvas confetti ───────────────────────────────────────────────────────────
@@ -170,14 +170,14 @@ export default function CinematicMCQ({ mcq, candidateName, onComplete }: Props) 
       cancelSpeakRef.current = speak(
         "Fantastic! That's correct — well done. Bonus points added to your score. Back to the interview.",
         'hr',
-        () => setTimeout(() => { setMcqState('exiting'); setTimeout(() => onComplete(true), 500); }, 1200),
+        () => setTimeout(() => { setMcqState('exiting'); setTimeout(() => onComplete(true, index), 500); }, 1200),
       );
     } else {
       setMcqState('answered-wrong');
       cancelSpeakRef.current = speak(
         `Not quite — but no worries. ${mcq.explanation} Let's keep going.`,
         'hr',
-        () => setTimeout(() => { setMcqState('exiting'); setTimeout(() => onComplete(false), 500); }, 1400),
+        () => setTimeout(() => { setMcqState('exiting'); setTimeout(() => onComplete(false, index), 500); }, 1400),
       );
     }
   }, [mcqState, mcq, stopSpeech, onComplete]);
