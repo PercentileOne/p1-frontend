@@ -458,10 +458,21 @@ interface Chapter {
 
 function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapter[] }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [activeChapter, setActiveChapter] = useState(0);
+  const [isFs, setIsFs] = useState(false);
+  useEffect(() => {
+    const onFsChange = () => setIsFs(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
+  const toggleFs = () => {
+    if (!document.fullscreenElement) containerRef.current?.requestFullscreen();
+    else document.exitFullscreen();
+  };
 
   // Blob is revoked by the parent page on unmount — don't revoke here or it breaks on tab switch
 
@@ -495,7 +506,7 @@ function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapt
   const progress = duration > 0 ? currentTime / duration : 0;
 
   return (
-    <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
+    <div ref={containerRef} style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
       {/* Video */}
       <div style={{ position: 'relative', background: '#000', aspectRatio: '16/9' }}>
         <video
@@ -510,6 +521,19 @@ function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapt
           disablePictureInPicture
           controlsList="nodownload nofullscreen noremoteplayback"
         />
+        {/* Fullscreen button — bottom right of video */}
+        <button onClick={toggleFs} title={isFs ? 'Exit fullscreen' : 'Fullscreen'}
+          style={{ position: 'absolute', bottom: '10px', right: '10px', background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '7px', padding: '6px 8px', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', backdropFilter: 'blur(4px)', transition: 'all 0.2s', zIndex: 10 }}>
+          {isFs ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3"/>
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/>
+            </svg>
+          )}
+        </button>
         {/* Play overlay when paused */}
         {!playing && (
           <button
