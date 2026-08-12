@@ -300,6 +300,15 @@ export default function InterviewRoom() {
     }
   }, []);
 
+  // Snapshot current chunks into a local blob URL for immediate playback on summary screen.
+  // Called BEFORE navigate so the URL is ready when the summary mounts.
+  const buildPlaybackUrl = useCallback((): string | null => {
+    if (recordingChunksRef.current.length === 0) return null;
+    const mimeType = recordingChunksRef.current[0]?.type ?? 'video/webm';
+    const blob = new Blob(recordingChunksRef.current, { type: mimeType });
+    return URL.createObjectURL(blob);
+  }, []);
+
   const uploadRecording = useCallback((answers: SessionAnswer[]) => {
     const recorder = mediaRecorderRef.current;
     if (!recorder || recorder.state === 'inactive' || recordingChunksRef.current.length === 0) return;
@@ -609,7 +618,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
     if (qIndex + 1 >= questions.length) {
       uploadRecording(sessionAnswers);
-      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqQuestion, mcqResult, mcqBonusPoints } });
+      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqQuestion, mcqResult, mcqBonusPoints, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current } });
     } else {
       const next = qIndex + 1;
       setQIndex(next);
@@ -654,7 +663,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     }
 
     if (qIndex + 1 >= questions.length) {
-      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: [...sessionAnswers, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }], cvCtx, jobCtx, mcqQuestion, mcqResult, mcqBonusPoints } });
+      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: [...sessionAnswers, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }], cvCtx, jobCtx, mcqQuestion, mcqResult, mcqBonusPoints, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current } });
     } else {
       const next = qIndex + 1;
       setQIndex(next);
@@ -847,7 +856,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           <button onClick={() => {
             cancelSpeakRef.current?.();
             uploadRecording(sessionAnswers);
-            navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqQuestion, mcqResult, mcqBonusPoints } });
+            navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqQuestion, mcqResult, mcqBonusPoints, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current } });
           }}
             style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '8px', padding: '7px 14px', color: '#34D399', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>
             End Session

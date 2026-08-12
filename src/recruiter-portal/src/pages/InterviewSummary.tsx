@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChairSpinner } from '../components/ChairSpinner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -447,6 +447,161 @@ function Label({ text }: { text: string }) {
   return <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '10px' }}>{text}</div>;
 }
 
+// ── Interview Replay Player ────────────────────────────────────────────────────
+
+interface Chapter {
+  questionIndex: number;
+  questionText: string;
+  competency: string;
+  offsetSeconds: number;
+}
+
+function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapter[] }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [activeChapter, setActiveChapter] = useState(0);
+
+  useEffect(() => {
+    return () => { URL.revokeObjectURL(url); };
+  }, [url]);
+
+  const jumpTo = (seconds: number) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = seconds;
+      videoRef.current.play();
+      setPlaying(true);
+    }
+  };
+
+  const togglePlay = () => {
+    if (!videoRef.current) return;
+    if (playing) { videoRef.current.pause(); setPlaying(false); }
+    else { videoRef.current.play(); setPlaying(true); }
+  };
+
+  const onTimeUpdate = () => {
+    if (!videoRef.current) return;
+    const t = videoRef.current.currentTime;
+    setCurrentTime(t);
+    // Update active chapter
+    let active = 0;
+    for (let i = 0; i < chapters.length; i++) {
+      if (t >= chapters[i].offsetSeconds) active = i;
+    }
+    setActiveChapter(active);
+  };
+
+  const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  const progress = duration > 0 ? currentTime / duration : 0;
+
+  return (
+    <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
+      {/* Video */}
+      <div style={{ position: 'relative', background: '#000', aspectRatio: '16/9' }}>
+        <video
+          ref={videoRef}
+          src={url}
+          style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+          onTimeUpdate={onTimeUpdate}
+          onLoadedMetadata={() => setDuration(videoRef.current?.duration ?? 0)}
+          onEnded={() => setPlaying(false)}
+          playsInline
+        />
+        {/* Play overlay when paused */}
+        {!playing && (
+          <button
+            onClick={togglePlay}
+            style={{
+              position: 'absolute', inset: 0, width: '100%', height: '100%',
+              background: 'rgba(0,0,0,0.35)', border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <div style={{
+              width: '64px', height: '64px', borderRadius: '50%',
+              background: 'rgba(79,142,247,0.9)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 0 32px rgba(79,142,247,0.5)',
+            }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </button>
+        )}
+      </div>
+
+      {/* Controls */}
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+        {/* Progress bar */}
+        <div
+          style={{ height: '4px', background: 'var(--bg3)', borderRadius: '2px', cursor: 'pointer', marginBottom: '10px', position: 'relative' }}
+          onClick={e => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const pct = (e.clientX - rect.left) / rect.width;
+            if (videoRef.current) videoRef.current.currentTime = pct * duration;
+          }}
+        >
+          <div style={{ width: `${progress * 100}%`, height: '100%', background: 'var(--blue)', borderRadius: '2px', transition: 'width 0.1s linear' }} />
+          {/* Chapter tick marks */}
+          {chapters.map((c, i) => (
+            <div key={i} style={{
+              position: 'absolute', top: '-2px', left: `${(c.offsetSeconds / duration) * 100}%`,
+              width: '2px', height: '8px', background: '#a78bfa', borderRadius: '1px',
+              transform: 'translateX(-50%)',
+            }} />
+          ))}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button onClick={togglePlay} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)', padding: 0, display: 'flex', alignItems: 'center' }}>
+            {playing
+              ? <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              : <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            }
+          </button>
+          <span style={{ fontSize: '12px', color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>{fmt(currentTime)} / {fmt(duration)}</span>
+        </div>
+      </div>
+
+      {/* Chapter markers */}
+      {chapters.length > 0 && (
+        <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '4px' }}>
+            Jump to question
+          </div>
+          {chapters.map((c, i) => (
+            <button
+              key={i}
+              onClick={() => jumpTo(c.offsetSeconds)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '10px',
+                background: activeChapter === i ? 'rgba(79,142,247,0.10)' : 'transparent',
+                border: activeChapter === i ? '1px solid rgba(79,142,247,0.25)' : '1px solid transparent',
+                borderRadius: '8px', padding: '8px 10px', cursor: 'pointer',
+                textAlign: 'left', fontFamily: 'inherit', transition: 'all 0.15s',
+              }}
+            >
+              <span style={{ fontSize: '11px', fontWeight: 700, color: activeChapter === i ? 'var(--blue)' : 'var(--text-3)', minWidth: '38px', fontVariantNumeric: 'tabular-nums' }}>
+                {fmt(c.offsetSeconds)}
+              </span>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: activeChapter === i ? 'var(--blue)' : '#a78bfa', background: activeChapter === i ? 'rgba(79,142,247,0.12)' : 'rgba(167,139,250,0.08)', borderRadius: '4px', padding: '2px 7px', flexShrink: 0 }}>
+                Q{c.questionIndex + 1}
+              </span>
+              <span style={{ fontSize: '12px', color: activeChapter === i ? 'var(--text)' : 'var(--text-2)', lineHeight: 1.4, flex: 1 }}>
+                {c.questionText.length > 70 ? c.questionText.slice(0, 70) + '…' : c.questionText}
+              </span>
+              {activeChapter === i && (
+                <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}
+                  style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--blue)', flexShrink: 0 }} />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
 type Tab = 'interview' | 'learn' | 'feedback' | 'coming-soon';
@@ -460,6 +615,8 @@ export default function InterviewSummary() {
   const mcqQuestion = location.state?.mcqQuestion as { questionText: string; options: string[]; correctIndex: number; explanation: string } | undefined;
   const mcqResult = location.state?.mcqResult as { correct: boolean; selectedIndex: number } | undefined;
   const mcqBonusPoints: number = location.state?.mcqBonusPoints ?? 0;
+  const playbackUrl: string | null = location.state?.playbackUrl ?? null;
+  const chapters: { questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[] = location.state?.chapters ?? [];
   const [activeTab, setActiveTab] = useState<Tab>('interview');
   const [showShare, setShowShare] = useState(false);
 
@@ -608,6 +765,16 @@ ${questionsHtml}
         {/* ── INTERVIEW TAB ── */}
         {activeTab === 'interview' && (
           <>
+            {/* Instant replay player */}
+            {playbackUrl && (
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>
+                  🎬 Your Interview Replay
+                </div>
+                <InterviewReplayPlayer url={playbackUrl} chapters={chapters} />
+              </motion.div>
+            )}
+
             {/* Cross-sell banner */}
             {showLearnBanner && (
               <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
