@@ -463,9 +463,7 @@ function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapt
   const [playing, setPlaying] = useState(false);
   const [activeChapter, setActiveChapter] = useState(0);
 
-  useEffect(() => {
-    return () => { URL.revokeObjectURL(url); };
-  }, [url]);
+  // Blob is revoked by the parent page on unmount — don't revoke here or it breaks on tab switch
 
   const jumpTo = (seconds: number) => {
     if (videoRef.current) {
@@ -615,9 +613,10 @@ export default function InterviewSummary() {
   const jobCtx: JobSpecContext | undefined = location.state?.jobCtx;
   const mcqQuestions: Array<{ questionText: string; options: string[]; correctIndex: number; explanation: string }> = location.state?.mcqQuestions ?? [];
   const mcqResults: Array<{ correct: boolean; selectedIndex: number; questionIndex: number }> = location.state?.mcqResults ?? [];
-  const mcqBonusPoints: number = location.state?.mcqBonusPoints ?? 0;
   const playbackUrl: string | null = location.state?.playbackUrl ?? null;
   const chapters: { questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[] = location.state?.chapters ?? [];
+  // Revoke blob URL only when the whole summary page unmounts
+  useEffect(() => { return () => { if (playbackUrl) URL.revokeObjectURL(playbackUrl); }; }, []);
   const [activeTab, setActiveTab] = useState<Tab>('interview');
   const [showShare, setShowShare] = useState(false);
 
