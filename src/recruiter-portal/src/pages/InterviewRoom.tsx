@@ -222,6 +222,8 @@ export default function InterviewRoom() {
   const ctx = (location.state ?? {}) as RoomState;
   const cvCtx = ctx.cvCtx;
   const jobCtx = ctx.jobCtx;
+  // Resolve candidate name: explicit preferredName wins, then CV firstName, then undefined
+  const resolvedPreferredName = ctx.preferredName?.trim() || cvCtx?.firstName?.trim() || undefined;
 
   const demoCompany = useMemo(() => pickRandomCompany(), []);
 
@@ -313,7 +315,7 @@ export default function InterviewRoom() {
         const metadata = JSON.stringify({ chapters: chapterMarkersRef.current, answers: answerSummaries });
         const qs = new URLSearchParams({
           candidateId,
-          candidateName: ctx.preferredName ?? 'Candidate',
+          candidateName: resolvedPreferredName ?? 'Candidate',
           jobTitle: ctx.jobTitle ?? 'Interview',
           company: ctx.company ?? '',
           durationSeconds: String(durationSeconds),
@@ -330,7 +332,7 @@ export default function InterviewRoom() {
       }
     };
     recorder.stop();
-  }, [API_BASE, ctx.preferredName, ctx.jobTitle, ctx.company]);
+  }, [API_BASE, resolvedPreferredName, ctx.jobTitle, ctx.company]);
 
   // Upload if component unmounts mid-session
   useEffect(() => () => { uploadRecording([]); }, [uploadRecording]);
@@ -518,7 +520,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       cvText: ctx.cvText,
       selectedDifficulty: ctx.selectedDifficulty,
       selectedLanguage: ctx.selectedLanguage,
-      preferredName: ctx.preferredName,
+      preferredName: resolvedPreferredName,
     }).then(script => {
       clearTimeout(mikeTimeout);
       if (script) { bgMikeScriptRef.current = script; setBgMikeScript(script); }
@@ -535,7 +537,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       }, 0);
 
       // Phase 2: fires in parallel — doesn't wait for the setTimeout above
-      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, ctx.preferredName);
+      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName);
 
     }).then(result => {
       bgLoadedRef.current = true;
