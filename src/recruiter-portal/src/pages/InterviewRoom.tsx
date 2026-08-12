@@ -664,13 +664,25 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
     if (qIndex + 1 >= questions.length) {
       uploadRecording(sessionAnswers);
-      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqResults, mcqBonusPoints, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current } });
+      closeInterview(sessionAnswers, mcqResults, mcqBonusPoints);
     } else {
       const next = qIndex + 1;
       setQIndex(next);
       askQuestion(next);
     }
   }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, q, cvCtx, jobCtx, uploadRecording, mcqQuestions, mcqResults, mcqBonusPoints]);
+
+  const closeInterview = useCallback((answers: SessionAnswer[], mcqRes: typeof mcqResults, bonusPts: number) => {
+    setPhase('done');
+    const name = resolvedPreferredName ? `, ${resolvedPreferredName}` : '';
+    const closingLine = `Well${name}, that brings us to the end of your interview — thank you so much for your time today. I'm going to have a quick word with James, and then your agent Mike will be in touch shortly with some feedback. In the meantime, you can watch your full interview replay on the next screen, and retake it anytime you like. Best of luck!`;
+    cancelSpeakRef.current?.();
+    cancelSpeakRef.current = speak(closingLine, 'hr', () => {
+      navigate(`/interview-summary/session-${Date.now()}`, {
+        state: { answers, cvCtx, jobCtx, mcqResults: mcqRes, mcqQuestions, mcqBonusPoints: bonusPts, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current },
+      });
+    });
+  }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl]);
 
   const resumeAfterMCQ = useCallback((bonusEarned: boolean, selectedIndex: number) => {
     setMcqActive(false);
@@ -681,12 +693,12 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     const next = qIndex + 1;
     if (next >= questions.length) {
       uploadRecording(sessionAnswers);
-      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqResults: [...mcqResults, newResult], mcqQuestions, mcqBonusPoints: mcqBonusPoints + (bonusEarned ? 10 : 0), playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current } });
+      closeInterview(sessionAnswers, [...mcqResults, newResult], mcqBonusPoints + (bonusEarned ? 10 : 0));
     } else {
       setQIndex(next);
       askQuestion(next);
     }
-  }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, cvCtx, jobCtx, uploadRecording, mcqResults, mcqQuestions, mcqBonusPoints, buildPlaybackUrl]);
+  }, [qIndex, questions.length, sessionAnswers, askQuestion, uploadRecording, mcqResults, mcqQuestions, mcqBonusPoints, closeInterview]);
 
   const handlePass = useCallback(() => {
     const thinkTimeMs = thinkStartRef.current > 0 ? Date.now() - thinkStartRef.current : undefined;
@@ -712,13 +724,14 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
     const passedAnswers = [...sessionAnswers, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }];
     if (qIndex + 1 >= questions.length) {
-      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: passedAnswers, cvCtx, jobCtx, mcqResults, mcqQuestions, mcqBonusPoints, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current } });
+      uploadRecording(passedAnswers);
+      closeInterview(passedAnswers, mcqResults, mcqBonusPoints);
     } else {
       const next = qIndex + 1;
       setQIndex(next);
       askQuestion(next);
     }
-  }, [q, qIndex, questions.length, sessionAnswers, navigate, askQuestion, cvCtx, jobCtx, mcqQuestions, mcqResults, mcqBonusPoints, buildPlaybackUrl]);
+  }, [q, qIndex, questions.length, sessionAnswers, askQuestion, cvCtx, jobCtx, mcqQuestions, mcqResults, mcqBonusPoints, uploadRecording, closeInterview]);
 
   const submitAnswer = useCallback(async (text: string, meta?: TranscriptMeta, byVoice = false) => {
     if (!text.trim()) return;
@@ -929,9 +942,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
             {isFullscreen ? 'Exit Full' : 'Full Screen'}
           </button>
           <button onClick={() => {
-            cancelSpeakRef.current?.();
             uploadRecording(sessionAnswers);
-            navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqResults, mcqQuestions, mcqBonusPoints, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current } });
+            closeInterview(sessionAnswers, mcqResults, mcqBonusPoints);
           }}
             style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '8px', padding: '7px 14px', color: '#34D399', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>
             End Session

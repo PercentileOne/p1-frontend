@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChairSpinner } from '../components/ChairSpinner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,6 +10,7 @@ import type { CVContext, JobSpecContext } from '../utils/contextBuilder';
 import type { FeedbackOutcome } from '../utils/clientSession';
 import { buildCandidateFeedbackUrl, type CandidateFeedbackSession } from '../utils/clientSession';
 import { getRoleImprovementAreas } from '../utils/clientSession';
+import { speak } from '../api/ttsApi';
 
 interface SessionAnswer {
   question: InterviewQuestion;
@@ -665,6 +666,57 @@ export default function InterviewSummary() {
 
   const showLearnBanner = overall < 0.70 && weakestTag;
 
+  // ── Mike's verbal debrief ────────────────────────────────────────────────────
+  const mikeSpokeRef = useRef(false);
+  const [mikeActive, setMikeActive] = useState(false);
+
+  const buildMikeScript = useCallback(() => {
+    const name = cvCtx?.name?.split(' ')[0] ?? 'there';
+    const pct = Math.round(overall * 100);
+    const strongLabel = strengths[0] ?? null;
+    const weakLabel = improvements[0] ?? null;
+    const learnTopic = weakestTag ?? weakLabel ?? 'your interview technique';
+
+    let opening = `Hi ${name}, it's Mike here — I've just had a word with Sarah and James, and they wanted me to share some feedback with you.`;
+
+    let scoreComment = '';
+    if (pct >= 85) scoreComment = `First of all, brilliant session — you scored ${pct} percent overall. That's genuinely impressive.`;
+    else if (pct >= 65) scoreComment = `You scored ${pct} percent overall — a solid performance, and there's real potential here.`;
+    else scoreComment = `You scored ${pct} percent overall. It's a start, and with a bit of focused practice, you'll see that number climb quickly.`;
+
+    let strengthComment = strongLabel
+      ? `Sarah particularly noticed your ${strongLabel} — she said it came across really well.`
+      : '';
+
+    let improvementComment = '';
+    if (weakLabel) {
+      improvementComment = pct < 100
+        ? `One area to focus on is ${weakLabel} — if you can sharpen that up, it'll make a real difference.`
+        : '';
+    }
+
+    let learnPitch = pct < 100
+      ? `The good news is, our Learn platform has a lesson on ${learnTopic} ready to go right now — just head over to the Learn tab and hit Generate. It'll walk you through exactly what you need. I'd really recommend it.`
+      : `You nailed it across the board — honestly, you should be very proud of that session.`;
+
+    const closing = `Good luck ${name}, and remember — every session makes you sharper. Speak soon.`;
+
+    return [opening, scoreComment, strengthComment, improvementComment, learnPitch, closing]
+      .filter(Boolean).join(' ');
+  }, [cvCtx, overall, strengths, improvements, weakestTag]);
+
+  useEffect(() => {
+    if (mikeSpokeRef.current) return;
+    mikeSpokeRef.current = true;
+    if (!answers.length) return;
+    const delay = setTimeout(() => {
+      setMikeActive(true);
+      const script = buildMikeScript();
+      speak(script, 'mike', () => setMikeActive(false));
+    }, 1400);
+    return () => clearTimeout(delay);
+  }, []);
+
   // Build per-question LEARN recommendation (only for low-scoring answers)
   const learnRecsPerQuestion = answers.map(a => {
     if (a.score.overallScore >= 0.65 || !a.question.competencyTags.length) return null;
@@ -785,6 +837,57 @@ ${questionsHtml}
           ))}
         </div>
       </div>
+
+      {/* ── Mike Debrief Banner ── */}
+      <AnimatePresence>
+        {mikeActive && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.35 }}
+            style={{
+              background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(79,142,247,0.06))',
+              borderBottom: '1px solid rgba(52,211,153,0.2)',
+              padding: '16px 28px',
+            }}
+          >
+            <div style={{ maxWidth: '840px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '14px' }}>
+              {/* Mike avatar with pulse ring */}
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #34d399, #4F8EF7)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '20px', fontWeight: 800, color: '#fff', position: 'relative', zIndex: 1,
+                }}>M</div>
+                <div style={{
+                  position: 'absolute', inset: -4, borderRadius: '50%',
+                  border: '2px solid rgba(52,211,153,0.5)',
+                  animation: 'mike-pulse 1.4s ease-in-out infinite',
+                }} />
+              </div>
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#34d399', marginBottom: '2px' }}>Mike · Your Agent</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Listening to your debrief…</div>
+              </div>
+              {/* Speaking bars */}
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: '3px', alignItems: 'flex-end', height: '20px' }}>
+                {[0, 1, 2, 3, 4].map(i => (
+                  <div key={i} style={{
+                    width: 3, borderRadius: 2, background: '#34d399',
+                    height: '40%', animation: `mike-bar 0.9s ease-in-out ${i * 0.15}s infinite alternate`,
+                  }} />
+                ))}
+              </div>
+            </div>
+            <style>{`
+              @keyframes mike-pulse { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.25);opacity:0} }
+              @keyframes mike-bar { from{height:20%} to{height:90%} }
+            `}</style>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div style={{ maxWidth: '840px', margin: '0 auto', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
 

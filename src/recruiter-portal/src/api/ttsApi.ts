@@ -3,6 +3,7 @@
 //   VITE_ELEVENLABS_API_KEY=your_key_here
 //   VITE_ELEVENLABS_VOICE_HR=voice_id_for_sarah
 //   VITE_ELEVENLABS_VOICE_TECH=voice_id_for_james
+//   VITE_ELEVENLABS_VOICE_MIKE=voice_id_for_mike (agent debrief)
 
 // Phonetic substitutions so TTS pronounces tech terms correctly
 const PHONETIC: [RegExp, string][] = [
@@ -71,6 +72,7 @@ function sanitiseForTTS(text: string): string {
 const ELEVENLABS_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY as string | undefined;
 const VOICE_HR       = import.meta.env.VITE_ELEVENLABS_VOICE_HR as string | undefined;
 const VOICE_TECH     = import.meta.env.VITE_ELEVENLABS_VOICE_TECH as string | undefined;
+const VOICE_MIKE     = import.meta.env.VITE_ELEVENLABS_VOICE_MIKE as string | undefined;
 
 const ELEVENLABS_MODEL = 'eleven_turbo_v2'; // lowest latency, high quality
 
@@ -154,7 +156,7 @@ async function speakElevenLabs(
 
 function speakWebSpeech(
   text: string,
-  role: 'hr' | 'technical',
+  role: 'hr' | 'technical' | 'mike',
   onEnd: () => void,
   onWordBoundary?: (charIndex: number) => void,
 ): () => void {
@@ -162,13 +164,15 @@ function speakWebSpeech(
   const utterance = new SpeechSynthesisUtterance(sanitiseForTTS(text));
   utterance.lang  = 'en-GB';
   utterance.rate  = 0.92;
-  utterance.pitch = role === 'hr' ? 1.15 : 0.9;
+  utterance.pitch = role === 'hr' ? 1.15 : role === 'mike' ? 1.0 : 0.9;
 
   const voices = window.speechSynthesis.getVoices();
   const preferred =
     voices.find(v =>
       role === 'hr'
         ? v.name.match(/Hazel|Libby|Susan|Female|Zira/i)
+        : role === 'mike'
+        ? v.name.match(/George|Ryan|Arthur|Male|David/i)
         : v.name.match(/George|Ryan|Arthur|Male|David/i),
     ) ?? voices.find(v => v.lang.startsWith('en')) ?? null;
   if (preferred) utterance.voice = preferred;
@@ -194,11 +198,11 @@ function speakWebSpeech(
  */
 export function speak(
   text: string,
-  role: 'hr' | 'technical',
+  role: 'hr' | 'technical' | 'mike',
   onEnd: () => void,
   onAnalyser?: (a: AnalyserNode | null) => void,
 ): () => void {
-  const voiceId = role === 'hr' ? VOICE_HR : VOICE_TECH;
+  const voiceId = role === 'hr' ? VOICE_HR : role === 'mike' ? (VOICE_MIKE ?? VOICE_TECH) : VOICE_TECH;
 
   if (ELEVENLABS_KEY && voiceId) {
     let cancelled = false;
@@ -206,7 +210,7 @@ export function speak(
 
     speakElevenLabs(text, voiceId, () => {
       if (!cancelled) onEnd();
-    }, role === 'technical' ? 0.5 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined)
+    }, role === 'technical' ? 0.5 : role === 'mike' ? 0.65 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined)
       .then(cancel => { cancelAudio = cancel; })
       .catch(() => {
         // ElevenLabs failed — fall back to Web Speech
