@@ -655,10 +655,18 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
     // MCQ trigger — fires at Q3 (index 2) and Q7 (index 6)
     const nextMcqIdx = mcqFiredCountRef.current;
-    if (MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
+    if (!mcqActive && MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
       mcqFiredCountRef.current += 1;
-      setActiveMcqQuestion(mcqQuestions[nextMcqIdx]);
-      setMcqActive(true);
+      const mcqQ = mcqQuestions[nextMcqIdx];
+      const ordinal = nextMcqIdx === 0 ? 'first' : 'second';
+      const intro = `Great, before we move on — this is your ${ordinal} bonus question. ${mcqQ.questionText}`;
+      cancelSpeakRef.current?.();
+      setHrState('speaking');
+      cancelSpeakRef.current = speak(intro, 'hr', () => {
+        setHrState('idle');
+        setActiveMcqQuestion(mcqQ);
+        setMcqActive(true);
+      }, (a) => setHrAnalyser(a));
       return;
     }
 
@@ -670,18 +678,19 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       setQIndex(next);
       askQuestion(next);
     }
-  }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, q, cvCtx, jobCtx, uploadRecording, mcqQuestions, mcqResults, mcqBonusPoints]);
+  }, [qIndex, questions.length, sessionAnswers, askQuestion, q, uploadRecording, mcqQuestions, mcqResults, mcqBonusPoints, mcqActive, closeInterview]);
 
   const closeInterview = useCallback((answers: SessionAnswer[], mcqRes: typeof mcqResults, bonusPts: number) => {
-    setPhase('done');
     const name = resolvedPreferredName ? `, ${resolvedPreferredName}` : '';
     const closingLine = `Well${name}, that brings us to the end of your interview — thank you so much for your time today. I'm going to have a quick word with James, and then your agent Mike will be in touch shortly with some feedback. In the meantime, you can watch your full interview replay on the next screen, and retake it anytime you like. Best of luck!`;
     cancelSpeakRef.current?.();
+    setHrState('speaking');
     cancelSpeakRef.current = speak(closingLine, 'hr', () => {
+      setHrState('idle');
       navigate(`/interview-summary/session-${Date.now()}`, {
         state: { answers, cvCtx, jobCtx, mcqResults: mcqRes, mcqQuestions, mcqBonusPoints: bonusPts, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current },
       });
-    });
+    }, (a) => setHrAnalyser(a));
   }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl]);
 
   const resumeAfterMCQ = useCallback((bonusEarned: boolean, selectedIndex: number) => {
@@ -715,10 +724,18 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
     // MCQ trigger — same slots as nextQuestion
     const nextMcqIdx = mcqFiredCountRef.current;
-    if (MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
+    if (!mcqActive && MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
       mcqFiredCountRef.current += 1;
-      setActiveMcqQuestion(mcqQuestions[nextMcqIdx]);
-      setMcqActive(true);
+      const mcqQ = mcqQuestions[nextMcqIdx];
+      const ordinal = nextMcqIdx === 0 ? 'first' : 'second';
+      const intro = `Great, before we move on — this is your ${ordinal} bonus question. ${mcqQ.questionText}`;
+      cancelSpeakRef.current?.();
+      setHrState('speaking');
+      cancelSpeakRef.current = speak(intro, 'hr', () => {
+        setHrState('idle');
+        setActiveMcqQuestion(mcqQ);
+        setMcqActive(true);
+      }, (a) => setHrAnalyser(a));
       return;
     }
 
@@ -731,7 +748,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       setQIndex(next);
       askQuestion(next);
     }
-  }, [q, qIndex, questions.length, sessionAnswers, askQuestion, cvCtx, jobCtx, mcqQuestions, mcqResults, mcqBonusPoints, uploadRecording, closeInterview]);
+  }, [q, qIndex, questions.length, sessionAnswers, askQuestion, mcqQuestions, mcqResults, mcqBonusPoints, mcqActive, uploadRecording, closeInterview]);
 
   const submitAnswer = useCallback(async (text: string, meta?: TranscriptMeta, byVoice = false) => {
     if (!text.trim()) return;
