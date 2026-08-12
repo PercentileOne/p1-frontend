@@ -9,8 +9,9 @@ import { speak, elevenLabsConfigured } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
 import { generateCoachingMessage, type CoachingMessage } from '../utils/coachingEngine';
-import { scoreWithAI, coachWithAI, aiScoringConfigured, sessionPrepareClient, generateMikeScriptOnly } from '../api/aiScoring';
+import { scoreWithAI, coachWithAI, aiScoringConfigured, sessionPrepareClient, generateMikeScriptOnly, type MCQQuestion } from '../api/aiScoring';
 import { ChairSpinner } from '../components/ChairSpinner';
+import CinematicMCQ from '../components/CinematicMCQ';
 import { pickRandomCompany, type Company } from '../data/companyBank';
 import { logFlowEvent } from '../api/flowLogger';
 
@@ -237,6 +238,14 @@ export default function InterviewRoom() {
   const [bgSpecialistTitle, setBgSpecialistTitle] = useState<string | null>(null);
   const bgLoadRef = useRef(false);
   const bgLoadedRef = useRef(false); // true once AI results arrive
+
+  // MCQ bonus round
+  const [mcqQuestion, setMcqQuestion] = useState<MCQQuestion | null>(null);
+  const [mcqActive, setMcqActive] = useState(false);
+  const [mcqBonusPoints, setMcqBonusPoints] = useState(0);
+  // MCQ fires after Q3 or Q5 — decided at mount (random coin flip)
+  const mcqSlotRef = useRef<number>(Math.random() < 0.5 ? 2 : 4); // 0-based: after index 2 (Q3) or 4 (Q5)
+  const mcqFiredRef = useRef(false);
 
   // Session-prep readiness — Mike waits for AI to return (max 8 s) before speaking
   const sessionReadyRef = useRef(false);
@@ -547,6 +556,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       if (result.jamesIntro) setBgJamesIntro(result.jamesIntro);
       if (result.companyFacts?.length) setBgCompanyFacts(result.companyFacts);
       if (result.specialistTitle) setBgSpecialistTitle(result.specialistTitle);
+      if (result.mcqQuestion) setMcqQuestion(result.mcqQuestion);
       logFlowEvent('QUESTION_GENERATED', { count: result.questions.length, specialistTitle: result.specialistTitle });
 
     }).catch(err => {
@@ -588,6 +598,14 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setTypedAnswer('');
     setCoachingMessage(null);
     logFlowEvent('QUESTION_COMPLETED', { questionId: q?.questionId, index: qIndex });
+
+    // MCQ trigger — fires once after the designated question slot
+    if (!mcqFiredRef.current && mcqQuestion && qIndex === mcqSlotRef.current) {
+      mcqFiredRef.current = true;
+      setMcqActive(true);
+      return; // MCQ onComplete will call nextQuestion flow via resumeAfterMCQ
+    }
+
     if (qIndex + 1 >= questions.length) {
       uploadRecording(sessionAnswers);
       navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx } });
@@ -596,7 +614,20 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       setQIndex(next);
       askQuestion(next);
     }
-  }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, q, cvCtx, jobCtx, uploadRecording]);
+  }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, q, cvCtx, jobCtx, uploadRecording, mcqQuestion]);
+
+  const resumeAfterMCQ = useCallback((bonusEarned: boolean) => {
+    setMcqActive(false);
+    if (bonusEarned) setMcqBonusPoints(10);
+    const next = qIndex + 1;
+    if (next >= questions.length) {
+      uploadRecording(sessionAnswers);
+      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx } });
+    } else {
+      setQIndex(next);
+      askQuestion(next);
+    }
+  }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, cvCtx, jobCtx, uploadRecording]);
 
   const handlePass = useCallback(() => {
     const thinkTimeMs = thinkStartRef.current > 0 ? Date.now() - thinkStartRef.current : undefined;
@@ -676,6 +707,14 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       display: 'flex', flexDirection: 'column',
       userSelect: 'none',
     }}>
+      {/* Cinematic MCQ overlay */}
+      {mcqActive && mcqQuestion && (
+        <CinematicMCQ
+          mcq={mcqQuestion}
+          candidateName={resolvedPreferredName}
+          onComplete={resumeAfterMCQ}
+        />
+      )}
       {/* Top bar */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -698,6 +737,15 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   borderRadius: '6px', padding: '3px 10px',
                 }}>
                   {avgScore}%
+                </div>
+              )}
+              {mcqBonusPoints > 0 && (
+                <div style={{
+                  fontSize: '12px', fontWeight: 800, color: '#34D399',
+                  background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.35)',
+                  borderRadius: '6px', padding: '3px 10px',
+                }}>
+                  +{mcqBonusPoints} bonus
                 </div>
               )}
             </>
