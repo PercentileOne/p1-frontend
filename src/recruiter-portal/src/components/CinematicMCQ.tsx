@@ -12,6 +12,7 @@ export interface MCQQuestion {
 interface Props {
   mcq: MCQQuestion;
   candidateName?: string;
+  questionOrdinal?: 'first' | 'second';
   onComplete: (bonusEarned: boolean, selectedIndex: number) => void;
 }
 
@@ -132,7 +133,7 @@ function OptionCard({
 
 type MCQState = 'entering' | 'question' | 'answered-correct' | 'answered-wrong' | 'exiting';
 
-export default function CinematicMCQ({ mcq, candidateName, onComplete }: Props) {
+export default function CinematicMCQ({ mcq, candidateName, questionOrdinal, onComplete }: Props) {
   const [mcqState, setMcqState] = useState<MCQState>('entering');
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [bonusVisible, setBonusVisible] = useState(false);
@@ -144,10 +145,11 @@ export default function CinematicMCQ({ mcq, candidateName, onComplete }: Props) 
     cancelSpeakRef.current = null;
   }, []);
 
-  // Guardian Angel intro speech on mount
+  // Guardian Angel intro + reads question aloud on mount
   useEffect(() => {
     const name = candidateName ? `, ${candidateName}` : '';
-    const line = `Okay${name}... time for your bonus question. Answer it correctly and you'll earn bonus points. Good luck.`;
+    const ordinalPhrase = questionOrdinal ? `your ${questionOrdinal} bonus question` : 'a bonus question';
+    const line = `Okay${name}... here is ${ordinalPhrase}. ${mcq.questionText} Answer correctly and you'll earn bonus points.`;
     cancelSpeakRef.current = speak(line, 'hr', () => {
       setMcqState('question');
     });

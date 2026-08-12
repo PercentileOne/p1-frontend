@@ -248,6 +248,7 @@ export default function InterviewRoom() {
   const mcqFiredCountRef = useRef(0); // how many MCQs have fired so far
   // active MCQ question for the current overlay
   const [activeMcqQuestion, setActiveMcqQuestion] = useState<MCQQuestion | null>(null);
+  const [activeMcqOrdinal, setActiveMcqOrdinal] = useState<'first' | 'second'>('first');
 
   // Session-prep readiness — Mike waits for AI to return (max 8 s) before speaking
   const sessionReadyRef = useRef(false);
@@ -670,16 +671,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     const nextMcqIdx = mcqFiredCountRef.current;
     if (!mcqActive && MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
       mcqFiredCountRef.current += 1;
-      const mcqQ = mcqQuestions[nextMcqIdx];
-      const ordinal = nextMcqIdx === 0 ? 'first' : 'second';
-      const intro = `Great, before we move on — this is your ${ordinal} bonus question. ${mcqQ.questionText}`;
       cancelSpeakRef.current?.();
-      setHrState('speaking');
-      cancelSpeakRef.current = speak(intro, 'hr', () => {
-        setHrState('idle');
-        setActiveMcqQuestion(mcqQ);
-        setMcqActive(true);
-      }, (a) => setHrAnalyser(a));
+      setActiveMcqOrdinal(nextMcqIdx === 0 ? 'first' : 'second');
+      setActiveMcqQuestion(mcqQuestions[nextMcqIdx]);
+      setMcqActive(true);
       return;
     }
 
@@ -726,16 +721,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     const nextMcqIdx = mcqFiredCountRef.current;
     if (!mcqActive && MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
       mcqFiredCountRef.current += 1;
-      const mcqQ = mcqQuestions[nextMcqIdx];
-      const ordinal = nextMcqIdx === 0 ? 'first' : 'second';
-      const intro = `Great, before we move on — this is your ${ordinal} bonus question. ${mcqQ.questionText}`;
       cancelSpeakRef.current?.();
-      setHrState('speaking');
-      cancelSpeakRef.current = speak(intro, 'hr', () => {
-        setHrState('idle');
-        setActiveMcqQuestion(mcqQ);
-        setMcqActive(true);
-      }, (a) => setHrAnalyser(a));
+      setActiveMcqOrdinal(nextMcqIdx === 0 ? 'first' : 'second');
+      setActiveMcqQuestion(mcqQuestions[nextMcqIdx]);
+      setMcqActive(true);
       return;
     }
 
@@ -824,6 +813,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
         <CinematicMCQ
           mcq={activeMcqQuestion}
           candidateName={resolvedPreferredName}
+          questionOrdinal={activeMcqOrdinal}
           onComplete={resumeAfterMCQ}
         />
       )}
