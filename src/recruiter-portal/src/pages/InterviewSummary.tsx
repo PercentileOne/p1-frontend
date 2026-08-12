@@ -613,8 +613,8 @@ export default function InterviewSummary() {
   const answers: SessionAnswer[] = location.state?.answers ?? [];
   const cvCtx: CVContext | undefined = location.state?.cvCtx;
   const jobCtx: JobSpecContext | undefined = location.state?.jobCtx;
-  const mcqQuestion = location.state?.mcqQuestion as { questionText: string; options: string[]; correctIndex: number; explanation: string } | undefined;
-  const mcqResult = location.state?.mcqResult as { correct: boolean; selectedIndex: number } | undefined;
+  const mcqQuestions: Array<{ questionText: string; options: string[]; correctIndex: number; explanation: string }> = location.state?.mcqQuestions ?? [];
+  const mcqResults: Array<{ correct: boolean; selectedIndex: number; questionIndex: number }> = location.state?.mcqResults ?? [];
   const mcqBonusPoints: number = location.state?.mcqBonusPoints ?? 0;
   const playbackUrl: string | null = location.state?.playbackUrl ?? null;
   const chapters: { questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[] = location.state?.chapters ?? [];
@@ -817,56 +817,61 @@ ${questionsHtml}
               </div>
             </motion.div>
 
-            {/* MCQ Bonus Round card */}
-            {mcqQuestion && mcqResult && (
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-                style={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.08) 0%, rgba(124,58,237,0.06) 100%)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: '16px', overflow: 'hidden' }}>
-                <div style={{ padding: '16px 22px', borderBottom: '1px solid rgba(167,139,250,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '18px' }}>⚡</span>
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#a78bfa' }}>Bonus Round</div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', marginTop: '2px' }}>Multiple Choice Question</div>
-                    </div>
-                  </div>
-                  {mcqResult.correct
-                    ? <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: '10px', padding: '6px 14px' }}>
-                        <span style={{ fontSize: '15px' }}>🏆</span>
-                        <span style={{ fontSize: '13px', fontWeight: 800, color: '#34D399' }}>+{mcqBonusPoints} pts</span>
+            {/* MCQ Bonus Round cards — one per fired MCQ */}
+            {mcqQuestions.map((mcqQ, mcqIdx) => {
+              const mcqResult = mcqResults[mcqIdx];
+              if (!mcqResult) return null;
+              const bonusPts = mcqResult.correct ? 10 : 0;
+              return (
+                <motion.div key={mcqIdx} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + mcqIdx * 0.08 }}
+                  style={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.08) 0%, rgba(124,58,237,0.06) 100%)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: '16px', overflow: 'hidden' }}>
+                  <div style={{ padding: '16px 22px', borderBottom: '1px solid rgba(167,139,250,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '18px' }}>⚡</span>
+                      <div>
+                        <div style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#a78bfa' }}>Bonus Round {mcqQuestions.length > 1 ? mcqIdx + 1 : ''}</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', marginTop: '2px' }}>Multiple Choice Question</div>
                       </div>
-                    : <div style={{ fontSize: '12px', color: 'var(--text-3)', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '8px', padding: '5px 12px' }}>No bonus</div>
-                  }
-                </div>
-                <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', lineHeight: 1.5 }}>{mcqQuestion.questionText}</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {mcqQuestion.options.map((opt, i) => {
-                      const isCorrect = i === mcqQuestion.correctIndex;
-                      const isSelected = i === mcqResult.selectedIndex;
-                      const bg = isCorrect ? 'rgba(52,211,153,0.10)' : isSelected && !isCorrect ? 'rgba(239,68,68,0.08)' : 'transparent';
-                      const border = isCorrect ? '1px solid rgba(52,211,153,0.35)' : isSelected && !isCorrect ? '1px solid rgba(239,68,68,0.3)' : '1px solid var(--border)';
-                      const labelColor = isCorrect ? '#34D399' : isSelected && !isCorrect ? '#EF4444' : 'var(--text-3)';
-                      return (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', borderRadius: '10px', background: bg, border }}>
-                          <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: isCorrect ? 'rgba(52,211,153,0.15)' : isSelected && !isCorrect ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: labelColor, flexShrink: 0 }}>
-                            {isCorrect ? '✓' : isSelected ? '✗' : ['A','B','C','D'][i]}
-                          </div>
-                          <span style={{ fontSize: '13px', color: isCorrect ? '#f1f5f9' : isSelected && !isCorrect ? 'rgba(240,244,255,0.5)' : 'var(--text-2)', flex: 1 }}>{opt}</span>
-                          {isSelected && <span style={{ fontSize: '11px', fontWeight: 700, color: labelColor }}>{mcqResult.correct ? 'Your answer ✓' : 'Your answer'}</span>}
-                          {isCorrect && !mcqResult.correct && <span style={{ fontSize: '11px', fontWeight: 700, color: '#34D399' }}>Correct answer</span>}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {!mcqResult.correct && (
-                    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px' }}>
-                      <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '6px' }}>Why the correct answer</div>
-                      <div style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.6 }}>{mcqQuestion.explanation}</div>
                     </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
+                    {mcqResult.correct
+                      ? <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: '10px', padding: '6px 14px' }}>
+                          <span style={{ fontSize: '15px' }}>🏆</span>
+                          <span style={{ fontSize: '13px', fontWeight: 800, color: '#34D399' }}>+{bonusPts} pts</span>
+                        </div>
+                      : <div style={{ fontSize: '12px', color: 'var(--text-3)', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '8px', padding: '5px 12px' }}>No bonus</div>
+                    }
+                  </div>
+                  <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', lineHeight: 1.5 }}>{mcqQ.questionText}</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {mcqQ.options.map((opt, i) => {
+                        const isCorrect = i === mcqQ.correctIndex;
+                        const isSelected = i === mcqResult.selectedIndex;
+                        const bg = isCorrect ? 'rgba(52,211,153,0.10)' : isSelected && !isCorrect ? 'rgba(239,68,68,0.08)' : 'transparent';
+                        const border = isCorrect ? '1px solid rgba(52,211,153,0.35)' : isSelected && !isCorrect ? '1px solid rgba(239,68,68,0.3)' : '1px solid var(--border)';
+                        const labelColor = isCorrect ? '#34D399' : isSelected && !isCorrect ? '#EF4444' : 'var(--text-3)';
+                        return (
+                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', borderRadius: '10px', background: bg, border }}>
+                            <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: isCorrect ? 'rgba(52,211,153,0.15)' : isSelected && !isCorrect ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: labelColor, flexShrink: 0 }}>
+                              {isCorrect ? '✓' : isSelected ? '✗' : ['A','B','C','D'][i]}
+                            </div>
+                            <span style={{ fontSize: '13px', color: isCorrect ? '#f1f5f9' : isSelected && !isCorrect ? 'rgba(240,244,255,0.5)' : 'var(--text-2)', flex: 1 }}>{opt}</span>
+                            {isSelected && <span style={{ fontSize: '11px', fontWeight: 700, color: labelColor }}>{mcqResult.correct ? 'Your answer ✓' : 'Your answer'}</span>}
+                            {isCorrect && !mcqResult.correct && <span style={{ fontSize: '11px', fontWeight: 700, color: '#34D399' }}>Correct answer</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {!mcqResult.correct && (
+                      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px' }}>
+                        <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '6px' }}>Why the correct answer</div>
+                        <div style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.6 }}>{mcqQ.explanation}</div>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
 
             {/* Per-question breakdown */}
             {answers.map((a, i) => {

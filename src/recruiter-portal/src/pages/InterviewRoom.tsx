@@ -239,14 +239,15 @@ export default function InterviewRoom() {
   const bgLoadRef = useRef(false);
   const bgLoadedRef = useRef(false); // true once AI results arrive
 
-  // MCQ bonus round
-  const [mcqQuestion, setMcqQuestion] = useState<MCQQuestion | null>(null);
+  // MCQ bonus round — two questions, fixed slots Q3 (index 2) and Q7 (index 6)
+  const [mcqQuestions, setMcqQuestions] = useState<MCQQuestion[]>([]);
   const [mcqActive, setMcqActive] = useState(false);
   const [mcqBonusPoints, setMcqBonusPoints] = useState(0);
-  const [mcqResult, setMcqResult] = useState<{ correct: boolean; selectedIndex: number } | null>(null);
-  // MCQ fires after Q3 or Q5 — decided at mount (random coin flip)
-  const mcqSlotRef = useRef<number>(Math.random() < 0.5 ? 2 : 4); // 0-based: after index 2 (Q3) or 4 (Q5)
-  const mcqFiredRef = useRef(false);
+  const [mcqResults, setMcqResults] = useState<Array<{ correct: boolean; selectedIndex: number; questionIndex: number }>>([]);
+  const MCQ_SLOTS = [2, 6]; // fire after Q3 and Q7 (0-based)
+  const mcqFiredCountRef = useRef(0); // how many MCQs have fired so far
+  // active MCQ question for the current overlay
+  const [activeMcqQuestion, setActiveMcqQuestion] = useState<MCQQuestion | null>(null);
 
   // Session-prep readiness — Mike waits for AI to return (max 8 s) before speaking
   const sessionReadyRef = useRef(false);
@@ -609,7 +610,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       if (result.jamesIntro) setBgJamesIntro(result.jamesIntro);
       if (result.companyFacts?.length) setBgCompanyFacts(result.companyFacts);
       if (result.specialistTitle) setBgSpecialistTitle(result.specialistTitle);
-      if (result.mcqQuestion) setMcqQuestion(result.mcqQuestion);
+      if (result.mcqQuestions?.length) setMcqQuestions(result.mcqQuestions);
       logFlowEvent('QUESTION_GENERATED', { count: result.questions.length, specialistTitle: result.specialistTitle });
 
     }).catch(err => {
@@ -652,38 +653,40 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setCoachingMessage(null);
     logFlowEvent('QUESTION_COMPLETED', { questionId: q?.questionId, index: qIndex });
 
-    // MCQ trigger — fires once after the designated question slot
-    if (!mcqFiredRef.current && mcqQuestion && qIndex === mcqSlotRef.current) {
-      mcqFiredRef.current = true;
+    // MCQ trigger — fires at Q3 (index 2) and Q7 (index 6)
+    const nextMcqIdx = mcqFiredCountRef.current;
+    if (MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
+      mcqFiredCountRef.current += 1;
+      setActiveMcqQuestion(mcqQuestions[nextMcqIdx]);
       setMcqActive(true);
-      return; // MCQ onComplete will call nextQuestion flow via resumeAfterMCQ
+      return;
     }
 
     if (qIndex + 1 >= questions.length) {
       uploadRecording(sessionAnswers);
-      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqQuestion, mcqResult, mcqBonusPoints, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current } });
+      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqResults, mcqBonusPoints, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current } });
     } else {
       const next = qIndex + 1;
       setQIndex(next);
       askQuestion(next);
     }
-  }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, q, cvCtx, jobCtx, uploadRecording, mcqQuestion]);
+  }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, q, cvCtx, jobCtx, uploadRecording, mcqQuestions, mcqResults, mcqBonusPoints]);
 
   const resumeAfterMCQ = useCallback((bonusEarned: boolean, selectedIndex: number) => {
     setMcqActive(false);
-    const bonus = bonusEarned ? 10 : 0;
-    if (bonusEarned) setMcqBonusPoints(10);
-    const result = { correct: bonusEarned, selectedIndex };
-    setMcqResult(result);
+    setActiveMcqQuestion(null);
+    const newResult = { correct: bonusEarned, selectedIndex, questionIndex: qIndex };
+    setMcqResults(prev => [...prev, newResult]);
+    if (bonusEarned) setMcqBonusPoints(prev => prev + 10);
     const next = qIndex + 1;
     if (next >= questions.length) {
       uploadRecording(sessionAnswers);
-      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqQuestion, mcqResult: result, mcqBonusPoints: bonus } });
+      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqResults: [...mcqResults, newResult], mcqQuestions, mcqBonusPoints: mcqBonusPoints + (bonusEarned ? 10 : 0), playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current } });
     } else {
       setQIndex(next);
       askQuestion(next);
     }
-  }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, cvCtx, jobCtx, uploadRecording, mcqQuestion]);
+  }, [qIndex, questions.length, sessionAnswers, navigate, askQuestion, cvCtx, jobCtx, uploadRecording, mcqResults, mcqQuestions, mcqBonusPoints, buildPlaybackUrl]);
 
   const handlePass = useCallback(() => {
     const thinkTimeMs = thinkStartRef.current > 0 ? Date.now() - thinkStartRef.current : undefined;
@@ -698,21 +701,24 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setCurrentScore(null); setCoachingMessage(null); setTypedAnswer('');
     logFlowEvent('QUESTION_COMPLETED', { questionId: q?.questionId, index: qIndex, passed: true });
 
-    // MCQ trigger — same check as nextQuestion
-    if (!mcqFiredRef.current && mcqQuestion && qIndex === mcqSlotRef.current) {
-      mcqFiredRef.current = true;
+    // MCQ trigger — same slots as nextQuestion
+    const nextMcqIdx = mcqFiredCountRef.current;
+    if (MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
+      mcqFiredCountRef.current += 1;
+      setActiveMcqQuestion(mcqQuestions[nextMcqIdx]);
       setMcqActive(true);
       return;
     }
 
+    const passedAnswers = [...sessionAnswers, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }];
     if (qIndex + 1 >= questions.length) {
-      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: [...sessionAnswers, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }], cvCtx, jobCtx, mcqQuestion, mcqResult, mcqBonusPoints, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current } });
+      navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: passedAnswers, cvCtx, jobCtx, mcqResults, mcqQuestions, mcqBonusPoints, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current } });
     } else {
       const next = qIndex + 1;
       setQIndex(next);
       askQuestion(next);
     }
-  }, [q, qIndex, questions.length, sessionAnswers, navigate, askQuestion, cvCtx, jobCtx, mcqQuestion]);
+  }, [q, qIndex, questions.length, sessionAnswers, navigate, askQuestion, cvCtx, jobCtx, mcqQuestions, mcqResults, mcqBonusPoints, buildPlaybackUrl]);
 
   const submitAnswer = useCallback(async (text: string, meta?: TranscriptMeta, byVoice = false) => {
     if (!text.trim()) return;
@@ -772,9 +778,9 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       userSelect: 'none',
     }}>
       {/* Cinematic MCQ overlay */}
-      {mcqActive && mcqQuestion && (
+      {mcqActive && activeMcqQuestion && (
         <CinematicMCQ
-          mcq={mcqQuestion}
+          mcq={activeMcqQuestion}
           candidateName={resolvedPreferredName}
           onComplete={resumeAfterMCQ}
         />
@@ -899,7 +905,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           <button onClick={() => {
             cancelSpeakRef.current?.();
             uploadRecording(sessionAnswers);
-            navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqQuestion, mcqResult, mcqBonusPoints, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current } });
+            navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: sessionAnswers, cvCtx, jobCtx, mcqResults, mcqQuestions, mcqBonusPoints, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current } });
           }}
             style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '8px', padding: '7px 14px', color: '#34D399', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>
             End Session

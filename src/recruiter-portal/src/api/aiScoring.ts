@@ -718,7 +718,7 @@ export interface ClientSessionResult {
   mikeScript: string | null;
   companyFacts: string[];
   specialistTitle: string;
-  mcqQuestion: MCQQuestion | null;
+  mcqQuestions: MCQQuestion[];
 }
 
 export async function sessionPrepareClient(
@@ -777,12 +777,20 @@ Return this exact JSON:
   "companyFacts": ["3 specific facts about this company or role the candidate should know before walking in"],
   "sarahIntro": "Sarah's spoken welcome, 50–75 words. HR Director, warm and professional. Address the candidate by their Preferred Name if set, otherwise extract their first name from the CV, otherwise use no name. Introduces herself by name, briefly mentions James will be joining her, then explains the controls: click Record to start answering, click Stop when finished, use Repeat to hear the question again, and Pause if they need a moment. Sets a positive tone and tells the candidate to speak naturally and take their time.",
   "jamesIntro": "James's spoken intro, 20–30 words. Direct and role-focused. Address the candidate by their Preferred Name if set — if not set, you MUST extract their first name from the CV and use it — NEVER say 'there' or omit the name when a CV is provided. Introduces himself and what he'll be focusing on in the interview.",
-  "mcqQuestion": {
-    "questionText": "A hard multiple-choice question directly relevant to this role",
-    "options": ["A. first option", "B. second option", "C. third option", "D. fourth option"],
-    "correctIndex": 0,
-    "explanation": "One clear sentence explaining why the correct answer is right"
-  },
+  "mcqQuestions": [
+    {
+      "questionText": "First hard multiple-choice question directly relevant to this role",
+      "options": ["A. first option", "B. second option", "C. third option", "D. fourth option"],
+      "correctIndex": 0,
+      "explanation": "One clear sentence explaining why the correct answer is right"
+    },
+    {
+      "questionText": "Second hard multiple-choice question on a different aspect of this role",
+      "options": ["A. first option", "B. second option", "C. third option", "D. fourth option"],
+      "correctIndex": 0,
+      "explanation": "One clear sentence explaining why the correct answer is right"
+    }
+  ],
   "questions": [
     {
       "questionId": "q1",
@@ -800,9 +808,9 @@ Generate exactly 10 questions total:
 - 8 role/competency questions (source: "Role") — based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover different competencies
 - 2 HR/culture questions (source: "HR") — the last one must ask what the candidate knows about the company and why this role appeals to them specifically
 
-Also generate one multiple-choice bonus question in the "mcqQuestion" field:
+Also generate TWO multiple-choice bonus questions in the "mcqQuestions" array — they must be on DIFFERENT aspects of the role:
 - Same subject area as the role, Hard difficulty
-- 4 options (prefix each: "A. ", "B. ", "C. ", "D. ") — only one correct
+- 4 options each (prefix each: "A. ", "B. ", "C. ", "D. ") — only one correct per question
 - correctIndex: 0-based index of the correct answer
 - explanation: one clear sentence explaining why the correct answer is right`;
 
@@ -818,20 +826,19 @@ Also generate one multiple-choice bonus question in the "mcqQuestion" field:
     sarahIntro: string;
     jamesIntro: string;
     questions: InterviewQuestion[];
-    mcqQuestion?: {
+    mcqQuestions?: Array<{
       questionText: string;
       options: string[];
       correctIndex: number;
       explanation: string;
-    };
+    }>;
   };
 
   const result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.7);
 
-  const rawMcq = result.mcqQuestion;
-  const mcqQuestion: MCQQuestion | null = rawMcq?.questionText && rawMcq?.options?.length === 4
-    ? { questionText: rawMcq.questionText, options: rawMcq.options, correctIndex: rawMcq.correctIndex ?? 0, explanation: rawMcq.explanation ?? '' }
-    : null;
+  const mcqQuestions: MCQQuestion[] = (result.mcqQuestions ?? [])
+    .filter(q => q?.questionText && q?.options?.length === 4)
+    .map(q => ({ questionText: q.questionText, options: q.options, correctIndex: q.correctIndex ?? 0, explanation: q.explanation ?? '' }));
 
   return {
     questions: result.questions ?? [],
@@ -840,6 +847,6 @@ Also generate one multiple-choice bonus question in the "mcqQuestion" field:
     mikeScript: result.mikeScript ?? null,
     companyFacts: result.companyFacts ?? [],
     specialistTitle: result.specialistTitle ?? 'Hiring Manager',
-    mcqQuestion,
+    mcqQuestions,
   };
 }
