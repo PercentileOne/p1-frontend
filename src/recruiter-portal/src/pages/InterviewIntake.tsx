@@ -320,6 +320,7 @@ export default function InterviewIntake() {
   // Pre-parsed CV context — populated as soon as the user provides CV text
   const [cvCtxParsed, setCvCtxParsed] = useState<CVContext | null>(null);
   const [parsingCv, setParsingCv] = useState(false);
+  const [cvTab, setCvTab] = useState<'upload' | 'text'>('upload');
   const [consentToRecord] = useState(true);
 
   // Learn tab state
@@ -806,25 +807,42 @@ export default function InterviewIntake() {
               <AnimatePresence>
                 {hasCv && (
                   <motion.div key="cv-section" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden', marginBottom: '20px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '8px' }}>CV / Resume</div>
-                    <FileUpload label="CV" onExtracted={(text) => setCvText(text)} />
-                    <CVPreviewCard ctx={cvCtxParsed} parsing={parsingCv && cvText.trim().length >= 50} />
-                    {!cvCtxParsed && !parsingCv && (
-                      <>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '16px 0' }}>
-                          <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-                          <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>or paste below</span>
-                          <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-                        </div>
-                        <Field value={cvText} onChange={setCvText} placeholder="Paste your CV text here — work history, skills, achievements, education…" rows={6} />
-                      </>
-                    )}
-                    {cvCtxParsed && (
-                      <details style={{ marginTop: '10px' }}>
-                        <summary style={{ fontSize: '12px', color: 'var(--text-3)', cursor: 'pointer', userSelect: 'none', listStyle: 'none' }}>✎ Edit raw CV text</summary>
-                        <div style={{ marginTop: '10px' }}><Field value={cvText} onChange={setCvText} placeholder="" rows={5} /></div>
-                      </details>
-                    )}
+                    <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>CV / Resume</div>
+                    {/* Tab bar */}
+                    <div style={{ display: 'flex', gap: '0', borderBottom: '1px solid var(--border)', marginBottom: '16px' }}>
+                      {(['upload', 'text'] as const).map(tab => (
+                        <button key={tab} onClick={() => setCvTab(tab)} style={{
+                          padding: '8px 18px', border: 'none', background: 'none', cursor: 'pointer',
+                          fontSize: '13px', fontWeight: 700, fontFamily: 'inherit',
+                          color: cvTab === tab ? 'var(--blue)' : 'var(--text-3)',
+                          borderBottom: cvTab === tab ? '2px solid var(--blue)' : '2px solid transparent',
+                          marginBottom: '-1px', transition: 'all 0.15s',
+                        }}>
+                          {tab === 'upload' ? 'CV Upload' : 'CV Text'}
+                        </button>
+                      ))}
+                    </div>
+                    {/* Tab content */}
+                    <AnimatePresence mode="wait">
+                      {cvTab === 'upload' && (
+                        <motion.div key="cv-upload" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                          <FileUpload label="CV" onExtracted={(text) => setCvText(text)} />
+                          <CVPreviewCard ctx={cvCtxParsed} parsing={parsingCv && cvText.trim().length >= 50} />
+                          {cvCtxParsed && (
+                            <details style={{ marginTop: '10px' }}>
+                              <summary style={{ fontSize: '12px', color: 'var(--text-3)', cursor: 'pointer', userSelect: 'none', listStyle: 'none' }}>✎ Edit raw CV text</summary>
+                              <div style={{ marginTop: '10px' }}><Field value={cvText} onChange={setCvText} placeholder="" rows={5} /></div>
+                            </details>
+                          )}
+                        </motion.div>
+                      )}
+                      {cvTab === 'text' && (
+                        <motion.div key="cv-text" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                          <Field value={cvText} onChange={setCvText} placeholder="Paste your CV text here — work history, skills, achievements, education…" rows={8} />
+                          <CVPreviewCard ctx={cvCtxParsed} parsing={parsingCv && cvText.trim().length >= 50} />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 )}
               </AnimatePresence>
