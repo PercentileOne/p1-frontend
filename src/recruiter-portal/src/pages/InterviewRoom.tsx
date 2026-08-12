@@ -641,6 +641,14 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setSessionAnswers(prev => [...prev, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }]);
     setCurrentScore(null); setCoachingMessage(null); setTypedAnswer('');
     logFlowEvent('QUESTION_COMPLETED', { questionId: q?.questionId, index: qIndex, passed: true });
+
+    // MCQ trigger — same check as nextQuestion
+    if (!mcqFiredRef.current && mcqQuestion && qIndex === mcqSlotRef.current) {
+      mcqFiredRef.current = true;
+      setMcqActive(true);
+      return;
+    }
+
     if (qIndex + 1 >= questions.length) {
       navigate(`/interview-summary/session-${Date.now()}`, { state: { answers: [...sessionAnswers, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }], cvCtx, jobCtx } });
     } else {
@@ -648,7 +656,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       setQIndex(next);
       askQuestion(next);
     }
-  }, [q, qIndex, questions.length, sessionAnswers, navigate, askQuestion, cvCtx, jobCtx]);
+  }, [q, qIndex, questions.length, sessionAnswers, navigate, askQuestion, cvCtx, jobCtx, mcqQuestion]);
 
   const submitAnswer = useCallback(async (text: string, meta?: TranscriptMeta, byVoice = false) => {
     if (!text.trim()) return;
