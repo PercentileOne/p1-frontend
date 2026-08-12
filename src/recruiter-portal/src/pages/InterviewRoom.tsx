@@ -495,7 +495,6 @@ export default function InterviewRoom() {
     introStartedRef.current = true;
     cancelSpeakRef.current?.();
     cancelSpeakRef.current = null;
-    if (consentToRecord) startRecording();
     setPhase('interviewer-intro');
     logFlowEvent('INTERVIEW_PHASE_STARTED', {
       questionCount: questions.length,
@@ -523,7 +522,7 @@ export default function InterviewRoom() {
         }, (a) => setTechAnalyser(a));
       }, (a) => setHrAnalyser(a));
     }, 600);
-  }, [askQuestion, effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage, startRecording, consentToRecord]);
+  }, [askQuestion, effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage]);
 
   const beginInterviewIntroRef = useRef(beginInterviewIntro);
   useEffect(() => { beginInterviewIntroRef.current = beginInterviewIntro; }, [beginInterviewIntro]);
@@ -544,8 +543,9 @@ export default function InterviewRoom() {
   useEffect(() => { startMikeRef.current = startMike; }, [startMike]);
 
   const startInterview = useCallback(() => {
+    if (consentToRecord) startRecording(); // fire share dialog before Mike speaks
     startMike();
-  }, [startMike]);
+  }, [startMike, startRecording, consentToRecord]);
 
   useEffect(() => {
     return () => { cancelSpeakRef.current?.(); };
@@ -770,8 +770,20 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
   // Show Sarah + James only after Mike has finished
   const showInterviewers = phase !== 'intro' && phase !== 'mike';
 
+  const roomRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) roomRef.current?.requestFullscreen();
+    else document.exitFullscreen();
+  };
+
   return (
-    <div style={{
+    <div ref={roomRef} style={{
       minHeight: '100vh', background: 'var(--bg)',
       fontFamily: '-apple-system,"Segoe UI",sans-serif',
       display: 'flex', flexDirection: 'column',
@@ -902,6 +914,19 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               ⏸ Pause
             </button>
           )}
+          {/* Fullscreen toggle */}
+          <button onClick={toggleFullscreen} title={isFullscreen ? 'Exit fullscreen' : 'Go fullscreen'}
+            style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: '8px', padding: '7px 10px', color: '#a78bfa', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }}>
+            {isFullscreen ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3"/>
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/>
+              </svg>
+            )}
+          </button>
           <button onClick={() => {
             cancelSpeakRef.current?.();
             uploadRecording(sessionAnswers);
