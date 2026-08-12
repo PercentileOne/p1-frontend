@@ -59,6 +59,7 @@ export default function InterviewPackStart() {
   const [jobTitle, setJobTitle] = useState(incoming.jobTitle ?? '');
   const [cvText, setCvText] = useState('');
   const [cvFileName, setCvFileName] = useState('');
+  const [cvInputTab, setCvInputTab] = useState<'upload' | 'text'>('upload');
   const [preferredName, setPreferredName] = useState('');
   const [jobSpec, setJobSpec] = useState(incoming.jobSpec ?? '');
   const [jobSpecFileName, setJobSpecFileName] = useState('');
@@ -258,36 +259,47 @@ export default function InterviewPackStart() {
                   />
                 </div>
 
-                <FileUpload
-                  label="CV"
-                  onExtracted={(text, name) => {
-                    setCvText(text);
-                    setCvFileName(name);
-                    logFlowEvent('CV_UPLOADED', { fileName: name, charCount: text.length });
-                  }}
-                />
-                {!cvFileName && (
+                {/* CV input tabs */}
+                <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '16px' }}>
+                  {(['upload', 'text'] as const).map(t => (
+                    <button key={t} onClick={() => setCvInputTab(t)} style={{
+                      padding: '7px 16px', border: 'none', background: 'none', cursor: 'pointer',
+                      fontSize: '12px', fontWeight: 700, fontFamily: 'inherit',
+                      color: cvInputTab === t ? 'var(--blue)' : 'var(--text-3)',
+                      borderBottom: cvInputTab === t ? '2px solid var(--blue)' : '2px solid transparent',
+                      marginBottom: '-1px', transition: 'all 0.15s',
+                    }}>
+                      {t === 'upload' ? 'CV Upload' : 'CV Text'}
+                    </button>
+                  ))}
+                </div>
+                {cvInputTab === 'upload' && (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '16px 0' }}>
-                      <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-                      <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>or paste below</span>
-                      <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-                    </div>
-                    <textarea
-                      value={cvText}
-                      onChange={e => { setCvText(e.target.value); setCvFileName(''); }}
-                      placeholder="Paste your CV / résumé text here — skills, experience, achievements…"
-                      rows={6}
-                      style={{
-                        width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
-                        borderRadius: '10px', padding: '14px', color: 'var(--text)', fontSize: '13px',
-                        lineHeight: 1.6, resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+                    <FileUpload
+                      label="CV"
+                      onExtracted={(text, name) => {
+                        setCvText(text);
+                        setCvFileName(name);
+                        logFlowEvent('CV_UPLOADED', { fileName: name, charCount: text.length });
                       }}
                     />
+                    {cvFileName && (
+                      <div style={{ marginTop: '8px', fontSize: '12px', color: '#34D399' }}>✓ {cvFileName} loaded</div>
+                    )}
                   </>
                 )}
-                {cvFileName && (
-                  <div style={{ marginTop: '8px', fontSize: '12px', color: '#34D399' }}>✓ {cvFileName} loaded</div>
+                {cvInputTab === 'text' && (
+                  <textarea
+                    value={cvText}
+                    onChange={e => { setCvText(e.target.value); setCvFileName(''); }}
+                    placeholder="Paste your CV / résumé text here — skills, experience, achievements…"
+                    rows={8}
+                    style={{
+                      width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+                      borderRadius: '10px', padding: '14px', color: 'var(--text)', fontSize: '13px',
+                      lineHeight: 1.6, resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+                    }}
+                  />
                 )}
               </>
             )}
