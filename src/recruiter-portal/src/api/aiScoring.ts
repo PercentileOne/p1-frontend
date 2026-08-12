@@ -759,7 +759,9 @@ CRITICAL RULES — READ CAREFULLY:
 5. All spoken scripts (Mike, Sarah, James) must sound natural when read aloud. No bullet points, no lists, no asterisks.
 6. Return ONLY valid JSON — no markdown, no explanation, no code fences.`;
 
-  const userPrompt = `Generate a complete interview session for the job specification below.
+  const sessionSeed = Math.floor(Math.random() * 9000) + 1000; // forces fresh generation each session
+
+  const userPrompt = `Generate a complete interview session for the job specification below. Session seed: ${sessionSeed} — use this to vary your question selection so no two sessions have the same questions.
 ${cvSection ? 'A candidate CV is also provided — use it to personalise questions and intros.' : 'No CV provided — base questions purely on the role requirements.'}
 
 ═══ SESSION CONTEXT ═══${jobTitleLine}${difficultyLine}${preferredNameLine}
@@ -806,8 +808,10 @@ Return this exact JSON:
 }
 
 Generate exactly 10 questions total:
-- 8 role/competency questions (source: "Role") — based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover different competencies
+- 8 role/competency questions (source: "Role") — based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover DIFFERENT competencies each time — do NOT reuse the same question themes across sessions. Use the session seed to pick a fresh angle on the role. Avoid generic questions like "tell me about yourself" or "describe a challenge" — make them specific to this exact role and company.
 - 2 HR/culture questions (source: "HR") — the last one must ask what the candidate knows about the company and why this role appeals to them specifically
+
+CRITICAL: The JSON must contain "mcqQuestions" (plural, an array of exactly 2 objects) — NOT "mcqQuestion" (singular). This is mandatory.
 
 Also generate TWO multiple-choice bonus questions in the "mcqQuestions" array — they must be on DIFFERENT aspects of the role:
 - Same subject area as the role, Hard difficulty
@@ -833,11 +837,22 @@ Also generate TWO multiple-choice bonus questions in the "mcqQuestions" array �
       correctIndex: number;
       explanation: string;
     }>;
+    mcqQuestion?: { // fallback: AI sometimes reverts to singular key
+      questionText: string;
+      options: string[];
+      correctIndex: number;
+      explanation: string;
+    };
   };
 
   const result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.7);
 
-  const mcqQuestions: MCQQuestion[] = (result.mcqQuestions ?? [])
+  // Accept both mcqQuestions (correct) and mcqQuestion (AI hallucination of old key)
+  const rawMcqs = result.mcqQuestions?.length
+    ? result.mcqQuestions
+    : result.mcqQuestion ? [result.mcqQuestion] : [];
+
+  const mcqQuestions: MCQQuestion[] = rawMcqs
     .filter(q => q?.questionText && q?.options?.length === 4)
     .map(q => ({ questionText: q.questionText, options: q.options, correctIndex: q.correctIndex ?? 0, explanation: q.explanation ?? '' }));
 
