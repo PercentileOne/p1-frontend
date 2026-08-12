@@ -553,7 +553,6 @@ ${questionsHtml}
   const TABS: { id: Tab; label: string }[] = [
     { id: 'interview', label: '🎤 Interview Room' },
     { id: 'learn', label: '📚 Learn' },
-    { id: 'feedback', label: '✉ Send Feedback to Candidate' },
     { id: 'coming-soon', label: '⚡ Coming Soon' },
   ];
 
