@@ -671,7 +671,7 @@ export default function InterviewSummary() {
   const [mikeActive, setMikeActive] = useState(false);
 
   const buildMikeScript = useCallback(() => {
-    const name = cvCtx?.name?.split(' ')[0] ?? 'there';
+    const name = cvCtx?.firstName ?? 'there';
     const pct = Math.round(overall * 100);
     const strongLabel = strengths[0] ?? null;
     const weakLabel = improvements[0] ?? null;

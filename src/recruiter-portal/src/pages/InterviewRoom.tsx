@@ -647,6 +647,19 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     }
   }, [askQuestion, qIndex]);
 
+  const closeInterview = useCallback((answers: SessionAnswer[], mcqRes: typeof mcqResults, bonusPts: number) => {
+    const name = resolvedPreferredName ? `, ${resolvedPreferredName}` : '';
+    const closingLine = `Well${name}, that brings us to the end of your interview — thank you so much for your time today. I'm going to have a quick word with James, and then your agent Mike will be in touch shortly with some feedback. In the meantime, you can watch your full interview replay on the next screen, and retake it anytime you like. Best of luck!`;
+    cancelSpeakRef.current?.();
+    setHrState('speaking');
+    cancelSpeakRef.current = speak(closingLine, 'hr', () => {
+      setHrState('idle');
+      navigate(`/interview-summary/session-${Date.now()}`, {
+        state: { answers, cvCtx, jobCtx, mcqResults: mcqRes, mcqQuestions, mcqBonusPoints: bonusPts, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current },
+      });
+    }, (a) => setHrAnalyser(a));
+  }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl]);
+
   const nextQuestion = useCallback(() => {
     setCurrentScore(null);
     setTypedAnswer('');
@@ -679,19 +692,6 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       askQuestion(next);
     }
   }, [qIndex, questions.length, sessionAnswers, askQuestion, q, uploadRecording, mcqQuestions, mcqResults, mcqBonusPoints, mcqActive, closeInterview]);
-
-  const closeInterview = useCallback((answers: SessionAnswer[], mcqRes: typeof mcqResults, bonusPts: number) => {
-    const name = resolvedPreferredName ? `, ${resolvedPreferredName}` : '';
-    const closingLine = `Well${name}, that brings us to the end of your interview — thank you so much for your time today. I'm going to have a quick word with James, and then your agent Mike will be in touch shortly with some feedback. In the meantime, you can watch your full interview replay on the next screen, and retake it anytime you like. Best of luck!`;
-    cancelSpeakRef.current?.();
-    setHrState('speaking');
-    cancelSpeakRef.current = speak(closingLine, 'hr', () => {
-      setHrState('idle');
-      navigate(`/interview-summary/session-${Date.now()}`, {
-        state: { answers, cvCtx, jobCtx, mcqResults: mcqRes, mcqQuestions, mcqBonusPoints: bonusPts, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current },
-      });
-    }, (a) => setHrAnalyser(a));
-  }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl]);
 
   const resumeAfterMCQ = useCallback((bonusEarned: boolean, selectedIndex: number) => {
     setMcqActive(false);
