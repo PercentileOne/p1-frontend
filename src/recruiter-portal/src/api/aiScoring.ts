@@ -738,7 +738,8 @@ export async function sessionPrepareClient(
     : 'Standard — well-rounded questions to build confidence and preparation';
 
   const jobTitleLine = jobTitle ? `\nJob Title (explicitly confirmed by candidate): ${jobTitle}` : '';
-  const difficultyLine = selectedDifficulty ? `\nSession Difficulty: ${difficultyLabel}` : '';
+  const difficultyLevel = selectedDifficulty || 'Standard';
+  const difficultyLine = `\nSession Difficulty: ${difficultyLevel} (${difficultyLabel})`;
   const preferredNameLine = preferredName?.trim()
     ? `\nCandidate Name: "${preferredName.trim()}" — explicitly set by the candidate. Use this name in ALL spoken scripts (Mike, Sarah, James). Do NOT use any other name.`
     : `\nCandidate Name: NOT explicitly set — you MUST extract the candidate's first name from the CV and use it in ALL spoken scripts (Mike, Sarah, James). NEVER say "there" or omit the name when a CV is provided.`;
@@ -776,7 +777,7 @@ Return this exact JSON:
   "specialistTitle": "James's interviewer title — role-appropriate, e.g. 'Restaurant Manager' for hospitality, 'Ward Sister' for nursing, 'Site Foreman' for construction, 'Finance Director' for accounting. NEVER use 'Technical Lead' unless the role is genuinely technical.",
   "companyFacts": ["3 specific facts about this company or role the candidate should know before walking in"],
   "sarahIntro": "Sarah's spoken welcome, 50–75 words. HR Director, warm and professional. Address the candidate by their Preferred Name if set, otherwise extract their first name from the CV, otherwise use no name. Introduces herself by name, briefly mentions James will be joining her, then explains the controls: click Record to start answering, click Stop when finished, use Repeat to hear the question again, and Pause if they need a moment. Sets a positive tone and tells the candidate to speak naturally and take their time.",
-  "jamesIntro": "James's spoken intro, 30–45 words. Direct and role-focused. Address the candidate by their Preferred Name if set — if not set, you MUST extract their first name from the CV and use it — NEVER say 'there' or omit the name when a CV is provided. Introduces himself, then naturally acknowledges the session difficulty and language in a single sentence — for Standard say something like 'You've gone with Standard difficulty today, so we'll build up steadily'; for Pro say 'You've chosen Pro level, so expect some searching questions'; for Expert say 'You've opted for Expert level — these questions will challenge even seasoned professionals'. If the language is not English, also acknowledge it warmly e.g. 'and we'll be conducting this in French today'. Then briefly states what he'll be focusing on.",
+  "jamesIntro": "James's spoken intro, 30–45 words. Direct and role-focused. Address the candidate by their Preferred Name (see Session Context above). Introduces himself, then MUST reference the exact Session Difficulty from the Session Context — use the difficulty level name naturally in speech: if Standard say something like 'You've gone with Standard difficulty, so we'll work through this steadily'; if Pro say 'You've chosen Pro level, so expect some probing questions'; if Expert say 'You've opted for Expert level — these questions will really test your depth of knowledge'. If the session language is not English, also mention it e.g. 'and we'll be doing this in French'. Then briefly states what he will be focusing on.",
   "mcqQuestions": [
     {
       "questionText": "First hard multiple-choice question directly relevant to this role",
