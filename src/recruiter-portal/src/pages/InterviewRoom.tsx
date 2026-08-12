@@ -285,18 +285,61 @@ export default function InterviewRoom() {
     try {
       const mimeType = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'audio/webm']
         .find(t => MediaRecorder.isTypeSupported(t)) ?? '';
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      recordingStreamRef.current = stream;
+
+      // Capture the full browser tab — video shows the entire interview room
+      // (Sarah, James, candidate webcam, question cards, MCQ overlay, coaching)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tabStream: MediaStream = await (navigator.mediaDevices as any).getDisplayMedia({
+        video: { displaySurface: 'browser', frameRate: 30 },
+        audio: true,           // captures ElevenLabs voices playing in the tab
+        preferCurrentTab: true,
+      });
+
+      // Separately capture mic so candidate answers are recorded even if
+      // getDisplayMedia audio doesn't include the mic (browser-dependent)
+      let micStream: MediaStream | null = null;
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      } catch { /* mic denied — tab audio only */ }
+
+      // Mix tab audio + mic audio into one track via AudioContext
+      const audioCtx = new AudioContext();
+      const dest = audioCtx.createMediaStreamDestination();
+
+      const tabAudioTracks = tabStream.getAudioTracks();
+      if (tabAudioTracks.length > 0) {
+        const tabSource = audioCtx.createMediaStreamSource(new MediaStream(tabAudioTracks));
+        tabSource.connect(dest);
+      }
+      if (micStream) {
+        const micSource = audioCtx.createMediaStreamSource(micStream);
+        micSource.connect(dest);
+      }
+
+      // Build composite stream: tab video + mixed audio
+      const compositeStream = new MediaStream([
+        ...tabStream.getVideoTracks(),
+        ...dest.stream.getAudioTracks(),
+      ]);
+
+      recordingStreamRef.current = compositeStream;
       recordingChunksRef.current = [];
       chapterMarkersRef.current = [];
       recordingStartTimeRef.current = Date.now();
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+
+      const recorder = new MediaRecorder(compositeStream, mimeType ? { mimeType } : undefined);
       mediaRecorderRef.current = recorder;
       recorder.ondataavailable = e => { if (e.data.size > 0) recordingChunksRef.current.push(e.data); };
       recorder.start(1000);
       setIsRecording(true);
+
+      // Stop mic stream when tab stream ends (user stops sharing)
+      tabStream.getVideoTracks()[0]?.addEventListener('ended', () => {
+        micStream?.getTracks().forEach(t => t.stop());
+        audioCtx.close();
+      });
     } catch {
-      // camera/mic denied — recording unavailable, interview continues
+      // User dismissed share dialog or permission denied — interview continues unrecorded
     }
   }, []);
 
