@@ -272,7 +272,7 @@ export default function InterviewRoom() {
   const recordingChunksRef = useRef<Blob[]>([]);
   const recordingStreamRef = useRef<MediaStream | null>(null);
   const recordingStartTimeRef = useRef<number>(0);
-  const chapterMarkersRef = useRef<{ questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[]>([]);
+  const chapterMarkersRef = useRef<{ questionIndex: number; questionText: string; competency: string; offsetSeconds: number; isMcq?: boolean; mcqOrdinal?: number }[]>([]);
 
   const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net';
 
@@ -672,6 +672,16 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     if (!mcqActive && MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
       mcqFiredCountRef.current += 1;
       cancelSpeakRef.current?.();
+      if (recordingStartTimeRef.current > 0) {
+        chapterMarkersRef.current.push({
+          questionIndex: -1,
+          questionText: mcqQuestions[nextMcqIdx].questionText,
+          competency: 'bonus',
+          offsetSeconds: Math.round((Date.now() - recordingStartTimeRef.current) / 1000),
+          isMcq: true,
+          mcqOrdinal: nextMcqIdx + 1,
+        });
+      }
       setActiveMcqOrdinal(nextMcqIdx === 0 ? 'first' : 'second');
       setActiveMcqQuestion(mcqQuestions[nextMcqIdx]);
       setMcqActive(true);
@@ -722,6 +732,16 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     if (!mcqActive && MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
       mcqFiredCountRef.current += 1;
       cancelSpeakRef.current?.();
+      if (recordingStartTimeRef.current > 0) {
+        chapterMarkersRef.current.push({
+          questionIndex: -1,
+          questionText: mcqQuestions[nextMcqIdx].questionText,
+          competency: 'bonus',
+          offsetSeconds: Math.round((Date.now() - recordingStartTimeRef.current) / 1000),
+          isMcq: true,
+          mcqOrdinal: nextMcqIdx + 1,
+        });
+      }
       setActiveMcqOrdinal(nextMcqIdx === 0 ? 'first' : 'second');
       setActiveMcqQuestion(mcqQuestions[nextMcqIdx]);
       setMcqActive(true);

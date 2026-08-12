@@ -455,6 +455,8 @@ interface Chapter {
   questionText: string;
   competency: string;
   offsetSeconds: number;
+  isMcq?: boolean;
+  mcqOrdinal?: number;
 }
 
 function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapter[] }) {
@@ -573,8 +575,8 @@ function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapt
           {chapters.map((c, i) => (
             <div key={i} style={{
               position: 'absolute', top: '-2px', left: `${(c.offsetSeconds / duration) * 100}%`,
-              width: '2px', height: '8px', background: '#a78bfa', borderRadius: '1px',
-              transform: 'translateX(-50%)',
+              width: '2px', height: '8px', borderRadius: '1px', transform: 'translateX(-50%)',
+              background: c.isMcq ? '#f59e0b' : '#a78bfa',
             }} />
           ))}
         </div>
@@ -595,33 +597,42 @@ function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapt
           <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '4px' }}>
             Jump to question
           </div>
-          {chapters.map((c, i) => (
-            <button
-              key={i}
-              onClick={() => jumpTo(c.offsetSeconds)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '10px',
-                background: activeChapter === i ? 'rgba(79,142,247,0.10)' : 'transparent',
-                border: activeChapter === i ? '1px solid rgba(79,142,247,0.25)' : '1px solid transparent',
-                borderRadius: '8px', padding: '8px 10px', cursor: 'pointer',
-                textAlign: 'left', fontFamily: 'inherit', transition: 'all 0.15s',
-              }}
-            >
-              <span style={{ fontSize: '11px', fontWeight: 700, color: activeChapter === i ? 'var(--blue)' : 'var(--text-3)', minWidth: '38px', fontVariantNumeric: 'tabular-nums' }}>
-                {fmt(c.offsetSeconds)}
-              </span>
-              <span style={{ fontSize: '11px', fontWeight: 600, color: activeChapter === i ? 'var(--blue)' : '#a78bfa', background: activeChapter === i ? 'rgba(79,142,247,0.12)' : 'rgba(167,139,250,0.08)', borderRadius: '4px', padding: '2px 7px', flexShrink: 0 }}>
-                Q{c.questionIndex + 1}
-              </span>
-              <span style={{ fontSize: '12px', color: activeChapter === i ? 'var(--text)' : 'var(--text-2)', lineHeight: 1.4, flex: 1 }}>
-                {c.questionText}
-              </span>
-              {activeChapter === i && (
-                <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}
-                  style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--blue)', flexShrink: 0 }} />
-              )}
-            </button>
-          ))}
+          {chapters.map((c, i) => {
+            const isMcq = c.isMcq;
+            const isActive = activeChapter === i;
+            const activeBg = isMcq ? 'rgba(245,158,11,0.10)' : 'rgba(79,142,247,0.10)';
+            const activeBorder = isMcq ? '1px solid rgba(245,158,11,0.30)' : '1px solid rgba(79,142,247,0.25)';
+            const badgeColor = isMcq ? '#f59e0b' : (isActive ? 'var(--blue)' : '#a78bfa');
+            const badgeBg = isMcq ? 'rgba(245,158,11,0.12)' : (isActive ? 'rgba(79,142,247,0.12)' : 'rgba(167,139,250,0.08)');
+            const dotColor = isMcq ? '#f59e0b' : 'var(--blue)';
+            return (
+              <button
+                key={i}
+                onClick={() => jumpTo(c.offsetSeconds)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  background: isActive ? activeBg : 'transparent',
+                  border: isActive ? activeBorder : '1px solid transparent',
+                  borderRadius: '8px', padding: '8px 10px', cursor: 'pointer',
+                  textAlign: 'left', fontFamily: 'inherit', transition: 'all 0.15s',
+                }}
+              >
+                <span style={{ fontSize: '11px', fontWeight: 700, color: isActive ? (isMcq ? '#f59e0b' : 'var(--blue)') : 'var(--text-3)', minWidth: '38px', fontVariantNumeric: 'tabular-nums' }}>
+                  {fmt(c.offsetSeconds)}
+                </span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: badgeColor, background: badgeBg, borderRadius: '4px', padding: '2px 7px', flexShrink: 0 }}>
+                  {isMcq ? `⚡ B${c.mcqOrdinal}` : `Q${c.questionIndex + 1}`}
+                </span>
+                <span style={{ fontSize: '12px', color: isActive ? 'var(--text)' : 'var(--text-2)', lineHeight: 1.4, flex: 1 }}>
+                  {c.questionText}
+                </span>
+                {isActive && (
+                  <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}
+                    style={{ width: '6px', height: '6px', borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
