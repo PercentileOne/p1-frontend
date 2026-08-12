@@ -1829,7 +1829,8 @@
     // Allow nav-logo, nav links, language selector, hamburger
     if (btn.closest('.nav-logo') || btn.closest('.nav-links') ||
         btn.closest('.nav-mobile-menu') || btn.closest('#langMenu') ||
-        btn.classList.contains('nav-burger')) return;
+        btn.classList.contains('nav-burger') ||
+        btn.id === 'notif-pause-btn') return;
     // Allow specific nav anchors — block everything else including buttons and mailto: links
     var href = btn.getAttribute('href');
     if (href && ALLOW_HREFS.indexOf(href) !== -1) return;
