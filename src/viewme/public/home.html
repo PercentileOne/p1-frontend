@@ -638,10 +638,7 @@
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;">
             <div id="notif-dots" style="display:flex;gap:5px;"></div>
-            <div style="display:flex;gap:6px;">
-              <button onclick="notifPrev()" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:50%;width:28px;height:28px;color:var(--green);cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">&#8249;</button>
-              <button onclick="notifNext()" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:50%;width:28px;height:28px;color:var(--green);cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">&#8250;</button>
-            </div>
+            <button id="notif-pause-btn" onclick="notifTogglePause()" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:50%;width:28px;height:28px;color:var(--green);cursor:pointer;font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;" title="Pause / Play">&#9646;&#9646;</button>
           </div>
         </div>
       </div>
@@ -1792,9 +1789,10 @@
       }
       startTimer();
     }
+    var paused = false;
     function startTimer() {
       clearInterval(timer);
-      timer = setInterval(function(){ go((cur + 1) % slides.length); }, 4000);
+      if (!paused) timer = setInterval(function(){ go((cur + 1) % slides.length); }, 7500);
     }
     function go(idx) {
       slides[cur].style.display = 'none';
@@ -1807,6 +1805,12 @@
     window.notifGo  = go;
     window.notifNext = function() { go((cur + 1) % slides.length); };
     window.notifPrev = function() { go((cur - 1 + slides.length) % slides.length); };
+    window.notifTogglePause = function() {
+      paused = !paused;
+      var btn = document.getElementById('notif-pause-btn');
+      if (paused) { clearInterval(timer); if (btn) btn.innerHTML = '&#9654;'; }
+      else { startTimer(); if (btn) btn.innerHTML = '&#9646;&#9646;'; }
+    };
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init);
     } else {
