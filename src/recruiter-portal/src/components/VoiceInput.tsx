@@ -241,27 +241,34 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-      {/* Whisper badge */}
-      {whisperConfigured && (
-        <div style={{ display: 'inline-flex', alignSelf: 'flex-start', alignItems: 'center', gap: '6px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: '6px', padding: '4px 10px' }}>
-          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#34D399' }} />
-          <span style={{ fontSize: '11px', fontWeight: 700, color: '#34D399', letterSpacing: '0.04em' }}>Whisper STT active</span>
-        </div>
+      {/* Your turn prompt — shown only when idle and ready to answer */}
+      {micState === 'idle' && (
+        <motion.div
+          animate={{ opacity: [0.7, 1, 0.7] }}
+          transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+          style={{ display: 'inline-flex', alignSelf: 'flex-start', alignItems: 'center', gap: '8px', background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.25)', borderRadius: '8px', padding: '6px 12px' }}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" fill="#4F8EF7"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M9 22h6" stroke="#4F8EF7" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+          <span style={{ fontSize: '12px', fontWeight: 700, color: '#4F8EF7', letterSpacing: '0.02em' }}>Your turn — click Record to answer, then Stop when finished</span>
+        </motion.div>
       )}
 
       {/* Waveform + mic button row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div style={{ position: 'relative', flexShrink: 0, width: '56px', height: '56px' }}>
-          {highlightRecord && !isListening && (
+          {!isListening && !isProcessing && (
             <>
               <motion.div
-                animate={{ scale: [1, 1.8], opacity: [0.7, 0] }}
-                transition={{ repeat: Infinity, duration: 1.2, ease: 'easeOut' }}
+                animate={{ scale: [1, 1.8], opacity: [0.6, 0] }}
+                transition={{ repeat: Infinity, duration: 1.4, ease: 'easeOut' }}
                 style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(79,142,247,0.5)', pointerEvents: 'none' }}
               />
               <motion.div
-                animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
-                transition={{ repeat: Infinity, duration: 1.2, delay: 0.3, ease: 'easeOut' }}
+                animate={{ scale: [1, 1.5], opacity: [0.4, 0] }}
+                transition={{ repeat: Infinity, duration: 1.4, delay: 0.35, ease: 'easeOut' }}
                 style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(79,142,247,0.35)', pointerEvents: 'none' }}
               />
             </>
@@ -331,7 +338,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
             )}
             {micState === 'idle' && (
               <motion.div key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                style={{ fontSize: '12px', color: 'var(--text-3)' }}>Speak or type</motion.div>
+                style={{ fontSize: '12px', color: 'var(--text-3)' }}>Ready</motion.div>
             )}
           </AnimatePresence>
         </div>
