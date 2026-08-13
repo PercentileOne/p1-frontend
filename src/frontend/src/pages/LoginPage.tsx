@@ -142,7 +142,7 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.55, duration: 0.7, ease: "easeOut" }}
         >
-          Percentile.One
+          Explain<span style={{ color: "#34D399" }}>.global</span>
         </motion.p>
 
         {/* Tagline */}
@@ -154,10 +154,10 @@ export default function LoginPage() {
           transition={{ delay: 1.8, duration: 0.8, ease: "easeOut" }}
         >
           <h1 className="text-xl font-semibold text-white tracking-tight leading-snug">
-            Welcome to the future of Success.
+            Your AI interview coach.
           </h1>
           <p className="text-sm text-slate-500 mt-1.5 leading-snug">
-            Built for people who take Success seriously.
+            Sign in to your candidate portal.
           </p>
         </motion.div>
 
