@@ -394,7 +394,10 @@ export default function ProductHome() {
           <li><a href="#ph-eco">Ecosystem</a></li>
           <li><a href="#ph-road">Roadmap</a></li>
         </ul>
-        <a href="/register" className="ph-nav-cta">Get Started →</a>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <a href="/login" style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.6)", textDecoration: "none", padding: "8px 14px" }}>Log in</a>
+          <a href="/register" className="ph-nav-cta">Get Started →</a>
+        </div>
       </nav>
 
       {/* HERO — Interview Chair two-column */}
