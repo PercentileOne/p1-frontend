@@ -652,6 +652,7 @@ export default function InterviewSummary() {
   const jobCtx: JobSpecContext | undefined = location.state?.jobCtx;
   const mcqQuestions: Array<{ questionText: string; options: string[]; correctIndex: number; explanation: string }> = location.state?.mcqQuestions ?? [];
   const mcqResults: Array<{ correct: boolean; selectedIndex: number; questionIndex: number }> = location.state?.mcqResults ?? [];
+  const mcqBonusPoints: number = location.state?.mcqBonusPoints ?? 0;
   const playbackUrl: string | null = location.state?.playbackUrl ?? null;
   const chapters: { questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[] = location.state?.chapters ?? [];
   const interviewId: string | undefined = location.state?.interviewId;
@@ -953,6 +954,9 @@ ${questionsHtml}
               <div style={{ textAlign: 'center', flexShrink: 0 }}>
                 <div style={{ fontSize: '56px', fontWeight: 900, color: scoreColor(overall), letterSpacing: '-0.04em', lineHeight: 1 }}>{Math.round(overall * 100)}</div>
                 <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>Overall Score</div>
+                {mcqBonusPoints > 0 && (
+                  <div style={{ fontSize: '12px', color: '#34D399', fontWeight: 700, marginTop: '4px' }}>+{mcqBonusPoints} MCQ bonus</div>
+                )}
               </div>
               <div style={{ flex: 1 }}>
                 {strengths.length > 0 && (

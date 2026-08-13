@@ -27,9 +27,9 @@ const PROFILES = {
     bg: 'linear-gradient(160deg, #1a1040 0%, #0f0c29 100%)',
   },
   technical: {
-    name: 'James Okafor',
+    name: 'James Jacobs',
     title: 'Hiring Manager',
-    initials: 'JO',
+    initials: 'JJ',
     photo: '/images/james.png',
     gradient: 'linear-gradient(135deg, #1B3A6B 0%, #2563eb 100%)',
     ring: '#4F8EF7',

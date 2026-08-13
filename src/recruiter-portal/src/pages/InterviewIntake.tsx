@@ -919,7 +919,7 @@ export default function InterviewIntake() {
               <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '40px' }}>
                 {[
                   { initials: 'SM', name: 'Sarah Mitchell', role: 'HR Director', gradient: 'linear-gradient(135deg,#667eea,#764ba2)' },
-                  { initials: 'JO', name: 'James Okafor', role: preparingSpecialistTitle, gradient: 'linear-gradient(135deg,#1B3A6B,#2563eb)' },
+                  { initials: 'JJ', name: 'James Jacobs', role: preparingSpecialistTitle, gradient: 'linear-gradient(135deg,#1B3A6B,#2563eb)' },
                 ].map(p => (
                   <motion.div key={p.name} animate={{ scale: [1, 1.04, 1] }} transition={{ repeat: Infinity, duration: 3, delay: p.name === 'Sarah Mitchell' ? 0 : 1.5 }}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>

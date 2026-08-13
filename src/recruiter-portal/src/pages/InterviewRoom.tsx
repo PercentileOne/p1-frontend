@@ -250,6 +250,8 @@ export default function InterviewRoom() {
   const [activeMcqQuestion, setActiveMcqQuestion] = useState<MCQQuestion | null>(null);
   const [activeMcqOrdinal, setActiveMcqOrdinal] = useState<'first' | 'second'>('first');
 
+  const passInProgressRef = useRef(false); // prevents double-firing Pass button
+
   // Session-prep readiness — Mike waits for AI to return (max 8 s) before speaking
   const sessionReadyRef = useRef(false);
   const sessionWaitersRef = useRef<Array<() => void>>([]);
@@ -543,8 +545,10 @@ export default function InterviewRoom() {
 
   useEffect(() => { startMikeRef.current = startMike; }, [startMike]);
 
-  const startInterview = useCallback(() => {
-    if (consentToRecord) startRecording(); // fire share dialog before Mike speaks
+  const startInterview = useCallback(async () => {
+    if (consentToRecord) {
+      await startRecording(); // wait for browser share dialog before Mike speaks
+    }
     startMike();
   }, [startMike, startRecording, consentToRecord]);
 
@@ -715,6 +719,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
   }, [qIndex, questions.length, sessionAnswers, askQuestion, uploadRecording, mcqResults, mcqQuestions, mcqBonusPoints, closeInterview]);
 
   const handlePass = useCallback(() => {
+    if (passInProgressRef.current) return;
+    passInProgressRef.current = true;
     const thinkTimeMs = thinkStartRef.current > 0 ? Date.now() - thinkStartRef.current : undefined;
     thinkStartRef.current = 0;
     const passScore: ScoreResponse = {
@@ -754,6 +760,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       closeInterview(passedAnswers, mcqResults, mcqBonusPoints);
     } else {
       const next = qIndex + 1;
+      passInProgressRef.current = false;
       setQIndex(next);
       askQuestion(next);
     }

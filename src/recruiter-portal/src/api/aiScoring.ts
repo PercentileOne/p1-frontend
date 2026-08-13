@@ -331,7 +331,7 @@ export async function generateIntros(
 ): Promise<{ sarahIntro: string; jamesIntro: string }> {
   const systemPrompt = `You are writing natural, varied spoken dialogue for two AI interviewers.
 Sarah Mitchell is the HR Director — warm, professional, observant about people and culture.
-James Okafor is the specialist interviewer — direct, curious, focused on role competencies and how the candidate performs in practice.
+James Jacobs is the specialist interviewer — direct, curious, focused on role competencies and how the candidate performs in practice.
 Each session should sound slightly different — vary sentence structure, word choice, and what details they pick up on.
 
 STRICT MODE — ZERO HALLUCINATION POLICY:
@@ -759,9 +759,9 @@ CRITICAL RULES — READ CAREFULLY:
 5. All spoken scripts (Mike, Sarah, James) must sound natural when read aloud. No bullet points, no lists, no asterisks.
 6. Return ONLY valid JSON — no markdown, no explanation, no code fences.`;
 
-  const sessionSeed = Math.floor(Math.random() * 9000) + 1000; // forces fresh generation each session
+  const sessionSeed = `${Date.now()}-${crypto.randomUUID()}`; // unique per session — never reuse
 
-  const userPrompt = `Generate a complete interview session for the job specification below. Session seed: ${sessionSeed} — use this to vary your question selection so no two sessions have the same questions.
+  const userPrompt = `Generate a complete interview session for the job specification below. Session ID: ${sessionSeed} — this is unique to this session. You MUST generate completely fresh questions every time. Never repeat or reuse questions from any prior generation. Vary question wording, angle, and which competencies you probe.
 ${cvSection ? 'A candidate CV is also provided — use it to personalise questions and intros.' : 'No CV provided — base questions purely on the role requirements.'}
 
 ═══ SESSION CONTEXT ═══${jobTitleLine}${difficultyLine}${preferredNameLine}
@@ -784,13 +784,13 @@ Return this exact JSON:
     {
       "questionText": "First hard multiple-choice question directly relevant to this role",
       "options": ["A. first option", "B. second option", "C. third option", "D. fourth option"],
-      "correctIndex": 0,
+      "correctIndex": 2,
       "explanation": "One clear sentence explaining why the correct answer is right"
     },
     {
       "questionText": "Second hard multiple-choice question on a different aspect of this role",
       "options": ["A. first option", "B. second option", "C. third option", "D. fourth option"],
-      "correctIndex": 0,
+      "correctIndex": 1,
       "explanation": "One clear sentence explaining why the correct answer is right"
     }
   ],
@@ -816,8 +816,9 @@ CRITICAL: The JSON must contain "mcqQuestions" (plural, an array of exactly 2 ob
 Also generate TWO multiple-choice bonus questions in the "mcqQuestions" array — they must be on DIFFERENT aspects of the role:
 - Same subject area as the role, Hard difficulty
 - 4 options each (prefix each: "A. ", "B. ", "C. ", "D. ") — only one correct per question
-- correctIndex: 0-based index of the correct answer
-- explanation: one clear sentence explaining why the correct answer is right`;
+- correctIndex: 0-based index of the correct answer — MUST vary between questions, NEVER always 0. Choose different values (0, 1, 2, or 3) for each question based on where the correct answer actually falls in your options list.
+- explanation: one clear sentence explaining why the correct answer is right
+IMPORTANT: The two MCQ questions and ALL interview questions MUST be completely different every single session. Never repeat questions from any previous generation. Use the session seed above to vary your selection.`;
 
   type RawResult = {
     language: string;
@@ -845,7 +846,7 @@ Also generate TWO multiple-choice bonus questions in the "mcqQuestions" array �
     };
   };
 
-  const result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.7);
+  const result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
 
   // Accept both mcqQuestions (correct) and mcqQuestion (AI hallucination of old key)
   const rawMcqs = result.mcqQuestions?.length

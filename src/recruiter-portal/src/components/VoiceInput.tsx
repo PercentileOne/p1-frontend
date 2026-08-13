@@ -209,6 +209,10 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
 
       // Always fire onTranscript — use fallback text if Whisper gave nothing
       const finalText = text || fallbackText;
+      setInterim('');
+      interimRef.current = '';
+      chunksRef.current = [];
+      setMicState('idle');
       if (finalText) {
         const meta: TranscriptMeta = {
           confidence: text ? confidence : 0.65,
@@ -218,10 +222,6 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
         };
         onTranscript(finalText, meta);
       }
-      setInterim('');
-      interimRef.current = '';
-      chunksRef.current = [];
-      setMicState('idle');
     };
 
     finish();
