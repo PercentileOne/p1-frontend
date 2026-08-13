@@ -550,35 +550,59 @@
   .mob-feat-icon { width:32px;height:32px;border-radius:8px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:1px; }
   .mob-feat-body strong { display:block;font-size:14px;font-weight:700;color:#F0F4FF;margin-bottom:2px; }
   .mob-feat-body span { font-size:13px;color:rgba(240,244,255,.55);line-height:1.55; }
-  /* iPhone frame — matches Apple product render style */
+  /* iPhone frame — titanium, matches Apple product render */
   .iphone17 {
     width:270px;height:560px;
     border-radius:46px;
-    background:#0a0a0a;
+    /* Titanium: dark with subtle warm-grey gradient around the band */
+    background:linear-gradient(160deg,#2e2e2e 0%,#1a1a1a 20%,#0e0e0e 50%,#1c1c1c 80%,#2a2a2a 100%);
     position:relative;
-    /* outer edge: thin bright highlight top-left, fading to nothing bottom-right */
     box-shadow:
-      inset 0 0 0 1px rgba(255,255,255,.18),
-      inset 1px 1px 0 rgba(255,255,255,.08),
-      0 0 0 0.5px rgba(255,255,255,.06),
-      0 30px 70px rgba(0,0,0,.9),
-      0 8px 24px rgba(0,0,0,.6);
+      /* outer titanium rim highlight */
+      0 0 0 1px rgba(255,255,255,.22),
+      /* subtle inner bevel */
+      inset 0 0 0 1px rgba(0,0,0,.8),
+      /* depth shadow */
+      0 40px 80px rgba(0,0,0,.95),
+      0 12px 30px rgba(0,0,0,.7),
+      /* glow behind phone */
+      0 0 60px rgba(79,142,247,.08);
     flex-shrink:0;
     overflow:visible;
   }
-  /* Left specular edge — the thin bright strip Apple always has */
-  .iphone17::before {
-    content:'';position:absolute;left:0;top:12%;bottom:12%;width:1.5px;
-    background:linear-gradient(to bottom,transparent,rgba(255,255,255,.25) 30%,rgba(255,255,255,.14) 70%,transparent);
-    border-radius:0 0 0 46px;pointer-events:none;
+  /* Top edge specular — titanium catches light at the top */
+  .iphone17::after {
+    content:'';position:absolute;top:0;left:10%;right:10%;height:1px;
+    background:linear-gradient(to right,transparent,rgba(255,255,255,.35) 40%,rgba(255,255,255,.35) 60%,transparent);
+    border-radius:50%;pointer-events:none;
   }
-  .iphone17-screen { position:absolute;inset:8px;border-radius:38px;background:#050912;overflow:hidden;display:flex;flex-direction:column; }
-  /* Dynamic Island — small pill, not a notch */
+  .iphone17-screen {
+    position:absolute;inset:9px;border-radius:38px;
+    background:#050912;overflow:hidden;display:flex;flex-direction:column;
+    /* thin inner bezel */
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.9);
+  }
+  /* Dynamic Island */
   .iphone17-island { position:absolute;top:10px;left:50%;transform:translateX(-50%);width:88px;height:24px;background:#000;border-radius:12px;z-index:10; }
-  /* Side buttons — very flush, almost invisible, like the real phone */
-  .iphone17-vol  { position:absolute;left:-2px;top:120px;width:2.5px;height:28px;background:linear-gradient(to right,#111,#222);border-radius:2px 0 0 2px; }
-  .iphone17-vol2 { position:absolute;left:-2px;top:158px;width:2.5px;height:52px;background:linear-gradient(to right,#111,#222);border-radius:2px 0 0 2px; }
-  .iphone17-pow  { position:absolute;right:-2px;top:140px;width:2.5px;height:66px;background:linear-gradient(to left,#111,#222);border-radius:0 2px 2px 0; }
+  /* Buttons — 3D protrusions, like real titanium buttons */
+  .iphone17-vol  {
+    position:absolute;left:-4px;top:118px;width:4px;height:30px;
+    background:linear-gradient(to right,#1a1a1a,#2e2e2e,#1e1e1e);
+    border-radius:3px 0 0 3px;
+    box-shadow:-1px 0 2px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.1);
+  }
+  .iphone17-vol2 {
+    position:absolute;left:-4px;top:158px;width:4px;height:56px;
+    background:linear-gradient(to right,#1a1a1a,#2e2e2e,#1e1e1e);
+    border-radius:3px 0 0 3px;
+    box-shadow:-1px 0 2px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.1);
+  }
+  .iphone17-pow  {
+    position:absolute;right:-4px;top:138px;width:4px;height:70px;
+    background:linear-gradient(to left,#1a1a1a,#2e2e2e,#1e1e1e);
+    border-radius:0 3px 3px 0;
+    box-shadow:1px 0 2px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.1);
+  }
   .im-tab { display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;padding-top:8px; }
   @media(max-width:900px){
     .mob-grid { grid-template-columns:1fr;gap:48px; }
@@ -736,7 +760,7 @@
                 <div class="iphone17-pow"></div>
                 <div class="iphone17-island"></div>
                 <div class="iphone17-screen">
-                  <div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 18px 0 22px;margin-top:32px;font-size:12px;font-weight:600;color:rgba(240,244,255,.9);flex-shrink:0;">
+                  <div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 18px 0 22px;margin-top:28px;font-size:12px;font-weight:600;color:rgba(240,244,255,.9);flex-shrink:0;">
                     <span>9:41</span>
                     <div style="display:flex;align-items:center;gap:5px;">
                       <svg width="16" height="12" viewBox="0 0 16 12" fill="rgba(240,244,255,.8)"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13.5" y="0" width="2.5" height="12" rx="1" opacity=".3"/></svg>
