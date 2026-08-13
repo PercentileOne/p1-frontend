@@ -12,7 +12,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Organisation>       Organisations       => Set<Organisation>();
     public DbSet<OrganisationMember> OrganisationMembers => Set<OrganisationMember>();
     public DbSet<LoginHistory>       LoginHistories      => Set<LoginHistory>();
-    public DbSet<PortalFeedback>     PortalFeedbacks     => Set<PortalFeedback>();
+    public DbSet<PortalFeedback>      PortalFeedbacks      => Set<PortalFeedback>();
+    public DbSet<PasswordResetToken>  PasswordResetTokens  => Set<PasswordResetToken>();
 
     // RBAC
     public DbSet<Role>           Roles           => Set<Role>();

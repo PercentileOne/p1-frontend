@@ -4,6 +4,8 @@ import ProductHome from "./pages/ProductHome";
 import ExplainPrep from "./pages/ExplainPrep";
 import ExplainFeedback from "./pages/ExplainFeedback";
 import PortalFeedbackPage from "./pages/PortalFeedbackPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import LearnHome from "./pages/LearnHome";
 import LessonViewer from "./pages/LessonViewer";
 import LearnBookshelf from "./pages/LearnBookshelf";
@@ -95,6 +97,8 @@ export default function App() {
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/cockpit" element={<CockpitShell />} />
       <Route path="/home" element={<PersonalisedHomePage />} />
       <Route path="/today" element={<TodayPage />} />

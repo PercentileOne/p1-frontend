@@ -104,6 +104,9 @@ Explain.Api.Features.Contact.Endpoint.Map(app);
 Explain.Api.Features.Feedback.Submit.Endpoint.Map(app);
 Explain.Api.Features.Feedback.List.Endpoint.Map(app);
 
+Explain.Api.Features.Auth.ForgotPassword.Endpoint.Map(app);
+Explain.Api.Features.Auth.ResetPassword.Endpoint.Map(app);
+
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
    .AllowAnonymous();
 
