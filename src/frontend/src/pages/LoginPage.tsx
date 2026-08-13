@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, ChevronDown, Loader2, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, User } from "lucide-react";
 import { authApi, type ApiError } from "../api/authApi";
 import { useAuthStore } from "../auth/authStore";
 import { defaultPortalForPermissions } from "../auth/permissionMatrix";
@@ -11,8 +11,6 @@ import type { Permission } from "../auth/permissionMatrix";
    P1 LOGIN SCREEN — Cinematic OS Entrance
    ══════════════════════════════════════════════════════════════ */
 
-const TENANTS  = ["Just Exploring", "Percentile.One", "University of Essex", "Goldman Sachs", "Apple", "Demo Organisation"];
-const PERSONAS = ["Just Browsing", "Professional", "Entrepreneur", "Student", "Athlete", "Parent", "Designer", "Nurse", "Lawyer"];
 
 type Phase = "idle" | "loading" | "success";
 
@@ -21,8 +19,7 @@ export default function LoginPage() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [tenant,   setTenant]   = useState("Just Exploring");
-  const [persona,  setPersona]  = useState("Just Browsing");
+  const [tenant,   setTenant]   = useState("Demo Organisation");
   const [showPass, setShowPass] = useState(false);
   const [phase,    setPhase]    = useState<Phase>("idle");
   const [emailError, setEmailError] = useState("");
@@ -91,8 +88,7 @@ export default function LoginPage() {
   const handleDemo = () => {
     setUsername("demo@explain.global");
     setPassword("Demo@2026!");
-    setTenant("Percentile.One");
-    setPersona("Entrepreneur");
+    setTenant("Demo Organisation");
     setTimeout(handleLogin, 400);
   };
 
@@ -213,21 +209,12 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* Tenant */}
-          <LoginSelect
-            placeholder="Organisation / Tenant"
-            value={tenant}
-            onChange={setTenant}
-            options={TENANTS}
-          />
-
-          {/* Persona */}
-          <LoginSelect
-            placeholder="Persona"
-            value={persona}
-            onChange={setPersona}
-            options={PERSONAS}
-          />
+          {/* Forgot password */}
+          <div className="text-right" style={{ marginTop: -8 }}>
+            <Link to="/forgot-password" style={{ fontSize: 12, color: "#818cf8", textDecoration: "none", fontWeight: 500 }}>
+              Forgot password?
+            </Link>
+          </div>
 
           {/* Buttons */}
           <div className="flex flex-col gap-2.5 mt-1">
@@ -489,33 +476,6 @@ function AgentPill({ label, delay }: { label: string; delay: number }) {
    FORM PRIMITIVES
    ──────────────────────────────────────────────────────────── */
 
-function fieldStyle(focused: boolean): React.CSSProperties {
-  return {
-    background:   "#111318",
-    border:       focused
-                    ? "1px solid rgba(203,213,225,0.45)"
-                    : "1px solid rgba(148,163,184,0.16)",
-    borderRadius: "8px",
-    boxShadow:    focused
-                    ? "inset 0 2px 6px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.025), 0 0 0 2.5px rgba(203,213,225,0.09), 0 0 12px rgba(148,163,184,0.07)"
-                    : "inset 0 2px 6px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.025)",
-    padding:      "11px 14px",
-    transition:   "border 0.18s ease, box-shadow 0.18s ease",
-  };
-}
-
-const INPUT_TEXT: React.CSSProperties = {
-  fontSize:      "0.8125rem",
-  fontWeight:    350,
-  color:         "#cbd5e1",
-  caretColor:    "#818cf8",
-  letterSpacing: "0.01em",
-  background:    "transparent",
-  outline:       "none",
-  width:         "100%",
-  minWidth:      0,
-};
-
 function LoginField({
   icon, type, placeholder, value, onChange, suffix,
 }: {
@@ -543,42 +503,6 @@ function LoginField({
   );
 }
 
-function LoginSelect({
-  value, onChange, options,
-}: {
-  placeholder?: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: string[];
-}) {
-  const [focused, setFocused] = useState(false);
-
-  return (
-    <div style={{ position: "relative" }}>
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur ={() => setFocused(false)}
-        style={{
-          ...fieldStyle(focused),
-          ...INPUT_TEXT,
-          color:       "#cbd5e1",
-          paddingRight: "2.25rem",
-          width:       "100%",
-          cursor:      "pointer",
-          appearance:  "none",
-          WebkitAppearance: "none",
-        }}
-      >
-        {options.map(o => (
-          <option key={o} value={o} style={{ background: "#111318", color: "#cbd5e1" }}>{o}</option>
-        ))}
-      </select>
-      <ChevronDown size={13} style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", color: "#4b5563", pointerEvents: "none" }} />
-    </div>
-  );
-}
 
 /* ────────────────────────────────────────────────────────────
    AMBIENT ORB
