@@ -9,7 +9,7 @@ import { speak, elevenLabsConfigured } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
 import { generateCoachingMessage, type CoachingMessage } from '../utils/coachingEngine';
-import { scoreWithAI, coachWithAI, aiScoringConfigured, sessionPrepareClient, generateMikeScriptOnly, type MCQQuestion } from '../api/aiScoring';
+import { scoreWithAI, coachWithAI, aiScoringConfigured, sessionPrepareClient, generateMikeScriptOnly, generateMCQs, type MCQQuestion } from '../api/aiScoring';
 import { ChairSpinner } from '../components/ChairSpinner';
 import CinematicMCQ from '../components/CinematicMCQ';
 import { pickRandomCompany, type Company } from '../data/companyBank';
@@ -615,7 +615,13 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       if (result.jamesIntro) setBgJamesIntro(result.jamesIntro);
       if (result.companyFacts?.length) setBgCompanyFacts(result.companyFacts);
       if (result.specialistTitle) setBgSpecialistTitle(result.specialistTitle);
-      if (result.mcqQuestions?.length) setMcqQuestions(result.mcqQuestions);
+      // MCQs generated in a separate dedicated call — more variety, not anchored to main questions
+      generateMCQs(jobSpec, ctx.jobTitle, ctx.cvText).then(mcqs => {
+        if (mcqs.length) setMcqQuestions(mcqs);
+        else if (result.mcqQuestions?.length) setMcqQuestions(result.mcqQuestions); // fallback
+      }).catch(() => {
+        if (result.mcqQuestions?.length) setMcqQuestions(result.mcqQuestions);
+      });
       logFlowEvent('QUESTION_GENERATED', { count: result.questions.length, specialistTitle: result.specialistTitle });
 
     }).catch(err => {
@@ -721,6 +727,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
   const handlePass = useCallback(() => {
     if (passInProgressRef.current) return;
     passInProgressRef.current = true;
+    setTimeout(() => { passInProgressRef.current = false; }, 800);
     const thinkTimeMs = thinkStartRef.current > 0 ? Date.now() - thinkStartRef.current : undefined;
     thinkStartRef.current = 0;
     const passScore: ScoreResponse = {
@@ -760,7 +767,6 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       closeInterview(passedAnswers, mcqResults, mcqBonusPoints);
     } else {
       const next = qIndex + 1;
-      passInProgressRef.current = false;
       setQIndex(next);
       askQuestion(next);
     }

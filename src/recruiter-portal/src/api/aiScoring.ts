@@ -867,3 +867,78 @@ IMPORTANT: The two MCQ questions and ALL interview questions MUST be completely 
     mcqQuestions,
   };
 }
+
+// ── Dedicated MCQ generation ───────────────────────────────────────────────────
+// Separate call so MCQs get full attention and are never anchored to whatever
+// dominated the main question generation. Forces topic rotation every session.
+
+const MCQ_COMPETENCY_POOLS: Record<string, string[]> = {
+  default: [
+    'regulatory compliance and legal obligations',
+    'risk management and mitigation strategies',
+    'team leadership and stakeholder communication',
+    'operational efficiency and process improvement',
+    'customer experience and service delivery',
+    'data security and privacy requirements',
+    'strategic planning and business outcomes',
+    'problem-solving under pressure',
+    'budget management and cost control',
+    'change management and adoption',
+    'quality assurance and standards',
+    'cross-functional collaboration',
+  ],
+};
+
+function pickTwoDistinct(pool: string[]): [string, string] {
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  return [shuffled[0], shuffled[1]];
+}
+
+export async function generateMCQs(
+  jobSpecText: string,
+  jobTitle?: string,
+  cvText?: string,
+): Promise<MCQQuestion[]> {
+  const [focus1, focus2] = pickTwoDistinct(MCQ_COMPETENCY_POOLS.default);
+  const callId = `${Date.now()}-${crypto.randomUUID()}`;
+
+  const systemPrompt = `You generate hard, role-specific multiple-choice bonus questions for a live interview platform.
+Each question tests genuine knowledge relevant to the role — not generic definitions.
+Return ONLY valid JSON — no markdown, no explanation.`;
+
+  const cvLine = cvText?.trim() ? `\nCandidate CV excerpt: ${cvText.slice(0, 800)}` : '';
+
+  const userPrompt = `Generate exactly 2 multiple-choice questions for this role. Call ID: ${callId}
+
+Role: ${jobTitle ?? 'unknown'}
+Job specification (excerpt): ${jobSpecText.slice(0, 2000)}${cvLine}
+
+STRICT RULES:
+- Question 1 MUST test competency area: "${focus1}"
+- Question 2 MUST test competency area: "${focus2}"
+- Both questions must be hard — not obvious to someone who has never done this job
+- 4 options each (prefix: "A. ", "B. ", "C. ", "D. ") — exactly one correct answer
+- correctIndex: 0-based index of the correct answer — this MUST match which option is actually correct (0=A, 1=B, 2=C, 3=D). Vary it — do NOT always use 0.
+- explanation: one sentence explaining why the correct answer is right
+- Never write trick questions or "all of the above" options
+- The two questions must be on completely different topics
+
+Return JSON:
+{
+  "mcqQuestions": [
+    { "questionText": "...", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "correctIndex": 2, "explanation": "..." },
+    { "questionText": "...", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "correctIndex": 0, "explanation": "..." }
+  ]
+}`;
+
+  try {
+    const result = await chatJSON<{ mcqQuestions: Array<{ questionText: string; options: string[]; correctIndex: number; explanation: string }> }>(
+      systemPrompt, userPrompt, 1.0,
+    );
+    return (result.mcqQuestions ?? [])
+      .filter(q => q?.questionText && q?.options?.length === 4)
+      .map(q => ({ questionText: q.questionText, options: q.options, correctIndex: q.correctIndex ?? 0, explanation: q.explanation ?? '' }));
+  } catch {
+    return [];
+  }
+}
