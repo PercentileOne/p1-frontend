@@ -328,11 +328,52 @@ export default function Home() {
     .ph-pack-card-footer{text-align:center;font-size:12px;color:#9CA3AF;padding-bottom:4px}
     .ph-pack-card-footer strong{color:#3B4FCF}
 
+    #ph-mobile{background:#020710;padding:120px 0;overflow:hidden;position:relative}
+    #ph-mobile::before{content:'';position:absolute;top:50%;right:10%;transform:translateY(-50%);width:600px;height:600px;background:radial-gradient(ellipse,rgba(52,211,153,.07) 0%,rgba(79,142,247,.05) 40%,transparent 70%);pointer-events:none}
+    .ph-mob-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;max-width:1100px;margin:0 auto;padding:0 32px}
+    .ph-mob-hl{font-size:clamp(36px,4.5vw,58px);font-weight:900;line-height:1.06;letter-spacing:-.04em;color:#F0F4FF;margin-bottom:20px}
+    .ph-mob-sub{font-size:clamp(15px,1.8vw,18px);line-height:1.75;color:rgba(240,244,255,.6);margin-bottom:28px}
+    .ph-mob-feat{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+    .ph-mob-feat-icon{width:32px;height:32px;border-radius:8px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:1px}
+    .ph-mob-feat-text{font-size:14px;color:rgba(240,244,255,.65);line-height:1.55}
+    .ph-mob-feat-text strong{color:#F0F4FF;font-weight:700;display:block;margin-bottom:2px}
+    .ph-mob-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:100px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);font-size:10px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#34D399;margin-bottom:24px}
+    .ph-mob-cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:36px}
+    .ph-mob-phone-wrap{display:flex;justify-content:center;align-items:center;position:relative}
+
+    /* iPhone 17 Pro Max frame */
+    .ph-iphone{width:280px;height:604px;border-radius:44px;background:linear-gradient(145deg,#3a3a3c 0%,#1c1c1e 40%,#2c2c2e 60%,#1c1c1e 100%);position:relative;box-shadow:0 0 0 1px rgba(255,255,255,0.12),0 2px 0 1px rgba(255,255,255,0.06),0 40px 80px rgba(0,0,0,.7),0 80px 120px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,0.08);flex-shrink:0}
+    .ph-iphone-screen{position:absolute;inset:10px;border-radius:36px;background:#050912;overflow:hidden;display:flex;flex-direction:column}
+    .ph-iphone-notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:100px;height:32px;background:#1c1c1e;border-radius:0 0 20px 20px;z-index:10}
+    .ph-iphone-notch-pill{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:80px;height:24px;background:#000;border-radius:12px}
+    .ph-iphone-btn-vol{position:absolute;left:-3px;top:120px;width:3px;height:32px;background:#2c2c2e;border-radius:3px 0 0 3px}
+    .ph-iphone-btn-vol2{position:absolute;left:-3px;top:162px;width:3px;height:52px;background:#2c2c2e;border-radius:3px 0 0 3px}
+    .ph-iphone-btn-pow{position:absolute;right:-3px;top:140px;width:3px;height:68px;background:#2c2c2e;border-radius:0 3px 3px 0}
+
+    /* App screen content */
+    .ph-app-status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 18px 0 22px;margin-top:8px;font-size:12px;font-weight:600;color:rgba(240,244,255,.9);flex-shrink:0}
+    .ph-app-status-right{display:flex;align-items:center;gap:5px}
+    .ph-app-logo{text-align:center;padding:6px 0 10px;font-size:14px;font-weight:900;letter-spacing:-.02em;flex-shrink:0}
+    .ph-app-scroll{flex:1;overflow:hidden;padding:0 14px;display:flex;flex-direction:column;gap:10px}
+    .ph-app-hero-card{border-radius:20px;overflow:hidden;background:linear-gradient(135deg,#0f2040 0%,#071630 100%);border:1px solid rgba(79,142,247,.2);padding:16px;flex-shrink:0}
+    .ph-app-tab-bar{height:72px;background:rgba(5,9,18,.95);border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-around;padding:0 8px 8px;flex-shrink:0;backdrop-filter:blur(10px)}
+    .ph-app-tab{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;padding-top:8px}
+    .ph-app-tab-icon{font-size:20px;line-height:1}
+    .ph-app-tab-lbl{font-size:9px;font-weight:600}
+
+    /* Skin-tone hand */
+    .ph-hand-wrap{position:relative;display:inline-block}
+    .ph-finger{position:absolute;left:2px;width:22px;border-radius:11px;background:linear-gradient(100deg,#6B4226 0%,#8B5E3C 28%,#C8946A 55%,#E2BC96 80%);box-shadow:inset -4px 0 10px rgba(0,0,0,.22),inset 1px 0 4px rgba(255,255,255,.1);pointer-events:none;z-index:1}
+    .ph-thumb{position:absolute;right:16px;width:28px;border-radius:14px 14px 8px 8px;background:linear-gradient(100deg,#7A5030 0%,#9E6E46 32%,#C8946A 60%,#E2BC96 85%,#C8946A 100%);box-shadow:-3px 0 12px rgba(0,0,0,.24),inset 3px 0 8px rgba(255,255,255,.13);pointer-events:none;z-index:3}
+    .ph-thumb-nail{position:absolute;top:5px;left:4px;right:4px;height:22px;background:#DEC0AE;border-radius:8px 8px 6px 6px;opacity:.9;box-shadow:inset 0 2px 5px rgba(255,255,255,.28)}
+
     @media(max-width:900px){
       .ph-why-grid,.ph-ir-layout,.ph-portals-grid,.ph-flow-grid,.ph-hero-inner{grid-template-columns:1fr}
       .ph-learn-grid,.ph-packs-grid{grid-template-columns:1fr 1fr}
       .ph-c{padding:0 20px}.ph-global-stats{grid-template-columns:1fr 1fr}
       .ph-practice-grid{grid-template-columns:1fr;gap:40px}
+      .ph-mob-grid{grid-template-columns:1fr;gap:48px}
+      .ph-mob-phone-wrap{order:-1}
     }
     @media(max-width:600px){
       .ph-learn-grid,.ph-packs-grid,.ph-global-stats{grid-template-columns:1fr}
@@ -797,6 +838,158 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="ph-gl-line" />
+
+      {/* MOBILE APP */}
+      <section id="ph-mobile">
+        <div className="ph-mob-grid">
+          {/* Left: copy */}
+          <div>
+            <div className="ph-mob-badge ph-r" data-ph="">📱 Coming to iOS &amp; Android</div>
+            <h2 className="ph-mob-hl ph-r" data-ph="" data-d="1">
+              Interview prep<br />
+              <span style={{color:'#34D399'}}>in your pocket.</span>
+            </h2>
+            <p className="ph-mob-sub ph-r" data-ph="" data-d="2">
+              The InterviewMe mobile app brings your practice sessions, push questions, inbox alerts, and bookshelf everywhere you go — built for the moments between.
+            </p>
+            {[
+              { icon: '🎤', title: 'Practice on the go', body: 'Run a full AI interview session from anywhere — commute, lunch break, hotel room.' },
+              { icon: '🔔', title: 'Question Push', body: 'Receive timed interview questions straight to your phone. Answer. Improve. Repeat.' },
+              { icon: '📬', title: 'Live Inbox & Alerts', body: 'Recruiter messages, session invitations, and talent alerts — all in one place.' },
+              { icon: '📚', title: 'Learn Bookshelf', body: 'Continue your structured lessons and flashcard sessions between desktop sessions.' },
+            ].map(f => (
+              <div className="ph-mob-feat ph-r" data-ph="" key={f.title}>
+                <div className="ph-mob-feat-icon">{f.icon}</div>
+                <div className="ph-mob-feat-text"><strong>{f.title}</strong>{f.body}</div>
+              </div>
+            ))}
+            <div className="ph-mob-cta-row ph-r" data-ph="" data-d="5">
+              <button className="ph-btn-primary" style={{background:'linear-gradient(135deg,#34D399,#059669)',boxShadow:'0 8px 32px rgba(52,211,153,.3)'}} onClick={() => setShowContact(true)}>
+                Notify me at launch
+              </button>
+              <button className="ph-btn-ghost" style={{borderColor:'rgba(52,211,153,.25)',color:'#34D399'}} onClick={() => setShowContact(true)}>
+                Learn more
+              </button>
+            </div>
+          </div>
+
+          {/* Right: hand-held iPhone */}
+          <div className="ph-mob-phone-wrap ph-r" data-ph="" data-d="3">
+            <div className="ph-hand-wrap" style={{transform:'rotate(-8deg)',filter:'drop-shadow(0 12px 28px rgba(0,0,0,.2)) drop-shadow(0 36px 60px rgba(0,0,0,.18))'}}>
+              {/* Fingers behind phone */}
+              {[{top:200,h:58,hi:true},{top:270,h:62},{top:340,h:58},{top:404,h:44}].map((f,i) => (
+                <div key={i} className="ph-finger" style={{
+                  top:f.top,height:f.h,
+                  background:f.hi
+                    ?'linear-gradient(100deg,#9E6E46 0%,#C8946A 30%,#E2BC96 62%,#C8946A 100%)'
+                    :'linear-gradient(100deg,#7A5030 0%,#9E6E46 28%,#C8946A 55%,#E2BC96 80%)',
+                }} />
+              ))}
+
+              {/* Phone */}
+              <div style={{position:'relative',zIndex:2}}>
+                <div className="ph-iphone">
+                  {/* Hardware buttons */}
+                  <div className="ph-iphone-btn-vol" />
+                  <div className="ph-iphone-btn-vol2" />
+                  <div className="ph-iphone-btn-pow" />
+
+                  {/* Dynamic island */}
+                  <div className="ph-iphone-notch">
+                    <div className="ph-iphone-notch-pill" />
+                  </div>
+
+                  {/* Screen */}
+                  <div className="ph-iphone-screen">
+                    {/* Status bar */}
+                    <div className="ph-app-status" style={{marginTop:40}}>
+                      <span>9:41</span>
+                      <div className="ph-app-status-right">
+                        <svg width="16" height="12" viewBox="0 0 16 12" fill="rgba(240,244,255,.8)"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13.5" y="0" width="2.5" height="12" rx="1" opacity=".3"/></svg>
+                        <svg width="15" height="12" viewBox="0 0 15 12" fill="rgba(240,244,255,.8)"><path d="M7.5 2.5C9.8 2.5 11.9 3.4 13.4 4.9L14.5 3.8C12.7 2 10.2 1 7.5 1 4.8 1 2.3 2 0.5 3.8L1.6 4.9C3.1 3.4 5.2 2.5 7.5 2.5Z"/><path d="M7.5 5.5C9 5.5 10.4 6.1 11.4 7.1L12.5 6C11.2 4.8 9.4 4 7.5 4S3.8 4.8 2.5 6L3.6 7.1C4.6 6.1 6 5.5 7.5 5.5Z"/><circle cx="7.5" cy="10" r="1.5"/></svg>
+                        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="rgba(240,244,255,.35)"/><rect x="2" y="2" width="17" height="8" rx="2" fill="#34D399"/><path d="M23 4.5V7.5C23.8 7.2 24.5 6.4 24.5 6C24.5 5.6 23.8 4.8 23 4.5Z" fill="rgba(240,244,255,.4)"/></svg>
+                      </div>
+                    </div>
+
+                    {/* App logo */}
+                    <div className="ph-app-logo">
+                      <span style={{color:'#4F8EF7'}}>Interview</span><span style={{color:'#F0F4FF'}}>Me</span>
+                    </div>
+
+                    {/* Scrollable content */}
+                    <div className="ph-app-scroll">
+                      {/* Today's session card */}
+                      <div className="ph-app-hero-card">
+                        <div style={{fontSize:9,fontWeight:800,letterSpacing:'.15em',textTransform:'uppercase',color:'rgba(79,142,247,.7)',marginBottom:6}}>Today's Session</div>
+                        <div style={{fontSize:14,fontWeight:800,color:'#F0F4FF',lineHeight:1.3,marginBottom:8}}>Senior Software Engineer<br /><span style={{color:'rgba(240,244,255,.5)',fontSize:11,fontWeight:600}}>DeepMind · London</span></div>
+                        <div style={{display:'flex',gap:6,marginBottom:10}}>
+                          {['Sarah','James'].map((name,i) => (
+                            <div key={name} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 8px',borderRadius:8,background:i===0?'rgba(167,139,250,.1)':'rgba(79,142,247,.08)',border:`1px solid ${i===0?'rgba(167,139,250,.2)':'rgba(79,142,247,.15)'}`}}>
+                              <div style={{width:16,height:16,borderRadius:'50%',background:i===0?'linear-gradient(135deg,#a78bfa,#7c3aed)':'linear-gradient(135deg,#4F8EF7,#2563eb)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:800,color:'#fff',flexShrink:0}}>{name[0]}</div>
+                              <span style={{fontSize:9,fontWeight:700,color:i===0?'#a78bfa':'#4F8EF7'}}>{name}</span>
+                            </div>
+                          ))}
+                          <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:3,padding:'4px 8px',borderRadius:8,background:'rgba(52,211,153,.08)',border:'1px solid rgba(52,211,153,.2)'}}>
+                            <div style={{width:6,height:6,borderRadius:'50%',background:'#34D399'}} />
+                            <span style={{fontSize:9,fontWeight:700,color:'#34D399'}}>Ready</span>
+                          </div>
+                        </div>
+                        <button style={{width:'100%',padding:'10px 0',borderRadius:10,background:'linear-gradient(135deg,#4F8EF7,#2D5BFF)',color:'#fff',fontSize:12,fontWeight:700,border:'none',cursor:'pointer',fontFamily:'inherit',boxShadow:'0 4px 12px rgba(79,142,247,.35)'}}>
+                          Start Interview →
+                        </button>
+                      </div>
+
+                      {/* Push question card */}
+                      <div style={{borderRadius:14,background:'rgba(245,158,11,.06)',border:'1px solid rgba(245,158,11,.2)',padding:'10px 12px',flexShrink:0}}>
+                        <div style={{fontSize:9,fontWeight:800,letterSpacing:'.12em',textTransform:'uppercase',color:'#F59E0B',marginBottom:5}}>⚡ Push Question</div>
+                        <div style={{fontSize:11,fontWeight:700,color:'#F0F4FF',lineHeight:1.45}}>Describe a time you navigated conflicting priorities across multiple stakeholders.</div>
+                        <div style={{display:'flex',gap:6,marginTop:8}}>
+                          <button style={{flex:1,padding:'6px 0',borderRadius:7,background:'rgba(245,158,11,.12)',border:'1px solid rgba(245,158,11,.25)',color:'#F59E0B',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>Answer</button>
+                          <button style={{padding:'6px 10px',borderRadius:7,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',color:'rgba(240,244,255,.4)',fontSize:10,fontWeight:600,cursor:'pointer',fontFamily:'inherit'}}>Later</button>
+                        </div>
+                      </div>
+
+                      {/* Prep score */}
+                      <div style={{borderRadius:14,background:'rgba(79,142,247,.06)',border:'1px solid rgba(79,142,247,.14)',padding:'10px 12px',display:'flex',alignItems:'center',gap:10,flexShrink:0}}>
+                        <div style={{width:36,height:36,borderRadius:'50%',background:'linear-gradient(135deg,rgba(79,142,247,.2),rgba(45,91,255,.1))',border:'2px solid rgba(79,142,247,.35)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:900,color:'#4F8EF7',flexShrink:0}}>74</div>
+                        <div>
+                          <div style={{fontSize:11,fontWeight:700,color:'#F0F4FF'}}>Prep Score</div>
+                          <div style={{fontSize:9,color:'rgba(240,244,255,.4)',marginTop:1}}>+6 since yesterday · Top 28%</div>
+                        </div>
+                        <div style={{marginLeft:'auto',fontSize:9,fontWeight:700,color:'#4F8EF7'}}>View →</div>
+                      </div>
+                    </div>
+
+                    {/* Tab bar */}
+                    <div className="ph-app-tab-bar">
+                      {[
+                        {icon:'🎤',label:'Interview',active:true},
+                        {icon:'📚',label:'Learn',active:false},
+                        {icon:'📬',label:'Inbox',active:false},
+                        {icon:'⚙️',label:'Settings',active:false},
+                      ].map(tab => (
+                        <div key={tab.label} className="ph-app-tab">
+                          <div className="ph-app-tab-icon" style={{filter:tab.active?'none':'grayscale(1) opacity(.4)'}}>{tab.icon}</div>
+                          <span className="ph-app-tab-lbl" style={{color:tab.active?'#4F8EF7':'rgba(240,244,255,.3)'}}>{tab.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Thumb in front */}
+              <div className="ph-thumb" style={{bottom:110,zIndex:3}}>
+                <div className="ph-thumb-nail" />
+                <div style={{position:'absolute',top:86,left:3,right:3,height:'1.5px',background:'rgba(80,44,16,.3)',borderRadius:1}} />
+                <div style={{position:'absolute',top:112,left:4,right:4,height:'1px',background:'rgba(80,44,16,.18)',borderRadius:1}} />
+              </div>
+            </div>
           </div>
         </div>
       </section>
