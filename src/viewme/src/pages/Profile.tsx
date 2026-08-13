@@ -48,6 +48,7 @@ interface CandidateData {
   tags: string[]
   answers: { q: string; score: number; summary: string }[]
   dimensions: { label: string; score: number }[]
+  profileVideoUrl?: string  // URL to profile intro video — set when candidate has recorded one
 }
 
 export default function Profile() {
@@ -147,6 +148,37 @@ export default function Profile() {
               <span>{m.icon}</span> {m.label}
             </div>
           ))}
+        </motion.div>
+
+        {/* PROFILE VIDEO */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}
+          style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', color: '#475569', textTransform: 'uppercase', marginBottom: 14 }}>
+            Profile Introduction
+          </div>
+          {candidate.profileVideoUrl ? (
+            <div style={{ borderRadius: 20, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)', background: '#000', aspectRatio: '16/9', maxHeight: 380 }}>
+              <video
+                src={candidate.profileVideoUrl}
+                controls
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            </div>
+          ) : (
+            <div style={{ borderRadius: 20, border: '1px dashed rgba(79,142,247,0.25)', background: 'rgba(79,142,247,0.03)', padding: '36px 32px', display: 'flex', alignItems: 'center', gap: 24 }}>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 22 }}>
+                🎥
+              </div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#94a3b8', marginBottom: 4 }}>
+                  {candidate.name.split(' ')[0]} hasn't recorded a profile introduction yet
+                </div>
+                <div style={{ fontSize: 13, color: '#475569', lineHeight: 1.6 }}>
+                  Profile videos let candidates introduce themselves in their own words — personality, goals, and what makes them stand out.
+                </div>
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* SCORE DIMENSIONS */}

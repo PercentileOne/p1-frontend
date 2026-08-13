@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'src/viewme/public/**'
+      - 'src/viewme/**'
   workflow_dispatch:
 
 jobs:
@@ -15,31 +15,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Prepare static output
-        run: |
-          mkdir -p deploy-gate
-          cp src/viewme/public/gate.html deploy-gate/index.html
-          cp src/viewme/public/mastermind-chair.png deploy-gate/mastermind-chair.png
-          cp src/viewme/public/the-interview-chair.png deploy-gate/the-interview-chair.png
-          cp src/viewme/public/interview-preview.png deploy-gate/interview-preview.png
-          cp src/viewme/public/interview-room-latest.png deploy-gate/interview-room-latest.png
-          cp src/viewme/public/candidate-1.jpg deploy-gate/candidate-1.jpg
-          cp src/viewme/public/candidate-2.jpg deploy-gate/candidate-2.jpg
-          cp src/viewme/public/candidate-3.jpg deploy-gate/candidate-3.jpg
-          cp src/viewme/public/candidate-4.jpg deploy-gate/candidate-4.jpg
-          cp src/viewme/public/candidate5.jpg deploy-gate/candidate5.jpg
-          cp src/viewme/public/candidate-6.jpg deploy-gate/candidate-6.jpg
-          cp src/viewme/public/candidate-7.jpg deploy-gate/candidate-7.jpg
-          cp src/viewme/public/candidate-8.jpg deploy-gate/candidate-8.jpg
-          cp src/viewme/public/candidate-9.jpg deploy-gate/candidate-9.jpg
-          cp src/viewme/public/candidate-10.jpg deploy-gate/candidate-10.jpg
-          cp src/viewme/public/gate-staticwebapp.config.json deploy-gate/staticwebapp.config.json
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: src/viewme/package-lock.json
 
-      - name: Deploy to Azure SWA
+      - name: Install dependencies
+        working-directory: src/viewme
+        run: npm ci
+
+      - name: Type-check
+        working-directory: src/viewme
+        run: npx tsc -b --noEmit
+
+      - name: Build
+        working-directory: src/viewme
+        run: npm run build
+
+      - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_INTERVIEWME }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
-          app_location: deploy-gate
+          app_location: src/viewme/dist
           skip_app_build: true
