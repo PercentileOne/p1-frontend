@@ -96,9 +96,8 @@ export default function RegisterPage() {
       const permSet = new Set(session.permissions) as Set<Permission>;
       const dest    = defaultPortalForPermissions(permSet);
       setTimeout(() => {
-        // New candidates go straight to their Profile Video to record an intro
         if (permSet.has('CAN_START_INTERVIEW') && !permSet.has('CAN_VIEW_RECRUITER_PORTAL')) {
-          navigate('/profile/video');
+          navigate('/profile');
         } else {
           const isSameOrigin = dest.startsWith(window.location.origin);
           if (isSameOrigin) navigate('/cockpit');
