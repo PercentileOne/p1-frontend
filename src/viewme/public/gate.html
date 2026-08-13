@@ -375,6 +375,33 @@
   .btn-candidate:hover { background: rgba(52,211,153,0.13); border-color: rgba(52,211,153,0.4); }
   .btn-candidate svg { width: 15px; height: 15px; stroke: var(--green); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
+  /* ── ROLE CARDS ── */
+  .role-cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .role-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; border-radius: 12px; text-decoration: none;
+    border: 1px solid var(--border); background: rgba(255,255,255,0.03);
+    transition: all 0.2s; cursor: pointer;
+  }
+  .role-card:hover { transform: translateX(3px); }
+  .role-card-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .role-card-body { flex: 1; min-width: 0; }
+  .role-card-title { font-size: 13px; font-weight: 800; color: var(--pearl); margin-bottom: 2px; }
+  .role-card-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .role-card-arrow { font-size: 16px; color: var(--muted); flex-shrink: 0; }
+  .role-card.rc-candidate { border-color: rgba(52,211,153,0.25); }
+  .role-card.rc-candidate:hover { background: rgba(52,211,153,0.06); border-color: rgba(52,211,153,0.4); }
+  .role-card.rc-candidate .role-card-icon { background: rgba(52,211,153,0.1); }
+  .role-card.rc-candidate .role-card-title { color: var(--green); }
+  .role-card.rc-recruiter { border-color: rgba(251,191,36,0.25); }
+  .role-card.rc-recruiter:hover { background: rgba(251,191,36,0.06); border-color: rgba(251,191,36,0.4); }
+  .role-card.rc-recruiter .role-card-icon { background: rgba(251,191,36,0.1); }
+  .role-card.rc-recruiter .role-card-title { color: var(--amber); }
+  .role-card.rc-employer { border-color: rgba(61,126,246,0.25); }
+  .role-card.rc-employer:hover { background: rgba(61,126,246,0.06); border-color: rgba(61,126,246,0.4); }
+  .role-card.rc-employer .role-card-icon { background: rgba(61,126,246,0.1); }
+  .role-card.rc-employer .role-card-title { color: var(--blue); }
+
   .auth-footer { margin-top: 22px; }
   .badge-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 10px; flex-wrap: wrap; }
   .badge { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--muted); }
@@ -1060,51 +1087,43 @@
         <div class="field"><label>Password</label><input type="password" placeholder="••••••••" autocomplete="current-password"></div>
         <a href="#" class="forgot">Forgot your password?</a>
         <button class="btn-primary" type="submit">Sign In</button>
-        <div class="auth-divider">or</div>
-        <button class="btn-candidate" type="button" onclick="switchTab('candidate')">
+        <div class="auth-divider">new here?</div>
+        <button class="btn-candidate" type="button" onclick="switchTab('signup')">
           <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          I'm a candidate — record my interview
+          Create an account
         </button>
       </form>
 
-      <form class="auth-form hidden" id="form-signup" onsubmit="return false">
-        <div class="field-row">
-          <div class="field"><label>First name</label><input type="text" placeholder="Alex" autocomplete="given-name"></div>
-          <div class="field"><label>Last name</label><input type="text" placeholder="Morgan" autocomplete="family-name"></div>
+      <div class="auth-form hidden" id="form-signup">
+        <div class="auth-sub" style="margin-bottom:14px">Who are you joining as?</div>
+        <div class="role-cards">
+          <a href="https://explain.global/register" class="role-card rc-candidate">
+            <div class="role-card-icon">🎯</div>
+            <div class="role-card-body">
+              <div class="role-card-title">Candidate</div>
+              <div class="role-card-desc">Build your profile, record your intro, and get discovered by top employers.</div>
+            </div>
+            <div class="role-card-arrow">→</div>
+          </a>
+          <a href="https://recruiter.explain.global/register" class="role-card rc-recruiter">
+            <div class="role-card-icon">🔍</div>
+            <div class="role-card-body">
+              <div class="role-card-title">Recruiter</div>
+              <div class="role-card-desc">Source pre-screened candidates, run AI interviews, and fill roles faster.</div>
+            </div>
+            <div class="role-card-arrow">→</div>
+          </a>
+          <a href="https://employer.explain.global/register" class="role-card rc-employer">
+            <div class="role-card-icon">🏢</div>
+            <div class="role-card-body">
+              <div class="role-card-title">Employer</div>
+              <div class="role-card-desc">Post roles, review AI-scored candidates, and hire with confidence.</div>
+            </div>
+            <div class="role-card-arrow">→</div>
+          </a>
         </div>
-        <div class="field"><label>Work email</label><input type="email" placeholder="alex@company.com" autocomplete="email"></div>
-        <div class="field"><label>Company</label><input type="text" placeholder="Acme Ltd"></div>
-        <div class="field">
-          <label>I am a</label>
-          <select>
-            <option value="">Select your role...</option>
-            <option>Hiring Manager</option>
-            <option>In-House Recruiter</option>
-            <option>Recruitment Agency / RPO</option>
-            <option>Business Owner / Founder</option>
-          </select>
-        </div>
-        <div class="field"><label>Password</label><input type="password" placeholder="Create a strong password" autocomplete="new-password"></div>
-        <button class="btn-primary" type="submit">Create Employer Account</button>
-        <div class="auth-divider">looking to be hired?</div>
-        <button class="btn-candidate" type="button" onclick="switchTab('candidate')">
-          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          Register as a candidate instead
-        </button>
-      </form>
-
-      <form class="auth-form hidden" id="form-candidate" onsubmit="return false">
-        <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:4px">Create your profile and complete your AI interview. Employers will find you.</p>
-        <div class="field-row">
-          <div class="field"><label>First name</label><input type="text" placeholder="Jordan" autocomplete="given-name"></div>
-          <div class="field"><label>Last name</label><input type="text" placeholder="Smith" autocomplete="family-name"></div>
-        </div>
-        <div class="field"><label>Email</label><input type="email" placeholder="jordan@email.com" autocomplete="email"></div>
-        <div class="field"><label>Job title</label><input type="text" placeholder="e.g. Senior Software Engineer"></div>
-        <div class="field"><label>Password</label><input type="password" placeholder="Create a strong password" autocomplete="new-password"></div>
-        <button class="btn-primary" type="submit" style="background:linear-gradient(135deg,#34D399,#059669);box-shadow:0 4px 18px rgba(52,211,153,0.28)">Start My Free Interview</button>
         <div style="text-align:center"><a href="#" style="font-size:11px;color:var(--muted);text-decoration:none" onclick="switchTab('login')">Already have an account? Sign in</a></div>
-      </form>
+      </div>
 
       <div class="auth-footer">
         <div class="badge-row">
@@ -1230,17 +1249,15 @@
 
   // auth tabs
   function switchTab(tab) {
-    ['login','signup','candidate'].forEach(t => {
+    ['login','signup'].forEach(t => {
       document.getElementById('form-' + t).classList.toggle('hidden', t !== tab);
     });
     document.querySelectorAll('.tab').forEach((btn, i) => {
       btn.classList.toggle('active',
         (i === 0 && tab === 'login') ||
-        (i === 1 && (tab === 'signup' || tab === 'candidate'))
+        (i === 1 && tab === 'signup')
       );
     });
-    if (tab === 'candidate') document.querySelectorAll('.tab')[1].textContent = 'Candidate';
-    else if (tab === 'signup') document.querySelectorAll('.tab')[1].textContent = 'Create Account';
   }
 </script>
 </body>
