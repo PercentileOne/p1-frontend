@@ -164,7 +164,7 @@ export default function App() {
 
       {/* Profile & Identity */}
       <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/profile/video" element={<ProfileVideoPage />} />
+      <Route path="/profile/video" element={<RequirePermission permission="CAN_START_INTERVIEW"><ProfileVideoPage /></RequirePermission>} />
       <Route path="/awards" element={<AwardsPage />} />
       <Route path="/proof" element={<ProofPage />} />
       <Route path="/vision" element={<VisionPage />} />

@@ -70,15 +70,14 @@ export default function LoginPage() {
       setPhase("success");
       const permSet = new Set(session.permissions) as Set<Permission>;
       const dest = defaultPortalForPermissions(permSet);
-      // Keep the cinematic success overlay, then navigate to the right portal
       setTimeout(() => {
-        // Navigate within the SPA if the portal is on the same origin,
-        // otherwise redirect to the correct subdomain
-        const isSameOrigin = dest.startsWith(window.location.origin) || dest === '/cockpit';
-        if (isSameOrigin) {
-          navigate("/cockpit");
+        // Candidates stay on explain.global — send to their profile home
+        if (permSet.has('CAN_START_INTERVIEW') && !permSet.has('CAN_VIEW_RECRUITER_PORTAL')) {
+          navigate('/profile');
         } else {
-          window.location.href = dest;
+          const isSameOrigin = dest.startsWith(window.location.origin) || dest === '/cockpit';
+          if (isSameOrigin) navigate('/cockpit');
+          else window.location.href = dest;
         }
       }, 2200);
     } catch (err) {
