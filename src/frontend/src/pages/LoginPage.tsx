@@ -19,7 +19,7 @@ export default function LoginPage() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [tenant,   setTenant]   = useState("Demo Organisation");
+  const [tenant] = useState("Demo Organisation");
   const [showPass, setShowPass] = useState(false);
   const [phase,    setPhase]    = useState<Phase>("idle");
   const [emailError, setEmailError] = useState("");
@@ -86,10 +86,23 @@ export default function LoginPage() {
   };
 
   const handleDemo = () => {
-    setUsername("demo@explain.global");
-    setPassword("Demo@2026!");
-    setTenant("Demo Organisation");
-    setTimeout(handleLogin, 400);
+    setPhase("loading");
+    setTimeout(() => {
+      storeLogin("demo-token", {
+        id:        "0",
+        email:     "demo@explain.global",
+        name:      "Demo Candidate",
+        firstName: "Demo",
+        role:      "candidate",
+      }, [
+        "CAN_VIEW_CAREERS",
+        "CAN_START_INTERVIEW",
+        "CAN_PRACTICE_INTERVIEW",
+        "CAN_VIEW_INTERVIEW_RESULTS",
+      ]);
+      setPhase("success");
+      setTimeout(() => navigate("/dashboard"), 1200);
+    }, 800);
   };
 
   return (
