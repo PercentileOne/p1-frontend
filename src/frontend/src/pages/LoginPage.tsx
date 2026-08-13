@@ -71,9 +71,8 @@ export default function LoginPage() {
       const permSet = new Set(session.permissions) as Set<Permission>;
       const dest = defaultPortalForPermissions(permSet);
       setTimeout(() => {
-        // Candidates stay on explain.global — send to their profile home
         if (permSet.has('CAN_START_INTERVIEW') && !permSet.has('CAN_VIEW_RECRUITER_PORTAL')) {
-          navigate('/profile');
+          navigate('/dashboard');
         } else {
           const isSameOrigin = dest.startsWith(window.location.origin) || dest === '/cockpit';
           if (isSameOrigin) navigate('/cockpit');

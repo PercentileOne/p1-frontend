@@ -97,7 +97,7 @@ export default function RegisterPage() {
       const dest    = defaultPortalForPermissions(permSet);
       setTimeout(() => {
         if (permSet.has('CAN_START_INTERVIEW') && !permSet.has('CAN_VIEW_RECRUITER_PORTAL')) {
-          navigate('/profile');
+          navigate('/dashboard');
         } else {
           const isSameOrigin = dest.startsWith(window.location.origin);
           if (isSameOrigin) navigate('/cockpit');
