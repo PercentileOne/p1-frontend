@@ -692,7 +692,8 @@ export default function InterviewSummary() {
     const pct = Math.round(overall * 100);
     const strongLabel = strengths[0] ?? null;
     const weakLabel = improvements[0] ?? null;
-    const learnTopic = weakestTag ?? weakLabel ?? 'your interview technique';
+    // Use the same topic for both the improvement comment and the Learn pitch
+    const focusTopic = weakestTag ?? weakLabel ?? 'your interview technique';
 
     let opening = `Hi ${name}, it's Mike here — I've just had a word with Sarah and James, and they wanted me to share some feedback with you.`;
 
@@ -705,15 +706,12 @@ export default function InterviewSummary() {
       ? `Sarah particularly noticed your ${strongLabel} — she said it came across really well.`
       : '';
 
-    let improvementComment = '';
-    if (weakLabel) {
-      improvementComment = pct < 100
-        ? `One area to focus on is ${weakLabel} — if you can sharpen that up, it'll make a real difference.`
-        : '';
-    }
+    let improvementComment = pct < 100 && focusTopic
+      ? `One area to focus on is ${focusTopic} — if you can sharpen that up, it'll make a real difference.`
+      : '';
 
     let learnPitch = pct < 100
-      ? `The good news is, our Learn platform has a lesson on ${learnTopic} ready to go right now — just head over to the Learn tab and hit Generate. It'll walk you through exactly what you need. I'd really recommend it.`
+      ? `The good news is, our Learn platform has a lesson on ${focusTopic} ready to go right now — just head over to the Learn tab and hit Generate. It'll walk you through exactly what you need. I'd really recommend it.`
       : `You nailed it across the board — honestly, you should be very proud of that session.`;
 
     const closing = `Good luck ${name}, and remember — every session makes you sharper. Speak soon.`;
