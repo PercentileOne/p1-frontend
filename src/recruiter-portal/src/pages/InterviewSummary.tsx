@@ -655,7 +655,7 @@ export default function InterviewSummary() {
   const playbackUrl: string | null = location.state?.playbackUrl ?? null;
   const chapters: { questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[] = location.state?.chapters ?? [];
   const interviewId: string | undefined = location.state?.interviewId;
-  const candidateId: string | undefined = location.state?.candidateId ?? cvCtx?.candidateId;
+  const candidateId: string | undefined = location.state?.candidateId;
   // Revoke blob URL only when the whole summary page unmounts
   useEffect(() => { return () => { if (playbackUrl) URL.revokeObjectURL(playbackUrl); }; }, []);
   const [activeTab, setActiveTab] = useState<Tab>('interview');

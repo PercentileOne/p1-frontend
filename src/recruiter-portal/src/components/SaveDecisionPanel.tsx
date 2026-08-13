@@ -54,7 +54,6 @@ export function SaveDecisionPanel({
   const [shareToken, setShareToken] = useState('');
   const [shareUrl, setShareUrl]     = useState('');
   const [qrDataUri, setQrDataUri]   = useState('');
-  const [qrCopied, setQrCopied]     = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [error, setError]           = useState('');
 
