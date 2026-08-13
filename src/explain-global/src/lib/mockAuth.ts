@@ -25,9 +25,9 @@ export interface AuthError {
 }
 
 const PORTAL_URLS: Record<UserRole, string> = {
-  Candidate: 'https://candidate.explain.global',
-  Recruiter: 'https://recruiter.explain.global/dashboard',
-  Client:    'https://client.explain.global',
+  Candidate: '/my-interviews',
+  Recruiter: '/my-interviews',
+  Client:    '/my-interviews',
 };
 
 async function post<T>(path: string, body: unknown): Promise<T> {
