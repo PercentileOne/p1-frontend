@@ -911,16 +911,6 @@ ${questionsHtml}
         {/* ── INTERVIEW TAB ── */}
         {activeTab === 'interview' && (
           <>
-            {/* Instant replay player */}
-            {playbackUrl && (
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>
-                  🎬 Your Interview Replay
-                </div>
-                <InterviewReplayPlayer url={playbackUrl} chapters={chapters} />
-              </motion.div>
-            )}
-
             {/* ── Save / QR / Share decision flow ── */}
             <SaveDecisionPanel
               score={Math.round(overall * 100)}
@@ -933,6 +923,16 @@ ${questionsHtml}
                 setSavedShareUrl(url);
               }}
             />
+
+            {/* Instant replay player */}
+            {playbackUrl && (
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>
+                  🎬 Your Interview Replay
+                </div>
+                <InterviewReplayPlayer url={playbackUrl} chapters={chapters} />
+              </motion.div>
+            )}
 
             {/* Cross-sell banner */}
             {showLearnBanner && (
