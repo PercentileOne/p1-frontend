@@ -4,6 +4,7 @@ import { ChairSpinner } from '../components/ChairSpinner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScoringDisplay } from '../components/ScoringDisplay';
 import { ShareModal } from '../components/ShareModal';
+import { SaveDecisionPanel } from '../components/SaveDecisionPanel';
 import type { InterviewQuestion, ScoreResponse } from '../api/explainApi';
 import type { TranscriptMeta } from '../components/VoiceInput';
 import type { CVContext, JobSpecContext } from '../utils/contextBuilder';
@@ -653,10 +654,14 @@ export default function InterviewSummary() {
   const mcqResults: Array<{ correct: boolean; selectedIndex: number; questionIndex: number }> = location.state?.mcqResults ?? [];
   const playbackUrl: string | null = location.state?.playbackUrl ?? null;
   const chapters: { questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[] = location.state?.chapters ?? [];
+  const interviewId: string | undefined = location.state?.interviewId;
+  const candidateId: string | undefined = location.state?.candidateId ?? cvCtx?.candidateId;
   // Revoke blob URL only when the whole summary page unmounts
   useEffect(() => { return () => { if (playbackUrl) URL.revokeObjectURL(playbackUrl); }; }, []);
   const [activeTab, setActiveTab] = useState<Tab>('interview');
   const [showShare, setShowShare] = useState(false);
+  const [savedShareToken, setSavedShareToken] = useState<string | null>(null);
+  const [savedShareUrl, setSavedShareUrl] = useState<string | null>(null);
 
   const overall = overallAvg(answers);
   const strengths = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) >= 0.65);
@@ -812,7 +817,7 @@ ${questionsHtml}
           <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>Session Complete</div>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={() => setShowShare(true)} style={{ background: 'linear-gradient(135deg, #a78bfa, #4F8EF7)', color: '#fff', border: 'none', borderRadius: '9px', padding: '10px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px' }}>
+          <button onClick={() => setShowShare(true)} disabled={!savedShareToken} title={savedShareToken ? undefined : 'Save your interview first'} style={{ background: savedShareToken ? 'linear-gradient(135deg, #a78bfa, #4F8EF7)' : 'rgba(167,139,250,0.2)', color: savedShareToken ? '#fff' : 'rgba(255,255,255,0.3)', border: 'none', borderRadius: '9px', padding: '10px 20px', fontSize: '13px', fontWeight: 700, cursor: savedShareToken ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: '7px' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
               <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
@@ -914,6 +919,19 @@ ${questionsHtml}
                 <InterviewReplayPlayer url={playbackUrl} chapters={chapters} />
               </motion.div>
             )}
+
+            {/* ── Save / QR / Share decision flow ── */}
+            <SaveDecisionPanel
+              score={Math.round(overall * 100)}
+              role={jobCtx?.title}
+              company={jobCtx?.company}
+              candidateId={candidateId}
+              interviewId={interviewId}
+              onSaved={(token, url) => {
+                setSavedShareToken(token);
+                setSavedShareUrl(url);
+              }}
+            />
 
             {/* Cross-sell banner */}
             {showLearnBanner && (
@@ -1135,7 +1153,7 @@ ${questionsHtml}
           role={jobCtx?.title}
           company={jobCtx?.company}
           score={Math.round(overall * 100)}
-          shareUrl={`https://candidate.explain.global/shared/demo-${Date.now()}`}
+          shareUrl={savedShareUrl ?? `https://candidate.explain.global/shared/${savedShareToken}`}
           onClose={() => setShowShare(false)}
         />
       )}
