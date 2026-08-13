@@ -543,6 +543,28 @@
     .aud-h2 { font-size: clamp(1.8rem, 6vw, 2.4rem); }
     .aud-visual { display: none; }
   }
+
+  /* ── Mobile app section ── */
+  .mob-grid { display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;max-width:1060px;margin:0 auto; }
+  .mob-feat-row { display:flex;align-items:flex-start;gap:12px;margin-bottom:14px; }
+  .mob-feat-icon { width:32px;height:32px;border-radius:8px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:1px; }
+  .mob-feat-body strong { display:block;font-size:14px;font-weight:700;color:#F0F4FF;margin-bottom:2px; }
+  .mob-feat-body span { font-size:13px;color:rgba(240,244,255,.55);line-height:1.55; }
+  .iphone17 { width:268px;height:580px;border-radius:44px;background:linear-gradient(145deg,#3a3a3c 0%,#1c1c1e 40%,#2c2c2e 60%,#1c1c1e 100%);position:relative;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 2px 0 1px rgba(255,255,255,.06),0 40px 80px rgba(0,0,0,.75),0 80px 120px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);flex-shrink:0; }
+  .iphone17-screen { position:absolute;inset:10px;border-radius:36px;background:#050912;overflow:hidden;display:flex;flex-direction:column; }
+  .iphone17-island { position:absolute;top:12px;left:50%;transform:translateX(-50%);width:90px;height:26px;background:#000;border-radius:13px;z-index:10; }
+  .iphone17-vol { position:absolute;left:-3px;top:116px;width:3px;height:30px;background:#2c2c2e;border-radius:3px 0 0 3px; }
+  .iphone17-vol2 { position:absolute;left:-3px;top:156px;width:3px;height:50px;background:#2c2c2e;border-radius:3px 0 0 3px; }
+  .iphone17-pow { position:absolute;right:-3px;top:136px;width:3px;height:64px;background:#2c2c2e;border-radius:0 3px 3px 0; }
+  .im-hand-wrap { position:relative;display:inline-block; }
+  .im-finger { position:absolute;left:2px;width:21px;border-radius:10px;box-shadow:inset -4px 0 10px rgba(0,0,0,.22),inset 1px 0 4px rgba(255,255,255,.1);pointer-events:none;z-index:1; }
+  .im-thumb { position:absolute;right:14px;bottom:108px;width:27px;height:162px;border-radius:13px 13px 8px 8px;background:linear-gradient(100deg,#7A5030 0%,#9E6E46 32%,#C8946A 60%,#E2BC96 85%,#C8946A 100%);box-shadow:-3px 0 12px rgba(0,0,0,.24),inset 3px 0 8px rgba(255,255,255,.13);pointer-events:none;z-index:3; }
+  .im-thumb-nail { position:absolute;top:5px;left:4px;right:4px;height:21px;background:#DEC0AE;border-radius:8px 8px 6px 6px;opacity:.9;box-shadow:inset 0 2px 5px rgba(255,255,255,.28); }
+  .im-tab { display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;padding-top:8px; }
+  @media(max-width:900px){
+    .mob-grid { grid-template-columns:1fr;gap:48px; }
+    .mob-phone-col { order:-1; }
+  }
 </style>
 
 <!-- SECTION 1: STATEMENT -->
