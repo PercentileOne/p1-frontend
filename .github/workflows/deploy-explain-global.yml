@@ -43,8 +43,10 @@ jobs:
       - name: Build
         working-directory: src/frontend
         env:
-          VITE_EXPLAIN_API_URL: https://api.explain.global
-          VITE_OPENAI_API_KEY:  ${{ secrets.VITE_OPENAI_API_KEY }}
+          VITE_EXPLAIN_API_URL:         https://api.explain.global
+          VITE_OPENAI_API_KEY:          ${{ secrets.VITE_OPENAI_API_KEY }}
+          VITE_ELEVENLABS_API_KEY:      ${{ secrets.VITE_ELEVENLABS_API_KEY }}
+          VITE_ELEVENLABS_VOICE_HR:     ${{ secrets.VITE_ELEVENLABS_VOICE_HR }}
         run: npm run build
 
       - name: Deploy to Azure Static Web Apps

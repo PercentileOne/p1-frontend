@@ -27,17 +27,18 @@ import { STORIES } from "../lib/storiesData";
    P1 PROFILE PAGE 2.0
    ══════════════════════════════════════════════════════════════ */
 
-type ProfileTab = "overview" | "story" | "posts" | "achievements" | "walls" | "groups" | "awards" | "interests";
+type ProfileTab = "overview" | "story" | "posts" | "achievements" | "walls" | "groups" | "awards" | "interests" | "video";
 
 const TABS: { key: ProfileTab; label: string; emoji: string }[] = [
-  { key: "overview",      label: "Overview",     emoji: "🏠" },
-  { key: "story",         label: "Story",        emoji: "📖" },
-  { key: "posts",         label: "Posts",        emoji: "📝" },
-  { key: "achievements",  label: "Achievements", emoji: "🏅" },
-  { key: "walls",         label: "Walls",        emoji: "🧱" },
-  { key: "groups",        label: "Groups",       emoji: "👥" },
-  { key: "awards",        label: "Awards",       emoji: "🏆" },
-  { key: "interests",     label: "Interests",    emoji: "✨" },
+  { key: "overview",      label: "Overview",      emoji: "🏠" },
+  { key: "story",         label: "Story",         emoji: "📖" },
+  { key: "posts",         label: "Posts",         emoji: "📝" },
+  { key: "achievements",  label: "Achievements",  emoji: "🏅" },
+  { key: "walls",         label: "Walls",         emoji: "🧱" },
+  { key: "groups",        label: "Groups",        emoji: "👥" },
+  { key: "awards",        label: "Awards",        emoji: "🏆" },
+  { key: "interests",     label: "Interests",     emoji: "✨" },
+  { key: "video",         label: "Profile Video", emoji: "🎥" },
 ];
 
 function fmtNum(n: number): string {
@@ -976,6 +977,29 @@ export default function ProfilePage() {
                     <InterestsPanel profile={profile} />
                   </SectionCard>
                 </div>
+              )}
+
+              {tab === "video" && (
+                <SectionCard>
+                  <SectionHeading emoji="🎥" title="Profile Introduction Video" />
+                  <p className="text-[12px] text-slate-500 mb-5 leading-relaxed">
+                    Record a short personal introduction — employers and recruiters see this on your InterviewMe profile. Sarah will guide you through 5 relaxed questions with personalised coaching after each answer.
+                  </p>
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-full aspect-video rounded-2xl bg-slate-900/60 border border-slate-700/40 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-4xl mb-3">🎬</div>
+                        <p className="text-[13px] text-slate-500">No profile video recorded yet</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigate("/profile/video")}
+                      className="flex items-center gap-2 px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-[13px] font-bold transition-colors shadow-lg shadow-violet-900/30"
+                    >
+                      🎥 Record Profile Introduction
+                    </button>
+                  </div>
+                </SectionCard>
               )}
 
             </motion.div>

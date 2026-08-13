@@ -19,6 +19,7 @@ import LearningMultiplayer from "./pages/LearningMultiplayer";
 import LearningQueue from "./pages/LearningQueue";
 import LearningEmployer from "./pages/LearningEmployer";
 import ProfilePage from "./pages/ProfilePage";
+import ProfileVideoPage from "./pages/ProfileVideoPage";
 import SettingsPage from "./pages/SettingsPage";
 import GoalsPage from "./pages/GoalsPage";
 import GoalCreatePage from "./pages/GoalCreatePage";
@@ -163,6 +164,7 @@ export default function App() {
 
       {/* Profile & Identity */}
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/profile/video" element={<ProfileVideoPage />} />
       <Route path="/awards" element={<AwardsPage />} />
       <Route path="/proof" element={<ProofPage />} />
       <Route path="/vision" element={<VisionPage />} />
