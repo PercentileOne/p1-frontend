@@ -3,6 +3,7 @@ import { RequirePermission, UnauthorizedPage } from "./auth/RequirePermission";
 import ProductHome from "./pages/ProductHome";
 import ExplainPrep from "./pages/ExplainPrep";
 import ExplainFeedback from "./pages/ExplainFeedback";
+import PortalFeedbackPage from "./pages/PortalFeedbackPage";
 import LearnHome from "./pages/LearnHome";
 import LessonViewer from "./pages/LessonViewer";
 import LearnBookshelf from "./pages/LearnBookshelf";
@@ -86,7 +87,8 @@ export default function App() {
       {/* Explain public-facing routes */}
       <Route path="/" element={<ProductHome />} />
       <Route path="/prep" element={<ExplainPrep />} />
-      <Route path="/feedback" element={<ExplainFeedback />} />
+      <Route path="/feedback" element={<PortalFeedbackPage />} />
+      <Route path="/explain-feedback" element={<ExplainFeedback />} />
       <Route path="/learn" element={<LearnHome />} />
       <Route path="/learn/lesson/:lessonId" element={<LessonViewer />} />
       <Route path="/learn/bookshelf" element={<LearnBookshelf />} />

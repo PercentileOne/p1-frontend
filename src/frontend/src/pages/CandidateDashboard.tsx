@@ -39,9 +39,9 @@ const LIVE_STATS: LiveCard[] = [
     color: "#4F8EF7", bg: "rgba(79,142,247,0.08)", border: "rgba(79,142,247,0.2)", shadow: "79,142,247",
     interval: 13000,
     slides: [
-      { label: "Interviews Completed", value: "3",    change: "Last score: 84%"              },
-      { label: "Best Score",           value: "84%",  change: "vs. 71% role average"         },
-      { label: "Interview Status",     value: "Ready", change: "All modules complete"         },
+      { label: "Interviews Completed", value: "3",     change: "Last score: 84%"        },
+      { label: "Best Score",           value: "84%",   change: "vs. 71% role average"   },
+      { label: "Interview Status",     value: "Ready", change: "All modules complete"    },
     ],
   },
   {
@@ -60,6 +60,15 @@ const LIVE_STATS: LiveCard[] = [
       { label: "Profile Views",  value: "47",   change: "+8 today"                    },
       { label: "This Week",      value: "23",   change: "Trending up 34%"             },
       { label: "Top Role Match", value: ".NET", change: "Most searched role this week" },
+    ],
+  },
+  {
+    color: "#F472B6", bg: "rgba(244,114,182,0.08)", border: "rgba(244,114,182,0.2)", shadow: "244,114,182",
+    interval: 16000,
+    slides: [
+      { label: "Paid Contacts This Week", value: "3",   change: "Employers paid to reach you"  },
+      { label: "Total Paid Contacts",     value: "11",  change: "Since you went live"           },
+      { label: "Your Earning Power",      value: "£55", change: "Value generated this month"    },
     ],
   },
 ];
@@ -350,7 +359,7 @@ export default function CandidateDashboard() {
         </div>
 
         {/* ── STATS ROW ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 28 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>
           {LIVE_STATS.map((s, i) => <LiveStatCard key={i} card={s} />)}
         </div>
 
