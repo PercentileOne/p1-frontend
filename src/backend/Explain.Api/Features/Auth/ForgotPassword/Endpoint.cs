@@ -50,8 +50,7 @@ public static class Endpoint
         await db.SaveChangesAsync();
 
         // Send reset email
-        var appUrl   = config["AppUrl"]?.Split(',')[0].Trim() ?? "https://candidate.explain.global";
-        var resetUrl = $"{appUrl}/reset-password?token={rawToken}";
+        var resetUrl = $"https://candidate.explain.global/reset-password?token={rawToken}";
 
         try
         {
