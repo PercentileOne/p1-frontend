@@ -90,7 +90,7 @@ export default function LoginPage() {
     setTimeout(() => {
       storeLogin("demo-token", {
         id:        "0",
-        email:     "demo@explain.global",
+        email:     "demo@InterviewMe.global",
         name:      "Demo Candidate",
         firstName: "Demo",
         role:      "candidate",
@@ -151,7 +151,7 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.55, duration: 0.7, ease: "easeOut" }}
         >
-          Explain<span style={{ color: "#34D399" }}>.global</span>
+          InterviewMe<span style={{ color: "#34D399" }}>.global</span>
         </motion.p>
 
         {/* Tagline */}
@@ -530,3 +530,4 @@ function Orb({ className, color, delay, dur }: { className: string; color: strin
     />
   );
 }
+

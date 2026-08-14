@@ -1,11 +1,11 @@
-name: Deploy explain.global (candidate + learn) → Azure SWA
+name: Deploy InterviewMe portal → Azure SWA
 
 on:
   push:
     branches: [ main ]
     paths:
       - 'src/frontend/**'
-      - '.github/workflows/deploy-explain-global.yml'
+      - '.github/workflows/deploy-interviewme-portal.yml'
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches: [ main ]

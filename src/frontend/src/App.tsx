@@ -1,8 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { RequirePermission, UnauthorizedPage } from "./auth/RequirePermission";
 import ProductHome from "./pages/ProductHome";
-import ExplainPrep from "./pages/ExplainPrep";
-import ExplainFeedback from "./pages/ExplainFeedback";
+import InterviewMePrep from "./pages/InterviewMePrep";
+import InterviewMeFeedback from "./pages/InterviewMeFeedback";
 import PortalFeedbackPage from "./pages/PortalFeedbackPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -88,9 +88,9 @@ export default function App() {
     <Routes>
       {/* Explain public-facing routes */}
       <Route path="/" element={<ProductHome />} />
-      <Route path="/prep" element={<ExplainPrep />} />
+      <Route path="/prep" element={<InterviewMePrep />} />
       <Route path="/feedback" element={<PortalFeedbackPage />} />
-      <Route path="/explain-feedback" element={<ExplainFeedback />} />
+      <Route path="/explain-feedback" element={<InterviewMeFeedback />} />
       <Route path="/learn" element={<LearnHome />} />
       <Route path="/learn/lesson/:lessonId" element={<LessonViewer />} />
       <Route path="/learn/bookshelf" element={<LearnBookshelf />} />
@@ -208,3 +208,4 @@ export default function App() {
     </Routes>
   );
 }
+

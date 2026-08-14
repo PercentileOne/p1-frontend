@@ -1,5 +1,5 @@
 {
-  "name": "explain-global",
+  "name": "interviewme",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -28,3 +28,4 @@
     "vite": "^8.1.1"
   }
 }
+

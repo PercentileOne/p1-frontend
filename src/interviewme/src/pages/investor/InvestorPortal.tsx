@@ -1158,7 +1158,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
     />
 
     <Callout icon="🚀" title="The Core Insight" color={A}
-      body={<>Before <IM />, every candidate did the same thing: write a CV, submit an application, wait, hope, repeat — one employer at a time. If the bot didn't reject them first, they might get a call. Then came the hardest part — prepare for days, travel to the interview, give everything they had — only to be ghosted. No feedback. No explanation. Just silence. That cycle, repeated across dozens of applications, broke people. Now, for the very first time in the history of hiring, a candidate can record a single interview once — from their living room — and while they get on with their life, that interview is working for them. Seen by potentially thousands of recruiters and employers simultaneously, without applying to a single one of them. The candidate never has to travel to be disappointed again. <IM />.global is the world's first broadcast interview platform. This is the new hiring medium.</>} />
+      body={<>Before <IM />, every candidate did the same thing: write a CV, submit an application, wait, hope, repeat — one employer at a time. If the bot didn't reject them first, they might get a call. Then came the hardest part — prepare for days, travel to the interview, give everything they had — only to be ghosted. No feedback. No explanation. Just silence. That cycle, repeated across dozens of applications, broke people. Now, for the very first time in the history of hiring, a candidate can record a single interview once — from their living room — and while they get on with their life, that interview is working for them. Seen by potentially thousands of recruiters and employers simultaneously, without applying to a single one of them. The candidate never has to travel to be disappointed again. <IM />.global is the world's first interview broadcast platform. This is the new hiring medium.</>} />
 
     {/* Three ecosystem components */}
     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: A, marginBottom: 16 }}>The Ecosystem — Three Products, One Platform</div>
@@ -1267,7 +1267,7 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24 }}>
           {[
             { label: 'Mission', text: 'Make CVs redundant. Replace gatekeeping with proof. Give every candidate — regardless of background, country, or income — a fair shot at being seen.' },
-            { label: 'Category', text: <><IM /> is the first broadcast interview platform — no incumbent. LinkedIn shows CVs. Interviewing.io is coding only. A category we are creating and naming.</> },
+            { label: 'Category', text: <><IM /> is the first interview broadcast platform — no incumbent. LinkedIn shows CVs. Interviewing.io is coding only. A category we are creating and naming.</> },
             { label: 'IP', text: 'Patent-pending across 22 claims and 12 families covering both products. Full details in the Patent & IP section of this portal.' },
           ].map(({ label, text }) => (
             <div key={label}>

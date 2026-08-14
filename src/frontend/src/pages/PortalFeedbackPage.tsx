@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Star, ChevronRight, CheckCircle2 } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════════════
-   PORTAL FEEDBACK PAGE — explain.global/feedback
+   PORTAL FEEDBACK PAGE — InterviewMe.global/feedback
    Public, no auth required. Logged to DB via POST /api/feedback
    ══════════════════════════════════════════════════════════════ */
 
@@ -133,7 +133,7 @@ export default function PortalFeedbackPage() {
           improvements: form.improvements.trim() || null,
           recommend:    form.recommend || null,
           submitted_at: new Date().toISOString(),
-          source:       "explain.global/feedback",
+          source:       "InterviewMe.global/feedback",
         }),
       });
       if (!res.ok) throw new Error();
@@ -155,7 +155,7 @@ export default function PortalFeedbackPage() {
             Your feedback means everything to us. We read every single response and use it to make the platform better for everyone.
           </p>
           <a href="/" style={{ display: "inline-block", padding: "12px 28px", background: "linear-gradient(135deg,#34D399,#059669)", color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
-            Back to Explain.global
+            Back to InterviewMe.global
           </a>
         </motion.div>
       </div>
@@ -168,7 +168,7 @@ export default function PortalFeedbackPage() {
       {/* Header */}
       <div style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "18px 24px", display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg,#34D399,#047857)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, color: "#fff" }}>P1</div>
-        <span style={{ fontSize: 15, fontWeight: 900, color: "#fff", letterSpacing: "-0.01em" }}>Explain<span style={{ color: "#34D399" }}>.global</span></span>
+        <span style={{ fontSize: 15, fontWeight: 900, color: "#fff", letterSpacing: "-0.01em" }}>InterviewMe<span style={{ color: "#34D399" }}>.global</span></span>
       </div>
 
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "48px 24px 80px" }}>
@@ -182,7 +182,7 @@ export default function PortalFeedbackPage() {
             Help us build something<br /><span style={{ color: "#34D399" }}>genuinely great.</span>
           </h1>
           <p style={{ fontSize: 15, color: "rgba(255,255,255,0.5)", lineHeight: 1.75, maxWidth: 520 }}>
-            We're building Explain.global from the ground up — and your honest feedback shapes what comes next. It takes about 3 minutes.
+            We're building InterviewMe.global from the ground up — and your honest feedback shapes what comes next. It takes about 3 minutes.
           </p>
         </motion.div>
 
@@ -283,7 +283,7 @@ export default function PortalFeedbackPage() {
 
             {/* Section: Recommend */}
             <Section title="One last thing">
-              <Field label="Would you recommend Explain.global to a friend?">
+              <Field label="Would you recommend InterviewMe.global to a friend?">
                 <div style={{ display: "flex", gap: 10 }}>
                   {["Definitely yes", "Probably yes", "Not sure", "Probably not"].map(opt => (
                     <button
@@ -346,3 +346,4 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     </div>
   );
 }
+

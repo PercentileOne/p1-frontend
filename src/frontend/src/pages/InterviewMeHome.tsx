@@ -80,7 +80,7 @@ export default function ExplainHome() {
         <div style={{ maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(79,142,247,0.8)', marginBottom: '20px' }}>
-              explain.global · AI interview preparation & learning
+              InterviewMe.global · AI interview preparation & learning
             </div>
             <h1 style={{ fontSize: 'clamp(32px, 6vw, 56px)', fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '20px', textWrap: 'balance' } as React.CSSProperties}>
               Prepare smarter.<br />Interview better.
@@ -232,9 +232,10 @@ export default function ExplainHome() {
       {/* Footer */}
       <div style={{ borderTop: '1px solid var(--border)', padding: '20px 24px', textAlign: 'center' }}>
         <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>
-          Explain · explain.global · Preparing candidates for any role, any industry
+          Explain · InterviewMe.global · Preparing candidates for any role, any industry
         </span>
       </div>
     </div>
   );
 }
+

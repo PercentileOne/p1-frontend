@@ -180,7 +180,7 @@ export default function RegisterPage() {
             </svg>
           </div>
           <span style={{ fontWeight: 800, fontSize: 17, color: "#fff", letterSpacing: "-.02em" }}>
-            explain<span style={{ color: "#2563eb" }}>.global</span>
+            InterviewMe<span style={{ color: "#34D399" }}>.global</span>
           </span>
         </motion.div>
 
@@ -584,3 +584,4 @@ function Orb({ cls, color, delay, dur }: { cls: string; color: string; delay: nu
     />
   );
 }
+
