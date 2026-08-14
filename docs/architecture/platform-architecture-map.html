@@ -1,0 +1,562 @@
+<title>Platform Architecture Map</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0d0f18;
+    --surface:   #131620;
+    --surface2:  #1a1e2e;
+    --border:    #1d2235;
+    --border2:   #252a3d;
+    --text:      #e2e8f0;
+    --muted:     #5a6480;
+    --subtle:    #8892aa;
+    --green:     #34d399;
+    --green-dim: #0d3d2a;
+    --red:       #ef4444;
+    --red-dim:   #3b1010;
+    --amber:     #f59e0b;
+    --amber-dim: #3a2600;
+    --blue:      #60a5fa;
+    --blue-dim:  #0f2040;
+    --purple:    #a78bfa;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .logo-block { display: flex; align-items: center; gap: 14px; }
+
+  .logo-mark {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg, #34d399, #047857);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 15px; color: #fff; letter-spacing: -0.5px;
+    flex-shrink: 0;
+  }
+
+  .logo-name { font-size: 17px; font-weight: 700; color: var(--text); }
+  .logo-name span { color: var(--green); }
+  .logo-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+  .header-right { text-align: right; }
+  .header-title { font-size: 20px; font-weight: 700; color: var(--text); }
+  .header-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* ── Main content ── */
+  .main { max-width: 1100px; margin: 0 auto; padding: 32px 24px 64px; }
+
+  /* ── Section label ── */
+  .section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  /* ── Issues card ── */
+  .issues-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 24px;
+    margin-bottom: 36px;
+  }
+
+  .issue-row {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .issue-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .issue-row:first-child { padding-top: 0; }
+
+  .badge {
+    flex-shrink: 0;
+    font-size: 9px; font-weight: 800; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+    margin-top: 2px;
+  }
+  .badge-critical { background: var(--red-dim); color: var(--red); border: 1px solid #5a1a1a; }
+  .badge-attention { background: var(--amber-dim); color: var(--amber); border: 1px solid #5a3c00; }
+
+  .issue-text { font-size: 13px; color: var(--subtle); line-height: 1.55; }
+  .issue-text strong { color: var(--text); font-weight: 600; }
+
+  /* ── SWA grid ── */
+  .swa-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 700px) { .swa-grid { grid-template-columns: 1fr; } }
+
+  .swa-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+
+  .swa-card.critical-border { border-color: #5a1a1a; }
+
+  /* card header */
+  .swa-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+  .swa-domain {
+    font-family: "SF Mono", "Cascadia Code", "Fira Code", ui-monospace, monospace;
+    font-size: 13px; font-weight: 600; color: var(--text);
+  }
+
+  .status-pill {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 20px;
+    display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+  }
+  .status-pill::before { content: ""; width: 5px; height: 5px; border-radius: 50%; }
+  .pill-live { background: #0d3d2a; color: var(--green); border: 1px solid #1a5c3d; }
+  .pill-live::before { background: var(--green); }
+  .pill-redirect { background: var(--blue-dim); color: var(--blue); border: 1px solid #1a3560; }
+  .pill-redirect::before { background: var(--blue); }
+  .pill-unknown { background: #1a1a2a; color: var(--muted); border: 1px solid #2a2a4a; }
+  .pill-unknown::before { background: var(--muted); }
+
+  /* meta row */
+  .swa-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  .meta-chip {
+    font-size: 10px; padding: 2px 8px; border-radius: 4px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    color: var(--subtle); font-weight: 500;
+  }
+  .meta-token {
+    font-family: ui-monospace, monospace;
+    font-size: 10px; color: var(--muted); letter-spacing: 0.02em;
+  }
+  .meta-path {
+    font-family: ui-monospace, monospace;
+    font-size: 10px; color: var(--muted);
+  }
+
+  /* divider */
+  .swa-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+  /* routes */
+  .routes-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+  }
+
+  .route-list { display: flex; flex-direction: column; gap: 4px; }
+
+  .route-row { display: flex; align-items: baseline; gap: 8px; font-size: 12px; }
+
+  .route-path {
+    font-family: ui-monospace, monospace;
+    color: var(--text); font-size: 12px; white-space: nowrap;
+  }
+  .route-path.misplaced { color: var(--red); }
+  .route-bullet { color: var(--border2); flex-shrink: 0; }
+  .route-desc { color: var(--subtle); font-size: 11px; }
+
+  .routes-warn {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--red); margin: 10px 0 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .routes-warn::before { content: "▪"; }
+
+  .note-box {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 6px; padding: 10px 12px;
+    font-size: 11px; color: var(--subtle); line-height: 1.5;
+  }
+  .note-box.warn-note { border-color: #5a1a1a; background: var(--red-dim); color: #f8a0a0; }
+  .note-box.info-note { border-color: #1a3560; background: var(--blue-dim); color: #90bfff; }
+
+  /* pages */
+  .page-row { display: flex; align-items: baseline; gap: 8px; font-size: 12px; margin-bottom: 4px; }
+  .page-path { font-family: ui-monospace, monospace; color: var(--green); font-size: 12px; }
+  .page-file { font-family: ui-monospace, monospace; color: var(--muted); font-size: 11px; }
+
+  /* footer */
+  .footer {
+    margin-top: 48px; padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--muted);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+</style>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo-block">
+    <div class="logo-mark">IM</div>
+    <div>
+      <div class="logo-name">InterviewMe<span>.global</span></div>
+      <div class="logo-sub">Percentile One Ltd</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="header-title">Platform Architecture Map</div>
+    <div class="header-meta">Generated 12 Aug 2026 &nbsp;·&nbsp; Full audit across all repos &amp; SWAs</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Issues -->
+  <div class="section-label">Issues to Resolve</div>
+  <div class="issues-card">
+
+    <div class="issue-row">
+      <span class="badge badge-critical">Critical</span>
+      <div class="issue-text">
+        <strong>/candidate/* and /client routes live inside the Recruiter portal (mango-bay SWA).</strong>
+        Candidate-facing and client-facing pages are being served from recruiter.explain.global —
+        wrong SWA, wrong domain, wrong audience.
+      </div>
+    </div>
+
+    <div class="issue-row">
+      <span class="badge badge-critical">Critical</span>
+      <div class="issue-text">
+        <strong>Two workflows both deploy to orange-island (candidate SWA).</strong>
+        The legacy manual workflow in P1 points at recruiter-portal source; the active auto-deploy
+        is explain-global-platform. The legacy one must be disabled.
+      </div>
+    </div>
+
+    <div class="issue-row">
+      <span class="badge badge-attention">Attention</span>
+      <div class="issue-text">
+        <strong>P1/src/frontend deploys to an unknown domain</strong> via
+        <code style="font-family:monospace;font-size:11px;color:var(--amber)">AZURE_STATIC_WEB_APPS_API_TOKEN_EXPLAIN_GLOBAL_MAIN</code>
+        — 80+ routes, no confirmed live domain. Clarify what domain this maps to.
+      </div>
+    </div>
+
+    <div class="issue-row">
+      <span class="badge badge-attention">Attention</span>
+      <div class="issue-text">
+        <strong>talktolearnplatform (Next.js) has no deployment pipeline.</strong>
+        Full app with Cosmos DB, Stripe &amp; magic-link auth — but no GitHub Actions workflow configured.
+      </div>
+    </div>
+
+    <div class="issue-row">
+      <span class="badge badge-attention">Attention</span>
+      <div class="issue-text">
+        <strong>Domains still reference explain.global, not interviewme.global.</strong>
+        As the rebrand lands, candidate/recruiter/client subdomains should move to *.interviewme.global.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SWA Grid -->
+  <div class="section-label">Live Static Web Apps</div>
+  <div class="swa-grid">
+
+    <!-- product.interviewme.global -->
+    <div class="swa-card">
+      <div class="swa-head">
+        <div class="swa-domain">product.interviewme.global</div>
+        <div class="status-pill pill-live">Live</div>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-token">SWA token: PRODUCT_INTERVIEWME</span>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-chip">Static HTML</span>
+        <span class="meta-path">P1 / src/viewme/public/</span>
+      </div>
+      <hr class="swa-divider">
+      <div>
+        <div class="routes-label">Pages</div>
+        <div class="route-list">
+          <div class="page-row">
+            <span class="page-path">/</span>
+            <span class="route-bullet">·</span>
+            <span class="page-file">home.html</span>
+            <span class="route-bullet">—</span>
+            <span class="route-desc">main marketing landing</span>
+          </div>
+          <div class="page-row">
+            <span class="page-path">/contact</span>
+            <span class="route-bullet">·</span>
+            <span class="page-file">contact.html</span>
+            <span class="route-bullet">—</span>
+            <span class="route-desc">early access form</span>
+          </div>
+          <div class="page-row">
+            <span class="page-path">/profile</span>
+            <span class="route-bullet">·</span>
+            <span class="page-file">profile.html</span>
+            <span class="route-bullet">—</span>
+            <span class="route-desc">public candidate profile demo</span>
+          </div>
+          <div class="page-row">
+            <span class="page-path">/fp</span>
+            <span class="route-bullet">·</span>
+            <span class="page-file">fp.html</span>
+            <span class="route-bullet">—</span>
+            <span class="route-desc">feature page</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- interviewme.global -->
+    <div class="swa-card">
+      <div class="swa-head">
+        <div class="swa-domain">interviewme.global</div>
+        <div class="status-pill pill-redirect">Redirect</div>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-token">SWA token: INTERVIEWME</span>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-chip">Static HTML</span>
+        <span class="meta-path">P1 / src/viewme/public/</span>
+      </div>
+      <hr class="swa-divider">
+      <div>
+        <div class="routes-label">Routes</div>
+        <div class="route-list">
+          <div class="route-row">
+            <span class="route-path">/*</span>
+            <span class="route-bullet">→</span>
+            <span class="route-desc">301 redirect → product.interviewme.global</span>
+          </div>
+          <div class="route-row">
+            <span class="route-path">/</span>
+            <span class="route-bullet">→</span>
+            <span class="route-desc">gate.html (splash before redirect fires)</span>
+          </div>
+        </div>
+      </div>
+      <div class="note-box info-note">
+        Gateway only — no content served here. Exists purely to capture bare-domain traffic.
+      </div>
+    </div>
+
+    <!-- explain.global -->
+    <div class="swa-card">
+      <div class="swa-head">
+        <div class="swa-domain">explain.global <span style="font-size:10px;color:var(--muted);font-family:sans-serif;font-weight:400">≡ ≡ ≡</span></div>
+        <div class="status-pill pill-live">Live</div>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-token">SWA: ambitious-stone-07fe1b98f</span>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-chip">React 19 + Vite 8</span>
+        <span class="meta-path">P1 / src/interviewme/</span>
+      </div>
+      <hr class="swa-divider">
+      <div>
+        <div class="routes-label">Routes</div>
+        <div class="route-list">
+          <div class="route-row"><span class="route-path">/</span><span class="route-bullet">→</span><span class="route-desc">Home</span></div>
+          <div class="route-row"><span class="route-path">/login</span><span class="route-bullet">→</span><span class="route-desc">Login</span></div>
+          <div class="route-row"><span class="route-path">/register</span><span class="route-bullet">→</span><span class="route-desc">Register</span></div>
+          <div class="route-row"><span class="route-path">/jobs</span><span class="route-bullet">→</span><span class="route-desc">Jobs board</span></div>
+          <div class="route-row"><span class="route-path">/learn</span><span class="route-bullet">→</span><span class="route-desc">Learn section</span></div>
+          <div class="route-row"><span class="route-path">/investor</span><span class="route-bullet">→</span><span class="route-desc">Investor portal (password-gated)</span></div>
+          <div class="route-row"><span class="route-path">/the-problem</span><span class="route-bullet">→</span><span class="route-desc">Narrative page</span></div>
+          <div class="route-row" style="margin-top:4px;">
+            <span class="route-desc" style="color:var(--muted);font-size:11px;">+ /community &nbsp;/pricing &nbsp;/portals &nbsp;/developer &nbsp;/my-interviews</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- recruiter.explain.global -->
+    <div class="swa-card critical-border">
+      <div class="swa-head">
+        <div class="swa-domain">recruiter.explain.global</div>
+        <div class="status-pill pill-live">Live</div>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-token">SWA: mango-bay-0177b86b03</span>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-chip">React 19 + Vite 8</span>
+        <span class="meta-path">P1 / src/recruiter-portal/</span>
+      </div>
+      <hr class="swa-divider">
+      <div>
+        <div class="routes-label">Recruiter Routes (Correct)</div>
+        <div class="route-list">
+          <div class="route-row"><span class="route-path">/dashboard</span><span class="route-bullet">·</span><span class="route-desc">Recruiter dashboard</span></div>
+          <div class="route-row"><span class="route-path">/interview-pack/start</span><span class="route-bullet">·</span><span class="route-desc">Start interview pack</span></div>
+          <div class="route-row"><span class="route-path">/interview-room/:packId</span><span class="route-bullet">·</span><span class="route-desc">Live interview room</span></div>
+          <div class="route-row"><span class="route-path">/screen-candidates</span><span class="route-bullet">·</span><span class="route-desc">Screen candidates</span></div>
+          <div class="route-row"><span class="route-path">/league</span><span class="route-bullet">·</span><span class="route-desc">League table</span></div>
+        </div>
+        <div class="routes-warn">Misplaced Routes (should be on orange-island)</div>
+        <div class="route-list">
+          <div class="route-row"><span class="route-path misplaced">/candidate</span><span class="route-bullet">·</span><span class="route-desc">Candidate home</span></div>
+          <div class="route-row"><span class="route-path misplaced">/candidate/prep</span><span class="route-bullet">·</span><span class="route-desc">Interview prep</span></div>
+          <div class="route-row"><span class="route-path misplaced">/candidate/feedback</span><span class="route-bullet">·</span><span class="route-desc">Feedback portal</span></div>
+          <div class="route-row"><span class="route-path misplaced">/client</span><span class="route-bullet">·</span><span class="route-desc">Client portal</span></div>
+          <div class="route-row"><span class="route-path misplaced">/prep/:token</span><span class="route-bullet">·</span><span class="route-desc">Candidate prep via token</span></div>
+        </div>
+      </div>
+      <div class="note-box warn-note">
+        Candidate &amp; client routes are being served from the recruiter SWA. These must be moved to
+        orange-island (candidate.explain.global).
+      </div>
+    </div>
+
+    <!-- candidate.explain.global -->
+    <div class="swa-card">
+      <div class="swa-head">
+        <div class="swa-domain">candidate.explain.global</div>
+        <div class="status-pill pill-live">Live</div>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-token">SWA: orange-island (EXPLAIN_GLOBAL_MAIN)</span>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-chip">React 19 + Vite 8</span>
+        <span class="meta-path">P1 / src/frontend/</span>
+      </div>
+      <hr class="swa-divider">
+      <div>
+        <div class="routes-label">Routes (80+ total)</div>
+        <div class="route-list">
+          <div class="route-row"><span class="route-path">/dashboard</span><span class="route-bullet">→</span><span class="route-desc">Candidate dashboard</span></div>
+          <div class="route-row"><span class="route-path">/profile</span><span class="route-bullet">→</span><span class="route-desc">Profile page</span></div>
+          <div class="route-row"><span class="route-path">/interview-room</span><span class="route-bullet">→</span><span class="route-desc">AI interview room</span></div>
+          <div class="route-row"><span class="route-path">/my-interviews</span><span class="route-bullet">→</span><span class="route-desc">Interview history</span></div>
+          <div class="route-row"><span class="route-path">/login</span><span class="route-bullet">→</span><span class="route-desc">Login</span></div>
+          <div class="route-row"><span class="route-path">/register</span><span class="route-bullet">→</span><span class="route-desc">Candidate registration</span></div>
+          <div class="route-row"><span class="route-path">/settings</span><span class="route-bullet">→</span><span class="route-desc">Account settings</span></div>
+          <div class="route-row" style="margin-top:4px;">
+            <span class="route-desc" style="color:var(--muted);font-size:11px;">+ employer portal, recruiter portal, admin, feedback, learn engine…</span>
+          </div>
+        </div>
+      </div>
+      <div class="note-box warn-note">
+        This SWA also receives candidate &amp; client traffic misrouted from mango-bay.
+        Dual-workflow issue: legacy pipeline must be disabled.
+      </div>
+    </div>
+
+    <!-- client.explain.global -->
+    <div class="swa-card">
+      <div class="swa-head">
+        <div class="swa-domain">client.explain.global</div>
+        <div class="status-pill pill-live">Live</div>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-token">SWA: EXPLAIN_GLOBAL_CLIENT (token pending)</span>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-chip">React 19 + Vite 8</span>
+        <span class="meta-path">P1 / src/frontend/ (employer portal routes)</span>
+      </div>
+      <hr class="swa-divider">
+      <div>
+        <div class="routes-label">Routes</div>
+        <div class="route-list">
+          <div class="route-row"><span class="route-path">/</span><span class="route-bullet">→</span><span class="route-desc">Employer gate / login</span></div>
+          <div class="route-row"><span class="route-path">/dashboard</span><span class="route-bullet">→</span><span class="route-desc">Hiring manager cockpit</span></div>
+          <div class="route-row"><span class="route-path">/candidates</span><span class="route-bullet">→</span><span class="route-desc">Candidate marketplace</span></div>
+          <div class="route-row"><span class="route-path">/candidate/:id</span><span class="route-bullet">→</span><span class="route-desc">Candidate profile (read-only)</span></div>
+          <div class="route-row"><span class="route-path">/interviews</span><span class="route-bullet">→</span><span class="route-desc">Interview results viewer</span></div>
+        </div>
+      </div>
+      <div class="note-box info-note">
+        Domain rename in progress: client.explain.global → employer.explain.global
+        → employer.interviewme.global (Phase 2 of rebrand).
+      </div>
+    </div>
+
+    <!-- Backend API -->
+    <div class="swa-card" style="border-color:#1a2a1a;">
+      <div class="swa-head">
+        <div class="swa-domain">api.explain.global</div>
+        <div class="status-pill pill-live">Live</div>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-token">Azure App Service: explain-global-api</span>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-chip">.NET 9 / ASP.NET Core</span>
+        <span class="meta-path">P1 / src/backend/Explain.Api/</span>
+      </div>
+      <hr class="swa-divider">
+      <div>
+        <div class="routes-label">Key Endpoints</div>
+        <div class="route-list">
+          <div class="route-row"><span class="route-path">/auth/register</span><span class="route-bullet">·</span><span class="route-desc">Candidate registration</span></div>
+          <div class="route-row"><span class="route-path">/auth/login</span><span class="route-bullet">·</span><span class="route-desc">JWT login</span></div>
+          <div class="route-row"><span class="route-path">/auth/me</span><span class="route-bullet">·</span><span class="route-desc">Session / current user</span></div>
+          <div class="route-row"><span class="route-path">/auth/reset-password</span><span class="route-bullet">·</span><span class="route-desc">Password reset flow</span></div>
+          <div class="route-row"><span class="route-path">/api/ai-proxy</span><span class="route-bullet">·</span><span class="route-desc">OpenAI proxy (GPT-4o)</span></div>
+          <div class="route-row"><span class="route-path">/feedback</span><span class="route-bullet">·</span><span class="route-desc">Portal feedback submissions</span></div>
+        </div>
+      </div>
+      <div class="note-box" style="background:#0d1a0d;border-color:#1a3a1a;color:#90c090;">
+        DO NOT rename this Azure resource. App Setting <code style="font-family:monospace;font-size:10px;">ConnectionStrings__SqlDb</code>
+        points to explain-global-db.database.windows.net (Azure SQL serverless).
+      </div>
+    </div>
+
+    <!-- talktolearnplatform -->
+    <div class="swa-card" style="border-color:#3a2600;">
+      <div class="swa-head">
+        <div class="swa-domain">talktolearnplatform</div>
+        <div class="status-pill pill-unknown">No pipeline</div>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-token">No GitHub Actions workflow configured</span>
+      </div>
+      <div class="swa-meta">
+        <span class="meta-chip">Next.js</span>
+        <span class="meta-path">P1 / src/talktolearnplatform/</span>
+      </div>
+      <hr class="swa-divider">
+      <div>
+        <div class="routes-label">Features Built</div>
+        <div class="route-list">
+          <div class="route-row"><span class="route-path">/</span><span class="route-bullet">·</span><span class="route-desc">Marketing / landing</span></div>
+          <div class="route-row"><span class="route-path">/dashboard</span><span class="route-bullet">·</span><span class="route-desc">User dashboard</span></div>
+          <div class="route-row"><span class="route-path">/learn</span><span class="route-bullet">·</span><span class="route-desc">Learning engine</span></div>
+        </div>
+      </div>
+      <div class="note-box warn-note" style="background:var(--amber-dim);border-color:#5a3c00;color:#fcd08a;">
+        Full app with Cosmos DB, Stripe &amp; magic-link auth — but no deployment
+        pipeline exists. Must be wired to GitHub Actions before shipping.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span>InterviewMe.global · Percentile One Ltd · Platform Architecture Map</span>
+    <span>Generated 12 Aug 2026 &nbsp;·&nbsp; Updated 14 Aug 2026 (src/interviewme rename applied)</span>
+  </div>
+
+</div>
