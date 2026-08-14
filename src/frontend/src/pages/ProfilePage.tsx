@@ -851,7 +851,7 @@ export default function ProfilePage() {
       {/* Top bar */}
       <div className="sticky top-0 z-20 bg-[#13151c] border-b border-white/[0.06]">
         <div className="flex items-center gap-3 px-6 py-3">
-          <BackToCockpit />
+          <BackToCockpit to="/dashboard" />
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-lg flex items-center justify-center text-[9px] font-bold text-white"
               style={{ background: profile.avatarColor }}>
