@@ -32,6 +32,7 @@ public static class Endpoint
             return Results.BadRequest(new { error = "Account not found." });
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
+        user.UpdatedAt    = DateTime.UtcNow;
         entry.Used        = true;
 
         await db.SaveChangesAsync();
