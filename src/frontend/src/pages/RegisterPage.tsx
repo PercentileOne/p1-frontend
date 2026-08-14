@@ -156,7 +156,7 @@ export default function RegisterPage() {
       <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[420px] h-[420px] rounded-full"
            style={{ background: "radial-gradient(ellipse, rgba(79,142,247,0.12) 0%, transparent 70%)" }} />
 
-      <div className="relative z-10 w-full max-w-sm px-4 flex flex-col items-center gap-6">
+      <div className="relative z-10 w-full max-w-lg px-4 flex flex-col items-center gap-6">
 
         {/* Logo mark */}
         <motion.div
@@ -192,7 +192,7 @@ export default function RegisterPage() {
           transition={{ delay: 0.3, duration: 0.6 }}
         >
           <h1 style={{ fontSize: 20, fontWeight: 800, color: "#fff", letterSpacing: "-.03em", margin: 0 }}>
-            Create your account
+            Candidate Registration
           </h1>
           <p style={{ fontSize: 13, color: "rgba(240,244,255,.45)", marginTop: 4 }}>
             Your interview intelligence platform awaits.
@@ -262,8 +262,9 @@ export default function RegisterPage() {
                 {/* Name row */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   <div>
+                    <FieldLabel>First name</FieldLabel>
                     <RegInput
-                      placeholder="First name"
+                      placeholder="e.g. Francis"
                       value={firstName}
                       onChange={v => { setFirstName(v); clearErr("firstName"); }}
                       autoFocus
@@ -271,8 +272,9 @@ export default function RegisterPage() {
                     <ErrMsg msg={errors.firstName} />
                   </div>
                   <div>
+                    <FieldLabel>Last name</FieldLabel>
                     <RegInput
-                      placeholder="Last name"
+                      placeholder="e.g. Cobbinah"
                       value={lastName}
                       onChange={v => { setLastName(v); clearErr("lastName"); }}
                     />
@@ -282,8 +284,9 @@ export default function RegisterPage() {
 
                 {/* Email */}
                 <div>
+                  <FieldLabel>Email address</FieldLabel>
                   <RegInput
-                    placeholder="Email address"
+                    placeholder="you@example.com"
                     type="email"
                     value={email}
                     onChange={v => { setEmail(v); clearErr("email"); }}
@@ -292,12 +295,15 @@ export default function RegisterPage() {
                 </div>
 
                 {/* Profession (optional) */}
-                <RegSelect
-                  value={profession}
-                  onChange={setProfession}
-                  options={PROFESSIONS}
-                  placeholder="Profession (optional)"
-                />
+                <div>
+                  <FieldLabel>Profession <span style={{ opacity: 0.45, fontWeight: 400 }}>(optional)</span></FieldLabel>
+                  <RegSelect
+                    value={profession}
+                    onChange={setProfession}
+                    options={PROFESSIONS}
+                    placeholder="Select your profession"
+                  />
+                </div>
 
                 <PrimaryButton onClick={goToStep2} phase="idle" label="Continue" icon={<ArrowRight size={14} />} />
               </motion.div>
@@ -315,8 +321,9 @@ export default function RegisterPage() {
               >
                 {/* Password */}
                 <div>
+                  <FieldLabel>Password</FieldLabel>
                   <RegInput
-                    placeholder="Password (min. 8 characters)"
+                    placeholder="Min. 8 characters"
                     type={showPass ? "text" : "password"}
                     value={password}
                     onChange={v => { setPassword(v); clearErr("password"); }}
@@ -349,8 +356,9 @@ export default function RegisterPage() {
 
                 {/* Confirm */}
                 <div>
+                  <FieldLabel>Confirm password</FieldLabel>
                   <RegInput
-                    placeholder="Confirm password"
+                    placeholder="Re-enter your password"
                     type={showConf ? "text" : "password"}
                     value={confirm}
                     onChange={v => { setConfirm(v); clearErr("confirm"); }}
@@ -503,6 +511,14 @@ function PrimaryButton({
         transition={{ duration: 0.6 }}
       />
     </motion.button>
+  );
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(240,244,255,0.5)", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 5px 2px" }}>
+      {children}
+    </p>
   );
 }
 
