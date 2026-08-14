@@ -78,7 +78,7 @@ export const authApi = {
 
   /** Validates the stored token and returns the full session + permissions. */
   getSession(token: string): Promise<SessionResponse> {
-    return get('/auth/session', token);
+    return get('/auth/me', token);
   },
 
   logout(token: string): Promise<void> {
