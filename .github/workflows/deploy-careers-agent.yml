@@ -1,0 +1,42 @@
+name: Deploy P1.CareersAgent → Azure Functions
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/agents/P1.CareersAgent/**'
+      - '.github/workflows/deploy-careers-agent.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    name: Build and Deploy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Restore
+        working-directory: src/agents/P1.CareersAgent
+        run: dotnet restore
+
+      - name: Build
+        working-directory: src/agents/P1.CareersAgent
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish
+        working-directory: src/agents/P1.CareersAgent
+        run: dotnet publish --configuration Release --no-build --output ./publish
+
+      - name: Deploy to Azure Functions
+        uses: Azure/functions-action@v1
+        with:
+          app-name: p1-careers-agent
+          package: src/agents/P1.CareersAgent/publish
+          publish-profile: ${{ secrets.AZURE_CAREERS_AGENT_PUBLISH_PROFILE }}
