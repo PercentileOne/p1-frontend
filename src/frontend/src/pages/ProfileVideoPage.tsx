@@ -50,7 +50,7 @@ const FILTER_LABELS: Record<FilterPreset, { icon: string; label: string; desc: s
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-type Phase = 'welcome' | 'sarah-speaking' | 'recording' | 'processing' | 'coaching' | 'complete';
+type Phase = 'welcome' | 'setup' | 'sarah-speaking' | 'recording' | 'processing' | 'coaching' | 'complete';
 
 interface AnswerClip {
   questionIndex: number;
@@ -200,12 +200,44 @@ export default function ProfileVideoPage() {
     setCameraReady(false);
   }, []);
 
-  // Start preview automatically when we enter the recording phase
+  // ── Mic level meter for setup screen ─────────────────────────────────────
+  const [micLevel, setMicLevel] = useState(0);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const micLevelFrameRef = useRef<number | null>(null);
+
+  const startMicMeter = useCallback((stream: MediaStream) => {
+    const ctx = new AudioContext();
+    const source = ctx.createMediaStreamSource(stream);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+    analyserRef.current = analyser;
+
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    const tick = () => {
+      analyser.getByteFrequencyData(data);
+      const avg = data.reduce((a, b) => a + b, 0) / data.length;
+      setMicLevel(Math.min(100, avg * 2.5));
+      micLevelFrameRef.current = requestAnimationFrame(tick);
+    };
+    tick();
+  }, []);
+
+  const stopMicMeter = useCallback(() => {
+    if (micLevelFrameRef.current) { cancelAnimationFrame(micLevelFrameRef.current); micLevelFrameRef.current = null; }
+    analyserRef.current = null;
+    setMicLevel(0);
+  }, []);
+
+  // Start preview automatically when we enter the recording or setup phase
   useEffect(() => {
-    if (phase === 'recording') {
-      void startPreview();
+    if (phase === 'recording' || phase === 'setup') {
+      void startPreview().then(() => {
+        if (rawStreamRef.current) startMicMeter(rawStreamRef.current);
+      });
     } else {
       stopPreview();
+      stopMicMeter();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
@@ -361,10 +393,96 @@ export default function ProfileVideoPage() {
                 <div key={q.id} style={{ fontSize: 11, fontWeight: 600, color: 'rgba(241,245,249,0.4)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '4px 12px' }}>Q{i + 1}</div>
               ))}
             </div>
-            <button onClick={() => startQuestion(0)} style={{ padding: '16px 48px', borderRadius: 14, background: 'linear-gradient(135deg,#a78bfa,#7c3aed)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 32px rgba(167,139,250,0.35)' }}>
-              Begin →
+            <button onClick={() => setPhase('setup')} style={{ padding: '16px 48px', borderRadius: 14, background: 'linear-gradient(135deg,#a78bfa,#7c3aed)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 32px rgba(167,139,250,0.35)' }}>
+              Set up camera →
             </button>
             <div style={{ marginTop: 16, fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>You'll need camera + microphone access</div>
+          </motion.div>
+        )}
+
+        {/* ── Setup: test camera + pick look ── */}
+        {phase === 'setup' && (
+          <motion.div key="setup" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            style={{ maxWidth: 640, width: '100%' }}>
+
+            <div style={{ textAlign: 'center', marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(167,139,250,0.7)', marginBottom: 6 }}>Step 1 of 2 · Camera &amp; Audio Check</div>
+              <h2 style={{ fontSize: 'clamp(1.3rem,4vw,1.7rem)', fontWeight: 900, letterSpacing: '-0.02em', color: '#fff', marginBottom: 6 }}>How do you want to look?</h2>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', lineHeight: 1.6 }}>Choose your look below — it's applied to every clip you record.</p>
+            </div>
+
+            {/* Live preview */}
+            <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 20, background: '#0a0e1a', border: '1px solid rgba(255,255,255,0.08)', marginBottom: 16, position: 'relative', overflow: 'hidden' }}>
+              {cameraReady ? (
+                <video
+                  ref={el => {
+                    if (el && rawStreamRef.current) { el.srcObject = rawStreamRef.current; void el.play(); }
+                  }}
+                  playsInline muted
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)', filter: FILTER_CSS[filterPreset], borderRadius: 20 }}
+                />
+              ) : cameraError ? (
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)', gap: 8 }}>
+                  <div style={{ fontSize: 36 }}>📷</div>
+                  <div style={{ fontSize: 13 }}>Camera access needed</div>
+                  <button onClick={() => void startPreview()} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 10, background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', color: '#a78bfa', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Try again</button>
+                </div>
+              ) : (
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                    style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid rgba(167,139,250,0.2)', borderTop: '3px solid #a78bfa' }} />
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>Starting camera…</div>
+                </div>
+              )}
+
+              {/* Active filter badge */}
+              {cameraReady && (
+                <div style={{ position: 'absolute', top: 14, left: 14, display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '4px 12px', fontSize: 11, fontWeight: 700, color: '#34D399' }}>
+                  {FILTER_LABELS[filterPreset].icon} {FILTER_LABELS[filterPreset].label} · {FILTER_LABELS[filterPreset].desc}
+                </div>
+              )}
+            </div>
+
+            {/* Filter presets */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, textAlign: 'center' }}>Choose your look</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {(['beauty','warm','studio','natural'] as FilterPreset[]).map(preset => {
+                  const active = filterPreset === preset;
+                  return (
+                    <button key={preset} onClick={() => setFilterPreset(preset)} title={FILTER_LABELS[preset].desc}
+                      style={{ flex: 1, padding: '12px 6px', borderRadius: 12, background: active ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.08)'}`, color: active ? '#34D399' : 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, transition: 'all 0.15s ease' }}>
+                      <span style={{ fontSize: 20 }}>{FILTER_LABELS[preset].icon}</span>
+                      <span>{FILTER_LABELS[preset].label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Mic level meter */}
+            <div style={{ marginBottom: 20, padding: '14px 16px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <span style={{ fontSize: 14 }}>🎙</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Microphone</span>
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: micLevel > 8 ? '#34D399' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>{micLevel > 8 ? '✓ Picking up audio' : 'Speak to test…'}</span>
+              </div>
+              <div style={{ height: 6, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                <motion.div
+                  animate={{ width: `${micLevel}%` }}
+                  transition={{ duration: 0.08 }}
+                  style={{ height: '100%', borderRadius: 4, background: micLevel > 60 ? '#34D399' : micLevel > 30 ? '#4F8EF7' : 'rgba(52,211,153,0.5)' }}
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={() => startQuestion(0)}
+              disabled={!cameraReady}
+              style={{ width: '100%', padding: '16px', borderRadius: 14, background: cameraReady ? 'linear-gradient(135deg,#34D399,#059669)' : 'rgba(255,255,255,0.06)', border: 'none', color: cameraReady ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: 15, fontWeight: 800, cursor: cameraReady ? 'pointer' : 'default', fontFamily: 'inherit', boxShadow: cameraReady ? '0 8px 24px rgba(52,211,153,0.3)' : 'none', transition: 'all 0.2s ease' }}>
+              {cameraReady ? `I look great — let's go →` : 'Preparing camera…'}
+            </button>
+            <div style={{ textAlign: 'center', marginTop: 12, fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>Your chosen filter stays on for every question</div>
           </motion.div>
         )}
 
