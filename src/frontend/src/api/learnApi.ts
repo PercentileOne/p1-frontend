@@ -1,7 +1,6 @@
 import type { LessonData, LessonProgress, SavedLesson } from '../types/learn';
 
-const OPENAI_KEY = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
+const API_PROXY = '/api/ai-proxy';
 const MODEL = 'gpt-4o-mini';
 
 const USER_ID_KEY = 'explain_learn_user_id';
@@ -13,28 +12,59 @@ export function getLearnUserId(): string {
 }
 
 async function chatJSON<T>(system: string, user: string): Promise<T> {
-  if (!OPENAI_KEY) throw new Error('OpenAI key not configured — set VITE_OPENAI_API_KEY');
   for (let attempt = 0; attempt <= 3; attempt++) {
-    const res = await fetch(OPENAI_URL, {
+    const res = await fetch(API_PROXY, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: MODEL, temperature: 0.7, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: MODEL,
+        temperature: 0.7,
+        response_format: { type: 'json_object' },
+        messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+      }),
     });
     if (res.status === 429 && attempt < 3) {
       const wait = parseInt(res.headers.get('Retry-After') ?? '10', 10) * 1000;
-      await new Promise(r => setTimeout(r, Math.min(wait, 30000)));
+      await new Promise(r => setTimeout(r, Math.min(wait, 30_000)));
       continue;
     }
-    if (!res.ok) throw new Error(`OpenAI error ${res.status}`);
+    if (!res.ok) throw new Error(`AI proxy error ${res.status}`);
     const data = await res.json() as { choices: { message: { content: string } }[] };
     return JSON.parse(data.choices[0].message.content) as T;
   }
-  throw new Error('OpenAI rate limited after retries');
+  throw new Error('AI rate limited after retries');
 }
 
+// ── Weak-spot store (interview → learn integration) ───────────────────────────
+
+const WEAK_TOPICS_KEY = 'explain_weak_topics';
+
+export interface WeakTopic {
+  subject: string;
+  scorePct: number;
+  competency: string;
+  addedAt: string;
+}
+
+export function saveWeakTopics(topics: WeakTopic[]): void {
+  const existing: WeakTopic[] = JSON.parse(localStorage.getItem(WEAK_TOPICS_KEY) ?? '[]');
+  const merged = [...topics, ...existing.filter(e => !topics.some(t => t.subject.toLowerCase() === e.subject.toLowerCase()))];
+  localStorage.setItem(WEAK_TOPICS_KEY, JSON.stringify(merged.slice(0, 10)));
+}
+
+export function getWeakTopics(): WeakTopic[] {
+  return JSON.parse(localStorage.getItem(WEAK_TOPICS_KEY) ?? '[]');
+}
+
+export function dismissWeakTopic(subject: string): void {
+  const existing: WeakTopic[] = JSON.parse(localStorage.getItem(WEAK_TOPICS_KEY) ?? '[]');
+  localStorage.setItem(WEAK_TOPICS_KEY, JSON.stringify(existing.filter(t => t.subject.toLowerCase() !== subject.toLowerCase())));
+}
+
+// ── Lesson generation ──────────────────────────────────────────────────────────
+
 export async function generateLesson(subject: string, language = 'English'): Promise<LessonData> {
-  const isEnglish = language === 'English';
-  const langNote = isEnglish ? '' : ` Write the ENTIRE lesson in ${language} — all fields including titles, bodies, glossary terms, questions, and answers.`;
+  const langNote = language === 'English' ? '' : ` Write the ENTIRE lesson in ${language} — all fields including titles, bodies, glossary terms, questions, and answers.`;
 
   const system = `You are an expert educator and curriculum designer. Generate a comprehensive, engaging lesson on any subject for any language worldwide.${langNote}
 Always return valid JSON only — no markdown, no code fences.
@@ -71,6 +101,28 @@ Make the content rich, accurate, and engaging. Avoid generic filler.`;
 
   return chatJSON<LessonData>(system, `Generate a lesson on: ${subject}`);
 }
+
+export async function expandConcept(subject: string, conceptTitle: string, conceptBody: string): Promise<{
+  headline: string; explanation: string; analogy: string; advancedInsight: string;
+  codeSnippet?: string | null; practicalSteps: string[]; commonQuestions: { q: string; a: string }[];
+}> {
+  const system = `You are an expert educator. Expand on a specific concept from a lesson in rich detail.
+Return valid JSON only with this structure:
+{
+  "headline": "Short punchy headline for the expansion",
+  "explanation": "3-4 sentence deeper explanation",
+  "analogy": "A vivid real-world analogy",
+  "advancedInsight": "Something that surprises even experienced people",
+  "codeSnippet": null,
+  "practicalSteps": ["Step 1", "Step 2", "Step 3"],
+  "commonQuestions": [{"q": "FAQ?", "a": "Answer"}]
+}
+Only include codeSnippet if genuinely technical/code-related.`;
+
+  return chatJSON(system, `Subject: ${subject}\nConcept: ${conceptTitle}\nBody: ${conceptBody}`);
+}
+
+// ── Persistence ────────────────────────────────────────────────────────────────
 
 export async function saveLesson(lesson: LessonData, language = 'English'): Promise<{ id: string; createdAt: string }> {
   const userId = getLearnUserId();
