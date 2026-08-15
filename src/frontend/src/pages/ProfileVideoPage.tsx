@@ -2,6 +2,13 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { speak } from '../api/ttsApi';
+import {
+  useVideoFilter,
+  FILTER_CSS,
+  FILTER_LABELS,
+  FILTER_PRESETS,
+  type FilterPreset,
+} from '../hooks/useVideoFilter';
 
 // ── Questions ─────────────────────────────────────────────────────────────────
 const QUESTIONS = [
@@ -31,23 +38,6 @@ const QUESTIONS = [
     prompt: "What do you do outside of work — any passions or interests to share?",
   },
 ];
-
-// ── Filter presets ─────────────────────────────────────────────────────────────
-type FilterPreset = 'beauty' | 'warm' | 'studio' | 'natural';
-
-const FILTER_CSS: Record<FilterPreset, string> = {
-  beauty:  'brightness(1.07) contrast(1.06) saturate(1.12)',
-  warm:    'brightness(1.09) contrast(1.05) saturate(1.35) sepia(0.18)',
-  studio:  'brightness(1.13) contrast(1.22) saturate(0.82)',
-  natural: 'brightness(1.02) contrast(1.02) saturate(1.04)',
-};
-
-const FILTER_LABELS: Record<FilterPreset, { icon: string; label: string; desc: string }> = {
-  beauty:  { icon: '✨', label: 'Beauty',  desc: 'Soft & bright (default)' },
-  warm:    { icon: '🌅', label: 'Warm',    desc: 'Golden, flattering glow' },
-  studio:  { icon: '🎬', label: 'Studio',  desc: 'Crisp, high contrast' },
-  natural: { icon: '🌿', label: 'Natural', desc: 'True to life' },
-};
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Phase = 'welcome' | 'setup' | 'sarah-speaking' | 'recording' | 'processing' | 'coaching' | 'complete';
@@ -115,7 +105,78 @@ function getSpeechRecognition(): SpeechRecogCtor | null {
   return (w['SpeechRecognition'] ?? w['webkitSpeechRecognition'] ?? null) as SpeechRecogCtor | null;
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// ── Live camera preview element ───────────────────────────────────────────────
+function CameraPreview({ stream, filterPreset, children }: {
+  stream: MediaStream | null;
+  filterPreset: FilterPreset;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 20, background: '#0a0e1a', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden' }}>
+      {stream ? (
+        <video
+          ref={el => { if (el && stream) { el.srcObject = stream; void el.play(); } }}
+          playsInline muted
+          style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)', filter: FILTER_CSS[filterPreset], borderRadius: 20 }}
+        />
+      ) : (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+          <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+            style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid rgba(167,139,250,0.2)', borderTop: '3px solid #a78bfa' }} />
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>Starting camera…</div>
+        </div>
+      )}
+      {children}
+    </div>
+  );
+}
+
+// ── Filter preset buttons ─────────────────────────────────────────────────────
+function FilterBar({ value, onChange }: { value: FilterPreset; onChange: (p: FilterPreset) => void }) {
+  return (
+    <div>
+      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, textAlign: 'center' }}>Look &amp; Feel</div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        {FILTER_PRESETS.map(preset => {
+          const active = value === preset;
+          return (
+            <button key={preset} onClick={() => onChange(preset)} title={FILTER_LABELS[preset].desc}
+              style={{ flex: 1, padding: '10px 6px', borderRadius: 12, background: active ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.08)'}`, color: active ? '#34D399' : 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, transition: 'all 0.15s ease' }}>
+              <span style={{ fontSize: 18 }}>{FILTER_LABELS[preset].icon}</span>
+              <span>{FILTER_LABELS[preset].label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Background buttons (coming soon) ─────────────────────────────────────────
+function BackgroundBar() {
+  return (
+    <div>
+      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, textAlign: 'center' }}>Background</div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        {[
+          { icon: '⬛', label: 'None',   active: true  },
+          { icon: '🌀', label: 'Blur',   active: false },
+          { icon: '🖼',  label: 'Office', active: false },
+          { icon: '🌇', label: 'City',   active: false },
+        ].map(bg => (
+          <button key={bg.label} title={bg.label}
+            style={{ flex: 1, padding: '10px 6px', borderRadius: 12, background: bg.active ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${bg.active ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)'}`, color: bg.active ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: 700, cursor: bg.active ? 'pointer' : 'default', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, position: 'relative' }}>
+            <span style={{ fontSize: 18 }}>{bg.icon}</span>
+            <span>{bg.label}</span>
+            {!bg.active && <span style={{ position: 'absolute', top: 4, right: 6, fontSize: 8, fontWeight: 800, color: 'rgba(52,211,153,0.6)', textTransform: 'uppercase' }}>soon</span>}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 export default function ProfileVideoPage() {
   const navigate = useNavigate();
   const [phase, setPhase] = useState<Phase>('welcome');
@@ -126,118 +187,32 @@ export default function ProfileVideoPage() {
   const [isRecordingActive, setIsRecordingActive] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [filterPreset, setFilterPreset] = useState<FilterPreset>('beauty');
-  const [cameraReady, setCameraReady] = useState(false);
-  const [cameraError, setCameraError] = useState(false);
+
+  const {
+    filterPreset, setFilterPreset,
+    cameraReady, cameraError,
+    micLevel,
+    videoPreviewRef, canvasRef,
+    rawStream, canvasStream,
+    startPreview, stopPreview,
+  } = useVideoFilter('beauty');
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  // Raw stream from getUserMedia — never recorded directly
-  const rawStreamRef = useRef<MediaStream | null>(null);
-  // Canvas stream — what actually gets recorded (has filter baked in)
-  const canvasStreamRef = useRef<MediaStream | null>(null);
   const cancelSpeakRef = useRef<(() => void) | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recognitionRef = useRef<ReturnType<SpeechRecogCtor['prototype']['constructor']> | null>(null);
   const transcriptRef = useRef('');
-  const animFrameRef = useRef<number | null>(null);
-  const videoPreviewRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const filterPresetRef = useRef<FilterPreset>('beauty');
 
   const currentQ = QUESTIONS[qIndex];
   const progress = clips.length / QUESTIONS.length;
 
-  // Keep filter ref in sync so the draw loop always uses the latest value
-  useEffect(() => { filterPresetRef.current = filterPreset; }, [filterPreset]);
-
-  // ── Camera preview ─────────────────────────────────────────────────────────
-  const startPreview = useCallback(async () => {
-    setCameraReady(false);
-    setCameraError(false);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, facingMode: 'user' }, audio: true });
-      rawStreamRef.current = stream;
-
-      const video = videoPreviewRef.current;
-      if (!video) return;
-      video.srcObject = stream;
-      await video.play();
-      setCameraReady(true);
-
-      // Canvas draw loop — applies the CSS filter to every frame
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      canvas.width  = 1280;
-      canvas.height = 720;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      const draw = () => {
-        ctx.filter = FILTER_CSS[filterPresetRef.current];
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        animFrameRef.current = requestAnimationFrame(draw);
-      };
-      draw();
-
-      // Canvas stream — has filter baked in
-      canvasStreamRef.current = canvas.captureStream(30);
-      // Add audio from raw stream
-      const audioTrack = stream.getAudioTracks()[0];
-      if (audioTrack) canvasStreamRef.current.addTrack(audioTrack);
-
-    } catch {
-      setCameraError(true);
-    }
-  }, []);
-
-  const stopPreview = useCallback(() => {
-    if (animFrameRef.current) { cancelAnimationFrame(animFrameRef.current); animFrameRef.current = null; }
-    rawStreamRef.current?.getTracks().forEach(t => t.stop());
-    rawStreamRef.current = null;
-    canvasStreamRef.current = null;
-    setCameraReady(false);
-  }, []);
-
-  // ── Mic level meter for setup screen ─────────────────────────────────────
-  const [micLevel, setMicLevel] = useState(0);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const micLevelFrameRef = useRef<number | null>(null);
-
-  const startMicMeter = useCallback((stream: MediaStream) => {
-    const ctx = new AudioContext();
-    const source = ctx.createMediaStreamSource(stream);
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 256;
-    source.connect(analyser);
-    analyserRef.current = analyser;
-
-    const data = new Uint8Array(analyser.frequencyBinCount);
-    const tick = () => {
-      analyser.getByteFrequencyData(data);
-      const avg = data.reduce((a, b) => a + b, 0) / data.length;
-      setMicLevel(Math.min(100, avg * 2.5));
-      micLevelFrameRef.current = requestAnimationFrame(tick);
-    };
-    tick();
-  }, []);
-
-  const stopMicMeter = useCallback(() => {
-    if (micLevelFrameRef.current) { cancelAnimationFrame(micLevelFrameRef.current); micLevelFrameRef.current = null; }
-    analyserRef.current = null;
-    setMicLevel(0);
-  }, []);
-
-  // Start preview automatically when we enter the recording or setup phase
+  // Camera on during setup and recording phases
   useEffect(() => {
-    if (phase === 'recording' || phase === 'setup') {
-      void startPreview().then(() => {
-        if (rawStreamRef.current) startMicMeter(rawStreamRef.current);
-      });
+    if (phase === 'setup' || phase === 'recording') {
+      void startPreview();
     } else {
       stopPreview();
-      stopMicMeter();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
@@ -248,35 +223,27 @@ export default function ProfileVideoPage() {
       mediaRecorderRef.current?.stop();
       if (timerRef.current) clearInterval(timerRef.current);
       recognitionRef.current?.stop();
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-      rawStreamRef.current?.getTracks().forEach(t => t.stop());
     };
   }, []);
 
-  // ── Start a question: Sarah speaks ─────────────────────────────────────────
+  // ── Sarah speaks then transitions to recording phase ──────────────────────
   const startQuestion = useCallback((index: number) => {
     setQIndex(index);
     setPhase('sarah-speaking');
     setIsRecordingActive(false);
     transcriptRef.current = '';
     mediaRecorderRef.current = null;
-
     cancelSpeakRef.current = speak(QUESTIONS[index].sarahText, 'hr', () => setPhase('recording'));
   }, []);
 
-  // ── Begin recording from filtered canvas stream ────────────────────────────
+  // ── Record from the filtered canvas stream ────────────────────────────────
   const startRecording = useCallback(() => {
-    const stream = canvasStreamRef.current;
-    if (!stream) {
-      alert('Camera not ready — please wait a moment and try again.');
-      return;
-    }
+    if (!canvasStream) { alert('Camera not ready — please wait a moment.'); return; }
 
     chunksRef.current = [];
-
     const mimeType = ['video/webm;codecs=vp9,opus', 'video/webm', 'audio/webm']
       .find(t => MediaRecorder.isTypeSupported(t)) ?? '';
-    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    const recorder = new MediaRecorder(canvasStream, mimeType ? { mimeType } : undefined);
     mediaRecorderRef.current = recorder;
     recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
     recorder.start(500);
@@ -285,7 +252,6 @@ export default function ProfileVideoPage() {
     setRecordingSeconds(0);
     timerRef.current = setInterval(() => setRecordingSeconds(s => s + 1), 1000);
 
-    // Speech recognition still runs on raw stream audio
     const SR = getSpeechRecognition();
     if (SR) {
       const recog = new SR();
@@ -299,9 +265,9 @@ export default function ProfileVideoPage() {
       recognitionRef.current = recog;
       recog.start();
     }
-  }, []);
+  }, [canvasStream]);
 
-  // ── Stop recording → coaching ──────────────────────────────────────────────
+  // ── Stop recording ────────────────────────────────────────────────────────
   const stopRecording = useCallback(async () => {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     recognitionRef.current?.stop();
@@ -323,12 +289,7 @@ export default function ProfileVideoPage() {
 
     const tips = await generateProfileCoaching(currentQ.prompt, transcriptRef.current || '(no transcript captured)');
     setCoachingTips(tips);
-
-    setClips(prev => {
-      const next = prev.filter(c => c.questionIndex !== qIndex);
-      return [...next, { questionIndex: qIndex, blob, coachingTips: tips }];
-    });
-
+    setClips(prev => [...prev.filter(c => c.questionIndex !== qIndex), { questionIndex: qIndex, blob, coachingTips: tips }]);
     setPhase('coaching');
   }, [currentQ, qIndex]);
 
@@ -362,7 +323,7 @@ export default function ProfileVideoPage() {
         </div>
       )}
 
-      {/* Hidden elements used by the filter pipeline */}
+      {/* Hidden pipeline elements — used by useVideoFilter */}
       <video ref={videoPreviewRef} playsInline muted style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 1, height: 1 }} />
       <canvas ref={canvasRef} style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 1, height: 1 }} />
 
@@ -378,11 +339,10 @@ export default function ProfileVideoPage() {
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(167,139,250,0.7)', marginBottom: 12 }}>Sarah Mitchell · HR Director</div>
             <h1 style={{ fontSize: 'clamp(1.6rem,5vw,2.2rem)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 16, lineHeight: 1.2 }}>Record your<br />Profile Introduction</h1>
             <p style={{ fontSize: 15, color: 'rgba(241,245,249,0.55)', lineHeight: 1.7, maxWidth: 440, margin: '0 auto 20px' }}>
-              Sarah will ask you 5 short, relaxed questions. After each answer you'll get personalised coaching — and you can re-record any answer as many times as you like.
+              Sarah will ask you 5 short, relaxed questions. After each answer you'll get personalised coaching — and you can re-record as many times as you like.
             </p>
-            {/* Filter preview teaser */}
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 28 }}>
-              {(['beauty','warm','studio','natural'] as FilterPreset[]).map(p => (
+              {FILTER_PRESETS.map(p => (
                 <div key={p} style={{ fontSize: 10, fontWeight: 600, color: 'rgba(52,211,153,0.7)', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 20, padding: '3px 10px' }}>
                   {FILTER_LABELS[p].icon} {FILTER_LABELS[p].label}
                 </div>
@@ -404,60 +364,31 @@ export default function ProfileVideoPage() {
         {phase === 'setup' && (
           <motion.div key="setup" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             style={{ maxWidth: 640, width: '100%' }}>
-
             <div style={{ textAlign: 'center', marginBottom: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(167,139,250,0.7)', marginBottom: 6 }}>Step 1 of 2 · Camera &amp; Audio Check</div>
               <h2 style={{ fontSize: 'clamp(1.3rem,4vw,1.7rem)', fontWeight: 900, letterSpacing: '-0.02em', color: '#fff', marginBottom: 6 }}>How do you want to look?</h2>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', lineHeight: 1.6 }}>Choose your look below — it's applied to every clip you record.</p>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', lineHeight: 1.6 }}>Choose your look — it stays on for every clip you record.</p>
             </div>
 
-            {/* Live preview */}
-            <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 20, background: '#0a0e1a', border: '1px solid rgba(255,255,255,0.08)', marginBottom: 16, position: 'relative', overflow: 'hidden' }}>
-              {cameraReady ? (
-                <video
-                  ref={el => {
-                    if (el && rawStreamRef.current) { el.srcObject = rawStreamRef.current; void el.play(); }
-                  }}
-                  playsInline muted
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)', filter: FILTER_CSS[filterPreset], borderRadius: 20 }}
-                />
-              ) : cameraError ? (
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)', gap: 8 }}>
-                  <div style={{ fontSize: 36 }}>📷</div>
-                  <div style={{ fontSize: 13 }}>Camera access needed</div>
-                  <button onClick={() => void startPreview()} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 10, background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', color: '#a78bfa', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Try again</button>
-                </div>
-              ) : (
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                    style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid rgba(167,139,250,0.2)', borderTop: '3px solid #a78bfa' }} />
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>Starting camera…</div>
-                </div>
-              )}
-
-              {/* Active filter badge */}
-              {cameraReady && (
-                <div style={{ position: 'absolute', top: 14, left: 14, display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '4px 12px', fontSize: 11, fontWeight: 700, color: '#34D399' }}>
-                  {FILTER_LABELS[filterPreset].icon} {FILTER_LABELS[filterPreset].label} · {FILTER_LABELS[filterPreset].desc}
-                </div>
-              )}
+            <div style={{ marginBottom: 14 }}>
+              <CameraPreview stream={rawStream} filterPreset={filterPreset}>
+                {cameraError && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', gap: 8 }}>
+                    <div style={{ fontSize: 36 }}>📷</div>
+                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>Camera access needed</div>
+                    <button onClick={() => void startPreview()} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 10, background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', color: '#a78bfa', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Try again</button>
+                  </div>
+                )}
+                {cameraReady && (
+                  <div style={{ position: 'absolute', top: 14, left: 14, display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '4px 12px', fontSize: 11, fontWeight: 700, color: '#34D399' }}>
+                    {FILTER_LABELS[filterPreset].icon} {FILTER_LABELS[filterPreset].label} · {FILTER_LABELS[filterPreset].desc}
+                  </div>
+                )}
+              </CameraPreview>
             </div>
 
-            {/* Filter presets */}
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, textAlign: 'center' }}>Choose your look</div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {(['beauty','warm','studio','natural'] as FilterPreset[]).map(preset => {
-                  const active = filterPreset === preset;
-                  return (
-                    <button key={preset} onClick={() => setFilterPreset(preset)} title={FILTER_LABELS[preset].desc}
-                      style={{ flex: 1, padding: '12px 6px', borderRadius: 12, background: active ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.08)'}`, color: active ? '#34D399' : 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, transition: 'all 0.15s ease' }}>
-                      <span style={{ fontSize: 20 }}>{FILTER_LABELS[preset].icon}</span>
-                      <span>{FILTER_LABELS[preset].label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+            <div style={{ marginBottom: 14 }}>
+              <FilterBar value={filterPreset} onChange={setFilterPreset} />
             </div>
 
             {/* Mic level meter */}
@@ -465,20 +396,17 @@ export default function ProfileVideoPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                 <span style={{ fontSize: 14 }}>🎙</span>
                 <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Microphone</span>
-                <span style={{ marginLeft: 'auto', fontSize: 11, color: micLevel > 8 ? '#34D399' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>{micLevel > 8 ? '✓ Picking up audio' : 'Speak to test…'}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: micLevel > 8 ? '#34D399' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
+                  {micLevel > 8 ? '✓ Picking up audio' : 'Speak to test…'}
+                </span>
               </div>
               <div style={{ height: 6, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                <motion.div
-                  animate={{ width: `${micLevel}%` }}
-                  transition={{ duration: 0.08 }}
-                  style={{ height: '100%', borderRadius: 4, background: micLevel > 60 ? '#34D399' : micLevel > 30 ? '#4F8EF7' : 'rgba(52,211,153,0.5)' }}
-                />
+                <motion.div animate={{ width: `${micLevel}%` }} transition={{ duration: 0.08 }}
+                  style={{ height: '100%', borderRadius: 4, background: micLevel > 60 ? '#34D399' : micLevel > 30 ? '#4F8EF7' : 'rgba(52,211,153,0.5)' }} />
               </div>
             </div>
 
-            <button
-              onClick={() => startQuestion(0)}
-              disabled={!cameraReady}
+            <button onClick={() => startQuestion(0)} disabled={!cameraReady}
               style={{ width: '100%', padding: '16px', borderRadius: 14, background: cameraReady ? 'linear-gradient(135deg,#34D399,#059669)' : 'rgba(255,255,255,0.06)', border: 'none', color: cameraReady ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: 15, fontWeight: 800, cursor: cameraReady ? 'pointer' : 'default', fontFamily: 'inherit', boxShadow: cameraReady ? '0 8px 24px rgba(52,211,153,0.3)' : 'none', transition: 'all 0.2s ease' }}>
               {cameraReady ? `I look great — let's go →` : 'Preparing camera…'}
             </button>
@@ -511,168 +439,44 @@ export default function ProfileVideoPage() {
         {phase === 'recording' && (
           <motion.div key="recording" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             style={{ maxWidth: 640, width: '100%' }}>
-
             <div style={{ textAlign: 'center', marginBottom: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#a78bfa', marginBottom: 6 }}>Question {qIndex + 1} of {QUESTIONS.length}</div>
               <div style={{ fontSize: 18, fontWeight: 800, color: '#fff', lineHeight: 1.4 }}>"{currentQ.prompt}"</div>
             </div>
 
-            {/* Camera preview */}
-            <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 20, background: '#0a0e1a', border: '1px solid rgba(255,255,255,0.08)', marginBottom: 16, position: 'relative', overflow: 'hidden' }}>
-              {/* Filtered canvas preview — what the user sees */}
-              <canvas
-                ref={el => {
-                  // Second canvas just for display — mirrors the recording canvas with filter via CSS
-                  if (el && canvasRef.current && cameraReady) {
-                    // We use the hidden canvas as the source; display it via an img updated on rAF
-                    // Simpler: show the raw video with CSS filter applied for preview
-                  }
-                }}
-                style={{ display: 'none' }}
-              />
-
-              {/* Live preview: raw video + CSS filter for visual feedback */}
-              {cameraReady ? (
-                <video
-                  ref={el => {
-                    if (el && rawStreamRef.current) {
-                      el.srcObject = rawStreamRef.current;
-                      void el.play();
-                    }
-                  }}
-                  playsInline
-                  muted
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    transform: 'scaleX(-1)', // mirror for natural selfie feel
-                    filter: FILTER_CSS[filterPreset],
-                    borderRadius: 20,
-                  }}
-                />
-              ) : cameraError ? (
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)', gap: 8 }}>
-                  <div style={{ fontSize: 36 }}>📷</div>
-                  <div style={{ fontSize: 13 }}>Camera access needed</div>
-                  <button onClick={() => void startPreview()} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 10, background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', color: '#a78bfa', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-                    Try again
-                  </button>
-                </div>
-              ) : (
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                    style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid rgba(167,139,250,0.2)', borderTop: '3px solid #a78bfa' }} />
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>Starting camera…</div>
-                </div>
-              )}
-
-              {/* Recording indicator */}
-              {isRecordingActive && (
-                <div style={{ position: 'absolute', top: 14, right: 14, display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(239,68,68,0.9)', borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 700, color: '#fff', backdropFilter: 'blur(8px)' }}>
-                  <motion.div animate={{ opacity: [1,0,1] }} transition={{ repeat: Infinity, duration: 1.2 }}
-                    style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff' }} />
-                  {fmt(recordingSeconds)}
-                </div>
-              )}
-
-              {/* Active filter badge */}
-              {cameraReady && (
-                <div style={{ position: 'absolute', top: 14, left: 14, display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>
-                  {FILTER_LABELS[filterPreset].icon} {FILTER_LABELS[filterPreset].label}
-                </div>
-              )}
-            </div>
-
-            {/* ── Filter presets ── */}
             <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, textAlign: 'center' }}>Look &amp; Feel</div>
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-                {(['beauty','warm','studio','natural'] as FilterPreset[]).map(preset => {
-                  const active = filterPreset === preset;
-                  return (
-                    <button
-                      key={preset}
-                      onClick={() => setFilterPreset(preset)}
-                      title={FILTER_LABELS[preset].desc}
-                      style={{
-                        flex: 1,
-                        padding: '10px 6px',
-                        borderRadius: 12,
-                        background: active ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.04)',
-                        border: `1px solid ${active ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.08)'}`,
-                        color: active ? '#34D399' : 'rgba(255,255,255,0.45)',
-                        fontSize: 11,
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        fontFamily: 'inherit',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: 4,
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      <span style={{ fontSize: 18 }}>{FILTER_LABELS[preset].icon}</span>
-                      <span>{FILTER_LABELS[preset].label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <CameraPreview stream={rawStream} filterPreset={filterPreset}>
+                {isRecordingActive && (
+                  <div style={{ position: 'absolute', top: 14, right: 14, display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(239,68,68,0.9)', borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 700, color: '#fff' }}>
+                    <motion.div animate={{ opacity: [1,0,1] }} transition={{ repeat: Infinity, duration: 1.2 }}
+                      style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff' }} />
+                    {fmt(recordingSeconds)}
+                  </div>
+                )}
+                {!isRecordingActive && cameraReady && (
+                  <div style={{ position: 'absolute', top: 14, left: 14, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>
+                    {FILTER_LABELS[filterPreset].icon} {FILTER_LABELS[filterPreset].label}
+                  </div>
+                )}
+              </CameraPreview>
             </div>
 
-            {/* ── Background controls (coming soon) ── */}
+            <div style={{ marginBottom: 14 }}>
+              <FilterBar value={filterPreset} onChange={setFilterPreset} />
+            </div>
             <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, textAlign: 'center' }}>Background</div>
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-                {[
-                  { icon: '🌀', label: 'Blur',       desc: 'Background blur' },
-                  { icon: '🖼',  label: 'Office',     desc: 'Virtual office background' },
-                  { icon: '🌇', label: 'City',        desc: 'City skyline background' },
-                  { icon: '⬛', label: 'None',        desc: 'No background effect', active: true },
-                ].map(bg => (
-                  <button
-                    key={bg.label}
-                    title={bg.desc}
-                    style={{
-                      flex: 1,
-                      padding: '10px 6px',
-                      borderRadius: 12,
-                      background: bg.active ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.02)',
-                      border: `1px solid ${bg.active ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)'}`,
-                      color: bg.active ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)',
-                      fontSize: 11,
-                      fontWeight: 700,
-                      cursor: bg.active ? 'pointer' : 'default',
-                      fontFamily: 'inherit',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 4,
-                      position: 'relative',
-                    }}
-                  >
-                    <span style={{ fontSize: 18 }}>{bg.icon}</span>
-                    <span>{bg.label}</span>
-                    {!bg.active && (
-                      <span style={{ position: 'absolute', top: 4, right: 6, fontSize: 8, fontWeight: 800, letterSpacing: '0.05em', color: 'rgba(52,211,153,0.6)', textTransform: 'uppercase' }}>soon</span>
-                    )}
-                  </button>
-                ))}
-              </div>
+              <BackgroundBar />
             </div>
 
-            {/* ── Record / Stop ── */}
             <div style={{ display: 'flex', gap: 12 }}>
               {!isRecordingActive ? (
-                <button
-                  onClick={startRecording}
-                  disabled={!cameraReady}
+                <button onClick={startRecording} disabled={!cameraReady}
                   style={{ flex: 1, padding: '16px', borderRadius: 14, background: cameraReady ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'rgba(255,255,255,0.06)', border: 'none', color: cameraReady ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: 15, fontWeight: 800, cursor: cameraReady ? 'pointer' : 'default', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: cameraReady ? '0 8px 24px rgba(239,68,68,0.3)' : 'none', transition: 'all 0.2s ease' }}>
-                  <span style={{ fontSize: 18 }}>⏺</span> {cameraReady ? 'Record' : 'Preparing camera…'}
+                  <span style={{ fontSize: 18 }}>⏺</span> {cameraReady ? 'Record' : 'Preparing…'}
                 </button>
               ) : (
-                <button onClick={() => void stopRecording()} style={{ flex: 1, padding: '16px', borderRadius: 14, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                <button onClick={() => void stopRecording()}
+                  style={{ flex: 1, padding: '16px', borderRadius: 14, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                   <span style={{ fontSize: 18 }}>⏹</span> Stop &amp; Review
                 </button>
               )}
@@ -695,9 +499,7 @@ export default function ProfileVideoPage() {
           <motion.div key="coaching" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             style={{ maxWidth: 560, width: '100%' }}>
             <div style={{ textAlign: 'center', marginBottom: 28 }}>
-              <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg,rgba(251,191,36,0.15),rgba(245,158,11,0.08))', border: '1px solid rgba(251,191,36,0.3)', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, boxShadow: '0 0 30px rgba(251,191,36,0.15)' }}>
-                😇
-              </div>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg,rgba(251,191,36,0.15),rgba(245,158,11,0.08))', border: '1px solid rgba(251,191,36,0.3)', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, boxShadow: '0 0 30px rgba(251,191,36,0.15)' }}>😇</div>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#FBBF24', marginBottom: 6 }}>Coaching · Q{qIndex + 1} of {QUESTIONS.length}</div>
               <div style={{ fontSize: 16, fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>"{currentQ.prompt}"</div>
             </div>
@@ -728,7 +530,7 @@ export default function ProfileVideoPage() {
             <div style={{ fontSize: 56, marginBottom: 20 }}>🎉</div>
             <h2 style={{ fontSize: 'clamp(1.4rem,4vw,2rem)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 12 }}>All 5 answers recorded!</h2>
             <p style={{ fontSize: 15, color: 'rgba(241,245,249,0.5)', lineHeight: 1.7, maxWidth: 400, margin: '0 auto 32px' }}>
-              Your profile introduction is ready. Save it to publish it on your InterviewMe profile — recruiters and employers will see it when they view your page.
+              Your profile introduction is ready. Save it to publish it on your InterviewMe profile.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32, textAlign: 'left' }}>
               {QUESTIONS.map((q, i) => {
@@ -752,10 +554,12 @@ export default function ProfileVideoPage() {
               </div>
             ) : (
               <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-                <button onClick={() => { setClips([]); setQIndex(0); startQuestion(0); }} style={{ padding: '14px 24px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <button onClick={() => { setClips([]); setQIndex(0); startQuestion(0); }}
+                  style={{ padding: '14px 24px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   Start over
                 </button>
-                <button onClick={() => void saveProfile()} disabled={isSaving} style={{ padding: '14px 36px', borderRadius: 12, background: isSaving ? 'rgba(167,139,250,0.3)' : 'linear-gradient(135deg,#a78bfa,#7c3aed)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: isSaving ? 'default' : 'pointer', fontFamily: 'inherit', boxShadow: isSaving ? 'none' : '0 8px 24px rgba(167,139,250,0.3)' }}>
+                <button onClick={() => void saveProfile()} disabled={isSaving}
+                  style={{ padding: '14px 36px', borderRadius: 12, background: isSaving ? 'rgba(167,139,250,0.3)' : 'linear-gradient(135deg,#a78bfa,#7c3aed)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: isSaving ? 'default' : 'pointer', fontFamily: 'inherit', boxShadow: isSaving ? 'none' : '0 8px 24px rgba(167,139,250,0.3)' }}>
                   {isSaving ? '⏳ Saving…' : '💾 Save Profile Video'}
                 </button>
               </div>
