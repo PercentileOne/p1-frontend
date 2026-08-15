@@ -129,13 +129,11 @@ function getTodayLabel(): string {
 
 async function fetchTodaysNews(role: string): Promise<NewsItem[]> {
   const today = getTodayLabel();
-  const key   = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
-  if (!key) return FALLBACK_NEWS;
 
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await fetch("/api/ai-proxy", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "gpt-4o-mini",
         messages: [
@@ -345,17 +343,30 @@ export default function CandidateDashboard() {
               {getTodayLabel()} · 2 interviews scheduled this week
             </div>
           </div>
-          <button
-            onClick={() => navigate("/profile/video")}
-            style={{
-              padding: "9px 18px", background: "linear-gradient(135deg,#34D399,#059669)",
-              color: "#fff", border: "none", borderRadius: 8,
-              fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-              boxShadow: "0 4px 14px rgba(52,211,153,0.3)",
-            }}
-          >
-            + Record Profile Video
-          </button>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              onClick={() => navigate("/interview/standard")}
+              style={{
+                padding: "9px 18px", background: "linear-gradient(135deg,#a78bfa,#7c3aed)",
+                color: "#fff", border: "none", borderRadius: 8,
+                fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                boxShadow: "0 4px 14px rgba(167,139,250,0.35)",
+              }}
+            >
+              🎙️ Start Interview
+            </button>
+            <button
+              onClick={() => navigate("/profile/video")}
+              style={{
+                padding: "9px 18px", background: "linear-gradient(135deg,#34D399,#059669)",
+                color: "#fff", border: "none", borderRadius: 8,
+                fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                boxShadow: "0 4px 14px rgba(52,211,153,0.3)",
+              }}
+            >
+              + Record Profile Video
+            </button>
+          </div>
         </div>
 
         {/* ── STATS ROW ── */}

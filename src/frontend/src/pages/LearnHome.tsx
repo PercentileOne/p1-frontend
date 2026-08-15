@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { generateLesson, saveLesson, getLessons } from '../api/learnApi';
+import { generateLesson, saveLesson, getLessons, getWeakTopics, dismissWeakTopic } from '../api/learnApi';
 import { logFlowEvent } from '../api/flowLogger';
 import type { LessonData } from '../types/learn';
+import type { WeakTopic } from '../api/learnApi';
 
 const LANGUAGES = [
   'English', 'French', 'Spanish', 'German', 'Portuguese', 'Dutch',
@@ -35,10 +36,12 @@ export default function LearnHome() {
   const [loadingMsg, setLoadingMsg] = useState('');
   const [error, setError] = useState('');
   const [recentLessons, setRecentLessons] = useState<RecentLesson[]>([]);
+  const [weakTopics, setWeakTopics] = useState<WeakTopic[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     logFlowEvent('LEARN_HOME_VIEWED');
+    setWeakTopics(getWeakTopics());
     getLessons().then(lessons => {
       setRecentLessons(lessons.slice(0, 6).map(l => ({
         id: l.id,
@@ -107,10 +110,43 @@ export default function LearnHome() {
               </div>
             </div>
           </div>
-          <button onClick={() => navigate('/learn/bookshelf')} style={{ background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 10, padding: '8px 14px', color: '#A5B4FC', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
-            📚 My Bookshelf
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => navigate('/learn/flash-talk')} style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.30)', borderRadius: 10, padding: '8px 14px', color: '#F59E0B', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+              ⚡ Flash Talk
+            </button>
+            <button onClick={() => navigate('/learn/bookshelf')} style={{ background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 10, padding: '8px 14px', color: '#A5B4FC', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+              📚 My Bookshelf
+            </button>
+          </div>
         </div>
+
+        {/* Weak spots from interview */}
+        {weakTopics.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+            style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.20)', borderRadius: 16, padding: '16px 20px', marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <div style={{ fontSize: 14 }}>🎯</div>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#F87171' }}>
+                Recommended — based on your last interview
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {weakTopics.map(t => (
+                <div key={t.subject} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 20, padding: '6px 12px 6px 14px' }}>
+                  <button onClick={() => setSubject(t.subject)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#FCA5A5', padding: 0, fontFamily: 'inherit' }}>
+                    {t.subject}
+                    <span style={{ fontSize: 10, color: 'rgba(252,165,165,0.6)', marginLeft: 6 }}>{t.scorePct}%</span>
+                  </button>
+                  <button onClick={() => { dismissWeakTopic(t.subject); setWeakTopics(getWeakTopics()); }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(252,165,165,0.5)', fontSize: 14, padding: '0 0 0 2px', lineHeight: 1, fontFamily: 'inherit' }}>
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Hero */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>

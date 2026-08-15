@@ -84,6 +84,7 @@ import TeacherShell from "./pages/TeacherShell";
 import UniversityShell from "./pages/UniversityShell";
 import InterviewRoomPage from "./pages/InterviewRoomPage";
 import InterviewSummaryPage from "./pages/InterviewSummaryPage";
+import LearnFlashTalkPage from "./pages/LearnFlashTalkPage";
 
 export default function App() {
   return (
@@ -96,6 +97,7 @@ export default function App() {
       <Route path="/learn" element={<LearnHome />} />
       <Route path="/learn/lesson/:lessonId" element={<LessonViewer />} />
       <Route path="/learn/bookshelf" element={<LearnBookshelf />} />
+      <Route path="/learn/flash-talk" element={<LearnFlashTalkPage />} />
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />

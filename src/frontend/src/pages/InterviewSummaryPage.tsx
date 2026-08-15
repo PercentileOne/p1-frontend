@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { ScoreResponse, InterviewQuestion } from '../api/explainApi';
 import type { CVContext, JobSpecContext } from '../utils/contextBuilder';
 import type { MCQQuestion } from '../api/aiScoring';
+import { saveWeakTopics } from '../api/learnApi';
 
 interface SessionAnswer {
   question: InterviewQuestion;
@@ -42,6 +44,18 @@ export default function InterviewSummaryPage() {
   const passed = answers.filter(a => !a.answerText.trim()).length;
   const mcqCorrect = (state.mcqResults ?? []).filter(r => r.correct).length;
   const mcqTotal = (state.mcqResults ?? []).length;
+
+  useEffect(() => {
+    const lowScoring = answers
+      .filter(a => a.answerText.trim() && a.score.overallScore < 0.5)
+      .map(a => ({
+        subject: a.question.competencyTags?.[0] ?? a.question.questionText.slice(0, 40),
+        scorePct: Math.round(a.score.overallScore * 100),
+        competency: a.question.competencyTags?.[0] ?? '',
+        addedAt: new Date().toISOString(),
+      }));
+    if (lowScoring.length > 0) saveWeakTopics(lowScoring);
+  }, []);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: '-apple-system,"Segoe UI",sans-serif', padding: '32px 24px' }}>
