@@ -82,6 +82,8 @@ import StudentShell from "./pages/StudentShell";
 import ParentShell from "./pages/ParentShell";
 import TeacherShell from "./pages/TeacherShell";
 import UniversityShell from "./pages/UniversityShell";
+import InterviewRoomPage from "./pages/InterviewRoomPage";
+import InterviewSummaryPage from "./pages/InterviewSummaryPage";
 
 export default function App() {
   return (
@@ -202,6 +204,10 @@ export default function App() {
       <Route path="/shop" element={<ShopPage />} />
       <Route path="/chat" element={<ChatPage />} />
       <Route path="/settings" element={<SettingsPage />} />
+
+      {/* Interview Room */}
+      <Route path="/interview/:packId" element={<RequirePermission permission="CAN_START_INTERVIEW"><InterviewRoomPage /></RequirePermission>} />
+      <Route path="/interview-summary/:id" element={<RequirePermission permission="CAN_START_INTERVIEW"><InterviewSummaryPage /></RequirePermission>} />
 
       {/* Access denied */}
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
