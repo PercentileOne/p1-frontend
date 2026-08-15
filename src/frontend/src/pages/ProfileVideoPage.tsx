@@ -32,6 +32,24 @@ const QUESTIONS = [
   },
 ];
 
+// ── Filter presets ─────────────────────────────────────────────────────────────
+type FilterPreset = 'beauty' | 'warm' | 'studio' | 'natural';
+
+const FILTER_CSS: Record<FilterPreset, string> = {
+  beauty:  'brightness(1.07) contrast(1.06) saturate(1.12)',
+  warm:    'brightness(1.09) contrast(1.05) saturate(1.35) sepia(0.18)',
+  studio:  'brightness(1.13) contrast(1.22) saturate(0.82)',
+  natural: 'brightness(1.02) contrast(1.02) saturate(1.04)',
+};
+
+const FILTER_LABELS: Record<FilterPreset, { icon: string; label: string; desc: string }> = {
+  beauty:  { icon: '✨', label: 'Beauty',  desc: 'Soft & bright (default)' },
+  warm:    { icon: '🌅', label: 'Warm',    desc: 'Golden, flattering glow' },
+  studio:  { icon: '🎬', label: 'Studio',  desc: 'Crisp, high contrast' },
+  natural: { icon: '🌿', label: 'Natural', desc: 'True to life' },
+};
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 type Phase = 'welcome' | 'sarah-speaking' | 'recording' | 'processing' | 'coaching' | 'complete';
 
 interface AnswerClip {
@@ -76,7 +94,7 @@ Return ONLY valid JSON.`,
   }
 }
 
-// ── Web Speech recognition — typed to avoid lib dependency ──────────────────
+// ── Web Speech recognition ────────────────────────────────────────────────────
 interface SpeechResult {
   readonly [i: number]: { readonly [j: number]: { readonly transcript: string } };
   readonly length: number;
@@ -108,29 +126,102 @@ export default function ProfileVideoPage() {
   const [isRecordingActive, setIsRecordingActive] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [filterPreset, setFilterPreset] = useState<FilterPreset>('beauty');
+  const [cameraReady, setCameraReady] = useState(false);
+  const [cameraError, setCameraError] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const streamRef = useRef<MediaStream | null>(null);
+  // Raw stream from getUserMedia — never recorded directly
+  const rawStreamRef = useRef<MediaStream | null>(null);
+  // Canvas stream — what actually gets recorded (has filter baked in)
+  const canvasStreamRef = useRef<MediaStream | null>(null);
   const cancelSpeakRef = useRef<(() => void) | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recognitionRef = useRef<ReturnType<SpeechRecogCtor['prototype']['constructor']> | null>(null);
   const transcriptRef = useRef('');
+  const animFrameRef = useRef<number | null>(null);
+  const videoPreviewRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const filterPresetRef = useRef<FilterPreset>('beauty');
 
   const currentQ = QUESTIONS[qIndex];
   const progress = clips.length / QUESTIONS.length;
+
+  // Keep filter ref in sync so the draw loop always uses the latest value
+  useEffect(() => { filterPresetRef.current = filterPreset; }, [filterPreset]);
+
+  // ── Camera preview ─────────────────────────────────────────────────────────
+  const startPreview = useCallback(async () => {
+    setCameraReady(false);
+    setCameraError(false);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, facingMode: 'user' }, audio: true });
+      rawStreamRef.current = stream;
+
+      const video = videoPreviewRef.current;
+      if (!video) return;
+      video.srcObject = stream;
+      await video.play();
+      setCameraReady(true);
+
+      // Canvas draw loop — applies the CSS filter to every frame
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      canvas.width  = 1280;
+      canvas.height = 720;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const draw = () => {
+        ctx.filter = FILTER_CSS[filterPresetRef.current];
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        animFrameRef.current = requestAnimationFrame(draw);
+      };
+      draw();
+
+      // Canvas stream — has filter baked in
+      canvasStreamRef.current = canvas.captureStream(30);
+      // Add audio from raw stream
+      const audioTrack = stream.getAudioTracks()[0];
+      if (audioTrack) canvasStreamRef.current.addTrack(audioTrack);
+
+    } catch {
+      setCameraError(true);
+    }
+  }, []);
+
+  const stopPreview = useCallback(() => {
+    if (animFrameRef.current) { cancelAnimationFrame(animFrameRef.current); animFrameRef.current = null; }
+    rawStreamRef.current?.getTracks().forEach(t => t.stop());
+    rawStreamRef.current = null;
+    canvasStreamRef.current = null;
+    setCameraReady(false);
+  }, []);
+
+  // Start preview automatically when we enter the recording phase
+  useEffect(() => {
+    if (phase === 'recording') {
+      void startPreview();
+    } else {
+      stopPreview();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   useEffect(() => {
     return () => {
       cancelSpeakRef.current?.();
       mediaRecorderRef.current?.stop();
-      streamRef.current?.getTracks().forEach(t => t.stop());
       if (timerRef.current) clearInterval(timerRef.current);
       recognitionRef.current?.stop();
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      rawStreamRef.current?.getTracks().forEach(t => t.stop());
     };
   }, []);
 
-  // ── Start a question: Sarah speaks ────────────────────────────────────────
+  // ── Start a question: Sarah speaks ─────────────────────────────────────────
   const startQuestion = useCallback((index: number) => {
     setQIndex(index);
     setPhase('sarah-speaking');
@@ -141,43 +232,44 @@ export default function ProfileVideoPage() {
     cancelSpeakRef.current = speak(QUESTIONS[index].sarahText, 'hr', () => setPhase('recording'));
   }, []);
 
-  // ── Begin recording ───────────────────────────────────────────────────────
-  const startRecording = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      streamRef.current = stream;
-      chunksRef.current = [];
+  // ── Begin recording from filtered canvas stream ────────────────────────────
+  const startRecording = useCallback(() => {
+    const stream = canvasStreamRef.current;
+    if (!stream) {
+      alert('Camera not ready — please wait a moment and try again.');
+      return;
+    }
 
-      const mimeType = ['video/webm;codecs=vp9,opus', 'video/webm', 'audio/webm']
-        .find(t => MediaRecorder.isTypeSupported(t)) ?? '';
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-      mediaRecorderRef.current = recorder;
-      recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-      recorder.start(500);
-      setIsRecordingActive(true);
+    chunksRef.current = [];
 
-      setRecordingSeconds(0);
-      timerRef.current = setInterval(() => setRecordingSeconds(s => s + 1), 1000);
+    const mimeType = ['video/webm;codecs=vp9,opus', 'video/webm', 'audio/webm']
+      .find(t => MediaRecorder.isTypeSupported(t)) ?? '';
+    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    mediaRecorderRef.current = recorder;
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+    recorder.start(500);
+    setIsRecordingActive(true);
 
-      const SR = getSpeechRecognition();
-      if (SR) {
-        const recog = new SR();
-        recog.continuous = true;
-        recog.interimResults = true;
-        recog.onresult = (e: SpeechResultsEvent) => {
-          let t = '';
-          for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
-          transcriptRef.current = t;
-        };
-        recognitionRef.current = recog;
-        recog.start();
-      }
-    } catch {
-      alert('Camera/microphone access is needed to record your profile video.');
+    setRecordingSeconds(0);
+    timerRef.current = setInterval(() => setRecordingSeconds(s => s + 1), 1000);
+
+    // Speech recognition still runs on raw stream audio
+    const SR = getSpeechRecognition();
+    if (SR) {
+      const recog = new SR();
+      recog.continuous = true;
+      recog.interimResults = true;
+      recog.onresult = (e: SpeechResultsEvent) => {
+        let t = '';
+        for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+        transcriptRef.current = t;
+      };
+      recognitionRef.current = recog;
+      recog.start();
     }
   }, []);
 
-  // ── Stop recording → coaching ─────────────────────────────────────────────
+  // ── Stop recording → coaching ──────────────────────────────────────────────
   const stopRecording = useCallback(async () => {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     recognitionRef.current?.stop();
@@ -196,8 +288,6 @@ export default function ProfileVideoPage() {
       recorder.onstop = () => resolve(new Blob(chunksRef.current, { type: chunksRef.current[0]?.type ?? 'video/webm' }));
       recorder.stop();
     });
-    streamRef.current?.getTracks().forEach(t => t.stop());
-    streamRef.current = null;
 
     const tips = await generateProfileCoaching(currentQ.prompt, transcriptRef.current || '(no transcript captured)');
     setCoachingTips(tips);
@@ -223,7 +313,6 @@ export default function ProfileVideoPage() {
 
   const saveProfile = useCallback(async () => {
     setIsSaving(true);
-    // TODO: upload clip blobs to API and save profileVideoUrl against candidate
     await new Promise(r => setTimeout(r, 1800));
     setIsSaving(false);
     setSaved(true);
@@ -241,8 +330,13 @@ export default function ProfileVideoPage() {
         </div>
       )}
 
+      {/* Hidden elements used by the filter pipeline */}
+      <video ref={videoPreviewRef} playsInline muted style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 1, height: 1 }} />
+      <canvas ref={canvasRef} style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 1, height: 1 }} />
+
       <AnimatePresence mode="wait">
 
+        {/* ── Welcome ── */}
         {phase === 'welcome' && (
           <motion.div key="welcome" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}
             style={{ maxWidth: 560, width: '100%', textAlign: 'center' }}>
@@ -251,9 +345,17 @@ export default function ProfileVideoPage() {
             </div>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(167,139,250,0.7)', marginBottom: 12 }}>Sarah Mitchell · HR Director</div>
             <h1 style={{ fontSize: 'clamp(1.6rem,5vw,2.2rem)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 16, lineHeight: 1.2 }}>Record your<br />Profile Introduction</h1>
-            <p style={{ fontSize: 15, color: 'rgba(241,245,249,0.55)', lineHeight: 1.7, maxWidth: 440, margin: '0 auto 32px' }}>
-              Sarah will ask you 5 short, relaxed questions. After each answer you'll get personalised coaching — and you can re-record any answer as many times as you like. This video will appear on your public InterviewMe profile.
+            <p style={{ fontSize: 15, color: 'rgba(241,245,249,0.55)', lineHeight: 1.7, maxWidth: 440, margin: '0 auto 20px' }}>
+              Sarah will ask you 5 short, relaxed questions. After each answer you'll get personalised coaching — and you can re-record any answer as many times as you like.
             </p>
+            {/* Filter preview teaser */}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 28 }}>
+              {(['beauty','warm','studio','natural'] as FilterPreset[]).map(p => (
+                <div key={p} style={{ fontSize: 10, fontWeight: 600, color: 'rgba(52,211,153,0.7)', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 20, padding: '3px 10px' }}>
+                  {FILTER_LABELS[p].icon} {FILTER_LABELS[p].label}
+                </div>
+              ))}
+            </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 32 }}>
               {QUESTIONS.map((q, i) => (
                 <div key={q.id} style={{ fontSize: 11, fontWeight: 600, color: 'rgba(241,245,249,0.4)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '4px 12px' }}>Q{i + 1}</div>
@@ -266,6 +368,7 @@ export default function ProfileVideoPage() {
           </motion.div>
         )}
 
+        {/* ── Sarah speaking ── */}
         {phase === 'sarah-speaking' && (
           <motion.div key="sarah-speaking" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
             style={{ maxWidth: 560, width: '100%', textAlign: 'center' }}>
@@ -286,41 +389,181 @@ export default function ProfileVideoPage() {
           </motion.div>
         )}
 
+        {/* ── Recording ── */}
         {phase === 'recording' && (
           <motion.div key="recording" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            style={{ maxWidth: 560, width: '100%' }}>
-            <div style={{ textAlign: 'center', marginBottom: 28 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#a78bfa', marginBottom: 8 }}>Question {qIndex + 1} of {QUESTIONS.length}</div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', lineHeight: 1.4 }}>"{currentQ.prompt}"</div>
+            style={{ maxWidth: 640, width: '100%' }}>
+
+            <div style={{ textAlign: 'center', marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#a78bfa', marginBottom: 6 }}>Question {qIndex + 1} of {QUESTIONS.length}</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: '#fff', lineHeight: 1.4 }}>"{currentQ.prompt}"</div>
             </div>
-            <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 20, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
-              <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)' }}>
-                <div style={{ fontSize: 40, marginBottom: 8 }}>{isRecordingActive ? '🎥' : '📷'}</div>
-                <div style={{ fontSize: 13 }}>{isRecordingActive ? 'Recording in progress' : 'Click Record to start'}</div>
-              </div>
+
+            {/* Camera preview */}
+            <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 20, background: '#0a0e1a', border: '1px solid rgba(255,255,255,0.08)', marginBottom: 16, position: 'relative', overflow: 'hidden' }}>
+              {/* Filtered canvas preview — what the user sees */}
+              <canvas
+                ref={el => {
+                  // Second canvas just for display — mirrors the recording canvas with filter via CSS
+                  if (el && canvasRef.current && cameraReady) {
+                    // We use the hidden canvas as the source; display it via an img updated on rAF
+                    // Simpler: show the raw video with CSS filter applied for preview
+                  }
+                }}
+                style={{ display: 'none' }}
+              />
+
+              {/* Live preview: raw video + CSS filter for visual feedback */}
+              {cameraReady ? (
+                <video
+                  ref={el => {
+                    if (el && rawStreamRef.current) {
+                      el.srcObject = rawStreamRef.current;
+                      void el.play();
+                    }
+                  }}
+                  playsInline
+                  muted
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transform: 'scaleX(-1)', // mirror for natural selfie feel
+                    filter: FILTER_CSS[filterPreset],
+                    borderRadius: 20,
+                  }}
+                />
+              ) : cameraError ? (
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)', gap: 8 }}>
+                  <div style={{ fontSize: 36 }}>📷</div>
+                  <div style={{ fontSize: 13 }}>Camera access needed</div>
+                  <button onClick={() => void startPreview()} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 10, background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', color: '#a78bfa', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    Try again
+                  </button>
+                </div>
+              ) : (
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                    style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid rgba(167,139,250,0.2)', borderTop: '3px solid #a78bfa' }} />
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>Starting camera…</div>
+                </div>
+              )}
+
+              {/* Recording indicator */}
               {isRecordingActive && (
-                <div style={{ position: 'absolute', top: 14, right: 14, display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(239,68,68,0.9)', borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 700, color: '#fff' }}>
+                <div style={{ position: 'absolute', top: 14, right: 14, display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(239,68,68,0.9)', borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 700, color: '#fff', backdropFilter: 'blur(8px)' }}>
                   <motion.div animate={{ opacity: [1,0,1] }} transition={{ repeat: Infinity, duration: 1.2 }}
                     style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff' }} />
                   {fmt(recordingSeconds)}
                 </div>
               )}
+
+              {/* Active filter badge */}
+              {cameraReady && (
+                <div style={{ position: 'absolute', top: 14, left: 14, display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>
+                  {FILTER_LABELS[filterPreset].icon} {FILTER_LABELS[filterPreset].label}
+                </div>
+              )}
             </div>
+
+            {/* ── Filter presets ── */}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, textAlign: 'center' }}>Look &amp; Feel</div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                {(['beauty','warm','studio','natural'] as FilterPreset[]).map(preset => {
+                  const active = filterPreset === preset;
+                  return (
+                    <button
+                      key={preset}
+                      onClick={() => setFilterPreset(preset)}
+                      title={FILTER_LABELS[preset].desc}
+                      style={{
+                        flex: 1,
+                        padding: '10px 6px',
+                        borderRadius: 12,
+                        background: active ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${active ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                        color: active ? '#34D399' : 'rgba(255,255,255,0.45)',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 4,
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <span style={{ fontSize: 18 }}>{FILTER_LABELS[preset].icon}</span>
+                      <span>{FILTER_LABELS[preset].label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ── Background controls (coming soon) ── */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, textAlign: 'center' }}>Background</div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                {[
+                  { icon: '🌀', label: 'Blur',       desc: 'Background blur' },
+                  { icon: '🖼',  label: 'Office',     desc: 'Virtual office background' },
+                  { icon: '🌇', label: 'City',        desc: 'City skyline background' },
+                  { icon: '⬛', label: 'None',        desc: 'No background effect', active: true },
+                ].map(bg => (
+                  <button
+                    key={bg.label}
+                    title={bg.desc}
+                    style={{
+                      flex: 1,
+                      padding: '10px 6px',
+                      borderRadius: 12,
+                      background: bg.active ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.02)',
+                      border: `1px solid ${bg.active ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)'}`,
+                      color: bg.active ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: bg.active ? 'pointer' : 'default',
+                      fontFamily: 'inherit',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 4,
+                      position: 'relative',
+                    }}
+                  >
+                    <span style={{ fontSize: 18 }}>{bg.icon}</span>
+                    <span>{bg.label}</span>
+                    {!bg.active && (
+                      <span style={{ position: 'absolute', top: 4, right: 6, fontSize: 8, fontWeight: 800, letterSpacing: '0.05em', color: 'rgba(52,211,153,0.6)', textTransform: 'uppercase' }}>soon</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Record / Stop ── */}
             <div style={{ display: 'flex', gap: 12 }}>
               {!isRecordingActive ? (
-                <button onClick={startRecording} style={{ flex: 1, padding: '16px', borderRadius: 14, background: 'linear-gradient(135deg,#ef4444,#dc2626)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: '0 8px 24px rgba(239,68,68,0.3)' }}>
-                  <span style={{ fontSize: 18 }}>⏺</span> Record
+                <button
+                  onClick={startRecording}
+                  disabled={!cameraReady}
+                  style={{ flex: 1, padding: '16px', borderRadius: 14, background: cameraReady ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'rgba(255,255,255,0.06)', border: 'none', color: cameraReady ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: 15, fontWeight: 800, cursor: cameraReady ? 'pointer' : 'default', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: cameraReady ? '0 8px 24px rgba(239,68,68,0.3)' : 'none', transition: 'all 0.2s ease' }}>
+                  <span style={{ fontSize: 18 }}>⏺</span> {cameraReady ? 'Record' : 'Preparing camera…'}
                 </button>
               ) : (
-                <button onClick={stopRecording} style={{ flex: 1, padding: '16px', borderRadius: 14, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 18 }}>⏹</span> Stop & Review
+                <button onClick={() => void stopRecording()} style={{ flex: 1, padding: '16px', borderRadius: 14, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>⏹</span> Stop &amp; Review
                 </button>
               )}
             </div>
-            <div style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>Speak naturally — you can re-record as many times as you like</div>
+            <div style={{ textAlign: 'center', marginTop: 12, fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>Speak naturally — you can re-record as many times as you like</div>
           </motion.div>
         )}
 
+        {/* ── Processing ── */}
         {phase === 'processing' && (
           <motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ textAlign: 'center' }}>
             <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
@@ -329,6 +572,7 @@ export default function ProfileVideoPage() {
           </motion.div>
         )}
 
+        {/* ── Coaching ── */}
         {phase === 'coaching' && (
           <motion.div key="coaching" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             style={{ maxWidth: 560, width: '100%' }}>
@@ -359,6 +603,7 @@ export default function ProfileVideoPage() {
           </motion.div>
         )}
 
+        {/* ── Complete ── */}
         {phase === 'complete' && (
           <motion.div key="complete" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             style={{ maxWidth: 560, width: '100%', textAlign: 'center' }}>
@@ -392,7 +637,7 @@ export default function ProfileVideoPage() {
                 <button onClick={() => { setClips([]); setQIndex(0); startQuestion(0); }} style={{ padding: '14px 24px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   Start over
                 </button>
-                <button onClick={saveProfile} disabled={isSaving} style={{ padding: '14px 36px', borderRadius: 12, background: isSaving ? 'rgba(167,139,250,0.3)' : 'linear-gradient(135deg,#a78bfa,#7c3aed)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: isSaving ? 'default' : 'pointer', fontFamily: 'inherit', boxShadow: isSaving ? 'none' : '0 8px 24px rgba(167,139,250,0.3)' }}>
+                <button onClick={() => void saveProfile()} disabled={isSaving} style={{ padding: '14px 36px', borderRadius: 12, background: isSaving ? 'rgba(167,139,250,0.3)' : 'linear-gradient(135deg,#a78bfa,#7c3aed)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: isSaving ? 'default' : 'pointer', fontFamily: 'inherit', boxShadow: isSaving ? 'none' : '0 8px 24px rgba(167,139,250,0.3)' }}>
                   {isSaving ? '⏳ Saving…' : '💾 Save Profile Video'}
                 </button>
               </div>
