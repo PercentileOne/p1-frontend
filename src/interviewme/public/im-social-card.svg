@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#08090D"/>
+      <stop offset="100%" stop-color="#0D1117"/>
+    </linearGradient>
+    <linearGradient id="imGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#34D399" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#047857" stop-opacity="0.03"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <clipPath id="markClip">
+      <rect x="0" y="0" width="96" height="96" rx="20"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+
+  <!-- Subtle right-side geometric accent circles -->
+  <circle cx="1050" cy="200" r="280" fill="url(#accentGrad)"/>
+  <circle cx="1120" cy="480" r="160" fill="#34D399" fill-opacity="0.04"/>
+
+  <!-- Top-left green glow behind mark -->
+  <ellipse cx="128" cy="120" rx="90" ry="90" fill="#34D399" fill-opacity="0.08" filter="url(#glow)"/>
+
+  <!-- IM Logo mark — rounded square -->
+  <rect x="72" y="72" width="96" height="96" rx="20" fill="url(#imGrad)"/>
+  <!-- IM text inside mark -->
+  <text x="120" y="136" font-family="-apple-system,'Segoe UI',Arial,sans-serif" font-weight="800" font-size="38" fill="white" text-anchor="middle" letter-spacing="-1">IM</text>
+
+  <!-- Wordmark -->
+  <text x="200" y="124" font-family="-apple-system,'Segoe UI',Arial,sans-serif" font-weight="800" font-size="64" fill="white" letter-spacing="-2">Interview</text>
+  <text x="200" y="124" font-family="-apple-system,'Segoe UI',Arial,sans-serif" font-weight="800" font-size="64" fill="white" letter-spacing="-2">
+    <tspan>Interview</tspan><tspan fill="#34D399">Me</tspan><tspan fill="#6B7280" font-weight="400" font-size="44">.global</tspan>
+  </text>
+
+  <!-- Divider line -->
+  <rect x="72" y="200" width="480" height="2" fill="#34D399" opacity="0.3"/>
+
+  <!-- Tagline -->
+  <text x="72" y="258" font-family="-apple-system,'Segoe UI',Arial,sans-serif" font-weight="600" font-size="32" fill="#F9FAFB" letter-spacing="-0.5">Interview once.</text>
+  <text x="72" y="302" font-family="-apple-system,'Segoe UI',Arial,sans-serif" font-weight="400" font-size="32" fill="#9CA3AF" letter-spacing="-0.5">Get seen by thousands of employers.</text>
+
+  <!-- Bottom stats bar -->
+  <rect x="0" y="510" width="1200" height="120" fill="#34D399" fill-opacity="0.05"/>
+  <rect x="0" y="510" width="1200" height="1" fill="#34D399" fill-opacity="0.2"/>
+
+  <!-- Stat: Candidates -->
+  <text x="120" y="562" font-family="-apple-system,'Segoe UI',Arial,sans-serif" font-weight="800" font-size="36" fill="#34D399" text-anchor="middle">7.4M</text>
+  <text x="120" y="594" font-family="-apple-system,'Segoe UI',Arial,sans-serif" font-weight="400" font-size="18" fill="#6B7280" text-anchor="middle">Candidates</text>
+
+  <!-- Divider -->
+  <rect x="220" y="535" width="1" height="60" fill="#374151"/>
+
+  <!-- Stat: Employers -->
+  <text x="320" y="562" font-family="-apple-system,'Segoe UI',Arial,sans-serif" font-weight="800" font-size="36" fill="#34D399" text-anchor="middle">50K</text>
+  <text x="320" y="594" font-family="-apple-system,'Segoe UI',Arial,sans-serif" font-weight="400" font-size="18" fill="#6B7280" text-anchor="middle">Employers</text>
+
+  <!-- Divider -->
+  <rect x="420" y="535" width="1" height="60" fill="#374151"/>
+
+  <!-- Stat: 24/7 -->
+  <text x="520" y="562" font-family="-apple-system,'Segoe UI',Arial,sans-serif" font-weight="800" font-size="36" fill="#34D399" text-anchor="middle">24/7</text>
+  <text x="520" y="594" font-family="-apple-system,'Segoe UI',Arial,sans-serif" font-weight="400" font-size="18" fill="#6B7280" text-anchor="middle">Always On</text>
+
+  <!-- Right side: "The World's First Interview Broadcast Platform" -->
+  <text x="1128" y="562" font-family="-apple-system,'Segoe UI',Arial,sans-serif" font-weight="500" font-size="16" fill="#4B5563" text-anchor="end">The World's First</text>
+  <text x="1128" y="584" font-family="-apple-system,'Segoe UI',Arial,sans-serif" font-weight="600" font-size="16" fill="#6B7280" text-anchor="end">Interview Broadcast Platform</text>
+
+  <!-- Right accent: large faint chair silhouette shape -->
+  <rect x="900" y="80" width="3" height="380" fill="#34D399" fill-opacity="0.15" rx="2"/>
+  <rect x="920" y="140" width="240" height="3" fill="#34D399" fill-opacity="0.1" rx="2"/>
+</svg>
