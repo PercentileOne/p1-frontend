@@ -111,15 +111,28 @@ function CameraPreview({ stream, filterPreset, children }: {
   filterPreset: FilterPreset;
   children?: React.ReactNode;
 }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Only set srcObject when the stream reference changes — not on every render
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    if (stream) {
+      el.srcObject = stream;
+      void el.play();
+    } else {
+      el.srcObject = null;
+    }
+  }, [stream]);
+
   return (
     <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 20, background: '#0a0e1a', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden' }}>
-      {stream ? (
-        <video
-          ref={el => { if (el && stream) { el.srcObject = stream; void el.play(); } }}
-          playsInline muted
-          style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)', filter: FILTER_CSS[filterPreset], borderRadius: 20 }}
-        />
-      ) : (
+      <video
+        ref={videoRef}
+        playsInline muted
+        style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)', filter: FILTER_CSS[filterPreset], borderRadius: 20, display: stream ? 'block' : 'none' }}
+      />
+      {!stream && (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
           <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
             style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid rgba(167,139,250,0.2)', borderTop: '3px solid #a78bfa' }} />
