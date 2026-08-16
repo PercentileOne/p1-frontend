@@ -1,6 +1,16 @@
 {
   "routes": [
     {
+      "route": "/login",
+      "redirect": "https://candidate.interviewme.global/login",
+      "statusCode": 302
+    },
+    {
+      "route": "/register",
+      "redirect": "https://candidate.interviewme.global/register",
+      "statusCode": 302
+    },
+    {
       "route": "/fp",
       "rewrite": "/fp.html"
     },
