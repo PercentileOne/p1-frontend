@@ -1,6 +1,6 @@
 {
   "nav": {
-    "home": "Home", "jobs": "Jobs", "learn": "Learn", "community": "Community",
+    "home": "Home", "jobs": "Jobs", "careers": "Careers", "learn": "Learn", "community": "Community",
     "myInterviews": "My Interviews", "portals": "Portals", "pricing": "Pricing",
     "registerInterest": "Register Interest", "signIn": "Sign in", "register": "Register"
   },

@@ -24,6 +24,7 @@ const LANGUAGES = [
 const NAV_KEYS = [
   { to: '/', key: 'nav.home' },
   { to: '/jobs', key: 'nav.jobs' },
+  { to: '/careers', key: 'nav.careers' },
   { to: '/learn', key: 'nav.learn' },
   { to: '/community', key: 'nav.community' },
   { to: '/my-interviews', key: 'nav.myInterviews' },

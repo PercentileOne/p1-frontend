@@ -4,6 +4,7 @@ import { Nav } from './components/Nav';
 import Home from './pages/Home';
 import Jobs from './pages/Jobs';
 import Learn from './pages/Learn';
+import Careers from './pages/Careers';
 import Community from './pages/Community';
 import MyInterviews from './pages/MyInterviews';
 import Portals from './pages/Portals';
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/learn" element={<Learn />} />
+            <Route path="/careers" element={<Careers />} />
             <Route path="/community" element={<Community />} />
             <Route path="/my-interviews" element={<MyInterviews />} />
             <Route path="/portals" element={<Portals />} />
