@@ -17,6 +17,7 @@ import FlowViewer from './pages/FlowViewer'
 import LearnHome from './pages/learn/LearnHome'
 import LessonViewer from './pages/learn/LessonViewer'
 import LearnBookshelf from './pages/learn/LearnBookshelf'
+import CandidateHome from './pages/candidate/CandidateHome'
 
 // Redirects unauthenticated users to /login
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -48,6 +49,10 @@ function AppRoutes() {
       <Route path="/learn" element={<RequireAuth><LearnHome /></RequireAuth>} />
       <Route path="/learn/lesson/:lessonId" element={<RequireAuth><LessonViewer /></RequireAuth>} />
       <Route path="/learn/bookshelf" element={<RequireAuth><LearnBookshelf /></RequireAuth>} />
+
+      {/* Candidate portal */}
+      <Route path="/candidate/home" element={<CandidateHome />} />
+
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
