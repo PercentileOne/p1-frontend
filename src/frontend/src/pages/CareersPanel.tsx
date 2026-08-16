@@ -287,7 +287,6 @@ async function fetchCourses(career: Career): Promise<CourseResult[]> {
 
 function generateFallbackCourses(career: Career): CourseResult[] {
   const skills = career.pathway?.skills?.slice(0, 2) ?? [];
-  const titleSlug = career.title.toLowerCase().replace(/\s+/g, '-');
   return [
     {
       title: `The Complete ${career.title} Bootcamp`,
