@@ -537,9 +537,16 @@ export default function CareersPanel() {
                 onMouseEnter={e => { if (!active) (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(120,80,255,0.3)'; }}
                 onMouseLeave={e => { if (!active) (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.07)'; }}
               >
-                <span style={{ fontSize: 20 }}>{categoryIcon(category)}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                  <span style={{ fontSize: 20 }}>{categoryIcon(category)}</span>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, color: active ? '#a78bfa' : '#7060b0',
+                    background: active ? 'rgba(120,80,255,0.2)' : 'rgba(255,255,255,0.06)',
+                    border: `1px solid ${active ? 'rgba(120,80,255,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                    borderRadius: 20, padding: '2px 7px', letterSpacing: '0.02em',
+                  }}>{count}</span>
+                </div>
                 <span style={{ fontSize: 12, fontWeight: 700, color: active ? '#fff' : '#c0b8e0' }}>{category}</span>
-                <span style={{ fontSize: 11, color: '#5050a0' }}>{count} careers</span>
               </div>
             );
           })}
