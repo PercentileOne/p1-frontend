@@ -104,6 +104,7 @@ Requirements:
   const body = JSON.stringify({
     model: 'gpt-4o',
     temperature: 0.7,
+    max_tokens: 16000,
     response_format: { type: 'json_object' },
     messages: [
       { role: 'system', content: systemPrompt },
@@ -111,20 +112,39 @@ Requirements:
     ],
   });
 
-  // Try local Vite proxy first; fall back to deployed SWA function (CORS: *)
-  const PROXY_URLS = ['/api/ai-proxy', 'https://recruiter.explain.global/api/ai-proxy'];
-
-  for (let attempt = 0; attempt <= 2; attempt++) {
-    const url = attempt < PROXY_URLS.length ? PROXY_URLS[attempt] : PROXY_URLS[PROXY_URLS.length - 1];
-    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
-    if (res.status === 429 && attempt < 2) { await new Promise(r => setTimeout(r, 12000)); continue; }
-    if (!res.ok) continue; // try next URL on any error
+  async function tryFetch(url: string, headers: Record<string, string>) {
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body });
+    if (!res.ok) {
+      console.error(`[LearnEngine] ${url} responded ${res.status}`);
+      return null;
+    }
+    let raw = '';
     try {
       const data = await res.json() as { choices: { message: { content: string } }[] };
-      const parsed = JSON.parse(data.choices[0].message.content) as Omit<Course, 'id' | 'createdAt'>;
+      raw = data.choices?.[0]?.message?.content ?? '';
+      if (!raw) { console.error('[LearnEngine] Empty content in response', data); return null; }
+      const parsed = JSON.parse(raw) as Omit<Course, 'id' | 'createdAt'>;
+      if (!parsed.modules?.length) { console.error('[LearnEngine] No modules in parsed course', parsed); return null; }
       return { ...parsed, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
-    } catch { continue; }
+    } catch (e) {
+      console.error('[LearnEngine] JSON parse failed', e, '\nRaw content (first 500 chars):', raw.slice(0, 500));
+      return null;
+    }
   }
+
+  // 1. Server-side proxy
+  const via_proxy = await tryFetch('/api/ai-proxy', {}).catch(e => { console.error('[LearnEngine] Proxy fetch threw', e); return null; });
+  if (via_proxy) return via_proxy;
+
+  // 2. Direct OpenAI (dev fallback)
+  const apiKey = (import.meta as unknown as { env: Record<string, string> }).env?.VITE_OPENAI_API_KEY;
+  if (apiKey) {
+    const via_direct = await tryFetch('https://api.openai.com/v1/chat/completions', {
+      Authorization: `Bearer ${apiKey}`,
+    }).catch(e => { console.error('[LearnEngine] Direct fetch threw', e); return null; });
+    if (via_direct) return via_direct;
+  }
+
   throw new Error('Course generation failed');
 }
 
