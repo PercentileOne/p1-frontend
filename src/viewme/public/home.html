@@ -2018,6 +2018,7 @@
     // Allow nav-logo, nav links, language selector, hamburger
     if (btn.closest('.nav-logo') || btn.closest('.nav-links') ||
         btn.closest('.nav-mobile-menu') || btn.closest('#langMenu') ||
+        btn.closest('#about-overlay') ||
         btn.classList.contains('nav-burger') ||
         btn.id === 'notif-pause-btn') return;
     // Allow specific nav anchors — block everything else including buttons and mailto: links
