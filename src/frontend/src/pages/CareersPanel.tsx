@@ -438,6 +438,7 @@ export default function CareersPanel() {
   const [selectedCareer, setSelectedCareer] = useState<Career | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { getCategories().then(setCategories); }, []);
 
@@ -459,6 +460,7 @@ export default function CareersPanel() {
     const results = await getCareersByCategory(cat);
     setCategoryResults(results);
     setLoadingCategory(false);
+    setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   }
 
   return (
@@ -555,7 +557,7 @@ export default function CareersPanel() {
 
       {/* Category results */}
       {activeCategory && (
-        <div>
+        <div ref={resultsRef}>
           <h2 style={{ fontSize: 14, fontWeight: 700, color: '#94a3b8', margin: '0 0 16px' }}>
             {categoryIcon(activeCategory)} {activeCategory}
             {!loadingCategory && categoryResults.length > 0 && (
