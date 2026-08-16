@@ -85,9 +85,9 @@ Return ONLY valid JSON matching this exact schema (no markdown, no explanation):
           "title": "lecture title",
           "type": "lesson",
           "estimatedMinutes": <10-25>,
-          "content": "150-200 words of expert, engaging content. Use clear paragraphs. Include a real-world example or analogy. No bullet lists — prose only.",
-          "keyTakeaways": ["concise takeaway 1", "concise takeaway 2", "concise takeaway 3"],
-          "interviewQuestions": ["specific interview question about this topic?", "deeper follow-up interview question?"]
+          "content": "500-600 words of expert, engaging, deeply educational content. Write 3-4 substantive paragraphs. Each paragraph should develop one idea fully. Include concrete real-world examples, specific numbers, named tools or techniques, and practical insights a professional would actually use. No bullet lists — flowing prose only.",
+          "keyTakeaways": ["A specific fact or insight the student now knows — e.g. 'Neural networks with more than 3 layers are called deep networks and can learn hierarchical features'", "Another concrete insight stated as a fact, not an instruction", "A third factual takeaway — something memorable and specific"],
+          "interviewQuestions": ["A realistic technical interview question a hiring manager would ask about this specific topic?", "A deeper follow-up that tests genuine understanding, not just recall?"]
         }
       ]
     }
