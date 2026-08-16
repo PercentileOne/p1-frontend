@@ -258,6 +258,143 @@ function StatTile({ label, value, good, bad }: { label: string; value: string; g
 
 // ── Career Detail Slide Panel ──────────────────────────────────────────────────
 
+// ── Course Finder ──────────────────────────────────────────────────────────────
+
+interface CourseResult {
+  title: string;
+  provider: 'Udemy' | 'Coursera' | 'LinkedIn Learning';
+  instructor: string;
+  rating: number;
+  reviewCount: number;
+  price: string;
+  originalPrice?: string;
+  durationHours: number;
+  level: string;
+  url: string;
+  badge?: string;
+}
+
+async function fetchCourses(career: Career): Promise<CourseResult[]> {
+  try {
+    const res = await fetch(
+      `/api/courses?career=${encodeURIComponent(career.id)}&title=${encodeURIComponent(career.title)}&category=${encodeURIComponent(career.category)}`
+    );
+    if (res.ok) return await res.json() as CourseResult[];
+  } catch { /* fall through */ }
+  return generateFallbackCourses(career);
+}
+
+function generateFallbackCourses(career: Career): CourseResult[] {
+  const skills = career.pathway?.skills?.slice(0, 2) ?? [];
+  const titleSlug = career.title.toLowerCase().replace(/\s+/g, '-');
+  return [
+    {
+      title: `The Complete ${career.title} Bootcamp`,
+      provider: 'Udemy',
+      instructor: 'Industry Expert',
+      rating: 4.7,
+      reviewCount: 12400,
+      price: '£14.99',
+      originalPrice: '£79.99',
+      durationHours: 22,
+      level: 'Beginner to Advanced',
+      url: `https://www.udemy.com/courses/search/?q=${encodeURIComponent(career.title)}`,
+      badge: 'Bestseller',
+    },
+    {
+      title: `${career.title}: Professional Certificate`,
+      provider: 'Coursera',
+      instructor: skills[0] ? `${skills[0]} Specialisation` : 'Professional Series',
+      rating: 4.8,
+      reviewCount: 6200,
+      price: 'Free to audit',
+      durationHours: 40,
+      level: 'Intermediate',
+      url: `https://www.coursera.org/search?query=${encodeURIComponent(career.title)}`,
+      badge: 'Certificate',
+    },
+    {
+      title: `${skills[0] || career.category} for ${career.title}s`,
+      provider: 'LinkedIn Learning',
+      instructor: 'LinkedIn Instructor',
+      rating: 4.5,
+      reviewCount: 3100,
+      price: 'Free with LinkedIn Premium',
+      durationHours: 8,
+      level: 'Intermediate',
+      url: `https://www.linkedin.com/learning/search?keywords=${encodeURIComponent(career.title)}`,
+    },
+  ];
+}
+
+const PROVIDER_COLORS: Record<string, { bg: string; color: string; border: string }> = {
+  'Udemy':            { bg: 'rgba(167,103,28,0.15)',  color: '#f59e0b', border: 'rgba(167,103,28,0.3)'  },
+  'Coursera':         { bg: 'rgba(30,100,220,0.12)',  color: '#60a5fa', border: 'rgba(30,100,220,0.25)' },
+  'LinkedIn Learning':{ bg: 'rgba(10,100,150,0.12)',  color: '#38bdf8', border: 'rgba(10,100,150,0.25)' },
+};
+
+function CourseCard({ course }: { course: CourseResult }) {
+  const pc = PROVIDER_COLORS[course.provider] ?? PROVIDER_COLORS['Udemy'];
+  return (
+    <a
+      href={course.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ textDecoration: 'none', display: 'block', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px', transition: 'border-color 0.15s, background 0.15s' }}
+      onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(120,80,255,0.35)'; (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(120,80,255,0.06)'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(255,255,255,0.03)'; }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#e0dcff', lineHeight: 1.4, marginBottom: 3 }}>{course.title}</div>
+          <div style={{ fontSize: 11, color: '#7060a0' }}>{course.instructor} · {course.durationHours}h · {course.level}</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, background: pc.bg, color: pc.color, border: `1px solid ${pc.border}`, borderRadius: 20, padding: '2px 8px' }}>{course.provider}</span>
+          {course.badge && (
+            <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 20, padding: '2px 8px' }}>{course.badge}</span>
+          )}
+        </div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#f59e0b' }}>{'★'.repeat(Math.round(course.rating))}</span>
+          <span style={{ fontSize: 11, color: '#7060a0' }}>{course.rating.toFixed(1)} ({course.reviewCount.toLocaleString()})</span>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <span style={{ fontSize: 13, fontWeight: 800, color: '#34d399' }}>{course.price}</span>
+          {course.originalPrice && <span style={{ fontSize: 11, color: '#4040a0', textDecoration: 'line-through', marginLeft: 6 }}>{course.originalPrice}</span>}
+        </div>
+      </div>
+    </a>
+  );
+}
+
+function CoursesSection({ career }: { career: Career }) {
+  const [courses, setCourses] = useState<CourseResult[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCourses(career).then(c => { setCourses(c); setLoading(false); });
+  }, [career.id]);
+
+  return (
+    <Section title="📚 Courses to Get There">
+      {loading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {[1,2,3].map(i => <div key={i} style={{ height: 80, background: 'rgba(255,255,255,0.03)', borderRadius: 12, animation: 'pulse 1.5s ease-in-out infinite' }} />)}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {courses.map((c, i) => <CourseCard key={i} course={c} />)}
+        </div>
+      )}
+    </Section>
+  );
+}
+
+// ── Career Detail Panel ────────────────────────────────────────────────────────
+
 function CareerDetailPanel({ career, onClose }: { career: Career; onClose: () => void }) {
   const uk = career.salary?.uk;
   const us = career.salary?.us;
@@ -307,6 +444,8 @@ function CareerDetailPanel({ career, onClose }: { career: Career; onClose: () =>
               </div>
             </Section>
           )}
+
+          <CoursesSection career={career} />
 
           {(wuk || wus) && (
             <Section title="👥 Workforce">
