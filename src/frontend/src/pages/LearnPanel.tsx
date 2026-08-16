@@ -50,6 +50,7 @@ interface Course {
 // ── Persisted course store ─────────────────────────────────────────────────────
 
 const STORAGE_KEY = 'im_learn_courses_v1';
+const CACHE_TTL_MS = 48 * 60 * 60 * 1000; // 2 days
 
 function loadCourses(): Course[] {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'); } catch { return []; }
@@ -58,6 +59,20 @@ function loadCourses(): Course[] {
 function saveCourse(course: Course) {
   const existing = loadCourses().filter(c => c.id !== course.id);
   localStorage.setItem(STORAGE_KEY, JSON.stringify([course, ...existing].slice(0, 20)));
+}
+
+function deleteCourse(id: string) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(loadCourses().filter(c => c.id !== id)));
+}
+
+function findCached(title: string, level: string): Course | null {
+  const normalise = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
+  const now = Date.now();
+  return loadCourses().find(c =>
+    normalise(c.title) === normalise(title) &&
+    c.level === level &&
+    now - new Date(c.createdAt).getTime() < CACHE_TTL_MS
+  ) ?? null;
 }
 
 // ── AI course generation ───────────────────────────────────────────────────────
@@ -289,6 +304,16 @@ function CourseCard({ course, onClick }: { course: Course; onClick: () => void }
         <span>{fmtHours(mins)}</span>
         <span>·</span>
         <span style={{ color: accent }}>{course.category}</span>
+      </div>
+      <div style={{ fontSize: 10, color: TEXT3 }}>
+        {(() => {
+          const ageMs = Date.now() - new Date(course.createdAt).getTime();
+          const ageH = Math.floor(ageMs / 3600000);
+          const ageD = Math.floor(ageMs / 86400000);
+          if (ageH < 1) return 'Generated just now';
+          if (ageH < 24) return `Generated ${ageH}h ago`;
+          return `Generated ${ageD}d ago`;
+        })()}
       </div>
     </div>
   );
@@ -642,6 +667,12 @@ export default function LearnPanel() {
     return () => { if (genTimer.current) clearInterval(genTimer.current); };
   }, [generating]);
 
+  function handleDelete(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    deleteCourse(id);
+    setSavedCourses(loadCourses());
+  }
+
   async function handleGenerate(title?: string) {
     const t = (title ?? query).trim();
     if (!t || t.length < 3) {
@@ -650,6 +681,9 @@ export default function LearnPanel() {
       return;
     }
     setError('');
+    // Serve from cache if generated within the last 2 days
+    const cached = findCached(t, level);
+    if (cached) { setActiveCourse(cached); return; }
     setGenerating(true);
     try {
       const course = await generateCourse(t, level);
@@ -862,7 +896,23 @@ export default function LearnPanel() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
             {savedCourses.map(course => (
-              <CourseCard key={course.id} course={course} onClick={() => setActiveCourse(course)} />
+              <div key={course.id} style={{ position: 'relative' }}>
+                <CourseCard course={course} onClick={() => setActiveCourse(course)} />
+                <button
+                  onClick={e => handleDelete(course.id, e)}
+                  title="Remove course"
+                  style={{
+                    position: 'absolute', top: 10, right: 10,
+                    background: 'rgba(255,255,255,0.06)', border: `1px solid ${BORDER}`,
+                    borderRadius: '50%', width: 22, height: 22,
+                    color: TEXT3, cursor: 'pointer', fontSize: 12, lineHeight: 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#F87171'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(248,113,113,0.4)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = TEXT3; (e.currentTarget as HTMLButtonElement).style.borderColor = BORDER; }}
+                >×</button>
+              </div>
             ))}
           </div>
         </div>
