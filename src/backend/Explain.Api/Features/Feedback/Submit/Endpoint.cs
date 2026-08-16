@@ -33,7 +33,7 @@ public static class Endpoint
             Thoughts     = req.Thoughts.Trim(),
             Improvements = req.Improvements?.Trim(),
             Recommend    = req.Recommend,
-            Source       = req.Source ?? "explain.global/feedback",
+            Source       = req.Source ?? "interviewme.global/feedback",
             SubmittedAt  = req.SubmittedAt ?? DateTime.UtcNow,
         };
 

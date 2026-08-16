@@ -50,7 +50,7 @@ public static class Endpoint
         await db.SaveChangesAsync();
 
         // Send reset email
-        var resetUrl = $"https://candidate.explain.global/reset-password?token={rawToken}";
+        var resetUrl = $"https://candidate.interviewme.global/reset-password?token={rawToken}";
 
         try
         {
@@ -72,8 +72,8 @@ public static class Endpoint
         var smtpPort  = int.Parse(config["Email:SmtpPort"] ?? "587");
         var smtpUser  = config["Email:SmtpUser"]  ?? throw new InvalidOperationException("Email:SmtpUser not configured");
         var smtpPass  = config["Email:SmtpPass"]  ?? throw new InvalidOperationException("Email:SmtpPass not configured");
-        var fromEmail = config["Email:FromEmail"] ?? "noreply@explain.global";
-        var fromName  = config["Email:FromName"]  ?? "Explain.global";
+        var fromEmail = config["Email:FromEmail"] ?? "noreply@interviewme.global";
+        var fromName  = config["Email:FromName"]  ?? "InterviewMe.global";
 
         var body = $"""
             <div style="font-family:-apple-system,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;background:#09090f;color:#fff;border-radius:16px;overflow:hidden;">

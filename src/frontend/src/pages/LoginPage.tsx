@@ -84,11 +84,11 @@ export default function LoginPage() {
           return;
         }
         if (selectedRole === 'Recruiter' && permSet.has('CAN_VIEW_RECRUITER_PORTAL')) {
-          window.location.href = 'https://recruiter.explain.global';
+          window.location.href = 'https://recruiter.interviewme.global';
           return;
         }
         if (selectedRole === 'Employer' && permSet.has('CAN_VIEW_CLIENT_PORTAL')) {
-          window.location.href = 'https://employer.explain.global';
+          window.location.href = 'https://employer.interviewme.global';
           return;
         }
         if (permSet.has('CAN_START_INTERVIEW')) {

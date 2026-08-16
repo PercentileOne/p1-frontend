@@ -511,7 +511,7 @@ function CareerDetailPanel({ career, onClose }: { career: Career; onClose: () =>
             <div style={{ fontSize: 14, fontWeight: 700, color: '#e0dcff', marginBottom: 5 }}>Ready to interview for this role?</div>
             <div style={{ fontSize: 12, color: '#8080b0', marginBottom: 14 }}>Practice with an AI interviewer tailored to {career.title} questions.</div>
             <button
-              onClick={() => window.open('https://recruiter.explain.global/demo/vallum-job-paid', '_blank')}
+              onClick={() => window.open('https://recruiter.interviewme.global/demo/vallum-job-paid', '_blank')}
               style={{ background: 'linear-gradient(135deg, #7b5cf5, #5b8ff7)', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 24px', fontSize: 13, fontWeight: 700, cursor: 'pointer', width: '100%' }}>
               Start Interview Practice →
             </button>
