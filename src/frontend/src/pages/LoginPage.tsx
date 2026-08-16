@@ -115,8 +115,8 @@ export default function LoginPage() {
       storeLogin("demo-token", {
         id:        "0",
         email:     "demo@InterviewMe.global",
-        name:      "Demo Candidate",
-        firstName: "Demo",
+        name:      "Francis Cobbinah",
+        firstName: "Francis",
         role:      "candidate",
       }, [
         "CAN_VIEW_CAREERS",
