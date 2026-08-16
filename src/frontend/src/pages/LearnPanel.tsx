@@ -650,8 +650,12 @@ export default function LearnPanel() {
   const [error, setError] = useState('');
   const [activeCourse, setActiveCourse] = useState<Course | null>(null);
   const [savedCourses, setSavedCourses] = useState<Course[]>(() => loadCourses());
+  const [suggestions, setSuggestions] = useState<{ title: string; level: string }[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggFocused, setSuggFocused] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const genTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (generating) {
@@ -666,6 +670,32 @@ export default function LearnPanel() {
     }
     return () => { if (genTimer.current) clearInterval(genTimer.current); };
   }, [generating]);
+
+  function handleQueryChange(val: string) {
+    setQuery(val);
+    setError('');
+    setSuggFocused(-1);
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    if (val.trim().length < 2) { setSuggestions([]); setShowSuggestions(false); return; }
+    debounceTimer.current = setTimeout(async () => {
+      // Platform suggestions (courses other users have already generated)
+      const platformSuggs: { title: string; level: string }[] = [];
+      try {
+        const r = await fetch(`/api/courses/suggest?q=${encodeURIComponent(val.trim())}`);
+        if (r.ok) platformSuggs.push(...(await r.json() as { title: string; level: string }[]));
+      } catch { /* ignore */ }
+      // Local SUGGESTIONS filtered by query
+      const q = val.toLowerCase();
+      const localSuggs = SUGGESTIONS
+        .filter(s => s.title.toLowerCase().includes(q))
+        .map(s => ({ title: s.title, level: '' }));
+      // Merge: platform first, then local, deduplicated
+      const seen = new Set(platformSuggs.map(s => s.title.toLowerCase()));
+      const merged = [...platformSuggs, ...localSuggs.filter(s => !seen.has(s.title.toLowerCase()))].slice(0, 8);
+      setSuggestions(merged);
+      setShowSuggestions(merged.length > 0);
+    }, 280);
+  }
 
   function handleDelete(id: string, e: React.MouseEvent) {
     e.stopPropagation();
@@ -802,21 +832,35 @@ export default function LearnPanel() {
       </div>
 
       {/* Search + level */}
-      <div style={{ maxWidth: 680, marginBottom: 32 }}>
+      <div style={{ maxWidth: 680, marginBottom: 32, position: 'relative' }}>
         {/* Title input */}
         <div style={{
           display: 'flex', alignItems: 'center',
           background: 'rgba(255,255,255,0.05)',
           border: `1.5px solid ${error ? '#f87171' : 'rgba(167,139,250,0.4)'}`,
-          borderRadius: '12px 12px 0 0', padding: '0 18px',
+          borderRadius: showSuggestions ? '12px 12px 0 0' : '12px 12px 0 0', padding: '0 18px',
           boxShadow: '0 0 0 4px rgba(167,139,250,0.06)',
         }}>
           <span style={{ fontSize: 20, marginRight: 4 }}>📚</span>
           <input
             ref={inputRef}
             value={query}
-            onChange={e => { setQuery(e.target.value); setError(''); }}
-            onKeyDown={e => { if (e.key === 'Enter') handleGenerate(); }}
+            onChange={e => handleQueryChange(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'ArrowDown') { e.preventDefault(); setSuggFocused(i => Math.min(i + 1, suggestions.length - 1)); }
+              else if (e.key === 'ArrowUp') { e.preventDefault(); setSuggFocused(i => Math.max(i - 1, -1)); }
+              else if (e.key === 'Enter') {
+                if (suggFocused >= 0 && suggestions[suggFocused]) {
+                  const s = suggestions[suggFocused];
+                  setQuery(s.title);
+                  if (s.level) setLevel(s.level as 'Beginner' | 'Intermediate' | 'Expert');
+                  setShowSuggestions(false);
+                  setSuggFocused(-1);
+                } else { handleGenerate(); }
+              } else if (e.key === 'Escape') { setShowSuggestions(false); setSuggFocused(-1); }
+            }}
+            onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             placeholder="e.g. Certified Chief Technology Officer, Plumbing Fundamentals, Data Science..."
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
@@ -825,10 +869,54 @@ export default function LearnPanel() {
             }}
           />
           {query && (
-            <button onClick={() => { setQuery(''); setError(''); inputRef.current?.focus(); }}
+            <button onClick={() => { setQuery(''); setSuggestions([]); setShowSuggestions(false); setError(''); inputRef.current?.focus(); }}
               style={{ background: 'none', border: 'none', color: TEXT3, cursor: 'pointer', fontSize: 18, padding: '0 4px' }}>✕</button>
           )}
         </div>
+
+        {/* Typeahead dropdown */}
+        {showSuggestions && suggestions.length > 0 && (
+          <div style={{
+            position: 'absolute', top: 62, left: 0, right: 0, zIndex: 50,
+            background: '#1a1d27', border: '1.5px solid rgba(167,139,250,0.35)',
+            borderTop: 'none', borderRadius: '0 0 12px 12px',
+            overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+          }}>
+            {suggestions.map((s, i) => (
+              <div
+                key={i}
+                onMouseDown={() => {
+                  setQuery(s.title);
+                  if (s.level) setLevel(s.level as 'Beginner' | 'Intermediate' | 'Expert');
+                  setShowSuggestions(false);
+                  setSuggFocused(-1);
+                  inputRef.current?.focus();
+                }}
+                style={{
+                  padding: '11px 20px', cursor: 'pointer',
+                  background: i === suggFocused ? 'rgba(167,139,250,0.12)' : 'transparent',
+                  borderBottom: i < suggestions.length - 1 ? `1px solid ${BORDER}` : 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                  transition: 'background 0.1s',
+                }}
+                onMouseEnter={() => setSuggFocused(i)}
+                onMouseLeave={() => setSuggFocused(-1)}
+              >
+                <span style={{ fontSize: 14, color: TEXT1 }}>{s.title}</span>
+                {s.level ? (
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, flexShrink: 0,
+                    color: LEVEL_COLOURS[s.level as keyof typeof LEVEL_COLOURS] ?? PURPLE,
+                    background: (LEVEL_COLOURS[s.level as keyof typeof LEVEL_COLOURS] ?? PURPLE) + '18',
+                    borderRadius: 20, padding: '2px 8px',
+                  }}>{s.level} · cached</span>
+                ) : (
+                  <span style={{ fontSize: 10, color: TEXT3, flexShrink: 0 }}>suggestion</span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Level + generate */}
         <div style={{

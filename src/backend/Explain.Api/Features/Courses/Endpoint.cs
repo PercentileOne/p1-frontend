@@ -31,17 +31,41 @@ public static class Endpoint
             }
         }).AllowAnonymous();
 
+        // GET /api/courses/suggest?q=X — returns up to 8 matching titles from the platform cache
+        app.MapGet("/api/courses/suggest", async (string q, CosmosService cosmos) =>
+        {
+            if (string.IsNullOrWhiteSpace(q) || q.Trim().Length < 2)
+                return Results.Ok(Array.Empty<string>());
+
+            var container = cosmos.GetContainer("courses");
+            var term = q.Trim().ToLowerInvariant();
+            var query = new QueryDefinition(
+                "SELECT c.title, c.level FROM c WHERE CONTAINS(c.pk, @term) OFFSET 0 LIMIT 8")
+                .WithParameter("@term", term);
+
+            var suggestions = new List<object>();
+            using var feed = container.GetItemQueryIterator<SuggestionRow>(query);
+            while (feed.HasMoreResults && suggestions.Count < 8)
+            {
+                var page = await feed.ReadNextAsync();
+                foreach (var row in page)
+                    suggestions.Add(new { row.title, row.level });
+            }
+            return Results.Ok(suggestions);
+        }).AllowAnonymous();
+
         // POST /api/courses  — body: { title, level, course }
         app.MapPost("/api/courses", async (SaveCourseRequest req, CosmosService cosmos) =>
         {
             var container = cosmos.GetContainer("courses");
             var pk = Pk(req.Title, req.Level);
-            var doc = new CourseDocument(pk, pk, req.Course, DateTimeOffset.UtcNow);
+            var doc = new CourseDocument(pk, pk, req.Title, req.Level, req.Course, DateTimeOffset.UtcNow);
             await container.UpsertItemAsync(doc, new PartitionKey(pk));
             return Results.Ok();
         }).AllowAnonymous();
     }
 
-    private record CourseDocument(string id, string pk, object Course, DateTimeOffset SavedAt);
+    private record CourseDocument(string id, string pk, string title, string level, object Course, DateTimeOffset SavedAt);
     private record SaveCourseRequest(string Title, string Level, object Course);
+    private record SuggestionRow(string title, string level);
 }
