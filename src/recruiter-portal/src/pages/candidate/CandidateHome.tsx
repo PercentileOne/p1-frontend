@@ -6,6 +6,7 @@ import {
   Clock, Award, BarChart2, Zap,
 } from 'lucide-react';
 import CareersPanel from './CareersPanel';
+import LearnPanel from './LearnPanel';
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const BG       = '#0c0e14';
@@ -225,11 +226,14 @@ export default function CandidateHome() {
           </div>
         </header>
 
-        {/* Careers panel (full-width, no padding wrapper) */}
+        {/* Careers panel */}
         {activeNav === 'Careers' && <CareersPanel />}
 
+        {/* Learn panel */}
+        {activeNav === 'Learn' && <LearnPanel />}
+
         {/* Page body — dashboard content */}
-        {activeNav !== 'Careers' && <div style={{ flex: 1, padding: '28px 28px 40px', maxWidth: 1240 }}>
+        {activeNav !== 'Careers' && activeNav !== 'Learn' && <div style={{ flex: 1, padding: '28px 28px 40px', maxWidth: 1240 }}>
 
           {/* Greeting */}
           <div style={{ marginBottom: 28 }}>
@@ -463,6 +467,7 @@ export default function CandidateHome() {
           </div>
 
         </div>}
+
       </main>
     </div>
   );
