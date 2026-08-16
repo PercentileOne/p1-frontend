@@ -355,7 +355,7 @@ export default function CandidateDashboard() {
                 boxShadow: "0 4px 14px rgba(167,139,250,0.35)",
               }}
             >
-              🎙️ Start Interview
+              🎙️ Practice Interview
             </button>
             <button
               onClick={() => navigate("/profile/video")}
