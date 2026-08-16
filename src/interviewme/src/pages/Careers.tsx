@@ -15,7 +15,7 @@ interface Career {
   demand: { uk: number; us: number; automationRisk: number; futureScore: number; trend: string };
   lifestyle: { environment: string; stress: number; energy: number; remoteScore: number; typicalHours: string };
   identity: { summary: string; traits: string[]; strengths: string[] };
-  pathway: { entryRequirements: string[]; qualifications: string[]; skills: string[]; timeToSenior: string };
+  pathway: { entryRequirements: string[]; qualifications: string[]; skills: string[]; timeToJunior: string; timeToMid: string; timeToSenior: string; timeToExpert: string; learningPath: string[] };
   confidence: number;
 }
 
@@ -118,6 +118,124 @@ function growthColor(pct: number) {
   return '#f87171';
 }
 
+// ── AI Impact helpers ──────────────────────────────────────────────────────────
+
+function aiImpactLabel(risk: number): { label: string; sublabel: string; color: string; bg: string; icon: string } {
+  if (risk >= 75) return {
+    label: 'High AI Disruption Risk',
+    sublabel: 'Many tasks in this role are already being automated. Roles are evolving — adaptability is key.',
+    color: '#f87171', bg: 'rgba(248,113,113,0.08)', icon: '⚠️',
+  };
+  if (risk >= 45) return {
+    label: 'Moderate AI Impact',
+    sublabel: 'AI is changing parts of this role. New tools are emerging — those who adapt will thrive.',
+    color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', icon: '🤖',
+  };
+  if (risk >= 20) return {
+    label: 'Low AI Risk — AI-Assisted',
+    sublabel: 'AI tools are helping professionals in this field do more, faster. Human judgement stays central.',
+    color: '#7b5cf5', bg: 'rgba(120,80,255,0.08)', icon: '✨',
+  };
+  return {
+    label: 'AI-Resilient Career',
+    sublabel: 'This role relies heavily on human skills — creativity, empathy, physical presence — that AI cannot replicate.',
+    color: '#34d399', bg: 'rgba(52,211,153,0.08)', icon: '🛡️',
+  };
+}
+
+function AiImpactBanner({ risk, futureScore }: { risk: number; futureScore: number }) {
+  const { label, sublabel, color, bg, icon } = aiImpactLabel(risk);
+  return (
+    <div style={{
+      background: bg,
+      border: `1px solid ${color}30`,
+      borderRadius: 12, padding: '16px 18px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        <span style={{ fontSize: 20 }}>{icon}</span>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color }}>{label}</div>
+          <div style={{ fontSize: 11, color: '#6060a0', marginTop: 1 }}>Automation risk: {risk}%</div>
+        </div>
+        <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: futureScore >= 70 ? '#34d399' : futureScore >= 40 ? '#f59e0b' : '#f87171' }}>
+            {futureScore}
+          </div>
+          <div style={{ fontSize: 10, color: '#5050a0' }}>Future Score</div>
+        </div>
+      </div>
+      <p style={{ fontSize: 12, color: '#8080b0', margin: 0, lineHeight: 1.6 }}>{sublabel}</p>
+    </div>
+  );
+}
+
+// ── Time to Junior helpers ─────────────────────────────────────────────────────
+
+function TimeToJuniorBanner({ career }: { career: Career }) {
+  const ttj = career.pathway?.timeToJunior;
+  const ttm = career.pathway?.timeToMid;
+  const tts = career.pathway?.timeToSenior;
+  if (!ttj) return null;
+
+  return (
+    <div style={{
+      background: 'rgba(120,80,255,0.07)',
+      border: '1px solid rgba(120,80,255,0.2)',
+      borderRadius: 12, padding: '18px',
+    }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: '#6060a0', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 14 }}>
+        🗓️ Your Journey Timeline
+      </div>
+
+      {/* Timeline bar */}
+      <div style={{ display: 'flex', gap: 0, marginBottom: 14 }}>
+        {[
+          { label: 'Junior', time: ttj, color: '#7b5cf5' },
+          { label: 'Mid', time: ttm, color: '#5b8ff7' },
+          { label: 'Senior', time: tts, color: '#34d399' },
+        ].filter(s => s.time).map((step, i, arr) => (
+          <div key={step.label} style={{ flex: 1, position: 'relative' }}>
+            <div style={{
+              height: 4,
+              background: step.color,
+              opacity: 0.3 + (i * 0.2),
+              borderRadius: i === 0 ? '4px 0 0 4px' : i === arr.length - 1 ? '0 4px 4px 0' : 0,
+            }} />
+            <div style={{ marginTop: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: step.color }}>{step.label}</div>
+              <div style={{ fontSize: 12, color: '#9090b0', marginTop: 2 }}>{step.time}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Personalised teaser */}
+      <div style={{
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(120,80,255,0.15)',
+        borderRadius: 8, padding: '12px 14px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+      }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: '#c0aaff' }}>🎯 Personalised estimate</div>
+          <div style={{ fontSize: 11, color: '#5050a0', marginTop: 3 }}>
+            Sign in and we'll calculate your exact time to Junior based on your CV and skills.
+          </div>
+        </div>
+        <button
+          onClick={() => window.location.href = '/login'}
+          style={{
+            background: 'rgba(120,80,255,0.2)', border: '1px solid rgba(120,80,255,0.3)',
+            borderRadius: 8, padding: '7px 12px', color: '#c0aaff',
+            fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+          }}>
+          Sign in →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Career Detail Panel ────────────────────────────────────────────────────────
 
 function CareerPanel({ career, onClose }: { career: Career; onClose: () => void }) {
@@ -175,6 +293,17 @@ function CareerPanel({ career, onClose }: { career: Career; onClose: () => void 
         </div>
 
         <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+          {/* AI Impact */}
+          {career.demand?.automationRisk !== undefined && (
+            <AiImpactBanner
+              risk={career.demand.automationRisk}
+              futureScore={career.demand.futureScore ?? 0}
+            />
+          )}
+
+          {/* Time to Junior */}
+          <TimeToJuniorBanner career={career} />
 
           {/* Salary */}
           {(uk || us) && (
