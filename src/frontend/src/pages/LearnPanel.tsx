@@ -102,7 +102,7 @@ Requirements:
 - Interview questions must be realistic interview questions a hiring manager would ask about this topic`;
 
   const body = JSON.stringify({
-    model: 'gpt-4o',
+    model: 'gpt-4o-mini',
     temperature: 0.7,
     max_tokens: 16000,
     response_format: { type: 'json_object' },

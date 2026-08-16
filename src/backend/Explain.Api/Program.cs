@@ -111,8 +111,8 @@ Explain.Api.Features.Auth.ResetPassword.Endpoint.Map(app);
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
    .AllowAnonymous();
 
-// ── OpenAI proxy — forwards requests from the frontend to avoid CORS ──────────
-app.MapPost("/api/ai-proxy", async (HttpRequest req, IHttpClientFactory factory, IConfiguration config) =>
+// ── OpenAI proxy — streams OpenAI response to keep the SWA connection alive ───
+app.MapPost("/api/ai-proxy", async (HttpRequest req, HttpResponse res, IHttpClientFactory factory, IConfiguration config) =>
 {
     var apiKey = config["OpenAI:ApiKey"] ?? throw new InvalidOperationException("OpenAI:ApiKey not configured");
     req.EnableBuffering();
@@ -122,9 +122,10 @@ app.MapPost("/api/ai-proxy", async (HttpRequest req, IHttpClientFactory factory,
     using var msg = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
     msg.Headers.Add("Authorization", $"Bearer {apiKey}");
     msg.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
-    using var resp = await client.SendAsync(msg);
-    var respBody = await resp.Content.ReadAsStringAsync();
-    return Results.Content(respBody, "application/json", statusCode: (int)resp.StatusCode);
+    using var resp = await client.SendAsync(msg, HttpCompletionOption.ResponseHeadersRead);
+    res.StatusCode = (int)resp.StatusCode;
+    res.ContentType = "application/json";
+    await resp.Content.CopyToAsync(res.Body);
 }).AllowAnonymous();
 
 app.Run();
