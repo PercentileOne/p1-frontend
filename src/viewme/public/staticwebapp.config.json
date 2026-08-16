@@ -11,6 +11,10 @@
       "statusCode": 302
     },
     {
+      "route": "/about",
+      "rewrite": "/about.html"
+    },
+    {
       "route": "/fp",
       "rewrite": "/fp.html"
     },

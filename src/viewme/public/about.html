@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>About — InterviewMe.global</title>
+<meta name="description" content="The founder story behind InterviewMe.global — built from a dialysis chair, for every candidate who deserved a fairer shot."/>
+<link rel="icon" href="/favicon-512.png"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07080f;
+  --ink:#f0f2ff;
+  --ink-soft:#8890aa;
+  --ink-muted:rgba(240,242,255,0.35);
+  --green:#34D399;
+  --blue:#4F8EF7;
+  --gold:#F59E0B;
+  --hairline:rgba(255,255,255,0.07);
+  --max:860px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,'Segoe UI',sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+
+/* ── NAV ── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px;background:rgba(7,8,15,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--hairline)}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo-badge{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#34D399,#047857);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;letter-spacing:-0.03em;flex-shrink:0}
+.nav-wordmark{font-size:15px;font-weight:900;color:#fff;letter-spacing:-0.02em}
+.nav-wordmark span.g{color:var(--green)}
+.nav-wordmark span.b{color:var(--blue)}
+.nav-back{font-size:13px;color:var(--ink-soft);text-decoration:none;transition:color .2s}
+.nav-back:hover{color:var(--ink)}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 32px 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(52,211,153,0.05) 0%,transparent 70%)}
+.hero-eyebrow{font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--green);margin-bottom:32px;opacity:.8}
+.hero-hl{font-family:Georgia,'Times New Roman',serif;font-size:clamp(32px,6vw,64px);font-weight:700;line-height:1.1;letter-spacing:-0.03em;color:var(--ink);max-width:820px;text-wrap:balance}
+.hero-hl em{font-style:italic;color:var(--ink-soft)}
+.hero-sub{margin-top:32px;font-size:18px;line-height:1.8;color:var(--ink-soft);max-width:560px}
+.hero-rule{width:48px;height:2px;background:var(--green);margin:40px auto 0;opacity:.6}
+
+/* ── SECTIONS ── */
+section{padding:100px 32px}
+.inner{max-width:var(--max);margin:0 auto}
+
+/* ── STAT BLOCK ── */
+.stat-section{background:rgba(52,211,153,0.03);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0}
+.stat-cell{padding:64px 40px;border-right:1px solid var(--hairline);text-align:center}
+.stat-cell:last-child{border-right:none}
+.stat-num{font-family:Georgia,'Times New Roman',serif;font-size:clamp(48px,8vw,96px);font-weight:700;line-height:1;letter-spacing:-0.04em;color:var(--green)}
+.stat-label{font-size:13px;color:var(--ink-soft);margin-top:12px;line-height:1.5}
+
+/* ── PULL QUOTE ── */
+.pull{font-family:Georgia,'Times New Roman',serif;font-size:clamp(22px,3.5vw,36px);line-height:1.35;letter-spacing:-0.02em;color:var(--ink);text-wrap:balance}
+.pull-accent{color:var(--green)}
+
+/* ── BODY COPY ── */
+.body-copy{font-size:17px;line-height:1.85;color:rgba(240,242,255,0.72)}
+.body-copy p{margin-bottom:1.4em}
+.body-copy p:last-child{margin-bottom:0}
+
+/* ── SECTION LABEL ── */
+.section-label{font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--green);opacity:.7;margin-bottom:24px;display:block}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--hairline);max-width:var(--max);margin:0 auto}
+
+/* ── TWO-COL ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start}
+.two-col.flip{direction:rtl}.two-col.flip>*{direction:ltr}
+
+/* ── INSIGHT BOX ── */
+.insight{background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);border-radius:20px;padding:48px;margin-top:0}
+.insight-label{font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;display:block}
+.insight-hl{font-family:Georgia,'Times New Roman',serif;font-size:clamp(20px,2.8vw,28px);line-height:1.3;color:var(--ink);letter-spacing:-0.02em;margin-bottom:20px}
+.insight-body{font-size:15px;line-height:1.8;color:rgba(240,242,255,0.65)}
+
+/* ── METHOD BADGE ── */
+.method{display:inline-flex;align-items:center;gap:12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:40px;padding:12px 24px;margin:32px 0}
+.method-text{font-size:14px;font-weight:700;color:var(--gold);letter-spacing:0.04em}
+.method-arrow{font-size:18px;color:var(--gold)}
+
+/* ── MISSION ── */
+.mission-section{background:linear-gradient(135deg,rgba(52,211,153,0.04) 0%,rgba(79,142,247,0.04) 100%);border-top:1px solid var(--hairline)}
+.mission-hl{font-family:Georgia,'Times New Roman',serif;font-size:clamp(28px,4.5vw,52px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;color:var(--ink);max-width:640px;text-wrap:balance}
+.mission-hl span{color:var(--green)}
+
+/* ── CLOSE ── */
+.close-section{padding:80px 32px 120px;text-align:center}
+.signature{font-family:Georgia,'Times New Roman',serif;font-size:22px;font-style:italic;color:var(--ink);margin-bottom:8px}
+.signature-meta{font-size:13px;color:var(--ink-muted)}
+.signature-meta span{color:var(--green)}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--hairline);padding:28px 32px;text-align:center;font-size:12px;color:var(--ink-muted)}
+footer a{color:var(--ink-soft);text-decoration:none}
+footer a:hover{color:var(--ink)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:680px){
+  .stat-grid{grid-template-columns:1fr}
+  .stat-cell{border-right:none;border-bottom:1px solid var(--hairline);padding:48px 24px}
+  .stat-cell:last-child{border-bottom:none}
+  .two-col{grid-template-columns:1fr;gap:40px}
+  .two-col.flip{direction:ltr}
+  section{padding:72px 24px}
+  .nav{padding:0 20px}
+  .hero{padding:100px 24px 64px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-badge">IM</div>
+    <span class="nav-wordmark">Interview<span class="g">Me</span><span class="b">.global</span></span>
+  </a>
+  <a href="/" class="nav-back">← Back to site</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <span class="hero-eyebrow">Founder Story</span>
+  <h1 class="hero-hl">
+    Building the world's most important hiring platform —<br>
+    <em>from a dialysis chair.</em>
+  </h1>
+  <p class="hero-sub">
+    This is the story of why InterviewMe exists, what it cost to build it, and why that cost is exactly the point.
+  </p>
+  <div class="hero-rule"></div>
+</section>
+
+<!-- STAT BLOCK -->
+<div class="stat-section">
+  <div class="stat-grid">
+    <div class="stat-cell">
+      <div class="stat-num">3×</div>
+      <div class="stat-label">dialysis sessions<br>every single week</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">25</div>
+      <div class="stat-label">years searching for<br>how to make knowledge stick</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">1</div>
+      <div class="stat-label">method that finally<br>cracked it</div>
+    </div>
+  </div>
+</div>
+
+<!-- THE CHAIR -->
+<section>
+  <div class="inner">
+    <div class="two-col">
+      <div>
+        <span class="section-label">The Chair</span>
+        <p class="pull">Dialysis doesn't pause for<br><span class="pull-accent">product launches.</span></p>
+      </div>
+      <div class="body-copy">
+        <p>Three times a week, four hours at a time, a machine does what my kidneys cannot. It doesn't move for pitch meetings. It doesn't move for late-night debugging sessions or the moment you finally crack the architecture that's been keeping you up for three weeks.</p>
+        <p>Most people, when they learn this, say something kind. I understand why. But I don't want kindness — I want them to understand something more important: the chair is where InterviewMe was designed. It's where the hardest product decisions were made, where the go-to-market strategy was refined, where the vision was sharpened, one session at a time.</p>
+        <p>Constraint is clarifying. When you can only build in the hours between sessions, you get very clear about what matters.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- THE BOTTOM -->
+<section>
+  <div class="inner">
+    <span class="section-label">When the scaffolding falls</span>
+    <p class="pull" style="max-width:700px;margin-bottom:48px">I know what it is to have <span class="pull-accent">nothing.</span> Not in the abstract. In the lived, specific, terrifying way.</p>
+    <div class="two-col flip">
+      <div class="body-copy">
+        <p>I've faced homelessness. I know the particular weight of trying to project confidence into a job interview when the scaffolding of your life has completely collapsed beneath you.</p>
+        <p>I know what it means for a job — the <em>right</em> job — to be the difference between everything and nothing. Not a step on a career ladder. A lifeline.</p>
+        <p>And I know what it feels like to walk into an interview underprepared, not because you didn't try, but because nobody ever showed you how to prepare properly. To answer questions that weren't quite what you rehearsed. To feel your mind go blank under pressure you weren't trained for.</p>
+        <p>The hiring system, as it exists, was not built for people in those moments. It was built for people who already had the advantage of confidence, coaching, and contacts. I built InterviewMe for everyone else.</p>
+      </div>
+      <div>
+        <div class="insight" style="background:rgba(52,211,153,0.04);border-color:rgba(52,211,153,0.15)">
+          <span class="insight-label" style="color:var(--green)">The other side of the table</span>
+          <p class="insight-hl" style="color:var(--green);font-size:18px;line-height:1.5">I've also been the one hiring.</p>
+          <p class="insight-body">I've watched talented candidates crumble under questions they clearly knew the answers to — not because they lacked ability, but because the interview is a performance skill nobody ever taught them. The bot-filtered CVs. The ghosting after promising first rounds. The candidate who was perfect for the role, who just couldn't find their voice under pressure.</p>
+          <p class="insight-body" style="margin-top:12px">Both experiences are the same wound, seen from different angles.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 25 YEARS -->
+<section>
+  <div class="inner">
+    <span class="section-label">Twenty-five years</span>
+    <p class="pull" style="max-width:680px;margin-bottom:48px">How do you make knowledge actually <span class="pull-accent">stick?</span></p>
+    <div class="two-col">
+      <div class="body-copy">
+        <p>Not just read it. Not just highlight it. Actually <em>own</em> it — the way you own your own name, the way you own your date of birth. Where it's just there, instantly, under pressure, in any context.</p>
+        <p>For twenty-five years, this question consumed me. I tried everything. Spaced repetition. Mind maps. The Feynman technique. Voice notes. Re-reading. Active recall. Teaching out loud. Flash cards at 3am.</p>
+        <p>Each approach worked partially. None worked completely. Something was always missing — some gap between knowing something when you were calm and relaxed, and knowing it when you actually needed it.</p>
+        <p>I kept searching.</p>
+      </div>
+      <div class="body-copy">
+        <p>The irony is that the answer was hiding inside the very experience I was trying to help people with.</p>
+        <p>Every time I prepared for an interview — really prepared, the kind where someone fires questions at you and won't accept vague answers — I remembered things better. Longer. More reliably.</p>
+        <p>I assumed that was just stress. Adrenaline. Stakes making things sharper.</p>
+        <p>I was half right. But I was missing something much bigger.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSIGHT -->
+<section style="background:rgba(245,158,11,0.03);border-top:1px solid rgba(245,158,11,0.1);border-bottom:1px solid rgba(245,158,11,0.1)">
+  <div class="inner" style="text-align:center">
+    <span class="section-label" style="color:var(--gold)">The breakthrough</span>
+    <p class="pull" style="font-size:clamp(28px,4.5vw,52px);max-width:720px;margin:0 auto 40px;color:var(--ink)">
+      The best way to make knowledge stick<br>is to be <span style="color:var(--gold)">interrogated</span> on it.
+    </p>
+    <div class="method">
+      <span class="method-text">STUDY</span>
+      <span class="method-arrow">→</span>
+      <span class="method-text">INTERVIEW</span>
+      <span class="method-arrow">→</span>
+      <span class="method-text">OWN IT</span>
+    </div>
+    <p style="font-size:17px;color:rgba(240,242,255,0.6);max-width:600px;margin:0 auto;line-height:1.8">
+      Not tested. Not quizzed. <em>Interrogated</em> — by something that doesn't let you get away with vague answers. That follows up. That goes deeper. That gives you honest feedback when you dodge.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="inner">
+    <div class="two-col">
+      <div>
+        <span class="section-label">Study → Interview Method</span>
+        <p class="pull" style="margin-bottom:32px">The interview format isn't just a hiring mechanism.<br><span class="pull-accent">It's the most powerful learning tool ever invented.</span></p>
+        <p class="body-copy" style="font-size:16px;color:rgba(240,242,255,0.6)">We'd just been using it wrong — only at the end of the journey, only under pressure, only when the stakes were already too high to fail.</p>
+      </div>
+      <div>
+        <div class="insight">
+          <span class="insight-label">What changes when you flip the model</span>
+          <p class="insight-hl">Learn a subject. Be interviewed on it. Repeat.</p>
+          <p class="insight-body">When you know an interview is coming, your brain encodes information differently. More deeply. More retrievably. It stops filing things under "might be useful someday" and starts filing them under "need this under pressure."</p>
+          <p class="insight-body" style="margin-top:12px">That's not a productivity hack. That's a fundamental change in how knowledge becomes yours.</p>
+          <p class="insight-body" style="margin-top:12px;color:var(--gold);font-style:italic">Twenty-five years of searching. One method. Everything clicks.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MISSION -->
+<section class="mission-section">
+  <div class="inner">
+    <span class="section-label">Why this exists</span>
+    <h2 class="mission-hl" style="margin-bottom:48px">Every candidate deserves a<br><span>fair shot.</span></h2>
+    <div class="two-col">
+      <div class="body-copy">
+        <p>Not a lucky shot. Not a "knows someone" shot. Not a "happened to go to the right university" shot.</p>
+        <p>A fair one — where they walk into the room having been properly prepared. Where the questions don't catch them off-guard because they've already been asked harder ones. Where their nerves are trained, not untouched. Where their knowledge is <em>owned</em>, not just skimmed.</p>
+        <p>I've been ghosted. I've been bot-filtered out of roles I was qualified for. I've sat in a dialysis chair and wondered whether what I was building actually mattered.</p>
+        <p>That's also why practice interviews on InterviewMe are free to every candidate — permanently. Not as a marketing tactic. Because I remember exactly what it felt like to need the help and not be able to afford it.</p>
+        <p>I know it matters. And I intend to prove it.</p>
+      </div>
+      <div class="body-copy">
+        <p>InterviewMe is the platform I wish had existed every time I sat across from an interviewer not quite knowing how to show them who I really was.</p>
+        <p>It's for the candidate at 11pm the night before, panicking. For the person re-entering the workforce after time away. For the brilliant engineer who freezes under pressure. For the graduate who can't get past the ATS filter. For anyone who's ever had the experience of knowing they were right for a role — and still not getting it.</p>
+        <p>We are just getting started.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSE -->
+<div class="close-section">
+  <p class="signature">Francis Cobbinah</p>
+  <p class="signature-meta">Founder · <span>InterviewMe.global</span> · Colchester, England</p>
+</div>
+
+<footer>
+  <a href="/">← Back to InterviewMe.global</a>
+  &nbsp;·&nbsp; © 2026 Percentile One Ltd
+</footer>
+
+</body>
+</html>

@@ -368,6 +368,7 @@
     <a href="#how">How it works</a>
     <a href="#pricing">Pricing</a>
     <a href="/contact">Contact Us</a>
+    <a href="/about" style="color:#34D399;font-weight:700;text-shadow:0 0 12px rgba(52,211,153,0.5);transition:text-shadow 0.2s" onmouseover="this.style.textShadow='0 0 20px rgba(52,211,153,0.85)'" onmouseout="this.style.textShadow='0 0 12px rgba(52,211,153,0.5)'">Our Story</a>
   </div>
   <!-- Hamburger (mobile only) -->
   <button class="nav-burger" onclick="toggleMobileMenu()" aria-label="Menu">
@@ -378,6 +379,7 @@
     <a href="#how" onclick="toggleMobileMenu()">How it works</a>
     <a href="#pricing" onclick="toggleMobileMenu()">Pricing</a>
     <a href="/contact">Contact Us</a>
+    <a href="/about" style="color:#34D399;font-weight:700">Our Story</a>
     <a href="https://candidate.interviewme.global/login" style="color:var(--pearl);font-weight:700">Login</a>
     <a href="https://candidate.interviewme.global/register" style="color:#34D399;font-weight:800">Register →</a>
   </div>
@@ -2007,7 +2009,7 @@
 
   // ── REDIRECT ALL CTAs TO CONTACT PAGE ─────────────────
   // Redirect every button and link to /contact — except nav links and the logo
-  var ALLOW_HREFS = ['/', '#how', '#pricing', '/contact'];
+  var ALLOW_HREFS = ['/', '#how', '#pricing', '/contact', '/about'];
   document.addEventListener('click', function(e) {
     var el = e.target;
     // Find closest anchor or button
