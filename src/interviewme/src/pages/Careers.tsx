@@ -27,6 +27,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Business': '📊', 'Hospitality': '🏨', 'Construction': '🏗️', 'Transport': '🚗',
   'Retail': '🛍️', 'Agriculture': '🌾', 'Media': '📺', 'Sport': '⚽',
   'Public Sector': '🏛️', 'Social Care': '🤝', 'Trades': '🔧', 'General': '🌐',
+  'Music & Entertainment': '🎵', 'Art & Culture': '🖼️',
 };
 
 function categoryIcon(cat: string) {
@@ -76,26 +77,28 @@ async function getCareersByCategory(category: string): Promise<Career[]> {
 // ── Static fallback categories (from our seed data) ───────────────────────────
 
 const FALLBACK_CATEGORIES = [
-  { category: 'Technology', count: 142 },
-  { category: 'Healthcare', count: 198 },
-  { category: 'Finance', count: 87 },
-  { category: 'Engineering', count: 134 },
-  { category: 'Education', count: 76 },
-  { category: 'Creative', count: 94 },
-  { category: 'Legal', count: 48 },
-  { category: 'Science', count: 112 },
-  { category: 'Business', count: 89 },
-  { category: 'Construction', count: 67 },
-  { category: 'Hospitality', count: 54 },
-  { category: 'Transport', count: 43 },
-  { category: 'Retail', count: 38 },
-  { category: 'Social Care', count: 61 },
-  { category: 'Trades', count: 72 },
-  { category: 'Media', count: 45 },
-  { category: 'Agriculture', count: 29 },
-  { category: 'Public Sector', count: 56 },
-  { category: 'Sport', count: 34 },
-  { category: 'General', count: 32 },
+  { category: 'Technology',            count: 142 },
+  { category: 'Healthcare',            count: 198 },
+  { category: 'Finance',               count: 87  },
+  { category: 'Engineering',           count: 134 },
+  { category: 'Education',             count: 76  },
+  { category: 'Creative',              count: 94  },
+  { category: 'Music & Entertainment', count: 68  },
+  { category: 'Art & Culture',         count: 52  },
+  { category: 'Legal',                 count: 48  },
+  { category: 'Science',               count: 112 },
+  { category: 'Business',              count: 89  },
+  { category: 'Construction',          count: 67  },
+  { category: 'Hospitality',           count: 54  },
+  { category: 'Transport',             count: 43  },
+  { category: 'Retail',                count: 38  },
+  { category: 'Social Care',           count: 61  },
+  { category: 'Trades',                count: 72  },
+  { category: 'Media',                 count: 45  },
+  { category: 'Agriculture',           count: 29  },
+  { category: 'Public Sector',         count: 56  },
+  { category: 'Sport',                 count: 34  },
+  { category: 'General',               count: 32  },
 ];
 
 // ── Salary formatter ───────────────────────────────────────────────────────────
@@ -595,10 +598,10 @@ export default function Careers() {
           ✦ CAREERS EXPLORER
         </div>
         <h1 style={{ fontSize: 38, fontWeight: 900, color: '#fff', margin: '0 0 14px', lineHeight: 1.1 }}>
-          Explore 1,600+ careers
+          Explore 4,000+ careers
         </h1>
         <p style={{ fontSize: 16, color: '#7070a0', maxWidth: 540, margin: '0 auto', lineHeight: 1.7 }}>
-          Real salary data, workforce figures, growth trends, and skills — for every career in the UK and US.
+          Real salary data, workforce figures, AI impact and growth trends — for every career in the UK and US. Growing daily.
         </p>
       </div>
 

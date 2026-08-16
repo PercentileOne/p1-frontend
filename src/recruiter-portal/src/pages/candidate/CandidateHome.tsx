@@ -5,6 +5,7 @@ import {
   Plus, TrendingUp, Star, Flame, ChevronRight, Globe, Play,
   Clock, Award, BarChart2, Zap,
 } from 'lucide-react';
+import CareersPanel from './CareersPanel';
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const BG       = '#0c0e14';
@@ -119,13 +120,13 @@ export default function CandidateHome() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 32, height: 32, borderRadius: 8,
-              background: `linear-gradient(135deg, ${BLUE}, ${PURPLE})`,
+              background: 'linear-gradient(135deg, #34d399, #047857)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 14, fontWeight: 900, color: '#fff', flexShrink: 0,
-            }}>E</div>
+              fontSize: 12, fontWeight: 900, color: '#fff', flexShrink: 0, letterSpacing: '-0.02em',
+            }}>IM</div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em' }}>
-                Explain<span style={{ color: '#7b5cf5' }}>.global</span>
+                Interview<span style={{ color: '#34d399' }}>Me</span><span style={{ color: '#7b5cf5' }}>.global</span>
               </div>
               <div style={{ fontSize: 10, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: 1 }}>
                 Candidate Portal
@@ -199,7 +200,7 @@ export default function CandidateHome() {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           position: 'sticky', top: 0, zIndex: 5,
         }}>
-          <div style={{ fontSize: 13, color: TEXT3 }}>Dashboard</div>
+          <div style={{ fontSize: 13, color: TEXT3 }}>{activeNav}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {/* Country / Lang */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: TEXT3, background: BG3, border: `1px solid ${BORDER}`, borderRadius: 7, padding: '5px 10px' }}>
@@ -224,8 +225,11 @@ export default function CandidateHome() {
           </div>
         </header>
 
-        {/* Page body */}
-        <div style={{ flex: 1, padding: '28px 28px 40px', maxWidth: 1240 }}>
+        {/* Careers panel (full-width, no padding wrapper) */}
+        {activeNav === 'Careers' && <CareersPanel />}
+
+        {/* Page body — dashboard content */}
+        {activeNav !== 'Careers' && <div style={{ flex: 1, padding: '28px 28px 40px', maxWidth: 1240 }}>
 
           {/* Greeting */}
           <div style={{ marginBottom: 28 }}>
@@ -458,7 +462,7 @@ export default function CandidateHome() {
             </button>
           </div>
 
-        </div>
+        </div>}
       </main>
     </div>
   );
