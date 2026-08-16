@@ -78,7 +78,7 @@ public static class Endpoint
         var body = $"""
             <div style="font-family:-apple-system,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;background:#09090f;color:#fff;border-radius:16px;overflow:hidden;">
               <div style="background:linear-gradient(135deg,#34D399,#047857);padding:32px;text-align:center;">
-                <p style="font-size:22px;font-weight:900;letter-spacing:-0.02em;margin:0;">Explain<span style="opacity:0.7">.global</span></p>
+                <p style="font-size:22px;font-weight:900;letter-spacing:-0.02em;margin:0;">Interview<span style="color:#34D399">Me</span><span style="color:#4F8EF7;opacity:0.9">.global</span></p>
               </div>
               <div style="padding:32px;">
                 <h2 style="font-size:20px;font-weight:700;margin:0 0 12px;">Hi {firstName},</h2>
@@ -97,7 +97,7 @@ public static class Endpoint
             """;
 
         using var client  = new SmtpClient(smtpHost, smtpPort) { Credentials = new NetworkCredential(smtpUser, smtpPass), EnableSsl = true };
-        using var message = new MailMessage { From = new MailAddress(fromEmail, fromName), Subject = "Reset your Explain.global password", Body = body, IsBodyHtml = true };
+        using var message = new MailMessage { From = new MailAddress(fromEmail, fromName), Subject = "Reset your InterviewMe.global password", Body = body, IsBodyHtml = true };
         message.To.Add(new MailAddress(email, firstName));
         await client.SendMailAsync(message);
     }
