@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import type { RoomState } from './InterviewRoomPage';
+import type { InterviewQuestion } from '../api/explainApi';
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const BG2    = '#10131a';
@@ -321,7 +324,7 @@ function CourseCard({ course, onClick }: { course: Course; onClick: () => void }
 
 // ── Lecture content renderer ───────────────────────────────────────────────────
 
-function LectureView({ lecture, courseTitle, onPractice }: { lecture: Lecture; courseTitle: string; onPractice: (q: string) => void }) {
+function LectureView({ lecture, courseTitle, onPractice }: { lecture: Lecture; courseTitle: string; onPractice: (q: string, lecture?: Lecture) => void }) {
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '32px 36px 60px' }}>
       {/* Lecture header */}
@@ -459,7 +462,7 @@ function LectureView({ lecture, courseTitle, onPractice }: { lecture: Lecture; c
             {lecture.interviewQuestions.map((q, i) => (
               <div
                 key={i}
-                onClick={() => onPractice(q)}
+                onClick={() => onPractice(q, lecture)}
                 style={{
                   background: 'rgba(167,139,250,0.08)',
                   border: '1px solid rgba(167,139,250,0.18)',
@@ -505,7 +508,50 @@ function LectureView({ lecture, courseTitle, onPractice }: { lecture: Lecture; c
 
 // ── Course view (module tree + lecture) ────────────────────────────────────────
 
+function buildQuestionsFromCourse(course: Course, focusLecture?: Lecture): InterviewQuestion[] {
+  // For a focused practice (single lecture), use that lecture's questions + neighbours
+  // For full course practice, pull top 2 questions from each module (up to 10 total)
+  if (focusLecture) {
+    const focusQs: InterviewQuestion[] = focusLecture.interviewQuestions.map((q, i) => ({
+      questionId: `lq-${focusLecture.number}-${i}`,
+      questionText: q,
+      modelAnswer: `Draw on your understanding of ${focusLecture.title}. Be specific and use real examples.`,
+      questionType: 'Technical',
+      difficulty: 'Medium',
+      source: 'Learn Engine',
+      competencyTags: [focusLecture.title.toLowerCase()],
+    }));
+    // Pad to 5 with questions from the rest of the course
+    const allOthers = course.modules.flatMap(m => m.lectures)
+      .filter(l => l.number !== focusLecture.number)
+      .flatMap((l, li) => l.interviewQuestions.map((q, i) => ({
+        questionId: `xq-${li}-${i}`,
+        questionText: q,
+        modelAnswer: `Draw on your understanding of ${l.title}.`,
+        questionType: 'Technical' as const,
+        difficulty: 'Medium' as const,
+        source: 'Learn Engine',
+        competencyTags: [l.title.toLowerCase()],
+      })));
+    return [...focusQs, ...allOthers].slice(0, 5);
+  }
+  // Full course: 1 question per module (first lecture's first question), up to 10
+  return course.modules.slice(0, 10).map((m, mi) => {
+    const q = m.lectures[0]?.interviewQuestions[0] ?? `Tell me about your experience with ${m.title}.`;
+    return {
+      questionId: `cq-${mi}`,
+      questionText: q,
+      modelAnswer: `Draw on your understanding of ${m.title} from the ${course.title} course.`,
+      questionType: 'Technical' as const,
+      difficulty: 'Medium' as const,
+      source: 'Learn Engine',
+      competencyTags: [m.title.toLowerCase()],
+    };
+  });
+}
+
 function CourseView({ course, onBack }: { course: Course; onBack: () => void }) {
+  const navigate = useNavigate();
   const [expandedModule, setExpandedModule] = useState<number>(1);
   const [activeLecture, setActiveLecture] = useState<{ module: Module; lecture: Lecture } | null>(() => ({
     module: course.modules[0],
@@ -514,11 +560,23 @@ function CourseView({ course, onBack }: { course: Course; onBack: () => void }) 
   const { accent, bg } = catStyle(course.category);
   const mins = totalMinutes(course);
 
-  function handlePractice(question: string) {
-    const url = question
-      ? `/interview-room/prep?topic=${encodeURIComponent(question)}`
-      : `/interview-room/prep?course=${encodeURIComponent(course.title)}`;
-    window.open(url, '_blank');
+  function handlePractice(question: string, lecture?: Lecture) {
+    const questions = question && lecture
+      ? buildQuestionsFromCourse(course, lecture)
+      : buildQuestionsFromCourse(course);
+    const sarahIntro = `Hi — I'm Sarah. Today we're going to run through some interview questions based on your ${course.title} course. James will be leading the technical questions. When each question appears, click Record to answer. Good luck!`;
+    const jamesIntro = question
+      ? `Thanks Sarah. I've been reviewing your ${course.title} course work, and I'd like to start with a question on ${lecture?.title ?? 'one of the topics'}. Here we go.`
+      : `Thanks Sarah. I've prepared questions covering the key modules from your ${course.title} course. Let's see what you've learned.`;
+    const state: RoomState = {
+      questions,
+      jobTitle: course.title,
+      sarahIntro,
+      jamesIntro,
+      specialistTitle: 'Learn Engine',
+      autoStart: true,
+    };
+    navigate('/interview/learn-practice', { state });
   }
 
   return (
