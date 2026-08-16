@@ -101,7 +101,7 @@ export function Nav() {
           {/* Logo */}
           <NavLink to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, marginRight: 16, textDecoration: 'none', flexShrink: 0 }}>
             <span style={{ fontWeight: 800, fontSize: 18, color: '#fff', letterSpacing: '-0.02em' }}>
-              Explain<span style={{ color: '#7b5cf5' }}>.global</span>
+              InterviewMe<span style={{ color: '#7b5cf5' }}>.global</span>
             </span>
           </NavLink>
 
