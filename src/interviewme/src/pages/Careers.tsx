@@ -40,7 +40,7 @@ function categoryIcon(cat: string) {
 // For now we call the recruiter portal's ai-proxy pattern.
 // We'll swap this for a real Azure Function endpoint once deployed.
 
-const PROXY_BASE = 'https://recruiter.explain.global/api/careers';
+const PROXY_BASE = 'https://p1-careers-agent.azurewebsites.net/api/careers';
 
 async function searchCareers(q: string): Promise<Career[]> {
   try {

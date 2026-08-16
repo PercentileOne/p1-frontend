@@ -66,6 +66,49 @@ public class CosmosCareerService
         return titles;
     }
 
+    // ── API query methods ──────────────────────────────────────────────────────
+
+    public async Task<List<CareerDocument>> SearchAsync(string q, int top = 12)
+    {
+        // Case-insensitive CONTAINS search on title, category, subcategory and tags
+        var lower = q.ToLowerInvariant();
+        var sql = new QueryDefinition(
+            "SELECT TOP @top * FROM c WHERE " +
+            "CONTAINS(LOWER(c.title), @q) OR " +
+            "CONTAINS(LOWER(c.category), @q) OR " +
+            "CONTAINS(LOWER(c.subcategory), @q) " +
+            "ORDER BY c.title")
+            .WithParameter("@q", lower)
+            .WithParameter("@top", top);
+
+        return await DrainQueryIterator(_container.GetItemQueryIterator<CareerDocument>(sql));
+    }
+
+    public async Task<List<CareerDocument>> GetByCategoryAsync(string category, int top = 20)
+    {
+        var sql = new QueryDefinition(
+            "SELECT TOP @top * FROM c WHERE c.category = @cat ORDER BY c.title")
+            .WithParameter("@cat", category)
+            .WithParameter("@top", top);
+
+        return await DrainQueryIterator(_container.GetItemQueryIterator<CareerDocument>(sql));
+    }
+
+    public async Task<List<CategoryCount>> GetCategoryCountsAsync()
+    {
+        var sql = new QueryDefinition(
+            "SELECT c.category, COUNT(1) AS count FROM c GROUP BY c.category ORDER BY c.category");
+
+        var iter    = _container.GetItemQueryIterator<CategoryCount>(sql);
+        var results = new List<CategoryCount>();
+        while (iter.HasMoreResults)
+        {
+            var page = await iter.ReadNextAsync();
+            results.AddRange(page);
+        }
+        return results.OrderByDescending(x => x.Count).ToList();
+    }
+
     public async Task UpsertAsync(CareerDocument career)
     {
         await _container.UpsertItemAsync(career, new PartitionKey(career.Category));
@@ -89,6 +132,17 @@ public class CosmosCareerService
     }
 
     private static async Task<List<CareerDocument>> DrainIterator(FeedIterator<CareerDocument> iter)
+    {
+        var results = new List<CareerDocument>();
+        while (iter.HasMoreResults)
+        {
+            var page = await iter.ReadNextAsync();
+            results.AddRange(page);
+        }
+        return results;
+    }
+
+    private static async Task<List<CareerDocument>> DrainQueryIterator(FeedIterator<CareerDocument> iter)
     {
         var results = new List<CareerDocument>();
         while (iter.HasMoreResults)
