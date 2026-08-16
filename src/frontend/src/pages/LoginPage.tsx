@@ -1,11 +1,20 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Loader2, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, User, ChevronDown } from "lucide-react";
 import { authApi, type ApiError } from "../api/authApi";
 import { useAuthStore } from "../auth/authStore";
 import { defaultPortalForPermissions } from "../auth/permissionMatrix";
 import type { Permission } from "../auth/permissionMatrix";
+
+type UserRole = 'Candidate' | 'Employer' | 'Recruiter' | 'Investor';
+
+const ROLE_OPTIONS: { value: UserRole; label: string; emoji: string; subtitle: string }[] = [
+  { value: 'Candidate',  emoji: '🎓', label: 'Candidate',  subtitle: 'I\'m preparing for interviews' },
+  { value: 'Employer',   emoji: '🏢', label: 'Employer',   subtitle: 'I\'m hiring talent' },
+  { value: 'Recruiter',  emoji: '🔍', label: 'Recruiter',  subtitle: 'I place candidates' },
+  { value: 'Investor',   emoji: '💼', label: 'Investor',   subtitle: 'I\'m investing in the platform' },
+];
 
 /* ══════════════════════════════════════════════════════════════
    P1 LOGIN SCREEN — Cinematic OS Entrance
@@ -24,6 +33,8 @@ export default function LoginPage() {
   const [phase,    setPhase]    = useState<Phase>("idle");
   const [emailError, setEmailError] = useState("");
   const [authError,  setAuthError]  = useState("");
+  const [selectedRole, setSelectedRole] = useState<UserRole>('Candidate');
+  const [roleDropOpen, setRoleDropOpen] = useState(false);
 
   const storeLogin = useAuthStore(s => s.login);
 
@@ -62,15 +73,28 @@ export default function LoginPage() {
 
       storeLogin(token, user, session.permissions);
 
-      notifyEmailJS(email, "Successful login");
+      notifyEmailJS(email, `Successful login as ${selectedRole}`);
 
       setPhase("success");
       const permSet = new Set(session.permissions) as Set<Permission>;
-      const dest = defaultPortalForPermissions(permSet);
+
       setTimeout(() => {
-        if (permSet.has('CAN_START_INTERVIEW') && !permSet.has('CAN_VIEW_RECRUITER_PORTAL')) {
+        if (selectedRole === 'Investor') {
+          navigate('/dashboard');
+          return;
+        }
+        if (selectedRole === 'Recruiter' && permSet.has('CAN_VIEW_RECRUITER_PORTAL')) {
+          window.location.href = 'https://recruiter.explain.global';
+          return;
+        }
+        if (selectedRole === 'Employer' && permSet.has('CAN_VIEW_CLIENT_PORTAL')) {
+          window.location.href = 'https://employer.explain.global';
+          return;
+        }
+        if (permSet.has('CAN_START_INTERVIEW')) {
           navigate('/dashboard');
         } else {
+          const dest = defaultPortalForPermissions(permSet);
           const isSameOrigin = dest.startsWith(window.location.origin) || dest === '/cockpit';
           if (isSameOrigin) navigate('/cockpit');
           else window.location.href = dest;
@@ -166,7 +190,7 @@ export default function LoginPage() {
             Your AI interview coach.
           </h1>
           <p className="text-sm text-slate-500 mt-1.5 leading-snug">
-            Sign in to your candidate portal.
+            {ROLE_OPTIONS.find(r => r.value === selectedRole)?.subtitle ?? 'Sign in to continue.'}
           </p>
         </motion.div>
 
@@ -185,6 +209,65 @@ export default function LoginPage() {
           transition={{ delay: 2.1, duration: 0.7, ease: "easeOut" }}
           whileHover={{ y: -3, transition: { duration: 0.3 } }}
         >
+          {/* Role selector */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setRoleDropOpen(o => !o)}
+              className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg bg-[#111111] border border-gray-600 text-left transition-all duration-200 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
+            >
+              <span className="text-base leading-none">
+                {ROLE_OPTIONS.find(r => r.value === selectedRole)?.emoji}
+              </span>
+              <span className="flex-1 text-sm font-medium text-white">
+                {selectedRole}
+              </span>
+              <ChevronDown
+                size={14}
+                className="text-gray-500 transition-transform duration-200"
+                style={{ transform: roleDropOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              />
+            </button>
+
+            <AnimatePresence>
+              {roleDropOpen && (
+                <motion.div
+                  className="absolute left-0 right-0 top-full mt-1 rounded-xl overflow-hidden z-20"
+                  style={{
+                    background: "#161616",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    boxShadow: "0 16px 40px rgba(0,0,0,0.6)",
+                  }}
+                  initial={{ opacity: 0, y: -6, scaleY: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scaleY: 1 }}
+                  exit={{ opacity: 0, y: -4, scaleY: 0.95 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                >
+                  {ROLE_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => { setSelectedRole(opt.value); setRoleDropOpen(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-white/[0.04]"
+                      style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                    >
+                      <span className="text-base">{opt.emoji}</span>
+                      <div className="flex flex-col">
+                        <span className={`text-sm font-semibold ${opt.value === selectedRole ? 'text-indigo-300' : 'text-white'}`}>
+                          {opt.label}
+                        </span>
+                        <span className="text-[11px] text-slate-500">{opt.subtitle}</span>
+                      </div>
+                      {opt.value === selectedRole && (
+                        <span className="ml-auto text-indigo-400 text-xs">✓</span>
+                      )}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           {/* Email */}
           <div>
             <LoginField
@@ -286,7 +369,7 @@ export default function LoginPage() {
 
       {/* ── Success overlay ── */}
       <AnimatePresence>
-        {phase === "success" && <SuccessOverlay />}
+        {phase === "success" && <SuccessOverlay role={selectedRole} />}
       </AnimatePresence>
     </div>
   );
@@ -420,7 +503,15 @@ function P1LoginLogo() {
 /* ────────────────────────────────────────────────────────────
    SUCCESS OVERLAY
    ──────────────────────────────────────────────────────────── */
-function SuccessOverlay() {
+function SuccessOverlay({ role }: { role: UserRole }) {
+  const roleMessages: Record<UserRole, { heading: string; sub: string }> = {
+    Candidate:  { heading: "Welcome back — you're in.",    sub: "Loading your candidate portal…" },
+    Employer:   { heading: "Welcome back — loading your employer dashboard…", sub: "Setting up your hiring cockpit…" },
+    Recruiter:  { heading: "Welcome back — loading recruiter portal…", sub: "Connecting your candidate pipeline…" },
+    Investor:   { heading: "Welcome, investor.",           sub: "Your dedicated portal is coming — routing you now…" },
+  };
+  const msg = roleMessages[role];
+
   return (
     <motion.div
       className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-6"
@@ -455,8 +546,8 @@ function SuccessOverlay() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.5 }}
       >
-        <p className="text-white font-semibold text-lg">Good morning, Francis — welcome back.</p>
-        <p className="text-slate-500 text-sm mt-1.5">Initialising your personal OS…</p>
+        <p className="text-white font-semibold text-lg">{msg.heading}</p>
+        <p className="text-slate-500 text-sm mt-1.5">{msg.sub}</p>
         <div className="flex items-center justify-center gap-4 mt-4">
           <AgentPill label="Persona Agent" delay={0.5} />
           <AgentPill label="Tenant Agent"  delay={0.8} />
