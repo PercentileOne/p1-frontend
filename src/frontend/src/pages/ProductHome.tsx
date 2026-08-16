@@ -385,9 +385,9 @@ export default function ProductHome() {
 
       {/* NAV */}
       <nav className="ph-nav">
-        <div className="ph-nav-logo"><span className="ph-ex">Explain</span><span className="ph-gl">.global</span><em className="ph-nav-by">by Percentile.One</em></div>
+        <div className="ph-nav-logo"><span className="ph-ex">InterviewMe</span><span className="ph-gl">.global</span><em className="ph-nav-by">by Percentile.One</em></div>
         <ul className="ph-nav-links">
-          <li><a href="#ph-why">Why Explain</a></li>
+          <li><a href="#ph-why">Why InterviewMe</a></li>
           <li><a href="#ph-global">Global</a></li>
           <li><a href="#ph-learn">Learn Engine</a></li>
           <li><a href="#ph-ir">The Interview Chair</a></li>
@@ -538,7 +538,7 @@ export default function ProductHome() {
         <div className="ph-c" style={{textAlign:"center"}}>
           <div className="ph-r" data-ph="" style={{marginBottom:24}}>
             <div className="ph-r ph-nav-logo" data-ph="" style={{fontSize:32,fontWeight:900,letterSpacing:"-.04em",textShadow:"0 0 60px rgba(79,142,247,.7)"}}>
-              <span className="ph-ex">Explain</span><span className="ph-gl">.global</span>
+              <span className="ph-ex">InterviewMe</span><span className="ph-gl">.global</span>
             </div>
           </div>
           <h2 className="ph-mission-hl ph-r" data-ph="" data-d="1">The Interview<br /><span style={{color:"#4F8EF7"}}>Intelligence Platform</span></h2>
@@ -547,7 +547,7 @@ export default function ProductHome() {
           </p>
           <div className="ph-r" data-ph="" data-d="3" style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap",marginTop:44}}>
             <a href="/register" className="ph-btn-primary">Get Started →</a>
-            <a href="#ph-why" className="ph-btn-ghost">Why Explain</a>
+            <a href="#ph-why" className="ph-btn-ghost">Why InterviewMe</a>
           </div>
         </div>
       </section>
@@ -599,21 +599,21 @@ export default function ProductHome() {
         <div className="ph-c">
           <div className="ph-why-grid">
             <div className="ph-manifesto">
-              <div className="ph-lbl ph-r" data-ph="">Why Explain Exists</div>
+              <div className="ph-lbl ph-r" data-ph="">Why InterviewMe Exists</div>
               <p className="ph-r" data-ph="" data-d="1">People don't fail interviews because they're not good enough.</p>
               <p className="ph-r" data-ph="" data-d="2">They fail because they've never actually <strong style={{color:"#F0F4FF"}}>practised</strong>. Not once. Not properly. Most people walk into the most important conversation of their career having rehearsed nothing — because there was nowhere to rehearse.</p>
               <p className="ph-em1 ph-r" data-ph="" data-d="3">The first time they sit<br />in the chair —<br />is the real interview.</p>
               <p className="ph-em2 ph-r" data-ph="" data-d="4">That ends now.</p>
-              <div className="ph-tagline ph-r" data-ph="" data-d="5"><p>Explain is the world's first <strong>AI interview practice platform</strong> that feels like the real thing. So when the real thing comes — you're already ready.</p></div>
+              <div className="ph-tagline ph-r" data-ph="" data-d="5"><p>InterviewMe is the world's first <strong>AI interview practice platform</strong> that feels like the real thing. So when the real thing comes — you're already ready.</p></div>
             </div>
             <div>
               <div className="ph-pillars">
                 {[
                   ["💡","Clarity","Know exactly what to expect","We remove the mystery of interviews. You see the question structure, the competencies being assessed, and the benchmark before you walk in. Clarity is the most underrated competitive advantage.","Prepared minds perform."],
                   ["📐","Structure","A framework that turns pressure into performance","Every session follows a proven architecture — opening, competency questions, HR questions, debrief. You learn to map your experience to what interviewers actually need. No more guessing.","Structure beats talent in the room."],
-                  ["🎯","Coaching","Real-time guidance, not post-match analysis","While you answer, Explain's coaching engine watches your delivery, flags hesitations, and surfaces cues in real time. You don't just practice — you improve with every question.","The best coaches speak during the game."],
+                  ["🎯","Coaching","Real-time guidance, not post-match analysis","While you answer, InterviewMe's coaching engine watches your delivery, flags hesitations, and surfaces cues in real time. You don't just practice — you improve with every question.","The best coaches speak during the game."],
                   ["📊","Scoring","Honest scores. No vanity metrics.","After each answer, you receive a breakdown across Clarity, Depth, Confidence, and Delivery — calibrated against the Top 5% benchmark for your specific role and industry.","You can't improve what you can't measure."],
-                  ["⚡","Confidence","Walk in ready. Walk out proud.","Confidence isn't fake it till you make it. It's the natural result of genuine preparation. After enough sessions with Explain, you don't just feel ready — you are ready.","Confidence is a skill. We build it."],
+                  ["⚡","Confidence","Walk in ready. Walk out proud.","Confidence isn't fake it till you make it. It's the natural result of genuine preparation. After enough sessions with InterviewMe, you don't just feel ready — you are ready.","Confidence is a skill. We build it."],
                 ].map(([icon,name,hl,body,micro],i) => (
                   <div className="ph-pillar ph-r" data-ph="" data-d={String(i+1)} key={name} style={{flexDirection:"column",alignItems:"flex-start",gap:10}}>
                     <div style={{display:"flex",alignItems:"center",gap:12}}>
@@ -818,8 +818,8 @@ export default function ProductHome() {
               {n:3,done:false,phase:"Phase 3 — Coming Soon",title:"Interview Chair",sub:"Live AI voice interviewer with real-time scoring, coaching overlays, and full session recording.",badge:"coming",label:"In Development"},
               {n:4,done:false,phase:"Phase 4 — Coming Soon",title:"Interview Packs",sub:"Role-specific preparation bundles distributed through partner recruitment agencies globally.",badge:"coming",label:"Planned"},
               {n:5,done:false,phase:"Phase 5 — Coming Soon",title:"Recruiter Portal",sub:"Full recruiter intelligence suite — pack builder, candidate flow management, scoring, and insights.",badge:"coming",label:"Planned"},
-              {n:6,done:false,phase:"Phase 6 — Vision",title:"Global Distribution",sub:"Explain Interview Packs available through the world's leading recruitment agencies and job boards.",badge:"coming",label:"Vision"},
-              {n:7,done:false,phase:"Phase 7 — Vision",title:"Explain AI + Percentile.One",sub:"The full Percentile.One ecosystem: Learn, Work, Grow — unified under one AI intelligence layer.",badge:"coming",label:"Vision"},
+              {n:6,done:false,phase:"Phase 6 — Vision",title:"Global Distribution",sub:"InterviewMe Interview Packs available through the world's leading recruitment agencies and job boards.",badge:"coming",label:"Vision"},
+              {n:7,done:false,phase:"Phase 7 — Vision",title:"InterviewMe AI + Percentile.One",sub:"The full Percentile.One ecosystem: Learn, Work, Grow — unified under one AI intelligence layer.",badge:"coming",label:"Vision"},
             ].map(r=>(
               <div className="ph-road-item" key={r.n}>
                 <div className={`ph-road-num${r.done?" done":""}`}>{r.n}</div>
@@ -860,7 +860,7 @@ export default function ProductHome() {
           <div className="ph-lbl ph-r" data-ph="" style={{textAlign:"center",marginBottom:32}}>A Message from the Founder</div>
           <div className="ph-founder-card ph-r" data-ph="" style={{maxWidth:760}}>
             <p style={{fontSize:16,color:"rgba(240,244,255,.5)",lineHeight:1.85,marginBottom:20,position:"relative",zIndex:1,fontWeight:500}}>
-              I built Explain because I lived the problem.
+              I built InterviewMe because I lived the problem.
             </p>
             <p style={{fontSize:16,color:"rgba(240,244,255,.6)",lineHeight:1.85,marginBottom:20,position:"relative",zIndex:1}}>
               I have sat in interview rooms and watched people who were brilliant — genuinely brilliant — walk out empty-handed. Not because they weren't good enough. Because the process was a black box. It rewarded those who had been coached, those who had insider knowledge, those who had simply <em style={{fontStyle:"normal",color:"#F0F4FF",fontWeight:700}}>done it before</em>.
@@ -893,9 +893,9 @@ export default function ProductHome() {
       {/* FOOTER */}
       <footer className="ph-footer">
         <div className="ph-footer-inner">
-          <div style={{fontSize:15,fontWeight:900,letterSpacing:"-.03em"}}><span className="ph-ex">Explain</span><span className="ph-gl">.global</span></div>
+          <div style={{fontSize:15,fontWeight:900,letterSpacing:"-.03em"}}><span className="ph-ex">InterviewMe</span><span className="ph-gl">.global</span></div>
           <div className="ph-footer-links">
-            <a href="#ph-why">Why Explain</a><a href="#ph-global">Global</a>
+            <a href="#ph-why">Why InterviewMe</a><a href="#ph-global">Global</a>
             <a href="#ph-learn">Learn Engine</a><a href="#ph-eco">Ecosystem</a>
             <a href="#ph-wait">Waitlist</a>
           </div>

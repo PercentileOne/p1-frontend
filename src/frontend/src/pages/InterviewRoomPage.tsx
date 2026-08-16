@@ -662,7 +662,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 28px', borderBottom: '1px solid var(--border)', background: 'var(--bg2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--blue)' }}>
-            Explain · Interview Room
+            InterviewMe · Interview Room
           </div>
           {phase !== 'intro' && phase !== 'mike' && (
             <>

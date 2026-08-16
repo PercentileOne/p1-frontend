@@ -339,7 +339,7 @@ export async function generateMikeScriptOnly(params: {
     ? `CANDIDATE NAME: Read the CV below and extract the candidate's first name. NEVER say "Hi there" — always use the actual name.`
     : `CANDIDATE NAME: Unknown — use "there" only as a last resort.`;
 
-  const systemPrompt = `You are Mike, a warm and encouraging recruitment consultant at Explain.
+  const systemPrompt = `You are Mike, a warm and encouraging recruitment consultant at InterviewMe.
 Write a short spoken briefing for a candidate about to start their interview.
 Sound natural and personal — like you genuinely know them.
 No bullet points, no lists. Spoken prose only.
@@ -421,7 +421,7 @@ export async function sessionPrepareClient(
     ? `\nIMPORTANT LANGUAGE OVERRIDE: The user has explicitly selected "${selectedLanguage}" as the interview language. Generate ALL output in that language.`
     : '';
 
-  const systemPrompt = `You are an AI interview preparation system for a global hiring platform called Explain.
+  const systemPrompt = `You are an AI interview preparation system for a global hiring platform called InterviewMe.
 Generate a complete, personalised interview session based on the job specification and (optionally) the candidate's CV.
 
 CRITICAL RULES:

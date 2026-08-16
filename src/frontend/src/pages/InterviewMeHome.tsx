@@ -128,7 +128,7 @@ export default function ExplainHome() {
       <div style={{ maxWidth: '1040px', margin: '0 auto', padding: '64px 24px 48px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)', marginBottom: '10px' }}>
-            Three ways to use Explain
+            Three ways to use InterviewMe
           </div>
           <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>
             Choose your starting point
@@ -232,7 +232,7 @@ export default function ExplainHome() {
       {/* Footer */}
       <div style={{ borderTop: '1px solid var(--border)', padding: '20px 24px', textAlign: 'center' }}>
         <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>
-          Explain · InterviewMe.global · Preparing candidates for any role, any industry
+          InterviewMe.global · Preparing candidates for any role, any industry
         </span>
       </div>
     </div>

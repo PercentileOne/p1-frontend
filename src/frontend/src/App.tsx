@@ -89,7 +89,7 @@ import LearnFlashTalkPage from "./pages/LearnFlashTalkPage";
 export default function App() {
   return (
     <Routes>
-      {/* Explain public-facing routes */}
+      {/* InterviewMe public-facing routes */}
       <Route path="/" element={<ProductHome />} />
       <Route path="/prep" element={<InterviewMePrep />} />
       <Route path="/feedback" element={<PortalFeedbackPage />} />

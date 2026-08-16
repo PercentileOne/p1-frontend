@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Explain.global — Multi-Portal Permission Matrix
+// InterviewMe.global — Multi-Portal Permission Matrix
 //
 // This file is the SINGLE SOURCE OF TRUTH for all access control decisions.
 // It is enforced at three levels:
