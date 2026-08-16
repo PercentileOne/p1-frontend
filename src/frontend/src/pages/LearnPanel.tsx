@@ -85,7 +85,7 @@ Return ONLY valid JSON matching this exact schema (no markdown, no explanation):
           "title": "lecture title",
           "type": "lesson",
           "estimatedMinutes": <10-25>,
-          "content": "400-500 words of expert, engaging content. Use clear paragraphs. Include real-world examples, analogies, and specifics. No bullet lists — prose only.",
+          "content": "150-200 words of expert, engaging content. Use clear paragraphs. Include a real-world example or analogy. No bullet lists — prose only.",
           "keyTakeaways": ["concise takeaway 1", "concise takeaway 2", "concise takeaway 3"],
           "interviewQuestions": ["specific interview question about this topic?", "deeper follow-up interview question?"]
         }
