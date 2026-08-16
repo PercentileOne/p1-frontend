@@ -73,6 +73,7 @@ const FALLBACK_CATEGORIES = [
   { category: 'Agriculture',           count: 29  },
   { category: 'Public Sector',         count: 56  },
   { category: 'Sport',                 count: 34  },
+  { category: 'Property',              count: 41  },
   { category: 'General',               count: 32  },
 ];
 
@@ -84,7 +85,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Business': '📊', 'Hospitality': '🏨', 'Construction': '🏗️', 'Transport': '🚗',
   'Retail': '🛍️', 'Agriculture': '🌾', 'Media': '📺', 'Sport': '⚽',
   'Public Sector': '🏛️', 'Social Care': '🤝', 'Trades': '🔧', 'General': '🌐',
-  'Music & Entertainment': '🎵', 'Art & Culture': '🖼️',
+  'Music & Entertainment': '🎵', 'Art & Culture': '🖼️', 'Property': '🏠',
 };
 
 function categoryIcon(cat: string) {
