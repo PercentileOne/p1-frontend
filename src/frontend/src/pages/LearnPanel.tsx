@@ -20,6 +20,10 @@ interface Lecture {
   estimatedMinutes: number;
   content: string;
   keyTakeaways: string[];
+  deepDive: string;
+  realWorldExample: string;
+  memoryHook: string;
+  commonMisconceptions: { myth: string; reality: string }[];
   interviewQuestions: string[];
 }
 
@@ -85,8 +89,15 @@ Return ONLY valid JSON matching this exact schema (no markdown, no explanation):
           "title": "lecture title",
           "type": "lesson",
           "estimatedMinutes": <10-25>,
-          "content": "500-600 words of expert, engaging, deeply educational content. Write 3-4 substantive paragraphs. Each paragraph should develop one idea fully. Include concrete real-world examples, specific numbers, named tools or techniques, and practical insights a professional would actually use. No bullet lists — flowing prose only.",
-          "keyTakeaways": ["A specific fact or insight the student now knows — e.g. 'Neural networks with more than 3 layers are called deep networks and can learn hierarchical features'", "Another concrete insight stated as a fact, not an instruction", "A third factual takeaway — something memorable and specific"],
+          "content": "400-500 words of expert, engaging, deeply educational content. Write 3-4 substantive paragraphs. Each paragraph develops one idea fully. Include specific numbers, named tools or techniques, and practical insights a professional would actually use. No bullet lists — flowing prose only.",
+          "keyTakeaways": ["A specific fact the student now knows, stated as a fact not an instruction — e.g. 'BERT uses bidirectional attention, meaning it reads context from both left and right simultaneously'", "Another concrete factual insight", "A third memorable factual takeaway"],
+          "deepDive": "2-3 sentences going deeper into the mechanism, theory, or nuance behind this topic — for the curious student who wants to understand the 'why' not just the 'what'.",
+          "realWorldExample": "One specific, vivid real-world scenario showing exactly how this concept is applied in practice. Name actual companies, tools, or situations. 2-3 sentences.",
+          "memoryHook": "A memorable analogy, mnemonic, or mental model that makes this concept stick. Something a student could recall in an exam or interview to reconstruct the idea from first principles.",
+          "commonMisconceptions": [
+            { "myth": "A common wrong belief people have about this topic", "reality": "The accurate explanation that corrects it" },
+            { "myth": "Another frequent misconception", "reality": "The correct understanding" }
+          ],
           "interviewQuestions": ["A realistic technical interview question a hiring manager would ask about this specific topic?", "A deeper follow-up that tests genuine understanding, not just recall?"]
         }
       ]
@@ -336,6 +347,73 @@ function LectureView({ lecture, courseTitle, onPractice }: { lecture: Lecture; c
                   fontSize: 10, fontWeight: 800, color: GREEN, flexShrink: 0, marginTop: 1,
                 }}>{i + 1}</div>
                 <div style={{ fontSize: 13, color: '#9ff0d0', lineHeight: 1.5 }}>{t}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Deep Dive */}
+      {lecture.deepDive && (
+        <div style={{
+          background: 'rgba(79,142,247,0.06)', border: '1px solid rgba(79,142,247,0.18)',
+          borderRadius: 12, padding: '20px 24px', marginBottom: 16,
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: BLUE, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>
+            📖 Deep Dive
+          </div>
+          <p style={{ fontSize: 14, color: '#b8cef7', lineHeight: 1.75, margin: 0 }}>{lecture.deepDive}</p>
+        </div>
+      )}
+
+      {/* Real-World Example */}
+      {lecture.realWorldExample && (
+        <div style={{
+          background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)',
+          borderRadius: 12, padding: '20px 24px', marginBottom: 16,
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#F59E0B', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>
+            💡 Real-World Example
+          </div>
+          <p style={{ fontSize: 14, color: '#fde68a', lineHeight: 1.75, margin: 0 }}>{lecture.realWorldExample}</p>
+        </div>
+      )}
+
+      {/* Memory Hook */}
+      {lecture.memoryHook && (
+        <div style={{
+          background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.2)',
+          borderRadius: 12, padding: '20px 24px', marginBottom: 16,
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: GREEN, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>
+            🧠 Memory Hook
+          </div>
+          <p style={{ fontSize: 15, fontWeight: 600, color: '#6EE7B7', lineHeight: 1.65, margin: 0, fontStyle: 'italic' }}>{lecture.memoryHook}</p>
+        </div>
+      )}
+
+      {/* Common Misconceptions */}
+      {lecture.commonMisconceptions?.length > 0 && (
+        <div style={{
+          background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.18)',
+          borderRadius: 12, padding: '20px 24px', marginBottom: 24,
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#F87171', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 14 }}>
+            ⚠️ Common Misconceptions
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {lecture.commonMisconceptions.map((m, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <span style={{ fontSize: 13, color: '#fca5a5', lineHeight: 1.5 }}>
+                    <span style={{ fontWeight: 700 }}>✗ Myth: </span>{m.myth}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, paddingLeft: 12, borderLeft: '2px solid rgba(52,211,153,0.4)' }}>
+                  <span style={{ fontSize: 13, color: '#9ff0d0', lineHeight: 1.5 }}>
+                    <span style={{ fontWeight: 700 }}>✓ Reality: </span>{m.reality}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
