@@ -31,6 +31,7 @@ jobs:
           cp src/viewme/public/viewme-trade-1.png deploy-product/viewme-trade-1.png
           cp src/viewme/public/viewme-trade-2.png deploy-product/viewme-trade-2.png
           cp src/viewme/public/viewme-trade-3.png deploy-product/viewme-trade-3.png
+          cp src/viewme/public/about.html deploy-product/about.html
           cp src/viewme/public/fp.html deploy-product/fp.html
           cp src/viewme/public/contact.html deploy-product/contact.html
           cp src/viewme/public/profile.html deploy-product/profile.html
