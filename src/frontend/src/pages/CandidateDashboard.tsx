@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../auth/authStore";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
-  MessageSquare, Settings, LogOut, ChevronRight, CheckCircle2, Circle,
+  MessageSquare, Settings, LogOut, ChevronRight, CheckCircle2, Circle, Compass,
 } from "lucide-react";
+import LearnPanel from "./LearnPanel";
+import CareersPanel from "./CareersPanel";
 
 /* ══════════════════════════════════════════════════════════════
    CANDIDATE DASHBOARD — cockpit-grade portal for InterviewMe.global
@@ -21,6 +23,7 @@ const NAV_ITEMS = [
   { Icon: Video,           label: "Interviews" },
   { Icon: Briefcase,       label: "Jobs" },
   { Icon: BookOpen,        label: "Learn" },
+  { Icon: Compass,         label: "Careers" },
   { Icon: MessageSquare,   label: "Messages" },
   { Icon: Settings,        label: "Settings" },
 ] as const;
@@ -255,7 +258,6 @@ export default function CandidateDashboard() {
       "My Profile": "/profile",
       "Interviews": "/interviews",
       "Jobs":       "/jobs",
-      "Learn":      "/learning",
       "Messages":   "/messages",
       "Settings":   "/settings",
     };
@@ -368,6 +370,12 @@ export default function CandidateDashboard() {
             </button>
           </div>
         </div>
+
+        {/* ── PANEL OVERRIDES ── */}
+        {activeNav === "Learn"    && <LearnPanel />}
+        {activeNav === "Careers"  && <CareersPanel />}
+
+        {activeNav !== "Learn" && activeNav !== "Careers" && <>
 
         {/* ── STATS ROW ── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>
@@ -564,6 +572,8 @@ export default function CandidateDashboard() {
 
           </div>
         </div>
+
+        </>}
       </main>
     </div>
   );
