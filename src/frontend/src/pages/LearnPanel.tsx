@@ -681,15 +681,37 @@ export default function LearnPanel() {
       return;
     }
     setError('');
-    // Serve from cache if generated within the last 2 days
-    const cached = findCached(t, level);
-    if (cached) { setActiveCourse(cached); return; }
+
+    // 1. Local browser cache (instant)
+    const localCached = findCached(t, level);
+    if (localCached) { setActiveCourse(localCached); return; }
+
+    // 2. Platform cache (Cosmos — shared across all users)
+    try {
+      const pr = await fetch(`/api/courses/cached?title=${encodeURIComponent(t)}&level=${encodeURIComponent(level)}`);
+      if (pr.ok) {
+        const platformCourse = await pr.json() as Omit<Course, 'id' | 'createdAt'>;
+        const course: Course = { ...platformCourse, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
+        saveCourse(course);
+        setSavedCourses(loadCourses());
+        setActiveCourse(course);
+        return;
+      }
+    } catch { /* platform cache unavailable — generate fresh */ }
+
+    // 3. Generate fresh via OpenAI
     setGenerating(true);
     try {
       const course = await generateCourse(t, level);
       saveCourse(course);
       setSavedCourses(loadCourses());
       setActiveCourse(course);
+      // Save to platform cache for all future users
+      fetch('/api/courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: t, level, course }),
+      }).catch(() => { /* non-critical */ });
     } catch (e) {
       setError('Course generation failed — please try again. Check your OpenAI balance if the error persists.');
     } finally {

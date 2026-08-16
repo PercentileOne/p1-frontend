@@ -36,6 +36,10 @@ public class CosmosService
         // Every topic searched — feeds micro-subject intelligence and leaderboards.
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("searches", "/pk"));
+
+        // Platform-level course cache — shared across all users, 2-day TTL.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("courses", "/pk") { DefaultTimeToLive = 172800 });
     }
 
     public Container GetContainer(string name) => _database.GetContainer(name);

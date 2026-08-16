@@ -105,6 +105,8 @@ Explain.Api.Features.Contact.Endpoint.Map(app);
 Explain.Api.Features.Feedback.Submit.Endpoint.Map(app);
 Explain.Api.Features.Feedback.List.Endpoint.Map(app);
 
+Explain.Api.Features.Courses.Endpoint.Map(app);
+
 Explain.Api.Features.Auth.ForgotPassword.Endpoint.Map(app);
 Explain.Api.Features.Auth.ResetPassword.Endpoint.Map(app);
 
