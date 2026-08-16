@@ -115,13 +115,15 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime
 app.MapPost("/api/ai-proxy", async (HttpRequest req, IHttpClientFactory factory, IConfiguration config) =>
 {
     var apiKey = config["OpenAI:ApiKey"] ?? throw new InvalidOperationException("OpenAI:ApiKey not configured");
-    var body   = await new StreamReader(req.Body).ReadToEndAsync();
+    req.EnableBuffering();
+    var body = await new System.IO.StreamReader(req.Body, System.Text.Encoding.UTF8, leaveOpen: true).ReadToEndAsync();
+    req.Body.Position = 0;
     var client = factory.CreateClient();
     using var msg = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
     msg.Headers.Add("Authorization", $"Bearer {apiKey}");
     msg.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
     using var resp = await client.SendAsync(msg);
-    var respBody   = await resp.Content.ReadAsStringAsync();
+    var respBody = await resp.Content.ReadAsStringAsync();
     return Results.Content(respBody, "application/json", statusCode: (int)resp.StatusCode);
 }).AllowAnonymous();
 
