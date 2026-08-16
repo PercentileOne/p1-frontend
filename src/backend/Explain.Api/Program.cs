@@ -124,7 +124,7 @@ app.MapPost("/api/ai-proxy", async (HttpRequest req, HttpResponse res, IHttpClie
     msg.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
     using var resp = await client.SendAsync(msg, HttpCompletionOption.ResponseHeadersRead);
     res.StatusCode = (int)resp.StatusCode;
-    res.ContentType = "application/json";
+    res.ContentType = resp.Content.Headers.ContentType?.ToString() ?? "application/json";
     await resp.Content.CopyToAsync(res.Body);
 }).AllowAnonymous();
 

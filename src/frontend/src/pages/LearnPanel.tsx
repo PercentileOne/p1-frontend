@@ -105,34 +105,58 @@ Requirements:
     model: 'gpt-4o-mini',
     temperature: 0.7,
     max_tokens: 16000,
-    response_format: { type: 'json_object' },
+    stream: true,
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
     ],
   });
 
+  // Reads an OpenAI SSE stream and returns the accumulated content string
+  async function readStream(res: Response): Promise<string> {
+    const reader = res.body!.getReader();
+    const decoder = new TextDecoder();
+    let content = '';
+    let buffer = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') return content;
+        try {
+          const chunk = JSON.parse(data) as { choices: { delta: { content?: string } }[] };
+          content += chunk.choices?.[0]?.delta?.content ?? '';
+        } catch { /* ignore malformed chunks */ }
+      }
+    }
+    return content;
+  }
+
   async function tryFetch(url: string, headers: Record<string, string>) {
     const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body });
-    if (!res.ok) {
+    if (!res.ok || !res.body) {
       console.error(`[LearnEngine] ${url} responded ${res.status}`);
       return null;
     }
     let raw = '';
     try {
-      const data = await res.json() as { choices: { message: { content: string } }[] };
-      raw = data.choices?.[0]?.message?.content ?? '';
-      if (!raw) { console.error('[LearnEngine] Empty content in response', data); return null; }
+      raw = await readStream(res);
+      if (!raw) { console.error('[LearnEngine] Empty stream content'); return null; }
       const parsed = JSON.parse(raw) as Omit<Course, 'id' | 'createdAt'>;
       if (!parsed.modules?.length) { console.error('[LearnEngine] No modules in parsed course', parsed); return null; }
       return { ...parsed, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
     } catch (e) {
-      console.error('[LearnEngine] JSON parse failed', e, '\nRaw content (first 500 chars):', raw.slice(0, 500));
+      console.error('[LearnEngine] JSON parse failed', e, '\nRaw (first 500):', raw.slice(0, 500));
       return null;
     }
   }
 
-  // 1. Server-side proxy
+  // 1. Server-side proxy (streams through SWA to avoid 45s timeout)
   const via_proxy = await tryFetch('/api/ai-proxy', {}).catch(e => { console.error('[LearnEngine] Proxy fetch threw', e); return null; });
   if (via_proxy) return via_proxy;
 
