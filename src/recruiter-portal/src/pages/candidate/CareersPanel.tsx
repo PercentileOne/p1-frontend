@@ -21,13 +21,14 @@ interface Career {
 
 // ── API ────────────────────────────────────────────────────────────────────────
 
-const PROXY_BASE = 'https://p1-careers-agent.azurewebsites.net/api/careers';
+const PROXY_BASE = 'https://p1-careers-agent-gbgyheascwc2fpfr.uksouth-01.azurewebsites.net/api/careers';
 
 async function searchCareers(q: string): Promise<Career[]> {
   try {
-    const res = await fetch(`${PROXY_BASE}/search?q=${encodeURIComponent(q)}&top=12`);
+    const res = await fetch(`${PROXY_BASE}/search?q=${encodeURIComponent(q)}&limit=12`);
     if (!res.ok) throw new Error('api');
-    return await res.json();
+    const data = await res.json() as Career[];
+    return data.map(normalise);
   } catch { return []; }
 }
 
@@ -41,9 +42,10 @@ async function getCategories(): Promise<{ category: string; count: number }[]> {
 
 async function getCareersByCategory(category: string): Promise<Career[]> {
   try {
-    const res = await fetch(`${PROXY_BASE}/by-category?category=${encodeURIComponent(category)}&top=20`);
+    const res = await fetch(`${PROXY_BASE}/by-category?category=${encodeURIComponent(category)}&limit=20`);
     if (!res.ok) throw new Error('api');
-    return await res.json();
+    const data = await res.json() as Career[];
+    return data.map(normalise);
   } catch { return []; }
 }
 
@@ -91,6 +93,32 @@ function categoryIcon(cat: string) {
     if (cat.toLowerCase().includes(key.toLowerCase())) return icon;
   }
   return '💼';
+}
+
+// ── Normalise API response (some fields come back as space-separated strings) ──
+
+function toArr(v: string | string[] | undefined): string[] {
+  if (!v) return [];
+  if (Array.isArray(v)) return v;
+  return v.split(/\s{2,}|\|/).map((s: string) => s.trim()).filter(Boolean);
+}
+
+function normalise(c: Career): Career {
+  return {
+    ...c,
+    identity: c.identity ? {
+      ...c.identity,
+      traits:    toArr(c.identity.traits as unknown as string),
+      strengths: toArr(c.identity.strengths as unknown as string),
+    } : c.identity,
+    pathway: c.pathway ? {
+      ...c.pathway,
+      skills:             toArr(c.pathway.skills as unknown as string),
+      entryRequirements:  toArr(c.pathway.entryRequirements as unknown as string),
+      qualifications:     toArr(c.pathway.qualifications as unknown as string),
+      learningPath:       toArr(c.pathway.learningPath as unknown as string),
+    } : c.pathway,
+  };
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
