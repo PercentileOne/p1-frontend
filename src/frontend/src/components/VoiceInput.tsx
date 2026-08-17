@@ -242,8 +242,8 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-      {/* Your turn prompt — shown only when idle and ready to answer */}
-      {micState === 'idle' && (
+      {/* Your turn prompt — shown only when idle and it's actually the candidate's turn */}
+      {micState === 'idle' && !disabled && (
         <motion.div
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
@@ -260,7 +260,9 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
       {/* Waveform + mic button row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div style={{ position: 'relative', flexShrink: 0, width: '56px', height: '56px' }}>
-          {!isListening && !isProcessing && (
+          {/* Ripple pulse only while it's genuinely the candidate's turn to record —
+              not just whenever the button happens to be idle (e.g. mid-question). */}
+          {!isListening && !isProcessing && !disabled && (
             <>
               <motion.div
                 animate={{ scale: [1, 1.8], opacity: [0.6, 0] }}

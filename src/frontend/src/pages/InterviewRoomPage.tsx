@@ -1283,6 +1283,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         onTranscript={(text, meta) => submitAnswer(text, meta, true)}
                         onInterimTranscript={() => {}}
                         highlightRecord={highlightRecord}
+                        disabled={phase !== 'answering'}
                       />
                     )}
                     <div style={{ flex: 1 }}>
