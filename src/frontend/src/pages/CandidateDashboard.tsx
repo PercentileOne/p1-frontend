@@ -347,7 +347,7 @@ export default function CandidateDashboard() {
           </div>
           <div style={{ display: "flex", gap: 10 }}>
             <button
-              onClick={() => navigate("/interview/standard")}
+              onClick={() => navigate("/interview/standard", { state: { preferredName: firstName } })}
               style={{
                 padding: "9px 18px", background: "linear-gradient(135deg,#a78bfa,#7c3aed)",
                 color: "#fff", border: "none", borderRadius: 8,
