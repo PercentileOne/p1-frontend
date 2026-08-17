@@ -113,9 +113,10 @@ async function speakElevenLabs(
   if (blob.size < 100) throw new Error('ElevenLabs returned empty audio');
   const url  = URL.createObjectURL(blob);
 
-  // Use explicit src assignment so crossOrigin is set before load
   const audio = new Audio();
-  audio.crossOrigin = 'anonymous';
+  // crossOrigin only needed when wiring an AudioContext analyser — setting it on
+  // a blob URL without an analyser can cause playback to fail in some browsers
+  if (onAnalyser) audio.crossOrigin = 'anonymous';
   audio.src = url;
   audio.volume = volume;
 
