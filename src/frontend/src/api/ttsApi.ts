@@ -78,9 +78,9 @@ const ELEVENLABS_MODEL = 'eleven_turbo_v2'; // lowest latency, high quality
 
 // Shared AudioContext — created once, reused across all TTS calls
 let _audioCtx: AudioContext | null = null;
-function getAudioContext(): AudioContext {
+async function getAudioContext(): Promise<AudioContext> {
   if (!_audioCtx || _audioCtx.state === 'closed') _audioCtx = new AudioContext();
-  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  if (_audioCtx.state === 'suspended') await _audioCtx.resume();
   return _audioCtx;
 }
 
@@ -117,7 +117,7 @@ async function speakElevenLabs(
   // summary page where no recent user gesture has unlocked the <audio> autoplay
   // policy. The AudioContext is unlocked during the interview and stays unlocked
   // for the lifetime of the tab, so this path never triggers the autoplay block.
-  const ctx = getAudioContext();
+  const ctx = await getAudioContext();
   const arrayBuffer = await blob.arrayBuffer();
   URL.revokeObjectURL(url);
   const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
