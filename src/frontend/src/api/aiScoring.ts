@@ -5,9 +5,10 @@ import type { ScoreResponse, InterviewQuestion } from './explainApi';
 import { buildCVContext, type CVContext, type CVExperience, type JobSpecContext } from '../utils/contextBuilder';
 import type { CoachingMessage } from '../utils/coachingEngine';
 
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 const MODEL = 'gpt-4o-mini';
 
-// AI is always available — calls go through the server-side /api/ai-proxy function
+// AI is always available — calls go through the .NET backend's /api/ai-proxy endpoint
 // which holds the key securely and avoids browser CORS issues.
 export const aiScoringConfigured = true;
 
@@ -24,7 +25,7 @@ async function chatJSON<T>(systemPrompt: string, userPrompt: string, temperature
 
   // Retry up to 3 times on 429
   for (let attempt = 0; attempt <= 3; attempt++) {
-    const res = await fetch('/api/ai-proxy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+    const res = await fetch(`${API_BASE}/api/ai-proxy`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
     if (res.status === 429 && attempt < 3) {
       const retryAfter = parseInt(res.headers.get('Retry-After') ?? '10', 10);
       const wait = Math.min((isNaN(retryAfter) ? 10 : retryAfter) * 1000, 30000);
@@ -130,7 +131,7 @@ Return JSON:
   try {
     // Single attempt only — if rate limited, fall through to heuristic immediately
     // rather than retrying and burning budget needed for questions + intros.
-    const res = await fetch('/api/ai-proxy', {
+    const res = await fetch(`${API_BASE}/api/ai-proxy`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: MODEL, temperature: 0, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }] }),

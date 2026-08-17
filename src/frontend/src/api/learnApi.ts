@@ -1,6 +1,7 @@
 import type { LessonData, LessonProgress, SavedLesson } from '../types/learn';
 
-const API_PROXY = '/api/ai-proxy';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_PROXY = `${API_BASE}/api/ai-proxy`;
 const MODEL = 'gpt-4o-mini';
 
 const USER_ID_KEY = 'explain_learn_user_id';

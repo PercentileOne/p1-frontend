@@ -38,7 +38,7 @@ interface Props {
   onDiscarded?: () => void;
 }
 
-const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net';
+const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
 
 export function SaveDecisionPanel({
   score,

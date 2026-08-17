@@ -289,7 +289,7 @@ export default function InterviewRoomPage() {
   // (below) and closeInterview's navigate() state always refer to the same saved record.
   const interviewIdRef = useRef<string>(crypto.randomUUID());
 
-  const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net';
+  const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
   const authUser = useAuthStore(s => s.user);
   const authToken = useAuthStore(s => s.token);
 

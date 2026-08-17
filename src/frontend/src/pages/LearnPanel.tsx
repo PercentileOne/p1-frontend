@@ -7,6 +7,8 @@ import type { InterviewQuestion } from '../api/explainApi';
 
 mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'strict' });
 
+const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const BG2    = '#10131a';
 const BG3    = '#14171f';
@@ -134,22 +136,9 @@ async function callAI(messages: { role: string; content: string }[], maxTokens =
     messages,
   });
 
-  const tryFetch = async (url: string, headers: Record<string, string>) => {
-    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body });
-    if (!res.ok || !res.body) return null;
-    return readStream(res);
-  };
-
-  const via_proxy = await tryFetch('/api/ai-proxy', {}).catch(() => null);
-  if (via_proxy) return via_proxy;
-
-  const apiKey = (import.meta as unknown as { env: Record<string, string> }).env?.VITE_OPENAI_API_KEY;
-  if (apiKey) {
-    const via_direct = await tryFetch('https://api.openai.com/v1/chat/completions', { Authorization: `Bearer ${apiKey}` }).catch(() => null);
-    if (via_direct) return via_direct;
-  }
-
-  throw new Error('AI call failed');
+  const res = await fetch(`${API_BASE}/api/ai-proxy`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+  if (!res.ok || !res.body) throw new Error('AI call failed');
+  return readStream(res);
 }
 
 // ── Phase 1: course outline (fast ~3s) ────────────────────────────────────────

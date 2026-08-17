@@ -413,7 +413,7 @@ export default function InterviewSummaryPage() {
   useEffect(() => {
     if (hasRouteState || !routeId || !authUser?.id || !authToken) return;
     setFetchState('loading');
-    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net';
+    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
     fetch(`${apiBase}/api/interviews/${encodeURIComponent(authUser.id)}/${encodeURIComponent(routeId)}`, {
       headers: { Authorization: `Bearer ${authToken}` },
     })

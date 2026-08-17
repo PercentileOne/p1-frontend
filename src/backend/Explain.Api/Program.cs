@@ -162,6 +162,37 @@ app.MapPost("/api/ai-proxy", async (HttpRequest req, HttpResponse res, IHttpClie
     await resp.Content.CopyToAsync(res.Body);
 }).AllowAnonymous();
 
+// ── Whisper transcription proxy — raw audio body in, { text } out ─────────────
+app.MapPost("/api/ai/transcribe", async (HttpRequest req, HttpResponse res, IHttpClientFactory factory, IConfiguration config) =>
+{
+    var apiKey = config["OpenAI:ApiKey"] ?? throw new InvalidOperationException("OpenAI:ApiKey not configured");
+    var language = req.Query["language"].ToString();
+    if (string.IsNullOrWhiteSpace(language)) language = "en";
+
+    var contentType = req.ContentType ?? "audio/webm";
+    var ext = contentType.Contains("ogg") ? "ogg" : contentType.Contains("mp4") ? "mp4" : "webm";
+
+    using var ms = new System.IO.MemoryStream();
+    await req.Body.CopyToAsync(ms);
+    ms.Position = 0;
+
+    using var content = new MultipartFormDataContent();
+    var audioContent = new StreamContent(ms);
+    audioContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+    content.Add(audioContent, "file", $"recording.{ext}");
+    content.Add(new StringContent("whisper-1"), "model");
+    content.Add(new StringContent(language), "language");
+
+    var client = factory.CreateClient();
+    using var msg = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/audio/transcriptions");
+    msg.Headers.Add("Authorization", $"Bearer {apiKey}");
+    msg.Content = content;
+    using var resp = await client.SendAsync(msg);
+    res.StatusCode = (int)resp.StatusCode;
+    res.ContentType = resp.Content.Headers.ContentType?.ToString() ?? "application/json";
+    await resp.Content.CopyToAsync(res.Body);
+}).AllowAnonymous();
+
 app.Run();
 
 public partial class Program { }

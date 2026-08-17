@@ -18,7 +18,7 @@ export interface TranscriptMeta {
 type MicState = 'idle' | 'listening' | 'processing';
 
 const FILLER_WORDS = ['um', 'uh', 'like', 'basically', 'literally', 'you know', 'i mean', 'sort of', 'kind of', 'right so'];
-const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net';
+const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
 export const whisperConfigured = true;
 
 function detectFillers(text: string): string[] {

@@ -867,7 +867,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!authToken) return;
-    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net';
+    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
     fetch(`${apiBase}/profile`, { headers: { Authorization: `Bearer ${authToken}` } })
       .then(res => (res.ok ? res.json() : null))
       .then((data: RealProfileFields | null) => { if (data) setReal(data); })

@@ -49,15 +49,14 @@ interface AnswerClip {
   coachingTips: string[];
 }
 
-const OPENAI_KEY = (import.meta.env.VITE_OPENAI_API_KEY ?? '') as string;
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 
 // ── AI Coaching ───────────────────────────────────────────────────────────────
 async function generateProfileCoaching(question: string, answer: string): Promise<string[]> {
-  if (!OPENAI_KEY) return ['Speak naturally and confidently — authenticity is what employers remember most.'];
   try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const res = await fetch(`${API_BASE}/api/ai-proxy`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_KEY}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         temperature: 0.7,

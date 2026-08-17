@@ -22,6 +22,8 @@ type LiveCard  = { color: string; bg: string; border: string; shadow: string; in
 
 interface NewsItem { tag: string; timeAgo: string; headline: string; source: string; color: string }
 
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: "Dashboard" },
   { Icon: User,            label: "My Profile" },
@@ -139,7 +141,7 @@ async function fetchTodaysNews(role: string): Promise<NewsItem[]> {
   const today = getTodayLabel();
 
   try {
-    const res = await fetch("/api/ai-proxy", {
+    const res = await fetch(`${API_BASE}/api/ai-proxy`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

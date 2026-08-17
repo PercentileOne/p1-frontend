@@ -55,7 +55,7 @@ export default function MyInterviewsPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
 
-  const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net';
+  const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
 
   useEffect(() => {
     if (!authToken) return;
