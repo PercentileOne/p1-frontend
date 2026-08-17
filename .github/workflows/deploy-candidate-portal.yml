@@ -40,8 +40,10 @@ jobs:
         env:
           VITE_EXPLAIN_API_URL:     https://explain-global-api.azurewebsites.net
           VITE_OPENAI_API_KEY:      ${{ secrets.VITE_OPENAI_API_KEY }}
-          VITE_ELEVENLABS_API_KEY:  ${{ secrets.VITE_ELEVENLABS_API_KEY }}
-          VITE_ELEVENLABS_VOICE_HR: ${{ secrets.VITE_ELEVENLABS_VOICE_HR }}
+          VITE_ELEVENLABS_API_KEY:    ${{ secrets.VITE_ELEVENLABS_API_KEY }}
+          VITE_ELEVENLABS_VOICE_HR:   ${{ secrets.VITE_ELEVENLABS_VOICE_HR }}
+          VITE_ELEVENLABS_VOICE_TECH: ${{ secrets.VITE_ELEVENLABS_VOICE_TECH }}
+          VITE_ELEVENLABS_VOICE_MIKE: ${{ secrets.VITE_ELEVENLABS_VOICE_MIKE }}
         run: npm run build
 
       - name: Deploy to Azure Static Web Apps
