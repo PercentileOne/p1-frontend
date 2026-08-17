@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import BackToCockpit from "../components/BackToCockpit";
 import { SmallAwardBadge } from "../components/AwardTiles";
+import { useAuthStore } from "../auth/authStore";
 import {
   OWN_PROFILE,
   ALL_INTERESTS,
@@ -839,9 +840,56 @@ function OverviewTab({ profile }: { profile: UserProfile }) {
    MAIN PAGE
    ══════════════════════════════════════════════════════════════ */
 
+const AVATAR_COLORS = ["#6366f1", "#4F8EF7", "#34D399", "#F59E0B", "#EC4899", "#A78BFA"];
+function colorForName(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+}
+function initialsFor(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return (parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '') || '?';
+}
+
+interface RealProfileFields {
+  name?: string;
+  bio?: string;
+  jobTitle?: string;
+  jobRole?: string;
+  company?: string;
+}
+
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const profile = OWN_PROFILE;
+  const authUser = useAuthStore(s => s.user);
+  const authToken = useAuthStore(s => s.token);
+  const [real, setReal] = useState<RealProfileFields | null>(null);
+
+  useEffect(() => {
+    if (!authToken) return;
+    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net';
+    fetch(`${apiBase}/profile`, { headers: { Authorization: `Bearer ${authToken}` } })
+      .then(res => (res.ok ? res.json() : null))
+      .then((data: RealProfileFields | null) => { if (data) setReal(data); })
+      .catch(() => { /* keep showing what we have */ });
+  }, [authToken]);
+
+  // Real identity (name/bio/profession) overlaid on the demo social content
+  // (achievements/walls/groups/posts/stats) — those aren't backed by a real
+  // API yet, so they stay as placeholder content for every account for now.
+  const name = real?.name || authUser?.name || OWN_PROFILE.name;
+  const profession = real?.jobTitle || real?.jobRole || (real ? '' : OWN_PROFILE.profession);
+  const profile: UserProfile = {
+    ...OWN_PROFILE,
+    id: authUser?.id ?? OWN_PROFILE.id,
+    name,
+    initials: initialsFor(name) || OWN_PROFILE.initials,
+    avatarColor: colorForName(name),
+    profession,
+    professionEmoji: profession ? OWN_PROFILE.professionEmoji : '',
+    location: real ? (real.company ?? '') : OWN_PROFILE.location,
+    bio: real ? (real.bio || 'No bio yet — add one from your profile settings.') : OWN_PROFILE.bio,
+  };
   const [tab, setTab] = useState<ProfileTab>("overview");
   const [followed, setFollowed] = useState(false);
 
