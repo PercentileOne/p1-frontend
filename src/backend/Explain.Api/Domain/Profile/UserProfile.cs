@@ -68,6 +68,10 @@ public class UserProfile
 
     public static UserProfile Create(string userId, string firstName, string lastName, string? jobRole = null) => new()
     {
+        // Id must equal UserId — GetProfileHandler always reads by id=userId, and
+        // without this the default `Id = Guid.NewGuid()` orphans the document:
+        // every registration silently created a profile no GET could ever find.
+        Id        = userId,
         UserId    = userId,
         FirstName = firstName,
         LastName  = lastName,

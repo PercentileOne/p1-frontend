@@ -42,8 +42,11 @@ public class UpdateProfileHandler(
         }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            // Create profile if it somehow doesn't exist yet
-            profile = new UserProfile { UserId = cmd.UserId };
+            // Create profile if it somehow doesn't exist yet. Id must equal UserId —
+            // GetProfileHandler always reads by id=userId, and without this the
+            // default `Id = Guid.NewGuid()` orphans a fresh, never-retrievable
+            // document on every single save.
+            profile = new UserProfile { Id = cmd.UserId, UserId = cmd.UserId };
         }
 
         // Apply only the fields the caller sent
