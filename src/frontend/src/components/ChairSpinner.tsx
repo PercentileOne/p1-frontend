@@ -2,12 +2,13 @@ import { motion } from 'framer-motion';
 
 interface ChairSpinnerProps {
   label?: string;
-  size?: number;
+  size?: number; // width in px
 }
 
 export function ChairSpinner({ label, size = 120 }: ChairSpinnerProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '24px 16px' }}>
+      {/* Perspective wrapper — gives the 3D turning-in-chair effect */}
       <div style={{ perspective: '600px' }}>
         <motion.img
           src="/images/mastermind-chair-tight.png"
@@ -23,6 +24,8 @@ export function ChairSpinner({ label, size = 120 }: ChairSpinnerProps) {
           }}
         />
       </div>
+
+      {/* Subtle ground shadow — moves with the chair turn */}
       <motion.div
         animate={{ scaleX: [0.7, 1, 0.7], opacity: [0.25, 0.15, 0.25] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
@@ -35,6 +38,7 @@ export function ChairSpinner({ label, size = 120 }: ChairSpinnerProps) {
           marginTop: -8,
         }}
       />
+
       {label && (
         <motion.div
           animate={{ opacity: [0.5, 1, 0.5] }}

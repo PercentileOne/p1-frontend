@@ -2,8 +2,8 @@ import type { ScoreResponse, InterviewQuestion } from '../api/explainApi';
 import type { CVContext, JobSpecContext } from './contextBuilder';
 
 export interface CoachingMessage {
-  lines: string[];
-  fullText: string;
+  lines: string[];   // spoken sequentially
+  fullText: string;  // joined for display
   tone: 'strong' | 'encourage' | 'delivery' | 'relevance';
 }
 
@@ -23,18 +23,24 @@ export function generateCoachingMessage(
   const depth = score.depth ?? 0.55;
 
   const company = cvCtx?.companies?.[0] ?? 'your previous role';
+
+  // Trim achievement to a short readable phrase — strip bullet chars, cap at 60 chars
   const rawAch = cvCtx?.achievements?.[0] ?? '';
   const achievement = rawAch
     ? rawAch.replace(/^[-•*]\s*/, '').split(/[.,]/)[0].trim().slice(0, 60)
     : 'that example';
 
+  // Distil the job spec into a short role label, not raw sentence text
   const jobTitle = jobCtx?.title
     ? jobCtx.title.replace(/^(we are|we're|seeking|looking for)\s+/i, '').trim().slice(0, 50)
     : 'this role';
   const topSkill = jobCtx?.requiredSkills?.[0] ?? jobCtx?.techStack?.[0] ?? null;
+
+  // Without a job spec we can't meaningfully judge relevance
   const hasJobContext = !!(jobCtx?.title || jobCtx?.requiredSkills?.length);
 
   if (overall >= 0.70) {
+    // Strong answer
     tone = 'strong';
     lines.push(`That was a really strong answer — especially the part about ${achievement}.`);
     if (depth < 0.65) {
@@ -43,10 +49,12 @@ export function generateCoachingMessage(
       lines.push(`The depth and specificity you showed there is exactly what interviewers are looking for.`);
     }
   } else if (confidence < 0.45) {
+    // Weak delivery
     tone = 'delivery';
     lines.push(`Your content was actually solid — but your delivery felt a little hesitant.`);
     lines.push(`Try speaking a little slower, and put more weight on your key points. Confidence is contagious — own what you know.`);
   } else if (relevance < 0.45 && hasJobContext) {
+    // Off-topic — only flag this when we actually have a job spec to compare against
     tone = 'relevance';
     lines.push(`This one didn't quite land as well as it could.`);
     const answerLower = answerText.toLowerCase();
@@ -59,6 +67,7 @@ export function generateCoachingMessage(
       lines.push(`Try connecting your experience more directly to the ${jobTitle} requirements — show the interviewer exactly how what you've done maps to what they need.`);
     }
   } else {
+    // Moderate — needs more depth
     tone = 'encourage';
     lines.push(`Good start — you covered the basics, but there's room to go deeper.`);
     const answerLower = answerText.toLowerCase();
@@ -73,6 +82,8 @@ export function generateCoachingMessage(
     }
   }
 
+  // Closing line — always the same warm sign-off
   lines.push(`Okay… back to your interview. You're doing great.`);
+
   return { lines, fullText: lines.join(' '), tone };
 }

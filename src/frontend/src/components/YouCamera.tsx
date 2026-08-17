@@ -18,6 +18,7 @@ function MicWaveform({ speaking, analyserNode }: { speaking: boolean; analyserNo
   useEffect(() => {
     cancelAnimationFrame(rafRef.current);
     if (!speaking) { setHeights(Array(BAR_COUNT).fill(0.08)); return; }
+
     if (analyserNode) {
       const bufLen = analyserNode.frequencyBinCount;
       dataRef.current = new Uint8Array(bufLen);
@@ -32,6 +33,8 @@ function MicWaveform({ speaking, analyserNode }: { speaking: boolean; analyserNo
       rafRef.current = requestAnimationFrame(tick);
       return () => cancelAnimationFrame(rafRef.current);
     }
+
+    // Fallback: simple speaking pulse when no analyser
     const id = setInterval(() => {
       setHeights(Array.from({ length: BAR_COUNT }, () => 0.2 + Math.random() * 0.7));
     }, 80);
@@ -41,8 +44,16 @@ function MicWaveform({ speaking, analyserNode }: { speaking: boolean; analyserNo
   return (
     <div style={{ display: 'flex', gap: '2px', alignItems: 'center', height: '28px' }}>
       {heights.map((h, i) => (
-        <motion.div key={i} animate={{ scaleY: speaking ? h : 0.08 }} transition={{ duration: 0.05, ease: 'linear' }}
-          style={{ width: '3px', height: '100%', background: speaking ? '#34D399' : 'rgba(255,255,255,0.10)', borderRadius: '2px', transformOrigin: 'center' }} />
+        <motion.div
+          key={i}
+          animate={{ scaleY: speaking ? h : 0.08 }}
+          transition={{ duration: 0.05, ease: 'linear' }}
+          style={{
+            width: '3px', height: '100%',
+            background: speaking ? '#34D399' : 'rgba(255,255,255,0.10)',
+            borderRadius: '2px', transformOrigin: 'center',
+          }}
+        />
       ))}
     </div>
   );
@@ -56,6 +67,7 @@ export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle 
   const [camState, setCamState] = useState<'requesting' | 'active' | 'denied'>('requesting');
   const [micReady, setMicReady] = useState(false);
 
+  // Request camera + mic together so we get real audio levels
   useEffect(() => {
     let mounted = true;
     navigator.mediaDevices
@@ -65,6 +77,8 @@ export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle 
         streamRef.current = stream;
         if (videoRef.current) videoRef.current.srcObject = stream;
         setCamState('active');
+
+        // Wire mic to AnalyserNode for live waveform
         try {
           const ctx = new AudioContext();
           audioCtxRef.current = ctx;
@@ -73,11 +87,13 @@ export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle 
           analyser.fftSize = 64;
           analyser.smoothingTimeConstant = 0.7;
           source.connect(analyser);
+          // Do NOT connect analyser to destination — we don't want mic playback
           micAnalyserRef.current = analyser;
           setMicReady(true);
         } catch { /* Web Audio unavailable */ }
       })
       .catch(() => { if (mounted) setCamState('denied'); });
+
     return () => {
       mounted = false;
       streamRef.current?.getTracks().forEach(t => t.stop());
@@ -85,38 +101,70 @@ export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle 
     };
   }, []);
 
+  // Enable/disable video track when cameraOn changes
   useEffect(() => {
     const track = streamRef.current?.getVideoTracks()[0];
     if (track) track.enabled = cameraOn;
   }, [cameraOn]);
 
+  // Resume AudioContext on user interaction (browser autoplay policy)
   useEffect(() => {
-    if (speaking && audioCtxRef.current?.state === 'suspended') audioCtxRef.current.resume();
+    if (speaking && audioCtxRef.current?.state === 'suspended') {
+      audioCtxRef.current.resume();
+    }
   }, [speaking]);
 
   const showVideo = camState === 'active' && cameraOn;
 
   return (
-    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4 }}
       style={{
-        width: '160px', flexShrink: 0, background: '#0a0a12', borderRadius: '16px',
+        width: '160px', flexShrink: 0,
+        background: '#0a0a12',
+        borderRadius: '16px',
         border: `1px solid ${speaking ? 'rgba(52,211,153,0.55)' : 'rgba(255,255,255,0.06)'}`,
         boxShadow: speaking ? '0 0 0 2px rgba(52,211,153,0.20)' : 'none',
-        overflow: 'hidden', position: 'relative', minHeight: '120px',
+        overflow: 'hidden',
+        position: 'relative',
+        minHeight: '120px',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'border-color 0.15s, box-shadow 0.15s',
       }}
     >
-      <video ref={videoRef} autoPlay playsInline muted
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)', opacity: showVideo ? 1 : 0, transition: 'opacity 0.3s' }} />
+      {/* Live webcam feed */}
+      <video
+        ref={videoRef}
+        autoPlay playsInline muted
+        style={{
+          position: 'absolute', inset: 0,
+          width: '100%', height: '100%',
+          objectFit: 'cover',
+          transform: 'scaleX(-1)',
+          opacity: showVideo ? 1 : 0,
+          transition: 'opacity 0.3s',
+        }}
+      />
 
+      {/* Camera off — empty chair */}
       <AnimatePresence>
         {!showVideo && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
-            style={{ position: 'absolute', inset: 0 }}>
-            <img src="/images/mastermind-chair.png" alt=""
-              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center bottom', opacity: 0.7 }} />
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg, rgba(5,8,20,0.5) 0%, rgba(5,8,20,0.2) 100%)' }} />
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            style={{ position: 'absolute', inset: 0 }}
+          >
+            <img
+              src="/images/mastermind-chair.png"
+              alt=""
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center bottom', opacity: 0.7 }}
+            />
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(160deg, rgba(5,8,20,0.5) 0%, rgba(5,8,20,0.2) 100%)',
+            }} />
             {camState === 'denied' && (
               <div style={{ position: 'absolute', bottom: 32, left: 0, right: 0, textAlign: 'center', fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                 No camera
@@ -126,8 +174,10 @@ export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle 
         )}
       </AnimatePresence>
 
+      {/* Bottom vignette */}
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 55%)', pointerEvents: 'none' }} />
 
+      {/* Name + mic waveform / status */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 12px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>{label}</div>
@@ -137,17 +187,25 @@ export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle 
             </div>
           )}
         </div>
-        {speaking && <MicWaveform speaking={speaking} analyserNode={micReady ? micAnalyserRef.current : null} />}
+        {/* Live mic waveform when it's the user's turn */}
+        {speaking && (
+          <MicWaveform speaking={speaking} analyserNode={micReady ? micAnalyserRef.current : null} />
+        )}
       </div>
 
+      {/* Camera toggle button */}
       {camState === 'active' && (
-        <button onClick={onToggle} title={cameraOn ? 'Turn camera off' : 'Turn camera on'}
+        <button
+          onClick={onToggle}
+          title={cameraOn ? 'Turn camera off' : 'Turn camera on'}
           style={{
             position: 'absolute', top: '8px', right: '8px',
             background: cameraOn ? 'rgba(0,0,0,0.6)' : 'rgba(239,68,68,0.9)',
             border: `2px solid ${cameraOn ? 'rgba(255,255,255,0.25)' : '#ef4444'}`,
-            borderRadius: '10px', padding: '7px 10px', cursor: 'pointer', backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', gap: '5px', transition: 'all 0.2s',
+            borderRadius: '10px', padding: '7px 10px',
+            cursor: 'pointer', backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', gap: '5px',
+            transition: 'all 0.2s',
             boxShadow: cameraOn ? 'none' : '0 0 12px rgba(239,68,68,0.5)',
           }}
         >

@@ -37,8 +37,10 @@ async function transcribeWithWhisper(blob: Blob, _durationSeconds: number): Prom
   form.append('file', blob, `recording.${ext}`);
   form.append('model', 'whisper-1');
   form.append('language', 'en');
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 20_000);
+
   try {
     const res = await fetch(`${API_BASE}/api/ai/transcribe?language=en`, {
       method: 'POST',
@@ -68,7 +70,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
   const animFrameRef = useRef<number>(0);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const interimRef = useRef('');
+  const interimRef = useRef('');   // mirror of interim state for use in callbacks
 
   const animateBars = useCallback(() => {
     if (analyserRef.current) {
@@ -92,12 +94,14 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
 
   const startListening = useCallback(async () => {
     if (disabled || micState !== 'idle') return;
+
     setMicState('listening');
     setInterim('');
     interimRef.current = '';
     chunksRef.current = [];
     startTimeRef.current = Date.now();
 
+    // ── Mic stream ───────────────────────────────────────────────────────────
     let stream: MediaStream | null = null;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -108,10 +112,11 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
       analyser.fftSize = 256;
       source.connect(analyser);
       analyserRef.current = analyser;
-    } catch { /* no mic access */ }
+    } catch { /* no mic access — use fake waveform */ }
 
     animFrameRef.current = requestAnimationFrame(animateBars);
 
+    // ── MediaRecorder (for Whisper) ───────────────────────────────────────────
     if (stream && whisperConfigured) {
       const mimeType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg', 'audio/mp4']
         .find(t => MediaRecorder.isTypeSupported(t)) ?? '';
@@ -121,6 +126,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
       recorderRef.current = recorder;
     }
 
+    // ── Web Speech API (live interim preview) ────────────────────────────────
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const SpeechRec = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
     if (SpeechRec) {
@@ -129,6 +135,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
       recognition.interimResults = true;
       recognition.lang = 'en-GB';
       recognitionRef.current = recognition;
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onresult = (e: any) => {
         let interimText = '';
@@ -138,7 +145,10 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
           if (e.results[i].isFinal) finalText += t + ' ';
           else interimText += t;
         }
-        if (interimText) { setInterim(interimText); onInterimTranscript?.(interimText); }
+        if (interimText) {
+          setInterim(interimText);
+          onInterimTranscript?.(interimText);
+        }
         if (finalText) {
           const updated = (interimRef.current + ' ' + finalText).trim();
           interimRef.current = updated;
@@ -155,6 +165,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
     recognitionRef.current?.stop();
     recognitionRef.current = null;
     setMicState('processing');
+
     const duration = (Date.now() - startTimeRef.current) / 1000;
     const fallbackText = interimRef.current.trim();
     const recorder = recorderRef.current;
@@ -163,15 +174,22 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
     const finish = async () => {
       let text = fallbackText;
       let confidence = 0.78;
+
       if (whisperConfigured && recorder) {
         setProcessingLabel('Transcribing with Whisper…');
         try {
+          // Stop recorder FIRST so it finalises and fires ondataavailable
           await new Promise<void>(resolve => {
             recorder.onstop = () => resolve();
-            if (recorder.state !== 'inactive') recorder.stop();
-            else resolve();
+            if (recorder.state !== 'inactive') {
+              recorder.stop();
+            } else {
+              resolve();
+            }
           });
+          // Now safe to kill the stream
           stopMic();
+
           if (chunksRef.current.length > 0) {
             const mimeType = chunksRef.current[0]?.type ?? 'audio/webm';
             const blob = new Blob(chunksRef.current, { type: mimeType });
@@ -181,12 +199,16 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
           }
         } catch {
           stopMic();
+          // Fall back to Web Speech transcript silently
         }
       } else {
         if (recorder?.state !== 'inactive') recorder?.stop();
         stopMic();
       }
+
       setProcessingLabel('Processing…');
+
+      // Always fire onTranscript — use fallback text if Whisper gave nothing
       const finalText = text || fallbackText;
       setInterim('');
       interimRef.current = '';
@@ -202,6 +224,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
         onTranscript(finalText, meta);
       }
     };
+
     finish();
   }, [onTranscript, stopMic]);
 
@@ -219,9 +242,13 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      {/* Your turn prompt — shown only when idle and ready to answer */}
       {micState === 'idle' && (
-        <motion.div animate={{ opacity: [0.7, 1, 0.7] }} transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-          style={{ display: 'inline-flex', alignSelf: 'flex-start', alignItems: 'center', gap: '8px', background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.25)', borderRadius: '8px', padding: '6px 12px' }}>
+        <motion.div
+          animate={{ opacity: [0.7, 1, 0.7] }}
+          transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+          style={{ display: 'inline-flex', alignSelf: 'flex-start', alignItems: 'center', gap: '8px', background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.25)', borderRadius: '8px', padding: '6px 12px' }}
+        >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
             <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" fill="#4F8EF7"/>
             <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M9 22h6" stroke="#4F8EF7" strokeWidth="1.8" strokeLinecap="round"/>
@@ -230,28 +257,44 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
         </motion.div>
       )}
 
+      {/* Waveform + mic button row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div style={{ position: 'relative', flexShrink: 0, width: '56px', height: '56px' }}>
           {!isListening && !isProcessing && (
             <>
-              <motion.div animate={{ scale: [1, 1.8], opacity: [0.6, 0] }} transition={{ repeat: Infinity, duration: 1.4, ease: 'easeOut' }}
-                style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(79,142,247,0.5)', pointerEvents: 'none' }} />
-              <motion.div animate={{ scale: [1, 1.5], opacity: [0.4, 0] }} transition={{ repeat: Infinity, duration: 1.4, delay: 0.35, ease: 'easeOut' }}
-                style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(79,142,247,0.35)', pointerEvents: 'none' }} />
+              <motion.div
+                animate={{ scale: [1, 1.8], opacity: [0.6, 0] }}
+                transition={{ repeat: Infinity, duration: 1.4, ease: 'easeOut' }}
+                style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(79,142,247,0.5)', pointerEvents: 'none' }}
+              />
+              <motion.div
+                animate={{ scale: [1, 1.5], opacity: [0.4, 0] }}
+                transition={{ repeat: Infinity, duration: 1.4, delay: 0.35, ease: 'easeOut' }}
+                style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(79,142,247,0.35)', pointerEvents: 'none' }}
+              />
             </>
           )}
-          <motion.button onClick={isListening ? stopListening : startListening}
-            disabled={disabled || isProcessing} whileTap={{ scale: 0.92 }}
+          <motion.button
+            onClick={isListening ? stopListening : startListening}
+            disabled={disabled || isProcessing}
+            whileTap={{ scale: 0.92 }}
             style={{
-              position: 'relative', zIndex: 1, width: '56px', height: '56px', borderRadius: '50%', border: 'none',
+              position: 'relative', zIndex: 1,
+              width: '56px', height: '56px', borderRadius: '50%', border: 'none',
               cursor: disabled || isProcessing ? 'default' : 'pointer',
-              background: isListening ? 'linear-gradient(135deg,#EF4444,#dc2626)' : 'linear-gradient(135deg,#4F8EF7,#2563eb)',
+              background: isListening
+                ? 'linear-gradient(135deg,#EF4444,#dc2626)'
+                : 'linear-gradient(135deg,#4F8EF7,#2563eb)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: isListening ? '0 0 20px rgba(239,68,68,0.4)' : highlightRecord ? '0 0 28px rgba(79,142,247,0.7)' : '0 0 16px rgba(79,142,247,0.3)',
-              transition: 'background 0.3s, box-shadow 0.3s', opacity: disabled || isProcessing ? 0.5 : 1,
-            }}>
+              transition: 'background 0.3s, box-shadow 0.3s',
+              opacity: disabled || isProcessing ? 0.5 : 1,
+            }}
+          >
             {isListening ? (
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="#fff"/></svg>
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                <rect x="6" y="6" width="12" height="12" rx="2" fill="#fff"/>
+              </svg>
             ) : (
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
                 <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" fill="#fff"/>
@@ -261,13 +304,23 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
           </motion.button>
         </div>
 
+        {/* Waveform */}
         <div style={{ flex: 1, height: '48px', display: 'flex', alignItems: 'center', gap: '2px', overflow: 'hidden' }}>
           {barHeights.map((h, i) => (
-            <motion.div key={i} animate={{ scaleY: isListening ? h : 0.08 }} transition={{ duration: 0.1 }}
-              style={{ flex: 1, height: '100%', background: isListening ? `rgba(79,142,247,${0.4 + h * 0.6})` : 'rgba(255,255,255,0.08)', borderRadius: '2px', transformOrigin: 'center' }} />
+            <motion.div
+              key={i}
+              animate={{ scaleY: isListening ? h : 0.08 }}
+              transition={{ duration: 0.1 }}
+              style={{
+                flex: 1, height: '100%',
+                background: isListening ? `rgba(79,142,247,${0.4 + h * 0.6})` : 'rgba(255,255,255,0.08)',
+                borderRadius: '2px', transformOrigin: 'center',
+              }}
+            />
           ))}
         </div>
 
+        {/* Status */}
         <div style={{ minWidth: '90px', textAlign: 'right' }}>
           <AnimatePresence mode="wait">
             {isListening && (
@@ -280,7 +333,9 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
             )}
             {isProcessing && (
               <motion.div key="p" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                style={{ fontSize: '12px', fontWeight: 700, color: 'var(--amber)' }}>{processingLabel}</motion.div>
+                style={{ fontSize: '12px', fontWeight: 700, color: 'var(--amber)' }}>
+                {processingLabel}
+              </motion.div>
             )}
             {micState === 'idle' && (
               <motion.div key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -290,10 +345,18 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
         </div>
       </div>
 
+      {/* Live interim preview */}
       <AnimatePresence>
         {interim && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden' }}>
-            <div style={{ background: 'rgba(79,142,247,0.06)', border: '1px solid rgba(79,142,247,0.15)', borderRadius: '10px', padding: '12px 14px', fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.6, fontStyle: 'italic' }}>
+          <motion.div
+            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div style={{
+              background: 'rgba(79,142,247,0.06)', border: '1px solid rgba(79,142,247,0.15)',
+              borderRadius: '10px', padding: '12px 14px',
+              fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.6, fontStyle: 'italic',
+            }}>
               {interim}
               <motion.span animate={{ opacity: [1, 0] }} transition={{ repeat: Infinity, duration: 0.8 }}
                 style={{ display: 'inline-block', width: '2px', height: '14px', background: 'var(--blue)', marginLeft: '3px', verticalAlign: 'text-bottom' }} />
