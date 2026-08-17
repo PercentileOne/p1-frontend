@@ -573,15 +573,47 @@ function buildQuestionsFromCourse(course: Course, focusLecture?: Lecture): Inter
   });
 }
 
-function CourseView({ course, onBack }: { course: Course; onBack: () => void }) {
+function CourseView({ course, onBack, onUpdateCourse }: { course: Course; onBack: () => void; onUpdateCourse: (course: Course) => void }) {
   const navigate = useNavigate();
   const [expandedModule, setExpandedModule] = useState<number>(1);
   const [activeLecture, setActiveLecture] = useState<{ module: Module; lecture: Lecture } | null>(() => {
     const firstLecture = course.modules[0]?.lectures[0];
     return firstLecture ? { module: course.modules[0], lecture: firstLecture } : null;
   });
+  const [retryingModule, setRetryingModule] = useState<number | null>(null);
   const { accent, bg } = catStyle(course.category);
   const mins = totalMinutes(course);
+
+  async function retryModule(modNumber: number) {
+    const modIndex = course.modules.findIndex(m => m.number === modNumber);
+    if (modIndex === -1) return;
+    setRetryingModule(modNumber);
+    let lectures: Lecture[] | null = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 2000));
+        lectures = await generateModuleLectures(course.title, course.modules[modIndex], course.level);
+        break;
+      } catch (e) {
+        console.warn(`[LearnEngine] Retry module ${modNumber} attempt ${attempt + 1} failed:`, e);
+      }
+    }
+    const updatedModules = [...course.modules];
+    updatedModules[modIndex] = { ...updatedModules[modIndex], lectures: lectures ?? [], loading: false };
+    const updated = { ...course, modules: updatedModules };
+    onUpdateCourse(updated);
+    setRetryingModule(null);
+
+    // Push the corrected course back to the platform cache so it stops
+    // serving the previously-broken snapshot to other users.
+    if (lectures) {
+      fetch('/api/courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: course.title, level: course.level, course: updated }),
+      }).catch(() => { /* non-critical */ });
+    }
+  }
 
   // Auto-select first lecture once Module 1's content arrives (progressive load)
   useEffect(() => {
@@ -671,7 +703,9 @@ function CourseView({ course, onBack }: { course: Course; onBack: () => void }) 
                     <div style={{ fontSize: 11, fontWeight: 700, color: isExpanded ? BLUE : TEXT2 }}>
                       Module {mod.number}
                     </div>
-                    <div style={{ fontSize: 10, color: TEXT3 }}>{mod.loading ? '…' : fmtHours(modMins)}</div>
+                    <div style={{ fontSize: 10, color: !mod.loading && mod.lectures.length === 0 ? '#F87171' : TEXT3 }}>
+                      {mod.loading ? '…' : mod.lectures.length === 0 ? 'Failed' : fmtHours(modMins)}
+                    </div>
                   </div>
                   <div style={{ fontSize: 12, color: isExpanded ? TEXT1 : TEXT2, lineHeight: 1.4, fontWeight: isExpanded ? 600 : 400 }}>
                     {mod.title}
@@ -687,7 +721,30 @@ function CourseView({ course, onBack }: { course: Course; onBack: () => void }) 
                     </div>
                   </div>
                 )}
-                {isExpanded && !mod.loading && mod.lectures.map(lec => {
+
+                {/* Failed to generate — offer retry instead of leaving it silently empty */}
+                {isExpanded && !mod.loading && mod.lectures.length === 0 && (
+                  <div style={{ padding: '12px 16px 12px 28px', borderBottom: `1px solid ${BORDER}` }}>
+                    <div style={{ fontSize: 12, color: '#F87171', marginBottom: 8 }}>
+                      This module failed to generate.
+                    </div>
+                    <button
+                      onClick={() => retryModule(mod.number)}
+                      disabled={retryingModule === mod.number}
+                      style={{
+                        background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)',
+                        borderRadius: 8, color: retryingModule === mod.number ? TEXT3 : '#F87171',
+                        fontSize: 11, fontWeight: 700, padding: '6px 12px',
+                        cursor: retryingModule === mod.number ? 'default' : 'pointer',
+                        display: 'flex', alignItems: 'center', gap: 6,
+                      }}>
+                      {retryingModule === mod.number ? (
+                        <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⟳</span> Retrying…</>
+                      ) : '↻ Retry'}
+                    </button>
+                  </div>
+                )}
+                {isExpanded && !mod.loading && mod.lectures.length > 0 && mod.lectures.map(lec => {
                   const isActive = activeLecture?.lecture.number === lec.number && activeLecture.module.number === mod.number;
                   return (
                     <div
@@ -859,8 +916,8 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
       const filled = { ...skeleton, modules: [...skeletonModules] };
       for (let i = 0; i < outline.modules.length; i++) {
         let lectures: Lecture[] | null = null;
-        // Two attempts per module — GPT occasionally returns malformed JSON on first try
-        for (let attempt = 0; attempt < 2; attempt++) {
+        // Three attempts per module — GPT occasionally returns malformed JSON
+        for (let attempt = 0; attempt < 3; attempt++) {
           try {
             if (attempt > 0) await new Promise(r => setTimeout(r, 2000));
             lectures = await generateModuleLectures(outline.title, outline.modules[i], level);
@@ -873,14 +930,19 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
         setActiveCourse({ ...filled, modules: [...filled.modules] });
       }
 
-      // All done — save complete course
+      // All done — save complete course locally regardless of per-module failures,
+      // but only push to the shared platform cache if every module actually generated —
+      // a partial course must never be cached, since every future viewer would be
+      // served that same broken snapshot for the full 2-day Cosmos TTL.
       saveCourse(filled);
       setSavedCourses(loadCourses());
-      fetch('/api/courses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: t, level, course: filled }),
-      }).catch(() => { /* non-critical */ });
+      if (filled.modules.every(m => m.lectures.length > 0)) {
+        fetch('/api/courses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: t, level, course: filled }),
+        }).catch(() => { /* non-critical */ });
+      }
     } catch (e) {
       setError('Course generation failed — please try again. Check your OpenAI balance if the error persists.');
       setGenerating(false);
@@ -889,7 +951,17 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
 
   // ── Course view ──
   if (activeCourse) {
-    return <CourseView course={activeCourse} onBack={() => setActiveCourse(null)} />;
+    return (
+      <CourseView
+        course={activeCourse}
+        onBack={() => setActiveCourse(null)}
+        onUpdateCourse={(updated) => {
+          setActiveCourse(updated);
+          saveCourse(updated);
+          setSavedCourses(loadCourses());
+        }}
+      />
+    );
   }
 
   // ── Generating state ──
