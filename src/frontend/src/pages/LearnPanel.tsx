@@ -576,12 +576,20 @@ function buildQuestionsFromCourse(course: Course, focusLecture?: Lecture): Inter
 function CourseView({ course, onBack }: { course: Course; onBack: () => void }) {
   const navigate = useNavigate();
   const [expandedModule, setExpandedModule] = useState<number>(1);
-  const [activeLecture, setActiveLecture] = useState<{ module: Module; lecture: Lecture } | null>(() => ({
-    module: course.modules[0],
-    lecture: course.modules[0].lectures[0],
-  }));
+  const [activeLecture, setActiveLecture] = useState<{ module: Module; lecture: Lecture } | null>(() => {
+    const firstLecture = course.modules[0]?.lectures[0];
+    return firstLecture ? { module: course.modules[0], lecture: firstLecture } : null;
+  });
   const { accent, bg } = catStyle(course.category);
   const mins = totalMinutes(course);
+
+  // Auto-select first lecture once Module 1's content arrives (progressive load)
+  useEffect(() => {
+    if (!activeLecture) {
+      const firstLecture = course.modules[0]?.lectures[0];
+      if (firstLecture) setActiveLecture({ module: course.modules[0], lecture: firstLecture });
+    }
+  }, [course.modules[0]?.lectures[0]]);
 
   function handlePractice(question: string, lecture?: Lecture) {
     const questions = question && lecture
@@ -719,8 +727,15 @@ function CourseView({ course, onBack }: { course: Course; onBack: () => void }) 
               onPractice={handlePractice}
             />
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: TEXT3 }}>
-              Select a lecture to begin
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, color: TEXT3 }}>
+              {course.modules[0]?.loading ? (
+                <>
+                  <span style={{ fontSize: 28, animation: 'spin 1.2s linear infinite', display: 'inline-block' }}>⟳</span>
+                  <div style={{ fontSize: 14 }}>Writing Module 1 lectures…</div>
+                </>
+              ) : (
+                <div style={{ fontSize: 14 }}>Select a lecture to begin</div>
+              )}
             </div>
           )}
         </div>
