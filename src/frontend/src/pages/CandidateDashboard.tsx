@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import LearnPanel from "./LearnPanel";
 import CareersPanel from "./CareersPanel";
+import MyInterviewsPage from "./MyInterviewsPage";
 
 /* ══════════════════════════════════════════════════════════════
    CANDIDATE DASHBOARD — cockpit-grade portal for InterviewMe.global
@@ -256,7 +257,6 @@ export default function CandidateDashboard() {
   function navTo(label: string) {
     const routes: Record<string, string> = {
       "My Profile": "/profile",
-      "My Interviews": "/interviews",
       "Jobs":       "/jobs",
       "Messages":   "/messages",
       "Settings":   "/settings",
@@ -372,10 +372,11 @@ export default function CandidateDashboard() {
         </div>
 
         {/* ── PANEL OVERRIDES ── */}
-        {activeNav === "Learn"    && <LearnPanel />}
-        {activeNav === "Careers"  && <CareersPanel />}
+        {activeNav === "Learn"        && <LearnPanel />}
+        {activeNav === "Careers"      && <CareersPanel />}
+        {activeNav === "My Interviews" && <MyInterviewsPage />}
 
-        {activeNav !== "Learn" && activeNav !== "Careers" && <>
+        {activeNav !== "Learn" && activeNav !== "Careers" && activeNav !== "My Interviews" && <>
 
         {/* ── STATS ROW ── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>
