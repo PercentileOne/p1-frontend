@@ -217,7 +217,7 @@ Return a JSON array of exactly 4 lectures:
 
 Lecture types: "lesson" for most, "practice" for one hands-on exercise, "quiz" for one knowledge check.`,
     },
-  ], 3500);
+  ], 5000);
 
   const parsed = JSON.parse(raw) as Lecture[];
   if (!Array.isArray(parsed) || !parsed.length) throw new Error('No lectures parsed');
@@ -858,15 +858,19 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
       // Phase 2: fill each module's lectures sequentially in the background
       const filled = { ...skeleton, modules: [...skeletonModules] };
       for (let i = 0; i < outline.modules.length; i++) {
-        try {
-          const lectures = await generateModuleLectures(outline.title, outline.modules[i], level);
-          filled.modules[i] = { ...filled.modules[i], lectures, loading: false };
-          // Update state after each module so UI reveals immediately
-          setActiveCourse({ ...filled, modules: [...filled.modules] });
-        } catch {
-          filled.modules[i] = { ...filled.modules[i], loading: false };
-          setActiveCourse({ ...filled, modules: [...filled.modules] });
+        let lectures: Lecture[] | null = null;
+        // Two attempts per module — GPT occasionally returns malformed JSON on first try
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            if (attempt > 0) await new Promise(r => setTimeout(r, 2000));
+            lectures = await generateModuleLectures(outline.title, outline.modules[i], level);
+            break;
+          } catch (e) {
+            console.warn(`[LearnEngine] Module ${i + 1} attempt ${attempt + 1} failed:`, e);
+          }
         }
+        filled.modules[i] = { ...filled.modules[i], lectures: lectures ?? [], loading: false };
+        setActiveCourse({ ...filled, modules: [...filled.modules] });
       }
 
       // All done — save complete course
