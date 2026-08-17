@@ -45,6 +45,7 @@ interface Lecture {
   interviewQuestions: string[];
   codeSamples?: CodeSample[];
   diagrams?: Diagram[];
+  solutionCode?: CodeSample;
 }
 
 interface Module {
@@ -234,7 +235,8 @@ Return a JSON array of exactly 4 lectures:
     ],
     "diagrams": [
       { "mermaid": "valid Mermaid.js syntax. For CODING: flowchart, sequence, or state diagram of the logic/architecture. For MATHS: represent the relationship structurally with a flowchart or graph TD (e.g. a number line, a decision tree, steps of a proof) — Mermaid can't plot continuous functions, so describe the concept's structure instead. For ELECTRONICS: a block/flow diagram of signal or data flow.", "caption": "one-line caption" }
-    ]
+    ],
+    "solutionCode": { "language": "typescript", "code": "ONLY for type=\"practice\" on a coding/electronics/maths-heavy topic: a complete, correct, runnable reference solution to the exercise described in content — not a fragment, the whole thing, so the learner can compare it against what they built. Omit this field entirely for non-practice lectures or non-technical subjects.", "caption": "Reference solution" }
   }
 ]
 
@@ -478,6 +480,38 @@ function DiagramBlock({ diagram }: { diagram: Diagram }) {
   );
 }
 
+// ── Reference solution reveal (practice exercises) ─────────────────────────────
+
+function SolutionReveal({ sample }: { sample: CodeSample }) {
+  const [revealed, setRevealed] = useState(false);
+  return (
+    <div style={{
+      margin: '0 0 24px', borderRadius: 12, overflow: 'hidden',
+      border: '1px solid rgba(52,211,153,0.25)', background: 'rgba(52,211,153,0.04)',
+    }}>
+      <button
+        onClick={() => setRevealed(v => !v)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '14px 20px', background: 'none', border: 'none', cursor: 'pointer',
+        }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: GREEN, display: 'flex', alignItems: 'center', gap: 8 }}>
+          ✅ {revealed ? 'Hide Reference Solution' : 'Compare to Reference Solution'}
+        </span>
+        <span style={{ fontSize: 12, color: GREEN, transform: revealed ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>▾</span>
+      </button>
+      {revealed && (
+        <div style={{ padding: '0 16px 16px' }}>
+          <div style={{ fontSize: 12, color: TEXT3, marginBottom: 10 }}>
+            Built it a different way? That's fine — this is one correct approach, not the only one.
+          </div>
+          <CodeBlock sample={sample} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Lecture content renderer ───────────────────────────────────────────────────
 
 function LectureView({ lecture, courseTitle, onPractice }: { lecture: Lecture; courseTitle: string; onPractice: (q: string, lecture?: Lecture) => void }) {
@@ -543,6 +577,11 @@ function LectureView({ lecture, courseTitle, onPractice }: { lecture: Lecture; c
           );
         })()}
       </div>
+
+      {/* Reference solution — hidden by default so it doesn't spoil the exercise */}
+      {lecture.type === 'practice' && lecture.solutionCode && (
+        <SolutionReveal sample={lecture.solutionCode} />
+      )}
 
       {/* Key takeaways */}
       {lecture.keyTakeaways?.length > 0 && (
