@@ -91,6 +91,14 @@ async function speakElevenLabs(
   volume = 1.0,
   onAnalyser?: (a: AnalyserNode) => void,
 ): Promise<() => void> {
+  // Resume the AudioContext FIRST — as the very first await, before any network
+  // call — so the browser still considers it part of the click that got us here.
+  // Doing this after fetch()/blob() means the resume() often lands too late for
+  // the browser to honour it as "within" the user gesture, silently staying
+  // suspended and forcing the robotic Web Speech fallback.
+  const ctx = await getAudioContext();
+  if (ctx.state !== 'running') throw new Error('AudioContext suspended — no user gesture');
+
   const res = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
     {
@@ -113,8 +121,6 @@ async function speakElevenLabs(
   if (blob.size < 100) throw new Error('ElevenLabs returned empty audio');
   const url  = URL.createObjectURL(blob);
 
-  const ctx = await getAudioContext();
-  if (ctx.state !== 'running') throw new Error('AudioContext suspended — no user gesture');
   const arrayBuffer = await blob.arrayBuffer();
   URL.revokeObjectURL(url);
   const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
