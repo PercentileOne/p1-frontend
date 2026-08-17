@@ -113,46 +113,50 @@ async function speakElevenLabs(
   if (blob.size < 100) throw new Error('ElevenLabs returned empty audio');
   const url  = URL.createObjectURL(blob);
 
-  const audio = new Audio();
-  // crossOrigin only needed when wiring an AudioContext analyser — setting it on
-  // a blob URL without an analyser can cause playback to fail in some browsers
-  if (onAnalyser) audio.crossOrigin = 'anonymous';
-  audio.src = url;
-  audio.volume = volume;
+  // Always decode through the shared AudioContext so playback works even on the
+  // summary page where no recent user gesture has unlocked the <audio> autoplay
+  // policy. The AudioContext is unlocked during the interview and stays unlocked
+  // for the lifetime of the tab, so this path never triggers the autoplay block.
+  const ctx = getAudioContext();
+  const arrayBuffer = await blob.arrayBuffer();
+  URL.revokeObjectURL(url);
+  const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
 
-  // Wire real-time frequency analyser if caller wants it
+  const source = ctx.createBufferSource();
+  source.buffer = audioBuffer;
+
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = volume;
+
   if (onAnalyser) {
     try {
-      const ctx = getAudioContext();
-      const source = ctx.createMediaElementSource(audio);
       const analyser = ctx.createAnalyser();
-      analyser.fftSize = 64;              // 32 bins — fast, plenty for 10 bars
+      analyser.fftSize = 64;
       analyser.smoothingTimeConstant = 0.75;
       source.connect(analyser);
-      analyser.connect(ctx.destination);
+      analyser.connect(gainNode);
       onAnalyser(analyser);
     } catch {
-      // Web Audio unavailable — WaveformBars will use simulation fallback
+      source.connect(gainNode);
     }
+  } else {
+    source.connect(gainNode);
   }
+  gainNode.connect(ctx.destination);
 
   let ended = false;
-  const done = () => { if (!ended) { ended = true; URL.revokeObjectURL(url); onEnd(); } };
+  const done = () => { if (!ended) { ended = true; onEnd(); } };
 
-  audio.onended = done;
-  audio.onerror = done;
+  source.onended = done;
 
-  // Safety: force-advance after duration + 5s so interview never hangs
-  audio.onloadedmetadata = () => {
-    const safetyMs = (isFinite(audio.duration) ? audio.duration * 1000 : 60000) + 5000;
-    setTimeout(done, safetyMs);
-  };
+  // Safety timeout: duration + 5s so interview never hangs
+  const safetyMs = (audioBuffer.duration * 1000) + 5000;
+  const safetyTimer = setTimeout(done, safetyMs);
+  source.onended = () => { clearTimeout(safetyTimer); done(); };
 
-  // Await play() — if browser blocks autoplay this throws, causing speak()'s
-  // .catch() to trigger Web Speech fallback instead of silently doing nothing.
-  await audio.play();
+  source.start();
 
-  return () => { ended = true; audio.pause(); URL.revokeObjectURL(url); };
+  return () => { ended = true; try { source.stop(); } catch { /* already ended */ } };
 }
 
 function speakWebSpeech(
