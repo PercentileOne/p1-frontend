@@ -113,10 +113,27 @@ async function speakElevenLabs(
   if (blob.size < 100) throw new Error('ElevenLabs returned empty audio');
   const url  = URL.createObjectURL(blob);
 
-  const ctx = await getAudioContext();
-  // If the context is still suspended after resume() (no prior user gesture on
-  // this page), throw so the caller's .catch() triggers the Web Speech fallback.
-  if (ctx.state !== 'running') throw new Error('AudioContext suspended — no user gesture');
+  let ctx = await getAudioContext();
+
+  // If AudioContext is still suspended (no prior user gesture on this page),
+  // wait for the next click anywhere on the page to unlock it — the user will
+  // click Save/Discard/tab and ElevenLabs plays immediately at that point.
+  // This gives real ElevenLabs audio instead of falling back to Web Speech.
+  if (ctx.state !== 'running') {
+    await new Promise<void>(resolve => {
+      const unlock = async () => {
+        document.removeEventListener('click', unlock, true);
+        try { await ctx.resume(); } catch { /* ignore */ }
+        resolve();
+      };
+      document.addEventListener('click', unlock, { once: true, capture: true });
+    });
+    // Re-fetch context state after unlock
+    ctx = await getAudioContext();
+    // If still not running after a gesture, fall through to throw so Web Speech fires
+    if (ctx.state !== 'running') throw new Error('AudioContext still suspended after gesture');
+  }
+
   const arrayBuffer = await blob.arrayBuffer();
   URL.revokeObjectURL(url);
   const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
@@ -145,8 +162,6 @@ async function speakElevenLabs(
 
   let ended = false;
   const done = () => { if (!ended) { ended = true; onEnd(); } };
-
-  source.onended = done;
 
   // Safety timeout: duration + 5s so interview never hangs
   const safetyMs = (audioBuffer.duration * 1000) + 5000;
