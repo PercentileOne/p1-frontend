@@ -6,12 +6,14 @@ using Explain.Api.Common;
 using Explain.Api.Infrastructure.Anthropic;
 using Explain.Api.Infrastructure.Cosmos;
 using Explain.Api.Infrastructure.Sql;
+using Explain.Api.Infrastructure.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Services ──────────────────────────────────────────────────────────────────
 
 builder.Services.AddSingleton<CosmosService>();
+builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlDb"),
         sql => sql.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(10), errorNumbersToAdd: null)));
@@ -25,6 +27,10 @@ builder.Services.AddMediatR(cfg =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opt =>
     {
+        // Without this, ASP.NET remaps short claim names ("sub", "email", "role") to legacy
+        // XML-namespace URIs on the way in, so every ctx.User.FindFirst("sub") lookup in the
+        // app returns null even for a validly-authenticated request.
+        opt.MapInboundClaims = false;
         opt.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
@@ -74,6 +80,7 @@ var app = builder.Build();
 
 // Ensure Cosmos DB database and containers exist before accepting requests
 await app.Services.GetRequiredService<CosmosService>().InitialiseAsync();
+await app.Services.GetRequiredService<BlobStorageService>().InitialiseAsync();
 
 // Apply any pending EF migrations automatically on startup
 using (var scope = app.Services.CreateScope())
@@ -121,6 +128,8 @@ Explain.Api.Features.Feedback.Submit.Endpoint.Map(app);
 Explain.Api.Features.Feedback.List.Endpoint.Map(app);
 
 Explain.Api.Features.Courses.Endpoint.Map(app);
+
+Explain.Api.Features.Interviews.Endpoint.Map(app);
 
 Explain.Api.Features.Auth.ForgotPassword.Endpoint.Map(app);
 Explain.Api.Features.Auth.ResetPassword.Endpoint.Map(app);

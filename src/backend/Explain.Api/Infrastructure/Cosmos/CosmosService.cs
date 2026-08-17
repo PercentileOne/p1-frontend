@@ -40,6 +40,11 @@ public class CosmosService
         // Platform-level course cache — shared across all users, 2-day TTL.
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("courses", "/pk") { DefaultTimeToLive = 172800 });
+
+        // Completed interview sessions — answers, scores, recording, share state.
+        // Partition key = /candidateId so a candidate's own sessions are single-partition.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("interviews", "/candidateId"));
     }
 
     public Container GetContainer(string name) => _database.GetContainer(name);
