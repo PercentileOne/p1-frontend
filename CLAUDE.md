@@ -8,6 +8,8 @@ This file is read automatically by every Claude Code session working in this rep
 
 **Incident, 2026-08-17:** `src/frontend`'s `LearnPanel.tsx` and `ProfileVideoPage.tsx` called OpenAI directly from the browser using `VITE_OPENAI_API_KEY`, exposed in the public JS bundle. Separately, most of the app's `/api/ai-proxy` calls used a **relative path** (`fetch('/api/ai-proxy')`), which silently 404'd because this specific Static Web App has its own integrated Functions runtime with no `ai-proxy` function of its own — so the client-key fallback was doing more work than anyone realized. Fixed by routing every AI call through an absolute URL (`${VITE_EXPLAIN_API_URL}/api/ai-proxy`) and deleting the client-key path entirely. **If any AI feature in this app misbehaves or silently degrades, check for a relative `/api/*` path first** — that's the recurring failure mode.
 
+**A second, separate incident found the same day:** a prior agent session had created its own generically-named OpenAI API key and used it directly for its own agentic work (calling models like `gpt-5.6-sol`, `gpt-5.3-codex` that this codebase never references — every AI call here hardcodes `gpt-4o-mini`), racking up $84.61 in charges on Francis's personal account over about three weeks. **No Claude Code session should ever create or use its own third-party API key (OpenAI, Anthropic, etc.) for its own work billed to the user.** A project's API key exists only for that project's own server-side backend code to call, never for an agent to use directly for anything else.
+
 ## 1. Portal map — where to actually work
 
 | Portal | Codebase | Live domain | Notes |
