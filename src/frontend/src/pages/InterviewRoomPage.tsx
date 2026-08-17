@@ -14,6 +14,7 @@ import { ChairSpinner } from '../components/ChairSpinner';
 import CinematicMCQ from '../components/CinematicMCQ';
 import { pickRandomCompany, type Company } from '../data/companyBank';
 import { logFlowEvent } from '../api/flowLogger';
+import { useAuthStore } from '../auth/authStore';
 
 // ── Multilingual Sarah intro fallbacks ───────────────────────────────────────
 const SARAH_INTROS: Record<string, string> = {
@@ -277,10 +278,18 @@ export default function InterviewRoomPage() {
   const micStreamRef = useRef<MediaStream | null>(null);
   const recordingStartTimeRef = useRef<number>(0);
   const chapterMarkersRef = useRef<{ questionIndex: number; questionText: string; competency: string; offsetSeconds: number; isMcq?: boolean; mcqOrdinal?: number }[]>([]);
+  // Stable for the whole room session — used as the Cosmos doc id so the auto-upload
+  // (below) and closeInterview's navigate() state always refer to the same saved record.
+  const interviewIdRef = useRef<string>(crypto.randomUUID());
 
   const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net';
+  const authUser = useAuthStore(s => s.user);
+  const authToken = useAuthStore(s => s.token);
 
   const getCandidateId = () => {
+    if (authUser?.id) return authUser.id;
+    // Not logged in (shouldn't happen — this route requires CAN_START_INTERVIEW) — fall
+    // back to a per-browser anonymous id so recording upload doesn't hard-fail.
     const key = 'explain_candidate_id';
     let id = localStorage.getItem(key);
     if (!id) { id = crypto.randomUUID(); localStorage.setItem(key, id); }
@@ -362,9 +371,51 @@ export default function InterviewRoomPage() {
 
   const uploadRecording = useCallback((answers: SessionAnswer[]) => {
     const recorder = mediaRecorderRef.current;
-    if (!recorder || recorder.state === 'inactive' || recordingChunksRef.current.length === 0) return;
-    setUploadStatus('uploading');
-    recorder.onstop = async () => {
+    const candidateId = getCandidateId();
+    const interviewId = interviewIdRef.current;
+
+    // Persist the session even without a recording (screen-share permission denied) —
+    // otherwise there'd be no record for the summary page to reload, or for Save/Share to act on.
+    const finish = async (videoBlob: Blob | null) => {
+      setUploadStatus('uploading');
+      try {
+        const overallScore = answers.length
+          ? answers.reduce((s, a) => s + a.score.overallScore, 0) / answers.length
+          : 0;
+        const metadata = JSON.stringify({
+          candidateId,
+          interviewId,
+          role: ctx.jobTitle,
+          company: ctx.company,
+          overallScore: Math.round(overallScore * 100),
+          answers,
+          mcqQuestions,
+          mcqResults,
+          mcqBonusPoints,
+          chapters: chapterMarkersRef.current,
+          cvCtx,
+          jobCtx,
+        });
+        const form = new FormData();
+        form.append('metadata', metadata);
+        if (videoBlob) form.append('video', videoBlob, 'session.webm');
+
+        const res = await fetch(`${API_BASE}/api/interviews/upload`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${authToken ?? ''}` },
+          body: form,
+        });
+        setUploadStatus(res.ok ? 'done' : 'error');
+      } catch {
+        setUploadStatus('error');
+      }
+    };
+
+    if (!recorder || recorder.state === 'inactive' || recordingChunksRef.current.length === 0) {
+      if (answers.length > 0) void finish(null);
+      return;
+    }
+    recorder.onstop = () => {
       // Stop all streams — composite, tab (getDisplayMedia), and mic
       recordingStreamRef.current?.getTracks().forEach(t => t.stop());
       tabStreamRef.current?.getTracks().forEach(t => t.stop());
@@ -372,42 +423,12 @@ export default function InterviewRoomPage() {
       tabStreamRef.current = null;
       micStreamRef.current = null;
       setIsRecording(false);
-      try {
-        const mimeType = recordingChunksRef.current[0]?.type ?? 'video/webm';
-        const blob = new Blob(recordingChunksRef.current, { type: mimeType });
-        const durationSeconds = Math.round((Date.now() - recordingStartTimeRef.current) / 1000);
-        const overallScore = answers.length
-          ? answers.reduce((s, a) => s + a.score.overallScore, 0) / answers.length
-          : 0;
-        const candidateId = getCandidateId();
-        const answerSummaries = answers.map((a, i) => ({
-          questionIndex: i,
-          questionText: a.question.questionText,
-          answerText: a.answerText,
-          score: Math.round(a.score.overallScore * 100),
-          passed: a.answerText === '',
-        }));
-        const metadata = JSON.stringify({ chapters: chapterMarkersRef.current, answers: answerSummaries });
-        const qs = new URLSearchParams({
-          candidateId,
-          candidateName: resolvedPreferredName ?? 'Candidate',
-          jobTitle: ctx.jobTitle ?? 'Interview',
-          company: ctx.company ?? '',
-          durationSeconds: String(durationSeconds),
-          overallScore: String(Math.round(overallScore * 100)),
-        });
-        await fetch(`${API_BASE}/api/interviews/upload?${qs}`, {
-          method: 'POST',
-          headers: { 'Content-Type': mimeType, 'X-Interview-Metadata': metadata },
-          body: blob,
-        });
-        setUploadStatus('done');
-      } catch {
-        setUploadStatus('error');
-      }
+      const mimeType = recordingChunksRef.current[0]?.type ?? 'video/webm';
+      const blob = new Blob(recordingChunksRef.current, { type: mimeType });
+      void finish(blob);
     };
     recorder.stop();
-  }, [API_BASE, resolvedPreferredName, ctx.jobTitle, ctx.company]);
+  }, [API_BASE, authToken, ctx.jobTitle, ctx.company, mcqQuestions, mcqResults, mcqBonusPoints, cvCtx, jobCtx]);
 
   // Upload if component unmounts mid-session
   useEffect(() => () => { uploadRecording([]); }, [uploadRecording]);
@@ -674,8 +695,12 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setHrState('speaking');
     cancelSpeakRef.current = speak(closingLine, 'hr', () => {
       setHrState('idle');
-      navigate(`/interview-summary/session-${Date.now()}`, {
-        state: { answers, cvCtx, jobCtx, mcqResults: mcqRes, mcqQuestions, mcqBonusPoints: bonusPts, playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current },
+      navigate(`/interview-summary/${interviewIdRef.current}`, {
+        state: {
+          answers, cvCtx, jobCtx, mcqResults: mcqRes, mcqQuestions, mcqBonusPoints: bonusPts,
+          playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current,
+          interviewId: interviewIdRef.current, candidateId: getCandidateId(),
+        },
       });
     }, (a) => setHrAnalyser(a));
   }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl]);

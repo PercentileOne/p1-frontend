@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useAuthStore } from '../auth/authStore';
 import LearnPanel from './LearnPanel';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScoringDisplay } from '../components/ScoringDisplay';
@@ -202,7 +203,7 @@ function Label({ text }: { text: string }) {
 
 // ── Interview Replay Player ────────────────────────────────────────────────────
 
-interface Chapter {
+export interface Chapter {
   questionIndex: number;
   questionText: string;
   competency: string;
@@ -211,7 +212,7 @@ interface Chapter {
   mcqOrdinal?: number;
 }
 
-function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapter[] }) {
+export function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapter[] }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -398,18 +399,43 @@ type Tab = 'interview' | 'learn' | 'feedback' | 'coming-soon';
 export default function InterviewSummaryPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const answers: SessionAnswer[] = location.state?.answers ?? [];
-  const cvCtx: CVContext | undefined = location.state?.cvCtx;
-  const jobCtx: JobSpecContext | undefined = location.state?.jobCtx;
-  const mcqQuestions: Array<{ questionText: string; options: string[]; correctIndex: number; explanation: string }> = location.state?.mcqQuestions ?? [];
-  const mcqResults: Array<{ correct: boolean; selectedIndex: number; questionIndex: number }> = location.state?.mcqResults ?? [];
-  const mcqBonusPoints: number = location.state?.mcqBonusPoints ?? 0;
-  const playbackUrl: string | null = location.state?.playbackUrl ?? null;
-  const chapters: { questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[] = location.state?.chapters ?? [];
-  const interviewId: string | undefined = location.state?.interviewId;
-  const candidateId: string | undefined = location.state?.candidateId;
-  // Revoke blob URL only when the whole summary page unmounts
-  useEffect(() => { return () => { if (playbackUrl) URL.revokeObjectURL(playbackUrl); }; }, []);
+  const { id: routeId } = useParams<{ id: string }>();
+  const authUser = useAuthStore(s => s.user);
+  const authToken = useAuthStore(s => s.token);
+
+  // Router state only exists right after finishing an interview — a reload, a bookmark,
+  // or coming back later loses it entirely, so fetch the persisted session by id instead.
+  const hasRouteState = !!location.state;
+  const [fetched, setFetched] = useState<Record<string, unknown> | null>(null);
+  const [fetchState, setFetchState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
+
+  useEffect(() => {
+    if (hasRouteState || !routeId || !authUser?.id || !authToken) return;
+    setFetchState('loading');
+    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net';
+    fetch(`${apiBase}/api/interviews/${encodeURIComponent(authUser.id)}/${encodeURIComponent(routeId)}`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    })
+      .then(res => { if (!res.ok) throw new Error(String(res.status)); return res.json(); })
+      .then((data: Record<string, unknown>) => { setFetched(data); setFetchState('done'); })
+      .catch(() => setFetchState('error'));
+  }, [hasRouteState, routeId, authUser?.id, authToken]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const src = (location.state ?? fetched ?? {}) as any;
+  const answers: SessionAnswer[] = src.answers ?? [];
+  const cvCtx: CVContext | undefined = src.cvCtx;
+  const jobCtx: JobSpecContext | undefined = src.jobCtx;
+  const mcqQuestions: Array<{ questionText: string; options: string[]; correctIndex: number; explanation: string }> = src.mcqQuestions ?? [];
+  const mcqResults: Array<{ correct: boolean; selectedIndex: number; questionIndex: number }> = src.mcqResults ?? [];
+  const mcqBonusPoints: number = src.mcqBonusPoints ?? 0;
+  const playbackUrl: string | null = src.playbackUrl ?? (typeof src.videoUrl === 'string' ? src.videoUrl : null);
+  const chapters: { questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[] = src.chapters ?? [];
+  const interviewId: string | undefined = src.interviewId ?? routeId;
+  const candidateId: string | undefined = src.candidateId ?? authUser?.id;
+  // Revoke blob URL only when the whole summary page unmounts — but only if it's a local
+  // blob: URL we created; a fetched session's videoUrl is a real hosted URL, never revoke that.
+  useEffect(() => { return () => { if (playbackUrl?.startsWith('blob:')) URL.revokeObjectURL(playbackUrl); }; }, []);
   const [activeTab, setActiveTab] = useState<Tab>('interview');
   const [showShare, setShowShare] = useState(false);
   const [savedShareToken, setSavedShareToken] = useState<string | null>(null);
@@ -551,6 +577,33 @@ ${questionsHtml}
     { id: 'learn', label: '📚 Learn' },
     { id: 'coming-soon', label: '⚡ Coming Soon' },
   ];
+
+  if (!hasRouteState && fetchState === 'loading') {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', flexDirection: 'column', gap: 16, color: 'var(--text-2)' }}>
+        <span style={{ fontSize: 28, animation: 'spin 1.2s linear infinite', display: 'inline-block' }}>⟳</span>
+        <div style={{ fontSize: 14 }}>Loading your interview session…</div>
+        <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
+      </div>
+    );
+  }
+
+  if (!hasRouteState && fetchState === 'error') {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', flexDirection: 'column', gap: 16, padding: 24, textAlign: 'center' }}>
+        <div style={{ fontSize: 32 }}>🔍</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-1)' }}>We couldn't find this session</div>
+        <div style={{ fontSize: 13, color: 'var(--text-3)', maxWidth: 420 }}>
+          It may have been discarded, or the link is out of date.
+        </div>
+        <button
+          onClick={() => navigate('/dashboard')}
+          style={{ background: 'linear-gradient(135deg, #7b5cf5, #5b8ff7)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+          ← Back to Dashboard
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: '-apple-system,"Segoe UI",sans-serif', paddingBottom: '60px' }}>

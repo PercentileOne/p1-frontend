@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuthStore } from '../auth/authStore';
 
 type SaveStep = 'decide' | 'saving' | 'saved' | 'qr' | 'share' | 'discarded';
 
@@ -31,8 +32,7 @@ interface Props {
   role?: string;
   company?: string;
   candidateId?: string;
-  interviewId?: string;    // set if already uploaded; undefined = upload on save
-  videoBlob?: Blob;        // the local recording, uploaded on save
+  interviewId?: string;    // the session's Cosmos doc id — set by InterviewRoomPage's auto-upload
   apiBase?: string;
   onSaved?: (shareToken: string, shareUrl: string) => void;
   onDiscarded?: () => void;
@@ -45,13 +45,13 @@ export function SaveDecisionPanel({
   role,
   company,
   candidateId,
-  interviewId: initialInterviewId,
-  videoBlob,
+  interviewId,
   onSaved,
   onDiscarded,
 }: Props) {
+  const authToken = useAuthStore(s => s.token);
   const [step, setStep] = useState<SaveStep>('decide');
-  const [shareToken, setShareToken] = useState('');
+  const [, setShareToken] = useState('');
   const [shareUrl, setShareUrl]     = useState('');
   const [qrDataUri, setQrDataUri]   = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
@@ -59,50 +59,35 @@ export function SaveDecisionPanel({
 
   const shareText = `I scored ${score}% on my ${role ?? 'job'} interview with InterviewMe — the AI interview platform. Watch my full session:`;
 
+  // The recording + full answer data are already uploaded automatically the moment the
+  // interview room closes — "Save" here just needs to publish a share link + QR for it.
   const handleSave = async () => {
+    if (!candidateId || !interviewId) {
+      setError("This session isn't ready to share yet — give it a moment and try again.");
+      return;
+    }
     setStep('saving');
     setError('');
     try {
-      let iid = initialInterviewId;
-
-      // Step 1: Upload video if not already saved
-      if (!iid && videoBlob && candidateId) {
-        const fd = new FormData();
-        fd.append('video', videoBlob, 'session.webm');
-        const uploadRes = await fetch(
-          `${API_BASE}/api/interviews/upload?candidateId=${encodeURIComponent(candidateId)}&overallScore=${score}`,
-          { method: 'POST', body: videoBlob,
-            headers: { 'Content-Type': 'video/webm', Authorization: `Bearer ${localStorage.getItem('explain_token') ?? ''}` } }
-        );
-        if (!uploadRes.ok) throw new Error('Upload failed');
-        const uploadData = await uploadRes.json() as { id: string };
-        iid = uploadData.id;
+      const doShare = () => fetch(
+        `${API_BASE}/api/interviews/${encodeURIComponent(candidateId)}/${encodeURIComponent(interviewId)}/share`,
+        { method: 'POST', headers: { Authorization: `Bearer ${authToken ?? ''}` } }
+      );
+      // The upload can still be in flight when the summary page first appears — one retry
+      // after a short wait covers that race without the user having to click Save twice.
+      let shareRes = await doShare();
+      if (shareRes.status === 404) {
+        await new Promise(r => setTimeout(r, 2000));
+        shareRes = await doShare();
       }
-
-      // Step 2: Publish & get QR
-      if (iid && candidateId) {
-        const shareRes = await fetch(
-          `${API_BASE}/api/interviews/${encodeURIComponent(candidateId)}/${encodeURIComponent(iid)}/share`,
-          { method: 'POST',
-            headers: { Authorization: `Bearer ${localStorage.getItem('explain_token') ?? ''}` } }
-        );
-        if (!shareRes.ok) throw new Error('Share failed');
-        const shareData = await shareRes.json() as { shareToken: string; shareUrl: string; qrDataUri: string };
-        setShareToken(shareData.shareToken);
-        setShareUrl(shareData.shareUrl);
-        setQrDataUri(shareData.qrDataUri);
-        setStep('saved');
-        onSaved?.(shareData.shareToken, shareData.shareUrl);
-        setTimeout(() => setStep('qr'), 1400);
-      } else {
-        // Demo mode — no candidateId/interviewId yet
-        const demoToken = `demo-${Date.now()}`;
-        const demoUrl   = `https://candidate.explain.global/shared/${demoToken}`;
-        setShareToken(demoToken);
-        setShareUrl(demoUrl);
-        setStep('saved');
-        setTimeout(() => setStep('qr'), 1400);
-      }
+      if (!shareRes.ok) throw new Error('Share failed');
+      const shareData = await shareRes.json() as { shareToken: string; shareUrl: string; qrDataUri: string };
+      setShareToken(shareData.shareToken);
+      setShareUrl(shareData.shareUrl);
+      setQrDataUri(shareData.qrDataUri);
+      setStep('saved');
+      onSaved?.(shareData.shareToken, shareData.shareUrl);
+      setTimeout(() => setStep('qr'), 1400);
     } catch {
       setError('Something went wrong. Please try again.');
       setStep('decide');
@@ -112,6 +97,12 @@ export function SaveDecisionPanel({
   const handleDiscard = () => {
     setStep('discarded');
     onDiscarded?.();
+    if (candidateId && interviewId) {
+      fetch(`${API_BASE}/api/interviews/${encodeURIComponent(candidateId)}/${encodeURIComponent(interviewId)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${authToken ?? ''}` },
+      }).catch(() => { /* best-effort */ });
+    }
   };
 
   const copyLink = async () => {
@@ -335,7 +326,7 @@ export function SaveDecisionPanel({
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
               {PLATFORMS.map(p => (
                 <a key={p.id}
-                  href={p.getUrl(shareUrl || `https://candidate.explain.global/shared/${shareToken}`, shareText)}
+                  href={p.getUrl(shareUrl, shareText)}
                   target="_blank" rel="noopener noreferrer"
                   style={{
                     display: 'flex', alignItems: 'center', gap: '10px',
