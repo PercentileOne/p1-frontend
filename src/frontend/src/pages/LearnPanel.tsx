@@ -124,9 +124,9 @@ Return ONLY valid JSON matching this exact schema (no markdown, no explanation):
 }
 
 Requirements:
-- Exactly 5 modules
-- Each module has exactly 3 lectures
-- Lecture types: use "lesson" for most, "practice" for one hands-on exercise per module, "quiz" for one knowledge check per module
+- Exactly 10 modules
+- Each module has exactly 4 lectures
+- Lecture types: use "lesson" for most, "practice" for hands-on exercises (2 per module), "quiz" for knowledge checks (1 per module)
 - Content must be genuinely educational and specific to "${title}" at ${level} level
 - Interview questions must be realistic interview questions a hiring manager would ask about this topic`;
 
@@ -867,7 +867,7 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
           </div>
 
           <div style={{ marginTop: 20, fontSize: 12, color: TEXT3 }}>
-            GPT-4o is writing 5 modules with full lecture content — this takes about 20 seconds.
+            GPT-4o is writing 10 modules with full lecture content — this takes about 20 seconds.
           </div>
         </div>
       </div>
@@ -885,7 +885,7 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
           What do you want to learn?
         </h1>
         <p style={{ fontSize: 14, color: TEXT3, margin: 0, lineHeight: 1.6 }}>
-          Type any topic and get a complete course — 5 modules, 15 lectures, interview questions and practice built in.
+          Type any topic and get a complete course — 10 modules, 40 lectures, interview questions and practice built in.
         </p>
       </div>
 
