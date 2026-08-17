@@ -175,7 +175,7 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.55, duration: 0.7, ease: "easeOut" }}
         >
-          InterviewMe<span style={{ color: "#34D399" }}>.global</span>
+          <strong style={{ color: "#fff" }}>Interview</strong><strong style={{ color: "#34D399" }}>Me</strong><span style={{ color: "#4F8EF7", fontWeight: 400 }}>.global</span>
         </motion.p>
 
         {/* Tagline */}
