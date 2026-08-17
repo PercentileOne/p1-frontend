@@ -39,6 +39,7 @@ jobs:
           cp src/viewme/public/im-social-card.svg deploy-product/im-social-card.svg
           cp src/viewme/public/im-social-card.png deploy-product/im-social-card.png
           cp src/viewme/public/favicon-512.png deploy-product/favicon-512.png
+          cp src/viewme/public/favicon.ico deploy-product/favicon.ico
 
       - name: Deploy to Azure SWA
         uses: Azure/static-web-apps-deploy@v1
