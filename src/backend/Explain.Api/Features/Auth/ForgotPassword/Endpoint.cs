@@ -50,7 +50,7 @@ public static class Endpoint
         db.PasswordResetTokens.Add(resetToken);
         await db.SaveChangesAsync();
 
-        var appUrl      = config["AppUrl"]?.Split(',')[0].Trim() ?? "https://candidate.interviewme.global";
+        var appUrl      = "https://candidate.interviewme.global";
         var resetUrl    = $"{appUrl}/reset-password?token={token}";
         var smtpHost    = config["Email:SmtpHost"]  ?? throw new InvalidOperationException("Email:SmtpHost not configured");
         var smtpPort    = int.Parse(config["Email:SmtpPort"] ?? "587");
