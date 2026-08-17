@@ -20,7 +20,7 @@ interface NewsItem { tag: string; timeAgo: string; headline: string; source: str
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: "Dashboard" },
   { Icon: User,            label: "My Profile" },
-  { Icon: Video,           label: "Interviews" },
+  { Icon: Video,           label: "My Interviews" },
   { Icon: Briefcase,       label: "Jobs" },
   { Icon: BookOpen,        label: "Learn" },
   { Icon: Compass,         label: "Careers" },
@@ -256,7 +256,7 @@ export default function CandidateDashboard() {
   function navTo(label: string) {
     const routes: Record<string, string> = {
       "My Profile": "/profile",
-      "Interviews": "/interviews",
+      "My Interviews": "/interviews",
       "Jobs":       "/jobs",
       "Messages":   "/messages",
       "Settings":   "/settings",

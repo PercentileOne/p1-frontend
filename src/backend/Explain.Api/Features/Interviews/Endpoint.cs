@@ -81,6 +81,26 @@ public static class Endpoint
             return Results.Ok(new { id = interviewId, videoSaved = hasVideo });
         }).RequireAuthorization().DisableAntiforgery();
 
+        // GET /api/interviews — every saved session for the current candidate, newest first.
+        // Lightweight summaries only (no answers/transcript) — the My Interviews list page.
+        app.MapGet("/api/interviews", async (HttpContext ctx, CosmosService cosmos) =>
+        {
+            var userId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+            var container = cosmos.GetContainer("interviews");
+            var query = new QueryDefinition("SELECT * FROM c WHERE c.candidateId = @cid")
+                .WithParameter("@cid", userId);
+            var summaries = new List<InterviewSummary>();
+            using var feed = container.GetItemQueryIterator<InterviewEnvelope>(query, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userId) });
+            while (feed.HasMoreResults)
+            {
+                foreach (var env in await feed.ReadNextAsync())
+                    summaries.Add(ToSummary(env));
+            }
+            return Results.Ok(summaries.OrderByDescending(s => s.createdAt));
+        }).RequireAuthorization();
+
         // POST /api/interviews/{candidateId}/{id}/share — publishes a shareable link + QR code.
         app.MapPost("/api/interviews/{candidateId}/{id}/share", async (string candidateId, string id, HttpContext ctx, CosmosService cosmos) =>
         {
@@ -157,6 +177,23 @@ public static class Endpoint
         return await JsonSerializer.DeserializeAsync<InterviewEnvelope>(response.Content);
     }
 
+    private static InterviewSummary ToSummary(InterviewEnvelope env)
+    {
+        string? role = null, company = null;
+        double overallScore = 0;
+        try
+        {
+            using var doc = JsonDocument.Parse(env.sessionDataJson);
+            var root = doc.RootElement;
+            if (root.TryGetProperty("role", out var r) && r.ValueKind == JsonValueKind.String) role = r.GetString();
+            if (root.TryGetProperty("company", out var c) && c.ValueKind == JsonValueKind.String) company = c.GetString();
+            if (root.TryGetProperty("overallScore", out var s) && s.ValueKind == JsonValueKind.Number) overallScore = s.GetDouble();
+        }
+        catch (JsonException) { /* malformed sessionDataJson — summary just shows defaults */ }
+
+        return new InterviewSummary(env.id, env.createdAt, role, company, overallScore, env.isShared, env.hasVideo);
+    }
+
     private static string BuildResponseJson(InterviewEnvelope env, BlobStorageService blob)
     {
         var node = JsonNode.Parse(env.sessionDataJson)?.AsObject() ?? new JsonObject();
@@ -199,3 +236,13 @@ public record InterviewEnvelope(
     string? shareToken,
     bool isShared,
     string sessionDataJson);
+
+// Lightweight row for the My Interviews list — no answers/transcript, just enough to render a card.
+public record InterviewSummary(
+    string id,
+    string createdAt,
+    string? role,
+    string? company,
+    double overallScore,
+    bool isShared,
+    bool hasVideo);

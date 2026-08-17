@@ -85,6 +85,7 @@ import UniversityShell from "./pages/UniversityShell";
 import InterviewRoomPage from "./pages/InterviewRoomPage";
 import InterviewSummaryPage from "./pages/InterviewSummaryPage";
 import SharedInterviewPage from "./pages/SharedInterviewPage";
+import MyInterviewsPage from "./pages/MyInterviewsPage";
 import LearnFlashTalkPage from "./pages/LearnFlashTalkPage";
 
 export default function App() {
@@ -212,6 +213,7 @@ export default function App() {
       <Route path="/interview/:packId" element={<RequirePermission permission="CAN_START_INTERVIEW"><InterviewRoomPage /></RequirePermission>} />
       <Route path="/interview-summary/:id" element={<RequirePermission permission="CAN_START_INTERVIEW"><InterviewSummaryPage /></RequirePermission>} />
       <Route path="/shared/:token" element={<SharedInterviewPage />} />
+      <Route path="/interviews" element={<RequirePermission permission="CAN_START_INTERVIEW"><MyInterviewsPage /></RequirePermission>} />
 
       {/* Access denied */}
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
