@@ -219,8 +219,11 @@ export function speak(
       if (!cancelled) onEnd();
     }, role === 'technical' ? 0.5 : role === 'mike' ? 0.65 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined)
       .then(cancel => { cancelAudio = cancel; })
-      .catch(() => {
-        // ElevenLabs failed — fall back to Web Speech
+      .catch((err) => {
+        // ElevenLabs failed — fall back to Web Speech. Logged (not swallowed) so the
+        // real cause — AudioContext still suspended, a rate-limited/failed API call,
+        // decode failure, etc. — is visible in the console instead of just "sounds robotic".
+        console.warn(`[TTS] ElevenLabs failed for role "${role}", falling back to Web Speech:`, err);
         if (!cancelled) {
           onAnalyser?.(null);
           speakWebSpeech(text, role, onEnd);

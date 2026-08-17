@@ -247,6 +247,13 @@ export default function InterviewRoomPage() {
   const [mcqResults, setMcqResults] = useState<Array<{ correct: boolean; selectedIndex: number; questionIndex: number }>>([]);
   const MCQ_SLOTS = [2, 6]; // fire after Q3 and Q7 (0-based)
   const mcqFiredCountRef = useRef(0); // how many MCQs have fired so far
+  // Synchronous guard against mcqFiredCountRef double-incrementing — nextQuestion and
+  // handlePass both gate MCQ-firing on the `mcqActive` *state*, but state commits are
+  // async, so if either could re-enter within the same tick (e.g. a stray double-call),
+  // both would see mcqActive still false and each bump the ref-counted ordinal, causing
+  // the first bonus question to announce itself as "second". A ref updates immediately,
+  // so this closes the race the state check alone couldn't.
+  const mcqFiringRef = useRef(false);
   // active MCQ question for the current overlay
   const [activeMcqQuestion, setActiveMcqQuestion] = useState<MCQQuestion | null>(null);
   const [activeMcqOrdinal, setActiveMcqOrdinal] = useState<'first' | 'second'>('first');
@@ -713,7 +720,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
     // MCQ trigger — fires at Q3 (index 2) and Q7 (index 6)
     const nextMcqIdx = mcqFiredCountRef.current;
-    if (!mcqActive && MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
+    if (!mcqActive && !mcqFiringRef.current && MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
+      mcqFiringRef.current = true;
       mcqFiredCountRef.current += 1;
       cancelSpeakRef.current?.();
       if (recordingStartTimeRef.current > 0) {
@@ -743,6 +751,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
   }, [qIndex, questions.length, sessionAnswers, askQuestion, q, uploadRecording, mcqQuestions, mcqResults, mcqBonusPoints, mcqActive, closeInterview]);
 
   const resumeAfterMCQ = useCallback((bonusEarned: boolean, selectedIndex: number) => {
+    mcqFiringRef.current = false;
     setMcqActive(false);
     setActiveMcqQuestion(null);
     const newResult = { correct: bonusEarned, selectedIndex, questionIndex: qIndex };
@@ -776,7 +785,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
     // MCQ trigger — same slots as nextQuestion
     const nextMcqIdx = mcqFiredCountRef.current;
-    if (!mcqActive && MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
+    if (!mcqActive && !mcqFiringRef.current && MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
+      mcqFiringRef.current = true;
       mcqFiredCountRef.current += 1;
       cancelSpeakRef.current?.();
       if (recordingStartTimeRef.current > 0) {
