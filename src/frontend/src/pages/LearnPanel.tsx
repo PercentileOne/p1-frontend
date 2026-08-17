@@ -36,6 +36,7 @@ interface Module {
   description: string;
   estimatedMinutes: number;
   lectures: Lecture[];
+  loading?: boolean; // true while content is being generated
 }
 
 interface Course {
@@ -80,125 +81,147 @@ function findCached(title: string, level: string): Course | null {
 
 // ── AI course generation ───────────────────────────────────────────────────────
 
-async function generateCourse(title: string, level: string): Promise<Course> {
-  const systemPrompt = `You are a world-class curriculum designer who creates structured, expert-quality courses for working professionals.
-Generate a complete course as a single JSON object. Every field is required.`;
+// ── Shared SSE stream reader ───────────────────────────────────────────────────
 
-  const userPrompt = `Create a comprehensive course on: "${title}"
-Level: ${level}
+async function readStream(res: Response): Promise<string> {
+  const reader = res.body!.getReader();
+  const decoder = new TextDecoder();
+  let content = '';
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const data = line.slice(6).trim();
+      if (data === '[DONE]') return content;
+      try {
+        const chunk = JSON.parse(data) as { choices: { delta: { content?: string } }[] };
+        content += chunk.choices?.[0]?.delta?.content ?? '';
+      } catch { /* ignore malformed chunks */ }
+    }
+  }
+  return content;
+}
 
-Return ONLY valid JSON matching this exact schema (no markdown, no explanation):
+async function callAI(messages: { role: string; content: string }[], maxTokens = 4000): Promise<string> {
+  const body = JSON.stringify({
+    model: 'gpt-4o-mini',
+    temperature: 0.7,
+    max_tokens: maxTokens,
+    stream: true,
+    messages,
+  });
+
+  const tryFetch = async (url: string, headers: Record<string, string>) => {
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body });
+    if (!res.ok || !res.body) return null;
+    return readStream(res);
+  };
+
+  const via_proxy = await tryFetch('/api/ai-proxy', {}).catch(() => null);
+  if (via_proxy) return via_proxy;
+
+  const apiKey = (import.meta as unknown as { env: Record<string, string> }).env?.VITE_OPENAI_API_KEY;
+  if (apiKey) {
+    const via_direct = await tryFetch('https://api.openai.com/v1/chat/completions', { Authorization: `Bearer ${apiKey}` }).catch(() => null);
+    if (via_direct) return via_direct;
+  }
+
+  throw new Error('AI call failed');
+}
+
+// ── Phase 1: course outline (fast ~3s) ────────────────────────────────────────
+
+interface CourseOutline {
+  title: string;
+  subtitle: string;
+  level: 'Beginner' | 'Intermediate' | 'Expert';
+  category: string;
+  description: string;
+  totalHours: number;
+  modules: { number: number; title: string; description: string; estimatedMinutes: number }[];
+}
+
+async function generateOutline(title: string, level: string): Promise<CourseOutline> {
+  const raw = await callAI([
+    {
+      role: 'system',
+      content: 'You are a world-class curriculum designer. Return ONLY valid JSON — no markdown, no explanation.',
+    },
+    {
+      role: 'user',
+      content: `Create a course outline for: "${title}" at ${level} level.
+
+Return JSON:
 {
   "title": "full course title",
   "subtitle": "one compelling subtitle sentence",
   "level": "${level}",
   "category": "one of: Technology, Business, Finance, Healthcare, Engineering, Creative, Legal, Science, Leadership, Marketing, Data, Product",
-  "description": "3-4 sentence course description explaining what students will achieve",
+  "description": "3-4 sentence course description",
   "totalHours": <number 8-20>,
   "modules": [
-    {
-      "number": 1,
-      "title": "module title",
-      "description": "what this module covers in 1-2 sentences",
-      "estimatedMinutes": <60-120>,
-      "lectures": [
-        {
-          "number": 1,
-          "title": "lecture title",
-          "type": "lesson",
-          "estimatedMinutes": <10-25>,
-          "content": "400-500 words of expert, engaging, deeply educational content. Write 3-4 substantive paragraphs. Each paragraph develops one idea fully. Include specific numbers, named tools or techniques, and practical insights a professional would actually use. No bullet lists — flowing prose only.",
-          "keyTakeaways": ["A specific fact the student now knows, stated as a fact not an instruction — e.g. 'BERT uses bidirectional attention, meaning it reads context from both left and right simultaneously'", "Another concrete factual insight", "A third memorable factual takeaway"],
-          "deepDive": "2-3 sentences going deeper into the mechanism, theory, or nuance behind this topic — for the curious student who wants to understand the 'why' not just the 'what'.",
-          "realWorldExample": "One specific, vivid real-world scenario showing exactly how this concept is applied in practice. Name actual companies, tools, or situations. 2-3 sentences.",
-          "memoryHook": "A memorable analogy, mnemonic, or mental model that makes this concept stick. Something a student could recall in an exam or interview to reconstruct the idea from first principles.",
-          "commonMisconceptions": [
-            { "myth": "A common wrong belief people have about this topic", "reality": "The accurate explanation that corrects it" },
-            { "myth": "Another frequent misconception", "reality": "The correct understanding" }
-          ],
-          "interviewQuestions": ["A realistic technical interview question a hiring manager would ask about this specific topic?", "A deeper follow-up that tests genuine understanding, not just recall?"]
-        }
-      ]
-    }
+    { "number": 1, "title": "module title", "description": "1-2 sentence description", "estimatedMinutes": <60-120> }
   ]
 }
 
-Requirements:
-- Exactly 10 modules
-- Each module has exactly 4 lectures
-- Lecture types: use "lesson" for most, "practice" for hands-on exercises (2 per module), "quiz" for knowledge checks (1 per module)
-- Content must be genuinely educational and specific to "${title}" at ${level} level
-- Interview questions must be realistic interview questions a hiring manager would ask about this topic`;
+Requirements: exactly 10 modules. No lecture content — titles and descriptions only.`,
+    },
+  ], 1500);
 
-  const body = JSON.stringify({
-    model: 'gpt-4o-mini',
-    temperature: 0.7,
-    max_tokens: 16000,
-    stream: true,
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt },
+  const parsed = JSON.parse(raw) as CourseOutline;
+  if (!parsed.modules?.length) throw new Error('No modules in outline');
+  return parsed;
+}
+
+// ── Phase 2: one module's lectures (called 10× in background) ─────────────────
+
+async function generateModuleLectures(
+  courseTitle: string,
+  mod: { number: number; title: string; description: string },
+  level: string,
+): Promise<Lecture[]> {
+  const raw = await callAI([
+    {
+      role: 'system',
+      content: 'You are a world-class curriculum designer. Return ONLY valid JSON — no markdown, no explanation.',
+    },
+    {
+      role: 'user',
+      content: `Generate the lectures for Module ${mod.number}: "${mod.title}" of the course "${courseTitle}" (${level} level).
+Module description: ${mod.description}
+
+Return a JSON array of exactly 4 lectures:
+[
+  {
+    "number": 1,
+    "title": "lecture title",
+    "type": "lesson",
+    "estimatedMinutes": <10-25>,
+    "content": "400-500 words of expert, engaging prose. 3-4 substantive paragraphs. Include specific numbers, named tools, practical insights. No bullet lists.",
+    "keyTakeaways": ["specific factual insight", "another concrete takeaway", "a third memorable fact"],
+    "deepDive": "2-3 sentences on the mechanism or theory behind this topic.",
+    "realWorldExample": "One vivid real-world scenario naming actual companies, tools, or situations. 2-3 sentences.",
+    "memoryHook": "A memorable analogy or mental model to recall this concept in an interview.",
+    "commonMisconceptions": [
+      { "myth": "common wrong belief", "reality": "accurate correction" },
+      { "myth": "another misconception", "reality": "correct understanding" }
     ],
-  });
-
-  // Reads an OpenAI SSE stream and returns the accumulated content string
-  async function readStream(res: Response): Promise<string> {
-    const reader = res.body!.getReader();
-    const decoder = new TextDecoder();
-    let content = '';
-    let buffer = '';
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() ?? '';
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if (data === '[DONE]') return content;
-        try {
-          const chunk = JSON.parse(data) as { choices: { delta: { content?: string } }[] };
-          content += chunk.choices?.[0]?.delta?.content ?? '';
-        } catch { /* ignore malformed chunks */ }
-      }
-    }
-    return content;
+    "interviewQuestions": ["realistic hiring manager question?", "deeper follow-up question?"]
   }
+]
 
-  async function tryFetch(url: string, headers: Record<string, string>) {
-    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body });
-    if (!res.ok || !res.body) {
-      console.error(`[LearnEngine] ${url} responded ${res.status}`);
-      return null;
-    }
-    let raw = '';
-    try {
-      raw = await readStream(res);
-      if (!raw) { console.error('[LearnEngine] Empty stream content'); return null; }
-      const parsed = JSON.parse(raw) as Omit<Course, 'id' | 'createdAt'>;
-      if (!parsed.modules?.length) { console.error('[LearnEngine] No modules in parsed course', parsed); return null; }
-      return { ...parsed, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
-    } catch (e) {
-      console.error('[LearnEngine] JSON parse failed', e, '\nRaw (first 500):', raw.slice(0, 500));
-      return null;
-    }
-  }
+Lecture types: "lesson" for most, "practice" for one hands-on exercise, "quiz" for one knowledge check.`,
+    },
+  ], 3500);
 
-  // 1. Server-side proxy (streams through SWA to avoid 45s timeout)
-  const via_proxy = await tryFetch('/api/ai-proxy', {}).catch(e => { console.error('[LearnEngine] Proxy fetch threw', e); return null; });
-  if (via_proxy) return via_proxy;
-
-  // 2. Direct OpenAI (dev fallback)
-  const apiKey = (import.meta as unknown as { env: Record<string, string> }).env?.VITE_OPENAI_API_KEY;
-  if (apiKey) {
-    const via_direct = await tryFetch('https://api.openai.com/v1/chat/completions', {
-      Authorization: `Bearer ${apiKey}`,
-    }).catch(e => { console.error('[LearnEngine] Direct fetch threw', e); return null; });
-    if (via_direct) return via_direct;
-  }
-
-  throw new Error('Course generation failed');
+  const parsed = JSON.parse(raw) as Lecture[];
+  if (!Array.isArray(parsed) || !parsed.length) throw new Error('No lectures parsed');
+  return parsed;
 }
 
 // ── Suggested topics ───────────────────────────────────────────────────────────
@@ -640,15 +663,23 @@ function CourseView({ course, onBack }: { course: Course; onBack: () => void }) 
                     <div style={{ fontSize: 11, fontWeight: 700, color: isExpanded ? BLUE : TEXT2 }}>
                       Module {mod.number}
                     </div>
-                    <div style={{ fontSize: 10, color: TEXT3 }}>{fmtHours(modMins)}</div>
+                    <div style={{ fontSize: 10, color: TEXT3 }}>{mod.loading ? '…' : fmtHours(modMins)}</div>
                   </div>
                   <div style={{ fontSize: 12, color: isExpanded ? TEXT1 : TEXT2, lineHeight: 1.4, fontWeight: isExpanded ? 600 : 400 }}>
                     {mod.title}
                   </div>
                 </div>
 
-                {/* Lectures */}
-                {isExpanded && mod.lectures.map(lec => {
+                {/* Lectures — show skeleton while module is loading */}
+                {isExpanded && mod.loading && (
+                  <div style={{ padding: '12px 16px 12px 28px', borderBottom: `1px solid ${BORDER}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: TEXT3, fontSize: 12 }}>
+                      <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⟳</span>
+                      Writing lectures…
+                    </div>
+                  </div>
+                )}
+                {isExpanded && !mod.loading && mod.lectures.map(lec => {
                   const isActive = activeLecture?.lecture.number === lec.number && activeLecture.module.number === mod.number;
                   return (
                     <div
@@ -787,22 +818,52 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
       }
     } catch { /* platform cache unavailable — generate fresh */ }
 
-    // 3. Generate fresh via OpenAI
+    // 3. Generate fresh — phase 1: outline (fast), then modules in background
     setGenerating(true);
     try {
-      const course = await generateCourse(t, level);
-      saveCourse(course);
+      const outline = await generateOutline(t, level);
+
+      // Build course skeleton with loading placeholders for all modules
+      const skeletonModules: Module[] = outline.modules.map(m => ({
+        ...m,
+        lectures: [],
+        loading: true,
+      }));
+      const courseId = crypto.randomUUID();
+      const skeleton: Course = {
+        ...outline,
+        id: courseId,
+        createdAt: new Date().toISOString(),
+        modules: skeletonModules,
+      };
+
+      setActiveCourse(skeleton);
+      setGenerating(false);
+
+      // Phase 2: fill each module's lectures sequentially in the background
+      const filled = { ...skeleton, modules: [...skeletonModules] };
+      for (let i = 0; i < outline.modules.length; i++) {
+        try {
+          const lectures = await generateModuleLectures(outline.title, outline.modules[i], level);
+          filled.modules[i] = { ...filled.modules[i], lectures, loading: false };
+          // Update state after each module so UI reveals immediately
+          setActiveCourse({ ...filled, modules: [...filled.modules] });
+        } catch {
+          filled.modules[i] = { ...filled.modules[i], loading: false };
+          setActiveCourse({ ...filled, modules: [...filled.modules] });
+        }
+      }
+
+      // All done — save complete course
+      saveCourse(filled);
       setSavedCourses(loadCourses());
-      setActiveCourse(course);
-      // Save to platform cache for all future users
       fetch('/api/courses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: t, level, course }),
+        body: JSON.stringify({ title: t, level, course: filled }),
       }).catch(() => { /* non-critical */ });
     } catch (e) {
       setError('Course generation failed — please try again. Check your OpenAI balance if the error persists.');
-    } finally {
       setGenerating(false);
     }
   }
