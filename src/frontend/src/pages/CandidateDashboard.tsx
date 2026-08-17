@@ -8,6 +8,10 @@ import {
 import LearnPanel from "./LearnPanel";
 import CareersPanel from "./CareersPanel";
 import MyInterviewsPage from "./MyInterviewsPage";
+import ProfilePage from "./ProfilePage";
+import JobsHome from "./JobsHome";
+import MessagesPage from "./MessagesPage";
+import SettingsPage from "./SettingsPage";
 
 /* ══════════════════════════════════════════════════════════════
    CANDIDATE DASHBOARD — cockpit-grade portal for InterviewMe.global
@@ -255,13 +259,6 @@ export default function CandidateDashboard() {
   }
 
   function navTo(label: string) {
-    const routes: Record<string, string> = {
-      "My Profile": "/profile",
-      "Jobs":       "/jobs",
-      "Messages":   "/messages",
-      "Settings":   "/settings",
-    };
-    if (routes[label]) { navigate(routes[label]); return; }
     setActiveNav(label);
   }
 
@@ -345,38 +342,47 @@ export default function CandidateDashboard() {
               {getTodayLabel()} · 2 interviews scheduled this week
             </div>
           </div>
-          <div style={{ display: "flex", gap: 10 }}>
-            <button
-              onClick={() => navigate("/interview/standard", { state: { preferredName: firstName } })}
-              style={{
-                padding: "9px 18px", background: "linear-gradient(135deg,#a78bfa,#7c3aed)",
-                color: "#fff", border: "none", borderRadius: 8,
-                fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-                boxShadow: "0 4px 14px rgba(167,139,250,0.35)",
-              }}
-            >
-              🎙️ Practice Interview
-            </button>
-            <button
-              onClick={() => navigate("/profile/video")}
-              style={{
-                padding: "9px 18px", background: "linear-gradient(135deg,#34D399,#059669)",
-                color: "#fff", border: "none", borderRadius: 8,
-                fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-                boxShadow: "0 4px 14px rgba(52,211,153,0.3)",
-              }}
-            >
-              + Record Profile Video
-            </button>
-          </div>
+          {/* Quick actions only make sense on the Dashboard home view — every other panel
+              (Learn, Careers, My Interviews, etc.) has its own contextual primary action,
+              so showing these here too would just duplicate it. */}
+          {activeNav === "Dashboard" && (
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => navigate("/interview/standard", { state: { preferredName: firstName } })}
+                style={{
+                  padding: "9px 18px", background: "linear-gradient(135deg,#a78bfa,#7c3aed)",
+                  color: "#fff", border: "none", borderRadius: 8,
+                  fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                  boxShadow: "0 4px 14px rgba(167,139,250,0.35)",
+                }}
+              >
+                🎙️ Practice Interview
+              </button>
+              <button
+                onClick={() => navigate("/profile/video")}
+                style={{
+                  padding: "9px 18px", background: "linear-gradient(135deg,#34D399,#059669)",
+                  color: "#fff", border: "none", borderRadius: 8,
+                  fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                  boxShadow: "0 4px 14px rgba(52,211,153,0.3)",
+                }}
+              >
+                + Record Profile Video
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ── PANEL OVERRIDES ── */}
-        {activeNav === "Learn"        && <LearnPanel />}
-        {activeNav === "Careers"      && <CareersPanel />}
-        {activeNav === "My Interviews" && <MyInterviewsPage />}
+        {activeNav === "Learn"          && <LearnPanel />}
+        {activeNav === "Careers"        && <CareersPanel />}
+        {activeNav === "My Interviews"  && <MyInterviewsPage />}
+        {activeNav === "My Profile"     && <ProfilePage />}
+        {activeNav === "Jobs"           && <JobsHome />}
+        {activeNav === "Messages"       && <MessagesPage />}
+        {activeNav === "Settings"       && <SettingsPage />}
 
-        {activeNav !== "Learn" && activeNav !== "Careers" && activeNav !== "My Interviews" && <>
+        {!["Learn", "Careers", "My Interviews", "My Profile", "Jobs", "Messages", "Settings"].includes(activeNav) && <>
 
         {/* ── STATS ROW ── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>
