@@ -51,6 +51,9 @@ builder.Services.AddCors(options =>
             "https://www.explain.global",
             "https://candidate.explain.global",
             "https://recruiter.explain.global",
+            "https://candidate.interviewme.global",
+            "https://recruiter.interviewme.global",
+            "https://interviewme.global",
             "http://localhost:5173",
             "http://localhost:5176",
         };
