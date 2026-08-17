@@ -273,6 +273,8 @@ export default function InterviewRoomPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingChunksRef = useRef<Blob[]>([]);
   const recordingStreamRef = useRef<MediaStream | null>(null);
+  const tabStreamRef = useRef<MediaStream | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
   const recordingStartTimeRef = useRef<number>(0);
   const chapterMarkersRef = useRef<{ questionIndex: number; questionText: string; competency: string; offsetSeconds: number; isMcq?: boolean; mcqOrdinal?: number }[]>([]);
 
@@ -301,9 +303,11 @@ export default function InterviewRoomPage() {
 
       // Separately capture mic so candidate answers are recorded even if
       // getDisplayMedia audio doesn't include the mic (browser-dependent)
+      tabStreamRef.current = tabStream;
       let micStream: MediaStream | null = null;
       try {
         micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        micStreamRef.current = micStream;
       } catch { /* mic denied — tab audio only */ }
 
       // Mix tab audio + mic audio into one track via AudioContext
@@ -361,7 +365,12 @@ export default function InterviewRoomPage() {
     if (!recorder || recorder.state === 'inactive' || recordingChunksRef.current.length === 0) return;
     setUploadStatus('uploading');
     recorder.onstop = async () => {
+      // Stop all streams — composite, tab (getDisplayMedia), and mic
       recordingStreamRef.current?.getTracks().forEach(t => t.stop());
+      tabStreamRef.current?.getTracks().forEach(t => t.stop());
+      micStreamRef.current?.getTracks().forEach(t => t.stop());
+      tabStreamRef.current = null;
+      micStreamRef.current = null;
       setIsRecording(false);
       try {
         const mimeType = recordingChunksRef.current[0]?.type ?? 'video/webm';

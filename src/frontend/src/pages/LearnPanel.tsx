@@ -700,8 +700,8 @@ function CourseView({ course, onBack }: { course: Course; onBack: () => void }) 
 
 // ── Main LearnPanel ────────────────────────────────────────────────────────────
 
-export default function LearnPanel() {
-  const [query, setQuery] = useState('');
+export default function LearnPanel({ initialTopic }: { initialTopic?: string } = {}) {
+  const [query, setQuery] = useState(initialTopic ?? '');
   const [level, setLevel] = useState<'Beginner' | 'Intermediate' | 'Expert'>('Intermediate');
   const [generating, setGenerating] = useState(false);
   const [genStep, setGenStep] = useState(0);
