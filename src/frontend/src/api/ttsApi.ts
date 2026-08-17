@@ -113,11 +113,10 @@ async function speakElevenLabs(
   if (blob.size < 100) throw new Error('ElevenLabs returned empty audio');
   const url  = URL.createObjectURL(blob);
 
-  // Always decode through the shared AudioContext so playback works even on the
-  // summary page where no recent user gesture has unlocked the <audio> autoplay
-  // policy. The AudioContext is unlocked during the interview and stays unlocked
-  // for the lifetime of the tab, so this path never triggers the autoplay block.
   const ctx = await getAudioContext();
+  // If the context is still suspended after resume() (no prior user gesture on
+  // this page), throw so the caller's .catch() triggers the Web Speech fallback.
+  if (ctx.state !== 'running') throw new Error('AudioContext suspended — no user gesture');
   const arrayBuffer = await blob.arrayBuffer();
   URL.revokeObjectURL(url);
   const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
