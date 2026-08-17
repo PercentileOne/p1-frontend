@@ -1,5 +1,6 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
 
 namespace Explain.Api.Infrastructure.Storage;
 
@@ -7,6 +8,10 @@ namespace Explain.Api.Infrastructure.Storage;
 /// Interview recording storage. Configure via ConnectionStrings:BlobStorage — until that's
 /// set, IsConfigured is false and callers should skip video upload rather than throw, so
 /// interview data (answers, scores, share links) still persists without a recording attached.
+///
+/// The container is private, not public — recordings are read through short-lived SAS URLs
+/// generated per-request (GetReadUrl), not a permanent public link. That avoids needing
+/// "Allow Blob anonymous access" enabled account-wide just for this one feature.
 /// </summary>
 public class BlobStorageService
 {
@@ -29,22 +34,44 @@ public class BlobStorageService
     public async Task InitialiseAsync()
     {
         if (_container is null) return;
-        // Public blob-level read access: a saved interview is explicitly shared by the
-        // candidate, so the recording needs to be fetchable via a plain URL without a SAS token.
-        await _container.CreateIfNotExistsAsync(PublicAccessType.Blob);
+        await _container.CreateIfNotExistsAsync(PublicAccessType.None);
     }
 
-    /// <returns>The public URL of the uploaded blob.</returns>
-    public async Task<string> UploadAsync(string candidateId, string interviewId, Stream content, string contentType)
+    public async Task UploadAsync(string candidateId, string interviewId, Stream content, string contentType)
     {
         if (_container is null)
             throw new InvalidOperationException("Blob storage is not configured (ConnectionStrings:BlobStorage is missing).");
 
-        var blob = _container.GetBlobClient($"{candidateId}/{interviewId}.webm");
+        var blob = _container.GetBlobClient(BlobPath(candidateId, interviewId));
         await blob.UploadAsync(content, new BlobUploadOptions
         {
             HttpHeaders = new BlobHttpHeaders { ContentType = contentType },
         });
-        return blob.Uri.ToString();
     }
+
+    /// <summary>A time-limited signed URL for the recording, or null if blob storage isn't configured.</summary>
+    public string? GetReadUrl(string candidateId, string interviewId, TimeSpan? validFor = null)
+    {
+        if (_container is null) return null;
+        var blob = _container.GetBlobClient(BlobPath(candidateId, interviewId));
+        if (!blob.CanGenerateSasUri) return null;
+
+        var sasBuilder = new BlobSasBuilder
+        {
+            BlobContainerName = _container.Name,
+            BlobName = blob.Name,
+            Resource = "b",
+            ExpiresOn = DateTimeOffset.UtcNow.Add(validFor ?? TimeSpan.FromHours(24)),
+        };
+        sasBuilder.SetPermissions(BlobSasPermissions.Read);
+        return blob.GenerateSasUri(sasBuilder).ToString();
+    }
+
+    public async Task DeleteAsync(string candidateId, string interviewId)
+    {
+        if (_container is null) return;
+        await _container.GetBlobClient(BlobPath(candidateId, interviewId)).DeleteIfExistsAsync();
+    }
+
+    private static string BlobPath(string candidateId, string interviewId) => $"{candidateId}/{interviewId}.webm";
 }

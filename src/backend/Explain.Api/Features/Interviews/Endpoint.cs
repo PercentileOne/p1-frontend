@@ -54,19 +54,20 @@ public static class Endpoint
 
             if (candidateId != userId) return Results.Forbid();
 
-            string? videoUrl = null;
+            var hasVideo = false;
             var videoFile = form.Files["video"];
             if (videoFile is not null && videoFile.Length > 0 && blob.IsConfigured)
             {
                 await using var stream = videoFile.OpenReadStream();
-                videoUrl = await blob.UploadAsync(candidateId, interviewId, stream, videoFile.ContentType ?? "video/webm");
+                await blob.UploadAsync(candidateId, interviewId, stream, videoFile.ContentType ?? "video/webm");
+                hasVideo = true;
             }
 
             var envelope = new InterviewEnvelope(
                 id: interviewId,
                 candidateId: candidateId,
                 createdAt: DateTimeOffset.UtcNow.ToString("o"),
-                videoUrl: videoUrl,
+                hasVideo: hasVideo,
                 shareToken: null,
                 isShared: false,
                 sessionDataJson: metadataJson);
@@ -77,7 +78,7 @@ public static class Endpoint
             if (!upsertResponse.IsSuccessStatusCode)
                 return Results.Problem("Failed to save interview session", statusCode: (int)upsertResponse.StatusCode);
 
-            return Results.Ok(new { id = interviewId, videoSaved = videoUrl is not null });
+            return Results.Ok(new { id = interviewId, videoSaved = hasVideo });
         }).RequireAuthorization().DisableAntiforgery();
 
         // POST /api/interviews/{candidateId}/{id}/share — publishes a shareable link + QR code.
@@ -104,7 +105,7 @@ public static class Endpoint
 
         // GET /api/interviews/{candidateId}/{id} — owner-only fetch, used by the summary page
         // to hydrate itself when React Router state is empty (reload, revisit, direct link).
-        app.MapGet("/api/interviews/{candidateId}/{id}", async (string candidateId, string id, HttpContext ctx, CosmosService cosmos) =>
+        app.MapGet("/api/interviews/{candidateId}/{id}", async (string candidateId, string id, HttpContext ctx, CosmosService cosmos, BlobStorageService blob) =>
         {
             var userId = ctx.User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -112,11 +113,11 @@ public static class Endpoint
 
             var container = cosmos.GetContainer("interviews");
             var envelope = await ReadEnvelopeAsync(container, id, candidateId);
-            return envelope is null ? Results.NotFound() : Results.Text(BuildResponseJson(envelope), "application/json");
+            return envelope is null ? Results.NotFound() : Results.Text(BuildResponseJson(envelope, blob), "application/json");
         }).RequireAuthorization();
 
         // GET /api/interviews/shared/{shareToken} — public view for a shared link/QR scan.
-        app.MapGet("/api/interviews/shared/{shareToken}", async (string shareToken, CosmosService cosmos) =>
+        app.MapGet("/api/interviews/shared/{shareToken}", async (string shareToken, CosmosService cosmos, BlobStorageService blob) =>
         {
             var container = cosmos.GetContainer("interviews");
             var query = new QueryDefinition("SELECT * FROM c WHERE c.shareToken = @token AND c.isShared = true")
@@ -126,13 +127,13 @@ public static class Endpoint
             {
                 var page = await feed.ReadNextAsync();
                 var envelope = page.FirstOrDefault();
-                if (envelope is not null) return Results.Text(BuildResponseJson(envelope), "application/json");
+                if (envelope is not null) return Results.Text(BuildResponseJson(envelope, blob), "application/json");
             }
             return Results.NotFound();
         }).AllowAnonymous();
 
         // DELETE /api/interviews/{candidateId}/{id} — "Discard, it was practice".
-        app.MapDelete("/api/interviews/{candidateId}/{id}", async (string candidateId, string id, HttpContext ctx, CosmosService cosmos) =>
+        app.MapDelete("/api/interviews/{candidateId}/{id}", async (string candidateId, string id, HttpContext ctx, CosmosService cosmos, BlobStorageService blob) =>
         {
             var userId = ctx.User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -144,6 +145,7 @@ public static class Endpoint
                 await container.DeleteItemStreamAsync(id, new PartitionKey(candidateId));
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { /* already gone */ }
+            await blob.DeleteAsync(candidateId, id);
             return Results.NoContent();
         }).RequireAuthorization();
     }
@@ -155,13 +157,15 @@ public static class Endpoint
         return await JsonSerializer.DeserializeAsync<InterviewEnvelope>(response.Content);
     }
 
-    private static string BuildResponseJson(InterviewEnvelope env)
+    private static string BuildResponseJson(InterviewEnvelope env, BlobStorageService blob)
     {
         var node = JsonNode.Parse(env.sessionDataJson)?.AsObject() ?? new JsonObject();
         node["id"] = env.id;
         node["candidateId"] = env.candidateId;
         node["createdAt"] = env.createdAt;
-        node["videoUrl"] = env.videoUrl;
+        // Signed, time-limited URL generated fresh per request — never stored, so it can't go stale
+        // or leak a permanent link to what's meant to be a private recording.
+        node["videoUrl"] = env.hasVideo ? blob.GetReadUrl(env.candidateId, env.id) : null;
         node["shareToken"] = env.shareToken;
         node["isShared"] = env.isShared;
         return node.ToJsonString();
@@ -184,14 +188,14 @@ public static class Endpoint
     }
 }
 
-// candidateId/id/createdAt/videoUrl/shareToken/isShared are first-class fields we control;
+// candidateId/id/createdAt/hasVideo/shareToken/isShared are first-class fields we control;
 // sessionDataJson is the client's opaque metadata blob (answers, mcq*, chapters, cvCtx, jobCtx,
 // role, company, overallScore) — merged back in at read time by BuildResponseJson.
 public record InterviewEnvelope(
     string id,
     string candidateId,
     string createdAt,
-    string? videoUrl,
+    bool hasVideo,
     string? shareToken,
     bool isShared,
     string sessionDataJson);

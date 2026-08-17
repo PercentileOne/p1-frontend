@@ -80,7 +80,15 @@ var app = builder.Build();
 
 // Ensure Cosmos DB database and containers exist before accepting requests
 await app.Services.GetRequiredService<CosmosService>().InitialiseAsync();
-await app.Services.GetRequiredService<BlobStorageService>().InitialiseAsync();
+try
+{
+    await app.Services.GetRequiredService<BlobStorageService>().InitialiseAsync();
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogWarning(ex, "Blob storage initialisation failed — interview recordings won't upload, but everything else is unaffected.");
+}
 
 // Apply any pending EF migrations automatically on startup
 using (var scope = app.Services.CreateScope())
