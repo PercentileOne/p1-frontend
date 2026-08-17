@@ -113,26 +113,10 @@ async function speakElevenLabs(
   if (blob.size < 100) throw new Error('ElevenLabs returned empty audio');
   const url  = URL.createObjectURL(blob);
 
-  let ctx = await getAudioContext();
-
-  // If AudioContext is still suspended (no prior user gesture on this page),
-  // wait for the next click anywhere on the page to unlock it — the user will
-  // click Save/Discard/tab and ElevenLabs plays immediately at that point.
-  // This gives real ElevenLabs audio instead of falling back to Web Speech.
-  if (ctx.state !== 'running') {
-    await new Promise<void>(resolve => {
-      const unlock = async () => {
-        document.removeEventListener('click', unlock, true);
-        try { await ctx.resume(); } catch { /* ignore */ }
-        resolve();
-      };
-      document.addEventListener('click', unlock, { once: true, capture: true });
-    });
-    // Re-fetch context state after unlock
-    ctx = await getAudioContext();
-    // If still not running after a gesture, fall through to throw so Web Speech fires
-    if (ctx.state !== 'running') throw new Error('AudioContext still suspended after gesture');
-  }
+  // The "Get Feedback" button is the user gesture that unlocks the AudioContext.
+  // By the time speak() is called here, the button click has already resumed it.
+  const ctx = await getAudioContext();
+  if (ctx.state !== 'running') throw new Error('AudioContext suspended — no user gesture');
 
   const arrayBuffer = await blob.arrayBuffer();
   URL.revokeObjectURL(url);

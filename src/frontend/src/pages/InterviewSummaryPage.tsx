@@ -471,17 +471,12 @@ export default function InterviewSummaryPage() {
       .filter(Boolean).join(' ');
   }, [cvCtx, overall, strengths, improvements, weakestTag]);
 
-  useEffect(() => {
-    if (mikeSpokeRef.current) return;
+  function handleGetFeedback() {
+    if (mikeSpokeRef.current || !answers.length) return;
     mikeSpokeRef.current = true;
-    if (!answers.length) return;
-    const delay = setTimeout(() => {
-      setMikeActive(true);
-      const script = buildMikeScript();
-      speak(script, 'mike', () => setMikeActive(false));
-    }, 1400);
-    return () => clearTimeout(delay);
-  }, []);
+    setMikeActive(true);
+    speak(buildMikeScript(), 'mike', () => setMikeActive(false));
+  }
 
   // Build per-question LEARN recommendation (only for low-scoring answers)
   const learnRecsPerQuestion = answers.map(a => {
@@ -606,8 +601,9 @@ ${questionsHtml}
 
       {/* ── Mike Debrief Banner ── */}
       <AnimatePresence>
-        {mikeActive && (
+        {mikeActive ? (
           <motion.div
+            key="mike-speaking"
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
@@ -619,7 +615,6 @@ ${questionsHtml}
             }}
           >
             <div style={{ maxWidth: '840px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '14px' }}>
-              {/* Mike avatar with pulse ring */}
               <div style={{ position: 'relative', flexShrink: 0 }}>
                 <div style={{
                   width: 44, height: 44, borderRadius: '50%',
@@ -635,9 +630,8 @@ ${questionsHtml}
               </div>
               <div>
                 <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#34d399', marginBottom: '2px' }}>Mike · Your Agent</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Listening to your debrief…</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Delivering your debrief…</div>
               </div>
-              {/* Speaking bars */}
               <div style={{ marginLeft: 'auto', display: 'flex', gap: '3px', alignItems: 'flex-end', height: '20px' }}>
                 {[0, 1, 2, 3, 4].map(i => (
                   <div key={i} style={{
@@ -651,6 +645,44 @@ ${questionsHtml}
               @keyframes mike-pulse { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.25);opacity:0} }
               @keyframes mike-bar { from{height:20%} to{height:90%} }
             `}</style>
+          </motion.div>
+        ) : !mikeSpokeRef.current && answers.length > 0 ? (
+          <motion.div
+            key="mike-cta"
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.35 }}
+            style={{
+              background: 'linear-gradient(135deg, rgba(52,211,153,0.05), rgba(79,142,247,0.04))',
+              borderBottom: '1px solid rgba(52,211,153,0.15)',
+              padding: '14px 28px',
+            }}
+          >
+            <div style={{ maxWidth: '840px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #34d399, #4F8EF7)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '20px', fontWeight: 800, color: '#fff', flexShrink: 0,
+              }}>M</div>
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#34d399', marginBottom: '2px' }}>Mike · Your Agent</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Ready to give you a personalised debrief on your session.</div>
+              </div>
+              <button
+                onClick={handleGetFeedback}
+                style={{
+                  marginLeft: 'auto', flexShrink: 0,
+                  background: 'linear-gradient(135deg, #34d399, #4F8EF7)',
+                  color: '#fff', border: 'none', borderRadius: '10px',
+                  padding: '10px 20px', fontSize: '13px', fontWeight: 700,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >
+                Get Feedback
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

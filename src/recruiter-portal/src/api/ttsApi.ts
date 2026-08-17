@@ -113,23 +113,8 @@ async function speakElevenLabs(
   if (blob.size < 100) throw new Error('ElevenLabs returned empty audio');
   const url  = URL.createObjectURL(blob);
 
-  let ctx = await getAudioContext();
-
-  // If AudioContext is still suspended (no prior user gesture on this page),
-  // wait for the next click anywhere on the page to unlock it — the user will
-  // click Save/Discard/tab and ElevenLabs plays immediately at that point.
-  if (ctx.state !== 'running') {
-    await new Promise<void>(resolve => {
-      const unlock = async () => {
-        document.removeEventListener('click', unlock, true);
-        try { await ctx.resume(); } catch { /* ignore */ }
-        resolve();
-      };
-      document.addEventListener('click', unlock, { once: true, capture: true });
-    });
-    ctx = await getAudioContext();
-    if (ctx.state !== 'running') throw new Error('AudioContext still suspended after gesture');
-  }
+  const ctx = await getAudioContext();
+  if (ctx.state !== 'running') throw new Error('AudioContext suspended — no user gesture');
   const arrayBuffer = await blob.arrayBuffer();
   URL.revokeObjectURL(url);
   const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
