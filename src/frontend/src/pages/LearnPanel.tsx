@@ -1,7 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useId } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Highlight, themes } from 'prism-react-renderer';
+import mermaid from 'mermaid';
 import type { RoomState } from './InterviewRoomPage';
 import type { InterviewQuestion } from '../api/explainApi';
+
+mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'strict' });
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const BG2    = '#10131a';
@@ -16,6 +20,17 @@ const TEXT3  = '#5a6478';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
+interface CodeSample {
+  language: string;
+  code: string;
+  caption?: string;
+}
+
+interface Diagram {
+  mermaid: string;
+  caption?: string;
+}
+
 interface Lecture {
   number: number;
   title: string;
@@ -28,6 +43,8 @@ interface Lecture {
   memoryHook: string;
   commonMisconceptions: { myth: string; reality: string }[];
   interviewQuestions: string[];
+  codeSamples?: CodeSample[];
+  diagrams?: Diagram[];
 }
 
 interface Module {
@@ -202,7 +219,7 @@ Return a JSON array of exactly 4 lectures:
     "title": "lecture title",
     "type": "lesson",
     "estimatedMinutes": <10-25>,
-    "content": "400-500 words of expert, engaging prose. 3-4 substantive paragraphs. Include specific numbers, named tools, practical insights. No bullet lists.",
+    "content": "400-500 words of expert, engaging prose. 3-4 substantive paragraphs. Include specific numbers, named tools, practical insights. No bullet lists. For coding, electronics, hardware, or maths-heavy topics ONLY: place a marker on its own line — {{CODE_1}}, {{CODE_2}}, {{DIAGRAM_1}} etc — at the exact point in the prose where that example belongs, matching the index of an entry in codeSamples/diagrams below. Never use markers for non-technical topics.",
     "keyTakeaways": ["specific factual insight", "another concrete takeaway", "a third memorable fact"],
     "deepDive": "2-3 sentences on the mechanism or theory behind this topic.",
     "realWorldExample": "One vivid real-world scenario naming actual companies, tools, or situations. 2-3 sentences.",
@@ -211,13 +228,21 @@ Return a JSON array of exactly 4 lectures:
       { "myth": "common wrong belief", "reality": "accurate correction" },
       { "myth": "another misconception", "reality": "correct understanding" }
     ],
-    "interviewQuestions": ["realistic hiring manager question?", "deeper follow-up question?"]
+    "interviewQuestions": ["realistic hiring manager question?", "deeper follow-up question?"],
+    "codeSamples": [
+      { "language": "typescript", "code": "for a CODING topic: real, correct, runnable code, 5-20 lines, realistic names, comments where they earn their place. For a MATHS topic: a worked numerical example or step-by-step derivation instead — set language to 'text'. For ELECTRONICS/hardware: pseudocode, a register/pin table, or a component listing — set language to 'text' if it isn't real code.", "caption": "one-line caption" }
+    ],
+    "diagrams": [
+      { "mermaid": "valid Mermaid.js syntax. For CODING: flowchart, sequence, or state diagram of the logic/architecture. For MATHS: represent the relationship structurally with a flowchart or graph TD (e.g. a number line, a decision tree, steps of a proof) — Mermaid can't plot continuous functions, so describe the concept's structure instead. For ELECTRONICS: a block/flow diagram of signal or data flow.", "caption": "one-line caption" }
+    ]
   }
 ]
 
+codeSamples and diagrams: 0-3 codeSamples and 0-2 diagrams per lecture. ONLY populate these for coding, electronics, hardware, or maths-heavy subjects where a snippet or diagram genuinely clarifies the concept — for every other subject (business, healthcare, leadership, law, etc.) return empty arrays [] for both and use no markers in content.
+
 Lecture types: "lesson" for most, "practice" for one hands-on exercise, "quiz" for one knowledge check.`,
     },
-  ], 5000);
+  ], 7000);
 
   const parsed = JSON.parse(raw) as Lecture[];
   if (!Array.isArray(parsed) || !parsed.length) throw new Error('No lectures parsed');
@@ -345,6 +370,114 @@ function CourseCard({ course, onClick }: { course: Course; onClick: () => void }
   );
 }
 
+// ── Code block (syntax-highlighted, book-style) ────────────────────────────────
+
+// Languages Prism actually ships grammars for — anything else (e.g. the AI writing
+// "text" for a maths derivation or a pin/register table) renders as plain monospace
+// instead of risking Prism.tokenize() throwing on an unknown grammar.
+const KNOWN_LANGUAGES = new Set([
+  'markup', 'html', 'xml', 'svg', 'css', 'clike', 'javascript', 'js', 'jsx', 'tsx',
+  'typescript', 'ts', 'python', 'py', 'csharp', 'cs', 'c', 'cpp', 'c++', 'java', 'go',
+  'rust', 'rs', 'php', 'ruby', 'rb', 'swift', 'kotlin', 'kt', 'sql', 'bash', 'shell',
+  'sh', 'yaml', 'yml', 'json', 'markdown', 'md', 'graphql', 'diff', 'git', 'makefile',
+  'objectivec', 'scss', 'sass', 'less', 'wasm', 'docker', 'powershell', 'ps1',
+]);
+
+function CodeBlock({ sample }: { sample: CodeSample }) {
+  const [copied, setCopied] = useState(false);
+  const lang = sample.language?.toLowerCase().trim() ?? '';
+  const highlightable = KNOWN_LANGUAGES.has(lang);
+  return (
+    <div style={{
+      margin: '20px 0', borderRadius: 12, overflow: 'hidden',
+      border: '1px solid rgba(255,255,255,0.08)', background: '#0a0c12',
+    }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '8px 16px', background: 'rgba(255,255,255,0.03)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+          {sample.language}
+        </span>
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(sample.code).catch(() => {});
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+          }}
+          style={{
+            background: 'none', border: 'none', color: copied ? GREEN : TEXT3,
+            fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: '2px 6px',
+          }}>
+          {copied ? '✓ Copied' : 'Copy'}
+        </button>
+      </div>
+      {highlightable ? (
+        <Highlight theme={themes.vsDark} code={sample.code.trim()} language={lang as never}>
+          {({ style, tokens, getLineProps, getTokenProps }) => (
+            <pre style={{ ...style, margin: 0, padding: '16px 20px', fontSize: 13, lineHeight: 1.65, overflowX: 'auto', background: 'transparent' }}>
+              {tokens.map((line, i) => (
+                <div key={i} {...getLineProps({ line })}>
+                  {line.map((token, key) => (
+                    <span key={key} {...getTokenProps({ token })} />
+                  ))}
+                </div>
+              ))}
+            </pre>
+          )}
+        </Highlight>
+      ) : (
+        <pre style={{ margin: 0, padding: '16px 20px', fontSize: 13, lineHeight: 1.65, overflowX: 'auto', color: '#c0cce0', fontFamily: 'ui-monospace, monospace' }}>
+          {sample.code.trim()}
+        </pre>
+      )}
+      {sample.caption && (
+        <div style={{ padding: '8px 16px 12px', fontSize: 12, color: TEXT3, fontStyle: 'italic' }}>
+          {sample.caption}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Mermaid diagram (flowcharts, sequence/state diagrams) ─────────────────────
+
+function DiagramBlock({ diagram }: { diagram: Diagram }) {
+  const id = useId().replace(/:/g, '');
+  const [svg, setSvg] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setSvg(null);
+    setFailed(false);
+    mermaid.render(`mmd-${id}`, diagram.mermaid.trim())
+      .then(({ svg }) => { if (!cancelled) setSvg(svg); })
+      .catch(() => { if (!cancelled) setFailed(true); });
+    return () => { cancelled = true; };
+  }, [diagram.mermaid, id]);
+
+  if (failed) return null; // malformed AI-generated diagram — fail silently rather than break the lesson
+
+  return (
+    <div style={{
+      margin: '20px 0', borderRadius: 12, overflow: 'hidden',
+      border: '1px solid rgba(255,255,255,0.08)', background: '#0a0c12',
+      padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+    }}>
+      {svg ? (
+        <div style={{ maxWidth: '100%', overflowX: 'auto' }} dangerouslySetInnerHTML={{ __html: svg }} />
+      ) : (
+        <div style={{ fontSize: 12, color: TEXT3, padding: '20px 0' }}>Rendering diagram…</div>
+      )}
+      {diagram.caption && svg && (
+        <div style={{ fontSize: 12, color: TEXT3, fontStyle: 'italic', textAlign: 'center' }}>{diagram.caption}</div>
+      )}
+    </div>
+  );
+}
+
 // ── Lecture content renderer ───────────────────────────────────────────────────
 
 function LectureView({ lecture, courseTitle, onPractice }: { lecture: Lecture; courseTitle: string; onPractice: (q: string, lecture?: Lecture) => void }) {
@@ -372,9 +505,43 @@ function LectureView({ lecture, courseTitle, onPractice }: { lecture: Lecture; c
         borderLeft: '3px solid rgba(79,142,247,0.3)',
         paddingLeft: 20,
       }}>
-        {lecture.content.split('\n').filter(p => p.trim()).map((para, i) => (
-          <p key={i} style={{ margin: '0 0 16px' }}>{para}</p>
-        ))}
+        {(() => {
+          const lines = lecture.content.split('\n').filter(p => p.trim());
+          const usedCode = new Set<number>();
+          const usedDiagram = new Set<number>();
+          lines.forEach(p => {
+            const t = p.trim();
+            const cm = t.match(/^\{\{CODE_(\d+)\}\}$/);
+            const dm = t.match(/^\{\{DIAGRAM_(\d+)\}\}$/);
+            if (cm) usedCode.add(Number(cm[1]) - 1);
+            if (dm) usedDiagram.add(Number(dm[1]) - 1);
+          });
+          // Anything the AI generated but forgot to (or never tried to) place inline
+          // still gets shown — appended after the prose — rather than silently dropped.
+          const leftoverCode = (lecture.codeSamples ?? []).filter((_, i) => !usedCode.has(i));
+          const leftoverDiagrams = (lecture.diagrams ?? []).filter((_, i) => !usedDiagram.has(i));
+
+          return (
+            <>
+              {lines.map((para, i) => {
+                const t = para.trim();
+                const cm = t.match(/^\{\{CODE_(\d+)\}\}$/);
+                const dm = t.match(/^\{\{DIAGRAM_(\d+)\}\}$/);
+                if (cm) {
+                  const sample = lecture.codeSamples?.[Number(cm[1]) - 1];
+                  return sample ? <CodeBlock key={i} sample={sample} /> : null;
+                }
+                if (dm) {
+                  const diagram = lecture.diagrams?.[Number(dm[1]) - 1];
+                  return diagram ? <DiagramBlock key={i} diagram={diagram} /> : null;
+                }
+                return <p key={i} style={{ margin: '0 0 16px' }}>{para}</p>;
+              })}
+              {leftoverCode.map((s, i) => <CodeBlock key={`lc-${i}`} sample={s} />)}
+              {leftoverDiagrams.map((d, i) => <DiagramBlock key={`ld-${i}`} diagram={d} />)}
+            </>
+          );
+        })()}
       </div>
 
       {/* Key takeaways */}
