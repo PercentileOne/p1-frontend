@@ -105,13 +105,18 @@ public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactor
     // ── Discover new careers not yet in Cosmos ─────────────────────────────────
 
     public async Task<List<(string Title, string Category, string Subcategory)>>
-        DiscoverNewCareersAsync(ISet<string> existingTitles, ILogger log)
+        DiscoverNewCareersAsync(ISet<string> existingTitles, List<string> thinCategories, ILogger log)
     {
         var sample  = string.Join(", ", existingTitles.Take(30));
+        var thinHint = thinCategories.Count > 0
+            ? $"PRIORITY: these categories are underrepresented and need more careers — {string.Join(", ", thinCategories)}. " +
+              "At least 30 of your 50 suggestions must belong to these categories.\n"
+            : "";
         var prompt  =
             "You are a career data expert. List 50 real job titles that exist in the UK and/or USA " +
             "that are NOT in this existing database of " + existingTitles.Count + " careers.\n" +
-            "Focus on: niche specialist roles, emerging tech roles, healthcare sub-specialties, " +
+            thinHint +
+            "Also include: niche specialist roles, emerging tech roles, healthcare sub-specialties, " +
             "trades, creative industries, and everyday service jobs not yet covered.\n" +
             "Return JSON only: {\"careers\":[{\"title\":\"\",\"category\":\"\",\"subcategory\":\"\"}]}\n" +
             "Do not repeat titles similar to: " + sample + " ...";
