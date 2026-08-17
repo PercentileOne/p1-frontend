@@ -646,7 +646,7 @@ ${questionsHtml}
               @keyframes mike-bar { from{height:20%} to{height:90%} }
             `}</style>
           </motion.div>
-        ) : !mikeSpokeRef.current && answers.length > 0 ? (
+        ) : (!mikeSpokeRef.current && answers.length > 0) ? (
           <motion.div
             key="mike-cta"
             initial={{ opacity: 0, y: -12 }}
@@ -684,7 +684,7 @@ ${questionsHtml}
               </button>
             </div>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
 
       <div style={{ maxWidth: '840px', margin: '0 auto', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
