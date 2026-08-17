@@ -41,8 +41,20 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("frontend", policy =>
     {
-        var raw = builder.Configuration["AppUrl"] ?? "http://localhost:5173";
-        var origins = raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var raw = builder.Configuration["AppUrl"] ?? "";
+        var configOrigins = raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var knownOrigins = new[]
+        {
+            "https://candidate.interviewme.global",
+            "https://recruiter.interviewme.global",
+            "https://explain.global",
+            "https://www.explain.global",
+            "https://candidate.explain.global",
+            "https://recruiter.explain.global",
+            "http://localhost:5173",
+            "http://localhost:5176",
+        };
+        var origins = configOrigins.Union(knownOrigins).ToArray();
         policy.WithOrigins(origins)
               .AllowAnyHeader()
               .AllowAnyMethod()
