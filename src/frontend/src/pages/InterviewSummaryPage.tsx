@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../auth/authStore';
+import BackToCockpit from '../components/BackToCockpit';
 import LearnPanel from './LearnPanel';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScoringDisplay } from '../components/ScoringDisplay';
@@ -610,9 +611,12 @@ ${questionsHtml}
 
       {/* Header */}
       <div style={{ background: 'var(--bg2)', borderBottom: '1px solid var(--border)', padding: '20px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '4px' }}>Explain · Interview Summary</div>
-          <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>Session Complete</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <BackToCockpit to="/dashboard" />
+          <div>
+            <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '4px' }}>Explain · Interview Summary</div>
+            <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>Session Complete</div>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button onClick={() => setShowShare(true)} disabled={!savedShareToken} title={savedShareToken ? undefined : 'Save your interview first'} style={{ background: savedShareToken ? 'linear-gradient(135deg, #a78bfa, #4F8EF7)' : 'rgba(167,139,250,0.2)', color: savedShareToken ? '#fff' : 'rgba(255,255,255,0.3)', border: 'none', borderRadius: '9px', padding: '10px 20px', fontSize: '13px', fontWeight: 700, cursor: savedShareToken ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: '7px' }}>

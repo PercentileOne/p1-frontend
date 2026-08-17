@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { speak } from '../api/ttsApi';
+import BackToCockpit from '../components/BackToCockpit';
 import {
   useVideoFilter,
   FILTER_CSS,
@@ -328,6 +329,10 @@ export default function ProfileVideoPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#060A14', color: '#F1F5F9', fontFamily: "-apple-system,'Segoe UI',sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
+
+      <div style={{ position: 'fixed', top: 20, left: 20, zIndex: 101 }}>
+        <BackToCockpit to="/dashboard" />
+      </div>
 
       {phase !== 'welcome' && phase !== 'complete' && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 3, background: 'rgba(255,255,255,0.06)', zIndex: 100 }}>
