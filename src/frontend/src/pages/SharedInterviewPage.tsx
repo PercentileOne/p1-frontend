@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { InterviewReplayPlayer, type Chapter } from './InterviewSummaryPage';
+import { InterviewResultsBody, type MCQQuestionResult, type MCQAnswerResult } from '../components/InterviewResultsBody';
 import type { InterviewQuestion, ScoreResponse } from '../api/explainApi';
 
 interface SharedAnswer {
@@ -19,26 +20,8 @@ interface SharedSession {
   chapters: Chapter[];
   createdAt: string;
   cvCtx?: { firstName?: string; lastName?: string };
-}
-
-const DIMENSIONS = ['relevance', 'clarity', 'depth', 'confidence'] as const;
-
-function scoreColor(pct: number) {
-  if (pct >= 70) return '#34D399';
-  if (pct >= 50) return '#F59E0B';
-  return '#EF4444';
-}
-
-function scoreLabel(pct: number) {
-  if (pct >= 80) return 'Excellent';
-  if (pct >= 70) return 'Strong';
-  if (pct >= 50) return 'Good';
-  return 'Developing';
-}
-
-function avgDimension(answers: SharedAnswer[], dim: (typeof DIMENSIONS)[number]) {
-  if (!answers.length) return 0;
-  return answers.reduce((s, a) => s + (a.score as unknown as Record<string, number>)[dim], 0) / answers.length;
+  mcqQuestions?: MCQQuestionResult[];
+  mcqResults?: MCQAnswerResult[];
 }
 
 // Public, unauthenticated view for a shared interview link / QR scan. Recruiters landing
@@ -80,11 +63,8 @@ export default function SharedInterviewPage() {
     );
   }
 
-  const pct = Math.round(data.overallScore);
-  const color = scoreColor(pct);
   const answers = data.answers ?? [];
   const name = [data.cvCtx?.firstName, data.cvCtx?.lastName].filter(Boolean).join(' ');
-  const strengths = DIMENSIONS.filter(d => avgDimension(answers, d) >= 0.65);
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px 60px', display: 'flex', flexDirection: 'column', gap: 28 }}>
@@ -121,59 +101,12 @@ export default function SharedInterviewPage() {
         </div>
       )}
 
-      {/* Score hero */}
-      <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 20, overflow: 'hidden' }}>
-        <div style={{ background: 'linear-gradient(135deg, #0d1f3c 0%, #0a0f1e 100%)', padding: '28px 32px', borderBottom: strengths.length ? '1px solid var(--border)' : 'none' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginBottom: 6 }}>
-            <div style={{ fontSize: 64, fontWeight: 900, lineHeight: 1, color, fontVariantNumeric: 'tabular-nums' }}>{pct}</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: 'rgba(255,255,255,0.3)', marginBottom: 10 }}>/ 100</div>
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                {scoreLabel(pct)}
-              </div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>Overall interview score</div>
-            </div>
-          </div>
-        </div>
-        {strengths.length > 0 && (
-          <div style={{ padding: '18px 32px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginRight: 4 }}>Strengths</span>
-            {strengths.map(s => (
-              <span key={s} style={{ fontSize: 12, fontWeight: 700, color: '#34D399', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 20, padding: '4px 12px', textTransform: 'capitalize' }}>
-                {s}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {answers.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)' }}>
-            Questions &amp; Answers
-          </div>
-          {answers.map((a, i) => (
-            <div key={i} style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '18px 20px' }}>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 8 }}>
-                Q{i + 1} · {a.question.questionType} · {a.question.difficulty}
-              </div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>{a.question.questionText}</div>
-              <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6, marginBottom: 14 }}>
-                {a.answerText || '(No answer recorded)'}
-              </div>
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 11, color: 'var(--text-3)' }}>
-                <span>Relevance: <strong style={{ color: 'var(--text-2)' }}>{Math.round(a.score.relevance * 100)}%</strong></span>
-                <span>Clarity: <strong style={{ color: 'var(--text-2)' }}>{Math.round(a.score.clarity * 100)}%</strong></span>
-                <span>Depth: <strong style={{ color: 'var(--text-2)' }}>{Math.round(a.score.depth * 100)}%</strong></span>
-                <span>Confidence: <strong style={{ color: 'var(--text-2)' }}>{Math.round(a.score.confidence * 100)}%</strong></span>
-                <span style={{ color: scoreColor(Math.round(a.score.overallScore * 100)), fontWeight: 700 }}>
-                  Overall: {Math.round(a.score.overallScore * 100)}%
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Score card, MCQ bonus rounds, per-question breakdown — identical to the candidate's own private summary page */}
+      <InterviewResultsBody
+        answers={answers}
+        mcqQuestions={data.mcqQuestions}
+        mcqResults={data.mcqResults}
+      />
 
       <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-3)', marginTop: 12 }}>
         Powered by InterviewMe.global — practice interviews, free forever.
