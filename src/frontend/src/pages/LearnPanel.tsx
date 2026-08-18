@@ -1107,9 +1107,12 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
       setActiveCourse(skeleton);
       setGenerating(false);
 
-      // Phase 2: fill each module's lectures sequentially in the background
+      // Phase 2: fill every module's lectures concurrently in the background — not one at a
+      // time — so clicking ahead to module 6 never means waiting on modules 2-5's turn in a
+      // queue first. Each module still retries independently; the UI updates as each one
+      // finishes, in whatever order they actually complete.
       const filled = { ...skeleton, modules: [...skeletonModules] };
-      for (let i = 0; i < outline.modules.length; i++) {
+      const fillModule = async (i: number) => {
         let lectures: Lecture[] | null = null;
         // Three attempts per module — GPT occasionally returns malformed JSON
         for (let attempt = 0; attempt < 3; attempt++) {
@@ -1123,7 +1126,8 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
         }
         filled.modules[i] = { ...filled.modules[i], lectures: lectures ?? [], loading: false };
         setActiveCourse({ ...filled, modules: [...filled.modules] });
-      }
+      };
+      await Promise.allSettled(outline.modules.map((_, i) => fillModule(i)));
 
       // All done — save complete course locally regardless of per-module failures,
       // but only push to the shared platform cache if every module actually generated —

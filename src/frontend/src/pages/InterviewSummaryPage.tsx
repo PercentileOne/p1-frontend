@@ -746,6 +746,7 @@ ${questionsHtml}
               company={jobCtx?.company}
               candidateId={candidateId}
               interviewId={interviewId}
+              alreadyShared={!!src.isShared}
               onSaved={(token, url) => {
                 setSavedShareToken(token);
                 setSavedShareUrl(url);

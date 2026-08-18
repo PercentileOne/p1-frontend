@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../auth/authStore';
 
@@ -34,6 +34,7 @@ interface Props {
   candidateId?: string;
   interviewId?: string;    // the session's Cosmos doc id — set by InterviewRoomPage's auto-upload
   apiBase?: string;
+  alreadyShared?: boolean; // true when the fetched interview data says this was saved before
   onSaved?: (shareToken: string, shareUrl: string) => void;
   onDiscarded?: () => void;
 }
@@ -46,6 +47,7 @@ export function SaveDecisionPanel({
   company,
   candidateId,
   interviewId,
+  alreadyShared = false,
   onSaved,
   onDiscarded,
 }: Props) {
@@ -56,6 +58,31 @@ export function SaveDecisionPanel({
   const [qrDataUri, setQrDataUri]   = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
   const [error, setError]           = useState('');
+
+  // Revisiting an interview that was already saved/shared before — restore its real QR/link
+  // straight away instead of showing "Save this interview?" again as if it were brand new.
+  // /share is idempotent (reuses the existing token), so this can't invalidate a link or QR
+  // the candidate may have already handed to a recruiter or printed on a CV.
+  useEffect(() => {
+    if (!alreadyShared || !candidateId || !interviewId) return;
+    let cancelled = false;
+    fetch(
+      `${API_BASE}/api/interviews/${encodeURIComponent(candidateId)}/${encodeURIComponent(interviewId)}/share`,
+      { method: 'POST', headers: { Authorization: `Bearer ${authToken ?? ''}` } },
+    )
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then((data: { shareToken: string; shareUrl: string; qrDataUri: string }) => {
+        if (cancelled) return;
+        setShareToken(data.shareToken);
+        setShareUrl(data.shareUrl);
+        setQrDataUri(data.qrDataUri);
+        setStep('qr');
+        onSaved?.(data.shareToken, data.shareUrl);
+      })
+      .catch(() => { /* fall back to the normal decide/save flow */ });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alreadyShared, candidateId, interviewId]);
 
   const shareText = `I scored ${score}% on my ${role ?? 'job'} interview with InterviewMe — the AI interview platform. Watch my full session:`;
 

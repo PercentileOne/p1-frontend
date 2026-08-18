@@ -112,12 +112,23 @@ public static class Endpoint
             var envelope = await ReadEnvelopeAsync(container, id, candidateId);
             if (envelope is null) return Results.NotFound();
 
-            var shareToken = GenerateShareToken();
-            var updated = envelope with { shareToken = shareToken, isShared = true };
-            using var body = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(updated));
-            using var upsertResponse = await container.UpsertItemStreamAsync(body, new PartitionKey(candidateId));
-            if (!upsertResponse.IsSuccessStatusCode)
-                return Results.Problem("Failed to publish share link", statusCode: (int)upsertResponse.StatusCode);
+            // Idempotent: reusing an already-issued token instead of always minting a fresh one
+            // means calling this again (e.g. revisiting the summary page) never invalidates a
+            // link or QR code the candidate may have already handed to a recruiter or put on a CV.
+            string shareToken;
+            if (envelope.isShared && !string.IsNullOrEmpty(envelope.shareToken))
+            {
+                shareToken = envelope.shareToken;
+            }
+            else
+            {
+                shareToken = GenerateShareToken();
+                var updated = envelope with { shareToken = shareToken, isShared = true };
+                using var body = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(updated));
+                using var upsertResponse = await container.UpsertItemStreamAsync(body, new PartitionKey(candidateId));
+                if (!upsertResponse.IsSuccessStatusCode)
+                    return Results.Problem("Failed to publish share link", statusCode: (int)upsertResponse.StatusCode);
+            }
 
             var shareUrl = $"{ShareBaseUrl}/{shareToken}";
             return Results.Ok(new { shareToken, shareUrl, qrDataUri = GenerateQrDataUri(shareUrl) });
