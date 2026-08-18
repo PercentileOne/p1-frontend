@@ -513,8 +513,17 @@ export default function InterviewRoomPage() {
     recorder.stop();
   }, [API_BASE, authToken, ctx.jobTitle, ctx.company, mcqQuestions, mcqResults, mcqBonusPoints, cvCtx, jobCtx]);
 
-  // Upload if component unmounts mid-session
-  useEffect(() => () => { uploadRecording([]); }, [uploadRecording]);
+  // Upload if component unmounts mid-session — TRUE unmount only (empty deps). A ref indirection
+  // is required: uploadRecording's own deps (mcqQuestions, cvCtx, jobCtx, ...) change mid-interview
+  // as session-prep data streams in while Mike is still speaking, which previously changed
+  // uploadRecording's identity and fired this cleanup on every one of those changes — stopping the
+  // still-running recorder and uploading just Mike's intro, then never recording again. Depending on
+  // uploadRecording directly here reintroduces that exact bug even with an apparently-correct cleanup.
+  const uploadRecordingRef = useRef(uploadRecording);
+  useEffect(() => { uploadRecordingRef.current = uploadRecording; }, [uploadRecording]);
+  useEffect(() => {
+    return () => { uploadRecordingRef.current([]); };
+  }, []);
 
   const consentToRecord = ctx.consentToRecord !== false;
   const [cameraOn, setCameraOn] = useState(true);
