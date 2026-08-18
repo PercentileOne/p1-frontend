@@ -5,7 +5,7 @@ import { InterviewerAvatar, type AvatarState } from '../components/InterviewerAv
 import { YouCamera } from '../components/YouCamera';
 import { VoiceInput, type TranscriptMeta } from '../components/VoiceInput';
 import type { InterviewQuestion, ScoreResponse } from '../api/explainApi';
-import { speak, elevenLabsConfigured } from '../api/ttsApi';
+import { speak, elevenLabsConfigured, getTTSAudioContext, setTTSRecordingDestination } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
 import { generateCoachingMessage, type CoachingMessage } from '../utils/coachingEngine';
@@ -277,6 +277,7 @@ export default function InterviewRoomPage() {
 
     // ── Session recording ─────────────────────────────────────────────────────
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingFailed, setRecordingFailed] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingChunksRef = useRef<Blob[]>([]);
@@ -284,6 +285,15 @@ export default function InterviewRoomPage() {
   const tabStreamRef = useRef<MediaStream | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
   const recordingStartTimeRef = useRef<number>(0);
+  // Hidden elements that composite the candidate's own webcam (+ a question caption) onto a
+  // canvas, which is what's actually recorded. Deliberately NOT getDisplayMedia (screen/tab
+  // capture) — no mobile browser exposes that API to web content at all, so relying on it meant
+  // every mobile interview silently recorded nothing. canvas.captureStream() works identically
+  // on desktop and mobile, needs only the same camera/mic permission the app already asks for.
+  const recordVideoElRef = useRef<HTMLVideoElement | null>(null);
+  const recordCanvasElRef = useRef<HTMLCanvasElement | null>(null);
+  const recordDrawFrameRef = useRef<number>(0);
+  const recordCaptionRef = useRef<string>('');
   const chapterMarkersRef = useRef<{ questionIndex: number; questionText: string; competency: string; offsetSeconds: number; isMcq?: boolean; mcqOrdinal?: number }[]>([]);
   // Stable for the whole room session — used as the Cosmos doc id so the auto-upload
   // (below) and closeInterview's navigate() state always refer to the same saved record.
@@ -304,47 +314,112 @@ export default function InterviewRoomPage() {
   };
 
   const startRecording = useCallback(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const supportsScreenCapture = typeof (navigator.mediaDevices as any)?.getDisplayMedia === 'function';
     try {
-      const mimeType = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'audio/webm']
+      const mimeType = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
         .find(t => MediaRecorder.isTypeSupported(t)) ?? '';
 
-      // Capture the full browser tab — video shows the entire interview room
-      // (Sarah, James, candidate webcam, question cards, MCQ overlay, coaching)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const tabStream: MediaStream = await (navigator.mediaDevices as any).getDisplayMedia({
-        video: { displaySurface: 'browser', frameRate: 30 },
-        audio: true,           // captures ElevenLabs voices playing in the tab
-        preferCurrentTab: true,
-      });
+      let compositeStream: MediaStream;
 
-      // Separately capture mic so candidate answers are recorded even if
-      // getDisplayMedia audio doesn't include the mic (browser-dependent)
-      tabStreamRef.current = tabStream;
-      let micStream: MediaStream | null = null;
-      try {
-        micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-        micStreamRef.current = micStream;
-      } catch { /* mic denied — tab audio only */ }
+      if (supportsScreenCapture) {
+        // Desktop — capture the full browser tab, unchanged: Sarah, James, question cards,
+        // MCQ overlays, coaching, everything visible on screen.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const tabStream: MediaStream = await (navigator.mediaDevices as any).getDisplayMedia({
+          video: { displaySurface: 'browser', frameRate: 30 },
+          audio: true,           // captures ElevenLabs voices playing in the tab
+          preferCurrentTab: true,
+        });
+        tabStreamRef.current = tabStream;
 
-      // Mix tab audio + mic audio into one track via AudioContext
-      const audioCtx = new AudioContext();
-      const dest = audioCtx.createMediaStreamDestination();
+        let micStream: MediaStream | null = null;
+        try {
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+          micStreamRef.current = micStream;
+        } catch { /* mic denied — tab audio only */ }
 
-      const tabAudioTracks = tabStream.getAudioTracks();
-      if (tabAudioTracks.length > 0) {
-        const tabSource = audioCtx.createMediaStreamSource(new MediaStream(tabAudioTracks));
-        tabSource.connect(dest);
+        const audioCtx = new AudioContext();
+        const dest = audioCtx.createMediaStreamDestination();
+        const tabAudioTracks = tabStream.getAudioTracks();
+        if (tabAudioTracks.length > 0) {
+          audioCtx.createMediaStreamSource(new MediaStream(tabAudioTracks)).connect(dest);
+        }
+        if (micStream) audioCtx.createMediaStreamSource(micStream).connect(dest);
+
+        compositeStream = new MediaStream([...tabStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
+
+        tabStream.getVideoTracks()[0]?.addEventListener('ended', () => {
+          micStream?.getTracks().forEach(t => t.stop());
+          audioCtx.close();
+        });
+      } else {
+        // Mobile — no browser exposes screen/tab capture to web content here at all, so
+        // getDisplayMedia would never even show a prompt. Fall back to the candidate's own
+        // camera + a question caption composited onto a canvas, instead of silently
+        // recording nothing. Desktop is untouched by this branch entirely.
+        const camStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: 1280, height: 720 },
+          audio: true,
+        });
+        tabStreamRef.current = camStream; // stopped generically in uploadRecording's cleanup
+
+        const video = recordVideoElRef.current;
+        const canvas = recordCanvasElRef.current;
+        if (!video || !canvas) throw new Error('recording canvas not mounted');
+        video.srcObject = camStream;
+        await video.play();
+
+        canvas.width = 1280;
+        canvas.height = 720;
+        const ctx2d = canvas.getContext('2d');
+        if (!ctx2d) throw new Error('canvas 2d context unavailable');
+
+        const draw = () => {
+          // Mirror the feed, matching every other self-view in this app
+          ctx2d.save();
+          ctx2d.scale(-1, 1);
+          ctx2d.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+          ctx2d.restore();
+
+          const caption = recordCaptionRef.current;
+          if (caption) {
+            ctx2d.font = '600 28px -apple-system, "Segoe UI", sans-serif';
+            const words = caption.split(/\s+/);
+            const lines: string[] = [];
+            let line = '';
+            for (const word of words) {
+              const test = line ? `${line} ${word}` : word;
+              if (line && ctx2d.measureText(test).width > canvas.width - 64) { lines.push(line); line = word; }
+              else line = test;
+            }
+            if (line) lines.push(line);
+            const capped = lines.slice(0, 3);
+            const lineHeight = 36;
+            const barHeight = capped.length * lineHeight + 32;
+            ctx2d.fillStyle = 'rgba(6,10,20,0.75)';
+            ctx2d.fillRect(0, canvas.height - barHeight, canvas.width, barHeight);
+            ctx2d.fillStyle = '#ffffff';
+            ctx2d.textBaseline = 'top';
+            capped.forEach((l, i) => ctx2d.fillText(l, 32, canvas.height - barHeight + 16 + i * lineHeight));
+          }
+
+          recordDrawFrameRef.current = requestAnimationFrame(draw);
+        };
+        draw();
+
+        const canvasStream = canvas.captureStream(30);
+
+        // Mix candidate mic + AI interviewer voices (via the shared TTS AudioContext) into
+        // one audio track — must be the SAME context speak() uses, nodes can't cross contexts.
+        // Desktop doesn't need this: tab-audio capture above already includes ElevenLabs playback.
+        const audioCtx = await getTTSAudioContext();
+        const dest = audioCtx.createMediaStreamDestination();
+        audioCtx.createMediaStreamSource(camStream).connect(dest);
+        setTTSRecordingDestination(dest);
+
+        compositeStream = new MediaStream([...canvasStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
       }
-      if (micStream) {
-        const micSource = audioCtx.createMediaStreamSource(micStream);
-        micSource.connect(dest);
-      }
-
-      // Build composite stream: tab video + mixed audio
-      const compositeStream = new MediaStream([
-        ...tabStream.getVideoTracks(),
-        ...dest.stream.getAudioTracks(),
-      ]);
 
       recordingStreamRef.current = compositeStream;
       recordingChunksRef.current = [];
@@ -356,14 +431,12 @@ export default function InterviewRoomPage() {
       recorder.ondataavailable = e => { if (e.data.size > 0) recordingChunksRef.current.push(e.data); };
       recorder.start(1000);
       setIsRecording(true);
-
-      // Stop mic stream when tab stream ends (user stops sharing)
-      tabStream.getVideoTracks()[0]?.addEventListener('ended', () => {
-        micStream?.getTracks().forEach(t => t.stop());
-        audioCtx.close();
-      });
-    } catch {
-      // User dismissed share dialog or permission denied — interview continues unrecorded
+      setRecordingFailed(false);
+    } catch (err) {
+      console.error('[InterviewRoom] Failed to start recording:', err);
+      setRecordingFailed(true);
+      // Interview continues unrecorded, but this is now visible in the status badge
+      // instead of silently producing a video-less summary page.
     }
   }, []);
 
@@ -423,12 +496,15 @@ export default function InterviewRoomPage() {
       return;
     }
     recorder.onstop = () => {
-      // Stop all streams — composite, tab (getDisplayMedia), and mic
+      // Stop all streams — composite, tab/camera, and mic — and tear down the mobile-path
+      // canvas draw loop + TTS recording tap (harmless no-ops if the desktop path ran instead)
       recordingStreamRef.current?.getTracks().forEach(t => t.stop());
       tabStreamRef.current?.getTracks().forEach(t => t.stop());
       micStreamRef.current?.getTracks().forEach(t => t.stop());
       tabStreamRef.current = null;
       micStreamRef.current = null;
+      cancelAnimationFrame(recordDrawFrameRef.current);
+      setTTSRecordingDestination(null);
       setIsRecording(false);
       const mimeType = recordingChunksRef.current[0]?.type ?? 'video/webm';
       const blob = new Blob(recordingChunksRef.current, { type: mimeType });
@@ -471,6 +547,11 @@ export default function InterviewRoomPage() {
 
   const q = questions[qIndex];
   const isHrQuestion = q?.source === 'HR';
+
+  // Keeps the mobile-path recording caption in sync without restarting the draw loop
+  useEffect(() => {
+    recordCaptionRef.current = (phase === 'asking' || phase === 'answering') ? (q?.questionText ?? '') : '';
+  }, [phase, q]);
 
   const avgScore = runningScores.length > 0
     ? Math.round(runningScores.reduce((s, v) => s + v, 0) / runningScores.length * 100)
@@ -885,6 +966,11 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       display: 'flex', flexDirection: 'column',
       userSelect: 'none',
     }}>
+      {/* Hidden elements for the mobile-path recording (canvas-composited webcam + caption) —
+          never visible, but must be real DOM elements for captureStream() to work reliably */}
+      <video ref={recordVideoElRef} playsInline muted style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 1, height: 1 }} />
+      <canvas ref={recordCanvasElRef} style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 1, height: 1 }} />
+
       {/* Cinematic MCQ overlay */}
       {mcqActive && activeMcqQuestion && (
         <CinematicMCQ
@@ -997,6 +1083,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 <><span>⚠</span>Save failed</>
               ) : isRecording ? (
                 <><motion.span animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#EF4444', flexShrink: 0 }} />Recording</>
+              ) : recordingFailed ? (
+                <><span>⚠</span><span>No video — camera/mic denied</span></>
               ) : (
                 <><span style={{ color: 'var(--text-3)' }}>⏺</span><span style={{ color: 'var(--text-3)' }}>Standby</span></>
               )}

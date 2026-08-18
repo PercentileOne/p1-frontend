@@ -427,6 +427,11 @@ export default function InterviewSummaryPage() {
   const chapters: { questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[] = src.chapters ?? [];
   const interviewId: string | undefined = src.interviewId ?? routeId;
   const candidateId: string | undefined = src.candidateId ?? authUser?.id;
+  // Route-state (just finished) never carries createdAt — the session isn't saved to Cosmos
+  // yet at that point — so "now" is accurate there; a fetched/reloaded session has the real one.
+  const createdAt: string = typeof src.createdAt === 'string' ? src.createdAt : new Date().toISOString();
+  const createdAtLabel = new Date(createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    + ' · ' + new Date(createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   // Revoke blob URL only when the whole summary page unmounts — but only if it's a local
   // blob: URL we created; a fetched session's videoUrl is a real hosted URL, never revoke that.
   useEffect(() => { return () => { if (playbackUrl?.startsWith('blob:')) URL.revokeObjectURL(playbackUrl); }; }, []);
@@ -600,6 +605,7 @@ ${questionsHtml}
           <div>
             <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '4px' }}>Explain · Interview Summary</div>
             <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>Session Complete</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>{createdAtLabel}</div>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>

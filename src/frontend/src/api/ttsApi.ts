@@ -78,10 +78,20 @@ const ELEVENLABS_MODEL = 'eleven_turbo_v2'; // lowest latency, high quality
 
 // Shared AudioContext — created once, reused across all TTS calls
 let _audioCtx: AudioContext | null = null;
-async function getAudioContext(): Promise<AudioContext> {
+export async function getTTSAudioContext(): Promise<AudioContext> {
   if (!_audioCtx || _audioCtx.state === 'closed') _audioCtx = new AudioContext();
   if (_audioCtx.state === 'suspended') await _audioCtx.resume();
   return _audioCtx;
+}
+async function getAudioContext(): Promise<AudioContext> { return getTTSAudioContext(); }
+
+// Optional tap so session recording can capture the AI interviewers' voices alongside
+// the candidate's mic — set/cleared by whoever owns the recording (e.g. InterviewRoomPage).
+// Must be a node on the SAME AudioContext returned by getTTSAudioContext(), since Web Audio
+// nodes can't connect across different contexts.
+let _recordingDestination: MediaStreamAudioDestinationNode | null = null;
+export function setTTSRecordingDestination(node: MediaStreamAudioDestinationNode | null) {
+  _recordingDestination = node;
 }
 
 async function speakElevenLabs(
@@ -147,6 +157,7 @@ async function speakElevenLabs(
     source.connect(gainNode);
   }
   gainNode.connect(ctx.destination);
+  if (_recordingDestination) gainNode.connect(_recordingDestination);
 
   let ended = false;
   const done = () => { if (!ended) { ended = true; onEnd(); } };

@@ -65,6 +65,10 @@ export default function SharedInterviewPage() {
 
   const answers = data.answers ?? [];
   const name = [data.cvCtx?.firstName, data.cvCtx?.lastName].filter(Boolean).join(' ');
+  const createdAtLabel = data.createdAt
+    ? new Date(data.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+      + ' · ' + new Date(data.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+    : null;
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px 60px', display: 'flex', flexDirection: 'column', gap: 28 }}>
@@ -85,6 +89,7 @@ export default function SharedInterviewPage() {
           {name ? `${name}'s ` : ''}{data.role ?? 'Interview'}{data.company ? ` at ${data.company}` : ''}
         </h1>
         <div style={{ fontSize: 13, color: 'var(--text-3)' }}>Recorded on InterviewMe.global — the world's first interview broadcast platform.</div>
+        {createdAtLabel && <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{createdAtLabel}</div>}
       </div>
 
       {/* Video first — this is what a recruiter actually came here to do */}
