@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShareModal } from '../components/ShareModal';
 import { SaveDecisionPanel } from '../components/SaveDecisionPanel';
 import { InterviewResultsBody } from '../components/InterviewResultsBody';
+import { WaveformBars } from '../components/InterviewerAvatar';
 import type { InterviewQuestion, ScoreResponse } from '../api/explainApi';
 import type { TranscriptMeta } from '../components/VoiceInput';
 import type { CVContext, JobSpecContext } from '../utils/contextBuilder';
@@ -509,6 +510,8 @@ export default function InterviewSummaryPage() {
   // ── Mike's verbal debrief ────────────────────────────────────────────────────
   const mikeSpokeRef = useRef(false);
   const [mikeActive, setMikeActive] = useState(false);
+  const cancelMikeRef = useRef<(() => void) | null>(null);
+  const [mikeAnalyser, setMikeAnalyser] = useState<AnalyserNode | null>(null);
 
   const buildMikeScript = useCallback(() => {
     const name = cvCtx?.firstName ?? 'there';
@@ -544,11 +547,29 @@ export default function InterviewSummaryPage() {
   }, [cvCtx, overall, strengths, improvements, weakestTag]);
 
   function handleGetFeedback() {
-    if (mikeSpokeRef.current || !answers.length) return;
+    // Playing — this click means Stop.
+    if (mikeActive) {
+      cancelMikeRef.current?.();
+      cancelMikeRef.current = null;
+      setMikeAnalyser(null);
+      setMikeActive(false);
+      return;
+    }
+    if (!answers.length) return;
     mikeSpokeRef.current = true;
     setMikeActive(true);
-    speak(buildMikeScript(), 'mike', () => setMikeActive(false));
+    cancelMikeRef.current = speak(buildMikeScript(), 'mike', () => {
+      setMikeActive(false);
+      setMikeAnalyser(null);
+      cancelMikeRef.current = null;
+    }, (a) => setMikeAnalyser(a));
   }
+
+  // Stop Mike if the candidate navigates away mid-debrief, rather than leaving him
+  // talking into an unmounted page.
+  useEffect(() => {
+    return () => { cancelMikeRef.current?.(); };
+  }, []);
 
   // cvCtx name only exists if a CV happened to be parsed for this session — the real
   // account name is always available and is what the upload's own candidateName field carries.
@@ -760,21 +781,26 @@ ${questionsHtml}
                 <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#34d399', marginBottom: '2px' }}>Mike · Your Agent</div>
                 <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Delivering your debrief…</div>
               </div>
-              <div style={{ marginLeft: 'auto', display: 'flex', gap: '3px', alignItems: 'flex-end', height: '20px' }}>
-                {[0, 1, 2, 3, 4].map(i => (
-                  <div key={i} style={{
-                    width: 3, borderRadius: 2, background: '#34d399',
-                    height: '40%', animation: `mike-bar 0.9s ease-in-out ${i * 0.15}s infinite alternate`,
-                  }} />
-                ))}
+              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <WaveformBars active={mikeActive} color="#34d399" analyserNode={mikeAnalyser} />
+                <button
+                  onClick={handleGetFeedback}
+                  style={{
+                    flexShrink: 0, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)',
+                    color: '#F87171', borderRadius: '10px', padding: '9px 18px', fontSize: '13px', fontWeight: 700,
+                    cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '7px',
+                  }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                  Stop Feedback
+                </button>
               </div>
             </div>
             <style>{`
               @keyframes mike-pulse { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.25);opacity:0} }
-              @keyframes mike-bar { from{height:20%} to{height:90%} }
             `}</style>
           </motion.div>
-        ) : (!mikeSpokeRef.current && answers.length > 0) ? (
+        ) : answers.length > 0 ? (
           <motion.div
             key="mike-cta"
             initial={{ opacity: 0, y: -12 }}
@@ -796,7 +822,9 @@ ${questionsHtml}
               }}>M</div>
               <div>
                 <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#34d399', marginBottom: '2px' }}>Mike · Your Agent</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Ready to give you a personalised debrief on your session.</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>
+                  {mikeSpokeRef.current ? 'Want to hear that again?' : 'Ready to give you a personalised debrief on your session.'}
+                </div>
               </div>
               <button
                 onClick={handleGetFeedback}
@@ -805,10 +833,11 @@ ${questionsHtml}
                   background: 'linear-gradient(135deg, #34d399, #4F8EF7)',
                   color: '#fff', border: 'none', borderRadius: '10px',
                   padding: '10px 20px', fontSize: '13px', fontWeight: 700,
-                  cursor: 'pointer', fontFamily: 'inherit',
+                  cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '7px',
                 }}
               >
-                Get Feedback
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                {mikeSpokeRef.current ? 'Play Feedback' : 'Get Feedback'}
               </button>
             </div>
           </motion.div>

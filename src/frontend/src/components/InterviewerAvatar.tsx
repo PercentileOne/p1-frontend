@@ -41,7 +41,7 @@ const PROFILES = {
 const BAR_COUNT = 10;
 const BAR_SHAPES = [0.45, 0.72, 0.88, 1.0, 0.95, 0.78, 0.92, 0.65, 0.82, 0.50];
 
-function WaveformBars({ active, color, analyserNode }: {
+export function WaveformBars({ active, color, analyserNode }: {
   active: boolean;
   color: string;
   analyserNode?: AnalyserNode | null;
