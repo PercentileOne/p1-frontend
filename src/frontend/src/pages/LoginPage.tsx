@@ -2,9 +2,8 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Loader2, Lock, User, ChevronDown } from "lucide-react";
-import { authApi, type ApiError } from "../api/authApi";
+import { authApi, type ApiError, type AuthUser } from "../api/authApi";
 import { useAuthStore } from "../auth/authStore";
-import { defaultPortalForPermissions } from "../auth/permissionMatrix";
 import type { Permission } from "../auth/permissionMatrix";
 
 type UserRole = 'Candidate' | 'Employer' | 'Recruiter' | 'Investor';
@@ -15,6 +14,22 @@ const ROLE_OPTIONS: { value: UserRole; label: string; emoji: string; subtitle: s
   { value: 'Recruiter',  emoji: '🔍', label: 'Recruiter',  subtitle: 'I place candidates' },
   { value: 'Investor',   emoji: '💼', label: 'Investor',   subtitle: 'I\'m investing in the platform' },
 ];
+
+// Which real permission each role requires — Investor has no dedicated portal yet, so it's
+// exempt (see the Investor branch below, which just routes to the shared dashboard).
+const ROLE_PERMISSION: Record<'Candidate' | 'Employer' | 'Recruiter', Permission> = {
+  Candidate: 'CAN_START_INTERVIEW',
+  Employer:  'CAN_VIEW_CLIENT_PORTAL',
+  Recruiter: 'CAN_VIEW_RECRUITER_PORTAL',
+};
+
+interface RoleMismatch {
+  requested: UserRole;
+  available: ('Candidate' | 'Employer' | 'Recruiter')[];
+  token: string;
+  user: AuthUser;
+  permissions: string[];
+}
 
 /* ══════════════════════════════════════════════════════════════
    P1 LOGIN SCREEN — Cinematic OS Entrance
@@ -35,6 +50,7 @@ export default function LoginPage() {
   const [authError,  setAuthError]  = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole>('Candidate');
   const [roleDropOpen, setRoleDropOpen] = useState(false);
+  const [roleMismatch, setRoleMismatch] = useState<RoleMismatch | null>(null);
 
   const storeLogin = useAuthStore(s => s.login);
 
@@ -56,11 +72,26 @@ export default function LoginPage() {
     }).catch(() => {});
   };
 
+  // Completes sign-in for a confirmed-available role — shared by the normal path and by the
+  // one-click "continue as X instead" recovery when the originally-selected role didn't match.
+  const completeLogin = (role: UserRole, token: string, user: AuthUser, permissions: string[], email: string) => {
+    storeLogin(token, user, permissions);
+    notifyEmailJS(email, `Successful login as ${role}`);
+    setPhase("success");
+    setTimeout(() => {
+      if (role === 'Investor')  { navigate('/dashboard'); return; }
+      if (role === 'Recruiter') { window.location.href = 'https://recruiter.interviewme.global'; return; }
+      if (role === 'Employer')  { window.location.href = 'https://employer.interviewme.global'; return; }
+      navigate('/dashboard');
+    }, 2200);
+  };
+
   const handleLogin = async () => {
     if (!username.trim()) { setEmailError("Email is required"); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username.trim())) { setEmailError("Please enter a valid email address"); return; }
     setEmailError("");
     setAuthError("");
+    setRoleMismatch(null);
     setPhase("loading");
 
     const email = username.trim().toLowerCase();
@@ -70,36 +101,23 @@ export default function LoginPage() {
 
       // Fetch the session to get the live permissions list from the .NET backend
       const session = await authApi.getSession(token);
-
-      storeLogin(token, user, session.permissions);
-
-      notifyEmailJS(email, `Successful login as ${selectedRole}`);
-
-      setPhase("success");
       const permSet = new Set(session.permissions) as Set<Permission>;
 
-      setTimeout(() => {
-        if (selectedRole === 'Investor') {
-          navigate('/dashboard');
-          return;
-        }
-        if (selectedRole === 'Recruiter' && permSet.has('CAN_VIEW_RECRUITER_PORTAL')) {
-          window.location.href = 'https://recruiter.interviewme.global';
-          return;
-        }
-        if (selectedRole === 'Employer' && permSet.has('CAN_VIEW_CLIENT_PORTAL')) {
-          window.location.href = 'https://employer.interviewme.global';
-          return;
-        }
-        if (permSet.has('CAN_START_INTERVIEW')) {
-          navigate('/dashboard');
-        } else {
-          const dest = defaultPortalForPermissions(permSet);
-          const isSameOrigin = dest.startsWith(window.location.origin) || dest === '/cockpit';
-          if (isSameOrigin) navigate('/cockpit');
-          else window.location.href = dest;
-        }
-      }, 2200);
+      // The role picker is a preference, not a grant — some accounts genuinely hold more than
+      // one (a recruitment consultant who also has their own candidate profile, say). If the
+      // selected role's permission isn't actually present, don't silently land them in whatever
+      // portal they DO have access to — that's confusing and looks like a security hole even
+      // though the real permission check (here, and again at every protected route) is correct.
+      // Investor has no dedicated portal yet, so it's exempt from this check.
+      if (selectedRole !== 'Investor' && !permSet.has(ROLE_PERMISSION[selectedRole])) {
+        const available = (Object.keys(ROLE_PERMISSION) as (keyof typeof ROLE_PERMISSION)[])
+          .filter(r => permSet.has(ROLE_PERMISSION[r]));
+        setPhase("idle");
+        setRoleMismatch({ requested: selectedRole, available, token, user, permissions: session.permissions });
+        return;
+      }
+
+      completeLogin(selectedRole, token, user, session.permissions, email);
     } catch (err) {
       setPhase("idle");
       const apiErr = err as ApiError;
@@ -304,6 +322,41 @@ export default function LoginPage() {
               <p className="text-[11px] text-red-400 mt-1 ml-1">{authError}</p>
             )}
           </div>
+
+          {/* Role mismatch — account authenticated fine, just doesn't hold the selected role.
+              Offer a one-click switch to a role it does have, using the same already-verified
+              session (no need to re-enter the password) — handles multi-role accounts cleanly
+              instead of a dead-end error or a silent redirect. */}
+          {roleMismatch && (
+            <div style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: 10, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, marginTop: -4 }}>
+              <p style={{ fontSize: 12, color: "#F59E0B", margin: 0, lineHeight: 1.5 }}>
+                This account doesn't have {roleMismatch.requested} access.
+              </p>
+              {roleMismatch.available.length > 0 ? (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {roleMismatch.available.map(r => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => {
+                        const { token, user, permissions } = roleMismatch;
+                        setSelectedRole(r);
+                        setRoleMismatch(null);
+                        completeLogin(r, token, user, permissions, username.trim().toLowerCase());
+                      }}
+                      style={{ background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.4)", borderRadius: 8, padding: "7px 12px", color: "#FBBF24", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+                    >
+                      Continue as {r} instead →
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ fontSize: 12, color: "rgba(245,158,11,0.7)", margin: 0 }}>
+                  This account doesn't have access to any portal yet — contact support if that's unexpected.
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Forgot password */}
           <div className="text-right" style={{ marginTop: -8 }}>
