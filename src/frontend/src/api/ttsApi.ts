@@ -209,7 +209,9 @@ export function speak(
   onEnd: () => void,
   onAnalyser?: (a: AnalyserNode | null) => void,
 ): () => void {
-  const voiceId = role === 'hr' ? VOICE_HR : role === 'mike' ? (VOICE_MIKE ?? VOICE_TECH) : VOICE_TECH;
+  // `||` not `??` — an unset GitHub secret bakes in as an empty string at build time, not
+  // undefined, so `??` never falls through to VOICE_TECH and silently leaves voiceId as ''.
+  const voiceId = role === 'hr' ? VOICE_HR : role === 'mike' ? (VOICE_MIKE || VOICE_TECH) : VOICE_TECH;
 
   if (ELEVENLABS_KEY && voiceId) {
     let cancelled = false;
