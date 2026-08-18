@@ -178,7 +178,10 @@ app.MapPost("/api/ai/transcribe", async (HttpRequest req, HttpResponse res, IHtt
 
     using var content = new MultipartFormDataContent();
     var audioContent = new StreamContent(ms);
-    audioContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+    // MediaTypeHeaderValue rejects a full browser Content-Type like "audio/webm;codecs=opus" —
+    // its constructor only accepts a bare "type/subtype", no parameters. Use a clean one derived
+    // from the detected extension instead of re-parsing the raw request header.
+    audioContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue($"audio/{ext}");
     content.Add(audioContent, "file", $"recording.{ext}");
     content.Add(new StringContent("whisper-1"), "model");
     content.Add(new StringContent(language), "language");
