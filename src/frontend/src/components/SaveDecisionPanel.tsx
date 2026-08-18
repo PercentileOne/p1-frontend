@@ -111,7 +111,11 @@ export function SaveDecisionPanel({
         await new Promise(r => setTimeout(r, 2000));
         shareRes = await doShare();
       }
-      if (!shareRes.ok) throw new Error('Share failed');
+      if (!shareRes.ok) {
+        const body = await shareRes.text().catch(() => '(no body)');
+        console.error(`[SaveDecisionPanel] /share failed: HTTP ${shareRes.status}`, body);
+        throw new Error(`Share failed: HTTP ${shareRes.status}`);
+      }
       const shareData = await shareRes.json() as { shareToken: string; shareUrl: string; qrDataUri: string };
       setShareToken(shareData.shareToken);
       setShareUrl(shareData.shareUrl);
@@ -119,7 +123,8 @@ export function SaveDecisionPanel({
       setStep('saved');
       onSaved?.(shareData.shareToken, shareData.shareUrl);
       setTimeout(() => setStep('qr'), 1400);
-    } catch {
+    } catch (err) {
+      console.error('[SaveDecisionPanel] Save failed:', err);
       setError('Something went wrong. Please try again.');
       setStep('decide');
     }
