@@ -439,7 +439,14 @@ export default function InterviewSummaryPage() {
   // Poll until it lands so Save/Share/QR are never offered before there's actually anything to
   // share yet. A revisited/reloaded session (no route state) got here via a successful fetch,
   // so the upload is already known to be done — no polling needed there.
+  //
+  // Never give up and silently mark this "not pending" on a timeout — a real video upload on a
+  // slow connection can genuinely take several minutes, and falsely clearing uploadPending lets
+  // Save become clickable while the interview still doesn't exist on the server, which fails
+  // with a bare "Something went wrong" and no indication why. Only an actual 200 response (or
+  // the user navigating away) should ever clear this.
   const [uploadPending, setUploadPending] = useState(hasRouteState);
+  const [uploadSlow, setUploadSlow] = useState(false);
   useEffect(() => {
     if (!hasRouteState || !candidateId || !interviewId || !authToken) { setUploadPending(false); return; }
     let cancelled = false;
@@ -448,17 +455,18 @@ export default function InterviewSummaryPage() {
     const poll = () => {
       if (cancelled) return;
       attempts += 1;
+      if (attempts === 20) setUploadSlow(true); // ~60s in — still polling, just let them know it's slower than usual
       fetch(`${apiBase}/api/interviews/${encodeURIComponent(candidateId)}/${encodeURIComponent(interviewId)}`, {
         headers: { Authorization: `Bearer ${authToken}` },
       })
         .then(res => {
           if (cancelled) return;
           if (res.ok) { setUploadPending(false); return; }
-          if (attempts < 20) setTimeout(poll, 3000); else setUploadPending(false); // give up after ~60s either way
+          setTimeout(poll, 3000);
         })
         .catch(() => {
           if (cancelled) return;
-          if (attempts < 20) setTimeout(poll, 3000); else setUploadPending(false);
+          setTimeout(poll, 3000);
         });
     };
     poll();
@@ -643,6 +651,11 @@ ${questionsHtml}
           <div>
             <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '4px' }}>Explain · Interview Summary</div>
             <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>Session Complete</div>
+            {(pdfCandidateName || jobCtx?.title) && (
+              <div style={{ fontSize: '13px', color: 'var(--text-2)', fontWeight: 600, marginTop: '4px' }}>
+                {pdfCandidateName}{pdfCandidateName && jobCtx?.title ? ' · ' : ''}{jobCtx?.title}{jobCtx?.company ? ` at ${jobCtx.company}` : ''}
+              </div>
+            )}
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>{createdAtLabel}</div>
           </div>
         </div>
@@ -671,7 +684,9 @@ ${questionsHtml}
           <motion.span animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1 }}
             style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />
           <span style={{ fontSize: '13px', fontWeight: 600, color: '#F59E0B' }}>
-            Still uploading your video and interview data — usually under a minute. Don't share or scan the QR code yet.
+            {uploadSlow
+              ? "Still uploading — taking longer than usual, likely a slower connection. Hang tight, it'll land. Don't share or scan the QR code yet."
+              : "Still uploading your video and interview data — usually under a minute. Don't share or scan the QR code yet."}
           </span>
         </div>
       )}
@@ -799,6 +814,7 @@ ${questionsHtml}
               interviewId={interviewId}
               alreadyShared={!!src.isShared}
               uploadPending={uploadPending}
+              uploadSlow={uploadSlow}
               onSaved={(token, url) => {
                 setSavedShareToken(token);
                 setSavedShareUrl(url);

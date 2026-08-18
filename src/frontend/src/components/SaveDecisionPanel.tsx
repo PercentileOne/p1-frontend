@@ -38,6 +38,7 @@ interface Props {
   apiBase?: string;
   alreadyShared?: boolean; // true when the fetched interview data says this was saved before
   uploadPending?: boolean; // true while the background video/data upload hasn't landed yet
+  uploadSlow?: boolean;    // true once that's taken noticeably longer than usual
   onSaved?: (shareToken: string, shareUrl: string) => void;
   onDiscarded?: () => void;
 }
@@ -52,6 +53,7 @@ export function SaveDecisionPanel({
   interviewId,
   alreadyShared = false,
   uploadPending = false,
+  uploadSlow = false,
   onSaved,
   onDiscarded,
 }: Props) {
@@ -198,7 +200,9 @@ export function SaveDecisionPanel({
 
             {uploadPending && (
               <div style={{ fontSize: '12px', color: '#F59E0B', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '10px', padding: '10px 14px', marginBottom: '16px', userSelect: 'none', cursor: 'default' }}>
-                ⏳ Still uploading — this becomes available as soon as it lands, usually under a minute.
+                {uploadSlow
+                  ? '⏳ Still uploading — taking longer than usual, likely a slower connection. Hang tight, it\'ll land.'
+                  : '⏳ Still uploading — this becomes available as soon as it lands, usually under a minute.'}
               </div>
             )}
 
