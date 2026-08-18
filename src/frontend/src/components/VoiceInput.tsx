@@ -193,13 +193,17 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
           if (chunksRef.current.length > 0) {
             const mimeType = chunksRef.current[0]?.type ?? 'audio/webm';
             const blob = new Blob(chunksRef.current, { type: mimeType });
+            console.log(`[VoiceInput] Sending ${blob.size} bytes (${mimeType}) to Whisper, duration ${duration.toFixed(1)}s`);
             const result = await transcribeWithWhisper(blob, duration);
             text = result.text;
             confidence = result.confidence;
+            console.log(`[VoiceInput] Whisper returned: ${JSON.stringify(text)}`);
+          } else {
+            console.warn('[VoiceInput] No audio chunks recorded — recorder produced nothing');
           }
-        } catch {
+        } catch (err) {
           stopMic();
-          // Fall back to Web Speech transcript silently
+          console.error('[VoiceInput] Whisper transcription failed, falling back to Web Speech:', err);
         }
       } else {
         if (recorder?.state !== 'inactive') recorder?.stop();
@@ -210,6 +214,9 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
 
       // Always fire onTranscript — use fallback text if Whisper gave nothing
       const finalText = text || fallbackText;
+      if (!finalText) {
+        console.warn(`[VoiceInput] Nothing captured — Whisper text: ${JSON.stringify(text)}, Web Speech fallback: ${JSON.stringify(fallbackText)}. The answer will be silently dropped.`);
+      }
       setInterim('');
       interimRef.current = '';
       chunksRef.current = [];
