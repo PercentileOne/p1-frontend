@@ -192,7 +192,7 @@ export function SaveDecisionPanel({
             )}
 
             {uploadPending && (
-              <div style={{ fontSize: '12px', color: '#F59E0B', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '10px', padding: '10px 14px', marginBottom: '16px' }}>
+              <div style={{ fontSize: '12px', color: '#F59E0B', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '10px', padding: '10px 14px', marginBottom: '16px', userSelect: 'none', cursor: 'default' }}>
                 ⏳ Still uploading — this becomes available as soon as it lands, usually under a minute.
               </div>
             )}

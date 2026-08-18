@@ -667,7 +667,7 @@ ${questionsHtml}
           a while; nothing to share yet until it lands, so make that unmistakable instead of
           letting Save/Share/QR look ready when they aren't. */}
       {uploadPending && (
-        <div style={{ background: 'rgba(245,158,11,0.08)', borderBottom: '1px solid rgba(245,158,11,0.25)', padding: '12px 28px', display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+        <div style={{ background: 'rgba(245,158,11,0.08)', borderBottom: '1px solid rgba(245,158,11,0.25)', padding: '12px 28px', display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center', userSelect: 'none', cursor: 'default' }}>
           <motion.span animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1 }}
             style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />
           <span style={{ fontSize: '13px', fontWeight: 600, color: '#F59E0B' }}>
