@@ -432,6 +432,39 @@ export default function InterviewSummaryPage() {
   const createdAt: string = typeof src.createdAt === 'string' ? src.createdAt : new Date().toISOString();
   const createdAtLabel = new Date(createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     + ' · ' + new Date(createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+  // Right after finishing, the room's background upload (metadata + video together, one call)
+  // may still be in flight — the interview document doesn't exist in Cosmos at all until it
+  // completes, so a fetch-by-id 404s during that window rather than showing a "pending" state.
+  // Poll until it lands so Save/Share/QR are never offered before there's actually anything to
+  // share yet. A revisited/reloaded session (no route state) got here via a successful fetch,
+  // so the upload is already known to be done — no polling needed there.
+  const [uploadPending, setUploadPending] = useState(hasRouteState);
+  useEffect(() => {
+    if (!hasRouteState || !candidateId || !interviewId || !authToken) { setUploadPending(false); return; }
+    let cancelled = false;
+    let attempts = 0;
+    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+    const poll = () => {
+      if (cancelled) return;
+      attempts += 1;
+      fetch(`${apiBase}/api/interviews/${encodeURIComponent(candidateId)}/${encodeURIComponent(interviewId)}`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      })
+        .then(res => {
+          if (cancelled) return;
+          if (res.ok) { setUploadPending(false); return; }
+          if (attempts < 20) setTimeout(poll, 3000); else setUploadPending(false); // give up after ~60s either way
+        })
+        .catch(() => {
+          if (cancelled) return;
+          if (attempts < 20) setTimeout(poll, 3000); else setUploadPending(false);
+        });
+    };
+    poll();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasRouteState, candidateId, interviewId, authToken]);
   // Revoke blob URL only when the whole summary page unmounts — but only if it's a local
   // blob: URL we created; a fetched session's videoUrl is a real hosted URL, never revoke that.
   useEffect(() => { return () => { if (playbackUrl?.startsWith('blob:')) URL.revokeObjectURL(playbackUrl); }; }, []);
@@ -630,6 +663,19 @@ ${questionsHtml}
         </div>
       </div>
 
+      {/* Still uploading — video + interview data upload happens in the background and can take
+          a while; nothing to share yet until it lands, so make that unmistakable instead of
+          letting Save/Share/QR look ready when they aren't. */}
+      {uploadPending && (
+        <div style={{ background: 'rgba(245,158,11,0.08)', borderBottom: '1px solid rgba(245,158,11,0.25)', padding: '12px 28px', display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+          <motion.span animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1 }}
+            style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#F59E0B' }}>
+            Still uploading your video and interview data — usually under a minute. Don't share or scan the QR code yet.
+          </span>
+        </div>
+      )}
+
       {/* Tab bar */}
       <div style={{ background: 'var(--bg2)', borderBottom: '1px solid var(--border)', padding: '0 28px' }}>
         <div style={{ display: 'flex', gap: '0', maxWidth: '840px', margin: '0 auto' }}>
@@ -752,6 +798,7 @@ ${questionsHtml}
               candidateId={candidateId}
               interviewId={interviewId}
               alreadyShared={!!src.isShared}
+              uploadPending={uploadPending}
               onSaved={(token, url) => {
                 setSavedShareToken(token);
                 setSavedShareUrl(url);

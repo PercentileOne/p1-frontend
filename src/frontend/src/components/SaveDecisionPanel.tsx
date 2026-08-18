@@ -37,6 +37,7 @@ interface Props {
   interviewId?: string;    // the session's Cosmos doc id — set by InterviewRoomPage's auto-upload
   apiBase?: string;
   alreadyShared?: boolean; // true when the fetched interview data says this was saved before
+  uploadPending?: boolean; // true while the background video/data upload hasn't landed yet
   onSaved?: (shareToken: string, shareUrl: string) => void;
   onDiscarded?: () => void;
 }
@@ -50,6 +51,7 @@ export function SaveDecisionPanel({
   candidateId,
   interviewId,
   alreadyShared = false,
+  uploadPending = false,
   onSaved,
   onDiscarded,
 }: Props) {
@@ -189,26 +191,32 @@ export function SaveDecisionPanel({
               </div>
             )}
 
+            {uploadPending && (
+              <div style={{ fontSize: '12px', color: '#F59E0B', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '10px', padding: '10px 14px', marginBottom: '16px' }}>
+                ⏳ Still uploading — this becomes available as soon as it lands, usually under a minute.
+              </div>
+            )}
+
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              <button onClick={handleSave} style={{
+              <button onClick={handleSave} disabled={uploadPending} style={{
                 flex: 1, minWidth: '200px', padding: '16px 24px', borderRadius: '13px',
-                background: 'linear-gradient(135deg, #34D399, #059669)',
-                color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                background: uploadPending ? 'rgba(52,211,153,0.25)' : 'linear-gradient(135deg, #34D399, #059669)',
+                color: uploadPending ? 'rgba(255,255,255,0.5)' : '#fff', border: 'none', cursor: uploadPending ? 'default' : 'pointer', fontFamily: 'inherit',
                 fontSize: '14px', fontWeight: 800,
-                boxShadow: '0 8px 24px rgba(52,211,153,0.3)',
+                boxShadow: uploadPending ? 'none' : '0 8px 24px rgba(52,211,153,0.3)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
               }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
                 </svg>
-                Save this interview
+                {uploadPending ? 'Uploading…' : 'Save this interview'}
               </button>
 
-              <button onClick={handleDiscard} style={{
+              <button onClick={handleDiscard} disabled={uploadPending} style={{
                 flex: 1, minWidth: '200px', padding: '16px 24px', borderRadius: '13px',
                 background: 'rgba(255,255,255,0.04)', color: 'var(--text-3)',
-                border: '1px solid var(--border)', cursor: 'pointer', fontFamily: 'inherit',
-                fontSize: '14px', fontWeight: 700,
+                border: '1px solid var(--border)', cursor: uploadPending ? 'default' : 'pointer', fontFamily: 'inherit',
+                fontSize: '14px', fontWeight: 700, opacity: uploadPending ? 0.5 : 1,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
               }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
