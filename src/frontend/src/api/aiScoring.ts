@@ -710,6 +710,7 @@ export interface MCQQuestion {
   options: string[];
   correctIndex: number;
   explanation: string;
+  topic?: string; // competency area this MCQ tests — drives the "Study X" link when answered wrong
 }
 
 export interface ClientSessionResult {
@@ -938,7 +939,9 @@ Return JSON:
     );
     return (result.mcqQuestions ?? [])
       .filter(q => q?.questionText && q?.options?.length === 4)
-      .map(q => ({ questionText: q.questionText, options: q.options, correctIndex: q.correctIndex ?? 0, explanation: q.explanation ?? '' }));
+      // Question 1 was prompted to test focus1, question 2 focus2 — known before the call,
+      // no need to ask the AI to echo it back.
+      .map((q, i) => ({ questionText: q.questionText, options: q.options, correctIndex: q.correctIndex ?? 0, explanation: q.explanation ?? '', topic: i === 0 ? focus1 : focus2 }));
   } catch {
     return [];
   }

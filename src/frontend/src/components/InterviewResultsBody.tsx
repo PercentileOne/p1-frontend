@@ -17,6 +17,7 @@ export interface MCQQuestionResult {
   options: string[];
   correctIndex: number;
   explanation: string;
+  topic?: string;
 }
 
 export interface MCQAnswerResult {
@@ -146,6 +147,20 @@ export function InterviewResultsBody({
                 <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px' }}>
                   <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '6px' }}>Why the correct answer</div>
                   <div style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.6 }}>{mcqQ.explanation}</div>
+                </div>
+              )}
+              {!mcqResult.correct && mcqQ.topic && onStudyTopic && (
+                <div style={{ background: 'rgba(79,142,247,0.06)', border: '1px solid rgba(79,142,247,0.15)', borderRadius: '10px', padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-2)', lineHeight: 1.5 }}>
+                    Missed this one on <strong>{mcqQ.topic}</strong>.{' '}
+                    <span style={{ color: 'var(--blue)' }}>Use LEARN to study this free.</span>
+                  </div>
+                  <button
+                    onClick={() => onStudyTopic(mcqQ.topic!)}
+                    style={{ background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '7px', padding: '7px 14px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: 'inherit' }}
+                  >
+                    Study {mcqQ.topic} →
+                  </button>
                 </div>
               )}
             </div>

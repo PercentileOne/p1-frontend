@@ -421,7 +421,7 @@ export default function InterviewSummaryPage() {
   const answers: SessionAnswer[] = src.answers ?? [];
   const cvCtx: CVContext | undefined = src.cvCtx;
   const jobCtx: JobSpecContext | undefined = src.jobCtx;
-  const mcqQuestions: Array<{ questionText: string; options: string[]; correctIndex: number; explanation: string }> = src.mcqQuestions ?? [];
+  const mcqQuestions: Array<{ questionText: string; options: string[]; correctIndex: number; explanation: string; topic?: string }> = src.mcqQuestions ?? [];
   const mcqResults: Array<{ correct: boolean; selectedIndex: number; questionIndex: number }> = src.mcqResults ?? [];
   const playbackUrl: string | null = src.playbackUrl ?? (typeof src.videoUrl === 'string' ? src.videoUrl : null);
   const chapters: { questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[] = src.chapters ?? [];
