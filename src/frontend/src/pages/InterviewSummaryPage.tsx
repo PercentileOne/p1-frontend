@@ -503,6 +503,11 @@ export default function InterviewSummaryPage() {
     speak(buildMikeScript(), 'mike', () => setMikeActive(false));
   }
 
+  // cvCtx name only exists if a CV happened to be parsed for this session — the real
+  // account name is always available and is what the upload's own candidateName field carries.
+  const pdfCandidateName = (cvCtx?.firstName ? `${cvCtx.firstName} ${cvCtx.lastName ?? ''}`.trim() : '')
+    || src.candidateName || authUser?.name || '';
+
   const downloadPdf = () => {
     const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
     const questionsHtml = answers.map((a, i) => `
@@ -546,7 +551,7 @@ export default function InterviewSummaryPage() {
 <div class="header">
   <div class="brand">Explain AI · Interview Summary</div>
   <h1>Interview Practice Session</h1>
-  <div class="meta">${date} · ${answers.length} questions${cvCtx?.firstName ? ` · ${cvCtx.firstName} ${cvCtx.lastName ?? ''}`.trim() : ''}${jobCtx?.title ? ` · ${jobCtx.title}` : ''}</div>
+  <div class="meta">${date} · ${answers.length} questions${pdfCandidateName ? ` · ${pdfCandidateName}` : ''}${jobCtx?.title ? ` · ${jobCtx.title}` : ''}</div>
   <div class="overall">${Math.round(overall * 100)}<span style="font-size:16px;color:#888">/100</span></div>
   <div class="meta">Overall average score</div>
 </div>

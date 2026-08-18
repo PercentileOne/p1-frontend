@@ -475,6 +475,10 @@ export default function InterviewRoomPage() {
           chapters: chapterMarkersRef.current,
           cvCtx,
           jobCtx,
+          // Real account name — always available, unlike cvCtx.firstName/lastName which is
+          // only ever populated if a CV happened to be parsed for this specific session.
+          // Every shared interview needs a name at the top regardless of that.
+          candidateName: authUser?.name,
         });
         const form = new FormData();
         form.append('metadata', metadata);

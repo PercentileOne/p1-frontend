@@ -21,6 +21,7 @@ interface SharedSession {
   chapters: Chapter[];
   createdAt: string;
   cvCtx?: { firstName?: string; lastName?: string };
+  candidateName?: string;
   mcqQuestions?: MCQQuestionResult[];
   mcqResults?: MCQAnswerResult[];
 }
@@ -66,7 +67,9 @@ export default function SharedInterviewPage() {
   }
 
   const answers = data.answers ?? [];
-  const name = [data.cvCtx?.firstName, data.cvCtx?.lastName].filter(Boolean).join(' ');
+  // cvCtx is only populated if a CV happened to be parsed for this specific session —
+  // candidateName (the real account name) is always available, so it's the reliable fallback.
+  const name = [data.cvCtx?.firstName, data.cvCtx?.lastName].filter(Boolean).join(' ') || data.candidateName || '';
   const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://candidate.interviewme.global/shared/${token}`;
   const shareText = name
     ? `Watch ${name}'s ${data.role ?? 'interview'} on InterviewMe.global:`
