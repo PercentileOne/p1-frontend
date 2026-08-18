@@ -447,6 +447,7 @@ export default function InterviewSummaryPage() {
   // the user navigating away) should ever clear this.
   const [uploadPending, setUploadPending] = useState(hasRouteState);
   const [uploadSlow, setUploadSlow] = useState(false);
+  const [uploadLikelyFailed, setUploadLikelyFailed] = useState(false);
   useEffect(() => {
     if (!hasRouteState || !candidateId || !interviewId || !authToken) { setUploadPending(false); return; }
     let cancelled = false;
@@ -455,18 +456,23 @@ export default function InterviewSummaryPage() {
     const poll = () => {
       if (cancelled) return;
       attempts += 1;
-      if (attempts === 20) setUploadSlow(true); // ~60s in — still polling, just let them know it's slower than usual
+      if (attempts === 20) setUploadSlow(true);        // ~60s in — still polling, let them know it's slower than usual
+      if (attempts === 60) setUploadLikelyFailed(true); // ~3min in — this isn't "slow" anymore, it's not coming
+      // Back off to every 15s once it looks failed — still gives it a chance to recover on a
+      // genuinely glacial connection, without hammering the backend every 3s indefinitely if
+      // the tab is just left open.
+      const nextDelay = attempts >= 60 ? 15000 : 3000;
       fetch(`${apiBase}/api/interviews/${encodeURIComponent(candidateId)}/${encodeURIComponent(interviewId)}`, {
         headers: { Authorization: `Bearer ${authToken}` },
       })
         .then(res => {
           if (cancelled) return;
           if (res.ok) { setUploadPending(false); return; }
-          setTimeout(poll, 3000);
+          setTimeout(poll, nextDelay);
         })
         .catch(() => {
           if (cancelled) return;
-          setTimeout(poll, 3000);
+          setTimeout(poll, nextDelay);
         });
     };
     poll();
@@ -680,14 +686,23 @@ ${questionsHtml}
           a while; nothing to share yet until it lands, so make that unmistakable instead of
           letting Save/Share/QR look ready when they aren't. */}
       {uploadPending && (
-        <div style={{ background: 'rgba(245,158,11,0.08)', borderBottom: '1px solid rgba(245,158,11,0.25)', padding: '12px 28px', display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center', userSelect: 'none', cursor: 'default' }}>
-          <motion.span animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1 }}
-            style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#F59E0B' }}>
-            {uploadSlow
+        <div style={{ background: uploadLikelyFailed ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)', borderBottom: `1px solid ${uploadLikelyFailed ? 'rgba(239,68,68,0.25)' : 'rgba(245,158,11,0.25)'}`, padding: '12px 28px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', userSelect: 'none', flexWrap: 'wrap' }}>
+          {!uploadLikelyFailed && (
+            <motion.span animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1 }}
+              style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />
+          )}
+          <span style={{ fontSize: '13px', fontWeight: 600, color: uploadLikelyFailed ? '#F87171' : '#F59E0B', cursor: 'default' }}>
+            {uploadLikelyFailed
+              ? "This is taking far longer than a real upload ever should — it's likely stuck or failed, probably a connection issue. Nothing will appear here until it lands."
+              : uploadSlow
               ? "Still uploading — taking longer than usual, likely a slower connection. Hang tight, it'll land. Don't share or scan the QR code yet."
               : "Still uploading your video and interview data — usually under a minute. Don't share or scan the QR code yet."}
           </span>
+          {uploadLikelyFailed && (
+            <button onClick={() => navigate('/interview-room/demo')} style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '8px', padding: '6px 14px', color: '#F87171', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+              Try a fresh interview instead →
+            </button>
+          )}
         </div>
       )}
 

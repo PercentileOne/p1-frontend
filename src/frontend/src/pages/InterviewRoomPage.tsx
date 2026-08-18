@@ -480,17 +480,54 @@ export default function InterviewRoomPage() {
           // Every shared interview needs a name at the top regardless of that.
           candidateName: authUser?.name,
         });
-        const form = new FormData();
-        form.append('metadata', metadata);
-        if (videoBlob) form.append('video', videoBlob, 'session.webm');
 
-        const res = await fetch(`${API_BASE}/api/interviews/upload`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${authToken ?? ''}` },
-          body: form,
-        });
-        setUploadStatus(res.ok ? 'done' : 'error');
-      } catch {
+        // A real video upload on a poor connection (public/hospital wifi, etc.) can genuinely
+        // take a while, but with no timeout at all a stalled connection hangs this forever —
+        // the interview never lands, and InterviewSummaryPage's "still uploading" poll then
+        // waits on something that will never arrive, with no way for the candidate to know.
+        // Timeout + one retry + a video-less fallback so a bad connection loses the video, not
+        // the whole session.
+        const attemptUpload = async (withVideo: boolean, timeoutMs: number) => {
+          const form = new FormData();
+          form.append('metadata', metadata);
+          if (withVideo && videoBlob) form.append('video', videoBlob, 'session.webm');
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), timeoutMs);
+          try {
+            return await fetch(`${API_BASE}/api/interviews/upload`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${authToken ?? ''}` },
+              body: form,
+              signal: controller.signal,
+            });
+          } finally {
+            clearTimeout(timer);
+          }
+        };
+
+        let res: Response | null = null;
+        try {
+          res = await attemptUpload(true, 120_000);
+        } catch (err) {
+          console.warn('[InterviewRoom] Upload attempt 1 failed, retrying once:', err);
+          try {
+            res = await attemptUpload(true, 120_000);
+          } catch (err2) {
+            console.error('[InterviewRoom] Upload retry also failed — falling back to metadata only, without video:', err2);
+            if (videoBlob) {
+              try {
+                res = await attemptUpload(false, 30_000);
+              } catch (err3) {
+                console.error('[InterviewRoom] Metadata-only fallback also failed:', err3);
+              }
+            }
+          }
+        }
+
+        setUploadStatus(res?.ok ? 'done' : 'error');
+        if (!res?.ok) console.error('[InterviewRoom] Upload ultimately failed — no interview record was saved.', res);
+      } catch (err) {
+        console.error('[InterviewRoom] Unexpected error during upload:', err);
         setUploadStatus('error');
       }
     };
