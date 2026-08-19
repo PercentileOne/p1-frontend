@@ -83,6 +83,7 @@ import ParentShell from "./pages/ParentShell";
 import TeacherShell from "./pages/TeacherShell";
 import UniversityShell from "./pages/UniversityShell";
 import InterviewRoomPage from "./pages/InterviewRoomPage";
+import InterviewPackStart from "./pages/InterviewPackStart";
 import InterviewSummaryPage from "./pages/InterviewSummaryPage";
 import SharedInterviewPage from "./pages/SharedInterviewPage";
 import MyInterviewsPage from "./pages/MyInterviewsPage";
@@ -210,6 +211,7 @@ export default function App() {
       <Route path="/settings" element={<SettingsPage />} />
 
       {/* Interview Room */}
+      <Route path="/interview-pack/start" element={<RequirePermission permission="CAN_START_INTERVIEW"><InterviewPackStart /></RequirePermission>} />
       <Route path="/interview/:packId" element={<RequirePermission permission="CAN_START_INTERVIEW"><InterviewRoomPage /></RequirePermission>} />
       <Route path="/interview-summary/:id" element={<RequirePermission permission="CAN_START_INTERVIEW"><InterviewSummaryPage /></RequirePermission>} />
       <Route path="/shared/:token" element={<SharedInterviewPage />} />

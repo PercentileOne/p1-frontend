@@ -123,7 +123,7 @@ export default function MyInterviewsPage() {
           </p>
         </div>
         <button
-          onClick={() => navigate('/interview/standard', { state: { preferredName: firstName } })}
+          onClick={() => navigate('/interview-pack/start', { state: { preferredName: firstName } })}
           style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #34D399, #4F8EF7)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
           🎙️ Practice Interview
         </button>

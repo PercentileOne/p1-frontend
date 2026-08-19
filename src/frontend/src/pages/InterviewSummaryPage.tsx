@@ -697,7 +697,7 @@ ${questionsHtml}
           <button onClick={downloadPdf} style={{ background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9px', padding: '10px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
             Download PDF
           </button>
-          <button onClick={() => navigate('/interview/demo')} style={{ background: 'var(--bg3)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '9px', padding: '10px 20px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
+          <button onClick={() => navigate('/interview-pack/start', { state: { jobTitle: jobCtx?.title, company: jobCtx?.company } })} style={{ background: 'var(--bg3)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '9px', padding: '10px 20px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
             Try Again
           </button>
         </div>
@@ -720,7 +720,7 @@ ${questionsHtml}
               : "Still uploading your video and interview data — usually under a minute. Don't share or scan the QR code yet."}
           </span>
           {uploadLikelyFailed && (
-            <button onClick={() => navigate('/interview/demo')} style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '8px', padding: '6px 14px', color: '#F87171', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+            <button onClick={() => navigate('/interview-pack/start', { state: { jobTitle: jobCtx?.title, company: jobCtx?.company } })} style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '8px', padding: '6px 14px', color: '#F87171', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
               Try a fresh interview instead →
             </button>
           )}
@@ -901,7 +901,7 @@ ${questionsHtml}
               <div style={{ textAlign: 'center', color: 'var(--text-3)', padding: '48px 0' }}>
                 <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎤</div>
                 <div>No answers recorded in this session.</div>
-                <button onClick={() => navigate('/interview/demo')} style={{ marginTop: '20px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9px', padding: '12px 28px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>
+                <button onClick={() => navigate('/interview-pack/start', { state: { jobTitle: jobCtx?.title, company: jobCtx?.company } })} style={{ marginTop: '20px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9px', padding: '12px 28px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>
                   Start an Interview
                 </button>
               </div>
