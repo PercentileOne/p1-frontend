@@ -862,15 +862,13 @@ IMPORTANT: The two MCQ questions and ALL interview questions MUST be completely 
     };
   };
 
-  // The prompt asks for "exactly 10" but nothing enforces that on a JSON-mode LLM call —
-  // it drifts (seen in practice: 8 or 9 questions instead of 10), especially at this call's
-  // high temperature (0.9, for session-to-session variety). A single retry isn't a strong
-  // enough guarantee — the AI can drift on the retry too — so try up to 3 times total,
-  // stopping as soon as one hits exactly 10, otherwise keeping the closest. An over-long
-  // response is just trimmed, since 10+ is a harmless, free fix. If every attempt still
-  // comes back short, that's accepted rather than looping further or padding with generic
-  // filler questions, which would break the "personalised to this role" promise worse than
-  // a session running one or two questions short.
+  // The prompt asks for "exactly 10" but nothing enforces that on a JSON-mode LLM call — it
+  // drifts (seen in practice: 8 or 9 instead of 10), especially at this call's high
+  // temperature (0.9, for session-to-session variety). Retrying the whole generation is
+  // retry-and-hope — it can miss on every attempt. Once retries are exhausted, make the
+  // count exact deterministically: ask for precisely the missing questions as a small
+  // top-up, rather than accepting a short session or padding with generic filler that
+  // breaks the "personalised to this role" promise.
   let result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
   for (let attempt = 1; attempt < 3 && (result.questions?.length ?? 0) !== 10; attempt++) {
     console.warn(`[Explain AI] Session prep returned ${result.questions?.length ?? 0} questions instead of 10 — retrying (attempt ${attempt + 1}/3).`);
@@ -878,6 +876,31 @@ IMPORTANT: The two MCQ questions and ALL interview questions MUST be completely 
     if (Math.abs(10 - (retry.questions?.length ?? 0)) < Math.abs(10 - (result.questions?.length ?? 0))) result = retry;
   }
   if (result.questions?.length > 10) result.questions = result.questions.slice(0, 10);
+
+  const shortfall = 10 - (result.questions?.length ?? 0);
+  if (shortfall > 0) {
+    console.warn(`[Explain AI] Still ${result.questions?.length ?? 0} questions after retries — topping up ${shortfall} more directly.`);
+    try {
+      const existingTexts = (result.questions ?? []).map(q => `- ${q.questionText}`).join('\n');
+      const topUpPrompt = `Generate exactly ${shortfall} more interview question(s) for the same role, continuing this session (do not repeat any theme from the list below).
+
+═══ JOB SPECIFICATION ═══
+${jobSpecText.slice(0, 4000)}${cvSection}
+${jobTitleLine}${difficultyLine}
+
+═══ QUESTIONS ALREADY IN THIS SESSION — do not repeat these themes ═══
+${existingTexts}
+
+Return this exact JSON:
+{ "questions": [ { "questionId": "qX", "questionText": "...", "modelAnswer": "what a strong answer covers — specific to this role", "questionType": "Competency", "difficulty": "Medium", "source": "Role", "competencyTags": ["relevant tag"] } ] }`;
+      const topUp = await chatJSON<{ questions: InterviewQuestion[] }>(systemPrompt, topUpPrompt, 0.9);
+      if (topUp.questions?.length) {
+        result.questions = [...(result.questions ?? []), ...topUp.questions].slice(0, 10);
+      }
+    } catch (err) {
+      console.error('[Explain AI] Question top-up failed — session will run short:', err);
+    }
+  }
 
   // Accept both mcqQuestions (correct) and mcqQuestion (AI hallucination of old key)
   const rawMcqs = result.mcqQuestions?.length
