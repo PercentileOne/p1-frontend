@@ -100,7 +100,7 @@ export default function SharedInterviewPage() {
 
       <div>
         <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: '0 0 6px' }}>
-          {name ? `${name}'s ` : ''}{data.role ?? 'Interview'}{data.company ? ` at ${data.company}` : ''}
+          {name ? `${name}'s ` : ''}{data.role ? `${data.role} Interview` : 'Interview'}{data.company ? ` at ${data.company}` : ''}
         </h1>
         <div style={{ fontSize: 13, color: 'var(--text-3)' }}>Recorded on InterviewMe.global — the world's first interview broadcast platform.</div>
         {createdAtLabel && <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{createdAtLabel}</div>}
