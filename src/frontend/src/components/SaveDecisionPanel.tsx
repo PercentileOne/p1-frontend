@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../auth/authStore';
 
-type SaveStep = 'decide' | 'saving' | 'saved' | 'qr' | 'share' | 'discarded';
+type SaveStep = 'decide' | 'saving' | 'saved' | 'ready' | 'discarded';
+type ReadyTab = 'qr' | 'share';
 
 // Exported so any other page (e.g. the public SharedInterviewPage) can offer the same
 // re-share options — recruiters/employers passing an interview along is its own growth loop.
@@ -59,6 +60,7 @@ export function SaveDecisionPanel({
 }: Props) {
   const authToken = useAuthStore(s => s.token);
   const [step, setStep] = useState<SaveStep>('decide');
+  const [readyTab, setReadyTab] = useState<ReadyTab>('qr');
   const [, setShareToken] = useState('');
   const [shareUrl, setShareUrl]     = useState('');
   const [qrDataUri, setQrDataUri]   = useState('');
@@ -82,7 +84,7 @@ export function SaveDecisionPanel({
         setShareToken(data.shareToken);
         setShareUrl(data.shareUrl);
         setQrDataUri(data.qrDataUri);
-        setStep('qr');
+        setStep('ready');
         onSaved?.(data.shareToken, data.shareUrl);
       })
       .catch(() => { /* fall back to the normal decide/save flow */ });
@@ -124,7 +126,7 @@ export function SaveDecisionPanel({
       setQrDataUri(shareData.qrDataUri);
       setStep('saved');
       onSaved?.(shareData.shareToken, shareData.shareUrl);
-      setTimeout(() => setStep('qr'), 1400);
+      setTimeout(() => setStep('ready'), 1400);
     } catch (err) {
       console.error('[SaveDecisionPanel] Save failed:', err);
       setError('Something went wrong. Please try again.');
@@ -263,157 +265,176 @@ export function SaveDecisionPanel({
         </motion.div>
       )}
 
-      {/* ── STEP 3: QR Code ── */}
-      {step === 'qr' && (
-        <motion.div key="qr"
+      {/* ── STEP 3: Ready — QR and Share as tabs in the same card, not a one-way wizard.
+           Switching tabs no longer unmounts the other (that was the bug: "Continue to share
+           options" used to be a hard step transition, so the QR code was gone with no way
+           back short of reloading the page). ── */}
+      {step === 'ready' && (
+        <motion.div key="ready"
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
           style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '20px', overflow: 'hidden' }}
         >
-          <div style={{ background: 'linear-gradient(135deg, #0d1f3c, #0a0f1e)', padding: '24px 32px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ fontSize: '28px' }}>📄</div>
-            <div>
-              <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Add your interview to your CV</div>
-              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>Recruiters scan the QR code and watch your video — no cover letter needed</div>
-            </div>
-          </div>
-
-          <div style={{ padding: '32px', display: 'flex', gap: '32px', alignItems: 'center', flexWrap: 'wrap' }}>
-            {/* QR code */}
-            <div style={{ flexShrink: 0, textAlign: 'center' }}>
-              {qrDataUri ? (
-                <img src={qrDataUri} alt="Your interview QR code" style={{ width: 160, height: 160, borderRadius: '12px', background: '#fff', padding: '8px' }} />
-              ) : (
-                /* Demo QR placeholder */
-                <div style={{ width: 160, height: 160, borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-                    {/* Simple QR-style grid */}
-                    {[0,1,2,3,4,5,6].map(r => [0,1,2,3,4,5,6].map(c => {
-                      const inCorner = (r < 3 && c < 3) || (r < 3 && c > 3) || (r > 3 && c < 3);
-                      const fill = inCorner ? '#34D399' : Math.random() > 0.5 ? '#4F8EF7' : 'transparent';
-                      return <rect key={`${r}-${c}`} x={c * 11 + 1} y={r * 11 + 1} width="10" height="10" rx="2" fill={fill} opacity="0.7" />;
-                    }))}
-                  </svg>
-                </div>
-              )}
-              <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '8px' }}>Points to your interview page</div>
-            </div>
-
-            {/* Instructions */}
-            <div style={{ flex: 1, minWidth: '200px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
-                {[
-                  { n: '1', text: 'Download the QR code below' },
-                  { n: '2', text: 'Paste it into your CV — top right corner works well' },
-                  { n: '3', text: 'Recruiters scan it and watch your full interview' },
-                ].map(({ n, text }) => (
-                  <div key={n} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: '#34D399', flexShrink: 0 }}>{n}</div>
-                    <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>{text}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <button onClick={downloadQr} style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  padding: '12px 22px', borderRadius: '11px',
-                  background: 'linear-gradient(135deg, #34D399, #059669)',
-                  color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                  fontSize: '13px', fontWeight: 800,
-                  boxShadow: '0 6px 18px rgba(52,211,153,0.28)',
-                }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                  </svg>
-                  Download QR for my CV
-                </button>
-                <button onClick={() => setStep('share')} style={{
-                  padding: '12px 22px', borderRadius: '11px',
-                  background: 'rgba(255,255,255,0.05)', color: 'var(--text-2)',
-                  border: '1px solid var(--border)', cursor: 'pointer', fontFamily: 'inherit',
-                  fontSize: '13px', fontWeight: 700,
-                }}>
-                  Skip →
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ padding: '0 32px 28px' }}>
-            <button onClick={() => setStep('share')} style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-3)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-              Continue to share options →
-            </button>
-          </div>
-        </motion.div>
-      )}
-
-      {/* ── STEP 4: Share ── */}
-      {step === 'share' && (
-        <motion.div key="share"
-          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-          style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '20px', overflow: 'hidden' }}
-        >
-          <div style={{ background: 'linear-gradient(135deg, #0d1f3c, #0a0f1e)', padding: '24px 32px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ fontSize: '28px' }}>🚀</div>
-            <div>
-              <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Share your result</div>
-              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>Let recruiters, your network, or friends watch your interview</div>
-            </div>
-          </div>
-
-          <div style={{ padding: '28px 32px' }}>
-            {/* Share text preview */}
-            <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '8px' }}>Message preview</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-2)', lineHeight: 1.6, background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px', marginBottom: '20px' }}>
-              {shareText}
-            </div>
-
-            {/* Platform grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-              {SHARE_PLATFORMS.map(p => (
-                <a key={p.id}
-                  href={p.getUrl(shareUrl, shareText)}
-                  target="_blank" rel="noopener noreferrer"
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    background: `${p.color}18`, border: `1px solid ${p.color}40`,
-                    borderRadius: '10px', padding: '13px 16px',
-                    color: p.id === 'x' ? '#fff' : p.color,
-                    textDecoration: 'none', fontSize: '13px', fontWeight: 700,
-                  }}
-                >
-                  {p.icon} {p.label}
-                </a>
-              ))}
-            </div>
-
-            {/* Copy link */}
-            <button onClick={copyLink} style={{
-              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              background: linkCopied ? 'rgba(52,211,153,0.1)' : 'var(--bg3)',
-              border: `1px solid ${linkCopied ? 'rgba(52,211,153,0.35)' : 'var(--border)'}`,
-              borderRadius: '10px', padding: '13px',
-              color: linkCopied ? '#34D399' : 'var(--text-2)',
-              fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-              transition: 'all 0.2s', marginBottom: '12px',
+          {/* Tab bar */}
+          <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
+            <button onClick={() => setReadyTab('qr')} style={{
+              flex: 1, padding: '14px 16px', background: readyTab === 'qr' ? 'var(--bg3)' : 'transparent',
+              border: 'none', borderBottom: `2px solid ${readyTab === 'qr' ? '#34D399' : 'transparent'}`,
+              color: readyTab === 'qr' ? 'var(--text)' : 'var(--text-3)',
+              fontSize: '13px', fontWeight: readyTab === 'qr' ? 700 : 500, cursor: 'pointer',
+              fontFamily: 'inherit', transition: 'all 0.15s',
             }}>
-              {linkCopied ? (
-                <>✓ Link copied!</>
-              ) : (
-                <>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
-                    <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
-                  </svg>
-                  Copy share link
-                </>
-              )}
+              📄 QR Code for CV
             </button>
-
-            <div style={{ fontSize: '10px', color: 'var(--text-3)', textAlign: 'center' }}>
-              Anyone with this link can watch your interview · CV uploaded automatically if provided
-            </div>
+            <button onClick={() => setReadyTab('share')} style={{
+              flex: 1, padding: '14px 16px', background: readyTab === 'share' ? 'var(--bg3)' : 'transparent',
+              border: 'none', borderBottom: `2px solid ${readyTab === 'share' ? '#a78bfa' : 'transparent'}`,
+              color: readyTab === 'share' ? 'var(--text)' : 'var(--text-3)',
+              fontSize: '13px', fontWeight: readyTab === 'share' ? 700 : 500, cursor: 'pointer',
+              fontFamily: 'inherit', transition: 'all 0.15s',
+            }}>
+              🚀 Share Options
+            </button>
           </div>
+
+          {readyTab === 'qr' && (
+            <>
+              <div style={{ background: 'linear-gradient(135deg, #0d1f3c, #0a0f1e)', padding: '24px 32px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ fontSize: '28px' }}>📄</div>
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Add your interview to your CV</div>
+                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>Recruiters scan the QR code and watch your video — no cover letter needed</div>
+                </div>
+              </div>
+
+              <div style={{ padding: '32px', display: 'flex', gap: '32px', alignItems: 'center', flexWrap: 'wrap' }}>
+                {/* QR code */}
+                <div style={{ flexShrink: 0, textAlign: 'center' }}>
+                  {qrDataUri ? (
+                    <img src={qrDataUri} alt="Your interview QR code" style={{ width: 160, height: 160, borderRadius: '12px', background: '#fff', padding: '8px' }} />
+                  ) : (
+                    /* Demo QR placeholder */
+                    <div style={{ width: 160, height: 160, borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                        {/* Simple QR-style grid */}
+                        {[0,1,2,3,4,5,6].map(r => [0,1,2,3,4,5,6].map(c => {
+                          const inCorner = (r < 3 && c < 3) || (r < 3 && c > 3) || (r > 3 && c < 3);
+                          const fill = inCorner ? '#34D399' : Math.random() > 0.5 ? '#4F8EF7' : 'transparent';
+                          return <rect key={`${r}-${c}`} x={c * 11 + 1} y={r * 11 + 1} width="10" height="10" rx="2" fill={fill} opacity="0.7" />;
+                        }))}
+                      </svg>
+                    </div>
+                  )}
+                  <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '8px' }}>Points to your interview page</div>
+                </div>
+
+                {/* Instructions */}
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+                    {[
+                      { n: '1', text: 'Download the QR code below' },
+                      { n: '2', text: 'Paste it into your CV — top right corner works well' },
+                      { n: '3', text: 'Recruiters scan it and watch your full interview' },
+                    ].map(({ n, text }) => (
+                      <div key={n} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: '#34D399', flexShrink: 0 }}>{n}</div>
+                        <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>{text}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <button onClick={downloadQr} style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      padding: '12px 22px', borderRadius: '11px',
+                      background: 'linear-gradient(135deg, #34D399, #059669)',
+                      color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                      fontSize: '13px', fontWeight: 800,
+                      boxShadow: '0 6px 18px rgba(52,211,153,0.28)',
+                    }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                      </svg>
+                      Download QR for my CV
+                    </button>
+                    <button onClick={() => setReadyTab('share')} style={{
+                      padding: '12px 22px', borderRadius: '11px',
+                      background: 'rgba(255,255,255,0.05)', color: 'var(--text-2)',
+                      border: '1px solid var(--border)', cursor: 'pointer', fontFamily: 'inherit',
+                      fontSize: '13px', fontWeight: 700,
+                    }}>
+                      Share options →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {readyTab === 'share' && (
+            <>
+              <div style={{ background: 'linear-gradient(135deg, #0d1f3c, #0a0f1e)', padding: '24px 32px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ fontSize: '28px' }}>🚀</div>
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Share your result</div>
+                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>Let recruiters, your network, or friends watch your interview</div>
+                </div>
+              </div>
+
+              <div style={{ padding: '28px 32px' }}>
+                {/* Share text preview */}
+                <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '8px' }}>Message preview</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-2)', lineHeight: 1.6, background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px', marginBottom: '20px' }}>
+                  {shareText}
+                </div>
+
+                {/* Platform grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                  {SHARE_PLATFORMS.map(p => (
+                    <a key={p.id}
+                      href={p.getUrl(shareUrl, shareText)}
+                      target="_blank" rel="noopener noreferrer"
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '10px',
+                        background: `${p.color}18`, border: `1px solid ${p.color}40`,
+                        borderRadius: '10px', padding: '13px 16px',
+                        color: p.id === 'x' ? '#fff' : p.color,
+                        textDecoration: 'none', fontSize: '13px', fontWeight: 700,
+                      }}
+                    >
+                      {p.icon} {p.label}
+                    </a>
+                  ))}
+                </div>
+
+                {/* Copy link */}
+                <button onClick={copyLink} style={{
+                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  background: linkCopied ? 'rgba(52,211,153,0.1)' : 'var(--bg3)',
+                  border: `1px solid ${linkCopied ? 'rgba(52,211,153,0.35)' : 'var(--border)'}`,
+                  borderRadius: '10px', padding: '13px',
+                  color: linkCopied ? '#34D399' : 'var(--text-2)',
+                  fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                  transition: 'all 0.2s', marginBottom: '12px',
+                }}>
+                  {linkCopied ? (
+                    <>✓ Link copied!</>
+                  ) : (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+                      </svg>
+                      Copy share link
+                    </>
+                  )}
+                </button>
+
+                <div style={{ fontSize: '10px', color: 'var(--text-3)', textAlign: 'center' }}>
+                  Anyone with this link can watch your interview · CV uploaded automatically if provided
+                </div>
+              </div>
+            </>
+          )}
         </motion.div>
       )}
 
