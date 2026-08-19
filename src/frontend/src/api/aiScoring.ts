@@ -862,7 +862,20 @@ IMPORTANT: The two MCQ questions and ALL interview questions MUST be completely 
     };
   };
 
-  const result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
+  // The prompt asks for "exactly 10" but nothing enforces that on a JSON-mode LLM call —
+  // it drifts (seen in practice: 8 questions instead of 10), especially at this call's high
+  // temperature (0.9, for session-to-session variety). One retry catches the common case;
+  // an over-long response is just trimmed rather than retried, since 10+ is a harmless,
+  // free fix. If the retry still comes back short, that's accepted rather than looping —
+  // padding with generic filler questions would break the "personalised to this role"
+  // promise worse than a session running one or two questions short.
+  let result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
+  if ((result.questions?.length ?? 0) < 10) {
+    console.warn(`[Explain AI] Session prep returned ${result.questions?.length ?? 0} questions instead of 10 — retrying once.`);
+    const retry = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
+    if ((retry.questions?.length ?? 0) > (result.questions?.length ?? 0)) result = retry;
+  }
+  if (result.questions?.length > 10) result.questions = result.questions.slice(0, 10);
 
   // Accept both mcqQuestions (correct) and mcqQuestion (AI hallucination of old key)
   const rawMcqs = result.mcqQuestions?.length

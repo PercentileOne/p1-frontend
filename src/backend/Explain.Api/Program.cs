@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Explain.Api.Common;
@@ -9,6 +10,16 @@ using Explain.Api.Infrastructure.Sql;
 using Explain.Api.Infrastructure.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Default request-body limits (Kestrel ~28.6MB out-of-process, IIS in-process form
+// parsing 128MB) are well below what a full interview screen+audio recording produces —
+// see web.config for the matching IIS-level requestLimits raise, which is the one that
+// actually binds under in-process hosting. These two are defense-in-depth for the ASP.NET
+// Core layer itself (Kestrel if hosting model ever changes, and the multipart form parser
+// either way).
+const long MaxUploadBytes = 500L * 1024 * 1024;
+builder.WebHost.ConfigureKestrel(o => { o.Limits.MaxRequestBodySize = MaxUploadBytes; });
+builder.Services.Configure<FormOptions>(o => { o.MultipartBodyLengthLimit = MaxUploadBytes; });
 
 // ── Services ──────────────────────────────────────────────────────────────────
 
