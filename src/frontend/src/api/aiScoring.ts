@@ -863,17 +863,19 @@ IMPORTANT: The two MCQ questions and ALL interview questions MUST be completely 
   };
 
   // The prompt asks for "exactly 10" but nothing enforces that on a JSON-mode LLM call —
-  // it drifts (seen in practice: 8 questions instead of 10), especially at this call's high
-  // temperature (0.9, for session-to-session variety). One retry catches the common case;
-  // an over-long response is just trimmed rather than retried, since 10+ is a harmless,
-  // free fix. If the retry still comes back short, that's accepted rather than looping —
-  // padding with generic filler questions would break the "personalised to this role"
-  // promise worse than a session running one or two questions short.
+  // it drifts (seen in practice: 8 or 9 questions instead of 10), especially at this call's
+  // high temperature (0.9, for session-to-session variety). A single retry isn't a strong
+  // enough guarantee — the AI can drift on the retry too — so try up to 3 times total,
+  // stopping as soon as one hits exactly 10, otherwise keeping the closest. An over-long
+  // response is just trimmed, since 10+ is a harmless, free fix. If every attempt still
+  // comes back short, that's accepted rather than looping further or padding with generic
+  // filler questions, which would break the "personalised to this role" promise worse than
+  // a session running one or two questions short.
   let result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
-  if ((result.questions?.length ?? 0) < 10) {
-    console.warn(`[Explain AI] Session prep returned ${result.questions?.length ?? 0} questions instead of 10 — retrying once.`);
+  for (let attempt = 1; attempt < 3 && (result.questions?.length ?? 0) !== 10; attempt++) {
+    console.warn(`[Explain AI] Session prep returned ${result.questions?.length ?? 0} questions instead of 10 — retrying (attempt ${attempt + 1}/3).`);
     const retry = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
-    if ((retry.questions?.length ?? 0) > (result.questions?.length ?? 0)) result = retry;
+    if (Math.abs(10 - (retry.questions?.length ?? 0)) < Math.abs(10 - (result.questions?.length ?? 0))) result = retry;
   }
   if (result.questions?.length > 10) result.questions = result.questions.slice(0, 10);
 
