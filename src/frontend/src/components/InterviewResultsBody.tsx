@@ -168,18 +168,26 @@ export function InterviewResultsBody({
         );
       })}
 
-      {/* Per-question breakdown */}
-      {answers.map((a, i) => {
-        const tag = a.question.competencyTags[0];
-        const pct = Math.round(a.score.overallScore * 100);
-        const showRec = !!onStudyTopic && a.score.overallScore < 0.65 && !!tag;
-        return (
-          <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-            style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', overflow: 'hidden' }}>
-            <div style={{ padding: '18px 22px 14px', borderBottom: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: '4px', padding: '2px 8px', color: 'var(--blue)' }}>Q{i + 1}</span>
-                <span style={{ fontSize: '11px', color: 'var(--text-3)', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', padding: '2px 8px' }}>{a.question.questionType}</span>
+      {/* Per-question breakdown — follow-up answers (Go Deeper) render as an indented
+          sub-card under their parent question's number rather than their own Q-number,
+          since they always appear immediately after their parent in submission order. */}
+      {(() => {
+        let mainQNum = 0;
+        return answers.map((a, i) => {
+          const isFollowUp = a.question.questionType === 'Follow-up';
+          if (!isFollowUp) mainQNum += 1;
+          const tag = a.question.competencyTags[0];
+          const pct = Math.round(a.score.overallScore * 100);
+          const showRec = !!onStudyTopic && a.score.overallScore < 0.65 && !!tag;
+          return (
+            <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
+              style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', overflow: 'hidden', marginLeft: isFollowUp ? '28px' : 0 }}>
+              <div style={{ padding: '18px 22px 14px', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {isFollowUp
+                    ? <span style={{ fontSize: '11px', fontWeight: 700, background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: '4px', padding: '2px 8px', color: '#a78bfa' }}>↳ Follow-up on Q{mainQNum}</span>
+                    : <span style={{ fontSize: '11px', fontWeight: 700, background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: '4px', padding: '2px 8px', color: 'var(--blue)' }}>Q{mainQNum}</span>}
+                  {!isFollowUp && <span style={{ fontSize: '11px', color: 'var(--text-3)', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', padding: '2px 8px' }}>{a.question.questionType}</span>}
                 {a.answeredByVoice && <span style={{ fontSize: '11px', color: '#34D399', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: '4px', padding: '2px 8px' }}>🎤 Voice</span>}
                 {!a.answerText && <span style={{ fontSize: '11px', color: 'var(--red)', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '4px', padding: '2px 8px' }}>Passed</span>}
                 {a.thinkTimeMs !== undefined && (
@@ -221,8 +229,9 @@ export function InterviewResultsBody({
               )}
             </div>
           </motion.div>
-        );
-      })}
+          );
+        });
+      })()}
     </>
   );
 }

@@ -278,8 +278,17 @@ export async function scoreWithAI(
   answerText: string,
   cvCtx?: CVContext,
   jobCtx?: JobSpecContext,
+  goDeeper?: { enabled: boolean; difficulty: string },
 ): Promise<ScoreResponse> {
-  const systemPrompt = `You are an expert interview coach scoring candidate answers.
+  const goDeeperOn = goDeeper?.enabled === true;
+  const aggression = goDeeper?.difficulty === 'Expert'
+    ? 'Be genuinely probing — the kind of question that exposes someone who oversold their experience. Ask for a specific tool, number, or exact step they personally performed.'
+    : goDeeper?.difficulty === 'Pro'
+    ? 'Probe firmly but fairly — ask for one concrete specific the answer glossed over.'
+    : 'Probe gently — ask for one clarifying specific, in a friendly way.';
+
+  const systemPrompt = `You are an expert interview coach scoring candidate answers.${goDeeperOn ? `
+You are ALSO deciding, in the same pass, whether this answer needs a genuine spoken follow-up question — the kind a real interviewer asks when an answer sounds high-level, generic, or unverifiable (e.g. someone claims "agile experience at a big bank" but can't say what sprint ceremonies they actually ran). ${aggression} If the answer already contains genuine specifics (named tools, numbers, a clear personal role, a real outcome), do NOT request a follow-up.` : ''}
 Return ONLY a valid JSON object — no markdown, no explanation.`;
 
   const context = [
@@ -302,6 +311,8 @@ Scoring guide:
 - depth: are there specific examples, metrics, or outcomes — not just generalities?
 - confidence: does the language sound assured, or is it hedged with "maybe", "I think", "kind of"?
 - overallScore: weighted average (relevance 35%, clarity 25%, depth 25%, confidence 15%)
+${goDeeperOn ? `
+Also decide: does this answer warrant a probing follow-up (see system prompt)? If yes, write ONE natural, spoken follow-up question — one or two sentences, conversational, no bullet points, no em dashes, going straight to the probe (don't repeat the original question or restate what they said).` : ''}
 
 Return JSON:
 {
@@ -313,13 +324,16 @@ Return JSON:
   "feedback": [
     { "dimension": "relevance|clarity|depth|confidence", "message": "one specific observation", "severity": "high|medium|low" }
   ],
-  "suggestions": ["one actionable improvement tip"]
+  "suggestions": ["one actionable improvement tip"]${goDeeperOn ? `,
+  "needsFollowUp": false,
+  "followUpQuestion": null` : ''}
 }`;
 
   console.log('[Explain AI] SCORING Q:', question.questionText.slice(0, 60));
   const score = await chatJSON<ScoreResponse>(systemPrompt, userPrompt);
   console.group('[Explain AI] SCORE RECEIVED');
   console.log(`Overall: ${Math.round(score.overallScore * 100)}% | Relevance: ${Math.round((score.relevance ?? 0) * 100)}% | Clarity: ${Math.round((score.clarity ?? 0) * 100)}% | Depth: ${Math.round((score.depth ?? 0) * 100)}% | Confidence: ${Math.round((score.confidence ?? 0) * 100)}%`);
+  if (goDeeperOn) console.log(`Go Deeper: needsFollowUp=${score.needsFollowUp} — ${score.followUpQuestion ?? '(none)'}`);
   console.groupEnd();
   return score;
 }

@@ -144,6 +144,7 @@ export interface RoomState {
   preferredName?: string;
   company?: string;
   consentToRecord?: boolean;
+  goDeeperEnabled?: boolean;
 }
 
 interface SessionAnswer {
@@ -215,6 +216,36 @@ function useTypewriter(text: string, active: boolean, wordsPerMin = 215) {
   return displayed;
 }
 
+// ── Go Deeper — probing follow-ups, scaled by difficulty ─────────────────────
+
+const GO_DEEPER_LIMITS: Record<string, { max: number; chance: number }> = {
+  Standard: { max: 1, chance: 0.15 },
+  Pro: { max: 2, chance: 0.25 },
+  Expert: { max: 3, chance: 0.40 },
+};
+
+const FOLLOWUP_TRANSITIONS = [
+  'Mm, one more thing—',
+  "Okay, good answer, but I was thinking—",
+  "That's helpful — actually, one follow-up on that—",
+  'Just before we move on—',
+];
+
+const HANDOFF_LINES: Record<'hr' | 'technical', string[]> = {
+  hr: ['James, anything you\'d like to add to that?', 'James, did you want to follow up on that one?'],
+  technical: ['Sarah, do you have anything to add to that?', 'Sarah, anything you wanted to dig into there?'],
+};
+
+const HANDOFF_ACCEPT_LINES = [
+  'Errm, yes — I just wanted to follow up on that.',
+  'Yes, actually — one thing I\'d like to know.',
+  'I do, actually.',
+];
+
+function pickRandom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function InterviewRoomPage() {
@@ -257,6 +288,9 @@ export default function InterviewRoomPage() {
   // active MCQ question for the current overlay
   const [activeMcqQuestion, setActiveMcqQuestion] = useState<MCQQuestion | null>(null);
   const [activeMcqOrdinal, setActiveMcqOrdinal] = useState<'first' | 'second'>('first');
+
+  // Go Deeper — probabilistic probing follow-ups, capped per session and scaled by difficulty
+  const goDeeperFiredRef = useRef(0);
 
   const passInProgressRef = useRef(false); // prevents double-firing Pass button
 
@@ -573,6 +607,7 @@ export default function InterviewRoomPage() {
   const [qIndex, setQIndex] = useState(0);
   const [typedAnswer, setTypedAnswer] = useState('');
   const [useVoice, setUseVoice] = useState(true);
+  const [goDeeperEnabled, setGoDeeperEnabled] = useState(ctx.goDeeperEnabled ?? false);
   const [highlightRecord, setHighlightRecord] = useState(false);
   const [sessionLanguage, setSessionLanguage] = useState(ctx.selectedLanguage ?? 'en');
   const [currentScore, setCurrentScore] = useState<ScoreResponse | null>(null);
@@ -618,8 +653,13 @@ export default function InterviewRoomPage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [phase, paused]);
 
-  const askQuestion = useCallback((index: number) => {
-    const question = questions[index];
+  // spokenTextOverride lets a follow-up prepend a natural transition line ("Mm, one more
+  // thing—") to what's actually said aloud, while the stored question.questionText (used
+  // for scoring/display) stays the clean follow-up text. questionOverride lets a caller pass
+  // a just-spliced question directly — bgQuestions/questions won't reflect a splice until
+  // next render, so a same-tick lookup by index would see stale (or missing) data.
+  const askQuestion = useCallback((index: number, spokenTextOverride?: string, interviewerOverride?: 'hr' | 'technical', questionOverride?: InterviewQuestion) => {
+    const question = questionOverride ?? questions[index];
     if (!question) return;
     // Record chapter marker
     if (recordingStartTimeRef.current > 0) {
@@ -630,7 +670,7 @@ export default function InterviewRoomPage() {
         offsetSeconds: Math.round((Date.now() - recordingStartTimeRef.current) / 1000),
       });
     }
-    const interviewer: 'hr' | 'technical' = question.source === 'HR' ? 'hr' : 'technical';
+    const interviewer: 'hr' | 'technical' = interviewerOverride ?? (question.source === 'HR' ? 'hr' : 'technical');
     setPhase('asking');
     onDoneRef.current = null;
     if (interviewer === 'hr') { setHrState('speaking'); setTechState('listening'); }
@@ -641,7 +681,7 @@ export default function InterviewRoomPage() {
       thinkStartRef.current = Date.now();
       setPhase('answering');
     };
-    cancelSpeakRef.current = speak(question.questionText, interviewer, onDone, (a) => {
+    cancelSpeakRef.current = speak(spokenTextOverride ?? question.questionText, interviewer, onDone, (a) => {
       if (interviewer === 'hr') setHrAnalyser(a);
       else setTechAnalyser(a);
     });
@@ -826,6 +866,92 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     }
   }, [askQuestion, qIndex]);
 
+  // Handoff variant: the interviewer who DIDN'T ask the original question delivers the
+  // follow-up, after a short spoken handoff exchange between the two. Needs two sequential
+  // speak() calls (each call is single-voice) rather than askQuestion's one-call flow.
+  // Takes the question object directly — see askQuestion's questionOverride comment.
+  const askFollowUpWithHandoff = useCallback((index: number, question: InterviewQuestion, followUpText: string, originalInterviewer: 'hr' | 'technical') => {
+    if (recordingStartTimeRef.current > 0) {
+      chapterMarkersRef.current.push({
+        questionIndex: index,
+        questionText: question.questionText,
+        competency: question.competencyTags?.[0] ?? '',
+        offsetSeconds: Math.round((Date.now() - recordingStartTimeRef.current) / 1000),
+      });
+    }
+    const otherInterviewer: 'hr' | 'technical' = originalInterviewer === 'hr' ? 'technical' : 'hr';
+    const handoffLine = pickRandom(HANDOFF_LINES[originalInterviewer]);
+    const acceptLine = pickRandom(HANDOFF_ACCEPT_LINES);
+
+    setPhase('asking');
+    onDoneRef.current = null;
+    if (originalInterviewer === 'hr') { setHrState('speaking'); setTechState('listening'); }
+    else { setTechState('speaking'); setHrState('listening'); }
+    logFlowEvent('QUESTION_DISPLAYED', { questionId: question.questionId, index, source: question.source, handoff: true });
+
+    const onDone = () => {
+      setHrState('idle'); setTechState('idle');
+      thinkStartRef.current = Date.now();
+      setPhase('answering');
+    };
+
+    cancelSpeakRef.current = speak(handoffLine, originalInterviewer, () => {
+      if (otherInterviewer === 'hr') { setHrState('speaking'); setTechState('idle'); }
+      else { setTechState('speaking'); setHrState('idle'); }
+      cancelSpeakRef.current = speak(`${acceptLine} ${followUpText}`, otherInterviewer, onDone, (a) => {
+        if (otherInterviewer === 'hr') setHrAnalyser(a); else setTechAnalyser(a);
+      });
+    }, (a) => {
+      if (originalInterviewer === 'hr') setHrAnalyser(a); else setTechAnalyser(a);
+    });
+  }, []);
+
+  // Rolls whether to fire a Go Deeper probing follow-up after the answer that was just
+  // scored/coached. scoreWithAI already decided, in the same call, whether this answer
+  // sounded shallow enough to warrant one (score.needsFollowUp/followUpQuestion) — this
+  // just applies the session cap + difficulty-scaled "does it actually fire" roll on top,
+  // so a genuinely vague answer doesn't get probed every single time (keeps it feeling
+  // occasional, not like an interrogation). Splices a synthetic InterviewQuestion into
+  // bgQuestions right after the current index so the entire existing ask/answer/score/coach
+  // pipeline handles it for free — no new phases needed. Returns true if fired (caller
+  // should skip its normal advance-to-next-question logic).
+  const maybeGoDeeper = useCallback((lastAnswer: SessionAnswer): boolean => {
+    if (!goDeeperEnabled) return false;
+    if (lastAnswer.question.questionType === 'Follow-up') return false; // never chain a follow-up onto a follow-up
+    if (!lastAnswer.score.needsFollowUp || !lastAnswer.score.followUpQuestion) return false;
+
+    const limits = GO_DEEPER_LIMITS[selectedDifficulty] ?? GO_DEEPER_LIMITS.Standard;
+    if (goDeeperFiredRef.current >= limits.max) return false;
+    if (Math.random() > limits.chance) return false;
+
+    const followUpText = lastAnswer.score.followUpQuestion;
+    goDeeperFiredRef.current += 1;
+    const originalInterviewer: 'hr' | 'technical' = lastAnswer.question.source === 'HR' ? 'hr' : 'technical';
+    const followUpQuestion: InterviewQuestion = {
+      ...lastAnswer.question,
+      questionId: `${lastAnswer.question.questionId}-followup-${goDeeperFiredRef.current}`,
+      questionText: followUpText,
+      questionType: 'Follow-up',
+    };
+
+    const insertIndex = qIndex + 1;
+    setBgQuestions(prev => {
+      const arr = [...(prev ?? questions)];
+      arr.splice(insertIndex, 0, followUpQuestion);
+      return arr;
+    });
+    setQIndex(insertIndex);
+
+    const doHandoff = Math.random() < 0.5;
+    if (doHandoff) {
+      askFollowUpWithHandoff(insertIndex, followUpQuestion, followUpText, originalInterviewer);
+    } else {
+      const transition = pickRandom(FOLLOWUP_TRANSITIONS);
+      askQuestion(insertIndex, `${transition} ${followUpText}`, originalInterviewer, followUpQuestion);
+    }
+    return true;
+  }, [goDeeperEnabled, selectedDifficulty, qIndex, questions, askQuestion, askFollowUpWithHandoff]);
+
   const closeInterview = useCallback((answers: SessionAnswer[], mcqRes: typeof mcqResults, bonusPts: number) => {
     const name = resolvedPreferredName ? `, ${resolvedPreferredName}` : '';
     const closingLine = `Well${name}, that brings us to the end of your interview — thank you so much for your time today. I'm going to have a quick word with James, and then your agent Mike will be in touch shortly with some feedback. In the meantime, you can watch your full interview replay on the next screen, and retake it anytime you like. Best of luck!`;
@@ -871,15 +997,24 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       return;
     }
 
-    if (qIndex + 1 >= questions.length) {
-      uploadRecording(sessionAnswers);
-      closeInterview(sessionAnswers, mcqResults, mcqBonusPoints);
+    const advance = () => {
+      if (qIndex + 1 >= questions.length) {
+        uploadRecording(sessionAnswers);
+        closeInterview(sessionAnswers, mcqResults, mcqBonusPoints);
+      } else {
+        const next = qIndex + 1;
+        setQIndex(next);
+        askQuestion(next);
+      }
+    };
+
+    const lastAnswer = sessionAnswers[sessionAnswers.length - 1];
+    if (lastAnswer) {
+      if (!maybeGoDeeper(lastAnswer)) advance();
     } else {
-      const next = qIndex + 1;
-      setQIndex(next);
-      askQuestion(next);
+      advance();
     }
-  }, [qIndex, questions.length, sessionAnswers, askQuestion, q, uploadRecording, mcqQuestions, mcqResults, mcqBonusPoints, mcqActive, closeInterview]);
+  }, [qIndex, questions.length, sessionAnswers, askQuestion, q, uploadRecording, mcqQuestions, mcqResults, mcqBonusPoints, mcqActive, closeInterview, maybeGoDeeper]);
 
   const resumeAfterMCQ = useCallback((bonusEarned: boolean, selectedIndex: number) => {
     mcqFiringRef.current = false;
@@ -888,15 +1023,25 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     const newResult = { correct: bonusEarned, selectedIndex, questionIndex: qIndex };
     setMcqResults(prev => [...prev, newResult]);
     if (bonusEarned) setMcqBonusPoints(prev => prev + 10);
-    const next = qIndex + 1;
-    if (next >= questions.length) {
-      uploadRecording(sessionAnswers);
-      closeInterview(sessionAnswers, [...mcqResults, newResult], mcqBonusPoints + (bonusEarned ? 10 : 0));
+
+    const advance = () => {
+      const next = qIndex + 1;
+      if (next >= questions.length) {
+        uploadRecording(sessionAnswers);
+        closeInterview(sessionAnswers, [...mcqResults, newResult], mcqBonusPoints + (bonusEarned ? 10 : 0));
+      } else {
+        setQIndex(next);
+        askQuestion(next);
+      }
+    };
+
+    const lastAnswer = sessionAnswers[sessionAnswers.length - 1];
+    if (lastAnswer) {
+      if (!maybeGoDeeper(lastAnswer)) advance();
     } else {
-      setQIndex(next);
-      askQuestion(next);
+      advance();
     }
-  }, [qIndex, questions.length, sessionAnswers, askQuestion, uploadRecording, mcqResults, mcqQuestions, mcqBonusPoints, closeInterview]);
+  }, [qIndex, questions.length, sessionAnswers, askQuestion, uploadRecording, mcqResults, mcqQuestions, mcqBonusPoints, closeInterview, maybeGoDeeper]);
 
   const handlePass = useCallback(() => {
     if (passInProgressRef.current) return;
@@ -955,10 +1100,13 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setHrState('thinking'); setTechState('thinking');
     logFlowEvent('ANSWER_RECEIVED', { questionId: q?.questionId, wordCount: text.trim().split(/\s+/).length, byVoice });
 
+    const goDeeperLimits = GO_DEEPER_LIMITS[selectedDifficulty] ?? GO_DEEPER_LIMITS.Standard;
+    const goDeeperEligible = goDeeperEnabled && q?.questionType !== 'Follow-up' && goDeeperFiredRef.current < goDeeperLimits.max;
+
     let score: ScoreResponse;
     try {
       score = aiScoringConfigured
-        ? await scoreWithAI(q, text, cvCtx, jobCtx)
+        ? await scoreWithAI(q, text, cvCtx, jobCtx, { enabled: goDeeperEligible, difficulty: selectedDifficulty })
         : localScore(q, text, companyKeywords);
     } catch {
       score = localScore(q, text, companyKeywords);
@@ -981,7 +1129,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
     setCoachingMessage(coaching);
     setPhase('coaching');
-  }, [q, qIndex, cvCtx, jobCtx, companyKeywords]);
+  }, [q, qIndex, cvCtx, jobCtx, companyKeywords, goDeeperEnabled, selectedDifficulty]);
 
   const displayedQuestion = useTypewriter(q?.questionText ?? '', phase === 'asking');
   const coachingCue = useCoachingCue(phase === 'answering');
@@ -1262,6 +1410,16 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     {audioCheckState === 'done' ? '✓ Audio OK' : audioCheckState === 'playing' ? 'Playing…' : '🔊 Test audio'}
                   </button>
                 </motion.div>
+
+                {/* Go Deeper toggle */}
+                <motion.label initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.45, duration: 0.5 }}
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: '9px', maxWidth: '380px', textAlign: 'left', cursor: 'pointer', background: goDeeperEnabled ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${goDeeperEnabled ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '10px', padding: '10px 14px' }}>
+                  <input type="checkbox" checked={goDeeperEnabled} onChange={(e) => setGoDeeperEnabled(e.target.checked)}
+                    style={{ marginTop: '2px', accentColor: '#a78bfa' }} />
+                  <span style={{ fontSize: '12.5px', lineHeight: 1.5, color: 'rgba(240,244,255,0.7)' }}>
+                    <strong style={{ color: 'rgba(240,244,255,0.9)' }}>🔍 Go Deeper</strong> — occasional real follow-up questions that test genuine depth of experience{selectedDifficulty === 'Expert' ? ' (recommended for Expert)' : ''}.
+                  </span>
+                </motion.label>
 
                 {/* CTA */}
                 <motion.button onClick={startInterview}
