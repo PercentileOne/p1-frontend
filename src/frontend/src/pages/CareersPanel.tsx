@@ -575,20 +575,29 @@ export default function CareersPanel() {
   const [categoryResults, setCategoryResults] = useState<Career[]>([]);
   const [loadingCategory, setLoadingCategory] = useState(false);
   const [selectedCareer, setSelectedCareer] = useState<Career | null>(null);
+  const [searching, setSearching] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { getCategories().then(setCategories); }, []);
 
+  // A real search (2+ chars) replaces category browsing with search results — was
+  // previously two disconnected data flows: the category grid always rendered its
+  // once-on-mount data regardless of what was typed, so "installation operative" (no
+  // matches) still showed every category untouched instead of showing nothing found.
+  const isSearchActive = query.trim().length >= 2;
+
   const handleSearch = useCallback((q: string) => {
     setQuery(q);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (q.length < 2) { setSuggestions([]); setShowSuggestions(false); return; }
+    if (q.trim().length < 2) { setSuggestions([]); setShowSuggestions(false); setSearching(false); return; }
+    setSearching(true);
     debounceRef.current = setTimeout(async () => {
       const results = await searchCareers(q);
       setSuggestions(results);
       setShowSuggestions(results.length > 0);
+      setSearching(false);
     }, 280);
   }, []);
 
@@ -658,44 +667,75 @@ export default function CareersPanel() {
         )}
       </div>
 
-      {/* Browse by Category */}
-      <div style={{ marginBottom: 36 }}>
-        <h2 style={{ fontSize: 14, fontWeight: 700, color: '#94a3b8', marginBottom: 16, margin: '0 0 16px' }}>Browse by category</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
-          {categories.map(({ category, count }) => {
-            const active = activeCategory === category;
-            return (
-              <div
-                key={category}
-                onClick={() => browseCategory(category)}
-                style={{
-                  background: active ? 'rgba(120,80,255,0.18)' : 'rgba(255,255,255,0.03)',
-                  border: `1px solid ${active ? 'rgba(120,80,255,0.5)' : 'rgba(255,255,255,0.07)'}`,
-                  borderRadius: 10, padding: '12px 14px',
-                  cursor: 'pointer', transition: 'all 0.15s',
-                  display: 'flex', flexDirection: 'column', gap: 3,
-                }}
-                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(120,80,255,0.3)'; }}
-                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.07)'; }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-                  <span style={{ fontSize: 20 }}>{categoryIcon(category)}</span>
-                  <span style={{
-                    fontSize: 10, fontWeight: 700, color: active ? '#a78bfa' : '#7060b0',
-                    background: active ? 'rgba(120,80,255,0.2)' : 'rgba(255,255,255,0.06)',
-                    border: `1px solid ${active ? 'rgba(120,80,255,0.3)' : 'rgba(255,255,255,0.08)'}`,
-                    borderRadius: 20, padding: '2px 7px', letterSpacing: '0.02em',
-                  }}>{count}</span>
+      {/* Browse by Category — only when not actively searching; a search replaces this
+          with its own results/empty state below, rather than sitting there unfiltered. */}
+      {!isSearchActive && (
+        <div style={{ marginBottom: 36 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: '#94a3b8', marginBottom: 16, margin: '0 0 16px' }}>Browse by category</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
+            {categories.map(({ category, count }) => {
+              const active = activeCategory === category;
+              return (
+                <div
+                  key={category}
+                  onClick={() => browseCategory(category)}
+                  style={{
+                    background: active ? 'rgba(120,80,255,0.18)' : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${active ? 'rgba(120,80,255,0.5)' : 'rgba(255,255,255,0.07)'}`,
+                    borderRadius: 10, padding: '12px 14px',
+                    cursor: 'pointer', transition: 'all 0.15s',
+                    display: 'flex', flexDirection: 'column', gap: 3,
+                  }}
+                  onMouseEnter={e => { if (!active) (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(120,80,255,0.3)'; }}
+                  onMouseLeave={e => { if (!active) (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.07)'; }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                    <span style={{ fontSize: 20 }}>{categoryIcon(category)}</span>
+                    <span style={{
+                      fontSize: 10, fontWeight: 700, color: active ? '#a78bfa' : '#7060b0',
+                      background: active ? 'rgba(120,80,255,0.2)' : 'rgba(255,255,255,0.06)',
+                      border: `1px solid ${active ? 'rgba(120,80,255,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                      borderRadius: 20, padding: '2px 7px', letterSpacing: '0.02em',
+                    }}>{count}</span>
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: active ? '#fff' : '#c0b8e0' }}>{category}</span>
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 700, color: active ? '#fff' : '#c0b8e0' }}>{category}</span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Search results — replaces category browsing while a search is active */}
+      {isSearchActive && (
+        <div style={{ marginBottom: 36 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: '#94a3b8', margin: '0 0 16px' }}>
+            Search results
+            {!searching && <span style={{ fontSize: 12, fontWeight: 400, color: '#5050a0', marginLeft: 8 }}>{suggestions.length} found</span>}
+          </h2>
+          {searching ? (
+            <div style={{ textAlign: 'center', padding: '40px 0', color: '#5050a0' }}>
+              <div style={{ fontSize: 22, marginBottom: 8 }}>⟳</div>
+              Searching...
+            </div>
+          ) : suggestions.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
+              {suggestions.map(c => (
+                <CareerCard key={c.id} career={c} onClick={() => setSelectedCareer(c)} />
+              ))}
+            </div>
+          ) : (
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '36px', textAlign: 'center', color: '#5050a0' }}>
+              <div style={{ fontSize: 28, marginBottom: 8 }}>🔍</div>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>No careers found for "{query}"</div>
+              <div style={{ fontSize: 12 }}>We're adding new careers daily — try a broader search, or clear it to browse by category.</div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Category results */}
-      {activeCategory && (
+      {activeCategory && !isSearchActive && (
         <div ref={resultsRef}>
           <h2 style={{ fontSize: 14, fontWeight: 700, color: '#94a3b8', margin: '0 0 16px' }}>
             {categoryIcon(activeCategory)} {activeCategory}
