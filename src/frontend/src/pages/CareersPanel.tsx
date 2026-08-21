@@ -581,11 +581,21 @@ export default function CareersPanel() {
                     background: active ? 'rgba(120,80,255,0.18)' : 'rgba(255,255,255,0.03)',
                     border: `1px solid ${active ? 'rgba(120,80,255,0.5)' : 'rgba(255,255,255,0.07)'}`,
                     borderRadius: 10, padding: '12px 14px',
-                    cursor: 'pointer', transition: 'all 0.15s',
+                    cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s, border-color 0.15s',
                     display: 'flex', flexDirection: 'column', gap: 3,
                   }}
-                  onMouseEnter={e => { if (!active) (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(120,80,255,0.3)'; }}
-                  onMouseLeave={e => { if (!active) (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.07)'; }}
+                  onMouseEnter={e => {
+                    const el = e.currentTarget as HTMLDivElement;
+                    el.style.transform = 'translateY(-3px)';
+                    el.style.boxShadow = '0 10px 24px rgba(120,80,255,0.18)';
+                    if (!active) el.style.borderColor = 'rgba(120,80,255,0.3)';
+                  }}
+                  onMouseLeave={e => {
+                    const el = e.currentTarget as HTMLDivElement;
+                    el.style.transform = 'translateY(0)';
+                    el.style.boxShadow = 'none';
+                    if (!active) el.style.borderColor = 'rgba(255,255,255,0.07)';
+                  }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
                     <span style={{ fontSize: 20 }}>{categoryIcon(category)}</span>
