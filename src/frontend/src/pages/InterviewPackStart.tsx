@@ -75,6 +75,9 @@ export default function InterviewPackStart() {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Standard');
   const [consentToRecord, setConsentToRecord] = useState(true);
+  // Only shown after a blocked attempt to start — not on first load, so an empty form
+  // doesn't look like it's already in an error state before the candidate's done anything.
+  const [attemptedStart, setAttemptedStart] = useState(false);
 
   useEffect(() => {
     logFlowEvent('UPLOAD_SCREEN_VIEW', { hasIncomingJobSpec: Boolean(incoming.jobSpec) });
@@ -82,6 +85,12 @@ export default function InterviewPackStart() {
   }, []);
 
   const handleStart = () => {
+    if (!hasEnough) {
+      setAttemptedStart(true);
+      if (!hasCV) setActiveTab('cv'); // surface the CV upload area even if they're on the Job Spec tab
+      logFlowEvent('START_INTERVIEW_BLOCKED', { hasRole, hasCV });
+      return;
+    }
     logFlowEvent('START_INTERVIEW_CLICKED', {
       hasJobSpec: Boolean(jobSpec.trim()),
       hasCv: Boolean(cvText.trim()),
@@ -108,6 +117,7 @@ export default function InterviewPackStart() {
   const hasCV = cvText.trim().length > 20 || cvFileName.length > 0;
   const hasRole = jobTitle.trim().length > 2 || jobSpec.trim().length > 20;
   const hasEnough = hasRole && hasCV;
+  const missingParts = [!hasRole && 'a job title (or job spec)', !hasCV && 'your CV'].filter(Boolean) as string[];
 
   const tabStyle = (active: boolean) => ({
     flex: 1,
@@ -170,7 +180,7 @@ export default function InterviewPackStart() {
         </div>
 
         {/* Job Title */}
-        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 28px', marginBottom: '16px' }}>
+        <div style={{ background: 'var(--bg2)', border: `1px solid ${attemptedStart && !hasRole ? 'rgba(245,158,11,0.5)' : 'var(--border)'}`, borderRadius: '16px', padding: '24px 28px', marginBottom: '16px', transition: 'border-color 0.15s' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Job Title</span>
             <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 400 }}>(or upload a Job Spec)</span>
@@ -192,7 +202,7 @@ export default function InterviewPackStart() {
         </div>
 
         {/* Job Spec + CV — tabbed */}
-        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', marginBottom: '16px', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--bg2)', border: `1px solid ${attemptedStart && !hasCV ? 'rgba(245,158,11,0.5)' : 'var(--border)'}`, borderRadius: '16px', marginBottom: '16px', overflow: 'hidden', transition: 'border-color 0.15s' }}>
 
           {/* Tab bar */}
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
@@ -425,10 +435,10 @@ export default function InterviewPackStart() {
           }
         `}</style>
 
-        {/* CTA */}
+        {/* CTA — deliberately not `disabled`: a disabled button can't tell you why it won't
+            click. Instead, clicking while incomplete surfaces exactly what's missing below. */}
         <button
           onClick={handleStart}
-          disabled={!hasEnough}
           style={{
             width: '100%',
             background: hasEnough
@@ -436,12 +446,18 @@ export default function InterviewPackStart() {
               : 'rgba(79,142,247,0.25)',
             color: '#fff', border: 'none', borderRadius: '12px',
             padding: '18px', fontSize: '16px', fontWeight: 800,
-            cursor: hasEnough ? 'pointer' : 'default',
+            cursor: 'pointer',
             fontFamily: 'inherit', letterSpacing: '-0.01em', transition: 'opacity 0.2s',
           }}
         >
           Start Interview →
         </button>
+
+        {attemptedStart && !hasEnough && (
+          <div style={{ marginTop: '12px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '10px', padding: '11px 16px', fontSize: '13px', color: 'var(--amber)', fontWeight: 600, textAlign: 'center' }}>
+            ⚠️ Add {missingParts.join(' and ')} before you can start.
+          </div>
+        )}
 
         <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-3)', marginTop: '14px', lineHeight: 1.6 }}>
           Your CV is never stored. This session is private and confidential.
