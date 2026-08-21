@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { type Career, type SalaryRegion, type WorkforceRegion, searchCareers, getCategories, getCareersByCategory, FALLBACK_CATEGORIES } from '../api/careersApi';
+import { useNavigate } from 'react-router-dom';
+import { type Career, type SalaryRegion, type WorkforceRegion, searchCareers, getCategories, getCareersByCategory, FALLBACK_CATEGORIES, humanizeList } from '../api/careersApi';
 import { CareerGuideOverlay } from '../components/CareerGuideOverlay';
 
 // ── Category icons ─────────────────────────────────────────────────────────────
@@ -300,6 +301,7 @@ function CareerDetailPanel({ career, onClose }: { career: Career; onClose: () =>
   const wuk = career.workforce?.uk;
   const wus = career.workforce?.us;
   const [showGuide, setShowGuide] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -384,8 +386,8 @@ function CareerDetailPanel({ career, onClose }: { career: Career; onClose: () =>
           {career.lifestyle && (
             <Section title="🧘 Lifestyle">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-                <StatTile label="Environment" value={career.lifestyle.environment} />
-                <StatTile label="Typical Hours" value={career.lifestyle.typicalHours} />
+                <StatTile label="Environment" value={humanizeList(career.lifestyle.environment)} />
+                <StatTile label="Typical Hours" value={humanizeList(career.lifestyle.typicalHours)} />
                 <StatTile label="Stress" value={career.lifestyle.stress + '/100'} bad={career.lifestyle.stress > 70} />
                 <StatTile label="Remote Score" value={career.lifestyle.remoteScore + '/100'} good={career.lifestyle.remoteScore > 60} />
               </div>
@@ -426,7 +428,7 @@ function CareerDetailPanel({ career, onClose }: { career: Career; onClose: () =>
             <div style={{ fontSize: 14, fontWeight: 700, color: '#e0dcff', marginBottom: 5 }}>Ready to interview for this role?</div>
             <div style={{ fontSize: 12, color: '#8080b0', marginBottom: 14 }}>Practice with an AI interviewer tailored to {career.title} questions.</div>
             <button
-              onClick={() => window.open('https://recruiter.interviewme.global/demo/vallum-job-paid', '_blank')}
+              onClick={() => navigate('/interview-pack/start', { state: { jobTitle: career.title } })}
               style={{ background: 'linear-gradient(135deg, #7b5cf5, #5b8ff7)', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 24px', fontSize: 13, fontWeight: 700, cursor: 'pointer', width: '100%' }}>
               Start Interview Practice →
             </button>

@@ -129,6 +129,7 @@ export default function LoginPage() {
 
   const handleDemo = () => {
     setPhase("loading");
+    notifyEmailJS("demo@InterviewMe.global", "Demo user login (Continue as Demo User)");
     setTimeout(() => {
       storeLogin("demo-token", {
         id:        "0",

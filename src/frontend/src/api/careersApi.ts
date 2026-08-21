@@ -98,6 +98,17 @@ export async function getCareersByCategory(category: string): Promise<Career[]> 
   } catch { return []; }
 }
 
+// Some lifestyle fields (e.g. environment) come back as a raw pipe-delimited enum like
+// "office|remote|hybrid" rather than prose — turn that into readable text instead of
+// leaking the pipes verbatim. Leaves already-prose values (no pipe) untouched.
+export function humanizeList(s: string): string {
+  if (!s || !s.includes('|')) return s;
+  const parts = s.split('|').map(p => p.trim()).filter(Boolean);
+  if (parts.length <= 1) return parts[0] ?? s;
+  if (parts.length === 2) return `${parts[0]} or ${parts[1]}`;
+  return `${parts.slice(0, -1).join(', ')}, or ${parts[parts.length - 1]}`;
+}
+
 // Builds a short spoken walkthrough script from a CareerDocument's own fields — no AI
 // call needed, so it works even when we don't yet have anything personal to say about
 // the candidate (see CLAUDE.md: never call a third-party AI provider from the browser).
@@ -131,9 +142,9 @@ export function buildCareerScript(career: Career, candidateName?: string): strin
 
   if (career.lifestyle) {
     const bits: string[] = [];
-    if (career.lifestyle.environment) bits.push(career.lifestyle.environment.toLowerCase());
+    if (career.lifestyle.environment) bits.push(humanizeList(career.lifestyle.environment).toLowerCase());
     if (career.lifestyle.remoteScore > 60) bits.push('plenty of scope to work remotely');
-    if (career.lifestyle.typicalHours) bits.push(`typical hours of ${career.lifestyle.typicalHours.toLowerCase()}`);
+    if (career.lifestyle.typicalHours) bits.push(`typical hours of ${humanizeList(career.lifestyle.typicalHours).toLowerCase()}`);
     if (bits.length) lines.push(`Day to day, it suits ${bits.join(', ')}.`);
   }
 
