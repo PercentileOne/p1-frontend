@@ -65,7 +65,10 @@ export default function InterviewPackStart() {
   const [cvText, setCvText] = useState('');
   const [cvFileName, setCvFileName] = useState('');
   const [cvInputTab, setCvInputTab] = useState<'upload' | 'text'>('upload');
-  const [preferredName, setPreferredName] = useState(incoming.preferredName ?? '');
+  // Deliberately not pre-filled from incoming.preferredName (e.g. the candidate's own
+  // account name) — this field means "what should the AI call you in THIS interview",
+  // which is usually the name on the CV being tested, not always the account holder's own.
+  const [preferredName, setPreferredName] = useState('');
   const [jobSpec, setJobSpec] = useState(incoming.jobSpec ?? '');
   const [jobSpecFileName, setJobSpecFileName] = useState('');
   const [activeTab, setActiveTab] = useState<'jobspec' | 'cv'>('cv');
@@ -141,9 +144,9 @@ export default function InterviewPackStart() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
-            <img src="/assets/explain-logo.svg" width={36} height={36} alt="Explain" style={{ borderRadius: '50%' }} />
+            <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: 'linear-gradient(135deg,#34D399,#047857)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 900, color: '#fff', letterSpacing: '-0.05em' }}>IM</div>
             <span style={{ fontWeight: 800, fontSize: '20px', color: '#fff' }}>
-              explain<span style={{ color: 'var(--blue)' }}>.global</span>
+              Interview<span style={{ color: '#34D399' }}>Me</span><span style={{ color: '#4F8EF7' }}>.global</span>
             </span>
           </div>
 
