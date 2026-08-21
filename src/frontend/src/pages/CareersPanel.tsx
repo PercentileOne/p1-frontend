@@ -480,6 +480,11 @@ export default function CareersPanel() {
 
   useEffect(() => { getCategories().then(setCategories); }, []);
 
+  // Real, live total — was a static "4,000+" that never reflected what was actually in
+  // the database. Sums the per-category counts already being fetched for the tiles below,
+  // so it grows on its own as the database does, no separate endpoint needed.
+  const totalCareers = categories.reduce((sum, c) => sum + c.count, 0);
+
   // A real search (2+ chars) replaces category browsing with search results — was
   // previously two disconnected data flows: the category grid always rendered its
   // once-on-mount data regardless of what was typed, so "installation operative" (no
@@ -515,7 +520,7 @@ export default function CareersPanel() {
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: '#7b5cf5', letterSpacing: '0.06em', marginBottom: 8 }}>✦ CAREERS EXPLORER</div>
-        <h1 style={{ fontSize: 28, fontWeight: 900, color: '#e2e8f0', margin: '0 0 8px', lineHeight: 1.1 }}>Explore 4,000+ careers</h1>
+        <h1 style={{ fontSize: 28, fontWeight: 900, color: '#e2e8f0', margin: '0 0 8px', lineHeight: 1.1 }}>Explore {totalCareers.toLocaleString('en-GB')}+ careers</h1>
         <p style={{ fontSize: 14, color: '#5a6478', margin: 0, lineHeight: 1.6 }}>
           Real salary data, workforce figures, AI impact and growth trends — for every career in the UK and US. Growing daily.
         </p>
