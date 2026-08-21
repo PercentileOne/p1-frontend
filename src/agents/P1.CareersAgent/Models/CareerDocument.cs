@@ -31,6 +31,12 @@ public class CareerDocument
     [JsonPropertyName("salary")]
     public SalaryData? Salary { get; set; }
 
+    // Nullable at every level (both this and each region) — day-rate contracting isn't a
+    // meaningful concept for every career (e.g. permanent-only professions like Football
+    // Manager or Nurse), so it's omitted rather than forced to a fabricated number.
+    [JsonPropertyName("contractRate")]
+    public ContractRateData? ContractRate { get; set; }
+
     [JsonPropertyName("workforce")]
     public WorkforceData? Workforce { get; set; }
 
@@ -72,6 +78,35 @@ public class SalaryRegion
 {
     [JsonPropertyName("starting")]
     public int Starting { get; set; }
+
+    [JsonPropertyName("mid")]
+    public int Mid { get; set; }
+
+    [JsonPropertyName("senior")]
+    public int Senior { get; set; }
+
+    [JsonPropertyName("expert")]
+    public int Expert { get; set; }
+
+    [JsonPropertyName("currency")]
+    public string Currency { get; set; } = string.Empty;
+}
+
+public class ContractRateData
+{
+    [JsonPropertyName("uk")]
+    public ContractRateRegion? Uk { get; set; }
+
+    [JsonPropertyName("us")]
+    public ContractRateRegion? Us { get; set; }
+}
+
+// Day rates, not annual figures — how contract/freelance/interim work in this career is
+// normally quoted, distinct from SalaryRegion's permanent annual bands.
+public class ContractRateRegion
+{
+    [JsonPropertyName("junior")]
+    public int Junior { get; set; }
 
     [JsonPropertyName("mid")]
     public int Mid { get; set; }

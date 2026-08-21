@@ -124,6 +124,12 @@ public class CosmosCareerService
             PatchOperation.Replace("/salaryLastUpdated", career.SalaryLastUpdated),
             PatchOperation.Replace("/lastUpdated",       career.LastUpdated),
         };
+        // /contractRate may not exist yet on documents written before this field existed —
+        // Add rather than Replace would fail with Replace on a genuinely missing path, and
+        // Set (upsert-a-path) isn't available on PatchOperation, so branch on presence.
+        patches.Add(career.ContractRate is null
+            ? PatchOperation.Set("/contractRate", (ContractRateData?)null)
+            : PatchOperation.Set("/contractRate", career.ContractRate));
 
         await _container.PatchItemAsync<CareerDocument>(
             career.Id,

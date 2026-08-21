@@ -30,8 +30,9 @@ public class WeeklySalaryUpdateFunction(CosmosCareerService cosmos, OpenAiEnrich
         {
             try
             {
-                var (salary, workforce, date) = await enricher.UpdateSalaryAsync(career, log);
+                var (salary, contractRate, workforce, date) = await enricher.UpdateSalaryAsync(career, log);
                 career.Salary            = salary;
+                career.ContractRate      = contractRate;
                 career.Workforce         = workforce;
                 career.SalaryLastUpdated = date;
                 career.LastUpdated       = date;

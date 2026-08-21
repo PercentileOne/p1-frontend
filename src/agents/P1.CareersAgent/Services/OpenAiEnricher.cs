@@ -20,7 +20,7 @@ public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactor
 
     // ── Salary-only update (cheap, weekly) ─────────────────────────────────────
 
-    public async Task<(SalaryData salary, WorkforceData workforce, string updatedDate)>
+    public async Task<(SalaryData salary, ContractRateData? contractRate, WorkforceData workforce, string updatedDate)>
         UpdateSalaryAsync(CareerDocument career, ILogger log)
     {
         var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
@@ -32,20 +32,29 @@ public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactor
             "    \"uk\": {\"starting\":0,\"mid\":0,\"senior\":0,\"expert\":0,\"currency\":\"GBP\"},\n" +
             "    \"us\": {\"starting\":0,\"mid\":0,\"senior\":0,\"expert\":0,\"currency\":\"USD\"}\n" +
             "  },\n" +
+            "  \"contractRate\": null OR {\n" +
+            "    \"uk\": {\"junior\":0,\"mid\":0,\"senior\":0,\"expert\":0,\"currency\":\"GBP\"},\n" +
+            "    \"us\": {\"junior\":0,\"mid\":0,\"senior\":0,\"expert\":0,\"currency\":\"USD\"}\n" +
+            "  },\n" +
             "  \"workforce\": {\n" +
             "    \"uk\": {\"employed\":0,\"studying\":0,\"growthPct5yr\":0.0,\"growthTrend\":\"stable\",\"vacancies\":0},\n" +
             "    \"us\": {\"employed\":0,\"studying\":0,\"growthPct5yr\":0.0,\"growthTrend\":\"stable\",\"vacancies\":0}\n" +
             "  }\n" +
             "}\n" +
+            "\"contractRate\" is DAY RATES (not annual), for freelance/interim/contract work in this career — " +
+            "only include it if that's actually a normal way this career is engaged (e.g. IT contractors, " +
+            "interim managers, locums); return null for careers that are essentially permanent-only (e.g. " +
+            "Nurse, Football Manager, Teacher).\n" +
             "Use current realistic figures as of " + today + ".";
 
         var response = await CallGptAsync(prompt, log);
         var node = JsonNode.Parse(response)!;
 
-        var salary    = node["salary"]!.Deserialize<SalaryData>(_json)!;
-        var workforce = node["workforce"]!.Deserialize<WorkforceData>(_json)!;
+        var salary       = node["salary"]!.Deserialize<SalaryData>(_json)!;
+        var contractRate = node["contractRate"] is JsonNode crNode ? crNode.Deserialize<ContractRateData>(_json) : null;
+        var workforce    = node["workforce"]!.Deserialize<WorkforceData>(_json)!;
 
-        return (salary, workforce, today);
+        return (salary, contractRate, workforce, today);
     }
 
     // ── Full enrichment (new or low-confidence careers) ─────────────────────────
@@ -74,6 +83,10 @@ public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactor
             "    \"uk\": {\"starting\":0,\"mid\":0,\"senior\":0,\"expert\":0,\"currency\":\"GBP\"},\n" +
             "    \"us\": {\"starting\":0,\"mid\":0,\"senior\":0,\"expert\":0,\"currency\":\"USD\"}\n" +
             "  },\n" +
+            "  \"contractRate\": null OR {\n" +
+            "    \"uk\": {\"junior\":0,\"mid\":0,\"senior\":0,\"expert\":0,\"currency\":\"GBP\"},\n" +
+            "    \"us\": {\"junior\":0,\"mid\":0,\"senior\":0,\"expert\":0,\"currency\":\"USD\"}\n" +
+            "  },\n" +
             "  \"workforce\": {\n" +
             "    \"uk\": {\"employed\":0,\"studying\":0,\"growthPct5yr\":0.0,\"growthTrend\":\"stable\",\"vacancies\":0},\n" +
             "    \"us\": {\"employed\":0,\"studying\":0,\"growthPct5yr\":0.0,\"growthTrend\":\"stable\",\"vacancies\":0}\n" +
@@ -87,7 +100,10 @@ public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactor
             "  \"source\": \"agent-v1\",\n" +
             "  \"confidence\": 0.85\n" +
             "}\n" +
-            "All scores 0-100. Salary = realistic annual GBP/USD.";
+            "All scores 0-100. Salary = realistic annual GBP/USD. " +
+            "\"contractRate\" is DAY RATES (not annual) for freelance/interim/contract work — only include " +
+            "it if that's actually a normal way this career is engaged (e.g. IT contractors, interim " +
+            "managers, locums); return null for essentially permanent-only careers (e.g. Nurse, Teacher).";
 
         var response = await CallGptAsync(prompt, log);
 
