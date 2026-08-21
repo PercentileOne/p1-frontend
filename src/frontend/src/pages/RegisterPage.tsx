@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Loader2, ArrowRight, ArrowLeft, Check } from "lucide-react";
@@ -6,18 +6,13 @@ import { authApi, type ApiError } from "../api/authApi";
 import { useAuthStore } from "../auth/authStore";
 import { defaultPortalForPermissions } from "../auth/permissionMatrix";
 import type { Permission } from "../auth/permissionMatrix";
+import { type Career, searchCareers } from "../api/careersApi";
 
 /* ══════════════════════════════════════════════════════════════
    REGISTER — Two-step cinematic form
    Step 1: Name + email
    Step 2: Password + optional profession
    ══════════════════════════════════════════════════════════════ */
-
-const PROFESSIONS = [
-  "Software Engineer", "Product Manager", "Data Scientist", "Designer",
-  "Marketing", "Finance", "Consulting", "Healthcare", "Legal",
-  "Sales", "Operations", "Entrepreneur", "Student", "Other",
-];
 
 type Phase = "idle" | "loading" | "success";
 
@@ -41,6 +36,29 @@ export default function RegisterPage() {
   // Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiErr, setApiErr] = useState("");
+
+  // Profession type-ahead — free text against the careers database instead of a fixed
+  // dropdown, which can't realistically list all ~23k careers. Never blocks free text;
+  // a typed profession with no match is still a valid, real answer.
+  const [professionSuggestions, setProfessionSuggestions] = useState<Career[]>([]);
+  const [showProfessionSuggestions, setShowProfessionSuggestions] = useState(false);
+  const professionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleProfessionChange = useCallback((value: string) => {
+    setProfession(value);
+    if (professionDebounceRef.current) clearTimeout(professionDebounceRef.current);
+    if (value.trim().length < 2) { setProfessionSuggestions([]); setShowProfessionSuggestions(false); return; }
+    professionDebounceRef.current = setTimeout(async () => {
+      const results = await searchCareers(value, 8);
+      setProfessionSuggestions(results);
+      setShowProfessionSuggestions(results.length > 0);
+    }, 280);
+  }, []);
+
+  const selectProfessionSuggestion = useCallback((c: Career) => {
+    setProfession(c.title);
+    setShowProfessionSuggestions(false);
+  }, []);
 
   // ── Validation ────────────────────────────────────────────────
 
@@ -82,10 +100,11 @@ export default function RegisterPage() {
 
     try {
       const { token, user } = await authApi.register({
-        email:     email.trim().toLowerCase(),
+        email:      email.trim().toLowerCase(),
         password,
-        firstName: firstName.trim(),
-        lastName:  lastName.trim(),
+        firstName:  firstName.trim(),
+        lastName:   lastName.trim(),
+        profession: profession || undefined,
       });
 
       const session = await authApi.getSession(token);
@@ -294,15 +313,32 @@ export default function RegisterPage() {
                   <ErrMsg msg={errors.email} />
                 </div>
 
-                {/* Profession (optional) */}
-                <div>
+                {/* Profession (optional) — free text with type-ahead against the careers database */}
+                <div style={{ position: "relative" }}>
                   <FieldLabel>Profession <span style={{ opacity: 0.45, fontWeight: 400 }}>(optional)</span></FieldLabel>
-                  <RegSelect
+                  <RegInput
+                    placeholder="e.g. Software Engineer, Nurse, Marketing Manager…"
                     value={profession}
-                    onChange={setProfession}
-                    options={PROFESSIONS}
-                    placeholder="Select your profession"
+                    onChange={handleProfessionChange}
+                    onFocus={() => { if (professionSuggestions.length > 0) setShowProfessionSuggestions(true); }}
+                    onBlur={() => setTimeout(() => setShowProfessionSuggestions(false), 150)}
                   />
+                  {showProfessionSuggestions && professionSuggestions.length > 0 && (
+                    <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#0a1a3a", border: "1px solid rgba(79,142,247,0.3)", borderRadius: 10, overflow: "hidden", zIndex: 20, boxShadow: "0 16px 48px rgba(0,0,0,0.6)" }}>
+                      {professionSuggestions.map(c => (
+                        <div
+                          key={c.id}
+                          onMouseDown={() => selectProfessionSuggestion(c)}
+                          style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(79,142,247,0.1)"; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
+                        >
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#cbd5e1" }}>{c.title}</div>
+                          <div style={{ fontSize: 11, color: "rgba(140,180,255,0.5)" }}>{c.category}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <PrimaryButton onClick={goToStep2} phase="idle" label="Continue" icon={<ArrowRight size={14} />} />
@@ -421,10 +457,11 @@ export default function RegisterPage() {
 /* ── Sub-components ────────────────────────────────────────── */
 
 function RegInput({
-  placeholder, type = "text", value, onChange, suffix, autoFocus,
+  placeholder, type = "text", value, onChange, suffix, autoFocus, onFocus, onBlur,
 }: {
   placeholder: string; type?: string; value: string;
   onChange: (v: string) => void; suffix?: React.ReactNode; autoFocus?: boolean;
+  onFocus?: () => void; onBlur?: () => void;
 }) {
   return (
     <div style={{
@@ -439,43 +476,14 @@ function RegInput({
         placeholder={placeholder}
         value={value}
         onChange={e => onChange(e.target.value)}
+        onFocus={onFocus}
+        onBlur={onBlur}
         style={{
           flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none",
           fontSize: 13, color: "#cbd5e1", fontWeight: 350, caretColor: "#4F8EF7",
         }}
       />
       {suffix}
-    </div>
-  );
-}
-
-function RegSelect({
-  value, onChange, options, placeholder,
-}: {
-  value: string; onChange: (v: string) => void; options: string[]; placeholder: string;
-}) {
-  return (
-    <div style={{ position: "relative" }}>
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        style={{
-          width: "100%", appearance: "none", WebkitAppearance: "none",
-          background: "rgba(79,142,247,0.07)", border: "1px solid rgba(79,142,247,0.22)",
-          borderRadius: 8, padding: "10px 32px 10px 14px",
-          fontSize: 13, color: value ? "#cbd5e1" : "rgba(140,180,255,0.45)",
-          fontWeight: 350, outline: "none", cursor: "pointer",
-        }}
-      >
-        <option value="" style={{ color: "#3d4451", background: "#071228" }}>{placeholder}</option>
-        {options.map(o => (
-          <option key={o} value={o} style={{ background: "#071228", color: "#cbd5e1" }}>{o}</option>
-        ))}
-      </select>
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
-        style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-        <path d="M2 4l4 4 4-4" stroke="#4b5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
     </div>
   );
 }

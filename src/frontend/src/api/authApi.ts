@@ -65,6 +65,7 @@ export const authApi = {
     password:   string;
     firstName:  string;
     lastName:   string;
+    profession?: string;
   }): Promise<AuthResponse> {
     return post('/auth/register', body);
   },
