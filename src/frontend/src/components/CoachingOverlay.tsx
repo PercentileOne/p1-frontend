@@ -109,7 +109,7 @@ export function CoachingOverlay({ message, score, onDone }: Props) {
             </motion.div>
 
             {/* Speaking indicator */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'default' }}>
               <div style={{ fontSize: '13px', fontWeight: 700, color: cfg.accent }}>{cfg.label}</div>
               {speaking && (
                 <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', height: '14px' }}>

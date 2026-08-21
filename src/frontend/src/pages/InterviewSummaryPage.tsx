@@ -707,7 +707,7 @@ ${questionsHtml}
           a while; nothing to share yet until it lands, so make that unmistakable instead of
           letting Save/Share/QR look ready when they aren't. */}
       {uploadPending && (
-        <div style={{ background: uploadLikelyFailed ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)', borderBottom: `1px solid ${uploadLikelyFailed ? 'rgba(239,68,68,0.25)' : 'rgba(245,158,11,0.25)'}`, padding: '12px 28px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', userSelect: 'none', flexWrap: 'wrap' }}>
+        <div style={{ background: uploadLikelyFailed ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)', borderBottom: `1px solid ${uploadLikelyFailed ? 'rgba(239,68,68,0.25)' : 'rgba(245,158,11,0.25)'}`, padding: '12px 28px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', userSelect: 'none', cursor: 'default', flexWrap: 'wrap' }}>
           {!uploadLikelyFailed && (
             <motion.span animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1 }}
               style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />
