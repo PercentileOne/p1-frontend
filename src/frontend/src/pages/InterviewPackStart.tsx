@@ -314,7 +314,7 @@ export default function InterviewPackStart() {
                 <div style={{ marginBottom: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Known As</span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 400 }}>(optional — overrides your CV name)</span>
+                    <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 400 }}>(optional — overrides your account name)</span>
                   </div>
                   <input
                     type="text"

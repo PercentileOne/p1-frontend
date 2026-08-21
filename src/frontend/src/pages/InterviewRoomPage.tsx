@@ -255,8 +255,15 @@ export default function InterviewRoomPage() {
   const ctx = (location.state ?? {}) as RoomState;
   const cvCtx = ctx.cvCtx;
   const jobCtx = ctx.jobCtx;
-  // Resolve candidate name: explicit preferredName wins, then CV firstName, then undefined
-  const resolvedPreferredName = ctx.preferredName?.trim() || cvCtx?.firstName?.trim() || undefined;
+  const authUser = useAuthStore(s => s.user);
+  // Resolve candidate name: explicit "Known As" override wins, then the logged-in
+  // account's own name, then undefined. Was CV-extracted firstName as the fallback
+  // instead of the account name — but a CV can belong to anyone (a candidate testing
+  // with someone else's CV, a recruiter previewing a role), while the account name is
+  // always genuinely who's sitting in the interview. Found live: logging in as one
+  // account but uploading a different person's CV made Sarah/James/Mike address the
+  // CV's name, not the actual candidate's.
+  const resolvedPreferredName = ctx.preferredName?.trim() || authUser?.firstName?.trim() || undefined;
 
   const demoCompany = useMemo(() => pickRandomCompany(), []);
 
@@ -334,7 +341,6 @@ export default function InterviewRoomPage() {
   const interviewIdRef = useRef<string>(crypto.randomUUID());
 
   const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
-  const authUser = useAuthStore(s => s.user);
   const authToken = useAuthStore(s => s.token);
 
   const getCandidateId = () => {
