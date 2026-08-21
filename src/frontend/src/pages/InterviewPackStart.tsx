@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FileUpload } from '../components/FileUpload';
 import { logFlowEvent } from '../api/flowLogger';
+import { type Career, searchCareers, reportMissingCareerTitle } from '../api/careersApi';
 
 const LANGUAGES = [
   { code: 'en', name: 'English' },
@@ -78,6 +79,42 @@ export default function InterviewPackStart() {
   // Only shown after a blocked attempt to start — not on first load, so an empty form
   // doesn't look like it's already in an error state before the candidate's done anything.
   const [attemptedStart, setAttemptedStart] = useState(false);
+
+  // Job title type-ahead — suggests real careers from the database as the candidate
+  // types, but never blocks free text (a title genuinely missing from the database is
+  // still a valid interview to run; it's just reported so the population job can catch up).
+  const [jobTitleSuggestions, setJobTitleSuggestions] = useState<Career[]>([]);
+  const [showJobTitleSuggestions, setShowJobTitleSuggestions] = useState(false);
+  const jobTitleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastMatchedTitleRef = useRef<string | null>(null); // avoids re-reporting the same free-typed title repeatedly
+
+  const handleJobTitleChange = useCallback((value: string) => {
+    setJobTitle(value);
+    if (jobTitleDebounceRef.current) clearTimeout(jobTitleDebounceRef.current);
+    if (value.trim().length < 2) { setJobTitleSuggestions([]); setShowJobTitleSuggestions(false); return; }
+    jobTitleDebounceRef.current = setTimeout(async () => {
+      const results = await searchCareers(value, 8);
+      setJobTitleSuggestions(results);
+      setShowJobTitleSuggestions(results.length > 0);
+    }, 280);
+  }, []);
+
+  const selectJobTitleSuggestion = useCallback((c: Career) => {
+    setJobTitle(c.title);
+    lastMatchedTitleRef.current = c.title;
+    setShowJobTitleSuggestions(false);
+  }, []);
+
+  const handleJobTitleBlur = useCallback(() => {
+    setTimeout(() => setShowJobTitleSuggestions(false), 150); // let a suggestion click register first
+    const typed = jobTitle.trim();
+    if (typed.length < 3 || typed === lastMatchedTitleRef.current) return;
+    const matchesKnownCareer = jobTitleSuggestions.some(c => c.title.toLowerCase() === typed.toLowerCase());
+    if (!matchesKnownCareer) {
+      lastMatchedTitleRef.current = typed; // only report once per distinct typed title
+      void reportMissingCareerTitle(typed);
+    }
+  }, [jobTitle, jobTitleSuggestions]);
 
   useEffect(() => {
     logFlowEvent('UPLOAD_SCREEN_VIEW', { hasIncomingJobSpec: Boolean(incoming.jobSpec) });
@@ -185,20 +222,38 @@ export default function InterviewPackStart() {
             <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Job Title</span>
             <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 400 }}>(or upload a Job Spec)</span>
           </div>
-          <input
-            type="text"
-            value={jobTitle}
-            onChange={e => setJobTitle(e.target.value)}
-            placeholder="e.g. Head of Engineering, Senior Product Manager, Registered Nurse…"
-            style={{
-              width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
-              borderRadius: '10px', padding: '13px 16px', color: 'var(--text)', fontSize: '14px',
-              fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
-              transition: 'border-color 0.15s',
-            }}
-            onFocus={e => { e.target.style.borderColor = 'rgba(79,142,247,0.5)'; }}
-            onBlur={e => { e.target.style.borderColor = 'var(--border)'; }}
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              value={jobTitle}
+              onChange={e => handleJobTitleChange(e.target.value)}
+              onFocus={e => { e.target.style.borderColor = 'rgba(79,142,247,0.5)'; if (jobTitleSuggestions.length > 0) setShowJobTitleSuggestions(true); }}
+              onBlur={e => { e.target.style.borderColor = 'var(--border)'; handleJobTitleBlur(); }}
+              placeholder="e.g. Head of Engineering, Senior Product Manager, Registered Nurse…"
+              style={{
+                width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+                borderRadius: '10px', padding: '13px 16px', color: 'var(--text)', fontSize: '14px',
+                fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+                transition: 'border-color 0.15s',
+              }}
+            />
+            {showJobTitleSuggestions && jobTitleSuggestions.length > 0 && (
+              <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, background: '#0d0c1e', border: '1px solid rgba(79,142,247,0.3)', borderRadius: '10px', overflow: 'hidden', zIndex: 20, boxShadow: '0 16px 48px rgba(0,0,0,0.6)' }}>
+                {jobTitleSuggestions.map(c => (
+                  <div
+                    key={c.id}
+                    onMouseDown={() => selectJobTitleSuggestion(c)}
+                    style={{ padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(79,142,247,0.1)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
+                  >
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{c.title}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-3)' }}>{c.category}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Job Spec + CV — tabbed */}
