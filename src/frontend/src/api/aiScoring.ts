@@ -913,13 +913,27 @@ Return this exact JSON:
 
   return {
     questions: result.questions ?? [],
-    sarahIntro: result.sarahIntro ?? '',
-    jamesIntro: result.jamesIntro ?? '',
+    sarahIntro: ensureNameSpoken(result.sarahIntro ?? '', preferredName),
+    jamesIntro: ensureNameSpoken(result.jamesIntro ?? '', preferredName),
     mikeScript: result.mikeScript ?? null,
     companyFacts: result.companyFacts ?? [],
     specialistTitle: result.specialistTitle ?? 'Hiring Manager',
     mcqQuestions,
   };
+}
+
+// Sarah/James's intros are two fields among many in one large JSON generation (10
+// questions + 2 MCQs + 3 intros), and the model doesn't reliably follow the "use this
+// name" instruction there even though it's stated explicitly — unlike Mike's script,
+// which is a separate, focused call and does comply reliably. Same shape of problem as
+// the earlier question-count drift: prompting harder wasn't reliable, so guarantee it
+// deterministically in code instead of trusting the model.
+function ensureNameSpoken(text: string, name?: string): string {
+  if (!text.trim() || !name?.trim()) return text;
+  const n = name.trim();
+  const escaped = n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (new RegExp(`\\b${escaped}\\b`, 'i').test(text)) return text;
+  return `${n}, ${text}`;
 }
 
 // ── Dedicated MCQ generation ───────────────────────────────────────────────────
