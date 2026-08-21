@@ -96,7 +96,7 @@ export function CareerGuideOverlay({ career, onClose }: Props) {
               🎙️
             </motion.div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'default' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'default', userSelect: 'none' }}>
               <div style={{ fontSize: '13px', fontWeight: 700, color: ACCENT }}>Sarah on {career.title}</div>
               {speaking && (
                 <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', height: '14px' }}>

@@ -1272,7 +1272,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
           {/* Recording status indicator */}
           {phase !== 'intro' && phase !== 'mike' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '7px 12px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#EF4444', cursor: 'default' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '7px 12px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#EF4444', cursor: 'default', userSelect: 'none' }}>
               {uploadStatus === 'uploading' ? (
                 <><motion.span animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 0.8 }} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />Saving…</>
               ) : uploadStatus === 'done' ? (
@@ -1452,7 +1452,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               <div style={{ fontSize: '21px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Mike</div>
               <div style={{ fontSize: '12px', color: 'var(--text-3)', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Recruitment Consultant</div>
               {/* Speaking indicator */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '24px', cursor: 'default', userSelect: 'none' }}>
                 <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}
                   style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34D399' }} />
                 <span style={{ fontSize: '13px', color: 'var(--text-3)' }}>Speaking…</span>
