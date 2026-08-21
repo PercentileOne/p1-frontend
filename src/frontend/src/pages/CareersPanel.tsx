@@ -300,19 +300,21 @@ function CareerDetailPanel({ career, onClose }: { career: Career; onClose: () =>
   const wus = career.workforce?.us;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} />
       <div style={{
         position: 'relative', zIndex: 1,
-        width: '100%', maxWidth: 500,
-        height: '100vh',
+        width: '100%', maxWidth: 640,
+        maxHeight: '85vh',
         background: '#0a0818',
-        borderLeft: '1px solid rgba(120,80,255,0.2)',
+        border: '1px solid rgba(120,80,255,0.25)',
+        borderRadius: 20,
+        boxShadow: '0 30px 90px rgba(0,0,0,0.55)',
         overflowY: 'auto',
         display: 'flex', flexDirection: 'column',
       }}>
         {/* Header */}
-        <div style={{ padding: '24px 24px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', position: 'sticky', top: 0, background: '#0a0818', zIndex: 1 }}>
+        <div style={{ padding: '24px 24px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', position: 'sticky', top: 0, background: '#0a0818', zIndex: 1, borderRadius: '20px 20px 0 0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <div style={{ fontSize: 10, fontWeight: 700, color: '#7b5cf5', letterSpacing: '0.06em', marginBottom: 4 }}>

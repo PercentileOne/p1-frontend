@@ -240,6 +240,7 @@ export default function CandidateDashboard() {
   const logout   = useAuthStore(s => s.logout);
 
   const [activeNav, setActiveNav] = useState("Dashboard");
+  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const [news,      setNews]      = useState<NewsItem[]>(FALLBACK_NEWS);
   const [newsReady, setNewsReady] = useState(false);
 
@@ -289,24 +290,33 @@ export default function CandidateDashboard() {
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: "16px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
-          {NAV_ITEMS.map(({ Icon, label }) => (
-            <button
-              key={label}
-              onClick={() => navTo(label)}
-              style={{
-                display: "flex", alignItems: "center", gap: 10,
-                padding: "9px 12px", borderRadius: 8, border: "none",
-                cursor: "pointer", textAlign: "left", width: "100%",
-                background: activeNav === label ? "rgba(52,211,153,0.12)" : "transparent",
-                color: activeNav === label ? "#34D399" : "var(--text-2)",
-                fontSize: 13, fontWeight: activeNav === label ? 700 : 500,
-                transition: "all 0.15s", fontFamily: "inherit",
-              }}
-            >
-              <Icon size={15} strokeWidth={activeNav === label ? 2.2 : 1.8} />
-              {label}
-            </button>
-          ))}
+          {NAV_ITEMS.map(({ Icon, label }) => {
+            const active = activeNav === label;
+            const hovered = hoveredNav === label;
+            return (
+              <button
+                key={label}
+                onClick={() => navTo(label)}
+                onMouseEnter={() => setHoveredNav(label)}
+                onMouseLeave={() => setHoveredNav(null)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "9px 12px", borderRadius: 8, border: "none",
+                  cursor: "pointer", textAlign: "left", width: "100%",
+                  background: active ? "rgba(52,211,153,0.12)" : hovered ? "rgba(255,255,255,0.06)" : "transparent",
+                  color: active ? "#34D399" : hovered ? "var(--text)" : "var(--text-2)",
+                  fontSize: 13, fontWeight: active ? 700 : 500,
+                  transform: hovered && !active ? "translateX(3px)" : "translateX(0)",
+                  boxShadow: hovered && !active ? "0 0 0 1px rgba(255,255,255,0.06)" : "none",
+                  transition: "background 0.15s, color 0.15s, transform 0.15s, box-shadow 0.15s",
+                  fontFamily: "inherit",
+                }}
+              >
+                <Icon size={15} strokeWidth={active ? 2.2 : hovered ? 2 : 1.8} />
+                {label}
+              </button>
+            );
+          })}
         </nav>
 
         {/* User footer */}
