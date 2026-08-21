@@ -98,6 +98,55 @@ export async function getCareersByCategory(category: string): Promise<Career[]> 
   } catch { return []; }
 }
 
+// Builds a short spoken walkthrough script from a CareerDocument's own fields — no AI
+// call needed, so it works even when we don't yet have anything personal to say about
+// the candidate (see CLAUDE.md: never call a third-party AI provider from the browser).
+// candidateName is accepted for when profile data becomes available later; omit for now.
+export function buildCareerScript(career: Career, candidateName?: string): string[] {
+  const lines: string[] = [];
+  const opener = candidateName ? `${candidateName}, let` : 'Let';
+  lines.push(`${opener} me tell you about being a ${career.title}.`);
+
+  if (career.identity?.summary) {
+    lines.push(career.identity.summary);
+  } else if (career.subcategory) {
+    lines.push(`It's a role in ${career.subcategory}, within the wider ${career.category} field.`);
+  }
+
+  const uk = career.salary?.uk;
+  if (uk && uk.starting > 0) {
+    lines.push(
+      `In the UK, you'd typically start around £${uk.starting.toLocaleString('en-GB')}, ` +
+      `rising to about £${uk.senior.toLocaleString('en-GB')} at senior level` +
+      (uk.expert > uk.senior ? `, and up to £${uk.expert.toLocaleString('en-GB')} once you're an expert.` : '.')
+    );
+  }
+
+  const growth = career.workforce?.uk?.growthPct5yr;
+  if (growth !== undefined && growth !== 0) {
+    lines.push(`Demand is ${growth > 0 ? 'growing' : 'shrinking'} — about ${Math.abs(growth)}% over the next five years, with a future score of ${career.demand?.futureScore ?? '—'} out of 100.`);
+  } else if (career.demand?.trend) {
+    lines.push(`The overall trend for this role is ${career.demand.trend.toLowerCase()}.`);
+  }
+
+  if (career.lifestyle) {
+    const bits: string[] = [];
+    if (career.lifestyle.environment) bits.push(career.lifestyle.environment.toLowerCase());
+    if (career.lifestyle.remoteScore > 60) bits.push('plenty of scope to work remotely');
+    if (career.lifestyle.typicalHours) bits.push(`typical hours of ${career.lifestyle.typicalHours.toLowerCase()}`);
+    if (bits.length) lines.push(`Day to day, it suits ${bits.join(', ')}.`);
+  }
+
+  const traits = career.identity?.traits ?? [];
+  if (traits.length) {
+    lines.push(`People who thrive here tend to be ${traits.slice(0, 3).join(', ').toLowerCase()}.`);
+  }
+
+  lines.push(`If this feels like a fit, why not put it to the test with a mock interview?`);
+
+  return lines;
+}
+
 // Fires and forgets a note that a candidate typed a job title with no database match —
 // feeds the population function's backlog rather than being silently lost. The endpoint
 // doesn't exist yet server-side; safe no-op (catches its own failure) until it does.

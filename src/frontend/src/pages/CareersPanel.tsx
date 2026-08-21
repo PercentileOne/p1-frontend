@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { type Career, type SalaryRegion, type WorkforceRegion, searchCareers, getCategories, getCareersByCategory, FALLBACK_CATEGORIES } from '../api/careersApi';
+import { CareerGuideOverlay } from '../components/CareerGuideOverlay';
 
 // ── Category icons ─────────────────────────────────────────────────────────────
 
@@ -298,8 +299,10 @@ function CareerDetailPanel({ career, onClose }: { career: Career; onClose: () =>
   const us = career.salary?.us;
   const wuk = career.workforce?.uk;
   const wus = career.workforce?.us;
+  const [showGuide, setShowGuide] = useState(false);
 
   return (
+    <>
     <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} />
       <div style={{
@@ -309,7 +312,7 @@ function CareerDetailPanel({ career, onClose }: { career: Career; onClose: () =>
         background: '#0a0818',
         border: '1px solid rgba(120,80,255,0.25)',
         borderRadius: 20,
-        boxShadow: '0 30px 90px rgba(0,0,0,0.55)',
+        boxShadow: '0 0 100px rgba(120,80,255,0.22), 0 30px 90px rgba(0,0,0,0.55)',
         overflowY: 'auto',
         display: 'flex', flexDirection: 'column',
       }}>
@@ -327,6 +330,18 @@ function CareerDetailPanel({ career, onClose }: { career: Career; onClose: () =>
           {career.identity?.summary && (
             <p style={{ fontSize: 12, color: '#8080b0', lineHeight: 1.7, marginTop: 10, marginBottom: 0 }}>{career.identity.summary}</p>
           )}
+          <button
+            onClick={() => setShowGuide(true)}
+            style={{
+              marginTop: 14, width: '100%',
+              background: 'linear-gradient(135deg, rgba(123,92,245,0.18), rgba(91,143,247,0.14))',
+              border: '1px solid rgba(120,80,255,0.4)', borderRadius: 10,
+              padding: '10px 16px', fontSize: 12.5, fontWeight: 700, color: '#c0aaff',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}
+          >
+            🎙️ Tell Me About This Role
+          </button>
         </div>
 
         {/* Body */}
@@ -419,6 +434,8 @@ function CareerDetailPanel({ career, onClose }: { career: Career; onClose: () =>
         </div>
       </div>
     </div>
+    {showGuide && <CareerGuideOverlay career={career} onClose={() => setShowGuide(false)} />}
+    </>
   );
 }
 
