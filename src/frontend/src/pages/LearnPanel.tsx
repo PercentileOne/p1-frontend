@@ -802,7 +802,7 @@ function CourseView({ course, onBack, onUpdateCourse }: { course: Course; onBack
     // Push the corrected course back to the platform cache so it stops
     // serving the previously-broken snapshot to other users.
     if (lectures) {
-      fetch('/api/courses', {
+      fetch(`${API_BASE}/api/courses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: course.title, level: course.level, course: updated }),
@@ -1037,7 +1037,7 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
       // Platform suggestions (courses other users have already generated)
       const platformSuggs: { title: string; level: string }[] = [];
       try {
-        const r = await fetch(`/api/courses/suggest?q=${encodeURIComponent(val.trim())}`);
+        const r = await fetch(`${API_BASE}/api/courses/suggest?q=${encodeURIComponent(val.trim())}`);
         if (r.ok) platformSuggs.push(...(await r.json() as { title: string; level: string }[]));
       } catch { /* ignore */ }
       // Local SUGGESTIONS filtered by query
@@ -1074,7 +1074,7 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
 
     // 2. Platform cache (Cosmos — shared across all users)
     try {
-      const pr = await fetch(`/api/courses/cached?title=${encodeURIComponent(t)}&level=${encodeURIComponent(level)}`);
+      const pr = await fetch(`${API_BASE}/api/courses/cached?title=${encodeURIComponent(t)}&level=${encodeURIComponent(level)}`);
       if (pr.ok) {
         const platformCourse = await pr.json() as Omit<Course, 'id' | 'createdAt'>;
         const course: Course = { ...platformCourse, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
@@ -1136,7 +1136,7 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
       saveCourse(filled);
       setSavedCourses(loadCourses());
       if (filled.modules.every(m => m.lectures.length > 0)) {
-        fetch('/api/courses', {
+        fetch(`${API_BASE}/api/courses`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ title: t, level, course: filled }),
