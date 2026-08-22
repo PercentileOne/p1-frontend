@@ -1282,15 +1282,15 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               {uploadStatus === 'uploading' ? (
                 <><motion.span animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 0.8 }} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />Saving…</>
               ) : uploadStatus === 'done' ? (
-                <><span style={{ color: '#34D399' }}>✓</span><span style={{ color: '#34D399' }}>Saved</span></>
+                <><span style={{ color: '#34D399', userSelect: 'none' }}>✓</span><span style={{ color: '#34D399', userSelect: 'none' }}>Saved</span></>
               ) : uploadStatus === 'error' ? (
-                <><span>⚠</span>Save failed</>
+                <><span style={{ userSelect: 'none' }}>⚠</span>Save failed</>
               ) : isRecording ? (
                 <><motion.span animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#EF4444', flexShrink: 0 }} />Recording</>
               ) : recordingFailed ? (
-                <><span>⚠</span><span>No video — camera/mic denied</span></>
+                <><span style={{ userSelect: 'none' }}>⚠</span><span style={{ userSelect: 'none' }}>No video — camera/mic denied</span></>
               ) : (
-                <><span style={{ color: 'var(--text-3)' }}>⏺</span><span style={{ color: 'var(--text-3)' }}>Standby</span></>
+                <><span style={{ color: 'var(--text-3)', userSelect: 'none' }}>⏺</span><span style={{ color: 'var(--text-3)', userSelect: 'none' }}>Standby</span></>
               )}
             </div>
           )}
