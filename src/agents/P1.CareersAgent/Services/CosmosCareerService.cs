@@ -3,6 +3,7 @@ using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Configuration;
 using P1.CareersAgent.Models;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace P1.CareersAgent.Services;
 
@@ -75,19 +76,47 @@ public class CosmosCareerService
         // variants, abbreviations like "CEO"/"CTO", etc.) — this query never actually touched
         // that field despite the old comment claiming it did, so none of that data was ever
         // reachable via search since the import shipped.
+        //
+        // Over-fetches a wider candidate pool than the caller wants, then ranks in C# rather
+        // than trusting Cosmos's plain alphabetical order. This matters a lot for short queries
+        // like "CTO" — CONTAINS matches it as a bare substring inside unrelated words
+        // ("direCTOr", "operaTOr"...), and without re-ranking, dozens of those alphabetically
+        // beat the one real match ("Chief Technology Officer") out of the top N the UI shows.
         var lower = q.ToLowerInvariant();
+        const int candidatePoolSize = 80;
         var sql = new QueryDefinition(
             "SELECT TOP @top * FROM c WHERE " +
             "CONTAINS(LOWER(c.title), @q) OR " +
             "CONTAINS(LOWER(c.category), @q) OR " +
             "CONTAINS(LOWER(c.subcategory), @q) OR " +
             "EXISTS(SELECT VALUE t FROM t IN c.tags WHERE CONTAINS(LOWER(t), @q)) OR " +
-            "EXISTS(SELECT VALUE a FROM a IN c.aliases WHERE CONTAINS(LOWER(a), @q)) " +
-            "ORDER BY c.title")
+            "EXISTS(SELECT VALUE a FROM a IN c.aliases WHERE CONTAINS(LOWER(a), @q))")
             .WithParameter("@q", lower)
-            .WithParameter("@top", top);
+            .WithParameter("@top", candidatePoolSize);
 
-        return await DrainQueryIterator(_container.GetItemQueryIterator<CareerDocument>(sql));
+        var candidates = await DrainQueryIterator(_container.GetItemQueryIterator<CareerDocument>(sql));
+
+        return candidates
+            .Select(c => new { Doc = c, Rank = RelevanceRank(c, lower) })
+            .OrderBy(x => x.Rank)
+            .ThenBy(x => x.Doc.Title, StringComparer.OrdinalIgnoreCase)
+            .Take(top)
+            .Select(x => x.Doc)
+            .ToList();
+    }
+
+    private static int RelevanceRank(CareerDocument c, string lowerQuery)
+    {
+        var title = c.Title?.ToLowerInvariant() ?? "";
+        var aliases = c.Aliases.Select(a => a.ToLowerInvariant()).ToList();
+
+        if (title == lowerQuery || aliases.Any(a => a == lowerQuery)) return 0;
+        if (title.StartsWith(lowerQuery) || aliases.Any(a => a.StartsWith(lowerQuery))) return 1;
+
+        var boundaryPattern = $@"\b{Regex.Escape(lowerQuery)}\b";
+        if (Regex.IsMatch(title, boundaryPattern) || aliases.Any(a => Regex.IsMatch(a, boundaryPattern))) return 2;
+
+        return 3; // bare substring match only (category/subcategory/tags, or mid-word collision)
     }
 
     public async Task<List<CareerDocument>> GetByCategoryAsync(string category, int top = 20)
