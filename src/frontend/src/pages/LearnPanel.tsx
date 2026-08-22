@@ -4,6 +4,7 @@ import { Highlight, themes } from 'prism-react-renderer';
 import mermaid from 'mermaid';
 import type { RoomState } from './InterviewRoomPage';
 import type { InterviewQuestion } from '../api/explainApi';
+import { createReadAloudPlayer, extractReadableText, type ReadAloudState, type ReadAloudGender } from '../api/readAloud';
 
 mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'strict' });
 
@@ -501,6 +502,78 @@ function SolutionReveal({ sample }: { sample: CodeSample }) {
   );
 }
 
+// ── Read-aloud button ────────────────────────────────────────────────────────────
+
+const READ_RATES = [1, 1.25, 1.5, 2];
+
+function ReadAloudButton({ text }: { text: string }) {
+  const [state, setState] = useState<ReadAloudState>('idle');
+  const [rate, setRateValue] = useState(1);
+  const [gender, setGenderValue] = useState<ReadAloudGender>('female');
+  const playerRef = useRef<ReturnType<typeof createReadAloudPlayer> | null>(null);
+
+  useEffect(() => {
+    playerRef.current = createReadAloudPlayer(text, setState, gender);
+    return () => playerRef.current?.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const speaking = state === 'playing' || state === 'paused';
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, userSelect: 'none' }}>
+      <button
+        onClick={() => {
+          if (state === 'playing') playerRef.current?.pause();
+          else if (state === 'paused') playerRef.current?.resume();
+          else playerRef.current?.play();
+        }}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          background: speaking ? 'rgba(79,142,247,0.14)' : 'rgba(255,255,255,0.05)',
+          border: `1px solid ${speaking ? 'rgba(79,142,247,0.4)' : BORDER}`,
+          borderRadius: 20, padding: '6px 14px', fontSize: 12, fontWeight: 700,
+          color: speaking ? BLUE : TEXT2, cursor: 'pointer', transition: 'all 0.15s',
+        }}
+      >
+        {state === 'playing' ? '⏸ Pause' : state === 'paused' ? '▶ Resume' : '🔊 Read Aloud'}
+      </button>
+      {speaking && (
+        <>
+          <select
+            value={rate}
+            onChange={e => {
+              const r = Number(e.target.value);
+              setRateValue(r);
+              playerRef.current?.setRate(r);
+            }}
+            style={{
+              fontSize: 11, fontWeight: 600, padding: '5px 8px', borderRadius: 7,
+              background: BG3, border: `1px solid ${BORDER}`, color: TEXT2, cursor: 'pointer', outline: 'none',
+            }}
+          >
+            {READ_RATES.map(r => <option key={r} value={r}>{r}×</option>)}
+          </select>
+          <button
+            onClick={() => {
+              const next: ReadAloudGender = gender === 'female' ? 'male' : 'female';
+              setGenderValue(next);
+              playerRef.current?.setGender(next);
+            }}
+            title={`Switch to ${gender === 'female' ? 'male' : 'female'} voice`}
+            style={{
+              fontSize: 13, padding: '5px 9px', borderRadius: 7,
+              background: BG3, border: `1px solid ${BORDER}`, color: TEXT2, cursor: 'pointer',
+            }}
+          >
+            {gender === 'female' ? '♀' : '♂'}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Lecture content renderer ───────────────────────────────────────────────────
 
 function LectureView({ lecture, courseTitle, onPractice }: { lecture: Lecture; courseTitle: string; onPractice: (q: string, lecture?: Lecture) => void }) {
@@ -508,13 +581,16 @@ function LectureView({ lecture, courseTitle, onPractice }: { lecture: Lecture; c
     <div style={{ flex: 1, overflowY: 'auto', padding: '32px 36px 60px' }}>
       {/* Lecture header */}
       <div style={{ marginBottom: 28 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <span style={{ fontSize: 18 }}>{LECTURE_ICONS[lecture.type]}</span>
-          <span style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-            color: lecture.type === 'practice' ? GREEN : lecture.type === 'quiz' ? PURPLE : BLUE,
-          }}>{lecture.type}</span>
-          <span style={{ fontSize: 11, color: TEXT3, marginLeft: 4 }}>· {lecture.estimatedMinutes} min</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 18 }}>{LECTURE_ICONS[lecture.type]}</span>
+            <span style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+              color: lecture.type === 'practice' ? GREEN : lecture.type === 'quiz' ? PURPLE : BLUE,
+            }}>{lecture.type}</span>
+            <span style={{ fontSize: 11, color: TEXT3, marginLeft: 4 }}>· {lecture.estimatedMinutes} min</span>
+          </div>
+          <ReadAloudButton key={`${courseTitle}-${lecture.number}-${lecture.title}`} text={extractReadableText(lecture.content)} />
         </div>
         <h2 style={{ fontSize: 22, fontWeight: 800, color: TEXT1, margin: 0, letterSpacing: '-0.02em' }}>
           {lecture.title}

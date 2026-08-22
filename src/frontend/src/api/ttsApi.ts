@@ -61,7 +61,7 @@ const PHONETIC: [RegExp, string][] = [
   [/\bi\.e\./gi, 'that is'],
 ];
 
-function sanitiseForTTS(text: string): string {
+export function sanitiseForTTS(text: string): string {
   let out = text;
   for (const [pattern, replacement] of PHONETIC) {
     out = out.replace(pattern, replacement);
