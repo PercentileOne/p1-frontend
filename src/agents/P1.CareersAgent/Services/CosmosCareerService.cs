@@ -70,13 +70,19 @@ public class CosmosCareerService
 
     public async Task<List<CareerDocument>> SearchAsync(string q, int top = 12)
     {
-        // Case-insensitive CONTAINS search on title, category, subcategory and tags
+        // Case-insensitive CONTAINS search on title, category, subcategory, tags and aliases.
+        // aliases carries ~1,400 real alternate job titles from the SOC/O*NET import (regional
+        // variants, abbreviations like "CEO"/"CTO", etc.) — this query never actually touched
+        // that field despite the old comment claiming it did, so none of that data was ever
+        // reachable via search since the import shipped.
         var lower = q.ToLowerInvariant();
         var sql = new QueryDefinition(
             "SELECT TOP @top * FROM c WHERE " +
             "CONTAINS(LOWER(c.title), @q) OR " +
             "CONTAINS(LOWER(c.category), @q) OR " +
-            "CONTAINS(LOWER(c.subcategory), @q) " +
+            "CONTAINS(LOWER(c.subcategory), @q) OR " +
+            "EXISTS(SELECT VALUE t FROM t IN c.tags WHERE CONTAINS(LOWER(t), @q)) OR " +
+            "EXISTS(SELECT VALUE a FROM a IN c.aliases WHERE CONTAINS(LOWER(a), @q)) " +
             "ORDER BY c.title")
             .WithParameter("@q", lower)
             .WithParameter("@top", top);
