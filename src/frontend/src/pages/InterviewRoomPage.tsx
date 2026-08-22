@@ -1381,9 +1381,9 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
                 {/* Headline */}
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.5, duration: 0.7 }}
-                  style={{ fontSize: '26px', fontWeight: 800, color: '#fff', textAlign: 'center', lineHeight: 1.3, letterSpacing: '-0.01em' }}>
+                  style={{ fontSize: '26px', fontWeight: 800, color: '#fff', textAlign: 'center', lineHeight: 1.3, letterSpacing: '-0.01em', userSelect: 'none' }}>
                   The seat is yours.<br />
-                  <span style={{ color: 'rgba(167,139,250,0.9)' }}>Make every answer count.</span>
+                  <span style={{ color: 'rgba(167,139,250,0.9)', userSelect: 'none' }}>Make every answer count.</span>
                 </motion.div>
 
                 {/* Meta row */}
@@ -1394,7 +1394,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   </div>
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: elevenLabsConfigured ? 'rgba(52,211,153,0.1)' : 'rgba(255,255,255,0.05)', border: `1px solid ${elevenLabsConfigured ? 'rgba(52,211,153,0.25)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '20px', padding: '5px 14px' }}>
                     <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: elevenLabsConfigured ? '#34D399' : 'var(--amber)' }} />
-                    <span style={{ fontSize: '12px', color: elevenLabsConfigured ? '#34D399' : 'var(--amber)' }}>
+                    <span style={{ fontSize: '12px', color: elevenLabsConfigured ? '#34D399' : 'var(--amber)', userSelect: 'none' }}>
                       {elevenLabsConfigured ? 'Neural voices ready' : 'Browser voices'}
                     </span>
                   </div>
@@ -1403,11 +1403,11 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 {/* Answer mode + audio test */}
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.3, duration: 0.5 }}
                   style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: 'rgba(240,244,255,0.65)', cursor: 'pointer' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: 'rgba(240,244,255,0.65)', cursor: 'pointer', userSelect: 'none' }}>
                     <input type="radio" checked={useVoice} onChange={() => setUseVoice(true)} style={{ accentColor: '#a78bfa' }} />
                     Speak my answers
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: 'rgba(240,244,255,0.65)', cursor: 'pointer' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: 'rgba(240,244,255,0.65)', cursor: 'pointer', userSelect: 'none' }}>
                     <input type="radio" checked={!useVoice} onChange={() => setUseVoice(false)} style={{ accentColor: '#a78bfa' }} />
                     Type my answers
                   </label>
@@ -1419,10 +1419,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
                 {/* Go Deeper toggle */}
                 <motion.label initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.45, duration: 0.5 }}
-                  style={{ display: 'flex', alignItems: 'flex-start', gap: '9px', maxWidth: '380px', textAlign: 'left', cursor: 'pointer', background: goDeeperEnabled ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${goDeeperEnabled ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '10px', padding: '10px 14px' }}>
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: '9px', maxWidth: '380px', textAlign: 'left', cursor: 'pointer', background: goDeeperEnabled ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${goDeeperEnabled ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '10px', padding: '10px 14px', userSelect: 'none' }}>
                   <input type="checkbox" checked={goDeeperEnabled} onChange={(e) => setGoDeeperEnabled(e.target.checked)}
                     style={{ marginTop: '2px', accentColor: '#a78bfa' }} />
-                  <span style={{ fontSize: '12.5px', lineHeight: 1.5, color: 'rgba(240,244,255,0.7)' }}>
+                  <span style={{ fontSize: '12.5px', lineHeight: 1.5, color: 'rgba(240,244,255,0.7)', userSelect: 'none' }}>
                     <strong style={{ color: 'rgba(240,244,255,0.9)' }}>🔍 Go Deeper</strong> — occasional real follow-up questions that test genuine depth of experience{selectedDifficulty === 'Expert' ? ' (recommended for Expert)' : ''}.
                   </span>
                 </motion.label>
@@ -1461,7 +1461,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '24px', cursor: 'default', userSelect: 'none' }}>
                 <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}
                   style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34D399' }} />
-                <span style={{ fontSize: '13px', color: 'var(--text-3)' }}>Speaking…</span>
+                <span style={{ fontSize: '13px', color: 'var(--text-3)', userSelect: 'none' }}>Speaking…</span>
               </div>
               <button
                 onClick={() => {
