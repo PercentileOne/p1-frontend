@@ -123,6 +123,37 @@ Only include codeSnippet if genuinely technical/code-related.`;
   return chatJSON(system, `Subject: ${subject}\nConcept: ${conceptTitle}\nBody: ${conceptBody}`);
 }
 
+// ── Practice MCQs (mini cinematic practice mode) ────────────────────────────────
+
+export interface PracticeMCQ {
+  questionText: string;
+  options: string[];    // 4 options, each prefixed "A. ", "B. " etc — matches CinematicMCQ's format
+  correctIndex: number; // 0-based
+  explanation: string;
+}
+
+export async function generatePracticeMCQs(courseTitle: string, topic: string, seedQuestion: string): Promise<PracticeMCQ[]> {
+  const system = `You are an expert interview coach creating a short multiple-choice practice quiz on a specific topic from a course.
+Return valid JSON only — no markdown, no code fences.
+The JSON must match this exact structure:
+{
+  "questions": [
+    {
+      "questionText": "A realistic interview-style question testing understanding of the topic",
+      "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+      "correctIndex": 0,
+      "explanation": "1-2 sentence explanation of why the correct answer is right"
+    }
+  ]
+}
+Generate exactly 6 questions, each with 4 options and only one correct. Vary difficulty slightly across the 6 (start a little easier, get harder). Questions should feel like realistic interview questions on the topic, not textbook trivia.`;
+
+  const user = `Course: ${courseTitle}\nTopic: ${topic}\nExample interview question on this topic (for context/tone, don't repeat verbatim): ${seedQuestion}`;
+
+  const data = await chatJSON<{ questions: PracticeMCQ[] }>(system, user);
+  return data.questions;
+}
+
 // ── Persistence ────────────────────────────────────────────────────────────────
 
 export async function saveLesson(lesson: LessonData, language = 'English'): Promise<{ id: string; createdAt: string }> {

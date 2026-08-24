@@ -5,6 +5,7 @@ import mermaid from 'mermaid';
 import type { RoomState } from './InterviewRoomPage';
 import type { InterviewQuestion } from '../api/explainApi';
 import { createReadAloudPlayer, extractReadableText, type ReadAloudState, type ReadAloudGender } from '../api/readAloud';
+import MiniPracticeSession from '../components/MiniPracticeSession';
 
 mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'strict' });
 
@@ -579,7 +580,11 @@ function ReadAloudButton({ text }: { text: string }) {
 
 // ── Lecture content renderer ───────────────────────────────────────────────────
 
-function LectureView({ lecture, courseTitle, onPractice }: { lecture: Lecture; courseTitle: string; onPractice: (q: string, lecture?: Lecture) => void }) {
+function LectureView({ lecture, courseTitle, onPractice, onMiniPractice }: {
+  lecture: Lecture; courseTitle: string;
+  onPractice: (q: string, lecture?: Lecture) => void;
+  onMiniPractice: (q: string, lecture: Lecture) => void;
+}) {
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '32px 36px 60px' }}>
       {/* Lecture header */}
@@ -759,7 +764,7 @@ function LectureView({ lecture, courseTitle, onPractice }: { lecture: Lecture; c
             {lecture.interviewQuestions.map((q, i) => (
               <div
                 key={i}
-                onClick={() => onPractice(q, lecture)}
+                onClick={() => onMiniPractice(q, lecture)}
                 style={{
                   background: 'rgba(167,139,250,0.08)',
                   border: '1px solid rgba(167,139,250,0.18)',
@@ -855,6 +860,7 @@ function CourseView({ course, onBack, onUpdateCourse }: { course: Course; onBack
     return firstLecture ? { module: course.modules[0], lecture: firstLecture } : null;
   });
   const [retryingModule, setRetryingModule] = useState<number | null>(null);
+  const [miniPractice, setMiniPractice] = useState<{ topic: string; seedQuestion: string } | null>(null);
   const { accent, bg } = catStyle(course.category);
   const mins = totalMinutes(course);
 
@@ -914,6 +920,10 @@ function CourseView({ course, onBack, onUpdateCourse }: { course: Course; onBack
       autoStart: true,
     };
     navigate('/interview/learn-practice', { state });
+  }
+
+  function handleMiniPractice(question: string, lecture: Lecture) {
+    setMiniPractice({ topic: lecture.title, seedQuestion: question });
   }
 
   return (
@@ -1056,6 +1066,7 @@ function CourseView({ course, onBack, onUpdateCourse }: { course: Course; onBack
               lecture={activeLecture.lecture}
               courseTitle={course.title}
               onPractice={handlePractice}
+              onMiniPractice={handleMiniPractice}
             />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, color: TEXT3 }}>
@@ -1071,6 +1082,15 @@ function CourseView({ course, onBack, onUpdateCourse }: { course: Course; onBack
           )}
         </div>
       </div>
+
+      {miniPractice && (
+        <MiniPracticeSession
+          courseTitle={course.title}
+          topic={miniPractice.topic}
+          seedQuestion={miniPractice.seedQuestion}
+          onClose={() => setMiniPractice(null)}
+        />
+      )}
     </div>
   );
 }
