@@ -114,35 +114,67 @@ public static class Endpoint
 
         var interviewDateStr = prep.interviewDate.ToString("dddd d MMMM 'at' h:mmtt");
 
+        var benefits = new[]
+        {
+            "Practice with Sarah &amp; James, our AI interviewers, in a realistic mock interview",
+            $"Questions tailored specifically to a {WebUtility.HtmlEncode(prep.role)} ({WebUtility.HtmlEncode(prep.level)}) role",
+            "Instant, honest feedback to sharpen every answer",
+            "100% free — no card, no catch",
+        };
+        var benefitsHtml = string.Join("\n", benefits.Select(b => $"""
+                  <tr>
+                    <td style="padding:0 0 14px;vertical-align:top;width:26px;">
+                      <span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:rgba(52,211,153,0.15);color:#34D399;font-size:12px;font-weight:800;line-height:20px;text-align:center;">✓</span>
+                    </td>
+                    <td style="padding:0 0 14px 10px;vertical-align:top;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;">{b}</td>
+                  </tr>
+            """));
+
         var body = $"""
             <!DOCTYPE html>
             <html>
             <body style="margin:0;padding:0;background:#07080f;font-family:-apple-system,'Segoe UI',sans-serif;">
               <div style="max-width:560px;margin:40px auto;padding:0 20px;">
-                <div style="text-align:center;margin-bottom:32px;">
+                <div style="text-align:center;margin-bottom:28px;">
                   <p style="font-size:18px;font-weight:700;color:#fff;margin:0;">
                     <strong style="color:#fff">Interview</strong><strong style="color:#34D399">Me</strong><span style="color:#4F8EF7;font-weight:400">.global</span>
                   </p>
                 </div>
-                <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:40px 36px;">
-                  <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0 0 12px;">You've been invited to prepare for an interview</h1>
-                  <p style="font-size:15px;color:rgba(255,255,255,0.6);line-height:1.7;margin:0 0 24px;">
-                    Hi {firstName}, {prep.recruiterName} has set you up to prepare for your <strong style="color:#fff">{prep.role}</strong> ({prep.level}) interview on <strong style="color:#fff">{interviewDateStr}</strong>.
+
+                <div style="background:linear-gradient(160deg,#0d1117 0%,#0f1b16 100%);border:1px solid rgba(52,211,153,0.25);border-radius:20px;padding:44px 36px 36px;box-shadow:0 0 60px rgba(52,211,153,0.08);">
+
+                  <div style="text-align:center;margin-bottom:22px;">
+                    <span style="display:inline-block;width:64px;height:64px;line-height:64px;border-radius:50%;background:radial-gradient(circle,rgba(52,211,153,0.22) 0%,rgba(52,211,153,0.06) 70%);font-size:28px;">🎁</span>
+                  </div>
+
+                  <p style="text-align:center;font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:#34D399;margin:0 0 10px;">A free gift from {WebUtility.HtmlEncode(prep.recruiterName)}</p>
+
+                  <h1 style="text-align:center;font-size:23px;font-weight:800;color:#fff;margin:0 0 18px;line-height:1.35;">
+                    {firstName}, here's a head start on your {WebUtility.HtmlEncode(prep.role)} interview
+                  </h1>
+
+                  <p style="text-align:center;font-size:14px;color:rgba(255,255,255,0.55);line-height:1.7;margin:0 0 28px;">
+                    {WebUtility.HtmlEncode(prep.recruiterName)} wants you walking into your interview on <strong style="color:#fff">{interviewDateStr}</strong> feeling fully prepared — so they've unlocked free access to InterviewMe, built just for this role.
                   </p>
-                  <p style="font-size:15px;color:rgba(255,255,255,0.6);line-height:1.7;margin:0 0 32px;">
-                    Create your free account to practice with AI interviewers, get personalised questions, and walk in ready.
-                  </p>
-                  <div style="text-align:center;margin-bottom:32px;">
-                    <a href="{registerUrl}" style="display:inline-block;background:linear-gradient(135deg,#34D399,#059669);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:12px;">
-                      Start preparing →
+
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 30px;">
+                    {benefitsHtml}
+                  </table>
+
+                  <div style="text-align:center;margin-bottom:16px;">
+                    <a href="{registerUrl}" style="display:inline-block;background:linear-gradient(135deg,#34D399,#059669);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:15px 40px;border-radius:12px;box-shadow:0 8px 24px rgba(52,211,153,0.35);">
+                      Claim your free prep →
                     </a>
                   </div>
-                  <p style="font-size:12px;color:rgba(255,255,255,0.3);line-height:1.7;margin:0;word-break:break-all;">
+                  <p style="text-align:center;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(52,211,153,0.6);margin:0 0 28px;">100% free · no card required</p>
+
+                  <p style="font-size:11px;color:rgba(255,255,255,0.25);line-height:1.7;margin:0;word-break:break-all;text-align:center;">
                     Or copy this link into your browser:<br/>{registerUrl}
                   </p>
                 </div>
-                <p style="text-align:center;font-size:12px;color:rgba(255,255,255,0.2);margin-top:24px;">
-                  Sent via InterviewMe.global on behalf of {prep.recruiterName}.
+
+                <p style="text-align:center;font-size:12px;color:rgba(255,255,255,0.25);margin-top:24px;">
+                  A gift from {WebUtility.HtmlEncode(prep.recruiterName)}, sent via InterviewMe.global
                 </p>
               </div>
             </body>
@@ -157,7 +189,7 @@ public static class Endpoint
         using var message = new MailMessage
         {
             From       = new MailAddress(fromEmail, fromName),
-            Subject    = $"You're set up for your {prep.role} interview",
+            Subject    = $"🎁 {prep.recruiterName} sent you a free gift for your {prep.role} interview",
             Body       = body,
             IsBodyHtml = true,
         };

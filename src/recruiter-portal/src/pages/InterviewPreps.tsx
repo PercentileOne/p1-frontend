@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Send, Mail, Calendar, Briefcase, User } from 'lucide-react'
+import { ArrowLeft, Send, Mail, Calendar, Briefcase, User, Loader2, Play } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { interviewPrepsApi, type InterviewPrep } from '../api/interviewPrepsApi'
+import { explainApi } from '../api/explainApi'
 
 const LEVELS = ['Junior', 'Mid', 'Senior', 'Lead', 'Director', 'Executive']
 
@@ -156,7 +158,7 @@ function statusColor(status: string) {
   return status === 'sent' ? '#F59E0B' : status === 'opened' ? '#4F8EF7' : status === 'completed' ? '#34D399' : 'var(--text-3)'
 }
 
-function PrepCard({ prep }: { prep: InterviewPrep }) {
+function PrepCard({ prep, onPreview, previewing }: { prep: InterviewPrep; onPreview: () => void; previewing: boolean }) {
   const initials = prep.candidateName.split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
   const interviewDate = new Date(prep.interviewDate)
   const sentDate = new Date(prep.createdAt)
@@ -164,8 +166,9 @@ function PrepCard({ prep }: { prep: InterviewPrep }) {
 
   return (
     <motion.div
-      style={{ background: '#0c1220', border: '1px solid var(--border)', borderRadius: 14, padding: '18px 20px' }}
-      whileHover={{ y: -2, borderColor: 'rgba(79,142,247,0.4)' }}
+      onClick={previewing ? undefined : onPreview}
+      style={{ background: '#0c1220', border: '1px solid var(--border)', borderRadius: 14, padding: '18px 20px', cursor: previewing ? 'default' : 'pointer' }}
+      whileHover={previewing ? {} : { y: -2, borderColor: 'rgba(79,142,247,0.4)' }}
       transition={{ duration: 0.15 }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
@@ -183,7 +186,7 @@ function PrepCard({ prep }: { prep: InterviewPrep }) {
         </span>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 20px', marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px 20px', marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-3)' }}>
           <Mail size={12} /> {prep.email}
         </div>
@@ -193,17 +196,23 @@ function PrepCard({ prep }: { prep: InterviewPrep }) {
         <div style={{ fontSize: 12, color: 'var(--text-3)' }}>
           Sent {sentDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#4F8EF7', marginLeft: 'auto' }}>
+          {previewing ? <><Loader2 size={12} className="animate-spin" /> Preparing…</> : <><Play size={12} /> Preview with Sarah &amp; James</>}
+        </div>
       </div>
     </motion.div>
   )
 }
 
 export default function InterviewPreps() {
+  const navigate = useNavigate()
   const { token } = useAuth()
   const [view, setView] = useState<View>('list')
   const [preps, setPreps] = useState<InterviewPrep[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+  const [previewingId, setPreviewingId] = useState<string | null>(null)
+  const [previewError, setPreviewError] = useState('')
 
   const load = useCallback(() => {
     if (!token) return
@@ -216,6 +225,35 @@ export default function InterviewPreps() {
   }, [token])
 
   useEffect(load, [load])
+
+  // Recruiter preview — the exact interview Sarah and James would run for this candidate,
+  // generated fresh from the prep's role/level (no CV on file yet, this is a preview not the
+  // real candidate session). Reuses the same InterviewRoom already built for InterviewIntake.
+  async function startPreview(prep: InterviewPrep) {
+    setPreviewError('')
+    setPreviewingId(prep.id)
+    try {
+      const session = await explainApi.sessionPrepare({
+        jobSpecText: `${prep.role} — ${prep.level} level position.`,
+      })
+      navigate(`/interview-room/${prep.id}`, {
+        state: {
+          questions: session.questions,
+          sarahIntro: session.sarahIntro,
+          jamesIntro: session.jamesIntro,
+          specialistTitle: session.specialistTitle,
+          mikeScript: session.mikeScript,
+          companyFacts: session.companyFacts,
+          jobTitle: prep.role,
+          preferredName: prep.knownAs || prep.candidateName.split(' ')[0],
+          autoStart: true,
+        },
+      })
+    } catch (err) {
+      setPreviewError(err instanceof Error ? err.message : 'Could not prepare the interview preview.')
+      setPreviewingId(null)
+    }
+  }
 
   return (
     <div>
@@ -265,9 +303,17 @@ export default function InterviewPreps() {
               </div>
             )}
 
+            {previewError && (
+              <div style={{ fontSize: 13, color: '#F87171', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 12 }}>
+                {previewError}
+              </div>
+            )}
+
             {!loading && !loadError && preps.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {preps.map(p => <PrepCard key={p.id} prep={p} />)}
+                {preps.map(p => (
+                  <PrepCard key={p.id} prep={p} onPreview={() => startPreview(p)} previewing={previewingId === p.id} />
+                ))}
               </div>
             )}
           </motion.div>
