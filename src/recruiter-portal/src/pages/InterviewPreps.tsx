@@ -5,6 +5,7 @@ import { ArrowLeft, Send, Mail, Calendar, Briefcase, User, Loader2, Play } from 
 import { useAuth } from '../context/AuthContext'
 import { interviewPrepsApi, type InterviewPrep } from '../api/interviewPrepsApi'
 import { explainApi } from '../api/explainApi'
+import { buildCVContext, buildJobSpecContext, buildSarahIntro, buildJamesIntro, buildPersonalisedQuestions, inferSpecialistTitle } from '../utils/contextBuilder'
 
 const LEVELS = ['Junior', 'Mid', 'Senior', 'Lead', 'Director', 'Executive']
 
@@ -228,14 +229,20 @@ export default function InterviewPreps() {
 
   // Recruiter preview — the exact interview Sarah and James would run for this candidate,
   // generated fresh from the prep's role/level (no CV on file yet, this is a preview not the
-  // real candidate session). Reuses the same InterviewRoom already built for InterviewIntake.
+  // real candidate session). Reuses the same InterviewRoom already built for InterviewIntake —
+  // including its exact fallback: /session/prepare isn't currently deployed on the .NET
+  // backend (404 in production, confirmed 2026-08-24 — a pre-existing gap, not new), so
+  // InterviewIntake.tsx already falls back to local heuristic generation on failure. Mirror
+  // that here rather than surfacing a broken feature.
   async function startPreview(prep: InterviewPrep) {
     setPreviewError('')
     setPreviewingId(prep.id)
+
+    const jobSpecText = `${prep.role} — ${prep.level} level position.`
+    const preferredName = prep.knownAs || prep.candidateName.split(' ')[0]
+
     try {
-      const session = await explainApi.sessionPrepare({
-        jobSpecText: `${prep.role} — ${prep.level} level position.`,
-      })
+      const session = await explainApi.sessionPrepare({ jobSpecText })
       navigate(`/interview-room/${prep.id}`, {
         state: {
           questions: session.questions,
@@ -245,13 +252,32 @@ export default function InterviewPreps() {
           mikeScript: session.mikeScript,
           companyFacts: session.companyFacts,
           jobTitle: prep.role,
-          preferredName: prep.knownAs || prep.candidateName.split(' ')[0],
+          preferredName,
           autoStart: true,
         },
       })
-    } catch (err) {
-      setPreviewError(err instanceof Error ? err.message : 'Could not prepare the interview preview.')
-      setPreviewingId(null)
+    } catch {
+      try {
+        const cvCtx = buildCVContext('')
+        const jobCtx = buildJobSpecContext(jobSpecText)
+        navigate(`/interview-room/${prep.id}`, {
+          state: {
+            cvCtx, jobCtx,
+            questions: buildPersonalisedQuestions(cvCtx, jobCtx),
+            sarahIntro: buildSarahIntro(cvCtx, jobCtx),
+            jamesIntro: buildJamesIntro(cvCtx, jobCtx),
+            specialistTitle: inferSpecialistTitle(jobCtx.title),
+            mikeScript: null,
+            companyFacts: [],
+            jobTitle: prep.role,
+            preferredName,
+            autoStart: true,
+          },
+        })
+      } catch (err) {
+        setPreviewError(err instanceof Error ? err.message : 'Could not prepare the interview preview.')
+        setPreviewingId(null)
+      }
     }
   }
 
