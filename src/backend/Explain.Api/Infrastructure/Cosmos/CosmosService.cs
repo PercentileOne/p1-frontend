@@ -45,6 +45,11 @@ public class CosmosService
         // Partition key = /candidateId so a candidate's own sessions are single-partition.
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("interviews", "/candidateId"));
+
+        // Recruiter-sent candidate interview preps. Partition key = /recruiterId so a
+        // recruiter's own sent list is single-partition.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("interview-preps", "/recruiterId"));
     }
 
     public Container GetContainer(string name) => _database.GetContainer(name);

@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Loader2, ArrowRight, ArrowLeft, Check } from "lucide-react";
 import { authApi, type ApiError } from "../api/authApi";
@@ -19,16 +19,18 @@ type Phase = "idle" | "loading" | "success";
 export default function RegisterPage() {
   const navigate   = useNavigate();
   const storeLogin = useAuthStore(s => s.login);
+  const [searchParams] = useSearchParams();
 
   const [step,       setStep]       = useState<1 | 2>(1);
   const [phase,      setPhase]      = useState<Phase>("idle");
   const [showPass,   setShowPass]   = useState(false);
   const [showConf,   setShowConf]   = useState(false);
 
-  // Fields
-  const [firstName,   setFirstName]   = useState("");
-  const [lastName,    setLastName]    = useState("");
-  const [email,       setEmail]       = useState("");
+  // Fields — pre-filled from ?email=&firstName=&lastName= when arriving via a recruiter's
+  // interview prep invite, so the candidate isn't retyping what was already sent to them.
+  const [firstName,   setFirstName]   = useState(() => searchParams.get('firstName') ?? "");
+  const [lastName,    setLastName]    = useState(() => searchParams.get('lastName') ?? "");
+  const [email,       setEmail]       = useState(() => searchParams.get('email') ?? "");
   const [password,    setPassword]    = useState("");
   const [confirm,     setConfirm]     = useState("");
   const [profession,  setProfession]  = useState("");
