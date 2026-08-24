@@ -66,6 +66,7 @@ export const authApi = {
     firstName:  string;
     lastName:   string;
     profession?: string;
+    role?:      string; // "recruiter" — omit/anything else defaults to Candidate server-side
   }): Promise<AuthResponse> {
     return post('/auth/register', body);
   },

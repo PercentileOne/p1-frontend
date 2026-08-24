@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Loader2, ArrowRight, ArrowLeft, Check } from "lucide-react";
+import { Eye, EyeOff, Loader2, ArrowRight, ArrowLeft, Check, ChevronDown } from "lucide-react";
 import { authApi, type ApiError } from "../api/authApi";
 import { useAuthStore } from "../auth/authStore";
 import { defaultPortalForPermissions } from "../auth/permissionMatrix";
@@ -16,6 +16,17 @@ import { type Career, searchCareers } from "../api/careersApi";
 
 type Phase = "idle" | "loading" | "success";
 
+// Only what the backend actually self-registers today (RegisterCommandHandler.cs whitelists
+// candidate/recruiter only — Employer/Admin/SuperAdmin are admin-assigned, never self-service).
+// Mirrors LoginPage.tsx's role dropdown pattern but deliberately doesn't include its other
+// two options, to avoid silently registering someone as Candidate when they picked Employer.
+type RegisterRole = 'Candidate' | 'Recruiter';
+
+const REGISTER_ROLE_OPTIONS: { value: RegisterRole; label: string; emoji: string; subtitle: string }[] = [
+  { value: 'Candidate', emoji: '🎓', label: 'Candidate', subtitle: "I'm preparing for interviews" },
+  { value: 'Recruiter',  emoji: '🔍', label: 'Recruiter', subtitle: 'I place candidates' },
+];
+
 export default function RegisterPage() {
   const navigate   = useNavigate();
   const storeLogin = useAuthStore(s => s.login);
@@ -25,6 +36,8 @@ export default function RegisterPage() {
   const [phase,      setPhase]      = useState<Phase>("idle");
   const [showPass,   setShowPass]   = useState(false);
   const [showConf,   setShowConf]   = useState(false);
+  const [selectedRole, setSelectedRole] = useState<RegisterRole | null>(null);
+  const [roleDropOpen, setRoleDropOpen] = useState(false);
 
   // Fields — pre-filled from ?email=&firstName=&lastName= when arriving via a recruiter's
   // interview prep invite, so the candidate isn't retyping what was already sent to them.
@@ -66,6 +79,7 @@ export default function RegisterPage() {
 
   const validateStep1 = () => {
     const e: Record<string, string> = {};
+    if (!selectedRole)                              e.role      = "Please select whether you're a candidate or recruiter.";
     if (!firstName.trim())                          e.firstName = "First name is required.";
     if (!lastName.trim())                           e.lastName  = "Last name is required.";
     if (!email.trim())                              e.email     = "Email is required.";
@@ -96,7 +110,7 @@ export default function RegisterPage() {
   // ── Submit ────────────────────────────────────────────────────
 
   const handleSubmit = async () => {
-    if (!validateStep2()) return;
+    if (!validateStep2() || !selectedRole) return;
     setApiErr("");
     setPhase("loading");
 
@@ -107,6 +121,7 @@ export default function RegisterPage() {
         firstName:  firstName.trim(),
         lastName:   lastName.trim(),
         profession: profession || undefined,
+        role:       selectedRole.toLowerCase(),
       });
 
       const session = await authApi.getSession(token);
@@ -122,7 +137,10 @@ export default function RegisterPage() {
         } else {
           const isSameOrigin = dest.startsWith(window.location.origin);
           if (isSameOrigin) navigate('/cockpit');
-          else window.location.href = dest;
+          // Cross-domain handoff — the receiving portal validates this token against the
+          // shared backend (GET /auth/me) before trusting it, same as the Login page's
+          // equivalent redirect.
+          else window.location.href = `${dest}/auth/callback?token=${encodeURIComponent(token)}`;
         }
       }, 2400);
     } catch (err) {
@@ -213,10 +231,10 @@ export default function RegisterPage() {
           transition={{ delay: 0.3, duration: 0.6 }}
         >
           <h1 style={{ fontSize: 20, fontWeight: 800, color: "#fff", letterSpacing: "-.03em", margin: 0 }}>
-            Candidate Registration
+            {selectedRole ? `${selectedRole} Registration` : 'Create your account'}
           </h1>
           <p style={{ fontSize: 13, color: "rgba(240,244,255,.45)", marginTop: 4 }}>
-            Your interview intelligence platform awaits.
+            {REGISTER_ROLE_OPTIONS.find(r => r.value === selectedRole)?.subtitle ?? 'Your interview intelligence platform awaits.'}
           </p>
         </motion.div>
 
@@ -280,6 +298,69 @@ export default function RegisterPage() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
+                {/* Role — required, no default, so nobody is silently registered as the wrong thing */}
+                <div style={{ position: "relative" }}>
+                  <FieldLabel>I am a…</FieldLabel>
+                  <button
+                    type="button"
+                    onClick={() => setRoleDropOpen(o => !o)}
+                    style={{
+                      width: "100%", display: "flex", alignItems: "center", gap: 10,
+                      background: "rgba(79,142,247,0.07)", border: `1px solid ${errors.role ? "#F87171" : "rgba(79,142,247,0.22)"}`,
+                      borderRadius: 8, padding: "10px 14px", cursor: "pointer", textAlign: "left", fontFamily: "inherit",
+                    }}
+                  >
+                    {selectedRole ? (
+                      <>
+                        <span style={{ fontSize: 15, lineHeight: 1 }}>{REGISTER_ROLE_OPTIONS.find(r => r.value === selectedRole)?.emoji}</span>
+                        <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#cbd5e1" }}>{selectedRole}</span>
+                      </>
+                    ) : (
+                      <span style={{ flex: 1, fontSize: 13, color: "rgba(140,180,255,0.45)" }}>Select your role…</span>
+                    )}
+                    <ChevronDown size={14} style={{ color: "#4b5563", transform: roleDropOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+                  </button>
+
+                  <AnimatePresence>
+                    {roleDropOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.15 }}
+                        style={{
+                          position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 20,
+                          background: "#0a1a3a", border: "1px solid rgba(79,142,247,0.3)", borderRadius: 10,
+                          overflow: "hidden", boxShadow: "0 16px 48px rgba(0,0,0,0.6)",
+                        }}
+                      >
+                        {REGISTER_ROLE_OPTIONS.map(opt => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => { setSelectedRole(opt.value); setRoleDropOpen(false); clearErr("role"); }}
+                            style={{
+                              width: "100%", display: "flex", alignItems: "center", gap: 12,
+                              padding: "10px 14px", background: "none", border: "none", cursor: "pointer",
+                              textAlign: "left", fontFamily: "inherit", borderBottom: "1px solid rgba(255,255,255,0.05)",
+                            }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(79,142,247,0.1)"; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+                          >
+                            <span style={{ fontSize: 15 }}>{opt.emoji}</span>
+                            <span style={{ display: "flex", flexDirection: "column" }}>
+                              <span style={{ fontSize: 13, fontWeight: 700, color: opt.value === selectedRole ? "#4F8EF7" : "#cbd5e1" }}>{opt.label}</span>
+                              <span style={{ fontSize: 11, color: "rgba(140,180,255,0.5)" }}>{opt.subtitle}</span>
+                            </span>
+                            {opt.value === selectedRole && <span style={{ marginLeft: "auto", color: "#4F8EF7", fontSize: 12 }}>✓</span>}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <ErrMsg msg={errors.role} />
+                </div>
+
                 {/* Name row */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   <div>
