@@ -5,6 +5,8 @@
 // is what keeps this affordable for lesson-length text read repeatedly (unlike a one-off
 // script such as the career guide).
 
+import { useAuthStore } from '../auth/authStore';
+
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 
 export type ReadAloudState = 'idle' | 'loading' | 'playing' | 'paused' | 'done' | 'error';
@@ -36,9 +38,15 @@ export function extractReadableText(content: string): string {
 }
 
 async function fetchChunks(text: string, gender: ReadAloudGender, signal: AbortSignal): Promise<AudioChunk[]> {
+  // LearnPanel only renders behind the /dashboard RequirePermission gate, so a token is
+  // always present here — read non-reactively via getState() since this isn't a component.
+  const token = useAuthStore.getState().token;
   const res = await fetch(`${API_BASE}/lessons/read-aloud`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify({ text, gender }),
     signal,
   });
