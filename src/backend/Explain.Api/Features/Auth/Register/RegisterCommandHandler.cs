@@ -18,6 +18,15 @@ public class RegisterCommandHandler(
     ILogger<RegisterCommandHandler> logger)
     : IRequestHandler<RegisterCommand, Result<AuthResponse>>
 {
+    // Only roles a stranger should be able to grant themselves through a public, anonymous
+    // endpoint. Client/Admin/SuperAdmin are seeded (see AddRbacRolesAndPermissions migration)
+    // but deliberately absent here — those are assigned by an admin, never by self-registration.
+    private static readonly Dictionary<string, (int RoleId, string Name)> SelfRegisterableRoles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["candidate"] = (1, "Candidate"),
+        ["recruiter"] = (2, "Recruiter"),
+    };
+
     public async Task<Result<AuthResponse>> Handle(RegisterCommand cmd, CancellationToken ct)
     {
         logger.LogInformation("Register attempt for {Email}", cmd.Email);
@@ -35,6 +44,9 @@ public class RegisterCommandHandler(
             return Result<AuthResponse>.Failure("Last name is required.", 400);
 
         var email = cmd.Email.Trim().ToLower();
+        var (roleId, roleName) = cmd.Role is not null && SelfRegisterableRoles.TryGetValue(cmd.Role, out var r)
+            ? r
+            : SelfRegisterableRoles["candidate"];
 
         // Duplicate check in SQL — indexed, instant, no full-scan
         if (await db.Users.AnyAsync(u => u.Email == email, ct))
@@ -50,12 +62,11 @@ public class RegisterCommandHandler(
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(cmd.Password),
             FirstName    = cmd.FirstName.Trim(),
             LastName     = cmd.LastName.Trim(),
-            Role         = "user",
+            Role         = roleName,
         };
 
-        // Assign default Candidate role (id = 1, seeded)
         db.Users.Add(sqlUser);
-        db.UserRoles.Add(new UserRole { UserId = sqlUser.Id, RoleId = 1 });
+        db.UserRoles.Add(new UserRole { UserId = sqlUser.Id, RoleId = roleId });
 
         try
         {
@@ -87,8 +98,8 @@ public class RegisterCommandHandler(
         var name     = $"{sqlUser.FirstName} {sqlUser.LastName}".Trim();
         var username = $"{sqlUser.FirstName}{sqlUser.LastName}".ToLower().Replace(" ", "");
         var perms    = await permissions.LoadAsync(sqlUser.Id, ct);
-        var token    = tokens.CreateSessionToken(sqlUser.Id, sqlUser.Email, name, "Candidate", perms);
-        var response = new AuthResponse(token, new UserDto(sqlUser.Id, sqlUser.Email, name, sqlUser.FirstName, username, "Candidate"));
+        var token    = tokens.CreateSessionToken(sqlUser.Id, sqlUser.Email, name, roleName, perms);
+        var response = new AuthResponse(token, new UserDto(sqlUser.Id, sqlUser.Email, name, sqlUser.FirstName, username, roleName));
 
         return Result<AuthResponse>.Success(response);
     }

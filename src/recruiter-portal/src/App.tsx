@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Login from './pages/Login'
-import AuthVerify from './pages/AuthVerify'
+import Register from './pages/Register'
+import AuthCallback from './pages/AuthCallback'
 import Dashboard from './pages/Dashboard'
 import DemoLinkedIn from './pages/DemoLinkedIn'
 import DemoLinkedInPaid from './pages/DemoLinkedInPaid'
@@ -19,9 +20,12 @@ import LessonViewer from './pages/learn/LessonViewer'
 import LearnBookshelf from './pages/learn/LearnBookshelf'
 import CandidateHome from './pages/candidate/CandidateHome'
 
-// Redirects unauthenticated users to /login
+// Redirects unauthenticated users to /login. Waits for the async session
+// re-validation (AuthProvider's isLoading) before deciding, so a page refresh
+// with a still-valid token doesn't flash-redirect to /login first.
 function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { token } = useAuth()
+  const { token, isLoading } = useAuth()
+  if (isLoading) return null
   if (!token) return <Navigate to="/login" replace />
   return <>{children}</>
 }
@@ -31,7 +35,8 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/auth/verify" element={<AuthVerify />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
 
       {/* Protected recruiter routes */}
       <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />

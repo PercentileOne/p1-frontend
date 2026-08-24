@@ -1,54 +1,73 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { authApi, type SessionResponse } from '../api/authApi';
 
 const TOKEN_KEY = 'explain_token';
+const RECRUITER_PERMISSION = 'CAN_VIEW_RECRUITER_PORTAL';
 
 interface AuthUser {
-  email: string;
-  name: string;
-  role: string;
+  email:       string;
+  name:        string;
+  role:        string;
+  permissions: string[];
 }
 
 interface AuthContextValue {
-  user: AuthUser | null;
-  token: string | null;
-  signIn: (token: string, email: string, name: string) => void;
+  user:       AuthUser | null;
+  token:      string | null;
+  isLoading:  boolean;
+  /** Validates a token against the shared backend before trusting it. Throws if invalid or not a recruiter account. */
+  signIn: (token: string) => Promise<void>;
   signOut: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
   token: null,
-  signIn: () => {},
+  isLoading: true,
+  signIn: async () => {},
   signOut: () => {},
 });
 
-function decodeToken(token: string): AuthUser | null {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-    if (payload.exp && Math.floor(Date.now() / 1000) > payload.exp) return null;
-    return { email: payload.email, name: payload.name, role: payload.role };
-  } catch {
-    return null;
-  }
-}
-
-function getStored(): { token: string; user: AuthUser } | null {
-  const token = localStorage.getItem(TOKEN_KEY);
-  if (!token) return null;
-  const user = decodeToken(token);
-  if (!user) { localStorage.removeItem(TOKEN_KEY); return null; }
-  return { token, user };
+function toAuthUser(session: SessionResponse): AuthUser {
+  return { email: session.email, name: session.name, role: session.role, permissions: session.permissions };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const stored = getStored();
-  const [token, setToken] = useState<string | null>(stored?.token ?? null);
-  const [user, setUser] = useState<AuthUser | null>(stored?.user ?? null);
+  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const signIn = useCallback((newToken: string, email: string, name: string) => {
+  // On load, re-validate whatever's in localStorage against the shared backend rather than
+  // trusting a locally-decoded JWT forever — a revoked/expired token should sign you out.
+  useEffect(() => {
+    const stored = localStorage.getItem(TOKEN_KEY);
+    if (!stored) { setIsLoading(false); return; }
+
+    authApi.getSession(stored)
+      .then(session => {
+        if (!session.permissions.includes(RECRUITER_PERMISSION)) {
+          localStorage.removeItem(TOKEN_KEY);
+          setIsLoading(false);
+          return;
+        }
+        setToken(stored);
+        setUser(toAuthUser(session));
+        setIsLoading(false);
+      })
+      .catch(() => {
+        localStorage.removeItem(TOKEN_KEY);
+        setIsLoading(false);
+      });
+  }, []);
+
+  const signIn = useCallback(async (newToken: string) => {
+    const session = await authApi.getSession(newToken);
+    if (!session.permissions.includes(RECRUITER_PERMISSION)) {
+      throw new Error("This account isn't registered as a recruiter.");
+    }
     localStorage.setItem(TOKEN_KEY, newToken);
     setToken(newToken);
-    setUser({ email, name, role: 'recruiter' });
+    setUser(toAuthUser(session));
   }, []);
 
   const signOut = useCallback(() => {
@@ -58,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, token, isLoading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

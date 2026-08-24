@@ -80,8 +80,10 @@ export default function LoginPage() {
     setPhase("success");
     setTimeout(() => {
       if (role === 'Investor')  { navigate('/dashboard'); return; }
-      if (role === 'Recruiter') { window.location.href = 'https://recruiter.interviewme.global'; return; }
-      if (role === 'Employer')  { window.location.href = 'https://employer.interviewme.global'; return; }
+      // Cross-domain handoff — the receiving portal validates this token against the shared
+      // backend (GET /auth/me) before trusting it, it doesn't just decode-and-accept it.
+      if (role === 'Recruiter') { window.location.href = `https://recruiter.interviewme.global/auth/callback?token=${encodeURIComponent(token)}`; return; }
+      if (role === 'Employer')  { window.location.href = `https://employer.interviewme.global/auth/callback?token=${encodeURIComponent(token)}`; return; }
       navigate('/dashboard');
     }, 2200);
   };
