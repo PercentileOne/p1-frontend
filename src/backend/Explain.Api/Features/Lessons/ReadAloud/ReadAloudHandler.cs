@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using MediatR;
 using Explain.Api.Common;
@@ -14,6 +15,14 @@ public class ReadAloudHandler(
 {
     private const string Model = "eleven_turbo_v2";
     private const int MaxConcurrentGenerations = 3; // ElevenLabs concurrency is finite too — don't hammer it on a long lesson's first read
+
+    // Observed live 2026-08-24: ElevenLabs returns 409 "already_running" ("Multiple voice
+    // additions/deletions for the same voice were called at the same time. Please retry
+    // shortly.") when several chunks hit the same voice at once — self-resolves on retry
+    // per their own message. 429 is the obvious other transient one. Retrying here means a
+    // momentary hiccup on one chunk doesn't fail the whole lesson and force a manual retry.
+    private static readonly HttpStatusCode[] TransientStatuses = [HttpStatusCode.Conflict, HttpStatusCode.TooManyRequests];
+    private const int MaxAttempts = 3;
 
     public async Task<Result<ReadAloudDto>> Handle(ReadAloudCommand cmd, CancellationToken ct)
     {
@@ -59,29 +68,40 @@ public class ReadAloudHandler(
         if (cached is not null)
             return new ReadAloudChunkDto(chunk, cached);
 
-        using var msg = new HttpRequestMessage(HttpMethod.Post, $"https://api.elevenlabs.io/v1/text-to-speech/{voiceId}");
-        msg.Headers.Add("xi-api-key", apiKey);
-        msg.Content = JsonContent.Create(new
+        for (var attempt = 1; ; attempt++)
         {
-            text = chunk,
-            model_id = Model,
-            voice_settings = new { stability = 0.5, similarity_boost = 0.75 },
-        });
+            using var msg = new HttpRequestMessage(HttpMethod.Post, $"https://api.elevenlabs.io/v1/text-to-speech/{voiceId}");
+            msg.Headers.Add("xi-api-key", apiKey);
+            msg.Content = JsonContent.Create(new
+            {
+                text = chunk,
+                model_id = Model,
+                voice_settings = new { stability = 0.5, similarity_boost = 0.75 },
+            });
 
-        using var resp = await client.SendAsync(msg, ct);
-        if (!resp.IsSuccessStatusCode)
-        {
-            var errorBody = await resp.Content.ReadAsStringAsync(ct);
-            throw new InvalidOperationException(
-                $"ElevenLabs returned {resp.StatusCode} for a {chunk.Length}-char chunk (voiceId={voiceId}): {errorBody}");
+            using var resp = await client.SendAsync(msg, ct);
+            if (!resp.IsSuccessStatusCode)
+            {
+                if (TransientStatuses.Contains(resp.StatusCode) && attempt < MaxAttempts)
+                {
+                    logger.LogWarning("ElevenLabs returned {Status} for a {Length}-char chunk (attempt {Attempt}/{Max}) — retrying",
+                        resp.StatusCode, chunk.Length, attempt, MaxAttempts);
+                    await Task.Delay(TimeSpan.FromMilliseconds(500 * attempt), ct);
+                    continue;
+                }
+
+                var errorBody = await resp.Content.ReadAsStringAsync(ct);
+                throw new InvalidOperationException(
+                    $"ElevenLabs returned {resp.StatusCode} for a {chunk.Length}-char chunk (voiceId={voiceId}): {errorBody}");
+            }
+
+            await using var responseStream = await resp.Content.ReadAsStreamAsync(ct);
+            using var buffer = new MemoryStream();
+            await responseStream.CopyToAsync(buffer, ct);
+            buffer.Position = 0;
+
+            var url = await cache.UploadAndGetReadUrlAsync(key, buffer, "audio/mpeg");
+            return new ReadAloudChunkDto(chunk, url);
         }
-
-        await using var responseStream = await resp.Content.ReadAsStreamAsync(ct);
-        using var buffer = new MemoryStream();
-        await responseStream.CopyToAsync(buffer, ct);
-        buffer.Position = 0;
-
-        var url = await cache.UploadAndGetReadUrlAsync(key, buffer, "audio/mpeg");
-        return new ReadAloudChunkDto(chunk, url);
     }
 }
