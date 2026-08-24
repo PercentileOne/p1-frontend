@@ -70,7 +70,11 @@ public class ReadAloudHandler(
 
         using var resp = await client.SendAsync(msg, ct);
         if (!resp.IsSuccessStatusCode)
-            throw new InvalidOperationException($"ElevenLabs returned {resp.StatusCode} for a {chunk.Length}-char chunk");
+        {
+            var errorBody = await resp.Content.ReadAsStringAsync(ct);
+            throw new InvalidOperationException(
+                $"ElevenLabs returned {resp.StatusCode} for a {chunk.Length}-char chunk (voiceId={voiceId}): {errorBody}");
+        }
 
         await using var responseStream = await resp.Content.ReadAsStreamAsync(ct);
         using var buffer = new MemoryStream();
