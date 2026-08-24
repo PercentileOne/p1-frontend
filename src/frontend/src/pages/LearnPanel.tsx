@@ -519,11 +519,13 @@ function ReadAloudButton({ text }: { text: string }) {
   }, []);
 
   const speaking = state === 'playing' || state === 'paused';
+  const loading = state === 'loading';
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, userSelect: 'none' }}>
       <button
         onClick={() => {
+          if (loading) return;
           if (state === 'playing') playerRef.current?.pause();
           else if (state === 'paused') playerRef.current?.resume();
           else playerRef.current?.play();
@@ -533,10 +535,11 @@ function ReadAloudButton({ text }: { text: string }) {
           background: speaking ? 'rgba(79,142,247,0.14)' : 'rgba(255,255,255,0.05)',
           border: `1px solid ${speaking ? 'rgba(79,142,247,0.4)' : BORDER}`,
           borderRadius: 20, padding: '6px 14px', fontSize: 12, fontWeight: 700,
-          color: speaking ? BLUE : TEXT2, cursor: 'pointer', transition: 'all 0.15s',
+          color: speaking ? BLUE : TEXT2, cursor: loading ? 'wait' : 'pointer',
+          opacity: loading ? 0.6 : 1, transition: 'all 0.15s',
         }}
       >
-        {state === 'playing' ? '⏸ Pause' : state === 'paused' ? '▶ Resume' : '🔊 Read Aloud'}
+        {loading ? '⏳ Loading…' : state === 'playing' ? '⏸ Pause' : state === 'paused' ? '▶ Resume' : '🔊 Read Aloud'}
       </button>
       {speaking && (
         <>

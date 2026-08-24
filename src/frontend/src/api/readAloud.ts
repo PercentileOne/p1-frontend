@@ -1,12 +1,13 @@
-// Read-aloud for Learn module lessons — Web Speech API, not ElevenLabs.
-// Reading whole lesson modules across "dozens of courses a month" would rack up real
-// per-character cost on an exposed browser key with no natural cap, and ElevenLabs'
-// buffer playback has no native pause/resume or true speed control anyway (would need
-// manual chunking + fake-pause bookkeeping). Web Speech is free, has no length limit,
-// and gives pause/resume/rate for free via the browser's own engine.
-import { sanitiseForTTS } from './ttsApi';
+// Read-aloud for Learn module lessons — real ElevenLabs voice via the .NET backend's
+// /lessons/read-aloud proxy, not a client-side ElevenLabs call. The backend chunks and
+// caches audio per (voice, text) in blob storage, so rereading the same lesson — by the
+// same candidate or a different one — is served from cache instead of regenerated, which
+// is what keeps this affordable for lesson-length text read repeatedly (unlike a one-off
+// script such as the career guide).
 
-export type ReadAloudState = 'idle' | 'playing' | 'paused' | 'done' | 'error';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+
+export type ReadAloudState = 'idle' | 'loading' | 'playing' | 'paused' | 'done' | 'error';
 export type ReadAloudGender = 'female' | 'male';
 
 export interface ReadAloudPlayer {
@@ -18,12 +19,10 @@ export interface ReadAloudPlayer {
   setGender: (gender: ReadAloudGender) => void;
 }
 
-// Matches the same name heuristics ttsApi.ts already uses for 'hr' vs 'technical' —
-// consistent voice-picking convention across the app rather than a second one invented here.
-const VOICE_PATTERNS: Record<ReadAloudGender, RegExp> = {
-  female: /Hazel|Libby|Susan|Zira|Female/i,
-  male:   /George|Ryan|Arthur|Male|David/i,
-};
+interface AudioChunk {
+  text: string;
+  audioUrl: string;
+}
 
 // Strips {{CODE_N}} / {{DIAGRAM_N}} markers and blank lines from lesson content — those
 // render as separate structured components (code blocks, diagrams), and reading the raw
@@ -36,59 +35,106 @@ export function extractReadableText(content: string): string {
     .join(' ');
 }
 
+async function fetchChunks(text: string, gender: ReadAloudGender, signal: AbortSignal): Promise<AudioChunk[]> {
+  const res = await fetch(`${API_BASE}/lessons/read-aloud`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, gender }),
+    signal,
+  });
+  if (!res.ok) throw new Error(`read-aloud failed: ${res.status}`);
+  const data = await res.json() as { chunks: AudioChunk[] };
+  return data.chunks;
+}
+
 export function createReadAloudPlayer(
   fullText: string,
   onStateChange: (state: ReadAloudState) => void,
   initialGender: ReadAloudGender = 'female',
 ): ReadAloudPlayer {
-  const synth = window.speechSynthesis;
+  let audio: HTMLAudioElement | null = null;
+  let chunks: AudioChunk[] = [];
+  let index = 0;
   let rate = 1;
   let gender = initialGender;
-  let offset = 0;       // char offset into fullText where the current utterance began
-  let lastBoundary = 0; // char offset within the current (sanitised) utterance's remaining text
+  let generation = 0;         // bumped on stop/gender-change so stale async work is a no-op
+  let abortController: AbortController | null = null;
+  let currentState: ReadAloudState = 'idle';
 
-  function speakFrom(startOffset: number) {
-    synth.cancel();
-    offset = startOffset;
-    lastBoundary = 0;
-    const remaining = fullText.slice(startOffset);
-    if (!remaining.trim()) { onStateChange('done'); return; }
+  function emit(state: ReadAloudState) {
+    currentState = state;
+    onStateChange(state);
+  }
 
-    const u = new SpeechSynthesisUtterance(sanitiseForTTS(remaining));
-    u.lang = 'en-GB';
-    u.rate = rate;
+  function teardownAudio() {
+    if (!audio) return;
+    audio.onended = null;
+    audio.onerror = null;
+    audio.onplay = null;
+    audio.onpause = null;
+    audio.pause();
+    audio = null;
+  }
 
-    const voices = synth.getVoices();
-    const preferred = voices.find(v => VOICE_PATTERNS[gender].test(v.name))
-      ?? voices.find(v => v.lang.startsWith('en')) ?? null;
-    if (preferred) u.voice = preferred;
+  function playChunk(i: number) {
+    if (i >= chunks.length) { emit('done'); return; }
+    index = i;
+    teardownAudio();
+    audio = new Audio(chunks[i].audioUrl);
+    audio.playbackRate = rate;
+    audio.onplay = () => emit('playing');
+    audio.onpause = () => { if (audio && !audio.ended) emit('paused'); };
+    audio.onended = () => playChunk(i + 1);
+    audio.onerror = () => emit('error');
+    audio.play().catch(() => emit('error'));
+  }
 
-    // Tracks roughly where we are so setRate() can restart from here at the new speed —
-    // Web Speech has no live rate change on an in-flight utterance. Drift against the
-    // ORIGINAL text is possible since phonetic substitutions can change length, but a
-    // word or two of imprecision on a speed change is a fine tradeoff, not safety-critical.
-    u.onboundary = (e) => { if (e.name === 'word') lastBoundary = e.charIndex; };
-    u.onstart = () => onStateChange('playing');
-    u.onend = () => onStateChange('done');
-    u.onerror = () => onStateChange('error');
-    u.onpause = () => onStateChange('paused');
-    u.onresume = () => onStateChange('playing');
+  async function start(fromIndex: number) {
+    const myGeneration = ++generation;
+    abortController?.abort();
 
-    synth.speak(u);
+    if (chunks.length === 0) {
+      abortController = new AbortController();
+      emit('loading');
+      try {
+        chunks = await fetchChunks(fullText, gender, abortController.signal);
+      } catch (err) {
+        if (myGeneration !== generation) return; // superseded by a later stop()/setGender()
+        if ((err as Error).name === 'AbortError') return;
+        console.error('[ReadAloud] failed to load voice audio:', err);
+        emit('error');
+        return;
+      }
+    }
+
+    if (myGeneration !== generation) return;
+    playChunk(fromIndex);
   }
 
   return {
-    play() { speakFrom(0); },
-    pause() { synth.pause(); },
-    resume() { synth.resume(); },
-    stop() { synth.cancel(); onStateChange('idle'); },
+    play() { start(0); },
+    pause() { audio?.pause(); },
+    resume() { audio?.play().catch(() => emit('error')); },
+    stop() {
+      generation++;
+      abortController?.abort();
+      teardownAudio();
+      emit('idle');
+    },
     setRate(r) {
       rate = r;
-      if (synth.speaking) speakFrom(offset + lastBoundary);
+      if (audio) audio.playbackRate = r; // live — no restart needed, unlike Web Speech
     },
     setGender(g) {
+      if (g === gender) return;
+      const wasActive = currentState === 'playing' || currentState === 'paused';
+      const resumeAt = index; // chunk boundaries don't depend on voice, so the same index lines up
       gender = g;
-      if (synth.speaking) speakFrom(offset + lastBoundary);
+      chunks = []; // different voice → different cache keys, needs a fresh fetch
+      generation++;
+      abortController?.abort();
+      teardownAudio();
+      if (wasActive) start(resumeAt); else emit('idle');
     },
   };
 }

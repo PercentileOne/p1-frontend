@@ -25,6 +25,7 @@ builder.Services.Configure<FormOptions>(o => { o.MultipartBodyLengthLimit = MaxU
 
 builder.Services.AddSingleton<CosmosService>();
 builder.Services.AddSingleton<BlobStorageService>();
+builder.Services.AddSingleton<TtsCacheService>();
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlDb"),
         sql => sql.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(10), errorNumbersToAdd: null)));
@@ -100,6 +101,15 @@ catch (Exception ex)
     var logger = app.Services.GetRequiredService<ILogger<Program>>();
     logger.LogWarning(ex, "Blob storage initialisation failed — interview recordings won't upload, but everything else is unaffected.");
 }
+try
+{
+    await app.Services.GetRequiredService<TtsCacheService>().InitialiseAsync();
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogWarning(ex, "TTS cache initialisation failed — Read Aloud will regenerate audio every time instead of serving cached clips.");
+}
 
 // Apply any pending EF migrations automatically on startup
 using (var scope = app.Services.CreateScope())
@@ -137,6 +147,7 @@ Explain.Api.Features.Lessons.Generate.Endpoint.Map(app);
 Explain.Api.Features.Lessons.Score.Endpoint.Map(app);
 Explain.Api.Features.Lessons.ExpandConcept.Endpoint.Map(app);
 Explain.Api.Features.Lessons.GoDeeper.Endpoint.Map(app);
+Explain.Api.Features.Lessons.ReadAloud.Endpoint.Map(app);
 Explain.Api.Features.Lessons.Export.Endpoint.Map(app);
 Explain.Api.Features.Lessons.Export.TestEmailEndpoint.Map(app);
 
