@@ -764,31 +764,30 @@ function LectureView({ lecture, courseTitle, onPractice, onMiniPractice }: {
             {lecture.interviewQuestions.map((q, i) => (
               <div
                 key={i}
-                onClick={() => onMiniPractice(q, lecture)}
                 style={{
                   background: 'rgba(167,139,250,0.08)',
                   border: '1px solid rgba(167,139,250,0.18)',
                   borderRadius: 10, padding: '12px 16px',
-                  cursor: 'pointer', transition: 'all 0.15s',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(167,139,250,0.15)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(167,139,250,0.08)'; }}
               >
                 <div style={{ fontSize: 13, color: '#d4c5ff', lineHeight: 1.5 }}>{q}</div>
-                <div style={{
-                  background: 'linear-gradient(135deg, #7b5cf5, #5b8ff7)',
-                  color: '#fff', border: 'none',
-                  borderRadius: 8, padding: '6px 12px',
-                  fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
-                }}>
-                  Practice →
-                </div>
               </div>
             ))}
           </div>
 
-          <div style={{ marginTop: 16, padding: '14px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: `1px solid ${BORDER}` }}>
+          <div style={{ marginTop: 16 }}>
+            <button
+              onClick={() => onMiniPractice(lecture.interviewQuestions[0] ?? lecture.title, lecture)}
+              style={{
+                background: 'linear-gradient(135deg, #7b5cf5, #5b8ff7)',
+                color: '#fff', border: 'none', borderRadius: 9, padding: '10px 20px',
+                fontSize: 12, fontWeight: 700, cursor: 'pointer', width: '100%',
+              }}>
+              🎯 Take Short Multiple Choice Test →
+            </button>
+          </div>
+
+          <div style={{ marginTop: 12, padding: '14px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: `1px solid ${BORDER}` }}>
             <div style={{ fontSize: 12, color: TEXT3, marginBottom: 8 }}>
               Ready to be interviewed on <strong style={{ color: TEXT2 }}>{courseTitle}</strong>? Practice with James or Sarah — they'll use questions from this course.
             </div>
