@@ -127,9 +127,26 @@ Only include codeSnippet if genuinely technical/code-related.`;
 
 export interface PracticeMCQ {
   questionText: string;
-  options: string[];    // 4 options, each prefixed "A. ", "B. " etc — matches CinematicMCQ's format
+  options: string[];    // 4 plain option strings, no letter prefix — the overlay renders the A/B/C/D badge itself
   correctIndex: number; // 0-based
   explanation: string;
+}
+
+// Fisher-Yates on the 4 options, remapping correctIndex to match. Models reliably put the
+// correct answer early (mostly A/B) when asked to generate correctIndex themselves — that's
+// a training-data bias, not something a prompt instruction fixes reliably — so the position
+// has to be randomised after generation, not trusted from the model.
+function shuffleOptions(mcq: PracticeMCQ): PracticeMCQ {
+  const order = [0, 1, 2, 3];
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return {
+    ...mcq,
+    options: order.map(i => mcq.options[i]),
+    correctIndex: order.indexOf(mcq.correctIndex),
+  };
 }
 
 export async function generatePracticeMCQs(courseTitle: string, topic: string, seedQuestion: string): Promise<PracticeMCQ[]> {
@@ -140,17 +157,18 @@ The JSON must match this exact structure:
   "questions": [
     {
       "questionText": "A realistic interview-style question testing understanding of the topic",
-      "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+      "options": ["first option text, no letter prefix", "second option text", "third option text", "fourth option text"],
       "correctIndex": 0,
       "explanation": "1-2 sentence explanation of why the correct answer is right"
     }
   ]
 }
-Generate exactly 6 questions, each with 4 options and only one correct. Vary difficulty slightly across the 6 (start a little easier, get harder). Questions should feel like realistic interview questions on the topic, not textbook trivia.`;
+Generate exactly 6 questions, each with 4 options and only one correct. Vary which position (0-3) holds the correct answer across the 6 questions — don't default to putting it first. Vary difficulty slightly across the 6 (start a little easier, get harder). Questions should feel like realistic interview questions on the topic, not textbook trivia.`;
 
   const user = `Course: ${courseTitle}\nTopic: ${topic}\nExample interview question on this topic (for context/tone, don't repeat verbatim): ${seedQuestion}`;
 
   const data = await chatJSON<{ questions: PracticeMCQ[] }>(system, user);
+  data.questions = data.questions.map(shuffleOptions);
   return data.questions;
 }
 
