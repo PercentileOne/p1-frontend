@@ -78,12 +78,34 @@ interface Course {
 const STORAGE_KEY = 'im_learn_courses_v1';
 const CACHE_TTL_MS = 48 * 60 * 60 * 1000; // 2 days
 
+const normaliseTitle = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
+const courseKey = (title: string, level: string) => `${normaliseTitle(title)}|${level}`;
+
+// De-dupes by (title, level) — the real identity of a course on the shelf — not by the
+// internal `id`, which the platform-cache path in handleGenerate mints fresh every time
+// (so a course whose local 48h cache expired but whose shared Cosmos cache is still warm
+// used to come back as a second entry under a new id). Runs on every load so it also
+// self-heals any duplicates already sitting in localStorage from before this fix.
+function dedupeCourses(courses: Course[]): Course[] {
+  const byKey = new Map<string, Course>();
+  for (const c of courses) {
+    const key = courseKey(c.title, c.level);
+    const existing = byKey.get(key);
+    if (!existing || new Date(c.createdAt) > new Date(existing.createdAt)) byKey.set(key, c);
+  }
+  return Array.from(byKey.values()).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
 function loadCourses(): Course[] {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'); } catch { return []; }
+  let courses: Course[];
+  try { courses = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'); } catch { return []; }
+  const deduped = dedupeCourses(courses);
+  if (deduped.length !== courses.length) localStorage.setItem(STORAGE_KEY, JSON.stringify(deduped));
+  return deduped;
 }
 
 function saveCourse(course: Course) {
-  const existing = loadCourses().filter(c => c.id !== course.id);
+  const existing = loadCourses().filter(c => courseKey(c.title, c.level) !== courseKey(course.title, course.level));
   localStorage.setItem(STORAGE_KEY, JSON.stringify([course, ...existing].slice(0, 20)));
 }
 
@@ -92,10 +114,9 @@ function deleteCourse(id: string) {
 }
 
 function findCached(title: string, level: string): Course | null {
-  const normalise = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
   const now = Date.now();
   return loadCourses().find(c =>
-    normalise(c.title) === normalise(title) &&
+    normaliseTitle(c.title) === normaliseTitle(title) &&
     c.level === level &&
     now - new Date(c.createdAt).getTime() < CACHE_TTL_MS
   ) ?? null;
