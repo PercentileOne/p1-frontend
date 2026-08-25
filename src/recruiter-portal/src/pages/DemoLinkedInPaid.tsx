@@ -176,8 +176,10 @@ function PracticePack() {
       {/* Brand strip */}
       <div style={{ padding: '10px 16px 12px', borderBottom: '1px solid rgba(79,142,247,0.1)', marginTop: -2 }}>
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.01em' }}>
-          <span style={{ color: '#4F8EF7' }}>www</span>
-          <span style={{ color: '#ffffff' }}>.Explain.global</span>
+          <span style={{ color: '#4F8EF7' }}>www.</span>
+          <span style={{ color: '#ffffff' }}>Interview</span>
+          <span style={{ color: '#34D399' }}>Me</span>
+          <span style={{ color: '#4F8EF7' }}>.global</span>
         </span>
       </div>
 
@@ -202,7 +204,7 @@ function PracticePack() {
 
       <div style={{ padding: '10px 16px 14px', fontSize: 10, color: 'rgba(255,255,255,0.55)', textAlign: 'center', lineHeight: 1.6 }}>
         No login needed · Instant access<br />
-        <span style={{ color: '#4F8EF7', fontWeight: 700 }}>Powered by Explain.Global</span>
+        <span style={{ color: '#4F8EF7', fontWeight: 700 }}>Powered by InterviewMe.Global</span>
       </div>
     </div>
   );
@@ -276,7 +278,7 @@ export default function DemoLinkedInPaid() {
             ))}
           </div>
           <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e0e0e0', padding: '20px' }}>
-            <div style={{ fontSize: '13px', color: '#000', fontWeight: 700, marginBottom: '6px' }}>Powered by Explain AI</div>
+            <div style={{ fontSize: '13px', color: '#000', fontWeight: 700, marginBottom: '6px' }}>Powered by InterviewMe AI</div>
             <div style={{ fontSize: '12px', color: '#666', lineHeight: 1.6 }}>
               {EXPLAIN_CTA_LONG}
             </div>

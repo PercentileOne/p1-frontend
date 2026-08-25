@@ -63,7 +63,7 @@ const CVS = [
     salaryExpectation: '£95,000+', rightToWork: 'Yes — UK',
     linkedin: 'linkedin.com/in/franciscobbinah',
     skills: ['.NET / C#', 'Azure', 'React', 'SQL Server', 'Software Architecture', 'Microservices'],
-    summary: 'Exceptionally passionate Senior .NET Developer and Software Architect with 24 years of commercial experience across investment banking, insurance, and retail. Currently building a cutting-edge AI-powered learning and recruitment platform (Explain.global). Previous employers include Bank of Tokyo Mitsubishi, HSBC, Amlin Insurance, Marks & Spencer and BGC Partners.',
+    summary: 'Exceptionally passionate Senior .NET Developer and Software Architect with 24 years of commercial experience across investment banking, insurance, and retail. Currently building a cutting-edge AI-powered learning and recruitment platform (InterviewMe.global). Previous employers include Bank of Tokyo Mitsubishi, HSBC, Amlin Insurance, Marks & Spencer and BGC Partners.',
   },
   {
     id: 6, initials: 'PS', candidate: 'Priya Sharma', email: 'priya.sharma@hotmail.co.uk', mobile: '07688 774 902',
@@ -340,9 +340,9 @@ export default function CVsPage() {
                 <ScoreCard label="Practice Score" value={selected.practiceScore} suffix="%" color="#4F8EF7" empty={!selected.hasPracticed} />
               </div>
 
-              {/* Explain activity */}
+              {/* InterviewMe activity */}
               <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: 2 }}>Explain Activity</div>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: 2 }}>InterviewMe Activity</div>
                 <ActivityRow label="Has Practiced" value={selected.hasPracticed ? 'Yes' : 'Not yet'} ok={selected.hasPracticed} />
                 <ActivityRow label="Pack Generated" value={selected.packGenerated ? 'Yes' : 'No'} ok={selected.packGenerated} />
                 <ActivityRow label="Practice Score" value={selected.practiceScore != null ? `${selected.practiceScore}%` : '—'} ok={selected.practiceScore != null} />

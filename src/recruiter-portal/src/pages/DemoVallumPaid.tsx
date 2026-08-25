@@ -58,7 +58,8 @@ function PremiumCard({ onOpen }: { onOpen: () => void }) {
       }}>
         <span style={{ fontSize: 20, fontWeight: 900, letterSpacing: '-0.02em', lineHeight: 1 }}>
           <span style={{ color: '#4F8EF7' }}>www.</span>
-          <span style={{ color: '#ffffff' }}>Explain</span>
+          <span style={{ color: '#ffffff' }}>Interview</span>
+          <span style={{ color: '#34D399' }}>Me</span>
           <span style={{ color: '#4F8EF7' }}>.global</span>
         </span>
       </div>
@@ -112,7 +113,7 @@ function PremiumCard({ onOpen }: { onOpen: () => void }) {
         marginTop: 4,
       }}>
         No login needed · Instant access<br />
-        <span style={{ color: '#4F8EF7', fontWeight: 700 }}>Powered by Explain.Global</span>
+        <span style={{ color: '#4F8EF7', fontWeight: 700 }}>Powered by InterviewMe.Global</span>
       </div>
     </div>
   );

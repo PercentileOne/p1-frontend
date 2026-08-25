@@ -355,7 +355,7 @@ export const MOCK_CV_DATA: Record<number, RichCvData> = {
     candidateId: 'mock-7',
     firstName: 'Francis',
     lastName: 'Cobbinah',
-    summary: 'Exceptionally passionate Senior .NET Developer and Software Architect with 24 years of commercial experience spanning investment banking, insurance, and retail. Founder of Percentile One, building Explain.global — an AI-powered recruitment and learning platform. Previous employers include Bank of Tokyo Mitsubishi, HSBC, Amlin Insurance, Marks & Spencer, and BGC Partners.',
+    summary: 'Exceptionally passionate Senior .NET Developer and Software Architect with 24 years of commercial experience spanning investment banking, insurance, and retail. Founder of Percentile One, building InterviewMe.global — an AI-powered recruitment and learning platform. Previous employers include Bank of Tokyo Mitsubishi, HSBC, Amlin Insurance, Marks & Spencer, and BGC Partners.',
     yearsOfExperience: 24,
     seniority: 'Principal / Architect',
     roles: ['Founder & Lead Architect', 'Principal .NET Developer', 'Senior Software Architect', 'Lead Developer'],
@@ -363,10 +363,10 @@ export const MOCK_CV_DATA: Record<number, RichCvData> = {
     experience: [
       {
         role: 'Founder & Lead Architect',
-        company: 'Percentile One (Explain.global)',
+        company: 'Percentile One (InterviewMe.global)',
         period: 'Jan 2022 – Present',
         responsibilities: [
-          'Sole architect and lead developer of the entire Explain.global ecosystem',
+          'Sole architect and lead developer of the entire InterviewMe.global ecosystem',
           'Designed multi-portal platform: Recruiter Portal, Candidate Portal, Client Portal, AI Interview Engine',
           'Integrated OpenAI, ElevenLabs, D-ID, Anthropic Claude, and Azure Cognitive Services',
           'Architected Azure-based serverless backend (Azure Functions, Cosmos DB, Static Web Apps)',
@@ -451,7 +451,7 @@ export const MOCK_CV_DATA: Record<number, RichCvData> = {
     ],
     skills: ['.NET / C# (24 yrs)', 'Software Architecture', 'Azure', 'React 19 / TypeScript', 'SQL Server', 'Microservices', 'AI / LLM Integration', 'OpenAI API', 'ElevenLabs', 'Framer Motion', 'Vite / Tailwind', 'Azure Functions', 'Cosmos DB', 'Team Leadership', 'Financial Systems'],
     achievements: [
-      'Founded and built Explain.global — AI recruitment platform — as sole architect and developer',
+      'Founded and built InterviewMe.global — AI recruitment platform — as sole architect and developer',
       'Platform generated 10k+ LinkedIn impressions in first week',
       'Reduced BGC Partners trade execution latency by 18%',
       'M&S e-commerce relaunch with zero downtime cutover',
@@ -466,7 +466,7 @@ export const MOCK_CV_DATA: Record<number, RichCvData> = {
     certifications: ['Microsoft Certified Professional (MCP) × 2', 'Azure Fundamentals (self-directed)', 'Anthropic Claude API Specialist (practical)'],
     industries: ['Investment Banking', 'Insurance', 'Retail', 'AI & Deep Tech', 'Recruitment Tech'],
     keywords: ['architecture', 'ai platform', 'founder', 'financial systems', 'latency optimisation', 'microservices', 'react', 'azure', 'llm integration'],
-    hobbies: ['Building AI products (Explain.global ecosystem)', 'Reading — especially technology and philosophy', 'Walking and reflection', 'Mentoring junior developers'],
+    hobbies: ['Building AI products (InterviewMe.global ecosystem)', 'Reading — especially technology and philosophy', 'Walking and reflection', 'Mentoring junior developers'],
     languages: ['English (native)', 'Twi (heritage)'],
   },
 

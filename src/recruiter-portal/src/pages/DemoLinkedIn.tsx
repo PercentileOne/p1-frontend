@@ -102,7 +102,7 @@ export default function DemoLinkedIn() {
             ))}
           </div>
           <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e0e0e0', padding: '20px' }}>
-            <div style={{ fontSize: '13px', color: '#000', fontWeight: 700, marginBottom: '6px' }}>Powered by Explain AI</div>
+            <div style={{ fontSize: '13px', color: '#000', fontWeight: 700, marginBottom: '6px' }}>Powered by InterviewMe AI</div>
             <div style={{ fontSize: '12px', color: '#666', lineHeight: 1.6 }}>
               {EXPLAIN_CTA_LONG}
             </div>
