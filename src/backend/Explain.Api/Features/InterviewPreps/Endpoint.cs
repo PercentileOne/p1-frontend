@@ -45,6 +45,7 @@ public static class Endpoint
                 id: Guid.NewGuid().ToString(),
                 recruiterId: recruiterId,
                 recruiterName: recruiterName,
+                title: string.IsNullOrWhiteSpace(req.Title) ? null : req.Title.Trim(),
                 firstName: req.FirstName.Trim(),
                 lastName: req.LastName.Trim(),
                 email: req.Email.Trim().ToLower(),
@@ -199,6 +200,7 @@ public static class Endpoint
     }
 
     public record Request(
+        string? Title,
         string FirstName,
         string LastName,
         string Email,
@@ -211,6 +213,7 @@ public record InterviewPrep(
     string id,
     string recruiterId,
     string recruiterName,
+    string? title,
     string firstName,
     string lastName,
     string email,

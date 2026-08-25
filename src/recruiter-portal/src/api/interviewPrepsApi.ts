@@ -4,6 +4,7 @@ export interface InterviewPrep {
   id:            string;
   recruiterId:   string;
   recruiterName: string;
+  title:         string | null;
   firstName:     string;
   lastName:      string;
   email:         string;
@@ -15,6 +16,7 @@ export interface InterviewPrep {
 }
 
 export interface SendPrepRequest {
+  title?:        string;
   firstName:     string;
   lastName:      string;
   email:         string;

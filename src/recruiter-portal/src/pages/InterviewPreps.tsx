@@ -8,6 +8,7 @@ import { explainApi } from '../api/explainApi'
 import { buildCVContext, buildJobSpecContext, buildSarahIntro, buildJamesIntro, buildPersonalisedQuestions, inferSpecialistTitle } from '../utils/contextBuilder'
 
 const LEVELS = ['Junior', 'Mid', 'Senior', 'Lead', 'Director', 'Executive']
+const TITLES = ['Mr', 'Mrs', 'Miss', 'Ms', 'Mx', 'Dr', 'Prof']
 
 type View = 'list' | 'form'
 
@@ -31,6 +32,7 @@ const inputStyle: React.CSSProperties = {
 
 function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => void; onCancel: () => void }) {
   const { token } = useAuth()
+  const [title, setTitle] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -60,6 +62,7 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
     setSending(true)
     try {
       const prep = await interviewPrepsApi.send(token, {
+        title: title || undefined,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: email.trim().toLowerCase(),
@@ -89,7 +92,14 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
       </div>
 
       <div style={{ maxWidth: 520, display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '0.7fr 1.3fr 1.3fr', gap: 14 }}>
+          <div>
+            <FieldLabel optional>Title</FieldLabel>
+            <select value={title} onChange={e => setTitle(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
+              <option value="">—</option>
+              {TITLES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
           <div>
             <FieldLabel>First name</FieldLabel>
             <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="e.g. Francis" style={inputStyle} autoFocus />
@@ -180,7 +190,7 @@ function PrepCard({ prep, onPreview, previewing }: { prep: InterviewPrep; onPrev
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
-            {prep.firstName} {prep.lastName}
+            {prep.title ? `${prep.title} ` : ''}{prep.firstName} {prep.lastName}
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>{prep.role} · {prep.level}</div>
         </div>
