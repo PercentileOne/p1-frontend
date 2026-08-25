@@ -9,6 +9,9 @@
       "rewrite": "/register.html"
     },
     {
+      "route": "/*.{png,jpg,jpeg,svg,ico,css,js,woff,woff2}"
+    },
+    {
       "route": "/*",
       "redirect": "https://product.interviewme.global",
       "statusCode": 301
