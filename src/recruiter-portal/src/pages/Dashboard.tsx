@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { LayoutDashboard, Package, Users, Briefcase, FileText, BarChart2, CalendarCheck, Settings, History, Zap, Filter, Video, Send } from 'lucide-react'
 import { ExplainLogo } from '../components/LogoMark'
+import { useAuth } from '../context/AuthContext'
 import InterviewPacks from './InterviewPacks'
 import InterviewPreps from './InterviewPreps'
 import Candidates from './Candidates'
@@ -138,7 +138,7 @@ const PASS_RATES = [
 ]
 
 export default function Dashboard() {
-  const navigate = useNavigate()
+  const { signOut } = useAuth()
   const [todos, setTodos] = useState(TODOS)
   const [activeNav, setActiveNav] = useState('Dashboard')
   const [packBuilderSpec, setPackBuilderSpec] = useState<string | null>(null)
@@ -212,7 +212,7 @@ export default function Dashboard() {
             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>{USER.fullName}</div>
             <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{USER.role}</div>
           </div>
-          <button onClick={() => navigate('/login')} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', fontSize: 16 }} title="Sign out">⇥</button>
+          <button onClick={() => { signOut(); window.location.href = 'https://www.interviewme.global/login' }} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', fontSize: 16 }} title="Sign out">⇥</button>
         </div>
       </aside>
 

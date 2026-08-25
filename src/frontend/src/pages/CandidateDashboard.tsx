@@ -258,7 +258,9 @@ export default function CandidateDashboard() {
 
   async function handleLogout() {
     await logout();
-    navigate("/login");
+    // The neutral gate, not this portal's own /login — signing out shouldn't land you back
+    // on a page that assumes you're a candidate, same reasoning as the interviewme.global work.
+    window.location.href = "https://www.interviewme.global/login";
   }
 
   function navTo(label: string) {

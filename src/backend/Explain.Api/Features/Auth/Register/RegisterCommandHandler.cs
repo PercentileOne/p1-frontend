@@ -48,11 +48,35 @@ public class RegisterCommandHandler(
             ? r
             : SelfRegisterableRoles["candidate"];
 
-        // Duplicate check in SQL — indexed, instant, no full-scan
-        if (await db.Users.AnyAsync(u => u.Email == email, ct))
+        // If this email already has an account, don't hard-reject — a real person can
+        // legitimately be both a candidate and a recruiter (or later, an employer), and
+        // forcing a second email address for that would fragment them into two disconnected
+        // profiles, which defeats the whole point of a single shareable candidate identity.
+        // Instead: prove it's really them (correct password for the existing account), then
+        // grant the additional role onto that SAME account rather than creating a new one.
+        var existing = await db.Users.FirstOrDefaultAsync(u => u.Email == email, ct);
+        if (existing is not null)
         {
-            logger.LogWarning("Register failed — email already exists: {Email}", email);
-            return Result<AuthResponse>.Failure("An account with this email already exists.", 409);
+            if (!BCrypt.Net.BCrypt.Verify(cmd.Password, existing.PasswordHash))
+            {
+                logger.LogWarning("Register failed — email already exists, password mismatch: {Email}", email);
+                return Result<AuthResponse>.Failure("An account with this email already exists.", 409);
+            }
+
+            var alreadyHasRole = await db.UserRoles.AnyAsync(ur => ur.UserId == existing.Id && ur.RoleId == roleId, ct);
+            if (!alreadyHasRole)
+            {
+                db.UserRoles.Add(new UserRole { UserId = existing.Id, RoleId = roleId });
+                await db.SaveChangesAsync(ct);
+                logger.LogInformation("Added {Role} role to existing account {Email} ({Id})", roleName, email, existing.Id);
+            }
+
+            var existingName     = $"{existing.FirstName} {existing.LastName}".Trim();
+            var existingUsername = $"{existing.FirstName}{existing.LastName}".ToLower().Replace(" ", "");
+            var existingPerms    = await permissions.LoadAsync(existing.Id, ct);
+            var existingToken    = tokens.CreateSessionToken(existing.Id, existing.Email, existingName, roleName, existingPerms);
+            return Result<AuthResponse>.Success(new AuthResponse(existingToken,
+                new UserDto(existing.Id, existing.Email, existingName, existing.FirstName, existingUsername, roleName)));
         }
 
         // Write identity to SQL

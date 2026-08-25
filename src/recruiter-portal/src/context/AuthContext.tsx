@@ -71,10 +71,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = useCallback(() => {
+    if (token) authApi.logout(token).catch(() => { /* best-effort */ });
     localStorage.removeItem(TOKEN_KEY);
     setToken(null);
     setUser(null);
-  }, []);
+  }, [token]);
 
   return (
     <AuthContext.Provider value={{ user, token, isLoading, signIn, signOut }}>
