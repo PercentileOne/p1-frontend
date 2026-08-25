@@ -1116,24 +1116,25 @@
       </form>
 
       <div class="auth-form hidden" id="form-signup">
-        <div class="auth-sub" style="margin-bottom:14px">Who are you joining as?</div>
-        <div class="role-cards">
-          <a href="https://candidate.interviewme.global/register?role=candidate" class="role-card rc-candidate">
+        <div class="auth-sub" style="margin-bottom:14px" id="signup-intro">Who are you joining as?</div>
+
+        <div class="role-cards" id="signup-role-cards">
+          <button type="button" class="role-card rc-candidate" onclick="selectSignupRole('Candidate')">
             <div class="role-card-icon">🎯</div>
             <div class="role-card-body">
               <div class="role-card-title">Candidate</div>
               <div class="role-card-desc">Build your profile, record your intro, and get discovered by top employers.</div>
             </div>
             <div class="role-card-arrow">→</div>
-          </a>
-          <a href="https://candidate.interviewme.global/register?role=recruiter" class="role-card rc-recruiter">
+          </button>
+          <button type="button" class="role-card rc-recruiter" onclick="selectSignupRole('Recruiter')">
             <div class="role-card-icon">🔍</div>
             <div class="role-card-body">
               <div class="role-card-title">Recruiter</div>
               <div class="role-card-desc">Source pre-screened candidates, run AI interviews, and fill roles faster.</div>
             </div>
             <div class="role-card-arrow">→</div>
-          </a>
+          </button>
           <div class="role-card rc-employer" style="opacity:0.5;cursor:default;">
             <div class="role-card-icon">🏢</div>
             <div class="role-card-body">
@@ -1142,6 +1143,19 @@
             </div>
           </div>
         </div>
+
+        <form class="auth-form" id="form-signup-fields" style="display:none" onsubmit="return handleRegister(event)">
+          <button type="button" onclick="deselectSignupRole()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-align:left;padding:0;margin-bottom:4px;">← Choose a different role</button>
+          <div class="field-row">
+            <div class="field"><label>First name</label><input type="text" id="signup-firstname" placeholder="e.g. Francis" autocomplete="given-name"></div>
+            <div class="field"><label>Last name</label><input type="text" id="signup-lastname" placeholder="e.g. Cobbinah" autocomplete="family-name"></div>
+          </div>
+          <div class="field"><label>Email address</label><input type="email" id="signup-email" placeholder="you@company.com" autocomplete="email"></div>
+          <div class="field"><label>Password</label><input type="password" id="signup-password" placeholder="At least 8 characters" autocomplete="new-password"></div>
+          <div id="signup-error" style="display:none;font-size:12px;color:#F87171;line-height:1.5;"></div>
+          <button class="btn-primary" type="submit" id="signup-submit">Create Account</button>
+        </form>
+
         <div style="text-align:center"><a href="#" style="font-size:11px;color:var(--muted);text-decoration:none" onclick="switchTab('login')">Already have an account? Sign in</a></div>
       </div>
 
@@ -1179,10 +1193,6 @@
       liveCount.textContent = base.toLocaleString();
     }, 3000);
   }
-  const pauseBtn = document.getElementById('pauseBtn');
-  const pauseIcon = document.getElementById('pauseIcon');
-  const pauseLabel = document.getElementById('pauseLabel');
-
   const audiences = ['candidate','general','employer','recruiter','candidate','employer','recruiter','general'];
   const accentColors = {
     candidate: '#34D399',
@@ -1190,9 +1200,6 @@
     recruiter: '#FBBF24',
     general:   '#A78BFA'
   };
-
-  const PLAY_ICON = '<rect x="1" y="1" width="3" height="8" rx="1"/><rect x="6" y="1" width="3" height="8" rx="1"/>';
-  const PAUSE_ICON = '<polygon points="2,1 9,5 2,9"/>';
 
   let current = 0;
   let timer, progTimer, progVal = 0;
@@ -1263,7 +1270,6 @@
   });
 
   // init
-  pauseIcon.innerHTML = PLAY_ICON;
   progress.style.background = accentColors[audiences[0]];
   resetTimer();
 
@@ -1352,6 +1358,68 @@
       errorEl.style.display = 'block';
       submitEl.disabled = false;
       submitEl.textContent = 'Sign In';
+    }
+    return false;
+  }
+
+  // ── Registration, same principle as login — a real form, not a link out to a
+  // portal-specific domain, so the whole account-creation step stays on the neutral
+  // interviewme.global gate until there's a real destination portal to send you to.
+  var signupRole = null;
+
+  function selectSignupRole(role) {
+    signupRole = role;
+    document.getElementById('signup-role-cards').style.display = 'none';
+    document.getElementById('form-signup-fields').style.display = 'flex';
+    document.getElementById('signup-intro').textContent = 'Joining as a ' + role + '.';
+  }
+
+  function deselectSignupRole() {
+    signupRole = null;
+    document.getElementById('signup-role-cards').style.display = 'flex';
+    document.getElementById('form-signup-fields').style.display = 'none';
+    document.getElementById('signup-intro').textContent = 'Who are you joining as?';
+    document.getElementById('signup-error').style.display = 'none';
+  }
+
+  async function handleRegister(evt) {
+    evt.preventDefault();
+    var firstName = document.getElementById('signup-firstname').value.trim();
+    var lastName  = document.getElementById('signup-lastname').value.trim();
+    var email     = document.getElementById('signup-email').value.trim().toLowerCase();
+    var password  = document.getElementById('signup-password').value;
+    var errorEl   = document.getElementById('signup-error');
+    var submitEl  = document.getElementById('signup-submit');
+    errorEl.style.display = 'none';
+
+    if (!firstName)              { errorEl.textContent = 'First name is required.'; errorEl.style.display = 'block'; return false; }
+    if (!lastName)                { errorEl.textContent = 'Last name is required.'; errorEl.style.display = 'block'; return false; }
+    if (!email)                   { errorEl.textContent = 'Email is required.'; errorEl.style.display = 'block'; return false; }
+    if (!password || password.length < 8) { errorEl.textContent = 'Password must be at least 8 characters.'; errorEl.style.display = 'block'; return false; }
+
+    submitEl.disabled = true;
+    submitEl.textContent = 'Creating account…';
+
+    try {
+      var res = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, firstName, lastName, role: signupRole.toLowerCase() }),
+      });
+      if (!res.ok) {
+        var err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Could not create your account. Please try again.');
+      }
+      var body = await res.json();
+      var token = body.token;
+
+      submitEl.textContent = 'Redirecting…';
+      var dest = PORTAL_ORIGINS[signupRole] || PORTAL_ORIGINS.Candidate;
+      window.location.href = `${dest}/auth/callback?token=${encodeURIComponent(token)}`;
+    } catch (err) {
+      errorEl.textContent = err.message || 'Something went wrong. Please try again.';
+      errorEl.style.display = 'block';
+      submitEl.disabled = false;
+      submitEl.textContent = 'Create Account';
     }
     return false;
   }
