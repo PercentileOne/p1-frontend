@@ -29,6 +29,20 @@ jobs:
           cp src/viewme/public/gate.html deploy-gate/login.html
           cp src/viewme/public/gate.html deploy-gate/register.html
           cp src/viewme/public/gate-staticwebapp.config.json deploy-gate/staticwebapp.config.json
+          # Image assets gate.html references — never copied before, hence the broken chair
+          # image Francis spotted live.
+          cp src/viewme/public/the-interview-chair.png deploy-gate/the-interview-chair.png
+          cp src/viewme/public/interview-room-latest.png deploy-gate/interview-room-latest.png
+          cp src/viewme/public/candidate-1.jpg deploy-gate/candidate-1.jpg
+          cp src/viewme/public/candidate-2.jpg deploy-gate/candidate-2.jpg
+          cp src/viewme/public/candidate-3.jpg deploy-gate/candidate-3.jpg
+          cp src/viewme/public/candidate-4.jpg deploy-gate/candidate-4.jpg
+          cp src/viewme/public/candidate5.jpg deploy-gate/candidate5.jpg
+          cp src/viewme/public/candidate-6.jpg deploy-gate/candidate-6.jpg
+          cp src/viewme/public/candidate-7.jpg deploy-gate/candidate-7.jpg
+          cp src/viewme/public/candidate-8.jpg deploy-gate/candidate-8.jpg
+          cp src/viewme/public/candidate-9.jpg deploy-gate/candidate-9.jpg
+          cp src/viewme/public/candidate-10.jpg deploy-gate/candidate-10.jpg
 
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
