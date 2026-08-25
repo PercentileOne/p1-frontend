@@ -1284,6 +1284,12 @@
         (i === 1 && tab === 'signup')
       );
     });
+    // Keep the address bar honest about which form is actually showing — clicking the tabs
+    // shouldn't leave the URL saying /register while Sign In is what's on screen (or vice
+    // versa). replaceState, not pushState — a tab toggle isn't a "navigation" worth cluttering
+    // the back-button history with.
+    var targetPath = tab === 'signup' ? '/register' : '/login';
+    if (location.pathname !== targetPath) history.replaceState(null, '', targetPath);
   }
 
   // Land on the right tab depending on which neutral URL brought you here —
