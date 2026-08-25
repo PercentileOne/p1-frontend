@@ -38,6 +38,10 @@ public static class Endpoint
                 return Results.BadRequest(new { error = "Level/seniority is required." });
             if (req.InterviewDate is null)
                 return Results.BadRequest(new { error = "Interview date is required." });
+            // Job spec is the recruiter's responsibility, not the candidate's — questions need
+            // to be grounded in the real role, not guessed from a one-line job title.
+            if (string.IsNullOrWhiteSpace(req.JobSpecText))
+                return Results.BadRequest(new { error = "Job spec is required." });
 
             var recruiterName = ctx.User.FindFirst("name")?.Value ?? "Your recruiter";
 
@@ -52,6 +56,12 @@ public static class Endpoint
                 role: req.Role.Trim(),
                 level: req.Level.Trim(),
                 interviewDate: req.InterviewDate.Value,
+                // Stored now so a future step can pre-generate the interview ahead of the
+                // candidate's session (less waiting time for them) — not wired up yet, since
+                // there's nowhere on the candidate side to consume it until the "Received
+                // Interview Prep" connection (see class doc above) exists.
+                jobSpecText: req.JobSpecText.Trim(),
+                cvText: string.IsNullOrWhiteSpace(req.CvText) ? null : req.CvText.Trim(),
                 status: "sent",
                 createdAt: DateTimeOffset.UtcNow);
 
@@ -206,7 +216,9 @@ public static class Endpoint
         string Email,
         string Role,
         string Level,
-        DateTimeOffset? InterviewDate);
+        DateTimeOffset? InterviewDate,
+        string JobSpecText,
+        string? CvText);
 }
 
 public record InterviewPrep(
@@ -220,5 +232,7 @@ public record InterviewPrep(
     string role,
     string level,
     DateTimeOffset interviewDate,
+    string jobSpecText,
+    string? cvText,
     string status,
     DateTimeOffset createdAt);

@@ -11,6 +11,8 @@ export interface InterviewPrep {
   role:          string;
   level:         string;
   interviewDate: string; // ISO
+  jobSpecText:   string;
+  cvText:        string | null;
   status:        string;
   createdAt:     string; // ISO
 }
@@ -23,6 +25,8 @@ export interface SendPrepRequest {
   role:          string;
   level:         string;
   interviewDate: string; // ISO
+  jobSpecText:   string;
+  cvText?:       string;
 }
 
 export interface ApiError {

@@ -6,9 +6,18 @@ import { useAuth } from '../context/AuthContext'
 import { interviewPrepsApi, type InterviewPrep } from '../api/interviewPrepsApi'
 import { explainApi } from '../api/explainApi'
 import { buildCVContext, buildJobSpecContext, buildSarahIntro, buildJamesIntro, buildPersonalisedQuestions, inferSpecialistTitle } from '../utils/contextBuilder'
+import { FileUpload } from '../components/FileUpload'
 
-const LEVELS = ['Junior', 'Mid', 'Senior', 'Lead', 'Director', 'Executive']
+// Same three values, same colours, as the candidate's own "Question Difficulty" picker on
+// InterviewPackStart.tsx (both candidate- and recruiter-portal copies) — Francis's explicit
+// ask: this dropdown and that one must speak the same language, not two different scales.
+const DIFFICULTIES = [
+  { value: 'Standard', color: '#34D399', borderColor: 'rgba(52,211,153,0.3)', desc: 'Well-rounded questions to build genuine confidence and solid preparation.' },
+  { value: 'Pro',       color: '#F59E0B', borderColor: 'rgba(245,158,11,0.3)', desc: 'Challenging questions that probe deeper — sharpen your edge beyond the basics.' },
+  { value: 'Expert',    color: '#EF4444', borderColor: 'rgba(239,68,68,0.3)',  desc: "We'll treat you like the leading authority in your field. Intense. Technical. Unforgiving." },
+]
 const TITLES = ['Mr', 'Mrs', 'Miss', 'Ms', 'Mx', 'Dr', 'Prof']
+const SELECT_CHEVRON = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`
 
 type View = 'list' | 'form'
 
@@ -39,6 +48,12 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
   const [role, setRole] = useState('')
   const [level, setLevel] = useState('')
   const [interviewDate, setInterviewDate] = useState('')
+  const [jobSpecTab, setJobSpecTab] = useState<'jobspec' | 'cv'>('jobspec')
+  const [jobSpec, setJobSpec] = useState('')
+  const [jobSpecFileName, setJobSpecFileName] = useState('')
+  const [cvInputTab, setCvInputTab] = useState<'upload' | 'text'>('upload')
+  const [cvText, setCvText] = useState('')
+  const [cvFileName, setCvFileName] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [sending, setSending] = useState(false)
   const [apiErr, setApiErr] = useState('')
@@ -52,6 +67,7 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
     if (!role.trim()) e.role = 'Role is required.'
     if (!level) e.level = 'Level is required.'
     if (!interviewDate) e.interviewDate = 'Interview date is required.'
+    if (jobSpec.trim().length < 20) e.jobSpec = 'Paste or upload the job spec — questions need to be grounded in the real role.'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -69,6 +85,8 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
         role: role.trim(),
         level,
         interviewDate: new Date(interviewDate).toISOString(),
+        jobSpecText: jobSpec.trim(),
+        cvText: cvText.trim() || undefined,
       })
       onSent(prep)
     } catch (err) {
@@ -86,12 +104,12 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
 
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>Send Candidate Interview Prep</h1>
-        <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 6, lineHeight: 1.6, maxWidth: 480 }}>
-          The candidate gets an email invite to create a free account and start practicing — James and Sarah will reference the role and interview date directly in their session.
+        <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 6, lineHeight: 1.6, maxWidth: 560 }}>
+          The candidate gets an email invite to create a free account and start practicing — James and Sarah will reference the role, the interview date, and (where provided) the candidate's own CV directly in their session.
         </p>
       </div>
 
-      <div style={{ maxWidth: 520, display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ maxWidth: 640, display: 'flex', flexDirection: 'column', gap: 20 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '0.7fr 1.3fr 1.3fr', gap: 14 }}>
           <div>
             <FieldLabel optional>Title</FieldLabel>
@@ -125,12 +143,114 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
             {errors.role && <div style={{ fontSize: 11, color: '#F87171', marginTop: 6 }}>{errors.role}</div>}
           </div>
           <div>
-            <FieldLabel>Level / seniority</FieldLabel>
-            <select value={level} onChange={e => setLevel(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-              <option value="">Select…</option>
-              {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-            </select>
+            <FieldLabel>Interview difficulty</FieldLabel>
+            {(() => {
+              const selected = DIFFICULTIES.find(d => d.value === level)
+              return (
+                <select
+                  value={level}
+                  onChange={e => setLevel(e.target.value)}
+                  style={{
+                    ...inputStyle, cursor: 'pointer', appearance: 'none',
+                    border: `1px solid ${selected?.borderColor ?? 'var(--border)'}`,
+                    color: selected?.color ?? 'var(--text)',
+                    fontWeight: selected ? 700 : 400,
+                    backgroundImage: SELECT_CHEVRON, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
+                  }}
+                >
+                  <option value="">Select…</option>
+                  {DIFFICULTIES.map(d => <option key={d.value} value={d.value} style={{ color: d.color, background: '#0c1220' }}>{d.value}</option>)}
+                </select>
+              )
+            })()}
             {errors.level && <div style={{ fontSize: 11, color: '#F87171', marginTop: 6 }}>{errors.level}</div>}
+          </div>
+        </div>
+
+        {/* Job Spec + CV — recruiter's responsibility, not the candidate's. Grounds every
+            generated question in the real role and the real candidate, rather than a one-line
+            job title — and gives an astute interviewer's eye into things like employment dates,
+            so practice actually catches what a CV might be fudging. */}
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
+            <button type="button" onClick={() => setJobSpecTab('jobspec')} style={{
+              flex: 1, padding: '12px 16px', border: 'none', background: jobSpecTab === 'jobspec' ? 'rgba(79,142,247,0.08)' : 'none', cursor: 'pointer',
+              fontSize: 12, fontWeight: 700, fontFamily: 'inherit', color: jobSpecTab === 'jobspec' ? 'var(--blue)' : 'var(--text-3)',
+              borderBottom: jobSpecTab === 'jobspec' ? '2px solid var(--blue)' : '2px solid transparent', marginBottom: -1,
+            }}>
+              📄 Job Spec {jobSpec.trim() ? '✓' : '* required'}
+            </button>
+            <button type="button" onClick={() => setJobSpecTab('cv')} style={{
+              flex: 1, padding: '12px 16px', border: 'none', background: jobSpecTab === 'cv' ? 'rgba(79,142,247,0.08)' : 'none', cursor: 'pointer',
+              fontSize: 12, fontWeight: 700, fontFamily: 'inherit', color: jobSpecTab === 'cv' ? 'var(--blue)' : 'var(--text-3)',
+              borderBottom: jobSpecTab === 'cv' ? '2px solid var(--blue)' : '2px solid transparent', marginBottom: -1,
+            }}>
+              👤 Candidate CV {cvText || cvFileName ? '✓' : '(optional, recommended)'}
+            </button>
+          </div>
+
+          <div style={{ padding: '20px' }}>
+            {jobSpecTab === 'jobspec' && (
+              <>
+                <FileUpload
+                  label="Job Spec"
+                  onExtracted={(text, name) => { setJobSpec(text); setJobSpecFileName(name) }}
+                />
+                {!jobSpecFileName && (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '14px 0' }}>
+                      <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                      <span style={{ fontSize: 12, color: 'var(--text-3)' }}>or paste below</span>
+                      <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                    </div>
+                    <textarea
+                      value={jobSpec}
+                      onChange={e => setJobSpec(e.target.value)}
+                      placeholder="Paste the full job description here…"
+                      rows={7}
+                      style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: 10, padding: 14, color: 'var(--text)', fontSize: 13, lineHeight: 1.6, resize: 'vertical', outline: 'none', fontFamily: 'inherit' }}
+                    />
+                  </>
+                )}
+                {jobSpecFileName && <div style={{ marginTop: 8, fontSize: 12, color: '#34D399' }}>✓ {jobSpecFileName} loaded</div>}
+                {errors.jobSpec && <div style={{ fontSize: 11, color: '#F87171', marginTop: 8 }}>{errors.jobSpec}</div>}
+              </>
+            )}
+
+            {jobSpecTab === 'cv' && (
+              <>
+                <div style={{ fontSize: 12, color: 'var(--text-3)', lineHeight: 1.6, marginBottom: 16 }}>
+                  If you have the candidate's CV, add it here — questions can then probe real experience (roles, dates, projects), not just the job spec. Great for catching an embellished CV before your client does.
+                </div>
+                <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: 14 }}>
+                  {(['upload', 'text'] as const).map(t => (
+                    <button key={t} type="button" onClick={() => setCvInputTab(t)} style={{
+                      padding: '7px 16px', border: 'none', background: 'none', cursor: 'pointer',
+                      fontSize: 12, fontWeight: 700, fontFamily: 'inherit',
+                      color: cvInputTab === t ? 'var(--blue)' : 'var(--text-3)',
+                      borderBottom: cvInputTab === t ? '2px solid var(--blue)' : '2px solid transparent', marginBottom: -1,
+                    }}>
+                      {t === 'upload' ? 'CV Upload' : 'CV Text'}
+                    </button>
+                  ))}
+                </div>
+                {cvInputTab === 'upload' && (
+                  <>
+                    <FileUpload label="CV" onExtracted={(text, name) => { setCvText(text); setCvFileName(name) }} />
+                    {cvFileName && <div style={{ marginTop: 8, fontSize: 12, color: '#34D399' }}>✓ {cvFileName} loaded</div>}
+                  </>
+                )}
+                {cvInputTab === 'text' && (
+                  <textarea
+                    value={cvText}
+                    onChange={e => { setCvText(e.target.value); setCvFileName('') }}
+                    placeholder="Paste the candidate's CV / résumé text here — skills, experience, dates, achievements…"
+                    rows={8}
+                    style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: 10, padding: 14, color: 'var(--text)', fontSize: 13, lineHeight: 1.6, resize: 'vertical', outline: 'none', fontFamily: 'inherit' }}
+                  />
+                )}
+              </>
+            )}
           </div>
         </div>
 
@@ -240,21 +360,22 @@ export default function InterviewPreps() {
   useEffect(load, [load])
 
   // Recruiter preview — the exact interview Sarah and James would run for this candidate,
-  // generated fresh from the prep's role/level (no CV on file yet, this is a preview not the
-  // real candidate session). Reuses the same InterviewRoom already built for InterviewIntake —
-  // including its exact fallback: /session/prepare isn't currently deployed on the .NET
-  // backend (404 in production, confirmed 2026-08-24 — a pre-existing gap, not new), so
-  // InterviewIntake.tsx already falls back to local heuristic generation on failure. Mirror
-  // that here rather than surfacing a broken feature.
+  // generated from the real job spec (and CV, when the recruiter provided one) captured on
+  // the prep itself — this is a preview, not the real candidate session, but it's now grounded
+  // in the same material the candidate's own session will use. Reuses the same InterviewRoom
+  // already built for InterviewIntake — including its exact fallback: /session/prepare isn't
+  // currently deployed on the .NET backend (404 in production, confirmed 2026-08-24 — a
+  // pre-existing gap, not new), so InterviewIntake.tsx already falls back to local heuristic
+  // generation on failure. Mirror that here rather than surfacing a broken feature.
   async function startPreview(prep: InterviewPrep) {
     setPreviewError('')
     setPreviewingId(prep.id)
 
-    const jobSpecText = `${prep.role} — ${prep.level} level position.`
+    const jobSpecText = prep.jobSpecText?.trim() || `${prep.role} — ${prep.level} level position.`
     const preferredName = prep.firstName
 
     try {
-      const session = await explainApi.sessionPrepare({ jobSpecText })
+      const session = await explainApi.sessionPrepare({ jobSpecText, cvText: prep.cvText ?? undefined })
       navigate(`/interview-room/${prep.id}`, {
         state: {
           questions: session.questions,
