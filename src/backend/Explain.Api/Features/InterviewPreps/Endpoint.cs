@@ -26,8 +26,10 @@ public static class Endpoint
             var recruiterId = ctx.User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(recruiterId)) return Results.Unauthorized();
 
-            if (string.IsNullOrWhiteSpace(req.CandidateName))
-                return Results.BadRequest(new { error = "Candidate name is required." });
+            if (string.IsNullOrWhiteSpace(req.FirstName))
+                return Results.BadRequest(new { error = "First name is required." });
+            if (string.IsNullOrWhiteSpace(req.LastName))
+                return Results.BadRequest(new { error = "Last name is required." });
             if (string.IsNullOrWhiteSpace(req.Email) || !req.Email.Contains('@'))
                 return Results.BadRequest(new { error = "A valid candidate email is required." });
             if (string.IsNullOrWhiteSpace(req.Role))
@@ -43,8 +45,8 @@ public static class Endpoint
                 id: Guid.NewGuid().ToString(),
                 recruiterId: recruiterId,
                 recruiterName: recruiterName,
-                candidateName: req.CandidateName.Trim(),
-                knownAs: string.IsNullOrWhiteSpace(req.KnownAs) ? null : req.KnownAs.Trim(),
+                firstName: req.FirstName.Trim(),
+                lastName: req.LastName.Trim(),
                 email: req.Email.Trim().ToLower(),
                 role: req.Role.Trim(),
                 level: req.Level.Trim(),
@@ -105,12 +107,10 @@ public static class Endpoint
         var fromEmail = config["Email:FromEmail"] ?? "noreply@interviewme.global";
         var fromName  = config["Email:FromName"] ?? "InterviewMe";
 
-        var nameParts  = prep.candidateName.Split(' ', 2);
-        var firstName  = prep.knownAs ?? nameParts[0];
         var registerUrl = "https://candidate.interviewme.global/register" +
             $"?email={Uri.EscapeDataString(prep.email)}" +
-            $"&firstName={Uri.EscapeDataString(nameParts[0])}" +
-            (nameParts.Length > 1 ? $"&lastName={Uri.EscapeDataString(nameParts[1])}" : "");
+            $"&firstName={Uri.EscapeDataString(prep.firstName)}" +
+            $"&lastName={Uri.EscapeDataString(prep.lastName)}";
 
         var interviewDateStr = prep.interviewDate.ToString("dddd d MMMM 'at' h:mmtt");
 
@@ -150,7 +150,7 @@ public static class Endpoint
                   <p style="text-align:center;font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:#34D399;margin:0 0 10px;">A free gift from {WebUtility.HtmlEncode(prep.recruiterName)}</p>
 
                   <h1 style="text-align:center;font-size:23px;font-weight:800;color:#fff;margin:0 0 18px;line-height:1.35;">
-                    {firstName}, here's a head start on your {WebUtility.HtmlEncode(prep.role)} interview
+                    {WebUtility.HtmlEncode(prep.firstName)}, here's a head start on your {WebUtility.HtmlEncode(prep.role)} interview
                   </h1>
 
                   <p style="text-align:center;font-size:14px;color:rgba(255,255,255,0.55);line-height:1.7;margin:0 0 28px;">
@@ -199,8 +199,8 @@ public static class Endpoint
     }
 
     public record Request(
-        string CandidateName,
-        string? KnownAs,
+        string FirstName,
+        string LastName,
         string Email,
         string Role,
         string Level,
@@ -211,8 +211,8 @@ public record InterviewPrep(
     string id,
     string recruiterId,
     string recruiterName,
-    string candidateName,
-    string? knownAs,
+    string firstName,
+    string lastName,
     string email,
     string role,
     string level,

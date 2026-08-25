@@ -31,8 +31,8 @@ const inputStyle: React.CSSProperties = {
 
 function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => void; onCancel: () => void }) {
   const { token } = useAuth()
-  const [candidateName, setCandidateName] = useState('')
-  const [knownAs, setKnownAs] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('')
   const [level, setLevel] = useState('')
@@ -43,7 +43,8 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
 
   function validate() {
     const e: Record<string, string> = {}
-    if (!candidateName.trim()) e.candidateName = 'Candidate name is required.'
+    if (!firstName.trim()) e.firstName = 'First name is required.'
+    if (!lastName.trim()) e.lastName = 'Last name is required.'
     if (!email.trim()) e.email = 'Email is required.'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = 'Please enter a valid email.'
     if (!role.trim()) e.role = 'Role is required.'
@@ -59,8 +60,8 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
     setSending(true)
     try {
       const prep = await interviewPrepsApi.send(token, {
-        candidateName: candidateName.trim(),
-        knownAs: knownAs.trim() || undefined,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
         email: email.trim().toLowerCase(),
         role: role.trim(),
         level,
@@ -90,13 +91,14 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
       <div style={{ maxWidth: 520, display: 'flex', flexDirection: 'column', gap: 20 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div>
-            <FieldLabel>Candidate name</FieldLabel>
-            <input value={candidateName} onChange={e => setCandidateName(e.target.value)} placeholder="e.g. Francis Cobbinah" style={inputStyle} autoFocus />
-            {errors.candidateName && <div style={{ fontSize: 11, color: '#F87171', marginTop: 6 }}>{errors.candidateName}</div>}
+            <FieldLabel>First name</FieldLabel>
+            <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="e.g. Francis" style={inputStyle} autoFocus />
+            {errors.firstName && <div style={{ fontSize: 11, color: '#F87171', marginTop: 6 }}>{errors.firstName}</div>}
           </div>
           <div>
-            <FieldLabel optional>Known as</FieldLabel>
-            <input value={knownAs} onChange={e => setKnownAs(e.target.value)} placeholder="e.g. Frank" style={inputStyle} />
+            <FieldLabel>Last name</FieldLabel>
+            <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="e.g. Cobbinah" style={inputStyle} />
+            {errors.lastName && <div style={{ fontSize: 11, color: '#F87171', marginTop: 6 }}>{errors.lastName}</div>}
           </div>
         </div>
 
@@ -160,7 +162,7 @@ function statusColor(status: string) {
 }
 
 function PrepCard({ prep, onPreview, previewing }: { prep: InterviewPrep; onPreview: () => void; previewing: boolean }) {
-  const initials = prep.candidateName.split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
+  const initials = `${prep.firstName[0] ?? ''}${prep.lastName[0] ?? ''}`.toUpperCase()
   const interviewDate = new Date(prep.interviewDate)
   const sentDate = new Date(prep.createdAt)
   const color = statusColor(prep.status)
@@ -178,7 +180,7 @@ function PrepCard({ prep, onPreview, previewing }: { prep: InterviewPrep; onPrev
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
-            {prep.candidateName}{prep.knownAs ? <span style={{ color: 'var(--text-3)', fontWeight: 400 }}> · "{prep.knownAs}"</span> : ''}
+            {prep.firstName} {prep.lastName}
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>{prep.role} · {prep.level}</div>
         </div>
@@ -239,7 +241,7 @@ export default function InterviewPreps() {
     setPreviewingId(prep.id)
 
     const jobSpecText = `${prep.role} — ${prep.level} level position.`
-    const preferredName = prep.knownAs || prep.candidateName.split(' ')[0]
+    const preferredName = prep.firstName
 
     try {
       const session = await explainApi.sessionPrepare({ jobSpecText })

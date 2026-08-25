@@ -4,8 +4,8 @@ export interface InterviewPrep {
   id:            string;
   recruiterId:   string;
   recruiterName: string;
-  candidateName: string;
-  knownAs:       string | null;
+  firstName:     string;
+  lastName:      string;
   email:         string;
   role:          string;
   level:         string;
@@ -15,8 +15,8 @@ export interface InterviewPrep {
 }
 
 export interface SendPrepRequest {
-  candidateName: string;
-  knownAs?:      string;
+  firstName:     string;
+  lastName:      string;
   email:         string;
   role:          string;
   level:         string;

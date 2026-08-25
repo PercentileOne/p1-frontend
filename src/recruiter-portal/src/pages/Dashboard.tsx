@@ -163,7 +163,7 @@ export default function Dashboard() {
           <ExplainLogo size={72} withAnimation={false} cometDuration={8} />
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: '-0.02em', color: '#ffffff', lineHeight: 1.2 }}>
-              Explain<span style={{ color: '#4F8EF7' }}>.global</span>
+              Interview<span style={{ color: '#34D399' }}>Me</span><span style={{ color: '#4F8EF7' }}>.global</span>
             </div>
             <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)', marginTop: 3 }}>
               Recruiter Portal
@@ -264,7 +264,7 @@ export default function Dashboard() {
           <div style={{ padding: '32px', maxWidth: '600px' }}>
             <div style={{ marginBottom: '28px' }}>
               <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text)', margin: '0 0 6px' }}>Magic Button Demos</h1>
-              <p style={{ fontSize: '14px', color: 'var(--text-2)', margin: 0 }}>Live demos of the Explain Magic Button embedded in real job pages.</p>
+              <p style={{ fontSize: '14px', color: 'var(--text-2)', margin: 0 }}>Live demos of the InterviewMe Magic Button embedded in real job pages.</p>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
