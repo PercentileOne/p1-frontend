@@ -10,12 +10,15 @@ namespace Explain.Api.Features.InterviewPreps;
 /// A recruiter sending a candidate ahead of a real interview a link to prepare — the first
 /// step of the loop: recruiter sends prep -> candidate practices -> candidate shares a good
 /// score -> employer discovers it -> candidate gets the job. See project docs for the full
-/// vision; this endpoint is the recruiter-side "send" only. Candidate account creation from
-/// this link reuses the same real, permission-backed Register flow used everywhere else — not
-/// the disconnected Cosmos-only magic-link path, which issues sessions with zero permissions
-/// and doesn't actually send email yet. Tying a created account back to this specific prep
-/// record (a "Received Interview Prep" list on the candidate side) is deliberately not built
-/// here — a separate, focused piece of work.
+/// vision. Candidate account creation from this link reuses the same real, permission-backed
+/// Register flow used everywhere else — not the disconnected Cosmos-only magic-link path,
+/// which issues sessions with zero permissions and doesn't actually send email yet.
+///
+/// The candidate-side "Received Interview Prep" list (GET .../received below) links purely by
+/// email — a candidate authenticates as themselves and sees every prep addressed to their own
+/// JWT email claim, cross-partition (this container's partition key is /recruiterId, chosen for
+/// the recruiter's own sent-list reads; a candidate's received-list read is comparatively rare
+/// and low-volume, so the fan-out cost here is a fine trade rather than a second container).
 /// </summary>
 public static class Endpoint
 {
@@ -82,6 +85,67 @@ public static class Endpoint
             return Results.Ok(prep);
         }).RequireAuthorization(Permissions.ManageInterviews);
 
+        // PUT /api/interview-preps/{id} — edit + resend. Clicking a sent prep in the recruiter's
+        // list opens this, not a live interview preview (that's its own explicit button) — the
+        // realistic reason to click a sent record is fixing a typo'd name or wrong date, not
+        // starting an interview you're not the candidate for.
+        app.MapPut("/api/interview-preps/{id}", async (string id, Request req, HttpContext ctx, CosmosService cosmos, IConfiguration config, ILogger<Program> logger) =>
+        {
+            var recruiterId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(recruiterId)) return Results.Unauthorized();
+
+            if (string.IsNullOrWhiteSpace(req.FirstName))
+                return Results.BadRequest(new { error = "First name is required." });
+            if (string.IsNullOrWhiteSpace(req.LastName))
+                return Results.BadRequest(new { error = "Last name is required." });
+            if (string.IsNullOrWhiteSpace(req.Email) || !req.Email.Contains('@'))
+                return Results.BadRequest(new { error = "A valid candidate email is required." });
+            if (string.IsNullOrWhiteSpace(req.Level))
+                return Results.BadRequest(new { error = "Level/seniority is required." });
+            if (req.InterviewDate is null)
+                return Results.BadRequest(new { error = "Interview date is required." });
+            if (string.IsNullOrWhiteSpace(req.JobSpecText))
+                return Results.BadRequest(new { error = "Job spec is required." });
+
+            var container = cosmos.GetContainer("interview-preps");
+            InterviewPrep existing;
+            try
+            {
+                var response = await container.ReadItemAsync<InterviewPrep>(id, new PartitionKey(recruiterId));
+                existing = response.Resource;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return Results.NotFound(new { error = "Interview prep not found." });
+            }
+
+            var updated = existing with
+            {
+                title = string.IsNullOrWhiteSpace(req.Title) ? null : req.Title.Trim(),
+                firstName = req.FirstName.Trim(),
+                lastName = req.LastName.Trim(),
+                email = req.Email.Trim().ToLower(),
+                role = req.Role.Trim(),
+                level = req.Level.Trim(),
+                interviewDate = req.InterviewDate.Value,
+                jobSpecText = req.JobSpecText.Trim(),
+                cvText = string.IsNullOrWhiteSpace(req.CvText) ? null : req.CvText.Trim(),
+            };
+
+            await container.UpsertItemAsync(updated, new PartitionKey(recruiterId));
+
+            try
+            {
+                await SendInviteEmailAsync(updated, config, logger);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to resend interview prep invite email to {Email}", updated.email);
+            }
+
+            return Results.Ok(updated);
+        }).RequireAuthorization(Permissions.ManageInterviews);
+
         // GET /api/interview-preps — every prep the current recruiter has sent, newest first.
         app.MapGet("/api/interview-preps", async (HttpContext ctx, CosmosService cosmos) =>
         {
@@ -100,6 +164,27 @@ public static class Endpoint
 
             return Results.Ok(preps.OrderByDescending(p => p.createdAt));
         }).RequireAuthorization(Permissions.ManageInterviews);
+
+        // GET /api/interview-preps/received — every prep addressed to the logged-in candidate's
+        // own email, across every recruiter who's sent them one. The candidate-side half of the
+        // loop: reviewing what's here (role, recruiter, interview date) before choosing to start,
+        // not being dropped straight into an interview.
+        app.MapGet("/api/interview-preps/received", async (HttpContext ctx, CosmosService cosmos) =>
+        {
+            var email = ctx.User.FindFirst("email")?.Value;
+            if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
+
+            var container = cosmos.GetContainer("interview-preps");
+            var query = new QueryDefinition("SELECT * FROM c WHERE c.email = @email")
+                .WithParameter("@email", email.Trim().ToLower());
+
+            var preps = new List<InterviewPrep>();
+            using var feed = container.GetItemQueryIterator<InterviewPrep>(query); // cross-partition — see class doc
+            while (feed.HasMoreResults)
+                preps.AddRange(await feed.ReadNextAsync());
+
+            return Results.Ok(preps.OrderByDescending(p => p.createdAt));
+        }).RequireAuthorization(Permissions.PracticeInterview);
     }
 
     private static async Task SendInviteEmailAsync(InterviewPrep prep, IConfiguration config, ILogger logger)

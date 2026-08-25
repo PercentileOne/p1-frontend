@@ -47,6 +47,19 @@ export const interviewPrepsApi = {
     return res.json();
   },
 
+  async update(token: string, id: string, body: SendPrepRequest): Promise<InterviewPrep> {
+    const res = await fetch(`${BASE}/api/interview-preps/${id}`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body:    JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => null) as ApiError | null;
+      throw new Error(data?.error ?? `Failed to update interview prep (${res.status}).`);
+    }
+    return res.json();
+  },
+
   async list(token: string): Promise<InterviewPrep[]> {
     const res = await fetch(`${BASE}/api/interview-preps`, {
       headers: { Authorization: `Bearer ${token}` },

@@ -40,19 +40,25 @@ const inputStyle: React.CSSProperties = {
 
 // ── Send form ─────────────────────────────────────────────────────────────
 
-function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => void; onCancel: () => void }) {
+function isoToLocalInput(iso: string): string {
+  const d = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep; onSent: (prep: InterviewPrep) => void; onCancel: () => void }) {
   const { token } = useAuth()
-  const [title, setTitle] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [email, setEmail] = useState('')
-  const [level, setLevel] = useState('')
-  const [interviewDate, setInterviewDate] = useState('')
+  const [title, setTitle] = useState(existing?.title ?? '')
+  const [firstName, setFirstName] = useState(existing?.firstName ?? '')
+  const [lastName, setLastName] = useState(existing?.lastName ?? '')
+  const [email, setEmail] = useState(existing?.email ?? '')
+  const [level, setLevel] = useState(existing?.level ?? '')
+  const [interviewDate, setInterviewDate] = useState(existing ? isoToLocalInput(existing.interviewDate) : '')
   const [jobSpecTab, setJobSpecTab] = useState<'jobspec' | 'cv'>('jobspec')
-  const [jobSpec, setJobSpec] = useState('')
+  const [jobSpec, setJobSpec] = useState(existing?.jobSpecText ?? '')
   const [jobSpecFileName, setJobSpecFileName] = useState('')
   const [cvInputTab, setCvInputTab] = useState<'upload' | 'text'>('upload')
-  const [cvText, setCvText] = useState('')
+  const [cvText, setCvText] = useState(existing?.cvText ?? '')
   const [cvFileName, setCvFileName] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [sending, setSending] = useState(false)
@@ -80,21 +86,24 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
     if (!validate() || !token) return
     setApiErr('')
     setSending(true)
+    const body = {
+      title: title || undefined,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.trim().toLowerCase(),
+      role: derivedRole,
+      level,
+      interviewDate: new Date(interviewDate).toISOString(),
+      jobSpecText: jobSpec.trim(),
+      cvText: cvText.trim() || undefined,
+    }
     try {
-      const prep = await interviewPrepsApi.send(token, {
-        title: title || undefined,
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        email: email.trim().toLowerCase(),
-        role: derivedRole,
-        level,
-        interviewDate: new Date(interviewDate).toISOString(),
-        jobSpecText: jobSpec.trim(),
-        cvText: cvText.trim() || undefined,
-      })
+      const prep = existing
+        ? await interviewPrepsApi.update(token, existing.id, body)
+        : await interviewPrepsApi.send(token, body)
       onSent(prep)
     } catch (err) {
-      setApiErr(err instanceof Error ? err.message : 'Failed to send interview prep.')
+      setApiErr(err instanceof Error ? err.message : `Failed to ${existing ? 'save' : 'send'} interview prep.`)
     } finally {
       setSending(false)
     }
@@ -107,9 +116,11 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
       </button>
 
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>Send Candidate Interview Prep</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>{existing ? 'Edit Interview Prep' : 'Send Candidate Interview Prep'}</h1>
         <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 6, lineHeight: 1.6, maxWidth: 560 }}>
-          The candidate gets an email invite to create a free account and start practicing — James and Sarah will reference the role, the interview date, and (where provided) the candidate's own CV directly in their session.
+          {existing
+            ? "Saving resends the invite email to the candidate with the updated details — handy for a typo'd name or a rescheduled date."
+            : "The candidate gets an email invite to create a free account and start practicing — James and Sarah will reference the role, the interview date, and (where provided) the candidate's own CV directly in their session."}
         </p>
       </div>
 
@@ -280,7 +291,9 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
             cursor: sending ? 'default' : 'pointer', opacity: sending ? 0.7 : 1, fontFamily: 'inherit',
           }}
         >
-          {sending ? 'Sending…' : <>Send Interview Prep <Send size={15} /></>}
+          {sending
+            ? (existing ? 'Saving…' : 'Sending…')
+            : existing ? <>Save &amp; Resend <Send size={15} /></> : <>Send Interview Prep <Send size={15} /></>}
         </motion.button>
       </div>
     </motion.div>
@@ -293,7 +306,7 @@ function statusColor(status: string) {
   return status === 'sent' ? '#F59E0B' : status === 'opened' ? '#4F8EF7' : status === 'completed' ? '#34D399' : 'var(--text-3)'
 }
 
-function PrepCard({ prep, onPreview, previewing }: { prep: InterviewPrep; onPreview: () => void; previewing: boolean }) {
+function PrepCard({ prep, onEdit, onPreview, previewing }: { prep: InterviewPrep; onEdit: () => void; onPreview: () => void; previewing: boolean }) {
   const initials = `${prep.firstName[0] ?? ''}${prep.lastName[0] ?? ''}`.toUpperCase()
   const interviewDate = new Date(prep.interviewDate)
   const sentDate = new Date(prep.createdAt)
@@ -301,9 +314,10 @@ function PrepCard({ prep, onPreview, previewing }: { prep: InterviewPrep; onPrev
 
   return (
     <motion.div
-      onClick={previewing ? undefined : onPreview}
-      style={{ background: '#0c1220', border: '1px solid var(--border)', borderRadius: 14, padding: '18px 20px', cursor: previewing ? 'default' : 'pointer' }}
-      whileHover={previewing ? {} : { y: -2, borderColor: 'rgba(79,142,247,0.4)' }}
+      onClick={onEdit}
+      title="Click to edit"
+      style={{ background: '#0c1220', border: '1px solid var(--border)', borderRadius: 14, padding: '18px 20px', cursor: 'pointer' }}
+      whileHover={{ y: -2, borderColor: 'rgba(79,142,247,0.4)' }}
       transition={{ duration: 0.15 }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
@@ -331,9 +345,19 @@ function PrepCard({ prep, onPreview, previewing }: { prep: InterviewPrep; onPrev
         <div style={{ fontSize: 12, color: 'var(--text-3)' }}>
           Sent {sentDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#4F8EF7', marginLeft: 'auto' }}>
+        <button
+          type="button"
+          disabled={previewing}
+          onClick={e => { e.stopPropagation(); onPreview() }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto',
+            background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.25)', borderRadius: 8,
+            padding: '6px 12px', fontSize: 12, fontWeight: 700, color: '#4F8EF7', fontFamily: 'inherit',
+            cursor: previewing ? 'default' : 'pointer',
+          }}
+        >
           {previewing ? <><Loader2 size={12} className="animate-spin" /> Preparing…</> : <><Play size={12} /> Preview with Sarah &amp; James</>}
-        </div>
+        </button>
       </div>
     </motion.div>
   )
@@ -343,6 +367,7 @@ export default function InterviewPreps() {
   const navigate = useNavigate()
   const { token } = useAuth()
   const [view, setView] = useState<View>('list')
+  const [editingPrep, setEditingPrep] = useState<InterviewPrep | null>(null)
   const [preps, setPreps] = useState<InterviewPrep[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
@@ -422,8 +447,13 @@ export default function InterviewPreps() {
         {view === 'form' ? (
           <SendPrepForm
             key="form"
-            onCancel={() => setView('list')}
-            onSent={prep => { setPreps(p => [prep, ...p]); setView('list') }}
+            existing={editingPrep ?? undefined}
+            onCancel={() => { setEditingPrep(null); setView('list') }}
+            onSent={prep => {
+              setPreps(p => editingPrep ? p.map(x => x.id === prep.id ? prep : x) : [prep, ...p])
+              setEditingPrep(null)
+              setView('list')
+            }}
           />
         ) : (
           <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -432,7 +462,7 @@ export default function InterviewPreps() {
                 <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>Interview Preps</h1>
                 <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>{preps.length} sent{preps.length !== 1 ? '' : ''}</p>
               </div>
-              <button onClick={() => setView('form')} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button onClick={() => { setEditingPrep(null); setView('form') }} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                 <Send size={14} /> Send Interview Prep
               </button>
             </div>
@@ -458,7 +488,7 @@ export default function InterviewPreps() {
                 <div style={{ fontSize: 13, color: 'var(--text-3)', maxWidth: 320, lineHeight: 1.6 }}>
                   Send a candidate an interview prep and it'll show up here — with status as they open it and start practicing.
                 </div>
-                <button onClick={() => setView('form')} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '10px 20px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <button onClick={() => { setEditingPrep(null); setView('form') }} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '10px 20px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   <Briefcase size={14} /> Send your first prep
                 </button>
               </div>
@@ -473,7 +503,13 @@ export default function InterviewPreps() {
             {!loading && !loadError && preps.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {preps.map(p => (
-                  <PrepCard key={p.id} prep={p} onPreview={() => startPreview(p)} previewing={previewingId === p.id} />
+                  <PrepCard
+                    key={p.id}
+                    prep={p}
+                    onEdit={() => { setEditingPrep(p); setView('form') }}
+                    onPreview={() => startPreview(p)}
+                    previewing={previewingId === p.id}
+                  />
                 ))}
               </div>
             )}
