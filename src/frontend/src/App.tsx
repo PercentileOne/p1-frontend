@@ -10,6 +10,7 @@ import LearnHome from "./pages/LearnHome";
 import LessonViewer from "./pages/LessonViewer";
 import LearnBookshelf from "./pages/LearnBookshelf";
 import LoginPage from "./pages/LoginPage";
+import AuthCallback from "./pages/AuthCallback";
 import RegisterPage from "./pages/RegisterPage";
 import CockpitShell from "./pages/CockpitShell";
 import LearningShell from "./pages/LearningShell";
@@ -103,6 +104,7 @@ export default function App() {
       <Route path="/learn/flash-talk" element={<LearnFlashTalkPage />} />
 
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />

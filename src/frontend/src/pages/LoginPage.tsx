@@ -48,8 +48,9 @@ export default function LoginPage() {
   const [phase,    setPhase]    = useState<Phase>("idle");
   const [emailError, setEmailError] = useState("");
   const [authError,  setAuthError]  = useState("");
-  const [selectedRole, setSelectedRole] = useState<UserRole>('Candidate');
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [roleDropOpen, setRoleDropOpen] = useState(false);
+  const [roleError, setRoleError] = useState("");
   const [roleMismatch, setRoleMismatch] = useState<RoleMismatch | null>(null);
 
   const storeLogin = useAuthStore(s => s.login);
@@ -89,8 +90,10 @@ export default function LoginPage() {
   };
 
   const handleLogin = async () => {
+    if (!selectedRole) { setRoleError("Please select your role"); return; }
     if (!username.trim()) { setEmailError("Email is required"); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username.trim())) { setEmailError("Please enter a valid email address"); return; }
+    setRoleError("");
     setEmailError("");
     setAuthError("");
     setRoleMismatch(null);
@@ -211,7 +214,7 @@ export default function LoginPage() {
             Your AI interview coach.
           </h1>
           <p className="text-sm text-slate-500 mt-1.5 leading-snug">
-            {ROLE_OPTIONS.find(r => r.value === selectedRole)?.subtitle ?? 'Sign in to continue.'}
+            {selectedRole ? ROLE_OPTIONS.find(r => r.value === selectedRole)?.subtitle : 'Sign in to continue.'}
           </p>
         </motion.div>
 
@@ -236,19 +239,29 @@ export default function LoginPage() {
               type="button"
               onClick={() => setRoleDropOpen(o => !o)}
               className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg bg-[#111111] border border-gray-600 text-left transition-all duration-200 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
+              style={roleError ? { borderColor: '#F87171' } : undefined}
             >
-              <span className="text-base leading-none">
-                {ROLE_OPTIONS.find(r => r.value === selectedRole)?.emoji}
-              </span>
-              <span className="flex-1 text-sm font-medium text-white">
-                {selectedRole}
-              </span>
+              {selectedRole ? (
+                <>
+                  <span className="text-base leading-none">
+                    {ROLE_OPTIONS.find(r => r.value === selectedRole)?.emoji}
+                  </span>
+                  <span className="flex-1 text-sm font-medium text-white">
+                    {selectedRole}
+                  </span>
+                </>
+              ) : (
+                <span className="flex-1 text-sm font-medium text-gray-500">
+                  Select your role…
+                </span>
+              )}
               <ChevronDown
                 size={14}
                 className="text-gray-500 transition-transform duration-200"
                 style={{ transform: roleDropOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
               />
             </button>
+            {roleError && <p className="text-xs mt-1.5" style={{ color: '#F87171' }}>{roleError}</p>}
 
             <AnimatePresence>
               {roleDropOpen && (
@@ -268,7 +281,7 @@ export default function LoginPage() {
                     <button
                       key={opt.value}
                       type="button"
-                      onClick={() => { setSelectedRole(opt.value); setRoleDropOpen(false); }}
+                      onClick={() => { setSelectedRole(opt.value); setRoleDropOpen(false); setRoleError(""); }}
                       className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-white/[0.04]"
                       style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                     >
@@ -425,7 +438,7 @@ export default function LoginPage() {
 
       {/* ── Success overlay ── */}
       <AnimatePresence>
-        {phase === "success" && <SuccessOverlay role={selectedRole} />}
+        {phase === "success" && selectedRole && <SuccessOverlay role={selectedRole} />}
       </AnimatePresence>
     </div>
   );

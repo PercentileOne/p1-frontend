@@ -1092,11 +1092,22 @@
         <button class="tab" onclick="switchTab('signup')">Create Account</button>
       </div>
 
-      <form class="auth-form" id="form-login" onsubmit="return false">
-        <div class="field"><label>Email address</label><input type="email" placeholder="you@company.com" autocomplete="email"></div>
-        <div class="field"><label>Password</label><input type="password" placeholder="••••••••" autocomplete="current-password"></div>
-        <a href="#" class="forgot">Forgot your password?</a>
-        <button class="btn-primary" type="submit">Sign In</button>
+      <form class="auth-form" id="form-login" onsubmit="return handleLogin(event)">
+        <div class="field">
+          <label>I am a…</label>
+          <select id="login-role" required>
+            <option value="" disabled selected>Select your role…</option>
+            <option value="Candidate">🎓 Candidate — I'm preparing for interviews</option>
+            <option value="Recruiter">🔍 Recruiter — I place candidates</option>
+            <option value="Employer">🏢 Employer — I'm hiring talent</option>
+            <option value="Investor">💼 Investor — I'm investing in the platform</option>
+          </select>
+        </div>
+        <div class="field"><label>Email address</label><input type="email" id="login-email" placeholder="you@company.com" autocomplete="email"></div>
+        <div class="field"><label>Password</label><input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"></div>
+        <div id="login-error" style="display:none;font-size:12px;color:#F87171;line-height:1.5;"></div>
+        <a href="https://candidate.interviewme.global/forgot-password" class="forgot">Forgot your password?</a>
+        <button class="btn-primary" type="submit" id="login-submit">Sign In</button>
         <div class="auth-divider">new here?</div>
         <button class="btn-candidate" type="button" onclick="switchTab('signup')">
           <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -1107,7 +1118,7 @@
       <div class="auth-form hidden" id="form-signup">
         <div class="auth-sub" style="margin-bottom:14px">Who are you joining as?</div>
         <div class="role-cards">
-          <a href="https://explain.global/register" class="role-card rc-candidate">
+          <a href="https://candidate.interviewme.global/register?role=candidate" class="role-card rc-candidate">
             <div class="role-card-icon">🎯</div>
             <div class="role-card-body">
               <div class="role-card-title">Candidate</div>
@@ -1115,7 +1126,7 @@
             </div>
             <div class="role-card-arrow">→</div>
           </a>
-          <a href="https://recruiter.explain.global/register" class="role-card rc-recruiter">
+          <a href="https://candidate.interviewme.global/register?role=recruiter" class="role-card rc-recruiter">
             <div class="role-card-icon">🔍</div>
             <div class="role-card-body">
               <div class="role-card-title">Recruiter</div>
@@ -1123,14 +1134,13 @@
             </div>
             <div class="role-card-arrow">→</div>
           </a>
-          <a href="https://employer.explain.global/register" class="role-card rc-employer">
+          <div class="role-card rc-employer" style="opacity:0.5;cursor:default;">
             <div class="role-card-icon">🏢</div>
             <div class="role-card-body">
-              <div class="role-card-title">Employer</div>
+              <div class="role-card-title">Employer <span style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Coming soon</span></div>
               <div class="role-card-desc">Post roles, review AI-scored candidates, and hire with confidence.</div>
             </div>
-            <div class="role-card-arrow">→</div>
-          </a>
+          </div>
         </div>
         <div style="text-align:center"><a href="#" style="font-size:11px;color:var(--muted);text-decoration:none" onclick="switchTab('login')">Already have an account? Sign in</a></div>
       </div>
@@ -1268,6 +1278,82 @@
         (i === 1 && tab === 'signup')
       );
     });
+  }
+
+  // Land on the right tab depending on which neutral URL brought you here —
+  // /login and /register both serve this same page (see gate-staticwebapp.config.json).
+  if (location.pathname === '/register') switchTab('signup');
+
+  // ── Real sign-in, wired to the shared .NET backend — same endpoints and role-match
+  // logic as LoginPage.tsx (src/frontend), just hand-written since this page has no
+  // build step. Keep the two in sync if either's login behaviour changes.
+  var API_BASE = 'https://api.explain.global';
+  var PORTAL_ORIGINS = {
+    Candidate: 'https://candidate.interviewme.global',
+    Recruiter: 'https://recruiter.interviewme.global',
+    Employer:  'https://employer.interviewme.global',
+  };
+  var ROLE_PERMISSION = {
+    Candidate: 'CAN_START_INTERVIEW',
+    Employer:  'CAN_VIEW_CLIENT_PORTAL',
+    Recruiter: 'CAN_VIEW_RECRUITER_PORTAL',
+  };
+
+  async function handleLogin(evt) {
+    evt.preventDefault();
+    const role     = document.getElementById('login-role').value;
+    const email    = document.getElementById('login-email').value.trim().toLowerCase();
+    const password = document.getElementById('login-password').value;
+    const errorEl  = document.getElementById('login-error');
+    const submitEl = document.getElementById('login-submit');
+    errorEl.style.display = 'none';
+
+    if (!role)     { errorEl.textContent = 'Please select your role.'; errorEl.style.display = 'block'; return false; }
+    if (!email)    { errorEl.textContent = 'Email is required.'; errorEl.style.display = 'block'; return false; }
+    if (!password) { errorEl.textContent = 'Password is required.'; errorEl.style.display = 'block'; return false; }
+
+    submitEl.disabled = true;
+    submitEl.textContent = 'Signing in…';
+
+    try {
+      const loginRes = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!loginRes.ok) {
+        const err = await loginRes.json().catch(() => ({}));
+        throw new Error(err.error || 'Incorrect email or password.');
+      }
+      const { token } = await loginRes.json();
+
+      const sessionRes = await fetch(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!sessionRes.ok) throw new Error('Could not verify your session. Please try again.');
+      const session = await sessionRes.json();
+      const perms = session.permissions || [];
+
+      // Investor has no dedicated portal yet — same exemption as LoginPage.tsx.
+      if (role !== 'Investor' && !perms.includes(ROLE_PERMISSION[role])) {
+        const available = Object.keys(ROLE_PERMISSION).filter(r => perms.includes(ROLE_PERMISSION[r]));
+        errorEl.innerHTML = `This account doesn't have ${role} access.` +
+          (available.length ? ` It does have access to: ${available.join(', ')}.` : '');
+        errorEl.style.display = 'block';
+        submitEl.disabled = false;
+        submitEl.textContent = 'Sign In';
+        return false;
+      }
+
+      submitEl.textContent = 'Redirecting…';
+      // Investor has no dedicated portal yet, so it lands on the candidate portal too —
+      // same fallback LoginPage.tsx uses.
+      const dest = PORTAL_ORIGINS[role] || PORTAL_ORIGINS.Candidate;
+      window.location.href = `${dest}/auth/callback?token=${encodeURIComponent(token)}`;
+    } catch (err) {
+      errorEl.textContent = err.message || 'Something went wrong. Please try again.';
+      errorEl.style.display = 'block';
+      submitEl.disabled = false;
+      submitEl.textContent = 'Sign In';
+    }
+    return false;
   }
 </script>
 </body>

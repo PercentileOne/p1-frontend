@@ -1,6 +1,14 @@
 {
   "routes": [
     {
+      "route": "/login",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/register",
+      "rewrite": "/index.html"
+    },
+    {
       "route": "/*",
       "redirect": "https://product.interviewme.global",
       "statusCode": 301

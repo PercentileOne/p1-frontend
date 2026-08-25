@@ -36,7 +36,10 @@ export default function RegisterPage() {
   const [phase,      setPhase]      = useState<Phase>("idle");
   const [showPass,   setShowPass]   = useState(false);
   const [showConf,   setShowConf]   = useState(false);
-  const [selectedRole, setSelectedRole] = useState<RegisterRole | null>(null);
+  const [selectedRole, setSelectedRole] = useState<RegisterRole | null>(() => {
+    const r = searchParams.get('role')?.toLowerCase();
+    return r === 'recruiter' ? 'Recruiter' : r === 'candidate' ? 'Candidate' : null;
+  });
   const [roleDropOpen, setRoleDropOpen] = useState(false);
 
   // Fields — pre-filled from ?email=&firstName=&lastName= when arriving via a recruiter's
