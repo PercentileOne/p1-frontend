@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../auth/authStore";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
-  MessageSquare, Settings, LogOut, ChevronRight, CheckCircle2, Circle, Compass,
+  MessageSquare, Settings, LogOut, ChevronRight, CheckCircle2, Circle, Compass, Gift,
 } from "lucide-react";
 import LearnPanel from "./LearnPanel";
 import CareersPanel from "./CareersPanel";
 import MyInterviewsPage from "./MyInterviewsPage";
+import ReceivedPreps from "./ReceivedPreps";
 import ProfilePage from "./ProfilePage";
 import JobsHome from "./JobsHome";
 import MessagesPage from "./MessagesPage";
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: "Dashboard" },
   { Icon: User,            label: "My Profile" },
   { Icon: Video,           label: "My Interviews" },
+  { Icon: Gift,            label: "Interview Preps" },
   { Icon: Briefcase,       label: "Jobs" },
   { Icon: BookOpen,        label: "Learn" },
   { Icon: Compass,         label: "Careers" },
@@ -391,6 +393,7 @@ export default function CandidateDashboard() {
         {activeNav === "Learn"          && <LearnPanel />}
         {activeNav === "Careers"        && <CareersPanel />}
         {activeNav === "My Interviews"  && <MyInterviewsPage />}
+        {activeNav === "Interview Preps" && <ReceivedPreps />}
         {activeNav === "My Profile"     && <ProfilePage />}
         {activeNav === "Jobs"           && <JobsHome />}
         {activeNav === "Messages"       && <MessagesPage />}

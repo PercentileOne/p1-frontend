@@ -49,6 +49,10 @@ interface IncomingState {
   jobTitle?: string;
   company?: string;
   preferredName?: string;
+  // From a recruiter's received interview prep — a real CV/difficulty already on file for
+  // this exact upcoming interview, unlike the general dashboard-initiated case above.
+  cvText?: string;
+  difficulty?: string;
 }
 
 const SELECT_CHEVRON = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`;
@@ -63,7 +67,7 @@ export default function InterviewPackStart() {
   const incoming = (location.state ?? {}) as IncomingState;
 
   const [jobTitle, setJobTitle] = useState(incoming.jobTitle ?? '');
-  const [cvText, setCvText] = useState('');
+  const [cvText, setCvText] = useState(incoming.cvText ?? '');
   const [cvFileName, setCvFileName] = useState('');
   const [cvInputTab, setCvInputTab] = useState<'upload' | 'text'>('upload');
   // Deliberately not pre-filled from incoming.preferredName (e.g. the candidate's own
@@ -74,7 +78,7 @@ export default function InterviewPackStart() {
   const [jobSpecFileName, setJobSpecFileName] = useState('');
   const [activeTab, setActiveTab] = useState<'jobspec' | 'cv'>('cv');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
-  const [selectedDifficulty, setSelectedDifficulty] = useState('Standard');
+  const [selectedDifficulty, setSelectedDifficulty] = useState(incoming.difficulty ?? 'Standard');
   const [consentToRecord, setConsentToRecord] = useState(true);
   // Only shown after a blocked attempt to start — not on first load, so an empty form
   // doesn't look like it's already in an error state before the candidate's done anything.
