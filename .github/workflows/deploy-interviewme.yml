@@ -33,7 +33,11 @@ jobs:
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_INTERVIEWME }}
+          # interviewme-gate replaces the original interviewme-global app, which got stuck
+          # in "WaitingForDeployment" since it was created (2026-08-07) and never actually
+          # activated a real deployment despite every upload reporting success — every route/
+          # config fix attempted tonight was correct, the resource itself just never worked.
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_INTERVIEWME_GATE }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
           app_location: deploy-gate
