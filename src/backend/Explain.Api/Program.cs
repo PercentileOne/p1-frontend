@@ -65,13 +65,13 @@ builder.Services.AddCors(options =>
         {
             "https://candidate.interviewme.global",
             "https://recruiter.interviewme.global",
+            "https://employer.interviewme.global",
             "https://explain.global",
             "https://www.explain.global",
             "https://candidate.explain.global",
             "https://recruiter.explain.global",
-            "https://candidate.interviewme.global",
-            "https://recruiter.interviewme.global",
             "https://interviewme.global",
+            "https://www.interviewme.global", // the actual working neutral gate domain (interviewme.global apex only redirects via GoDaddy, never serves real content)
             "http://localhost:5173",
             "http://localhost:5176",
         };
