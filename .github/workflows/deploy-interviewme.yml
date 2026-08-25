@@ -19,14 +19,15 @@ jobs:
 
       - name: Prepare gate redirect bundle
         run: |
-          mkdir -p deploy-gate/login deploy-gate/register
+          mkdir -p deploy-gate
           cp src/viewme/public/gate.html deploy-gate/index.html
-          # Folder+index.html so Azure resolves /login and /register as real static files —
-          # takes priority over the routes-level catch-all redirect below, more reliably than
-          # a "rewrite" rule did (that 404'd in practice even though it matches documented
-          # Azure SWA config syntax — not worth the time chasing why).
-          cp src/viewme/public/gate.html deploy-gate/login/index.html
-          cp src/viewme/public/gate.html deploy-gate/register/index.html
+          # Flat .html files at root + a "rewrite" route + navigationFallback — mirrors the
+          # already-working pattern in src/viewme/public/staticwebapp.config.json (its /about,
+          # /fp, /contact routes). A nested folder+index.html approach 404'd even for the
+          # literal file path; turned out navigationFallback being present/absent seems to be
+          # what actually governs whether Azure serves real files here, not just routes/rewrite.
+          cp src/viewme/public/gate.html deploy-gate/login.html
+          cp src/viewme/public/gate.html deploy-gate/register.html
           cp src/viewme/public/gate-staticwebapp.config.json deploy-gate/staticwebapp.config.json
 
       - name: Deploy to Azure Static Web Apps
