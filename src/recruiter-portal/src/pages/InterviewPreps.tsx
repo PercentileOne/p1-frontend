@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Send, Mail, Calendar, Briefcase, User, Loader2, Play } from 'lucide-react'
@@ -7,6 +7,7 @@ import { interviewPrepsApi, type InterviewPrep } from '../api/interviewPrepsApi'
 import { explainApi } from '../api/explainApi'
 import { buildCVContext, buildJobSpecContext, buildSarahIntro, buildJamesIntro, buildPersonalisedQuestions, inferSpecialistTitle } from '../utils/contextBuilder'
 import { FileUpload } from '../components/FileUpload'
+import { DateTimePicker } from '../components/DateTimePicker'
 
 // Same three values, same colours, as the candidate's own "Question Difficulty" picker on
 // InterviewPackStart.tsx (both candidate- and recruiter-portal copies) — Francis's explicit
@@ -45,7 +46,6 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
-  const [role, setRole] = useState('')
   const [level, setLevel] = useState('')
   const [interviewDate, setInterviewDate] = useState('')
   const [jobSpecTab, setJobSpecTab] = useState<'jobspec' | 'cv'>('jobspec')
@@ -58,13 +58,17 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
   const [sending, setSending] = useState(false)
   const [apiErr, setApiErr] = useState('')
 
+  // No separate Job Title field — the job spec already carries it, so ask for it once.
+  // buildJobSpecContext reads the spec's first line (same logic InterviewPackStart.tsx
+  // already relies on), falling back to "the role" if that line doesn't look title-like.
+  const derivedRole = useMemo(() => buildJobSpecContext(jobSpec).title, [jobSpec])
+
   function validate() {
     const e: Record<string, string> = {}
     if (!firstName.trim()) e.firstName = 'First name is required.'
     if (!lastName.trim()) e.lastName = 'Last name is required.'
     if (!email.trim()) e.email = 'Email is required.'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = 'Please enter a valid email.'
-    if (!role.trim()) e.role = 'Role is required.'
     if (!level) e.level = 'Level is required.'
     if (!interviewDate) e.interviewDate = 'Interview date is required.'
     if (jobSpec.trim().length < 20) e.jobSpec = 'Paste or upload the job spec — questions need to be grounded in the real role.'
@@ -82,7 +86,7 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: email.trim().toLowerCase(),
-        role: role.trim(),
+        role: derivedRole,
         level,
         interviewDate: new Date(interviewDate).toISOString(),
         jobSpecText: jobSpec.trim(),
@@ -136,35 +140,28 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
           {errors.email && <div style={{ fontSize: 11, color: '#F87171', marginTop: 6 }}>{errors.email}</div>}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <div>
-            <FieldLabel>Role</FieldLabel>
-            <input value={role} onChange={e => setRole(e.target.value)} placeholder="e.g. Senior .NET Developer" style={inputStyle} />
-            {errors.role && <div style={{ fontSize: 11, color: '#F87171', marginTop: 6 }}>{errors.role}</div>}
-          </div>
-          <div>
-            <FieldLabel>Interview difficulty</FieldLabel>
-            {(() => {
-              const selected = DIFFICULTIES.find(d => d.value === level)
-              return (
-                <select
-                  value={level}
-                  onChange={e => setLevel(e.target.value)}
-                  style={{
-                    ...inputStyle, cursor: 'pointer', appearance: 'none',
-                    border: `1px solid ${selected?.borderColor ?? 'var(--border)'}`,
-                    color: selected?.color ?? 'var(--text)',
-                    fontWeight: selected ? 700 : 400,
-                    backgroundImage: SELECT_CHEVRON, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
-                  }}
-                >
-                  <option value="">Select…</option>
-                  {DIFFICULTIES.map(d => <option key={d.value} value={d.value} style={{ color: d.color, background: '#0c1220' }}>{d.value}</option>)}
-                </select>
-              )
-            })()}
-            {errors.level && <div style={{ fontSize: 11, color: '#F87171', marginTop: 6 }}>{errors.level}</div>}
-          </div>
+        <div>
+          <FieldLabel>Interview difficulty</FieldLabel>
+          {(() => {
+            const selected = DIFFICULTIES.find(d => d.value === level)
+            return (
+              <select
+                value={level}
+                onChange={e => setLevel(e.target.value)}
+                style={{
+                  ...inputStyle, cursor: 'pointer', appearance: 'none',
+                  border: `1px solid ${selected?.borderColor ?? 'var(--border)'}`,
+                  color: selected?.color ?? 'var(--text)',
+                  fontWeight: selected ? 700 : 400,
+                  backgroundImage: SELECT_CHEVRON, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
+                }}
+              >
+                <option value="">Select…</option>
+                {DIFFICULTIES.map(d => <option key={d.value} value={d.value} style={{ color: d.color, background: '#0c1220' }}>{d.value}</option>)}
+              </select>
+            )
+          })()}
+          {errors.level && <div style={{ fontSize: 11, color: '#F87171', marginTop: 6 }}>{errors.level}</div>}
         </div>
 
         {/* Job Spec + CV — recruiter's responsibility, not the candidate's. Grounds every
@@ -214,6 +211,11 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
                 )}
                 {jobSpecFileName && <div style={{ marginTop: 8, fontSize: 12, color: '#34D399' }}>✓ {jobSpecFileName} loaded</div>}
                 {errors.jobSpec && <div style={{ fontSize: 11, color: '#F87171', marginTop: 8 }}>{errors.jobSpec}</div>}
+                {jobSpec.trim().length >= 20 && (
+                  <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-3)' }}>
+                    Detected role: <span style={{ color: 'var(--text)', fontWeight: 700 }}>{derivedRole}</span>
+                  </div>
+                )}
               </>
             )}
 
@@ -256,7 +258,7 @@ function SendPrepForm({ onSent, onCancel }: { onSent: (prep: InterviewPrep) => v
 
         <div>
           <FieldLabel>Interview date &amp; time</FieldLabel>
-          <input type="datetime-local" value={interviewDate} onChange={e => setInterviewDate(e.target.value)} style={inputStyle} />
+          <DateTimePicker value={interviewDate} onChange={setInterviewDate} hasError={!!errors.interviewDate} />
           {errors.interviewDate && <div style={{ fontSize: 11, color: '#F87171', marginTop: 6 }}>{errors.interviewDate}</div>}
         </div>
 
