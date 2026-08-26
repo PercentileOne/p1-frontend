@@ -5,7 +5,7 @@ interface ChairLogoProps {
   showText?: boolean
 }
 
-export function ChairLogo({ size = 48, showText = true }: ChairLogoProps) {
+export function ChairLogo({ size = 96, showText = true }: ChairLogoProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
       <div style={{

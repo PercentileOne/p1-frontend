@@ -124,7 +124,7 @@ export default function Register() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
-          <ChairLogo size={56} showText={false} />
+          <ChairLogo size={96} showText={false} />
         </motion.div>
 
         <motion.div

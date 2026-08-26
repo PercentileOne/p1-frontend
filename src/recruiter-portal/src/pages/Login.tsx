@@ -70,7 +70,7 @@ export default function Login() {
         margin: '0 20px',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20,
       }}>
-        <ChairLogo size={80} showText={false} />
+        <ChairLogo size={96} showText={false} />
 
         <motion.div
           style={{ textAlign: 'center', marginTop: -8 }}
