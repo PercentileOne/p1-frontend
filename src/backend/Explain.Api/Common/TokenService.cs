@@ -40,7 +40,8 @@ public class TokenService(IConfiguration config)
         catch { return null; }
     }
 
-    public string CreateSessionToken(string userId, string email, string name, string role, IEnumerable<string>? permissions = null)
+    public string CreateSessionToken(string userId, string email, string name, string role, IEnumerable<string>? permissions = null,
+        string? orgId = null, string? orgName = null, string? orgRole = null)
     {
         var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -56,6 +57,15 @@ public class TokenService(IConfiguration config)
         // Each permission is a separate claim so standard ClaimsPrincipal helpers work
         foreach (var perm in permissions ?? [])
             claims.Add(new Claim("perm", perm));
+
+        // Ties this session to the org the user belongs to (multi-tenant Recruiter/Employer
+        // accounts) — absent entirely for users with no org membership (e.g. every Candidate).
+        if (!string.IsNullOrEmpty(orgId))
+        {
+            claims.Add(new Claim("orgId", orgId));
+            claims.Add(new Claim("orgName", orgName ?? ""));
+            claims.Add(new Claim("orgRole", orgRole ?? "member"));
+        }
 
         var token = new JwtSecurityToken(
             claims:             claims,

@@ -175,6 +175,9 @@ Explain.Api.Features.InterviewPreps.Endpoint.Map(app);
 Explain.Api.Features.Auth.ForgotPassword.Endpoint.Map(app);
 Explain.Api.Features.Auth.ResetPassword.Endpoint.Map(app);
 
+Explain.Api.Features.Organisations.Endpoint.Map(app);
+Explain.Api.Features.Organisations.Members.Endpoint.Map(app);
+
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
    .AllowAnonymous();
 

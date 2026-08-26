@@ -34,6 +34,7 @@ public static class Permissions
     // Admin
     public const string ViewAdminPortal       = "CAN_VIEW_ADMIN_PORTAL";
     public const string EditRoles             = "CAN_EDIT_ROLES";
+    public const string ManageOrganisations   = "CAN_MANAGE_ORGANISATIONS";
 
     // Super Admin only
     public const string EditPermissions       = "CAN_EDIT_PERMISSIONS";

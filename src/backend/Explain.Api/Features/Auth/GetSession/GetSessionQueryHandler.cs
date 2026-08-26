@@ -38,7 +38,10 @@ public class GetSessionQueryHandler(
                 name,
                 firstName,
                 result.FindFirst("role")?.Value  ?? "",
-                permissions);
+                permissions,
+                result.FindFirst("orgId")?.Value,
+                result.FindFirst("orgName")?.Value,
+                result.FindFirst("orgRole")?.Value);
 
             logger.LogInformation("Session valid for {Email}", session.Email);
             return Task.FromResult(Result<SessionDto>.Success(session));

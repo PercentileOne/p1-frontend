@@ -74,9 +74,16 @@ public class RegisterCommandHandler(
             var existingName     = $"{existing.FirstName} {existing.LastName}".Trim();
             var existingUsername = $"{existing.FirstName}{existing.LastName}".ToLower().Replace(" ", "");
             var existingPerms    = await permissions.LoadAsync(existing.Id, ct);
-            var existingToken    = tokens.CreateSessionToken(existing.Id, existing.Email, existingName, roleName, existingPerms);
+            var existingOrg      = await db.OrganisationMembers
+                .Where(m => m.UserId == existing.Id)
+                .OrderBy(m => m.JoinedAt)
+                .Select(m => new { OrgId = m.OrganisationId.ToString(), OrgName = m.Organisation.Name, OrgRole = m.Role })
+                .FirstOrDefaultAsync(ct);
+            var existingToken    = tokens.CreateSessionToken(existing.Id, existing.Email, existingName, roleName, existingPerms,
+                existingOrg?.OrgId, existingOrg?.OrgName, existingOrg?.OrgRole);
             return Result<AuthResponse>.Success(new AuthResponse(existingToken,
-                new UserDto(existing.Id, existing.Email, existingName, existing.FirstName, existingUsername, roleName)));
+                new UserDto(existing.Id, existing.Email, existingName, existing.FirstName, existingUsername, roleName,
+                    existingOrg?.OrgId, existingOrg?.OrgName, existingOrg?.OrgRole)));
         }
 
         // Write identity to SQL

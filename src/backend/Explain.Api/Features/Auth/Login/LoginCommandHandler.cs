@@ -44,8 +44,18 @@ public class LoginCommandHandler(
                      : perms.Contains("CAN_VIEW_RECRUITER_PORTAL") ? "Recruiter"
                      : perms.Contains("CAN_VIEW_CLIENT_PORTAL")    ? "Client"
                      : "Candidate";
-        var token    = tokens.CreateSessionToken(user.Id, user.Email, name, role, perms);
-        var response = new AuthResponse(token, new UserDto(user.Id, user.Email, name, user.FirstName, username, role));
+
+        // Orgs are admin-provisioned (not self-registered), so realistically a user belongs to
+        // at most one today. Taking the earliest membership keeps this correct for that case
+        // without yet building the org-picker UI a genuine multi-org user would need at login.
+        var org = await db.OrganisationMembers
+            .Where(m => m.UserId == user.Id)
+            .OrderBy(m => m.JoinedAt)
+            .Select(m => new { OrgId = m.OrganisationId.ToString(), OrgName = m.Organisation.Name, OrgRole = m.Role })
+            .FirstOrDefaultAsync(ct);
+
+        var token    = tokens.CreateSessionToken(user.Id, user.Email, name, role, perms, org?.OrgId, org?.OrgName, org?.OrgRole);
+        var response = new AuthResponse(token, new UserDto(user.Id, user.Email, name, user.FirstName, username, role, org?.OrgId, org?.OrgName, org?.OrgRole));
 
         return Result<AuthResponse>.Success(response);
     }

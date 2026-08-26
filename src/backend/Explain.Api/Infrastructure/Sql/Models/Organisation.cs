@@ -8,6 +8,8 @@ public class Organisation
     public string ContactEmail { get; set; } = string.Empty;
     public string? ContactName { get; set; }
     public int SeatCount { get; set; } = 1;                 // number of licences purchased
+    public decimal SeatMonthlyFeeGbp { get; set; } = 299m;  // flat monthly access fee for the org
+    public decimal PrepUnitPriceGbp { get; set; } = 1m;     // metered usage — billed per interview prep sent
     public string Status { get; set; } = "active";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

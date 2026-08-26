@@ -15,4 +15,5 @@ public record RegisterCommand(
 
 public record AuthResponse(string Token, UserDto User);
 
-public record UserDto(string Id, string Email, string Name, string FirstName, string Username, string Role);
+public record UserDto(string Id, string Email, string Name, string FirstName, string Username, string Role,
+    string? OrgId = null, string? OrgName = null, string? OrgRole = null);
