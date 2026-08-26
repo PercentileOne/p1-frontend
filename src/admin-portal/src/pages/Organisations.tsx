@@ -1,29 +1,32 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Loader2 } from 'lucide-react'
+import { Plus, Search, Loader2, ChevronUp, ChevronDown } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { organisationsApi, type OrganisationSummary, type ApiError } from '../api/organisationsApi'
 
 const ORG_TYPES = ['business', 'university', 'jobcentre', 'recruitment']
 
+type SortKey = 'name' | 'type' | 'contact' | 'seats' | 'seatFee' | 'perPrep' | 'members' | 'status'
+type SortDir = 'asc' | 'desc'
+
 export default function Organisations() {
   const { token } = useAuth()
   const navigate = useNavigate()
   const [rows, setRows] = useState<OrganisationSummary[]>([])
-  const [total, setTotal] = useState(0)
   const [search, setSearch] = useState('')
+  const [sortKey, setSortKey] = useState<SortKey>('name')
+  const [sortDir, setSortDir] = useState<SortDir>('asc')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showCreate, setShowCreate] = useState(false)
 
-  const load = useCallback(async (q?: string) => {
+  const load = useCallback(async () => {
     if (!token) return
     setLoading(true)
     setError('')
     try {
-      const res = await organisationsApi.list(token, { search: q, size: 100 })
+      const res = await organisationsApi.list(token, { size: 100 })
       setRows(res.rows)
-      setTotal(res.total)
     } catch (err) {
       setError((err as ApiError).error ?? 'Failed to load organisations.')
     } finally {
@@ -33,9 +36,52 @@ export default function Organisations() {
 
   useEffect(() => { load() }, [load])
 
-  function handleSearchSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    load(search.trim() || undefined)
+  function toggleSort(key: SortKey) {
+    if (key === sortKey) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(key)
+      setSortDir('asc')
+    }
+  }
+
+  const visibleRows = useMemo(() => {
+    const term = search.trim().toLowerCase()
+    const filtered = term
+      ? rows.filter(o => o.name.toLowerCase().includes(term) || o.contactEmail.toLowerCase().includes(term))
+      : rows
+
+    const dir = sortDir === 'asc' ? 1 : -1
+    return [...filtered].sort((a, b) => {
+      switch (sortKey) {
+        case 'name': return a.name.localeCompare(b.name) * dir
+        case 'type': return a.type.localeCompare(b.type) * dir
+        case 'contact': return a.contactEmail.localeCompare(b.contactEmail) * dir
+        case 'seats': return (a.seatCount - b.seatCount) * dir
+        case 'seatFee': return (a.effectiveSeatMonthlyFeeGbp - b.effectiveSeatMonthlyFeeGbp) * dir
+        case 'perPrep': return (a.prepUnitPriceGbp - b.prepUnitPriceGbp) * dir
+        case 'members': return (a.memberCount - b.memberCount) * dir
+        case 'status': return a.status.localeCompare(b.status) * dir
+      }
+    })
+  }, [rows, search, sortKey, sortDir])
+
+  function SortableHeader({ label, sortKeyName }: { label: string; sortKeyName: SortKey }) {
+    const active = sortKey === sortKeyName
+    return (
+      <th
+        onClick={() => toggleSort(sortKeyName)}
+        style={{
+          textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
+          textTransform: 'uppercase', color: active ? 'var(--blue)' : 'var(--text-3)', cursor: 'pointer', userSelect: 'none',
+        }}
+      >
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+          {label}
+          {active && (sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />)}
+        </span>
+      </th>
+    )
   }
 
   return (
@@ -43,7 +89,7 @@ export default function Organisations() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>Organisations</h1>
-          <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>{total} organisation{total === 1 ? '' : 's'}</p>
+          <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>{visibleRows.length} of {rows.length} organisation{rows.length === 1 ? '' : 's'}</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
@@ -58,7 +104,7 @@ export default function Organisations() {
         </button>
       </div>
 
-      <form onSubmit={handleSearchSubmit} style={{ marginBottom: 18 }}>
+      <div style={{ marginBottom: 18 }}>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
           background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 10,
@@ -66,13 +112,15 @@ export default function Organisations() {
         }}>
           <Search size={15} color="var(--text-3)" />
           <input
+            type="text"
+            autoComplete="off"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by name or contact email…"
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit' }}
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', caretColor: 'var(--blue)' }}
           />
         </div>
-      </form>
+      </div>
 
       {error && (
         <div style={{ fontSize: 12, color: '#EF4444', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
@@ -86,18 +134,25 @@ export default function Organisations() {
         </div>
       ) : rows.length === 0 ? (
         <div style={{ color: 'var(--text-3)', fontSize: 13, padding: '24px 0' }}>No organisations yet.</div>
+      ) : visibleRows.length === 0 ? (
+        <div style={{ color: 'var(--text-3)', fontSize: 13, padding: '24px 0' }}>No organisations match "{search}".</div>
       ) : (
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Name', 'Type', 'Contact', 'Seats', 'Seat fee', 'Per prep', 'Members', 'Status'].map(h => (
-                  <th key={h} style={{ textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)' }}>{h}</th>
-                ))}
+                <SortableHeader label="Name" sortKeyName="name" />
+                <SortableHeader label="Type" sortKeyName="type" />
+                <SortableHeader label="Contact" sortKeyName="contact" />
+                <SortableHeader label="Seats" sortKeyName="seats" />
+                <SortableHeader label="Seat fee" sortKeyName="seatFee" />
+                <SortableHeader label="Per prep" sortKeyName="perPrep" />
+                <SortableHeader label="Members" sortKeyName="members" />
+                <SortableHeader label="Status" sortKeyName="status" />
               </tr>
             </thead>
             <tbody>
-              {rows.map(o => {
+              {visibleRows.map(o => {
                 const promoActive = o.promoSeatFeeGbp !== null && o.effectiveSeatMonthlyFeeGbp !== o.seatMonthlyFeeGbp
                 return (
                   <tr
