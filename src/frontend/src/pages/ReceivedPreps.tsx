@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, ChevronUp, ChevronDown, Gift } from 'lucide-react';
+import { X, ChevronUp, ChevronDown, Gift, FileText } from 'lucide-react';
 import { useAuthStore } from '../auth/authStore';
 
 // Candidate-side half of the recruiter → candidate interview-prep loop. Backend endpoint
@@ -17,6 +17,8 @@ interface ReceivedPrep {
   interviewDate: string;
   jobSpecText:   string;
   cvText:        string | null;
+  cvFileName:    string | null;
+  cvFileUrl:     string | null; // short-lived SAS URL — the real uploaded file, not the extracted text
   status:        string;
   createdAt:     string;
 }
@@ -73,6 +75,8 @@ export default function ReceivedPreps() {
         jobTitle: prep.role,
         jobSpec: prep.jobSpecText,
         cvText: prep.cvText ?? undefined,
+        cvFileUrl: prep.cvFileUrl ?? undefined,
+        cvFileName: prep.cvFileName ?? undefined,
         difficulty: prep.level,
       },
     });
@@ -215,9 +219,21 @@ export default function ReceivedPreps() {
                           </span>
                         </td>
                         <td style={{ padding: '14px 16px' }}>
-                          {prep.cvText
-                            ? <span style={{ fontSize: 11, fontWeight: 600, color: '#34D399', background: 'rgba(52,211,153,0.1)', padding: '3px 8px', borderRadius: 20 }}>✓ Loaded</span>
-                            : <span style={{ fontSize: 12, color: 'var(--text-3)' }}>—</span>}
+                          {prep.cvFileUrl
+                            ? (
+                              <a
+                                href={prep.cvFileUrl} target="_blank" rel="noreferrer"
+                                onClick={e => e.stopPropagation()}
+                                title={prep.cvFileName ?? 'View CV'}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600, color: '#34D399', background: 'rgba(52,211,153,0.1)', padding: '3px 8px', borderRadius: 20, textDecoration: 'none', maxWidth: 160 }}
+                              >
+                                <FileText size={11} style={{ flexShrink: 0 }} />
+                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prep.cvFileName ?? 'View CV'}</span>
+                              </a>
+                            )
+                            : prep.cvText
+                              ? <span style={{ fontSize: 11, fontWeight: 600, color: '#34D399', background: 'rgba(52,211,153,0.1)', padding: '3px 8px', borderRadius: 20 }}>✓ Loaded</span>
+                              : <span style={{ fontSize: 12, color: 'var(--text-3)' }}>—</span>}
                         </td>
                         <td style={{ padding: '14px 16px' }}>
                           <button onClick={e => { e.stopPropagation(); reviewAndStart(prep); }} style={{ fontSize: 11, color: '#34D399', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, whiteSpace: 'nowrap' }}>Review &amp; Start →</button>

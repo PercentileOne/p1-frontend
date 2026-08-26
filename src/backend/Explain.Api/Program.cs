@@ -25,6 +25,7 @@ builder.Services.Configure<FormOptions>(o => { o.MultipartBodyLengthLimit = MaxU
 
 builder.Services.AddSingleton<CosmosService>();
 builder.Services.AddSingleton<BlobStorageService>();
+builder.Services.AddSingleton<CvFileStorageService>();
 builder.Services.AddSingleton<TtsCacheService>();
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlDb"),
@@ -100,6 +101,15 @@ catch (Exception ex)
 {
     var logger = app.Services.GetRequiredService<ILogger<Program>>();
     logger.LogWarning(ex, "Blob storage initialisation failed — interview recordings won't upload, but everything else is unaffected.");
+}
+try
+{
+    await app.Services.GetRequiredService<CvFileStorageService>().InitialiseAsync();
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogWarning(ex, "CV file storage initialisation failed — interview prep CV uploads won't attach a viewable file, but extracted text and everything else is unaffected.");
 }
 try
 {

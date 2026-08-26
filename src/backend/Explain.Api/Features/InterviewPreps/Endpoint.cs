@@ -3,6 +3,7 @@ using System.Net.Mail;
 using Microsoft.Azure.Cosmos;
 using Explain.Api.Common;
 using Explain.Api.Infrastructure.Cosmos;
+using Explain.Api.Infrastructure.Storage;
 
 namespace Explain.Api.Features.InterviewPreps;
 
@@ -24,7 +25,7 @@ public static class Endpoint
 {
     public static void Map(WebApplication app)
     {
-        app.MapPost("/api/interview-preps", async (Request req, HttpContext ctx, CosmosService cosmos, IConfiguration config, ILogger<Program> logger) =>
+        app.MapPost("/api/interview-preps", async (Request req, HttpContext ctx, CosmosService cosmos, CvFileStorageService cvFiles, IConfiguration config, ILogger<Program> logger) =>
         {
             var recruiterId = ctx.User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(recruiterId)) return Results.Unauthorized();
@@ -47,9 +48,16 @@ public static class Endpoint
                 return Results.BadRequest(new { error = "Job spec is required." });
 
             var recruiterName = ctx.User.FindFirst("name")?.Value ?? "Your recruiter";
+            var id = Guid.NewGuid().ToString();
+
+            // The candidate's own actual CV file (not just its extracted text) — so their
+            // received-prep view can show a real, viewable attachment rather than a wall of
+            // extracted text. Best-effort: if the upload fails, cvText still grounds the
+            // interview questions, it's only the attachment that's missing.
+            var cvFileName = await TryStoreCvFileAsync(cvFiles, recruiterId, id, req, logger);
 
             var prep = new InterviewPrep(
-                id: Guid.NewGuid().ToString(),
+                id: id,
                 recruiterId: recruiterId,
                 recruiterName: recruiterName,
                 title: string.IsNullOrWhiteSpace(req.Title) ? null : req.Title.Trim(),
@@ -65,6 +73,7 @@ public static class Endpoint
                 // Interview Prep" connection (see class doc above) exists.
                 jobSpecText: req.JobSpecText.Trim(),
                 cvText: string.IsNullOrWhiteSpace(req.CvText) ? null : req.CvText.Trim(),
+                cvFileName: cvFileName,
                 status: "sent",
                 createdAt: DateTimeOffset.UtcNow);
 
@@ -82,14 +91,14 @@ public static class Endpoint
                 logger.LogError(ex, "Failed to send interview prep invite email to {Email}", prep.email);
             }
 
-            return Results.Ok(prep);
+            return Results.Ok(WithCvFileUrl(prep, cvFiles));
         }).RequireAuthorization(Permissions.ManageInterviews);
 
         // PUT /api/interview-preps/{id} — edit + resend. Clicking a sent prep in the recruiter's
         // list opens this, not a live interview preview (that's its own explicit button) — the
         // realistic reason to click a sent record is fixing a typo'd name or wrong date, not
         // starting an interview you're not the candidate for.
-        app.MapPut("/api/interview-preps/{id}", async (string id, Request req, HttpContext ctx, CosmosService cosmos, IConfiguration config, ILogger<Program> logger) =>
+        app.MapPut("/api/interview-preps/{id}", async (string id, Request req, HttpContext ctx, CosmosService cosmos, CvFileStorageService cvFiles, IConfiguration config, ILogger<Program> logger) =>
         {
             var recruiterId = ctx.User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(recruiterId)) return Results.Unauthorized();
@@ -119,6 +128,11 @@ public static class Endpoint
                 return Results.NotFound(new { error = "Interview prep not found." });
             }
 
+            // Only re-upload/overwrite the stored file when the recruiter actually picked a new
+            // one this time — an edit that only fixes a date typo shouldn't silently drop the
+            // CV file that was already on record.
+            var cvFileName = await TryStoreCvFileAsync(cvFiles, recruiterId, id, req, logger) ?? existing.cvFileName;
+
             var updated = existing with
             {
                 title = string.IsNullOrWhiteSpace(req.Title) ? null : req.Title.Trim(),
@@ -130,6 +144,7 @@ public static class Endpoint
                 interviewDate = req.InterviewDate.Value,
                 jobSpecText = req.JobSpecText.Trim(),
                 cvText = string.IsNullOrWhiteSpace(req.CvText) ? null : req.CvText.Trim(),
+                cvFileName = cvFileName,
             };
 
             await container.UpsertItemAsync(updated, new PartitionKey(recruiterId));
@@ -143,11 +158,11 @@ public static class Endpoint
                 logger.LogError(ex, "Failed to resend interview prep invite email to {Email}", updated.email);
             }
 
-            return Results.Ok(updated);
+            return Results.Ok(WithCvFileUrl(updated, cvFiles));
         }).RequireAuthorization(Permissions.ManageInterviews);
 
         // GET /api/interview-preps — every prep the current recruiter has sent, newest first.
-        app.MapGet("/api/interview-preps", async (HttpContext ctx, CosmosService cosmos) =>
+        app.MapGet("/api/interview-preps", async (HttpContext ctx, CosmosService cosmos, CvFileStorageService cvFiles) =>
         {
             var recruiterId = ctx.User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(recruiterId)) return Results.Unauthorized();
@@ -162,14 +177,14 @@ public static class Endpoint
             while (feed.HasMoreResults)
                 preps.AddRange(await feed.ReadNextAsync());
 
-            return Results.Ok(preps.OrderByDescending(p => p.createdAt));
+            return Results.Ok(preps.OrderByDescending(p => p.createdAt).Select(p => WithCvFileUrl(p, cvFiles)));
         }).RequireAuthorization(Permissions.ManageInterviews);
 
         // GET /api/interview-preps/received — every prep addressed to the logged-in candidate's
         // own email, across every recruiter who's sent them one. The candidate-side half of the
         // loop: reviewing what's here (role, recruiter, interview date) before choosing to start,
         // not being dropped straight into an interview.
-        app.MapGet("/api/interview-preps/received", async (HttpContext ctx, CosmosService cosmos) =>
+        app.MapGet("/api/interview-preps/received", async (HttpContext ctx, CosmosService cosmos, CvFileStorageService cvFiles) =>
         {
             var email = ctx.User.FindFirst("email")?.Value;
             if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
@@ -183,8 +198,38 @@ public static class Endpoint
             while (feed.HasMoreResults)
                 preps.AddRange(await feed.ReadNextAsync());
 
-            return Results.Ok(preps.OrderByDescending(p => p.createdAt));
+            return Results.Ok(preps.OrderByDescending(p => p.createdAt).Select(p => WithCvFileUrl(p, cvFiles)));
         }).RequireAuthorization(Permissions.PracticeInterview);
+    }
+
+    /// <summary>Decodes and uploads req.CvFileBase64 (when present) against this prep's own
+    /// blob path, returning the original file name to store on the record — or null if no
+    /// file was sent, storage isn't configured, or the upload itself failed (best-effort:
+    /// cvText alone is enough to still ground the interview).</summary>
+    private static async Task<string?> TryStoreCvFileAsync(CvFileStorageService cvFiles, string recruiterId, string prepId, Request req, ILogger logger)
+    {
+        if (string.IsNullOrWhiteSpace(req.CvFileBase64) || string.IsNullOrWhiteSpace(req.CvFileName)) return null;
+        if (!cvFiles.IsConfigured) return null;
+
+        try
+        {
+            var bytes = Convert.FromBase64String(req.CvFileBase64);
+            var extension = Path.GetExtension(req.CvFileName);
+            await cvFiles.UploadAsync(recruiterId, prepId, extension, new MemoryStream(bytes), req.CvFileContentType ?? "application/octet-stream");
+            return req.CvFileName;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to store CV file for interview prep {PrepId}", prepId);
+            return null;
+        }
+    }
+
+    private static InterviewPrep WithCvFileUrl(InterviewPrep prep, CvFileStorageService cvFiles)
+    {
+        if (string.IsNullOrEmpty(prep.cvFileName)) return prep;
+        var url = cvFiles.GetReadUrl(prep.recruiterId, prep.id, Path.GetExtension(prep.cvFileName));
+        return url is null ? prep : prep with { cvFileUrl = url };
     }
 
     private static async Task SendInviteEmailAsync(InterviewPrep prep, IConfiguration config, ILogger logger)
@@ -303,7 +348,12 @@ public static class Endpoint
         string Level,
         DateTimeOffset? InterviewDate,
         string JobSpecText,
-        string? CvText);
+        string? CvText,
+        // The CV file itself, base64-encoded — kept in the same JSON body the form already
+        // sends rather than switching to multipart, since a CV is small enough this is fine.
+        string? CvFileBase64,
+        string? CvFileName,
+        string? CvFileContentType);
 }
 
 public record InterviewPrep(
@@ -319,5 +369,9 @@ public record InterviewPrep(
     DateTimeOffset interviewDate,
     string jobSpecText,
     string? cvText,
+    string? cvFileName,
     string status,
-    DateTimeOffset createdAt);
+    DateTimeOffset createdAt,
+    // Computed per-response (short-lived SAS URL), never persisted as meaningful data —
+    // always null on the copy that gets upserted to Cosmos, only set on the returned copy.
+    string? cvFileUrl = null);

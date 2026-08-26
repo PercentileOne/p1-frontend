@@ -13,6 +13,8 @@ export interface InterviewPrep {
   interviewDate: string; // ISO
   jobSpecText:   string;
   cvText:        string | null;
+  cvFileName:    string | null;
+  cvFileUrl:     string | null; // short-lived SAS URL, regenerated fresh on every read
   status:        string;
   createdAt:     string; // ISO
 }
@@ -27,6 +29,9 @@ export interface SendPrepRequest {
   interviewDate: string; // ISO
   jobSpecText:   string;
   cvText?:       string;
+  cvFileBase64?:      string;
+  cvFileName?:        string;
+  cvFileContentType?: string;
 }
 
 export interface ApiError {

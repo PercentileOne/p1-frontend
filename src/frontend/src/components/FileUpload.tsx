@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { extractTextFromFile } from '../utils/fileExtractor';
 
 interface Props {
-  onExtracted: (text: string, fileName: string) => void;
+  onExtracted: (text: string, fileName: string, file: File) => void;
   label?: string;
   // Extraction runs async (multi-page PDFs can take a moment) — a parent that lets its
   // submit button fire before this resolves ends up sending the pre-upload empty text.
@@ -29,7 +29,7 @@ export function FileUpload({ onExtracted, label = 'CV', onExtractingChange }: Pr
       const { text, fileName: name } = await extractTextFromFile(file);
       setState('done');
       setFileName(name);
-      onExtracted(text, name);
+      onExtracted(text, name, file);
     } catch (e: unknown) {
       setState('error');
       setErrorMsg(e instanceof Error ? e.message : 'Failed to read file.');

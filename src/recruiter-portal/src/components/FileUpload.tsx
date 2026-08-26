@@ -3,7 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { extractTextFromFile } from '../utils/fileExtractor';
 
 interface Props {
-  onExtracted: (text: string, fileName: string) => void;
+  // The raw File is passed through too — extracted text alone isn't enough to keep a real,
+  // viewable copy of what was uploaded (see FileUpload's original text-only design, which is
+  // why a recruiter's uploaded CV never actually reached the candidate as anything but text).
+  onExtracted: (text: string, fileName: string, file: File) => void;
   label?: string;
   // Extraction runs async (multi-page PDFs can take a moment) — a parent that lets its
   // submit button fire before this resolves ends up sending the pre-upload empty text.
@@ -29,7 +32,7 @@ export function FileUpload({ onExtracted, label = 'CV', onExtractingChange }: Pr
       const { text, fileName: name } = await extractTextFromFile(file);
       setState('done');
       setFileName(name);
-      onExtracted(text, name);
+      onExtracted(text, name, file);
     } catch (e: unknown) {
       setState('error');
       setErrorMsg(e instanceof Error ? e.message : 'Failed to read file.');

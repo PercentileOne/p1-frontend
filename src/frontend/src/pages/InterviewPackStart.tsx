@@ -53,6 +53,10 @@ interface IncomingState {
   // From a recruiter's received interview prep — a real CV/difficulty already on file for
   // this exact upcoming interview, unlike the general dashboard-initiated case above.
   cvText?: string;
+  // The actual uploaded file (short-lived SAS URL) — cvText alone grounds the interview,
+  // this is purely so the candidate can see/open what was actually attached.
+  cvFileUrl?: string;
+  cvFileName?: string;
   difficulty?: string;
 }
 
@@ -70,6 +74,11 @@ export default function InterviewPackStart() {
   const [jobTitle, setJobTitle] = useState(incoming.jobTitle ?? '');
   const [cvText, setCvText] = useState(incoming.cvText ?? '');
   const [cvFileName, setCvFileName] = useState('');
+  // The recruiter's actual uploaded file, shown as a real attachment — replacing it further
+  // down (upload/text tabs) only changes THIS practice session, not what's on the prep record.
+  const [attachedCv, setAttachedCv] = useState<{ url: string; name: string } | null>(
+    incoming.cvFileUrl && incoming.cvFileName ? { url: incoming.cvFileUrl, name: incoming.cvFileName } : null
+  );
   const [cvInputTab, setCvInputTab] = useState<'upload' | 'text'>('upload');
   // Deliberately not pre-filled from incoming.preferredName (e.g. the candidate's own
   // account name) — this field means "what should the AI call you in THIS interview",
@@ -356,6 +365,23 @@ export default function InterviewPackStart() {
                   />
                 </div>
 
+                {attachedCv && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 10, marginBottom: '16px',
+                    background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.25)',
+                    borderRadius: '10px', padding: '12px 14px',
+                  }}>
+                    <span style={{ fontSize: 18 }}>📄</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{attachedCv.name}</div>
+                      <div style={{ fontSize: '11px', color: '#34D399' }}>Attached by your recruiter</div>
+                    </div>
+                    <a href={attachedCv.url} target="_blank" rel="noreferrer" style={{ fontSize: '12px', fontWeight: 700, color: 'var(--blue)', textDecoration: 'none', flexShrink: 0 }}>
+                      View ↗
+                    </a>
+                  </div>
+                )}
+
                 {/* CV input tabs */}
                 <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '16px' }}>
                   {(['upload', 'text'] as const).map(t => (
@@ -377,6 +403,7 @@ export default function InterviewPackStart() {
                       onExtracted={(text, name) => {
                         setCvText(text);
                         setCvFileName(name);
+                        setAttachedCv(null); // replacing the recruiter's attached CV for this session
                         logFlowEvent('CV_UPLOADED', { fileName: name, charCount: text.length });
                       }}
                       onExtractingChange={setCvExtracting}
@@ -389,7 +416,7 @@ export default function InterviewPackStart() {
                 {cvInputTab === 'text' && (
                   <textarea
                     value={cvText}
-                    onChange={e => { setCvText(e.target.value); setCvFileName(''); }}
+                    onChange={e => { setCvText(e.target.value); setCvFileName(''); setAttachedCv(null); }}
                     placeholder="Paste your CV / résumé text here — skills, experience, achievements…"
                     rows={8}
                     style={{

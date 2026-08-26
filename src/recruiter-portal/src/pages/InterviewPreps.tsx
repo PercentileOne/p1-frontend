@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Send, Mail, Calendar, Briefcase, User, Loader2, Play } from 'lucide-react'
+import { ArrowLeft, Send, Mail, Calendar, Briefcase, User, Loader2, Play, FileText } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { interviewPrepsApi, type InterviewPrep } from '../api/interviewPrepsApi'
 import { explainApi } from '../api/explainApi'
@@ -40,6 +40,18 @@ const inputStyle: React.CSSProperties = {
 
 // ── Send form ─────────────────────────────────────────────────────────────
 
+function fileToBase64(file: File): Promise<{ base64: string }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      resolve({ base64: result.slice(result.indexOf(',') + 1) }) // strip the data: URL prefix
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 function isoToLocalInput(iso: string): string {
   const d = new Date(iso)
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -60,7 +72,8 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
   const [jobSpecExtracting, setJobSpecExtracting] = useState(false)
   const [cvInputTab, setCvInputTab] = useState<'upload' | 'text'>('upload')
   const [cvText, setCvText] = useState(existing?.cvText ?? '')
-  const [cvFileName, setCvFileName] = useState('')
+  const [cvFileName, setCvFileName] = useState(existing?.cvFileName ?? '')
+  const [cvFile, setCvFile] = useState<File | null>(null) // only set when a NEW file is picked this session
   const [cvExtracting, setCvExtracting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [sending, setSending] = useState(false)
@@ -91,6 +104,9 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
     if (stillExtracting || !validate() || !token) return
     setApiErr('')
     setSending(true)
+    // Only sent when a new file was actually picked this session — an edit that doesn't
+    // touch the CV tab should leave whatever file's already on record alone.
+    const cvFilePayload = cvFile ? await fileToBase64(cvFile) : null
     const body = {
       title: title || undefined,
       firstName: firstName.trim(),
@@ -101,6 +117,9 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
       interviewDate: new Date(interviewDate).toISOString(),
       jobSpecText: jobSpec.trim(),
       cvText: cvText.trim() || undefined,
+      cvFileBase64: cvFilePayload?.base64,
+      cvFileName: cvFile?.name,
+      cvFileContentType: cvFile?.type,
     }
     try {
       const prep = existing
@@ -255,7 +274,7 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
                 </div>
                 {cvInputTab === 'upload' && (
                   <>
-                    <FileUpload label="CV" onExtracted={(text, name) => { setCvText(text); setCvFileName(name) }} onExtractingChange={setCvExtracting} />
+                    <FileUpload label="CV" onExtracted={(text, name, file) => { setCvText(text); setCvFileName(name); setCvFile(file) }} onExtractingChange={setCvExtracting} />
                     {cvFileName && <div style={{ marginTop: 8, fontSize: 12, color: '#34D399' }}>✓ {cvFileName} loaded</div>}
                   </>
                 )}
@@ -353,6 +372,16 @@ function PrepCard({ prep, onEdit, onPreview, previewing }: { prep: InterviewPrep
         <div style={{ fontSize: 12, color: 'var(--text-3)' }}>
           Sent {sentDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
         </div>
+        {prep.cvFileUrl && (
+          <a
+            href={prep.cvFileUrl} target="_blank" rel="noreferrer"
+            onClick={e => e.stopPropagation()}
+            title={prep.cvFileName ?? 'View CV'}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#34D399', textDecoration: 'none' }}
+          >
+            <FileText size={12} /> CV attached
+          </a>
+        )}
         <button
           type="button"
           disabled={previewing}
