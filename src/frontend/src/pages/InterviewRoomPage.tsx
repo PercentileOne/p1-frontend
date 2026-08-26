@@ -779,8 +779,15 @@ export default function InterviewRoomPage() {
       logFlowEvent('MIKE_INTRO_COMPLETED', {});
       // Give Sarah/James's real AI intros (with the candidate's name) a chance to land even
       // if Phase 2 is still in flight — same wait pattern as Mike's own sessionReadyRef gate.
-      if (phase2ReadyRef.current) beginInterviewIntroRef.current();
-      else phase2WaitersRef.current.push(() => beginInterviewIntroRef.current());
+      // Always deferred by one tick, even when phase2ReadyRef.current is ALREADY true: if
+      // Phase 2 resolved only moments before Mike finished speaking, React may not have
+      // re-rendered yet, so beginInterviewIntroRef.current could still be the closure from
+      // before that state update — the exact stale-closure bug the waiter path already
+      // guards against, just reachable here too when the two events land close together.
+      setTimeout(() => {
+        if (phase2ReadyRef.current) beginInterviewIntroRef.current();
+        else phase2WaitersRef.current.push(() => beginInterviewIntroRef.current());
+      }, 0);
     }, (a) => setTechAnalyser(a));
   }, [mikeScript, ctx.jobSpecText, ctx.cvText, ctx.selectedLanguage]);
 
