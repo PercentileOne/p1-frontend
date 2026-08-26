@@ -1020,6 +1020,11 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     const name = resolvedPreferredName ? `, ${resolvedPreferredName}` : '';
     const closingLine = `Well${name}, that brings us to the end of your interview — thank you so much for your time today. I'm going to have a quick word with James, and then your agent Mike will be in touch shortly with some feedback. In the meantime, you can watch your full interview replay on the next screen, and retake it anytime you like. Best of luck!`;
     cancelSpeakRef.current?.();
+    // Whichever path got us here (normal coaching flow, Pass, or an MCQ finish),
+    // leave 'done' so the answer/coaching panels can't stay mounted and clickable
+    // underneath Sarah's goodbye speech.
+    setPhase('done');
+    setCoachingMessage(null);
     setHrState('speaking');
     cancelSpeakRef.current = speak(closingLine, 'hr', () => {
       setHrState('idle');
