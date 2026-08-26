@@ -9,6 +9,10 @@ interface Props {
   // CSS filter() string, e.g. from FILTER_CSS[preset] in useVideoFilter.ts — plain
   // visual adjustment on the self-view, not a separate camera/canvas pipeline.
   videoFilterCss?: string;
+  // Defaults match the original fixed size used everywhere except the Mike screen, which
+  // sizes this to match Mike's own 180px photo instead.
+  width?: number;
+  height?: number;
 }
 
 const BAR_COUNT = 8;
@@ -62,7 +66,7 @@ function MicWaveform({ speaking, analyserNode }: { speaking: boolean; analyserNo
   );
 }
 
-export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle, videoFilterCss }: Props) {
+export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle, videoFilterCss, width = 160, height = 120 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const micAnalyserRef = useRef<AnalyserNode | null>(null);
@@ -125,14 +129,14 @@ export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle,
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4 }}
       style={{
-        width: '160px', flexShrink: 0,
+        width: `${width}px`, flexShrink: 0,
         background: '#0a0a12',
         borderRadius: '16px',
         border: `1px solid ${speaking ? 'rgba(52,211,153,0.55)' : 'rgba(255,255,255,0.06)'}`,
         boxShadow: speaking ? '0 0 0 2px rgba(52,211,153,0.20)' : 'none',
         overflow: 'hidden',
         position: 'relative',
-        minHeight: '120px',
+        minHeight: `${height}px`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'border-color 0.15s, box-shadow 0.15s',
       }}
