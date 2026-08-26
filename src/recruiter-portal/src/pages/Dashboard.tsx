@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { LayoutDashboard, Package, Users, Briefcase, FileText, BarChart2, CalendarCheck, Settings, History, Zap, Filter, Video, Send } from 'lucide-react'
-import { ExplainLogo } from '../components/LogoMark'
 import { useAuth } from '../context/AuthContext'
 import InterviewPacks from './InterviewPacks'
 import InterviewPreps from './InterviewPreps'
@@ -158,9 +157,10 @@ export default function Dashboard() {
         display: 'flex', flexDirection: 'column',
         position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 10,
       }}>
-        {/* Logo */}
+        {/* Logo — same "IM" mark as the candidate portal's sidebar (CandidateDashboard.tsx),
+            not the old Explain ring mark, so the two portals read as one product. */}
         <div style={{ padding: '24px 20px 18px', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, cursor: 'default' }}>
-          <ExplainLogo size={72} withAnimation={false} cometDuration={8} />
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg,#34D399,#047857)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.05em' }}>IM</div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: '-0.02em', color: '#ffffff', lineHeight: 1.2 }}>
               Interview<span style={{ color: '#34D399' }}>Me</span><span style={{ color: '#4F8EF7' }}>.global</span>
