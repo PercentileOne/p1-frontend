@@ -872,8 +872,16 @@ IMPORTANT: The two MCQ questions and ALL interview questions MUST be completely 
   let result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
   for (let attempt = 1; attempt < 3 && (result.questions?.length ?? 0) !== 10; attempt++) {
     console.warn(`[Explain AI] Session prep returned ${result.questions?.length ?? 0} questions instead of 10 — retrying (attempt ${attempt + 1}/3).`);
-    const retry = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
-    if (Math.abs(10 - (retry.questions?.length ?? 0)) < Math.abs(10 - (result.questions?.length ?? 0))) result = retry;
+    // A failed retry (network blip, transient 5xx) must not discard the perfectly good
+    // sarahIntro/jamesIntro/mikeScript already sitting in `result` from the first call —
+    // only the question count was being chased here, so just stop retrying and move on.
+    try {
+      const retry = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
+      if (Math.abs(10 - (retry.questions?.length ?? 0)) < Math.abs(10 - (result.questions?.length ?? 0))) result = retry;
+    } catch (err) {
+      console.error('[Explain AI] Question-count retry attempt failed — keeping the best result so far:', err);
+      break;
+    }
   }
   if (result.questions?.length > 10) result.questions = result.questions.slice(0, 10);
 

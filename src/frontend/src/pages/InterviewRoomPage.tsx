@@ -305,6 +305,14 @@ export default function InterviewRoomPage() {
   const sessionReadyRef = useRef(false);
   const sessionWaitersRef = useRef<Array<() => void>>([]);
 
+  // Phase-2 readiness — Sarah/James wait for their real AI intros (max 10 s) the same way
+  // Mike waits for his above. Without this, Phase 2 (now up to 3 sequential calls plus a
+  // top-up, see sessionPrepareClient's question-count retry loop) can still be in flight
+  // when Mike finishes speaking, and Sarah/James silently fall back to the static,
+  // name-less lines below instead of the real AI-generated ones with the candidate's name.
+  const phase2ReadyRef = useRef(false);
+  const phase2WaitersRef = useRef<Array<() => void>>([]);
+
   // Derived values — fresh AI results ALWAYS win over anything pre-passed via route state
   const questions = bgQuestions ?? buildDemoQuestions(demoCompany);
   const companyKeywords = bgCompanyFacts.length ? bgCompanyFacts : demoCompany.companyKnowledgeKeywords;
@@ -753,7 +761,10 @@ export default function InterviewRoomPage() {
     cancelSpeakRef.current = speak(bgMikeScriptRef.current ?? fallbackMikeScript, 'technical', () => {
       cancelSpeakRef.current = null;
       logFlowEvent('MIKE_INTRO_COMPLETED', {});
-      beginInterviewIntroRef.current();
+      // Give Sarah/James's real AI intros (with the candidate's name) a chance to land even
+      // if Phase 2 is still in flight — same wait pattern as Mike's own sessionReadyRef gate.
+      if (phase2ReadyRef.current) beginInterviewIntroRef.current();
+      else phase2WaitersRef.current.push(() => beginInterviewIntroRef.current());
     }, (a) => setTechAnalyser(a));
   }, [mikeScript, ctx.jobSpecText, ctx.cvText, ctx.selectedLanguage]);
 
@@ -794,6 +805,17 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       }
     }, 5000);
 
+    // 10s fallback for Phase 2 (Sarah/James) — started once Phase 2 actually begins, below.
+    let phase2Timeout: ReturnType<typeof setTimeout> | undefined;
+    const resolvePhase2 = () => {
+      if (phase2Timeout) clearTimeout(phase2Timeout);
+      if (!phase2ReadyRef.current) {
+        phase2ReadyRef.current = true;
+        phase2WaitersRef.current.forEach(cb => cb());
+        phase2WaitersRef.current = [];
+      }
+    };
+
     // Phase 1: Mike's script only — fast
     generateMikeScriptOnly({
       jobTitle: ctx.jobTitle,
@@ -819,16 +841,18 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       }, 0);
 
       // Phase 2: fires in parallel — doesn't wait for the setTimeout above
+      phase2Timeout = setTimeout(resolvePhase2, 10000);
       return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName);
 
     }).then(result => {
       bgLoadedRef.current = true;
-      if (!result) return;
+      if (!result) { resolvePhase2(); return; }
       setBgQuestions(result.questions);
       if (result.sarahIntro) setBgSarahIntro(result.sarahIntro);
       if (result.jamesIntro) setBgJamesIntro(result.jamesIntro);
       if (result.companyFacts?.length) setBgCompanyFacts(result.companyFacts);
       if (result.specialistTitle) setBgSpecialistTitle(result.specialistTitle);
+      resolvePhase2();
       // MCQs generated in a separate dedicated call — more variety, not anchored to main questions
       generateMCQs(jobSpec, ctx.jobTitle, ctx.cvText).then(mcqs => {
         if (mcqs.length) setMcqQuestions(mcqs);
@@ -847,9 +871,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
         sessionWaitersRef.current.forEach(cb => cb());
         sessionWaitersRef.current = [];
       }
+      resolvePhase2();
     });
 
-    return () => clearTimeout(mikeTimeout);
+    return () => { clearTimeout(mikeTimeout); if (phase2Timeout) clearTimeout(phase2Timeout); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
