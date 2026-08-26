@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "../auth/authStore";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
@@ -25,16 +25,19 @@ interface NewsItem { tag: string; timeAgo: string; headline: string; source: str
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 
+// slug: null keeps the URL as bare /dashboard for the home tab; every other tab gets a
+// real ?tab= query param so the address bar always matches what's on screen, and browser
+// back / our own Back button lands on the tab you were actually looking at, not a reset one.
 const NAV_ITEMS = [
-  { Icon: LayoutDashboard, label: "Dashboard" },
-  { Icon: User,            label: "My Profile" },
-  { Icon: Video,           label: "My Interviews" },
-  { Icon: Gift,            label: "Interview Preps" },
-  { Icon: Briefcase,       label: "Jobs" },
-  { Icon: BookOpen,        label: "Learn" },
-  { Icon: Compass,         label: "Careers" },
-  { Icon: MessageSquare,   label: "Messages" },
-  { Icon: Settings,        label: "Settings" },
+  { Icon: LayoutDashboard, label: "Dashboard",       slug: null },
+  { Icon: User,            label: "My Profile",      slug: "profile" },
+  { Icon: Video,           label: "My Interviews",   slug: "interviews" },
+  { Icon: Gift,            label: "Interview Preps", slug: "interview-preps" },
+  { Icon: Briefcase,       label: "Jobs",             slug: "jobs" },
+  { Icon: BookOpen,        label: "Learn",            slug: "learn" },
+  { Icon: Compass,         label: "Careers",          slug: "careers" },
+  { Icon: MessageSquare,   label: "Messages",         slug: "messages" },
+  { Icon: Settings,        label: "Settings",         slug: "settings" },
 ] as const;
 
 const LIVE_STATS: LiveCard[] = [
@@ -241,7 +244,8 @@ export default function CandidateDashboard() {
   const user     = useAuthStore(s => s.user);
   const logout   = useAuthStore(s => s.logout);
 
-  const [activeNav, setActiveNav] = useState("Dashboard");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeNav = NAV_ITEMS.find(n => n.slug === searchParams.get("tab"))?.label ?? "Dashboard";
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const [news,      setNews]      = useState<NewsItem[]>(FALLBACK_NEWS);
   const [newsReady, setNewsReady] = useState(false);
@@ -266,7 +270,8 @@ export default function CandidateDashboard() {
   }
 
   function navTo(label: string) {
-    setActiveNav(label);
+    const item = NAV_ITEMS.find(n => n.label === label);
+    setSearchParams(item?.slug ? { tab: item.slug } : {});
   }
 
   return (
