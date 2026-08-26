@@ -38,6 +38,11 @@ h1, h2, h3, h4, h5, h6, p, span, label, div {
   cursor: default;
 }
 
+/* Headings are branding/titles, not data to copy — no selection caret */
+h1, h2, h3, h4, h5, h6 {
+  user-select: none;
+}
+
 /* No blinking cursor on non-text interactive elements */
 select, button, input[type="file"], input[type="radio"], input[type="checkbox"], label {
   caret-color: transparent;

@@ -78,8 +78,8 @@ export default function Login() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.7, ease: 'easeOut' }}
         >
-          <div style={{ fontSize: 17, fontWeight: 700, letterSpacing: '0.04em', color: '#e8eaf0' }}>
-            <span style={{ color: '#4F8EF7' }}>www.</span>Explain<span style={{ color: '#4F8EF7' }}>.global</span>
+          <div style={{ fontSize: 17, fontWeight: 700, letterSpacing: '0.04em', color: '#e8eaf0', userSelect: 'none' }}>
+            InterviewMe<span style={{ color: '#4F8EF7' }}>.global</span>
           </div>
         </motion.div>
 
@@ -89,10 +89,10 @@ export default function Login() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.55, duration: 0.8, ease: 'easeOut' }}
         >
-          <div style={{ fontSize: 19, fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.25 }}>
+          <div style={{ fontSize: 19, fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.25, userSelect: 'none' }}>
             Admin Portal
           </div>
-          <div style={{ fontSize: 14, color: '#64748b', marginTop: 6, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 14, color: '#64748b', marginTop: 6, lineHeight: 1.5, userSelect: 'none' }}>
             Internal staff access only.<br />Organisations, accounts and billing.
           </div>
         </motion.div>
