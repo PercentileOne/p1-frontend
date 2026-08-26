@@ -368,6 +368,16 @@
   .field input, .field select { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 12px 15px; font-size: 14px; color: var(--pearl); font-family: var(--font); outline: none; transition: border-color 0.2s; width: 100%; }
   .field input::placeholder { color: rgba(100,116,139,0.5); }
   .field input:focus, .field select:focus { border-color: rgba(61,126,246,0.5); }
+  /* Chrome/Edge paint autofilled inputs with their own light background regardless of the
+     rule above (that's what turns this dark form white once a saved credential fills in) —
+     the inset box-shadow trick is the only reliable override. */
+  .field input:-webkit-autofill,
+  .field input:-webkit-autofill:hover,
+  .field input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--bg2) inset !important;
+    -webkit-text-fill-color: var(--pearl) !important;
+    caret-color: var(--pearl);
+  }
   .field select option { background: #0a0f1e; }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
