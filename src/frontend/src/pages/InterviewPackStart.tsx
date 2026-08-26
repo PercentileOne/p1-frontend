@@ -105,18 +105,40 @@ export default function InterviewPackStart() {
   // still a valid interview to run; it's just reported so the population job can catch up).
   const [jobTitleSuggestions, setJobTitleSuggestions] = useState<Career[]>([]);
   const [showJobTitleSuggestions, setShowJobTitleSuggestions] = useState(false);
+  const [searchingJobTitle, setSearchingJobTitle] = useState(false);
   const jobTitleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Bumped whenever a new search starts — a resolved fetch only applies its results if it's
+  // still the latest one requested, so a slow, superseded response can never overwrite what
+  // a faster, more recent keystroke's search already showed.
+  const jobTitleRequestIdRef = useRef(0);
   const lastMatchedTitleRef = useRef<string | null>(null); // avoids re-reporting the same free-typed title repeatedly
 
   const handleJobTitleChange = useCallback((value: string) => {
     setJobTitle(value);
     if (jobTitleDebounceRef.current) clearTimeout(jobTitleDebounceRef.current);
-    if (value.trim().length < 2) { setJobTitleSuggestions([]); setShowJobTitleSuggestions(false); return; }
+    if (value.trim().length < 2) {
+      jobTitleRequestIdRef.current++;
+      setJobTitleSuggestions([]);
+      setShowJobTitleSuggestions(false);
+      setSearchingJobTitle(false);
+      return;
+    }
+    // 180ms, down from 280 — still short enough to avoid firing a search on every single
+    // keystroke of a fast typer, but the dominant "feels slow" factor here wasn't actually
+    // the debounce or the search itself (both fast) — it was that nothing on screen changed
+    // between the last keystroke and the results appearing. The "Searching…" state below
+    // fixes that: the dropdown now opens immediately when a search starts, not once it
+    // finishes, so typing always gets an instant reaction even before real results land.
     jobTitleDebounceRef.current = setTimeout(async () => {
+      const requestId = ++jobTitleRequestIdRef.current;
+      setSearchingJobTitle(true);
+      setShowJobTitleSuggestions(true);
       const results = await searchCareers(value, 8);
+      if (requestId !== jobTitleRequestIdRef.current) return; // a newer keystroke superseded this
+      setSearchingJobTitle(false);
       setJobTitleSuggestions(results);
       setShowJobTitleSuggestions(results.length > 0);
-    }, 280);
+    }, 180);
   }, []);
 
   const selectJobTitleSuggestion = useCallback((c: Career) => {
@@ -269,9 +291,18 @@ export default function InterviewPackStart() {
                 transition: 'border-color 0.15s',
               }}
             />
-            {showJobTitleSuggestions && jobTitleSuggestions.length > 0 && (
+            {showJobTitleSuggestions && (searchingJobTitle || jobTitleSuggestions.length > 0) && (
               <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, background: '#0d0c1e', border: '1px solid rgba(79,142,247,0.3)', borderRadius: '10px', overflow: 'hidden', zIndex: 20, boxShadow: '0 16px 48px rgba(0,0,0,0.6)' }}>
-                {jobTitleSuggestions.map(c => (
+                {searchingJobTitle ? (
+                  <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--text-3)' }}>
+                    <span style={{
+                      display: 'inline-block', width: '13px', height: '13px', borderRadius: '50%',
+                      border: '2px solid rgba(79,142,247,0.25)', borderTopColor: 'var(--blue)',
+                      animation: 'jobTitleSpin 0.7s linear infinite',
+                    }} />
+                    Searching…
+                  </div>
+                ) : jobTitleSuggestions.map(c => (
                   <div
                     key={c.id}
                     onMouseDown={() => selectJobTitleSuggestion(c)}
@@ -539,6 +570,9 @@ export default function InterviewPackStart() {
             0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.55); }
             70%  { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
             100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+          }
+          @keyframes jobTitleSpin {
+            to { transform: rotate(360deg); }
           }
         `}</style>
 
