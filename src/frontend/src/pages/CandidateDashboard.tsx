@@ -399,7 +399,7 @@ export default function CandidateDashboard() {
         {activeNav === "Messages"       && <MessagesPage />}
         {activeNav === "Settings"       && <SettingsPage />}
 
-        {!["Learn", "Careers", "My Interviews", "My Profile", "Jobs", "Messages", "Settings"].includes(activeNav) && <>
+        {!["Learn", "Careers", "My Interviews", "Interview Preps", "My Profile", "Jobs", "Messages", "Settings"].includes(activeNav) && <>
 
         {/* ── STATS ROW ── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>
