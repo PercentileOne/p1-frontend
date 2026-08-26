@@ -188,7 +188,7 @@ export default function RegisterPage() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="flex flex-col items-center gap-2"
         >
-          <ChairLogo size={48} showText={false} />
+          <ChairLogo size={96} showText={false} />
           <span style={{ fontWeight: 800, fontSize: 17, color: "#fff", letterSpacing: "-.02em" }}>
             InterviewMe<span style={{ color: "#34D399" }}>.global</span>
           </span>
