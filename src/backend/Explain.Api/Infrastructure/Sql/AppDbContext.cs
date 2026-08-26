@@ -167,6 +167,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasMany(x => x.Members).WithOne(x => x.Organisation).HasForeignKey(x => x.OrganisationId);
             e.Property(x => x.SeatMonthlyFeeGbp).HasPrecision(10, 2);
             e.Property(x => x.PrepUnitPriceGbp).HasPrecision(10, 2);
+            e.Property(x => x.PromoSeatFeeGbp).HasPrecision(10, 2);
+            e.Ignore(x => x.EffectiveSeatMonthlyFeeGbp);
         });
 
         model.Entity<OrganisationMember>(e =>

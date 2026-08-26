@@ -32,7 +32,12 @@ public static class Endpoint
                 .Select(o => new
                 {
                     o.Id, o.Name, o.Type, o.ContactEmail, o.ContactName,
-                    o.SeatCount, o.SeatMonthlyFeeGbp, o.PrepUnitPriceGbp, o.Status, o.CreatedAt,
+                    o.SeatCount, o.SeatMonthlyFeeGbp, o.PrepUnitPriceGbp,
+                    o.PromoSeatFeeGbp, o.PromoExpiresAt,
+                    EffectiveSeatMonthlyFeeGbp = o.PromoSeatFeeGbp != null && (o.PromoExpiresAt == null || o.PromoExpiresAt > DateTime.UtcNow)
+                        ? o.PromoSeatFeeGbp.Value
+                        : o.SeatMonthlyFeeGbp,
+                    o.Status, o.CreatedAt,
                     MemberCount = o.Members.Count,
                 })
                 .ToListAsync();
@@ -59,7 +64,9 @@ public static class Endpoint
             return Results.Ok(new
             {
                 org.Id, org.Name, org.Type, org.ContactEmail, org.ContactName,
-                org.SeatCount, org.SeatMonthlyFeeGbp, org.PrepUnitPriceGbp, org.Status, org.CreatedAt,
+                org.SeatCount, org.SeatMonthlyFeeGbp, org.PrepUnitPriceGbp,
+                org.PromoSeatFeeGbp, org.PromoExpiresAt, org.EffectiveSeatMonthlyFeeGbp,
+                org.Status, org.CreatedAt,
                 Members = members,
             });
         })
@@ -82,6 +89,8 @@ public static class Endpoint
                 SeatCount         = req.SeatCount ?? 1,
                 SeatMonthlyFeeGbp = req.SeatMonthlyFeeGbp ?? 299m,
                 PrepUnitPriceGbp  = req.PrepUnitPriceGbp ?? 1m,
+                PromoSeatFeeGbp   = req.PromoSeatFeeGbp,
+                PromoExpiresAt    = req.PromoExpiresAt,
             };
 
             db.Organisations.Add(org);
@@ -105,6 +114,20 @@ public static class Endpoint
             if (req.PrepUnitPriceGbp is not null) org.PrepUnitPriceGbp = req.PrepUnitPriceGbp.Value;
             if (req.Status is not null) org.Status = req.Status;
 
+            // Promo: ClearPromo wins outright (an explicit "end the promo now" action);
+            // otherwise each field updates independently so you can set a fee without
+            // touching the expiry, or vice versa.
+            if (req.ClearPromo)
+            {
+                org.PromoSeatFeeGbp = null;
+                org.PromoExpiresAt  = null;
+            }
+            else
+            {
+                if (req.PromoSeatFeeGbp is not null) org.PromoSeatFeeGbp = req.PromoSeatFeeGbp;
+                if (req.PromoExpiresAt is not null) org.PromoExpiresAt = req.PromoExpiresAt;
+            }
+
             await db.SaveChangesAsync();
             return Results.Ok(new { org.Id });
         })
@@ -113,8 +136,10 @@ public static class Endpoint
     }
 
     public record CreateRequest(string Name, string ContactEmail, string? Type, string? ContactName,
-        int? SeatCount, decimal? SeatMonthlyFeeGbp, decimal? PrepUnitPriceGbp);
+        int? SeatCount, decimal? SeatMonthlyFeeGbp, decimal? PrepUnitPriceGbp,
+        decimal? PromoSeatFeeGbp, DateTime? PromoExpiresAt);
 
     public record UpdateRequest(string? Name, string? Type, string? ContactEmail, string? ContactName,
-        int? SeatCount, decimal? SeatMonthlyFeeGbp, decimal? PrepUnitPriceGbp, string? Status);
+        int? SeatCount, decimal? SeatMonthlyFeeGbp, decimal? PrepUnitPriceGbp, string? Status,
+        decimal? PromoSeatFeeGbp, DateTime? PromoExpiresAt, bool ClearPromo = false);
 }
