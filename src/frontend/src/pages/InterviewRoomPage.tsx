@@ -305,11 +305,14 @@ export default function InterviewRoomPage() {
   const sessionReadyRef = useRef(false);
   const sessionWaitersRef = useRef<Array<() => void>>([]);
 
-  // Phase-2 readiness — Sarah/James wait for their real AI intros (max 10 s) the same way
-  // Mike waits for his above. Without this, Phase 2 (now up to 3 sequential calls plus a
-  // top-up, see sessionPrepareClient's question-count retry loop) can still be in flight
-  // when Mike finishes speaking, and Sarah/James silently fall back to the static,
-  // name-less lines below instead of the real AI-generated ones with the candidate's name.
+  // Phase-2 readiness — Sarah/James wait for their real AI intros the same way Mike waits
+  // for his above. Without this, Phase 2 (now up to 3 sequential calls plus a top-up, see
+  // sessionPrepareClient's question-count retry loop) can still be in flight when Mike
+  // finishes speaking, and Sarah/James silently fall back to the static, name-less lines
+  // below instead of the real AI-generated ones with the candidate's name. The cap has to
+  // be generous — Mike's own script typically takes 45-60s to speak, and Phase 2's retry
+  // chain can legitimately take 20-30s+ — a short cap (10s tried first) just resolves the
+  // wait early and reproduces the exact bug it was meant to fix.
   const phase2ReadyRef = useRef(false);
   const phase2WaitersRef = useRef<Array<() => void>>([]);
 
@@ -805,7 +808,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       }
     }, 5000);
 
-    // 10s fallback for Phase 2 (Sarah/James) — started once Phase 2 actually begins, below.
+    // 35s fallback for Phase 2 (Sarah/James) — started once Phase 2 actually begins, below.
+    // Generous on purpose: see the phase2ReadyRef comment for why a short cap defeats itself.
     let phase2Timeout: ReturnType<typeof setTimeout> | undefined;
     const resolvePhase2 = () => {
       if (phase2Timeout) clearTimeout(phase2Timeout);
@@ -841,7 +845,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       }, 0);
 
       // Phase 2: fires in parallel — doesn't wait for the setTimeout above
-      phase2Timeout = setTimeout(resolvePhase2, 10000);
+      phase2Timeout = setTimeout(resolvePhase2, 35000);
       return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName);
 
     }).then(result => {
