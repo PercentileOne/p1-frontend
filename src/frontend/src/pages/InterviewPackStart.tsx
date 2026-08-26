@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 import { FileUpload } from '../components/FileUpload';
 import { logFlowEvent } from '../api/flowLogger';
 import { type Career, searchCareers, reportMissingCareerTitle } from '../api/careersApi';
@@ -76,6 +77,12 @@ export default function InterviewPackStart() {
   const [preferredName, setPreferredName] = useState('');
   const [jobSpec, setJobSpec] = useState(incoming.jobSpec ?? '');
   const [jobSpecFileName, setJobSpecFileName] = useState('');
+  const [jobSpecExtracting, setJobSpecExtracting] = useState(false);
+  const [cvExtracting, setCvExtracting] = useState(false);
+  // A multi-page PDF can take a moment to extract — without this, clicking Start the instant
+  // a file is dropped launches the interview with whatever cvText/jobSpec held before the
+  // upload (usually empty), silently dropping the CV/job spec that was "just" uploaded.
+  const stillExtracting = jobSpecExtracting || cvExtracting;
   const [activeTab, setActiveTab] = useState<'jobspec' | 'cv'>('cv');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedDifficulty, setSelectedDifficulty] = useState(incoming.difficulty ?? 'Standard');
@@ -126,6 +133,7 @@ export default function InterviewPackStart() {
   }, []);
 
   const handleStart = () => {
+    if (stillExtracting) return;
     if (!hasEnough) {
       setAttemptedStart(true);
       if (!hasCV) setActiveTab('cv'); // surface the CV upload area even if they're on the Job Spec tab
@@ -192,6 +200,17 @@ export default function InterviewPackStart() {
         transition={{ duration: 0.4 }}
         style={{ width: '100%', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '0' }}
       >
+        <button
+          onClick={() => navigate(-1)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start',
+            background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 13,
+            cursor: 'pointer', fontFamily: 'inherit', marginBottom: 20, padding: 0,
+          }}
+        >
+          <ArrowLeft size={14} /> Back
+        </button>
+
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
@@ -285,6 +304,7 @@ export default function InterviewPackStart() {
                     setJobSpecFileName(name);
                     logFlowEvent('JOB_SPEC_UPLOADED', { fileName: name, charCount: text.length });
                   }}
+                  onExtractingChange={setJobSpecExtracting}
                 />
                 {!jobSpecFileName && (
                   <>
@@ -359,6 +379,7 @@ export default function InterviewPackStart() {
                         setCvFileName(name);
                         logFlowEvent('CV_UPLOADED', { fileName: name, charCount: text.length });
                       }}
+                      onExtractingChange={setCvExtracting}
                     />
                     {cvFileName && (
                       <div style={{ marginTop: '8px', fontSize: '12px', color: '#34D399' }}>✓ {cvFileName} loaded</div>
@@ -505,11 +526,12 @@ export default function InterviewPackStart() {
               : 'rgba(79,142,247,0.25)',
             color: '#fff', border: 'none', borderRadius: '12px',
             padding: '18px', fontSize: '16px', fontWeight: 800,
-            cursor: 'pointer',
+            cursor: stillExtracting ? 'default' : 'pointer',
+            opacity: stillExtracting ? 0.7 : 1,
             fontFamily: 'inherit', letterSpacing: '-0.01em', transition: 'opacity 0.2s',
           }}
         >
-          Start Interview →
+          {stillExtracting ? 'Extracting file text…' : 'Start Interview →'}
         </button>
 
         {attemptedStart && !hasEnough && (

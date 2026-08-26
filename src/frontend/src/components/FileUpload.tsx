@@ -5,11 +5,15 @@ import { extractTextFromFile } from '../utils/fileExtractor';
 interface Props {
   onExtracted: (text: string, fileName: string) => void;
   label?: string;
+  // Extraction runs async (multi-page PDFs can take a moment) — a parent that lets its
+  // submit button fire before this resolves ends up sending the pre-upload empty text.
+  // Lets the parent gate submission on it instead of just watching for onExtracted.
+  onExtractingChange?: (extracting: boolean) => void;
 }
 
 type UploadState = 'idle' | 'extracting' | 'done' | 'error';
 
-export function FileUpload({ onExtracted, label = 'CV' }: Props) {
+export function FileUpload({ onExtracted, label = 'CV', onExtractingChange }: Props) {
   const [state, setState] = useState<UploadState>('idle');
   const [fileName, setFileName] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -20,6 +24,7 @@ export function FileUpload({ onExtracted, label = 'CV' }: Props) {
     setState('extracting');
     setFileName(file.name);
     setErrorMsg('');
+    onExtractingChange?.(true);
     try {
       const { text, fileName: name } = await extractTextFromFile(file);
       setState('done');
@@ -28,8 +33,10 @@ export function FileUpload({ onExtracted, label = 'CV' }: Props) {
     } catch (e: unknown) {
       setState('error');
       setErrorMsg(e instanceof Error ? e.message : 'Failed to read file.');
+    } finally {
+      onExtractingChange?.(false);
     }
-  }, [onExtracted]);
+  }, [onExtracted, onExtractingChange]);
 
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();

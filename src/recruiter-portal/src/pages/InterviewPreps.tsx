@@ -57,12 +57,17 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
   const [jobSpecTab, setJobSpecTab] = useState<'jobspec' | 'cv'>('jobspec')
   const [jobSpec, setJobSpec] = useState(existing?.jobSpecText ?? '')
   const [jobSpecFileName, setJobSpecFileName] = useState('')
+  const [jobSpecExtracting, setJobSpecExtracting] = useState(false)
   const [cvInputTab, setCvInputTab] = useState<'upload' | 'text'>('upload')
   const [cvText, setCvText] = useState(existing?.cvText ?? '')
   const [cvFileName, setCvFileName] = useState('')
+  const [cvExtracting, setCvExtracting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [sending, setSending] = useState(false)
   const [apiErr, setApiErr] = useState('')
+  // A multi-page PDF can take a moment to extract — without this, clicking Send the instant
+  // a file is dropped submits whatever cvText/jobSpec held before the upload (usually empty).
+  const stillExtracting = jobSpecExtracting || cvExtracting
 
   // No separate Job Title field — the job spec already carries it, so ask for it once.
   // buildJobSpecContext reads the spec's first line (same logic InterviewPackStart.tsx
@@ -83,7 +88,7 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
   }
 
   async function handleSubmit() {
-    if (!validate() || !token) return
+    if (stillExtracting || !validate() || !token) return
     setApiErr('')
     setSending(true)
     const body = {
@@ -203,6 +208,7 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
                 <FileUpload
                   label="Job Spec"
                   onExtracted={(text, name) => { setJobSpec(text); setJobSpecFileName(name) }}
+                  onExtractingChange={setJobSpecExtracting}
                 />
                 {!jobSpecFileName && (
                   <>
@@ -249,7 +255,7 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
                 </div>
                 {cvInputTab === 'upload' && (
                   <>
-                    <FileUpload label="CV" onExtracted={(text, name) => { setCvText(text); setCvFileName(name) }} />
+                    <FileUpload label="CV" onExtracted={(text, name) => { setCvText(text); setCvFileName(name) }} onExtractingChange={setCvExtracting} />
                     {cvFileName && <div style={{ marginTop: 8, fontSize: 12, color: '#34D399' }}>✓ {cvFileName} loaded</div>}
                   </>
                 )}
@@ -281,19 +287,21 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
 
         <motion.button
           onClick={handleSubmit}
-          disabled={sending}
+          disabled={sending || stillExtracting}
           whileHover={{ boxShadow: '0 4px 32px rgba(79,142,247,0.45)' }}
           whileTap={{ scale: 0.98 }}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             background: 'linear-gradient(135deg,#4F8EF7,#2563eb)', color: '#fff', border: 'none',
             borderRadius: 10, padding: '14px 24px', fontSize: 14, fontWeight: 700,
-            cursor: sending ? 'default' : 'pointer', opacity: sending ? 0.7 : 1, fontFamily: 'inherit',
+            cursor: sending || stillExtracting ? 'default' : 'pointer', opacity: sending || stillExtracting ? 0.7 : 1, fontFamily: 'inherit',
           }}
         >
-          {sending
-            ? (existing ? 'Saving…' : 'Sending…')
-            : existing ? <>Save &amp; Resend <Send size={15} /></> : <>Send Interview Prep <Send size={15} /></>}
+          {stillExtracting
+            ? 'Extracting file text…'
+            : sending
+              ? (existing ? 'Saving…' : 'Sending…')
+              : existing ? <>Save &amp; Resend <Send size={15} /></> : <>Send Interview Prep <Send size={15} /></>}
         </motion.button>
       </div>
     </motion.div>
