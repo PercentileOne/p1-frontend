@@ -73,8 +73,10 @@ builder.Services.AddCors(options =>
             "https://recruiter.explain.global",
             "https://interviewme.global",
             "https://www.interviewme.global", // the actual working neutral gate domain (interviewme.global apex only redirects via GoDaddy, never serves real content)
+            "https://admin.interviewme.global",
             "http://localhost:5173",
             "http://localhost:5176",
+            "http://localhost:5180",
         };
         var origins = configOrigins.Union(knownOrigins).ToArray();
         policy.WithOrigins(origins)
@@ -177,6 +179,7 @@ Explain.Api.Features.Auth.ResetPassword.Endpoint.Map(app);
 
 Explain.Api.Features.Organisations.Endpoint.Map(app);
 Explain.Api.Features.Organisations.Members.Endpoint.Map(app);
+Explain.Api.Features.Users.List.Endpoint.Map(app);
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
    .AllowAnonymous();

@@ -1,0 +1,60 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/*.{css,js,png,jpg,jpeg,svg,ico,woff,woff2,ttf,eot,webp,avif,json,map}",
+      "/assets/*"
+    ]
+  },
+  "routes": [
+    {
+      "route": "/assets/*",
+      "headers": {
+        "Cache-Control": "max-age=31536000, immutable"
+      }
+    },
+    {
+      "route": "/login",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/organisations",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/organisations/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/candidates",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/employers",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/*",
+      "headers": {
+        "Cache-Control": "no-store"
+      }
+    }
+  ],
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/index.html",
+      "statusCode": 200
+    }
+  },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "SAMEORIGIN",
+    "Referrer-Policy": "strict-origin-when-cross-origin"
+  },
+  "mimeTypes": {
+    ".html": "text/html",
+    ".json": "application/json",
+    ".woff":  "font/woff",
+    ".woff2": "font/woff2"
+  }
+}

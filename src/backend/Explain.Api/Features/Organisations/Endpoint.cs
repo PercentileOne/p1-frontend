@@ -31,7 +31,7 @@ public static class Endpoint
                 .Take(size)
                 .Select(o => new
                 {
-                    o.Id, o.Name, o.Type, o.ContactEmail, o.ContactName,
+                    o.Id, o.Name, o.Type, o.ContactEmail, o.ContactName, o.Phone, o.Website, o.Domain,
                     o.SeatCount, o.SeatMonthlyFeeGbp, o.PrepUnitPriceGbp,
                     o.PromoSeatFeeGbp, o.PromoExpiresAt,
                     EffectiveSeatMonthlyFeeGbp = o.PromoSeatFeeGbp != null && (o.PromoExpiresAt == null || o.PromoExpiresAt > DateTime.UtcNow)
@@ -63,7 +63,7 @@ public static class Endpoint
 
             return Results.Ok(new
             {
-                org.Id, org.Name, org.Type, org.ContactEmail, org.ContactName,
+                org.Id, org.Name, org.Type, org.ContactEmail, org.ContactName, org.Phone, org.Website, org.Domain,
                 org.SeatCount, org.SeatMonthlyFeeGbp, org.PrepUnitPriceGbp,
                 org.PromoSeatFeeGbp, org.PromoExpiresAt, org.EffectiveSeatMonthlyFeeGbp,
                 org.Status, org.CreatedAt,
@@ -79,18 +79,26 @@ public static class Endpoint
                 return Results.BadRequest(new { error = "Organisation name is required." });
             if (string.IsNullOrWhiteSpace(req.ContactEmail) || !req.ContactEmail.Contains('@'))
                 return Results.BadRequest(new { error = "A valid contact email is required." });
+            if (string.IsNullOrWhiteSpace(req.ContactName))
+                return Results.BadRequest(new { error = "Contact name is required." });
+            if (string.IsNullOrWhiteSpace(req.Phone))
+                return Results.BadRequest(new { error = "Phone number is required." });
 
             var org = new Organisation
             {
                 Name              = req.Name.Trim(),
                 Type              = req.Type ?? "business",
                 ContactEmail      = req.ContactEmail.Trim().ToLower(),
-                ContactName       = req.ContactName?.Trim(),
+                ContactName       = req.ContactName.Trim(),
+                Phone             = req.Phone.Trim(),
+                Website           = req.Website?.Trim(),
+                Domain            = req.Domain?.Trim().ToLower(),
                 SeatCount         = req.SeatCount ?? 1,
                 SeatMonthlyFeeGbp = req.SeatMonthlyFeeGbp ?? 299m,
                 PrepUnitPriceGbp  = req.PrepUnitPriceGbp ?? 1m,
                 PromoSeatFeeGbp   = req.PromoSeatFeeGbp,
                 PromoExpiresAt    = req.PromoExpiresAt,
+                Status            = req.Status ?? "active",
             };
 
             db.Organisations.Add(org);
@@ -108,7 +116,10 @@ public static class Endpoint
             if (!string.IsNullOrWhiteSpace(req.Name)) org.Name = req.Name.Trim();
             if (req.Type is not null) org.Type = req.Type;
             if (!string.IsNullOrWhiteSpace(req.ContactEmail)) org.ContactEmail = req.ContactEmail.Trim().ToLower();
-            if (req.ContactName is not null) org.ContactName = req.ContactName.Trim();
+            if (!string.IsNullOrWhiteSpace(req.ContactName)) org.ContactName = req.ContactName.Trim();
+            if (!string.IsNullOrWhiteSpace(req.Phone)) org.Phone = req.Phone.Trim();
+            if (req.Website is not null) org.Website = req.Website.Trim();
+            if (req.Domain is not null) org.Domain = req.Domain.Trim().ToLower();
             if (req.SeatCount is not null) org.SeatCount = req.SeatCount.Value;
             if (req.SeatMonthlyFeeGbp is not null) org.SeatMonthlyFeeGbp = req.SeatMonthlyFeeGbp.Value;
             if (req.PrepUnitPriceGbp is not null) org.PrepUnitPriceGbp = req.PrepUnitPriceGbp.Value;
@@ -135,11 +146,13 @@ public static class Endpoint
         .RequireAuthorization(Permissions.ManageOrganisations);
     }
 
-    public record CreateRequest(string Name, string ContactEmail, string? Type, string? ContactName,
+    public record CreateRequest(string Name, string ContactEmail, string ContactName, string Phone, string? Type,
+        string? Website, string? Domain,
         int? SeatCount, decimal? SeatMonthlyFeeGbp, decimal? PrepUnitPriceGbp,
-        decimal? PromoSeatFeeGbp, DateTime? PromoExpiresAt);
+        decimal? PromoSeatFeeGbp, DateTime? PromoExpiresAt, string? Status);
 
     public record UpdateRequest(string? Name, string? Type, string? ContactEmail, string? ContactName,
+        string? Phone, string? Website, string? Domain,
         int? SeatCount, decimal? SeatMonthlyFeeGbp, decimal? PrepUnitPriceGbp, string? Status,
         decimal? PromoSeatFeeGbp, DateTime? PromoExpiresAt, bool ClearPromo = false);
 }

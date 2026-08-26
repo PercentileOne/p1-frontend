@@ -6,7 +6,10 @@ public class Organisation
     public string Name { get; set; } = string.Empty;        // e.g. "University of Westminster"
     public string Type { get; set; } = "business";          // business | university | jobcentre | recruitment
     public string ContactEmail { get; set; } = string.Empty;
-    public string? ContactName { get; set; }
+    public string ContactName { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+    public string? Website { get; set; }
+    public string? Domain { get; set; }                     // company email domain, e.g. "vallumassociates.com" — for matching future self-serve members to this org by their email
     public int SeatCount { get; set; } = 1;                 // number of licences purchased
     public decimal SeatMonthlyFeeGbp { get; set; } = 299m;  // normal flat monthly access fee — never mutated by a promo
     public decimal PrepUnitPriceGbp { get; set; } = 1m;     // metered usage — billed per interview prep sent

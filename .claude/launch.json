@@ -52,5 +52,12 @@
       "port": 5177,
       "cwd": "C:\\Develop\\PercentileOne\\explain-global-platform"
     }
+  ,{
+      "name": "admin-portal",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5180,
+      "cwd": "src/admin-portal"
+    }
   ]
 }
