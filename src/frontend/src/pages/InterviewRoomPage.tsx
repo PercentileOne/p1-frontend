@@ -826,11 +826,20 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     let phase2Timeout: ReturnType<typeof setTimeout> | undefined;
     const resolvePhase2 = () => {
       if (phase2Timeout) clearTimeout(phase2Timeout);
-      if (!phase2ReadyRef.current) {
-        phase2ReadyRef.current = true;
+      if (phase2ReadyRef.current) return;
+      phase2ReadyRef.current = true;
+      // setTimeout(0) gives React one tick to flush the setBgSarahIntro/setBgJamesIntro
+      // calls that precede this so beginInterviewIntroRef.current (only updated by its own
+      // effect after a render commits) has already picked up the fresh text — same pattern,
+      // same reason, as Mike's own sessionReadyRef resolution above. Without this, a waiter
+      // queued because Mike finished speaking before Phase 2 resolved fires synchronously in
+      // the same tick as the state update, reading the closure from BEFORE it — so the wait
+      // itself worked, but the content it unblocked was still last render's stale, name-less
+      // one, reproducing the exact bug this whole gate exists to prevent.
+      setTimeout(() => {
         phase2WaitersRef.current.forEach(cb => cb());
         phase2WaitersRef.current = [];
-      }
+      }, 0);
     };
 
     // Phase 1: Mike's script only — fast
@@ -1487,55 +1496,63 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           {/* ── MIKE PHASE — ONLY Mike, nothing else ──────────────────────── */}
           {phase === 'mike' && (
             <motion.div key="mike" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '40px 32px', textAlign: 'center', maxWidth: '520px', margin: '0 auto' }}>
-              <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '20px' }}>
-                Your Recruitment Consultant
-              </div>
-              {/* Mike's photo */}
-              <div style={{ position: 'relative', width: '180px', height: '180px', margin: '0 auto 20px', borderRadius: '50%', overflow: 'hidden', background: 'var(--bg3)', border: '3px solid var(--blue)' }}>
-                <img src="/images/mike.png" alt="Mike" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
-                {/* Pulse ring while speaking */}
-                <motion.div
-                  animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0.15, 0.6] }}
-                  transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-                  style={{ position: 'absolute', inset: -8, borderRadius: '50%', border: '2px solid var(--blue)', pointerEvents: 'none' }}
-                />
-              </div>
-              <div style={{ fontSize: '21px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Mike</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-3)', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Recruitment Consultant</div>
-              {/* Speaking indicator */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '24px', cursor: 'default', userSelect: 'none' }}>
-                <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}
-                  style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34D399' }} />
-                <span style={{ fontSize: '13px', color: 'var(--text-3)', userSelect: 'none' }}>Speaking…</span>
-              </div>
+              style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '40px 32px', textAlign: 'center', maxWidth: '760px', margin: '0 auto' }}>
 
-              {/* While Mike briefs you — the natural moment to check how you'll look before
-                  Sarah and James actually appear. Same filter presets as the Profile Video
-                  recorder; picking one here carries through to the interview itself. */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
-                <YouCamera cameraOn={cameraOn} onToggle={() => setCameraOn(v => !v)} videoFilterCss={FILTER_CSS[filterPreset]} />
-                <div style={{ width: '100%', maxWidth: '280px' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '8px' }}>How you'll look</div>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {FILTER_PRESETS.map(preset => {
-                      const active = filterPreset === preset;
-                      return (
-                        <button key={preset} onClick={() => setFilterPreset(preset)} title={FILTER_LABELS[preset].desc}
-                          style={{
-                            flex: 1, padding: '8px 4px', borderRadius: '10px',
-                            background: active ? 'rgba(52,211,153,0.12)' : 'var(--bg3)',
-                            border: `1px solid ${active ? 'rgba(52,211,153,0.4)' : 'var(--border)'}`,
-                            color: active ? '#34D399' : 'var(--text-3)',
-                            fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
-                            transition: 'all 0.15s ease',
-                          }}>
-                          <span style={{ fontSize: '15px' }}>{FILTER_LABELS[preset].icon}</span>
-                          <span>{FILTER_LABELS[preset].label}</span>
-                        </button>
-                      );
-                    })}
+              {/* Mike on the left, appearance controls on the right — side by side rather
+                  than stacked, so checking how you'll look doesn't push everything else down. */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px', justifyContent: 'center', alignItems: 'flex-start', marginBottom: '28px' }}>
+
+                <div style={{ flex: '1 1 240px', maxWidth: '280px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '20px' }}>
+                    Your Recruitment Consultant
+                  </div>
+                  {/* Mike's photo */}
+                  <div style={{ position: 'relative', width: '180px', height: '180px', margin: '0 auto 20px', borderRadius: '50%', overflow: 'hidden', background: 'var(--bg3)', border: '3px solid var(--blue)' }}>
+                    <img src="/images/mike.png" alt="Mike" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
+                    {/* Pulse ring while speaking */}
+                    <motion.div
+                      animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0.15, 0.6] }}
+                      transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+                      style={{ position: 'absolute', inset: -8, borderRadius: '50%', border: '2px solid var(--blue)', pointerEvents: 'none' }}
+                    />
+                  </div>
+                  <div style={{ fontSize: '21px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Mike</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-3)', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Recruitment Consultant</div>
+                  {/* Speaking indicator */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'default', userSelect: 'none' }}>
+                    <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}
+                      style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34D399' }} />
+                    <span style={{ fontSize: '13px', color: 'var(--text-3)', userSelect: 'none' }}>Speaking…</span>
+                  </div>
+                </div>
+
+                {/* While Mike briefs you — the natural moment to check how you'll look before
+                    Sarah and James actually appear. Same filter presets as the Profile Video
+                    recorder; picking one here carries through to the interview itself. */}
+                <div style={{ flex: '1 1 200px', maxWidth: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', paddingLeft: '32px', borderLeft: '1px solid var(--border)' }}>
+                  <YouCamera cameraOn={cameraOn} onToggle={() => setCameraOn(v => !v)} videoFilterCss={FILTER_CSS[filterPreset]} />
+                  <div style={{ width: '100%' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '8px' }}>How you'll look</div>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      {FILTER_PRESETS.map(preset => {
+                        const active = filterPreset === preset;
+                        return (
+                          <button key={preset} onClick={() => setFilterPreset(preset)} title={FILTER_LABELS[preset].desc}
+                            style={{
+                              flex: 1, padding: '8px 4px', borderRadius: '10px',
+                              background: active ? 'rgba(52,211,153,0.12)' : 'var(--bg3)',
+                              border: `1px solid ${active ? 'rgba(52,211,153,0.4)' : 'var(--border)'}`,
+                              color: active ? '#34D399' : 'var(--text-3)',
+                              fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
+                              transition: 'all 0.15s ease',
+                            }}>
+                            <span style={{ fontSize: '15px' }}>{FILTER_LABELS[preset].icon}</span>
+                            <span>{FILTER_LABELS[preset].label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
