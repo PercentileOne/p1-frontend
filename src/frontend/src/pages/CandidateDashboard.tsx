@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuthStore } from "../auth/authStore";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
@@ -241,11 +241,15 @@ function DashCard({ title, action, onAction, children }: { title: string; action
 
 export default function CandidateDashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const user     = useAuthStore(s => s.user);
   const logout   = useAuthStore(s => s.logout);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const activeNav = NAV_ITEMS.find(n => n.slug === searchParams.get("tab"))?.label ?? "Dashboard";
+  // Set when arriving from InterviewSummaryPage's "Study {topic}" buttons, so Learn opens
+  // straight into the weak area that sent the candidate here.
+  const studyTopic = (location.state as { studyTopic?: string } | null)?.studyTopic;
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const [news,      setNews]      = useState<NewsItem[]>(FALLBACK_NEWS);
   const [newsReady, setNewsReady] = useState(false);
@@ -395,7 +399,7 @@ export default function CandidateDashboard() {
         </div>
 
         {/* ── PANEL OVERRIDES ── */}
-        {activeNav === "Learn"          && <LearnPanel />}
+        {activeNav === "Learn"          && <LearnPanel initialTopic={studyTopic} />}
         {activeNav === "Careers"        && <CareersPanel />}
         {activeNav === "My Interviews"  && <MyInterviewsPage />}
         {activeNav === "Interview Preps" && <ReceivedPreps />}

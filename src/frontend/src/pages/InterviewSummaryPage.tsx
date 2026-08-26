@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../auth/authStore';
 import BackToCockpit from '../components/BackToCockpit';
-import LearnPanel from './LearnPanel';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShareModal } from '../components/ShareModal';
 import { SaveDecisionPanel } from '../components/SaveDecisionPanel';
@@ -507,6 +506,13 @@ export default function InterviewSummaryPage() {
 
   const showLearnBanner = overall < 0.70 && weakestTag;
 
+  // Learn is a real destination in its own right (the candidate dashboard's own Learn tab),
+  // not something to render inline under this page's own "Interview Summary" chrome —
+  // navigate there instead, carrying the weak topic through as route state.
+  const goToLearn = (topic?: string | null) => {
+    navigate('/dashboard?tab=learn', { state: { studyTopic: topic ?? weakestTag ?? undefined } });
+  };
+
   // ── Mike's verbal debrief ────────────────────────────────────────────────────
   const mikeSpokeRef = useRef(false);
   const [mikeActive, setMikeActive] = useState(false);
@@ -733,7 +739,7 @@ ${questionsHtml}
           {TABS.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => tab.id === 'learn' ? goToLearn() : setActiveTab(tab.id)}
               style={{
                 padding: '14px 20px', border: 'none', background: 'none', cursor: 'pointer',
                 fontSize: '13px', fontWeight: 700, fontFamily: 'inherit',
@@ -882,7 +888,7 @@ ${questionsHtml}
                 <div style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.5 }}>
                   <strong style={{ color: 'var(--blue)' }}>📚 LEARN:</strong> Your lowest-scoring area was <strong style={{ color: 'var(--text)' }}>{weakestTag}</strong> ({Math.round(tagScores[weakestTag!]!.total / tagScores[weakestTag!]!.count * 100)}%). Top candidates score 90%+. Use <strong>Learn</strong> to study this free.
                 </div>
-                <button onClick={() => setActiveTab('learn')}
+                <button onClick={() => goToLearn(weakestTag)}
                   style={{ background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
                   Study Now →
                 </button>
@@ -894,7 +900,7 @@ ${questionsHtml}
               answers={answers}
               mcqQuestions={mcqQuestions}
               mcqResults={mcqResults}
-              onStudyTopic={() => setActiveTab('learn')}
+              onStudyTopic={goToLearn}
             />
 
             {answers.length === 0 && (
@@ -907,13 +913,6 @@ ${questionsHtml}
               </div>
             )}
           </>
-        )}
-
-        {/* ── LEARN TAB ── */}
-        {activeTab === 'learn' && (
-          <LearnPanel
-            initialTopic={weakestTag ?? undefined}
-          />
         )}
 
         {/* ── FEEDBACK TAB ── */}

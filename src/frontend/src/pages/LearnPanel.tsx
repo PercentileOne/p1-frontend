@@ -466,9 +466,21 @@ function DiagramBlock({ diagram }: { diagram: Diagram }) {
     let cancelled = false;
     setSvg(null);
     setFailed(false);
+    // On a syntax error, Mermaid doesn't just reject cleanly — it also draws its own
+    // "bomb" error graphic straight into document.body as a side effect, outside our
+    // component tree entirely, so it lingers on screen (even on a totally different page,
+    // once the SPA navigates away) no matter how we handle the rejected promise. Snapshot
+    // body's children before rendering so any it injects on failure can be identified and
+    // removed — the .catch() below only controls what WE show, not what Mermaid itself drew.
+    const bodyChildrenBefore = new Set(Array.from(document.body.children));
     mermaid.render(`mmd-${id}`, diagram.mermaid.trim())
       .then(({ svg }) => { if (!cancelled) setSvg(svg); })
-      .catch(() => { if (!cancelled) setFailed(true); });
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+        for (const el of Array.from(document.body.children)) {
+          if (!bodyChildrenBefore.has(el)) el.remove();
+        }
+      });
     return () => { cancelled = true; };
   }, [diagram.mermaid, id]);
 
