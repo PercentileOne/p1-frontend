@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Loader2, ArrowRight, ArrowLeft, Check, ChevronDown } from "lucide-react";
@@ -6,12 +6,12 @@ import { authApi, type ApiError } from "../api/authApi";
 import { useAuthStore } from "../auth/authStore";
 import { defaultPortalForPermissions } from "../auth/permissionMatrix";
 import type { Permission } from "../auth/permissionMatrix";
-import { type Career, searchCareers } from "../api/careersApi";
+import { ChairLogo } from "../components/LogoMark";
 
 /* ══════════════════════════════════════════════════════════════
    REGISTER — Two-step cinematic form
-   Step 1: Name + email
-   Step 2: Password + optional profession
+   Step 1: Role + name + email
+   Step 2: Password
    ══════════════════════════════════════════════════════════════ */
 
 type Phase = "idle" | "loading" | "success";
@@ -32,11 +32,17 @@ export default function RegisterPage() {
   const storeLogin = useAuthStore(s => s.login);
   const [searchParams] = useSearchParams();
 
+  // A recruiter's "Claim your free prep" invite always leads here for a candidate — nobody
+  // receiving that email is signing up as anything else, so the role is fixed rather than
+  // asked, same signal already used to pre-fill name/email below.
+  const isInvited = Boolean(searchParams.get('email'));
+
   const [step,       setStep]       = useState<1 | 2>(1);
   const [phase,      setPhase]      = useState<Phase>("idle");
   const [showPass,   setShowPass]   = useState(false);
   const [showConf,   setShowConf]   = useState(false);
   const [selectedRole, setSelectedRole] = useState<RegisterRole | null>(() => {
+    if (isInvited) return 'Candidate';
     const r = searchParams.get('role')?.toLowerCase();
     return r === 'recruiter' ? 'Recruiter' : r === 'candidate' ? 'Candidate' : null;
   });
@@ -49,34 +55,10 @@ export default function RegisterPage() {
   const [email,       setEmail]       = useState(() => searchParams.get('email') ?? "");
   const [password,    setPassword]    = useState("");
   const [confirm,     setConfirm]     = useState("");
-  const [profession,  setProfession]  = useState("");
 
   // Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiErr, setApiErr] = useState("");
-
-  // Profession type-ahead — free text against the careers database instead of a fixed
-  // dropdown, which can't realistically list all ~23k careers. Never blocks free text;
-  // a typed profession with no match is still a valid, real answer.
-  const [professionSuggestions, setProfessionSuggestions] = useState<Career[]>([]);
-  const [showProfessionSuggestions, setShowProfessionSuggestions] = useState(false);
-  const professionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const handleProfessionChange = useCallback((value: string) => {
-    setProfession(value);
-    if (professionDebounceRef.current) clearTimeout(professionDebounceRef.current);
-    if (value.trim().length < 2) { setProfessionSuggestions([]); setShowProfessionSuggestions(false); return; }
-    professionDebounceRef.current = setTimeout(async () => {
-      const results = await searchCareers(value, 8);
-      setProfessionSuggestions(results);
-      setShowProfessionSuggestions(results.length > 0);
-    }, 280);
-  }, []);
-
-  const selectProfessionSuggestion = useCallback((c: Career) => {
-    setProfession(c.title);
-    setShowProfessionSuggestions(false);
-  }, []);
 
   // ── Validation ────────────────────────────────────────────────
 
@@ -123,7 +105,6 @@ export default function RegisterPage() {
         password,
         firstName:  firstName.trim(),
         lastName:   lastName.trim(),
-        profession: profession || undefined,
         role:       selectedRole.toLowerCase(),
       });
 
@@ -207,20 +188,7 @@ export default function RegisterPage() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="flex flex-col items-center gap-2"
         >
-          <div style={{
-            width: 48, height: 48, borderRadius: "50%",
-            background: "linear-gradient(135deg,#4F8EF7,#2563eb)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <svg width="26" height="26" viewBox="0 0 44 44" fill="none">
-              <clipPath id="rg-clip"><circle cx="22" cy="22" r="18"/></clipPath>
-              <circle cx="22" cy="22" r="20" fill="#061228"/>
-              <g clipPath="url(#rg-clip)">
-                <path d="M8,31 L8,27 L17,27 L17,22 L26,22 L26,16 L35,16 L35,31 Z" fill="#a5b4fc"/>
-              </g>
-              <circle cx="31" cy="14" r="2.2" fill="#e0e7ff"/>
-            </svg>
-          </div>
+          <ChairLogo size={48} showText={false} />
           <span style={{ fontWeight: 800, fontSize: 17, color: "#fff", letterSpacing: "-.02em" }}>
             InterviewMe<span style={{ color: "#34D399" }}>.global</span>
           </span>
@@ -301,16 +269,20 @@ export default function RegisterPage() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
-                {/* Role — required, no default, so nobody is silently registered as the wrong thing */}
+                {/* Role — required, no default, so nobody is silently registered as the wrong thing.
+                    Locked to Candidate (not just defaulted) when arriving via a recruiter's prep
+                    invite — shown for context, but there's no other role that invite could mean. */}
                 <div style={{ position: "relative" }}>
                   <FieldLabel>I am a…</FieldLabel>
                   <button
                     type="button"
+                    disabled={isInvited}
                     onClick={() => setRoleDropOpen(o => !o)}
                     style={{
                       width: "100%", display: "flex", alignItems: "center", gap: 10,
                       background: "rgba(79,142,247,0.07)", border: `1px solid ${errors.role ? "#F87171" : "rgba(79,142,247,0.22)"}`,
-                      borderRadius: 8, padding: "10px 14px", cursor: "pointer", textAlign: "left", fontFamily: "inherit",
+                      borderRadius: 8, padding: "10px 14px", cursor: isInvited ? "default" : "pointer", textAlign: "left", fontFamily: "inherit",
+                      opacity: isInvited ? 0.7 : 1,
                     }}
                   >
                     {selectedRole ? (
@@ -321,11 +293,11 @@ export default function RegisterPage() {
                     ) : (
                       <span style={{ flex: 1, fontSize: 13, color: "rgba(140,180,255,0.45)" }}>Select your role…</span>
                     )}
-                    <ChevronDown size={14} style={{ color: "#4b5563", transform: roleDropOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+                    {!isInvited && <ChevronDown size={14} style={{ color: "#4b5563", transform: roleDropOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />}
                   </button>
 
                   <AnimatePresence>
-                    {roleDropOpen && (
+                    {roleDropOpen && !isInvited && (
                       <motion.div
                         initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -397,34 +369,6 @@ export default function RegisterPage() {
                     onChange={v => { setEmail(v); clearErr("email"); }}
                   />
                   <ErrMsg msg={errors.email} />
-                </div>
-
-                {/* Profession (optional) — free text with type-ahead against the careers database */}
-                <div style={{ position: "relative" }}>
-                  <FieldLabel>Profession <span style={{ opacity: 0.45, fontWeight: 400 }}>(optional)</span></FieldLabel>
-                  <RegInput
-                    placeholder="e.g. Software Engineer, Nurse, Marketing Manager…"
-                    value={profession}
-                    onChange={handleProfessionChange}
-                    onFocus={() => { if (professionSuggestions.length > 0) setShowProfessionSuggestions(true); }}
-                    onBlur={() => setTimeout(() => setShowProfessionSuggestions(false), 150)}
-                  />
-                  {showProfessionSuggestions && professionSuggestions.length > 0 && (
-                    <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#0a1a3a", border: "1px solid rgba(79,142,247,0.3)", borderRadius: 10, overflow: "hidden", zIndex: 20, boxShadow: "0 16px 48px rgba(0,0,0,0.6)" }}>
-                      {professionSuggestions.map(c => (
-                        <div
-                          key={c.id}
-                          onMouseDown={() => selectProfessionSuggestion(c)}
-                          style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.05)" }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(79,142,247,0.1)"; }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
-                        >
-                          <div style={{ fontSize: 13, fontWeight: 600, color: "#cbd5e1" }}>{c.title}</div>
-                          <div style={{ fontSize: 11, color: "rgba(140,180,255,0.5)" }}>{c.category}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 <PrimaryButton onClick={goToStep2} phase="idle" label="Continue" icon={<ArrowRight size={14} />} />
