@@ -15,6 +15,7 @@ import CinematicMCQ from '../components/CinematicMCQ';
 import { pickRandomCompany, type Company } from '../data/companyBank';
 import { logFlowEvent } from '../api/flowLogger';
 import { useAuthStore } from '../auth/authStore';
+import { FILTER_CSS, FILTER_LABELS, FILTER_PRESETS, type FilterPreset } from '../hooks/useVideoFilter';
 
 // ── Multilingual Sarah intro fallbacks ───────────────────────────────────────
 const SARAH_INTROS: Record<string, string> = {
@@ -427,9 +428,12 @@ export default function InterviewRoomPage() {
         if (!ctx2d) throw new Error('canvas 2d context unavailable');
 
         const draw = () => {
-          // Mirror the feed, matching every other self-view in this app
+          // Mirror the feed, matching every other self-view in this app. Desktop recording
+          // is a tab-capture, so the appearance filter is already baked in visually — this
+          // mobile path draws its own frame, so the same filter needs applying explicitly.
           ctx2d.save();
           ctx2d.scale(-1, 1);
+          ctx2d.filter = FILTER_CSS[filterPresetRef.current];
           ctx2d.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
           ctx2d.restore();
 
@@ -619,6 +623,15 @@ export default function InterviewRoomPage() {
 
   const consentToRecord = ctx.consentToRecord !== false;
   const [cameraOn, setCameraOn] = useState(true);
+  // Appearance filter — same presets as the Profile Video recorder (useVideoFilter.ts),
+  // applied here as a plain CSS filter on the self-view rather than that hook's own
+  // independent getUserMedia+canvas pipeline, since YouCamera already owns the camera
+  // stream here. Desktop recording is a tab-capture (getDisplayMedia), so this filter is
+  // automatically included in the saved video for free; the mobile recording path draws
+  // its own canvas frame-by-frame (see startRecording below) and needs it applied there too.
+  const [filterPreset, setFilterPreset] = useState<FilterPreset>('beauty');
+  const filterPresetRef = useRef<FilterPreset>('beauty');
+  useEffect(() => { filterPresetRef.current = filterPreset; }, [filterPreset]);
 
   const [phase, setPhase] = useState<RoomPhase>('intro');
   const [qIndex, setQIndex] = useState(0);
@@ -1221,7 +1234,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--blue)' }}>
-            Explain · Interview Room
+            InterviewMe · Interview Room
           </div>
           {phase !== 'intro' && phase !== 'mike' && (
             <>
@@ -1387,41 +1400,45 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           {/* ── INTRO — only shown when NOT autoStart ─────────────────────── */}
           {phase === 'intro' && (
             <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.8 }}
-              style={{ position: 'relative', borderRadius: '20px', overflow: 'hidden', minHeight: '480px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', background: '#000' }}>
-              {/* Chair — Ken Burns slow zoom */}
-              <motion.img
-                src="/images/mastermind-chair.png"
-                alt=""
-                initial={{ scale: 1.08, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 3.5, ease: 'easeOut' }}
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
-              />
-              {/* Dark gradient overlay — heavier at bottom for text legibility */}
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.92) 100%)' }} />
+              style={{ borderRadius: '20px', overflow: 'hidden', minHeight: '480px', display: 'flex', flexWrap: 'wrap', background: 'var(--bg2)', border: '1px solid var(--border)' }}>
 
-              {/* Content sits above image */}
-              <div style={{ position: 'relative', zIndex: 1, width: '100%', padding: '40px 36px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+              {/* Chair — image lives in its own column now, not behind the text */}
+              <div style={{ position: 'relative', flex: '1 1 320px', minHeight: '320px', overflow: 'hidden', background: '#000' }}>
+                <motion.img
+                  src="/images/mastermind-chair.png"
+                  alt=""
+                  initial={{ scale: 1.08, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 3.5, ease: 'easeOut' }}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+                />
+                {/* Light edge gradient only, purely decorative — the panel side no longer
+                    needs to fight the photo for text legibility */}
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, rgba(0,0,0,0.25) 100%)' }} />
+              </div>
+
+              {/* Content — solid panel, left-aligned, no longer competing with the photo */}
+              <div style={{ flex: '1 1 340px', padding: '40px 36px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: '20px' }}>
                 {/* Eyebrow */}
-                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2, duration: 0.7 }}
-                  style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(167,139,250,0.8)' }}>
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.7 }}
+                  style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--purple, #a78bfa)' }}>
                   Your interview awaits
                 </motion.div>
 
                 {/* Headline */}
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.5, duration: 0.7 }}
-                  style={{ fontSize: '26px', fontWeight: 800, color: '#fff', textAlign: 'center', lineHeight: 1.3, letterSpacing: '-0.01em', userSelect: 'none' }}>
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65, duration: 0.7 }}
+                  style={{ fontSize: '26px', fontWeight: 800, color: 'var(--text)', textAlign: 'left', lineHeight: 1.3, letterSpacing: '-0.01em', userSelect: 'none' }}>
                   The seat is yours.<br />
-                  <span style={{ color: 'rgba(167,139,250,0.9)', userSelect: 'none' }}>Make every answer count.</span>
+                  <span style={{ color: '#a78bfa', userSelect: 'none' }}>Make every answer count.</span>
                 </motion.div>
 
                 {/* Meta row */}
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2, duration: 0.6 }}
-                  style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                  <div style={{ fontSize: '12px', color: 'rgba(240,244,255,0.5)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '5px 14px' }}>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.85, duration: 0.6 }}
+                  style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-2)', background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '20px', padding: '5px 14px' }}>
                     {questions.length} questions · Sarah &amp; James
                   </div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: elevenLabsConfigured ? 'rgba(52,211,153,0.1)' : 'rgba(255,255,255,0.05)', border: `1px solid ${elevenLabsConfigured ? 'rgba(52,211,153,0.25)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '20px', padding: '5px 14px' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: elevenLabsConfigured ? 'rgba(52,211,153,0.1)' : 'var(--bg3)', border: `1px solid ${elevenLabsConfigured ? 'rgba(52,211,153,0.25)' : 'var(--border)'}`, borderRadius: '20px', padding: '5px 14px' }}>
                     <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: elevenLabsConfigured ? '#34D399' : 'var(--amber)' }} />
                     <span style={{ fontSize: '12px', color: elevenLabsConfigured ? '#34D399' : 'var(--amber)', userSelect: 'none' }}>
                       {elevenLabsConfigured ? 'Neural voices ready' : 'Browser voices'}
@@ -1430,35 +1447,35 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 </motion.div>
 
                 {/* Answer mode + audio test */}
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.3, duration: 0.5 }}
-                  style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: 'rgba(240,244,255,0.65)', cursor: 'pointer', userSelect: 'none' }}>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.5 }}
+                  style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'flex-start', alignItems: 'center' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: 'var(--text-2)', cursor: 'pointer', userSelect: 'none' }}>
                     <input type="radio" checked={useVoice} onChange={() => setUseVoice(true)} style={{ accentColor: '#a78bfa' }} />
                     Speak my answers
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: 'rgba(240,244,255,0.65)', cursor: 'pointer', userSelect: 'none' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: 'var(--text-2)', cursor: 'pointer', userSelect: 'none' }}>
                     <input type="radio" checked={!useVoice} onChange={() => setUseVoice(false)} style={{ accentColor: '#a78bfa' }} />
                     Type my answers
                   </label>
                   <button onClick={testAudio} disabled={audioCheckState === 'playing'}
-                    style={{ background: 'transparent', border: `1px solid ${audioCheckState === 'done' ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.15)'}`, borderRadius: '8px', padding: '6px 16px', fontSize: '12px', fontWeight: 600, cursor: audioCheckState === 'playing' ? 'default' : 'pointer', color: audioCheckState === 'done' ? '#34D399' : 'rgba(240,244,255,0.55)' }}>
+                    style={{ background: 'transparent', border: `1px solid ${audioCheckState === 'done' ? 'rgba(52,211,153,0.4)' : 'var(--border)'}`, borderRadius: '8px', padding: '6px 16px', fontSize: '12px', fontWeight: 600, cursor: audioCheckState === 'playing' ? 'default' : 'pointer', color: audioCheckState === 'done' ? '#34D399' : 'var(--text-2)' }}>
                     {audioCheckState === 'done' ? '✓ Audio OK' : audioCheckState === 'playing' ? 'Playing…' : '🔊 Test audio'}
                   </button>
                 </motion.div>
 
                 {/* Go Deeper toggle */}
-                <motion.label initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.45, duration: 0.5 }}
-                  style={{ display: 'flex', alignItems: 'flex-start', gap: '9px', maxWidth: '380px', textAlign: 'left', cursor: 'pointer', background: goDeeperEnabled ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${goDeeperEnabled ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '10px', padding: '10px 14px', userSelect: 'none' }}>
+                <motion.label initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.15, duration: 0.5 }}
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: '9px', maxWidth: '380px', textAlign: 'left', cursor: 'pointer', background: goDeeperEnabled ? 'rgba(167,139,250,0.08)' : 'var(--bg3)', border: `1px solid ${goDeeperEnabled ? 'rgba(167,139,250,0.3)' : 'var(--border)'}`, borderRadius: '10px', padding: '10px 14px', userSelect: 'none' }}>
                   <input type="checkbox" checked={goDeeperEnabled} onChange={(e) => setGoDeeperEnabled(e.target.checked)}
                     style={{ marginTop: '2px', accentColor: '#a78bfa' }} />
-                  <span style={{ fontSize: '12.5px', lineHeight: 1.5, color: 'rgba(240,244,255,0.7)', userSelect: 'none' }}>
-                    <strong style={{ color: 'rgba(240,244,255,0.9)' }}>🔍 Go Deeper</strong> — occasional real follow-up questions that test genuine depth of experience{selectedDifficulty === 'Expert' ? ' (recommended for Expert)' : ''}.
+                  <span style={{ fontSize: '12.5px', lineHeight: 1.5, color: 'var(--text-2)', userSelect: 'none' }}>
+                    <strong style={{ color: 'var(--text)' }}>🔍 Go Deeper</strong> — occasional real follow-up questions that test genuine depth of experience{selectedDifficulty === 'Expert' ? ' (recommended for Expert)' : ''}.
                   </span>
                 </motion.label>
 
                 {/* CTA */}
                 <motion.button onClick={startInterview}
-                  initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 2.6, duration: 0.5 }}
+                  initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.3, duration: 0.5 }}
                   whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
                   style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)', color: '#fff', border: 'none', borderRadius: '13px', padding: '15px 48px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', letterSpacing: '0.01em', boxShadow: '0 0 40px rgba(167,139,250,0.35)' }}>
                   Begin Interview →
@@ -1492,6 +1509,37 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34D399' }} />
                 <span style={{ fontSize: '13px', color: 'var(--text-3)', userSelect: 'none' }}>Speaking…</span>
               </div>
+
+              {/* While Mike briefs you — the natural moment to check how you'll look before
+                  Sarah and James actually appear. Same filter presets as the Profile Video
+                  recorder; picking one here carries through to the interview itself. */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
+                <YouCamera cameraOn={cameraOn} onToggle={() => setCameraOn(v => !v)} videoFilterCss={FILTER_CSS[filterPreset]} />
+                <div style={{ width: '100%', maxWidth: '280px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '8px' }}>How you'll look</div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    {FILTER_PRESETS.map(preset => {
+                      const active = filterPreset === preset;
+                      return (
+                        <button key={preset} onClick={() => setFilterPreset(preset)} title={FILTER_LABELS[preset].desc}
+                          style={{
+                            flex: 1, padding: '8px 4px', borderRadius: '10px',
+                            background: active ? 'rgba(52,211,153,0.12)' : 'var(--bg3)',
+                            border: `1px solid ${active ? 'rgba(52,211,153,0.4)' : 'var(--border)'}`,
+                            color: active ? '#34D399' : 'var(--text-3)',
+                            fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
+                            transition: 'all 0.15s ease',
+                          }}>
+                          <span style={{ fontSize: '15px' }}>{FILTER_LABELS[preset].icon}</span>
+                          <span>{FILTER_LABELS[preset].label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
               <button
                 onClick={() => {
                   cancelSpeakRef.current?.();

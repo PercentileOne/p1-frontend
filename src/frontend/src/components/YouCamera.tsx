@@ -6,6 +6,9 @@ interface Props {
   cameraOn: boolean;
   speaking?: boolean;
   onToggle: () => void;
+  // CSS filter() string, e.g. from FILTER_CSS[preset] in useVideoFilter.ts — plain
+  // visual adjustment on the self-view, not a separate camera/canvas pipeline.
+  videoFilterCss?: string;
 }
 
 const BAR_COUNT = 8;
@@ -59,7 +62,7 @@ function MicWaveform({ speaking, analyserNode }: { speaking: boolean; analyserNo
   );
 }
 
-export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle }: Props) {
+export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle, videoFilterCss }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const micAnalyserRef = useRef<AnalyserNode | null>(null);
@@ -145,6 +148,7 @@ export function YouCamera({ label = 'You', cameraOn, speaking = false, onToggle 
           transform: 'scaleX(-1)',
           opacity: showVideo ? 1 : 0,
           transition: 'opacity 0.3s',
+          filter: videoFilterCss,
         }}
       />
 
