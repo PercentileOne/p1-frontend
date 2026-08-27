@@ -207,13 +207,18 @@ export function InterviewerAvatar({ role, state, active, videoUrl, specialistTit
             {...MOUTH_POSITIONS[role]}
           />
         )}
-        {/* D-ID video overlay */}
+        {/* Pre-rendered talking-head video overlay (e.g. Sarah's real intro clip) — carries
+            its own audio track, so NOT muted. Autoplay-with-sound relies on the browser
+            already having registered a user gesture earlier in the flow (uploading a CV,
+            clicking "Begin Interview", granting mic/camera) — holds in practice, but if a
+            browser ever blocks it, this plays silently rather than erroring; onEnded still
+            fires either way. */}
         <AnimatePresence>
           {videoUrl && (
             <motion.video
               key={videoUrl}
               src={videoUrl}
-              autoPlay playsInline muted
+              autoPlay playsInline
               onEnded={onVideoEnded}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}

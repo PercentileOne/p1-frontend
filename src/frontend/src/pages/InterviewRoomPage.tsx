@@ -732,6 +732,14 @@ export default function InterviewRoomPage() {
 
   const introStartedRef = useRef(false);
 
+  // English only: sarah-intro-v1.mp4 replaces her live-TTS intro with the same real
+  // pre-rendered clip Mike uses (see startMike above) — set true only for the duration of
+  // her intro line, cleared again before she starts asking real questions (those are
+  // per-candidate and can't be pre-rendered, so she reverts to the static photo).
+  const [sarahIntroVideoActive, setSarahIntroVideoActive] = useState(false);
+  const sarahIntroDoneRef = useRef<() => void>(() => {});
+  const handleSarahIntroVideoEnded = useCallback(() => { sarahIntroDoneRef.current(); }, []);
+
   const beginInterviewIntro = useCallback(() => {
     if (introStartedRef.current) return;
     introStartedRef.current = true;
@@ -753,16 +761,26 @@ export default function InterviewRoomPage() {
       }, 8000);
       const jamesText = effectiveJamesIntro ??
         "And I'm James — looking forward to hearing about your experience. Let's get started.";
-      cancelSpeakRef.current = speak(sarahText, 'hr', () => {
+
+      const afterSarahIntro = () => {
         clearTimeout(pulseOuter);
         setHighlightRecord(false);
         setHrState('idle');
+        setSarahIntroVideoActive(false);
         setTechState('speaking');
         cancelSpeakRef.current = speak(jamesText, 'technical', () => {
           setTechState('idle');
           setTimeout(() => askQuestion(0), 500);
         }, (a) => setTechAnalyser(a));
-      }, (a) => setHrAnalyser(a));
+      };
+
+      const useSarahVideo = sessionLanguage === 'en';
+      if (useSarahVideo) {
+        sarahIntroDoneRef.current = afterSarahIntro;
+        setSarahIntroVideoActive(true);
+      } else {
+        cancelSpeakRef.current = speak(sarahText, 'hr', afterSarahIntro, (a) => setHrAnalyser(a));
+      }
     }, 600);
   }, [askQuestion, effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage]);
 
@@ -772,25 +790,35 @@ export default function InterviewRoomPage() {
   // Always hold a ref to the latest startMike so session-prep waiters call the right version
   const startMikeRef = useRef<() => void>(() => {});
 
+  // Fires once Mike's intro is over, whichever path produced that (real TTS via speak(),
+  // or the pre-rendered English video's onEnded below) — same completion logic either way.
+  const handleMikeIntroDone = useCallback(() => {
+    cancelSpeakRef.current = null;
+    logFlowEvent('MIKE_INTRO_COMPLETED', {});
+    // Give Sarah/James's real AI intros (with the candidate's name) a chance to land even
+    // if Phase 2 is still in flight — same wait pattern as Mike's own sessionReadyRef gate.
+    // Always deferred by one tick, even when phase2ReadyRef.current is ALREADY true: if
+    // Phase 2 resolved only moments before Mike finished speaking, React may not have
+    // re-rendered yet, so beginInterviewIntroRef.current could still be the closure from
+    // before that state update — the exact stale-closure bug the waiter path already
+    // guards against, just reachable here too when the two events land close together.
+    setTimeout(() => {
+      if (phase2ReadyRef.current) beginInterviewIntroRef.current();
+      else phase2WaitersRef.current.push(() => beginInterviewIntroRef.current());
+    }, 0);
+  }, []);
+
   const startMike = useCallback(() => {
     setPhase('mike');
     logFlowEvent('MIKE_INTRO_STARTED', { hasJobSpec: Boolean(ctx.jobSpecText), hasCv: Boolean(ctx.cvText), selectedLanguage: ctx.selectedLanguage });
-    cancelSpeakRef.current = speak(bgMikeScriptRef.current ?? fallbackMikeScript, 'technical', () => {
-      cancelSpeakRef.current = null;
-      logFlowEvent('MIKE_INTRO_COMPLETED', {});
-      // Give Sarah/James's real AI intros (with the candidate's name) a chance to land even
-      // if Phase 2 is still in flight — same wait pattern as Mike's own sessionReadyRef gate.
-      // Always deferred by one tick, even when phase2ReadyRef.current is ALREADY true: if
-      // Phase 2 resolved only moments before Mike finished speaking, React may not have
-      // re-rendered yet, so beginInterviewIntroRef.current could still be the closure from
-      // before that state update — the exact stale-closure bug the waiter path already
-      // guards against, just reachable here too when the two events land close together.
-      setTimeout(() => {
-        if (phase2ReadyRef.current) beginInterviewIntroRef.current();
-        else phase2WaitersRef.current.push(() => beginInterviewIntroRef.current());
-      }, 0);
-    }, (a) => setTechAnalyser(a));
-  }, [mikeScript, ctx.jobSpecText, ctx.cvText, ctx.selectedLanguage]);
+    // English: mike-intro-v1.mp4 (real lip-synced video, generic script, generated once and
+    // reused forever — see project-photoreal-intro-avatars-plan memory) plays instead, wired
+    // in the JSX below; its own onEnded calls handleMikeIntroDone directly, no TTS needed.
+    // Every other language keeps the original live-TTS + static-photo path.
+    if (sessionLanguage !== 'en') {
+      cancelSpeakRef.current = speak(bgMikeScriptRef.current ?? fallbackMikeScript, 'technical', handleMikeIntroDone, (a) => setTechAnalyser(a));
+    }
+  }, [mikeScript, ctx.jobSpecText, ctx.cvText, ctx.selectedLanguage, sessionLanguage, handleMikeIntroDone]);
 
   useEffect(() => { startMikeRef.current = startMike; }, [startMike]);
 
@@ -1410,7 +1438,11 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               transition={{ duration: 0.6 }}
               style={{ display: 'flex', gap: '16px' }}
             >
-              <InterviewerAvatar role="hr" state={hrState} active={hrState === 'speaking'} analyserNode={hrAnalyser} onVideoEnded={() => onDoneRef.current?.()} />
+              <InterviewerAvatar
+                role="hr" state={hrState} active={hrState === 'speaking'} analyserNode={hrAnalyser}
+                videoUrl={sarahIntroVideoActive ? '/images/sarah-intro-v1.mp4' : null}
+                onVideoEnded={sarahIntroVideoActive ? handleSarahIntroVideoEnded : () => onDoneRef.current?.()}
+              />
               <InterviewerAvatar role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} analyserNode={techAnalyser} onVideoEnded={() => onDoneRef.current?.()} />
               <YouCamera cameraOn={cameraOn} speaking={phase === 'answering'} onToggle={() => setCameraOn(v => !v)} />
             </motion.div>
@@ -1523,13 +1555,25 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '20px' }}>
                     Your Recruitment Consultant
                   </div>
-                  {/* Mike's photo */}
+                  {/* Mike's photo — or, in English, his real pre-rendered talking-head clip
+                      (see startMike/handleMikeIntroDone above). */}
                   <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', margin: '0 auto 20px', borderRadius: '16px', overflow: 'hidden', background: 'var(--bg3)', border: '3px solid var(--blue)' }}>
-                    <img src="/images/mike.png" alt="Mike" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
-                    {/* Same amplitude-driven mouth movement as Sarah/James — Mike's intro
-                        speaks through the 'technical' TTS channel, so techAnalyser already
-                        carries his live audio (see startMike's speak(...) call). */}
-                    {MOUTH_OVERLAY_ENABLED && <MouthOverlay analyserNode={techAnalyser} active={phase === 'mike'} {...MOUTH_POSITIONS.mike} />}
+                    {sessionLanguage === 'en' ? (
+                      <video
+                        src="/images/mike-intro-v1.mp4"
+                        autoPlay playsInline
+                        onEnded={handleMikeIntroDone}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
+                      />
+                    ) : (
+                      <>
+                        <img src="/images/mike.png" alt="Mike" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
+                        {/* Amplitude-driven mouth movement — only relevant on the non-English
+                            live-TTS path; MOUTH_OVERLAY_ENABLED is currently false anyway
+                            (see project-mouth-movement-avatars memory). */}
+                        {MOUTH_OVERLAY_ENABLED && <MouthOverlay analyserNode={techAnalyser} active={phase === 'mike'} {...MOUTH_POSITIONS.mike} />}
+                      </>
+                    )}
                     {/* Pulse ring while speaking */}
                     <motion.div
                       animate={{ scale: [1, 1.03, 1], opacity: [0.6, 0.15, 0.6] }}
