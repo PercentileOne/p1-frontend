@@ -19,6 +19,14 @@ import { useEffect, useRef, useState } from 'react';
  * test card (InterviewerAvatar's real card size varies with viewport — close enough to be
  * a real improvement, not claimed to be pixel-perfect on every screen size).
  */
+// Disabled 2026-08-27 — even after retuning per-profile, live testing showed it still
+// misreads (wrong position and/or a dark smudge rather than a mouth) on the real rendered
+// page in ways the local Pillow-based verification pass didn't catch. Photorealistic
+// talking-head generation (D-ID etc.) is being costed as the alternative instead of
+// continuing to iterate blind on this approach. Left in place, not deleted, in case the
+// amplitude approach is worth revisiting with a tighter feedback loop later.
+export const MOUTH_OVERLAY_ENABLED = false;
+
 export function MouthOverlay({
   analyserNode,
   active,

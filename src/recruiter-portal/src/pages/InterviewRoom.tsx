@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InterviewerAvatar, type AvatarState } from '../components/InterviewerAvatar';
-import { MouthOverlay, MOUTH_POSITIONS } from '../components/MouthOverlay';
+import { MouthOverlay, MOUTH_POSITIONS, MOUTH_OVERLAY_ENABLED } from '../components/MouthOverlay';
 import { YouCamera } from '../components/YouCamera';
 import { VoiceInput, type TranscriptMeta } from '../components/VoiceInput';
 import type { InterviewQuestion, ScoreResponse } from '../api/explainApi';
@@ -1114,7 +1114,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 {/* Same amplitude-driven mouth movement as Sarah/James — Mike's intro
                     speaks through the 'technical' TTS channel, so techAnalyser already
                     carries his live audio (see startMike's speak(...) call). */}
-                <MouthOverlay analyserNode={techAnalyser} active={phase === 'mike'} {...MOUTH_POSITIONS.mike} />
+                {MOUTH_OVERLAY_ENABLED && <MouthOverlay analyserNode={techAnalyser} active={phase === 'mike'} {...MOUTH_POSITIONS.mike} />}
                 {/* Pulse ring while speaking */}
                 <motion.div
                   animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0.15, 0.6] }}
