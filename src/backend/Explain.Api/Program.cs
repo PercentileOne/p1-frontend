@@ -77,6 +77,7 @@ builder.Services.AddCors(options =>
             "http://localhost:5173",
             "http://localhost:5176",
             "http://localhost:5180",
+            "http://localhost:5181",
         };
         var origins = configOrigins.Union(knownOrigins).ToArray();
         policy.WithOrigins(origins)

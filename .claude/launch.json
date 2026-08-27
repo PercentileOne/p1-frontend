@@ -59,5 +59,12 @@
       "port": 5180,
       "cwd": "src/admin-portal"
     }
+  ,{
+      "name": "employer-portal",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5181,
+      "cwd": "src/employer-portal"
+    }
   ]
 }
