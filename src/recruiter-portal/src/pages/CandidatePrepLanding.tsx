@@ -94,19 +94,15 @@ export default function CandidatePrepLanding() {
 
       <div style={{ position: 'relative', zIndex: 1, maxWidth: '580px', margin: '0 auto', padding: '48px 24px 80px' }}>
 
-        {/* Explain wordmark */}
+        {/* InterviewMe wordmark — same "IM" mark as the candidate portal sidebar */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           style={{ marginBottom: '48px', display: 'flex', alignItems: 'center', gap: '10px' }}
         >
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #4F8EF7, #a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-            </svg>
-          </div>
-          <span style={{ fontSize: '18px', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>Explain</span>
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg,#34D399,#047857)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.05em' }}>IM</div>
+          <span style={{ fontSize: '18px', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>Interview<span style={{ color: '#34D399' }}>Me</span></span>
         </motion.div>
 
         {/* Recruiter invite banner */}
@@ -276,8 +272,8 @@ export default function CandidatePrepLanding() {
 
         {/* Footer */}
         <div style={{ marginTop: '32px', textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.2)', lineHeight: 1.7 }}>
-          Powered by <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>Explain</span> · AI Interview Platform<br />
-          explain.global · Questions? hello@explain.global
+          Powered by <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>InterviewMe</span> · AI Interview Platform<br />
+          interviewme.global · Questions? hello@interviewme.global
         </div>
 
       </div>

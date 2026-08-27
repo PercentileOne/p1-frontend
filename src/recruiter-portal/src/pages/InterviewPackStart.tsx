@@ -136,9 +136,9 @@ export default function InterviewPackStart() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
-            <img src="/assets/explain-logo.svg" width={36} height={36} alt="Explain" style={{ borderRadius: '50%' }} />
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#34D399,#047857)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 900, color: '#fff', letterSpacing: '-0.05em' }}>IM</div>
             <span style={{ fontWeight: 800, fontSize: '20px', color: '#fff' }}>
-              explain<span style={{ color: 'var(--blue)' }}>.global</span>
+              Interview<span style={{ color: '#34D399' }}>Me</span><span style={{ color: 'var(--blue)' }}>.global</span>
             </span>
           </div>
 

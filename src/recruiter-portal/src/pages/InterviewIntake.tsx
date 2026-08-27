@@ -684,7 +684,7 @@ export default function InterviewIntake() {
               <div style={{ fontSize: '40px', marginBottom: '16px' }}>⚡</div>
               <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text)', marginBottom: '10px' }}>More coming soon</div>
               <div style={{ fontSize: '14px', color: 'var(--text-2)', lineHeight: 1.65, marginBottom: '28px' }}>
-                We're building visa interview prep, court preparation, driving theory, and more — because Explain isn't just for job interviews.
+                We're building visa interview prep, court preparation, driving theory, and more — because InterviewMe isn't just for job interviews.
               </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '32px' }}>
                 {['Visa Interviews', 'Driving Theory', 'Citizenship Tests', 'Court Preparation', 'Academic Admissions', 'Assessment Centres'].map(s => (

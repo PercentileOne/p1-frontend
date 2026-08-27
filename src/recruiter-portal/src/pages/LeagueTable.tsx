@@ -251,7 +251,7 @@ export default function LeagueTable() {
             {/* Header bar */}
             <div style={{ background: 'var(--bg2)', borderBottom: '1px solid var(--border)', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '56px' }}>
               <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: '13px', fontFamily: 'inherit', padding: '4px 0' }}>← Back</button>
-              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>Explain Challenge League</span>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>InterviewMe Challenge League</span>
               <div style={{ width: 60 }} />
             </div>
 
@@ -259,7 +259,7 @@ export default function LeagueTable() {
               {/* Hero */}
               <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                 <div style={{ fontSize: '40px', marginBottom: '12px' }}>🏆</div>
-                <h1 style={{ fontSize: '28px', fontWeight: 900, color: 'var(--text)', margin: '0 0 10px', letterSpacing: '-0.02em' }}>Explain Challenge League</h1>
+                <h1 style={{ fontSize: '28px', fontWeight: 900, color: 'var(--text)', margin: '0 0 10px', letterSpacing: '-0.02em' }}>InterviewMe Challenge League</h1>
                 <p style={{ fontSize: '15px', color: 'var(--text-2)', margin: '0 0 28px', lineHeight: 1.6 }}>
                   3-minute quickfire challenge. No coaching. Your answers, your score, the global table.
                 </p>

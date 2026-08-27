@@ -143,7 +143,7 @@ export default function CandidateFeedbackPortal() {
       {/* Footer */}
       <div style={{ borderTop: '1px solid var(--border)', padding: '20px 24px', textAlign: 'center' }}>
         <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>
-          Prepared by {session.recruiterName ?? 'your recruiter'} via Explain · explain.global · This feedback is confidential
+          Prepared by {session.recruiterName ?? 'your recruiter'} via InterviewMe · interviewme.global · This feedback is confidential
         </span>
       </div>
     </div>

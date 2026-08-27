@@ -57,7 +57,7 @@ const PLATFORMS = [
       </svg>
     ),
     getUrl: (url: string, text: string) =>
-      `mailto:?subject=${encodeURIComponent('My Explain Interview Score')}&body=${encodeURIComponent(`${text}\n\n${url}`)}`,
+      `mailto:?subject=${encodeURIComponent('My InterviewMe Interview Score')}&body=${encodeURIComponent(`${text}\n\n${url}`)}`,
   },
 ];
 
@@ -66,7 +66,7 @@ export function ShareModal({ role, company, score, shareUrl, onClose }: Props) {
 
   const roleLabel = role ?? 'this role';
   const companyLabel = company ? ` at ${company}` : '';
-  const shareText = `I just scored ${score}% on my ${roleLabel}${companyLabel} interview with Explain — the AI interview platform. Watch my full session here:`;
+  const shareText = `I just scored ${score}% on my ${roleLabel}${companyLabel} interview with InterviewMe — the AI interview platform. Watch my full session here:`;
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(shareUrl);
@@ -106,7 +106,7 @@ export function ShareModal({ role, company, score, shareUrl, onClose }: Props) {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div>
                 <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(167,139,250,0.7)', marginBottom: '8px' }}>
-                  Explain · Interview Score
+                  InterviewMe · Interview Score
                 </div>
                 <div style={{ fontSize: '22px', fontWeight: 900, color: '#fff', lineHeight: 1.25, marginBottom: company ? '4px' : 0 }}>
                   {role ?? 'Interview Session'}

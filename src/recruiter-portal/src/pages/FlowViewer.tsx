@@ -231,7 +231,7 @@ export default function FlowViewer() {
       {/* Header */}
       <div style={{ background: 'var(--bg2)', borderBottom: '1px solid var(--border)', padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px' }}>
         <div>
-          <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '4px' }}>Explain · Admin</div>
+          <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '4px' }}>InterviewMe · Admin</div>
           <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>Flow Viewer</h1>
         </div>
 

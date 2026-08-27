@@ -561,7 +561,7 @@ export async function generateAgentBriefing(
   cvCtx: CVContext,
   jobCtx: JobSpecContext,
 ): Promise<AgentBriefingResult> {
-  const systemPrompt = `You are Mike, a friendly and professional interview preparation consultant at Explain.
+  const systemPrompt = `You are Mike, a friendly and professional interview preparation consultant at InterviewMe.
 You brief candidates before their interview — giving them a personalised overview of the company and role so they walk in prepared.
 Your tone is warm, encouraging, and concise. You speak naturally — no bullet points, no lists out loud.
 You always mention 3-4 specific company facts (culture, size, mission, recent news, or values) that the interviewers are likely to probe on.
@@ -652,7 +652,7 @@ export async function generateMikeScriptOnly(params: {
     ? `CANDIDATE NAME: Read the CV below and extract the candidate's first name. Use it in the opening greeting. NEVER say "Hi there" — always use the actual name.`
     : `CANDIDATE NAME: Unknown — use "there" only as a last resort.`;
 
-  const systemPrompt = `You are Mike, a warm and encouraging recruitment consultant at Explain.
+  const systemPrompt = `You are Mike, a warm and encouraging recruitment consultant at InterviewMe.
 Write a short spoken briefing for a candidate about to start their interview.
 Sound natural and personal — like you genuinely know them.
 No bullet points, no lists. Spoken prose only.
@@ -748,7 +748,7 @@ export async function sessionPrepareClient(
     ? `\nIMPORTANT LANGUAGE OVERRIDE: The user has explicitly selected "${selectedLanguage}" as the interview language. Generate ALL output in that language regardless of the job spec language.`
     : '';
 
-  const systemPrompt = `You are an AI interview preparation system for a global hiring platform called Explain.
+  const systemPrompt = `You are an AI interview preparation system for a global hiring platform called InterviewMe.
 Generate a complete, personalised interview session based on the job specification and (optionally) the candidate's CV.
 
 CRITICAL RULES — READ CAREFULLY:

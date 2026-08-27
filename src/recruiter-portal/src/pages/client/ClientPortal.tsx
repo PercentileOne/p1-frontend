@@ -124,7 +124,7 @@ export default function ClientPortal() {
       {/* Footer */}
       <div style={{ borderTop: '1px solid var(--border)', padding: '20px 24px', textAlign: 'center' }}>
         <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>
-          Prepared by Explain · explain.global · This brief is confidential and intended only for the named interviewer
+          Prepared by InterviewMe · interviewme.global · This brief is confidential and intended only for the named interviewer
         </span>
       </div>
     </div>

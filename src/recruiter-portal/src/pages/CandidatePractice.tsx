@@ -138,7 +138,7 @@ export default function CandidatePractice() {
       {/* Header */}
       <div style={{ width: '100%', maxWidth: '720px', marginBottom: '32px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--blue)' }}>Explain · Practice Mode</div>
+          <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--blue)' }}>InterviewMe · Practice Mode</div>
           <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>Question {qIndex + 1} of {questions.length}</div>
         </div>
         {/* Progress bar */}
