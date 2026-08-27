@@ -272,19 +272,24 @@ function BillingCard({ org, token, onSaved, showToast }: { org: OrgDetail; token
 
 function MembersCard({ org, token, onSaved }: { org: OrgDetail; token: string; onSaved: (o: OrgDetail) => void }) {
   const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
   const [role, setRole] = useState('member')
   const [adding, setAdding] = useState(false)
   const [error, setError] = useState('')
+  const [justInvited, setJustInvited] = useState('')
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
     if (!email.trim()) return
     setAdding(true)
     setError('')
+    setJustInvited('')
     try {
-      const member = await organisationsApi.addMember(token, org.id, { email: email.trim(), role })
+      const { invited, ...member } = await organisationsApi.addMember(token, org.id, { email: email.trim(), role, name: name.trim() || undefined })
       onSaved({ ...org, members: [...org.members, member] })
+      if (invited) setJustInvited(member.email)
       setEmail('')
+      setName('')
       setRole('member')
     } catch (err) {
       setError((err as ApiError).error ?? 'Failed to add member.')
@@ -322,10 +327,15 @@ function MembersCard({ org, token, onSaved }: { org: OrgDetail; token: string; o
         </div>
       )}
 
-      <form onSubmit={handleAdd} style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
-        <div style={{ flex: 1 }}>
-          <FormField label="Add member by email">
+      <form onSubmit={handleAdd} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 200px' }}>
+          <FormField label="Email">
             <input value={email} onChange={e => setEmail(e.target.value)} placeholder="person@company.com" style={inputStyle} />
+          </FormField>
+        </div>
+        <div style={{ flex: '1 1 160px' }}>
+          <FormField label="Name (if new)">
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Mike Petrie" style={inputStyle} />
           </FormField>
         </div>
         <select value={role} onChange={e => setRole(e.target.value)} style={{ ...inputStyle, width: 120 }}>
@@ -333,13 +343,18 @@ function MembersCard({ org, token, onSaved }: { org: OrgDetail; token: string; o
           <option value="admin">admin</option>
         </select>
         <button type="submit" disabled={adding} style={{ ...buttonStyle, background: 'var(--blue)', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', gap: 6, opacity: adding ? 0.7 : 1 }}>
-          <UserPlus size={14} /> Add
+          <UserPlus size={14} /> {adding ? 'Adding…' : 'Add'}
         </button>
       </form>
       <p style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 8 }}>
-        The person must already have an account on the platform — this links an existing user, it doesn't create one.
+        If they already have an account, this just links it. If not, enter their name too — we'll create their account (as a {org.type === 'recruitment' ? 'Recruiter' : org.type === 'business' ? 'Employer' : 'member'}) and email them a link to set their password.
       </p>
 
+      {justInvited && (
+        <div style={{ fontSize: 12, color: 'var(--green)', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 8, padding: '8px 12px', marginTop: 10 }}>
+          Invite sent to {justInvited}.
+        </div>
+      )}
       {error && <div style={{ fontSize: 12, color: '#EF4444', marginTop: 10 }}>{error}</div>}
     </div>
   )

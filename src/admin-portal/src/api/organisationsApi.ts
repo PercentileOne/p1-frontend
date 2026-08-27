@@ -140,7 +140,7 @@ export const organisationsApi = {
     return call(`/api/admin/organisations/${id}`, token, { method: 'PUT', body: JSON.stringify(body) });
   },
 
-  addMember(token: string, orgId: number, body: { email: string; role?: string }): Promise<OrganisationMember> {
+  addMember(token: string, orgId: number, body: { email: string; role?: string; name?: string }): Promise<OrganisationMember & { invited: boolean }> {
     return call(`/api/admin/organisations/${orgId}/members`, token, { method: 'POST', body: JSON.stringify(body) });
   },
 
