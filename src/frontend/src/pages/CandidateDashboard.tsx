@@ -279,7 +279,7 @@ export default function CandidateDashboard() {
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg)", fontFamily: '-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif' }}>
+    <div style={{ display: "flex", width: "100%", minHeight: "100vh", background: "var(--bg)", fontFamily: '-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif' }}>
 
       {/* ── SIDEBAR ── */}
       <aside style={{
