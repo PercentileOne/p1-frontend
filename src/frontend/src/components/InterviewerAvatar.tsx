@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MouthOverlay, MOUTH_POSITIONS } from './MouthOverlay';
 
 export type AvatarState = 'idle' | 'speaking' | 'listening' | 'thinking';
 export type InterviewerRole = 'hr' | 'technical';
@@ -197,6 +198,15 @@ export function InterviewerAvatar({ role, state, active, videoUrl, specialistTit
           alt={profile.name}
           style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', display: 'block' }}
         />
+        {/* Amplitude-driven mouth movement — skipped once a real D-ID talking-head video
+            is playing (that already has real lip movement of its own). */}
+        {!videoUrl && (
+          <MouthOverlay
+            analyserNode={analyserNode}
+            active={state === 'speaking'}
+            {...MOUTH_POSITIONS[role]}
+          />
+        )}
         {/* D-ID video overlay */}
         <AnimatePresence>
           {videoUrl && (
