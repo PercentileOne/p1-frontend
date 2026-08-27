@@ -5,6 +5,7 @@ import { usersApi, type UserSummary, type ApiError } from '../api/usersApi'
 
 type SortKey = 'name' | 'email' | 'roles' | 'joined'
 type SortDir = 'asc' | 'desc'
+const PAGE_SIZE = 10
 
 export function UserList({ role, title, searchPlaceholder }: { role: string; title: string; searchPlaceholder: string }) {
   const { token } = useAuth()
@@ -14,6 +15,7 @@ export function UserList({ role, title, searchPlaceholder }: { role: string; tit
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [page, setPage] = useState(1)
 
   const load = useCallback(async () => {
     if (!token) return
@@ -38,6 +40,7 @@ export function UserList({ role, title, searchPlaceholder }: { role: string; tit
       setSortKey(key)
       setSortDir('asc')
     }
+    setPage(1)
   }
 
   const visibleRows = useMemo(() => {
@@ -63,6 +66,9 @@ export function UserList({ role, title, searchPlaceholder }: { role: string; tit
       }
     })
   }, [rows, search, sortKey, sortDir, role])
+
+  const totalPages = Math.max(1, Math.ceil(visibleRows.length / PAGE_SIZE))
+  const pageRows = visibleRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   function SortableHeader({ label, sortKeyName }: { label: string; sortKeyName: SortKey }) {
     const active = sortKey === sortKeyName
@@ -102,7 +108,7 @@ export function UserList({ role, title, searchPlaceholder }: { role: string; tit
             type="text"
             autoComplete="off"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); setPage(1) }}
             placeholder={searchPlaceholder}
             style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', caretColor: 'var(--blue)' }}
           />
@@ -135,10 +141,15 @@ export function UserList({ role, title, searchPlaceholder }: { role: string; tit
               </tr>
             </thead>
             <tbody>
-              {visibleRows.map(u => {
+              {pageRows.map(u => {
                 const otherRoles = u.roles.filter(r => r !== role)
                 return (
-                  <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                  <tr
+                    key={u.id}
+                    style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.1s' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,142,247,0.08)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  >
                     <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)' }}>{`${u.firstName} ${u.lastName}`.trim() || '—'}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{u.email}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', textTransform: 'capitalize' }}>{otherRoles.join(', ') || '—'}</td>
@@ -148,6 +159,33 @@ export function UserList({ role, title, searchPlaceholder }: { role: string; tit
               })}
             </tbody>
           </table>
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
+              <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+                Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, visibleRows.length)} of {visibleRows.length}
+              </span>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: page === 1 ? 'var(--text-3)' : 'var(--text-2)', cursor: page === 1 ? 'default' : 'pointer', fontSize: 12, fontFamily: 'inherit', opacity: page === 1 ? 0.4 : 1 }}
+                >← Prev</button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                  <button key={n} onClick={() => setPage(n)} style={{
+                    padding: '6px 10px', borderRadius: 6, border: '1px solid', fontSize: 12, fontFamily: 'inherit', cursor: 'pointer',
+                    background: n === page ? 'rgba(79,142,247,0.15)' : 'transparent',
+                    borderColor: n === page ? 'rgba(79,142,247,0.5)' : 'var(--border)',
+                    color: n === page ? 'var(--blue)' : 'var(--text-3)',
+                  }}>{n}</button>
+                ))}
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: page === totalPages ? 'var(--text-3)' : 'var(--text-2)', cursor: page === totalPages ? 'default' : 'pointer', fontSize: 12, fontFamily: 'inherit', opacity: page === totalPages ? 0.4 : 1 }}
+                >Next →</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

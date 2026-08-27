@@ -8,6 +8,7 @@ const ORG_TYPES = ['business', 'university', 'jobcentre', 'recruitment']
 
 type SortKey = 'name' | 'type' | 'contact' | 'seats' | 'seatFee' | 'perPrep' | 'members' | 'status'
 type SortDir = 'asc' | 'desc'
+const PAGE_SIZE = 10
 
 export default function Organisations() {
   const { token } = useAuth()
@@ -19,6 +20,7 @@ export default function Organisations() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showCreate, setShowCreate] = useState(false)
+  const [page, setPage] = useState(1)
 
   const load = useCallback(async () => {
     if (!token) return
@@ -43,6 +45,7 @@ export default function Organisations() {
       setSortKey(key)
       setSortDir('asc')
     }
+    setPage(1)
   }
 
   const visibleRows = useMemo(() => {
@@ -65,6 +68,9 @@ export default function Organisations() {
       }
     })
   }, [rows, search, sortKey, sortDir])
+
+  const totalPages = Math.max(1, Math.ceil(visibleRows.length / PAGE_SIZE))
+  const pageRows = visibleRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   function SortableHeader({ label, sortKeyName }: { label: string; sortKeyName: SortKey }) {
     const active = sortKey === sortKeyName
@@ -115,7 +121,7 @@ export default function Organisations() {
             type="text"
             autoComplete="off"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); setPage(1) }}
             placeholder="Search by name or contact email…"
             style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', caretColor: 'var(--blue)' }}
           />
@@ -152,13 +158,15 @@ export default function Organisations() {
               </tr>
             </thead>
             <tbody>
-              {visibleRows.map(o => {
+              {pageRows.map(o => {
                 const promoActive = o.promoSeatFeeGbp !== null && o.effectiveSeatMonthlyFeeGbp !== o.seatMonthlyFeeGbp
                 return (
                   <tr
                     key={o.id}
                     onClick={() => navigate(`/organisations/${o.id}`)}
-                    style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
+                    style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer', transition: 'background 0.1s' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,142,247,0.08)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                   >
                     <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)' }}>{o.name}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-2)', textTransform: 'capitalize' }}>{o.type}</td>
@@ -190,6 +198,33 @@ export default function Organisations() {
               })}
             </tbody>
           </table>
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
+              <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+                Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, visibleRows.length)} of {visibleRows.length}
+              </span>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: page === 1 ? 'var(--text-3)' : 'var(--text-2)', cursor: page === 1 ? 'default' : 'pointer', fontSize: 12, fontFamily: 'inherit', opacity: page === 1 ? 0.4 : 1 }}
+                >← Prev</button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                  <button key={n} onClick={() => setPage(n)} style={{
+                    padding: '6px 10px', borderRadius: 6, border: '1px solid', fontSize: 12, fontFamily: 'inherit', cursor: 'pointer',
+                    background: n === page ? 'rgba(79,142,247,0.15)' : 'transparent',
+                    borderColor: n === page ? 'rgba(79,142,247,0.5)' : 'var(--border)',
+                    color: n === page ? 'var(--blue)' : 'var(--text-3)',
+                  }}>{n}</button>
+                ))}
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: page === totalPages ? 'var(--text-3)' : 'var(--text-2)', cursor: page === totalPages ? 'default' : 'pointer', fontSize: 12, fontFamily: 'inherit', opacity: page === totalPages ? 0.4 : 1 }}
+                >Next →</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

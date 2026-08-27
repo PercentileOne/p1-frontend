@@ -314,7 +314,12 @@ function MembersCard({ org, token, onSaved }: { org: OrgDetail; token: string; o
       {org.members.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           {org.members.map(m => (
-            <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid var(--border)' }}>
+            <div
+              key={m.id}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', margin: '0 -12px', borderRadius: 8, borderBottom: '1px solid var(--border)', transition: 'background 0.1s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,142,247,0.06)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{m.name || m.email}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{m.email} · {m.role}</div>
