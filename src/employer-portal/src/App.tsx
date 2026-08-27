@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import Login from './pages/Login'
 import AuthCallback from './pages/AuthCallback'
 import Dashboard from './pages/Dashboard'
+import Watch from './pages/Watch'
 
 // Redirects unauthenticated users to /login. Waits for the async session
 // re-validation (AuthProvider's isLoading) before deciding, so a page refresh
@@ -20,6 +21,7 @@ function AppRoutes() {
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/watch/:id" element={<Watch />} />
 
       <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
 

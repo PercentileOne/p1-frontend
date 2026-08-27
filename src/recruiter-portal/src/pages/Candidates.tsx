@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { X } from 'lucide-react'
+import { X, Send } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { IntroduceEmployerModal } from '../components/IntroduceEmployerModal'
 
 const CANDIDATES = [
   { id: 1, name: 'James Okafor',    initials: 'JO', role: 'Senior .NET Developer',  score: 82, status: 'Interview Booked', color: '#34D399', location: 'London',     available: 'Immediate',    packs: 2, lastContact: '18 Jul' },
@@ -20,6 +21,7 @@ const STATUS_OPTS = ['All', 'New', 'In Progress', 'Confirmed', 'Interview Booked
 export default function Candidates() {
   const [filter, setFilter] = useState('All')
   const [search, setSearch] = useState('')
+  const [introducing, setIntroducing] = useState<typeof CANDIDATES[0] | null>(null)
 
   const visible = CANDIDATES.filter(c => {
     const matchStatus = filter === 'All' || c.status === filter
@@ -86,12 +88,29 @@ export default function Candidates() {
             </div>
             <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Last contact: {c.lastContact}</span>
-              <button style={{ fontSize: 11, color: '#4F8EF7', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>View profile →</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <button
+                  onClick={e => { e.stopPropagation(); setIntroducing(c) }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#34D399', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}
+                >
+                  <Send size={11} /> Introduce to employer
+                </button>
+                <button style={{ fontSize: 11, color: '#4F8EF7', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>View profile →</button>
+              </div>
             </div>
           </motion.div>
         ))}
       </div>
       {visible.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>No candidates match your search.</div>}
+
+      {introducing && (
+        <IntroduceEmployerModal
+          candidateName={introducing.name}
+          candidateRole={introducing.role}
+          overallScore={introducing.score}
+          onClose={() => setIntroducing(null)}
+        />
+      )}
     </div>
   )
 }

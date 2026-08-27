@@ -26,6 +26,10 @@
       "rewrite": "/index.html"
     },
     {
+      "route": "/watch/*",
+      "rewrite": "/index.html"
+    },
+    {
       "route": "/*",
       "headers": {
         "Cache-Control": "no-store"

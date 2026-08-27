@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { LayoutDashboard, Users, Inbox, Send, Briefcase, BarChart2, Settings } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import Introductions from './Introductions'
 
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: 'Dashboard' },
@@ -210,7 +211,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {activeNav !== 'Dashboard' && (
+        {activeNav === 'Introductions' && <Introductions />}
+
+        {activeNav !== 'Dashboard' && activeNav !== 'Introductions' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--text-3)', fontSize: 14 }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
             <div style={{ fontWeight: 700, color: 'var(--text-2)' }}>{activeNav}</div>

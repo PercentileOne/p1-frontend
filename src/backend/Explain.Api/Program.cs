@@ -75,6 +75,7 @@ builder.Services.AddCors(options =>
             "https://www.interviewme.global", // the actual working neutral gate domain (interviewme.global apex only redirects via GoDaddy, never serves real content)
             "https://admin.interviewme.global",
             "http://localhost:5173",
+            "http://localhost:5174",
             "http://localhost:5176",
             "http://localhost:5180",
             "http://localhost:5181",
@@ -174,6 +175,7 @@ Explain.Api.Features.Courses.Endpoint.Map(app);
 
 Explain.Api.Features.Interviews.Endpoint.Map(app);
 Explain.Api.Features.InterviewPreps.Endpoint.Map(app);
+Explain.Api.Features.Introductions.Endpoint.Map(app);
 
 Explain.Api.Features.Auth.ForgotPassword.Endpoint.Map(app);
 Explain.Api.Features.Auth.ResetPassword.Endpoint.Map(app);

@@ -50,6 +50,13 @@ public class CosmosService
         // recruiter's own sent list is single-partition.
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("interview-preps", "/recruiterId"));
+
+        // Recruiter or candidate introducing a candidate's interview to an employer.
+        // Partition key = /senderId so the sender's own sent list is single-partition;
+        // the employer's received list and the public watch-by-id lookup are both
+        // deliberately cross-partition (low volume, see Features/Introductions/Endpoint.cs).
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("introductions", "/senderId"));
     }
 
     public Container GetContainer(string name) => _database.GetContainer(name);
