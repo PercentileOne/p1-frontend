@@ -7,24 +7,38 @@ import { useEffect, useRef, useState } from 'react';
  * (see InterviewerAvatar.tsx) — no new audio plumbing, no per-photo cropped mouth assets,
  * no third-party API cost. Deliberately simple: amplitude-driven, not phoneme-accurate.
  *
- * Position is given as a percentage of the CONTAINING element (which must be
- * `position: relative`), eyeballed against each photo — see MOUTH_POSITIONS below.
- * These are approximate (the photos render via object-fit:cover/object-position:center
- * top, so exact alignment shifts a little with container aspect ratio) — nudge the
- * percentages there if it looks off once live, not the logic in this file.
+ * Tuning history: the first pass used one flat dark ellipse + mix-blend-mode:multiply for
+ * every profile, eyeballed against the raw (uncropped) photos. Looked like a black hole on
+ * Sarah's fair skin and barely showed at all against James's beard — a single intensity
+ * doesn't work across different faces. Fixed by rendering the ACTUAL object-fit:cover crop
+ * each profile shows (not the raw photo) with Python/Pillow, compositing candidate mouth
+ * shapes directly onto it, and iterating by looking at the resulting images directly —
+ * the interview room is behind login and passwords are never typed on the user's behalf,
+ * so this local-file route was the only way to actually see it before shipping. Per-profile
+ * width/height/opacity/color/blur below came out of that pass, tuned against a 360×460
+ * test card (InterviewerAvatar's real card size varies with viewport — close enough to be
+ * a real improvement, not claimed to be pixel-perfect on every screen size).
  */
 export function MouthOverlay({
   analyserNode,
   active,
   left,
   top,
-  size = 22,
+  width,
+  height,
+  peakOpacity = 0.6,
+  color = '30,15,12',
+  blur = 1.4,
 }: {
   analyserNode?: AnalyserNode | null;
   active: boolean;
   left: string;
   top: string;
-  size?: number;
+  width: number;
+  height: number;
+  peakOpacity?: number;
+  color?: string;
+  blur?: number;
 }) {
   const [level, setLevel] = useState(0); // 0 (closed) .. 1 (wide open)
   const rafRef = useRef<number>(0);
@@ -85,14 +99,13 @@ export function MouthOverlay({
       style={{
         position: 'absolute',
         left, top,
-        width: size, height: size,
-        transform: `translate(-50%, -50%) scaleY(${0.25 + level * 0.85})`,
+        width, height,
+        transform: `translate(-50%, -50%) scaleY(${0.2 + level * 0.9})`,
         transformOrigin: 'center',
         borderRadius: '50%',
-        background: 'radial-gradient(ellipse, rgba(20,10,10,0.95) 0%, rgba(20,10,10,0.5) 55%, transparent 75%)',
-        mixBlendMode: 'multiply',
-        opacity: active ? Math.min(1, 0.15 + level * 1.1) : 0,
-        filter: 'blur(1px)',
+        background: `radial-gradient(ellipse, rgba(${color},${Math.min(1, 0.05 + level * peakOpacity + 0.35)}) 0%, rgba(${color},${Math.min(1, (0.05 + level * peakOpacity) * 0.5)}) 55%, transparent 78%)`,
+        opacity: active ? 1 : 0,
+        filter: `blur(${blur}px)`,
         pointerEvents: 'none',
         transition: 'opacity 0.08s linear',
       }}
@@ -100,9 +113,10 @@ export function MouthOverlay({
   );
 }
 
-// Eyeballed against the actual photos — see the class doc above for how to re-tune these.
+// Tuned per-profile against the real object-fit:cover crop of each photo — see the class
+// doc above for how these were derived and re-derive the same way if they need adjusting.
 export const MOUTH_POSITIONS = {
-  hr: { left: '50%', top: '27%', size: 20 },         // sarah.jpg
-  technical: { left: '50%', top: '37%', size: 22 },  // james.png
-  mike: { left: '50%', top: '43%', size: 16 },        // mike.png, tighter circular crop
+  hr:        { left: '48.5%', top: '29.5%', width: 22, height: 14, peakOpacity: 0.55, color: '55,25,22', blur: 1.6 }, // sarah.jpg
+  technical: { left: '49.5%', top: '39.5%', width: 26, height: 16, peakOpacity: 0.85, color: '30,15,12', blur: 1.3 }, // james.png
+  mike:      { left: '49%',   top: '47%',   width: 18, height: 11, peakOpacity: 0.75, color: '30,18,15', blur: 1.1 }, // mike.png, tighter circular crop
 } as const;
