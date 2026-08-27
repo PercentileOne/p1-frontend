@@ -17,7 +17,7 @@
 export type Portal =
   | 'candidate'
   | 'recruiter'
-  | 'client'
+  | 'employer'
   | 'admin'
   | 'careers';
 
@@ -25,14 +25,14 @@ export type Portal =
 export const PORTAL_ORIGINS: Record<Portal, string> = {
   candidate: 'https://candidate.interviewme.global',
   recruiter: 'https://recruiter.interviewme.global',
-  client:    'https://employer.interviewme.global',
+  employer:  'https://employer.interviewme.global',
   admin:     'https://admin.interviewme.global',
   careers:   'https://careers.interviewme.global',
 };
 
 // ── Roles ─────────────────────────────────────────────────────────────────────
 
-export type Role = 'Candidate' | 'Recruiter' | 'Client' | 'Admin' | 'SuperAdmin' | 'Student';
+export type Role = 'Candidate' | 'Recruiter' | 'Employer' | 'Admin' | 'SuperAdmin' | 'Student';
 
 // ── Permissions ───────────────────────────────────────────────────────────────
 
@@ -47,8 +47,8 @@ export type Permission =
   | 'CAN_MANAGE_INTERVIEWS'
   | 'CAN_VIEW_CANDIDATE_PROFILE'
   | 'CAN_VIEW_RECRUITER_PORTAL'
-  // Client
-  | 'CAN_VIEW_CLIENT_PORTAL'
+  // Employer
+  | 'CAN_VIEW_EMPLOYER_PORTAL'
   // Admin
   | 'CAN_VIEW_ADMIN_PORTAL'
   | 'CAN_EDIT_ROLES'
@@ -81,11 +81,11 @@ export const ROLE_PERMISSIONS: Readonly<Record<Role, ReadonlyArray<Permission>>>
     'CAN_VIEW_ANALYTICS',
   ],
 
-  Client: [
+  Employer: [
     'CAN_VIEW_CAREERS',
     'CAN_VIEW_INTERVIEW_RESULTS',
     'CAN_VIEW_CANDIDATE_PROFILE',
-    'CAN_VIEW_CLIENT_PORTAL',
+    'CAN_VIEW_EMPLOYER_PORTAL',
   ],
 
   Admin: [
@@ -94,7 +94,7 @@ export const ROLE_PERMISSIONS: Readonly<Record<Role, ReadonlyArray<Permission>>>
     'CAN_MANAGE_INTERVIEWS',
     'CAN_VIEW_CANDIDATE_PROFILE',
     'CAN_VIEW_RECRUITER_PORTAL',
-    'CAN_VIEW_CLIENT_PORTAL',
+    'CAN_VIEW_EMPLOYER_PORTAL',
     'CAN_VIEW_ADMIN_PORTAL',
     'CAN_EDIT_ROLES',
     'CAN_VIEW_ANALYTICS',
@@ -108,7 +108,7 @@ export const ROLE_PERMISSIONS: Readonly<Record<Role, ReadonlyArray<Permission>>>
     'CAN_MANAGE_INTERVIEWS',
     'CAN_VIEW_CANDIDATE_PROFILE',
     'CAN_VIEW_RECRUITER_PORTAL',
-    'CAN_VIEW_CLIENT_PORTAL',
+    'CAN_VIEW_EMPLOYER_PORTAL',
     'CAN_VIEW_ADMIN_PORTAL',
     'CAN_EDIT_ROLES',
     'CAN_VIEW_ANALYTICS',
@@ -129,7 +129,7 @@ export const ROLE_PERMISSIONS: Readonly<Record<Role, ReadonlyArray<Permission>>>
 export const PORTAL_ENTRY_PERMISSION: Record<Portal, Permission> = {
   candidate: 'CAN_START_INTERVIEW',     // any practising candidate
   recruiter: 'CAN_VIEW_RECRUITER_PORTAL',
-  client:    'CAN_VIEW_CLIENT_PORTAL',
+  employer:  'CAN_VIEW_EMPLOYER_PORTAL',
   admin:     'CAN_VIEW_ADMIN_PORTAL',
   careers:   'CAN_VIEW_CAREERS',        // public — but still permission-checked so anonymous is explicit
 };
@@ -164,7 +164,7 @@ export function hasPermission(permissions: Set<Permission>, permission: Permissi
 export function defaultPortalForPermissions(permissions: Set<Permission>): string {
   if (canAccessPortal(permissions, 'admin'))     return PORTAL_ORIGINS.admin;
   if (canAccessPortal(permissions, 'recruiter')) return PORTAL_ORIGINS.recruiter;
-  if (canAccessPortal(permissions, 'client'))    return PORTAL_ORIGINS.client;
+  if (canAccessPortal(permissions, 'employer'))  return PORTAL_ORIGINS.employer;
   if (canAccessPortal(permissions, 'candidate')) return PORTAL_ORIGINS.candidate;
   return PORTAL_ORIGINS.careers;
 }

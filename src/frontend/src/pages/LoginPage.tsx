@@ -19,7 +19,7 @@ const ROLE_OPTIONS: { value: UserRole; label: string; emoji: string; subtitle: s
 // exempt (see the Investor branch below, which just routes to the shared dashboard).
 const ROLE_PERMISSION: Record<'Candidate' | 'Employer' | 'Recruiter', Permission> = {
   Candidate: 'CAN_START_INTERVIEW',
-  Employer:  'CAN_VIEW_CLIENT_PORTAL',
+  Employer:  'CAN_VIEW_EMPLOYER_PORTAL',
   Recruiter: 'CAN_VIEW_RECRUITER_PORTAL',
 };
 

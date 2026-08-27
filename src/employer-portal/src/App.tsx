@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import { Layout } from './components/Layout'
 import Login from './pages/Login'
+import AuthCallback from './pages/AuthCallback'
 import Dashboard from './pages/Dashboard'
 
 // Redirects unauthenticated users to /login. Waits for the async session
@@ -11,7 +11,7 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   const { token, isLoading } = useAuth()
   if (isLoading) return null
   if (!token) return <Navigate to="/login" replace />
-  return <Layout>{children}</Layout>
+  return <>{children}</>
 }
 
 function AppRoutes() {
@@ -19,6 +19,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
 
       <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
 

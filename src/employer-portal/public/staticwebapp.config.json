@@ -22,6 +22,10 @@
       "rewrite": "/index.html"
     },
     {
+      "route": "/auth/callback",
+      "rewrite": "/index.html"
+    },
+    {
       "route": "/*",
       "headers": {
         "Cache-Control": "no-store"
