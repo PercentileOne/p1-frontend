@@ -73,7 +73,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         model.Entity<Role>().HasData(
             new Role { Id = 1, Slug = "candidate",   Name = "Candidate",   IsSystemRole = true },
             new Role { Id = 2, Slug = "recruiter",   Name = "Recruiter",   IsSystemRole = true },
-            new Role { Id = 3, Slug = "client",      Name = "Client",      IsSystemRole = true },
+            new Role { Id = 3, Slug = "employer",    Name = "Employer",    IsSystemRole = true },
             new Role { Id = 4, Slug = "admin",       Name = "Admin",       IsSystemRole = true },
             new Role { Id = 5, Slug = "super-admin", Name = "Super Admin", IsSystemRole = true }
         );
@@ -88,7 +88,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             new Permission { Id =  6, Code = "CAN_VIEW_CANDIDATE_PROFILE",   Category = "Recruiter"  },
             new Permission { Id =  7, Code = "CAN_VIEW_RECRUITER_PORTAL",    Category = "Recruiter"  },
             new Permission { Id =  8, Code = "CAN_VIEW_ANALYTICS",           Category = "Recruiter"  },
-            new Permission { Id =  9, Code = "CAN_VIEW_CLIENT_PORTAL",       Category = "Client"     },
+            new Permission { Id =  9, Code = "CAN_VIEW_EMPLOYER_PORTAL",     Category = "Employer"   },
             new Permission { Id = 10, Code = "CAN_VIEW_ADMIN_PORTAL",        Category = "Admin"      },
             new Permission { Id = 11, Code = "CAN_EDIT_ROLES",               Category = "Admin"      },
             new Permission { Id = 12, Code = "CAN_EDIT_PERMISSIONS",         Category = "SuperAdmin" },
@@ -110,7 +110,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             new RolePermission { RoleId = 2, PermissionId =  6 },
             new RolePermission { RoleId = 2, PermissionId =  7 },
             new RolePermission { RoleId = 2, PermissionId =  8 },
-            // Client
+            // Employer
             new RolePermission { RoleId = 3, PermissionId =  1 },
             new RolePermission { RoleId = 3, PermissionId =  4 },
             new RolePermission { RoleId = 3, PermissionId =  6 },

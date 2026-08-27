@@ -28,8 +28,8 @@ public static class Permissions
     public const string ViewRecruiterPortal   = "CAN_VIEW_RECRUITER_PORTAL";
     public const string ViewAnalytics         = "CAN_VIEW_ANALYTICS";
 
-    // Client
-    public const string ViewClientPortal      = "CAN_VIEW_CLIENT_PORTAL";
+    // Employer
+    public const string ViewEmployerPortal    = "CAN_VIEW_EMPLOYER_PORTAL";
 
     // Admin
     public const string ViewAdminPortal       = "CAN_VIEW_ADMIN_PORTAL";

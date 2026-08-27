@@ -19,7 +19,7 @@ public class RegisterCommandHandler(
     : IRequestHandler<RegisterCommand, Result<AuthResponse>>
 {
     // Only roles a stranger should be able to grant themselves through a public, anonymous
-    // endpoint. Client/Admin/SuperAdmin are seeded (see AddRbacRolesAndPermissions migration)
+    // endpoint. Employer/Admin/SuperAdmin are seeded (see AddRbacRolesAndPermissions migration)
     // but deliberately absent here — those are assigned by an admin, never by self-registration.
     private static readonly Dictionary<string, (int RoleId, string Name)> SelfRegisterableRoles = new(StringComparer.OrdinalIgnoreCase)
     {

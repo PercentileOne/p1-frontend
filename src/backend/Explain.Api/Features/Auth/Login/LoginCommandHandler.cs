@@ -42,7 +42,7 @@ public class LoginCommandHandler(
         var perms    = await permissions.LoadAsync(user.Id, ct);
         var role     = perms.Contains("CAN_VIEW_ADMIN_PORTAL")  ? "Admin"
                      : perms.Contains("CAN_VIEW_RECRUITER_PORTAL") ? "Recruiter"
-                     : perms.Contains("CAN_VIEW_CLIENT_PORTAL")    ? "Client"
+                     : perms.Contains("CAN_VIEW_EMPLOYER_PORTAL")  ? "Employer"
                      : "Candidate";
 
         // Orgs are admin-provisioned (not self-registered), so realistically a user belongs to

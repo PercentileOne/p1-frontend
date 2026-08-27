@@ -10,7 +10,7 @@ public record RegisterCommand(
     string LastName,
     int? Age,
     string? Profession,
-    string? Role = null) // "recruiter" to self-register as one; anything else/omitted → Candidate. Never trust this for Client/Admin/SuperAdmin.
+    string? Role = null) // "recruiter" to self-register as one; anything else/omitted → Candidate. Never trust this for Employer/Admin/SuperAdmin.
     : IRequest<Result<AuthResponse>>;
 
 public record AuthResponse(string Token, UserDto User);
