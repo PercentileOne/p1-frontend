@@ -39,7 +39,22 @@ import { useEffect, useRef, useState } from 'react';
 // normal speaking volume ("looks like a black moustache on their lips"). Removed that
 // baseline entirely; opacity now scales purely from level*peakOpacity, capped low enough
 // (peakOpacity 0.45) to read as a soft shadow even at peak volume. Confirmed live.
-export const MOUTH_OVERLAY_ENABLED = true;
+//
+// Disabled again 2026-08-27, this time for good (not a bug — a category decision).
+// Positions and color were both fully correct and confirmed live at this point; Francis's
+// verdict after watching it working correctly was that amplitude-driven movement is
+// fundamentally the wrong category of solution, not a tuning problem: "even a woman who
+// don't have a moustache... it just looks silly and amateurish, just like every other
+// silly looking platform... it makes the creators look foolish." The real requirement is
+// convincing talking movement, the same bar every YouTube AI-avatar channel already
+// clears — which this technique structurally cannot reach no matter how well-tuned. Do
+// NOT re-enable this by nudging positions/color again; that was already tried and
+// confirmed working, and still wasn't good enough. Photorealistic generation (D-ID/
+// HeyGen/Tavus) is the actual next-level bar, currently blocked on live-interview unit
+// economics (see project-mouth-movement-avatars memory) — Francis is investigating other
+// approaches to that cost problem himself. Left in place, not deleted, only in case a
+// cheaper photoreal option or a smarter approach changes the calculus later.
+export const MOUTH_OVERLAY_ENABLED = false;
 
 export function MouthOverlay({
   analyserNode,
