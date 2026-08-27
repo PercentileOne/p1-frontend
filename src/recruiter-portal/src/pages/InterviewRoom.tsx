@@ -1104,12 +1104,15 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           {/* ── MIKE PHASE — ONLY Mike, nothing else ──────────────────────── */}
           {phase === 'mike' && (
             <motion.div key="mike" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '40px 32px', textAlign: 'center', maxWidth: '520px', margin: '0 auto' }}>
+              style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '40px 32px', textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
               <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '20px' }}>
                 Your Recruitment Consultant
               </div>
-              {/* Mike's photo */}
-              <div style={{ position: 'relative', width: '180px', height: '180px', margin: '0 auto 20px', borderRadius: '50%', overflow: 'hidden', background: 'var(--bg3)', border: '3px solid var(--blue)' }}>
+              {/* Mike's photo — sized close to Sarah/James's own card (448×300-ish) rather
+                  than the old small 180×180 circle, which made him look much smaller than
+                  them. A circular crop would also badly clip the 16:9 avatar video replacing
+                  this static photo. */}
+              <div style={{ position: 'relative', width: '100%', maxWidth: '500px', aspectRatio: '16 / 9', margin: '0 auto 20px', borderRadius: '16px', overflow: 'hidden', background: 'var(--bg3)', border: '3px solid var(--blue)' }}>
                 <img src="/images/mike.png" alt="Mike" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
                 {/* Same amplitude-driven mouth movement as Sarah/James — Mike's intro
                     speaks through the 'technical' TTS channel, so techAnalyser already
@@ -1117,9 +1120,9 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 {MOUTH_OVERLAY_ENABLED && <MouthOverlay analyserNode={techAnalyser} active={phase === 'mike'} {...MOUTH_POSITIONS.mike} />}
                 {/* Pulse ring while speaking */}
                 <motion.div
-                  animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0.15, 0.6] }}
+                  animate={{ scale: [1, 1.03, 1], opacity: [0.6, 0.15, 0.6] }}
                   transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-                  style={{ position: 'absolute', inset: -8, borderRadius: '50%', border: '2px solid var(--blue)', pointerEvents: 'none' }}
+                  style={{ position: 'absolute', inset: -8, borderRadius: '20px', border: '2px solid var(--blue)', pointerEvents: 'none' }}
                 />
               </div>
               <div style={{ fontSize: '21px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Mike</div>
