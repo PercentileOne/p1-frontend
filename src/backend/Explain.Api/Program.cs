@@ -176,6 +176,7 @@ Explain.Api.Features.Courses.Endpoint.Map(app);
 Explain.Api.Features.Interviews.Endpoint.Map(app);
 Explain.Api.Features.InterviewPreps.Endpoint.Map(app);
 Explain.Api.Features.Introductions.Endpoint.Map(app);
+Explain.Api.Features.Alerts.Endpoint.Map(app);
 
 Explain.Api.Features.Auth.ForgotPassword.Endpoint.Map(app);
 Explain.Api.Features.Auth.ResetPassword.Endpoint.Map(app);

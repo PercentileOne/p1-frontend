@@ -57,6 +57,16 @@ public class CosmosService
         // deliberately cross-partition (low volume, see Features/Introductions/Endpoint.cs).
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("introductions", "/senderId"));
+
+        // Recruiter/employer talent alerts ("notify me when a candidate scores > 90% for
+        // DevOps Lead") and the matches they've fired. Both partitioned by /ownerId so an
+        // alert owner's own alerts and match history are single-partition; the matching
+        // engine's "find every active alert" scan is the one deliberately cross-partition
+        // query — see Features/Alerts/Endpoint.cs.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("alerts", "/ownerId"));
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("alertMatches", "/ownerId"));
     }
 
     public Container GetContainer(string name) => _database.GetContainer(name);

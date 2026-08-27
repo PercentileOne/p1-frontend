@@ -27,7 +27,7 @@ public static class Endpoint
     {
         // POST /api/interviews/upload — multipart/form-data: "metadata" (JSON string, required),
         // "video" (file, optional — omitted if the candidate never granted screen-recording permission).
-        app.MapPost("/api/interviews/upload", async (HttpRequest req, CosmosService cosmos, BlobStorageService blob) =>
+        app.MapPost("/api/interviews/upload", async (HttpRequest req, CosmosService cosmos, BlobStorageService blob, IConfiguration config, ILogger<Program> logger) =>
         {
             var userId = req.HttpContext.User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -77,6 +77,28 @@ public static class Endpoint
             using var upsertResponse = await container.UpsertItemStreamAsync(body, new PartitionKey(candidateId));
             if (!upsertResponse.IsSuccessStatusCode)
                 return Results.Problem("Failed to save interview session", statusCode: (int)upsertResponse.StatusCode);
+
+            // Fire any matching talent alerts (recruiter/employer "notify me when a candidate
+            // scores > X for role Y"). Best-effort — a failure here should never block the
+            // candidate's own save from succeeding.
+            try
+            {
+                var candidateName = req.HttpContext.User.FindFirst("name")?.Value ?? "A candidate";
+                string? role = null;
+                double overallScore = 0;
+                using (var metaForAlerts = JsonDocument.Parse(metadataJson))
+                {
+                    var root = metaForAlerts.RootElement;
+                    if (root.TryGetProperty("role", out var r) && r.ValueKind == JsonValueKind.String) role = r.GetString();
+                    if (root.TryGetProperty("overallScore", out var s) && s.ValueKind == JsonValueKind.Number) overallScore = s.GetDouble();
+                }
+                await Explain.Api.Features.Alerts.Endpoint.MatchIncomingCandidateAsync(
+                    candidateId, candidateName, role, overallScore, interviewId, cosmos, config, logger);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Alert matching failed for interview {Id}", interviewId);
+            }
 
             return Results.Ok(new { id = interviewId, videoSaved = hasVideo });
         }).RequireAuthorization().DisableAntiforgery();

@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
-import { LayoutDashboard, Users, Inbox, Send, Briefcase, BarChart2, Settings } from 'lucide-react'
+import { LayoutDashboard, Users, Inbox, Send, Briefcase, BarChart2, Settings, Bell } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Introductions from './Introductions'
+import Alerts from './Alerts'
 
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: 'Dashboard' },
   { Icon: Users,           label: 'Candidate Marketplace' },
   { Icon: Inbox,           label: 'Introductions' },
+  { Icon: Bell,            label: 'Alerts' },
   { Icon: Send,            label: 'Direct Applications' },
   { Icon: Briefcase,       label: 'Open Roles' },
   { Icon: BarChart2,       label: 'Analytics' },
@@ -212,8 +214,9 @@ export default function Dashboard() {
         </div>
 
         {activeNav === 'Introductions' && <Introductions />}
+        {activeNav === 'Alerts' && <Alerts />}
 
-        {activeNav !== 'Dashboard' && activeNav !== 'Introductions' && (
+        {activeNav !== 'Dashboard' && activeNav !== 'Introductions' && activeNav !== 'Alerts' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--text-3)', fontSize: 14 }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
             <div style={{ fontWeight: 700, color: 'var(--text-2)' }}>{activeNav}</div>
