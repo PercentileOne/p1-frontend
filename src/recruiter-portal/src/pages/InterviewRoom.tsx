@@ -277,6 +277,11 @@ export default function InterviewRoom() {
   const recordingStreamRef = useRef<MediaStream | null>(null);
   const tabStreamRef = useRef<MediaStream | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
+  // Gates the candidate's own mic in the RECORDING only (never the live room — Sarah/James/
+  // Mike are always heard live regardless) so the saved video isn't full of ambient noise —
+  // coughs, background chatter — captured over the AI interviewers' lines. Muted by default,
+  // opened only while phase === 'answering'; see the effect below that drives it.
+  const micGainNodeRef = useRef<GainNode | null>(null);
   const recordingStartTimeRef = useRef<number>(0);
   const chapterMarkersRef = useRef<{ questionIndex: number; questionText: string; competency: string; offsetSeconds: number; isMcq?: boolean; mcqOrdinal?: number }[]>([]);
 
@@ -330,7 +335,10 @@ export default function InterviewRoom() {
       }
       if (micStream) {
         const micSource = audioCtx.createMediaStreamSource(micStream);
-        micSource.connect(compressor);
+        const micGain = audioCtx.createGain();
+        micGain.gain.value = 0; // starts muted — the effect watching `phase` opens it
+        micGainNodeRef.current = micGain;
+        micSource.connect(micGain).connect(compressor);
       }
 
       // Build composite stream: tab video + mixed audio
@@ -379,6 +387,7 @@ export default function InterviewRoom() {
       micStreamRef.current?.getTracks().forEach(t => t.stop());
       tabStreamRef.current = null;
       micStreamRef.current = null;
+      micGainNodeRef.current = null;
       setIsRecording(false);
       try {
         const mimeType = recordingChunksRef.current[0]?.type ?? 'video/webm';
@@ -424,6 +433,14 @@ export default function InterviewRoom() {
   const [cameraOn, setCameraOn] = useState(true);
 
   const [phase, setPhase] = useState<RoomPhase>('intro');
+  // Opens the candidate's mic in the recording only during their own answering turn, muted
+  // everything else — see micGainNodeRef's doc above. setTargetAtTime ramps over ~50ms rather
+  // than snapping the gain instantly, avoiding an audible click/pop at the open and close.
+  useEffect(() => {
+    const node = micGainNodeRef.current;
+    if (!node) return;
+    node.gain.setTargetAtTime(phase === 'answering' ? 1 : 0, node.context.currentTime, 0.05);
+  }, [phase]);
   const [qIndex, setQIndex] = useState(0);
   const [typedAnswer, setTypedAnswer] = useState('');
   const [useVoice, setUseVoice] = useState(true);

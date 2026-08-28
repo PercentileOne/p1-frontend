@@ -339,6 +339,11 @@ export default function InterviewRoomPage() {
   const recordingStreamRef = useRef<MediaStream | null>(null);
   const tabStreamRef = useRef<MediaStream | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
+  // Gates the candidate's own mic in the RECORDING only (never the live room — Sarah/James/
+  // Mike are always heard live regardless) so the saved video isn't full of ambient noise —
+  // coughs, background chatter — captured over the AI interviewers' lines. Muted by default,
+  // opened only while phase === 'answering'; see the effect below that drives it.
+  const micGainNodeRef = useRef<GainNode | null>(null);
   const recordingStartTimeRef = useRef<number>(0);
   // Hidden elements that composite the candidate's own webcam (+ a question caption) onto a
   // canvas, which is what's actually recorded. Deliberately NOT getDisplayMedia (screen/tab
@@ -406,7 +411,12 @@ export default function InterviewRoomPage() {
         if (tabAudioTracks.length > 0) {
           audioCtx.createMediaStreamSource(new MediaStream(tabAudioTracks)).connect(compressor);
         }
-        if (micStream) audioCtx.createMediaStreamSource(micStream).connect(compressor);
+        if (micStream) {
+          const micGain = audioCtx.createGain();
+          micGain.gain.value = 0; // starts muted — the effect watching `phase` opens it
+          micGainNodeRef.current = micGain;
+          audioCtx.createMediaStreamSource(micStream).connect(micGain).connect(compressor);
+        }
 
         compositeStream = new MediaStream([...tabStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
 
@@ -484,7 +494,10 @@ export default function InterviewRoomPage() {
         // compressor instead of landing on dest at full gain and summing into clipping.
         const compressor = audioCtx.createDynamicsCompressor();
         compressor.connect(dest);
-        audioCtx.createMediaStreamSource(camStream).connect(compressor);
+        const micGain = audioCtx.createGain();
+        micGain.gain.value = 0; // starts muted — the effect watching `phase` opens it
+        micGainNodeRef.current = micGain;
+        audioCtx.createMediaStreamSource(camStream).connect(micGain).connect(compressor);
         setTTSRecordingDestination(dest, compressor);
 
         compositeStream = new MediaStream([...canvasStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
@@ -613,6 +626,7 @@ export default function InterviewRoomPage() {
       micStreamRef.current?.getTracks().forEach(t => t.stop());
       tabStreamRef.current = null;
       micStreamRef.current = null;
+      micGainNodeRef.current = null;
       cancelAnimationFrame(recordDrawFrameRef.current);
       setTTSRecordingDestination(null);
       setIsRecording(false);
@@ -648,6 +662,14 @@ export default function InterviewRoomPage() {
   useEffect(() => { filterPresetRef.current = filterPreset; }, [filterPreset]);
 
   const [phase, setPhase] = useState<RoomPhase>('intro');
+  // Opens the candidate's mic in the recording only during their own answering turn, muted
+  // everything else — see micGainNodeRef's doc above. setTargetAtTime ramps over ~50ms rather
+  // than snapping the gain instantly, avoiding an audible click/pop at the open and close.
+  useEffect(() => {
+    const node = micGainNodeRef.current;
+    if (!node) return;
+    node.gain.setTargetAtTime(phase === 'answering' ? 1 : 0, node.context.currentTime, 0.05);
+  }, [phase]);
   const [qIndex, setQIndex] = useState(0);
   const [typedAnswer, setTypedAnswer] = useState('');
   const [useVoice, setUseVoice] = useState(true);
