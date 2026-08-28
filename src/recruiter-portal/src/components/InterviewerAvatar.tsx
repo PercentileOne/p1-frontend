@@ -14,6 +14,12 @@ interface Props {
   specialistTitle?: string;
   analyserNode?: AnalyserNode | null;
   onVideoEnded?: () => void;
+  // Fired once, when a real <video> starts playing, with a live AnalyserNode tapped off its
+  // OWN audio track — lets the caller feed WaveformBars from the video's real voice instead
+  // of whatever analyserNode it was passed (which reflects a separate TTS call that a
+  // pre-rendered video doesn't make, so the bars would otherwise fall back to their
+  // synthetic simulation and visibly not match the video's actual speech).
+  onVideoAnalyser?: (node: AnalyserNode) => void;
 }
 
 const PROFILES = {
@@ -132,11 +138,40 @@ function WaveformBars({ active, color, analyserNode }: {
   );
 }
 
-export function InterviewerAvatar({ role, state, active, videoUrl, specialistTitle, analyserNode, onVideoEnded }: Props) {
+export function InterviewerAvatar({ role, state, active, videoUrl, specialistTitle, analyserNode, onVideoEnded, onVideoAnalyser }: Props) {
   const profile = {
     ...PROFILES[role],
     title: role === 'technical' ? (specialistTitle ?? PROFILES.technical.title) : PROFILES.hr.title,
   };
+
+  // Taps a live AnalyserNode off the video's OWN audio track once it starts playing, so
+  // WaveformBars can react to the video's real voice instead of sitting on whatever
+  // analyserNode it was last given (stale from a previous speak() call, or null) — see the
+  // onVideoAnalyser prop doc. createMediaElementSource can only be called once per <video>
+  // element; the video's `key={videoUrl}` above means a new element (and a fresh effect run)
+  // whenever videoUrl changes, so this only ever runs once per real element.
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    if (!videoUrl || !videoRef.current || !onVideoAnalyser) return;
+    const videoEl = videoRef.current;
+    try {
+      const audioCtx = new AudioContext();
+      const source = audioCtx.createMediaElementSource(videoEl);
+      const videoAnalyser = audioCtx.createAnalyser();
+      videoAnalyser.fftSize = 128;
+      // Must route back to destination — createMediaElementSource takes over the element's
+      // audio output, so without this the video plays silently.
+      source.connect(videoAnalyser);
+      videoAnalyser.connect(audioCtx.destination);
+      onVideoAnalyser(videoAnalyser);
+      return () => { audioCtx.close().catch(() => {}); };
+    } catch {
+      // AudioContext can be blocked in some browsers without a prior user gesture — the
+      // waveform just stays on its synthetic fallback in that edge case; the <video>
+      // element's own audio still plays regardless, this only affects the visualizer.
+      return undefined;
+    }
+  }, [videoUrl, onVideoAnalyser]);
 
   const statusLabel =
     state === 'speaking' ? 'Speaking'
@@ -216,6 +251,7 @@ export function InterviewerAvatar({ role, state, active, videoUrl, specialistTit
         <AnimatePresence>
           {videoUrl && (
             <motion.video
+              ref={videoRef}
               key={videoUrl}
               src={videoUrl}
               autoPlay playsInline

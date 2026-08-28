@@ -1442,6 +1442,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 role="hr" state={hrState} active={hrState === 'speaking'} analyserNode={hrAnalyser}
                 videoUrl={sarahIntroVideoActive ? '/images/sarah-intro-v1.mp4' : null}
                 onVideoEnded={sarahIntroVideoActive ? handleSarahIntroVideoEnded : () => onDoneRef.current?.()}
+                onVideoAnalyser={a => setHrAnalyser(a)}
               />
               <InterviewerAvatar role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} analyserNode={techAnalyser} onVideoEnded={() => onDoneRef.current?.()} />
               <YouCamera cameraOn={cameraOn} speaking={phase === 'answering'} onToggle={() => setCameraOn(v => !v)} />

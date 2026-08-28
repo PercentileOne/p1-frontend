@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { FileUpload } from '../components/FileUpload';
 import { logFlowEvent } from '../api/flowLogger';
 import { type Career, searchCareers, reportMissingCareerTitle } from '../api/careersApi';
+import { useAuthStore } from '../auth/authStore';
 
 const LANGUAGES = [
   { code: 'en', name: 'English' },
@@ -80,10 +81,15 @@ export default function InterviewPackStart() {
     incoming.cvFileUrl && incoming.cvFileName ? { url: incoming.cvFileUrl, name: incoming.cvFileName } : null
   );
   const [cvInputTab, setCvInputTab] = useState<'upload' | 'text'>('upload');
-  // Deliberately not pre-filled from incoming.preferredName (e.g. the candidate's own
-  // account name) — this field means "what should the AI call you in THIS interview",
-  // which is usually the name on the CV being tested, not always the account holder's own.
-  const [preferredName, setPreferredName] = useState('');
+  // This field means "what should the AI call you in THIS interview" — usually the name
+  // on the CV being tested, which is normally the account holder's own name, so pre-fill
+  // it with that as an editable suggestion rather than leaving it blank. A blank default
+  // silently relied on a fallback three files downstream (InterviewRoomPage's own
+  // authUser?.firstName check) actually catching it — easy to leave blank without
+  // noticing, at which point Sarah/James's AI intros have no name to say at all. Still
+  // fully editable for the real reason this was blank before: testing someone else's CV.
+  const authFirstName = useAuthStore(s => s.user?.firstName);
+  const [preferredName, setPreferredName] = useState(incoming.preferredName ?? authFirstName ?? '');
   const [jobSpec, setJobSpec] = useState(incoming.jobSpec ?? '');
   const [jobSpecFileName, setJobSpecFileName] = useState('');
   const [jobSpecExtracting, setJobSpecExtracting] = useState(false);
