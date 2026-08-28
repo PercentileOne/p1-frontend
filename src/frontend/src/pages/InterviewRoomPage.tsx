@@ -967,8 +967,14 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
         }
       }, 0);
 
-      // Phase 2: fires in parallel — doesn't wait for the setTimeout above
-      phase2Timeout = setTimeout(resolvePhase2, 35000);
+      // Phase 2: fires in parallel — doesn't wait for the setTimeout above. Widened from 35s
+      // to 55s — sessionPrepareClient's question-count retry/top-up loop (now actually
+      // enforcing the configured count, see its own comments) can legitimately need up to 3
+      // full generation calls plus a top-up call to land on an exact count, which pushed real
+      // Phase 2 completions closer to or past the old 35s cap more often than before. When
+      // this fallback fires before the real data arrives, Sarah/James silently fall back to
+      // their generic, name-less lines — that's what "James stopped saying my name" was.
+      phase2Timeout = setTimeout(resolvePhase2, 55000);
       return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount);
 
     }).then(result => {

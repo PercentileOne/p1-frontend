@@ -890,30 +890,36 @@ IMPORTANT: The two MCQ questions and ALL interview questions MUST be completely 
     };
   };
 
-  // The prompt asks for "exactly 10" but nothing enforces that on a JSON-mode LLM call — it
-  // drifts (seen in practice: 8 or 9 instead of 10), especially at this call's high
-  // temperature (0.9, for session-to-session variety). Retrying the whole generation is
-  // retry-and-hope — it can miss on every attempt. Once retries are exhausted, make the
-  // count exact deterministically: ask for precisely the missing questions as a small
-  // top-up, rather than accepting a short session or padding with generic filler that
-  // breaks the "personalised to this role" promise.
+  // The prompt asks for "exactly N" but nothing enforces that on a JSON-mode LLM call — it
+  // drifts (seen in practice: N-1 or N-2), especially at this call's high temperature (0.9,
+  // for session-to-session variety). Retrying the whole generation is retry-and-hope — it can
+  // miss on every attempt. Once retries are exhausted, make the count exact deterministically:
+  // ask for precisely the missing questions as a small top-up, rather than accepting a short
+  // session or padding with generic filler that breaks the "personalised to this role" promise.
+  //
+  // Every target below is `totalQuestions` (the candidate's configured count), not a literal
+  // 10 — this whole block was written before the question-count dropdown existed, when 10 was
+  // the only option, and never got updated when that became configurable. That's exactly why
+  // selecting 5 on the intake screen still produced a 10-question session: the AI was very
+  // likely honouring "generate exactly 5" in the main prompt, and this safety net then padded
+  // the result straight back up to a hardcoded 10 regardless.
   let result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
-  for (let attempt = 1; attempt < 3 && (result.questions?.length ?? 0) !== 10; attempt++) {
-    console.warn(`[Explain AI] Session prep returned ${result.questions?.length ?? 0} questions instead of 10 — retrying (attempt ${attempt + 1}/3).`);
+  for (let attempt = 1; attempt < 3 && (result.questions?.length ?? 0) !== totalQuestions; attempt++) {
+    console.warn(`[Explain AI] Session prep returned ${result.questions?.length ?? 0} questions instead of ${totalQuestions} — retrying (attempt ${attempt + 1}/3).`);
     // A failed retry (network blip, transient 5xx) must not discard the perfectly good
     // sarahIntro/jamesIntro/mikeScript already sitting in `result` from the first call —
     // only the question count was being chased here, so just stop retrying and move on.
     try {
       const retry = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
-      if (Math.abs(10 - (retry.questions?.length ?? 0)) < Math.abs(10 - (result.questions?.length ?? 0))) result = retry;
+      if (Math.abs(totalQuestions - (retry.questions?.length ?? 0)) < Math.abs(totalQuestions - (result.questions?.length ?? 0))) result = retry;
     } catch (err) {
       console.error('[Explain AI] Question-count retry attempt failed — keeping the best result so far:', err);
       break;
     }
   }
-  if (result.questions?.length > 10) result.questions = result.questions.slice(0, 10);
+  if (result.questions?.length > totalQuestions) result.questions = result.questions.slice(0, totalQuestions);
 
-  const shortfall = 10 - (result.questions?.length ?? 0);
+  const shortfall = totalQuestions - (result.questions?.length ?? 0);
   if (shortfall > 0) {
     console.warn(`[Explain AI] Still ${result.questions?.length ?? 0} questions after retries — topping up ${shortfall} more directly.`);
     try {
@@ -931,7 +937,7 @@ Return this exact JSON:
 { "questions": [ { "questionId": "qX", "questionText": "...", "modelAnswer": "what a strong answer covers — specific to this role", "questionType": "Competency", "difficulty": "Medium", "source": "Role", "competencyTags": ["relevant tag"] } ] }`;
       const topUp = await chatJSON<{ questions: InterviewQuestion[] }>(systemPrompt, topUpPrompt, 0.9);
       if (topUp.questions?.length) {
-        result.questions = [...(result.questions ?? []), ...topUp.questions].slice(0, 10);
+        result.questions = [...(result.questions ?? []), ...topUp.questions].slice(0, totalQuestions);
       }
     } catch (err) {
       console.error('[Explain AI] Question top-up failed — session will run short:', err);
