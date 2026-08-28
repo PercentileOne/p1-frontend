@@ -7,6 +7,7 @@ import OrganisationDetail from './pages/OrganisationDetail'
 import Recruiters from './pages/Recruiters'
 import Candidates from './pages/Candidates'
 import Employers from './pages/Employers'
+import Interviews from './pages/Interviews'
 import Careers from './pages/Careers'
 
 // Redirects unauthenticated users to /login. Waits for the async session
@@ -30,6 +31,7 @@ function AppRoutes() {
       <Route path="/recruiters" element={<RequireAuth><Recruiters /></RequireAuth>} />
       <Route path="/candidates" element={<RequireAuth><Candidates /></RequireAuth>} />
       <Route path="/employers" element={<RequireAuth><Employers /></RequireAuth>} />
+      <Route path="/interviews" element={<RequireAuth><Interviews /></RequireAuth>} />
       <Route path="/careers" element={<RequireAuth><Careers /></RequireAuth>} />
 
       <Route path="*" element={<Navigate to="/organisations" replace />} />

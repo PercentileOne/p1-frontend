@@ -174,6 +174,7 @@ Explain.Api.Features.Feedback.List.Endpoint.Map(app);
 Explain.Api.Features.Courses.Endpoint.Map(app);
 
 Explain.Api.Features.Interviews.Endpoint.Map(app);
+Explain.Api.Features.Interviews.Admin.Endpoint.Map(app);
 Explain.Api.Features.InterviewPreps.Endpoint.Map(app);
 Explain.Api.Features.Introductions.Endpoint.Map(app);
 Explain.Api.Features.Alerts.Endpoint.Map(app);
