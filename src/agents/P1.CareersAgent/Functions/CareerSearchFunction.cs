@@ -55,6 +55,24 @@ public class CareerSearchFunction(CosmosCareerService cosmos)
         return await OkJson(req, results);
     }
 
+    // GET /api/careers/recent?top=50 — newest-first by lastUpdated, for the admin
+    // portal's "what's been added lately" view.
+    [Function("CareersRecent")]
+    public async Task<HttpResponseData> Recent(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "careers/recent")] HttpRequestData req,
+        FunctionContext context)
+    {
+        var log = context.GetLogger<CareerSearchFunction>();
+
+        int.TryParse(req.Query["top"], out var top);
+        if (top <= 0) top = 50;
+
+        log.LogInformation("Recent careers: top={Top}", top);
+
+        var results = await cosmos.GetRecentAsync(top);
+        return await OkJson(req, results);
+    }
+
     // GET /api/careers/categories
     [Function("CareerCategories")]
     public async Task<HttpResponseData> Categories(

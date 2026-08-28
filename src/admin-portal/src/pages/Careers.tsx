@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
-import { Search, Loader2, X, Flag, AlertTriangle, CheckCircle2, XCircle, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react'
+import { Search, Loader2, X, Flag, AlertTriangle, CheckCircle2, XCircle, RotateCcw, ChevronUp, ChevronDown, Clock } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import {
   careersAgentApi, missingCareersApi,
@@ -65,6 +65,7 @@ function TabButton({ label, active, onClick, badge }: { label: string; active: b
 function BrowsePanel() {
   const [categories, setCategories] = useState<CategoryCount[]>([])
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'recent' | 'category' | 'search'>('recent')
   const [search, setSearch] = useState('')
   const [rows, setRows] = useState<AdminCareer[]>([])
   const [loading, setLoading] = useState(false)
@@ -74,13 +75,28 @@ function BrowsePanel() {
   const [selected, setSelected] = useState<AdminCareer | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  const loadRecent = useCallback(() => {
+    setActiveCategory(null)
+    setSearch('')
+    setViewMode('recent')
+    setLoading(true)
+    setError('')
+    careersAgentApi.getRecent(50)
+      .then(setRows)
+      .catch(() => setError('Failed to load recent careers.'))
+      .finally(() => setLoading(false))
+  }, [])
+
   useEffect(() => {
     careersAgentApi.getCategories().then(setCategories).catch(() => setCategories([]))
+    loadRecent()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadCategory = useCallback((category: string) => {
     setActiveCategory(category)
     setSearch('')
+    setViewMode('category')
     setLoading(true)
     setError('')
     careersAgentApi.getByCategory(category, 200)
@@ -91,8 +107,10 @@ function BrowsePanel() {
 
   function handleSearchChange(value: string) {
     setSearch(value)
-    setActiveCategory(null)
     if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (value.trim().length === 0) { loadRecent(); return }
+    setActiveCategory(null)
+    setViewMode('search')
     if (value.trim().length < 2) { setRows([]); return }
     debounceRef.current = setTimeout(() => {
       setLoading(true)
@@ -140,6 +158,18 @@ function BrowsePanel() {
         </div>
         <span style={{ fontSize: 12, color: 'var(--text-3)' }}>or by category:</span>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button
+            onClick={loadRecent}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              border: '1px solid', borderColor: viewMode === 'recent' ? 'rgba(79,142,247,0.5)' : 'var(--border)',
+              background: viewMode === 'recent' ? 'rgba(79,142,247,0.15)' : 'transparent',
+              color: viewMode === 'recent' ? 'var(--blue)' : 'var(--text-2)',
+            }}
+          >
+            <Clock size={12} /> Recent
+          </button>
           {categories.map(c => (
             <button
               key={c.category}
@@ -163,13 +193,21 @@ function BrowsePanel() {
         </div>
       )}
 
+      {!loading && rows.length > 0 && (
+        <p style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 10 }}>
+          {viewMode === 'recent' && `Most recently added or updated, newest first — ${rows.length} shown.`}
+          {viewMode === 'category' && `${rows.length} in ${activeCategory}.`}
+          {viewMode === 'search' && `${rows.length} result${rows.length === 1 ? '' : 's'} for "${search}".`}
+        </p>
+      )}
+
       {loading ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-3)', fontSize: 13, padding: '24px 0' }}>
           <Loader2 size={16} className="admin-spin" /> Loading…
         </div>
       ) : rows.length === 0 ? (
         <div style={{ color: 'var(--text-3)', fontSize: 13, padding: '24px 0' }}>
-          {activeCategory || search ? 'No careers found.' : 'Pick a category or search to browse careers.'}
+          {viewMode === 'search' ? `No careers match "${search}".` : 'No careers found.'}
         </div>
       ) : (
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>

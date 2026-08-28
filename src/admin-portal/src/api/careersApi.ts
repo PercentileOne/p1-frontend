@@ -59,6 +59,12 @@ export const careersAgentApi = {
     return res.json();
   },
 
+  async getRecent(top = 50): Promise<AdminCareer[]> {
+    const res = await fetch(`${CAREERS_AGENT_BASE}/recent?top=${top}`);
+    if (!res.ok) throw new Error('Failed to load recent careers.');
+    return res.json();
+  },
+
   async search(q: string, top = 40): Promise<AdminCareer[]> {
     const res = await fetch(`${CAREERS_AGENT_BASE}/search?q=${encodeURIComponent(q)}&top=${top}`);
     if (!res.ok) throw new Error('Search failed.');

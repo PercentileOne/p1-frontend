@@ -129,6 +129,17 @@ public class CosmosCareerService
         return await DrainQueryIterator(_container.GetItemQueryIterator<CareerDocument>(sql));
     }
 
+    public async Task<List<CareerDocument>> GetRecentAsync(int top = 50)
+    {
+        // lastUpdated is a plain "yyyy-MM-dd" string, so lexicographic ORDER BY sorts
+        // chronologically for free — same trick GetCareersForSalaryUpdate relies on.
+        var sql = new QueryDefinition(
+            "SELECT TOP @top * FROM c ORDER BY c.lastUpdated DESC")
+            .WithParameter("@top", top);
+
+        return await DrainQueryIterator(_container.GetItemQueryIterator<CareerDocument>(sql));
+    }
+
     public async Task<List<CategoryCount>> GetCategoryCountsAsync()
     {
         var sql = new QueryDefinition(
