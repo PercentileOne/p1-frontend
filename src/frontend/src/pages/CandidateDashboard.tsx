@@ -411,7 +411,7 @@ export default function CandidateDashboard() {
         {activeNav === "Demo"           && <DemoPanel />}
         {activeNav === "Settings"       && <SettingsPage />}
 
-        {!["Learn", "Careers", "My Interviews", "Interview Preps", "My Profile", "Jobs", "Messages", "Settings"].includes(activeNav) && <>
+        {!["Learn", "Careers", "My Interviews", "Interview Preps", "My Profile", "Jobs", "Messages", "Demo", "Settings"].includes(activeNav) && <>
 
         {/* ── STATS ROW ── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>
