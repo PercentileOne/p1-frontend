@@ -828,7 +828,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     let score: ScoreResponse;
     try {
       score = aiScoringConfigured
-        ? await scoreWithAI(q, text, cvCtx, jobCtx)
+        ? await scoreWithAI(q, text, cvCtx, jobCtx, sessionLanguage)
         : localScore(q, text, companyKeywords);
     } catch {
       score = localScore(q, text, companyKeywords);
@@ -842,7 +842,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     let coaching: CoachingMessage;
     try {
       coaching = aiScoringConfigured
-        ? await coachWithAI(q, text, score, cvCtx, jobCtx, thinkTimeMs)
+        ? await coachWithAI(q, text, score, cvCtx, jobCtx, thinkTimeMs, sessionLanguage)
         : generateCoachingMessage(score, q, text, cvCtx, jobCtx);
     } catch (err) {
       console.error('[InterviewRoom] AI coaching failed — using template fallback:', err);
@@ -851,7 +851,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
     setCoachingMessage(coaching);
     setPhase('coaching');
-  }, [q, qIndex, cvCtx, jobCtx, companyKeywords]);
+  }, [q, qIndex, cvCtx, jobCtx, companyKeywords, sessionLanguage]);
 
   const displayedQuestion = useTypewriter(q?.questionText ?? '', phase === 'asking');
   const coachingCue = useCoachingCue(phase === 'answering');

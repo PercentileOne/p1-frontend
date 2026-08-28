@@ -277,8 +277,16 @@ export async function scoreWithAI(
   answerText: string,
   cvCtx?: CVContext,
   jobCtx?: JobSpecContext,
+  selectedLanguage?: string,
 ): Promise<ScoreResponse> {
-  const systemPrompt = `You are an expert interview coach scoring candidate answers.
+  // Explicit and unconditional (including for English) — this prompt previously had NO
+  // language instruction at all. feedback[].message and suggestions are free text the model
+  // generates fresh each call, with nothing anchoring it to the candidate's actual session
+  // language — see aiScoring.ts's frontend copy for the fuller story (a Go Deeper follow-up
+  // question there came back in French mid-session from this exact gap).
+  const languageNote = `\nWrite all text output (feedback messages and suggestions) in the language the candidate selected in the UI — ISO code "${selectedLanguage || 'en'}" — regardless of what language the question or answer text above happens to be in.`;
+
+  const systemPrompt = `You are an expert interview coach scoring candidate answers.${languageNote}
 Return ONLY a valid JSON object — no markdown, no explanation.`;
 
   const context = [
@@ -415,9 +423,16 @@ export async function coachWithAI(
   cvCtx?: CVContext,
   jobCtx?: JobSpecContext,
   thinkTimeMs?: number,
+  selectedLanguage?: string,
 ): Promise<CoachingMessage> {
+  // Same gap as scoreWithAI/sessionPrepareClient — see those for the fuller story. This
+  // message is shown directly to the candidate after every answer, so it's exactly the kind
+  // of output that must respect their selected session language, not whatever the model
+  // infers from the question/answer text.
+  const languageNote = `\nWrite this message in the language the candidate selected in the UI — ISO code "${selectedLanguage || 'en'}" — regardless of what language the question or answer text below happens to be in.`;
+
   const systemPrompt = `You are a warm, encouraging interview coach — like a guardian angel whispering advice.
-Be specific, personal, and brief. Reference what the candidate actually said.
+Be specific, personal, and brief. Reference what the candidate actually said.${languageNote}
 Return ONLY a valid JSON object — no markdown, no explanation.`;
 
   const dims: ('relevance' | 'clarity' | 'depth' | 'confidence')[] = ['relevance', 'clarity', 'depth', 'confidence'];
@@ -640,9 +655,11 @@ export async function generateMikeScriptOnly(params: {
       ? "This is a Pro-level session — tell them to expect sharper, more probing questions that go beyond the basics."
       : "This is a Standard session — tell them you've put together a solid set of questions to help them perform at their best.";
 
-  const langNote = selectedLanguage && selectedLanguage !== 'en'
-    ? `\nIMPORTANT: Write the script entirely in the language with ISO code "${selectedLanguage}".`
-    : '';
+  // Always explicit, including for English — leaving this blank for the 'en' case let the
+  // model fall back to whatever language felt natural given the job spec/CV text, which
+  // occasionally meant generating the whole script in a different language even though the
+  // candidate picked English in the UI. The candidate's own selection must always win.
+  const langNote = `\nIMPORTANT: Write the script entirely in the language the candidate selected in the UI — ISO code "${selectedLanguage || 'en'}", regardless of what language the job spec or CV text happens to be written in.`;
 
   const cvSnippet = cvText?.trim() ? cvText.slice(0, 800) : '';
   const jobSpecSnippet = jobSpecText?.trim() ? jobSpecText.slice(0, 400) : '';
@@ -744,9 +761,12 @@ export async function sessionPrepareClient(
     ? `\nCandidate Name: "${preferredName.trim()}" — explicitly set by the candidate. Use this name in ALL spoken scripts (Mike, Sarah, James). Do NOT use any other name.`
     : `\nCandidate Name: NOT explicitly set — you MUST extract the candidate's first name from the CV and use it in ALL spoken scripts (Mike, Sarah, James). NEVER say "there" or omit the name when a CV is provided.`;
 
-  const languageOverride = selectedLanguage && selectedLanguage !== 'en'
-    ? `\nIMPORTANT LANGUAGE OVERRIDE: The user has explicitly selected "${selectedLanguage}" as the interview language. Generate ALL output in that language regardless of the job spec language.`
-    : '';
+  // Always explicit, including for English — rule 1 below tells the model to detect language
+  // from the job spec, and with no override for the 'en' case that rule ran unconstrained: if
+  // the job spec/CV text happened to contain another language, the whole session (questions,
+  // scripts, everything) could come back in that language despite the candidate having picked
+  // English in the UI. The candidate's own explicit selection must always take priority.
+  const languageOverride = `\nIMPORTANT LANGUAGE OVERRIDE: The candidate has explicitly selected "${selectedLanguage || 'en'}" as the interview language in the UI. Generate ALL output in that language (ISO code "${selectedLanguage || 'en'}"), regardless of what language the job spec or CV text is written in — this explicit selection always overrides rule 1's "detect from job spec" instruction below.`;
 
   const systemPrompt = `You are an AI interview preparation system for a global hiring platform called InterviewMe.
 Generate a complete, personalised interview session based on the job specification and (optionally) the candidate's CV.
