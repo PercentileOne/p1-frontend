@@ -29,6 +29,35 @@ public static class Endpoint
         .WithName("ListMissingCareerReports").WithTags("Careers")
         .RequireAuthorization(Permissions.ManageCareers);
 
+        app.MapPost("/api/admin/careers", async (AddCareerRequest req, IHttpClientFactory factory, IConfiguration config) =>
+        {
+            if (string.IsNullOrWhiteSpace(req.Title) || req.Title.Trim().Length < 2)
+            {
+                return Results.BadRequest(new { error = "title is required." });
+            }
+            if (string.IsNullOrWhiteSpace(req.Category) || req.Category.Trim().Length < 2)
+            {
+                return Results.BadRequest(new { error = "category is required." });
+            }
+
+            var (baseUrl, key) = GetAgentConfig(config);
+            var client = factory.CreateClient();
+            client.DefaultRequestHeaders.Add("x-functions-key", key);
+
+            using var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new
+            {
+                title = req.Title.Trim(),
+                category = req.Category.Trim(),
+                subcategory = req.Subcategory?.Trim() ?? "",
+            }), System.Text.Encoding.UTF8, "application/json");
+
+            var res = await client.PostAsync($"{baseUrl}/careers/add", content);
+            var body = await res.Content.ReadAsStringAsync();
+            return Results.Content(body, "application/json", statusCode: (int)res.StatusCode);
+        })
+        .WithName("AddCareer").WithTags("Careers")
+        .RequireAuthorization(Permissions.ManageCareers);
+
         app.MapPost("/api/admin/careers/missing-reports/{id}/status", async (string id, UpdateStatusRequest req, IHttpClientFactory factory, IConfiguration config) =>
         {
             if (req.Status is not ("pending" or "resolved" or "dismissed"))
@@ -64,4 +93,5 @@ public static class Endpoint
     }
 
     public record UpdateStatusRequest(string Status);
+    public record AddCareerRequest(string Title, string Category, string? Subcategory);
 }

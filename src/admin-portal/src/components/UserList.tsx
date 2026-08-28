@@ -1,13 +1,16 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
-import { Search, Loader2, ChevronUp, ChevronDown } from 'lucide-react'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import { Search, Loader2, ChevronUp, ChevronDown, Plus } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { usersApi, type UserSummary, type ApiError } from '../api/usersApi'
+import { FormField, inputStyle, buttonStyle } from '../pages/Organisations'
 
 type SortKey = 'name' | 'email' | 'roles' | 'joined'
 type SortDir = 'asc' | 'desc'
 const PAGE_SIZE = 10
 
-export function UserList({ role, title, searchPlaceholder }: { role: string; title: string; searchPlaceholder: string }) {
+export function UserList({ role, title, entityLabel, searchPlaceholder }: {
+  role: 'candidate' | 'recruiter' | 'employer'; title: string; entityLabel: string; searchPlaceholder: string
+}) {
   const { token } = useAuth()
   const [rows, setRows] = useState<UserSummary[]>([])
   const [search, setSearch] = useState('')
@@ -16,6 +19,7 @@ export function UserList({ role, title, searchPlaceholder }: { role: string; tit
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [page, setPage] = useState(1)
+  const [showCreate, setShowCreate] = useState(false)
 
   const load = useCallback(async () => {
     if (!token) return
@@ -90,11 +94,24 @@ export function UserList({ role, title, searchPlaceholder }: { role: string; tit
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>{title}</h1>
-        <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>
-          {visibleRows.length} of {rows.length} account{rows.length === 1 ? '' : 's'}
-        </p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>{title}</h1>
+          <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>
+            {visibleRows.length} of {rows.length} account{rows.length === 1 ? '' : 's'}
+          </p>
+        </div>
+        <button
+          onClick={() => setShowCreate(true)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 10,
+            padding: '10px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+          }}
+        >
+          <Plus size={16} strokeWidth={2.5} />
+          New {entityLabel}
+        </button>
       </div>
 
       <div style={{ marginBottom: 18 }}>
@@ -188,6 +205,77 @@ export function UserList({ role, title, searchPlaceholder }: { role: string; tit
           )}
         </div>
       )}
+
+      {showCreate && (
+        <CreateUserModal
+          role={role}
+          entityLabel={entityLabel}
+          onClose={() => setShowCreate(false)}
+          onCreated={() => { setShowCreate(false); load() }}
+        />
+      )}
+    </div>
+  )
+}
+
+function CreateUserModal({ role, entityLabel, onClose, onCreated }: {
+  role: 'candidate' | 'recruiter' | 'employer'; entityLabel: string; onClose: () => void; onCreated: () => void
+}) {
+  const { token } = useAuth()
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const mouseDownOnBackdropRef = useRef(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!token) return
+    if (!name.trim()) { setError('Name is required.'); return }
+    if (!email.trim() || !email.includes('@')) { setError('A valid email is required.'); return }
+    setSaving(true)
+    setError('')
+    try {
+      await usersApi.create(token, { email: email.trim(), name: name.trim(), role })
+      onCreated()
+    } catch (err) {
+      setError((err as ApiError).error ?? `Failed to create ${entityLabel.toLowerCase()}.`)
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}
+      onMouseDown={e => { mouseDownOnBackdropRef.current = e.target === e.currentTarget }}
+      onClick={e => { if (e.target === e.currentTarget && mouseDownOnBackdropRef.current) onClose() }}
+    >
+      <form
+        onSubmit={handleSubmit}
+        onClick={e => e.stopPropagation()}
+        style={{ width: '100%', maxWidth: 440, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}
+      >
+        <div>
+          <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>New {entityLabel}</h2>
+          <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>Creates the account and emails them a link to set their own password.</p>
+        </div>
+
+        <FormField label="Name">
+          <input type="text" autoComplete="off" value={name} onChange={e => setName(e.target.value)} style={inputStyle} placeholder="e.g. Jordan Reyes" />
+        </FormField>
+        <FormField label="Email">
+          <input type="text" autoComplete="off" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} placeholder="jordan@example.com" />
+        </FormField>
+
+        {error && <div style={{ fontSize: 12, color: '#EF4444' }}>{error}</div>}
+
+        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+          <button type="button" onClick={onClose} style={{ ...buttonStyle, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-2)' }}>Cancel</button>
+          <button type="submit" disabled={saving} style={{ ...buttonStyle, background: 'var(--blue)', color: '#fff', border: 'none', flex: 1, opacity: saving ? 0.7 : 1 }}>
+            {saving ? 'Creating…' : `Create ${entityLabel.toLowerCase()}`}
+          </button>
+        </div>
+      </form>
     </div>
   )
 }

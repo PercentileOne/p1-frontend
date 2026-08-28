@@ -105,6 +105,15 @@ async function call<T>(path: string, token: string, init?: RequestInit): Promise
   return res.json() as Promise<T>;
 }
 
+export const careersAdminApi = {
+  // Triggers the same AI enrichment MonthlyDiscoveryFunction uses, on demand for one title —
+  // backs the "New Career" button. Explain.Api holds the careers-agent Functions key server-
+  // side, same as the missing-reports proxy above.
+  addCareer(token: string, body: { title: string; category: string; subcategory?: string }): Promise<AdminCareer> {
+    return call('/api/admin/careers', token, { method: 'POST', body: JSON.stringify(body) });
+  },
+};
+
 export const missingCareersApi = {
   list(token: string, status?: string): Promise<MissingCareerReport[]> {
     const qs = status ? `?status=${encodeURIComponent(status)}` : '';

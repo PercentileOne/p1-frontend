@@ -29,6 +29,8 @@ export interface ApiError {
   status: number;
 }
 
+export interface CreateUserResult { id: string; email: string; name: string; role: string }
+
 export const usersApi = {
   async list(token: string, params: { role?: string; search?: string; page?: number; size?: number }): Promise<UserListResponse> {
     const qs = new URLSearchParams();
@@ -45,5 +47,20 @@ export const usersApi = {
       throw { error: text || res.statusText, status: res.status } satisfies ApiError;
     }
     return res.json() as Promise<UserListResponse>;
+  },
+
+  // Creates a standalone account (not tied to an Organisation) and emails a set-password
+  // invite — backs the "New Recruiter"/"New Candidate"/"New Employer" buttons.
+  async create(token: string, body: { email: string; name: string; role: 'candidate' | 'recruiter' | 'employer' }): Promise<CreateUserResult> {
+    const res = await fetch(`${BASE}/api/admin/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw { error: text || res.statusText, status: res.status } satisfies ApiError;
+    }
+    return res.json() as Promise<CreateUserResult>;
   },
 };

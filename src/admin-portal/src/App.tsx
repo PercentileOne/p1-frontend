@@ -4,6 +4,7 @@ import { Layout } from './components/Layout'
 import Login from './pages/Login'
 import Organisations from './pages/Organisations'
 import OrganisationDetail from './pages/OrganisationDetail'
+import Recruiters from './pages/Recruiters'
 import Candidates from './pages/Candidates'
 import Employers from './pages/Employers'
 import Careers from './pages/Careers'
@@ -26,6 +27,7 @@ function AppRoutes() {
 
       <Route path="/organisations" element={<RequireAuth><Organisations /></RequireAuth>} />
       <Route path="/organisations/:id" element={<RequireAuth><OrganisationDetail /></RequireAuth>} />
+      <Route path="/recruiters" element={<RequireAuth><Recruiters /></RequireAuth>} />
       <Route path="/candidates" element={<RequireAuth><Candidates /></RequireAuth>} />
       <Route path="/employers" element={<RequireAuth><Employers /></RequireAuth>} />
       <Route path="/careers" element={<RequireAuth><Careers /></RequireAuth>} />

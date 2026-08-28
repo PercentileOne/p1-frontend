@@ -1,10 +1,11 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Building2, GraduationCap, Briefcase, Compass, LogOut } from 'lucide-react'
+import { Building2, GraduationCap, Briefcase, UserSquare2, Compass, LogOut } from 'lucide-react'
 import { ChairLogo } from './LogoMark'
 import { useAuth } from '../context/AuthContext'
 
 const NAV_ITEMS = [
   { to: '/organisations', Icon: Building2, label: 'Organisations' },
+  { to: '/recruiters', Icon: UserSquare2, label: 'Recruiters' },
   { to: '/candidates', Icon: GraduationCap, label: 'Candidates' },
   { to: '/employers', Icon: Briefcase, label: 'Employers' },
   { to: '/careers', Icon: Compass, label: 'Careers' },

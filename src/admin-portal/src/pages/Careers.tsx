@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
-import { Search, Loader2, X, Flag, AlertTriangle, CheckCircle2, XCircle, RotateCcw, ChevronUp, ChevronDown, Clock } from 'lucide-react'
+import { Search, Loader2, X, Flag, AlertTriangle, CheckCircle2, XCircle, RotateCcw, ChevronUp, ChevronDown, Clock, Plus } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { FormField, inputStyle, buttonStyle } from './Organisations'
 import {
-  careersAgentApi, missingCareersApi,
+  careersAgentApi, careersAdminApi, missingCareersApi,
   type AdminCareer, type CategoryCount, type MissingCareerReport, type ApiError,
 } from '../api/careersApi'
 
@@ -73,6 +74,7 @@ function BrowsePanel() {
   const [sortKey, setSortKey] = useState<SortKey>('lastUpdated')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [selected, setSelected] = useState<AdminCareer | null>(null)
+  const [showCreate, setShowCreate] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const loadRecent = useCallback(() => {
@@ -185,6 +187,17 @@ function BrowsePanel() {
             </button>
           ))}
         </div>
+        <button
+          onClick={() => setShowCreate(true)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 7, marginLeft: 'auto',
+            background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 10,
+            padding: '9px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+          }}
+        >
+          <Plus size={15} strokeWidth={2.5} />
+          New Career
+        </button>
       </div>
 
       {error && (
@@ -234,7 +247,7 @@ function BrowsePanel() {
                   <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{c.category}</td>
                   <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{c.subcategory}</td>
                   <td style={{ padding: '12px 16px', color: c.confidence < 0.8 ? '#F59E0B' : 'var(--text-2)' }}>{c.confidence.toFixed(2)}</td>
-                  <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{c.lastUpdated || '—'}</td>
+                  <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{formatLastUpdated(c.lastUpdated)}</td>
                 </tr>
               ))}
             </tbody>
@@ -243,6 +256,76 @@ function BrowsePanel() {
       )}
 
       {selected && <CareerDetailDrawer career={selected} onClose={() => setSelected(null)} />}
+      {showCreate && (
+        <CreateCareerModal
+          onClose={() => setShowCreate(false)}
+          onCreated={() => { setShowCreate(false); loadRecent() }}
+        />
+      )}
+    </div>
+  )
+}
+
+function CreateCareerModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const { token } = useAuth()
+  const [title, setTitle] = useState('')
+  const [category, setCategory] = useState('')
+  const [subcategory, setSubcategory] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const mouseDownOnBackdropRef = useRef(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!token) return
+    if (!title.trim()) { setError('Title is required.'); return }
+    if (!category.trim()) { setError('Category is required.'); return }
+    setSaving(true)
+    setError('')
+    try {
+      await careersAdminApi.addCareer(token, { title: title.trim(), category: category.trim(), subcategory: subcategory.trim() || undefined })
+      onCreated()
+    } catch (err) {
+      setError((err as ApiError).error ?? 'Failed to add career.')
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}
+      onMouseDown={e => { mouseDownOnBackdropRef.current = e.target === e.currentTarget }}
+      onClick={e => { if (e.target === e.currentTarget && mouseDownOnBackdropRef.current) onClose() }}
+    >
+      <form
+        onSubmit={handleSubmit}
+        onClick={e => e.stopPropagation()}
+        style={{ width: '100%', maxWidth: 440, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}
+      >
+        <div>
+          <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>New Career</h2>
+          <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>Generates a full profile via AI — salary, demand, lifestyle, pathway — same as the automated discovery sweep, just for one title right now.</p>
+        </div>
+
+        <FormField label="Title">
+          <input type="text" autoComplete="off" value={title} onChange={e => setTitle(e.target.value)} style={inputStyle} placeholder="e.g. DevOps Lead" />
+        </FormField>
+        <FormField label="Category">
+          <input type="text" autoComplete="off" value={category} onChange={e => setCategory(e.target.value)} style={inputStyle} placeholder="e.g. Technology" />
+        </FormField>
+        <FormField label="Subcategory (optional)">
+          <input type="text" autoComplete="off" value={subcategory} onChange={e => setSubcategory(e.target.value)} style={inputStyle} placeholder="e.g. Infrastructure" />
+        </FormField>
+
+        {error && <div style={{ fontSize: 12, color: '#EF4444' }}>{error}</div>}
+
+        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+          <button type="button" onClick={onClose} style={{ ...buttonStyle, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-2)' }}>Cancel</button>
+          <button type="submit" disabled={saving} style={{ ...buttonStyle, background: 'var(--blue)', color: '#fff', border: 'none', flex: 1, opacity: saving ? 0.7 : 1 }}>
+            {saving ? 'Generating…' : 'Create career'}
+          </button>
+        </div>
+      </form>
     </div>
   )
 }
@@ -287,8 +370,8 @@ function CareerDetailDrawer({ career: c, onClose }: { career: AdminCareer; onClo
           <FieldRow label="id" value={c.id} mono />
           <FieldRow label="source" value={c.source} />
           <FieldRow label="confidence" value={c.confidence.toFixed(2)} />
-          <FieldRow label="lastUpdated" value={c.lastUpdated || '—'} />
-          <FieldRow label="salaryLastUpdated" value={c.salaryLastUpdated || '—'} />
+          <FieldRow label="lastUpdated" value={formatLastUpdated(c.lastUpdated)} />
+          <FieldRow label="salaryLastUpdated" value={formatLastUpdated(c.salaryLastUpdated)} />
           <FieldRow label="soc_uk" value={c.soc_uk ?? '—'} />
           <FieldRow label="onet_us" value={c.onet_us ?? '—'} />
         </Section>
@@ -553,6 +636,19 @@ function IconButton({ children, onClick, disabled, title, color }: { children: R
       {children}
     </button>
   )
+}
+
+// Older docs only ever got a bare "yyyy-MM-dd" (no time was captured at write time) —
+// showing a fabricated midnight for those would be misleading, so time only renders when
+// the raw value actually carries one (contains 'T', i.e. a full ISO-8601 timestamp).
+function formatLastUpdated(raw: string): string {
+  if (!raw) return '—'
+  const hasTime = raw.includes('T')
+  const d = new Date(raw)
+  if (Number.isNaN(d.getTime())) return raw
+  return hasTime
+    ? d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 function formatDate(iso: string): string {

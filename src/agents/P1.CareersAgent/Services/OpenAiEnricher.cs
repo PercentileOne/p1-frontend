@@ -24,6 +24,7 @@ public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactor
         UpdateSalaryAsync(CareerDocument career, ILogger log)
     {
         var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
+        var timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
         var prompt =
             "Update salary and workforce data for: " + career.Title + " (" + career.Category + ")\n" +
             "Return JSON only, no markdown:\n" +
@@ -54,7 +55,7 @@ public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactor
         var contractRate = node["contractRate"] is JsonNode crNode ? crNode.Deserialize<ContractRateData>(_json) : null;
         var workforce    = node["workforce"]!.Deserialize<WorkforceData>(_json)!;
 
-        return (salary, contractRate, workforce, today);
+        return (salary, contractRate, workforce, timestamp);
     }
 
     // ── Full enrichment (new or low-confidence careers) ─────────────────────────
@@ -62,6 +63,7 @@ public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactor
     public async Task<CareerDocument?> EnrichCareerAsync(string title, string category, string subcategory, ILogger log)
     {
         var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
+        var timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
         var id    = title.ToLowerInvariant()
                          .Replace(' ', '-')
                          .Replace("/", "-")
@@ -96,7 +98,7 @@ public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactor
             "  \"identity\": {\"summary\":\"\",\"traits\":[],\"strengths\":[],\"weaknesses\":[]},\n" +
             "  \"pathway\": {\"entryRequirements\":[],\"qualifications\":[],\"skills\":[],\"timeToJunior\":\"\",\"timeToMid\":\"\",\"timeToSenior\":\"\",\"timeToExpert\":\"\",\"learningPath\":[]},\n" +
             "  \"salaryLastUpdated\": \"" + today + "\",\n" +
-            "  \"lastUpdated\": \"" + today + "\",\n" +
+            "  \"lastUpdated\": \"" + timestamp + "\",\n" +
             "  \"source\": \"agent-v1\",\n" +
             "  \"confidence\": 0.85\n" +
             "}\n" +
