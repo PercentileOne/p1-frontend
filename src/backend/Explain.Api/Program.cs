@@ -183,6 +183,7 @@ Explain.Api.Features.Auth.ResetPassword.Endpoint.Map(app);
 
 Explain.Api.Features.Organisations.Endpoint.Map(app);
 Explain.Api.Features.Organisations.Members.Endpoint.Map(app);
+Explain.Api.Features.Careers.Admin.Endpoint.Map(app);
 Explain.Api.Features.Users.List.Endpoint.Map(app);
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))

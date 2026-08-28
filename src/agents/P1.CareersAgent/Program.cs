@@ -12,6 +12,7 @@ var host = new HostBuilder()
 
         services.AddSingleton<CosmosCareerService>();
         services.AddSingleton<OpenAiEnricher>();
+        services.AddSingleton<MissingCareerReportService>();
         services.AddHttpClient();
     })
     .Build();

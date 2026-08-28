@@ -93,7 +93,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             new Permission { Id = 11, Code = "CAN_EDIT_ROLES",               Category = "Admin"      },
             new Permission { Id = 12, Code = "CAN_EDIT_PERMISSIONS",         Category = "SuperAdmin" },
             new Permission { Id = 13, Code = "CAN_VIEW_SYSTEM_SETTINGS",     Category = "SuperAdmin" },
-            new Permission { Id = 14, Code = "CAN_MANAGE_ORGANISATIONS",     Category = "Admin"      }
+            new Permission { Id = 14, Code = "CAN_MANAGE_ORGANISATIONS",     Category = "Admin"      },
+            new Permission { Id = 15, Code = "CAN_MANAGE_CAREERS",           Category = "Admin"      }
         );
 
         // Seed role→permission mappings (matching the permission matrix)
@@ -126,6 +127,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             new RolePermission { RoleId = 4, PermissionId = 10 },
             new RolePermission { RoleId = 4, PermissionId = 11 },
             new RolePermission { RoleId = 4, PermissionId = 14 },
+            new RolePermission { RoleId = 4, PermissionId = 15 },
             // SuperAdmin — all permissions
             new RolePermission { RoleId = 5, PermissionId =  1 },
             new RolePermission { RoleId = 5, PermissionId =  2 },
@@ -140,7 +142,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             new RolePermission { RoleId = 5, PermissionId = 11 },
             new RolePermission { RoleId = 5, PermissionId = 12 },
             new RolePermission { RoleId = 5, PermissionId = 13 },
-            new RolePermission { RoleId = 5, PermissionId = 14 }
+            new RolePermission { RoleId = 5, PermissionId = 14 },
+            new RolePermission { RoleId = 5, PermissionId = 15 }
         );
 
         model.Entity<Follow>(e =>

@@ -160,8 +160,9 @@ export function buildCareerScript(career: Career, candidateName?: string): strin
 }
 
 // Fires and forgets a note that a candidate typed a job title with no database match —
-// feeds the population function's backlog rather than being silently lost. The endpoint
-// doesn't exist yet server-side; safe no-op (catches its own failure) until it does.
+// feeds the admin portal's Missing Reports queue (see careers-agent's MissingCareerFunction
+// and admin-portal's Careers page) rather than being silently lost. Still wrapped in a
+// try/catch as a best-effort call — a failure here should never block the candidate's flow.
 export async function reportMissingCareerTitle(title: string): Promise<void> {
   try {
     await fetch(`${PROXY_BASE}/report-missing`, {
