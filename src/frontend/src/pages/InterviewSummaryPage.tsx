@@ -378,12 +378,16 @@ export function InterviewReplayPlayer({ url, chapters }: { url: string; chapters
           </div>
           {chapters.map((c, i) => {
             const isMcq = c.isMcq;
+            // Mike's/Sarah+James's intros are pushed with negative sentinel questionIndex
+            // values (-2, -1) — see InterviewRoomPage.tsx's startMike/beginInterviewIntro —
+            // so they're jumpable from this list too, styled distinctly from real questions.
+            const isIntro = c.questionIndex < 0;
             const isActive = activeChapter === i;
-            const activeBg = isMcq ? 'rgba(245,158,11,0.10)' : 'rgba(79,142,247,0.10)';
-            const activeBorder = isMcq ? '1px solid rgba(245,158,11,0.30)' : '1px solid rgba(79,142,247,0.25)';
-            const badgeColor = isMcq ? '#f59e0b' : (isActive ? 'var(--blue)' : '#a78bfa');
-            const badgeBg = isMcq ? 'rgba(245,158,11,0.12)' : (isActive ? 'rgba(79,142,247,0.12)' : 'rgba(167,139,250,0.08)');
-            const dotColor = isMcq ? '#f59e0b' : 'var(--blue)';
+            const activeBg = isMcq ? 'rgba(245,158,11,0.10)' : isIntro ? 'rgba(52,211,153,0.10)' : 'rgba(79,142,247,0.10)';
+            const activeBorder = isMcq ? '1px solid rgba(245,158,11,0.30)' : isIntro ? '1px solid rgba(52,211,153,0.30)' : '1px solid rgba(79,142,247,0.25)';
+            const badgeColor = isMcq ? '#f59e0b' : isIntro ? '#34D399' : (isActive ? 'var(--blue)' : '#a78bfa');
+            const badgeBg = isMcq ? 'rgba(245,158,11,0.12)' : isIntro ? 'rgba(52,211,153,0.12)' : (isActive ? 'rgba(79,142,247,0.12)' : 'rgba(167,139,250,0.08)');
+            const dotColor = isMcq ? '#f59e0b' : isIntro ? '#34D399' : 'var(--blue)';
             return (
               <button
                 key={i}
@@ -400,7 +404,7 @@ export function InterviewReplayPlayer({ url, chapters }: { url: string; chapters
                   {fmt(c.offsetSeconds)}
                 </span>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: badgeColor, background: badgeBg, borderRadius: '4px', padding: '2px 7px', flexShrink: 0 }}>
-                  {isMcq ? `MCQ-${c.mcqOrdinal}` : `Q${c.questionIndex + 1}`}
+                  {isMcq ? `MCQ-${c.mcqOrdinal}` : c.questionIndex === -2 ? 'MIKE' : c.questionIndex === -1 ? 'INTRO' : `Q${c.questionIndex + 1}`}
                 </span>
                 <span style={{ fontSize: '12px', color: isActive ? 'var(--text)' : 'var(--text-2)', lineHeight: 1.4, flex: 1 }}>
                   {c.questionText}

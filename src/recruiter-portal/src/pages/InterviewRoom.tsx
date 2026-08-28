@@ -549,6 +549,16 @@ export default function InterviewRoom() {
     cancelSpeakRef.current?.();
     cancelSpeakRef.current = null;
     setPhase('interviewer-intro');
+    // Chapter marker for the same reason as Mike's below — one combined entry for both
+    // Sarah's and James's intro lines, since they play back to back with no natural split.
+    if (recordingStartTimeRef.current > 0) {
+      chapterMarkersRef.current.push({
+        questionIndex: -1,
+        questionText: "Sarah & James's Introduction",
+        competency: '',
+        offsetSeconds: Math.round((Date.now() - recordingStartTimeRef.current) / 1000),
+      });
+    }
     logFlowEvent('INTERVIEW_PHASE_STARTED', {
       questionCount: questions.length,
       aiQuestionsLoaded: bgLoadedRef.current,
@@ -603,6 +613,18 @@ export default function InterviewRoom() {
 
   const startMike = useCallback(() => {
     setPhase('mike');
+    // Chapter marker so the replay's "Jump to question" list can jump back to the intros too,
+    // not just the interview questions — negative questionIndex sentinels (-2 Mike, -1 Sarah
+    // & James) keep these out of the real 0-based question range; InterviewSummary.tsx's
+    // chapter list renders them with their own label instead of a "QN" badge.
+    if (recordingStartTimeRef.current > 0) {
+      chapterMarkersRef.current.push({
+        questionIndex: -2,
+        questionText: "Mike's Introduction",
+        competency: '',
+        offsetSeconds: Math.round((Date.now() - recordingStartTimeRef.current) / 1000),
+      });
+    }
     logFlowEvent('MIKE_INTRO_STARTED', { hasJobSpec: Boolean(ctx.jobSpecText), hasCv: Boolean(ctx.cvText), selectedLanguage: ctx.selectedLanguage });
     // English: mike-intro-v1.mp4 (real lip-synced video, generic script, generated once and
     // reused forever — see project-photoreal-intro-avatars-plan memory) plays instead, wired
