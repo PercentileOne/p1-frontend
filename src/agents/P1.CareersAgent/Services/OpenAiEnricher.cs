@@ -164,6 +164,34 @@ public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactor
         }
     }
 
+    // ── Missing-report plausibility check (cheap, once per distinct title) ─────
+
+    public async Task<(bool Plausible, string Reason)> ClassifyJobTitleAsync(string title, ILogger log)
+    {
+        var prompt =
+            "Is \"" + title + "\" a plausible real-world job title? Any country, any industry, any " +
+            "seniority — including niche, trade, creative, or very specific roles. Be lenient: only say " +
+            "false for obvious gibberish, keyboard mashing, test input, an insult, or plain non-job text " +
+            "(e.g. a sentence, a place name with no role attached).\n" +
+            "Return JSON only: {\"plausible\": true or false, \"reason\": \"<one short sentence, under 12 words>\"}";
+
+        try
+        {
+            var response = await CallGptAsync(prompt, log);
+            var node = JsonNode.Parse(response);
+            var plausible = node?["plausible"]?.GetValue<bool>() ?? true;
+            var reason = node?["reason"]?.GetValue<string>() ?? "";
+            return (plausible, reason);
+        }
+        catch (Exception ex)
+        {
+            // Fail open — an AI/network hiccup should never make a real candidate report
+            // vanish silently, which is the exact bug this whole feature exists to fix.
+            log.LogWarning("Plausibility check failed for '{Title}': {Error}", title, ex.Message);
+            return (true, "");
+        }
+    }
+
     // ── Shared GPT call ────────────────────────────────────────────────────────
 
     private async Task<string> CallGptAsync(string userPrompt, ILogger log)

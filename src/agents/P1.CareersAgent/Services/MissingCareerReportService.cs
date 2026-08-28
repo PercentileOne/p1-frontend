@@ -1,5 +1,6 @@
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using P1.CareersAgent.Models;
 
 namespace P1.CareersAgent.Services;
@@ -13,10 +14,12 @@ public class MissingCareerReportService
 {
     private readonly Database _database;
     private readonly string _containerId;
+    private readonly OpenAiEnricher _enricher;
     private Container? _container;
 
-    public MissingCareerReportService(IConfiguration config)
+    public MissingCareerReportService(IConfiguration config, OpenAiEnricher enricher)
     {
+        _enricher = enricher;
         var connectionString = config["CosmosConnectionString"]
             ?? throw new InvalidOperationException("CosmosConnectionString not configured");
         var dbName = config["CosmosDatabaseName"] ?? "interviewme";
@@ -39,7 +42,7 @@ public class MissingCareerReportService
         return _container;
     }
 
-    public async Task ReportAsync(string title, string source)
+    public async Task ReportAsync(string title, string source, ILogger log)
     {
         var container = await GetContainerAsync();
         var normalized = Normalize(title);
@@ -55,6 +58,10 @@ public class MissingCareerReportService
         }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
+            // First sighting of this exact title — classify once here, so every later
+            // repeat of the same string (the common case) reuses this verdict for free.
+            var (plausible, reason) = await _enricher.ClassifyJobTitleAsync(title, log);
+
             var doc = new MissingCareerReport
             {
                 Id = normalized,
@@ -65,6 +72,8 @@ public class MissingCareerReportService
                 FirstReportedAt = now,
                 LastReportedAt = now,
                 Status = "pending",
+                Plausible = plausible,
+                AiNote = reason,
             };
             await container.UpsertItemAsync(doc, new PartitionKey(normalized));
         }

@@ -76,6 +76,8 @@ export interface MissingCareerReport {
   lastReportedAt: string;
   status: 'pending' | 'resolved' | 'dismissed';
   resolvedCareerId: string | null;
+  plausible: boolean;
+  aiNote: string;
 }
 
 export interface ApiError { error: string; status: number }

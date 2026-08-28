@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using Microsoft.Azure.Functions.Worker;
@@ -41,9 +42,14 @@ public class MissingCareerFunction(MissingCareerReportService reports)
         {
             return await BadRequest(req, "title is required.");
         }
+        if (LooksMalformed(title))
+        {
+            logger.LogInformation("Missing career report rejected as malformed: {Title}", title);
+            return await BadRequest(req, "title does not look like a plausible job title.");
+        }
 
         var source = string.IsNullOrWhiteSpace(body?.Source) ? "unknown" : body!.Source;
-        await reports.ReportAsync(title, source);
+        await reports.ReportAsync(title, source, logger);
         logger.LogInformation("Missing career reported: {Title} (source: {Source})", title, source);
 
         return req.CreateResponse(HttpStatusCode.Accepted);
@@ -86,6 +92,26 @@ public class MissingCareerFunction(MissingCareerReportService reports)
         }
 
         return req.CreateResponse(HttpStatusCode.NoContent);
+    }
+
+    // Free, zero-cost gate that runs before Cosmos or OpenAI ever get touched — catches
+    // keyboard-mashing and junk without spending an AI call on it. Deliberately lenient
+    // (real titles have hyphens, ampersands, slashes — "R&D Engineer", "UI/UX Designer");
+    // anything past this still gets the real AI plausibility check in ReportAsync.
+    private static bool LooksMalformed(string title)
+    {
+        if (title.Length > 80) return true;
+        if (!title.Any(char.IsLetter)) return true;
+
+        var letterish = title.Count(c => char.IsLetter(c) || c is ' ' or '-' or '&' or '/' or '\'');
+        if ((double)letterish / title.Length < 0.7) return true;
+
+        for (var i = 0; i + 3 < title.Length; i++)
+        {
+            if (title[i] == title[i + 1] && title[i] == title[i + 2] && title[i] == title[i + 3]) return true;
+        }
+
+        return false;
     }
 
     private static async Task<HttpResponseData> OkJson(HttpRequestData req, object data)

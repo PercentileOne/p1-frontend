@@ -34,4 +34,13 @@ public class MissingCareerReport
 
     [JsonPropertyName("resolvedCareerId")]
     public string? ResolvedCareerId { get; set; }
+
+    // Set once, on first sighting of this title, by OpenAiEnricher.ClassifyJobTitleAsync —
+    // never re-checked on repeat reports of the same title. Flags likely junk for triage;
+    // never used to silently drop a report, since a wrong AI call shouldn't erase real signal.
+    [JsonPropertyName("plausible")]
+    public bool Plausible { get; set; } = true;
+
+    [JsonPropertyName("aiNote")]
+    public string AiNote { get; set; } = string.Empty;
 }

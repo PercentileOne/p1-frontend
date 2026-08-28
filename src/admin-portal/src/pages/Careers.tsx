@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
-import { Search, Loader2, X, Flag, CheckCircle2, XCircle, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react'
+import { Search, Loader2, X, Flag, AlertTriangle, CheckCircle2, XCircle, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import {
   careersAgentApi, missingCareersApi,
@@ -433,7 +433,23 @@ function ReportsPanel({ onPendingCountChange }: { onPendingCountChange: (n: numb
             <tbody>
               {rows.map(r => (
                 <tr key={r.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)' }}>{r.title}</td>
+                  <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+                      {r.title}
+                      {!r.plausible && (
+                        <span
+                          title={r.aiNote || 'Flagged by AI as an unlikely job title.'}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 4,
+                            fontSize: 10, fontWeight: 700, color: '#F59E0B', background: 'rgba(245,158,11,0.1)',
+                            border: '1px solid rgba(245,158,11,0.25)', borderRadius: 6, padding: '2px 6px', cursor: 'help',
+                          }}
+                        >
+                          <AlertTriangle size={11} /> AI flagged
+                        </span>
+                      )}
+                    </span>
+                  </td>
                   <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{r.source}</td>
                   <td style={{ padding: '12px 16px', color: 'var(--text)', fontWeight: 700 }}>{r.reportCount}</td>
                   <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{formatDate(r.firstReportedAt)}</td>
