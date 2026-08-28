@@ -4,10 +4,6 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import AuthCallback from './pages/AuthCallback'
 import Dashboard from './pages/Dashboard'
-import DemoLinkedIn from './pages/DemoLinkedIn'
-import DemoLinkedInPaid from './pages/DemoLinkedInPaid'
-import DemoVallum from './pages/DemoVallum'
-import DemoVallumPaid from './pages/DemoVallumPaid'
 import InterviewRoom from './pages/InterviewRoom'
 import InterviewSummary from './pages/InterviewSummary'
 import InterviewIntake from './pages/InterviewIntake'
@@ -40,10 +36,6 @@ function AppRoutes() {
 
       {/* Protected recruiter routes */}
       <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
-      <Route path="/demo/linkedin-job" element={<RequireAuth><DemoLinkedIn /></RequireAuth>} />
-      <Route path="/demo/linkedin-job-paid" element={<RequireAuth><DemoLinkedInPaid /></RequireAuth>} />
-      <Route path="/demo/vallum-job" element={<RequireAuth><DemoVallum /></RequireAuth>} />
-      <Route path="/demo/vallum-job-paid" element={<RequireAuth><DemoVallumPaid /></RequireAuth>} />
       <Route path="/interview-pack/start" element={<RequireAuth><InterviewPackStart /></RequireAuth>} />
       <Route path="/screen-candidates" element={<RequireAuth><ScreenCandidates /></RequireAuth>} />
       <Route path="/interview-intake/:packId" element={<RequireAuth><InterviewIntake /></RequireAuth>} />

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuthStore } from "../auth/authStore";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
-  MessageSquare, Settings, LogOut, ChevronRight, CheckCircle2, Circle, Compass, Gift,
+  MessageSquare, Settings, LogOut, ChevronRight, CheckCircle2, Circle, Compass, Gift, Zap,
 } from "lucide-react";
 import LearnPanel from "./LearnPanel";
 import CareersPanel from "./CareersPanel";
@@ -13,6 +13,7 @@ import ProfilePage from "./ProfilePage";
 import JobsHome from "./JobsHome";
 import MessagesPage from "./MessagesPage";
 import SettingsPage from "./SettingsPage";
+import DemoPanel from "./DemoPanel";
 
 /* ══════════════════════════════════════════════════════════════
    CANDIDATE DASHBOARD — cockpit-grade portal for InterviewMe.global
@@ -37,6 +38,7 @@ const NAV_ITEMS = [
   { Icon: BookOpen,        label: "Learn",            slug: "learn" },
   { Icon: Compass,         label: "Careers",          slug: "careers" },
   { Icon: MessageSquare,   label: "Messages",         slug: "messages" },
+  { Icon: Zap,             label: "Demo",             slug: "demo" },
   { Icon: Settings,        label: "Settings",         slug: "settings" },
 ] as const;
 
@@ -406,6 +408,7 @@ export default function CandidateDashboard() {
         {activeNav === "My Profile"     && <ProfilePage />}
         {activeNav === "Jobs"           && <JobsHome />}
         {activeNav === "Messages"       && <MessagesPage />}
+        {activeNav === "Demo"           && <DemoPanel />}
         {activeNav === "Settings"       && <SettingsPage />}
 
         {!["Learn", "Careers", "My Interviews", "Interview Preps", "My Profile", "Jobs", "Messages", "Settings"].includes(activeNav) && <>

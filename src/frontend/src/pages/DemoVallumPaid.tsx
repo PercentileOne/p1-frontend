@@ -1,5 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 
+// Ported from recruiter-portal's DemoVallumPaid.tsx — now lives under the candidate portal's
+// own "Demo" nav item instead. Already used the simple direct-navigate pattern (no popup
+// modal), so this ports over unchanged.
 const JOB_DESCRIPTION = `
 Head of Engineering – Digital Transformation
 Vallum Associates · London (Hybrid)

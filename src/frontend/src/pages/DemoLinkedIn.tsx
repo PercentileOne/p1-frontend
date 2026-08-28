@@ -1,5 +1,12 @@
-import { MagicButton, EXPLAIN_CTA_LONG } from '../components/MagicButton';
+import { useNavigate } from 'react-router-dom';
 
+// Ported from recruiter-portal's DemoLinkedIn.tsx — now lives under the candidate portal's
+// own "Demo" nav item instead, since these were always candidate-facing showcases of the
+// Magic Button embed, not something a recruiter needed. Simplified from the original's
+// MagicButton+PackPopup modal to a direct navigate — this page is reached from inside the
+// already-logged-in candidate app now, not a public marketing page, so the popup's own
+// CV-upload/job-spec-entry step is redundant with InterviewPackStart, which does the same
+// thing as a full page.
 const JOB_DESCRIPTION = `
 Senior Software Engineer – FinTech Platform
 Vallum Associates · London, UK (Hybrid) · Full-time
@@ -37,7 +44,31 @@ const sections = [
   },
 ];
 
+function AIDocIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }} aria-hidden="true">
+      <rect x="1.5" y="1" width="9" height="12" rx="1.5" stroke="rgba(255,255,255,0.88)" strokeWidth="1.25" fill="none" />
+      <line x1="4" y1="4.5" x2="8.5" y2="4.5" stroke="rgba(255,255,255,0.65)" strokeWidth="1" strokeLinecap="round" />
+      <line x1="4" y1="6.5" x2="7" y2="6.5" stroke="rgba(255,255,255,0.65)" strokeWidth="1" strokeLinecap="round" />
+      <line x1="4" y1="8.5" x2="8.5" y2="8.5" stroke="rgba(255,255,255,0.65)" strokeWidth="1" strokeLinecap="round" />
+      <path d="M13 6.5L11.2 10h2.3L11.8 14" stroke="rgba(255,255,255,0.95)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function DemoLinkedIn() {
+  const navigate = useNavigate();
+
+  const handleMagicButton = () => {
+    navigate('/interview-pack/start', {
+      state: {
+        jobSpec: JOB_DESCRIPTION,
+        jobTitle: 'Senior Software Engineer – FinTech Platform',
+        company: 'Vallum Associates',
+      },
+    });
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: '#f3f2ef', fontFamily: '-apple-system, "Segoe UI", sans-serif' }}>
       {/* LinkedIn-style top nav */}
@@ -76,7 +107,20 @@ export default function DemoLinkedIn() {
             <button style={{ background: 'transparent', color: '#0A66C2', border: '1px solid #0A66C2', borderRadius: '20px', padding: '10px 24px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>Save</button>
 
             {/* Magic Button */}
-            <MagicButton jobDescriptionText={JOB_DESCRIPTION} />
+            <button
+              onClick={handleMagicButton}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                background: 'linear-gradient(135deg, #1a3a6b 0%, #2563eb 100%)',
+                color: '#fff', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px',
+                padding: '11px 20px', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+                boxShadow: '0 2px 10px rgba(37,99,235,0.38), 0 1px 3px rgba(0,0,0,0.12)',
+                letterSpacing: '-0.01em', whiteSpace: 'nowrap', fontFamily: 'inherit',
+              }}
+            >
+              <AIDocIcon />
+              Get Interview Pack
+            </button>
           </div>
 
           {/* Job description */}
@@ -104,7 +148,7 @@ export default function DemoLinkedIn() {
           <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e0e0e0', padding: '20px' }}>
             <div style={{ fontSize: '13px', color: '#000', fontWeight: 700, marginBottom: '6px' }}>Powered by InterviewMe AI</div>
             <div style={{ fontSize: '12px', color: '#666', lineHeight: 1.6 }}>
-              {EXPLAIN_CTA_LONG}
+              Get 20 AI‑generated interview questions tailored to this exact role and your CV.
             </div>
           </div>
         </div>

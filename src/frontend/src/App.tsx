@@ -89,6 +89,8 @@ import InterviewSummaryPage from "./pages/InterviewSummaryPage";
 import SharedInterviewPage from "./pages/SharedInterviewPage";
 import MyInterviewsPage from "./pages/MyInterviewsPage";
 import LearnFlashTalkPage from "./pages/LearnFlashTalkPage";
+import DemoLinkedIn from "./pages/DemoLinkedIn";
+import DemoVallumPaid from "./pages/DemoVallumPaid";
 
 export default function App() {
   return (
@@ -218,6 +220,10 @@ export default function App() {
       <Route path="/interview-summary/:id" element={<RequirePermission permission="CAN_START_INTERVIEW"><InterviewSummaryPage /></RequirePermission>} />
       <Route path="/shared/:token" element={<SharedInterviewPage />} />
       <Route path="/interviews" element={<RequirePermission permission="CAN_START_INTERVIEW"><MyInterviewsPage /></RequirePermission>} />
+
+      {/* Demo — reached from the Dashboard's "Demo" nav item, opens in a new tab */}
+      <Route path="/demo/linkedin-job" element={<RequirePermission permission="CAN_START_INTERVIEW"><DemoLinkedIn /></RequirePermission>} />
+      <Route path="/demo/vallum-job-paid" element={<RequirePermission permission="CAN_START_INTERVIEW"><DemoVallumPaid /></RequirePermission>} />
 
       {/* Access denied */}
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
