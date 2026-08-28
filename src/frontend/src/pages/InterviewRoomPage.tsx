@@ -647,6 +647,14 @@ export default function InterviewRoomPage() {
   const [techState, setTechState] = useState<AvatarState>('idle');
   const [hrAnalyser, setHrAnalyser] = useState<AnalyserNode | null>(null);
   const [techAnalyser, setTechAnalyser] = useState<AnalyserNode | null>(null);
+  // Stable reference — InterviewerAvatar's video-analyser effect depends on this prop, and
+  // setHrAnalyser itself is already stable (React guarantees state setters never change), so
+  // wrapping it here (rather than passing an inline arrow at the JSX call site) stops that
+  // effect re-running on every re-render while the video plays. It was re-running before:
+  // createMediaElementSource can only be called once per <video> element, so each rebuild
+  // threw (silently, inside a try/catch) after having already rewired the element's audio
+  // output — closing the AudioContext on cleanup then froze the video mid-playback.
+  const handleSarahVideoAnalyser = useCallback((a: AnalyserNode) => setHrAnalyser(a), []);
   const [elapsed, setElapsed] = useState(0);
   const [coachingMessage, setCoachingMessage] = useState<CoachingMessage | null>(null);
   const [paused, setPaused] = useState(false);
@@ -1442,7 +1450,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 role="hr" state={hrState} active={hrState === 'speaking'} analyserNode={hrAnalyser}
                 videoUrl={sarahIntroVideoActive ? '/images/sarah-intro-v1.mp4' : null}
                 onVideoEnded={sarahIntroVideoActive ? handleSarahIntroVideoEnded : () => onDoneRef.current?.()}
-                onVideoAnalyser={a => setHrAnalyser(a)}
+                onVideoAnalyser={handleSarahVideoAnalyser}
               />
               <InterviewerAvatar role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} analyserNode={techAnalyser} onVideoEnded={() => onDoneRef.current?.()} />
               <YouCamera cameraOn={cameraOn} speaking={phase === 'answering'} onToggle={() => setCameraOn(v => !v)} />
