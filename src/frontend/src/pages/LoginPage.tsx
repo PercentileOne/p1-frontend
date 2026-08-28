@@ -283,7 +283,7 @@ export default function LoginPage() {
                       type="button"
                       onClick={() => { setSelectedRole(opt.value); setRoleDropOpen(false); setRoleError(""); }}
                       className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-white/[0.04]"
-                      style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                      style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", background: "transparent" }}
                     >
                       <span className="text-base">{opt.emoji}</span>
                       <div className="flex flex-col">
