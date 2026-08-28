@@ -89,9 +89,18 @@ async function getAudioContext(): Promise<AudioContext> { return getTTSAudioCont
 // the candidate's mic — set/cleared by whoever owns the recording (e.g. InterviewRoomPage).
 // Must be a node on the SAME AudioContext returned by getTTSAudioContext(), since Web Audio
 // nodes can't connect across different contexts.
+//
+// The optional compressor is a limiter the caller has already wired as candidateMic -> dest
+// (see InterviewRoomPage.tsx's startRecording) — TTS audio routes through the SAME node
+// rather than connecting to dest directly, so mic + TTS voices sum through one limiter
+// instead of both landing at full gain on the destination and clipping. That clipping was a
+// real bug: every recording crackled constantly, worse exactly when the signal was louder —
+// the classic sound of digital clipping from multiple full-scale sources summing unchecked.
 let _recordingDestination: MediaStreamAudioDestinationNode | null = null;
-export function setTTSRecordingDestination(node: MediaStreamAudioDestinationNode | null) {
+let _recordingCompressor: DynamicsCompressorNode | null = null;
+export function setTTSRecordingDestination(node: MediaStreamAudioDestinationNode | null, compressor?: DynamicsCompressorNode | null) {
   _recordingDestination = node;
+  _recordingCompressor = compressor ?? null;
 }
 
 async function speakElevenLabs(
@@ -157,7 +166,7 @@ async function speakElevenLabs(
     source.connect(gainNode);
   }
   gainNode.connect(ctx.destination);
-  if (_recordingDestination) gainNode.connect(_recordingDestination);
+  if (_recordingDestination) gainNode.connect(_recordingCompressor ?? _recordingDestination);
 
   let ended = false;
   const done = () => { if (!ended) { ended = true; onEnd(); } };

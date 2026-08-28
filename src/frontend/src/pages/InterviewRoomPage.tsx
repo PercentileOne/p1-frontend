@@ -395,11 +395,18 @@ export default function InterviewRoomPage() {
 
         const audioCtx = new AudioContext();
         const dest = audioCtx.createMediaStreamDestination();
+        // Limiter — tab audio (already containing the AI voices at full volume) and the raw
+        // mic were both connecting straight to dest with no gain staging, so Web Audio just
+        // summed them: two full-scale sources add up to a signal that clips, and the clipping
+        // gets audibly worse exactly when the combined signal is louder. Routing both through
+        // one compressor first keeps the mix under the ceiling instead of clipping past it.
+        const compressor = audioCtx.createDynamicsCompressor();
+        compressor.connect(dest);
         const tabAudioTracks = tabStream.getAudioTracks();
         if (tabAudioTracks.length > 0) {
-          audioCtx.createMediaStreamSource(new MediaStream(tabAudioTracks)).connect(dest);
+          audioCtx.createMediaStreamSource(new MediaStream(tabAudioTracks)).connect(compressor);
         }
-        if (micStream) audioCtx.createMediaStreamSource(micStream).connect(dest);
+        if (micStream) audioCtx.createMediaStreamSource(micStream).connect(compressor);
 
         compositeStream = new MediaStream([...tabStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
 
@@ -472,8 +479,13 @@ export default function InterviewRoomPage() {
         // Desktop doesn't need this: tab-audio capture above already includes ElevenLabs playback.
         const audioCtx = await getTTSAudioContext();
         const dest = audioCtx.createMediaStreamDestination();
-        audioCtx.createMediaStreamSource(camStream).connect(dest);
-        setTTSRecordingDestination(dest);
+        // Same limiter fix as the desktop path above — mic and TTS voices (connected in
+        // ttsApi.ts's speak(), via setTTSRecordingDestination) both route through this
+        // compressor instead of landing on dest at full gain and summing into clipping.
+        const compressor = audioCtx.createDynamicsCompressor();
+        compressor.connect(dest);
+        audioCtx.createMediaStreamSource(camStream).connect(compressor);
+        setTTSRecordingDestination(dest, compressor);
 
         compositeStream = new MediaStream([...canvasStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
       }

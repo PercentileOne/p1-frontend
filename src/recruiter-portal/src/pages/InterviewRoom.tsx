@@ -315,15 +315,22 @@ export default function InterviewRoom() {
       // Mix tab audio + mic audio into one track via AudioContext
       const audioCtx = new AudioContext();
       const dest = audioCtx.createMediaStreamDestination();
+      // Limiter — tab audio (already containing the AI voices at full volume) and the raw
+      // mic were both connecting straight to dest with no gain staging, so Web Audio just
+      // summed them: two full-scale sources add up to a signal that clips, and the clipping
+      // gets audibly worse exactly when the combined signal is louder. Routing both through
+      // one compressor first keeps the mix under the ceiling instead of clipping past it.
+      const compressor = audioCtx.createDynamicsCompressor();
+      compressor.connect(dest);
 
       const tabAudioTracks = tabStream.getAudioTracks();
       if (tabAudioTracks.length > 0) {
         const tabSource = audioCtx.createMediaStreamSource(new MediaStream(tabAudioTracks));
-        tabSource.connect(dest);
+        tabSource.connect(compressor);
       }
       if (micStream) {
         const micSource = audioCtx.createMediaStreamSource(micStream);
-        micSource.connect(dest);
+        micSource.connect(compressor);
       }
 
       // Build composite stream: tab video + mixed audio
