@@ -494,6 +494,21 @@ function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapt
     else { videoRef.current.play(); setPlaying(true); }
   };
 
+  // Previous/Next jump between chapters (questions), not raw seconds. Previous follows the
+  // standard media-player convention (Spotify, YouTube chapters): more than a few seconds
+  // into the current question, it restarts that question rather than jumping back past it —
+  // only jumps to the actual previous question if you're already near its start.
+  const goToChapter = (index: number) => {
+    if (index < 0 || index >= chapters.length) return;
+    jumpTo(chapters[index].offsetSeconds);
+  };
+  const goPrev = () => {
+    const chapterStart = chapters[activeChapter]?.offsetSeconds ?? 0;
+    if (currentTime - chapterStart > 3) goToChapter(activeChapter);
+    else goToChapter(activeChapter - 1);
+  };
+  const goNext = () => goToChapter(activeChapter + 1);
+
   const onTimeUpdate = () => {
     if (!videoRef.current) return;
     const t = videoRef.current.currentTime;
@@ -582,11 +597,27 @@ function InterviewReplayPlayer({ url, chapters }: { url: string; chapters: Chapt
           ))}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button
+            onClick={goPrev}
+            disabled={chapters.length === 0}
+            title="Previous question"
+            style={{ background: 'none', border: 'none', cursor: chapters.length === 0 ? 'default' : 'pointer', color: chapters.length === 0 ? 'var(--text-3)' : 'var(--text)', opacity: chapters.length === 0 ? 0.4 : 1, padding: 0, display: 'flex', alignItems: 'center' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+          </button>
           <button onClick={togglePlay} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)', padding: 0, display: 'flex', alignItems: 'center' }}>
             {playing
               ? <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
               : <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
             }
+          </button>
+          <button
+            onClick={goNext}
+            disabled={chapters.length === 0 || activeChapter >= chapters.length - 1}
+            title="Next question"
+            style={{ background: 'none', border: 'none', cursor: (chapters.length === 0 || activeChapter >= chapters.length - 1) ? 'default' : 'pointer', color: (chapters.length === 0 || activeChapter >= chapters.length - 1) ? 'var(--text-3)' : 'var(--text)', opacity: (chapters.length === 0 || activeChapter >= chapters.length - 1) ? 0.4 : 1, padding: 0, display: 'flex', alignItems: 'center' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-3.5 6L4 6v12z"/></svg>
           </button>
           <span style={{ fontSize: '12px', color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>{fmt(currentTime)} / {fmt(duration)}</span>
         </div>

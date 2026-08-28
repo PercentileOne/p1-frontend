@@ -59,7 +59,10 @@ interface IncomingState {
   cvFileUrl?: string;
   cvFileName?: string;
   difficulty?: string;
+  questionCount?: number;
 }
+
+const QUESTION_COUNTS = [5, 10, 15, 20];
 
 const SELECT_CHEVRON = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`;
 
@@ -101,6 +104,7 @@ export default function InterviewPackStart() {
   const [activeTab, setActiveTab] = useState<'jobspec' | 'cv'>('cv');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedDifficulty, setSelectedDifficulty] = useState(incoming.difficulty ?? 'Standard');
+  const [selectedQuestionCount, setSelectedQuestionCount] = useState(incoming.questionCount ?? 10);
   const [consentToRecord, setConsentToRecord] = useState(true);
   // Only shown after a blocked attempt to start — not on first load, so an empty form
   // doesn't look like it's already in an error state before the candidate's done anything.
@@ -183,6 +187,7 @@ export default function InterviewPackStart() {
       hasJobTitle: Boolean(jobTitle.trim()),
       selectedLanguage,
       selectedDifficulty,
+      selectedQuestionCount,
     });
     navigate('/interview/standard', {
       state: {
@@ -193,6 +198,7 @@ export default function InterviewPackStart() {
         preferredName: preferredName.trim() || undefined,
         selectedLanguage,
         selectedDifficulty,
+        questionCount: selectedQuestionCount,
         autoStart: true,
         consentToRecord,
       },
@@ -469,11 +475,12 @@ export default function InterviewPackStart() {
           </div>
         </div>
 
-        {/* Language + Difficulty — side by side */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+        {/* Language + Difficulty + Question Count — wraps on narrow screens rather than
+            cramming three dropdowns into one row */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
 
           {/* Language */}
-          <div style={{ flex: 1, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
             <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
               Interview Language
             </div>
@@ -498,7 +505,7 @@ export default function InterviewPackStart() {
           </div>
 
           {/* Difficulty */}
-          <div style={{ flex: 1, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
             <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
               Question Difficulty
             </div>
@@ -521,6 +528,33 @@ export default function InterviewPackStart() {
             </select>
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
               {difficulty.desc}
+            </div>
+          </div>
+
+          {/* Question Count — defaults to 10 (matches the original fixed count); lets
+              someone doing a quick test run pick 5 instead of sitting through/passing 10,
+              and cuts AI generation cost proportionally for shorter sessions. */}
+          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
+              Number of Questions
+            </div>
+            <select
+              value={selectedQuestionCount}
+              onChange={e => setSelectedQuestionCount(Number(e.target.value))}
+              style={{
+                width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+                borderRadius: '10px', padding: '12px 14px', color: 'var(--text)', fontSize: '14px',
+                fontFamily: 'inherit', outline: 'none', cursor: 'pointer', appearance: 'none',
+                backgroundImage: SELECT_CHEVRON,
+                backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
+              }}
+            >
+              {QUESTION_COUNTS.map(n => (
+                <option key={n} value={n}>{n} questions</option>
+              ))}
+            </select>
+            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
+              Just want a quick run-through? Pick 5.
             </div>
           </div>
 

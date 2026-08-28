@@ -143,6 +143,7 @@ export interface RoomState {
   autoStart?: boolean;
   selectedLanguage?: string;
   selectedDifficulty?: string;
+  questionCount?: number;
   preferredName?: string;
   company?: string;
   consentToRecord?: boolean;
@@ -912,7 +913,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
       // Phase 2: fires in parallel — doesn't wait for the setTimeout above
       phase2Timeout = setTimeout(resolvePhase2, 35000);
-      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName);
+      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount);
 
     }).then(result => {
       bgLoadedRef.current = true;

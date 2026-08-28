@@ -745,7 +745,14 @@ export async function sessionPrepareClient(
   jobTitle?: string,
   selectedDifficulty?: string,
   preferredName?: string,
+  questionCount?: number,
 ): Promise<ClientSessionResult> {
+  // 4:1 role-to-HR split, same ratio as the original fixed 8+2 — the last HR question is
+  // always "what do you know about the company", every other slot is role/competency.
+  const totalQuestions = questionCount && [5, 10, 15, 20].includes(questionCount) ? questionCount : 10;
+  const hrQuestionCount = Math.max(1, Math.round(totalQuestions / 5));
+  const roleQuestionCount = totalQuestions - hrQuestionCount;
+
   const cvSection = cvText?.trim()
     ? `\n\n═══ CANDIDATE CV ═══\n${cvText.slice(0, 3000)}`
     : '';
@@ -827,9 +834,9 @@ Return this exact JSON:
   ]
 }
 
-Generate exactly 10 questions total:
-- 8 role/competency questions (source: "Role") — based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover DIFFERENT competencies each time — do NOT reuse the same question themes across sessions. Use the session seed to pick a fresh angle on the role. Avoid generic questions like "tell me about yourself" or "describe a challenge" — make them specific to this exact role and company.
-- 2 HR/culture questions (source: "HR") — the last one must ask what the candidate knows about the company and why this role appeals to them specifically
+Generate exactly ${totalQuestions} questions total:
+- ${roleQuestionCount} role/competency questions (source: "Role") — based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover DIFFERENT competencies each time — do NOT reuse the same question themes across sessions. Use the session seed to pick a fresh angle on the role. Avoid generic questions like "tell me about yourself" or "describe a challenge" — make them specific to this exact role and company.
+- ${hrQuestionCount} HR/culture question${hrQuestionCount === 1 ? '' : 's'} (source: "HR") — the last one must ask what the candidate knows about the company and why this role appeals to them specifically
 
 CRITICAL: The JSON must contain "mcqQuestions" (plural, an array of exactly 2 objects) — NOT "mcqQuestion" (singular). This is mandatory.
 
