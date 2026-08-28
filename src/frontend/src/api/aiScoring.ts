@@ -892,10 +892,18 @@ IMPORTANT: The two MCQ questions and ALL interview questions MUST be completely 
 
   // The prompt asks for "exactly N" but nothing enforces that on a JSON-mode LLM call — it
   // drifts (seen in practice: N-1 or N-2), especially at this call's high temperature (0.9,
-  // for session-to-session variety). Retrying the whole generation is retry-and-hope — it can
-  // miss on every attempt. Once retries are exhausted, make the count exact deterministically:
-  // ask for precisely the missing questions as a small top-up, rather than accepting a short
+  // for session-to-session variety). Make the count exact deterministically instead: ask for
+  // precisely the missing questions as a small top-up (below), rather than accepting a short
   // session or padding with generic filler that breaks the "personalised to this role" promise.
+  //
+  // This used to retry the ENTIRE mega-generation (10 questions + 2 MCQs + 3 intros) up to
+  // twice more first, before falling through to the top-up — each retry is another full
+  // ~10-20s OpenAI call, which repeatedly blew past Phase 2's fallback window in
+  // InterviewRoomPage.tsx under real-world latency (confirmed live 2026-08-28: "8 questions
+  // instead of 10 — retrying (attempt 2/3)" immediately preceded Sarah/James falling back to
+  // their generic, name-less lines). A full retry also silently replaced the whole `result`
+  // object, including the first call's already-good sarahIntro/jamesIntro, even though nothing
+  // was wrong with them. Going straight to the top-up is both faster and never touches them.
   //
   // Every target below is `totalQuestions` (the candidate's configured count), not a literal
   // 10 — this whole block was written before the question-count dropdown existed, when 10 was
@@ -903,25 +911,12 @@ IMPORTANT: The two MCQ questions and ALL interview questions MUST be completely 
   // selecting 5 on the intake screen still produced a 10-question session: the AI was very
   // likely honouring "generate exactly 5" in the main prompt, and this safety net then padded
   // the result straight back up to a hardcoded 10 regardless.
-  let result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
-  for (let attempt = 1; attempt < 3 && (result.questions?.length ?? 0) !== totalQuestions; attempt++) {
-    console.warn(`[Explain AI] Session prep returned ${result.questions?.length ?? 0} questions instead of ${totalQuestions} — retrying (attempt ${attempt + 1}/3).`);
-    // A failed retry (network blip, transient 5xx) must not discard the perfectly good
-    // sarahIntro/jamesIntro/mikeScript already sitting in `result` from the first call —
-    // only the question count was being chased here, so just stop retrying and move on.
-    try {
-      const retry = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
-      if (Math.abs(totalQuestions - (retry.questions?.length ?? 0)) < Math.abs(totalQuestions - (result.questions?.length ?? 0))) result = retry;
-    } catch (err) {
-      console.error('[Explain AI] Question-count retry attempt failed — keeping the best result so far:', err);
-      break;
-    }
-  }
+  const result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
   if (result.questions?.length > totalQuestions) result.questions = result.questions.slice(0, totalQuestions);
 
   const shortfall = totalQuestions - (result.questions?.length ?? 0);
   if (shortfall > 0) {
-    console.warn(`[Explain AI] Still ${result.questions?.length ?? 0} questions after retries — topping up ${shortfall} more directly.`);
+    console.warn(`[Explain AI] Session prep returned ${result.questions?.length ?? 0} questions instead of ${totalQuestions} — topping up ${shortfall} more directly.`);
     try {
       const existingTexts = (result.questions ?? []).map(q => `- ${q.questionText}`).join('\n');
       const topUpPrompt = `Generate exactly ${shortfall} more interview question(s) for the same role, continuing this session (do not repeat any theme from the list below).

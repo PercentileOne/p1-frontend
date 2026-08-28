@@ -258,6 +258,16 @@ export default function InterviewRoomPage() {
   const ctx = (location.state ?? {}) as RoomState;
   const cvCtx = ctx.cvCtx;
   const jobCtx = ctx.jobCtx;
+
+  // The tab title otherwise stays the generic app name for the whole session — no way to
+  // tell at a glance (browser tab, screen-share thumbnail, demo recording) which interview
+  // is actually running. Restores whatever was there before on unmount/navigate-away.
+  useEffect(() => {
+    const previousTitle = document.title;
+    const jobTitle = ctx.jobTitle?.trim();
+    if (jobTitle) document.title = `${jobTitle} — Interview | InterviewMe.global`;
+    return () => { document.title = previousTitle; };
+  }, [ctx.jobTitle]);
   const authUser = useAuthStore(s => s.user);
   // Resolve candidate name: explicit "Known As" override wins, then the logged-in
   // account's own name, then undefined. Was CV-extracted firstName as the fallback
