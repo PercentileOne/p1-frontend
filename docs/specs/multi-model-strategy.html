@@ -1,0 +1,361 @@
+<title>Multi-Model Strategy</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #F6F7FA;
+    --surface: #FFFFFF;
+    --surface-2: #EEF1F6;
+    --border: #DFE3EA;
+    --text: #14181F;
+    --text-2: #444C59;
+    --text-3: #6B7383;
+    --accent: #2563EB;
+    --accent-dim: #EAF0FE;
+    --good: #0F8F5F;
+    --good-dim: #E4F7EE;
+    --warn: #B5680A;
+    --warn-dim: #FBF0DD;
+    --bad: #C4331F;
+    --bad-dim: #FBE8E5;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --sans: 'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0B0F17;
+      --surface: #11161F;
+      --surface-2: #171D29;
+      --border: #232B3A;
+      --text: #E7EBF3;
+      --text-2: #AEB7C8;
+      --text-3: #7B8496;
+      --accent: #5B9BFF;
+      --accent-dim: #16233D;
+      --good: #34D399;
+      --good-dim: #103328;
+      --warn: #F0AA3C;
+      --warn-dim: #3A2A0E;
+      --bad: #EF6156;
+      --bad-dim: #3A1712;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0B0F17;
+    --surface: #11161F;
+    --surface-2: #171D29;
+    --border: #232B3A;
+    --text: #E7EBF3;
+    --text-2: #AEB7C8;
+    --text-3: #7B8496;
+    --accent: #5B9BFF;
+    --accent-dim: #16233D;
+    --good: #34D399;
+    --good-dim: #103328;
+    --warn: #F0AA3C;
+    --warn-dim: #3A2A0E;
+    --bad: #EF6156;
+    --bad-dim: #3A1712;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0 0 10px;
+  }
+  .subtitle {
+    font-size: 16px;
+    color: var(--text-2);
+    max-width: 58ch;
+    margin: 0 0 40px;
+  }
+  h2 {
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 52px 0 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  h2 .num {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-3);
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 26px 0 8px;
+    color: var(--text);
+  }
+  p { color: var(--text-2); font-size: 15px; margin: 0 0 14px; }
+  p.lead { color: var(--text); font-size: 15.5px; }
+  strong { color: var(--text); font-weight: 600; }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; }
+  a:hover { border-bottom-color: currentColor; }
+  code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: var(--text);
+  }
+  ul, ol { margin: 0 0 16px; padding-left: 22px; color: var(--text-2); font-size: 15px; }
+  li { margin-bottom: 6px; }
+  li::marker { color: var(--text-3); }
+
+  .callout {
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    margin: 0 0 8px;
+    display: flex;
+    gap: 14px;
+  }
+  .callout .icon { font-size: 18px; line-height: 1.4; flex-shrink: 0; }
+  .callout .body p:last-child { margin-bottom: 0; }
+  .callout.incident { background: var(--bad-dim); border-color: color-mix(in srgb, var(--bad) 35%, var(--border)); }
+  .callout.incident .kicker-small { color: var(--bad); }
+  .callout.fixed { background: var(--good-dim); border-color: color-mix(in srgb, var(--good) 35%, var(--border)); }
+  .callout.fixed .kicker-small { color: var(--good); }
+  .callout.recommend { background: var(--accent-dim); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); }
+  .callout.recommend .kicker-small { color: var(--accent); }
+  .kicker-small {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .option-grid {
+    display: grid;
+    gap: 12px;
+    margin: 12px 0 8px;
+  }
+  .option {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    background: var(--surface);
+  }
+  .option-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .option-name { font-weight: 700; font-size: 14.5px; }
+  .pill {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .pill.easy { background: var(--good-dim); color: var(--good); }
+  .pill.mid { background: var(--warn-dim); color: var(--warn); }
+  .pill.hard { background: var(--bad-dim); color: var(--bad); }
+  .option p { font-size: 13.5px; margin-bottom: 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin: 8px 0 20px;
+  }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    background: var(--surface-2);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.model { font-family: var(--mono); font-weight: 600; color: var(--text); white-space: nowrap; }
+
+  .model-catalog {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0 22px;
+  }
+  .model-chip {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-2);
+  }
+
+  .divider { height: 1px; background: var(--border); margin: 52px 0 0; }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--text-3);
+  }
+  footer a { color: var(--text-3); }
+  footer .sources { margin-top: 10px; }
+  footer .sources a { display: inline-block; margin: 2px 10px 2px 0; }
+</style>
+
+<div class="page">
+  <div class="kicker">Percentile.One / InterviewMe · Infrastructure Note</div>
+  <h1>Should the interview engine depend on one AI model?</h1>
+  <p class="subtitle">Your question after tonight's demo: is a single model too fragile to build hundreds of thousands of interviews on — and if we spread across two to four, how do the big platforms actually do it, and what does Microsoft give us for free?</p>
+
+  <div class="callout incident">
+    <div class="icon">⚠️</div>
+    <div class="body">
+      <span class="kicker-small">What actually broke tonight</span>
+      <p>Not model reliability. The safety net that tops up a short question count was re-running the <em>entire</em> generation — 10 questions, 2 MCQs, 3 intros — up to twice more, and each retry cost another 10–20s. That routinely ate the 55-second window Sarah and James have to arrive personalised, so they fell back to generic lines. Fixed by cutting the retries and going straight to a small, targeted top-up call. Already deployed.</p>
+    </div>
+  </div>
+  <div class="callout fixed">
+    <div class="icon">✓</div>
+    <div class="body">
+      <span class="kicker-small">Worth separating</span>
+      <p>Multi-model redundancy wouldn't have prevented tonight's bug — the model answered correctly every time, we just called it more than necessary. It's still the right question to ask for the platform's next stage, for different reasons below.</p>
+    </div>
+  </div>
+
+  <h2><span class="num">01</span> What's actually available</h2>
+  <p class="lead">Three shapes this can take, in order of how much you build yourself:</p>
+
+  <div class="option-grid">
+    <div class="option">
+      <div class="option-head">
+        <span class="option-name">Call providers directly, write your own routing</span>
+        <span class="pill hard">Most work</span>
+      </div>
+      <p>OpenAI, Anthropic, Google direct API calls from Explain.Api, with your own retry/fallback code choosing between them. Full control, but you own every failure mode, rate limit, and pricing quirk for each provider separately.</p>
+    </div>
+    <div class="option">
+      <div class="option-head">
+        <span class="option-name">An LLM gateway in front of everything</span>
+        <span class="pill mid">Moderate</span>
+      </div>
+      <p>A proxy layer (Bifrost, Portkey, LiteLLM and similar) sits between your app and every provider, speaking one API shape outward and handling failover, retries, and cost tracking centrally. Popular where teams are already multi-cloud or want provider choice beyond what Azure's catalog carries.</p>
+    </div>
+    <div class="option">
+      <div class="option-head">
+        <span class="option-name">Azure's own multi-model router</span>
+        <span class="pill easy">Least work</span>
+      </div>
+      <p>One Azure AI Foundry deployment exposes 18 models from five providers behind a single endpoint, with automatic failover and cost-aware routing built in — no gateway to run yourself. Detailed below, since P1 is already fully committed to Azure.</p>
+    </div>
+  </div>
+
+  <h2><span class="num">02</span> How the large platforms do it</h2>
+  <p>The pattern converges the same way almost everywhere it's been written up, and it's shifted meaning over the past couple of years — <a href="https://www.kai-waehner.de/blog/2026/08/10/why-enterprises-need-a-multi-model-ai-strategy-cost-compliance-and-resilience/" target="_blank" rel="noreferrer">multi-model started as a cost-optimisation tactic and is now treated as resilience engineering</a> in its own right.</p>
+  <ul>
+    <li><strong>Fallback chains.</strong> A primary model handles the request; on timeout, error, or a rate limit, the same request replays against a secondary model automatically, invisibly to the user.</li>
+    <li><strong>Complexity-based routing.</strong> Cheap, fast models absorb simple requests; expensive, capable models are reserved for the ones that actually need them. This is as much a cost lever as a reliability one.</li>
+    <li><strong>Provider diversification as insurance.</strong> Depending on one vendor means one vendor's bad day — an outage, a sudden rate-limit change, a quiet quality regression after a model update — becomes your bad day too, with no lever to pull.</li>
+    <li><strong>A gateway as the seam.</strong> Almost nobody hand-rolls this per call site. One control point owns retries, circuit-breaking, health checks, and observability, so the application code stays simple and provider-agnostic.</li>
+  </ul>
+
+  <h2><span class="num">03</span> What Microsoft actually offers</h2>
+  <p>Two distinct things carry the "Azure OpenAI" name, worth telling apart:</p>
+
+  <h3>Azure OpenAI Service — same models, Azure-hosted</h3>
+  <p>This is what Explain.Api already points at conceptually (currently via a direct OpenAI key rather than the Azure-hosted version). It's still fundamentally <em>one provider's models</em> — resilience here means <a href="https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/azure-openai-gateway-multi-backend" target="_blank" rel="noreferrer">deploying the same model across multiple Azure regions and load-balancing or failing over between them via API Management</a>, plus optional provisioned throughput (PTU) for guaranteed capacity instead of shared quota. Solves "Azure has an outage in one region" — doesn't solve "OpenAI's models are having a bad day."</p>
+
+  <h3>Azure AI Foundry — the broader model catalog</h3>
+  <p>The newer, bigger thing: a catalog of <a href="https://azure.microsoft.com/en-us/products/ai-foundry/models" target="_blank" rel="noreferrer">over 10,000 models</a> curated from OpenAI, Anthropic, Meta, Mistral, DeepSeek, xAI, Cohere, Hugging Face and others, all reachable through Azure with a single billing relationship and set of enterprise controls.</p>
+  <div class="model-catalog">
+    <span class="model-chip">GPT-5 / GPT-4o family</span>
+    <span class="model-chip">Claude Opus / Sonnet</span>
+    <span class="model-chip">Llama 3</span>
+    <span class="model-chip">Mistral Large</span>
+    <span class="model-chip">DeepSeek</span>
+    <span class="model-chip">Grok</span>
+    <span class="model-chip">Cohere Command</span>
+  </div>
+
+  <h3>Model Router — the specific piece that answers your question</h3>
+  <p>This is the part worth focusing on. <a href="https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/model-router" target="_blank" rel="noreferrer">Model Router is a single Foundry deployment</a> that puts 18 models from OpenAI, Anthropic, DeepSeek, Meta, and xAI behind one endpoint, and picks the right one per request in real time based on complexity, cost, or a quality target you set. Critically for tonight's conversation: <strong>automatic failover to another model is a built-in behaviour when a provider is unavailable</strong> — not something you write.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Capability</th><th>Azure OpenAI Service</th><th>Model Router (Foundry)</th></tr></thead>
+      <tbody>
+        <tr><td>Providers behind one endpoint</td><td>OpenAI only</td><td>OpenAI, Anthropic, DeepSeek, Meta, xAI</td></tr>
+        <tr><td>Failover on outage</td><td>Manual — you wire multi-region + APIM</td><td>Automatic, built in</td></tr>
+        <tr><td>Question phrasing varies by model</td><td>No — always the same model</td><td>Yes, as a natural side effect</td></tr>
+        <tr><td>Integration effort from today</td><td>Low</td><td>Low — same chat-completions shape</td></tr>
+        <tr><td>Cost behaviour</td><td>Fixed per model</td><td class="model">4–14% lower in practice</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout recommend">
+    <div class="icon">→</div>
+    <div class="body">
+      <span class="kicker-small">Recommendation</span>
+      <p>Model Router is the natural fit — it's already inside the Azure account P1 is committed to, and it happens to solve <em>both</em> things you asked for at once. Automatic cross-provider failover answers the reliability concern directly. And because different requests can land on different underlying models, no two sessions phrase questions identically even at the same settings — a real, structural answer to "we don't want people memorising and sharing answers," not just a temperature tweak.</p>
+      <p>The migration is small in shape: Explain.Api's <code>ai-proxy</code> already just forwards a chat-completions-style request to <code>api.openai.com</code>. Pointing it at a Foundry Model Router deployment instead is largely a URL and auth change, not a rewrite — though it's worth testing carefully against this app's specific prompts (the heavy <code>sessionPrepareClient</code> call in particular) before trusting it in production, since different underlying models may follow the JSON schema and word-count instructions slightly differently from GPT-4o-mini today.</p>
+      <p>This is a proposal, not a plan already in motion — happy to scope the actual migration whenever you want to move on it.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <footer>
+    Prepared 28 Aug 2026 for Percentile.One — sources below are what this brief drew from; worth reading directly before committing budget.
+    <div class="sources">
+      <a href="https://azure.microsoft.com/en-us/products/ai-foundry/models" target="_blank" rel="noreferrer">Azure AI Foundry Models</a>
+      <a href="https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/model-router" target="_blank" rel="noreferrer">Model Router concepts — Microsoft Learn</a>
+      <a href="https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/azure-openai-gateway-multi-backend" target="_blank" rel="noreferrer">Azure OpenAI multi-backend gateway — Architecture Center</a>
+      <a href="https://www.kai-waehner.de/blog/2026/08/10/why-enterprises-need-a-multi-model-ai-strategy-cost-compliance-and-resilience/" target="_blank" rel="noreferrer">Why enterprises need a multi-model AI strategy — Kai Waehner</a>
+      <a href="https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/architecting-cost-aware-llm-workloads-with-model-router-in-microsoft-foundry/4514440" target="_blank" rel="noreferrer">Cost-aware LLM workloads with Model Router — Microsoft Community Hub</a>
+    </div>
+  </footer>
+</div>
