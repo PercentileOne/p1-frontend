@@ -1,0 +1,461 @@
+<title>Never Depend on One Model</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,600;0,700;1,600&display=swap');
+
+  :root {
+    --bg: #F5F6F8;
+    --surface: #FFFFFF;
+    --surface-2: #ECEEF2;
+    --border: #DEE2E8;
+    --text: #14181F;
+    --text-2: #454C58;
+    --text-3: #6D7484;
+    --accent: #2354D9;
+    --accent-dim: #E8EDFC;
+    --tip: #7C4FD9;
+    --tip-dim: #F1EBFD;
+    --gotcha: #B5680A;
+    --gotcha-dim: #FBF0DD;
+    --code-bg: #171B24;
+    --code-text: #E7EBF3;
+    --code-border: #2B3040;
+    --code-key: #7BA3F0;
+    --code-str: #9BD98A;
+    --code-com: #7B8496;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --sans: 'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
+    --serif: 'IBM Plex Serif', Georgia, serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0A0D13;
+      --surface: #11151E;
+      --surface-2: #171C27;
+      --border: #232936;
+      --text: #E9ECF3;
+      --text-2: #AEB6C6;
+      --text-3: #7B8496;
+      --accent: #6E9BFF;
+      --accent-dim: #16223D;
+      --tip: #B79BF5;
+      --tip-dim: #241C3A;
+      --gotcha: #F0AA3C;
+      --gotcha-dim: #3A2A0E;
+      --code-bg: #05070B;
+      --code-border: #1D222C;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0A0D13;
+    --surface: #11151E;
+    --surface-2: #171C27;
+    --border: #232936;
+    --text: #E9ECF3;
+    --text-2: #AEB6C6;
+    --text-3: #7B8496;
+    --accent: #6E9BFF;
+    --accent-dim: #16223D;
+    --tip: #B79BF5;
+    --tip-dim: #241C3A;
+    --gotcha: #F0AA3C;
+    --gotcha-dim: #3A2A0E;
+    --code-bg: #05070B;
+    --code-border: #1D222C;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 740px; margin: 0 auto; padding: 60px 24px 110px; }
+
+  .book-tag {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 12px;
+    display: inline-block;
+    margin-bottom: 22px;
+  }
+  .book-tag strong { color: var(--accent); font-weight: 700; }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0 0 14px;
+  }
+  .dek {
+    font-size: 17px;
+    color: var(--text-2);
+    max-width: 56ch;
+    margin: 0 0 8px;
+  }
+  .chapter-meta {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-3);
+    margin: 18px 0 46px;
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .chapter-meta span { display: inline-flex; align-items: center; gap: 6px; }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 700;
+    margin: 58px 0 8px;
+    letter-spacing: -0.005em;
+  }
+  h2 + .section-dek { margin-top: -2px; margin-bottom: 22px; }
+  .section-dek { color: var(--text-2); font-size: 14.5px; max-width: 58ch; }
+
+  p { color: var(--text-2); font-size: 15.5px; margin: 0 0 15px; }
+  p.lead { color: var(--text); font-size: 16px; }
+  strong { color: var(--text); font-weight: 600; }
+  em { color: var(--text); }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+  a:hover { border-bottom-color: currentColor; }
+
+  code.inline {
+    font-family: var(--mono);
+    font-size: 0.87em;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5px 6px;
+    color: var(--text);
+  }
+
+  ul, ol.plain { margin: 0 0 16px; padding-left: 22px; color: var(--text-2); font-size: 15.5px; }
+  li { margin-bottom: 7px; }
+  li::marker { color: var(--text-3); }
+
+  /* ── Numbered steps ── */
+  .step {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 18px;
+    margin: 34px 0;
+  }
+  .step-num {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.3;
+  }
+  .step-body h3 {
+    font-size: 16.5px;
+    font-weight: 700;
+    margin: 3px 0 8px;
+    color: var(--text);
+  }
+  .step-body p { font-size: 15px; }
+
+  /* ── Code blocks ── */
+  .code-wrap {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 10px;
+    margin: 12px 0 16px;
+    overflow: hidden;
+  }
+  .code-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #8891A3;
+    padding: 9px 16px 0;
+  }
+  pre {
+    margin: 0;
+    padding: 12px 16px 16px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--code-text);
+  }
+  pre .c { color: var(--code-com); font-style: italic; }
+  pre .s { color: var(--code-str); }
+  pre .k { color: var(--code-key); }
+
+  /* ── Callouts ── */
+  .callout {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 16px 18px;
+    margin: 16px 0 18px;
+    display: flex;
+    gap: 13px;
+  }
+  .callout .icon { font-size: 16px; line-height: 1.5; flex-shrink: 0; }
+  .callout .body p:last-child { margin-bottom: 0; }
+  .callout .label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .callout.tip { background: var(--tip-dim); border-color: color-mix(in srgb, var(--tip) 35%, var(--border)); }
+  .callout.tip .label { color: var(--tip); }
+  .callout.gotcha { background: var(--gotcha-dim); border-color: color-mix(in srgb, var(--gotcha) 35%, var(--border)); }
+  .callout.gotcha .label { color: var(--gotcha); }
+  .callout.concept { background: var(--accent-dim); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); }
+  .callout.concept .label { color: var(--accent); }
+  .callout p { font-size: 14px; margin-bottom: 8px; }
+
+  /* ── Term glossary grid ── */
+  .terms { display: grid; gap: 10px; margin: 8px 0 20px; }
+  .term {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 16px;
+    background: var(--surface);
+  }
+  .term dt {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .term dd { margin: 0; font-size: 13.5px; color: var(--text-2); }
+
+  .divider { height: 1px; background: var(--border); margin: 56px 0 0; }
+  footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    font-size: 12.5px;
+    color: var(--text-3);
+    font-family: var(--mono);
+  }
+
+  .checklist { list-style: none; padding-left: 0; margin: 8px 0 20px; }
+  .checklist li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 14.5px;
+    color: var(--text-2);
+    margin-bottom: 9px;
+  }
+  .checklist li::before {
+    content: "✓";
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+</style>
+
+<div class="page">
+  <span class="book-tag">Building a World-Class Digital Product · Chapter Note — <strong>Reliability at Scale</strong></span>
+  <h1>Never depend on one AI model</h1>
+  <p class="dek">A beginner's walkthrough of Azure AI Foundry's Model Router — one Azure endpoint that automatically spreads your app's AI calls across 20+ models from OpenAI, Anthropic, Meta, DeepSeek and xAI, with built-in failover, using nothing but the Azure CLI.</p>
+  <div class="chapter-meta">
+    <span>⏱ ~25 minutes</span>
+    <span>💻 Terminal + an Azure account</span>
+    <span>💰 Pay-as-you-go, no upfront commitment</span>
+  </div>
+
+  <p class="lead">If you've only ever called one AI provider directly — a single OpenAI or Anthropic API key baked into your backend — this chapter changes that. You'll stand up an Azure resource that speaks to your app exactly like OpenAI does, except behind the scenes it can hand each request to whichever underlying model suits it best, and automatically try another one if the first choice is unavailable. Your product stops depending on any single company having a good day.</p>
+
+  <div class="callout concept">
+    <div class="icon">📖</div>
+    <div class="body">
+      <span class="label">Concept — Model Router</span>
+      <p>A trained routing model, not a proxy or a script. You send it a normal chat-completion request; it reads the prompt and decides, per request, which underlying model — a fast cheap one or a slow capable one — actually answers it. You never choose the model yourself.</p>
+    </div>
+  </div>
+
+  <h2>What you'll need</h2>
+  <ul class="checklist">
+    <li>An Azure account with an active subscription (a free trial works to follow along)</li>
+    <li>Azure CLI installed — version 2.60 or later (<code class="inline">az --version</code> to check, <code class="inline">az upgrade</code> to update)</li>
+    <li>Ten minutes of patience for Azure resource provisioning, which is never instant</li>
+  </ul>
+
+  <h2>The seven steps</h2>
+  <p class="section-dek">Everything below is real — run in that exact order, this is what actually stands the whole thing up.</p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <h3>Sign in and pick your subscription</h3>
+      <p>If you've used the Azure CLI before, you may have several subscriptions attached to your account. Confirm which one you're working in before creating anything.</p>
+      <div class="code-wrap">
+        <div class="code-label">terminal</div>
+        <pre>az login
+az account set --subscription "<span class="s">your-subscription-id</span>"</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <h3>Register the Cognitive Services provider</h3>
+      <p>Every Azure subscription starts with most "resource providers" switched off, to keep the default surface area small. AI Foundry resources live under <code class="inline">Microsoft.CognitiveServices</code> — if this is the first AI resource in the subscription, you'll need to switch it on once. It's free and it's permanent; you'll never run this again for future projects in the same subscription.</p>
+      <div class="code-wrap">
+        <div class="code-label">terminal</div>
+        <pre>az provider register --namespace Microsoft.CognitiveServices --wait</pre>
+      </div>
+      <div class="callout gotcha">
+        <div class="icon">⚠️</div>
+        <div class="body">
+          <span class="label">Gotcha</span>
+          <p>Skip this and your very first resource-creation command fails with <code class="inline">MissingSubscriptionRegistration</code>. It's not a permissions problem and it's not your syntax — it just means this specific subscription has never used this specific Azure service before. Run the line above and retry.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <h3>Create the AI Foundry resource</h3>
+      <p>This is the actual Azure resource your app will talk to. Give it a name that's globally unique (it becomes part of a URL), and pick a region close to where your app itself is hosted — the resource and your server exchanging data across continents adds real latency to every single AI call.</p>
+      <div class="code-wrap">
+        <div class="code-label">terminal</div>
+        <pre><span class="k">accountName</span>=<span class="s">"myapp-model-router"</span>
+<span class="k">resourceGroup</span>=<span class="s">"myapp-rg"</span>
+<span class="k">location</span>=<span class="s">"westeurope"</span>
+
+az cognitiveservices account create \
+  -n $accountName -g $resourceGroup \
+  --custom-domain $accountName \
+  --location $location \
+  --kind AIServices --sku S0</pre>
+      </div>
+      <p>The <code class="inline">--custom-domain</code> flag matters more than it looks — it's what turns your generic Azure resource into its own addressable endpoint, <code class="inline">https://myapp-model-router.openai.azure.com</code>, which is the URL your app will actually call.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <h3>Confirm Model Router is available to you</h3>
+      <p>Not every model is available in every region or on every subscription tier. Before deploying, check what your new resource can actually see — this also teaches you the exact model name and version string Azure expects, which you'll need in the next step.</p>
+      <div class="code-wrap">
+        <div class="code-label">terminal</div>
+        <pre>az cognitiveservices account list-models -n $accountName -g $resourceGroup \
+  | grep -A3 '"model-router"'</pre>
+      </div>
+      <p>Look for a version number like <code class="inline">2025-11-18</code> — Azure dates its Model Router releases rather than numbering them, and this specific version stays actively maintained (new underlying models get added to it automatically) rather than being frozen the way older dated versions are.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <h3>Deploy it</h3>
+      <p>"Deploying" here doesn't mean shipping code — it means telling Azure to actually provision capacity for this specific model against your resource, under a name you choose. That name is what your app puts in the <code class="inline">model</code> field of every request; it never needs to know which real model answered.</p>
+      <div class="code-wrap">
+        <div class="code-label">terminal</div>
+        <pre>az cognitiveservices account deployment create \
+  -n $accountName -g $resourceGroup \
+  --deployment-name model-router \
+  --model-name model-router \
+  --model-version "2025-11-18" \
+  --model-format OpenAI \
+  --sku-name GlobalStandard \
+  --sku-capacity 1</pre>
+      </div>
+      <p>This typically finishes in under a minute. Confirm it actually succeeded before moving on — a silent partial failure here is the most common reason step 7 doesn't work:</p>
+      <div class="code-wrap">
+        <div class="code-label">terminal</div>
+        <pre>az cognitiveservices account deployment show \
+  --deployment-name model-router -n $accountName -g $resourceGroup \
+  --query "properties.provisioningState"
+<span class="c"># → "Succeeded"</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-body">
+      <h3>Grab your endpoint and key</h3>
+      <div class="code-wrap">
+        <div class="code-label">terminal</div>
+        <pre>az cognitiveservices account show -n $accountName -g $resourceGroup \
+  --query "properties.endpoint" -o tsv
+
+az cognitiveservices account keys list -n $accountName -g $resourceGroup \
+  --query "key1" -o tsv</pre>
+      </div>
+      <div class="callout gotcha">
+        <div class="icon">⚠️</div>
+        <div class="body">
+          <span class="label">Gotcha</span>
+          <p>The <code class="inline">properties.endpoint</code> field returns a <code class="inline">.cognitiveservices.azure.com</code> domain, which looks right but isn't the one you want for chat completions — that domain fronts dozens of unrelated Azure AI services (Speech, Translator, Vision...). The one your app actually calls is the <code class="inline">.openai.azure.com</code> domain, built from the same resource name: <code class="inline">https://&lt;your-account-name&gt;.openai.azure.com</code>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-body">
+      <h3>Make your first call</h3>
+      <p>This is the entire integration. Notice the request body is the same OpenAI-style chat-completions shape you'd send to OpenAI directly — the only two things that change from a direct OpenAI integration are the URL and the auth header.</p>
+      <div class="code-wrap">
+        <div class="code-label">terminal</div>
+        <pre>curl -X POST "https://myapp-model-router.openai.azure.com/openai/v1/chat/completions" \
+  -H "api-key: <span class="s">YOUR_KEY_HERE</span>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "model-router",
+    "messages": [
+      { "role": "user", "content": "<span class="s">Say hello in one sentence.</span>" }
+    ]
+  }'</pre>
+      </div>
+      <p>The JSON that comes back includes a <code class="inline">model</code> field naming whichever real model actually answered — that's how you can watch, request by request, which model the router is reaching for.</p>
+    </div>
+  </div>
+
+  <h2>What you get for free</h2>
+  <p class="section-dek">None of the following needed any extra code — it's what the router does by simply existing between your app and the model providers.</p>
+
+  <dl class="terms">
+    <div class="term"><dt>Automatic failover</dt><dd>If the model the router would normally pick is having an outage or a rate-limit spike, it transparently tries the next-best model instead. Your app never sees the failure.</dd></div>
+    <div class="term"><dt>Cost-aware routing</dt><dd>Simple requests get routed to small, cheap, fast models. Requests that genuinely need deeper reasoning get routed to a more capable (and more expensive) model — automatically, per request, based on what you send it.</dd></div>
+    <div class="term"><dt>Natural output variety</dt><dd>Because different requests can land on different underlying models, two calls with an identical prompt won't necessarily come back phrased identically — useful any time you don't want your output to feel templated or become guessable.</dd></div>
+    <div class="term"><dt>One bill, one key</dt><dd>You're not managing separate API keys, separate billing relationships, or separate rate limits for OpenAI, Anthropic, and everyone else. It's all one Azure resource.</dd></div>
+  </dl>
+
+  <div class="callout tip">
+    <div class="icon">💡</div>
+    <div class="body">
+      <span class="label">Tip — before you trust it in production</span>
+      <p>Model Router defaults to "Balanced" mode, which weighs quality and cost together — for latency-sensitive, real-time features, that can mean it reaches for a slower, more capable model than the task strictly needs. Test your actual prompts against it and measure real response times before assuming it's a drop-in replacement for a single fast model you were calling directly. If it's consistently too slow, "Cost" mode (set via a Custom deployment in the Foundry portal, not currently exposed through the CLI flags shown here) biases harder toward speed and price.</p>
+    </div>
+  </div>
+
+  <h2>Wiring it into an existing app</h2>
+  <p>If your backend already calls OpenAI directly, the change is almost always this small: a new base URL, a header rename (<code class="inline">Authorization: Bearer &lt;key&gt;</code> becomes <code class="inline">api-key: &lt;key&gt;</code>), and setting <code class="inline">model</code> to your deployment name instead of a specific model like <code class="inline">gpt-4o-mini</code>. If your AI calls already flow through a single proxy endpoint on your own backend — which they should, for the reasons in the next chapter — you change it in exactly one place, and every feature that calls that proxy inherits the upgrade without knowing anything changed.</p>
+
+  <div class="divider"></div>
+  <footer>Building a World-Class Digital Product: From Zero to 1M+ Users — chapter reference, 29 Aug 2026</footer>
+</div>
