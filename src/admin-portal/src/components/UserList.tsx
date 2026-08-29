@@ -258,6 +258,11 @@ function CreateUserModal({ role, entityLabel, onClose, onCreated }: {
         <div>
           <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>New {entityLabel}</h2>
           <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>Creates the account and emails them a link to set their own password.</p>
+          {(role === 'recruiter' || role === 'employer') && (
+            <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 6 }}>
+              Belongs to a company or agency? Add them from that organisation's page instead, so they're linked to it.
+            </p>
+          )}
         </div>
 
         <FormField label="Name">
