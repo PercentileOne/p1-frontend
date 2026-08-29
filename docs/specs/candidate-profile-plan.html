@@ -1,0 +1,196 @@
+<title>Candidate Profile Foundation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #F6F7FA; --surface: #FFFFFF; --surface-2: #EEF1F6; --border: #DFE3EA;
+    --text: #14181F; --text-2: #444C59; --text-3: #6B7383;
+    --accent: #2563EB; --accent-dim: #EAF0FE;
+    --good: #0F8F5F; --good-dim: #E4F7EE;
+    --warn: #B5680A; --warn-dim: #FBF0DD;
+    --bad: #C4331F; --bad-dim: #FBE8E5;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --sans: 'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0B0F17; --surface: #11161F; --surface-2: #171D29; --border: #232B3A;
+      --text: #E7EBF3; --text-2: #AEB7C8; --text-3: #7B8496;
+      --accent: #5B9BFF; --accent-dim: #16233D;
+      --good: #34D399; --good-dim: #103328;
+      --warn: #F0AA3C; --warn-dim: #3A2A0E;
+      --bad: #EF6156; --bad-dim: #3A1712;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0B0F17; --surface: #11161F; --surface-2: #171D29; --border: #232B3A;
+    --text: #E7EBF3; --text-2: #AEB7C8; --text-3: #7B8496;
+    --accent: #5B9BFF; --accent-dim: #16233D;
+    --good: #34D399; --good-dim: #103328;
+    --warn: #F0AA3C; --warn-dim: #3A2A0E;
+    --bad: #EF6156; --bad-dim: #3A1712;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 780px; margin: 0 auto; padding: 56px 24px 100px; }
+  .kicker { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+  h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; text-wrap: balance; margin: 0 0 10px; }
+  .subtitle { font-size: 16px; color: var(--text-2); max-width: 62ch; margin: 0 0 8px; }
+  .status-row { display: flex; gap: 10px; margin: 18px 0 40px; flex-wrap: wrap; }
+  .status-pill { font-family: var(--mono); font-size: 11.5px; font-weight: 600; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-3); }
+  .status-pill.draft { color: var(--warn); background: var(--warn-dim); border-color: color-mix(in srgb, var(--warn) 35%, var(--border)); }
+
+  h2 { font-size: 21px; font-weight: 700; letter-spacing: -0.01em; margin: 52px 0 6px; display: flex; align-items: baseline; gap: 10px; }
+  h2 .num { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--text-3); }
+  h3 { font-size: 15px; font-weight: 700; margin: 24px 0 8px; }
+  p { color: var(--text-2); font-size: 15px; margin: 0 0 14px; }
+  p.lead { color: var(--text); font-size: 15.5px; }
+  strong { color: var(--text); font-weight: 600; }
+  code { font-family: var(--mono); font-size: 0.86em; background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--text); }
+  ul { margin: 0 0 16px; padding-left: 22px; color: var(--text-2); font-size: 15px; }
+  li { margin-bottom: 6px; }
+  li::marker { color: var(--text-3); }
+
+  .callout { border-radius: 12px; border: 1px solid var(--border); padding: 18px 20px; margin: 0 0 20px; display: flex; gap: 14px; }
+  .callout .icon { font-size: 18px; line-height: 1.4; flex-shrink: 0; }
+  .callout .body p:last-child { margin-bottom: 0; }
+  .callout.found { background: var(--good-dim); border-color: color-mix(in srgb, var(--good) 35%, var(--border)); }
+  .callout.found .kicker-small { color: var(--good); }
+  .callout.risk { background: var(--bad-dim); border-color: color-mix(in srgb, var(--bad) 35%, var(--border)); }
+  .callout.risk .kicker-small { color: var(--bad); }
+  .callout.open { background: var(--warn-dim); border-color: color-mix(in srgb, var(--warn) 35%, var(--border)); }
+  .callout.open .kicker-small { color: var(--warn); }
+  .kicker-small { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; display: block; margin-bottom: 5px; }
+
+  /* phase timeline */
+  .phases { display: flex; flex-direction: column; margin: 16px 0 8px; }
+  .phase { display: grid; grid-template-columns: 34px 1fr; gap: 16px; padding: 0 0 30px; position: relative; }
+  .phase:not(:last-child)::after { content: ""; position: absolute; left: 16px; top: 34px; bottom: -4px; width: 1px; background: var(--border); }
+  .phase-num { width: 34px; height: 34px; border-radius: 50%; background: var(--surface); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--text-3); flex-shrink: 0; }
+  .phase.now .phase-num { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .phase-body h4 { font-size: 15.5px; font-weight: 700; margin: 4px 0 4px; color: var(--text); }
+  .phase-body .tag { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent); }
+  .phase-body p { font-size: 13.5px; margin-bottom: 6px; }
+  .phase-body ul { font-size: 13.5px; margin-bottom: 0; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; margin: 8px 0 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-3); background: var(--surface-2); }
+  tr:last-child td { border-bottom: none; }
+  td.mono { font-family: var(--mono); font-size: 12.5px; color: var(--text); white-space: nowrap; }
+  .pill-new { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--good); background: var(--good-dim); border-radius: 5px; padding: 2px 6px; }
+  .pill-exists { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--text-3); background: var(--surface-2); border-radius: 5px; padding: 2px 6px; }
+
+  .qlist { list-style: none; padding: 0; margin: 8px 0 20px; display: flex; flex-direction: column; gap: 10px; }
+  .qlist li { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; font-size: 13.5px; color: var(--text-2); }
+  .qlist li strong { display: block; color: var(--text); margin-bottom: 3px; font-size: 14px; }
+
+  .divider { height: 1px; background: var(--border); margin: 52px 0 0; }
+  footer { margin-top: 32px; padding-top: 20px; font-size: 12.5px; color: var(--text-3); }
+</style>
+
+<div class="page">
+  <div class="kicker">Percentile.One / InterviewMe · Product Plan — Not Started</div>
+  <h1>Candidate Profile Foundation</h1>
+  <p class="subtitle">Francis's direction: everything the platform is building toward — Candidate Search, team-fit matching, founder-matching, org discovery — depends on the profile underneath it being right first. This is that plan.</p>
+  <div class="status-row">
+    <span class="status-pill draft">Saved plan — nothing built yet</span>
+    <span class="status-pill">4 phases</span>
+    <span class="status-pill">Phase 1 next</span>
+  </div>
+
+  <div class="callout found">
+    <div class="icon">🔍</div>
+    <div class="body">
+      <span class="kicker-small">Found while scoping this</span>
+      <p>Most of the rich profile UI already exists — <code>ProfilePage.tsx</code> is a fully designed "Profile Page 2.0" with Overview, Story, Posts, Achievements, Walls, Groups, Awards, Interests, and Video tabs. It's just running entirely on mock data (<code>profileData.ts</code>'s <code>OWN_PROFILE</code>), never connected to the real backend. This isn't a from-scratch build — it's finishing something already half-designed.</p>
+    </div>
+  </div>
+
+  <div class="callout risk">
+    <div class="icon">⚠️</div>
+    <div class="body">
+      <span class="kicker-small">The one hard "no" in this plan</span>
+      <p>Letting candidates enter raw HTML for their profile is a real security hole — anyone could embed a script that runs for every recruiter who views their page. The fix that still gets "better than LinkedIn's About section" (real bold, headings, lists) is a proper rich-text editor that stores structured content and renders it safely — never raw HTML from a user, ever.</p>
+    </div>
+  </div>
+
+  <h2><span class="num">01</span> The four phases</h2>
+  <p class="lead">In the order Francis's own read of the direction implies — each phase only makes sense once the one before it has real data behind it.</p>
+
+  <div class="phases">
+    <div class="phase now">
+      <div class="phase-num">1</div>
+      <div class="phase-body">
+        <span class="tag">Next up</span>
+        <h4>Profile Foundation</h4>
+        <p>Expand the real schema, wire the existing rich UI to real data instead of mocks, add photo + banner upload, replace the plain-string Bio with a safe rich-text editor.</p>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">2</div>
+      <div class="phase-body">
+        <span class="tag">After Phase 1 ships</span>
+        <h4>Likes &amp; social signals</h4>
+        <p>A lightweight "who liked whom" graph, layered onto profiles that already exist — feeds the recommendation logic Phase 4 needs. Doesn't block anything before it.</p>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">3</div>
+      <div class="phase-body">
+        <span class="tag">Independent track</span>
+        <h4>Media enhancement</h4>
+        <p>Photo/video filtering and quality enhancement. A genuinely separate capability (a real media-processing pipeline) — can be scoped and built in parallel with Phases 1-2 rather than waiting on them.</p>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">4</div>
+      <div class="phase-body">
+        <span class="tag">The actual goal</span>
+        <h4>Candidate Search + Org pages + Social</h4>
+        <p>The page everything else has been building toward — searchable by hobbies/interests/projects for team-fit, candidate-to-candidate discovery, groups, founder-matching (YC-style), organisation search, organisation home pages. Only as good as the data Phase 1 puts in the ground.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2><span class="num">02</span> Phase 1 — the actual schema change</h2>
+  <p>What's real today in <code>UserProfile.cs</code> (Cosmos-backed, live) versus what Francis is asking for:</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Field</th><th>Status</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">firstName / lastName / name / username</td><td><span class="pill-exists">exists</span></td><td>—</td></tr>
+        <tr><td class="mono">jobTitle / jobRole / company</td><td><span class="pill-exists">exists</span></td><td>—</td></tr>
+        <tr><td class="mono">interests</td><td><span class="pill-exists">exists</span></td><td>Already a string list — likely reusable for "Hobbies/Pastimes" and "Likes" too, or split into distinct fields if they need to mean different things</td></tr>
+        <tr><td class="mono">avatar</td><td><span class="pill-exists">exists</span></td><td>Field exists — real upload flow (vs. just a URL) is the actual gap</td></tr>
+        <tr><td class="mono">dreamRoleTitle / Industry / Salary / Timeline</td><td><span class="pill-exists">exists</span></td><td>This already covers "what you're looking for in your dream job" — may just need surfacing in the UI</td></tr>
+        <tr><td class="mono">bio</td><td><span class="pill-exists">exists</span></td><td>Plain string today — becomes the rich-text field</td></tr>
+        <tr><td class="mono">banner image</td><td><span class="pill-new">new</span></td><td>No field or upload flow exists yet</td></tr>
+        <tr><td class="mono">location / town</td><td><span class="pill-new">new</span></td><td>—</td></tr>
+        <tr><td class="mono">favouriteFilms</td><td><span class="pill-new">new</span></td><td>String list, same shape as interests</td></tr>
+        <tr><td class="mono">projects (current / past / future)</td><td><span class="pill-new">new</span></td><td>Needs its own shape — likely a small list of {title, status, description} rather than plain strings, since "what are you working on" wants more than a one-liner</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Also in Phase 1</h3>
+  <ul>
+    <li><strong>Real photo + banner upload</strong> — same private-blob-plus-SAS-URL pattern already used for interview recordings, not a new storage approach.</li>
+    <li><strong>Safe rich-text About editor</strong> replacing the plain Bio string — structured content in, safely rendered HTML out, never raw user HTML trusted directly.</li>
+    <li><strong>Wire <code>ProfilePage.tsx</code> to the real backend</strong> — replace <code>OWN_PROFILE</code> mock data with real API calls now that the schema underneath supports it.</li>
+  </ul>
+
+  <h2><span class="num">03</span> Open questions — worth deciding before building</h2>
+  <ul class="qlist">
+    <li><strong>Which portals get the rich profile?</strong> Candidates clearly do — do Recruiters and Employers get the same depth, or a simpler version, given their profiles serve a different purpose (representing a company, not "who am I")?</li>
+    <li><strong>Interests vs. Hobbies vs. Likes — one field or three?</strong> They're closely related but Francis named them separately. Worth deciding if they're genuinely distinct search facets or the same underlying list styled differently in the UI.</li>
+    <li><strong>Does the existing mock social UI (Walls, Groups, Posts, Achievements) get revived as-is, or redesigned?</strong> It's real, existing design work — worth a deliberate call rather than defaulting to either "keep everything" or "start over."</li>
+    <li><strong>Moderation.</strong> Once bios, projects, and hobbies are free-text and publicly visible to recruiters/other candidates, is any content moderation needed before Phase 4 makes profiles broadly discoverable?</li>
+  </ul>
+
+  <div class="divider"></div>
+  <footer>Percentile.One / InterviewMe — plan captured 29 Aug 2026. Nothing in this document has been built yet.</footer>
+</div>
