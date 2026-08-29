@@ -147,6 +147,8 @@ export interface UserProfile {
   name: string;
   initials: string;
   avatarColor: string;
+  avatarUrl?: string;
+  bannerUrl?: string;
   profession: string;
   professionEmoji: string;
   university?: string;

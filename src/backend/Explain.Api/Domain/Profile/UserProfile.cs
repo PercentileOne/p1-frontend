@@ -41,6 +41,18 @@ public class UserProfile
     [JsonProperty("avatar")]
     public string? Avatar { get; set; }
 
+    [JsonProperty("banner")]
+    public string? Banner { get; set; }
+
+    [JsonProperty("location")]
+    public string? Location { get; set; }
+
+    [JsonProperty("favouriteFilms")]
+    public List<string> FavouriteFilms { get; set; } = [];
+
+    [JsonProperty("projects")]
+    public List<ProfileProject> Projects { get; set; } = [];
+
     [JsonProperty("phone")]
     public string? Phone { get; set; }
 
@@ -79,4 +91,20 @@ public class UserProfile
         Username  = $"{firstName}{lastName}".ToLower().Replace(" ", ""),
         JobRole   = jobRole,
     };
+}
+
+public class ProfileProject
+{
+    [JsonProperty("id")]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    [JsonProperty("title")]
+    public string Title { get; set; } = string.Empty;
+
+    // "current" | "past" | "future"
+    [JsonProperty("status")]
+    public string Status { get; set; } = "current";
+
+    [JsonProperty("description")]
+    public string Description { get; set; } = string.Empty;
 }

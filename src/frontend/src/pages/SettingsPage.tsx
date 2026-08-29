@@ -1,20 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   Calendar, Activity, Watch, Code2, PlayCircle, FileText, CreditCard,
-  Sparkles, ExternalLink, Mail,
+  Sparkles, ExternalLink, Mail, ChevronRight,
 } from "lucide-react";
 import BackToCockpit from "../components/BackToCockpit";
 import SettingsSection from "../components/settings/SettingsSection";
 import SettingsRow from "../components/settings/SettingsRow";
 import ToggleSwitch from "../components/settings/ToggleSwitch";
-import TextInput from "../components/settings/TextInput";
 import SelectDropdown from "../components/settings/SelectDropdown";
-import AvatarUploader from "../components/settings/AvatarUploader";
 import DangerButton from "../components/settings/DangerButton";
 import Button from "../components/settings/Button";
 import ComingSoonCard from "../components/settings/ComingSoonCard";
+import { useAuthStore } from "../auth/authStore";
+import { profileApi, type Profile } from "../api/profileApi";
 
 /* ══════════════════════════════════════════════════════════════
    SETTINGS PAGE — /settings
@@ -22,7 +22,6 @@ import ComingSoonCard from "../components/settings/ComingSoonCard";
    real interactive controls (local state — no persistence yet).
    ══════════════════════════════════════════════════════════════ */
 
-const PROFILE_IMG = "/images/francis.jpg";
 const EASE = [0.4, 0, 0.2, 1] as const;
 
 export default function SettingsPage() {
@@ -69,36 +68,40 @@ export default function SettingsPage() {
    1. PROFILE
    ──────────────────────────────────────────────────────────── */
 function ProfileSection() {
-  const [name, setName] = useState("Francis Cobbinah");
-  const [profession, setProfession] = useState("Founder");
-  const [university, setUniversity] = useState("University of Essex");
-  const [bio, setBio] = useState("Building Percentile.One — the world's first Life Management OS.");
+  const navigate = useNavigate();
+  const authUser = useAuthStore(s => s.user);
+  const authToken = useAuthStore(s => s.token);
+  const [real, setReal] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    if (!authToken) return;
+    profileApi.getProfile(authToken).then(setReal).catch(() => { /* keep showing what we have */ });
+  }, [authToken]);
+
+  const name = real?.name || authUser?.name || "Your profile";
+  const initials = (name.trim().split(/\s+/).filter(Boolean).map(p => p[0]).join("").slice(0, 2) || "?").toUpperCase();
 
   return (
     <SettingsSection title="Profile" subtitle="Manage your public identity across P1.">
-      <div className="flex items-center gap-4 pb-3 border-b border-white/[0.1]">
-        <AvatarUploader src={PROFILE_IMG} initials="FC" />
-        <div className="text-[11px] text-slate-500 leading-relaxed">
-          Square image recommended.<br />Visible on your profile and story.
+      <div className="flex items-center gap-4">
+        <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-indigo-600/25 border border-white/[0.1] text-indigo-200 text-[16px] font-bold">
+          {real?.avatar ? <img src={real.avatar} alt={name} className="w-full h-full object-cover" /> : initials}
         </div>
-      </div>
-
-      <SettingsRow label="Name">
-        <div className="w-56"><TextInput value={name} onChange={setName} /></div>
-      </SettingsRow>
-      <SettingsRow label="Email" description="Used for sign-in and notifications">
-        <div className="w-56"><TextInput value="francis@percentile.one" disabled /></div>
-      </SettingsRow>
-      <SettingsRow label="Profession">
-        <div className="w-56"><TextInput value={profession} onChange={setProfession} /></div>
-      </SettingsRow>
-      <SettingsRow label="University" last>
-        <div className="w-56"><TextInput value={university} onChange={setUniversity} /></div>
-      </SettingsRow>
-
-      <div className="pt-1">
-        <p className="text-[12.5px] font-medium text-slate-200 mb-2">Short bio</p>
-        <TextInput value={bio} onChange={setBio} multiline rows={3} />
+        <div className="min-w-0 flex-1">
+          <p className="text-[14px] font-bold text-white truncate">{name}</p>
+          <p className="text-[11px] text-slate-500 truncate">
+            {real?.jobTitle || real?.jobRole || "No job title set"}{real?.company ? ` at ${real.company}` : ""}
+          </p>
+          <p className="text-[11px] text-slate-600 truncate mt-0.5">
+            {real?.bio || "No bio yet."}
+          </p>
+        </div>
+        <button
+          onClick={() => navigate("/profile")}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[12px] font-semibold transition-colors shrink-0"
+        >
+          Edit on Profile <ChevronRight size={12} />
+        </button>
       </div>
     </SettingsSection>
   );

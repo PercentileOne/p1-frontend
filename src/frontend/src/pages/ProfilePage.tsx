@@ -6,10 +6,11 @@ import {
   Bookmark, Bell, Share2, Trophy, Star, TrendingUp,
   Plus, Sparkles, Users, ChevronRight, Layers, Award,
   Flame, Zap, Target, FileText, Hash, Edit3,
-  ChevronDown, ChevronUp, X,
+  ChevronDown, ChevronUp, X, Loader2, Trash2,
 } from "lucide-react";
 import BackToCockpit from "../components/BackToCockpit";
 import { SmallAwardBadge } from "../components/AwardTiles";
+import AvatarUploader from "../components/settings/AvatarUploader";
 import { useAuthStore } from "../auth/authStore";
 import {
   OWN_PROFILE,
@@ -21,6 +22,7 @@ import {
   type ProfileGroup,
   type ProfilePost,
 } from "../lib/profileData";
+import { profileApi, type Profile, type ProfileProject } from "../api/profileApi";
 import { WEEKLY_WINNERS, MONTHLY_WINNERS } from "../lib/awardsData";
 import { STORIES } from "../lib/storiesData";
 
@@ -57,10 +59,13 @@ const SLIDE_UP = {
    A) PROFILE HEADER
    ══════════════════════════════════════════════════════════════ */
 
-function ProfileHeader({ profile, followed, onFollow }: {
+function ProfileHeader({ profile, followed, onFollow, editing, canEdit, onEditClick }: {
   profile: UserProfile;
   followed: boolean;
   onFollow: () => void;
+  editing: boolean;
+  canEdit: boolean;
+  onEditClick: () => void;
 }) {
   const awards = [...WEEKLY_WINNERS, ...MONTHLY_WINNERS].filter(w => w.authorName === profile.name);
 
@@ -74,12 +79,19 @@ function ProfileHeader({ profile, followed, onFollow }: {
       }}
     >
       {/* Accent band */}
-      <div className="absolute top-0 left-0 right-0 h-[3px]"
+      <div className="absolute top-0 left-0 right-0 h-[3px] z-10"
         style={{ background: `linear-gradient(90deg, transparent, ${profile.avatarColor}, transparent)` }} />
 
-      {/* Ambient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 pointer-events-none"
-        style={{ background: `radial-gradient(ellipse at center, ${profile.avatarColor}14 0%, transparent 70%)` }} />
+      {/* Banner */}
+      {profile.bannerUrl ? (
+        <div className="w-full h-32 overflow-hidden">
+          <img src={profile.bannerUrl} alt="" className="w-full h-full object-cover opacity-80" />
+        </div>
+      ) : (
+        /* Ambient glow, only shown when there's no banner photo */
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse at center, ${profile.avatarColor}14 0%, transparent 70%)` }} />
+      )}
 
       <div className="relative flex items-start gap-6 p-8">
         {/* Avatar */}
@@ -89,16 +101,22 @@ function ProfileHeader({ profile, followed, onFollow }: {
           transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
           className="relative shrink-0"
         >
-          <div
-            className="w-24 h-24 rounded-2xl flex items-center justify-center text-2xl font-black text-white"
-            style={{
-              background: `linear-gradient(135deg, ${profile.avatarColor}44 0%, ${profile.avatarColor}22 100%)`,
-              border: `2.5px solid ${profile.avatarColor}60`,
-              boxShadow: `0 8px 32px ${profile.avatarColor}30, 0 1px 0 ${profile.avatarColor}25 inset`,
-            }}
-          >
-            {profile.initials}
-          </div>
+          {profile.avatarUrl ? (
+            <div className="w-24 h-24 rounded-2xl overflow-hidden border-2.5" style={{ border: `2.5px solid ${profile.avatarColor}60`, boxShadow: `0 8px 32px ${profile.avatarColor}30` }}>
+              <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div
+              className="w-24 h-24 rounded-2xl flex items-center justify-center text-2xl font-black text-white"
+              style={{
+                background: `linear-gradient(135deg, ${profile.avatarColor}44 0%, ${profile.avatarColor}22 100%)`,
+                border: `2.5px solid ${profile.avatarColor}60`,
+                boxShadow: `0 8px 32px ${profile.avatarColor}30, 0 1px 0 ${profile.avatarColor}25 inset`,
+              }}
+            >
+              {profile.initials}
+            </div>
+          )}
           {/* Online dot */}
           <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-500 border-2 border-[#0e1018]" />
         </motion.div>
@@ -137,10 +155,15 @@ function ProfileHeader({ profile, followed, onFollow }: {
               </div>
             ) : (
               <button
-                onClick={() => {}}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold border border-white/[0.1] text-slate-400 hover:border-white/[0.2] hover:text-slate-200 transition-all"
+                onClick={onEditClick}
+                disabled={!canEdit}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold border transition-all ${
+                  editing
+                    ? "border-indigo-500/30 text-indigo-300 bg-indigo-600/15"
+                    : "border-white/[0.1] text-slate-400 hover:border-white/[0.2] hover:text-slate-200"
+                } ${!canEdit ? "opacity-50 cursor-default" : ""}`}
               >
-                <Edit3 size={12} /> Edit Profile
+                <Edit3 size={12} /> {editing ? "Editing…" : "Edit Profile"}
               </button>
             )}
           </div>
@@ -306,12 +329,20 @@ function MyStoryPanel({ profile }: { profile: UserProfile }) {
    C) INTERESTS & IDENTITY
    ══════════════════════════════════════════════════════════════ */
 
-function InterestsPanel({ profile }: { profile: UserProfile }) {
-  const [selected, setSelected] = useState<Set<string>>(new Set(profile.interests));
+function InterestsPanel({ selected: selectedIds, onChange, editable }: {
+  selected: string[]; onChange?: (ids: string[]) => void; editable: boolean;
+}) {
+  const selected = new Set(selectedIds);
   const [addingCustom, setAddingCustom] = useState(false);
   const [customText, setCustomText] = useState("");
-  const [customInterests, setCustomInterests] = useState<Interest[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Custom interests are stored as their literal label text (not a synthetic id) so
+  // they survive a reload and redisplay correctly — the backend only stores a flat
+  // string list, with no separate id→label lookup for anything outside ALL_INTERESTS.
+  const customInterests: Interest[] = selectedIds
+    .filter(id => !ALL_INTERESTS.some(i => i.id === id))
+    .map(label => ({ id: label, label, category: "Custom", emoji: "⭐" }));
 
   const byCategory = ALL_INTERESTS.reduce<Record<string, Interest[]>>((acc, i) => {
     if (!acc[i.category]) acc[i.category] = [];
@@ -320,20 +351,16 @@ function InterestsPanel({ profile }: { profile: UserProfile }) {
   }, {});
 
   function toggleInterest(id: string) {
-    setSelected(prev => {
-      const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
+    if (!editable || !onChange) return;
+    const next = new Set(selected);
+    next.has(id) ? next.delete(id) : next.add(id);
+    onChange([...next]);
   }
 
   function addCustom() {
     const label = customText.trim();
-    if (!label) return;
-    const id = `custom-${Date.now()}`;
-    const interest: Interest = { id, label, category: "Custom", emoji: "⭐" };
-    setCustomInterests(prev => [...prev, interest]);
-    setSelected(prev => new Set([...prev, id]));
+    if (!label || !onChange) return;
+    onChange([...selectedIds, label]);
     setCustomText("");
     setAddingCustom(false);
   }
@@ -351,17 +378,21 @@ function InterestsPanel({ profile }: { profile: UserProfile }) {
             {selected.size} selected
           </span>
         </div>
-        <button
-          onClick={() => { setAddingCustom(true); setTimeout(() => inputRef.current?.focus(), 50); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600/15 border border-indigo-500/20 text-indigo-400 text-[11px] font-semibold hover:bg-indigo-600/25 transition-colors"
-        >
-          <Plus size={11} /> Add Custom
-        </button>
+        {editable ? (
+          <button
+            onClick={() => { setAddingCustom(true); setTimeout(() => inputRef.current?.focus(), 50); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600/15 border border-indigo-500/20 text-indigo-400 text-[11px] font-semibold hover:bg-indigo-600/25 transition-colors"
+          >
+            <Plus size={11} /> Add Custom
+          </button>
+        ) : (
+          <span className="text-[10px] text-slate-600">Click Edit Profile to change these</span>
+        )}
       </div>
 
       {/* Custom input */}
       <AnimatePresence>
-        {addingCustom && (
+        {editable && addingCustom && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -394,14 +425,15 @@ function InterestsPanel({ profile }: { profile: UserProfile }) {
               return (
                 <motion.button
                   key={interest.id}
-                  whileTap={{ scale: 0.91 }}
-                  whileHover={{ y: -2 }}
+                  whileTap={editable ? { scale: 0.91 } : undefined}
+                  whileHover={editable ? { y: -2 } : undefined}
                   onClick={() => toggleInterest(interest.id)}
+                  disabled={!editable}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold border transition-all ${
                     active
                       ? "text-indigo-200 bg-indigo-600/20 border-indigo-500/30"
-                      : "text-slate-500 bg-white/[0.03] border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]"
-                  }`}
+                      : "text-slate-500 bg-white/[0.03] border-white/[0.07]"
+                  } ${editable ? "hover:text-slate-300 hover:border-white/[0.14] cursor-pointer" : "cursor-default"}`}
                   style={active ? { boxShadow: "0 4px 12px rgba(99,102,241,0.2)" } : {}}
                 >
                   <span className="text-[12px]">{interest.emoji}</span>
@@ -851,28 +883,323 @@ function initialsFor(name: string): string {
   return (parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '') || '?';
 }
 
-interface RealProfileFields {
-  name?: string;
-  bio?: string;
-  jobTitle?: string;
-  jobRole?: string;
-  company?: string;
+interface ProfileDraft {
+  bio: string;
+  location: string;
+  jobTitle: string;
+  jobRole: string;
+  company: string;
+  interests: string[];
+  favouriteFilms: string[];
+  projects: ProfileProject[];
+  dreamRoleTitle: string;
+  dreamRoleIndustry: string;
+  dreamRoleSalary: string;
+  dreamRoleTimeline: string;
+}
+
+function draftFromProfile(real: Profile | null): ProfileDraft {
+  return {
+    bio: real?.bio ?? '',
+    location: real?.location ?? '',
+    jobTitle: real?.jobTitle ?? '',
+    jobRole: real?.jobRole ?? '',
+    company: real?.company ?? '',
+    interests: real?.interests ?? [],
+    favouriteFilms: real?.favouriteFilms ?? [],
+    projects: real?.projects ?? [],
+    dreamRoleTitle: real?.dreamRoleTitle ?? '',
+    dreamRoleIndustry: real?.dreamRoleIndustry ?? '',
+    dreamRoleSalary: real?.dreamRoleSalary ?? '',
+    dreamRoleTimeline: real?.dreamRoleTimeline ?? '',
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   J) PROFILE EDIT PANEL
+   ══════════════════════════════════════════════════════════════ */
+
+function ProfileEditPanel({
+  draft, onChange, onSave, onCancel, saving, saveError,
+  avatarUrl, bannerUrl, initials, onAvatarUpload, onBannerUpload,
+}: {
+  draft: ProfileDraft;
+  onChange: (patch: Partial<ProfileDraft>) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  saving: boolean;
+  saveError: string | null;
+  avatarUrl?: string;
+  bannerUrl?: string;
+  initials: string;
+  onAvatarUpload: (file: File) => void;
+  onBannerUpload: (file: File) => void;
+}) {
+  const [filmText, setFilmText] = useState("");
+  const [newProject, setNewProject] = useState<{ title: string; status: ProfileProject["status"]; description: string }>({
+    title: "", status: "current", description: "",
+  });
+
+  function addFilm() {
+    const label = filmText.trim();
+    if (!label) return;
+    onChange({ favouriteFilms: [...draft.favouriteFilms, label] });
+    setFilmText("");
+  }
+  function removeFilm(i: number) {
+    onChange({ favouriteFilms: draft.favouriteFilms.filter((_, idx) => idx !== i) });
+  }
+
+  function addProject() {
+    const title = newProject.title.trim();
+    if (!title) return;
+    const project: ProfileProject = {
+      id: `${Date.now()}`,
+      title,
+      status: newProject.status,
+      description: newProject.description.trim(),
+    };
+    onChange({ projects: [...draft.projects, project] });
+    setNewProject({ title: "", status: "current", description: "" });
+  }
+  function removeProject(id: string) {
+    onChange({ projects: draft.projects.filter(p => p.id !== id) });
+  }
+
+  const inputClass = "w-full px-3 py-2 bg-white/[0.04] border border-white/[0.1] rounded-xl text-[12px] text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500/40";
+  const labelClass = "text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-1.5 block";
+
+  return (
+    <motion.div {...SLIDE_UP} className="space-y-5 mb-6">
+      <SectionCard>
+        <SectionHeading emoji="🖼️" title="Photos" />
+        <div className="flex items-start gap-6">
+          <div>
+            <p className={labelClass}>Avatar</p>
+            <AvatarUploader src={avatarUrl ?? ""} initials={initials} onChange={onAvatarUpload} />
+          </div>
+          <div className="flex-1">
+            <p className={labelClass}>Banner</p>
+            <AvatarUploader src={bannerUrl ?? ""} initials={initials} variant="banner" onChange={onBannerUpload} />
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard>
+        <SectionHeading emoji="📝" title="About" />
+        <div className="space-y-4">
+          <div>
+            <label className={labelClass}>Bio</label>
+            <textarea
+              value={draft.bio}
+              onChange={e => onChange({ bio: e.target.value })}
+              maxLength={500}
+              rows={4}
+              placeholder="Tell people about yourself…"
+              className={inputClass + " resize-none"}
+            />
+            <p className="text-[9px] text-slate-700 mt-1 text-right">{draft.bio.length}/500</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Location</label>
+              <input value={draft.location} onChange={e => onChange({ location: e.target.value })} placeholder="City, Country" className={inputClass} />
+            </div>
+            <div>
+              <label className={labelClass}>Job Title</label>
+              <input value={draft.jobTitle} onChange={e => onChange({ jobTitle: e.target.value })} placeholder="e.g. Software Engineer" className={inputClass} />
+            </div>
+            <div>
+              <label className={labelClass}>Job Role</label>
+              <input value={draft.jobRole} onChange={e => onChange({ jobRole: e.target.value })} placeholder="e.g. Backend" className={inputClass} />
+            </div>
+            <div>
+              <label className={labelClass}>Company</label>
+              <input value={draft.company} onChange={e => onChange({ company: e.target.value })} placeholder="e.g. Percentile.One" className={inputClass} />
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard>
+        <SectionHeading emoji="🎯" title="Dream Role" />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>Title</label>
+            <input value={draft.dreamRoleTitle} onChange={e => onChange({ dreamRoleTitle: e.target.value })} placeholder="e.g. Head of Product" className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Industry</label>
+            <input value={draft.dreamRoleIndustry} onChange={e => onChange({ dreamRoleIndustry: e.target.value })} placeholder="e.g. Fintech" className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Target Salary</label>
+            <input value={draft.dreamRoleSalary} onChange={e => onChange({ dreamRoleSalary: e.target.value })} placeholder="e.g. £80,000" className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Timeline</label>
+            <input value={draft.dreamRoleTimeline} onChange={e => onChange({ dreamRoleTimeline: e.target.value })} placeholder="e.g. Within 12 months" className={inputClass} />
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard>
+        <SectionHeading emoji="🎬" title="Favourite Films" />
+        <div className="flex flex-wrap gap-2 mb-3">
+          {draft.favouriteFilms.map((f, i) => (
+            <span key={`${f}-${i}`} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold text-indigo-200 bg-indigo-600/15 border border-indigo-500/20">
+              {f}
+              <button onClick={() => removeFilm(i)} className="text-indigo-400 hover:text-white"><X size={10} /></button>
+            </span>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <input
+            value={filmText}
+            onChange={e => setFilmText(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addFilm(); } }}
+            placeholder="Add a favourite film…"
+            className={inputClass}
+          />
+          <button onClick={addFilm} className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold transition-colors shrink-0">Add</button>
+        </div>
+      </SectionCard>
+
+      <SectionCard>
+        <SectionHeading emoji="🚀" title="Projects" />
+        <div className="space-y-3 mb-4">
+          {draft.projects.map(p => (
+            <div key={p.id} className="flex items-start justify-between gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-[12px] font-bold text-white truncate">{p.title}</p>
+                  <span className={`text-[8px] font-semibold px-1.5 py-0.5 rounded border uppercase tracking-wide ${
+                    p.status === "current" ? "text-green-400 bg-green-500/10 border-green-500/20"
+                    : p.status === "future" ? "text-indigo-400 bg-indigo-500/10 border-indigo-500/20"
+                    : "text-slate-500 bg-slate-500/10 border-slate-500/10"
+                  }`}>{p.status}</span>
+                </div>
+                {p.description && <p className="text-[11px] text-slate-500 leading-relaxed">{p.description}</p>}
+              </div>
+              <button onClick={() => removeProject(p.id)} className="text-slate-600 hover:text-rose-400 shrink-0"><Trash2 size={13} /></button>
+            </div>
+          ))}
+          {draft.projects.length === 0 && <p className="text-[11px] text-slate-600">No projects added yet.</p>}
+        </div>
+        <div className="space-y-2 p-3 rounded-xl border border-dashed border-white/[0.1]">
+          <div className="flex gap-2">
+            <input
+              value={newProject.title}
+              onChange={e => setNewProject(p => ({ ...p, title: e.target.value }))}
+              placeholder="Project title"
+              className={inputClass}
+            />
+            <select
+              value={newProject.status}
+              onChange={e => setNewProject(p => ({ ...p, status: e.target.value as ProfileProject["status"] }))}
+              className="px-3 py-2 bg-white/[0.04] border border-white/[0.1] rounded-xl text-[12px] text-white focus:outline-none focus:border-indigo-500/40"
+            >
+              <option value="current">Current</option>
+              <option value="past">Past</option>
+              <option value="future">Future</option>
+            </select>
+          </div>
+          <textarea
+            value={newProject.description}
+            onChange={e => setNewProject(p => ({ ...p, description: e.target.value }))}
+            placeholder="Short description…"
+            rows={2}
+            className={inputClass + " resize-none"}
+          />
+          <button onClick={addProject} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600/15 border border-indigo-500/20 text-indigo-400 text-[11px] font-semibold hover:bg-indigo-600/25 transition-colors">
+            <Plus size={11} /> Add Project
+          </button>
+        </div>
+      </SectionCard>
+
+      {saveError && (
+        <div className="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-[12px] text-rose-300">
+          {saveError}
+        </div>
+      )}
+
+      <div className="flex justify-end gap-2">
+        <button onClick={onCancel} disabled={saving} className="px-4 py-2.5 rounded-xl text-[12px] font-semibold border border-white/[0.1] text-slate-300 hover:border-white/[0.2] transition-all disabled:opacity-50">
+          Cancel
+        </button>
+        <button onClick={onSave} disabled={saving} className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[12px] font-bold transition-colors disabled:opacity-60">
+          {saving ? <><Loader2 size={12} className="animate-spin" /> Saving…</> : "Save Changes"}
+        </button>
+      </div>
+    </motion.div>
+  );
 }
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const authUser = useAuthStore(s => s.user);
   const authToken = useAuthStore(s => s.token);
-  const [real, setReal] = useState<RealProfileFields | null>(null);
+  const [real, setReal] = useState<Profile | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<ProfileDraft>(() => draftFromProfile(null));
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authToken) return;
-    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
-    fetch(`${apiBase}/profile`, { headers: { Authorization: `Bearer ${authToken}` } })
-      .then(res => (res.ok ? res.json() : null))
-      .then((data: RealProfileFields | null) => { if (data) setReal(data); })
+    profileApi.getProfile(authToken)
+      .then(data => { setReal(data); setDraft(draftFromProfile(data)); })
       .catch(() => { /* keep showing what we have */ });
   }, [authToken]);
+
+  function startEditing() {
+    setDraft(draftFromProfile(real));
+    setSaveError(null);
+    setEditing(true);
+  }
+
+  function cancelEditing() {
+    setDraft(draftFromProfile(real));
+    setSaveError(null);
+    setEditing(false);
+  }
+
+  async function saveEditing() {
+    if (!authToken) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const updated = await profileApi.updateProfile(authToken, { ...draft });
+      setReal(updated);
+      setDraft(draftFromProfile(updated));
+      setEditing(false);
+    } catch (e) {
+      const err = e as { error?: string };
+      setSaveError(err?.error || 'Failed to save changes.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleAvatarUpload(file: File) {
+    if (!authToken) return;
+    try {
+      const { url } = await profileApi.uploadAvatar(authToken, file);
+      setReal(prev => (prev ? { ...prev, avatar: url } : prev));
+    } catch {
+      setSaveError('Failed to upload avatar.');
+    }
+  }
+
+  async function handleBannerUpload(file: File) {
+    if (!authToken) return;
+    try {
+      const { url } = await profileApi.uploadBanner(authToken, file);
+      setReal(prev => (prev ? { ...prev, banner: url } : prev));
+    } catch {
+      setSaveError('Failed to upload banner.');
+    }
+  }
 
   // Real identity (name/bio/profession) overlaid on the demo social content
   // (achievements/walls/groups/posts/stats) — those aren't backed by a real
@@ -887,8 +1214,11 @@ export default function ProfilePage() {
     avatarColor: colorForName(name),
     profession,
     professionEmoji: profession ? OWN_PROFILE.professionEmoji : '',
-    location: real ? (real.company ?? '') : OWN_PROFILE.location,
+    location: real ? (real.location ?? '') : OWN_PROFILE.location,
     bio: real ? (real.bio || 'No bio yet — add one from your profile settings.') : OWN_PROFILE.bio,
+    interests: real?.interests ?? OWN_PROFILE.interests,
+    avatarUrl: real?.avatar ?? undefined,
+    bannerUrl: real?.banner ?? undefined,
   };
   const [tab, setTab] = useState<ProfileTab>("overview");
   const [followed, setFollowed] = useState(false);
@@ -933,7 +1263,30 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto px-6 py-6">
 
           {/* Profile header — always visible */}
-          <ProfileHeader profile={profile} followed={followed} onFollow={() => setFollowed(v => !v)} />
+          <ProfileHeader
+            profile={profile}
+            followed={followed}
+            onFollow={() => setFollowed(v => !v)}
+            editing={editing}
+            canEdit={!!authToken}
+            onEditClick={() => (editing ? cancelEditing() : startEditing())}
+          />
+
+          {editing && (
+            <ProfileEditPanel
+              draft={draft}
+              onChange={patch => setDraft(d => ({ ...d, ...patch }))}
+              onSave={saveEditing}
+              onCancel={cancelEditing}
+              saving={saving}
+              saveError={saveError}
+              avatarUrl={profile.avatarUrl}
+              bannerUrl={profile.bannerUrl}
+              initials={profile.initials}
+              onAvatarUpload={handleAvatarUpload}
+              onBannerUpload={handleBannerUpload}
+            />
+          )}
 
           {/* Tab content */}
           <AnimatePresence mode="wait">
@@ -1013,7 +1366,10 @@ export default function ProfilePage() {
 
               {tab === "interests" && (
                 <div className="space-y-4">
-                  <div className="flex justify-end">
+                  <div className="flex justify-between items-center">
+                    <p className="text-[11px] text-slate-600">
+                      {editing ? "Editing inline — remember to Save Changes above." : "Click Edit Profile to change these."}
+                    </p>
                     <button
                       onClick={() => navigate("/interests")}
                       className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold transition-colors"
@@ -1022,7 +1378,11 @@ export default function ProfilePage() {
                     </button>
                   </div>
                   <SectionCard>
-                    <InterestsPanel profile={profile} />
+                    <InterestsPanel
+                      selected={editing ? draft.interests : profile.interests}
+                      onChange={ids => setDraft(d => ({ ...d, interests: ids }))}
+                      editable={editing}
+                    />
                   </SectionCard>
                 </div>
               )}

@@ -3,6 +3,7 @@ using Microsoft.Azure.Cosmos;
 using Explain.Api.Common;
 using Explain.Api.Domain.Profile;
 using Explain.Api.Infrastructure.Cosmos;
+using System.Linq;
 
 namespace Explain.Api.Features.Profile.UpdateProfile;
 
@@ -21,7 +22,11 @@ public record UpdateProfileCommand(
     string? DreamRoleTitle   = null,
     string? DreamRoleIndustry = null,
     string? DreamRoleSalary  = null,
-    string? DreamRoleTimeline = null)
+    string? DreamRoleTimeline = null,
+    string? Location         = null,
+    string? Banner           = null,
+    List<string>? FavouriteFilms = null,
+    List<ProfileProject>? Projects = null)
     : IRequest<Result<UserProfile>>;
 
 public class UpdateProfileHandler(
@@ -31,6 +36,9 @@ public class UpdateProfileHandler(
 {
     public async Task<Result<UserProfile>> Handle(UpdateProfileCommand cmd, CancellationToken ct)
     {
+        var validationError = Validate(cmd);
+        if (validationError is not null) return Result<UserProfile>.Failure(validationError, 400);
+
         var container = cosmos.GetContainer("profiles");
         UserProfile profile;
 
@@ -66,6 +74,10 @@ public class UpdateProfileHandler(
         if (cmd.DreamRoleIndustry is not null) profile.DreamRoleIndustry  = cmd.DreamRoleIndustry.Trim();
         if (cmd.DreamRoleSalary   is not null) profile.DreamRoleSalary    = cmd.DreamRoleSalary.Trim();
         if (cmd.DreamRoleTimeline is not null) profile.DreamRoleTimeline  = cmd.DreamRoleTimeline.Trim();
+        if (cmd.Location       is not null) profile.Location       = cmd.Location.Trim();
+        if (cmd.Banner         is not null) profile.Banner         = cmd.Banner;
+        if (cmd.FavouriteFilms is not null) profile.FavouriteFilms = cmd.FavouriteFilms;
+        if (cmd.Projects       is not null) profile.Projects       = cmd.Projects;
 
         profile.UpdatedAt = DateTime.UtcNow.ToString("O");
 
@@ -80,5 +92,44 @@ public class UpdateProfileHandler(
             logger.LogError(ex, "Profile update failed for {UserId}", cmd.UserId);
             return Result<UserProfile>.Failure("Could not save profile.", 500);
         }
+    }
+
+    private static readonly HashSet<string> AllowedProjectStatuses = new(StringComparer.OrdinalIgnoreCase) { "current", "past", "future" };
+
+    // No validation existed on this handler at all before — every field below was
+    // previously accepted as arbitrary-length free text straight into Cosmos.
+    private static string? Validate(UpdateProfileCommand cmd)
+    {
+        if (cmd.Bio?.Length > 500) return "Bio must be 500 characters or fewer.";
+        if (cmd.Location?.Length > 100) return "Location must be 100 characters or fewer.";
+        if (cmd.JobTitle?.Length > 100) return "Job title must be 100 characters or fewer.";
+        if (cmd.JobRole?.Length > 100) return "Job role must be 100 characters or fewer.";
+        if (cmd.Company?.Length > 100) return "Company must be 100 characters or fewer.";
+
+        if (cmd.Interests is not null)
+        {
+            if (cmd.Interests.Count > 30) return "You can list up to 30 interests.";
+            if (cmd.Interests.Any(i => i.Length > 60)) return "Each interest must be 60 characters or fewer.";
+        }
+
+        if (cmd.FavouriteFilms is not null)
+        {
+            if (cmd.FavouriteFilms.Count > 30) return "You can list up to 30 favourite films.";
+            if (cmd.FavouriteFilms.Any(f => f.Length > 60)) return "Each film title must be 60 characters or fewer.";
+        }
+
+        if (cmd.Projects is not null)
+        {
+            if (cmd.Projects.Count > 20) return "You can list up to 20 projects.";
+            foreach (var p in cmd.Projects)
+            {
+                if (string.IsNullOrWhiteSpace(p.Title)) return "Every project needs a title.";
+                if (p.Title.Length > 100) return "Project titles must be 100 characters or fewer.";
+                if (p.Description?.Length > 1000) return "Project descriptions must be 1000 characters or fewer.";
+                if (!AllowedProjectStatuses.Contains(p.Status)) return "Project status must be current, past, or future.";
+            }
+        }
+
+        return null;
     }
 }
