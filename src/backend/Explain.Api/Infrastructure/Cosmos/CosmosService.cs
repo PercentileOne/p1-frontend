@@ -67,6 +67,19 @@ public class CosmosService
             new ContainerProperties("alerts", "/ownerId"));
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("alertMatches", "/ownerId"));
+
+        // Generic viewer reactions ("like") on any content type. Doc id is deterministic
+        // {targetType}:{targetId}:{userId} so a toggle is a single idempotent upsert/delete —
+        // no query-then-write race. Partition key = /targetId so all reactions on one
+        // target (e.g. one profile) are single-partition, cheap to count.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("reactions", "/targetId"));
+
+        // Comments left on a profile. Partition key = /profileUserId so a profile's own
+        // comment thread is single-partition; the admin "reported across all profiles"
+        // queue is the one deliberately cross-partition query — see Features/Comments/Admin/Endpoint.cs.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("profile-comments", "/profileUserId"));
     }
 
     public Container GetContainer(string name) => _database.GetContainer(name);

@@ -26,7 +26,8 @@ public record UpdateProfileCommand(
     string? Location         = null,
     string? Banner           = null,
     List<string>? FavouriteFilms = null,
-    List<ProfileProject>? Projects = null)
+    List<ProfileProject>? Projects = null,
+    bool? CommentsEnabled = null)
     : IRequest<Result<UserProfile>>;
 
 public class UpdateProfileHandler(
@@ -78,6 +79,7 @@ public class UpdateProfileHandler(
         if (cmd.Banner         is not null) profile.Banner         = cmd.Banner;
         if (cmd.FavouriteFilms is not null) profile.FavouriteFilms = cmd.FavouriteFilms;
         if (cmd.Projects       is not null) profile.Projects       = cmd.Projects;
+        if (cmd.CommentsEnabled is not null) profile.CommentsEnabled = cmd.CommentsEnabled.Value;
 
         profile.UpdatedAt = DateTime.UtcNow.ToString("O");
 

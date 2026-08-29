@@ -198,6 +198,11 @@ Explain.Api.Features.Careers.Admin.Endpoint.Map(app);
 Explain.Api.Features.Users.List.Endpoint.Map(app);
 Explain.Api.Features.Users.Create.Endpoint.Map(app);
 
+Explain.Api.Features.Reactions.Endpoint.Map(app);
+Explain.Api.Features.Comments.Endpoint.Map(app);
+Explain.Api.Features.Profile.Block.Endpoint.Map(app);
+Explain.Api.Features.Comments.Admin.Endpoint.Map(app);
+
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
    .AllowAnonymous();
 

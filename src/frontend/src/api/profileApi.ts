@@ -16,6 +16,12 @@ export interface ProfileProject {
   description: string;
 }
 
+export interface BlockedUserRef {
+  userId: string;
+  name: string;
+  blockedAt: string;
+}
+
 export interface Profile {
   id: string;
   userId: string;
@@ -33,6 +39,8 @@ export interface Profile {
   location?: string | null;
   favouriteFilms: string[];
   projects: ProfileProject[];
+  commentsEnabled: boolean;
+  blockedUsers: BlockedUserRef[];
   phone?: string | null;
   lifeStage?: string | null;
   dreamRoleTitle?: string | null;
@@ -43,6 +51,22 @@ export interface Profile {
   createdAt: string;
 }
 
+// Trimmed projection returned by GET /profile/{userId} for someone else's profile.
+export interface PublicProfile {
+  userId: string;
+  name: string;
+  username: string;
+  bio: string;
+  jobRole?: string | null;
+  jobTitle?: string | null;
+  company?: string | null;
+  interests: string[];
+  avatar?: string | null;
+  banner?: string | null;
+  location?: string | null;
+  commentsEnabled: boolean;
+}
+
 export type UpdateProfilePayload = Partial<{
   firstName: string; lastName: string; bio: string;
   jobRole: string; jobTitle: string; company: string;
@@ -50,6 +74,7 @@ export type UpdateProfilePayload = Partial<{
   lifeStage: string; dreamRoleTitle: string; dreamRoleIndustry: string;
   dreamRoleSalary: string; dreamRoleTimeline: string;
   location: string; favouriteFilms: string[]; projects: ProfileProject[];
+  commentsEnabled: boolean;
 }>;
 
 export interface ApiError { error: string; status: number }
@@ -68,6 +93,19 @@ async function put<T>(path: string, token: string, body: unknown): Promise<T> {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw { error: text || res.statusText, status: res.status } satisfies ApiError;
+  }
+  return res.json() as Promise<T>;
+}
+
+async function post<T>(path: string, token: string, body?: unknown): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) {
     const text = await res.text();
@@ -106,5 +144,17 @@ export const profileApi = {
 
   uploadBanner(token: string, file: File): Promise<{ url: string }> {
     return uploadImage('/profile/banner', token, file);
+  },
+
+  getPublicProfile(token: string, userId: string): Promise<PublicProfile> {
+    return get(`/profile/${userId}`, token);
+  },
+
+  block(token: string, userId: string): Promise<{ blockedUsers: BlockedUserRef[] }> {
+    return post(`/profile/block/${userId}`, token);
+  },
+
+  unblock(token: string, userId: string): Promise<{ blockedUsers: BlockedUserRef[] }> {
+    return post(`/profile/unblock/${userId}`, token);
   },
 };

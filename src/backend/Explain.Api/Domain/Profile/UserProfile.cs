@@ -53,6 +53,12 @@ public class UserProfile
     [JsonProperty("projects")]
     public List<ProfileProject> Projects { get; set; } = [];
 
+    [JsonProperty("commentsEnabled")]
+    public bool CommentsEnabled { get; set; } = false;
+
+    [JsonProperty("blockedUsers")]
+    public List<BlockedUserRef> BlockedUsers { get; set; } = [];
+
     [JsonProperty("phone")]
     public string? Phone { get; set; }
 
@@ -107,4 +113,74 @@ public class ProfileProject
 
     [JsonProperty("description")]
     public string Description { get; set; } = string.Empty;
+}
+
+public class BlockedUserRef
+{
+    [JsonProperty("userId")]
+    public string UserId { get; set; } = string.Empty;
+
+    // Denormalized at block-time so the "blocked users" list never needs a lookup.
+    [JsonProperty("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonProperty("blockedAt")]
+    public string BlockedAt { get; set; } = DateTime.UtcNow.ToString("O");
+}
+
+// Trimmed projection returned by GET /profile/{userId} when viewing someone else's
+// profile — never exposes Phone or the DreamRole* fields.
+public class PublicProfile
+{
+    [JsonProperty("userId")]
+    public string UserId { get; set; } = string.Empty;
+
+    [JsonProperty("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonProperty("username")]
+    public string Username { get; set; } = string.Empty;
+
+    [JsonProperty("bio")]
+    public string Bio { get; set; } = string.Empty;
+
+    [JsonProperty("jobRole")]
+    public string? JobRole { get; set; }
+
+    [JsonProperty("jobTitle")]
+    public string? JobTitle { get; set; }
+
+    [JsonProperty("company")]
+    public string? Company { get; set; }
+
+    [JsonProperty("interests")]
+    public List<string> Interests { get; set; } = [];
+
+    [JsonProperty("avatar")]
+    public string? Avatar { get; set; }
+
+    [JsonProperty("banner")]
+    public string? Banner { get; set; }
+
+    [JsonProperty("location")]
+    public string? Location { get; set; }
+
+    [JsonProperty("commentsEnabled")]
+    public bool CommentsEnabled { get; set; }
+
+    public static PublicProfile From(UserProfile p) => new()
+    {
+        UserId = p.UserId,
+        Name = p.Name,
+        Username = p.Username,
+        Bio = p.Bio,
+        JobRole = p.JobRole,
+        JobTitle = p.JobTitle,
+        Company = p.Company,
+        Interests = p.Interests,
+        Avatar = p.Avatar,
+        Banner = p.Banner,
+        Location = p.Location,
+        CommentsEnabled = p.CommentsEnabled,
+    };
 }

@@ -2,6 +2,7 @@ using MediatR;
 using Explain.Api.Common;
 using Explain.Api.Domain.Profile;
 using Explain.Api.Features.Profile.GetProfile;
+using Explain.Api.Features.Profile.GetPublicProfile;
 using Explain.Api.Features.Profile.Stats;
 using Explain.Api.Features.Profile.UpdateProfile;
 using Explain.Api.Infrastructure.Storage;
@@ -38,6 +39,21 @@ public static class Endpoint
                 : Results.Problem(result.Error, statusCode: result.StatusCode);
         }).RequireAuthorization();
 
+        // GET /profile/{userId} — trimmed public projection of another user's profile,
+        // used to view someone else's profile (Like/Comment target). Never returns
+        // phone or dream-role fields.
+        app.MapGet("/profile/{userId}", async (string userId, HttpContext ctx, IMediator mediator) =>
+        {
+            var viewerId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(viewerId))
+                return Results.Unauthorized();
+
+            var result = await mediator.Send(new GetPublicProfileQuery(userId));
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.Problem(result.Error, statusCode: result.StatusCode);
+        }).RequireAuthorization();
+
         // PUT /profile — upserts the current user's Cosmos profile
         app.MapPut("/profile", async (HttpContext ctx, UpdateProfileRequest req, IMediator mediator) =>
         {
@@ -52,7 +68,8 @@ public static class Endpoint
                 Avatar: req.Avatar, Interests: req.Interests,
                 LifeStage: req.LifeStage, DreamRoleTitle: req.DreamRoleTitle, DreamRoleIndustry: req.DreamRoleIndustry,
                 DreamRoleSalary: req.DreamRoleSalary, DreamRoleTimeline: req.DreamRoleTimeline,
-                Location: req.Location, Banner: req.Banner, FavouriteFilms: req.FavouriteFilms, Projects: req.Projects);
+                Location: req.Location, Banner: req.Banner, FavouriteFilms: req.FavouriteFilms, Projects: req.Projects,
+                CommentsEnabled: req.CommentsEnabled);
             var result = await mediator.Send(cmd);
 
             return result.IsSuccess
@@ -128,4 +145,5 @@ public record UpdateProfileRequest(
     string? Location = null,
     string? Banner = null,
     List<string>? FavouriteFilms = null,
-    List<ProfileProject>? Projects = null);
+    List<ProfileProject>? Projects = null,
+    bool? CommentsEnabled = null);

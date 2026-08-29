@@ -1,16 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   MapPin, MessageSquare, UserPlus, Check, BookOpen,
   Bookmark, Bell, Share2, Trophy, Star, TrendingUp,
   Plus, Sparkles, Users, ChevronRight, Layers, Award,
   Flame, Zap, Target, FileText, Hash, Edit3,
   ChevronDown, ChevronUp, X, Loader2, Trash2,
+  Heart, MoreHorizontal, Flag, UserX,
 } from "lucide-react";
 import BackToCockpit from "../components/BackToCockpit";
 import { SmallAwardBadge } from "../components/AwardTiles";
 import AvatarUploader from "../components/settings/AvatarUploader";
+import ToggleSwitch from "../components/settings/ToggleSwitch";
 import { useAuthStore } from "../auth/authStore";
 import {
   OWN_PROFILE,
@@ -22,7 +24,9 @@ import {
   type ProfileGroup,
   type ProfilePost,
 } from "../lib/profileData";
-import { profileApi, type Profile, type ProfileProject } from "../api/profileApi";
+import { profileApi, type Profile, type PublicProfile, type ProfileProject, type BlockedUserRef } from "../api/profileApi";
+import { reactionsApi } from "../api/reactionsApi";
+import { commentsApi, type ProfileComment } from "../api/commentsApi";
 import { WEEKLY_WINNERS, MONTHLY_WINNERS } from "../lib/awardsData";
 import { STORIES } from "../lib/storiesData";
 
@@ -59,13 +63,16 @@ const SLIDE_UP = {
    A) PROFILE HEADER
    ══════════════════════════════════════════════════════════════ */
 
-function ProfileHeader({ profile, followed, onFollow, editing, canEdit, onEditClick }: {
+function ProfileHeader({ profile, followed, onFollow, editing, canEdit, onEditClick, liked, likeCount, onToggleLike }: {
   profile: UserProfile;
   followed: boolean;
   onFollow: () => void;
   editing: boolean;
   canEdit: boolean;
   onEditClick: () => void;
+  liked: boolean;
+  likeCount: number;
+  onToggleLike: () => void;
 }) {
   const awards = [...WEEKLY_WINNERS, ...MONTHLY_WINNERS].filter(w => w.authorName === profile.name);
 
@@ -140,6 +147,14 @@ function ProfileHeader({ profile, followed, onFollow, editing, canEdit, onEditCl
             {/* Actions */}
             {!profile.isOwnProfile ? (
               <div className="flex gap-2 shrink-0">
+                <motion.button whileTap={{ scale: 0.93 }} onClick={onToggleLike}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-bold border transition-all ${
+                    liked
+                      ? "text-rose-400 border-rose-500/25 bg-rose-500/10"
+                      : "text-slate-300 border-white/[0.1] hover:border-white/[0.2]"
+                  }`}>
+                  <Heart size={12} fill={liked ? "currentColor" : "none"} /> {likeCount > 0 ? likeCount : "Like"}
+                </motion.button>
                 <motion.button whileTap={{ scale: 0.93 }} onClick={onFollow}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-bold border transition-all ${
                     followed
@@ -800,6 +815,34 @@ function SectionHeading({ emoji, title, action }: { emoji: string; title: string
 }
 
 function OverviewTab({ profile }: { profile: UserProfile }) {
+  // Achievements/Walls/Groups/Posts/Awards are mock-only content, not real for any
+  // user yet — only shown on your own profile, never attributed to someone else's.
+  if (!profile.isOwnProfile) {
+    return (
+      <div className="space-y-5">
+        <SectionCard>
+          <SectionHeading emoji="✨" title="Interests" />
+          {profile.interests.length === 0 ? (
+            <p className="text-[11px] text-slate-600">No interests listed yet.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {profile.interests.slice(0, 10).map(id => {
+                const interest = ALL_INTERESTS.find(i => i.id === id);
+                if (!interest) return null;
+                return (
+                  <span key={id}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold text-indigo-200 bg-indigo-600/15 border border-indigo-500/20">
+                    <span>{interest.emoji}</span>{interest.label}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+        </SectionCard>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
       <MyStoryPanel profile={profile} />
@@ -896,6 +939,7 @@ interface ProfileDraft {
   dreamRoleIndustry: string;
   dreamRoleSalary: string;
   dreamRoleTimeline: string;
+  commentsEnabled: boolean;
 }
 
 function draftFromProfile(real: Profile | null): ProfileDraft {
@@ -912,6 +956,7 @@ function draftFromProfile(real: Profile | null): ProfileDraft {
     dreamRoleIndustry: real?.dreamRoleIndustry ?? '',
     dreamRoleSalary: real?.dreamRoleSalary ?? '',
     dreamRoleTimeline: real?.dreamRoleTimeline ?? '',
+    commentsEnabled: real?.commentsEnabled ?? false,
   };
 }
 
@@ -922,6 +967,7 @@ function draftFromProfile(real: Profile | null): ProfileDraft {
 function ProfileEditPanel({
   draft, onChange, onSave, onCancel, saving, saveError,
   avatarUrl, bannerUrl, initials, onAvatarUpload, onBannerUpload,
+  blockedUsers, onUnblock,
 }: {
   draft: ProfileDraft;
   onChange: (patch: Partial<ProfileDraft>) => void;
@@ -934,6 +980,8 @@ function ProfileEditPanel({
   initials: string;
   onAvatarUpload: (file: File) => void;
   onBannerUpload: (file: File) => void;
+  blockedUsers: BlockedUserRef[];
+  onUnblock: (userId: string) => void;
 }) {
   const [filmText, setFilmText] = useState("");
   const [newProject, setNewProject] = useState<{ title: string; status: ProfileProject["status"]; description: string }>({
@@ -1117,6 +1165,31 @@ function ProfileEditPanel({
         </div>
       </SectionCard>
 
+      <SectionCard>
+        <SectionHeading emoji="💬" title="Comments & Moderation" />
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-[12px] font-semibold text-white">Allow comments on my profile</p>
+            <p className="text-[10px] text-slate-600 mt-0.5">Off by default. Anyone can report a comment; you can delete or block a commenter any time.</p>
+          </div>
+          <ToggleSwitch checked={draft.commentsEnabled} onChange={v => onChange({ commentsEnabled: v })} />
+        </div>
+
+        <p className={labelClass}>Blocked users</p>
+        {blockedUsers.length === 0 ? (
+          <p className="text-[11px] text-slate-600">No one is blocked.</p>
+        ) : (
+          <div className="space-y-2">
+            {blockedUsers.map(b => (
+              <div key={b.userId} className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                <span className="text-[12px] text-slate-300">{b.name}</span>
+                <button onClick={() => onUnblock(b.userId)} className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold">Unblock</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </SectionCard>
+
       {saveError && (
         <div className="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-[12px] text-rose-300">
           {saveError}
@@ -1135,22 +1208,189 @@ function ProfileEditPanel({
   );
 }
 
+/* ══════════════════════════════════════════════════════════════
+   K) COMMENTS SECTION
+   ══════════════════════════════════════════════════════════════ */
+
+function CommentsSection({ profileUserId, viewerId, commentsEnabled, isOwner, authToken, onBlocked }: {
+  profileUserId: string;
+  viewerId: string | undefined;
+  commentsEnabled: boolean;
+  isOwner: boolean;
+  authToken: string | null;
+  onBlocked: (userId: string) => void;
+}) {
+  const [comments, setComments] = useState<ProfileComment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [text, setText] = useState("");
+  const [posting, setPosting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!authToken) { setLoading(false); return; }
+    setLoading(true);
+    commentsApi.list(authToken, profileUserId)
+      .then(setComments)
+      .catch(() => { /* keep empty */ })
+      .finally(() => setLoading(false));
+  }, [authToken, profileUserId]);
+
+  async function postComment() {
+    if (!authToken) return;
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    setPosting(true);
+    setError(null);
+    try {
+      const created = await commentsApi.create(authToken, profileUserId, trimmed);
+      setComments(prev => [created, ...prev]);
+      setText("");
+    } catch (e) {
+      const err = e as { error?: string };
+      setError(err?.error || "Couldn't post your comment.");
+    } finally {
+      setPosting(false);
+    }
+  }
+
+  async function deleteComment(id: string) {
+    if (!authToken) return;
+    setOpenMenuId(null);
+    setComments(prev => prev.filter(c => c.id !== id));
+    try { await commentsApi.remove(authToken, id, profileUserId); }
+    catch { /* optimistic removal stands; a reload will reconcile if this failed */ }
+  }
+
+  async function reportComment(id: string) {
+    if (!authToken) return;
+    setOpenMenuId(null);
+    try { await commentsApi.report(authToken, id, profileUserId); } catch { /* best-effort */ }
+  }
+
+  async function blockAuthor(authorUserId: string) {
+    if (!authToken) return;
+    setOpenMenuId(null);
+    setComments(prev => prev.filter(c => c.authorUserId !== authorUserId));
+    try { await profileApi.block(authToken, authorUserId); onBlocked(authorUserId); }
+    catch { /* best-effort */ }
+  }
+
+  const visible = expanded ? comments : comments.slice(0, 5);
+
+  return (
+    <SectionCard className="mb-6">
+      <SectionHeading emoji="💬" title={comments.length > 0 ? `Comments (${comments.length})` : "Comments"} />
+
+      {loading ? (
+        <p className="text-[11px] text-slate-600">Loading comments…</p>
+      ) : (
+        <div className="space-y-4">
+          {visible.map(c => (
+            <div key={c.id} className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-indigo-600/25 text-indigo-200 text-[10px] font-bold">
+                {c.authorAvatarUrl ? <img src={c.authorAvatarUrl} alt={c.authorName} className="w-full h-full object-cover" /> : initialsFor(c.authorName)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-[11px] font-bold text-white">{c.authorName}</p>
+                  <p className="text-[9px] text-slate-600">{new Date(c.createdAt).toLocaleDateString()}</p>
+                </div>
+                <p className="text-[12px] text-slate-300 leading-relaxed">{c.text}</p>
+              </div>
+              <div className="relative shrink-0">
+                <button onClick={() => setOpenMenuId(id => (id === c.id ? null : c.id))} className="text-slate-600 hover:text-slate-300 p-1">
+                  <MoreHorizontal size={14} />
+                </button>
+                {openMenuId === c.id && (
+                  <div className="absolute right-0 top-7 z-10 w-48 rounded-xl border border-white/[0.1] bg-[#1c1f2e] shadow-xl overflow-hidden">
+                    <button onClick={() => reportComment(c.id)} className="w-full flex items-center gap-2 text-left px-3 py-2 text-[11px] text-slate-300 hover:bg-white/[0.05]">
+                      <Flag size={11} /> Report
+                    </button>
+                    {(isOwner || c.authorUserId === viewerId) && (
+                      <button onClick={() => deleteComment(c.id)} className="w-full flex items-center gap-2 text-left px-3 py-2 text-[11px] text-rose-400 hover:bg-white/[0.05]">
+                        <Trash2 size={11} /> Delete
+                      </button>
+                    )}
+                    {isOwner && c.authorUserId !== viewerId && (
+                      <button onClick={() => blockAuthor(c.authorUserId)} className="w-full flex items-center gap-2 text-left px-3 py-2 text-[11px] text-rose-400 hover:bg-white/[0.05]">
+                        <UserX size={11} /> Block this user
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          {comments.length === 0 && <p className="text-[11px] text-slate-600">No comments yet.</p>}
+          {!expanded && comments.length > 5 && (
+            <button onClick={() => setExpanded(true)} className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold">
+              View all {comments.length} comments
+            </button>
+          )}
+        </div>
+      )}
+
+      <div className="mt-4 pt-4 border-t border-white/[0.05]">
+        {commentsEnabled ? (
+          <div className="flex gap-2">
+            <input
+              value={text}
+              onChange={e => setText(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") postComment(); }}
+              placeholder="Write a comment…"
+              maxLength={1000}
+              className="flex-1 px-3 py-2 bg-white/[0.04] border border-white/[0.1] rounded-xl text-[12px] text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500/40"
+            />
+            <button onClick={postComment} disabled={posting || !text.trim()}
+              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold transition-colors disabled:opacity-50 shrink-0">
+              {posting ? "Posting…" : "Post"}
+            </button>
+          </div>
+        ) : (
+          <p className="text-[11px] text-slate-600">
+            {isOwner ? "Comments are off. Enable them from Edit Profile." : "Commenting is currently off for this profile."}
+          </p>
+        )}
+        {error && <p className="text-[10px] text-rose-400 mt-2">{error}</p>}
+      </div>
+    </SectionCard>
+  );
+}
+
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const { userId: routeUserId } = useParams();
   const authUser = useAuthStore(s => s.user);
   const authToken = useAuthStore(s => s.token);
+
+  const isOwnProfile = !routeUserId || routeUserId === authUser?.id;
+
   const [real, setReal] = useState<Profile | null>(null);
+  const [publicProfile, setPublicProfile] = useState<PublicProfile | null>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<ProfileDraft>(() => draftFromProfile(null));
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [reaction, setReaction] = useState<{ liked: boolean; count: number }>({ liked: false, count: 0 });
 
   useEffect(() => {
-    if (!authToken) return;
+    if (!authToken || !isOwnProfile) return;
     profileApi.getProfile(authToken)
       .then(data => { setReal(data); setDraft(draftFromProfile(data)); })
       .catch(() => { /* keep showing what we have */ });
-  }, [authToken]);
+  }, [authToken, isOwnProfile]);
+
+  useEffect(() => {
+    if (!authToken || isOwnProfile || !routeUserId) return;
+    profileApi.getPublicProfile(authToken, routeUserId)
+      .then(setPublicProfile)
+      .catch(() => { /* keep empty */ });
+    reactionsApi.get(authToken, 'profile', routeUserId)
+      .then(setReaction)
+      .catch(() => { /* keep default */ });
+  }, [authToken, isOwnProfile, routeUserId]);
 
   function startEditing() {
     setDraft(draftFromProfile(real));
@@ -1201,25 +1441,75 @@ export default function ProfilePage() {
     }
   }
 
+  async function toggleLike() {
+    if (!authToken || !routeUserId) return;
+    try {
+      setReaction(await reactionsApi.toggle(authToken, 'profile', routeUserId));
+    } catch { /* best-effort */ }
+  }
+
+  function handleUnblock(userId: string) {
+    if (!authToken) return;
+    setReal(prev => (prev ? { ...prev, blockedUsers: prev.blockedUsers.filter(b => b.userId !== userId) } : prev));
+    profileApi.unblock(authToken, userId).catch(() => { /* best-effort */ });
+  }
+
+  function handleBlockedFromComments(userId: string) {
+    setReal(prev => (prev
+      ? { ...prev, blockedUsers: [...prev.blockedUsers, { userId, name: 'Blocked user', blockedAt: new Date().toISOString() }] }
+      : prev));
+  }
+
   // Real identity (name/bio/profession) overlaid on the demo social content
   // (achievements/walls/groups/posts/stats) — those aren't backed by a real
-  // API yet, so they stay as placeholder content for every account for now.
-  const name = real?.name || authUser?.name || OWN_PROFILE.name;
-  const profession = real?.jobTitle || real?.jobRole || (real ? '' : OWN_PROFILE.profession);
-  const profile: UserProfile = {
+  // API yet, so they stay as placeholder content, shown only on your own profile.
+  const ownName = real?.name || authUser?.name || OWN_PROFILE.name;
+  const ownProfession = real?.jobTitle || real?.jobRole || (real ? '' : OWN_PROFILE.profession);
+  const ownProfile: UserProfile = {
     ...OWN_PROFILE,
     id: authUser?.id ?? OWN_PROFILE.id,
-    name,
-    initials: initialsFor(name) || OWN_PROFILE.initials,
-    avatarColor: colorForName(name),
-    profession,
-    professionEmoji: profession ? OWN_PROFILE.professionEmoji : '',
+    name: ownName,
+    initials: initialsFor(ownName) || OWN_PROFILE.initials,
+    avatarColor: colorForName(ownName),
+    profession: ownProfession,
+    professionEmoji: ownProfession ? OWN_PROFILE.professionEmoji : '',
     location: real ? (real.location ?? '') : OWN_PROFILE.location,
     bio: real ? (real.bio || 'No bio yet — add one from your profile settings.') : OWN_PROFILE.bio,
     interests: real?.interests ?? OWN_PROFILE.interests,
     avatarUrl: real?.avatar ?? undefined,
     bannerUrl: real?.banner ?? undefined,
+    isOwnProfile: true,
   };
+
+  // Someone else's profile: real fields only. Achievements/Walls/Groups/Posts/Awards
+  // stay empty — that mock content isn't real for anyone and must never be shown
+  // attributed to someone else.
+  const otherName = publicProfile?.name || 'This candidate';
+  const otherProfession = publicProfile?.jobTitle || publicProfile?.jobRole || '';
+  const otherProfile: UserProfile = {
+    ...OWN_PROFILE,
+    id: routeUserId ?? '',
+    name: otherName,
+    initials: initialsFor(otherName) || '?',
+    avatarColor: colorForName(otherName || routeUserId || ''),
+    profession: otherProfession,
+    professionEmoji: otherProfession ? '💼' : '',
+    location: publicProfile?.location ?? '',
+    bio: publicProfile?.bio || 'No bio yet.',
+    interests: publicProfile?.interests ?? [],
+    avatarUrl: publicProfile?.avatar ?? undefined,
+    bannerUrl: publicProfile?.banner ?? undefined,
+    followers: 0, following: 0, storiesPublished: 0, chaptersWritten: 0,
+    savesReceived: 0, awardsWon: 0, postsPublished: 0, wallsFollowed: 0, groupsJoined: 0,
+    achievements: [], walls: [], groups: [], posts: [],
+    isOwnProfile: false,
+  };
+
+  const profile = isOwnProfile ? ownProfile : otherProfile;
+  const commentsEnabled = isOwnProfile ? (real?.commentsEnabled ?? false) : (publicProfile?.commentsEnabled ?? false);
+  const targetUserId = isOwnProfile ? (authUser?.id ?? '') : (routeUserId ?? '');
+  const visibleTabs = isOwnProfile ? TABS : TABS.filter(t => t.key === "overview" || t.key === "interests");
+
   const [tab, setTab] = useState<ProfileTab>("overview");
   const [followed, setFollowed] = useState(false);
 
@@ -1242,7 +1532,7 @@ export default function ProfilePage() {
 
         {/* Tabs */}
         <div className="flex items-center gap-0.5 px-6 pb-0 border-t border-white/[0.04] overflow-x-auto">
-          {TABS.map(t => (
+          {visibleTabs.map(t => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
@@ -1268,8 +1558,11 @@ export default function ProfilePage() {
             followed={followed}
             onFollow={() => setFollowed(v => !v)}
             editing={editing}
-            canEdit={!!authToken}
+            canEdit={isOwnProfile && !!authToken}
             onEditClick={() => (editing ? cancelEditing() : startEditing())}
+            liked={reaction.liked}
+            likeCount={reaction.count}
+            onToggleLike={toggleLike}
           />
 
           {editing && (
@@ -1285,6 +1578,19 @@ export default function ProfilePage() {
               initials={profile.initials}
               onAvatarUpload={handleAvatarUpload}
               onBannerUpload={handleBannerUpload}
+              blockedUsers={real?.blockedUsers ?? []}
+              onUnblock={handleUnblock}
+            />
+          )}
+
+          {!editing && targetUserId && (
+            <CommentsSection
+              profileUserId={targetUserId}
+              viewerId={authUser?.id}
+              commentsEnabled={commentsEnabled}
+              isOwner={isOwnProfile}
+              authToken={authToken}
+              onBlocked={handleBlockedFromComments}
             />
           )}
 

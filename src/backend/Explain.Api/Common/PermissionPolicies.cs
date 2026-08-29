@@ -38,6 +38,7 @@ public static class Permissions
     public const string ManageCareers         = "CAN_MANAGE_CAREERS";
     public const string ManageUsers           = "CAN_MANAGE_USERS";
     public const string ViewAllInterviews     = "CAN_VIEW_ALL_INTERVIEWS";
+    public const string ModerateContent       = "CAN_MODERATE_CONTENT";
 
     // Super Admin only
     public const string EditPermissions       = "CAN_EDIT_PERMISSIONS";

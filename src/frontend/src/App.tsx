@@ -184,6 +184,7 @@ export default function App() {
       <Route path="/dashboard" element={<RequirePermission permission="CAN_START_INTERVIEW"><CandidateDashboard /></RequirePermission>} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/profile/video" element={<RequirePermission permission="CAN_START_INTERVIEW"><ProfileVideoPage /></RequirePermission>} />
+      <Route path="/profile/:userId" element={<ProfilePage />} />
       <Route path="/awards" element={<AwardsPage />} />
       <Route path="/proof" element={<ProofPage />} />
       <Route path="/vision" element={<VisionPage />} />
