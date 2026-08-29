@@ -118,6 +118,12 @@ export const careersAdminApi = {
   suggestCategory(token: string, title: string): Promise<{ category: string; subcategory: string }> {
     return call('/api/admin/careers/suggest-category', token, { method: 'POST', body: JSON.stringify({ title }) });
   },
+
+  // Corrects title/category/subcategory on a career that already exists — keeps the same
+  // document id even when the title changes (id is internal, never shown to candidates).
+  editCareer(token: string, id: string, body: { title?: string; category?: string; subcategory?: string }): Promise<AdminCareer> {
+    return call(`/api/admin/careers/${encodeURIComponent(id)}/edit`, token, { method: 'POST', body: JSON.stringify(body) });
+  },
 };
 
 export const missingCareersApi = {

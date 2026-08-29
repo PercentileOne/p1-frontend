@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
-import { Search, Loader2, X, Flag, AlertTriangle, CheckCircle2, XCircle, RotateCcw, ChevronUp, ChevronDown, Clock, Plus, Sparkles } from 'lucide-react'
+import { Search, Loader2, X, Flag, AlertTriangle, CheckCircle2, XCircle, RotateCcw, ChevronUp, ChevronDown, Clock, Plus, Sparkles, Pencil } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { FormField, inputStyle, buttonStyle } from './Organisations'
 import {
@@ -255,7 +255,16 @@ function BrowsePanel() {
         </div>
       )}
 
-      {selected && <CareerDetailDrawer career={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <CareerDetailDrawer
+          career={selected}
+          onClose={() => setSelected(null)}
+          onUpdated={updated => {
+            setSelected(updated)
+            setRows(prev => prev.map(r => r.id === updated.id ? updated : r))
+          }}
+        />
+      )}
       {showCreate && (
         <CreateCareerModal
           onClose={() => setShowCreate(false)}
@@ -390,22 +399,88 @@ function SortHeader({ label, sortKeyName, sortKey, sortDir, onClick }: {
   )
 }
 
-function CareerDetailDrawer({ career: c, onClose }: { career: AdminCareer; onClose: () => void }) {
+function CareerDetailDrawer({ career: c, onClose, onUpdated }: { career: AdminCareer; onClose: () => void; onUpdated: (updated: AdminCareer) => void }) {
+  const { token } = useAuth()
+  const [editing, setEditing] = useState(false)
+  const [title, setTitle] = useState(c.title)
+  const [category, setCategory] = useState(c.category)
+  const [subcategory, setSubcategory] = useState(c.subcategory)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  function startEdit() {
+    setTitle(c.title)
+    setCategory(c.category)
+    setSubcategory(c.subcategory)
+    setError('')
+    setEditing(true)
+  }
+
+  async function handleSave() {
+    if (!token) return
+    if (!title.trim()) { setError('Title is required.'); return }
+    if (!category.trim()) { setError('Category is required.'); return }
+    setSaving(true)
+    setError('')
+    try {
+      const updated = await careersAdminApi.editCareer(token, c.id, {
+        title: title.trim(), category: category.trim(), subcategory: subcategory.trim(),
+      })
+      onUpdated(updated)
+      setEditing(false)
+    } catch (err) {
+      setError((err as ApiError).error ?? 'Failed to save changes.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'flex-end', zIndex: 100 }} onClick={onClose}>
       <div
         onClick={e => e.stopPropagation()}
         style={{ width: '100%', maxWidth: 520, height: '100%', background: 'var(--bg2)', borderLeft: '1px solid var(--border)', padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 18 }}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <div>
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>{c.title}</h2>
-            <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>{c.category} · {c.subcategory}</p>
+        {editing ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>Edit career</h2>
+            <FormField label="Title">
+              <input type="text" autoComplete="off" value={title} onChange={e => setTitle(e.target.value)} style={inputStyle} />
+            </FormField>
+            <FormField label={<CategoryLabel title={title} onSuggest={(cat, sub) => { setCategory(cat); setSubcategory(sub) }} />}>
+              <input type="text" autoComplete="off" value={category} onChange={e => setCategory(e.target.value)} style={inputStyle} />
+            </FormField>
+            <FormField label="Subcategory">
+              <input type="text" autoComplete="off" value={subcategory} onChange={e => setSubcategory(e.target.value)} style={inputStyle} />
+            </FormField>
+            {error && <div style={{ fontSize: 12, color: '#EF4444' }}>{error}</div>}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="button" onClick={() => setEditing(false)} disabled={saving} style={{ ...buttonStyle, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-2)' }}>Cancel</button>
+              <button type="button" onClick={handleSave} disabled={saving} style={{ ...buttonStyle, background: 'var(--blue)', color: '#fff', border: 'none', flex: 1, opacity: saving ? 0.7 : 1 }}>
+                {saving ? 'Saving…' : 'Save changes'}
+              </button>
+            </div>
           </div>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 4 }}>
-            <X size={20} />
-          </button>
-        </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <div>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>{c.title}</h2>
+              <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>{c.category} · {c.subcategory}</p>
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button
+                onClick={startEdit}
+                title="Edit title / category / subcategory"
+                style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--text-2)', fontSize: 12, fontWeight: 700, fontFamily: 'inherit' }}
+              >
+                <Pencil size={13} /> Edit
+              </button>
+              <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 4 }}>
+                <X size={20} />
+              </button>
+            </div>
+          </div>
+        )}
 
         <Section title="System fields (hidden from candidates)">
           <FieldRow label="id" value={c.id} mono />

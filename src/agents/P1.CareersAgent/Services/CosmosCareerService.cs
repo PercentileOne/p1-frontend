@@ -140,6 +140,20 @@ public class CosmosCareerService
         return await DrainQueryIterator(_container.GetItemQueryIterator<CareerDocument>(sql));
     }
 
+    public async Task<CareerDocument?> GetByIdAsync(string id)
+    {
+        // Cross-partition — id alone doesn't tell us the category (partition key), and this
+        // is only ever called from the admin Edit action, not a hot path.
+        var sql = new QueryDefinition("SELECT * FROM c WHERE c.id = @id").WithParameter("@id", id);
+        var results = await DrainQueryIterator(_container.GetItemQueryIterator<CareerDocument>(sql));
+        return results.FirstOrDefault();
+    }
+
+    public async Task DeleteAsync(string id, string category)
+    {
+        await _container.DeleteItemAsync<CareerDocument>(id, new PartitionKey(category));
+    }
+
     public async Task<List<CategoryCount>> GetCategoryCountsAsync()
     {
         var sql = new QueryDefinition(

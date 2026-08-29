@@ -83,6 +83,56 @@ public class AddCareerFunction(CosmosCareerService cosmos, OpenAiEnricher enrich
         return await OkJson(req, new { category, subcategory });
     }
 
+    // Admin-only correction for a career already in the database — e.g. Francis resolving
+    // "DevOps" when he meant "DevOps Manager". Keeps the same document id even when the
+    // title changes (id is an internal key, never shown to candidates, and search matches
+    // on title/aliases/tags — not id — so there's no need to churn it). Category changes
+    // do need a real move since it's the Cosmos partition key: delete under the old
+    // partition, upsert under the new one, same id either way.
+    [Function("EditCareer")]
+    public async Task<HttpResponseData> Edit(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "careers/{id}/edit")] HttpRequestData req,
+        FunctionContext context, string id)
+    {
+        var log = context.GetLogger<AddCareerFunction>();
+        EditRequest? body;
+        try
+        {
+            body = await JsonSerializer.DeserializeAsync<EditRequest>(req.Body, _json);
+        }
+        catch (JsonException)
+        {
+            return await BadRequest(req, "Invalid JSON body.");
+        }
+
+        var existing = await cosmos.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return req.CreateResponse(HttpStatusCode.NotFound);
+        }
+
+        var newTitle = body?.Title?.Trim();
+        if (!string.IsNullOrWhiteSpace(newTitle)) existing.Title = newTitle;
+
+        var newCategory = body?.Category?.Trim();
+        var oldCategory = existing.Category;
+        var categoryChanged = !string.IsNullOrWhiteSpace(newCategory) && newCategory != oldCategory;
+        if (!string.IsNullOrWhiteSpace(newCategory)) existing.Category = newCategory;
+
+        if (body?.Subcategory is not null) existing.Subcategory = body.Subcategory.Trim();
+
+        existing.LastUpdated = DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+        if (categoryChanged)
+        {
+            await cosmos.DeleteAsync(id, oldCategory);
+        }
+        await cosmos.UpsertAsync(existing);
+
+        log.LogInformation("Career edited: {Id} → {Title} [{Category}]", id, existing.Title, existing.Category);
+        return await OkJson(req, existing);
+    }
+
     private static async Task<HttpResponseData> OkJson(HttpRequestData req, object data)
     {
         var res = req.CreateResponse(HttpStatusCode.OK);
@@ -101,4 +151,5 @@ public class AddCareerFunction(CosmosCareerService cosmos, OpenAiEnricher enrich
 
     private record AddRequest(string? Title, string? Category, string? Subcategory);
     private record SuggestRequest(string? Title);
+    private record EditRequest(string? Title, string? Category, string? Subcategory);
 }
