@@ -191,17 +191,36 @@ Explain.Api.Features.Users.Create.Endpoint.Map(app);
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
    .AllowAnonymous();
 
-// ── OpenAI proxy — streams OpenAI response to keep the SWA connection alive ───
+// ── AI proxy — Azure AI Foundry Model Router, streams the response to keep the SWA
+// connection alive. Was a direct pass-through to OpenAI; now routes across 20+ models
+// from OpenAI/Anthropic/DeepSeek/Meta/xAI with automatic failover if one is unavailable —
+// see docs/specs/multi-model-strategy.html for why. Every caller (aiScoring.ts across all
+// portals) still sends a hardcoded "gpt-4o-mini" in the request body; that's rewritten to
+// the router's deployment name below so nothing upstream needed to change.
 app.MapPost("/api/ai-proxy", async (HttpRequest req, HttpResponse res, IHttpClientFactory factory, IConfiguration config) =>
 {
-    var apiKey = config["OpenAI:ApiKey"] ?? throw new InvalidOperationException("OpenAI:ApiKey not configured");
+    var apiKey = config["ModelRouter:ApiKey"] ?? throw new InvalidOperationException("ModelRouter:ApiKey not configured");
+    var endpoint = config["ModelRouter:Endpoint"] ?? throw new InvalidOperationException("ModelRouter:Endpoint not configured");
     req.EnableBuffering();
     var body = await new System.IO.StreamReader(req.Body, System.Text.Encoding.UTF8, leaveOpen: true).ReadToEndAsync();
     req.Body.Position = 0;
+
+    string forwardBody;
+    try
+    {
+        var node = System.Text.Json.Nodes.JsonNode.Parse(body)!.AsObject();
+        node["model"] = "model-router";
+        forwardBody = node.ToJsonString();
+    }
+    catch (System.Text.Json.JsonException)
+    {
+        forwardBody = body; // malformed body — let the provider's own error surface rather than masking it
+    }
+
     var client = factory.CreateClient();
-    using var msg = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
-    msg.Headers.Add("Authorization", $"Bearer {apiKey}");
-    msg.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
+    using var msg = new HttpRequestMessage(HttpMethod.Post, $"{endpoint.TrimEnd('/')}/openai/v1/chat/completions");
+    msg.Headers.Add("api-key", apiKey);
+    msg.Content = new StringContent(forwardBody, System.Text.Encoding.UTF8, "application/json");
     using var resp = await client.SendAsync(msg, HttpCompletionOption.ResponseHeadersRead);
     res.StatusCode = (int)resp.StatusCode;
     res.ContentType = resp.Content.Headers.ContentType?.ToString() ?? "application/json";
