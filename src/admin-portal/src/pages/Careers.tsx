@@ -467,6 +467,7 @@ function ReportsPanel({ onPendingCountChange }: { onPendingCountChange: (n: numb
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [resolving, setResolving] = useState<MissingCareerReport | null>(null)
 
   const load = useCallback(async () => {
     if (!token) return
@@ -581,7 +582,7 @@ function ReportsPanel({ onPendingCountChange }: { onPendingCountChange: (n: numb
                   <td style={{ padding: '12px 16px' }}>
                     <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                       {r.status !== 'resolved' && (
-                        <IconButton title="Mark resolved" onClick={() => setStatus(r.id, 'resolved')} disabled={busyId === r.id} color="var(--green)">
+                        <IconButton title="Resolve — adds it as a real career" onClick={() => setResolving(r)} disabled={busyId === r.id} color="var(--green)">
                           <CheckCircle2 size={15} />
                         </IconButton>
                       )}
@@ -603,6 +604,100 @@ function ReportsPanel({ onPendingCountChange }: { onPendingCountChange: (n: numb
           </table>
         </div>
       )}
+
+      {resolving && (
+        <ResolveReportModal
+          report={resolving}
+          onClose={() => setResolving(null)}
+          onResolved={() => { setResolving(null); load() }}
+        />
+      )}
+    </div>
+  )
+}
+
+function ResolveReportModal({ report, onClose, onResolved }: { report: MissingCareerReport; onClose: () => void; onResolved: () => void }) {
+  const { token } = useAuth()
+  const [title, setTitle] = useState(report.title)
+  const [category, setCategory] = useState('')
+  const [subcategory, setSubcategory] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const mouseDownOnBackdropRef = useRef(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!token) return
+    if (!title.trim()) { setError('Title is required.'); return }
+    if (!category.trim()) { setError('Category is required.'); return }
+    setSaving(true)
+    setError('')
+    try {
+      await careersAdminApi.addCareer(token, { title: title.trim(), category: category.trim(), subcategory: subcategory.trim() || undefined })
+      await missingCareersApi.updateStatus(token, report.id, 'resolved')
+      onResolved()
+    } catch (err) {
+      setError((err as ApiError).error ?? 'Failed to add career.')
+      setSaving(false)
+    }
+  }
+
+  async function handleMarkResolvedOnly() {
+    if (!token) return
+    setSaving(true)
+    setError('')
+    try {
+      await missingCareersApi.updateStatus(token, report.id, 'resolved')
+      onResolved()
+    } catch (err) {
+      setError((err as ApiError).error ?? 'Failed to update report.')
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}
+      onMouseDown={e => { mouseDownOnBackdropRef.current = e.target === e.currentTarget }}
+      onClick={e => { if (e.target === e.currentTarget && mouseDownOnBackdropRef.current) onClose() }}
+    >
+      <form
+        onSubmit={handleSubmit}
+        onClick={e => e.stopPropagation()}
+        style={{ width: '100%', maxWidth: 440, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}
+      >
+        <div>
+          <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>Resolve "{report.title}"</h2>
+          <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>Generates a full career profile via AI and adds it to the database — this is what actually makes it searchable on the intake screen. Reported {report.reportCount} time{report.reportCount === 1 ? '' : 's'}.</p>
+        </div>
+
+        <FormField label="Title">
+          <input type="text" autoComplete="off" value={title} onChange={e => setTitle(e.target.value)} style={inputStyle} />
+        </FormField>
+        <FormField label="Category">
+          <input type="text" autoComplete="off" value={category} onChange={e => setCategory(e.target.value)} style={inputStyle} placeholder="e.g. Technology" />
+        </FormField>
+        <FormField label="Subcategory (optional)">
+          <input type="text" autoComplete="off" value={subcategory} onChange={e => setSubcategory(e.target.value)} style={inputStyle} placeholder="e.g. Infrastructure" />
+        </FormField>
+
+        {error && <div style={{ fontSize: 12, color: '#EF4444' }}>{error}</div>}
+
+        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+          <button type="button" onClick={onClose} style={{ ...buttonStyle, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-2)' }}>Cancel</button>
+          <button type="submit" disabled={saving} style={{ ...buttonStyle, background: 'var(--blue)', color: '#fff', border: 'none', flex: 1, opacity: saving ? 0.7 : 1 }}>
+            {saving ? 'Working…' : 'Add career & resolve'}
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={handleMarkResolvedOnly}
+          disabled={saving}
+          style={{ background: 'transparent', border: 'none', color: 'var(--text-3)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline', padding: 0, alignSelf: 'center' }}
+        >
+          It's already covered — just mark resolved without adding
+        </button>
+      </form>
     </div>
   )
 }
