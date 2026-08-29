@@ -29,6 +29,12 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("lessons", "/pk"));
 
+        // Name Bank — a personalised interviewer greeting clip, cached per {speaker}:{name}
+        // and reused for every candidate who shares that first name. Shared across all users;
+        // partition key = the same composite key as the document id (see Features/NameGreetings).
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("nameGreetings", "/pk"));
+
         // Per-user talk history — every scored session; partition key = /userId for efficient user queries.
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("lessonHistory", "/userId"));

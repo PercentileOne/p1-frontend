@@ -16,6 +16,7 @@ import CinematicMCQ from '../components/CinematicMCQ';
 import { pickRandomCompany, type Company } from '../data/companyBank';
 import { logFlowEvent } from '../api/flowLogger';
 import { useAuthStore } from '../auth/authStore';
+import { nameGreetingsApi } from '../api/nameGreetingsApi';
 import { FILTER_CSS, FILTER_LABELS, FILTER_PRESETS, type FilterPreset } from '../hooks/useVideoFilter';
 
 // ── Multilingual Sarah intro fallbacks ───────────────────────────────────────
@@ -700,6 +701,26 @@ export default function InterviewRoomPage() {
   // threw (silently, inside a try/catch) after having already rewired the element's audio
   // output — closing the AudioContext on cleanup then froze the video mid-playback.
   const handleSarahVideoAnalyser = useCallback((a: AnalyserNode) => setHrAnalyser(a), []);
+
+  // Name Bank pilot — a cached personalised "Hi <name>, I'm James" clip, looked up as early
+  // as possible (page mount) so it has the whole CV-upload/intake flow to resolve before
+  // James's line is ever reached. A miss (404, or just "hasn't resolved yet") is silent and
+  // falls through to today's unchanged live-TTS line — nobody ever waits on this.
+  const [jamesGreetingUrl, setJamesGreetingUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!authToken || !resolvedPreferredName || sessionLanguage !== 'en') return;
+    nameGreetingsApi.get(authToken, 'james', resolvedPreferredName)
+      .then(res => setJamesGreetingUrl(res?.videoUrl ?? null))
+      .catch(() => { /* treat any failure as a miss — never block James's line on this */ });
+  }, [authToken, resolvedPreferredName, sessionLanguage]);
+  const [jamesGreetingVideoActive, setJamesGreetingVideoActive] = useState(false);
+  const jamesGreetingDoneRef = useRef<() => void>(() => {});
+  const handleJamesGreetingVideoEnded = useCallback(() => {
+    setJamesGreetingVideoActive(false);
+    jamesGreetingDoneRef.current();
+  }, []);
+  const handleJamesVideoAnalyser = useCallback((a: AnalyserNode) => setTechAnalyser(a), []);
+
   const [elapsed, setElapsed] = useState(0);
   const [coachingMessage, setCoachingMessage] = useState<CoachingMessage | null>(null);
   const [paused, setPaused] = useState(false);
@@ -831,10 +852,22 @@ export default function InterviewRoomPage() {
         setHrState('idle');
         setSarahIntroVideoActive(false);
         setTechState('speaking');
-        cancelSpeakRef.current = speak(jamesText, 'technical', () => {
+
+        const finishJamesIntro = () => {
           setTechState('idle');
           setTimeout(() => askQuestion(0), 500);
-        }, (a) => setTechAnalyser(a));
+        };
+
+        // Name Bank pilot: a cached personalised greeting for this candidate's name, if one
+        // exists, fully replaces James's live line (including its difficulty/language mention)
+        // — an accepted trade-off for the pilot. Any miss falls straight through to today's
+        // unchanged TTS path, exactly as before this feature existed.
+        if (sessionLanguage === 'en' && jamesGreetingUrl) {
+          jamesGreetingDoneRef.current = finishJamesIntro;
+          setJamesGreetingVideoActive(true);
+        } else {
+          cancelSpeakRef.current = speak(jamesText, 'technical', finishJamesIntro, (a) => setTechAnalyser(a));
+        }
       };
 
       const useSarahVideo = sessionLanguage === 'en';
@@ -1525,7 +1558,12 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 onVideoEnded={sarahIntroVideoActive ? handleSarahIntroVideoEnded : () => onDoneRef.current?.()}
                 onVideoAnalyser={handleSarahVideoAnalyser}
               />
-              <InterviewerAvatar role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} analyserNode={techAnalyser} onVideoEnded={() => onDoneRef.current?.()} />
+              <InterviewerAvatar
+                role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} analyserNode={techAnalyser}
+                videoUrl={jamesGreetingVideoActive ? jamesGreetingUrl : null}
+                onVideoEnded={jamesGreetingVideoActive ? handleJamesGreetingVideoEnded : () => onDoneRef.current?.()}
+                onVideoAnalyser={handleJamesVideoAnalyser}
+              />
               <YouCamera cameraOn={cameraOn} speaking={phase === 'answering'} onToggle={() => setCameraOn(v => !v)} />
             </motion.div>
           )}
