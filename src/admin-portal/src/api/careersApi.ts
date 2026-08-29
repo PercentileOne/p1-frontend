@@ -112,6 +112,12 @@ export const careersAdminApi = {
   addCareer(token: string, body: { title: string; category: string; subcategory?: string }): Promise<AdminCareer> {
     return call('/api/admin/careers', token, { method: 'POST', body: JSON.stringify(body) });
   },
+
+  // Classifies a title against the categories already in use, so the New Career / Resolve
+  // Report forms don't need the admin to guess the existing taxonomy from memory.
+  suggestCategory(token: string, title: string): Promise<{ category: string; subcategory: string }> {
+    return call('/api/admin/careers/suggest-category', token, { method: 'POST', body: JSON.stringify({ title }) });
+  },
 };
 
 export const missingCareersApi = {

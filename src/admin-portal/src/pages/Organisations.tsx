@@ -348,10 +348,10 @@ function CreateOrganisationModal({ onClose, onCreated }: { onClose: () => void; 
   )
 }
 
-export function FormField({ label, children }: { label: string; children: React.ReactNode }) {
+export function FormField({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
+      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>{label}</span>
       {children}
     </div>
   )

@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using Microsoft.Azure.Functions.Worker;
@@ -54,6 +55,34 @@ public class AddCareerFunction(CosmosCareerService cosmos, OpenAiEnricher enrich
         return await OkJson(req, career);
     }
 
+    // Admin-only "Suggest" link on the New Career / Resolve Report forms — classifies a
+    // title against the categories already in use rather than letting the AI invent a
+    // near-duplicate (e.g. "Tech" alongside an existing "Technology").
+    [Function("SuggestCareerCategory")]
+    public async Task<HttpResponseData> SuggestCategory(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "careers/suggest-category")] HttpRequestData req,
+        FunctionContext context)
+    {
+        var log = context.GetLogger<AddCareerFunction>();
+        SuggestRequest? body;
+        try
+        {
+            body = await JsonSerializer.DeserializeAsync<SuggestRequest>(req.Body, _json);
+        }
+        catch (JsonException)
+        {
+            return await BadRequest(req, "Invalid JSON body.");
+        }
+
+        var title = body?.Title?.Trim() ?? string.Empty;
+        if (title.Length < 2) return await BadRequest(req, "title is required.");
+
+        var existingCategories = await cosmos.GetCategoryCountsAsync();
+        var (category, subcategory) = await enricher.SuggestCategoryAsync(title, existingCategories.Select(c => c.Category), log);
+
+        return await OkJson(req, new { category, subcategory });
+    }
+
     private static async Task<HttpResponseData> OkJson(HttpRequestData req, object data)
     {
         var res = req.CreateResponse(HttpStatusCode.OK);
@@ -71,4 +100,5 @@ public class AddCareerFunction(CosmosCareerService cosmos, OpenAiEnricher enrich
     }
 
     private record AddRequest(string? Title, string? Category, string? Subcategory);
+    private record SuggestRequest(string? Title);
 }

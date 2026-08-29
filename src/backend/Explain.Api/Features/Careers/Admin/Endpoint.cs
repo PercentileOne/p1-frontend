@@ -58,6 +58,27 @@ public static class Endpoint
         .WithName("AddCareer").WithTags("Careers")
         .RequireAuthorization(Permissions.ManageCareers);
 
+        app.MapPost("/api/admin/careers/suggest-category", async (SuggestCategoryRequest req, IHttpClientFactory factory, IConfiguration config) =>
+        {
+            if (string.IsNullOrWhiteSpace(req.Title) || req.Title.Trim().Length < 2)
+            {
+                return Results.BadRequest(new { error = "title is required." });
+            }
+
+            var (baseUrl, key) = GetAgentConfig(config);
+            var client = factory.CreateClient();
+            client.DefaultRequestHeaders.Add("x-functions-key", key);
+
+            using var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new { title = req.Title.Trim() }),
+                System.Text.Encoding.UTF8, "application/json");
+
+            var res = await client.PostAsync($"{baseUrl}/careers/suggest-category", content);
+            var body = await res.Content.ReadAsStringAsync();
+            return Results.Content(body, "application/json", statusCode: (int)res.StatusCode);
+        })
+        .WithName("SuggestCareerCategory").WithTags("Careers")
+        .RequireAuthorization(Permissions.ManageCareers);
+
         app.MapPost("/api/admin/careers/missing-reports/{id}/status", async (string id, UpdateStatusRequest req, IHttpClientFactory factory, IConfiguration config) =>
         {
             if (req.Status is not ("pending" or "resolved" or "dismissed"))
@@ -94,4 +115,5 @@ public static class Endpoint
 
     public record UpdateStatusRequest(string Status);
     public record AddCareerRequest(string Title, string Category, string? Subcategory);
+    public record SuggestCategoryRequest(string Title);
 }

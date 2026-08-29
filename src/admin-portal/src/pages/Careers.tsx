@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
-import { Search, Loader2, X, Flag, AlertTriangle, CheckCircle2, XCircle, RotateCcw, ChevronUp, ChevronDown, Clock, Plus } from 'lucide-react'
+import { Search, Loader2, X, Flag, AlertTriangle, CheckCircle2, XCircle, RotateCcw, ChevronUp, ChevronDown, Clock, Plus, Sparkles } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { FormField, inputStyle, buttonStyle } from './Organisations'
 import {
@@ -266,6 +266,47 @@ function BrowsePanel() {
   )
 }
 
+// "Category" label with an inline "Suggest" link — classifies the typed title against
+// the categories already in use, shared by CreateCareerModal and ResolveReportModal.
+function CategoryLabel({ title, onSuggest }: { title: string; onSuggest: (category: string, subcategory: string) => void }) {
+  const { token } = useAuth()
+  const [loading, setLoading] = useState(false)
+
+  async function handleSuggest() {
+    if (!token || !title.trim() || loading) return
+    setLoading(true)
+    try {
+      const { category, subcategory } = await careersAdminApi.suggestCategory(token, title.trim())
+      onSuggest(category, subcategory)
+    } catch {
+      // best-effort — admin can still type it in manually
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <>
+      <span>Category</span>
+      <button
+        type="button"
+        onClick={handleSuggest}
+        disabled={!title.trim() || loading}
+        style={{
+          background: 'transparent', border: 'none', cursor: title.trim() ? 'pointer' : 'default',
+          color: title.trim() ? 'var(--blue)' : 'var(--text-3)', fontSize: 11, fontWeight: 700,
+          textTransform: 'none', letterSpacing: 'normal', padding: 0, fontFamily: 'inherit',
+          display: 'inline-flex', alignItems: 'center', gap: 4, opacity: loading ? 0.6 : 1,
+        }}
+        title={title.trim() ? 'Suggest a category based on the title' : 'Enter a title first'}
+      >
+        {loading ? <Loader2 size={11} className="admin-spin" /> : <Sparkles size={11} />}
+        Suggest
+      </button>
+    </>
+  )
+}
+
 function CreateCareerModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const { token } = useAuth()
   const [title, setTitle] = useState('')
@@ -310,7 +351,7 @@ function CreateCareerModal({ onClose, onCreated }: { onClose: () => void; onCrea
         <FormField label="Title">
           <input type="text" autoComplete="off" value={title} onChange={e => setTitle(e.target.value)} style={inputStyle} placeholder="e.g. DevOps Lead" />
         </FormField>
-        <FormField label="Category">
+        <FormField label={<CategoryLabel title={title} onSuggest={(c, s) => { setCategory(c); setSubcategory(s) }} />}>
           <input type="text" autoComplete="off" value={category} onChange={e => setCategory(e.target.value)} style={inputStyle} placeholder="e.g. Technology" />
         </FormField>
         <FormField label="Subcategory (optional)">
@@ -674,7 +715,7 @@ function ResolveReportModal({ report, onClose, onResolved }: { report: MissingCa
         <FormField label="Title">
           <input type="text" autoComplete="off" value={title} onChange={e => setTitle(e.target.value)} style={inputStyle} />
         </FormField>
-        <FormField label="Category">
+        <FormField label={<CategoryLabel title={title} onSuggest={(c, s) => { setCategory(c); setSubcategory(s) }} />}>
           <input type="text" autoComplete="off" value={category} onChange={e => setCategory(e.target.value)} style={inputStyle} placeholder="e.g. Technology" />
         </FormField>
         <FormField label="Subcategory (optional)">

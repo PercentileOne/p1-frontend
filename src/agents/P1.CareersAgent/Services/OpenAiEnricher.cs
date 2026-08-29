@@ -194,6 +194,34 @@ public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactor
         }
     }
 
+    // ── Category suggestion for the admin "Suggest" link ────────────────────────
+
+    public async Task<(string Category, string Subcategory)> SuggestCategoryAsync(string title, IEnumerable<string> existingCategories, ILogger log)
+    {
+        var categoryList = string.Join(", ", existingCategories);
+        var prompt =
+            "Classify this job title into a career category and subcategory: \"" + title + "\"\n" +
+            "Existing categories already in use in the database: " + categoryList + "\n" +
+            "Strongly prefer reusing one of these existing categories if it genuinely fits — do not invent a " +
+            "near-duplicate of one that already exists (e.g. \"Tech\" when \"Technology\" already exists). " +
+            "Only propose a new category if the title truly doesn't fit any of the above.\n" +
+            "Return JSON only: {\"category\": \"...\", \"subcategory\": \"...\"}";
+
+        try
+        {
+            var response = await CallGptAsync(prompt, log);
+            var node = JsonNode.Parse(response);
+            var category = node?["category"]?.GetValue<string>() ?? "General";
+            var subcategory = node?["subcategory"]?.GetValue<string>() ?? "";
+            return (category, subcategory);
+        }
+        catch (Exception ex)
+        {
+            log.LogWarning("Category suggestion failed for '{Title}': {Error}", title, ex.Message);
+            return ("General", "");
+        }
+    }
+
     // ── Shared GPT call ────────────────────────────────────────────────────────
 
     private async Task<string> CallGptAsync(string userPrompt, ILogger log)
