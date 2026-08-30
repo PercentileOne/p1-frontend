@@ -798,6 +798,17 @@ export default function InterviewRoomPage() {
     });
   }, [questions]);
 
+  // Always-fresh reference to askQuestion — needed by finishJamesIntro below, which lives
+  // inside beginInterviewIntro's body. That body is guarded to run exactly once per session
+  // (introStartedRef), so whatever askQuestion closure it captured is frozen for the rest of
+  // the session even after the real AI-generated questions replace the fallback set moments
+  // later — the exact "spoken question doesn't match the displayed one" bug Francis hit live.
+  // Calling askQuestionRef.current(...) instead of the closed-over askQuestion sidesteps this
+  // regardless of timing, the same way beginInterviewIntroRef/startMikeRef already do for
+  // their own functions elsewhere in this file.
+  const askQuestionRef = useRef(askQuestion);
+  useEffect(() => { askQuestionRef.current = askQuestion; }, [askQuestion]);
+
   const repeatQuestion = useCallback(() => {
     cancelSpeakRef.current?.();
     askQuestion(qIndex);
@@ -861,7 +872,7 @@ export default function InterviewRoomPage() {
 
         const finishJamesIntro = () => {
           setTechState('idle');
-          setTimeout(() => askQuestion(0), 500);
+          setTimeout(() => askQuestionRef.current(0), 500);
         };
 
         // Name Bank pilot: a cached personalised greeting for this candidate's name, if one
