@@ -143,8 +143,10 @@ export default function Dashboard() {
           <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)' }}>Brightline Technologies</div>
         </div>
 
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: '16px 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {/* Nav — overflowY:auto so the logo header and user footer stay put and only this
+            list scrolls once there are more items than fit (see the same fix in
+            recruiter-portal's Dashboard.tsx, where this was found live). */}
+        <nav style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
           {NAV_ITEMS.map(({ Icon, label }) => (
             <button
               key={label}

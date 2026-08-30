@@ -180,8 +180,11 @@ export default function Dashboard() {
           <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)' }}>Vallum Associates</div>
         </div>
 
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: '16px 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {/* Nav — overflowY:auto so the logo header and user footer stay put and only this
+            list scrolls once there are more items than fit; the aside itself is fixed to
+            exactly viewport height (top:0, bottom:0), so without this anything past the
+            fold was permanently unreachable, not just hidden until a resize. */}
+        <nav style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
           {NAV_ITEMS.map(({ Icon, label }) => (
             <button
               key={label}
