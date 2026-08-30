@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import { Loader2, Sparkles, RefreshCw, CheckCircle2, Clock, XCircle } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { nameBankSettingsApi, type NameBankSetting, type NameGreeting, type ApiError } from '../api/nameBankSettingsApi'
@@ -127,25 +127,34 @@ export default function NameBank() {
                 </thead>
                 <tbody>
                   {greetings.map(g => (
-                    <tr key={g.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap' }}>{g.name}</td>
-                      <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{g.speaker}</td>
-                      <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{g.difficulty}</td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <StatusPill status={g.status} failureReason={g.failureReason} />
-                      </td>
-                      <td style={{ padding: '12px 16px', color: 'var(--text)', fontWeight: 700 }}>{g.useCount}</td>
-                      <td style={{ padding: '12px 16px', color: 'var(--text-3)' }}>{g.attemptCount}</td>
-                      <td style={{ padding: '12px 16px', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{formatDate(g.generatedAt)}</td>
-                      <td style={{ padding: '12px 16px', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{g.lastUsedAt ? formatDate(g.lastUsedAt) : '—'}</td>
-                      <td style={{ padding: '12px 16px' }}>
-                        {g.status === 'ready' && g.videoUrl && (
-                          <a href={g.videoUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: '#4F8EF7', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                            View clip
-                          </a>
-                        )}
-                      </td>
-                    </tr>
+                    <Fragment key={g.id}>
+                      <tr style={{ borderBottom: g.status === 'failed' && g.failureReason ? 'none' : '1px solid var(--border)' }}>
+                        <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap' }}>{g.name}</td>
+                        <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{g.speaker}</td>
+                        <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{g.difficulty}</td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <StatusPill status={g.status} />
+                        </td>
+                        <td style={{ padding: '12px 16px', color: 'var(--text)', fontWeight: 700 }}>{g.useCount}</td>
+                        <td style={{ padding: '12px 16px', color: 'var(--text-3)' }}>{g.attemptCount}</td>
+                        <td style={{ padding: '12px 16px', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{formatDate(g.generatedAt)}</td>
+                        <td style={{ padding: '12px 16px', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{g.lastUsedAt ? formatDate(g.lastUsedAt) : '—'}</td>
+                        <td style={{ padding: '12px 16px' }}>
+                          {g.status === 'ready' && g.videoUrl && (
+                            <a href={g.videoUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: '#4F8EF7', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                              View clip
+                            </a>
+                          )}
+                        </td>
+                      </tr>
+                      {g.status === 'failed' && g.failureReason && (
+                        <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                          <td colSpan={9} style={{ padding: '0 16px 12px', fontSize: 11, color: '#EF4444', fontFamily: 'monospace' }}>
+                            {g.failureReason}
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
                   ))}
                 </tbody>
               </table>
@@ -157,7 +166,7 @@ export default function NameBank() {
   )
 }
 
-function StatusPill({ status, failureReason }: { status: NameGreeting['status']; failureReason: string | null }) {
+function StatusPill({ status }: { status: NameGreeting['status'] }) {
   const styleFor = {
     ready:   { color: '#34D399', bg: 'rgba(52,211,153,0.1)',  border: 'rgba(52,211,153,0.25)',  Icon: CheckCircle2, label: 'Ready' },
     pending: { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.25)',  Icon: Clock,        label: 'Pending' },
@@ -166,7 +175,6 @@ function StatusPill({ status, failureReason }: { status: NameGreeting['status'];
   const { color, bg, border, Icon, label } = styleFor
   return (
     <span
-      title={failureReason ?? undefined}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
         fontSize: 11, fontWeight: 700, color, background: bg,
