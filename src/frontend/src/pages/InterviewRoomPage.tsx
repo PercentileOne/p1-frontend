@@ -730,7 +730,10 @@ export default function InterviewRoomPage() {
   const [elapsed, setElapsed] = useState(0);
   const [coachingMessage, setCoachingMessage] = useState<CoachingMessage | null>(null);
   const [paused, setPaused] = useState(false);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>(ctx.selectedDifficulty ?? 'Standard');
+  // Fixed at intake — no setter. Questions/scoring/Go Deeper limits are all built around
+  // whatever difficulty was chosen before the room ever loaded; there's no legitimate way to
+  // change it mid-session, so nothing in this file should be able to either.
+  const [selectedDifficulty] = useState<string>(ctx.selectedDifficulty ?? 'Standard');
   const [runningScores, setRunningScores] = useState<number[]>([]);
   const [audioCheckState, setAudioCheckState] = useState<'idle' | 'playing' | 'done'>('idle');
   const [waitingForSession, setWaitingForSession] = useState(false);
@@ -2007,25 +2010,23 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       <div style={{ fontSize: '9px', color: 'var(--text-3)', marginTop: '4px' }}>You are in the top 5th percentile</div>
                     </motion.div>
 
-                    {/* Difficulty dropdown */}
+                    {/* Difficulty — fixed at intake, before questions were even generated for it;
+                        read-only here, not a live control. Editing it mid-session used to be
+                        possible via this same spot but did nothing except desync the displayed
+                        label from the difficulty the questions/scoring were actually built for. */}
                     <div>
                       <div style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '6px' }}>Difficulty</div>
-                      <select
-                        value={selectedDifficulty}
-                        onChange={e => setSelectedDifficulty(e.target.value)}
+                      <div
                         style={{
-                          width: '100%', appearance: 'none', WebkitAppearance: 'none',
+                          width: '100%', boxSizing: 'border-box',
                           fontSize: '11px', fontWeight: 700, padding: '6px 10px', borderRadius: '8px',
                           background: selectedDifficulty === 'Expert' ? 'rgba(239,68,68,0.12)' : selectedDifficulty === 'Pro' ? 'rgba(245,158,11,0.12)' : 'rgba(52,211,153,0.1)',
                           color: selectedDifficulty === 'Expert' ? '#EF4444' : selectedDifficulty === 'Pro' ? '#F59E0B' : '#34D399',
                           border: `1px solid ${selectedDifficulty === 'Expert' ? 'rgba(239,68,68,0.3)' : selectedDifficulty === 'Pro' ? 'rgba(245,158,11,0.3)' : 'rgba(52,211,153,0.25)'}`,
-                          cursor: 'pointer', outline: 'none',
                         }}
                       >
-                        <option value="Expert" style={{ background: '#1a1e2e', color: '#EF4444' }}>Expert</option>
-                        <option value="Pro" style={{ background: '#1a1e2e', color: '#F59E0B' }}>Pro</option>
-                        <option value="Standard" style={{ background: '#1a1e2e', color: '#34D399' }}>Standard</option>
-                      </select>
+                        {selectedDifficulty}
+                      </div>
                     </div>
 
                     {/* Pause */}
