@@ -11,6 +11,21 @@ export interface NameBankSetting {
   updatedBy: string;
 }
 
+export interface NameGreeting {
+  id: string;
+  name: string;
+  speaker: string;
+  difficulty: string;
+  videoUrl: string;
+  useCount: number;
+  generatedAt: string;
+  lastUsedAt: string | null;
+  status: 'ready' | 'pending' | 'failed';
+  failureReason: string | null;
+  startedAt: string | null;
+  attemptCount: number;
+}
+
 export interface ApiError { error: string; status: number }
 
 async function call<T>(path: string, token: string, init?: RequestInit): Promise<T> {
@@ -39,5 +54,9 @@ export const nameBankSettingsApi = {
       method: 'POST',
       body: JSON.stringify({ autoGenerateEnabled }),
     });
+  },
+
+  listGreetings(token: string): Promise<NameGreeting[]> {
+    return call('/api/admin/name-greetings', token);
   },
 };
