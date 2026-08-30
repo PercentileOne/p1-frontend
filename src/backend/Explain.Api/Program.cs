@@ -28,6 +28,7 @@ builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddSingleton<CvFileStorageService>();
 builder.Services.AddSingleton<ProfileImageStorageService>();
 builder.Services.AddSingleton<TtsCacheService>();
+builder.Services.AddSingleton<Explain.Api.Infrastructure.Storage.NameGreetingVideoStorageService>();
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlDb"),
         sql => sql.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(10), errorNumbersToAdd: null)));
@@ -133,6 +134,16 @@ catch (Exception ex)
 {
     var logger = app.Services.GetRequiredService<ILogger<Program>>();
     logger.LogWarning(ex, "Profile image storage initialisation failed — avatar/banner uploads will fail, but profile text fields are unaffected.");
+}
+
+try
+{
+    await app.Services.GetRequiredService<Explain.Api.Infrastructure.Storage.NameGreetingVideoStorageService>().InitialiseAsync();
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogWarning(ex, "Name Bank video storage initialisation failed — auto-generated clips won't be re-hosted (D-ID's own URL would be used instead, which expires within 24h).");
 }
 try
 {

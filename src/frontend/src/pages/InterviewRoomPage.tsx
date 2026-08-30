@@ -702,17 +702,23 @@ export default function InterviewRoomPage() {
   // output — closing the AudioContext on cleanup then froze the video mid-playback.
   const handleSarahVideoAnalyser = useCallback((a: AnalyserNode) => setHrAnalyser(a), []);
 
-  // Name Bank pilot — a cached personalised "Hi <name>, I'm James" clip, looked up as early
-  // as possible (page mount) so it has the whole CV-upload/intake flow to resolve before
-  // James's line is ever reached. A miss (404, or just "hasn't resolved yet") is silent and
-  // falls through to today's unchanged live-TTS line — nobody ever waits on this.
+  // Name Bank — a cached personalised "Hi <name>, I'm James — you've chosen <difficulty>..."
+  // clip, looked up as early as possible (page mount) so it has the whole CV-upload/intake
+  // flow to resolve before James's line is ever reached. One of 3 pre-generated variants per
+  // name (Standard/Pro/Expert), so the difficulty-level mention James's live line always gives
+  // isn't lost even when a personalised clip plays. A miss (404, or just "hasn't resolved
+  // yet") is silent and falls through to today's unchanged live-TTS line — nobody ever waits.
   const [jamesGreetingUrl, setJamesGreetingUrl] = useState<string | null>(null);
   useEffect(() => {
     if (!authToken || !resolvedPreferredName || sessionLanguage !== 'en') return;
-    nameGreetingsApi.get(authToken, 'james', resolvedPreferredName)
+    // Same source `selectedDifficulty` state itself initialises from — read directly here
+    // rather than the state variable to avoid a declaration-order dependency, since this
+    // effect fires as early as possible (page mount), before `selectedDifficulty` exists yet.
+    const difficulty = ctx.selectedDifficulty ?? 'Standard';
+    nameGreetingsApi.get(authToken, 'james', resolvedPreferredName, difficulty)
       .then(res => setJamesGreetingUrl(res?.videoUrl ?? null))
       .catch(() => { /* treat any failure as a miss — never block James's line on this */ });
-  }, [authToken, resolvedPreferredName, sessionLanguage]);
+  }, [authToken, resolvedPreferredName, sessionLanguage, ctx.selectedDifficulty]);
   const [jamesGreetingVideoActive, setJamesGreetingVideoActive] = useState(false);
   const jamesGreetingDoneRef = useRef<() => void>(() => {});
   const handleJamesGreetingVideoEnded = useCallback(() => {

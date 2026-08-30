@@ -2,36 +2,44 @@ using System.Net;
 using Microsoft.Azure.Cosmos;
 using Explain.Api.Common;
 using Explain.Api.Infrastructure.Cosmos;
+using Explain.Api.Infrastructure.Storage;
 using PlatformSettingsEndpoint = Explain.Api.Features.PlatformSettings.Endpoint;
 
 namespace Explain.Api.Features.NameGreetings;
 
 /// <summary>
-/// Name Bank — a personalised interviewer greeting clip ("Hi Francis, I'm James"), cached
-/// per {speaker}:{normalizedName} and reused for every candidate who shares that first name.
-/// Auto-generation via D-ID is gated behind a global kill switch (Features/PlatformSettings) —
-/// when off, EVERY lookup 404s regardless of what's already cached, so an admin can revert
-/// everyone to generic mode instantly. The candidate-facing contract never changes: a miss is
-/// always silent, never an error, never a delay.
+/// Name Bank — a personalised interviewer greeting clip ("Hi Francis, I'm James — you've
+/// chosen a Pro-level session..."), cached per {speaker}:{name}:{difficulty} and reused for
+/// every candidate who shares that combination. Auto-generation via D-ID is gated behind a
+/// global kill switch (Features/PlatformSettings) — when off, EVERY lookup 404s regardless
+/// of what's already cached, so an admin can revert everyone to generic mode instantly. The
+/// candidate-facing contract never changes: a miss is always silent, never an error, never a
+/// delay.
 /// </summary>
 public static class Endpoint
 {
+    private static readonly HashSet<string> AllowedDifficulties = new(StringComparer.OrdinalIgnoreCase) { "standard", "pro", "expert" };
+
     public static void Map(WebApplication app)
     {
-        // GET /name-greetings/{speaker}/{name} — cache lookup, claim-and-generate on a fresh
-        // miss while the kill switch is on. 404 on any non-hit outcome is expected and silent.
-        app.MapGet("/name-greetings/{speaker}/{name}", async (
-            string speaker, string name, HttpContext ctx,
-            CosmosService cosmos, DidGenerationService did, IHostApplicationLifetime lifetime, ILogger<DidGenerationService> logger) =>
+        // GET /name-greetings/{speaker}/{name}/{difficulty} — cache lookup, claim-and-generate
+        // on a fresh miss while the kill switch is on. 404 on any non-hit outcome is expected
+        // and silent.
+        app.MapGet("/name-greetings/{speaker}/{name}/{difficulty}", async (
+            string speaker, string name, string difficulty, HttpContext ctx,
+            CosmosService cosmos, DidGenerationService did, NameGreetingVideoStorageService videoStorage,
+            IHttpClientFactory httpClientFactory, IHostApplicationLifetime lifetime, ILogger<DidGenerationService> logger) =>
         {
             var userId = ctx.User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+            var normalizedDifficulty = AllowedDifficulties.Contains(difficulty) ? difficulty.Trim().ToLowerInvariant() : "standard";
 
             var setting = await PlatformSettingsEndpoint.GetOrDefaultAsync(cosmos);
             var container = cosmos.GetContainer("nameGreetings");
             var normalizedSpeaker = speaker.Trim().ToLowerInvariant();
             var normalizedName = name.Trim().ToLowerInvariant();
-            var id = $"{normalizedSpeaker}:{normalizedName}";
+            var id = $"{normalizedSpeaker}:{normalizedName}:{normalizedDifficulty}";
 
             NameGreeting? existing = null;
             if (setting.autoGenerateEnabled)
@@ -62,7 +70,7 @@ public static class Endpoint
                 return Results.NotFound();
 
             var pending = new NameGreeting(
-                id: id, pk: id, name: name.Trim(), speaker: normalizedSpeaker, videoUrl: "",
+                id: id, pk: id, name: name.Trim(), speaker: normalizedSpeaker, difficulty: normalizedDifficulty, videoUrl: "",
                 useCount: 0, generatedAt: DateTimeOffset.UtcNow, lastUsedAt: null,
                 status: "pending", failureReason: null, startedAt: DateTimeOffset.UtcNow,
                 attemptCount: (existing?.attemptCount ?? 0) + 1);
@@ -75,7 +83,7 @@ public static class Endpoint
                 }
                 catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
                 {
-                    // Another request claimed this name between our read and this write.
+                    // Another request claimed this name+difficulty between our read and this write.
                     return Results.NotFound();
                 }
             }
@@ -87,17 +95,26 @@ public static class Endpoint
                 await container.UpsertItemAsync(pending, new PartitionKey(id));
             }
 
-            var script = $"Hi {name.Trim()}, I'm James — looking forward to hearing about your experience. Let's get started.";
+            var script = ScriptFor(name.Trim(), normalizedDifficulty);
             var shutdownToken = lifetime.ApplicationStopping;
             _ = Task.Run(async () =>
             {
                 NameGreeting finalDoc;
                 try
                 {
-                    var (success, videoUrl, error) = await did.GenerateAsync(script, shutdownToken);
-                    finalDoc = success
-                        ? pending with { status = "ready", videoUrl = videoUrl!, generatedAt = DateTimeOffset.UtcNow }
-                        : pending with { status = "failed", failureReason = error };
+                    var (success, didVideoUrl, error) = await did.GenerateAsync(script, shutdownToken);
+                    if (success && didVideoUrl is not null)
+                    {
+                        // D-ID's own result_url expires within 24h (confirmed live) — re-host
+                        // immediately so the cached URL is actually permanent.
+                        var downloadClient = httpClientFactory.CreateClient();
+                        var permanentUrl = await videoStorage.DownloadAndStoreAsync(didVideoUrl, id.Replace(':', '_'), downloadClient, shutdownToken);
+                        finalDoc = pending with { status = "ready", videoUrl = permanentUrl, generatedAt = DateTimeOffset.UtcNow };
+                    }
+                    else
+                    {
+                        finalDoc = pending with { status = "failed", failureReason = error };
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -119,8 +136,7 @@ public static class Endpoint
         }).RequireAuthorization();
 
         // POST /api/admin/name-greetings — manual seed/update, unaffected by the kill switch
-        // (used for the pilot's own hand-generated clips, and still useful once auto-gen exists
-        // for correcting a bad clip without waiting on a full regeneration cycle).
+        // (useful for correcting a bad clip without waiting on a full regeneration cycle).
         app.MapPost("/api/admin/name-greetings", async (SeedRequest req, CosmosService cosmos) =>
         {
             if (string.IsNullOrWhiteSpace(req.Name)) return Results.BadRequest(new { error = "name is required." });
@@ -129,13 +145,16 @@ public static class Endpoint
 
             var speaker = req.Speaker.Trim().ToLowerInvariant();
             var normalizedName = req.Name.Trim().ToLowerInvariant();
-            var id = $"{speaker}:{normalizedName}";
+            var difficulty = !string.IsNullOrWhiteSpace(req.Difficulty) && AllowedDifficulties.Contains(req.Difficulty)
+                ? req.Difficulty.Trim().ToLowerInvariant() : "standard";
+            var id = $"{speaker}:{normalizedName}:{difficulty}";
 
             var greeting = new NameGreeting(
                 id: id,
                 pk: id,
                 name: req.Name.Trim(),
                 speaker: speaker,
+                difficulty: difficulty,
                 videoUrl: req.VideoUrl.Trim(),
                 useCount: 0,
                 generatedAt: DateTimeOffset.UtcNow,
@@ -147,15 +166,26 @@ public static class Endpoint
             return Results.Ok(greeting);
         }).RequireAuthorization(Permissions.ViewAdminPortal);
     }
+
+    // Mirrors the tone/wording of James's own live AI-generated difficulty framing
+    // (src/frontend/src/api/aiScoring.ts's difficultyFrame) so a pre-generated clip reads
+    // consistently with what James would otherwise have said live.
+    private static string ScriptFor(string name, string difficulty) => difficulty switch
+    {
+        "expert" => $"Hi {name}, I'm James. You've chosen an Expert-level session, so I'll treat you as the leading authority in your field — be ready to go deep. Let's get started.",
+        "pro" => $"Hi {name}, I'm James. You've chosen a Pro-level session, so expect sharper, more probing questions that go beyond the basics. Let's get started.",
+        _ => $"Hi {name}, I'm James. You've chosen a Standard session — I've put together a solid set of questions to help you perform at your best. Let's get started.",
+    };
 }
 
-public record SeedRequest(string Name, string Speaker, string VideoUrl);
+public record SeedRequest(string Name, string Speaker, string VideoUrl, string? Difficulty = null);
 
 public record NameGreeting(
     string id,
     string pk,
     string name,
     string speaker,
+    string difficulty,
     string videoUrl,
     int useCount,
     DateTimeOffset generatedAt,
