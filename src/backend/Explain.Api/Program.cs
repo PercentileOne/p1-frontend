@@ -222,6 +222,7 @@ Explain.Api.Features.Reactions.Endpoint.Map(app);
 Explain.Api.Features.Comments.Endpoint.Map(app);
 Explain.Api.Features.Profile.Block.Endpoint.Map(app);
 Explain.Api.Features.Comments.Admin.Endpoint.Map(app);
+Explain.Api.Features.CandidateSearch.Endpoint.Map(app);
 Explain.Api.Features.NameGreetings.Endpoint.Map(app);
 Explain.Api.Features.NameGreetings.Admin.Endpoint.Map(app);
 Explain.Api.Features.PlatformSettings.Endpoint.Map(app);

@@ -40,6 +40,7 @@ export interface Profile {
   favouriteFilms: string[];
   projects: ProfileProject[];
   commentsEnabled: boolean;
+  searchableByRecruiters: boolean;
   blockedUsers: BlockedUserRef[];
   phone?: string | null;
   lifeStage?: string | null;
@@ -75,6 +76,7 @@ export type UpdateProfilePayload = Partial<{
   dreamRoleSalary: string; dreamRoleTimeline: string;
   location: string; favouriteFilms: string[]; projects: ProfileProject[];
   commentsEnabled: boolean;
+  searchableByRecruiters: boolean;
 }>;
 
 export interface ApiError { error: string; status: number }

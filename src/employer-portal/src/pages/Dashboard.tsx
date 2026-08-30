@@ -3,6 +3,7 @@ import { LayoutDashboard, Users, Inbox, Send, Briefcase, BarChart2, Settings, Be
 import { useAuth } from '../context/AuthContext'
 import Introductions from './Introductions'
 import Alerts from './Alerts'
+import CandidateSearch from './CandidateSearch'
 
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: 'Dashboard' },
@@ -213,10 +214,11 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {activeNav === 'Candidate Marketplace' && <CandidateSearch />}
         {activeNav === 'Introductions' && <Introductions />}
         {activeNav === 'Alerts' && <Alerts />}
 
-        {activeNav !== 'Dashboard' && activeNav !== 'Introductions' && activeNav !== 'Alerts' && (
+        {activeNav !== 'Dashboard' && activeNav !== 'Candidate Marketplace' && activeNav !== 'Introductions' && activeNav !== 'Alerts' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--text-3)', fontSize: 14 }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
             <div style={{ fontWeight: 700, color: 'var(--text-2)' }}>{activeNav}</div>

@@ -1,3 +1,4 @@
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace Explain.Api.Domain.Profile;
@@ -58,6 +59,13 @@ public class UserProfile
 
     [JsonProperty("blockedUsers")]
     public List<BlockedUserRef> BlockedUsers { get; set; } = [];
+
+    // Opt-in, off by default — gates ONLY discovery via candidate search
+    // (Features/CandidateSearch). It does not gate GET /profile/{userId} itself —
+    // a direct link (from an Alert match, an Introduction, etc.) still works
+    // regardless, same as most "opt into search" features elsewhere.
+    [JsonProperty("searchableByRecruiters")]
+    public bool SearchableByRecruiters { get; set; } = false;
 
     [JsonProperty("phone")]
     public string? Phone { get; set; }
@@ -182,5 +190,53 @@ public class PublicProfile
         Banner = p.Banner,
         Location = p.Location,
         CommentsEnabled = p.CommentsEnabled,
+    };
+}
+
+// Candidate Search result row — a STRICT SUBSET of PublicProfile's own field set,
+// deliberately excluding DreamRole*/LifeStage even though PublicProfile already
+// excludes them too (belt and braces: this projection must never widen beyond
+// PublicProfile's existing boundary, so a future field added to one doesn't
+// silently leak through the other).
+public class CandidateSearchResult
+{
+    [JsonProperty("userId")]
+    public string UserId { get; set; } = string.Empty;
+
+    [JsonProperty("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonProperty("avatar")]
+    public string? Avatar { get; set; }
+
+    [JsonProperty("jobRole")]
+    public string? JobRole { get; set; }
+
+    [JsonProperty("jobTitle")]
+    public string? JobTitle { get; set; }
+
+    [JsonProperty("company")]
+    public string? Company { get; set; }
+
+    [JsonProperty("location")]
+    public string? Location { get; set; }
+
+    [JsonProperty("interests")]
+    public List<string> Interests { get; set; } = [];
+
+    [JsonProperty("projectsSummary")]
+    public List<string> ProjectsSummary { get; set; } = [];
+
+    public static CandidateSearchResult From(UserProfile p) => new()
+    {
+        UserId = p.UserId,
+        Name = p.Name,
+        Avatar = p.Avatar,
+        JobRole = p.JobRole,
+        JobTitle = p.JobTitle,
+        Company = p.Company,
+        Location = p.Location,
+        Interests = p.Interests,
+        ProjectsSummary = p.Projects.Select(pr => pr.Title).Where(t => !string.IsNullOrWhiteSpace(t)).ToList(),
     };
 }

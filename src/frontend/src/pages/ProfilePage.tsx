@@ -940,6 +940,7 @@ interface ProfileDraft {
   dreamRoleSalary: string;
   dreamRoleTimeline: string;
   commentsEnabled: boolean;
+  searchableByRecruiters: boolean;
 }
 
 function draftFromProfile(real: Profile | null): ProfileDraft {
@@ -957,6 +958,7 @@ function draftFromProfile(real: Profile | null): ProfileDraft {
     dreamRoleSalary: real?.dreamRoleSalary ?? '',
     dreamRoleTimeline: real?.dreamRoleTimeline ?? '',
     commentsEnabled: real?.commentsEnabled ?? false,
+    searchableByRecruiters: real?.searchableByRecruiters ?? false,
   };
 }
 
@@ -1188,6 +1190,17 @@ function ProfileEditPanel({
             ))}
           </div>
         )}
+      </SectionCard>
+
+      <SectionCard>
+        <SectionHeading emoji="🔎" title="Visibility" />
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[12px] font-semibold text-white">Show my profile in recruiter/employer candidate search</p>
+            <p className="text-[10px] text-slate-600 mt-0.5">Off by default. This only controls whether recruiters/employers can find you by searching — a direct profile link still works either way.</p>
+          </div>
+          <ToggleSwitch checked={draft.searchableByRecruiters} onChange={v => onChange({ searchableByRecruiters: v })} />
+        </div>
       </SectionCard>
 
       {saveError && (

@@ -69,7 +69,7 @@ public static class Endpoint
                 LifeStage: req.LifeStage, DreamRoleTitle: req.DreamRoleTitle, DreamRoleIndustry: req.DreamRoleIndustry,
                 DreamRoleSalary: req.DreamRoleSalary, DreamRoleTimeline: req.DreamRoleTimeline,
                 Location: req.Location, Banner: req.Banner, FavouriteFilms: req.FavouriteFilms, Projects: req.Projects,
-                CommentsEnabled: req.CommentsEnabled);
+                CommentsEnabled: req.CommentsEnabled, SearchableByRecruiters: req.SearchableByRecruiters);
             var result = await mediator.Send(cmd);
 
             return result.IsSuccess
@@ -146,4 +146,5 @@ public record UpdateProfileRequest(
     string? Banner = null,
     List<string>? FavouriteFilms = null,
     List<ProfileProject>? Projects = null,
-    bool? CommentsEnabled = null);
+    bool? CommentsEnabled = null,
+    bool? SearchableByRecruiters = null);
