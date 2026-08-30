@@ -41,6 +41,7 @@ async function call<T>(path: string, token: string, init?: RequestInit): Promise
     const text = await res.text();
     throw { error: text || res.statusText, status: res.status } satisfies ApiError;
   }
+  if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }
 
@@ -58,5 +59,15 @@ export const nameBankSettingsApi = {
 
   listGreetings(token: string): Promise<NameGreeting[]> {
     return call('/api/admin/name-greetings', token);
+  },
+
+  // Deletes the cached doc so the next real request regenerates it from scratch — e.g. after
+  // a script/config change makes an existing "ready" clip stale.
+  regenerate(token: string, speaker: string, name: string, difficulty: string): Promise<void> {
+    return call(
+      `/api/admin/name-greetings/${encodeURIComponent(speaker)}/${encodeURIComponent(name)}/${encodeURIComponent(difficulty)}`,
+      token,
+      { method: 'DELETE' },
+    );
   },
 };

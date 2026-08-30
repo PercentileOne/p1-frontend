@@ -165,6 +165,22 @@ public static class Endpoint
             await container.UpsertItemAsync(greeting, new PartitionKey(id));
             return Results.Ok(greeting);
         }).RequireAuthorization(Permissions.ViewAdminPortal);
+
+        // DELETE /api/admin/name-greetings/{speaker}/{name}/{difficulty} — forces a fresh
+        // regeneration on the next request (e.g. after a script/config change makes an
+        // existing "ready" clip stale — there's no automatic re-generation of a ready doc,
+        // this is the manual override).
+        app.MapDelete("/api/admin/name-greetings/{speaker}/{name}/{difficulty}", async (string speaker, string name, string difficulty, CosmosService cosmos) =>
+        {
+            var id = $"{speaker.Trim().ToLowerInvariant()}:{name.Trim().ToLowerInvariant()}:{difficulty.Trim().ToLowerInvariant()}";
+            var container = cosmos.GetContainer("nameGreetings");
+            try
+            {
+                await container.DeleteItemAsync<NameGreeting>(id, new PartitionKey(id));
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { /* already gone */ }
+            return Results.NoContent();
+        }).RequireAuthorization(Permissions.ViewAdminPortal);
     }
 
     // Mirrors the tone/wording of James's own live AI-generated difficulty framing

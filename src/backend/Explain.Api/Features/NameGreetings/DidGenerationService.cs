@@ -44,7 +44,12 @@ public class DidGenerationService(IHttpClientFactory httpClientFactory, IConfigu
         {
             source_url = presenterUrl,
             script = new { type = "text", input = script, provider = new { type = "microsoft", voice_id = voiceId } },
-            config = new { fluent = true, pad_audio = 0 },
+            // stitch: true — without it, D-ID crops tight to just the detected face
+            // (confirmed live, 2026-08-30: 512x512 square output instead of the source
+            // photo's real 1280x852 framing), so James appeared zoomed in far more than
+            // Sarah/his own static photo. stitch:true preserves the source photo's full
+            // composition instead of cropping down to a headshot.
+            config = new { fluent = true, pad_audio = 0, stitch = true },
         };
 
         using var req = new HttpRequestMessage(HttpMethod.Post, "/talks");

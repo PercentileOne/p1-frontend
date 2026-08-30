@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useState } from 'react'
-import { Loader2, Sparkles, RefreshCw, CheckCircle2, Clock, XCircle } from 'lucide-react'
+import { Loader2, Sparkles, RefreshCw, CheckCircle2, Clock, XCircle, Trash2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { nameBankSettingsApi, type NameBankSetting, type NameGreeting, type ApiError } from '../api/nameBankSettingsApi'
 
@@ -9,6 +9,7 @@ export default function NameBank() {
   const [greetings, setGreetings] = useState<NameGreeting[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null)
   const [error, setError] = useState('')
 
   const load = useCallback(async () => {
@@ -41,6 +42,20 @@ export default function NameBank() {
       setError((err as ApiError).error ?? 'Failed to update the setting.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function regenerate(g: NameGreeting) {
+    if (!token) return
+    setRegeneratingId(g.id)
+    setError('')
+    try {
+      await nameBankSettingsApi.regenerate(token, g.speaker, g.name, g.difficulty)
+      await load()
+    } catch (err) {
+      setError((err as ApiError).error ?? 'Failed to clear the cached clip.')
+    } finally {
+      setRegeneratingId(null)
     }
   }
 
@@ -140,11 +155,26 @@ export default function NameBank() {
                         <td style={{ padding: '12px 16px', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{formatDate(g.generatedAt)}</td>
                         <td style={{ padding: '12px 16px', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{g.lastUsedAt ? formatDate(g.lastUsedAt) : '—'}</td>
                         <td style={{ padding: '12px 16px' }}>
-                          {g.status === 'ready' && g.videoUrl && (
-                            <a href={g.videoUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: '#4F8EF7', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                              View clip
-                            </a>
-                          )}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            {g.status === 'ready' && g.videoUrl && (
+                              <a href={g.videoUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: '#4F8EF7', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                View clip
+                              </a>
+                            )}
+                            <button
+                              title="Delete the cached clip so the next request regenerates it from scratch"
+                              onClick={() => regenerate(g)}
+                              disabled={regeneratingId === g.id}
+                              style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                width: 26, height: 26, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg3)',
+                                color: 'var(--text-3)', cursor: regeneratingId === g.id ? 'default' : 'pointer',
+                                opacity: regeneratingId === g.id ? 0.5 : 1, flexShrink: 0,
+                              }}
+                            >
+                              {regeneratingId === g.id ? <Loader2 size={12} className="admin-spin" /> : <Trash2 size={12} />}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                       {g.status === 'failed' && g.failureReason && (
