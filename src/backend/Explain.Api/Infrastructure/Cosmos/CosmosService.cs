@@ -35,6 +35,12 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("nameGreetings", "/pk"));
 
+        // Global, platform-wide settings — deliberately narrow (one document per setting,
+        // e.g. "nameBank"), not a general-purpose settings blob. First of its kind in this
+        // codebase; every other toggle so far has been per-record, not global.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("platformSettings", "/pk"));
+
         // Per-user talk history — every scored session; partition key = /userId for efficient user queries.
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("lessonHistory", "/userId"));

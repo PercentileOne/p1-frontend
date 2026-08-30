@@ -34,6 +34,7 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddScoped<PermissionLoader>();
 builder.Services.AddSingleton<AnthropicService>();
+builder.Services.AddSingleton<Explain.Api.Features.NameGreetings.DidGenerationService>();
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
@@ -90,6 +91,14 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddHttpClient();
+// Named client for D-ID's talking-head video API — invoked from a background task outside
+// a request scope (Name Bank auto-generation), so it wants its own explicit, generous timeout
+// rather than a per-request default.
+builder.Services.AddHttpClient("DID", c =>
+{
+    c.BaseAddress = new Uri("https://api.d-id.com");
+    c.Timeout = TimeSpan.FromSeconds(30);
+});
 builder.Services.AddOpenApi();
 
 // ── App ───────────────────────────────────────────────────────────────────────
@@ -203,6 +212,7 @@ Explain.Api.Features.Comments.Endpoint.Map(app);
 Explain.Api.Features.Profile.Block.Endpoint.Map(app);
 Explain.Api.Features.Comments.Admin.Endpoint.Map(app);
 Explain.Api.Features.NameGreetings.Endpoint.Map(app);
+Explain.Api.Features.PlatformSettings.Endpoint.Map(app);
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
    .AllowAnonymous();
