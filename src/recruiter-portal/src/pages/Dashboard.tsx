@@ -22,7 +22,7 @@ const NAV_ITEMS = [
   { Icon: Briefcase,       label: 'Job Specs' },
   { Icon: FileText,        label: 'CVs' },
   { Icon: Users,           label: 'Candidates' },
-  { Icon: Search,          label: 'Find Candidates' },
+  { Icon: Search,          label: 'Candidate Marketplace' },
   { Icon: Filter,          label: 'Screen' },
   { Icon: CalendarCheck,   label: 'Interviews' },
   { Icon: Package,         label: 'Interview Packs' },
@@ -258,7 +258,7 @@ export default function Dashboard() {
         {activeNav === 'Interview Preps' && <InterviewPreps />}
         {activeNav === 'Interview Packs' && <InterviewPacks />}
         {activeNav === 'Candidates' && <Candidates />}
-        {activeNav === 'Find Candidates' && <CandidateSearch />}
+        {activeNav === 'Candidate Marketplace' && <CandidateSearch />}
         {activeNav === 'Screen' && <ScreenCandidates />}
         {activeNav === 'Analytics' && <Analytics />}
         {activeNav === 'Job Specs' && !packBuilderSpec && <JobPositions onViewSpec={title => setPackBuilderSpec(title)} />}
@@ -268,7 +268,7 @@ export default function Dashboard() {
         {activeNav === 'Pack History' && <PackHistory />}
         {activeNav === 'My Interviews' && <InterviewHistory />}
         {activeNav === 'Alerts' && <Alerts />}
-        {activeNav !== 'Dashboard' && activeNav !== 'Interview Preps' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'Find Candidates' && activeNav !== 'Screen' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && activeNav !== 'Pack History' && activeNav !== 'My Interviews' && activeNav !== 'Alerts' && (
+        {activeNav !== 'Dashboard' && activeNav !== 'Interview Preps' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'Candidate Marketplace' && activeNav !== 'Screen' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && activeNav !== 'Pack History' && activeNav !== 'My Interviews' && activeNav !== 'Alerts' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--text-3)', fontSize: 14 }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
             <div style={{ fontWeight: 700, color: 'var(--text-2)' }}>{activeNav}</div>
