@@ -141,50 +141,14 @@ export default function NameBank() {
                   </tr>
                 </thead>
                 <tbody>
-                  {greetings.map(g => (
-                    <Fragment key={g.id}>
-                      <tr style={{ borderBottom: g.status === 'failed' && g.failureReason ? 'none' : '1px solid var(--border)' }}>
-                        <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap' }}>{g.name}</td>
-                        <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{g.speaker}</td>
-                        <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{g.difficulty}</td>
-                        <td style={{ padding: '12px 16px' }}>
-                          <StatusPill status={g.status} />
-                        </td>
-                        <td style={{ padding: '12px 16px', color: 'var(--text)', fontWeight: 700 }}>{g.useCount}</td>
-                        <td style={{ padding: '12px 16px', color: 'var(--text-3)' }}>{g.attemptCount}</td>
-                        <td style={{ padding: '12px 16px', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{formatDate(g.generatedAt)}</td>
-                        <td style={{ padding: '12px 16px', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{g.lastUsedAt ? formatDate(g.lastUsedAt) : '—'}</td>
-                        <td style={{ padding: '12px 16px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            {g.status === 'ready' && g.videoUrl && (
-                              <a href={g.videoUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: '#4F8EF7', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                                View clip
-                              </a>
-                            )}
-                            <button
-                              title="Delete the cached clip so the next request regenerates it from scratch"
-                              onClick={() => regenerate(g)}
-                              disabled={regeneratingId === g.id}
-                              style={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                width: 26, height: 26, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg3)',
-                                color: 'var(--text-3)', cursor: regeneratingId === g.id ? 'default' : 'pointer',
-                                opacity: regeneratingId === g.id ? 0.5 : 1, flexShrink: 0,
-                              }}
-                            >
-                              {regeneratingId === g.id ? <Loader2 size={12} className="admin-spin" /> : <Trash2 size={12} />}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                      {g.status === 'failed' && g.failureReason && (
-                        <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                          <td colSpan={9} style={{ padding: '0 16px 12px', fontSize: 11, color: '#EF4444', fontFamily: 'monospace' }}>
-                            {g.failureReason}
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
+                  {greetings.map((g, i) => (
+                    <GreetingRow
+                      key={g.id}
+                      g={g}
+                      i={i}
+                      regeneratingId={regeneratingId}
+                      onRegenerate={regenerate}
+                    />
                   ))}
                 </tbody>
               </table>
@@ -193,6 +157,65 @@ export default function NameBank() {
         </>
       ) : null}
     </div>
+  )
+}
+
+function GreetingRow({ g, i, regeneratingId, onRegenerate }: {
+  g: NameGreeting; i: number; regeneratingId: string | null; onRegenerate: (g: NameGreeting) => void;
+}) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <Fragment>
+      <tr
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          background: hovered ? 'rgba(79,142,247,0.08)' : i % 2 === 1 ? 'rgba(255,255,255,0.025)' : 'transparent',
+          borderBottom: g.status === 'failed' && g.failureReason ? 'none' : '1px solid var(--border)',
+          transition: 'background 0.15s ease',
+        }}
+      >
+        <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap' }}>{g.name}</td>
+        <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{g.speaker}</td>
+        <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{g.difficulty}</td>
+        <td style={{ padding: '12px 16px' }}>
+          <StatusPill status={g.status} />
+        </td>
+        <td style={{ padding: '12px 16px', color: 'var(--text)', fontWeight: 700 }}>{g.useCount}</td>
+        <td style={{ padding: '12px 16px', color: 'var(--text-3)' }}>{g.attemptCount}</td>
+        <td style={{ padding: '12px 16px', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{formatDate(g.generatedAt)}</td>
+        <td style={{ padding: '12px 16px', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{g.lastUsedAt ? formatDate(g.lastUsedAt) : '—'}</td>
+        <td style={{ padding: '12px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {g.status === 'ready' && g.videoUrl && (
+              <a href={g.videoUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: '#4F8EF7', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                View clip
+              </a>
+            )}
+            <button
+              title="Delete the cached clip so the next request regenerates it from scratch"
+              onClick={() => onRegenerate(g)}
+              disabled={regeneratingId === g.id}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 26, height: 26, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg3)',
+                color: 'var(--text-3)', cursor: regeneratingId === g.id ? 'default' : 'pointer',
+                opacity: regeneratingId === g.id ? 0.5 : 1, flexShrink: 0,
+              }}
+            >
+              {regeneratingId === g.id ? <Loader2 size={12} className="admin-spin" /> : <Trash2 size={12} />}
+            </button>
+          </div>
+        </td>
+      </tr>
+      {g.status === 'failed' && g.failureReason && (
+        <tr style={{ borderBottom: '1px solid var(--border)' }}>
+          <td colSpan={9} style={{ padding: '0 16px 12px', fontSize: 11, color: '#EF4444', fontFamily: 'monospace' }}>
+            {g.failureReason}
+          </td>
+        </tr>
+      )}
+    </Fragment>
   )
 }
 
