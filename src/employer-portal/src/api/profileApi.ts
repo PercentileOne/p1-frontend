@@ -19,6 +19,10 @@ export interface PublicProfile {
   banner: string | null;
   location: string | null;
   commentsEnabled: boolean;
+  employmentTypePreference?: string | null;
+  remotePreference?: string | null;
+  bestScore?: number | null;
+  country?: string | null;
 }
 
 export interface ApiError { error: string; status: number }
