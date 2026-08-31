@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { LayoutDashboard, Package, Users, Briefcase, FileText, BarChart2, CalendarCheck, Settings, History, Filter, Video, Send, Bell, Search } from 'lucide-react'
+import { LayoutDashboard, BarChart2, Settings, Send, Bell, Search } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import InterviewPacks from './InterviewPacks'
 import InterviewPreps from './InterviewPreps'
@@ -15,20 +15,19 @@ import ScreenCandidates from './ScreenCandidates'
 import InterviewHistory from './InterviewHistory'
 import Alerts from './Alerts'
 
+// Streamlined 2026-08-31: Francis wants the recruiter portal to work alongside recruiters'
+// existing ATS/CRM tooling rather than replace it, so anything that overlaps with tools
+// they likely already have (CVs, Candidates, Screen, Interviews, Interview Packs, Pack
+// History, Job Specs) is hidden here, not deleted — the pages/routes/negation-chain checks
+// below are untouched, so restoring one is just adding its line back to this array.
+// My Interviews hidden separately: it's a candidate-facing component (private/shared/public
+// visibility, a Share button) that doesn't conceptually fit a recruiter's own portal.
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: 'Dashboard' },
   { Icon: Send,            label: 'Interview Preps' },
   { Icon: Bell,            label: 'Alerts' },
-  { Icon: Briefcase,       label: 'Job Specs' },
-  { Icon: FileText,        label: 'CVs' },
-  { Icon: Users,           label: 'Candidates' },
   { Icon: Search,          label: 'Candidate Marketplace' },
-  { Icon: Filter,          label: 'Screen' },
-  { Icon: CalendarCheck,   label: 'Interviews' },
-  { Icon: Package,         label: 'Interview Packs' },
-  { Icon: History,         label: 'Pack History' },
   { Icon: BarChart2,       label: 'Analytics' },
-  { Icon: Video,           label: 'My Interviews' },
   { Icon: Settings,        label: 'Settings' },
 ]
 
