@@ -70,6 +70,37 @@ public class UserProfile
     [JsonProperty("phone")]
     public string? Phone { get; set; }
 
+    // ── Candidate Search Phase 2 ────────────────────────────────────────────
+    // "permanent" | "contract" | "either" | null (unset)
+    [JsonProperty("employmentTypePreference")]
+    public string? EmploymentTypePreference { get; set; }
+
+    // "remote" | "hybrid" | "onsite" | "any" | null (unset)
+    [JsonProperty("remotePreference")]
+    public string? RemotePreference { get; set; }
+
+    // Denormalized best-ever overallScore across all this candidate's interviews.
+    // Null = never interviewed. Updated best-effort, ratchets upward only — see
+    // Features/Interviews/Endpoint.cs's upload handler.
+    [JsonProperty("bestScore")]
+    public int? BestScore { get; set; }
+
+    // Geocoded from Location server-side (Azure Maps) whenever it changes. Null until
+    // the first successful geocode — candidates without it just fall back to plain-text
+    // location search, never excluded from search entirely.
+    [JsonProperty("locationGeo")]
+    public GeoPoint? LocationGeo { get; set; }
+
+    // Extracted from the same geocode response as LocationGeo — a cheap exact-match
+    // filter that doesn't need a radius calculation.
+    [JsonProperty("country")]
+    public string? Country { get; set; }
+
+    // The exact Location string LocationGeo/Country were last geocoded from, so
+    // re-saving a profile without touching Location doesn't burn another Azure Maps call.
+    [JsonProperty("locationGeocodedFrom")]
+    public string? LocationGeocodedFrom { get; set; }
+
     // ── Journey / Self Architecture ───────────────────────────────────────────
     [JsonProperty("lifeStage")]
     public string? LifeStage { get; set; }
@@ -121,6 +152,17 @@ public class ProfileProject
 
     [JsonProperty("description")]
     public string Description { get; set; } = string.Empty;
+}
+
+// GeoJSON Point — this exact shape is what Cosmos's ST_DISTANCE() function expects.
+public class GeoPoint
+{
+    [JsonProperty("type")]
+    public string Type { get; set; } = "Point";
+
+    // [longitude, latitude] — GeoJSON coordinate order, NOT lat/lng.
+    [JsonProperty("coordinates")]
+    public double[] Coordinates { get; set; } = [];
 }
 
 public class BlockedUserRef
@@ -176,6 +218,18 @@ public class PublicProfile
     [JsonProperty("commentsEnabled")]
     public bool CommentsEnabled { get; set; }
 
+    [JsonProperty("employmentTypePreference")]
+    public string? EmploymentTypePreference { get; set; }
+
+    [JsonProperty("remotePreference")]
+    public string? RemotePreference { get; set; }
+
+    [JsonProperty("bestScore")]
+    public int? BestScore { get; set; }
+
+    [JsonProperty("country")]
+    public string? Country { get; set; }
+
     public static PublicProfile From(UserProfile p) => new()
     {
         UserId = p.UserId,
@@ -190,6 +244,10 @@ public class PublicProfile
         Banner = p.Banner,
         Location = p.Location,
         CommentsEnabled = p.CommentsEnabled,
+        EmploymentTypePreference = p.EmploymentTypePreference,
+        RemotePreference = p.RemotePreference,
+        BestScore = p.BestScore,
+        Country = p.Country,
     };
 }
 
@@ -227,6 +285,18 @@ public class CandidateSearchResult
     [JsonProperty("projectsSummary")]
     public List<string> ProjectsSummary { get; set; } = [];
 
+    [JsonProperty("employmentTypePreference")]
+    public string? EmploymentTypePreference { get; set; }
+
+    [JsonProperty("remotePreference")]
+    public string? RemotePreference { get; set; }
+
+    [JsonProperty("bestScore")]
+    public int? BestScore { get; set; }
+
+    [JsonProperty("country")]
+    public string? Country { get; set; }
+
     public static CandidateSearchResult From(UserProfile p) => new()
     {
         UserId = p.UserId,
@@ -238,5 +308,9 @@ public class CandidateSearchResult
         Location = p.Location,
         Interests = p.Interests,
         ProjectsSummary = p.Projects.Select(pr => pr.Title).Where(t => !string.IsNullOrWhiteSpace(t)).ToList(),
+        EmploymentTypePreference = p.EmploymentTypePreference,
+        RemotePreference = p.RemotePreference,
+        BestScore = p.BestScore,
+        Country = p.Country,
     };
 }
