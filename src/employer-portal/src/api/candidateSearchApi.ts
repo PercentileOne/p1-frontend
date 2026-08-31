@@ -16,6 +16,10 @@ export interface CandidateSearchResult {
   location: string | null;
   interests: string[];
   projectsSummary: string[];
+  employmentTypePreference: string | null;
+  remotePreference: string | null;
+  bestScore: number | null;
+  country: string | null;
 }
 
 export interface CandidateSearchResponse {
@@ -37,11 +41,21 @@ async function call<T>(path: string, token: string): Promise<T> {
 }
 
 export const candidateSearchApi = {
-  search(token: string, params: { q?: string; location?: string; interest?: string; page?: number; size?: number }): Promise<CandidateSearchResponse> {
+  search(token: string, params: {
+    q?: string; location?: string; interest?: string; role?: string;
+    employmentType?: string; remote?: string; country?: string; minScore?: number;
+    radiusMiles?: number; page?: number; size?: number;
+  }): Promise<CandidateSearchResponse> {
     const qs = new URLSearchParams();
     if (params.q) qs.set('q', params.q);
     if (params.location) qs.set('location', params.location);
     if (params.interest) qs.set('interest', params.interest);
+    if (params.role) qs.set('role', params.role);
+    if (params.employmentType) qs.set('employmentType', params.employmentType);
+    if (params.remote) qs.set('remote', params.remote);
+    if (params.country) qs.set('country', params.country);
+    if (params.minScore !== undefined) qs.set('minScore', String(params.minScore));
+    if (params.radiusMiles !== undefined) qs.set('radiusMiles', String(params.radiusMiles));
     qs.set('page', String(params.page ?? 1));
     qs.set('size', String(params.size ?? 20));
     return call(`/api/candidates/search?${qs.toString()}`, token);
