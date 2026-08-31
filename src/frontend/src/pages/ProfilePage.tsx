@@ -930,7 +930,6 @@ interface ProfileDraft {
   bio: string;
   location: string;
   jobTitle: string;
-  jobRole: string;
   company: string;
   interests: string[];
   favouriteFilms: string[];
@@ -950,7 +949,6 @@ function draftFromProfile(real: Profile | null): ProfileDraft {
     bio: real?.bio ?? '',
     location: real?.location ?? '',
     jobTitle: real?.jobTitle ?? '',
-    jobRole: real?.jobRole ?? '',
     company: real?.company ?? '',
     interests: real?.interests ?? [],
     favouriteFilms: real?.favouriteFilms ?? [],
@@ -1062,10 +1060,6 @@ function ProfileEditPanel({
             <div>
               <label className={labelClass}>Job Title</label>
               <input value={draft.jobTitle} onChange={e => onChange({ jobTitle: e.target.value })} placeholder="e.g. Software Engineer" className={inputClass} />
-            </div>
-            <div>
-              <label className={labelClass}>Job Role</label>
-              <input value={draft.jobRole} onChange={e => onChange({ jobRole: e.target.value })} placeholder="e.g. Backend" className={inputClass} />
             </div>
             <div>
               <label className={labelClass}>Company</label>
