@@ -100,6 +100,12 @@ builder.Services.AddHttpClient("DID", c =>
     c.BaseAddress = new Uri("https://api.d-id.com");
     c.Timeout = TimeSpan.FromSeconds(30);
 });
+builder.Services.AddHttpClient("AzureMaps", c =>
+{
+    c.BaseAddress = new Uri("https://atlas.microsoft.com");
+    c.Timeout = TimeSpan.FromSeconds(10);
+});
+builder.Services.AddSingleton<Explain.Api.Infrastructure.Geo.AzureMapsGeocodingService>();
 builder.Services.AddOpenApi();
 
 // ── App ───────────────────────────────────────────────────────────────────────
