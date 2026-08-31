@@ -96,5 +96,29 @@ public static class Endpoint
         })
         .WithName("SearchCandidates").WithTags("CandidateSearch")
         .RequireAuthorization(Permissions.ViewCandidateProfile);
+
+        // GET /api/candidates/{userId}/interviews — a candidate's SHARED interview history,
+        // for the recruiter/employer CandidateDetail view. Privacy-consistent with
+        // SearchableByRecruiters: opting into search does not expose every interview
+        // attempt, only ones the candidate explicitly shared (isShared = true, the same
+        // flag POST /api/interviews/{candidateId}/{id}/share sets). Single-partition query
+        // (candidateId = userId), cheap — no cross-partition concerns like the search above.
+        app.MapGet("/api/candidates/{userId}/interviews", async (string userId, CosmosService cosmos) =>
+        {
+            var container = cosmos.GetContainer("interviews");
+            var query = new QueryDefinition("SELECT * FROM c WHERE c.candidateId = @cid AND c.isShared = true")
+                .WithParameter("@cid", userId);
+            var summaries = new List<Explain.Api.Features.Interviews.InterviewSummary>();
+            using var feed = container.GetItemQueryIterator<Explain.Api.Features.Interviews.InterviewEnvelope>(
+                query, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userId) });
+            while (feed.HasMoreResults)
+            {
+                foreach (var env in await feed.ReadNextAsync())
+                    summaries.Add(Explain.Api.Features.Interviews.Endpoint.ToSummary(env));
+            }
+            return Results.Ok(summaries.OrderByDescending(s => s.createdAt));
+        })
+        .WithName("GetCandidateSharedInterviews").WithTags("CandidateSearch")
+        .RequireAuthorization(Permissions.ViewCandidateProfile);
     }
 }

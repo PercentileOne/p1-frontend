@@ -240,7 +240,9 @@ public static class Endpoint
         }
     }
 
-    private static InterviewSummary ToSummary(InterviewEnvelope env)
+    // internal, not private — Features/CandidateSearch/Endpoint.cs reuses this exact
+    // parse-from-opaque-JSON logic for the candidate-interviews endpoint.
+    internal static InterviewSummary ToSummary(InterviewEnvelope env)
     {
         string? role = null, company = null;
         double overallScore = 0;
