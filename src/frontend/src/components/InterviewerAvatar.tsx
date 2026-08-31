@@ -164,6 +164,12 @@ export function InterviewerAvatar({ role, state, active, videoUrl, specialistTit
       source.connect(videoAnalyser);
       videoAnalyser.connect(audioCtx.destination);
       onVideoAnalyser(videoAnalyser);
+      // A freshly-created AudioContext can start life 'suspended' per the browser's
+      // autoplay policy — createMediaElementSource has already rerouted the video's audio
+      // through this (possibly suspended) graph, so if we don't explicitly resume it here
+      // the video plays and the mouth moves with zero sound reaching destination, silently.
+      // Safe to call unconditionally — a no-op once the context is already running.
+      if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
       return () => { audioCtx.close().catch(() => {}); };
     } catch {
       // AudioContext can be blocked in some browsers without a prior user gesture — the
