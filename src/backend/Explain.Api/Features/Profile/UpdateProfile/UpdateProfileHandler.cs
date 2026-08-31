@@ -3,6 +3,7 @@ using Microsoft.Azure.Cosmos;
 using Explain.Api.Common;
 using Explain.Api.Domain.Profile;
 using Explain.Api.Infrastructure.Cosmos;
+using Explain.Api.Infrastructure.Geo;
 using System.Linq;
 
 namespace Explain.Api.Features.Profile.UpdateProfile;
@@ -35,6 +36,7 @@ public record UpdateProfileCommand(
 
 public class UpdateProfileHandler(
     CosmosService cosmos,
+    AzureMapsGeocodingService geocoding,
     ILogger<UpdateProfileHandler> logger)
     : IRequestHandler<UpdateProfileCommand, Result<UserProfile>>
 {
@@ -78,7 +80,27 @@ public class UpdateProfileHandler(
         if (cmd.DreamRoleIndustry is not null) profile.DreamRoleIndustry  = cmd.DreamRoleIndustry.Trim();
         if (cmd.DreamRoleSalary   is not null) profile.DreamRoleSalary    = cmd.DreamRoleSalary.Trim();
         if (cmd.DreamRoleTimeline is not null) profile.DreamRoleTimeline  = cmd.DreamRoleTimeline.Trim();
-        if (cmd.Location       is not null) profile.Location       = cmd.Location.Trim();
+        if (cmd.Location is not null)
+        {
+            var trimmedLocation = cmd.Location.Trim();
+            profile.Location = trimmedLocation;
+            // Only re-geocode when the text actually changed — every other profile save
+            // (bio, interests, etc.) shouldn't burn an Azure Maps call for an unchanged location.
+            if (!string.IsNullOrWhiteSpace(trimmedLocation) && trimmedLocation != profile.LocationGeocodedFrom)
+            {
+                var geo = await geocoding.GeocodeAsync(trimmedLocation, ct);
+                if (geo is not null)
+                {
+                    profile.LocationGeo = new GeoPoint { Coordinates = [geo.Lon, geo.Lat] };
+                    profile.Country = geo.Country;
+                    profile.LocationGeocodedFrom = trimmedLocation;
+                }
+                // geo is null (unconfigured, address not found, API error): leave
+                // LocationGeo/Country/LocationGeocodedFrom untouched — the candidate stays
+                // excluded from radius search until a later save succeeds, but this save
+                // itself never fails because of it.
+            }
+        }
         if (cmd.Banner         is not null) profile.Banner         = cmd.Banner;
         if (cmd.FavouriteFilms is not null) profile.FavouriteFilms = cmd.FavouriteFilms;
         if (cmd.Projects       is not null) profile.Projects       = cmd.Projects;
