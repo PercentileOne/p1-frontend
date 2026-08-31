@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { X, Search as SearchIcon, ArrowLeft, MapPin, Briefcase, ChevronDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
-import { candidateSearchApi, type CandidateSearchResult, type ApiError } from '../api/candidateSearchApi'
+import { candidateSearchApi, type CandidateSearchResult, type CandidateInterviewSummary, type ApiError } from '../api/candidateSearchApi'
 import { profileApi, type PublicProfile } from '../api/profileApi'
 
 // Short hand-picked list rather than full ISO-3166 — this candidate base is concentrated
@@ -256,6 +256,7 @@ function CandidateDetail({ userId, onBack }: { userId: string; onBack: () => voi
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [interviews, setInterviews] = useState<CandidateInterviewSummary[] | null>(null)
 
   useEffect(() => {
     if (!token) return
@@ -265,6 +266,13 @@ function CandidateDetail({ userId, onBack }: { userId: string; onBack: () => voi
       .then(setProfile)
       .catch(err => setError((err as ApiError).error ?? 'Failed to load profile.'))
       .finally(() => setLoading(false))
+  }, [token, userId])
+
+  useEffect(() => {
+    if (!token) return
+    candidateSearchApi.getCandidateInterviews(token, userId)
+      .then(setInterviews)
+      .catch(() => setInterviews([])) // treat any failure as "nothing shared" — never block the profile view on this
   }, [token, userId])
 
   return (
@@ -310,6 +318,29 @@ function CandidateDetail({ userId, onBack }: { userId: string; onBack: () => voi
                 ))}
               </div>
             )}
+
+            <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-3)', marginBottom: 10 }}>Interview History</div>
+              {interviews === null ? (
+                <div style={{ fontSize: 12, color: 'var(--text-3)' }}>Loading…</div>
+              ) : interviews.length === 0 ? (
+                <div style={{ fontSize: 12, color: 'var(--text-3)' }}>No shared interviews yet.</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {interviews.map(iv => (
+                    <div key={iv.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 14px', background: 'rgba(255,255,255,0.025)', border: '1px solid var(--border)', borderRadius: 10 }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {iv.role || 'Interview'}{iv.company ? ` · ${iv.company}` : ''}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>{formatDate(iv.createdAt)}</div>
+                      </div>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: scoreColor(Math.round(iv.overallScore)), fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{Math.round(iv.overallScore)}%</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       ) : null}
@@ -320,4 +351,8 @@ function CandidateDetail({ userId, onBack }: { userId: string; onBack: () => voi
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
   return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase() || '?'
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }

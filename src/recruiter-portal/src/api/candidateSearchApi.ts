@@ -29,6 +29,16 @@ export interface CandidateSearchResponse {
   rows: CandidateSearchResult[];
 }
 
+export interface CandidateInterviewSummary {
+  id: string;
+  createdAt: string;
+  role: string | null;
+  company: string | null;
+  overallScore: number;
+  isShared: boolean;
+  hasVideo: boolean;
+}
+
 export interface ApiError { error: string; status: number }
 
 async function call<T>(path: string, token: string): Promise<T> {
@@ -59,5 +69,9 @@ export const candidateSearchApi = {
     qs.set('page', String(params.page ?? 1));
     qs.set('size', String(params.size ?? 20));
     return call(`/api/candidates/search?${qs.toString()}`, token);
+  },
+
+  getCandidateInterviews(token: string, userId: string): Promise<CandidateInterviewSummary[]> {
+    return call(`/api/candidates/${userId}/interviews`, token);
   },
 };
