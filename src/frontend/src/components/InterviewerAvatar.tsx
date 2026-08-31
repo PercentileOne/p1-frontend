@@ -253,13 +253,21 @@ export function InterviewerAvatar({ role, state, active, videoUrl, specialistTit
             already having registered a user gesture earlier in the flow (uploading a CV,
             clicking "Begin Interview", granting mic/camera) — holds in practice, but if a
             browser ever blocks it, this plays silently rather than erroring; onEnded still
-            fires either way. */}
+            fires either way.
+            crossOrigin="anonymous" — required for cross-origin sources (e.g. James's Name
+            Bank blob-hosted clips) so the audio-tap effect's createMediaElementSource() can
+            read a real, untainted audio track; without it the browser still plays the video
+            fine but SILENTLY zeroes the routed audio to prevent cross-origin exfiltration —
+            no error, just no sound. A no-op for same-origin sources like Sarah's static
+            asset, so safe to set unconditionally. Requires a matching CORS rule on the
+            storage account serving the source — see NameGreetingVideoStorageService. */}
         <AnimatePresence>
           {videoUrl && (
             <motion.video
               ref={videoRef}
               key={videoUrl}
               src={videoUrl}
+              crossOrigin="anonymous"
               autoPlay playsInline
               onEnded={onVideoEnded}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
