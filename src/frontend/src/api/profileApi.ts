@@ -41,6 +41,10 @@ export interface Profile {
   projects: ProfileProject[];
   commentsEnabled: boolean;
   searchableByRecruiters: boolean;
+  employmentTypePreference?: string | null;
+  remotePreference?: string | null;
+  bestScore?: number | null;
+  country?: string | null;
   blockedUsers: BlockedUserRef[];
   phone?: string | null;
   lifeStage?: string | null;
@@ -66,6 +70,10 @@ export interface PublicProfile {
   banner?: string | null;
   location?: string | null;
   commentsEnabled: boolean;
+  employmentTypePreference?: string | null;
+  remotePreference?: string | null;
+  bestScore?: number | null;
+  country?: string | null;
 }
 
 export type UpdateProfilePayload = Partial<{
@@ -77,6 +85,8 @@ export type UpdateProfilePayload = Partial<{
   location: string; favouriteFilms: string[]; projects: ProfileProject[];
   commentsEnabled: boolean;
   searchableByRecruiters: boolean;
+  employmentTypePreference: string;
+  remotePreference: string;
 }>;
 
 export interface ApiError { error: string; status: number }

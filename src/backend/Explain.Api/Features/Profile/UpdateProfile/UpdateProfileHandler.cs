@@ -28,7 +28,9 @@ public record UpdateProfileCommand(
     List<string>? FavouriteFilms = null,
     List<ProfileProject>? Projects = null,
     bool? CommentsEnabled = null,
-    bool? SearchableByRecruiters = null)
+    bool? SearchableByRecruiters = null,
+    string? EmploymentTypePreference = null,
+    string? RemotePreference = null)
     : IRequest<Result<UserProfile>>;
 
 public class UpdateProfileHandler(
@@ -82,6 +84,12 @@ public class UpdateProfileHandler(
         if (cmd.Projects       is not null) profile.Projects       = cmd.Projects;
         if (cmd.CommentsEnabled is not null) profile.CommentsEnabled = cmd.CommentsEnabled.Value;
         if (cmd.SearchableByRecruiters is not null) profile.SearchableByRecruiters = cmd.SearchableByRecruiters.Value;
+        // Empty string means "cleared back to unset" — stored as null, not "", to keep
+        // the "null = candidate hasn't set a preference" invariant clean for the search filter.
+        if (cmd.EmploymentTypePreference is not null)
+            profile.EmploymentTypePreference = cmd.EmploymentTypePreference.Trim() is { Length: > 0 } et ? et.ToLowerInvariant() : null;
+        if (cmd.RemotePreference is not null)
+            profile.RemotePreference = cmd.RemotePreference.Trim() is { Length: > 0 } rp ? rp.ToLowerInvariant() : null;
 
         profile.UpdatedAt = DateTime.UtcNow.ToString("O");
 
@@ -99,6 +107,8 @@ public class UpdateProfileHandler(
     }
 
     private static readonly HashSet<string> AllowedProjectStatuses = new(StringComparer.OrdinalIgnoreCase) { "current", "past", "future" };
+    private static readonly HashSet<string> AllowedEmploymentTypes = new(StringComparer.OrdinalIgnoreCase) { "permanent", "contract", "either" };
+    private static readonly HashSet<string> AllowedRemoteTypes = new(StringComparer.OrdinalIgnoreCase) { "remote", "hybrid", "onsite", "any" };
 
     // No validation existed on this handler at all before — every field below was
     // previously accepted as arbitrary-length free text straight into Cosmos.
@@ -133,6 +143,11 @@ public class UpdateProfileHandler(
                 if (!AllowedProjectStatuses.Contains(p.Status)) return "Project status must be current, past, or future.";
             }
         }
+
+        if (!string.IsNullOrWhiteSpace(cmd.EmploymentTypePreference) && !AllowedEmploymentTypes.Contains(cmd.EmploymentTypePreference))
+            return "Employment type must be permanent, contract, or either.";
+        if (!string.IsNullOrWhiteSpace(cmd.RemotePreference) && !AllowedRemoteTypes.Contains(cmd.RemotePreference))
+            return "Remote preference must be remote, hybrid, onsite, or any.";
 
         return null;
     }

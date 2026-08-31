@@ -941,6 +941,8 @@ interface ProfileDraft {
   dreamRoleTimeline: string;
   commentsEnabled: boolean;
   searchableByRecruiters: boolean;
+  employmentTypePreference: string;
+  remotePreference: string;
 }
 
 function draftFromProfile(real: Profile | null): ProfileDraft {
@@ -959,6 +961,8 @@ function draftFromProfile(real: Profile | null): ProfileDraft {
     dreamRoleTimeline: real?.dreamRoleTimeline ?? '',
     commentsEnabled: real?.commentsEnabled ?? false,
     searchableByRecruiters: real?.searchableByRecruiters ?? false,
+    employmentTypePreference: real?.employmentTypePreference ?? '',
+    remotePreference: real?.remotePreference ?? '',
   };
 }
 
@@ -1200,6 +1204,40 @@ function ProfileEditPanel({
             <p className="text-[10px] text-slate-600 mt-0.5">Off by default. This only controls whether recruiters/employers can find you by searching — a direct profile link still works either way.</p>
           </div>
           <ToggleSwitch checked={draft.searchableByRecruiters} onChange={v => onChange({ searchableByRecruiters: v })} />
+        </div>
+      </SectionCard>
+
+      <SectionCard>
+        <SectionHeading emoji="💼" title="Work preferences" />
+        <p className="text-[10px] text-slate-600 mb-3 -mt-1">Shown to recruiters/employers as filters in candidate search — optional, leave as "Not set" if you'd rather not say.</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClass}>Employment type</label>
+            <select
+              value={draft.employmentTypePreference}
+              onChange={e => onChange({ employmentTypePreference: e.target.value })}
+              className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.1] rounded-xl text-[12px] text-white focus:outline-none focus:border-indigo-500/40"
+            >
+              <option value="">Not set</option>
+              <option value="permanent">Permanent</option>
+              <option value="contract">Contract</option>
+              <option value="either">Either</option>
+            </select>
+          </div>
+          <div>
+            <label className={labelClass}>Remote</label>
+            <select
+              value={draft.remotePreference}
+              onChange={e => onChange({ remotePreference: e.target.value })}
+              className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.1] rounded-xl text-[12px] text-white focus:outline-none focus:border-indigo-500/40"
+            >
+              <option value="">Not set</option>
+              <option value="remote">Remote</option>
+              <option value="hybrid">Hybrid</option>
+              <option value="onsite">Onsite</option>
+              <option value="any">Any</option>
+            </select>
+          </div>
         </div>
       </SectionCard>
 
