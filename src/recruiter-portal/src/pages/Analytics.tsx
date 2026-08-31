@@ -1,38 +1,117 @@
-const PASS_RATES = [
-  { role: '.NET Developer', rate: 82, count: 11, color: '#4F8EF7' },
-  { role: 'UX Designer',    rate: 91, count: 7,  color: '#A78BFA' },
-  { role: 'Cloud Architect',rate: 85, count: 5,  color: '#34D399' },
-  { role: 'Business Analyst',rate: 77,count: 9,  color: '#4F8EF7' },
-  { role: 'DevOps Engineer', rate: 74, count: 8, color: '#F59E0B' },
-  { role: 'Product Manager', rate: 67, count: 6, color: '#F59E0B' },
-  { role: 'Scrum Master',    rate: 63, count: 4, color: '#EF4444' },
-  { role: 'Data Analyst',    rate: 58, count: 7, color: '#EF4444' },
-]
+import { useEffect, useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { alertsApi, type Alert, type AlertMatch } from '../api/alertsApi'
+import { interviewPrepsApi, type InterviewPrep } from '../api/interviewPrepsApi'
 
-const MONTHLY = [
-  { month: 'Feb', packs: 14, interviews: 9,  booked: 7  },
-  { month: 'Mar', packs: 18, interviews: 13, booked: 10 },
-  { month: 'Apr', packs: 22, interviews: 17, booked: 13 },
-  { month: 'May', packs: 29, interviews: 21, booked: 17 },
-  { month: 'Jun', packs: 35, interviews: 26, booked: 22 },
-  { month: 'Jul', packs: 47, interviews: 38, booked: 29 },
-]
+function scoreColor(s: number) {
+  if (s >= 80) return '#34D399'
+  if (s >= 70) return '#60A5FA'
+  if (s >= 50) return '#F59E0B'
+  return '#EF4444'
+}
 
-const SUMMARY = [
-  { label: 'Total Packs Sent',    value: '47',  change: '+34%',  up: true,  color: '#4F8EF7' },
-  { label: 'Avg. Score',          value: '74%', change: '+6pts', up: true,  color: '#34D399' },
-  { label: 'Conversion Rate',     value: '76%', change: '+8%',   up: true,  color: '#A78BFA' },
-  { label: 'Avg. Time to Book',   value: '2.4d',change: '-0.6d', up: true,  color: '#F59E0B' },
-]
+// Last 6 calendar months ending this month, computed from today rather than hardcoded —
+// each entry keyed by a real Date so counts below can group real records into it correctly.
+function lastSixMonths(): { key: string; label: string; date: Date }[] {
+  const months: { key: string; label: string; date: Date }[] = []
+  const now = new Date()
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    months.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString('en-GB', { month: 'short' }), date: d })
+  }
+  return months
+}
+
+function monthKey(iso: string): string {
+  const d = new Date(iso)
+  return `${d.getFullYear()}-${d.getMonth()}`
+}
+
+function isThisMonth(iso: string): boolean {
+  const d = new Date(iso), now = new Date()
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+}
+
+function isLastMonth(iso: string): boolean {
+  const d = new Date(iso), now = new Date()
+  const last = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  return d.getFullYear() === last.getFullYear() && d.getMonth() === last.getMonth()
+}
+
+function deltaLabel(current: number, previous: number): { text: string; up: boolean } {
+  if (previous === 0) return current > 0 ? { text: `+${current} vs last month`, up: true } : { text: 'No change vs last month', up: true }
+  const pct = Math.round(((current - previous) / previous) * 100)
+  return { text: `${pct >= 0 ? '+' : ''}${pct}% vs last month`, up: pct >= 0 }
+}
 
 export default function Analytics() {
-  const maxPacks = Math.max(...MONTHLY.map(m => m.packs))
+  const { token } = useAuth()
+  const [alerts, setAlerts] = useState<Alert[] | null>(null)
+  const [matches, setMatches] = useState<AlertMatch[] | null>(null)
+  const [preps, setPreps] = useState<InterviewPrep[] | null>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!token) return
+    setError('')
+    Promise.all([alertsApi.list(token), alertsApi.matches(token), interviewPrepsApi.list(token)])
+      .then(([a, m, p]) => { setAlerts(a); setMatches(m); setPreps(p) })
+      .catch(() => setError('Failed to load analytics data.'))
+  }, [token])
+
+  const loading = alerts === null || matches === null || preps === null
+
+  if (error) {
+    return <div style={{ fontSize: 12, color: '#EF4444', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 14px' }}>{error}</div>
+  }
+  if (loading) {
+    return <div style={{ padding: 60, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>Loading…</div>
+  }
+
+  const now = new Date()
+  const monthLabel = now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+
+  const prepsThisMonth = preps.filter(p => isThisMonth(p.createdAt)).length
+  const prepsLastMonth = preps.filter(p => isLastMonth(p.createdAt)).length
+  const activeAlerts = alerts.filter(a => a.status === 'active').length
+  const matchesThisMonth = matches.filter(m => isThisMonth(m.matchedAt)).length
+  const matchesLastMonth = matches.filter(m => isLastMonth(m.matchedAt)).length
+  const avgScore = matches.length > 0 ? Math.round(matches.reduce((sum, m) => sum + m.overallScore, 0) / matches.length) : null
+
+  const prepsDelta = deltaLabel(prepsThisMonth, prepsLastMonth)
+  const matchesDelta = deltaLabel(matchesThisMonth, matchesLastMonth)
+
+  const SUMMARY = [
+    { label: 'Total Preps Sent', value: String(preps.length), change: prepsDelta.text, up: prepsDelta.up, color: '#4F8EF7' },
+    { label: 'Active Alerts', value: String(activeAlerts), change: `${alerts.length} total`, up: true, color: '#A78BFA' },
+    { label: 'Total Matches', value: String(matches.length), change: matchesDelta.text, up: matchesDelta.up, color: '#34D399' },
+    { label: 'Avg. Match Score', value: avgScore !== null ? `${avgScore}%` : '—', change: avgScore !== null ? 'across all matches' : 'no matches yet', up: true, color: avgScore !== null ? scoreColor(avgScore) : '#F59E0B' },
+  ]
+
+  const months = lastSixMonths()
+  const monthly = months.map(m => ({
+    label: m.label,
+    prepsSent: preps.filter(p => monthKey(p.createdAt) === m.key).length,
+    matched: matches.filter(mt => monthKey(mt.matchedAt) === m.key).length,
+  }))
+  const maxMonthly = Math.max(1, ...monthly.map(m => Math.max(m.prepsSent, m.matched)))
+
+  const roleCounts = new Map<string, number>()
+  for (const m of matches) roleCounts.set(m.role, (roleCounts.get(m.role) ?? 0) + 1)
+  const roleColors = ['#4F8EF7', '#A78BFA', '#34D399', '#F59E0B', '#EF4444']
+  const matchesByRole = [...roleCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([role, count], i) => ({ role, count, color: roleColors[i % roleColors.length] }))
+  const maxRoleCount = Math.max(1, ...matchesByRole.map(r => r.count))
+
+  const recentMatches = [...matches].sort((a, b) => b.matchedAt.localeCompare(a.matchedAt)).slice(0, 5)
 
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>Analytics</h1>
-        <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>Performance overview · July 2026</p>
+        <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>Performance overview · {monthLabel}</p>
       </div>
 
       {/* Summary cards */}
@@ -41,7 +120,7 @@ export default function Analytics() {
           <div key={s.label} style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '18px 20px', boxShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 8 }}>{s.label}</div>
             <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1 }}>{s.value}</div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: s.color, marginTop: 6 }}>{s.up ? '↑' : '↓'} {s.change} vs last month</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: s.color, marginTop: 6 }}>{s.change}</div>
           </div>
         ))}
       </div>
@@ -52,7 +131,7 @@ export default function Analytics() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
             <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)' }}>Monthly Activity</div>
             <div style={{ display: 'flex', gap: 16 }}>
-              {[['#4F8EF7','Packs'],['#A78BFA','Sent'],['#34D399','Booked']].map(([c,l]) => (
+              {[['#4F8EF7', 'Preps Sent'], ['#34D399', 'Matched']].map(([c, l]) => (
                 <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                   <div style={{ width: 8, height: 8, borderRadius: 2, background: c }} />
                   <span style={{ fontSize: 11, color: 'var(--text-3)' }}>{l}</span>
@@ -60,61 +139,68 @@ export default function Analytics() {
               ))}
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16, height: 160 }}>
-            {MONTHLY.map(m => (
-              <div key={m.month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
-                <div style={{ width: '100%', display: 'flex', gap: 3, alignItems: 'flex-end', height: '100%' }}>
-                  {[
-                    { v: m.packs,      c: '#4F8EF7', o: 0.7 },
-                    { v: m.interviews, c: '#A78BFA', o: 0.7 },
-                    { v: m.booked,     c: '#34D399', o: 0.7 },
-                  ].map((b, i) => (
-                    <div key={i} style={{ flex: 1, background: b.c, opacity: b.o, borderRadius: '3px 3px 0 0', height: `${(b.v / maxPacks) * 100}%`, transition: 'height 0.3s ease' }} />
-                  ))}
+          {preps.length === 0 && matches.length === 0 ? (
+            <div style={{ padding: '30px 0', textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>No activity yet — send a prep or set up an alert to see it here.</div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16, height: 160 }}>
+              {monthly.map(m => (
+                <div key={m.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
+                  <div style={{ width: '100%', display: 'flex', gap: 3, alignItems: 'flex-end', height: '100%' }}>
+                    {[
+                      { v: m.prepsSent, c: '#4F8EF7' },
+                      { v: m.matched, c: '#34D399' },
+                    ].map((b, i) => (
+                      <div key={i} style={{ flex: 1, background: b.c, opacity: 0.7, borderRadius: '3px 3px 0 0', height: `${(b.v / maxMonthly) * 100}%`, minHeight: b.v > 0 ? 3 : 0, transition: 'height 0.3s ease' }} />
+                    ))}
+                  </div>
+                  <span style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 6 }}>{m.label}</span>
                 </div>
-                <span style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 6 }}>{m.month}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Pass rates */}
+        {/* Matches by role */}
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px 22px' }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)', marginBottom: 18 }}>Pass Rate by Role</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {PASS_RATES.map(r => (
-              <div key={r.role}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                  <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{r.role}</span>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: r.color }}>{r.rate}%</span>
+          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)', marginBottom: 18 }}>Matches by Role</div>
+          {matchesByRole.length === 0 ? (
+            <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>No candidate matches yet.</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {matchesByRole.map(r => (
+                <div key={r.role}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                    <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{r.role}</span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: r.color }}>{r.count}</span>
+                  </div>
+                  <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${(r.count / maxRoleCount) * 100}%`, background: r.color, borderRadius: 3, opacity: 0.8 }} />
+                  </div>
                 </div>
-                <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${r.rate}%`, background: r.color, borderRadius: 3, opacity: 0.8 }} />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Recruiter leaderboard */}
+      {/* Recent matches */}
       <div style={{ marginTop: 20, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px 24px' }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)', marginBottom: 16 }}>Recruiter Performance · This Month</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
-          {[
-            { name: 'Mike Afolabi',   packs: 31, booked: 21, rate: 68, rank: 1 },
-            { name: 'Sarah Collins',  packs: 16, booked: 8,  rate: 50, rank: 2 },
-            { name: 'Tom Briggs',     packs: 0,  booked: 0,  rate: 0,  rank: 3 },
-          ].map(r => (
-            <div key={r.name} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: r.rank === 1 ? 'linear-gradient(135deg,#F59E0B,#EF4444)' : 'linear-gradient(135deg,#4F8EF7,#7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 900, color: '#fff', flexShrink: 0 }}>#{r.rank}</div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{r.name}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>{r.packs} packs · {r.booked} booked · {r.rate}% rate</div>
+        <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)', marginBottom: 16 }}>Recent Matches</div>
+        {recentMatches.length === 0 ? (
+          <div style={{ padding: '10px 0', color: 'var(--text-3)', fontSize: 12 }}>No candidate matches yet — they'll show up here as soon as one of your alerts fires.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {recentMatches.map(m => (
+              <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 10 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{m.candidateName}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>{m.role} · {new Date(m.matchedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</div>
+                </div>
+                <span style={{ fontSize: 14, fontWeight: 800, color: scoreColor(m.overallScore), fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{m.overallScore}%</span>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
