@@ -94,10 +94,15 @@ public static class Endpoint
                 }
                 await Explain.Api.Features.Alerts.Endpoint.MatchIncomingCandidateAsync(
                     candidateId, candidateName, role, overallScore, interviewId, cosmos, config, logger);
+
+                // Denormalize this candidate's best-ever score onto their profile so Candidate
+                // Search can filter by score without parsing every candidate's opaque
+                // sessionDataJson on every request — see Features/CandidateSearch/Endpoint.cs.
+                await UpdateBestScoreAsync(candidateId, overallScore, cosmos, logger);
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Alert matching failed for interview {Id}", interviewId);
+                logger.LogWarning(ex, "Alert matching / best-score update failed for interview {Id}", interviewId);
             }
 
             return Results.Ok(new { id = interviewId, videoSaved = hasVideo });
@@ -208,6 +213,31 @@ public static class Endpoint
         using var response = await container.ReadItemStreamAsync(id, new PartitionKey(candidateId));
         if (!response.IsSuccessStatusCode) return null;
         return await JsonSerializer.DeserializeAsync<InterviewEnvelope>(response.Content);
+    }
+
+    // Single-partition read-then-conditional-write on the candidate's own profile doc — cheap,
+    // and never blocks the interview save (caller wraps this in the same best-effort try/catch
+    // as alert matching). Not atomic: two concurrent uploads from the same candidate could in
+    // theory race, but one candidate doesn't run two interviews at once in practice.
+    private static async Task UpdateBestScoreAsync(string candidateId, double overallScore, CosmosService cosmos, ILogger logger)
+    {
+        var container = cosmos.GetContainer("profiles");
+        try
+        {
+            var response = await container.ReadItemAsync<Explain.Api.Domain.Profile.UserProfile>(
+                candidateId, new PartitionKey(candidateId));
+            var profile = response.Resource;
+            var rounded = (int)Math.Round(overallScore);
+            if (rounded > (profile.BestScore ?? -1))
+            {
+                profile.BestScore = rounded;
+                await container.UpsertItemAsync(profile, new PartitionKey(candidateId));
+            }
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            logger.LogWarning("No profile found for {CandidateId} — skipping BestScore update", candidateId);
+        }
     }
 
     private static InterviewSummary ToSummary(InterviewEnvelope env)
