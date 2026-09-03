@@ -37,8 +37,12 @@ const SARAH_INTROS: Record<string, string> = {
 
 // ── Demo fallback questions ───────────────────────────────────────────────────
 
-function buildDemoQuestions(company: Company): InterviewQuestion[] {
-  return [
+// questionCount here mirrors sessionPrepareClient's own totalQuestions logic in aiScoring.ts
+// (same allowed values, same ~4:1 role:HR ratio, company-knowledge question always last) —
+// this static bank only has 10 questions, so 15/20 just returns all 10 rather than fabricating
+// more; the point is that 5 stops silently becoming 10, not that every count is fully covered.
+function buildDemoQuestions(company: Company, questionCount?: number): InterviewQuestion[] {
+  const all: InterviewQuestion[] = [
     {
       questionId: 'q1',
       questionText: 'Walk me through the most complex challenge you have faced in this type of role. What did you do and what was the outcome?',
@@ -100,6 +104,15 @@ function buildDemoQuestions(company: Company): InterviewQuestion[] {
       questionType: 'Behavioural', difficulty: 'Easy', source: 'HR', competencyTags: ['company knowledge', 'motivation'],
     },
   ];
+
+  const total = questionCount && [5, 10, 15, 20].includes(questionCount) ? questionCount : 10;
+  if (total >= all.length) return all;
+  const hrCount = Math.max(1, Math.round(total / 5));
+  const roleCount = total - hrCount;
+  const roleQs = all.filter(q => q.source === 'Role');
+  const hrQs = all.filter(q => q.source === 'HR');
+  // hrQs.slice(-hrCount) keeps the company-knowledge closer (always last) regardless of hrCount
+  return [...roleQs.slice(0, roleCount), ...hrQs.slice(-hrCount)];
 }
 
 // ── Local scoring fallback ────────────────────────────────────────────────────
@@ -331,7 +344,7 @@ export default function InterviewRoomPage() {
   const phase2WaitersRef = useRef<Array<() => void>>([]);
 
   // Derived values — fresh AI results ALWAYS win over anything pre-passed via route state
-  const questions = bgQuestions ?? buildDemoQuestions(demoCompany);
+  const questions = bgQuestions ?? buildDemoQuestions(demoCompany, ctx.questionCount);
   const companyKeywords = bgCompanyFacts.length ? bgCompanyFacts : demoCompany.companyKnowledgeKeywords;
   const specialistTitle = bgSpecialistTitle ?? 'Hiring Manager';
   const effectiveSarahIntro = bgSarahIntro ?? undefined;
