@@ -13,11 +13,13 @@ import { generateCoachingMessage, type CoachingMessage } from '../utils/coaching
 import { scoreWithAI, coachWithAI, aiScoringConfigured, sessionPrepareClient, generateMikeScriptOnly, generateMCQs, type MCQQuestion } from '../api/aiScoring';
 import { ChairSpinner } from '../components/ChairSpinner';
 import CinematicMCQ from '../components/CinematicMCQ';
-import { pickRandomCompany, type Company } from '../data/companyBank';
+import { pickRandomCompany } from '../data/companyBank';
 import { logFlowEvent } from '../api/flowLogger';
 import { useAuthStore } from '../auth/authStore';
 import { nameGreetingsApi } from '../api/nameGreetingsApi';
 import { FILTER_CSS, FILTER_LABELS, FILTER_PRESETS, type FilterPreset } from '../hooks/useVideoFilter';
+import { buildDemoQuestions } from './interview-room/demoQuestions';
+import { localScore } from './interview-room/localScoring';
 
 // ── Multilingual Sarah intro fallbacks ───────────────────────────────────────
 const SARAH_INTROS: Record<string, string> = {
@@ -34,111 +36,6 @@ const SARAH_INTROS: Record<string, string> = {
   zh: "您好 — 我是 Sarah，人力资源总监。很高兴您能来。James 将加入我进行岗位相关问题的提问。当每道题出现时，请点击录音按钮开始作答，完成后点击停止。如果您想重听题目，可以点击重复；需要暂停时，点击暂停即可。请自然地回答，慢慢来，不必紧张。",
   hi: "नमस्ते — मैं Sarah हूँ, HR Director। आपका यहाँ स्वागत है। James मेरे साथ भूमिका-विशिष्ट प्रश्नों के लिए जुड़ेंगे। जब प्रत्येक प्रश्न दिखे, तो Record बटन दबाएं और उत्तर देना शुरू करें, तथा समाप्त होने पर Stop दबाएं। Repeat बटन से प्रश्न फिर सुन सकते हैं, या Pause से थोड़ा रुक सकते हैं। स्वाभाविक रूप से बोलें, समय लें।",
 };
-
-// ── Demo fallback questions ───────────────────────────────────────────────────
-
-// questionCount here mirrors sessionPrepareClient's own totalQuestions logic in aiScoring.ts
-// (same allowed values, same ~4:1 role:HR ratio, company-knowledge question always last) —
-// this static bank only has 10 questions, so 15/20 just returns all 10 rather than fabricating
-// more; the point is that 5 stops silently becoming 10, not that every count is fully covered.
-function buildDemoQuestions(company: Company, questionCount?: number): InterviewQuestion[] {
-  const all: InterviewQuestion[] = [
-    {
-      questionId: 'q1',
-      questionText: 'Walk me through the most complex challenge you have faced in this type of role. What did you do and what was the outcome?',
-      modelAnswer: 'Cover: context, your specific actions, trade-offs made, and the measurable result.',
-      questionType: 'Competency', difficulty: 'Hard', source: 'Role', competencyTags: ['problem-solving'],
-    },
-    {
-      questionId: 'q2',
-      questionText: 'Tell me about a time you had to deliver under significant pressure. How did you manage it?',
-      modelAnswer: 'Cover: the pressures involved, your approach, how you prioritised, and the outcome.',
-      questionType: 'Competency', difficulty: 'Medium', source: 'Role', competencyTags: ['delivery', 'resilience'],
-    },
-    {
-      questionId: 'q3',
-      questionText: 'Describe a situation where you had to work closely with a team to achieve something difficult. What role did you play?',
-      modelAnswer: 'Cover: the team dynamic, your specific contribution, any conflict or challenge, and the result.',
-      questionType: 'Competency', difficulty: 'Medium', source: 'Role', competencyTags: ['teamwork', 'collaboration'],
-    },
-    {
-      questionId: 'q4',
-      questionText: 'Tell me about a time you disagreed with a decision made by your manager or leadership. How did you handle it?',
-      modelAnswer: 'Cover: the nature of the disagreement, how you raised it professionally, whether you escalated or accepted the outcome, and what you learned.',
-      questionType: 'Competency', difficulty: 'Medium', source: 'Role', competencyTags: ['communication', 'professional judgement'],
-    },
-    {
-      questionId: 'q5',
-      questionText: 'Give me an example of when you had to adapt quickly to a significant change at work. What did you do?',
-      modelAnswer: 'Cover: what changed, how you responded, what you prioritised, and how you helped others if relevant.',
-      questionType: 'Competency', difficulty: 'Medium', source: 'Role', competencyTags: ['adaptability', 'change management'],
-    },
-    {
-      questionId: 'q6',
-      questionText: 'Describe a time you identified a problem that others had missed. How did you spot it and what did you do?',
-      modelAnswer: 'Cover: what the problem was, how you identified it, the action you took, and the impact of catching it early.',
-      questionType: 'Competency', difficulty: 'Hard', source: 'Role', competencyTags: ['initiative', 'analytical thinking'],
-    },
-    {
-      questionId: 'q7',
-      questionText: 'Tell me about a time you had to manage competing priorities with limited resources. How did you decide what to focus on?',
-      modelAnswer: 'Cover: the competing demands, your prioritisation framework, trade-offs you made, and the outcome.',
-      questionType: 'Competency', difficulty: 'Hard', source: 'Role', competencyTags: ['prioritisation', 'decision-making'],
-    },
-    {
-      questionId: 'q8',
-      questionText: 'Describe an achievement you are genuinely proud of from your career so far. What made it significant?',
-      modelAnswer: 'Cover: what you did, the scale or difficulty involved, your personal contribution, and why it matters to you.',
-      questionType: 'Competency', difficulty: 'Easy', source: 'Role', competencyTags: ['achievement', 'motivation'],
-    },
-    {
-      questionId: 'q9',
-      questionText: 'Describe a time you delivered difficult feedback to someone. How did you approach it?',
-      modelAnswer: 'Use STAR. Emphasise empathy, specificity, listening to the response, and the relationship outcome.',
-      questionType: 'Behavioural', difficulty: 'Medium', source: 'HR', competencyTags: ['communication', 'stakeholder management'],
-    },
-    {
-      questionId: 'q10',
-      questionText: `What do you know about ${company.name} and why does this role specifically appeal to you?`,
-      modelAnswer: `Show genuine research into ${company.name}. Connect their mission to your own motivations and experience.`,
-      questionType: 'Behavioural', difficulty: 'Easy', source: 'HR', competencyTags: ['company knowledge', 'motivation'],
-    },
-  ];
-
-  const total = questionCount && [5, 10, 15, 20].includes(questionCount) ? questionCount : 10;
-  if (total >= all.length) return all;
-  const hrCount = Math.max(1, Math.round(total / 5));
-  const roleCount = total - hrCount;
-  const roleQs = all.filter(q => q.source === 'Role');
-  const hrQs = all.filter(q => q.source === 'HR');
-  // hrQs.slice(-hrCount) keeps the company-knowledge closer (always last) regardless of hrCount
-  return [...roleQs.slice(0, roleCount), ...hrQs.slice(-hrCount)];
-}
-
-// ── Local scoring fallback ────────────────────────────────────────────────────
-
-function localScore(q: InterviewQuestion, answer: string, companyKeywords: string[] = []): ScoreResponse {
-  const words = answer.trim().split(/\s+/).filter(Boolean);
-  const len = words.length;
-  const lower = answer.toLowerCase();
-  const clarity = Math.min(1, len / 80) * 0.8 + (answer.includes('.') ? 0.2 : 0);
-  const relevance = q.competencyTags.some(t => lower.includes(t)) ? 0.65 : 0.4;
-  const depth = /\d+/.test(answer) ? 0.7 : lower.includes('result') || lower.includes('outcome') ? 0.6 : 0.4;
-  const confidence = lower.includes('i led') || lower.includes('i built') || lower.includes('i delivered') ? 0.8
-    : lower.includes('i think') || lower.includes('maybe') ? 0.35 : 0.55;
-  const isCompanyKnowledgeQ = q.competencyTags.includes('company knowledge');
-  const factsHit = isCompanyKnowledgeQ ? companyKeywords.filter(f => lower.includes(f)).length : 0;
-  const companyBonus = isCompanyKnowledgeQ ? Math.min(0.2, factsHit * 0.05) : 0;
-  const overall = Math.min(1, Math.round((clarity * 0.25 + relevance * 0.35 + depth * 0.25 + confidence * 0.15 + companyBonus) * 10000) / 10000);
-  return {
-    clarity, relevance, depth, confidence, overallScore: overall,
-    feedback: [
-      { dimension: 'clarity', message: len < 40 ? 'Your answer is quite short — aim for at least 60 words.' : 'Good length and structure.', severity: len < 40 ? 'high' : 'low' },
-      { dimension: 'depth', message: depth < 0.5 ? 'Add a concrete metric or named outcome.' : 'Good use of specifics.', severity: depth < 0.5 ? 'medium' : 'low' },
-    ],
-    suggestions: len < 40 ? ['Use the STAR format to structure your answer.'] : [],
-  };
-}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
