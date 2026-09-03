@@ -9,7 +9,7 @@ import type { InterviewQuestion } from '../api/explainApi';
 import { speak, elevenLabsConfigured } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
-import { sessionPrepareClient, generateMikeScriptOnly, generateMCQs, type MCQQuestion } from '../api/aiScoring';
+import { sessionPrepareClient, generateMikeScriptOnly } from '../api/aiScoring';
 import { ChairSpinner } from '../components/ChairSpinner';
 import CinematicMCQ from '../components/CinematicMCQ';
 import { pickRandomCompany } from '../data/companyBank';
@@ -21,6 +21,7 @@ import type { RoomPhase, SessionAnswer } from './interview-room/types';
 import { useInterviewRecording } from '../hooks/useInterviewRecording';
 import { useAnswerScoring } from '../hooks/useAnswerScoring';
 import { useInterviewerAudio } from '../hooks/useInterviewerAudio';
+import { useMcqBonusRound, type McqGenParams } from '../hooks/useMcqBonusRound';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -155,23 +156,9 @@ export default function InterviewRoomPage() {
   const bgLoadRef = useRef(false);
   const bgLoadedRef = useRef(false); // true once AI results arrive
 
-  // MCQ bonus round — two questions, fixed slots Q3 (index 2) and Q7 (index 6)
-  const [mcqQuestions, setMcqQuestions] = useState<MCQQuestion[]>([]);
-  const [mcqActive, setMcqActive] = useState(false);
-  const [mcqBonusPoints, setMcqBonusPoints] = useState(0);
-  const [mcqResults, setMcqResults] = useState<Array<{ correct: boolean; selectedIndex: number; questionIndex: number }>>([]);
-  const MCQ_SLOTS = [2, 6]; // fire after Q3 and Q7 (0-based)
-  const mcqFiredCountRef = useRef(0); // how many MCQs have fired so far
-  // Synchronous guard against mcqFiredCountRef double-incrementing — nextQuestion and
-  // handlePass both gate MCQ-firing on the `mcqActive` *state*, but state commits are
-  // async, so if either could re-enter within the same tick (e.g. a stray double-call),
-  // both would see mcqActive still false and each bump the ref-counted ordinal, causing
-  // the first bonus question to announce itself as "second". A ref updates immediately,
-  // so this closes the race the state check alone couldn't.
-  const mcqFiringRef = useRef(false);
-  // active MCQ question for the current overlay
-  const [activeMcqQuestion, setActiveMcqQuestion] = useState<MCQQuestion | null>(null);
-  const [activeMcqOrdinal, setActiveMcqOrdinal] = useState<'first' | 'second'>('first');
+  // MCQ bonus round generation params — set once Phase 2 hands back a real job spec; see
+  // useMcqBonusRound's own doc comment for why this is the "session prep succeeded" signal.
+  const [mcqGenParams, setMcqGenParams] = useState<McqGenParams | null>(null);
 
   // Go Deeper — probabilistic probing follow-ups, capped per session and scaled by difficulty
   const goDeeperFiredRef = useRef(0);
@@ -287,6 +274,12 @@ export default function InterviewRoomPage() {
     setHighlightRecord, setAudioCheckState,
   });
 
+  const {
+    mcqQuestions, mcqActive, mcqBonusPoints, mcqResults,
+    activeMcqQuestion, activeMcqOrdinal,
+    maybeFireMcq, recordMcqResult,
+  } = useMcqBonusRound({ cancelSpeakRef, chapterMarkersRef, recordingStartTimeRef, mcqGenParams });
+
   const avgScore = runningScores.length > 0
     ? Math.round(runningScores.reduce((s, v) => s + v, 0) / runningScores.length * 100)
     : null;
@@ -397,13 +390,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       if (result.companyFacts?.length) setBgCompanyFacts(result.companyFacts);
       if (result.specialistTitle) setBgSpecialistTitle(result.specialistTitle);
       resolvePhase2();
-      // MCQs generated in a separate dedicated call — more variety, not anchored to main questions
-      generateMCQs(jobSpec, ctx.jobTitle, ctx.cvText).then(mcqs => {
-        if (mcqs.length) setMcqQuestions(mcqs);
-        else if (result.mcqQuestions?.length) setMcqQuestions(result.mcqQuestions); // fallback
-      }).catch(() => {
-        if (result.mcqQuestions?.length) setMcqQuestions(result.mcqQuestions);
-      });
+      setMcqGenParams({ jobSpec, jobTitle: ctx.jobTitle, cvText: ctx.cvText, fallback: result.mcqQuestions ?? [] });
       logFlowEvent('QUESTION_GENERATED', { count: result.questions.length, specialistTitle: result.specialistTitle });
 
     }).catch(err => {
@@ -514,27 +501,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setTypedAnswer('');
     logFlowEvent('QUESTION_COMPLETED', { questionId: q?.questionId, index: qIndex });
 
-    // MCQ trigger — fires at Q3 (index 2) and Q7 (index 6)
-    const nextMcqIdx = mcqFiredCountRef.current;
-    if (!mcqActive && !mcqFiringRef.current && MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
-      mcqFiringRef.current = true;
-      mcqFiredCountRef.current += 1;
-      cancelSpeakRef.current?.();
-      if (recordingStartTimeRef.current > 0) {
-        chapterMarkersRef.current.push({
-          questionIndex: -1,
-          questionText: mcqQuestions[nextMcqIdx].questionText,
-          competency: 'bonus',
-          offsetSeconds: Math.round((Date.now() - recordingStartTimeRef.current) / 1000),
-          isMcq: true,
-          mcqOrdinal: nextMcqIdx + 1,
-        });
-      }
-      setActiveMcqOrdinal(nextMcqIdx === 0 ? 'first' : 'second');
-      setActiveMcqQuestion(mcqQuestions[nextMcqIdx]);
-      setMcqActive(true);
-      return;
-    }
+    if (maybeFireMcq(qIndex)) return;
 
     const advance = () => {
       if (qIndex + 1 >= questions.length) {
@@ -553,21 +520,16 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     } else {
       advance();
     }
-  }, [qIndex, questions.length, sessionAnswers, askQuestion, q, uploadRecording, mcqQuestions, mcqResults, mcqBonusPoints, mcqActive, closeInterview, maybeGoDeeper, resetForNextQuestion]);
+  }, [qIndex, questions.length, sessionAnswers, askQuestion, q, uploadRecording, mcqQuestions, mcqResults, mcqBonusPoints, maybeFireMcq, closeInterview, maybeGoDeeper, resetForNextQuestion]);
 
   const resumeAfterMCQ = useCallback((bonusEarned: boolean, selectedIndex: number) => {
-    mcqFiringRef.current = false;
-    setMcqActive(false);
-    setActiveMcqQuestion(null);
-    const newResult = { correct: bonusEarned, selectedIndex, questionIndex: qIndex };
-    setMcqResults(prev => [...prev, newResult]);
-    if (bonusEarned) setMcqBonusPoints(prev => prev + 10);
+    const { newResults, newBonusPoints } = recordMcqResult(qIndex, bonusEarned, selectedIndex);
 
     const advance = () => {
       const next = qIndex + 1;
       if (next >= questions.length) {
-        uploadRecording(sessionAnswers, { mcqQuestions, mcqResults: [...mcqResults, newResult], mcqBonusPoints: mcqBonusPoints + (bonusEarned ? 10 : 0), cvCtx, jobCtx });
-        closeInterview(sessionAnswers, [...mcqResults, newResult], mcqBonusPoints + (bonusEarned ? 10 : 0));
+        uploadRecording(sessionAnswers, { mcqQuestions, mcqResults: newResults, mcqBonusPoints: newBonusPoints, cvCtx, jobCtx });
+        closeInterview(sessionAnswers, newResults, newBonusPoints);
       } else {
         setQIndex(next);
         askQuestion(next);
@@ -580,7 +542,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     } else {
       advance();
     }
-  }, [qIndex, questions.length, sessionAnswers, askQuestion, uploadRecording, mcqResults, mcqQuestions, mcqBonusPoints, closeInterview, maybeGoDeeper]);
+  }, [qIndex, questions.length, sessionAnswers, askQuestion, uploadRecording, mcqQuestions, closeInterview, maybeGoDeeper, recordMcqResult]);
 
   const handlePass = useCallback(() => {
     if (passInProgressRef.current) return;
@@ -593,27 +555,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setTypedAnswer('');
     logFlowEvent('QUESTION_COMPLETED', { questionId: q?.questionId, index: qIndex, passed: true });
 
-    // MCQ trigger — same slots as nextQuestion
-    const nextMcqIdx = mcqFiredCountRef.current;
-    if (!mcqActive && !mcqFiringRef.current && MCQ_SLOTS[nextMcqIdx] === qIndex && mcqQuestions[nextMcqIdx]) {
-      mcqFiringRef.current = true;
-      mcqFiredCountRef.current += 1;
-      cancelSpeakRef.current?.();
-      if (recordingStartTimeRef.current > 0) {
-        chapterMarkersRef.current.push({
-          questionIndex: -1,
-          questionText: mcqQuestions[nextMcqIdx].questionText,
-          competency: 'bonus',
-          offsetSeconds: Math.round((Date.now() - recordingStartTimeRef.current) / 1000),
-          isMcq: true,
-          mcqOrdinal: nextMcqIdx + 1,
-        });
-      }
-      setActiveMcqOrdinal(nextMcqIdx === 0 ? 'first' : 'second');
-      setActiveMcqQuestion(mcqQuestions[nextMcqIdx]);
-      setMcqActive(true);
-      return;
-    }
+    if (maybeFireMcq(qIndex)) return;
 
     const passedAnswers = [...sessionAnswers, passedEntry];
     if (qIndex + 1 >= questions.length) {
@@ -624,7 +566,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       setQIndex(next);
       askQuestion(next);
     }
-  }, [q, qIndex, questions.length, sessionAnswers, askQuestion, mcqQuestions, mcqResults, mcqBonusPoints, mcqActive, uploadRecording, closeInterview, recordPassedAnswer, resetForNextQuestion]);
+  }, [q, qIndex, questions.length, sessionAnswers, askQuestion, mcqQuestions, mcqResults, mcqBonusPoints, maybeFireMcq, uploadRecording, closeInterview, recordPassedAnswer, resetForNextQuestion]);
 
   // Thin wrapper: phase/avatar-state transitions stay here (orchestrator territory, same as
   // askQuestion/beginInterviewIntro's setPhase calls), scoring itself is useAnswerScoring's job.
