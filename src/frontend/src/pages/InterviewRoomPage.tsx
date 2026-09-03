@@ -6,7 +6,7 @@ import { MouthOverlay, MOUTH_POSITIONS, MOUTH_OVERLAY_ENABLED } from '../compone
 import { YouCamera } from '../components/YouCamera';
 import { VoiceInput, type TranscriptMeta } from '../components/VoiceInput';
 import type { InterviewQuestion, ScoreResponse } from '../api/explainApi';
-import { speak, elevenLabsConfigured, getTTSAudioContext, setTTSRecordingDestination } from '../api/ttsApi';
+import { speak, elevenLabsConfigured } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
 import { generateCoachingMessage, type CoachingMessage } from '../utils/coachingEngine';
@@ -20,6 +20,8 @@ import { nameGreetingsApi } from '../api/nameGreetingsApi';
 import { FILTER_CSS, FILTER_LABELS, FILTER_PRESETS, type FilterPreset } from '../hooks/useVideoFilter';
 import { buildDemoQuestions } from './interview-room/demoQuestions';
 import { localScore } from './interview-room/localScoring';
+import type { RoomPhase, SessionAnswer } from './interview-room/types';
+import { useInterviewRecording } from '../hooks/useInterviewRecording';
 
 // ── Multilingual Sarah intro fallbacks ───────────────────────────────────────
 const SARAH_INTROS: Record<string, string> = {
@@ -60,26 +62,6 @@ export interface RoomState {
   consentToRecord?: boolean;
   goDeeperEnabled?: boolean;
 }
-
-interface SessionAnswer {
-  question: InterviewQuestion;
-  answerText: string;
-  meta?: TranscriptMeta;
-  score: ScoreResponse;
-  answeredByVoice: boolean;
-  thinkTimeMs?: number;
-}
-
-// Mike-only phase, then full interview
-type RoomPhase =
-  | 'intro'
-  | 'mike'
-  | 'interviewer-intro'
-  | 'asking'
-  | 'answering'
-  | 'scoring'
-  | 'coaching'
-  | 'done';
 
 // ── Coaching cues — rotate during answering phase ────────────────────────────
 
@@ -251,36 +233,6 @@ export default function InterviewRoomPage() {
   const fallbackMikeScript = `Hi there — I'm Mike, your recruitment consultant. I've set up your interview today and I want to give you a quick briefing before you meet the panel. Your interviewers today are Sarah, who heads up HR, and James, who'll be assessing you on the role itself. They'll guide you through everything — just follow Sarah's instructions on the controls and you'll be absolutely fine. I'll be here throughout if you need anything. The best thing you can do is be specific: use real examples from your experience. Back yourself — you've got this. Good luck!`;
   const mikeScript = bgMikeScript ?? fallbackMikeScript;
 
-    // ── Session recording ─────────────────────────────────────────────────────
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingFailed, setRecordingFailed] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const recordingChunksRef = useRef<Blob[]>([]);
-  const recordingStreamRef = useRef<MediaStream | null>(null);
-  const tabStreamRef = useRef<MediaStream | null>(null);
-  const micStreamRef = useRef<MediaStream | null>(null);
-  // Gates the candidate's own mic in the RECORDING only (never the live room — Sarah/James/
-  // Mike are always heard live regardless) so the saved video isn't full of ambient noise —
-  // coughs, background chatter — captured over the AI interviewers' lines. Muted by default,
-  // opened only while phase === 'answering'; see the effect below that drives it.
-  const micGainNodeRef = useRef<GainNode | null>(null);
-  const recordingStartTimeRef = useRef<number>(0);
-  // Hidden elements that composite the candidate's own webcam (+ a question caption) onto a
-  // canvas, which is what's actually recorded. Deliberately NOT getDisplayMedia (screen/tab
-  // capture) — no mobile browser exposes that API to web content at all, so relying on it meant
-  // every mobile interview silently recorded nothing. canvas.captureStream() works identically
-  // on desktop and mobile, needs only the same camera/mic permission the app already asks for.
-  const recordVideoElRef = useRef<HTMLVideoElement | null>(null);
-  const recordCanvasElRef = useRef<HTMLCanvasElement | null>(null);
-  const recordDrawFrameRef = useRef<number>(0);
-  const recordCaptionRef = useRef<string>('');
-  const chapterMarkersRef = useRef<{ questionIndex: number; questionText: string; competency: string; offsetSeconds: number; isMcq?: boolean; mcqOrdinal?: number }[]>([]);
-  // Stable for the whole room session — used as the Cosmos doc id so the auto-upload
-  // (below) and closeInterview's navigate() state always refer to the same saved record.
-  const interviewIdRef = useRef<string>(crypto.randomUUID());
-
-  const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
   const authToken = useAuthStore(s => s.token);
 
   const getCandidateId = () => {
@@ -293,283 +245,6 @@ export default function InterviewRoomPage() {
     return id;
   };
 
-  const startRecording = useCallback(async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supportsScreenCapture = typeof (navigator.mediaDevices as any)?.getDisplayMedia === 'function';
-    try {
-      const mimeType = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
-        .find(t => MediaRecorder.isTypeSupported(t)) ?? '';
-
-      let compositeStream: MediaStream;
-
-      if (supportsScreenCapture) {
-        // Desktop — capture the full browser tab, unchanged: Sarah, James, question cards,
-        // MCQ overlays, coaching, everything visible on screen.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const tabStream: MediaStream = await (navigator.mediaDevices as any).getDisplayMedia({
-          video: { displaySurface: 'browser', frameRate: 30 },
-          audio: true,           // captures ElevenLabs voices playing in the tab
-          preferCurrentTab: true,
-        });
-        tabStreamRef.current = tabStream;
-
-        let micStream: MediaStream | null = null;
-        try {
-          micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-          micStreamRef.current = micStream;
-        } catch { /* mic denied — tab audio only */ }
-
-        const audioCtx = new AudioContext();
-        const dest = audioCtx.createMediaStreamDestination();
-        // Limiter — tab audio (already containing the AI voices at full volume) and the raw
-        // mic were both connecting straight to dest with no gain staging, so Web Audio just
-        // summed them: two full-scale sources add up to a signal that clips, and the clipping
-        // gets audibly worse exactly when the combined signal is louder. Routing both through
-        // one compressor first keeps the mix under the ceiling instead of clipping past it.
-        const compressor = audioCtx.createDynamicsCompressor();
-        compressor.connect(dest);
-        const tabAudioTracks = tabStream.getAudioTracks();
-        if (tabAudioTracks.length > 0) {
-          audioCtx.createMediaStreamSource(new MediaStream(tabAudioTracks)).connect(compressor);
-        }
-        if (micStream) {
-          const micGain = audioCtx.createGain();
-          micGain.gain.value = 0; // starts muted — the effect watching `phase` opens it
-          micGainNodeRef.current = micGain;
-          audioCtx.createMediaStreamSource(micStream).connect(micGain).connect(compressor);
-        }
-
-        compositeStream = new MediaStream([...tabStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
-
-        tabStream.getVideoTracks()[0]?.addEventListener('ended', () => {
-          micStream?.getTracks().forEach(t => t.stop());
-          audioCtx.close();
-        });
-      } else {
-        // Mobile — no browser exposes screen/tab capture to web content here at all, so
-        // getDisplayMedia would never even show a prompt. Fall back to the candidate's own
-        // camera + a question caption composited onto a canvas, instead of silently
-        // recording nothing. Desktop is untouched by this branch entirely.
-        const camStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'user', width: 1280, height: 720 },
-          audio: true,
-        });
-        tabStreamRef.current = camStream; // stopped generically in uploadRecording's cleanup
-
-        const video = recordVideoElRef.current;
-        const canvas = recordCanvasElRef.current;
-        if (!video || !canvas) throw new Error('recording canvas not mounted');
-        video.srcObject = camStream;
-        await video.play();
-
-        canvas.width = 1280;
-        canvas.height = 720;
-        const ctx2d = canvas.getContext('2d');
-        if (!ctx2d) throw new Error('canvas 2d context unavailable');
-
-        const draw = () => {
-          // Mirror the feed, matching every other self-view in this app. Desktop recording
-          // is a tab-capture, so the appearance filter is already baked in visually — this
-          // mobile path draws its own frame, so the same filter needs applying explicitly.
-          ctx2d.save();
-          ctx2d.scale(-1, 1);
-          ctx2d.filter = FILTER_CSS[filterPresetRef.current];
-          ctx2d.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-          ctx2d.restore();
-
-          const caption = recordCaptionRef.current;
-          if (caption) {
-            ctx2d.font = '600 28px -apple-system, "Segoe UI", sans-serif';
-            const words = caption.split(/\s+/);
-            const lines: string[] = [];
-            let line = '';
-            for (const word of words) {
-              const test = line ? `${line} ${word}` : word;
-              if (line && ctx2d.measureText(test).width > canvas.width - 64) { lines.push(line); line = word; }
-              else line = test;
-            }
-            if (line) lines.push(line);
-            const capped = lines.slice(0, 3);
-            const lineHeight = 36;
-            const barHeight = capped.length * lineHeight + 32;
-            ctx2d.fillStyle = 'rgba(6,10,20,0.75)';
-            ctx2d.fillRect(0, canvas.height - barHeight, canvas.width, barHeight);
-            ctx2d.fillStyle = '#ffffff';
-            ctx2d.textBaseline = 'top';
-            capped.forEach((l, i) => ctx2d.fillText(l, 32, canvas.height - barHeight + 16 + i * lineHeight));
-          }
-
-          recordDrawFrameRef.current = requestAnimationFrame(draw);
-        };
-        draw();
-
-        const canvasStream = canvas.captureStream(30);
-
-        // Mix candidate mic + AI interviewer voices (via the shared TTS AudioContext) into
-        // one audio track — must be the SAME context speak() uses, nodes can't cross contexts.
-        // Desktop doesn't need this: tab-audio capture above already includes ElevenLabs playback.
-        const audioCtx = await getTTSAudioContext();
-        const dest = audioCtx.createMediaStreamDestination();
-        // Same limiter fix as the desktop path above — mic and TTS voices (connected in
-        // ttsApi.ts's speak(), via setTTSRecordingDestination) both route through this
-        // compressor instead of landing on dest at full gain and summing into clipping.
-        const compressor = audioCtx.createDynamicsCompressor();
-        compressor.connect(dest);
-        const micGain = audioCtx.createGain();
-        micGain.gain.value = 0; // starts muted — the effect watching `phase` opens it
-        micGainNodeRef.current = micGain;
-        audioCtx.createMediaStreamSource(camStream).connect(micGain).connect(compressor);
-        setTTSRecordingDestination(dest, compressor);
-
-        compositeStream = new MediaStream([...canvasStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
-      }
-
-      recordingStreamRef.current = compositeStream;
-      recordingChunksRef.current = [];
-      chapterMarkersRef.current = [];
-      recordingStartTimeRef.current = Date.now();
-
-      const recorder = new MediaRecorder(compositeStream, mimeType ? { mimeType } : undefined);
-      mediaRecorderRef.current = recorder;
-      recorder.ondataavailable = e => { if (e.data.size > 0) recordingChunksRef.current.push(e.data); };
-      recorder.start(1000);
-      setIsRecording(true);
-      setRecordingFailed(false);
-    } catch (err) {
-      console.error('[InterviewRoom] Failed to start recording:', err);
-      setRecordingFailed(true);
-      // Interview continues unrecorded, but this is now visible in the status badge
-      // instead of silently producing a video-less summary page.
-    }
-  }, []);
-
-  // Snapshot current chunks into a local blob URL for immediate playback on summary screen.
-  // Called BEFORE navigate so the URL is ready when the summary mounts.
-  const buildPlaybackUrl = useCallback((): string | null => {
-    if (recordingChunksRef.current.length === 0) return null;
-    const mimeType = recordingChunksRef.current[0]?.type ?? 'video/webm';
-    const blob = new Blob(recordingChunksRef.current, { type: mimeType });
-    return URL.createObjectURL(blob);
-  }, []);
-
-  const uploadRecording = useCallback((answers: SessionAnswer[]) => {
-    const recorder = mediaRecorderRef.current;
-    const candidateId = getCandidateId();
-    const interviewId = interviewIdRef.current;
-
-    // Persist the session even without a recording (screen-share permission denied) —
-    // otherwise there'd be no record for the summary page to reload, or for Save/Share to act on.
-    const finish = async (videoBlob: Blob | null) => {
-      setUploadStatus('uploading');
-      try {
-        const overallScore = answers.length
-          ? answers.reduce((s, a) => s + a.score.overallScore, 0) / answers.length
-          : 0;
-        const metadata = JSON.stringify({
-          candidateId,
-          interviewId,
-          role: ctx.jobTitle,
-          company: ctx.company,
-          overallScore: Math.round(overallScore * 100),
-          answers,
-          mcqQuestions,
-          mcqResults,
-          mcqBonusPoints,
-          chapters: chapterMarkersRef.current,
-          cvCtx,
-          jobCtx,
-          // Real account name — always available, unlike cvCtx.firstName/lastName which is
-          // only ever populated if a CV happened to be parsed for this specific session.
-          // Every shared interview needs a name at the top regardless of that.
-          candidateName: authUser?.name,
-        });
-
-        // A real video upload on a poor connection (public/hospital wifi, etc.) can genuinely
-        // take a while, but with no timeout at all a stalled connection hangs this forever —
-        // the interview never lands, and InterviewSummaryPage's "still uploading" poll then
-        // waits on something that will never arrive, with no way for the candidate to know.
-        // Timeout + one retry + a video-less fallback so a bad connection loses the video, not
-        // the whole session.
-        const attemptUpload = async (withVideo: boolean, timeoutMs: number) => {
-          const form = new FormData();
-          form.append('metadata', metadata);
-          if (withVideo && videoBlob) form.append('video', videoBlob, 'session.webm');
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), timeoutMs);
-          try {
-            return await fetch(`${API_BASE}/api/interviews/upload`, {
-              method: 'POST',
-              headers: { Authorization: `Bearer ${authToken ?? ''}` },
-              body: form,
-              signal: controller.signal,
-            });
-          } finally {
-            clearTimeout(timer);
-          }
-        };
-
-        let res: Response | null = null;
-        try {
-          res = await attemptUpload(true, 120_000);
-        } catch (err) {
-          console.warn('[InterviewRoom] Upload attempt 1 failed, retrying once:', err);
-          try {
-            res = await attemptUpload(true, 120_000);
-          } catch (err2) {
-            console.error('[InterviewRoom] Upload retry also failed — falling back to metadata only, without video:', err2);
-            if (videoBlob) {
-              try {
-                res = await attemptUpload(false, 30_000);
-              } catch (err3) {
-                console.error('[InterviewRoom] Metadata-only fallback also failed:', err3);
-              }
-            }
-          }
-        }
-
-        setUploadStatus(res?.ok ? 'done' : 'error');
-        if (!res?.ok) console.error('[InterviewRoom] Upload ultimately failed — no interview record was saved.', res);
-      } catch (err) {
-        console.error('[InterviewRoom] Unexpected error during upload:', err);
-        setUploadStatus('error');
-      }
-    };
-
-    if (!recorder || recorder.state === 'inactive' || recordingChunksRef.current.length === 0) {
-      if (answers.length > 0) void finish(null);
-      return;
-    }
-    recorder.onstop = () => {
-      // Stop all streams — composite, tab/camera, and mic — and tear down the mobile-path
-      // canvas draw loop + TTS recording tap (harmless no-ops if the desktop path ran instead)
-      recordingStreamRef.current?.getTracks().forEach(t => t.stop());
-      tabStreamRef.current?.getTracks().forEach(t => t.stop());
-      micStreamRef.current?.getTracks().forEach(t => t.stop());
-      tabStreamRef.current = null;
-      micStreamRef.current = null;
-      micGainNodeRef.current = null;
-      cancelAnimationFrame(recordDrawFrameRef.current);
-      setTTSRecordingDestination(null);
-      setIsRecording(false);
-      const mimeType = recordingChunksRef.current[0]?.type ?? 'video/webm';
-      const blob = new Blob(recordingChunksRef.current, { type: mimeType });
-      void finish(blob);
-    };
-    recorder.stop();
-  }, [API_BASE, authToken, ctx.jobTitle, ctx.company, mcqQuestions, mcqResults, mcqBonusPoints, cvCtx, jobCtx]);
-
-  // Upload if component unmounts mid-session — TRUE unmount only (empty deps). A ref indirection
-  // is required: uploadRecording's own deps (mcqQuestions, cvCtx, jobCtx, ...) change mid-interview
-  // as session-prep data streams in while Mike is still speaking, which previously changed
-  // uploadRecording's identity and fired this cleanup on every one of those changes — stopping the
-  // still-running recorder and uploading just Mike's intro, then never recording again. Depending on
-  // uploadRecording directly here reintroduces that exact bug even with an apparently-correct cleanup.
-  const uploadRecordingRef = useRef(uploadRecording);
-  useEffect(() => { uploadRecordingRef.current = uploadRecording; }, [uploadRecording]);
-  useEffect(() => {
-    return () => { uploadRecordingRef.current([]); };
-  }, []);
-
   const consentToRecord = ctx.consentToRecord !== false;
   const [cameraOn, setCameraOn] = useState(true);
   // Appearance filter — same presets as the Profile Video recorder (useVideoFilter.ts),
@@ -579,18 +254,8 @@ export default function InterviewRoomPage() {
   // automatically included in the saved video for free; the mobile recording path draws
   // its own canvas frame-by-frame (see startRecording below) and needs it applied there too.
   const [filterPreset, setFilterPreset] = useState<FilterPreset>('beauty');
-  const filterPresetRef = useRef<FilterPreset>('beauty');
-  useEffect(() => { filterPresetRef.current = filterPreset; }, [filterPreset]);
 
   const [phase, setPhase] = useState<RoomPhase>('intro');
-  // Opens the candidate's mic in the recording only during their own answering turn, muted
-  // everything else — see micGainNodeRef's doc above. setTargetAtTime ramps over ~50ms rather
-  // than snapping the gain instantly, avoiding an audible click/pop at the open and close.
-  useEffect(() => {
-    const node = micGainNodeRef.current;
-    if (!node) return;
-    node.gain.setTargetAtTime(phase === 'answering' ? 1 : 0, node.context.currentTime, 0.05);
-  }, [phase]);
   const [qIndex, setQIndex] = useState(0);
   const [typedAnswer, setTypedAnswer] = useState('');
   const [useVoice, setUseVoice] = useState(true);
@@ -657,10 +322,21 @@ export default function InterviewRoomPage() {
   const q = questions[qIndex];
   const isHrQuestion = q?.source === 'HR';
 
-  // Keeps the mobile-path recording caption in sync without restarting the draw loop
-  useEffect(() => {
-    recordCaptionRef.current = (phase === 'asking' || phase === 'answering') ? (q?.questionText ?? '') : '';
-  }, [phase, q]);
+  const {
+    isRecording, recordingFailed, uploadStatus,
+    startRecording, uploadRecording, buildPlaybackUrl,
+    chapterMarkersRef, interviewIdRef, recordingStartTimeRef,
+    videoElRef: recordVideoElRef, canvasElRef: recordCanvasElRef,
+  } = useInterviewRecording({
+    phase,
+    filterPreset,
+    questionText: q?.questionText,
+    candidateId: getCandidateId(),
+    authToken,
+    jobTitle: ctx.jobTitle,
+    company: ctx.company,
+    candidateName: authUser?.name,
+  });
 
   const avgScore = runningScores.length > 0
     ? Math.round(runningScores.reduce((s, v) => s + v, 0) / runningScores.length * 100)
@@ -1163,7 +839,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
     const advance = () => {
       if (qIndex + 1 >= questions.length) {
-        uploadRecording(sessionAnswers);
+        uploadRecording(sessionAnswers, { mcqQuestions, mcqResults, mcqBonusPoints, cvCtx, jobCtx });
         closeInterview(sessionAnswers, mcqResults, mcqBonusPoints);
       } else {
         const next = qIndex + 1;
@@ -1191,7 +867,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     const advance = () => {
       const next = qIndex + 1;
       if (next >= questions.length) {
-        uploadRecording(sessionAnswers);
+        uploadRecording(sessionAnswers, { mcqQuestions, mcqResults: [...mcqResults, newResult], mcqBonusPoints: mcqBonusPoints + (bonusEarned ? 10 : 0), cvCtx, jobCtx });
         closeInterview(sessionAnswers, [...mcqResults, newResult], mcqBonusPoints + (bonusEarned ? 10 : 0));
       } else {
         setQIndex(next);
@@ -1247,7 +923,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
     const passedAnswers = [...sessionAnswers, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }];
     if (qIndex + 1 >= questions.length) {
-      uploadRecording(passedAnswers);
+      uploadRecording(passedAnswers, { mcqQuestions, mcqResults, mcqBonusPoints, cvCtx, jobCtx });
       closeInterview(passedAnswers, mcqResults, mcqBonusPoints);
     } else {
       const next = qIndex + 1;
@@ -1476,7 +1152,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
             {isFullscreen ? 'Exit Full' : 'Full Screen'}
           </button>
           <button onClick={() => {
-            uploadRecording(sessionAnswers);
+            uploadRecording(sessionAnswers, { mcqQuestions, mcqResults, mcqBonusPoints, cvCtx, jobCtx });
             closeInterview(sessionAnswers, mcqResults, mcqBonusPoints);
           }}
             style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '8px', padding: '7px 14px', color: '#34D399', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>
