@@ -847,6 +847,21 @@ export default function InterviewRoomPage() {
   const sarahIntroDoneRef = useRef<() => void>(() => {});
   const handleSarahIntroVideoEnded = useCallback(() => { sarahIntroDoneRef.current(); }, []);
 
+  // Single place that knows about every audio source this room can have active at once —
+  // live TTS (cancelSpeakRef) AND the two pre-rendered/personalised video clips (Sarah's
+  // intro, James's Name Bank greeting), which each carry their own embedded audio and were
+  // added later without the original "skip"/"interrupt" points ever being updated to know
+  // about them. Calling cancelSpeakRef alone (the old behaviour) left a still-playing video's
+  // audio running underneath whatever started next — that's the "2-3 voices at once" bug.
+  // Every interruption point (Skip buttons, question transitions, ending the interview early)
+  // should call this instead of cancelSpeakRef directly.
+  const stopAllInterviewerAudio = useCallback(() => {
+    cancelSpeakRef.current?.();
+    cancelSpeakRef.current = null;
+    setSarahIntroVideoActive(false);
+    setJamesGreetingVideoActive(false);
+  }, []);
+
   const beginInterviewIntro = useCallback(() => {
     if (introStartedRef.current) return;
     introStartedRef.current = true;
@@ -1803,7 +1818,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
               <button
                 onClick={() => {
-                  cancelSpeakRef.current?.();
+                  stopAllInterviewerAudio();
                   if (bgLoadedRef.current) {
                     beginInterviewIntroRef.current();
                   } else {
@@ -1851,7 +1866,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     <div style={{ fontSize: '14px', color: 'var(--text-2)' }}>Your interviewers are introducing themselves…</div>
                   </div>
                   <button
-                    onClick={() => { cancelSpeakRef.current?.(); setHrState('idle'); setTechState('idle'); askQuestion(0); }}
+                    onClick={() => { stopAllInterviewerAudio(); setHrState('idle'); setTechState('idle'); askQuestion(0); }}
                     style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 14px', fontSize: '12px', color: 'var(--text-3)', cursor: 'pointer', whiteSpace: 'nowrap', marginLeft: '16px', flexShrink: 0 }}
                   >
                     Skip Intro →
