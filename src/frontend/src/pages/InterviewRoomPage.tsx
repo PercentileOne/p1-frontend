@@ -233,9 +233,9 @@ export default function InterviewRoomPage() {
 
   const {
     hrState, techState, hrAnalyser, techAnalyser,
-    sarahIntroVideoActive, jamesGreetingVideoActive, jamesGreetingUrl, awaitingHandoff,
+    sarahIntroVideoActive, jamesGreetingVideoActive, jamesGreetingUrl, jamesIntroVideoActive, awaitingHandoff,
     handleSarahVideoAnalyser, handleJamesVideoAnalyser,
-    handleSarahIntroVideoEnded, handleJamesGreetingVideoEnded,
+    handleSarahIntroVideoEnded, handleJamesGreetingVideoEnded, handleJamesIntroVideoEnded,
     stopAllInterviewerAudio,
     askQuestion, repeatQuestion, testAudio, startMike, handleMikeIntroDone,
     beginInterviewIntroRef,
@@ -745,8 +745,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               />
               <InterviewerAvatar
                 role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} analyserNode={techAnalyser}
-                videoUrl={jamesGreetingVideoActive ? jamesGreetingUrl : null}
-                onVideoEnded={jamesGreetingVideoActive ? handleJamesGreetingVideoEnded : () => onDoneRef.current?.()}
+                videoUrl={jamesGreetingVideoActive ? jamesGreetingUrl : jamesIntroVideoActive ? '/images/james-intro-v1.mp4' : null}
+                onVideoEnded={jamesGreetingVideoActive ? handleJamesGreetingVideoEnded : jamesIntroVideoActive ? handleJamesIntroVideoEnded : () => onDoneRef.current?.()}
                 onVideoAnalyser={handleJamesVideoAnalyser}
               />
               <YouCamera cameraOn={cameraOn} speaking={phase === 'answering'} onToggle={() => setCameraOn(v => !v)} />

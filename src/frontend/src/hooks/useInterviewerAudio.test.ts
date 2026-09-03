@@ -116,4 +116,29 @@ describe('useInterviewerAudio — stopAllInterviewerAudio', () => {
     expect(result.current.cancelSpeakRef.current).toBeNull();
     expect(result.current.jamesGreetingVideoActive).toBe(false);
   });
+
+  it("silences James's generic intro video (no Name Bank hit), even with a live TTS cancel fn also seeded", async () => {
+    vi.mocked(nameGreetingsApi.get).mockResolvedValue(null); // no personalised clip for this candidate
+    const { result } = renderHook(() => useInterviewerAudio(baseParams()));
+
+    await act(async () => { await Promise.resolve(); });
+
+    act(() => { result.current.beginInterviewIntroRef.current(); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(600); });
+    expect(result.current.sarahIntroVideoActive).toBe(true);
+
+    // Sarah's video "ends" — falls through to james-intro-v1.mp4 since there's no Name Bank hit.
+    act(() => { result.current.handleSarahIntroVideoEnded(); });
+    expect(result.current.jamesIntroVideoActive).toBe(true);
+    expect(result.current.jamesGreetingVideoActive).toBe(false);
+
+    const cancelFn = vi.fn();
+    act(() => { result.current.cancelSpeakRef.current = cancelFn; });
+
+    act(() => { result.current.stopAllInterviewerAudio(); });
+
+    expect(cancelFn).toHaveBeenCalledTimes(1);
+    expect(result.current.cancelSpeakRef.current).toBeNull();
+    expect(result.current.jamesIntroVideoActive).toBe(false);
+  });
 });

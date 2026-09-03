@@ -72,6 +72,10 @@ export interface UseInterviewerAudioReturn {
   sarahIntroVideoActive: boolean;
   jamesGreetingVideoActive: boolean;
   jamesGreetingUrl: string | null;
+  /** English, no Name Bank hit — james-intro-v1.mp4, the generic pre-rendered clip matching
+   * Sarah's/Mike's own. Only ever active in the gap Name Bank's personalised clip would
+   * otherwise leave James on the static photo. */
+  jamesIntroVideoActive: boolean;
   awaitingHandoff: boolean;
   /** Typed to accept null (not just InterviewerAvatar's own AnalyserNode-only prop shape) so
    * the same handler can also be passed straight to speak()'s onAnalyser callback, which can
@@ -80,6 +84,7 @@ export interface UseInterviewerAudioReturn {
   handleJamesVideoAnalyser: (a: AnalyserNode | null) => void;
   handleSarahIntroVideoEnded: () => void;
   handleJamesGreetingVideoEnded: () => void;
+  handleJamesIntroVideoEnded: () => void;
   /** The one function every interruption point (Skip buttons, question transitions, ending
    * the interview early) must call instead of cancelSpeakRef directly — see its own doc
    * comment below for why. */
@@ -229,19 +234,31 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
   const sarahIntroDoneRef = useRef<() => void>(() => {});
   const handleSarahIntroVideoEnded = useCallback(() => { sarahIntroDoneRef.current(); }, []);
 
+  // English, no Name Bank hit: james-intro-v1.mp4 — the generic pre-rendered clip matching
+  // Sarah's/Mike's own, filling the gap a personalised clip would otherwise leave (static
+  // photo + live TTS). Same shape as sarahIntroVideoActive above.
+  const [jamesIntroVideoActive, setJamesIntroVideoActive] = useState(false);
+  const jamesIntroDoneRef = useRef<() => void>(() => {});
+  const handleJamesIntroVideoEnded = useCallback(() => {
+    setJamesIntroVideoActive(false);
+    jamesIntroDoneRef.current();
+  }, []);
+
   // Single place that knows about every audio source this room can have active at once —
-  // live TTS (cancelSpeakRef) AND the two pre-rendered/personalised video clips (Sarah's
-  // intro, James's Name Bank greeting), which each carry their own embedded audio and were
-  // added later without the original "skip"/"interrupt" points ever being updated to know
-  // about them. Calling cancelSpeakRef alone (the old behaviour) left a still-playing video's
-  // audio running underneath whatever started next — that's the "2-3 voices at once" bug.
-  // Every interruption point (Skip buttons, question transitions, ending the interview early)
-  // should call this instead of cancelSpeakRef directly.
+  // live TTS (cancelSpeakRef) AND every pre-rendered/personalised video clip (Sarah's intro,
+  // James's Name Bank greeting, James's generic intro), which each carry their own embedded
+  // audio and were added later without the original "skip"/"interrupt" points ever being
+  // updated to know about them. Calling cancelSpeakRef alone (the old behaviour) left a
+  // still-playing video's audio running underneath whatever started next — that's the
+  // "2-3 voices at once" bug. Every interruption point (Skip buttons, question transitions,
+  // ending the interview early) should call this instead of cancelSpeakRef directly. Any new
+  // video-active flag added to this hook must be added here too.
   const stopAllInterviewerAudio = useCallback(() => {
     cancelSpeakRef.current?.();
     cancelSpeakRef.current = null;
     setSarahIntroVideoActive(false);
     setJamesGreetingVideoActive(false);
+    setJamesIntroVideoActive(false);
   }, []);
 
   const beginInterviewIntro = useCallback(() => {
@@ -290,11 +307,15 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
 
         // Name Bank pilot: a cached personalised greeting for this candidate's name, if one
         // exists, fully replaces James's live line (including its difficulty/language mention)
-        // — an accepted trade-off for the pilot. Any miss falls straight through to today's
-        // unchanged TTS path, exactly as before this feature existed.
+        // — an accepted trade-off for the pilot. A miss falls through to james-intro-v1.mp4
+        // (English) — the generic pre-rendered clip matching Sarah's/Mike's own — and only
+        // falls all the way through to live TTS for non-English sessions, where no video exists.
         if (sessionLanguage === 'en' && jamesGreetingUrl) {
           jamesGreetingDoneRef.current = finishJamesIntro;
           setJamesGreetingVideoActive(true);
+        } else if (sessionLanguage === 'en') {
+          jamesIntroDoneRef.current = finishJamesIntro;
+          setJamesIntroVideoActive(true);
         } else {
           cancelSpeakRef.current = speak(jamesText, 'technical', finishJamesIntro, (a) => setTechAnalyser(a));
         }
@@ -414,9 +435,9 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
 
   return {
     hrState, techState, hrAnalyser, techAnalyser,
-    sarahIntroVideoActive, jamesGreetingVideoActive, jamesGreetingUrl, awaitingHandoff,
+    sarahIntroVideoActive, jamesGreetingVideoActive, jamesGreetingUrl, jamesIntroVideoActive, awaitingHandoff,
     handleSarahVideoAnalyser, handleJamesVideoAnalyser,
-    handleSarahIntroVideoEnded, handleJamesGreetingVideoEnded,
+    handleSarahIntroVideoEnded, handleJamesGreetingVideoEnded, handleJamesIntroVideoEnded,
     stopAllInterviewerAudio,
     askQuestion, repeatQuestion, testAudio, startMike, handleMikeIntroDone,
     beginInterviewIntroRef,
