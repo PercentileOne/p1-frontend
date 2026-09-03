@@ -458,6 +458,20 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     }, handleSarahVideoAnalyser);
   }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl, resetForNextQuestion, handleSarahVideoAnalyser, setHrState]);
 
+  // Shared tail for every "this question is over, move on" path (a normal next-question click,
+  // resuming after an MCQ bonus round, or a Pass) — previously reimplemented three times with
+  // only the answers/mcq-results/bonus-points arguments actually differing between them.
+  const advanceOrClose = useCallback((answers: SessionAnswer[], results: typeof mcqResults, bonusPoints: number) => {
+    const next = qIndex + 1;
+    if (next >= questions.length) {
+      uploadRecording(answers, { mcqQuestions, mcqResults: results, mcqBonusPoints: bonusPoints, cvCtx, jobCtx });
+      closeInterview(answers, results, bonusPoints);
+    } else {
+      setQIndex(next);
+      askQuestion(next);
+    }
+  }, [qIndex, questions.length, mcqQuestions, cvCtx, jobCtx, uploadRecording, closeInterview, askQuestion]);
+
   const nextQuestion = useCallback(() => {
     resetForNextQuestion();
     setTypedAnswer('');
@@ -465,46 +479,18 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
     if (maybeFireMcq(qIndex)) return;
 
-    const advance = () => {
-      if (qIndex + 1 >= questions.length) {
-        uploadRecording(sessionAnswers, { mcqQuestions, mcqResults, mcqBonusPoints, cvCtx, jobCtx });
-        closeInterview(sessionAnswers, mcqResults, mcqBonusPoints);
-      } else {
-        const next = qIndex + 1;
-        setQIndex(next);
-        askQuestion(next);
-      }
-    };
-
     const lastAnswer = sessionAnswers[sessionAnswers.length - 1];
-    if (lastAnswer) {
-      if (!maybeGoDeeper(lastAnswer)) advance();
-    } else {
-      advance();
-    }
-  }, [qIndex, questions.length, sessionAnswers, askQuestion, q, uploadRecording, mcqQuestions, mcqResults, mcqBonusPoints, maybeFireMcq, closeInterview, maybeGoDeeper, resetForNextQuestion]);
+    if (lastAnswer && maybeGoDeeper(lastAnswer)) return;
+    advanceOrClose(sessionAnswers, mcqResults, mcqBonusPoints);
+  }, [qIndex, sessionAnswers, q, mcqResults, mcqBonusPoints, maybeFireMcq, maybeGoDeeper, resetForNextQuestion, advanceOrClose]);
 
   const resumeAfterMCQ = useCallback((bonusEarned: boolean, selectedIndex: number) => {
     const { newResults, newBonusPoints } = recordMcqResult(qIndex, bonusEarned, selectedIndex);
 
-    const advance = () => {
-      const next = qIndex + 1;
-      if (next >= questions.length) {
-        uploadRecording(sessionAnswers, { mcqQuestions, mcqResults: newResults, mcqBonusPoints: newBonusPoints, cvCtx, jobCtx });
-        closeInterview(sessionAnswers, newResults, newBonusPoints);
-      } else {
-        setQIndex(next);
-        askQuestion(next);
-      }
-    };
-
     const lastAnswer = sessionAnswers[sessionAnswers.length - 1];
-    if (lastAnswer) {
-      if (!maybeGoDeeper(lastAnswer)) advance();
-    } else {
-      advance();
-    }
-  }, [qIndex, questions.length, sessionAnswers, askQuestion, uploadRecording, mcqQuestions, closeInterview, maybeGoDeeper, recordMcqResult]);
+    if (lastAnswer && maybeGoDeeper(lastAnswer)) return;
+    advanceOrClose(sessionAnswers, newResults, newBonusPoints);
+  }, [qIndex, sessionAnswers, recordMcqResult, maybeGoDeeper, advanceOrClose]);
 
   const handlePass = useCallback(() => {
     if (passInProgressRef.current) return;
@@ -519,16 +505,9 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
     if (maybeFireMcq(qIndex)) return;
 
-    const passedAnswers = [...sessionAnswers, passedEntry];
-    if (qIndex + 1 >= questions.length) {
-      uploadRecording(passedAnswers, { mcqQuestions, mcqResults, mcqBonusPoints, cvCtx, jobCtx });
-      closeInterview(passedAnswers, mcqResults, mcqBonusPoints);
-    } else {
-      const next = qIndex + 1;
-      setQIndex(next);
-      askQuestion(next);
-    }
-  }, [q, qIndex, questions.length, sessionAnswers, askQuestion, mcqQuestions, mcqResults, mcqBonusPoints, maybeFireMcq, uploadRecording, closeInterview, recordPassedAnswer, resetForNextQuestion]);
+    // Passing never triggers a Go Deeper follow-up — there's no answer to probe.
+    advanceOrClose([...sessionAnswers, passedEntry], mcqResults, mcqBonusPoints);
+  }, [q, qIndex, sessionAnswers, mcqResults, mcqBonusPoints, maybeFireMcq, recordPassedAnswer, resetForNextQuestion, advanceOrClose]);
 
   // Thin wrapper: phase/avatar-state transitions stay here (orchestrator territory, same as
   // askQuestion/beginInterviewIntro's setPhase calls), scoring itself is useAnswerScoring's job.
