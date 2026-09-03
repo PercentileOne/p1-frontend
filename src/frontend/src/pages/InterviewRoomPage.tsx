@@ -22,6 +22,7 @@ import { useInterviewRecording } from '../hooks/useInterviewRecording';
 import { useAnswerScoring } from '../hooks/useAnswerScoring';
 import { useInterviewerAudio } from '../hooks/useInterviewerAudio';
 import { useMcqBonusRound, type McqGenParams } from '../hooks/useMcqBonusRound';
+import { useGoDeeperFollowUps, GO_DEEPER_LIMITS } from '../hooks/useGoDeeperFollowUps';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -96,25 +97,6 @@ function useTypewriter(text: string, active: boolean, wordsPerMin = 215) {
   return displayed;
 }
 
-// ── Go Deeper — probing follow-ups, scaled by difficulty ─────────────────────
-
-const GO_DEEPER_LIMITS: Record<string, { max: number; chance: number }> = {
-  Standard: { max: 1, chance: 0.15 },
-  Pro: { max: 2, chance: 0.25 },
-  Expert: { max: 3, chance: 0.40 },
-};
-
-const FOLLOWUP_TRANSITIONS = [
-  'Mm, one more thing—',
-  "Okay, good answer, but I was thinking—",
-  "That's helpful — actually, one follow-up on that—",
-  'Just before we move on—',
-];
-
-function pickRandom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function InterviewRoomPage() {
@@ -159,9 +141,6 @@ export default function InterviewRoomPage() {
   // MCQ bonus round generation params — set once Phase 2 hands back a real job spec; see
   // useMcqBonusRound's own doc comment for why this is the "session prep succeeded" signal.
   const [mcqGenParams, setMcqGenParams] = useState<McqGenParams | null>(null);
-
-  // Go Deeper — probabilistic probing follow-ups, capped per session and scaled by difficulty
-  const goDeeperFiredRef = useRef(0);
 
   const passInProgressRef = useRef(false); // prevents double-firing Pass button
 
@@ -279,6 +258,8 @@ export default function InterviewRoomPage() {
     activeMcqQuestion, activeMcqOrdinal,
     maybeFireMcq, recordMcqResult,
   } = useMcqBonusRound({ cancelSpeakRef, chapterMarkersRef, recordingStartTimeRef, mcqGenParams });
+
+  const { goDeeperFiredRef, evaluateGoDeeper } = useGoDeeperFollowUps({ goDeeperEnabled, selectedDifficulty });
 
   const avgScore = runningScores.length > 0
     ? Math.round(runningScores.reduce((s, v) => s + v, 0) / runningScores.length * 100)
@@ -428,51 +409,32 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     }
   }, [askQuestion, qIndex]);
 
-  // Rolls whether to fire a Go Deeper probing follow-up after the answer that was just
-  // scored/coached. scoreWithAI already decided, in the same call, whether this answer
-  // sounded shallow enough to warrant one (score.needsFollowUp/followUpQuestion) — this
-  // just applies the session cap + difficulty-scaled "does it actually fire" roll on top,
-  // so a genuinely vague answer doesn't get probed every single time (keeps it feeling
-  // occasional, not like an interrogation). Splices a synthetic InterviewQuestion into
-  // bgQuestions right after the current index so the entire existing ask/answer/score/coach
-  // pipeline handles it for free — no new phases needed. Returns true if fired (caller
-  // should skip its normal advance-to-next-question logic).
+  // Decides (via useGoDeeperFollowUps) whether to fire a Go Deeper probing follow-up after the
+  // answer that was just scored/coached, then — if it fires — splices the synthetic question
+  // into bgQuestions right after the current index so the entire existing ask/answer/score/coach
+  // pipeline handles it for free, and calls into interviewer-audio to actually ask it. Both the
+  // splice and the interviewer-audio call stay here rather than in the hook, since this is the
+  // one place that already owns bgQuestions and askQuestion/askFollowUpWithHandoff. Returns true
+  // if fired (caller should skip its normal advance-to-next-question logic).
   const maybeGoDeeper = useCallback((lastAnswer: SessionAnswer): boolean => {
-    if (!goDeeperEnabled) return false;
-    if (lastAnswer.question.questionType === 'Follow-up') return false; // never chain a follow-up onto a follow-up
-    if (!lastAnswer.score.needsFollowUp || !lastAnswer.score.followUpQuestion) return false;
-
-    const limits = GO_DEEPER_LIMITS[selectedDifficulty] ?? GO_DEEPER_LIMITS.Standard;
-    if (goDeeperFiredRef.current >= limits.max) return false;
-    if (Math.random() > limits.chance) return false;
-
-    const followUpText = lastAnswer.score.followUpQuestion;
-    goDeeperFiredRef.current += 1;
-    const originalInterviewer: 'hr' | 'technical' = lastAnswer.question.source === 'HR' ? 'hr' : 'technical';
-    const followUpQuestion: InterviewQuestion = {
-      ...lastAnswer.question,
-      questionId: `${lastAnswer.question.questionId}-followup-${goDeeperFiredRef.current}`,
-      questionText: followUpText,
-      questionType: 'Follow-up',
-    };
+    const decision = evaluateGoDeeper(lastAnswer);
+    if (!decision) return false;
 
     const insertIndex = qIndex + 1;
     setBgQuestions(prev => {
       const arr = [...(prev ?? questions)];
-      arr.splice(insertIndex, 0, followUpQuestion);
+      arr.splice(insertIndex, 0, decision.followUpQuestion);
       return arr;
     });
     setQIndex(insertIndex);
 
-    const doHandoff = Math.random() < 0.5;
-    if (doHandoff) {
-      askFollowUpWithHandoff(insertIndex, followUpQuestion, followUpText, originalInterviewer);
+    if (decision.doHandoff) {
+      askFollowUpWithHandoff(insertIndex, decision.followUpQuestion, decision.followUpText, decision.originalInterviewer);
     } else {
-      const transition = pickRandom(FOLLOWUP_TRANSITIONS);
-      askQuestion(insertIndex, `${transition} ${followUpText}`, originalInterviewer, followUpQuestion);
+      askQuestion(insertIndex, `${decision.transition} ${decision.followUpText}`, decision.originalInterviewer, decision.followUpQuestion);
     }
     return true;
-  }, [goDeeperEnabled, selectedDifficulty, qIndex, questions, askQuestion, askFollowUpWithHandoff]);
+  }, [evaluateGoDeeper, qIndex, questions, askQuestion, askFollowUpWithHandoff]);
 
   const closeInterview = useCallback((answers: SessionAnswer[], mcqRes: typeof mcqResults, bonusPts: number) => {
     const name = resolvedPreferredName ? `, ${resolvedPreferredName}` : '';
