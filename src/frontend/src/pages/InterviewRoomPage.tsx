@@ -5,12 +5,11 @@ import { InterviewerAvatar, type AvatarState } from '../components/InterviewerAv
 import { MouthOverlay, MOUTH_POSITIONS, MOUTH_OVERLAY_ENABLED } from '../components/MouthOverlay';
 import { YouCamera } from '../components/YouCamera';
 import { VoiceInput, type TranscriptMeta } from '../components/VoiceInput';
-import type { InterviewQuestion, ScoreResponse } from '../api/explainApi';
+import type { InterviewQuestion } from '../api/explainApi';
 import { speak, elevenLabsConfigured } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
-import { generateCoachingMessage, type CoachingMessage } from '../utils/coachingEngine';
-import { scoreWithAI, coachWithAI, aiScoringConfigured, sessionPrepareClient, generateMikeScriptOnly, generateMCQs, type MCQQuestion } from '../api/aiScoring';
+import { sessionPrepareClient, generateMikeScriptOnly, generateMCQs, type MCQQuestion } from '../api/aiScoring';
 import { ChairSpinner } from '../components/ChairSpinner';
 import CinematicMCQ from '../components/CinematicMCQ';
 import { pickRandomCompany } from '../data/companyBank';
@@ -19,9 +18,9 @@ import { useAuthStore } from '../auth/authStore';
 import { nameGreetingsApi } from '../api/nameGreetingsApi';
 import { FILTER_CSS, FILTER_LABELS, FILTER_PRESETS, type FilterPreset } from '../hooks/useVideoFilter';
 import { buildDemoQuestions } from './interview-room/demoQuestions';
-import { localScore } from './interview-room/localScoring';
 import type { RoomPhase, SessionAnswer } from './interview-room/types';
 import { useInterviewRecording } from '../hooks/useInterviewRecording';
+import { useAnswerScoring } from '../hooks/useAnswerScoring';
 
 // ── Multilingual Sarah intro fallbacks ───────────────────────────────────────
 const SARAH_INTROS: Record<string, string> = {
@@ -262,8 +261,6 @@ export default function InterviewRoomPage() {
   const [goDeeperEnabled, setGoDeeperEnabled] = useState(ctx.goDeeperEnabled ?? false);
   const [highlightRecord, setHighlightRecord] = useState(false);
   const [sessionLanguage, setSessionLanguage] = useState(ctx.selectedLanguage ?? 'en');
-  const [currentScore, setCurrentScore] = useState<ScoreResponse | null>(null);
-  const [sessionAnswers, setSessionAnswers] = useState<SessionAnswer[]>([]);
   const [hrState, setHrState] = useState<AvatarState>('idle');
   const [techState, setTechState] = useState<AvatarState>('idle');
   const [hrAnalyser, setHrAnalyser] = useState<AnalyserNode | null>(null);
@@ -303,13 +300,11 @@ export default function InterviewRoomPage() {
   const handleJamesVideoAnalyser = useCallback((a: AnalyserNode) => setTechAnalyser(a), []);
 
   const [elapsed, setElapsed] = useState(0);
-  const [coachingMessage, setCoachingMessage] = useState<CoachingMessage | null>(null);
   const [paused, setPaused] = useState(false);
   // Fixed at intake — no setter. Questions/scoring/Go Deeper limits are all built around
   // whatever difficulty was chosen before the room ever loaded; there's no legitimate way to
   // change it mid-session, so nothing in this file should be able to either.
   const [selectedDifficulty] = useState<string>(ctx.selectedDifficulty ?? 'Standard');
-  const [runningScores, setRunningScores] = useState<number[]>([]);
   const [audioCheckState, setAudioCheckState] = useState<'idle' | 'playing' | 'done'>('idle');
   const [waitingForSession, setWaitingForSession] = useState(false);
 
@@ -337,6 +332,11 @@ export default function InterviewRoomPage() {
     company: ctx.company,
     candidateName: authUser?.name,
   });
+
+  const {
+    currentScore, sessionAnswers, runningScores, coachingMessage,
+    submitAnswer: scoreAnswer, recordPassedAnswer, resetForNextQuestion,
+  } = useAnswerScoring({ cvCtx, jobCtx, companyKeywords, sessionLanguage, selectedDifficulty });
 
   const avgScore = runningScores.length > 0
     ? Math.round(runningScores.reduce((s, v) => s + v, 0) / runningScores.length * 100)
@@ -795,7 +795,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     // leave 'done' so the answer/coaching panels can't stay mounted and clickable
     // underneath Sarah's goodbye speech.
     setPhase('done');
-    setCoachingMessage(null);
+    resetForNextQuestion();
     setHrState('speaking');
     cancelSpeakRef.current = speak(closingLine, 'hr', () => {
       setHrState('idle');
@@ -807,12 +807,11 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
         },
       });
     }, (a) => setHrAnalyser(a));
-  }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl]);
+  }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl, resetForNextQuestion]);
 
   const nextQuestion = useCallback(() => {
-    setCurrentScore(null);
+    resetForNextQuestion();
     setTypedAnswer('');
-    setCoachingMessage(null);
     logFlowEvent('QUESTION_COMPLETED', { questionId: q?.questionId, index: qIndex });
 
     // MCQ trigger — fires at Q3 (index 2) and Q7 (index 6)
@@ -854,7 +853,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     } else {
       advance();
     }
-  }, [qIndex, questions.length, sessionAnswers, askQuestion, q, uploadRecording, mcqQuestions, mcqResults, mcqBonusPoints, mcqActive, closeInterview, maybeGoDeeper]);
+  }, [qIndex, questions.length, sessionAnswers, askQuestion, q, uploadRecording, mcqQuestions, mcqResults, mcqBonusPoints, mcqActive, closeInterview, maybeGoDeeper, resetForNextQuestion]);
 
   const resumeAfterMCQ = useCallback((bonusEarned: boolean, selectedIndex: number) => {
     mcqFiringRef.current = false;
@@ -889,14 +888,9 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setTimeout(() => { passInProgressRef.current = false; }, 800);
     const thinkTimeMs = thinkStartRef.current > 0 ? Date.now() - thinkStartRef.current : undefined;
     thinkStartRef.current = 0;
-    const passScore: ScoreResponse = {
-      clarity: 0, relevance: 0, depth: 0, confidence: 0, overallScore: 0,
-      feedback: [{ dimension: 'overall', message: 'Question passed — no answer given.', severity: 'high' }],
-      suggestions: ['Attempt all questions in a real interview.'],
-    };
-    setRunningScores(prev => [...prev, 0]);
-    setSessionAnswers(prev => [...prev, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }]);
-    setCurrentScore(null); setCoachingMessage(null); setTypedAnswer('');
+    const passedEntry = recordPassedAnswer(q, thinkTimeMs);
+    resetForNextQuestion();
+    setTypedAnswer('');
     logFlowEvent('QUESTION_COMPLETED', { questionId: q?.questionId, index: qIndex, passed: true });
 
     // MCQ trigger — same slots as nextQuestion
@@ -921,7 +915,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       return;
     }
 
-    const passedAnswers = [...sessionAnswers, { question: q, answerText: '', score: passScore, answeredByVoice: false, thinkTimeMs }];
+    const passedAnswers = [...sessionAnswers, passedEntry];
     if (qIndex + 1 >= questions.length) {
       uploadRecording(passedAnswers, { mcqQuestions, mcqResults, mcqBonusPoints, cvCtx, jobCtx });
       closeInterview(passedAnswers, mcqResults, mcqBonusPoints);
@@ -930,8 +924,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       setQIndex(next);
       askQuestion(next);
     }
-  }, [q, qIndex, questions.length, sessionAnswers, askQuestion, mcqQuestions, mcqResults, mcqBonusPoints, mcqActive, uploadRecording, closeInterview]);
+  }, [q, qIndex, questions.length, sessionAnswers, askQuestion, mcqQuestions, mcqResults, mcqBonusPoints, mcqActive, uploadRecording, closeInterview, recordPassedAnswer, resetForNextQuestion]);
 
+  // Thin wrapper: phase/avatar-state transitions stay here (orchestrator territory, same as
+  // askQuestion/beginInterviewIntro's setPhase calls), scoring itself is useAnswerScoring's job.
   const submitAnswer = useCallback(async (text: string, meta?: TranscriptMeta, byVoice = false) => {
     if (!text.trim()) return;
     const thinkTimeMs = thinkStartRef.current > 0 ? Date.now() - thinkStartRef.current : undefined;
@@ -943,33 +939,11 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     const goDeeperLimits = GO_DEEPER_LIMITS[selectedDifficulty] ?? GO_DEEPER_LIMITS.Standard;
     const goDeeperEligible = goDeeperEnabled && q?.questionType !== 'Follow-up' && goDeeperFiredRef.current < goDeeperLimits.max;
 
-    let score: ScoreResponse;
-    try {
-      score = aiScoringConfigured
-        ? await scoreWithAI(q, text, cvCtx, jobCtx, { enabled: goDeeperEligible, difficulty: selectedDifficulty }, sessionLanguage)
-        : localScore(q, text, companyKeywords);
-    } catch {
-      score = localScore(q, text, companyKeywords);
-    }
+    await scoreAnswer(q, text, { meta, byVoice, thinkTimeMs, goDeeperEligible });
 
-    setCurrentScore(score);
-    setRunningScores(prev => [...prev, score.overallScore]);
-    setSessionAnswers(prev => [...prev, { question: q, answerText: text, meta, score, answeredByVoice: byVoice, thinkTimeMs }]);
     setHrState('idle'); setTechState('idle');
-
-    let coaching: CoachingMessage;
-    try {
-      coaching = aiScoringConfigured
-        ? await coachWithAI(q, text, score, cvCtx, jobCtx, thinkTimeMs, sessionLanguage)
-        : generateCoachingMessage(score, q, text, cvCtx, jobCtx);
-    } catch (err) {
-      console.error('[InterviewRoom] AI coaching failed — using template fallback:', err);
-      coaching = generateCoachingMessage(score, q, text, cvCtx, jobCtx);
-    }
-
-    setCoachingMessage(coaching);
     setPhase('coaching');
-  }, [q, qIndex, cvCtx, jobCtx, companyKeywords, goDeeperEnabled, selectedDifficulty, sessionLanguage]);
+  }, [q, scoreAnswer, goDeeperEnabled, selectedDifficulty]);
 
   const displayedQuestion = useTypewriter(q?.questionText ?? '', phase === 'asking');
   const coachingCue = useCoachingCue(phase === 'answering');
