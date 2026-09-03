@@ -1274,7 +1274,7 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
         }).catch(() => { /* non-critical */ });
       }
     } catch (e) {
-      setError('Course generation failed — please try again. Check your OpenAI balance if the error persists.');
+      setError('Course generation failed — please try again in a moment.');
       setGenerating(false);
     }
   }

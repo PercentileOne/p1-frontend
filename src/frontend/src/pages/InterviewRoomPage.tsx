@@ -906,10 +906,17 @@ export default function InterviewRoomPage() {
   // Always hold a ref to the latest startMike so session-prep waiters call the right version
   const startMikeRef = useRef<() => void>(() => {});
 
+  // True for the (usually brief, occasionally not) window between Mike finishing his line
+  // and Sarah/James actually appearing — Mike's video/photo has nothing of its own to show
+  // for this gap (his clip just freezes on its last frame, mouth mid-word), so this drives a
+  // real "thinking" indicator instead of leaving the screen looking frozen/broken.
+  const [awaitingHandoff, setAwaitingHandoff] = useState(false);
+
   // Fires once Mike's intro is over, whichever path produced that (real TTS via speak(),
   // or the pre-rendered English video's onEnded below) — same completion logic either way.
   const handleMikeIntroDone = useCallback(() => {
     cancelSpeakRef.current = null;
+    setAwaitingHandoff(true);
     logFlowEvent('MIKE_INTRO_COMPLETED', {});
     // Give Sarah/James's real AI intros (with the candidate's name) a chance to land even
     // if Phase 2 is still in flight — same wait pattern as Mike's own sessionReadyRef gate.
@@ -1720,6 +1727,25 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
                       style={{ position: 'absolute', inset: -8, borderRadius: '20px', border: '2px solid var(--blue)', pointerEvents: 'none' }}
                     />
+                    {/* Mike's clip has nothing of its own to show once he's finished and we're
+                        still waiting on Sarah/James — without this the frame just freezes on
+                        its last frame (mouth mid-word), which reads as broken rather than
+                        "loading". This scrim makes the wait visibly intentional. */}
+                    <AnimatePresence>
+                      {awaitingHandoff && (
+                        <motion.div
+                          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                          style={{ position: 'absolute', inset: 0, background: 'rgba(7,11,20,0.72)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}
+                        >
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                            style={{ width: 28, height: 28, borderRadius: '50%', border: '2.5px solid rgba(79,142,247,0.25)', borderTopColor: 'var(--blue)' }}
+                          />
+                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Bringing in Sarah &amp; James…</div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                   <div style={{ fontSize: '21px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Mike</div>
                   <div style={{ fontSize: '12px', color: 'var(--text-3)', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Recruitment Consultant</div>
