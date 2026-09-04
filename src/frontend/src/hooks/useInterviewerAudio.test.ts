@@ -117,6 +117,27 @@ describe('useInterviewerAudio — stopAllInterviewerAudio', () => {
     expect(result.current.jamesGreetingVideoActive).toBe(false);
   });
 
+  it("silences James's ambient idle loop (active alongside Sarah's intro video), even with a live TTS cancel fn also seeded", async () => {
+    const { result } = renderHook(() => useInterviewerAudio(baseParams()));
+
+    act(() => { result.current.beginInterviewIntroRef.current(); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(600); });
+    // Both start together — James's ambient loop is meant to run for as long as Sarah's
+    // intro video does, not just after it.
+    expect(result.current.sarahIntroVideoActive).toBe(true);
+    expect(result.current.jamesAmbientVideoActive).toBe(true);
+
+    const cancelFn = vi.fn();
+    act(() => { result.current.cancelSpeakRef.current = cancelFn; });
+
+    act(() => { result.current.stopAllInterviewerAudio(); });
+
+    expect(cancelFn).toHaveBeenCalledTimes(1);
+    expect(result.current.cancelSpeakRef.current).toBeNull();
+    expect(result.current.sarahIntroVideoActive).toBe(false);
+    expect(result.current.jamesAmbientVideoActive).toBe(false);
+  });
+
   it("silences James's generic intro video (no Name Bank hit), even with a live TTS cancel fn also seeded", async () => {
     vi.mocked(nameGreetingsApi.get).mockResolvedValue(null); // no personalised clip for this candidate
     const { result } = renderHook(() => useInterviewerAudio(baseParams()));

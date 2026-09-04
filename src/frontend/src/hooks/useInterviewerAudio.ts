@@ -76,6 +76,10 @@ export interface UseInterviewerAudioReturn {
    * Sarah's/Mike's own. Only ever active in the gap Name Bank's personalised clip would
    * otherwise leave James on the static photo. */
   jamesIntroVideoActive: boolean;
+  /** English only — james-idle-v1.mp4, a silent looping "listening" clip that plays under
+   * James's slot for as long as Sarah's own intro video is playing (see the state's own
+   * declaration for why it's tied 1:1 to sarahIntroVideoActive). */
+  jamesAmbientVideoActive: boolean;
   awaitingHandoff: boolean;
   /** Typed to accept null (not just InterviewerAvatar's own AnalyserNode-only prop shape) so
    * the same handler can also be passed straight to speak()'s onAnalyser callback, which can
@@ -244,6 +248,15 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     jamesIntroDoneRef.current();
   }, []);
 
+  // English only: james-idle-v1.mp4 — a silent, looping "listening" clip (nods, glances)
+  // that plays under James's static slot for as long as Sarah's own intro video is playing,
+  // so he doesn't just sit frozen on his photo while she talks. Turned on/off in lockstep
+  // with sarahIntroVideoActive below — never active at the same time as either of James's
+  // own speaking clips (Name Bank greeting, his generic intro), which take over the instant
+  // Sarah's video ends. No onEnded/done-ref needed: it's purely decorative, doesn't drive
+  // any phase transition, and native `loop` means the video's 'ended' event never fires.
+  const [jamesAmbientVideoActive, setJamesAmbientVideoActive] = useState(false);
+
   // Single place that knows about every audio source this room can have active at once —
   // live TTS (cancelSpeakRef) AND every pre-rendered/personalised video clip (Sarah's intro,
   // James's Name Bank greeting, James's generic intro), which each carry their own embedded
@@ -259,6 +272,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     setSarahIntroVideoActive(false);
     setJamesGreetingVideoActive(false);
     setJamesIntroVideoActive(false);
+    setJamesAmbientVideoActive(false);
   }, []);
 
   const beginInterviewIntro = useCallback(() => {
@@ -298,6 +312,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
         setHighlightRecord(false);
         setHrState('idle');
         setSarahIntroVideoActive(false);
+        setJamesAmbientVideoActive(false);
         setTechState('speaking');
 
         const finishJamesIntro = () => {
@@ -325,6 +340,10 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
       if (useSarahVideo) {
         sarahIntroDoneRef.current = afterSarahIntro;
         setSarahIntroVideoActive(true);
+        // James's silent idle loop starts in the same tick as Sarah's video — both are
+        // fixed-length clips starting together, so whatever motion James's clip was
+        // authored with lines up naturally against Sarah's own timing, no runtime cue needed.
+        setJamesAmbientVideoActive(true);
       } else {
         cancelSpeakRef.current = speak(sarahText, 'hr', afterSarahIntro, (a) => setHrAnalyser(a));
       }
@@ -435,7 +454,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
 
   return {
     hrState, techState, hrAnalyser, techAnalyser,
-    sarahIntroVideoActive, jamesGreetingVideoActive, jamesGreetingUrl, jamesIntroVideoActive, awaitingHandoff,
+    sarahIntroVideoActive, jamesGreetingVideoActive, jamesGreetingUrl, jamesIntroVideoActive, jamesAmbientVideoActive, awaitingHandoff,
     handleSarahVideoAnalyser, handleJamesVideoAnalyser,
     handleSarahIntroVideoEnded, handleJamesGreetingVideoEnded, handleJamesIntroVideoEnded,
     stopAllInterviewerAudio,

@@ -14,6 +14,12 @@ interface Props {
   specialistTitle?: string;
   analyserNode?: AnalyserNode | null;
   onVideoEnded?: () => void;
+  // Ambient/idle clips (e.g. James looking "alive" while Sarah talks) loop silently for as
+  // long as the caller keeps videoUrl pointed at them — unlike the speaking clips above,
+  // there's no spoken audio to carry and no "done" moment to advance the interview on, so
+  // onVideoEnded is irrelevant here (loop means the native 'ended' event never even fires).
+  loop?: boolean;
+  muted?: boolean;
   // Fired once, when a real <video> starts playing, with a live AnalyserNode tapped off its
   // OWN audio track — lets the caller feed WaveformBars from the video's real voice instead
   // of whatever analyserNode it was passed (which reflects a separate TTS call that a
@@ -138,7 +144,7 @@ export function WaveformBars({ active, color, analyserNode }: {
   );
 }
 
-export function InterviewerAvatar({ role, state, active, videoUrl, specialistTitle, analyserNode, onVideoEnded, onVideoAnalyser }: Props) {
+export function InterviewerAvatar({ role, state, active, videoUrl, specialistTitle, analyserNode, onVideoEnded, onVideoAnalyser, loop, muted }: Props) {
   const profile = {
     ...PROFILES[role],
     title: role === 'technical' ? (specialistTitle ?? PROFILES.technical.title) : PROFILES.hr.title,
@@ -269,6 +275,8 @@ export function InterviewerAvatar({ role, state, active, videoUrl, specialistTit
               src={videoUrl}
               crossOrigin="anonymous"
               autoPlay playsInline
+              loop={loop}
+              muted={muted}
               onEnded={onVideoEnded}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
