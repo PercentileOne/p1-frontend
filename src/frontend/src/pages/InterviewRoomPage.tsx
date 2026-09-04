@@ -202,10 +202,13 @@ export default function InterviewRoomPage() {
   // change it mid-session, so nothing in this file should be able to either.
   const [selectedDifficulty] = useState<string>(ctx.selectedDifficulty ?? 'Standard');
   const [audioCheckState, setAudioCheckState] = useState<'idle' | 'playing' | 'done'>('idle');
-  const [waitingForSession, setWaitingForSession] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pausedPhaseRef = useRef<RoomPhase>('answering');
+  // Mike's English pre-rendered video has no other stop mechanism — unlike Sarah/James's
+  // clips, it isn't routed through InterviewerAvatar's videoUrl prop, so Skip Intro needs a
+  // direct ref to actually pause it rather than just changing state around it.
+  const mikeVideoRef = useRef<HTMLVideoElement>(null);
 
   const q = questions[qIndex];
   const isHrQuestion = q?.source === 'HR';
@@ -238,7 +241,6 @@ export default function InterviewRoomPage() {
     handleSarahIntroVideoEnded, handleJamesGreetingVideoEnded, handleJamesIntroVideoEnded,
     stopAllInterviewerAudio,
     askQuestion, repeatQuestion, testAudio, startMike, handleMikeIntroDone,
-    beginInterviewIntroRef,
     askFollowUpWithHandoff,
     cancelSpeakRef, thinkStartRef, onDoneRef,
     setHrState, setTechState,
@@ -869,6 +871,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', margin: '0 auto 20px', borderRadius: '16px', overflow: 'hidden', background: 'var(--bg3)', border: '3px solid var(--blue)' }}>
                     {sessionLanguage === 'en' ? (
                       <video
+                        ref={mikeVideoRef}
                         src="/images/mike-intro-v1.mp4"
                         autoPlay playsInline
                         onEnded={handleMikeIntroDone}
@@ -952,19 +955,16 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
               <button
                 onClick={() => {
+                  // Same path as Mike finishing naturally (handleMikeIntroDone) — stops
+                  // whichever audio source is actually active (live TTS via
+                  // stopAllInterviewerAudio, or the English video directly, since that one
+                  // isn't routed through InterviewerAvatar and has no other stop mechanism),
+                  // then reuses the exact same awaitingHandoff scrim + phase2-ready-or-wait
+                  // gate Mike's own completion uses — one source of truth for "is Sarah/James's
+                  // content ready yet", instead of this button polling a second, different flag.
                   stopAllInterviewerAudio();
-                  if (bgLoadedRef.current) {
-                    beginInterviewIntroRef.current();
-                  } else {
-                    setWaitingForSession(true);
-                    const poll = setInterval(() => {
-                      if (bgLoadedRef.current) {
-                        clearInterval(poll);
-                        setWaitingForSession(false);
-                        beginInterviewIntroRef.current();
-                      }
-                    }, 300);
-                  }
+                  mikeVideoRef.current?.pause();
+                  handleMikeIntroDone();
                 }}
                 style={{
                   background: 'var(--bg3)', border: '1px solid var(--border)',
@@ -978,13 +978,6 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               >
                 Skip Intro →
               </button>
-
-              {/* Chair spinner — shown only if user skips before Phase 2 finishes */}
-              {waitingForSession && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginTop: '8px' }}>
-                  <ChairSpinner label="Preparing your interview…" size={80} />
-                </motion.div>
-              )}
             </motion.div>
           )}
 
