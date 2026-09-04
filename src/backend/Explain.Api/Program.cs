@@ -23,6 +23,14 @@ builder.Services.Configure<FormOptions>(o => { o.MultipartBodyLengthLimit = MaxU
 
 // ── Services ──────────────────────────────────────────────────────────────────
 
+// The App Service already had APPLICATIONINSIGHTS_CONNECTION_STRING and the
+// ApplicationInsightsAgent_EXTENSION_VERSION "codeless" auto-instrumentation setting
+// configured — but that approach is unreliable for .NET Core apps (Microsoft's own
+// recommendation is the SDK below instead), and confirmed live 2026-09-04 it was producing
+// zero telemetry despite both settings being present. AddApplicationInsightsTelemetry()
+// picks up the connection string from that same env var automatically — no extra config.
+builder.Services.AddApplicationInsightsTelemetry();
+
 builder.Services.AddSingleton<CosmosService>();
 builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddSingleton<CvFileStorageService>();
