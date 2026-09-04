@@ -242,7 +242,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime
 // see docs/specs/multi-model-strategy.html for why. Every caller (aiScoring.ts across all
 // portals) still sends a hardcoded "gpt-4o-mini" in the request body; that's rewritten to
 // the router's deployment name below so nothing upstream needed to change.
-app.MapPost("/api/ai-proxy", async (HttpRequest req, HttpResponse res, IHttpClientFactory factory, IConfiguration config) =>
+app.MapPost("/api/ai-proxy", async (HttpRequest req, HttpResponse res, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
 {
     var apiKey = config["ModelRouter:ApiKey"] ?? throw new InvalidOperationException("ModelRouter:ApiKey not configured");
     var endpoint = config["ModelRouter:Endpoint"] ?? throw new InvalidOperationException("ModelRouter:Endpoint not configured");
@@ -262,14 +262,33 @@ app.MapPost("/api/ai-proxy", async (HttpRequest req, HttpResponse res, IHttpClie
         forwardBody = body; // malformed body — let the provider's own error surface rather than masking it
     }
 
-    var client = factory.CreateClient();
-    using var msg = new HttpRequestMessage(HttpMethod.Post, $"{endpoint.TrimEnd('/')}/openai/v1/chat/completions");
-    msg.Headers.Add("api-key", apiKey);
-    msg.Content = new StringContent(forwardBody, System.Text.Encoding.UTF8, "application/json");
-    using var resp = await client.SendAsync(msg, HttpCompletionOption.ResponseHeadersRead);
-    res.StatusCode = (int)resp.StatusCode;
-    res.ContentType = resp.Content.Headers.ContentType?.ToString() ?? "application/json";
-    await resp.Content.CopyToAsync(res.Body);
+    // Everything from here on used to have zero exception handling: a transient failure
+    // reaching the Model Router (timeout, DNS blip, connection reset) threw an unhandled
+    // exception that bypassed the CORS middleware entirely, so the browser saw a bare 500
+    // with no Access-Control-Allow-Origin header and reported it as "blocked by CORS policy"
+    // — a genuine downstream failure masquerading as a CORS misconfiguration, confirmed live
+    // 2026-09-04 (intermittent: back-to-back identical requests got 500, then 200). Wrapping
+    // this in try/catch means a real failure still surfaces as a real, CORS-header-intact
+    // error the frontend's own retry logic can actually see and act on, instead of a
+    // misleading network-level failure with no status code at all.
+    try
+    {
+        var client = factory.CreateClient();
+        using var msg = new HttpRequestMessage(HttpMethod.Post, $"{endpoint.TrimEnd('/')}/openai/v1/chat/completions");
+        msg.Headers.Add("api-key", apiKey);
+        msg.Content = new StringContent(forwardBody, System.Text.Encoding.UTF8, "application/json");
+        using var resp = await client.SendAsync(msg, HttpCompletionOption.ResponseHeadersRead);
+        res.StatusCode = (int)resp.StatusCode;
+        res.ContentType = resp.Content.Headers.ContentType?.ToString() ?? "application/json";
+        await resp.Content.CopyToAsync(res.Body);
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "ai-proxy: Model Router call failed");
+        res.StatusCode = StatusCodes.Status502BadGateway;
+        res.ContentType = "application/json";
+        await res.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new { error = "Model Router request failed", detail = ex.Message }));
+    }
 }).AllowAnonymous();
 
 // ── Whisper transcription proxy — raw audio body in, { text } out ─────────────

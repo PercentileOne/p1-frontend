@@ -24,7 +24,12 @@ async function chatJSON<T>(systemPrompt: string, userPrompt: string, temperature
     ],
   });
 
-  // Retry up to 3 times on 429
+  // Retry up to 3 times on 429 (rate limit — backs off per Retry-After), and up to 2 times on
+  // 502/503/504 (the backend's ai-proxy endpoint returns 502 for a transient failure reaching
+  // the Model Router — a timeout, DNS blip, connection reset — confirmed live 2026-09-04 as
+  // genuinely intermittent: back-to-back identical requests got one failure then one success).
+  // Short, fixed backoff here since these aren't rate-limit related — no Retry-After header to
+  // honour, and the failure mode clears on its own within a couple of seconds in practice.
   for (let attempt = 0; attempt <= 3; attempt++) {
     const res = await fetch(`${API_BASE}/api/ai-proxy`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
     if (res.status === 429 && attempt < 3) {
@@ -33,11 +38,15 @@ async function chatJSON<T>(systemPrompt: string, userPrompt: string, temperature
       await new Promise(r => setTimeout(r, wait));
       continue;
     }
+    if ([502, 503, 504].includes(res.status) && attempt < 2) {
+      await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+      continue;
+    }
     if (!res.ok) throw new Error(`AI proxy error ${res.status}`);
     const data = await res.json() as { choices: { message: { content: string } }[] };
     return JSON.parse(data.choices[0].message.content) as T;
   }
-  throw new Error('OpenAI rate limited after retries');
+  throw new Error('AI proxy unavailable after retries');
 }
 
 // ── CV Parsing ────────────────────────────────────────────────────────────────
