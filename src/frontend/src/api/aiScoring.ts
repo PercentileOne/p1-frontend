@@ -1,9 +1,10 @@
-// Real AI scoring and coaching via GPT-4o.
-// Uses the same VITE_OPENAI_API_KEY already configured for Whisper STT.
+// Real AI scoring and coaching via GPT-4o, proxied through the .NET backend's
+// /api/ai-proxy (Azure AI Foundry Model Router) — no client-side key involved.
 
 import type { ScoreResponse, InterviewQuestion } from './explainApi';
 import { buildCVContext, type CVContext, type CVExperience, type JobSpecContext } from '../utils/contextBuilder';
 import type { CoachingMessage } from '../utils/coachingEngine';
+import { logFlowEvent } from './flowLogger';
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 const MODEL = 'gpt-4o-mini';
@@ -914,9 +915,16 @@ IMPORTANT: The two MCQ questions and ALL interview questions MUST be completely 
   const result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
   if (result.questions?.length > totalQuestions) result.questions = result.questions.slice(0, totalQuestions);
 
-  const shortfall = totalQuestions - (result.questions?.length ?? 0);
+  // Logged unconditionally (not just on shortfall) so this doubles as the denominator —
+  // count QUESTION_COUNT_FIRST_ATTEMPT events with shortfall:0 against total sessions to get
+  // a real "how often did the first call get the exact count right" rate, not just a tally of
+  // failures with no base to compare it against.
+  const firstAttemptCount = result.questions?.length ?? 0;
+  const shortfall = totalQuestions - firstAttemptCount;
+  logFlowEvent('QUESTION_COUNT_FIRST_ATTEMPT', { requested: totalQuestions, received: firstAttemptCount, shortfall: Math.max(shortfall, 0) });
+
   if (shortfall > 0) {
-    console.warn(`[Explain AI] Session prep returned ${result.questions?.length ?? 0} questions instead of ${totalQuestions} — topping up ${shortfall} more directly.`);
+    console.warn(`[Explain AI] Session prep returned ${firstAttemptCount} questions instead of ${totalQuestions} — topping up ${shortfall} more directly.`);
     try {
       const existingTexts = (result.questions ?? []).map(q => `- ${q.questionText}`).join('\n');
       const topUpPrompt = `Generate exactly ${shortfall} more interview question(s) for the same role, continuing this session (do not repeat any theme from the list below).
@@ -934,8 +942,21 @@ Return this exact JSON:
       if (topUp.questions?.length) {
         result.questions = [...(result.questions ?? []), ...topUp.questions].slice(0, totalQuestions);
       }
+      logFlowEvent('QUESTION_COUNT_TOPUP_RESULT', {
+        requested: totalQuestions,
+        shortfall,
+        topUpReceived: topUp.questions?.length ?? 0,
+        finalCount: result.questions?.length ?? 0,
+        fullyResolved: (result.questions?.length ?? 0) >= totalQuestions,
+      });
     } catch (err) {
       console.error('[Explain AI] Question top-up failed — session will run short:', err);
+      logFlowEvent('QUESTION_COUNT_TOPUP_FAILED', {
+        requested: totalQuestions,
+        shortfall,
+        finalCount: firstAttemptCount,
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 
