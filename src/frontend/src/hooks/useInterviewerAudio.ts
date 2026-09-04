@@ -80,6 +80,12 @@ export interface UseInterviewerAudioReturn {
    * James's slot for as long as Sarah's own intro video is playing (see the state's own
    * declaration for why it's tied 1:1 to sarahIntroVideoActive). */
   jamesAmbientVideoActive: boolean;
+  /** sarah-idle-v1.mp4 — a silent looping "listening" clip that plays under Sarah's slot for
+   * as long as James is actively speaking a question (live TTS, any language — unlike the
+   * other video clips this isn't English-gated, since there's no spoken content to it, just
+   * nodding/glancing, so there's no language for it to be wrong in). See the state's own
+   * declaration for why it's a plain derived value rather than its own useState. */
+  sarahAmbientVideoActive: boolean;
   awaitingHandoff: boolean;
   /** Typed to accept null (not just InterviewerAvatar's own AnalyserNode-only prop shape) so
    * the same handler can also be passed straight to speak()'s onAnalyser callback, which can
@@ -137,6 +143,16 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
   const [techState, setTechState] = useState<AvatarState>('idle');
   const [hrAnalyser, setHrAnalyser] = useState<AnalyserNode | null>(null);
   const [techAnalyser, setTechAnalyser] = useState<AnalyserNode | null>(null);
+
+  // English only: sarah-idle-v1.mp4 — a silent, looping "listening" clip (nods, glances)
+  // that plays under Sarah's static slot for as long as James is actively speaking. Unlike
+  // James's own ambient clip above (tied to a fixed-length video's start/end), this is a
+  // pure derivation of state that already toggles correctly everywhere James speaks a
+  // question (askQuestion, askFollowUpWithHandoff, Go Deeper) — no separate on/off wiring
+  // needed, and no entry in stopAllInterviewerAudio either, since there's nothing to "stop":
+  // the moment hrState/techState change away from this combination (candidate's turn to
+  // answer, question over, interview paused/skipped, whatever), this naturally goes false.
+  const sarahAmbientVideoActive = hrState === 'listening' && techState === 'speaking';
   // Stable reference — InterviewerAvatar's video-analyser effect depends on this prop, and
   // setHrAnalyser itself is already stable (React guarantees state setters never change), so
   // wrapping it here (rather than passing an inline arrow at the JSX call site) stops that
@@ -454,7 +470,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
 
   return {
     hrState, techState, hrAnalyser, techAnalyser,
-    sarahIntroVideoActive, jamesGreetingVideoActive, jamesGreetingUrl, jamesIntroVideoActive, jamesAmbientVideoActive, awaitingHandoff,
+    sarahIntroVideoActive, jamesGreetingVideoActive, jamesGreetingUrl, jamesIntroVideoActive, jamesAmbientVideoActive, sarahAmbientVideoActive, awaitingHandoff,
     handleSarahVideoAnalyser, handleJamesVideoAnalyser,
     handleSarahIntroVideoEnded, handleJamesGreetingVideoEnded, handleJamesIntroVideoEnded,
     stopAllInterviewerAudio,

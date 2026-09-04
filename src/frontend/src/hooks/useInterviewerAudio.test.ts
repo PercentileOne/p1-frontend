@@ -17,6 +17,7 @@ vi.mock('../api/nameGreetingsApi', () => ({
 vi.mock('../api/flowLogger', () => ({ logFlowEvent: vi.fn() }));
 
 import { nameGreetingsApi } from '../api/nameGreetingsApi';
+import { speak } from '../api/ttsApi';
 
 const mockQuestions: InterviewQuestion[] = [
   {
@@ -28,6 +29,11 @@ const mockQuestions: InterviewQuestion[] = [
     source: 'HR',
     competencyTags: [],
   },
+];
+
+const mixedQuestions: InterviewQuestion[] = [
+  { questionId: 'hr1', questionText: 'HR question', modelAnswer: '', questionType: 'Competency', difficulty: 'Medium', source: 'HR', competencyTags: [] },
+  { questionId: 'role1', questionText: 'Technical question', modelAnswer: '', questionType: 'Competency', difficulty: 'Medium', source: 'Role', competencyTags: [] },
 ];
 
 function baseParams(overrides: Partial<UseInterviewerAudioParams> = {}): UseInterviewerAudioParams {
@@ -161,5 +167,31 @@ describe('useInterviewerAudio — stopAllInterviewerAudio', () => {
     expect(cancelFn).toHaveBeenCalledTimes(1);
     expect(result.current.cancelSpeakRef.current).toBeNull();
     expect(result.current.jamesIntroVideoActive).toBe(false);
+  });
+});
+
+describe('useInterviewerAudio — sarahAmbientVideoActive', () => {
+  it('is true only while James is actively asking a question, not while Sarah asks or the candidate answers', () => {
+    const { result } = renderHook(() => useInterviewerAudio(baseParams({ questions: mixedQuestions })));
+
+    expect(result.current.sarahAmbientVideoActive).toBe(false);
+
+    // Sarah asks the HR question — James is listening, not the other way round.
+    act(() => { result.current.askQuestion(0); });
+    expect(result.current.sarahAmbientVideoActive).toBe(false);
+
+    // Sarah's line finishes — phase moves to answering, both idle.
+    const sarahOnDone = vi.mocked(speak).mock.calls[0][2];
+    act(() => { sarahOnDone(); });
+    expect(result.current.sarahAmbientVideoActive).toBe(false);
+
+    // James asks the technical question — now Sarah should be "listening".
+    act(() => { result.current.askQuestion(1); });
+    expect(result.current.sarahAmbientVideoActive).toBe(true);
+
+    // James's line finishes — candidate's turn to answer, both idle again.
+    const jamesOnDone = vi.mocked(speak).mock.calls[1][2];
+    act(() => { jamesOnDone(); });
+    expect(result.current.sarahAmbientVideoActive).toBe(false);
   });
 });

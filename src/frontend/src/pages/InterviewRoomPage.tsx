@@ -233,7 +233,7 @@ export default function InterviewRoomPage() {
 
   const {
     hrState, techState, hrAnalyser, techAnalyser,
-    sarahIntroVideoActive, jamesGreetingVideoActive, jamesGreetingUrl, jamesIntroVideoActive, jamesAmbientVideoActive, awaitingHandoff,
+    sarahIntroVideoActive, jamesGreetingVideoActive, jamesGreetingUrl, jamesIntroVideoActive, jamesAmbientVideoActive, sarahAmbientVideoActive, awaitingHandoff,
     handleSarahVideoAnalyser, handleJamesVideoAnalyser,
     handleSarahIntroVideoEnded, handleJamesGreetingVideoEnded, handleJamesIntroVideoEnded,
     stopAllInterviewerAudio,
@@ -739,9 +739,11 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
             >
               <InterviewerAvatar
                 role="hr" state={hrState} active={hrState === 'speaking'} analyserNode={hrAnalyser}
-                videoUrl={sarahIntroVideoActive ? '/images/sarah-intro-v1.mp4' : null}
+                videoUrl={sarahIntroVideoActive ? '/images/sarah-intro-v1.mp4' : sarahAmbientVideoActive ? '/images/sarah-idle-v1.mp4' : null}
                 onVideoEnded={sarahIntroVideoActive ? handleSarahIntroVideoEnded : () => onDoneRef.current?.()}
-                onVideoAnalyser={handleSarahVideoAnalyser}
+                onVideoAnalyser={sarahAmbientVideoActive ? undefined : handleSarahVideoAnalyser}
+                loop={sarahAmbientVideoActive}
+                muted={sarahAmbientVideoActive}
               />
               <InterviewerAvatar
                 role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} analyserNode={techAnalyser}
