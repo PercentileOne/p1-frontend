@@ -37,7 +37,7 @@ const PROFILES = {
     name: 'James Jacobs',
     title: 'Hiring Manager',
     initials: 'JJ',
-    photo: '/images/james.png',
+    photo: '/images/james.jpg',
     gradient: 'linear-gradient(135deg, #1B3A6B 0%, #2563eb 100%)',
     ring: '#4F8EF7',
     barColor: '#4F8EF7',

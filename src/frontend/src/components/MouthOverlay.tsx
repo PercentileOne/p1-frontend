@@ -164,6 +164,6 @@ export function MouthOverlay({
 // position/size differ per profile.
 export const MOUTH_POSITIONS = {
   hr:        { left: '50.97%', top: '30%',    width: 22, height: 14 }, // sarah.jpg, 448×300 crop — locked in via live pixel-by-pixel confirmation
-  technical: { left: '50%',    top: '39%',    width: 26, height: 16 }, // james.png, 448×300 crop
+  technical: { left: '50%',    top: '39%',    width: 26, height: 16 }, // james.jpg, tuned against the old crop — MOUTH_OVERLAY_ENABLED is false, so unused for now; re-check position if it's ever re-enabled
   mike:      { left: '52.51%', top: '42.44%', width: 18, height: 11 }, // mike.png, 180×180 circle
 } as const;

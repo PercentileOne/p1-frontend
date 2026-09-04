@@ -445,7 +445,7 @@ export default function ProductHome() {
                   <div className="ph-irm-tile-name"><strong>Sarah Mitchell</strong><span>HR Director</span></div>
                 </div>
                 <div className="ph-irm-tile ph-irm-tile-james">
-                  <img src="/images/james.png" alt="James Okafor" />
+                  <img src="/images/james.jpg" alt="James Okafor" />
                   <div className="ph-irm-tile-vignette" />
                   <div className="ph-irm-tile-status">Ready</div>
                   <div className="ph-irm-tile-name"><strong>James Okafor</strong><span>Hiring Manager</span></div>
