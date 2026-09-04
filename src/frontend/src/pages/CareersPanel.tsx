@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { type Career, type SalaryRegion, type WorkforceRegion, searchCareers, getCategories, getCareersByCategory, FALLBACK_CATEGORIES, humanizeList } from '../api/careersApi';
+import { type Career, type SalaryRegion, type ContractRateRegion, type WorkforceRegion, searchCareers, getCategories, getCareersByCategory, FALLBACK_CATEGORIES, humanizeList } from '../api/careersApi';
 import { CareerGuideOverlay } from '../components/CareerGuideOverlay';
 
 // ── Category icons ─────────────────────────────────────────────────────────────
@@ -27,6 +27,11 @@ function categoryIcon(cat: string) {
 function fmt(n: number, currency: string) {
   if (!n) return '—';
   return currency + new Intl.NumberFormat('en-GB', { maximumFractionDigits: 0 }).format(n);
+}
+
+function fmtDay(n: number, currency: string) {
+  if (!n) return '—';
+  return fmt(n, currency) + '/day';
 }
 
 function fmtK(n: number) {
@@ -123,6 +128,20 @@ function SalaryCard({ label, region }: { label: string; region: SalaryRegion }) 
         <div key={l as string} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
           <span style={{ fontSize: 12, color: '#7070a0' }}>{l}</span>
           <span style={{ fontSize: 12, fontWeight: 600, color: '#c0b8e0' }}>{fmt(v as number, region.currency)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ContractRateCard({ label, region }: { label: string; region: ContractRateRegion }) {
+  return (
+    <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '12px' }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#6060a0', marginBottom: 8 }}>{label}</div>
+      {[['Junior', region.junior], ['Mid', region.mid], ['Senior', region.senior], ['Expert', region.expert]].map(([l, v]) => (
+        <div key={l as string} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+          <span style={{ fontSize: 12, color: '#7070a0' }}>{l}</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#c0b8e0' }}>{fmtDay(v as number, region.currency)}</span>
         </div>
       ))}
     </div>
@@ -298,6 +317,8 @@ function CoursesSection({ career }: { career: Career }) {
 function CareerDetailPanel({ career, onClose }: { career: Career; onClose: () => void }) {
   const uk = career.salary?.uk;
   const us = career.salary?.us;
+  const cruk = career.contractRate?.uk;
+  const crus = career.contractRate?.us;
   const wuk = career.workforce?.uk;
   const wus = career.workforce?.us;
   const [showGuide, setShowGuide] = useState(false);
@@ -358,6 +379,15 @@ function CareerDetailPanel({ career, onClose }: { career: Career; onClose: () =>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 {uk && <SalaryCard label="UK" region={uk} />}
                 {us && <SalaryCard label="US" region={us} />}
+              </div>
+            </Section>
+          )}
+
+          {(cruk || crus) && (
+            <Section title="📄 Contract Day Rates">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {cruk && <ContractRateCard label="UK" region={cruk} />}
+                {crus && <ContractRateCard label="US" region={crus} />}
               </div>
             </Section>
           )}

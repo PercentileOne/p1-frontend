@@ -3,6 +3,10 @@
 // (InterviewPackStart.tsx) without duplicating the fetch/type logic.
 
 export interface SalaryRegion { starting: number; mid: number; senior: number; expert: number; currency: string }
+// Day rates, not annual figures — how contract/freelance/interim work in this career is
+// normally quoted. First tier is "junior" (not "starting", matching SalaryRegion) since
+// that's the backend's own field name (CareerDocument.cs's ContractRateRegion).
+export interface ContractRateRegion { junior: number; mid: number; senior: number; expert: number; currency: string }
 export interface WorkforceRegion { employed: number; studying: number; growthPct5yr: number; growthTrend: string; vacancies: number }
 export interface Career {
   id: string;
@@ -11,6 +15,9 @@ export interface Career {
   subcategory: string;
   tags: string[];
   salary: { uk: SalaryRegion; us: SalaryRegion };
+  // Nullable — day-rate contracting isn't a meaningful concept for every career (e.g.
+  // permanent-only professions), so the backend omits it rather than fabricating a number.
+  contractRate?: { uk: ContractRateRegion; us: ContractRateRegion } | null;
   workforce: { uk: WorkforceRegion; us: WorkforceRegion };
   demand: { uk: number; us: number; automationRisk: number; futureScore: number; trend: string };
   lifestyle: { environment: string; stress: number; energy: number; remoteScore: number; typicalHours: string };
