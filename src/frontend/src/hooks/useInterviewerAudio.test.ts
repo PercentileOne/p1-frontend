@@ -194,4 +194,19 @@ describe('useInterviewerAudio — sarahAmbientVideoActive', () => {
     act(() => { jamesOnDone(); });
     expect(result.current.sarahAmbientVideoActive).toBe(false);
   });
+
+  it("is also true during James's own intro, right after Sarah's intro video ends", async () => {
+    vi.mocked(nameGreetingsApi.get).mockResolvedValue(null);
+    const { result } = renderHook(() => useInterviewerAudio(baseParams()));
+    await act(async () => { await Promise.resolve(); });
+
+    act(() => { result.current.beginInterviewIntroRef.current(); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(600); });
+    expect(result.current.sarahAmbientVideoActive).toBe(false); // Sarah's own video is playing, she's not "listening" yet
+
+    // Sarah's intro video ends — hands off to James's intro (his generic clip, no Name Bank hit).
+    act(() => { result.current.handleSarahIntroVideoEnded(); });
+    expect(result.current.jamesIntroVideoActive).toBe(true);
+    expect(result.current.sarahAmbientVideoActive).toBe(true);
+  });
 });

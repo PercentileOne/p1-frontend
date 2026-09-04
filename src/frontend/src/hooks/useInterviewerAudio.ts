@@ -326,7 +326,11 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
       const afterSarahIntro = () => {
         clearTimeout(pulseOuter);
         setHighlightRecord(false);
-        setHrState('idle');
+        // 'listening' (not 'idle') — James is about to introduce himself, and this is exactly
+        // the hrState==='listening' && techState==='speaking' combination sarahAmbientVideoActive
+        // already watches for, so her idle loop now covers his intro moment too, not just his
+        // later interview questions, for free — no separate on/off wiring needed here.
+        setHrState('listening');
         setSarahIntroVideoActive(false);
         setJamesAmbientVideoActive(false);
         setTechState('speaking');
