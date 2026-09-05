@@ -1323,7 +1323,7 @@
     });
     // "Welcome back" only makes sense for a returning candidate — someone who clicked
     // Register is here for the first time and was seeing exactly that line regardless.
-    document.getElementById('auth-tagline').textContent = tab === 'signup' ? 'Welcome to InterviewMe.' : 'Welcome back.';
+    document.getElementById('auth-tagline').innerHTML = tab === 'signup' ? 'Welcome to Interview<span style="color:var(--green)">Me</span>.' : 'Welcome back.';
     document.getElementById('auth-headline-sub').textContent = tab === 'signup'
       ? 'The world’s first interview broadcast platform — set up your account below.'
       : 'Sign in to your account, or create one below.';
