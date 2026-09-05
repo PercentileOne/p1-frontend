@@ -3,6 +3,8 @@ import type { InterviewQuestion } from '../api/explainApi';
 import type { SessionAnswer } from '../pages/interview-room/types';
 
 export const GO_DEEPER_LIMITS: Record<string, { max: number; chance: number }> = {
+  // Beginner is meant to be pressure-free — no dynamic probing at all, however shallow an answer is.
+  Beginner: { max: 0, chance: 0 },
   Standard: { max: 1, chance: 0.15 },
   Pro: { max: 2, chance: 0.25 },
   Expert: { max: 3, chance: 0.40 },

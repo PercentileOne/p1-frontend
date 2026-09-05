@@ -86,6 +86,13 @@ describe.each([
   });
 });
 
+describe('decideGoDeeperFollowUp — Beginner tier (max 0)', () => {
+  it('never fires, even at firedCount 0 with a guaranteed-favorable roll', () => {
+    const decision = decideGoDeeperFollowUp(makeAnswer(), { goDeeperEnabled: true, difficulty: 'Beginner', firedCount: 0 }, () => 0);
+    expect(decision).toBeNull();
+  });
+});
+
 describe('decideGoDeeperFollowUp — decision shape', () => {
   it('builds a Follow-up question tagged with the next ordinal and the raw follow-up text', () => {
     const answer = makeAnswer({}, { questionId: 'q7', source: 'HR' });

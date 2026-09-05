@@ -27,6 +27,12 @@ const LANGUAGES = [
 
 const DIFFICULTIES = [
   {
+    value: 'Beginner',
+    color: '#4F8EF7',
+    borderColor: 'rgba(79,142,247,0.3)',
+    desc: 'Foundational questions with no pressure — a genuine first practice run, great if you’re new to this.',
+  },
+  {
     value: 'Standard',
     color: '#34D399',
     borderColor: 'rgba(52,211,153,0.3)',
@@ -103,7 +109,13 @@ export default function InterviewPackStart() {
   const stillExtracting = jobSpecExtracting || cvExtracting;
   const [activeTab, setActiveTab] = useState<'jobspec' | 'cv'>('cv');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
-  const [selectedDifficulty, setSelectedDifficulty] = useState(incoming.difficulty ?? 'Standard');
+  const [selectedDifficulty, setSelectedDifficulty] = useState(incoming.difficulty ?? 'Pro');
+  // Closed by default — most candidates now start from just a job title. Opens automatically
+  // when there's already CV/job-spec content to show (e.g. a recruiter's prep link), so nothing
+  // that arrived pre-filled is ever hidden from view.
+  const [cvSectionOpen, setCvSectionOpen] = useState(
+    Boolean(incoming.cvText || incoming.jobSpec || incoming.cvFileUrl)
+  );
   const [selectedQuestionCount, setSelectedQuestionCount] = useState(incoming.questionCount ?? 10);
   const [consentToRecord, setConsentToRecord] = useState(true);
   // Only shown after a blocked attempt to start — not on first load, so an empty form
@@ -177,7 +189,6 @@ export default function InterviewPackStart() {
     if (stillExtracting) return;
     if (!hasEnough) {
       setAttemptedStart(true);
-      if (!hasCV) setActiveTab('cv'); // surface the CV upload area even if they're on the Job Spec tab
       logFlowEvent('START_INTERVIEW_BLOCKED', { hasRole, hasCV });
       return;
     }
@@ -208,8 +219,11 @@ export default function InterviewPackStart() {
   const difficulty = DIFFICULTIES.find(d => d.value === selectedDifficulty) ?? DIFFICULTIES[0];
   const hasCV = cvText.trim().length > 20 || cvFileName.length > 0;
   const hasRole = jobTitle.trim().length > 2 || jobSpec.trim().length > 20;
-  const hasEnough = hasRole && hasCV;
-  const missingParts = [!hasRole && 'a job title (or job spec)', !hasCV && 'your CV'].filter(Boolean) as string[];
+  // A CV is no longer required to start — sessionPrepareClient already builds a full session
+  // from job title + difficulty alone (InterviewRoomPage synthesises a generic job spec when
+  // none is given). Job title is the one genuinely mandatory field now.
+  const hasEnough = hasRole;
+  const missingParts = [!hasRole && 'a job title (or job spec)'].filter(Boolean) as string[];
 
   const tabStyle = (active: boolean) => ({
     flex: 1,
@@ -331,13 +345,117 @@ export default function InterviewPackStart() {
           </div>
         </div>
 
-        {/* Job Spec + CV — tabbed */}
-        <div style={{ background: 'var(--bg2)', border: `1px solid ${attemptedStart && !hasCV ? 'rgba(245,158,11,0.5)' : 'var(--border)'}`, borderRadius: '16px', marginBottom: '16px', overflow: 'hidden', transition: 'border-color 0.15s' }}>
+        {/* Language + Difficulty + Question Count — the primary path now that a CV isn't
+            required; wraps on narrow screens rather than cramming three dropdowns into one row */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+
+          {/* Language */}
+          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
+              Interview Language
+            </div>
+            <select
+              value={selectedLanguage}
+              onChange={e => { setSelectedLanguage(e.target.value); logFlowEvent('LANGUAGE_SELECTED', { language: e.target.value }); }}
+              style={{
+                width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+                borderRadius: '10px', padding: '12px 14px', color: 'var(--text)', fontSize: '14px',
+                fontFamily: 'inherit', outline: 'none', cursor: 'pointer', appearance: 'none',
+                backgroundImage: SELECT_CHEVRON,
+                backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
+              }}
+            >
+              {LANGUAGES.map(l => (
+                <option key={l.code} value={l.code}>{l.name}</option>
+              ))}
+            </select>
+            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
+              Sarah and James will speak, ask, and respond entirely in {LANGUAGES.find(l => l.code === selectedLanguage)?.name ?? 'English'}.
+            </div>
+          </div>
+
+          {/* Difficulty */}
+          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
+              Question Difficulty
+            </div>
+            <select
+              value={selectedDifficulty}
+              onChange={e => setSelectedDifficulty(e.target.value)}
+              style={{
+                width: '100%', background: 'var(--bg3)',
+                border: `1px solid ${difficulty.borderColor}`,
+                borderRadius: '10px', padding: '12px 14px',
+                color: difficulty.color,
+                fontSize: '14px', fontWeight: 700, fontFamily: 'inherit', outline: 'none', cursor: 'pointer', appearance: 'none',
+                backgroundImage: SELECT_CHEVRON,
+                backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
+              }}
+            >
+              {DIFFICULTIES.map(d => (
+                <option key={d.value} value={d.value} style={{ color: d.color, background: '#0c1220' }}>{d.value}</option>
+              ))}
+            </select>
+            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
+              {difficulty.desc}
+            </div>
+          </div>
+
+          {/* Question Count — defaults to 10 (matches the original fixed count); lets
+              someone doing a quick test run pick 5 instead of sitting through/passing 10,
+              and cuts AI generation cost proportionally for shorter sessions. */}
+          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
+              Number of Questions
+            </div>
+            <select
+              value={selectedQuestionCount}
+              onChange={e => setSelectedQuestionCount(Number(e.target.value))}
+              style={{
+                width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+                borderRadius: '10px', padding: '12px 14px', color: 'var(--text)', fontSize: '14px',
+                fontFamily: 'inherit', outline: 'none', cursor: 'pointer', appearance: 'none',
+                backgroundImage: SELECT_CHEVRON,
+                backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
+              }}
+            >
+              {QUESTION_COUNTS.map(n => (
+                <option key={n} value={n}>{n} questions</option>
+              ))}
+            </select>
+            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
+              Just want a quick run-through? Pick 5.
+            </div>
+          </div>
+
+        </div>
+
+        {/* Job Spec + CV — collapsed by default now that a CV isn't required to start; opens
+            automatically when a recruiter's prep link already attached one (see cvSectionOpen's
+            initial state above), so nothing pre-filled is ever hidden from view. */}
+        <button
+          onClick={() => setCvSectionOpen(v => !v)}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
+            background: 'var(--bg2)', border: '1px solid var(--border)',
+            borderRadius: cvSectionOpen ? '16px 16px 0 0' : '16px',
+            padding: '16px 22px', marginBottom: cvSectionOpen ? 0 : '16px', cursor: 'pointer',
+            fontFamily: 'inherit', textAlign: 'left', color: 'var(--text)',
+          }}
+        >
+          <span style={{ fontSize: '13px', fontWeight: 700 }}>
+            📄 Add your CV or job spec <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>— optional, makes it more personalised</span>
+          </span>
+          <span style={{ fontSize: '12px', color: 'var(--text-3)', transform: cvSectionOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s', flexShrink: 0, marginLeft: '12px' }}>▾</span>
+        </button>
+
+        {cvSectionOpen && (
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 16px 16px', marginBottom: '16px', overflow: 'hidden' }}>
 
           {/* Tab bar */}
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
             <button style={tabStyle(activeTab === 'cv')} onClick={() => setActiveTab('cv')}>
-              👤 Your CV {cvText || cvFileName ? '✓' : '* required'}
+              👤 Your CV {cvText || cvFileName ? '✓' : '(optional)'}
             </button>
             <button style={tabStyle(activeTab === 'jobspec')} onClick={() => setActiveTab('jobspec')}>
               📄 Job Spec {incoming.jobSpec ? '✓' : '(optional)'}
@@ -474,91 +592,7 @@ export default function InterviewPackStart() {
 
           </div>
         </div>
-
-        {/* Language + Difficulty + Question Count — wraps on narrow screens rather than
-            cramming three dropdowns into one row */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
-
-          {/* Language */}
-          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
-              Interview Language
-            </div>
-            <select
-              value={selectedLanguage}
-              onChange={e => { setSelectedLanguage(e.target.value); logFlowEvent('LANGUAGE_SELECTED', { language: e.target.value }); }}
-              style={{
-                width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
-                borderRadius: '10px', padding: '12px 14px', color: 'var(--text)', fontSize: '14px',
-                fontFamily: 'inherit', outline: 'none', cursor: 'pointer', appearance: 'none',
-                backgroundImage: SELECT_CHEVRON,
-                backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
-              }}
-            >
-              {LANGUAGES.map(l => (
-                <option key={l.code} value={l.code}>{l.name}</option>
-              ))}
-            </select>
-            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
-              Sarah and James will speak, ask, and respond entirely in {LANGUAGES.find(l => l.code === selectedLanguage)?.name ?? 'English'}.
-            </div>
-          </div>
-
-          {/* Difficulty */}
-          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
-              Question Difficulty
-            </div>
-            <select
-              value={selectedDifficulty}
-              onChange={e => setSelectedDifficulty(e.target.value)}
-              style={{
-                width: '100%', background: 'var(--bg3)',
-                border: `1px solid ${difficulty.borderColor}`,
-                borderRadius: '10px', padding: '12px 14px',
-                color: difficulty.color,
-                fontSize: '14px', fontWeight: 700, fontFamily: 'inherit', outline: 'none', cursor: 'pointer', appearance: 'none',
-                backgroundImage: SELECT_CHEVRON,
-                backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
-              }}
-            >
-              {DIFFICULTIES.map(d => (
-                <option key={d.value} value={d.value} style={{ color: d.color, background: '#0c1220' }}>{d.value}</option>
-              ))}
-            </select>
-            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
-              {difficulty.desc}
-            </div>
-          </div>
-
-          {/* Question Count — defaults to 10 (matches the original fixed count); lets
-              someone doing a quick test run pick 5 instead of sitting through/passing 10,
-              and cuts AI generation cost proportionally for shorter sessions. */}
-          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
-              Number of Questions
-            </div>
-            <select
-              value={selectedQuestionCount}
-              onChange={e => setSelectedQuestionCount(Number(e.target.value))}
-              style={{
-                width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
-                borderRadius: '10px', padding: '12px 14px', color: 'var(--text)', fontSize: '14px',
-                fontFamily: 'inherit', outline: 'none', cursor: 'pointer', appearance: 'none',
-                backgroundImage: SELECT_CHEVRON,
-                backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
-              }}
-            >
-              {QUESTION_COUNTS.map(n => (
-                <option key={n} value={n}>{n} questions</option>
-              ))}
-            </select>
-            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
-              Just want a quick run-through? Pick 5.
-            </div>
-          </div>
-
-        </div>
+        )}
 
         {/* Recording consent — record widget toggle */}
         <button

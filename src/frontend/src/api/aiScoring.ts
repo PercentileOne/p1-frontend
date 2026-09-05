@@ -680,6 +680,8 @@ export async function generateMikeScriptOnly(params: {
       ? "This is an Expert-level session — tell them the panel will treat them as the leading authority in their field, and to be ready to go deep."
       : selectedDifficulty === 'Pro'
       ? "This is a Pro-level session — tell them to expect sharper, more probing questions that go beyond the basics."
+      : selectedDifficulty === 'Beginner'
+      ? "This is a Beginner-level session — reassure them there's no pressure, it's a genuine first practice run with foundational questions to help them find their footing."
       : "This is a Standard session — tell them you've put together a solid set of questions to help them perform at their best.";
 
   // Always explicit, including for English — leaving this blank for the 'en' case let the
@@ -786,6 +788,7 @@ export async function sessionPrepareClient(
 
   const difficultyLabel = selectedDifficulty === 'Expert' ? 'Expert-level — we treat the candidate as the leading authority in their field'
     : selectedDifficulty === 'Pro' ? 'Pro-level — challenging questions that probe beyond the basics'
+    : selectedDifficulty === 'Beginner' ? 'Beginner — foundational, no-pressure questions for a genuine first practice run'
     : 'Standard — well-rounded questions to build confidence and preparation';
 
   const jobTitleLine = jobTitle ? `\nJob Title (explicitly confirmed by candidate): ${jobTitle}` : '';
@@ -833,7 +836,7 @@ Return this exact JSON:
   "specialistTitle": "James's interviewer title — role-appropriate, e.g. 'Restaurant Manager' for hospitality, 'Ward Sister' for nursing, 'Site Foreman' for construction, 'Finance Director' for accounting. NEVER use 'Technical Lead' unless the role is genuinely technical.",
   "companyFacts": ["3 specific facts about this company or role the candidate should know before walking in"],
   "sarahIntro": "Sarah's spoken welcome, 50–75 words. HR Director, warm and professional. Address the candidate by their Preferred Name if set, otherwise extract their first name from the CV, otherwise use no name. Introduces herself by name, briefly mentions James will be joining her, then explains the controls: click Record to start answering, click Stop when finished, use Repeat to hear the question again, and Pause if they need a moment. Sets a positive tone and tells the candidate to speak naturally and take their time.",
-  "jamesIntro": "James's spoken intro, 30–45 words. Direct and role-focused. Address the candidate by their Preferred Name (see Session Context above). Introduces himself, then MUST reference the exact Session Difficulty from the Session Context — use the difficulty level name naturally in speech: if Standard say something like 'You've gone with Standard difficulty, so we'll work through this steadily'; if Pro say 'You've chosen Pro level, so expect some probing questions'; if Expert say 'You've opted for Expert level — these questions will really test your depth of knowledge'. If the session language is not English, also mention it e.g. 'and we'll be doing this in French'. Then briefly states what he will be focusing on.",
+  "jamesIntro": "James's spoken intro, 30–45 words. Direct and role-focused. Address the candidate by their Preferred Name (see Session Context above). Introduces himself, then MUST reference the exact Session Difficulty from the Session Context — use the difficulty level name naturally in speech: if Beginner say something like 'You've gone with Beginner level, so no pressure — we'll keep this friendly and foundational'; if Standard say something like 'You've gone with Standard difficulty, so we'll work through this steadily'; if Pro say 'You've chosen Pro level, so expect some probing questions'; if Expert say 'You've opted for Expert level — these questions will really test your depth of knowledge'. If the session language is not English, also mention it e.g. 'and we'll be doing this in French'. Then briefly states what he will be focusing on.",
   "mcqQuestions": [
     {
       "questionText": "First hard multiple-choice question directly relevant to this role",
