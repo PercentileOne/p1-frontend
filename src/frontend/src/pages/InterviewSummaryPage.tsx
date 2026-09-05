@@ -366,7 +366,7 @@ export function InterviewReplayPlayer({ url, chapters }: { url: string; chapters
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-3.5 6L4 6v12z"/></svg>
           </button>
-          <span style={{ fontSize: '12px', color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>{fmt(currentTime)} / {fmt(duration)}</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums', userSelect: 'none' }}>{fmt(currentTime)} / {fmt(duration)}</span>
         </div>
       </div>
 
@@ -400,13 +400,13 @@ export function InterviewReplayPlayer({ url, chapters }: { url: string; chapters
                   textAlign: 'left', fontFamily: 'inherit', transition: 'all 0.15s',
                 }}
               >
-                <span style={{ fontSize: '11px', fontWeight: 700, color: isActive ? (isMcq ? '#f59e0b' : 'var(--blue)') : 'var(--text-3)', minWidth: '38px', fontVariantNumeric: 'tabular-nums' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: isActive ? (isMcq ? '#f59e0b' : 'var(--blue)') : 'var(--text-3)', minWidth: '38px', fontVariantNumeric: 'tabular-nums', userSelect: 'none' }}>
                   {fmt(c.offsetSeconds)}
                 </span>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: badgeColor, background: badgeBg, borderRadius: '4px', padding: '2px 7px', flexShrink: 0 }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: badgeColor, background: badgeBg, borderRadius: '4px', padding: '2px 7px', flexShrink: 0, userSelect: 'none' }}>
                   {isMcq ? `MCQ-${c.mcqOrdinal}` : c.questionIndex === -2 ? 'MIKE' : c.questionIndex === -1 ? 'INTRO' : `Q${c.questionIndex + 1}`}
                 </span>
-                <span style={{ fontSize: '12px', color: isActive ? 'var(--text)' : 'var(--text-2)', lineHeight: 1.4, flex: 1 }}>
+                <span style={{ fontSize: '12px', color: isActive ? 'var(--text)' : 'var(--text-2)', lineHeight: 1.4, flex: 1, userSelect: 'none' }}>
                   {c.questionText}
                 </span>
                 {isActive && (
@@ -685,7 +685,7 @@ ${questionsHtml}
   if (!hasRouteState && fetchState === 'loading') {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', flexDirection: 'column', gap: 16, color: 'var(--text-2)' }}>
-        <span style={{ fontSize: 28, animation: 'spin 1.2s linear infinite', display: 'inline-block' }}>⟳</span>
+        <span style={{ fontSize: 28, animation: 'spin 1.2s linear infinite', display: 'inline-block', userSelect: 'none' }}>⟳</span>
         <div style={{ fontSize: 14 }}>Loading your interview session…</div>
         <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
       </div>
@@ -753,7 +753,7 @@ ${questionsHtml}
             <motion.span animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1 }}
               style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />
           )}
-          <span style={{ fontSize: '13px', fontWeight: 600, color: uploadLikelyFailed ? '#F87171' : '#F59E0B', cursor: 'default' }}>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: uploadLikelyFailed ? '#F87171' : '#F59E0B', cursor: 'default', userSelect: 'none' }}>
             {uploadLikelyFailed
               ? "This is taking far longer than a real upload ever should — it's likely stuck or failed, probably a connection issue. Nothing will appear here until it lands."
               : uploadSlow
