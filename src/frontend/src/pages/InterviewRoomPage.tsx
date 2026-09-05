@@ -673,13 +673,13 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           {phase !== 'intro' && phase !== 'mike' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '7px 12px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#EF4444', cursor: 'default', userSelect: 'none' }}>
               {uploadStatus === 'uploading' ? (
-                <><motion.span animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 0.8 }} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />Saving…</>
+                <><motion.span animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 0.8 }} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} /><span style={{ userSelect: 'none' }}>Saving…</span></>
               ) : uploadStatus === 'done' ? (
                 <><span style={{ color: '#34D399', userSelect: 'none' }}>✓</span><span style={{ color: '#34D399', userSelect: 'none' }}>Saved</span></>
               ) : uploadStatus === 'error' ? (
-                <><span style={{ userSelect: 'none' }}>⚠</span>Save failed</>
+                <><span style={{ userSelect: 'none' }}>⚠</span><span style={{ userSelect: 'none' }}>Save failed</span></>
               ) : isRecording ? (
-                <><motion.span animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#EF4444', flexShrink: 0 }} />Recording</>
+                <><motion.span animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#EF4444', flexShrink: 0 }} /><span style={{ userSelect: 'none' }}>Recording</span></>
               ) : recordingFailed ? (
                 <><span style={{ userSelect: 'none' }}>⚠</span><span style={{ userSelect: 'none' }}>No video — camera/mic denied</span></>
               ) : (
