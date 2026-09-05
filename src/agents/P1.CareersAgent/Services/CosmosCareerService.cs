@@ -105,18 +105,28 @@ public class CosmosCareerService
             .ToList();
     }
 
+    // A match against the career's own title always outranks a match that only exists because
+    // some OTHER career lists the query as one of its aliases — e.g. typing "Software e" must
+    // surface the actual "Software Engineer" career first, not ".NET Developer" or "Golang
+    // Developer" just because both happen to list "Software Engineer" as an alias. The old
+    // version ranked title and alias matches of equal strength identically, so ties fell back to
+    // plain alphabetical order — "." and "G" sort before "S", which is exactly backwards from
+    // what a candidate typing a real prefix of the title they want would expect.
     private static int RelevanceRank(CareerDocument c, string lowerQuery)
     {
         var title = c.Title?.ToLowerInvariant() ?? "";
         var aliases = c.Aliases.Select(a => a.ToLowerInvariant()).ToList();
-
-        if (title == lowerQuery || aliases.Any(a => a == lowerQuery)) return 0;
-        if (title.StartsWith(lowerQuery) || aliases.Any(a => a.StartsWith(lowerQuery))) return 1;
-
         var boundaryPattern = $@"\b{Regex.Escape(lowerQuery)}\b";
-        if (Regex.IsMatch(title, boundaryPattern) || aliases.Any(a => Regex.IsMatch(a, boundaryPattern))) return 2;
 
-        return 3; // bare substring match only (category/subcategory/tags, or mid-word collision)
+        if (title == lowerQuery) return 0;
+        if (title.StartsWith(lowerQuery)) return 1;
+        if (Regex.IsMatch(title, boundaryPattern)) return 2;
+
+        if (aliases.Any(a => a == lowerQuery)) return 3;
+        if (aliases.Any(a => a.StartsWith(lowerQuery))) return 4;
+        if (aliases.Any(a => Regex.IsMatch(a, boundaryPattern))) return 5;
+
+        return 6; // bare substring match only (category/subcategory/tags, or mid-word collision)
     }
 
     public async Task<List<CareerDocument>> GetByCategoryAsync(string category, int top = 20)
