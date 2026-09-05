@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Configuration;
 using P1.CareersAgent.Models;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -9,8 +8,10 @@ namespace P1.CareersAgent.Services;
 
 public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactory)
 {
-    private readonly string _apiKey = config["OpenAiApiKey"]
-        ?? throw new InvalidOperationException("OpenAiApiKey not configured");
+    // Was a direct OpenAI call with its own key — now routes through Explain.Api's shared
+    // /api/ai-proxy (Azure AI Foundry Model Router), same path Learn and interview scoring use,
+    // so this agent gets the router's auto-failover too and no longer needs its own OpenAI key.
+    private readonly string _explainApiUrl = (config["ExplainApiUrl"] ?? "https://api.explain.global").TrimEnd('/');
 
     private static readonly JsonSerializerOptions _json = new()
     {
@@ -227,9 +228,10 @@ public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactor
     private async Task<string> CallGptAsync(string userPrompt, ILogger log)
     {
         var client = httpFactory.CreateClient();
-        client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", _apiKey);
 
+        // model is rewritten to the Model Router's deployment name by ai-proxy itself —
+        // sent as "gpt-4o-mini" here only for consistency with every other caller of this
+        // endpoint (aiScoring.ts etc.), none of which need to change what they send either.
         var body = JsonSerializer.Serialize(new
         {
             model = "gpt-4o-mini",
@@ -243,14 +245,14 @@ public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactor
         });
 
         var response = await client.PostAsync(
-            "https://api.openai.com/v1/chat/completions",
+            $"{_explainApiUrl}/api/ai-proxy",
             new StringContent(body, Encoding.UTF8, "application/json"));
 
         if (!response.IsSuccessStatusCode)
         {
             var err = await response.Content.ReadAsStringAsync();
-            log.LogError("OpenAI {Status}: {Error}", response.StatusCode, err);
-            throw new HttpRequestException($"OpenAI {response.StatusCode}");
+            log.LogError("ai-proxy {Status}: {Error}", response.StatusCode, err);
+            throw new HttpRequestException($"ai-proxy {response.StatusCode}");
         }
 
         var json = await response.Content.ReadAsStringAsync();
