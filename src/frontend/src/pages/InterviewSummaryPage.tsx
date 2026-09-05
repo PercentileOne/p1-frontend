@@ -522,7 +522,10 @@ export default function InterviewSummaryPage() {
   const [savedShareToken, setSavedShareToken] = useState<string | null>(null);
   const [savedShareUrl, setSavedShareUrl] = useState<string | null>(null);
 
-  const overall = overallAvg(answers);
+  const mcqBonusPoints = mcqResults.filter(r => r.correct).length * 10;
+  // Matches InterviewResultsBody's own blending exactly — Mike's spoken percentage would
+  // otherwise mismatch the score card sitting right next to his debrief banner.
+  const overall = Math.min(1, overallAvg(answers) + mcqBonusPoints / 100);
   const strengths = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) >= 0.65);
   const improvements = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) < 0.55);
 
@@ -569,6 +572,15 @@ export default function InterviewSummaryPage() {
     else if (pct >= 65) scoreComment = `You scored ${pct} percent overall — a solid performance, and there's real potential here.`;
     else scoreComment = `You scored ${pct} percent overall. It's a start, and with a bit of focused practice, you'll see that number climb quickly.`;
 
+    const mcqCorrectCount = mcqResults.filter(r => r.correct).length;
+    const mcqTotalCount = mcqResults.length;
+    let mcqComment = '';
+    if (mcqTotalCount > 0 && mcqCorrectCount === mcqTotalCount) {
+      mcqComment = `Oh, and nice work on the bonus round — you got all ${mcqTotalCount} multiple-choice questions right, so that's an extra ${mcqBonusPoints} points on top.`;
+    } else if (mcqCorrectCount > 0) {
+      mcqComment = `You also picked up ${mcqCorrectCount} out of ${mcqTotalCount} on the bonus multiple-choice round, worth an extra ${mcqBonusPoints} points.`;
+    }
+
     let strengthComment = strongLabel
       ? `Sarah particularly noticed your ${strongLabel} — she said it came across really well.`
       : '';
@@ -583,9 +595,9 @@ export default function InterviewSummaryPage() {
 
     const closing = `Good luck ${name}, and remember — every session makes you sharper. Speak soon.`;
 
-    return [opening, scoreComment, strengthComment, improvementComment, learnPitch, closing]
+    return [opening, scoreComment, mcqComment, strengthComment, improvementComment, learnPitch, closing]
       .filter(Boolean).join(' ');
-  }, [cvCtx, overall, strengths, improvements, weakestTag]);
+  }, [cvCtx, overall, strengths, improvements, weakestTag, mcqResults, mcqBonusPoints]);
 
   function handleGetFeedback() {
     // Playing — this click means Stop.

@@ -61,10 +61,15 @@ export function InterviewResultsBody({
   mcqResults?: MCQAnswerResult[];
   onStudyTopic?: (tag: string) => void;
 }) {
-  const overall = overallAvg(answers);
+  const baseScore = overallAvg(answers);
   const strengths = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) >= 0.65);
   const improvements = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) < 0.55);
   const mcqBonusPoints = mcqResults.filter(r => r.correct).length * 10;
+  // MCQ bonus now genuinely lifts the headline score — it used to render as a disconnected
+  // "+N MCQ bonus" side-note next to a percentage it never actually affected, which is exactly
+  // why answering the bonus round well never showed up anywhere in the number itself. Capped at
+  // 100 so a perfect MCQ round can't push a middling set of real answers above full marks.
+  const overall = Math.min(1, baseScore + mcqBonusPoints / 100);
 
   return (
     <>

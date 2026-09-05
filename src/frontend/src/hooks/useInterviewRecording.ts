@@ -269,9 +269,16 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
     const finish = async (videoBlob: Blob | null) => {
       setUploadStatus('uploading');
       try {
-        const overallScore = answers.length
+        const baseScore = answers.length
           ? answers.reduce((s, a) => s + a.score.overallScore, 0) / answers.length
           : 0;
+        // MCQ bonus is now baked into the persisted overallScore itself, not just carried
+        // alongside it as a decorative mcqBonusPoints field nothing downstream actually applied
+        // — that's why answering the bonus round well never moved the number anywhere it's
+        // shown (summary page, My Interviews list, recruiter views). Capped at 100 so a perfect
+        // MCQ round can't push a middling set of real answers above full marks. Matches the
+        // identical blend in InterviewResultsBody.tsx / InterviewSummaryPage.tsx exactly.
+        const overallScore = Math.min(1, baseScore + extra.mcqBonusPoints / 100);
         const metadata = JSON.stringify({
           candidateId,
           interviewId,
