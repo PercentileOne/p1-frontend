@@ -471,13 +471,11 @@
   .s1-hero-split { display: flex; align-items: center; gap: 0; }
   .s1-hero-text { flex: 0 0 54%; min-width: 0; }
   .s1-hero-img { flex: 0 0 46%; }
-  .s1-hero-img img { width: 100%; height: 380px; object-fit: cover; object-position: center 30%; border-radius: 24px; box-shadow: 0 0 60px rgba(0,0,0,0.6), 0 0 120px rgba(52,211,153,0.06); display: block; margin-bottom: 32px; }
   @media (max-width: 900px) {
     .s1-hero-split { flex-direction: column; }
     .s1-hero-text { flex: none; width: 100%; }
     .s1-hero-img { flex: none; width: 100%; }
-    .s1-hero-img img { height: 260px; }
-    .hero-carousel { height: 260px; }
+    .hero-preview-frame img { height: 340px; }
     .s1-sub { max-width: 100%; }
   }
   .s1-btn-green {
@@ -561,10 +559,12 @@
   .mock-alert-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink: 0; margin-top: 6px; animation: pulse 2s infinite; }
   .mock-toast { background: rgba(52,211,153,0.06); border: 1px solid rgba(52,211,153,0.35); border-radius: 14px; padding: 20px 20px; display: flex; gap: 16px; align-items: center; margin-bottom: 10px; box-shadow: 0 0 24px rgba(52,211,153,0.1); }
 
-  /* Hero carousel */
-  .hero-carousel { position: relative; width: 100%; height: 380px; border-radius: 24px; overflow: hidden; box-shadow: 0 0 60px rgba(0,0,0,0.6), 0 0 120px rgba(52,211,153,0.06); }
-  .hero-slide { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; opacity: 0; transition: opacity 1.2s ease-in-out; display: block; }
-  .hero-slide.active { opacity: 1; }
+  /* Hero live-preview panel — a real interview-room screenshot, not a stock-photo carousel */
+  .hero-preview-caption { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .hero-preview-badge { display: inline-flex; align-items: center; gap: 7px; align-self: flex-start; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green); background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); border-radius: 100px; padding: 5px 12px; }
+  .hero-preview-caption p { font-size: 13px; color: var(--muted); font-weight: 500; letter-spacing: 0.01em; line-height: 1.5; margin: 0; }
+  .hero-preview-frame { position: relative; width: 100%; border-radius: 24px; overflow: hidden; box-shadow: 0 0 60px rgba(0,0,0,0.6), 0 0 120px rgba(52,211,153,0.06); border: 1px solid var(--border); }
+  .hero-preview-frame img { width: 100%; height: 520px; object-fit: cover; object-position: center top; display: block; }
 
   /* Mobile */
   @media (max-width: 860px) {
@@ -574,6 +574,7 @@
     .s1-h1 { font-size: clamp(2.2rem, 8vw, 3rem); }
     .aud-h2 { font-size: clamp(1.8rem, 6vw, 2.4rem); }
     .aud-visual { display: none; }
+    .hero-preview-frame img { height: 380px; }
   }
 
   /* ── Mobile app section ── */
@@ -651,15 +652,16 @@
         <div class="reveal">
           <div class="s1-eyebrow"><span class="pulse" style="background:var(--green)"></span> The world's first interview broadcast platform</div>
         </div>
-        <h1 class="s1-h1 reveal reveal-delay-1">Record your interview once.<br><span class="hl">Let hundreds of employers</span><br>find you.</h1>
+        <h1 class="s1-h1 reveal reveal-delay-1">Your panel is ready.<br><span class="hl">Record once.</span><br>Let it run everywhere.</h1>
         <p class="s1-sub reveal reveal-delay-2">Before <strong style="color:#fff">Interview</strong><strong style="color:var(--green)">Me</strong>, candidates wrote CVs, submitted applications, travelled to interviews — then were ghosted without a word if they didn't get the job. <strong style="color:#fff">Now, for the very first time,</strong> one recorded interview — done from home, in your own time — works for you 24 hours a day, seen by <strong style="color:#fff">thousands of recruiters and employers</strong>. Simultaneously. Without applying to a single one of them.</p>
       </div><!-- /s1-hero-text -->
       <div class="s1-hero-img reveal reveal-delay-2">
-        <p style="font-size:13px;color:var(--muted);font-weight:500;letter-spacing:0.01em;margin-bottom:14px;line-height:1.5;">Interview once, from the comfort of your own home —<br>and get seen by <strong style="color:var(--pearl);font-weight:700;">hundreds of employers</strong>, simultaneously.</p>
-        <div class="hero-carousel">
-          <img class="hero-slide active" src="hero-1.jpg" alt="Interview from anywhere" />
-          <img class="hero-slide" src="hero-2.jpg" alt="Interview from your sofa" />
-          <img class="hero-slide" src="hero-3.jpg" alt="Interview from home" />
+        <div class="hero-preview-caption">
+          <span class="hero-preview-badge"><span class="pulse" style="background:var(--green)"></span> Live preview</span>
+          <p>Interview once, from the comfort of your own home —<br>and get seen by <strong style="color:var(--pearl);font-weight:700;">hundreds of employers</strong>, simultaneously.</p>
+        </div>
+        <div class="hero-preview-frame">
+          <img src="interview-room-latest.png" alt="Live InterviewMe interview room — Sarah Mitchell, HR Director, and James Jacobs, Software Engineering Manager" />
         </div>
       </div>
     </div><!-- /s1-hero-split -->
@@ -884,6 +886,39 @@
 
 <div class="scroll-divider"></div>
 
+<!-- SECTION 1.5: RECRUITER PREP LINKS -->
+<div class="scroll-section" id="s-prep-link" style="background: var(--bg2);">
+  <div class="scroll-inner">
+    <div class="audience-grid">
+      <div>
+        <div class="aud-eyebrow reveal" style="color: #a78bfa;">🔗 For recruiters — before the interview even happens</div>
+        <h2 class="aud-h2 reveal reveal-delay-1">Send your candidates in<br>fully prepared.<br><span style="color:#a78bfa;">Every time.</span></h2>
+        <p class="aud-body reveal reveal-delay-2">You already have candidates in your pipeline. Give every one of them the exact format, the question style, and what "good" looks like — before they ever sit down. No prep call to schedule. No PDF nobody reads. Just one link.</p>
+        <ul class="aud-points reveal reveal-delay-2">
+          <li>Send a personalised Interview Prep Link in seconds — no login needed for your candidate</li>
+          <li>They arrive knowing exactly what to expect, so a bad interview day never costs you a good hire</li>
+          <li>Fewer no-shows, fewer nerves, fewer candidates who freeze because nobody told them what was coming</li>
+          <li>Every link opens straight into InterviewMe — so they're set up and ready for whatever comes next too</li>
+        </ul>
+        <a href="/contact" class="s1-btn-blue reveal reveal-delay-3" style="background:linear-gradient(180deg,#c4b5fd 0%,#7c3aed 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.25),inset 0 -3px 0 rgba(0,0,0,0.2),0 0 22px rgba(124,58,237,0.45);">Send my first prep link →</a>
+      </div>
+      <div class="aud-visual reveal reveal-delay-2" style="background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);border-radius:20px;padding:28px;box-shadow:0 0 60px rgba(124,58,237,0.1);">
+        <div class="aud-visual-glow" style="background: radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.15) 0%, transparent 70%);"></div>
+        <div style="font-size:12px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#a78bfa;margin-bottom:18px;">🔗 Prep links sent this week</div>
+        <div class="mock-alert"><div class="mock-alert-dot"></div><div><div style="font-size:15px;font-weight:800;color:var(--pearl)">Gary R. · Senior React Developer</div><div style="font-size:13px;color:#7080a0;margin-top:5px;line-height:1.5">Prep link sent Monday · opened in 4 minutes</div></div></div>
+        <div class="mock-alert"><div class="mock-alert-dot"></div><div><div style="font-size:15px;font-weight:800;color:var(--pearl)">Priya S. · Store Manager</div><div style="font-size:13px;color:#7080a0;margin-top:5px;line-height:1.5">Prep link sent Tuesday · opened same day</div></div></div>
+        <div class="mock-alert"><div class="mock-alert-dot"></div><div><div style="font-size:15px;font-weight:800;color:var(--pearl)">Tom H. · Junior Lawyer</div><div style="font-size:13px;color:#7080a0;margin-top:5px;line-height:1.5">Prep link sent this morning · opened in 40 seconds</div></div></div>
+        <div class="mock-toast" style="margin-top:20px;">
+          <span style="font-size:28px">✅</span>
+          <div><div style="font-size:15px;font-weight:800;color:var(--pearl)">Gary walked in ready</div><div style="font-size:13px;color:#7080a0;margin-top:4px">He knew the format, the tone, and what "good" looked like — before he said a word.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scroll-divider"></div>
+
 <!-- SECTION 2: CANDIDATES -->
 <div class="scroll-section" id="s-candidates" style="background: var(--bg);">
   <div class="scroll-inner">
@@ -1006,17 +1041,6 @@
     document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   })();
 
-  // Hero carousel — crossfade every 4s
-  (function(){
-    const slides = document.querySelectorAll('.hero-slide');
-    if (!slides.length) return;
-    let current = 0;
-    setInterval(() => {
-      slides[current].classList.remove('active');
-      current = (current + 1) % slides.length;
-      slides[current].classList.add('active');
-    }, 4000);
-  })();
 </script>
 
 <!-- END SCROLL SECTIONS -->
