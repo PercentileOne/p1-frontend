@@ -381,6 +381,21 @@
   .field select option { background: #0a0f1e; }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
+  /* Custom role picker for the login form — a native <select>'s open dropdown is rendered by
+     the OS, not the page, so the "currently selected" row shows the browser's own light
+     highlight color no matter what CSS is applied to <option>. Built fully out of styleable
+     divs/anchors instead, same approach as the language switcher menu on the marketing page. */
+  .role-select { position: relative; }
+  .role-select-btn { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 12px 15px; font-size: 14px; color: var(--pearl); font-family: var(--font); width: 100%; cursor: pointer; text-align: left; transition: border-color 0.2s; }
+  .role-select.open .role-select-btn { border-color: rgba(61,126,246,0.5); }
+  .role-select-btn .role-select-placeholder { color: rgba(100,116,139,0.6); }
+  .role-select-arrow { font-size: 11px; opacity: 0.6; flex-shrink: 0; transition: transform 0.2s; }
+  .role-select.open .role-select-arrow { transform: rotate(180deg); }
+  .role-select-menu { display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #0a0f1e; border: 1px solid var(--border); border-radius: 10px; padding: 6px; z-index: 50; box-shadow: 0 16px 40px rgba(0,0,0,0.5); }
+  .role-select.open .role-select-menu { display: block; }
+  .role-select-menu a { display: block; padding: 9px 10px; border-radius: 7px; cursor: pointer; color: var(--pearl); font-size: 13px; font-weight: 500; text-decoration: none; }
+  .role-select-menu a:hover { background: rgba(61,126,246,0.12); }
+
   .forgot { font-size: 12px; color: var(--blue); text-decoration: none; text-align: right; display: block; margin-top: -4px; }
   .forgot:hover { text-decoration: underline; }
 
@@ -1105,12 +1120,24 @@
       <form class="auth-form" id="form-login" onsubmit="return handleLogin(event)">
         <div class="field">
           <label>I am a…</label>
-          <select id="login-role" required>
+          <div class="role-select" id="loginRoleSelect">
+            <button type="button" class="role-select-btn" onclick="toggleLoginRoleMenu(event)">
+              <span id="loginRoleLabel" class="role-select-placeholder">Select your role…</span>
+              <span class="role-select-arrow">▾</span>
+            </button>
+            <div class="role-select-menu">
+              <a onclick="selectLoginRole(this,'Candidate')">🎓 Candidate — I'm preparing for interviews</a>
+              <a onclick="selectLoginRole(this,'Recruiter')">🔍 Recruiter — I place candidates</a>
+              <a onclick="selectLoginRole(this,'Employer')">🏢 Employer — I'm hiring talent</a>
+              <a onclick="selectLoginRole(this,'Investor')">💼 Investor — I'm investing in the platform</a>
+            </div>
+          </div>
+          <select id="login-role" required style="display:none" tabindex="-1" aria-hidden="true">
             <option value="" disabled selected>Select your role…</option>
-            <option value="Candidate">🎓 Candidate — I'm preparing for interviews</option>
-            <option value="Recruiter">🔍 Recruiter — I place candidates</option>
-            <option value="Employer">🏢 Employer — I'm hiring talent</option>
-            <option value="Investor">💼 Investor — I'm investing in the platform</option>
+            <option value="Candidate">Candidate</option>
+            <option value="Recruiter">Recruiter</option>
+            <option value="Employer">Employer</option>
+            <option value="Investor">Investor</option>
           </select>
         </div>
         <div class="field"><label>Email address</label><input type="email" id="login-email" placeholder="you@company.com" autocomplete="email"></div>
@@ -1305,6 +1332,24 @@
   // Land on the right tab depending on which neutral URL brought you here —
   // /login and /register both serve this same page (see gate-staticwebapp.config.json).
   if (location.pathname === '/register') switchTab('signup');
+
+  // Custom role picker for the login form — keeps the real (hidden) <select>'s value in sync
+  // so handleLogin()'s existing `document.getElementById('login-role').value` read needs no changes.
+  function toggleLoginRoleMenu(evt) {
+    evt.stopPropagation();
+    document.getElementById('loginRoleSelect').classList.toggle('open');
+  }
+  function selectLoginRole(el, value) {
+    var label = document.getElementById('loginRoleLabel');
+    label.textContent = el.textContent;
+    label.classList.remove('role-select-placeholder');
+    document.getElementById('login-role').value = value;
+    document.getElementById('loginRoleSelect').classList.remove('open');
+  }
+  document.addEventListener('click', function (e) {
+    var sel = document.getElementById('loginRoleSelect');
+    if (sel && !sel.contains(e.target)) sel.classList.remove('open');
+  });
 
   // ── Real sign-in, wired to the shared .NET backend — same endpoints and role-match
   // logic as LoginPage.tsx (src/frontend), just hand-written since this page has no
