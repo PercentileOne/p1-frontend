@@ -1,16 +1,21 @@
 import type { InterviewQuestion } from '../../api/explainApi';
-import type { Company } from '../../data/companyBank';
 
 // ── Demo fallback questions ───────────────────────────────────────────────────
 // Used by InterviewRoomPage whenever the real AI-generated session (sessionPrepareClient)
 // hasn't resolved yet or failed outright — see InterviewRoomPage.tsx's `questions` derivation
 // (`bgQuestions ?? buildDemoQuestions(...)`).
 //
+// Deliberately names no specific employer (see q10) — this used to take a `company` param
+// picked at random with zero regard for the job title (companyBank.ts's pickRandomCompany),
+// which is how a Shop Sales Assistant ended up with a placeholder question about Barclays.
+// These are only ever shown for the few seconds before the real AI questions land, so a
+// generic "this company" costs nothing and can never be wrong.
+//
 // questionCount here mirrors sessionPrepareClient's own totalQuestions logic in aiScoring.ts
 // (same allowed values, same ~4:1 role:HR ratio, company-knowledge question always last) —
 // this static bank only has 10 questions, so 15/20 just returns all 10 rather than fabricating
 // more; the point is that 5 stops silently becoming 10, not that every count is fully covered.
-export function buildDemoQuestions(company: Company, questionCount?: number): InterviewQuestion[] {
+export function buildDemoQuestions(questionCount?: number): InterviewQuestion[] {
   const all: InterviewQuestion[] = [
     {
       questionId: 'q1',
@@ -68,8 +73,8 @@ export function buildDemoQuestions(company: Company, questionCount?: number): In
     },
     {
       questionId: 'q10',
-      questionText: `What do you know about ${company.name} and why does this role specifically appeal to you?`,
-      modelAnswer: `Show genuine research into ${company.name}. Connect their mission to your own motivations and experience.`,
+      questionText: `What do you know about this company and why does this role specifically appeal to you?`,
+      modelAnswer: `Show genuine research into the company. Connect their mission to your own motivations and experience.`,
       questionType: 'Behavioural', difficulty: 'Easy', source: 'HR', competencyTags: ['company knowledge', 'motivation'],
     },
   ];

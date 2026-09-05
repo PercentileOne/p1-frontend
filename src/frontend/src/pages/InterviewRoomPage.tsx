@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InterviewerAvatar } from '../components/InterviewerAvatar';
@@ -12,7 +12,6 @@ import { CoachingOverlay } from '../components/CoachingOverlay';
 import { sessionPrepareClient, generateMikeScriptOnly } from '../api/aiScoring';
 import { ChairSpinner } from '../components/ChairSpinner';
 import CinematicMCQ from '../components/CinematicMCQ';
-import { pickRandomCompany } from '../data/companyBank';
 import { logFlowEvent } from '../api/flowLogger';
 import { useAuthStore } from '../auth/authStore';
 import { FILTER_CSS, FILTER_LABELS, FILTER_PRESETS, type FilterPreset } from '../hooks/useVideoFilter';
@@ -126,8 +125,6 @@ export default function InterviewRoomPage() {
   // CV's name, not the actual candidate's.
   const resolvedPreferredName = ctx.preferredName?.trim() || authUser?.firstName?.trim() || undefined;
 
-  const demoCompany = useMemo(() => pickRandomCompany(), []);
-
   // Background AI session prep results
   const [bgQuestions, setBgQuestions] = useState<InterviewQuestion[] | null>(null);
   const [bgSarahIntro, setBgSarahIntro] = useState<string | null>(null);
@@ -160,8 +157,10 @@ export default function InterviewRoomPage() {
   const phase2WaitersRef = useRef<Array<() => void>>([]);
 
   // Derived values — fresh AI results ALWAYS win over anything pre-passed via route state
-  const questions = bgQuestions ?? buildDemoQuestions(demoCompany, ctx.questionCount);
-  const companyKeywords = bgCompanyFacts.length ? bgCompanyFacts : demoCompany.companyKnowledgeKeywords;
+  const questions = bgQuestions ?? buildDemoQuestions(ctx.questionCount);
+  // Empty until the real AI companyFacts land — these placeholder questions never name a
+  // specific employer (see buildDemoQuestions), so there's nothing sensible to score against yet.
+  const companyKeywords = bgCompanyFacts;
   const specialistTitle = bgSpecialistTitle ?? 'Hiring Manager';
   const effectiveSarahIntro = bgSarahIntro ?? undefined;
   const effectiveJamesIntro = bgJamesIntro ?? undefined;
@@ -293,9 +292,13 @@ export default function InterviewRoomPage() {
     bgLoadRef.current = true;
 
     const resolvedJobTitle = ctx.jobTitle || 'Senior Professional';
+    // No Company/Industry line here on purpose — this used to hardcode a random real company
+    // (see companyBank.ts's pickRandomCompany) picked with zero regard for the job title,
+    // which is how a Shop Sales Assistant ended up interviewing "at Barclays". Leaving the
+    // employer unstated lets sessionPrepareClient's own COMPANY NAMING rule pick a genuinely
+    // fitting one (a real one via ctx.company below, or its own invented one) in the same
+    // call as the questions, instead of this file guessing first and boxing the AI in.
     const jobSpec = ctx.jobSpecText || `Job Title: ${resolvedJobTitle}
-Company: ${demoCompany.name}
-Industry: ${'sector' in demoCompany ? demoCompany.sector : 'Professional Services'}
 Location: United Kingdom
 
 We are looking for an experienced ${resolvedJobTitle} to join our team. The successful candidate will bring strong problem-solving ability, excellent communication skills, and a track record of delivering results under pressure. This role requires collaboration across teams, sound judgement, adaptability to change, and the ability to manage competing priorities effectively. The candidate should demonstrate initiative, professional integrity, and a commitment to continuous improvement.`;
@@ -362,7 +365,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       // this fallback fires before the real data arrives, Sarah/James silently fall back to
       // their generic, name-less lines — that's what "James stopped saying my name" was.
       phase2Timeout = setTimeout(resolvePhase2, 55000);
-      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount);
+      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount, ctx.company || undefined);
 
     }).then(result => {
       bgLoadedRef.current = true;

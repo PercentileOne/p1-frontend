@@ -776,6 +776,7 @@ export async function sessionPrepareClient(
   selectedDifficulty?: string,
   preferredName?: string,
   questionCount?: number,
+  companyName?: string,
 ): Promise<ClientSessionResult> {
   // 4:1 role-to-HR split, same ratio as the original fixed 8+2 — the last HR question is
   // always "what do you know about the company", every other slot is role/competency.
@@ -792,6 +793,12 @@ export async function sessionPrepareClient(
     : 'Standard — well-rounded questions to build confidence and preparation';
 
   const jobTitleLine = jobTitle ? `\nJob Title (explicitly confirmed by candidate): ${jobTitle}` : '';
+  // Real company, when one is actually known (e.g. a recruiter's prep link) — otherwise the
+  // model invents one itself (see COMPANY NAMING rule below). Previously only ever reached
+  // Mike's separate Phase 1 script call, never this one, so Sarah/James/the questions/the
+  // company-knowledge question could each end up implying a different (or no) employer even
+  // when Mike had just said a real one out loud.
+  const companyLine = companyName?.trim() ? `\nCompany (explicitly confirmed — use this exact name, do not invent another): ${companyName.trim()}` : '';
   const difficultyLevel = selectedDifficulty || 'Standard';
   const difficultyLine = `\nSession Difficulty: ${difficultyLevel} (${difficultyLabel})`;
   const preferredNameLine = preferredName?.trim()
@@ -814,14 +821,15 @@ CRITICAL RULES — READ CAREFULLY:
 3. NEVER generate IT or software engineering questions unless the job spec explicitly requires them. A barista needs questions about coffee craft and customer service. A nurse needs questions about patient care and clinical judgement. A lorry driver needs questions about road safety and logistics.
 4. Questions must be specific to THIS role at THIS company — not generic questions that could fit any employer.
 5. All spoken scripts (Mike, Sarah, James) must sound natural when read aloud. No bullet points, no lists, no asterisks.
-6. Return ONLY valid JSON — no markdown, no explanation, no code fences.`;
+6. Return ONLY valid JSON — no markdown, no explanation, no code fences.
+7. COMPANY NAMING: if the Session Context gives you a confirmed company, use that exact name everywhere — never invent a different one. Otherwise, if no company is named anywhere in the job spec, invent ONE single plausible, realistic company name whose industry genuinely fits THIS job title (e.g. a supermarket or retail chain for a Shop Sales Assistant, a stables or equestrian centre for a Horse Trainer, a hospital or clinic for a Nurse, a haulage firm for a Lorry Driver) — never a mismatched real company (a software/finance/tech giant is almost never the right invented employer for a non-corporate role) and never a vague placeholder like "the company" or "your employer". Use that one invented name consistently in the questions, both intros, and companyFacts.`;
 
   const sessionSeed = `${Date.now()}-${crypto.randomUUID()}`; // unique per session — never reuse
 
   const userPrompt = `Generate a complete interview session for the job specification below. Session ID: ${sessionSeed} — this is unique to this session. You MUST generate completely fresh questions every time. Never repeat or reuse questions from any prior generation. Vary question wording, angle, and which competencies you probe.
 ${cvSection ? 'A candidate CV is also provided — use it to personalise questions and intros.' : 'No CV provided — base questions purely on the role requirements.'}
 
-═══ SESSION CONTEXT ═══${jobTitleLine}${difficultyLine}${preferredNameLine}
+═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${preferredNameLine}
 
 ═══ JOB SPECIFICATION ═══
 ${jobSpecText.slice(0, 4000)}${cvSection}
@@ -830,7 +838,7 @@ Return this exact JSON:
 {
   "language": "ISO 639-1 code (e.g. en, fr, de, es, pt, nl, pl, ar, zh)",
   "jobTitle": "job title from the spec",
-  "company": "company name, or null if not mentioned",
+  "company": "the company name actually used for this session — the confirmed one from Session Context, or your own invented one per the COMPANY NAMING rule; never null and never a generic placeholder",
   "country": "country or region this role is based in",
   "industry": "industry sector (e.g. Fast Food, Healthcare, Construction, Finance, Education)",
   "specialistTitle": "James's interviewer title — role-appropriate, e.g. 'Restaurant Manager' for hospitality, 'Ward Sister' for nursing, 'Site Foreman' for construction, 'Finance Director' for accounting. NEVER use 'Technical Lead' unless the role is genuinely technical.",
@@ -943,7 +951,7 @@ IMPORTANT: The two MCQ questions and ALL interview questions MUST be completely 
 
 ═══ JOB SPECIFICATION ═══
 ${jobSpecText.slice(0, 4000)}${cvSection}
-${jobTitleLine}${difficultyLine}
+${jobTitleLine}${companyLine}${difficultyLine}
 
 ═══ QUESTIONS ALREADY IN THIS SESSION — do not repeat these themes ═══
 ${existingTexts}
