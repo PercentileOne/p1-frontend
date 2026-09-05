@@ -1109,8 +1109,8 @@
   <div class="auth-panel">
     <div class="auth-box">
 
-      <div class="auth-tagline">Welcome back.</div>
-      <div class="auth-sub">Sign in to your account, or create one below.</div>
+      <div class="auth-tagline" id="auth-tagline">Welcome back.</div>
+      <div class="auth-sub" id="auth-headline-sub">Sign in to your account, or create one below.</div>
 
       <div class="auth-tabs">
         <button class="tab active" onclick="switchTab('login')">Sign In</button>
@@ -1321,6 +1321,12 @@
         (i === 1 && tab === 'signup')
       );
     });
+    // "Welcome back" only makes sense for a returning candidate — someone who clicked
+    // Register is here for the first time and was seeing exactly that line regardless.
+    document.getElementById('auth-tagline').textContent = tab === 'signup' ? 'Welcome to InterviewMe.' : 'Welcome back.';
+    document.getElementById('auth-headline-sub').textContent = tab === 'signup'
+      ? 'The world’s first interview broadcast platform — set up your account below.'
+      : 'Sign in to your account, or create one below.';
     // Keep the address bar honest about which form is actually showing — clicking the tabs
     // shouldn't leave the URL saying /register while Sign In is what's on screen (or vice
     // versa). replaceState, not pushState — a tab toggle isn't a "navigation" worth cluttering
