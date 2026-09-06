@@ -111,10 +111,6 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
     interimRef.current = '';
     chunksRef.current = [];
     startTimeRef.current = Date.now();
-    if (!hasEverRecorded) {
-      setHasEverRecorded(true);
-      try { localStorage.setItem('explain_has_recorded_answer', 'true'); } catch { /* private browsing etc — hint just reappears next time, harmless */ }
-    }
 
     // ── Mic stream ───────────────────────────────────────────────────────────
     let stream: MediaStream | null = null;
@@ -174,12 +170,19 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
       recognition.onend = () => {};
       recognition.start();
     }
-  }, [disabled, micState, animateBars, onInterimTranscript, hasEverRecorded]);
+  }, [disabled, micState, animateBars, onInterimTranscript]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
     recognitionRef.current = null;
     setMicState('processing');
+    // Set on stop, not start — the "click again to stop" hint (below) needs hasEverRecorded to
+    // still read false for the whole of a candidate's very first recording, not flip true the
+    // instant it begins.
+    if (!hasEverRecorded) {
+      setHasEverRecorded(true);
+      try { localStorage.setItem('explain_has_recorded_answer', 'true'); } catch { /* private browsing etc — hint just reappears next time, harmless */ }
+    }
 
     const duration = (Date.now() - startTimeRef.current) / 1000;
     const fallbackText = interimRef.current.trim();
@@ -248,7 +251,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
     };
 
     finish();
-  }, [onTranscript, stopMic]);
+  }, [onTranscript, stopMic, hasEverRecorded]);
 
   useEffect(() => {
     return () => {
@@ -308,13 +311,29 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
             <motion.div
               animate={{ y: [0, 7, 0] }}
               transition={{ repeat: Infinity, duration: 1.1, ease: 'easeInOut' }}
-              style={{ position: 'absolute', bottom: 'calc(100% + 10px)', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none', zIndex: 2 }}
+              style={{ position: 'absolute', bottom: 'calc(100% + 10px)', left: '50%', transform: 'translateX(calc(-50% - 60px))', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none', zIndex: 2 }}
             >
               <span style={{ background: 'var(--blue)', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '5px 11px', borderRadius: '7px', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(79,142,247,0.5)' }}>
                 Click here to record
               </span>
               <svg width="14" height="8" viewBox="0 0 14 8" style={{ marginTop: '-1px' }}>
                 <path d="M0 0L7 8L14 0Z" fill="var(--blue)" />
+              </svg>
+            </motion.div>
+          )}
+          {/* Same first-time-ever guidance, for the equally-unobvious other half of the
+              gesture — clicking the same button again to stop, once actually recording. */}
+          {isListening && !hasEverRecorded && (
+            <motion.div
+              animate={{ y: [0, 7, 0] }}
+              transition={{ repeat: Infinity, duration: 1.1, ease: 'easeInOut' }}
+              style={{ position: 'absolute', bottom: 'calc(100% + 10px)', left: '50%', transform: 'translateX(calc(-50% - 60px))', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none', zIndex: 2 }}
+            >
+              <span style={{ background: '#EF4444', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '5px 11px', borderRadius: '7px', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(239,68,68,0.5)' }}>
+                Click again to stop
+              </span>
+              <svg width="14" height="8" viewBox="0 0 14 8" style={{ marginTop: '-1px' }}>
+                <path d="M0 0L7 8L14 0Z" fill="#EF4444" />
               </svg>
             </motion.div>
           )}
