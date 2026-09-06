@@ -828,11 +828,11 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '11px 16px', borderBottom: '1px solid var(--border)' }}>
                     <span style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', userSelect: 'none' }}>Answer mode</span>
                     <span style={{ display: 'flex', gap: '14px' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-2)', cursor: 'pointer', userSelect: 'none' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: useVoice ? 600 : 400, color: useVoice ? '#a78bfa' : 'var(--text-3)', cursor: 'pointer', userSelect: 'none' }}>
                         <input type="radio" checked={useVoice} onChange={() => setUseVoice(true)} style={{ accentColor: '#a78bfa' }} />
                         Speak
                       </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-2)', cursor: 'pointer', userSelect: 'none' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: !useVoice ? 600 : 400, color: !useVoice ? '#a78bfa' : 'var(--text-3)', cursor: 'pointer', userSelect: 'none' }}>
                         <input type="radio" checked={!useVoice} onChange={() => setUseVoice(false)} style={{ accentColor: '#a78bfa' }} />
                         Type
                       </label>
