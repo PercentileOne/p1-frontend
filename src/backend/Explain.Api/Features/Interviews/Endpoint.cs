@@ -161,6 +161,64 @@ public static class Endpoint
             return Results.Ok(new { shareToken, shareUrl, qrDataUri = GenerateQrDataUri(shareUrl) });
         }).RequireAuthorization();
 
+        // POST /api/interviews/{candidateId}/{id}/unshare — makes a previously-shared interview
+        // private again. Keeps the existing shareToken on the document rather than clearing it,
+        // so flipping back to public later (POST .../share) reactivates the exact same link/QR
+        // instead of minting a new one — GET /api/interviews/shared/{shareToken} below already
+        // refuses to serve anything while isShared is false, so this takes effect immediately.
+        app.MapPost("/api/interviews/{candidateId}/{id}/unshare", async (string candidateId, string id, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var userId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (candidateId != userId) return Results.Forbid();
+
+            var container = cosmos.GetContainer("interviews");
+            var envelope = await ReadEnvelopeAsync(container, id, candidateId);
+            if (envelope is null) return Results.NotFound();
+
+            if (envelope.isShared)
+            {
+                var updated = envelope with { isShared = false };
+                using var body = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(updated));
+                using var upsertResponse = await container.UpsertItemStreamAsync(body, new PartitionKey(candidateId));
+                if (!upsertResponse.IsSuccessStatusCode)
+                    return Results.Problem("Failed to update visibility", statusCode: (int)upsertResponse.StatusCode);
+            }
+            return Results.Ok(new { isShared = false });
+        }).RequireAuthorization();
+
+        // POST /api/interviews/visibility — { "isPublic": bool } — the "My Interviews" page's
+        // top-level bulk toggle: sets every one of the caller's own interviews public/private in
+        // one action (e.g. "just got a job, make everything private again"). Cosmos has no native
+        // bulk update, so this loops one upsert per document — fine at today's per-candidate
+        // interview volume, same accepted shortcut as the cross-partition scans elsewhere in this
+        // codebase. userId comes from the JWT, not a route param, so there's no ownership check to
+        // get wrong — a candidate can only ever bulk-edit their own partition.
+        app.MapPost("/api/interviews/visibility", async (VisibilityRequest body, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var userId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+            var container = cosmos.GetContainer("interviews");
+            var query = new QueryDefinition("SELECT * FROM c WHERE c.candidateId = @cid").WithParameter("@cid", userId);
+            var updatedCount = 0;
+            using var feed = container.GetItemQueryIterator<InterviewEnvelope>(
+                query, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userId) });
+            while (feed.HasMoreResults)
+            {
+                foreach (var env in await feed.ReadNextAsync())
+                {
+                    if (env.isShared == body.IsPublic) continue;
+                    var shareToken = body.IsPublic && string.IsNullOrEmpty(env.shareToken) ? GenerateShareToken() : env.shareToken;
+                    var updated = env with { isShared = body.IsPublic, shareToken = shareToken };
+                    using var upsertBody = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(updated));
+                    using var upsertResponse = await container.UpsertItemStreamAsync(upsertBody, new PartitionKey(userId));
+                    if (upsertResponse.IsSuccessStatusCode) updatedCount++;
+                }
+            }
+            return Results.Ok(new { updatedCount, isShared = body.IsPublic });
+        }).RequireAuthorization();
+
         // GET /api/interviews/{candidateId}/{id} — owner-only fetch, used by the summary page
         // to hydrate itself when React Router state is empty (reload, revisit, direct link).
         app.MapGet("/api/interviews/{candidateId}/{id}", async (string candidateId, string id, HttpContext ctx, CosmosService cosmos, BlobStorageService blob) =>
@@ -311,3 +369,6 @@ public record InterviewSummary(
     double overallScore,
     bool isShared,
     bool hasVideo);
+
+// Body for POST /api/interviews/visibility — the My Interviews page's bulk public/private toggle.
+public record VisibilityRequest(bool IsPublic);

@@ -67,6 +67,55 @@ export function SaveDecisionPanel({
   const [linkCopied, setLinkCopied] = useState(false);
   const [error, setError]           = useState('');
 
+  // Whether this interview is currently visible in Candidate Search / via its share link —
+  // reversible any time from here, not just a one-way "Save" decision. Initialized from
+  // alreadyShared (the parent's fetched isShared) and kept in sync locally as the candidate
+  // toggles it, since the parent doesn't refetch mid-session.
+  const [isPublicNow, setIsPublicNow] = useState(alreadyShared);
+  const [visBusy, setVisBusy] = useState(false);
+
+  const handleMakePrivate = async () => {
+    if (!candidateId || !interviewId || visBusy) return;
+    setVisBusy(true);
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/interviews/${encodeURIComponent(candidateId)}/${encodeURIComponent(interviewId)}/unshare`,
+        { method: 'POST', headers: { Authorization: `Bearer ${authToken ?? ''}` } },
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setIsPublicNow(false);
+    } catch (err) {
+      console.error('[SaveDecisionPanel] Unshare failed:', err);
+      setError('Something went wrong making this private. Please try again.');
+    } finally {
+      setVisBusy(false);
+    }
+  };
+
+  const handleMakePublicAgain = async () => {
+    if (!candidateId || !interviewId || visBusy) return;
+    setVisBusy(true);
+    setError('');
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/interviews/${encodeURIComponent(candidateId)}/${encodeURIComponent(interviewId)}/share`,
+        { method: 'POST', headers: { Authorization: `Bearer ${authToken ?? ''}` } },
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json() as { shareToken: string; shareUrl: string; qrDataUri: string };
+      setShareToken(data.shareToken);
+      setShareUrl(data.shareUrl);
+      setQrDataUri(data.qrDataUri);
+      setIsPublicNow(true);
+      onSaved?.(data.shareToken, data.shareUrl);
+    } catch (err) {
+      console.error('[SaveDecisionPanel] Re-share failed:', err);
+      setError('Something went wrong making this public again. Please try again.');
+    } finally {
+      setVisBusy(false);
+    }
+  };
+
   // Revisiting an interview that was already saved/shared before — restore its real QR/link
   // straight away instead of showing "Save this interview?" again as if it were brand new.
   // /share is idempotent (reuses the existing token), so this can't invalidate a link or QR
@@ -124,6 +173,7 @@ export function SaveDecisionPanel({
       setShareToken(shareData.shareToken);
       setShareUrl(shareData.shareUrl);
       setQrDataUri(shareData.qrDataUri);
+      setIsPublicNow(true);
       setStep('saved');
       onSaved?.(shareData.shareToken, shareData.shareUrl);
       setTimeout(() => setStep('ready'), 1400);
@@ -274,6 +324,47 @@ export function SaveDecisionPanel({
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
           style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '20px', overflow: 'hidden' }}
         >
+          {/* Visibility status + toggle — reversible any time, not a one-way "Saved" state.
+              This is the same isShared flag Candidate Search and the /shared link key off. */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
+            padding: '14px 20px', borderBottom: '1px solid var(--border)',
+            background: isPublicNow ? 'rgba(52,211,153,0.06)' : 'rgba(255,255,255,0.03)',
+          }}>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: isPublicNow ? '#34D399' : 'var(--text-3)' }}>
+              {isPublicNow ? '🌍 Public' : '🔒 Private'}
+              <span style={{ fontWeight: 500, color: 'var(--text-3)', marginLeft: 8 }}>
+                {isPublicNow ? '— visible in Candidate Search and via its share link' : '— hidden from Candidate Search, share link disabled'}
+              </span>
+            </div>
+            <button
+              onClick={isPublicNow ? handleMakePrivate : handleMakePublicAgain}
+              disabled={visBusy}
+              style={{
+                fontSize: '12px', fontWeight: 700, padding: '7px 14px', borderRadius: '8px',
+                border: '1px solid var(--border)', background: 'var(--bg3)', color: 'var(--text-2)',
+                cursor: visBusy ? 'default' : 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+                opacity: visBusy ? 0.6 : 1,
+              }}>
+              {visBusy ? 'Updating…' : isPublicNow ? 'Make Private' : 'Make Public'}
+            </button>
+          </div>
+
+          {error && (
+            <div style={{ margin: '16px 20px 0', fontSize: '13px', color: '#EF4444', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', padding: '10px 14px' }}>
+              {error}
+            </div>
+          )}
+
+          {!isPublicNow ? (
+            <div style={{ padding: '48px 32px', textAlign: 'center' }}>
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔒</div>
+              <div style={{ fontSize: '14px', color: 'var(--text-2)', maxWidth: 360, margin: '0 auto', lineHeight: 1.6 }}>
+                This interview is private. Recruiters and employers can't find or view it, and its old share link/QR code no longer works.
+              </div>
+            </div>
+          ) : (
+          <>
           {/* Tab bar */}
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
             <button onClick={() => setReadyTab('qr')} style={{
@@ -434,6 +525,8 @@ export function SaveDecisionPanel({
                 </div>
               </div>
             </>
+          )}
+          </>
           )}
         </motion.div>
       )}

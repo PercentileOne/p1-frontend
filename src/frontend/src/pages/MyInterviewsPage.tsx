@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
+import { X, ChevronUp, ChevronDown, Trash2, Globe, Lock } from 'lucide-react';
 import { useAuthStore } from '../auth/authStore';
 
 interface InterviewSummary {
@@ -13,7 +13,7 @@ interface InterviewSummary {
   hasVideo: boolean;
 }
 
-const FILTER_OPTS = ['All', 'Shared', 'Not Shared'] as const;
+const FILTER_OPTS = ['All', 'Public', 'Private'] as const;
 type FilterOpt = (typeof FILTER_OPTS)[number];
 type SortKey = 'createdAt' | 'role' | 'company' | 'overallScore';
 const PAGE_SIZE = 7;
@@ -57,6 +57,16 @@ export default function MyInterviewsPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
 
+  // Per-row visibility toggle — optimistic, reverted on failure.
+  const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
+  const [toggleError, setToggleError] = useState<string | null>(null);
+
+  // Bulk "make everything public/private" — the top-level control. Two steps: pick a target
+  // visibility from the dropdown, then confirm, since it can affect every interview at once.
+  const [visibilityMenuOpen, setVisibilityMenuOpen] = useState(false);
+  const [bulkConfirmTarget, setBulkConfirmTarget] = useState<boolean | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+
   const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
 
   useEffect(() => {
@@ -82,8 +92,52 @@ export default function MyInterviewsPage() {
     }
   }
 
+  // This candidate's own switch for whether recruiters/employers can find and watch this
+  // specific interview (Candidate Search + its public share link/QR both key off isShared).
+  // Reversible any time — unlike the old one-way "Save" flow, going private again immediately
+  // pulls it out of search and 404s the existing share link without deleting anything.
+  async function toggleVisibility(item: InterviewSummary) {
+    if (!candidateId) return;
+    const nextPublic = !item.isShared;
+    setToggleError(null);
+    setTogglingIds(prev => new Set(prev).add(item.id));
+    setItems(prev => prev?.map(i => (i.id === item.id ? { ...i, isShared: nextPublic } : i)) ?? null);
+    try {
+      const res = await fetch(
+        `${apiBase}/api/interviews/${encodeURIComponent(candidateId)}/${encodeURIComponent(item.id)}/${nextPublic ? 'share' : 'unshare'}`,
+        { method: 'POST', headers: { Authorization: `Bearer ${authToken ?? ''}` } },
+      );
+      if (!res.ok) throw new Error(String(res.status));
+    } catch {
+      setItems(prev => prev?.map(i => (i.id === item.id ? { ...i, isShared: !nextPublic } : i)) ?? null);
+      setToggleError(`Couldn't update "${item.role ?? 'that interview'}" — try again.`);
+    } finally {
+      setTogglingIds(prev => { const next = new Set(prev); next.delete(item.id); return next; });
+    }
+  }
+
+  async function applyBulkVisibility(isPublic: boolean) {
+    if (!authToken) return;
+    setBulkBusy(true);
+    setToggleError(null);
+    try {
+      const res = await fetch(`${apiBase}/api/interviews/visibility`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify({ isPublic }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      setItems(prev => prev?.map(i => ({ ...i, isShared: isPublic })) ?? null);
+      setBulkConfirmTarget(null);
+    } catch {
+      setToggleError("Couldn't update all your interviews — try again.");
+    } finally {
+      setBulkBusy(false);
+    }
+  }
+
   const filtered = (items ?? [])
-    .filter(i => filter === 'All' || (filter === 'Shared' ? i.isShared : !i.isShared))
+    .filter(i => filter === 'All' || (filter === 'Public' ? i.isShared : !i.isShared))
     .filter(i => {
       const q = search.toLowerCase();
       if (!q) return true;
@@ -115,18 +169,54 @@ export default function MyInterviewsPage() {
 
   return (
     <div style={{ padding: '0 0 40px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 16, flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>My Interviews</h1>
           <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>
-            {(items ?? []).length} saved · {sharedCount} shared
+            {(items ?? []).length} saved · {sharedCount} public
           </p>
         </div>
-        <button
-          onClick={() => navigate('/interview-pack/start', { state: { preferredName: firstName } })}
-          style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #34D399, #4F8EF7)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-          🎙️ Practice Interview
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {items && items.length > 0 && (
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setVisibilityMenuOpen(v => !v)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px',
+                  background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 8,
+                  color: 'var(--text-2)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                }}>
+                Visibility <ChevronDown size={13} />
+              </button>
+              {visibilityMenuOpen && (
+                <>
+                  <div onClick={() => setVisibilityMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 20 }} />
+                  <div style={{
+                    position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 21, minWidth: 240,
+                    background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 10,
+                    boxShadow: '0 12px 32px rgba(0,0,0,0.4)', overflow: 'hidden',
+                  }}>
+                    <button
+                      onClick={() => { setBulkConfirmTarget(true); setVisibilityMenuOpen(false); }}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: 'none', border: 'none', borderBottom: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                      <Globe size={15} color="#34D399" /> Make all interviews Public
+                    </button>
+                    <button
+                      onClick={() => { setBulkConfirmTarget(false); setVisibilityMenuOpen(false); }}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: 'none', border: 'none', color: 'var(--text)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                      <Lock size={15} color="var(--text-3)" /> Make all interviews Private
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          <button
+            onClick={() => navigate('/interview-pack/start', { state: { preferredName: firstName } })}
+            style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #34D399, #4F8EF7)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+            🎙️ Practice Interview
+          </button>
+        </div>
       </div>
 
       {items === null && !error && (
@@ -158,6 +248,13 @@ export default function MyInterviewsPage() {
 
       {items && items.length > 0 && (
         <>
+          {toggleError && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, fontSize: 12, color: '#EF4444', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 16 }}>
+              {toggleError}
+              <button onClick={() => setToggleError(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', display: 'flex', padding: 0 }}><X size={13} /></button>
+            </div>
+          )}
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
             <div style={{ flex: '1 1 220px', minWidth: 0, position: 'relative' }}>
               <input
@@ -185,7 +282,7 @@ export default function MyInterviewsPage() {
 
           <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', minWidth: 760, borderCollapse: 'collapse' }}>
+              <table style={{ width: '100%', minWidth: 780, borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
                     {sortableTh('Date', 'createdAt')}
@@ -193,7 +290,7 @@ export default function MyInterviewsPage() {
                     {sortableTh('Company', 'company')}
                     {sortableTh('Score', 'overallScore')}
                     <th style={thStyle}>Recording</th>
-                    <th style={thStyle}>Status</th>
+                    <th style={thStyle}>Visibility</th>
                     <th style={thStyle} />
                   </tr>
                 </thead>
@@ -201,6 +298,7 @@ export default function MyInterviewsPage() {
                   {visible.map((item, i) => {
                     const pct = Math.round(item.overallScore);
                     const color = scoreColor(pct);
+                    const isToggling = togglingIds.has(item.id);
                     return (
                       <tr key={item.id}
                         onClick={() => navigate(`/interview-summary/${item.id}`)}
@@ -224,13 +322,24 @@ export default function MyInterviewsPage() {
                             : <span style={{ fontSize: 12, color: 'var(--text-3)' }}>—</span>}
                         </td>
                         <td style={{ padding: '14px 16px' }}>
-                          <span style={{
-                            fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 20,
-                            color: item.isShared ? '#34D399' : 'var(--text-3)',
-                            background: item.isShared ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.05)',
-                          }}>
-                            {item.isShared ? 'Shared' : 'Private'}
-                          </span>
+                          {/* A real, reversible toggle — not a one-way "Shared" label. Clicking it
+                              flips isShared via /share or /unshare immediately, which is exactly
+                              what controls whether this interview shows up in recruiter/employer
+                              Candidate Search and whether its share link/QR still resolves. */}
+                          <button
+                            onClick={e => { e.stopPropagation(); toggleVisibility(item); }}
+                            disabled={isToggling}
+                            title={item.isShared ? 'Public — visible in Candidate Search and via its share link. Click to make private.' : 'Private — hidden from Candidate Search, share link disabled. Click to make public.'}
+                            style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: isToggling ? 'default' : 'pointer', padding: 0, opacity: isToggling ? 0.5 : 1, fontFamily: 'inherit' }}
+                          >
+                            <span style={{ width: 34, height: 18, borderRadius: 20, background: item.isShared ? '#34D399' : 'rgba(255,255,255,0.14)', position: 'relative', flexShrink: 0, transition: 'background 0.15s' }}>
+                              <span style={{ position: 'absolute', top: 2, left: item.isShared ? 18 : 2, width: 14, height: 14, borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+                            </span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: item.isShared ? '#34D399' : 'var(--text-3)' }}>
+                              {item.isShared ? <Globe size={12} /> : <Lock size={12} />}
+                              {item.isShared ? 'Public' : 'Private'}
+                            </span>
+                          </button>
                         </td>
                         <td style={{ padding: '14px 16px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -281,6 +390,39 @@ export default function MyInterviewsPage() {
             )}
           </div>
         </>
+      )}
+
+      {/* Bulk visibility confirmation — deliberately a second step, since "make everything
+          public" can affect every interview at once. */}
+      {bulkConfirmTarget !== null && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 30, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+          onClick={() => !bulkBusy && setBulkConfirmTarget(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 420, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 16, padding: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              {bulkConfirmTarget ? <Globe size={20} color="#34D399" /> : <Lock size={20} color="var(--text-3)" />}
+              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>
+                Make all interviews {bulkConfirmTarget ? 'Public' : 'Private'}?
+              </div>
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6, marginBottom: 24 }}>
+              {bulkConfirmTarget
+                ? `This makes all ${(items ?? []).length} of your interviews visible in Candidate Search and reactivates any share links/QR codes you've generated for them.`
+                : `This immediately hides all ${(items ?? []).length} of your interviews from Candidate Search and disables their share links/QR codes. Nothing is deleted — you can make them public again any time.`}
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setBulkConfirmTarget(null)} disabled={bulkBusy} style={{ flex: 1, padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-2)', fontSize: 13, fontWeight: 700, cursor: bulkBusy ? 'default' : 'pointer', fontFamily: 'inherit' }}>
+                Cancel
+              </button>
+              <button onClick={() => applyBulkVisibility(bulkConfirmTarget)} disabled={bulkBusy} style={{
+                flex: 1, padding: '12px 16px', borderRadius: 10, border: 'none', color: '#fff', fontSize: 13, fontWeight: 800, cursor: bulkBusy ? 'default' : 'pointer', fontFamily: 'inherit',
+                background: bulkConfirmTarget ? 'linear-gradient(135deg, #34D399, #059669)' : 'linear-gradient(135deg, #64748b, #475569)',
+                opacity: bulkBusy ? 0.7 : 1,
+              }}>
+                {bulkBusy ? 'Updating…' : `Yes, make all ${bulkConfirmTarget ? 'Public' : 'Private'}`}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
