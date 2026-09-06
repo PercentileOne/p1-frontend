@@ -30,11 +30,18 @@ public class SpeakVoiceHandler(
         if (string.IsNullOrWhiteSpace(cmd.Text))
             return Result<SpeakVoiceDto>.Failure("Text is required.");
 
+        // Sarah (hr) gets her own dedicated voice, separate from Lessons/ReadAloud's VoiceHr —
+        // they used to be two independent voices (interview room via the old client-side
+        // VITE_ELEVENLABS_VOICE_HR, Read Aloud via this same ElevenLabs:VoiceHr setting), and
+        // sharing one here silently swapped Sarah's voice for Read Aloud's when this endpoint
+        // was first built. VoiceInterviewHr falls back to the shared one only if it's ever
+        // unset, so this can never regress to a hard failure.
+        //
         // No ElevenLabs__VoiceMike configured yet — falls back to the technical (James) voice,
         // matching exactly what the old client-side code did (`VOICE_MIKE || VOICE_TECH`).
         var voiceId = cmd.Role switch
         {
-            "hr"   => config["ElevenLabs:VoiceHr"],
+            "hr"   => config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],
             "mike" => config["ElevenLabs:VoiceMike"] ?? config["ElevenLabs:VoiceTech"],
             _      => config["ElevenLabs:VoiceTech"], // "technical" and anything else
         };
