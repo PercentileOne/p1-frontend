@@ -1,0 +1,218 @@
+<title>System Moving Parts</title>
+<style>
+  :root {
+    --bg: #070b14;
+    --bg2: #0c1220;
+    --bg3: #111827;
+    --border: rgba(255,255,255,0.09);
+    --border-strong: rgba(255,255,255,0.16);
+    --text: #f1f5f9;
+    --text-2: rgba(241,245,249,0.68);
+    --text-3: rgba(241,245,249,0.4);
+    --blue: #4F8EF7;
+    --blue-dim: rgba(79,142,247,0.12);
+    --green: #34D399;
+    --green-dim: rgba(52,211,153,0.12);
+    --amber: #F59E0B;
+    --amber-dim: rgba(245,158,11,0.12);
+    --red: #EF4444;
+    --red-dim: rgba(239,68,68,0.1);
+    --font: -apple-system, "Segoe UI", "Inter", sans-serif;
+    --mono: "SF Mono", "IBM Plex Mono", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f7f8fb; --bg2: #ffffff; --bg3: #eef1f6;
+      --border: rgba(15,23,42,0.1); --border-strong: rgba(15,23,42,0.18);
+      --text: #0f172a; --text-2: rgba(15,23,42,0.68); --text-3: rgba(15,23,42,0.45);
+      --blue-dim: rgba(37,99,235,0.08); --green-dim: rgba(5,150,105,0.08);
+      --amber-dim: rgba(217,119,6,0.08); --red-dim: rgba(220,38,38,0.07);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f8fb; --bg2: #ffffff; --bg3: #eef1f6;
+    --border: rgba(15,23,42,0.1); --border-strong: rgba(15,23,42,0.18);
+    --text: #0f172a; --text-2: rgba(15,23,42,0.68); --text-3: rgba(15,23,42,0.45);
+    --blue-dim: rgba(37,99,235,0.08); --green-dim: rgba(5,150,105,0.08);
+    --amber-dim: rgba(217,119,6,0.08); --red-dim: rgba(220,38,38,0.07);
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); margin: 0; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 56px 28px 80px; }
+
+  .eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); margin-bottom: 14px; }
+  h1 { font-size: clamp(28px, 4vw, 38px); font-weight: 900; letter-spacing: -0.03em; margin: 0 0 10px; text-wrap: balance; }
+  .lede { font-size: 15px; color: var(--text-2); line-height: 1.65; max-width: 640px; margin: 0 0 8px; }
+  .snapshot-date { font-size: 12px; color: var(--text-3); margin: 0 0 40px; }
+
+  .finding {
+    background: var(--green-dim); border: 1px solid rgba(52,211,153,0.3); border-radius: 14px;
+    padding: 20px 24px; margin-bottom: 44px; display: flex; gap: 16px; align-items: flex-start;
+  }
+  .finding .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); flex-shrink: 0; margin-top: 6px; box-shadow: 0 0 0 4px rgba(52,211,153,0.15); }
+  .finding-title { font-size: 13px; font-weight: 800; color: var(--green); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .finding p { margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: var(--text-2); }
+  .finding p:last-child { margin-bottom: 0; }
+  .finding code { font-family: var(--mono); font-size: 12.5px; background: rgba(255,255,255,0.07); padding: 1px 6px; border-radius: 4px; color: var(--text); }
+
+  .group { margin-bottom: 40px; }
+  .group-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+  .group-title { font-size: 13px; font-weight: 800; letter-spacing: 0.04em; color: var(--text); }
+  .group-sub { font-size: 12px; color: var(--text-3); }
+
+  .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; background: var(--bg2); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 760px; }
+  thead th {
+    text-align: left; font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-3); padding: 13px 16px; border-bottom: 1px solid var(--border-strong);
+    background: var(--bg3); position: sticky; top: 0;
+  }
+  tbody td { padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text-2); line-height: 1.5; }
+  tbody tr:last-child td { border-bottom: none; }
+  .part-name { color: var(--text); font-weight: 700; font-size: 13.5px; }
+  .part-desc { max-width: 260px; }
+  .owner { white-space: nowrap; }
+  .owner .who { color: var(--text); font-weight: 600; }
+  .owner .what { display: block; font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+
+  .chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 100px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .chip-paid { background: var(--amber-dim); color: var(--amber); }
+  .chip-free { background: var(--green-dim); color: var(--green); }
+  .chip-scale { background: var(--green-dim); color: var(--green); }
+  .chip-risk { background: var(--red-dim); color: var(--red); }
+  .chip-watch { background: var(--amber-dim); color: var(--amber); }
+  .chip-fixed { background: var(--green-dim); color: var(--green); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; margin: 10px 0 40px; font-size: 12px; color: var(--text-3); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .sw { width: 9px; height: 9px; border-radius: 3px; }
+
+  .foot-note { font-size: 12px; color: var(--text-3); margin-top: 10px; line-height: 1.6; }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">InterviewMe · Infrastructure Reference</div>
+  <h1>Every moving part, for the load test</h1>
+  <p class="lede">What actually runs when a candidate takes an interview — what each piece does, who's billed for it, and whether it scales on its own or needs watching at 100–200 concurrent sessions.</p>
+  <p class="snapshot-date">Snapshot taken 2026-09-06, ahead of the Azure Load Testing pass on /api/ai-proxy, the transcribe proxy, and the upload endpoint.</p>
+
+  <div class="finding">
+    <div class="dot"></div>
+    <div>
+      <div class="finding-title">Found while building this table — fixed same day</div>
+      <p>The ElevenLabs API key was baked into the public JS bundle on both the candidate and recruiter portals — <code>VITE_ELEVENLABS_API_KEY</code> was a build-time variable, which Vite exposes directly to the browser. Same class of issue as the OpenAI incident already on file. Fixed by adding <code>Explain.Api</code>'s <code>/interviews/speak</code> proxy (same pattern as the existing Lessons/ReadAloud feature) — the key and voice-id mapping now live server-side only, and all three client call sites (candidate portal, recruiter portal, and a third ad-hoc call in LeagueTable.tsx) go through it. The old exposed key was deleted from ElevenLabs the same day.</p>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-head">
+      <div class="group-title">Frontend &amp; hosting</div>
+      <div class="group-sub">serves the app itself — not usually where load testing finds anything</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th style="width:190px">Part</th><th>What it does</th><th style="width:190px">Owner / billed to</th><th style="width:150px">For the load test</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="part-name">Azure Static Web App<br><span style="font-weight:400;color:var(--text-3);font-size:12px">candidate.interviewme.global</span></td>
+            <td class="part-desc">Serves the React app + its own small bundled Functions (save-lesson, get-lesson, share-meta).</td>
+            <td class="owner"><span class="who">Azure</span><span class="what">Static Web Apps plan</span></td>
+            <td><span class="chip chip-scale">● Scales itself</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-head">
+      <div class="group-title">Backend compute</div>
+      <div class="group-sub">the one thing every request passes through first</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th style="width:190px">Part</th><th>What it does</th><th style="width:190px">Owner / billed to</th><th style="width:150px">For the load test</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="part-name">Explain.Api<br><span style="font-weight:400;color:var(--text-3);font-size:12px">api.explain.global</span></td>
+            <td class="part-desc">The .NET backend — every AI call, TTS call, transcription, and upload passes through here before reaching a provider.</td>
+            <td class="owner"><span class="who">Azure App Service</span><span class="what">P0v4, 1 fixed instance — no autoscale rule configured</span></td>
+            <td><span class="chip chip-risk">⚠ Likely first bottleneck</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="foot-note">Checked live: this plan runs a single instance with no autoscale profile set up at all. 150 concurrent multi-second AI calls hitting one instance is worth testing before anything else — this is genuinely the most likely place things fall over first, ahead of any AI provider's own limits.</p>
+  </div>
+
+  <div class="group">
+    <div class="group-head">
+      <div class="group-title">AI &amp; voice providers</div>
+      <div class="group-sub">called by the backend per question, per answer, per spoken line</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th style="width:190px">Part</th><th>What it does</th><th style="width:190px">Owner / billed to</th><th style="width:150px">For the load test</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="part-name">Azure AI Foundry Model Router<br><span style="font-weight:400;color:var(--text-3);font-size:12px">/api/ai-proxy</span></td>
+            <td class="part-desc">Generates every interview session (questions, MCQs, Sarah/James/Mike's scripts), scores every answer, drives Learn lesson generation. Routes across 20+ models with automatic failover.</td>
+            <td class="owner"><span class="who">Azure AI Foundry</span><span class="what">Per-token, your Azure subscription</span></td>
+            <td><span class="chip chip-watch">◐ Check quota/TPM</span></td>
+          </tr>
+          <tr>
+            <td class="part-name">OpenAI Whisper<br><span style="font-weight:400;color:var(--text-3);font-size:12px">/api/ai/transcribe</span></td>
+            <td class="part-desc">Transcribes every spoken answer. Calls <code style="font-family:var(--mono);font-size:12px;background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px">api.openai.com</code> directly — <strong style="color:var(--text)">not</strong> routed through the Model Router, so it has none of that failover.</td>
+            <td class="owner"><span class="who">OpenAI</span><span class="what">Per-minute of audio, direct OpenAI billing</span></td>
+            <td><span class="chip chip-watch">◐ Single point of failure</span></td>
+          </tr>
+          <tr>
+            <td class="part-name">ElevenLabs TTS<br><span style="font-weight:400;color:var(--text-3);font-size:12px">/interviews/speak</span></td>
+            <td class="part-desc">Generates Sarah, James, and Mike's actual spoken voice audio. Proxied through the backend (see finding above) — key and voice ids held server-side, results cached in Blob Storage.</td>
+            <td class="owner"><span class="who">ElevenLabs</span><span class="what">Per-character, direct ElevenLabs billing</span></td>
+            <td><span class="chip chip-watch">◐ Own rate limit</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="foot-note">These three are the ones actually worth watching under load — each has its own separate quota/rate-limit ceiling, independent of how the App Service or Cosmos hold up.</p>
+  </div>
+
+  <div class="group">
+    <div class="group-head">
+      <div class="group-title">Data &amp; storage</div>
+      <div class="group-sub">where a finished interview actually lives</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th style="width:190px">Part</th><th>What it does</th><th style="width:190px">Owner / billed to</th><th style="width:150px">For the load test</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="part-name">Cosmos DB<br><span style="font-weight:400;color:var(--text-3);font-size:12px">percentileone-cosmos</span></td>
+            <td class="part-desc">Interviews, profiles, careers, lessons, alerts — every document write/read for a live session.</td>
+            <td class="owner"><span class="who">Azure Cosmos DB</span><span class="what">Serverless — pay per request, not pre-provisioned</span></td>
+            <td><span class="chip chip-scale">● Auto-scales, has a ceiling</span></td>
+          </tr>
+          <tr>
+            <td class="part-name">Azure SQL</td>
+            <td class="part-desc">Users, accounts, subscriptions, permissions, audit logs.</td>
+            <td class="owner"><span class="who">Azure SQL</span><span class="what">Your Azure subscription</span></td>
+            <td><span class="chip chip-scale">● Light load per session</span></td>
+          </tr>
+          <tr>
+            <td class="part-name">Blob Storage</td>
+            <td class="part-desc">The recorded interview video itself — uploaded once per finished session, via a per-request SAS URL. Also now backs the TTS clip cache above.</td>
+            <td class="owner"><span class="who">Azure Blob Storage</span><span class="what">Storage + egress, your Azure subscription</span></td>
+            <td><span class="chip chip-scale">● Scales itself</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i class="sw" style="background:var(--green)"></i> Scales on its own — not expected to be the constraint</span>
+    <span><i class="sw" style="background:var(--amber)"></i> Has its own ceiling — worth checking quota before the test</span>
+    <span><i class="sw" style="background:var(--red)"></i> Flagged issue, or the most likely first failure point</span>
+  </div>
+</div>
