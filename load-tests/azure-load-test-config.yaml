@@ -1,0 +1,43 @@
+version: v0.1
+testId: interview-concurrent-session-test
+displayName: InterviewMe — Concurrent Session Load Test
+testPlan: interview-load-test.jmx
+description: >
+  Exercises the three endpoints most likely to be the real constraint under
+  concurrent load (see docs/architecture/infrastructure-reference.html):
+  /api/ai-proxy (Model Router), /api/ai/transcribe (Whisper, direct OpenAI,
+  no failover), and /api/interviews/upload (metadata + recording). Start at
+  a low `users` value and step up — see README.md.
+
+# One engine instance covers a modest run comfortably; Azure Load Testing
+# splits `users` evenly across however many engines you set here (e.g.
+# engineInstances: 2 + users: 200 = 100 virtual users generated per engine).
+# Bump this if you push well past 200 concurrent users.
+engineInstances: 1
+
+# Stop the run automatically if things are clearly already in trouble —
+# cheaper than letting a bad run burn through the full duration.
+failureCriteria:
+  - avg(response_time_ms) > 8000
+  - percentage(error) > 10
+
+# Passed through to JMeter as -Jusers=... etc. — the same properties the
+# .jmx's User Defined Variables read via __P(). Override per-run with
+# `az load test create/update --env users=100 rampUp=30` instead of editing
+# this file, if you'd rather keep the committed defaults conservative.
+env:
+  - name: users
+    value: '20'
+  - name: rampUp
+    value: '60'
+  - name: loops
+    value: '1'
+  - name: audioFile
+    value: 'sample-answer.wav'
+  # authToken intentionally left blank — Thread Group 3 (/api/interviews/upload)
+  # needs a real bearer token or it will (correctly) 401 every request. Pass it
+  # at run time instead of committing one: --env authToken=<token>
+
+# sample-answer.wav needs to travel with the test plan so Azure Load Testing's
+# engines can read it — this is what --test-plan-file / the "Additional files"
+# section in the portal picks up alongside interview-load-test.jmx.

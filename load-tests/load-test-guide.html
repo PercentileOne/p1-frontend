@@ -1,0 +1,210 @@
+<title>Load Test Guide</title>
+<style>
+  :root {
+    --bg: #070b14;
+    --bg2: #0c1220;
+    --bg3: #111827;
+    --border: rgba(255,255,255,0.09);
+    --border-strong: rgba(255,255,255,0.16);
+    --text: #f1f5f9;
+    --text-2: rgba(241,245,249,0.68);
+    --text-3: rgba(241,245,249,0.4);
+    --blue: #4F8EF7;
+    --blue-dim: rgba(79,142,247,0.12);
+    --green: #34D399;
+    --green-dim: rgba(52,211,153,0.12);
+    --amber: #F59E0B;
+    --amber-dim: rgba(245,158,11,0.12);
+    --red: #EF4444;
+    --red-dim: rgba(239,68,68,0.1);
+    --font: -apple-system, "Segoe UI", "Inter", sans-serif;
+    --mono: "SF Mono", "IBM Plex Mono", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f7f8fb; --bg2: #ffffff; --bg3: #eef1f6;
+      --border: rgba(15,23,42,0.1); --border-strong: rgba(15,23,42,0.18);
+      --text: #0f172a; --text-2: rgba(15,23,42,0.68); --text-3: rgba(15,23,42,0.45);
+      --blue-dim: rgba(37,99,235,0.08); --green-dim: rgba(5,150,105,0.08);
+      --amber-dim: rgba(217,119,6,0.08); --red-dim: rgba(220,38,38,0.07);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f8fb; --bg2: #ffffff; --bg3: #eef1f6;
+    --border: rgba(15,23,42,0.1); --border-strong: rgba(15,23,42,0.18);
+    --text: #0f172a; --text-2: rgba(15,23,42,0.68); --text-3: rgba(15,23,42,0.45);
+    --blue-dim: rgba(37,99,235,0.08); --green-dim: rgba(5,150,105,0.08);
+    --amber-dim: rgba(217,119,6,0.08); --red-dim: rgba(220,38,38,0.07);
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); margin: 0; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 56px 28px 90px; }
+
+  .eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); margin-bottom: 14px; }
+  h1 { font-size: clamp(28px, 4vw, 38px); font-weight: 900; letter-spacing: -0.03em; margin: 0 0 10px; text-wrap: balance; }
+  .lede { font-size: 15px; color: var(--text-2); line-height: 1.65; max-width: 620px; margin: 0 0 40px; }
+
+  h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 6px; }
+  .section { margin-bottom: 44px; }
+  .section-sub { font-size: 13px; color: var(--text-3); margin: 0 0 18px; }
+
+  .steps { counter-reset: step; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+  .steps li { counter-increment: step; position: relative; padding-left: 40px; }
+  .steps li::before {
+    content: counter(step); position: absolute; left: 0; top: 0;
+    width: 26px; height: 26px; border-radius: 8px; background: var(--blue-dim); color: var(--blue);
+    font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+  }
+  .steps .step-title { font-weight: 700; font-size: 14.5px; margin-bottom: 3px; }
+  .steps .step-body { font-size: 13.5px; color: var(--text-2); line-height: 1.6; }
+
+  pre {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px;
+    line-height: 1.6; color: var(--text); margin: 10px 0 0;
+  }
+  code { font-family: var(--mono); font-size: 0.92em; background: rgba(255,255,255,0.07); padding: 1px 6px; border-radius: 4px; }
+
+  .callout {
+    border-radius: 14px; padding: 18px 22px; margin: 0 0 20px; display: flex; gap: 14px; align-items: flex-start;
+  }
+  .callout .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+  .callout-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+  .callout p { margin: 0 0 6px; font-size: 13.5px; line-height: 1.6; color: var(--text-2); }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout.amber { background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.3); }
+  .callout.amber .dot { background: var(--amber); box-shadow: 0 0 0 4px rgba(245,158,11,0.15); }
+  .callout.amber .callout-title { color: var(--amber); }
+  .callout.blue { background: var(--blue-dim); border: 1px solid rgba(79,142,247,0.3); }
+  .callout.blue .dot { background: var(--blue); box-shadow: 0 0 0 4px rgba(79,142,247,0.15); }
+  .callout.blue .callout-title { color: var(--blue); }
+
+  .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; background: var(--bg2); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
+  thead th {
+    text-align: left; font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-3); padding: 12px 14px; border-bottom: 1px solid var(--border-strong); background: var(--bg3);
+  }
+  tbody td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text-2); line-height: 1.5; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td:first-child { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .ramp { display: flex; gap: 10px; flex-wrap: wrap; }
+  .ramp-stop {
+    flex: 1; min-width: 130px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .ramp-stop .n { font-size: 22px; font-weight: 900; color: var(--blue); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .ramp-stop .l { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+  .filelist { display: flex; flex-direction: column; gap: 10px; }
+  .filelist .f { display: flex; gap: 12px; align-items: baseline; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; }
+  .filelist code { flex-shrink: 0; }
+  .filelist span { font-size: 13px; color: var(--text-2); }
+
+  .foot { font-size: 12px; color: var(--text-3); margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border); }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">InterviewMe · Load Testing</div>
+  <h1>Concurrent session load test</h1>
+  <p class="lede">A JMeter test plan for Azure Load Testing, targeting the three endpoints flagged as the real risk surface in the infrastructure reference — set up once, then run it a few times over the next week or two as changes land.</p>
+
+  <div class="section">
+    <h2>What's in this folder</h2>
+    <p class="section-sub">Everything needed to create and run the test in Azure Load Testing.</p>
+    <div class="filelist">
+      <div class="f"><code>interview-load-test.jmx</code><span>The JMeter test plan — 3 thread groups, one per endpoint, independently scalable.</span></div>
+      <div class="f"><code>azure-load-test-config.yaml</code><span>Azure Load Testing config referencing the plan above — engine count, failure criteria, default parameters.</span></div>
+      <div class="f"><code>sample-answer.wav</code><span>Small synthetic audio clip (4s tone) — the payload for the transcription thread group.</span></div>
+      <div class="f"><code>README.md</code><span>Quick command reference.</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>What it tests</h2>
+    <p class="section-sub">One thread group per endpoint — run all three together, or disable the ones you don't need for a given pass.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Thread group</th><th>Endpoint</th><th>What it's really checking</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>/api/ai-proxy</code></td><td>Whether the single-instance App Service and the Model Router hold up under concurrent AI calls. Default body is a cheap 1-line probe — see the cost note below.</td></tr>
+          <tr><td>2</td><td><code>/api/ai/transcribe</code></td><td>Whisper transcription, called directly against OpenAI with no Model Router failover — its own separate quota ceiling.</td></tr>
+          <tr><td>3</td><td><code>/api/interviews/upload</code></td><td>Metadata + recording upload. Requires a real bearer token — see setup step 3.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Setup</h2>
+    <ol class="steps">
+      <li>
+        <div class="step-title">Create the Azure Load Testing resource (one-time)</div>
+        <div class="step-body">If you don't already have one in <code>p1-core</code>:</div>
+        <pre>az load create --name p1-load-testing --resource-group p1-core --location uksouth</pre>
+      </li>
+      <li>
+        <div class="step-title">Create the test</div>
+        <pre>az load test create \
+  --name interview-load-test \
+  --resource-group p1-core \
+  --load-test-config-file load-tests/azure-load-test-config.yaml \
+  --test-plan load-tests/interview-load-test.jmx</pre>
+      </li>
+      <li>
+        <div class="step-title">Upload the audio sample and (optionally) a bearer token</div>
+        <div class="step-body">In the Azure Portal → your Load Testing resource → the test → <strong>Test files</strong>, upload <code>sample-answer.wav</code> so thread group 2 can find it. For thread group 3, grab a real token from a logged-in candidate session (browser dev tools → Application → local storage, or the network tab on any authenticated request) and pass it at run time — it's short-lived, so fetch a fresh one before each run rather than committing one anywhere.</div>
+      </li>
+      <li>
+        <div class="step-title">Run it</div>
+        <pre>az load test-run create \
+  --test-id interview-load-test \
+  --resource-group p1-core \
+  --env authToken=&lt;paste a fresh token&gt;</pre>
+      </li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h2>Before you push past 20 users</h2>
+    <div class="callout amber">
+      <div class="dot"></div>
+      <div>
+        <div class="callout-title">Cost — read this before a big run</div>
+        <p>The default <code>/api/ai-proxy</code> body is a deliberately cheap one-line probe, not a real interview generation call — running 150 of those costs pennies. The commented-out block inside the HTTP Request (in the .jmx, or just search for "production-shaped body") is the real thing: a full session-generation prompt matching what <code>sessionPrepareClient</code> actually sends. Swapping to that and running it at 150–200 concurrent users is a genuinely production-cost run — do it once, deliberately, not on every iteration.</p>
+      </div>
+    </div>
+    <div class="callout blue">
+      <div class="dot"></div>
+      <div>
+        <div class="callout-title">Ramp up, don't jump straight to 150</div>
+        <p>Step through a few stops first — cheaper to find where things bend at 50 than to discover it at 150 with no data on where the curve actually turns.</p>
+      </div>
+    </div>
+    <div class="ramp">
+      <div class="ramp-stop"><div class="n">20</div><div class="l">committed default — sanity check</div></div>
+      <div class="ramp-stop"><div class="n">50</div><div class="l">first real signal</div></div>
+      <div class="ramp-stop"><div class="n">100</div><div class="l">half the target</div></div>
+      <div class="ramp-stop"><div class="n">150–200</div><div class="l">the actual target range</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Reading the results</h2>
+    <p class="section-sub">The Aggregate Report (in the .jmx, and mirrored in the Azure Portal's own test-run dashboard) breaks results down per thread group. Averages hide the failure mode this test exists to catch — a single App Service instance that's fine most of the time and then chokes under the tail — so look at p90/p99, not just the average.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Signal</th><th>Likely means</th></tr></thead>
+        <tbody>
+          <tr><td>Error % climbs on thread group 1 specifically</td><td>The single-instance App Service (no autoscale) or the Model Router's own quota — check App Insights' <code>requests</code> table for which.</td></tr>
+          <tr><td>Thread group 2 slows or errors while 1 stays healthy</td><td>Whisper/OpenAI's own rate limit — this one has no Model Router failover to fall back on.</td></tr>
+          <tr><td>Thread group 3 all return 401</td><td>Expected if no (or an expired) bearer token was passed — not an infrastructure finding.</td></tr>
+          <tr><td>p99 response time spikes but error % stays low</td><td>Things are queuing, not failing outright — often the earliest sign of the single-instance ceiling before it starts actually rejecting requests.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="foot">Companion doc: <code>docs/architecture/infrastructure-reference.html</code> — the full breakdown of what each piece of infrastructure is, who's billed, and why these three endpoints specifically were chosen as the test surface.</div>
+</div>
