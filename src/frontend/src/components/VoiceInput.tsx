@@ -294,12 +294,12 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
               <motion.div
                 animate={{ scale: [1, 1.8], opacity: [0.6, 0] }}
                 transition={{ repeat: Infinity, duration: 1.4, ease: 'easeOut' }}
-                style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(79,142,247,0.5)', pointerEvents: 'none' }}
+                style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(52,211,153,0.5)', pointerEvents: 'none' }}
               />
               <motion.div
                 animate={{ scale: [1, 1.5], opacity: [0.4, 0] }}
                 transition={{ repeat: Infinity, duration: 1.4, delay: 0.35, ease: 'easeOut' }}
-                style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(79,142,247,0.35)', pointerEvents: 'none' }}
+                style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(52,211,153,0.35)', pointerEvents: 'none' }}
               />
             </>
           )}
@@ -319,11 +319,11 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
                 transition={{ repeat: Infinity, duration: 1.1, ease: 'easeInOut' }}
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
               >
-                <span style={{ background: 'var(--blue)', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '5px 11px', borderRadius: '7px', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(79,142,247,0.5)' }}>
+                <span style={{ background: 'var(--green)', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '5px 11px', borderRadius: '7px', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(52,211,153,0.5)' }}>
                   Click here to record
                 </span>
                 <svg width="14" height="8" viewBox="0 0 14 8" style={{ marginTop: '-1px' }}>
-                  <path d="M0 0L7 8L14 0Z" fill="var(--blue)" />
+                  <path d="M0 0L7 8L14 0Z" fill="var(--green)" />
                 </svg>
               </motion.div>
             </div>
@@ -356,9 +356,9 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
               cursor: disabled || isProcessing ? 'default' : 'pointer',
               background: isListening
                 ? 'linear-gradient(135deg,#EF4444,#dc2626)'
-                : 'linear-gradient(135deg,#4F8EF7,#2563eb)',
+                : 'linear-gradient(135deg,#34D399,#047857)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: isListening ? '0 0 20px rgba(239,68,68,0.4)' : highlightRecord ? '0 0 28px rgba(79,142,247,0.7)' : '0 0 16px rgba(79,142,247,0.3)',
+              boxShadow: isListening ? '0 0 20px rgba(239,68,68,0.4)' : highlightRecord ? '0 0 28px rgba(52,211,153,0.7)' : '0 0 16px rgba(52,211,153,0.3)',
               transition: 'background 0.3s, box-shadow 0.3s',
               opacity: disabled || isProcessing ? 0.5 : 1,
             }}
