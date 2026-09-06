@@ -1,9 +1,10 @@
-// Premium TTS via ElevenLabs — falls back to Web Speech API if keys not configured.
-// Set these in .env.local (never commit keys):
-//   VITE_ELEVENLABS_API_KEY=your_key_here
-//   VITE_ELEVENLABS_VOICE_HR=voice_id_for_sarah
-//   VITE_ELEVENLABS_VOICE_TECH=voice_id_for_james
-//   VITE_ELEVENLABS_VOICE_MIKE=voice_id_for_mike (agent debrief)
+// Premium TTS via ElevenLabs, proxied through the .NET backend — falls back to Web Speech API
+// if the call fails. Used to call ElevenLabs directly from the browser with
+// VITE_ELEVENLABS_API_KEY baked into the public bundle (same class of exposure as the OpenAI
+// incident documented in CLAUDE.md, just never fixed for this call site until now). The backend
+// now owns the API key AND the voice-id-per-role mapping — see
+// Features/Interviews/SpeakVoice/SpeakVoiceHandler.cs — so this file no longer needs to know
+// any ElevenLabs credentials or voice IDs at all, only which role is speaking.
 
 // Phonetic substitutions so TTS pronounces tech terms correctly
 const PHONETIC: [RegExp, string][] = [
@@ -69,12 +70,7 @@ export function sanitiseForTTS(text: string): string {
   return out;
 }
 
-const ELEVENLABS_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY as string | undefined;
-const VOICE_HR       = import.meta.env.VITE_ELEVENLABS_VOICE_HR as string | undefined;
-const VOICE_TECH     = import.meta.env.VITE_ELEVENLABS_VOICE_TECH as string | undefined;
-const VOICE_MIKE     = import.meta.env.VITE_ELEVENLABS_VOICE_MIKE as string | undefined;
-
-const ELEVENLABS_MODEL = 'eleven_turbo_v2'; // lowest latency, high quality
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 
 // Shared AudioContext — created once, reused across all TTS calls
 let _audioCtx: AudioContext | null = null;
@@ -105,7 +101,7 @@ export function setTTSRecordingDestination(node: MediaStreamAudioDestinationNode
 
 async function speakElevenLabs(
   text: string,
-  voiceId: string,
+  role: 'hr' | 'technical' | 'mike',
   onEnd: () => void,
   volume = 1.0,
   onAnalyser?: (a: AnalyserNode) => void,
@@ -119,23 +115,19 @@ async function speakElevenLabs(
   const ctx = await getAudioContext();
   if (ctx.state !== 'running') throw new Error('AudioContext suspended — no user gesture');
 
-  const res = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
-    {
-      method: 'POST',
-      headers: {
-        'xi-api-key': ELEVENLABS_KEY!,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        text: sanitiseForTTS(text),
-        model_id: ELEVENLABS_MODEL,
-        voice_settings: { stability: 0.5, similarity_boost: 0.75 },
-      }),
-    },
-  );
+  // Backend picks the actual ElevenLabs voice id from `role` and holds the API key server-side
+  // — see Features/Interviews/SpeakVoice. Response is a cached blob SAS URL, not raw audio, so
+  // this is a two-step fetch (ask for the clip, then fetch the clip) rather than one.
+  const genRes = await fetch(`${API_BASE}/interviews/speak`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: sanitiseForTTS(text), role }),
+  });
+  if (!genRes.ok) throw new Error(`Interview speak proxy error: ${genRes.status}`);
+  const { audioUrl } = await genRes.json() as { audioUrl: string };
 
-  if (!res.ok) throw new Error(`ElevenLabs error: ${res.status}`);
+  const res = await fetch(audioUrl);
+  if (!res.ok) throw new Error(`Audio clip fetch error: ${res.status}`);
 
   const blob = await res.blob();
   if (blob.size < 100) throw new Error('ElevenLabs returned empty audio');
@@ -229,38 +221,34 @@ export function speak(
   onEnd: () => void,
   onAnalyser?: (a: AnalyserNode | null) => void,
 ): () => void {
-  // `||` not `??` — an unset GitHub secret bakes in as an empty string at build time, not
-  // undefined, so `??` never falls through to VOICE_TECH and silently leaves voiceId as ''.
-  const voiceId = role === 'hr' ? VOICE_HR : role === 'mike' ? (VOICE_MIKE || VOICE_TECH) : VOICE_TECH;
+  let cancelled = false;
+  let cancelAudio: (() => void) | null = null;
 
-  if (ELEVENLABS_KEY && voiceId) {
-    let cancelled = false;
-    let cancelAudio: (() => void) | null = null;
+  speakElevenLabs(text, role, () => {
+    if (!cancelled) onEnd();
+  }, role === 'technical' ? 0.5 : role === 'mike' ? 0.65 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined)
+    .then(cancel => { cancelAudio = cancel; })
+    .catch((err) => {
+      // Backend proxy or ElevenLabs itself failed — fall back to Web Speech. Logged (not
+      // swallowed) so the real cause — AudioContext still suspended, backend down, a
+      // rate-limited/failed ElevenLabs call, decode failure, etc. — is visible in the
+      // console instead of just "sounds robotic".
+      console.warn(`[TTS] Neural voice failed for role "${role}", falling back to Web Speech:`, err);
+      if (!cancelled) {
+        onAnalyser?.(null);
+        speakWebSpeech(text, role, onEnd);
+      }
+    });
 
-    speakElevenLabs(text, voiceId, () => {
-      if (!cancelled) onEnd();
-    }, role === 'technical' ? 0.5 : role === 'mike' ? 0.65 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined)
-      .then(cancel => { cancelAudio = cancel; })
-      .catch((err) => {
-        // ElevenLabs failed — fall back to Web Speech. Logged (not swallowed) so the
-        // real cause — AudioContext still suspended, a rate-limited/failed API call,
-        // decode failure, etc. — is visible in the console instead of just "sounds robotic".
-        console.warn(`[TTS] ElevenLabs failed for role "${role}", falling back to Web Speech:`, err);
-        if (!cancelled) {
-          onAnalyser?.(null);
-          speakWebSpeech(text, role, onEnd);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-      cancelAudio?.();
-    };
-  }
-
-  // Web Speech path — no real analyser, pass null so caller uses simulation
-  onAnalyser?.(null);
-  return speakWebSpeech(text, role, onEnd);
+  return () => {
+    cancelled = true;
+    cancelAudio?.();
+  };
 }
 
-export const elevenLabsConfigured = Boolean(ELEVENLABS_KEY && VOICE_HR && VOICE_TECH);
+// Always true now — voice generation is proxied through the backend, which owns whether
+// ElevenLabs is actually configured (see SpeakVoiceHandler). If it isn't, or the call fails
+// for any reason, speak() above falls back to Web Speech per-call anyway; this flag only
+// drives the "Neural voices ready" vs "Browser voices" badge in InterviewRoomPage.tsx and
+// isn't worth a live health-check call just to keep it perfectly accurate.
+export const elevenLabsConfigured = true;

@@ -7,8 +7,7 @@ import { getLeague, addLeagueEntry, type LeagueEntry } from '../utils/leagueStor
 type Phase = 'table' | 'setup' | 'subject' | 'cinematic' | 'quickfire' | 'scoring' | 'results';
 
 const AI_CHAT_URL = `${import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://explain-api.azurewebsites.net'}/api/ai/chat`;
-const EL_KEY    = import.meta.env.VITE_ELEVENLABS_API_KEY as string | undefined;
-const EL_VOICE  = import.meta.env.VITE_ELEVENLABS_VOICE_TECH as string | undefined;
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'http://localhost:5130';
 
 const FALLBACK_QUESTIONS = [
   'Tell me about your greatest professional achievement and the impact it had.',
@@ -80,13 +79,17 @@ async function scoreSession(qas: { q: string; a: string }[], subject: string): P
 }
 
 async function speak(text: string): Promise<void> {
-  if (!EL_KEY || !EL_VOICE) return;
+  // Proxied through Explain.Api's /interviews/speak — see ttsApi.ts for the fuller story on
+  // why this used to call ElevenLabs directly with a key baked into the public bundle.
   try {
-    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${EL_VOICE}`, {
+    const genRes = await fetch(`${API_BASE}/interviews/speak`, {
       method: 'POST',
-      headers: { 'xi-api-key': EL_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, model_id: 'eleven_turbo_v2_5', voice_settings: { stability: 0.5, similarity_boost: 0.8 } }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, role: 'technical' }),
     });
+    if (!genRes.ok) return;
+    const { audioUrl } = await genRes.json() as { audioUrl: string };
+    const res = await fetch(audioUrl);
     if (!res.ok) return;
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
