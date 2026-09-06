@@ -193,6 +193,10 @@ export default function InterviewRoomPage() {
   const [useVoice, setUseVoice] = useState(true);
   const [goDeeperEnabled, setGoDeeperEnabled] = useState(ctx.goDeeperEnabled ?? false);
   const [highlightRecord, setHighlightRecord] = useState(false);
+  // True only while the mic is actually capturing a voice answer — gates Repeat/Pause/Pass
+  // below so a mistimed click can't land while an answer recording is live (that's how a
+  // repeated question ended up baked into a candidate's own answer clip).
+  const [isCapturingAnswer, setIsCapturingAnswer] = useState(false);
   const [sessionLanguage, setSessionLanguage] = useState(ctx.selectedLanguage ?? 'en');
   const [elapsed, setElapsed] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -1046,13 +1050,17 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     <span style={{ fontSize: '10px', color: 'var(--text-3)', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', padding: '3px 8px' }}>{selectedDifficulty}</span>
                     {phase === 'answering' && (
                       <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
-                        <button onClick={repeatQuestion} style={{ background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.35)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: 'var(--blue)', cursor: 'pointer' }}>
+                        {/* Disabled while actually recording a voice answer — a mistimed click used
+                            to re-trigger the question audio (Repeat) or bail out (Pause/Pass) mid-
+                            capture, which meant the repeated question itself got baked into the
+                            candidate's own answer clip. */}
+                        <button onClick={repeatQuestion} disabled={isCapturingAnswer} title={isCapturingAnswer ? "Stop recording first" : undefined} style={{ background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.35)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: 'var(--blue)', cursor: isCapturingAnswer ? 'not-allowed' : 'pointer', opacity: isCapturingAnswer ? 0.4 : 1 }}>
                           ↩ Repeat
                         </button>
-                        <button onClick={handlePause} style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.30)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: '#34D399', cursor: 'pointer' }}>
+                        <button onClick={handlePause} disabled={isCapturingAnswer} title={isCapturingAnswer ? "Stop recording first" : undefined} style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.30)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: '#34D399', cursor: isCapturingAnswer ? 'not-allowed' : 'pointer', opacity: isCapturingAnswer ? 0.4 : 1 }}>
                           ⏸ Pause
                         </button>
-                        <button onClick={handlePass} style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: '#EF4444', cursor: 'pointer' }}>
+                        <button onClick={handlePass} disabled={isCapturingAnswer} title={isCapturingAnswer ? "Stop recording first" : undefined} style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: '#EF4444', cursor: isCapturingAnswer ? 'not-allowed' : 'pointer', opacity: isCapturingAnswer ? 0.4 : 1 }}>
                           Pass →
                         </button>
                       </div>
@@ -1079,6 +1087,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         onInterimTranscript={() => {}}
                         highlightRecord={highlightRecord}
                         disabled={phase !== 'answering'}
+                        onListeningChange={setIsCapturingAnswer}
                       />
                     )}
                     <div style={{ flex: 1 }}>

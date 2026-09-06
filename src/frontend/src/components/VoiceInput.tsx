@@ -6,6 +6,9 @@ interface Props {
   onInterimTranscript?: (text: string) => void;
   disabled?: boolean;
   highlightRecord?: boolean;
+  /** Fires whenever the mic actually starts/stops listening — lets the parent disable
+   * Repeat/Pause/Pass while a voice answer is being captured (see InterviewRoomPage.tsx). */
+  onListeningChange?: (isListening: boolean) => void;
 }
 
 export interface TranscriptMeta {
@@ -56,11 +59,19 @@ async function transcribeWithWhisper(blob: Blob, _durationSeconds: number): Prom
   }
 }
 
-export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false, highlightRecord = false }: Props) {
+export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false, highlightRecord = false, onListeningChange }: Props) {
   const [micState, setMicState] = useState<MicState>('idle');
   const [interim, setInterim] = useState('');
   const [processingLabel, setProcessingLabel] = useState('Processing…');
   const [barHeights, setBarHeights] = useState<number[]>(Array(20).fill(0.1));
+  // First-time guidance: a bouncing arrow pointing straight at the mic button, shown until the
+  // candidate has actually recorded once — ever, not just this session. Found live: even with
+  // the button already animating (the ripple pulse below), a first-time candidate can still not
+  // realise it's the thing to click. Persisted in localStorage so a returning candidate who's
+  // already recorded before never sees it again.
+  const [hasEverRecorded, setHasEverRecorded] = useState(() => {
+    try { return localStorage.getItem('explain_has_recorded_answer') === 'true'; } catch { return false; }
+  });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
@@ -100,6 +111,10 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
     interimRef.current = '';
     chunksRef.current = [];
     startTimeRef.current = Date.now();
+    if (!hasEverRecorded) {
+      setHasEverRecorded(true);
+      try { localStorage.setItem('explain_has_recorded_answer', 'true'); } catch { /* private browsing etc — hint just reappears next time, harmless */ }
+    }
 
     // ── Mic stream ───────────────────────────────────────────────────────────
     let stream: MediaStream | null = null;
@@ -159,7 +174,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
       recognition.onend = () => {};
       recognition.start();
     }
-  }, [disabled, micState, animateBars, onInterimTranscript]);
+  }, [disabled, micState, animateBars, onInterimTranscript, hasEverRecorded]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
@@ -247,6 +262,8 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
   const isListening = micState === 'listening';
   const isProcessing = micState === 'processing';
 
+  useEffect(() => { onListeningChange?.(isListening); }, [isListening, onListeningChange]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       {/* Your turn prompt — shown only when idle and it's actually the candidate's turn */}
@@ -282,6 +299,24 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
                 style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(79,142,247,0.35)', pointerEvents: 'none' }}
               />
             </>
+          )}
+          {/* First-time-ever guidance — the ripple pulse above wasn't enough on its own for a
+              genuinely first-time candidate (found live: demoing a friend who never connected
+              the pulsing button with "the thing to click"). A bouncing arrow pointing straight
+              at the button, gone for good the moment they've recorded once. */}
+          {!isListening && !isProcessing && !disabled && !hasEverRecorded && (
+            <motion.div
+              animate={{ y: [0, 7, 0] }}
+              transition={{ repeat: Infinity, duration: 1.1, ease: 'easeInOut' }}
+              style={{ position: 'absolute', bottom: 'calc(100% + 10px)', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none', zIndex: 2 }}
+            >
+              <span style={{ background: 'var(--blue)', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '5px 11px', borderRadius: '7px', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(79,142,247,0.5)' }}>
+                Click here to record
+              </span>
+              <svg width="14" height="8" viewBox="0 0 14 8" style={{ marginTop: '-1px' }}>
+                <path d="M0 0L7 8L14 0Z" fill="var(--blue)" />
+              </svg>
+            </motion.div>
           )}
           <motion.button
             onClick={isListening ? stopListening : startListening}
