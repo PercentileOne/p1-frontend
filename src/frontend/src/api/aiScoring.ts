@@ -766,6 +766,10 @@ export interface ClientSessionResult {
   companyFacts: string[];
   specialistTitle: string;
   mcqQuestions: MCQQuestion[];
+  // The company name actually used for this session — either the candidate's confirmed one
+  // echoed back, or the model's own invented one per the COMPANY NAMING rule. Distinct from
+  // the caller's `companyName` param, which is often unset (a bare job title, no job spec).
+  resolvedCompany: string | null;
 }
 
 export async function sessionPrepareClient(
@@ -997,6 +1001,7 @@ Return this exact JSON:
     companyFacts: result.companyFacts ?? [],
     specialistTitle: result.specialistTitle ?? 'Hiring Manager',
     mcqQuestions,
+    resolvedCompany: result.company ?? null,
   };
 }
 

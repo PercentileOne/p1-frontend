@@ -132,6 +132,10 @@ export default function InterviewRoomPage() {
   const bgMikeScriptRef = useRef<string | null>(null); // sync ref — always current when startMike fires
   const [bgCompanyFacts, setBgCompanyFacts] = useState<string[]>([]);
   const [bgSpecialistTitle, setBgSpecialistTitle] = useState<string | null>(null);
+  // The company Sarah/James/the questions actually named this session — echoes ctx.company
+  // when one was confirmed, otherwise the model's own invented one. This is what gets saved,
+  // since ctx.company alone is often unset (a bare job title, no full job spec).
+  const [bgResolvedCompany, setBgResolvedCompany] = useState<string | null>(null);
   const bgLoadRef = useRef(false);
   const bgLoadedRef = useRef(false); // true once AI results arrive
 
@@ -228,7 +232,7 @@ export default function InterviewRoomPage() {
     candidateId: getCandidateId(),
     authToken,
     jobTitle: ctx.jobTitle,
-    company: ctx.company,
+    company: bgResolvedCompany ?? ctx.company,
     candidateName: authUser?.name,
   });
 
@@ -379,6 +383,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       if (result.jamesIntro) setBgJamesIntro(result.jamesIntro);
       if (result.companyFacts?.length) setBgCompanyFacts(result.companyFacts);
       if (result.specialistTitle) setBgSpecialistTitle(result.specialistTitle);
+      if (result.resolvedCompany) setBgResolvedCompany(result.resolvedCompany);
       resolvePhase2();
       setMcqGenParams({ jobSpec, jobTitle: ctx.jobTitle, cvText: ctx.cvText, fallback: result.mcqQuestions ?? [] });
       logFlowEvent('QUESTION_GENERATED', { count: result.questions.length, specialistTitle: result.specialistTitle });
