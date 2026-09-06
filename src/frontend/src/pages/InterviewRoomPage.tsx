@@ -804,35 +804,48 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   <span style={{ color: '#a78bfa', userSelect: 'none' }}>Make every answer count.</span>
                 </motion.div>
 
-                {/* Meta row */}
+                {/* Session summary — one "Label: Value" row per line rather than a scatter of
+                    pill badges + a separate radio row, so it reads like a settings summary
+                    someone can scan top-to-bottom before committing to Begin Interview. */}
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.85, duration: 0.6 }}
-                  style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
-                  <div style={{ fontSize: '12px', color: 'var(--text-2)', background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '20px', padding: '5px 14px' }}>
-                    {questions.length} questions · Sarah &amp; James
+                  style={{ width: '100%', maxWidth: '420px', borderRadius: '12px', border: '1px solid var(--border)', overflow: 'hidden', background: 'var(--bg3)' }}>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '11px 16px', borderBottom: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', userSelect: 'none' }}>Questions</span>
+                    <span style={{ fontSize: '13px', color: 'var(--text)', userSelect: 'none' }}>{questions.length} · Sarah &amp; James</span>
                   </div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: elevenLabsConfigured ? 'rgba(52,211,153,0.1)' : 'var(--bg3)', border: `1px solid ${elevenLabsConfigured ? 'rgba(52,211,153,0.25)' : 'var(--border)'}`, borderRadius: '20px', padding: '5px 14px' }}>
-                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: elevenLabsConfigured ? '#34D399' : 'var(--amber)' }} />
-                    <span style={{ fontSize: '12px', color: elevenLabsConfigured ? '#34D399' : 'var(--amber)', userSelect: 'none' }}>
-                      {elevenLabsConfigured ? 'Neural voices ready' : 'Browser voices'}
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '11px 16px', borderBottom: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', userSelect: 'none' }}>Voice</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: elevenLabsConfigured ? '#34D399' : 'var(--amber)', flexShrink: 0 }} />
+                      <span style={{ fontSize: '13px', color: elevenLabsConfigured ? '#34D399' : 'var(--amber)', userSelect: 'none' }}>
+                        {elevenLabsConfigured ? 'Neural voices ready' : 'Browser voices'}
+                      </span>
                     </span>
                   </div>
-                </motion.div>
 
-                {/* Answer mode + audio test */}
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.5 }}
-                  style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'flex-start', alignItems: 'center' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: 'var(--text-2)', cursor: 'pointer', userSelect: 'none' }}>
-                    <input type="radio" checked={useVoice} onChange={() => setUseVoice(true)} style={{ accentColor: '#a78bfa' }} />
-                    Speak my answers
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: 'var(--text-2)', cursor: 'pointer', userSelect: 'none' }}>
-                    <input type="radio" checked={!useVoice} onChange={() => setUseVoice(false)} style={{ accentColor: '#a78bfa' }} />
-                    Type my answers
-                  </label>
-                  <button onClick={testAudio} disabled={audioCheckState === 'playing'}
-                    style={{ background: 'transparent', border: `1px solid ${audioCheckState === 'done' ? 'rgba(52,211,153,0.4)' : 'var(--border)'}`, borderRadius: '8px', padding: '6px 16px', fontSize: '12px', fontWeight: 600, cursor: audioCheckState === 'playing' ? 'default' : 'pointer', color: audioCheckState === 'done' ? '#34D399' : 'var(--text-2)' }}>
-                    {audioCheckState === 'done' ? '✓ Audio OK' : audioCheckState === 'playing' ? 'Playing…' : '🔊 Test audio'}
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '11px 16px', borderBottom: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', userSelect: 'none' }}>Answer mode</span>
+                    <span style={{ display: 'flex', gap: '14px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-2)', cursor: 'pointer', userSelect: 'none' }}>
+                        <input type="radio" checked={useVoice} onChange={() => setUseVoice(true)} style={{ accentColor: '#a78bfa' }} />
+                        Speak
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-2)', cursor: 'pointer', userSelect: 'none' }}>
+                        <input type="radio" checked={!useVoice} onChange={() => setUseVoice(false)} style={{ accentColor: '#a78bfa' }} />
+                        Type
+                      </label>
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '11px 16px' }}>
+                    <span style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', userSelect: 'none' }}>Audio check</span>
+                    <button onClick={testAudio} disabled={audioCheckState === 'playing'}
+                      style={{ background: 'transparent', border: `1px solid ${audioCheckState === 'done' ? 'rgba(52,211,153,0.4)' : 'var(--border)'}`, borderRadius: '8px', padding: '5px 14px', fontSize: '12px', fontWeight: 600, cursor: audioCheckState === 'playing' ? 'default' : 'pointer', color: audioCheckState === 'done' ? '#34D399' : 'var(--text-2)' }}>
+                      {audioCheckState === 'done' ? '✓ Audio OK' : audioCheckState === 'playing' ? 'Playing…' : '🔊 Test audio'}
+                    </button>
+                  </div>
                 </motion.div>
 
                 {/* Go Deeper toggle */}
