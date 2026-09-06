@@ -308,34 +308,43 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
               the pulsing button with "the thing to click"). A bouncing arrow pointing straight
               at the button, gone for good the moment they've recorded once. */}
           {!isListening && !isProcessing && !disabled && !hasEverRecorded && (
-            <motion.div
-              animate={{ y: [0, 7, 0] }}
-              transition={{ repeat: Infinity, duration: 1.1, ease: 'easeInOut' }}
-              style={{ position: 'absolute', bottom: 'calc(100% + 10px)', left: '50%', transform: 'translateX(calc(-50% - 60px))', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none', zIndex: 2 }}
-            >
-              <span style={{ background: 'var(--blue)', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '5px 11px', borderRadius: '7px', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(79,142,247,0.5)' }}>
-                Click here to record
-              </span>
-              <svg width="14" height="8" viewBox="0 0 14 8" style={{ marginTop: '-1px' }}>
-                <path d="M0 0L7 8L14 0Z" fill="var(--blue)" />
-              </svg>
-            </motion.div>
+            // Plain CSS handles the true horizontal centering here — Framer Motion owns the
+            // `transform` property on any element it animates x/y/scale/rotate on, so a manual
+            // `transform: translateX(...)` on the SAME element as `animate={{ y: ... }}` gets
+            // silently overridden by Framer and never actually applies. Splitting the static
+            // centering (this wrapper) from the bounce (the motion.div inside it) fixes that.
+            <div style={{ position: 'absolute', bottom: 'calc(100% + 10px)', left: '50%', transform: 'translateX(-50%)', zIndex: 2, pointerEvents: 'none' }}>
+              <motion.div
+                animate={{ y: [0, 7, 0] }}
+                transition={{ repeat: Infinity, duration: 1.1, ease: 'easeInOut' }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+              >
+                <span style={{ background: 'var(--blue)', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '5px 11px', borderRadius: '7px', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(79,142,247,0.5)' }}>
+                  Click here to record
+                </span>
+                <svg width="14" height="8" viewBox="0 0 14 8" style={{ marginTop: '-1px' }}>
+                  <path d="M0 0L7 8L14 0Z" fill="var(--blue)" />
+                </svg>
+              </motion.div>
+            </div>
           )}
           {/* Same first-time-ever guidance, for the equally-unobvious other half of the
               gesture — clicking the same button again to stop, once actually recording. */}
           {isListening && !hasEverRecorded && (
-            <motion.div
-              animate={{ y: [0, 7, 0] }}
-              transition={{ repeat: Infinity, duration: 1.1, ease: 'easeInOut' }}
-              style={{ position: 'absolute', bottom: 'calc(100% + 10px)', left: '50%', transform: 'translateX(calc(-50% - 60px))', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none', zIndex: 2 }}
-            >
-              <span style={{ background: '#EF4444', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '5px 11px', borderRadius: '7px', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(239,68,68,0.5)' }}>
-                Click again to stop
-              </span>
-              <svg width="14" height="8" viewBox="0 0 14 8" style={{ marginTop: '-1px' }}>
-                <path d="M0 0L7 8L14 0Z" fill="#EF4444" />
-              </svg>
-            </motion.div>
+            <div style={{ position: 'absolute', bottom: 'calc(100% + 10px)', left: '50%', transform: 'translateX(-50%)', zIndex: 2, pointerEvents: 'none' }}>
+              <motion.div
+                animate={{ y: [0, 7, 0] }}
+                transition={{ repeat: Infinity, duration: 1.1, ease: 'easeInOut' }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+              >
+                <span style={{ background: '#EF4444', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '5px 11px', borderRadius: '7px', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(239,68,68,0.5)' }}>
+                  Click again to stop
+                </span>
+                <svg width="14" height="8" viewBox="0 0 14 8" style={{ marginTop: '-1px' }}>
+                  <path d="M0 0L7 8L14 0Z" fill="#EF4444" />
+                </svg>
+              </motion.div>
+            </div>
           )}
           <motion.button
             onClick={isListening ? stopListening : startListening}
