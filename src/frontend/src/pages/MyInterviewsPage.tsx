@@ -186,7 +186,7 @@ export default function MyInterviewsPage() {
                   background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 8,
                   color: 'var(--text-2)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
                 }}>
-                Visibility <ChevronDown size={13} />
+                Interview Visibility <ChevronDown size={13} />
               </button>
               {visibilityMenuOpen && (
                 <>
