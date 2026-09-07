@@ -276,9 +276,9 @@ export default function InterviewRoomPage() {
 
   const {
     hrState, techState, hrAnalyser, techAnalyser,
-    sarahIntroVideoActive, jamesGreetingVideoActive, jamesGreetingUrl, jamesIntroVideoActive, jamesAmbientVideoActive, sarahAmbientVideoActive, awaitingHandoff,
+    jamesGreetingVideoActive, jamesGreetingUrl, jamesIntroVideoActive, jamesAmbientVideoActive, awaitingHandoff,
     handleSarahVideoAnalyser, handleJamesVideoAnalyser,
-    handleSarahIntroVideoEnded, handleJamesGreetingVideoEnded, handleJamesIntroVideoEnded,
+    handleJamesGreetingVideoEnded, handleJamesIntroVideoEnded,
     stopAllInterviewerAudio,
     askQuestion, repeatQuestion, testAudio, startMike, handleMikeIntroDone,
     askFollowUpWithHandoff,
@@ -726,7 +726,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     style={{ width: '100%', accentColor: '#a78bfa', cursor: 'pointer' }}
                   />
                   <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 6, lineHeight: 1.4 }}>
-                    Controls Sarah, James &amp; Mike only — not your recording.
+                    Controls Wayne, James &amp; Mike only — not your recording.
                   </div>
                 </div>
               </>
@@ -837,17 +837,15 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               <div style={{ position: 'relative', flex: 1, display: 'flex' }}>
                 <InterviewerAvatar
                   role="hr" state={hrState} active={hrState === 'speaking'} analyserNode={hrAnalyser}
-                  videoUrl={sarahIntroVideoActive ? '/images/sarah-intro-v1.mp4' : sarahAmbientVideoActive ? '/images/sarah-idle-v1.mp4' : null}
-                  onVideoEnded={sarahIntroVideoActive ? handleSarahIntroVideoEnded : () => onDoneRef.current?.()}
-                  onVideoAnalyser={sarahAmbientVideoActive ? undefined : handleSarahVideoAnalyser}
-                  loop={sarahAmbientVideoActive}
-                  muted={sarahAmbientVideoActive}
+                  videoUrl={null}
+                  onVideoEnded={() => onDoneRef.current?.()}
+                  onVideoAnalyser={handleSarahVideoAnalyser}
                 />
-                {/* LiveAvatar overlay — real-time video, takes over Sarah's slot the moment the
-                    session connects (lazily, on her first real question; see liveAvatarSpeak
-                    above). Still the sandbox "Wayne" avatar, not Sarah's likeness, until a real
-                    avatar is created in the LiveAvatar dashboard — visual identity is a config
-                    swap away, not a code change. */}
+                {/* LiveAvatar overlay — real-time video, takes over Wayne's slot the moment the
+                    session connects (lazily, on his first real line; see liveAvatarSpeak above).
+                    Sarah's pre-rendered intro/idle clips are gone (Wayne has no pre-rendered
+                    equivalent yet), so the static photo below is the only thing visible during
+                    the brief pre-connection gap. */}
                 {liveAvatar.status === 'connected' && (
                   <video
                     ref={liveAvatar.setVideoEl}
@@ -915,7 +913,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '11px 16px', borderBottom: '1px solid var(--border)' }}>
                     <span style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', userSelect: 'none' }}>Questions</span>
-                    <span style={{ fontSize: '13px', color: 'var(--text)', userSelect: 'none' }}>{questions.length} · Sarah &amp; James</span>
+                    <span style={{ fontSize: '13px', color: 'var(--text)', userSelect: 'none' }}>{questions.length} · Wayne &amp; James</span>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '11px 16px', borderBottom: '1px solid var(--border)' }}>
@@ -1030,7 +1028,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                             transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
                             style={{ width: 28, height: 28, borderRadius: '50%', border: '2.5px solid rgba(79,142,247,0.25)', borderTopColor: 'var(--blue)' }}
                           />
-                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Bringing in Sarah &amp; James…</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Bringing in Wayne &amp; James…</div>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -1161,7 +1159,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         style={{ width: '7px', height: '7px', borderRadius: '50%', background: isHrQuestion ? '#a78bfa' : 'var(--blue)', flexShrink: 0 }} />
                     )}
                     <span style={{ fontSize: '10px', fontWeight: 700, color: isHrQuestion ? '#a78bfa' : 'var(--blue)', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', padding: '3px 8px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                      {isHrQuestion ? 'Sarah · HR' : `James · ${specialistTitle}`}
+                      {isHrQuestion ? 'Wayne · HR' : `James · ${specialistTitle}`}
                     </span>
                     <span style={{ fontSize: '10px', color: 'var(--text-3)', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', padding: '3px 8px' }}>{selectedDifficulty}</span>
                     {phase === 'answering' && (

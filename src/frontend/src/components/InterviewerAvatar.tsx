@@ -30,10 +30,10 @@ interface Props {
 
 const PROFILES = {
   hr: {
-    name: 'Sarah Mitchell',
+    name: 'Wayne Liang',
     title: 'HR Director',
-    initials: 'SM',
-    photo: '/images/sarah.jpg',
+    initials: 'WL',
+    photo: '/images/wayne-static-photo.png',
     gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     ring: '#a78bfa',
     barColor: '#a78bfa',
