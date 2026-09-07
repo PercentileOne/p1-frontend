@@ -46,13 +46,6 @@
   /* Divider */
   hr { border: none; border-top: 1px solid #D1D5DB; margin: 32px 0; }
 
-  /* Step sequence table */
-  .steps { width: 100%; border-collapse: separate; border-spacing: 8px; margin: 24px 0; }
-  .steps td { background: #EAF0FA; border-radius: 8px; text-align: center; padding: 16px 10px; vertical-align: top; width: 25%; border: 1px solid #BFDBFE; }
-  .steps .step-icon { font-size: 20pt; display: block; margin-bottom: 6px; }
-  .steps .step-label { font-family: 'Arial', sans-serif; font-size: 11pt; font-weight: 900; color: #1E3A5F; display: block; margin-bottom: 4px; }
-  .steps .step-detail { font-size: 8.5pt; color: #6B7280; font-style: italic; line-height: 1.4; display: block; }
-
   /* Claim boxes */
   .claim { border-left: 5px solid #2563EB; background: #EAF0FA; padding: 14px 18px; margin: 16px 0; border-radius: 0 6px 6px 0; }
   .claim.primary { border-left: 6px solid #1E3A5F; background: #D6E4FA; }
@@ -60,6 +53,10 @@
   .claim.primary .claim-title { font-size: 11.5pt; color: #1E3A5F; }
   .claim .claim-num { color: #2563EB; }
   .claim p { margin: 0; line-height: 1.65; font-size: 10.5pt; }
+
+  /* Technical-character note */
+  .tech-note { border-left: 5px solid #059669; background: #ECFDF5; padding: 12px 18px; margin: 14px 0; border-radius: 0 6px 6px 0; font-size: 9.5pt; color: #065F46; }
+  .tech-note strong { color: #047857; }
 
   /* Prior art table */
   .prior-art { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 10pt; }
@@ -97,16 +94,16 @@
     <h1>Patent Disclosure Brief</h1>
     <div class="subtitle">Confidential — Privileged &amp; Protected</div>
     <div class="inv-label">Title of Invention</div>
-    <div class="title-line1">AI-Verified Talent Discovery:</div>
-    <div class="title-line2">Record Interview · Score · Save · Share → Search · Watch · Like · Invite</div>
+    <div class="title-line1">AI-Conducted Interview Engine:</div>
+    <div class="title-line2">Synthetic Interviewer Orchestration · Verified Assessment Generation · Adaptive Learning Loop</div>
 
     <table class="meta-table">
       <tr><td>Inventor / Applicant</td><td>Francis Cobbinah, Founder — Francis Cobbinah T/A Explain.global</td></tr>
       <tr><td>Products / Brands</td><td>InterviewMe (interviewme.global) · Explain.Global / Learn (explain.global) · Percentile.One</td></tr>
       <tr><td>System Portals</td><td>candidate.explain.global · recruiter.explain.global · client.explain.global</td></tr>
       <tr><td>Patent Agent</td><td>David Tuddenham — Patent Outsourcing Limited</td></tr>
-      <tr><td>Disclosure Reference</td><td>Claims 1–9 — Nine Distinct Patent Families</td></tr>
-      <tr><td>Date of Disclosure</td><td>8 August 2026</td></tr>
+      <tr><td>Disclosure Reference</td><td>Claims 1–4 — Four Distinct Patent Families</td></tr>
+      <tr><td>Date of Disclosure</td><td>7 September 2026 (supersedes 8 August 2026 disclosure)</td></tr>
     </table>
 
     <div class="confidential">© 2026 Francis Cobbinah / Francis Cobbinah T/A Explain.global · All rights reserved · Not for distribution</div>
@@ -115,98 +112,52 @@
   <div class="page-break"></div>
 
   <!-- 1. BACKGROUND -->
-  <h1 class="section">1. Background &amp; Problem Statement</h1>
-  <p>The hiring and talent discovery process has remained fundamentally unchanged for decades. Employers rely on static CVs, cover letters, and in-person interviews — a process that is slow, expensive, geographically constrained, and deeply subjective.</p>
-  <p>Five critical failure modes define the current landscape:</p>
+  <h1 class="section">1. Background &amp; Scope of This Revision</h1>
+  <p>This brief supersedes the disclosure dated 8 August 2026, which presented nine claims spanning both the technical interview-generation engine and the surrounding two-sided marketplace (search, distribution, direct hiring contact, and a social "Like" mechanic).</p>
+  <p>On review — including direct comparison against HireVue (async video interviewing, employer-initiated, in market since the mid-2010s) and Voomer (text-prompted self-recorded practice with after-the-fact AI feedback) — several of the original nine claims were assessed as carrying material risk under UK/EPO patentability practice, specifically the exclusion of business methods and the "presentation of information" from patentable subject matter (Patents Act 1977 s.1(2); EPC Art. 52(2)) unless a claim demonstrates a genuine technical contribution beyond the automation of an otherwise-known business process on generic computing hardware.</p>
+  <p>The claims withdrawn from this disclosure — universal cross-channel distribution via shareable link/QR, multi-criteria candidate search, the direct-contact hiring workflow, the cross-platform identity graph, the trades-vertical application, and the "Like" social-engagement mechanic — remain commercially significant to the InterviewMe product but are assessed as better protected through trademark, trade secrecy, and first-mover execution than through patent claims that would likely fail on business-method or obviousness grounds. They are omitted here accordingly.</p>
+  <p>This disclosure presents only the four claims judged to carry genuine technical character: a specific technical mechanism, system architecture, or computational method — not merely a business outcome achieved via computer. A fifth candidate — an attribute-keyed caching architecture for personalized synthetic video ("Name Bank") — was considered and deliberately excluded from this revision as commercially minor and not worth the filing spend, notwithstanding its technical novelty.</p>
+
+  <hr>
+
+  <!-- 2. CORE TECHNICAL SYSTEM -->
+  <h1 class="section">2. The Core Technical System</h1>
+  <p>The four claims in this disclosure describe three interlocking technical subsystems that together generate, deliver, and adapt an AI-conducted structured interview:</p>
   <ul>
-    <li><strong>The CV is a document, not a person.</strong> It describes history but reveals nothing about communication ability, presence, confidence, or genuine capability.</li>
-    <li><strong>Evaluation is gated.</strong> A candidate can only be assessed after being shortlisted — the majority of viable candidates are never evaluated at all.</li>
-    <li><strong>The process does not scale.</strong> Reviewing hundreds of applications and assessing them consistently requires enormous human resource and introduces significant bias.</li>
-    <li><strong>Distribution is broken.</strong> A candidate's talent is visible only to the one employer they applied to. There is no mechanism to publish verified proof of capability to the market.</li>
-    <li><strong>Local and trade services have no structured discovery.</strong> A plumber, electrician, or babysitter has no way to present verified, watchable proof of who they are and what they do.</li>
+    <li><strong>Generation</strong> (Claim 1) — an automated pipeline that captures, transcribes, scores, and packages a candidate's interview session into a single verified data object, without manual curation at any stage.</li>
+    <li><strong>Delivery</strong> (Claim 2) — a real-time orchestration engine that sequences multiple distinct synthetic interviewer personas across synchronized voice and video channels, with automatic session chapter-marking and dynamic mid-session content insertion.</li>
+    <li><strong>Adaptivity</strong> (Claims 3 &amp; 4) — two related mechanisms for making the interview session itself, and the candidate's development after it, responsive to real assessment data rather than fixed in advance.</li>
   </ul>
-  <p>No existing platform solves all five problems simultaneously. This disclosure presents a system of nine interrelated inventions that together constitute a complete replacement for the traditional hiring and talent discovery stack.</p>
+  <p>Each claim is technically self-contained and independently patentable; none depends on the marketplace/discovery features omitted from this revision.</p>
 
   <hr>
 
-  <!-- 2. CORE SEQUENCE -->
-  <h1 class="section">2. The Core Innovation: A Two-Phase Talent Discovery System</h1>
-  <p>The central and most novel innovation of this disclosure is an eight-step, two-phase sequence that fundamentally inverts the traditional hiring model — separating the candidate's act of publishing verified proof of capability from the employer's act of discovering, evaluating, and engaging:</p>
-
-  <p style="font-weight:700;font-size:12pt;margin:18pt 0 8pt;color:#1a3c6e;letter-spacing:0.5px;text-transform:uppercase;">Phase 1 · Candidate Publishes</p>
-  <table class="steps" style="margin-bottom:10pt;">
-    <tr>
-      <td><span class="step-icon">🎬</span><span class="step-label">RECORD INTERVIEW</span><span class="step-detail">Candidate completes a structured AI-conducted interview — at a time of their choosing, from any device</span></td>
-      <td><span class="step-icon">📊</span><span class="step-label">SCORE</span><span class="step-detail">AI instantly scores the interview: communication, confidence, personality, clarity — generating the verified TIO</span></td>
-      <td><span class="step-icon">💾</span><span class="step-label">SAVE</span><span class="step-detail">The scored Talent Identity Object is saved: video, transcript, scores, personality signals, and a unique URL</span></td>
-      <td><span class="step-icon">🔗</span><span class="step-label">SHARE</span><span class="step-detail">The candidate publishes their profile to the searchable talent index — visible to employers, shareable by QR or link</span></td>
-    </tr>
-  </table>
-
-  <p style="font-weight:700;font-size:12pt;margin:18pt 0 8pt;color:#1a3c6e;letter-spacing:0.5px;text-transform:uppercase;">Phase 2 · Employer Discovers</p>
-  <table class="steps">
-    <tr>
-      <td><span class="step-icon">🔍</span><span class="step-label">SEARCH</span><span class="step-detail">By role, score, skill, location, personality, communication style — score visible before any click</span></td>
-      <td><span class="step-icon">▶</span><span class="step-label">WATCH</span><span class="step-detail">Full recorded AI interview — no scheduling required</span></td>
-      <td><span class="step-icon">👍</span><span class="step-label">LIKE</span><span class="step-detail">Signal interest — notifies the candidate, drives sharing, creates the viral engagement loop</span></td>
-      <td><span class="step-icon">✉</span><span class="step-label">INVITE</span><span class="step-detail">Direct inbox message — bypassing CV, ATS, and recruiter</span></td>
-    </tr>
-  </table>
-
-  <p>This eight-step sequence is the foundation of every claim in this disclosure. No existing platform implements both phases as a unified system. The key breakthroughs are: (1) Phase 1 — the candidate creates and publishes a verified, searchable interview object before any employer finds them; and (2) Phase 2, Step 3 — the employer can watch that verified, AI-conducted interview before making any contact decision, without scheduling, without a recruiter, and without a CV.</p>
-  <p><strong>Traditional model:</strong> Apply → Screen → Shortlist → Interview → Decide. Time: 4–8 weeks. Cost: £8,000–£15,000 per hire.</p>
-  <p><strong>This system:</strong> Record Interview → Score → Save → Share → Search → Watch → Like → Invite. Time: under 30 minutes to evaluate. Cost: included in subscription.</p>
-  <p>The candidate has already been interviewed — by AI, at a time of their choosing — before the employer ever sees them. The employer watches, decides, and only then reaches out.</p>
-
-  <hr>
-
-  <!-- 3. NINE CLAIMS -->
-  <h1 class="section">3. The Nine Patent Claims</h1>
-  <p><em>This disclosure presents nine distinct, independently patentable inventions. Each stands alone; together they form a complete ecosystem.</em></p>
+  <!-- 3. FOUR CLAIMS -->
+  <h1 class="section">3. The Four Patent Claims</h1>
+  <p><em>Each claim below is drafted around a specific computational mechanism, not a business outcome, per the scope note in Section 1.</em></p>
 
   <div class="claim primary no-break">
-    <div class="claim-title"><span class="claim-num">Claim 1 [FOUNDATIONAL]</span> — AI-Generated Talent Identity Object</div>
-    <p>A computational method for generating a structured, AI-verified interview object — the <strong>Talent Identity Object (TIO)</strong> — comprising: a recorded video of the candidate's AI-conducted interview; a full text transcript; behavioural signal analysis; communication metrics (clarity, structure, pace, vocabulary); confidence metrics; personality markers; a composite verified score; a unique shareable URL; a QR code linking to the profile; and a recruiter-contact interface embedded within the object. The TIO is the atomic unit of the platform — every other claim operates on or distributes this object.</p>
-  </div>
-
-  <div class="claim no-break">
-    <div class="claim-title"><span class="claim-num">Claim 2</span> — Universal Interview Distribution Mechanism</div>
-    <p>A method for distributing Talent Identity Objects across heterogeneous channels including: social networks (LinkedIn, X, Instagram, WhatsApp); messaging platforms; CV documents; PDF exports; email signatures; job applications; QR codes printed on physical materials; and public candidate profile pages. Each distribution channel embeds a persistent link to the live TIO, enabling any recipient — employer, recruiter, or private individual — to watch the verified interview at any time without scheduling.</p>
-  </div>
-
-  <div class="claim no-break">
-    <div class="claim-title"><span class="claim-num">Claim 3</span> — Recruiter Search and Matching Engine</div>
-    <p>A system for indexing Talent Identity Objects and enabling multi-dimensional search queries across: job title and role; skill set; geographic location and radius; AI-derived communication style; personality traits; clarity and structure scores; confidence and presence metrics; behavioural signals; minimum verified score threshold; seniority level; language; and availability. Search results are returned as ranked, watchable profiles — not static CVs — enabling employers to evaluate candidates before any human contact.</p>
-  </div>
-
-  <div class="claim no-break">
-    <div class="claim-title"><span class="claim-num">Claim 4 [COMMERCIALLY PRIMARY]</span> — Direct Recruiter-to-Candidate Hiring Pipeline</div>
-    <p>A method enabling employers and recruiters to: (a) discover candidates via the search engine of Claim 3; (b) watch the candidate's verified AI interview in full; (c) evaluate performance against AI-generated scores and behavioural signals; (d) send a direct inbox message or hiring invitation through the platform; and (e) initiate a hiring flow — all without requiring a CV, without contacting an ATS, and without scheduling an interview. This constitutes a complete bypass of the traditional CV-screening and ATS-gating model.</p>
-  </div>
-
-  <div class="claim no-break">
-    <div class="claim-title"><span class="claim-num">Claim 5</span> — Cinematic AI Interview Chair (Explain.Global)</div>
-    <p>A method for generating and conducting AI-led structured interviews comprising: (a) intake of contextual data (role, seniority, industry, job specification, candidate CV); (b) dynamic generation of role-specific, seniority-appropriate interview questions using a large language model; (c) delivery of questions by one or more named AI interviewer personas presented via synthesised voice and/or video avatar in a cinematic, low-stress interface; (d) real-time or asynchronous video capture of candidate responses; (e) multi-dimensional AI scoring across clarity, structure, relevance, impact, and communication; (f) generation of a performance report with coaching feedback and improvement recommendations; and (g) publication of the resulting Talent Identity Object to the searchable index of Claim 3. This system operates as the Explain.Global platform and feeds directly into the InterviewMe discovery layer.</p>
-  </div>
-
-  <div class="claim no-break">
-    <div class="claim-title"><span class="claim-num">Claim 6</span> — Cross-Platform Talent Identity Graph</div>
-    <p>A method for linking candidate activity, performance data, and verified interview objects across multiple interconnected platforms — InterviewMe.Global (discovery), Explain.Global (practice and interview generation), Percentile.One (benchmarking and scoring), recruiter portals, candidate portals, and learning engines — into a unified Talent Identity Graph. The graph persists a candidate's verified interview history, improvement trajectory, score benchmarks, and learning activity across all platforms under a single identity, enabling cross-platform discovery, longitudinal performance tracking, and personalised coaching at scale.</p>
+    <div class="claim-title"><span class="claim-num">Claim 1 [FOUNDATIONAL]</span> — Automated Multi-Modal Pipeline for Verified Interview Object Generation</div>
+    <p>A computer-implemented method for automatically generating a structured, verified interview data object, comprising: capturing synchronized audio-video responses from a candidate during a structured interview session; processing the captured audio via automated speech-to-text transcription; scoring the transcribed responses against a computed assessment metric; automatically serializing the resulting video, transcript, and computed metric into a single structured data object; and automatically generating a persistent shareable identifier and machine-readable code for the object at the point of creation — the entire pipeline executing without manual data entry, transcription, or curation by a human operator at any stage. (Note: the scoring step itself, and multi-dimensional AI interview scoring generally, is common in the art — see e.g. HireVue and comparable products — and is not asserted as novel; see Section 4.1.)</p>
   </div>
 
   <div class="claim primary no-break">
-    <div class="claim-title"><span class="claim-num">Claim 7 [ECOSYSTEM LOOP]</span> — AI-Driven Interview Gap Analysis and Adaptive Learning Engine</div>
-    <p>A method for closing the loop between interview performance and knowledge acquisition, comprising: (a) analysis of a candidate's Talent Identity Object to identify specific subject-matter weaknesses, low-scoring response areas, and knowledge gaps derived from the AI interview; (b) automatic generation of a structured, subject-specific learning course on the identified topic — covering foundational concepts, progressive depth ("Go Deeper") sections, worked examples, and a curated bookcase of related material — using a large language model; (c) delivery of this course through the Learn engine (Explain.Global) on web and mobile; (d) tracking of the candidate's learning progress, module completion, and comprehension signals; (e) invitation to retake a fresh AI-conducted interview on the same or related subject matter; and (f) updated scoring of the new interview, with score delta and improvement trajectory recorded to the candidate's Talent Identity Graph. The closed loop — interview → gap identification → personalised course → retake → improved score — constitutes a novel, integrated system for AI-directed professional development anchored to real evaluation data, not self-assessment.</p>
+    <div class="claim-title"><span class="claim-num">Claim 2 [STRONGEST TECHNICAL CHARACTER]</span> — Real-Time Multi-Persona Synthetic Interview Orchestration</div>
+    <p>A computer-implemented system for conducting a structured interview via two or more distinct synthetic interviewer personas, comprising: a phase-based state machine that sequences delivery of interview content across the personas; synchronized handoff between a pre-rendered video-avatar channel and a live text-to-speech audio channel, triggered by real-time session state rather than fixed timing; automatic timestamped chapter-marking of the resulting recording, keyed to persona identity and phase transition; and dynamic mid-session insertion of supplementary assessment content at computationally-determined points in the interview sequence, without interrupting or restarting the persona handoff sequence in progress.</p>
   </div>
 
   <div class="claim no-break">
-    <div class="claim-title"><span class="claim-num">Claim 8 [NEW MARKET]</span> — Verified Video Trust Profile for Local &amp; Trade Services</div>
-    <p>A method for enabling individuals offering local or trade services — including but not limited to plumbers, electricians, builders, decorators, cleaners, babysitters, dog walkers, gardeners, and care workers — to create, publish, and distribute a structured AI-verified video trust profile comprising: (a) an AI-conducted interview capturing the individual's personality, communication style, professional approach, warmth, confidence, and safety signals; (b) a multi-dimensional trust score derived from behavioural analysis, communication metrics, and professional self-presentation; (c) a Talent Identity Object published to a local services discovery index, searchable by trade, location, availability, and trust score; (d) a shareable URL and QR code enabling the individual to distribute their verified trust profile via messaging apps, local directories, business cards, and social media; and (e) an in-home trust signal — a video that allows a householder to see, hear, and assess the personality of an individual before granting them access to their property. This constitutes a novel application of AI-verified video profiling to the local services market, where the primary purchase decision is not skill alone but personal trust — a dimension entirely absent from existing platforms such as Checkatrade, Bark.com, and TaskRabbit, which offer only static text reviews with no video, no AI analysis, no personality signals, and no trust scoring.</p>
+    <div class="claim-title"><span class="claim-num">Claim 3</span> — Real-Time Adaptive Follow-Up Question Injection Based on Live Response-Depth Scoring</div>
+    <p>A computer-implemented method for dynamically extending a structured interview session in response to answer quality, comprising: scoring a candidate's response in real time against a depth/specificity metric as it is received; comparing the computed score against a threshold conditioned on a pre-selected difficulty tier; upon the score falling below the threshold, automatically generating and inserting into the live interview sequence a supplementary follow-up question targeted at the specific deficiency identified in the response; and constraining insertion to a bounded maximum count per session to prevent unbounded session extension, the bound itself scaled to the pre-selected difficulty tier.</p>
   </div>
 
-  <div class="claim primary no-break">
-    <div class="claim-title"><span class="claim-num">Claim 9 [ENGAGEMENT]</span> — Verified Interview Like: Social Signal on AI-Verified Interview Objects</div>
-    <p>A method for enabling authenticated platform users — employers, recruiters, hiring managers, or members of the public — to apply a positive engagement signal (a "Like") directly to a candidate's Talent Identity Object or interview profile, comprising: (a) a Like action applied to the interview object itself (not to a post, comment, or shared link about the interview, but to the verified interview profile as the primary content unit); (b) an instant notification delivered to the candidate confirming that a named, authenticated user has watched and liked their interview; (c) aggregation of Likes into a visible public count on the candidate's profile, contributing to a social proof signal distinct from and complementary to the AI-generated score; (d) an employer-side Liked Profiles list functioning as a saved watchlist and informal shortlist; (e) a candidate-side notification feed surfacing which employers or users liked their interview, enabling informed follow-up; and (f) platform-level Like signal data used to surface trending candidates, popular interview styles, and high-engagement profiles within the discovery index. This constitutes a novel social engagement layer applied specifically to verified, AI-conducted interview objects — a category of content that does not exist on any existing platform. LinkedIn, the world's largest professional network, does not permit users to Like a profile itself; reactions are available only on posts and activity. This system is the first to treat the verified interview profile as a standalone likeable content unit within a professional talent discovery context.</p>
+  <div class="claim no-break">
+    <div class="claim-title"><span class="claim-num">Claim 4</span> — Closed-Loop System for Interview-Derived Adaptive Curriculum Generation and Re-Assessment</div>
+    <p>A computer-implemented method for closing the loop between assessment and instruction, comprising: analyzing a completed structured interview's scored responses to automatically identify one or more subject-matter deficiencies; automatically generating a structured instructional module addressing an identified deficiency, without human authoring; tracking candidate engagement with the generated module; automatically triggering a follow-up assessment session on the same subject matter upon completion of the module; and computing and persisting a score delta between the original and follow-up assessment to a longitudinal candidate record, such that the generated instructional content is derived from, and its efficacy measured against, the candidate's own real assessment data rather than a generic curriculum.</p>
+  </div>
+
+  <div class="tech-note no-break">
+    <strong>Note on claim drafting:</strong> each claim above is phrased around a specific technical mechanism (a state-machine orchestration pattern, a scoring-triggered insertion rule, a closed data-feedback loop) rather than the business goal it serves. This is a deliberate response to the technical-character requirement under UK/EPO practice, and each claim should be reviewed and refined by the patent agent before filing — this brief establishes the technical substance, not final claim language.
   </div>
 
   <div class="page-break"></div>
@@ -214,72 +165,17 @@
   <!-- 4. DETAILED DESCRIPTION -->
   <h1 class="section">4. Detailed Description of Key Claims</h1>
 
-  <h2 class="section">4.1 The Talent Identity Object (Claim 1)</h2>
-  <p>The TIO is a structured data object and the atomic unit of the entire platform. It is not a self-submitted profile or a static CV. It is the output of a completed, AI-conducted structured interview — externally validated, not self-presented. A fully formed TIO contains:</p>
-  <ul>
-    <li><strong>Video recording</strong> — the full interview session, timestamped and tamper-evident</li>
-    <li><strong>Transcript</strong> — complete text of questions asked and answers given</li>
-    <li><strong>Behavioural signals</strong> — pace, hesitation, keyword frequency, response coherence</li>
-    <li><strong>Communication metrics</strong> — clarity score, structure score, vocabulary range</li>
-    <li><strong>Confidence metrics</strong> — derived from speech patterns, eye contact proxy, response latency</li>
-    <li><strong>Personality markers</strong> — openness, directness, warmth, analytical tendency</li>
-    <li><strong>Verified composite score</strong> — weighted multi-dimensional score out of 100</li>
-    <li><strong>Shareable URL</strong> — unique, persistent link to the live profile</li>
-    <li><strong>QR code</strong> — physical-world distribution (printable on CVs, business cards, leaflets)</li>
-    <li><strong>Recruiter contact interface</strong> — embedded "Watch &amp; Invite" CTA within the object</li>
-  </ul>
+  <h2 class="section">4.1 The Verified Interview Object Pipeline (Claim 1)</h2>
+  <p>The patentable core of Claim 1 is the automated pipeline as a whole, not any individual step within it, and not the resulting data object in isolation — a data structure alone is not patentable subject matter, and AI-based interview scoring is not novel (multi-dimensional scoring of communication, confidence, and similar metrics is standard practice across HireVue and comparable products). The invention lies specifically in the unattended, end-to-end chain — capture → transcription → scoring → serialization → identifier/QR generation — executing with no human step anywhere in it. This distinguishes it from systems where scoring, curation, or publication involves a human reviewer at any stage, regardless of how the scoring itself is computed. The patent agent should draft the claim to make clear the scoring step is recited only as a link in the automation chain, not as claimed subject matter in its own right.</p>
 
-  <h2 class="section">4.2 The Two-Sided Platform Architecture</h2>
-  <p>The platform operates simultaneously across two distinct verticals within a unified architecture:</p>
-  <ul>
-    <li><strong>Professional recruitment</strong> — software engineers, managers, designers, executives, data scientists, and all white-collar roles</li>
-    <li><strong>Local services discovery</strong> — plumbers, electricians, builders, babysitters, dog walkers, cleaners, and any individual with a local skill</li>
-  </ul>
-  <p>Both verticals share the same Talent Identity Object format, scoring infrastructure, search engine, and video delivery system. The interface adapts via a mode-switched toggle (Jobs / Services) while the architecture remains unified. This dual-market design within a single platform is itself novel and patentable.</p>
+  <h2 class="section">4.2 Multi-Persona Orchestration (Claim 2)</h2>
+  <p>This is assessed as the strongest claim in the disclosure. Neither HireVue nor Voomer — the two most directly comparable products identified to date — implement a synthesized-voice, video-avatar interviewer persona at all; both present interview prompts as static text. A system that orchestrates <em>multiple</em> distinct personas across a synchronized state machine, with real-time-triggered channel handoff and dynamic content insertion mid-session, has no identified prior art among current interview-practice or interview-assessment products.</p>
 
-  <h2 class="section">4.3 The Viral Distribution Engine (Claim 2)</h2>
-  <p>Every TIO generates a persistent shareable URL and QR code at the point of publication. This enables a candidate to distribute their verified interview across every digital and physical channel simultaneously — attaching it to a job application, embedding it in an email signature, printing it on a business card, posting it to LinkedIn, or sharing it via WhatsApp. Viewing is public; contact and search require registration. This creates a viral loop: every share is a new discovery surface for the platform.</p>
+  <h2 class="section">4.3 Adaptive Follow-Up Injection (Claim 3)</h2>
+  <p>The closest prior art category is computer-adaptive testing (CAT), which has used branching question logic based on live performance since the 1970s. This claim should be drafted narrowly around what is specifically novel relative to CAT: application to open-ended, AI-scored qualitative interview responses (rather than multiple-choice/scored-item CAT), and the bounded, difficulty-tier-scaled insertion cap as an anti-gaming mechanism. The patent agent should confirm this narrower framing survives a CAT prior-art search before filing.</p>
 
-  <h2 class="section">4.4 The Cross-Platform Identity Graph (Claim 6)</h2>
-  <p>A candidate who practices on Explain.Global, sits a scored interview on InterviewMe, and is benchmarked on Percentile.One accumulates a longitudinal talent record across all three platforms under a single verified identity. This graph enables:</p>
-  <ul>
-    <li><strong>Improvement trajectory tracking</strong> — score progress across multiple sessions over time</li>
-    <li><strong>Cross-platform discovery</strong> — a recruiter on InterviewMe can see Explain.Global practice history</li>
-    <li><strong>Personalised coaching</strong> — the learning engine reads performance data from InterviewMe sessions</li>
-    <li><strong>Benchmark positioning</strong> — Percentile.One places the candidate in a global scoring distribution</li>
-  </ul>
-
-  <h2 class="section">4.5 The Verified Interview Like (Claim 9)</h2>
-  <p>This is one of the most strategically significant and commercially underestimated mechanics in the platform. It appears simple — a Like button — but its implications are profound:</p>
-  <ul>
-    <li><strong>The profile is the content.</strong> On every other platform, you Like a post someone made about themselves. Here you Like the person's verified interview — their actual self-presentation, scored and structured by AI. That is an entirely different category of signal.</li>
-    <li><strong>The candidate is notified immediately.</strong> Someone watched your interview and liked it. Not liked a post you shared — liked <em>you</em>. That notification is one of the most powerful motivational moments the platform can create, and it drives the candidate to share their profile immediately to get more.</li>
-    <li><strong>The employer builds a shortlist passively.</strong> Every Like is saved to their Liked Profiles list. Over the course of a week of browsing, they have organically assembled a ranked watchlist without filling in a single form.</li>
-    <li><strong>The data compounds.</strong> Aggregate Like counts on profiles surface the most compelling candidates not just by AI score but by human resonance — the combination of a high score and many Likes is a signal no ATS can generate.</li>
-    <li><strong>LinkedIn cannot do this.</strong> LinkedIn has had over 20 years to add a Like to a profile and has not done so — because their architecture treats the profile as a static document, not as content. This platform treats the interview as the primary content unit, making the Like not just possible but natural.</li>
-  </ul>
-
-  <h2 class="section">4.6 The Verified Video Trust Profile for Tradespeople (Claim 8)</h2>
-  <p>The local services market is the largest untapped vertical for AI-verified video profiling. Every year, millions of householders hire a plumber, electrician, cleaner, or babysitter based on nothing more than a text review written by a stranger. The decision to let someone into your home is fundamentally a trust decision — yet no existing platform gives the householder any way to see, hear, or assess the person before they arrive.</p>
-  <p>This claim covers the direct application of the TIO (Claim 1) to the trades and local services market, with specific extensions for the in-home trust context:</p>
-  <ul>
-    <li><strong>Safety signals</strong> — the AI interview captures and scores cues specifically relevant to home trust: calmness, professionalism, warmth, clarity of communication, responsiveness to hypothetical scenarios (e.g. "What do you do if you find additional damage?"), and absence of aggression or evasiveness</li>
-    <li><strong>Trade-specific questioning</strong> — dynamic question generation tailored to the trade: a plumber is asked about emergency procedures; a babysitter about child safety; an electrician about compliance standards</li>
-    <li><strong>Local discovery index</strong> — profiles are searchable by trade, postcode/radius, availability, and trust score — not just by generic review aggregation</li>
-    <li><strong>The warmth dimension</strong> — no text review can convey whether someone is calm, friendly, or trustworthy in person. A 90-second AI interview can. This is the core innovation over Checkatrade and all existing trade directories</li>
-  </ul>
-  <p><strong>Prior art gap:</strong> Checkatrade, Bark.com, and TaskRabbit all operate on the same model — text reviews submitted after the fact, with no video, no AI, no personality or safety scoring, and no way for the householder to assess the individual before booking. This claim covers the entire category of AI-verified pre-booking video trust for home and local services.</p>
-
-  <h2 class="section">4.7 The Interview-to-Learn Feedback Loop (Claim 7)</h2>
-  <p>This is the most strategically differentiated claim in the ecosystem. No platform currently connects a scored, AI-conducted interview directly to a personalised learning course and then allows the candidate to retake and measure improvement. The loop works as follows:</p>
-  <ul>
-    <li><strong>Gap identification</strong> — after an interview, the system analyses which questions scored poorly and extracts the underlying subject-matter weakness (e.g. "Cloud Architecture", "Stakeholder Management", "Vertical Slice Architecture")</li>
-    <li><strong>Course generation</strong> — the Learn engine (Explain.Global) generates a full structured lesson on that subject: introduction, core concepts, Go Deeper sections, and a Bookcase of curated related material — instantly, on demand, on any subject in the world</li>
-    <li><strong>Mobile-first delivery</strong> — the course is delivered through the Explain.Global mobile app, designed for students and professionals who learn on the go</li>
-    <li><strong>Retake invitation</strong> — once the candidate has completed the course, they are invited to retake a fresh AI interview on the same subject</li>
-    <li><strong>Score delta</strong> — the new score is compared to the original, the improvement is recorded to the Talent Identity Graph, and the improved TIO is published to the discovery index</li>
-  </ul>
-  <p>This creates a self-reinforcing improvement engine: the weaker a candidate's interview, the more precisely targeted their learning becomes. The Learn engine is not a generic course library — it builds a course from scratch on any micro-subject the candidate needs, anchored to real performance data from their actual interview. This is the mechanism that transforms InterviewMe from a hiring tool into a career development platform.</p>
+  <h2 class="section">4.4 The Closed Assessment-to-Instruction Loop (Claim 4)</h2>
+  <p>"An AI generates a course on a topic" is not, alone, inventive. What is claimed here is the closed loop: automatic deficiency extraction from real scored-interview data → automatically generated instruction targeted at that specific deficiency → automatic re-assessment → automatic score-delta computation persisted against the same candidate record. It is the multi-stage, self-referential integration — not any single generation step — that constitutes the claimed invention.</p>
 
   <hr>
 
@@ -291,33 +187,20 @@
       <th style="width:28%">What it does</th>
       <th>What it does NOT do vs. this invention</th>
     </tr>
-    <tr><td>LinkedIn</td><td>Static profile + CV discovery</td><td>No AI interview; no score; no watch-before-contact; no TIO; no behavioural signals; no QR distribution; cannot Like a profile</td></tr>
-    <tr><td>Indeed / Reed</td><td>Job board + CV application</td><td>Candidate not pre-evaluated; employer must screen; no video; no score; no watch</td></tr>
-    <tr><td>HireVue</td><td>Async video interview (employer-initiated)</td><td>Employer-initiated only; not a public discovery index; no search; no score-first discovery; no QR; no TIO</td></tr>
-    <tr><td>Voomer</td><td>Text-prompted self-recorded practice answers, AI feedback after the fact</td><td>No AI-voiced interviewer persona; no video avatar; static text question only, never delivered by a synthesised interviewer; no live cinematic interview experience; not a discovery platform — practice tool only, nothing published or searchable</td></tr>
-    <tr><td>Checkatrade</td><td>Trade review aggregator</td><td>Static text reviews only; no video; no AI interview; no personality/safety signals; no score; no pre-booking trust profile; householder cannot see or hear the tradesperson before they arrive</td></tr>
-    <tr><td>Bark.com</td><td>Trade lead generation</td><td>Quote-request model only; no video profiles; no AI interview; no trust score; no personality signals; no in-home safety dimension</td></tr>
-    <tr><td>TaskRabbit</td><td>Local task marketplace</td><td>Photo and text bio only; no AI interview; no video trust profile; no personality or safety scoring; no pre-booking watchable profile</td></tr>
-    <tr><td>Loom / Intro.co</td><td>Self-recorded video intro</td><td>Self-presented only; no AI interview; no score; not a two-sided discovery platform</td></tr>
-    <tr><td>Greenhouse / Lever</td><td>ATS (Applicant Tracking System)</td><td>CV-gated; employer-side only; no candidate-published profiles; no AI interview; no public index</td></tr>
+    <tr><td>HireVue</td><td>Async video interview (employer-initiated); human or AI review of responses</td><td>No synthetic interviewer persona; no video avatar; no multi-persona orchestration; questions delivered as static prompts, not by a synthesized interviewer; no adaptive follow-up generation</td></tr>
+    <tr><td>Voomer</td><td>Text-prompted self-recorded practice answers, AI feedback after the fact</td><td>No AI-voiced interviewer persona; no video avatar; static text question only, never delivered by a synthesised interviewer; no live cinematic interview experience; no closed-loop instruction/re-assessment cycle</td></tr>
   </table>
+  <p style="font-size:9.5pt;color:#6B7280;margin-top:8px"><em>This table will be extended as further comparable products are identified and reviewed. Claims 3 and 4 have no directly comparable product identified to date — a formal prior-art search by the patent agent is recommended before filing, particularly for Claim 3 against computer-adaptive testing literature (see Section 4.3).</em></p>
 
   <hr>
 
   <!-- 6. NOVELTY -->
   <h1 class="section">6. Summary of Novelty</h1>
-  <p>The following features are believed to be novel and non-obvious over existing prior art:</p>
   <ul class="novelty">
-    <li><strong>The Talent Identity Object</strong> as the atomic unit of hiring — video, transcript, behavioural signals, scores, QR code, and recruiter interface in a single structured object</li>
-    <li><strong>The Search → Watch → Like → Invite sequence</strong> — evaluation before contact, a social engagement signal (Like) that notifies the candidate and drives viral sharing, followed by direct contact without scheduling or a CV</li>
-    <li><strong>The Verified Interview Like</strong> — a Like applied directly to an AI-verified interview profile as the primary content unit, with candidate notification, employer shortlisting, and social proof aggregation; the first platform to treat the interview profile itself as a standalone likeable content object (LinkedIn, after 20+ years, still cannot Like a profile)</li>
-    <li><strong>Multi-dimensional search by communication style, personality, confidence, and behavioural signals</strong> — not just role and location</li>
-    <li><strong>Universal QR + URL distribution</strong> embedded in the TIO at publication, enabling viral spread across physical and digital channels</li>
-    <li><strong>A unified two-sided platform</strong> serving professional recruitment and local trade discovery within a single architecture</li>
-    <li><strong>The Cross-Platform Talent Identity Graph</strong> linking InterviewMe, Explain.Global, and Percentile.One into a single longitudinal talent record</li>
-    <li><strong>The Interview-to-Learn closed feedback loop</strong> — AI gap analysis from a scored interview generates a bespoke subject course (on any topic in the world), delivered via the Learn engine, with retake and score-delta measurement — a novel integration of evaluation and adaptive learning not present in any existing platform</li>
-    <li><strong>Verified Video Trust Profile for local and trade services</strong> — AI-verified pre-booking video profiling for tradespeople and home service providers, capturing warmth, personality, and safety signals entirely absent from all existing trade directories (Checkatrade, Bark.com, TaskRabbit)</li>
-    <li><strong>Complete ATS bypass</strong> — a candidate is discovered, evaluated, and contacted without a CV or ATS at any point</li>
+    <li><strong>Unattended, end-to-end verified-object generation</strong> — capture through publication-ready serialization with no human step, distinguishing it from human-reviewed or human-curated systems including HireVue</li>
+    <li><strong>Multi-persona synthetic interview orchestration</strong> — no identified prior art implements synchronized, state-machine-driven handoff between multiple distinct AI interviewer personas across video and live TTS channels</li>
+    <li><strong>Depth-scored, bounded adaptive follow-up injection</strong> — application of adaptive branching to open-ended AI-scored qualitative responses, with a difficulty-scaled anti-gaming bound, distinct from conventional scored-item CAT</li>
+    <li><strong>Self-referential assessment-instruction-reassessment loop</strong> — closed-loop integration where generated instructional content is derived from, and measured against, the candidate's own real assessment data</li>
   </ul>
 
   <hr>
@@ -325,7 +208,7 @@
   <!-- 7. FOUNDER STATEMENT -->
   <h1 class="section">7. Founder Statement</h1>
   <div class="quote">
-    "Life is about selling yourself. Whether you're a teenager starting out, a dog walker, or an electrician — you have to find a way to show who you are. Until now, the only tool anyone had was paper. InterviewMe is the first time a person can sell themselves in motion. Not describe themselves — show themselves. The other person can watch, feel, and decide. Before any meeting. Before any risk. That's not a recruitment tool. That's infrastructure for human trust at scale."
+    "I'd rather file four claims that actually hold up than nine that sound impressive and fall apart the first time someone points at HireVue. The technology underneath InterviewMe — the way Sarah and James actually work, the way a weak answer gets followed up on live, the way a poor interview turns straight into a lesson — that's the real invention. The marketplace around it is a business I intend to win by building it well and moving fast, not by trying to patent the idea of a 'like' button."
     <span class="attr">— Francis Cobbinah, Founder, Percentile.One / InterviewMe</span>
   </div>
 
@@ -335,15 +218,10 @@
   <h1 class="section">8. Contact &amp; Filing Priority</h1>
   <p>This brief is submitted to Patent Outsourcing Limited to initiate the patent application process. Recommended filing priority:</p>
   <ol class="priority">
-    <li><strong>Claim 1 — AI-Generated Talent Identity Object</strong> — foundational; all other claims depend on this</li>
-    <li><strong>Claim 4 — Direct Recruiter-to-Candidate Hiring Pipeline</strong> — most commercially immediate; ATS bypass</li>
-    <li><strong>Claim 3 — Recruiter Search and Matching Engine</strong> — marketplace patent; defensively critical</li>
-    <li><strong>Claim 9 — Verified Interview Like</strong> — engagement and virality engine; early filing recommended</li>
-    <li><strong>Claim 2 — Universal Interview Distribution Mechanism</strong> — viral engine; supports network effects</li>
-    <li><strong>Claim 5 — Cinematic AI Interview Chair</strong> — Explain.Global product line</li>
-    <li><strong>Claim 8 — Verified Video Trust Profile (Trades)</strong> — new market vertical</li>
-    <li><strong>Claim 7 — Interview-to-Learn Feedback Loop</strong> — ecosystem differentiation</li>
-    <li><strong>Claim 6 — Cross-Platform Talent Identity Graph</strong> — ecosystem play; file after Claims 1–5 are secured</li>
+    <li><strong>Claim 2 — Multi-Persona Synthetic Interview Orchestration</strong> — strongest technical character; no identified prior art among comparable products reviewed to date</li>
+    <li><strong>Claim 1 — Verified Interview Object Generation Pipeline</strong> — foundational; other claims operate on its output</li>
+    <li><strong>Claim 4 — Closed-Loop Assessment-to-Instruction System</strong> — genuine multi-stage technical integration; ecosystem-differentiating</li>
+    <li><strong>Claim 3 — Adaptive Follow-Up Injection</strong> — filed last pending a prior-art search against computer-adaptive testing literature (see Section 4.3); narrowest claim of the four and most exposed to an obviousness objection if not drafted carefully</li>
   </ol>
 
   <table class="contact-table" style="margin-top:24px">
