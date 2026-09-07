@@ -38,9 +38,20 @@ export function useLiveAvatarSession() {
       const session = new LiveAvatarSession(sessionToken, { voiceChat: false });
       sessionRef.current = session;
 
-      session.on(SessionEvent.SESSION_STREAM_READY, () => {
-        streamReadyRef.current = true;
-        attachIfReady();
+      // session.start() resolves once the WebRTC/WebSocket handshake completes — that's not
+      // the same moment LiveAvatar's own rendering pipeline has actually finished warming up
+      // and subscribed the real video/audio tracks. Calling speak() in that gap is exactly
+      // what caused the very first question of a session to silently misfire live (text
+      // displayed, Wayne never moved, only Repeat — running well after the gap had closed —
+      // worked). SESSION_STREAM_READY is the SDK's own explicit "tracks are actually here"
+      // signal; connect() now waits for it too, with a safety timeout in case it never fires
+      // for some reason, so a stalled stream can't hang the whole interview indefinitely.
+      const streamReadyPromise = new Promise<void>((resolve) => {
+        session.on(SessionEvent.SESSION_STREAM_READY, () => {
+          streamReadyRef.current = true;
+          attachIfReady();
+          resolve();
+        });
       });
       session.on(SessionEvent.SESSION_DISCONNECTED, () => {
         setStatus('closed');
@@ -50,6 +61,10 @@ export function useLiveAvatarSession() {
       });
 
       await session.start();
+      await Promise.race([
+        streamReadyPromise,
+        new Promise<void>(resolve => setTimeout(resolve, 5000)),
+      ]);
       connectedRef.current = true;
       setStatus('connected');
     } catch (err) {
