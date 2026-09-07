@@ -1352,16 +1352,49 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 </div>
               )}
 
-              {/* Scoring spinner */}
-              {phase === 'scoring' && (
-                <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '8px 28px' }}>
-                  <ChairSpinner label="Analysing your answer…" size={100} />
-                </div>
-              )}
             </div>
           )}
         </AnimatePresence>
       </div>
+
+      {/* Scoring overlay — fixed/centered like the coaching dialog below, not inline in the
+          scroll flow. It used to render halfway down the page's normal content column, which
+          meant it was invisible without scrolling — same "you can't tell what's happening"
+          problem the coaching dialog already solves by taking over the whole viewport. */}
+      <AnimatePresence>
+        {phase === 'scoring' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 1000,
+              background: 'rgba(0,0,0,0.82)',
+              backdropFilter: 'blur(12px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '24px',
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0, y: 24 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: -16 }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                width: '100%', maxWidth: '420px',
+                background: 'var(--bg2)',
+                border: '1px solid var(--border)',
+                borderRadius: '24px',
+                padding: '8px 28px',
+                boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+              }}
+            >
+              <ChairSpinner label="Analysing your answer…" size={100} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Coaching overlay */}
       {phase === 'coaching' && coachingMessage && (
