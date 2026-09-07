@@ -43,20 +43,24 @@ public class TtsCacheService
         return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 
-    public async Task<string?> GetReadUrlIfCachedAsync(string key, TimeSpan? validFor = null)
+    public async Task<string?> GetReadUrlIfCachedAsync(string key, TimeSpan? validFor = null, string extension = "mp3")
     {
         if (_container is null) return null;
-        var blob = _container.GetBlobClient(BlobPath(key));
+        var blob = _container.GetBlobClient(BlobPath(key, extension));
         if (!await blob.ExistsAsync()) return null;
         return SasUrl(blob, validFor);
     }
 
-    public async Task<string> UploadAndGetReadUrlAsync(string key, Stream content, string contentType, TimeSpan? validFor = null)
+    // extension defaults to "mp3" for every existing caller (SpeakVoice, ReadAloud) — pass
+    // "pcm" explicitly for LiveAvatar's raw-PCM path (AvatarAudioHandler) so the blob's name
+    // actually reflects what's inside it, rather than every cached clip claiming to be an MP3
+    // regardless of real content.
+    public async Task<string> UploadAndGetReadUrlAsync(string key, Stream content, string contentType, TimeSpan? validFor = null, string extension = "mp3")
     {
         if (_container is null)
             throw new InvalidOperationException("Blob storage is not configured (ConnectionStrings:BlobStorage is missing).");
 
-        var blob = _container.GetBlobClient(BlobPath(key));
+        var blob = _container.GetBlobClient(BlobPath(key, extension));
         await blob.UploadAsync(content, new BlobUploadOptions
         {
             HttpHeaders = new BlobHttpHeaders { ContentType = contentType },
@@ -79,5 +83,5 @@ public class TtsCacheService
         return blob.GenerateSasUri(sasBuilder).ToString();
     }
 
-    private static string BlobPath(string key) => $"{key}.mp3";
+    private static string BlobPath(string key, string extension) => $"{key}.{extension}";
 }
