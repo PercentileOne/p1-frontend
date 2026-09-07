@@ -6,7 +6,7 @@ import { MouthOverlay, MOUTH_POSITIONS, MOUTH_OVERLAY_ENABLED } from '../compone
 import { YouCamera } from '../components/YouCamera';
 import { VoiceInput, type TranscriptMeta } from '../components/VoiceInput';
 import type { InterviewQuestion } from '../api/explainApi';
-import { speak, elevenLabsConfigured } from '../api/ttsApi';
+import { speak, elevenLabsConfigured, getStoredInterviewerVolume, setInterviewerVolume } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
 import { sessionPrepareClient, generateMikeScriptOnly } from '../api/aiScoring';
@@ -183,6 +183,15 @@ export default function InterviewRoomPage() {
 
   const consentToRecord = ctx.consentToRecord !== false;
   const [cameraOn, setCameraOn] = useState(true);
+  // Master volume for Sarah/James/Mike's voices — a real on-screen control instead of the
+  // candidate having to hunt for OS/browser volume mid-interview. Persisted in localStorage
+  // (see ttsApi.ts) so it carries across sessions; takes effect immediately even mid-sentence.
+  const [interviewerVolume, setInterviewerVolumeUI] = useState(() => getStoredInterviewerVolume());
+  const [volumeMenuOpen, setVolumeMenuOpen] = useState(false);
+  function handleVolumeChange(v: number) {
+    setInterviewerVolumeUI(v);
+    setInterviewerVolume(v);
+  }
   // Appearance filter — same presets as the Profile Video recorder (useVideoFilter.ts),
   // applied here as a plain CSS filter on the self-view rather than that hook's own
   // independent getUserMedia+canvas pipeline, since YouCamera already owns the camera
@@ -650,6 +659,55 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
             <option value="zh">🇨🇳 Chinese (ZH)</option>
             <option value="hi">🇮🇳 Hindi (HI)</option>
           </select>
+
+          {/* Interviewer volume — always visible, independent of OS/browser volume */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setVolumeMenuOpen(v => !v)}
+              title="Interviewer volume"
+              style={{
+                background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '8px',
+                padding: '7px 10px', color: 'var(--text-3)', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', transition: 'all 0.2s',
+              }}
+            >
+              {interviewerVolume === 0 ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <path d="M15.54 8.46a5 5 0 010 7.07" opacity={interviewerVolume > 0.4 ? 1 : 0.25}/>
+                  <path d="M19.07 4.93a10 10 0 010 14.14" opacity={interviewerVolume > 0.75 ? 1 : 0.25}/>
+                </svg>
+              )}
+            </button>
+            {volumeMenuOpen && (
+              <>
+                <div onClick={() => setVolumeMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 41, width: 180,
+                  background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: 10,
+                  boxShadow: '0 12px 32px rgba(0,0,0,0.4)', padding: '14px 16px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Voice Volume</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-2)', fontVariantNumeric: 'tabular-nums' }}>{Math.round(interviewerVolume * 100)}%</span>
+                  </div>
+                  <input
+                    type="range" min={0} max={1} step={0.05} value={interviewerVolume}
+                    onChange={e => handleVolumeChange(parseFloat(e.target.value))}
+                    style={{ width: '100%', accentColor: '#a78bfa', cursor: 'pointer' }}
+                  />
+                  <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 6, lineHeight: 1.4 }}>
+                    Controls Sarah, James &amp; Mike only — not your recording.
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
           {phase === 'answering' && (
             <div style={{ fontSize: '13px', fontWeight: 700, color: elapsed > 120 ? 'var(--amber)' : 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>{fmt(elapsed)}</div>
           )}

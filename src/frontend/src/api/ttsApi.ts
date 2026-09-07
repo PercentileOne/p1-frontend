@@ -81,6 +81,42 @@ export async function getTTSAudioContext(): Promise<AudioContext> {
 }
 async function getAudioContext(): Promise<AudioContext> { return getTTSAudioContext(); }
 
+// User-controlled master volume for the interviewers' voices — separate from system/browser
+// volume, so a candidate on a shared or public machine can turn Sarah/James/Mike down without
+// hunting through OS volume mixers mid-interview. Every utterance's per-role gain node routes
+// through this ONE persistent node rather than straight to ctx.destination, so a slider dragged
+// mid-sentence takes effect immediately (AudioParam.value is live-adjustable), and it's applied
+// only to what the candidate actually hears — NOT to the recording tap below, which stays on
+// the original per-utterance gain node so a saved/shared interview's audio is never affected by
+// whatever the candidate happened to set their own listening volume to.
+const INTERVIEWER_VOLUME_KEY = 'interviewerVolume';
+let _masterGain: GainNode | null = null;
+
+export function getStoredInterviewerVolume(): number {
+  try {
+    const raw = localStorage.getItem(INTERVIEWER_VOLUME_KEY);
+    const v = raw === null ? 1 : parseFloat(raw);
+    return Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 1;
+  } catch {
+    return 1;
+  }
+}
+
+export function setInterviewerVolume(volume: number) {
+  const clamped = Math.max(0, Math.min(1, volume));
+  if (_masterGain) _masterGain.gain.value = clamped;
+  try { localStorage.setItem(INTERVIEWER_VOLUME_KEY, String(clamped)); } catch { /* private mode, etc. */ }
+}
+
+function getMasterGain(ctx: AudioContext): GainNode {
+  if (!_masterGain) {
+    _masterGain = ctx.createGain();
+    _masterGain.gain.value = getStoredInterviewerVolume();
+    _masterGain.connect(ctx.destination);
+  }
+  return _masterGain;
+}
+
 // Optional tap so session recording can capture the AI interviewers' voices alongside
 // the candidate's mic — set/cleared by whoever owns the recording (e.g. InterviewRoomPage).
 // Must be a node on the SAME AudioContext returned by getTTSAudioContext(), since Web Audio
@@ -157,7 +193,7 @@ async function speakElevenLabs(
   } else {
     source.connect(gainNode);
   }
-  gainNode.connect(ctx.destination);
+  gainNode.connect(getMasterGain(ctx));
   if (_recordingDestination) gainNode.connect(_recordingCompressor ?? _recordingDestination);
 
   let ended = false;
@@ -184,6 +220,7 @@ function speakWebSpeech(
   utterance.lang  = 'en-GB';
   utterance.rate  = 0.92;
   utterance.pitch = role === 'hr' ? 1.15 : role === 'mike' ? 1.0 : 0.9;
+  utterance.volume = getStoredInterviewerVolume();
 
   const voices = window.speechSynthesis.getVoices();
   const preferred =
@@ -224,9 +261,15 @@ export function speak(
   let cancelled = false;
   let cancelAudio: (() => void) | null = null;
 
+  // James's live question-reading TTS ('technical') used to be an unexplained flat 0.5 — half
+  // the gain of Sarah's ('hr') 1.0 — since ttsApi.ts's very first commit, with no comment
+  // anywhere justifying the imbalance. That's the "James's voice drops ~35-40% when he reads
+  // questions" bug: his generic intro plays from a separately-mastered baked video (never hits
+  // this code path for English sessions), so only his live-TTS lines ever carried the cut.
+  // Matching Sarah's 1.0 now; Mike's 0.65 (debrief-only, never reported as quiet) is untouched.
   speakElevenLabs(text, role, () => {
     if (!cancelled) onEnd();
-  }, role === 'technical' ? 0.5 : role === 'mike' ? 0.65 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined)
+  }, role === 'mike' ? 0.65 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined)
     .then(cancel => { cancelAudio = cancel; })
     .catch((err) => {
       // Backend proxy or ElevenLabs itself failed — fall back to Web Speech. Logged (not
