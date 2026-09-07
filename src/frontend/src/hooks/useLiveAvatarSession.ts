@@ -15,6 +15,14 @@ export function useLiveAvatarSession() {
   const sessionRef = useRef<LiveAvatarSession | null>(null);
   const videoElRef = useRef<HTMLVideoElement | null>(null);
   const streamReadyRef = useRef(false);
+  // The actual source of truth for "is it safe to call speak() right now" — status (React
+  // state) lags behind this by one render, which is exactly the bug this ref exists to avoid:
+  // connect() awaiting session.start() then immediately calling speak() in the same async
+  // function, before React has re-rendered, means speak()'s own closure could still see the
+  // pre-connection status and throw instantly — question text displays (a separate effect),
+  // but the avatar never actually spoke. Same "always-fresh reference" idiom already used
+  // elsewhere in this codebase (askQuestionRef, beginInterviewIntroRef) for the same reason.
+  const connectedRef = useRef(false);
 
   const attachIfReady = useCallback(() => {
     if (streamReadyRef.current && videoElRef.current && sessionRef.current) {
@@ -37,14 +45,17 @@ export function useLiveAvatarSession() {
       session.on(SessionEvent.SESSION_DISCONNECTED, () => {
         setStatus('closed');
         sessionRef.current = null;
+        connectedRef.current = false;
         streamReadyRef.current = false;
       });
 
       await session.start();
+      connectedRef.current = true;
       setStatus('connected');
     } catch (err) {
       console.error('[LiveAvatar] Session failed to start:', err);
       sessionRef.current = null;
+      connectedRef.current = false;
       setStatus('failed');
     }
   }, [attachIfReady]);
@@ -52,6 +63,7 @@ export function useLiveAvatarSession() {
   const disconnect = useCallback(async () => {
     await sessionRef.current?.stop();
     sessionRef.current = null;
+    connectedRef.current = false;
     streamReadyRef.current = false;
     setStatus('closed');
   }, []);
@@ -61,7 +73,7 @@ export function useLiveAvatarSession() {
   // can slot into the same call sites without reshaping the state machine around it.
   const speak = useCallback(async (text: string, role: 'hr' | 'technical' | 'mike'): Promise<void> => {
     const session = sessionRef.current;
-    if (!session || status !== 'connected') throw new Error('Avatar session is not connected');
+    if (!session || !connectedRef.current) throw new Error('Avatar session is not connected');
 
     const audioBase64 = await fetchAvatarAudioBase64(text, role);
     return new Promise<void>((resolve) => {
@@ -72,7 +84,7 @@ export function useLiveAvatarSession() {
       session.on(AgentEventsEnum.AVATAR_SPEAK_ENDED, onEnded);
       session.repeatAudio(audioBase64);
     });
-  }, [status]);
+  }, []);
 
   // Maps to the reactive listening behaviour LiveAvatar's own demo showed off — call
   // startListening while the candidate is answering, stopListening right before the next
