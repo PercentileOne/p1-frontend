@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zero to 1M — A Founder's Field Guide</title>
+<meta name="description" content="Francis Cobbinah's field guide to building a world-class digital platform alone — from first commit to a million subscribers.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #eef0f4;
+    --surface: #ffffff;
+    --surface-2: #f6f7fa;
+    --border: #dde1e8;
+    --text: #1b1e27;
+    --text-2: #545b6c;
+    --text-3: #868da0;
+    --accent: #a97a24;
+    --accent-soft: rgba(169,122,36,0.12);
+    --accent-2: #2f6fe0;
+    --accent-2-soft: rgba(47,111,224,0.10);
+    --shadow: 0 20px 48px rgba(20,24,34,0.10);
+    --status-done-bg: rgba(52,168,113,0.13);
+    --status-done-fg: #1f8a56;
+    --status-draft-bg: rgba(217,155,45,0.14);
+    --status-draft-fg: #a97a24;
+    --status-empty-bg: rgba(134,141,160,0.14);
+    --status-empty-fg: #6b7183;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0b0d12;
+      --surface: #12141b;
+      --surface-2: #171a23;
+      --border: rgba(255,255,255,0.09);
+      --text: #eef0f4;
+      --text-2: #a7adbc;
+      --text-3: #6c7383;
+      --accent: #d4a24c;
+      --accent-soft: rgba(212,162,76,0.14);
+      --accent-2: #6ea3ff;
+      --accent-2-soft: rgba(110,163,255,0.12);
+      --shadow: 0 24px 60px rgba(0,0,0,0.5);
+      --status-done-bg: rgba(52,211,153,0.14);
+      --status-done-fg: #4fd699;
+      --status-draft-bg: rgba(212,162,76,0.16);
+      --status-draft-fg: #d4a24c;
+      --status-empty-bg: rgba(255,255,255,0.06);
+      --status-empty-fg: #838aa0;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0b0d12;
+    --surface: #12141b;
+    --surface-2: #171a23;
+    --border: rgba(255,255,255,0.09);
+    --text: #eef0f4;
+    --text-2: #a7adbc;
+    --text-3: #6c7383;
+    --accent: #d4a24c;
+    --accent-soft: rgba(212,162,76,0.14);
+    --accent-2: #6ea3ff;
+    --accent-2-soft: rgba(110,163,255,0.12);
+    --shadow: 0 24px 60px rgba(0,0,0,0.5);
+    --status-done-bg: rgba(52,211,153,0.14);
+    --status-done-fg: #4fd699;
+    --status-draft-bg: rgba(212,162,76,0.16);
+    --status-draft-fg: #d4a24c;
+    --status-empty-bg: rgba(255,255,255,0.06);
+    --status-empty-fg: #838aa0;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', system-ui, sans-serif; }
+  ::selection { background: var(--accent-soft); }
+
+  .shell { display: flex; min-height: 100vh; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 328px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; height: 100vh; position: sticky; top: 0;
+  }
+  .sb-head { padding: 28px 26px 20px; border-bottom: 1px solid var(--border); }
+  .sb-eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .sb-title { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; margin-bottom: 6px; text-wrap: balance; }
+  .sb-sub { font-size: 12.5px; color: var(--text-3); line-height: 1.5; margin-bottom: 16px; }
+  .sb-author { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--text-2); }
+  .sb-author .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+  .sb-progress-wrap { padding: 16px 26px; border-bottom: 1px solid var(--border); }
+  .sb-progress-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+  .sb-progress-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); }
+  .sb-progress-count { font-size: 12px; font-weight: 600; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .sb-progress-track { height: 5px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+  .sb-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 3px; transition: width 0.4s ease; }
+
+  .sb-search-wrap { padding: 14px 26px; border-bottom: 1px solid var(--border); }
+  .sb-search { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 12px; font-size: 13px; color: var(--text); font-family: inherit; outline: none; }
+  .sb-search::placeholder { color: var(--text-3); }
+  .sb-search:focus { border-color: var(--accent-2); }
+
+  .sb-list { flex: 1; overflow-y: auto; padding: 10px 14px 24px; }
+  .sb-part-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); padding: 14px 12px 6px; }
+  .sb-item {
+    display: flex; align-items: flex-start; gap: 12px; width: 100%; text-align: left;
+    padding: 10px 12px; border-radius: 10px; border: 1px solid transparent; background: none; cursor: pointer;
+    font-family: inherit; transition: background 0.12s, border-color 0.12s;
+  }
+  .sb-item:hover { background: var(--surface-2); }
+  .sb-item.active { background: var(--accent-soft); border-color: var(--accent); }
+  .sb-num { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: var(--text-3); flex-shrink: 0; width: 20px; padding-top: 2px; }
+  .sb-item.active .sb-num { color: var(--accent); }
+  .sb-item-body { min-width: 0; flex: 1; }
+  .sb-item-title { font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.35; margin-bottom: 3px; }
+  .sb-item.active .sb-item-title { color: var(--accent); }
+  .sb-item-teaser { font-size: 11.5px; color: var(--text-3); line-height: 1.4; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .sb-check { flex-shrink: 0; width: 17px; height: 17px; border-radius: 5px; border: 1.5px solid var(--border); margin-top: 2px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.12s; }
+  .sb-check.checked { background: var(--status-done-fg); border-color: var(--status-done-fg); }
+  .sb-check svg { display: none; width: 11px; height: 11px; stroke: #fff; stroke-width: 3; }
+  .sb-check.checked svg { display: block; }
+
+  .sb-foot { padding: 16px 26px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
+  .theme-toggle { display: flex; gap: 6px; background: var(--surface-2); border-radius: 9px; padding: 3px; }
+  .theme-btn { flex: 1; padding: 7px 0; border-radius: 7px; border: none; background: none; color: var(--text-3); font-size: 11.5px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .theme-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .sb-back { font-size: 12px; color: var(--text-3); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+  .sb-back:hover { color: var(--accent-2); }
+
+  /* ── Main ── */
+  .main { flex: 1; min-width: 0; }
+  .main-inner { max-width: 760px; margin: 0 auto; padding: 64px 48px 100px; }
+
+  .ch-eyebrow-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .ch-tag { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 11px; border-radius: 20px; }
+  .ch-status-empty { background: var(--status-empty-bg); color: var(--status-empty-fg); }
+  .ch-status-draft { background: var(--status-draft-bg); color: var(--status-draft-fg); }
+  .ch-status-done  { background: var(--status-done-bg); color: var(--status-done-fg); }
+
+  .ch-num { font-family: 'Fraunces', serif; font-size: 15px; color: var(--text-3); letter-spacing: 0.02em; }
+  .ch-title { font-family: 'Fraunces', serif; font-size: 44px; font-weight: 600; line-height: 1.1; letter-spacing: -0.015em; margin: 4px 0 22px; text-wrap: balance; }
+  .ch-synopsis { font-size: 17px; line-height: 1.75; color: var(--text-2); margin-bottom: 36px; max-width: 62ch; }
+  .ch-synopsis strong { color: var(--text); font-weight: 600; }
+
+  .ch-block { margin-bottom: 32px; }
+  .ch-block-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-2); margin-bottom: 14px; display: flex; align-items: center; gap: 9px; }
+  .ch-block-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .topic-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; }
+  .topic-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 14.5px; line-height: 1.6; color: var(--text-2); }
+  .topic-list li::before { content: '→'; color: var(--accent); flex-shrink: 0; font-weight: 600; margin-top: 1px; }
+  .topic-list li strong { color: var(--text); font-weight: 600; }
+
+  .field-note {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 4px 12px 12px 4px; padding: 20px 24px; box-shadow: var(--shadow);
+  }
+  .field-note-label { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .field-note p { font-size: 14.5px; line-height: 1.7; color: var(--text-2); font-style: italic; margin: 0; }
+  .field-note p strong { color: var(--text); font-style: normal; font-weight: 600; }
+
+  .ch-footer {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--border);
+  }
+  .studied-toggle {
+    display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 24px;
+    border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-family: inherit;
+    font-size: 13px; font-weight: 600; color: var(--text-2); transition: all 0.15s;
+  }
+  .studied-toggle.on { background: var(--status-done-bg); border-color: var(--status-done-fg); color: var(--status-done-fg); }
+  .studied-toggle .box { width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid var(--text-3); display: flex; align-items: center; justify-content: center; }
+  .studied-toggle.on .box { background: var(--status-done-fg); border-color: var(--status-done-fg); }
+  .studied-toggle .box svg { display: none; width: 10px; height: 10px; stroke: #fff; stroke-width: 3; }
+  .studied-toggle.on .box svg { display: block; }
+
+  .nav-btns { display: flex; gap: 8px; }
+  .nav-btn {
+    display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text-2); font-size: 13px;
+    font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; max-width: 220px;
+  }
+  .nav-btn:hover { border-color: var(--accent-2); color: var(--text); }
+  .nav-btn span.lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nav-btn:disabled { opacity: 0.35; cursor: default; }
+  .nav-btn:disabled:hover { border-color: var(--border); color: var(--text-2); }
+
+  /* Cover / landing state */
+  .cover { max-width: 640px; }
+  .cover-kicker { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); margin-bottom: 20px; }
+  .cover-title { font-family: 'Fraunces', serif; font-size: 56px; font-weight: 600; line-height: 1.05; letter-spacing: -0.02em; margin-bottom: 18px; text-wrap: balance; }
+  .cover-sub { font-family: 'Fraunces', serif; font-size: 21px; font-style: italic; color: var(--accent-2); margin-bottom: 30px; line-height: 1.4; }
+  .cover-body { font-size: 16px; line-height: 1.85; color: var(--text-2); margin-bottom: 20px; max-width: 58ch; }
+  .cover-quote {
+    margin: 36px 0; padding: 22px 26px; border-left: 3px solid var(--accent-2);
+    background: var(--accent-2-soft); border-radius: 4px 12px 12px 4px;
+    font-family: 'Fraunces', serif; font-size: 17px; font-style: italic; line-height: 1.65; color: var(--text);
+  }
+  .cover-cta {
+    margin-top: 36px; display: inline-flex; align-items: center; gap: 10px; padding: 13px 26px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #12141b; border: none;
+    border-radius: 11px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+
+  @media (max-width: 860px) {
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 30; transform: translateX(-100%); transition: transform 0.25s ease; box-shadow: var(--shadow); }
+    .sidebar.open { transform: translateX(0); }
+    .mobile-bar { display: flex; }
+    .main-inner { padding: 90px 24px 80px; }
+    .ch-title { font-size: 32px; }
+    .cover-title { font-size: 38px; }
+    .backdrop { display: block; }
+  }
+  .mobile-bar {
+    display: none; position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 25;
+    background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; padding: 0 16px; gap: 12px;
+  }
+  .mobile-bar button { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; color: var(--text); cursor: pointer; }
+  .mobile-bar .mb-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 15px; }
+  .backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 28; }
+</style>
+</head>
+<body>
+
+<div class="mobile-bar" id="mobileBar">
+  <button id="menuBtn" aria-label="Open chapters">☰</button>
+  <span class="mb-title">Zero to 1M</span>
+</div>
+<div class="backdrop" id="backdrop"></div>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-head">
+      <div class="sb-eyebrow">A Founder's Field Guide</div>
+      <div class="sb-title">Zero to 1M</div>
+      <div class="sb-sub">Building a world-class digital platform, alone — from first commit to a million subscribers.</div>
+      <div class="sb-author"><span class="dot"></span>Francis Cobbinah</div>
+    </div>
+
+    <div class="sb-progress-wrap">
+      <div class="sb-progress-row">
+        <span class="sb-progress-label">Studied</span>
+        <span class="sb-progress-count" id="progressCount">0 / 13</span>
+      </div>
+      <div class="sb-progress-track"><div class="sb-progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+
+    <div class="sb-search-wrap">
+      <input class="sb-search" id="searchBox" placeholder="Search chapters…" />
+    </div>
+
+    <nav class="sb-list" id="chapterList"></nav>
+
+    <div class="sb-foot">
+      <a class="sb-back" href="/">← Back to InterviewMe</a>
+      <div class="theme-toggle">
+        <button class="theme-btn" data-theme-choice="light">Light</button>
+        <button class="theme-btn active" data-theme-choice="system">Auto</button>
+        <button class="theme-btn" data-theme-choice="dark">Dark</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="main-inner" id="mainInner"></div>
+  </main>
+</div>
+
+<script>
+const CHAPTERS = [
+  {
+    id: 'preface', part: 'Preface', num: '—', title: 'Why I\'m Writing This Down',
+    teaser: 'The lonely part of building alone, and why this book exists.',
+    status: 'draft',
+    synopsis: 'Every founder is told to "find a co-founder" or "build a team." I built <strong>seven interconnected products</strong> — Explain, InterviewMe, Percentile.One, and the portals that sit around them — with one collaborator: an AI. This book is the field guide I wish someone had handed me on day one. Not a highlight reel. The actual bugs, the actual 3am incidents, the actual moments I nearly stopped — written down so the next solo founder doesn\'t have to learn every lesson the expensive way.',
+    topics: [
+      'Who this book is for — and who it isn\'t',
+      'How to read it: each chapter stands alone, read out of order',
+      'The promise: real incidents, real numbers, no survivorship-bias polish',
+    ],
+    note: 'This entire book — the writing, the editing, the technical retelling — is itself being drafted the same way the platform was built: me, describing what happened, to an AI that was there for most of it.',
+  },
+  {
+    id: 'ch1', part: 'Part I · The Stack', num: '01', title: 'ASP.NET API',
+    teaser: '.NET Minimal APIs, vertical slices, and the claims-mapping bug that cost a night.',
+    status: 'draft',
+    synopsis: 'Why the entire backend across five portals is <strong>one shared .NET 10 Minimal API</strong>, not five separate services — and the discipline it takes to keep vertical-slice, CQRS-style handlers from turning into a ball of mud as features multiply. This chapter is built around real production incidents: the JWT bearer handler silently remapping short claim names to legacy XML namespaces so <code>ctx.User.FindFirst("sub")</code> returned null for no obvious reason, and what it actually took to trace that back to one config line.',
+    topics: [
+      'Minimal APIs vs controllers — why less ceremony wins for a solo founder',
+      'Vertical-slice architecture: one feature, one folder, no shared "services" dumping ground',
+      'MediatR and when CQRS earns its keep vs when it\'s ceremony',
+      'The JWT MapInboundClaims gotcha, and a checklist for the next auth-shaped bug',
+    ],
+    note: 'The fix was one line — <code>opt.MapInboundClaims = false;</code> — but finding it took reading the ASP.NET source, not the docs. That\'s the pattern: the docs describe the happy path, the source describes what\'s actually happening to you at 11pm.',
+  },
+  {
+    id: 'ch2', part: 'Part I · The Stack', num: '02', title: 'Azure-Native Development',
+    teaser: 'Three databases, one philosophy, and the $84.61 lesson in API key discipline.',
+    status: 'draft',
+    synopsis: 'Why the data layer is deliberately split three ways — <strong>Azure SQL</strong> for anything transactional (billing, permissions, audit), <strong>Cosmos DB</strong> for anything real-time and document-shaped (profiles, interviews, alerts), <strong>Blob Storage</strong> for media, always behind a private container and a per-request SAS URL — rather than forcing everything into one database because it\'s simpler to reason about on day one. Also: the chapter that\'s hardest to write, about the day a key baked into a public JS bundle turned into real money leaving the account.',
+    topics: [
+      'Choosing a database per data shape, not per convenience',
+      'Why a key in a Vite build is a key in view-source, full stop',
+      'The Cosmos "id = someOtherField" trap — a bug that orphaned every user\'s profile since registration',
+      'Reading an Azure bill like a founder, not an engineer',
+    ],
+    note: 'Two incidents, one week: a client-side OpenAI key exposed in the bundle, and — separately — an AI agent session quietly running its own agentic work on my personal card for three weeks. £84.61 gone before anyone noticed. The lesson wasn\'t "be more careful." It was "write the rule down where the next session can\'t miss it" — which is the entire reason CLAUDE.md exists now.',
+  },
+  {
+    id: 'ch3', part: 'Part I · The Stack', num: '03', title: 'Microservices & .NET Architecture',
+    teaser: 'One backend serving five portals — and why that\'s the right call, for now.',
+    status: 'draft',
+    synopsis: 'The received wisdom is "microservices from day one." This chapter argues the opposite for a solo founder: <strong>one well-organised monolith</strong>, cleanly sliced by feature, will outrun a distributed system you don\'t yet have the team to operate. The five portals — candidate, recruiter, employer, the Explain hub, the InterviewMe marketing site — all talk to one <code>Explain.Api</code>. What that buys you, and the exact signals that will eventually tell you it\'s time to split.',
+    topics: [
+      'The real cost of a service boundary: not code, operational surface area',
+      'Vertical slices as a stepping stone — architecture that could split later without a rewrite',
+      'Shared backend, independent frontends: where the actual boundary lives today',
+      'Signals to watch for that say "now split it," not before',
+    ],
+  },
+  {
+    id: 'ch4', part: 'Part I · The Stack', num: '04', title: 'React, Tailwind CSS & Micro Frontends',
+    teaser: 'Vite 8, rolldown, and the nested .git that lied to me for a week.',
+    status: 'draft',
+    synopsis: 'React 19, Vite 8\'s new rolldown bundler, and Tailwind v4 — and the sharp edges nobody warns you about when you\'re an early adopter of all three at once, alone, with no team to absorb the learning curve. Rolldown\'s <code>[MISSING_EXPORT]</code> on a blank screen the first time you forget <code>import type</code>. The <code>[PARSE_ERROR]</code> on a duplicate lucide-react icon import. And the day I discovered <code>src/frontend</code> had its own stale nested git repo silently showing me the wrong diff for a week.',
+    topics: [
+      'Why five separate frontends beat one giant app — portal-per-domain as micro-frontend, without the framework overhead',
+      'The type-only import trap that\'s specific to rolldown, not Vite generally',
+      'Git repos inside git repos: the debugging session that taught me to always check "am I even where I think I am"',
+      'Tailwind v4\'s CSS-first config — what changed and what it\'s worth',
+    ],
+  },
+  {
+    id: 'ch5', part: 'Part I · The Stack', num: '05', title: 'Cloud Cost Optimization',
+    teaser: 'Reading an Azure bill before it reads you.',
+    status: 'empty',
+    synopsis: 'A practical chapter on keeping Azure spend proportional to actual usage as a bootstrapped solo founder — App Service tiers, Cosmos RU provisioning vs autoscale, Blob storage tiers for video that\'s watched once and then rarely again, and the discipline of a monthly bill review that catches a runaway resource before it catches you.',
+    topics: [
+      'App Service plan sizing — right-sizing without babysitting',
+      'Cosmos RU/s: provisioned vs autoscale, and when each wins',
+      'Blob storage tiers for interview recordings — hot, cool, and what\'s actually watched again',
+      'A monthly cost-review ritual that takes 15 minutes',
+    ],
+  },
+  {
+    id: 'ch6', part: 'Part I · The Stack', num: '06', title: 'Kubernetes',
+    teaser: 'The honest chapter: not there yet, and why that\'s the right call today.',
+    status: 'empty',
+    synopsis: 'An unusually honest chapter for a book about "world-class" infrastructure: the platform runs today on Azure App Service and Functions, not Kubernetes — and that\'s deliberate, not a gap. This chapter is written for the founder deciding whether they need K8s yet, with the actual signals (traffic shape, deployment cadence, team size, multi-region need) that separate "we should" from "we think we should because everyone else says so."',
+    topics: [
+      'What App Service already gives you for free that K8s makes you build',
+      'The real signals that say it\'s time: not traffic volume alone',
+      'AKS vs. staying put — a decision framework, not a tutorial',
+      'What to actually learn now, so the migration isn\'t a rewrite later',
+    ],
+  },
+  {
+    id: 'ch7', part: 'Part II · The Platform', num: '07', title: 'Multi-Tenant Platforms',
+    teaser: 'Org wiring, JWT claims, and admin CRUD — shipped in a day.',
+    status: 'draft',
+    synopsis: 'How the platform moved from single-tenant to a real multi-tenant account model — organisation membership threaded through the JWT, admin CRUD for managing org members, and an invite flow that reuses the existing password-reset token mechanism rather than building a second one. A case study in shipping the backend wiring and the riskiest piece first, and letting the UI catch up in a later pass.',
+    topics: [
+      'What actually has to change in a JWT to support organisations',
+      'Reusing existing mechanisms (the password-reset flow) instead of building parallel ones',
+      'Admin CRUD as the unglamorous 80% of any multi-tenant feature',
+      'Sequencing: backend risk first, UI polish second',
+    ],
+  },
+  {
+    id: 'ch8', part: 'Part II · The Platform', num: '08', title: 'Platform Design, Idea & Inception',
+    teaser: '"Life is about selling yourself" — the idea behind seven products.',
+    status: 'draft',
+    synopsis: 'Where InterviewMe actually came from: the observation that a CV is a document, not a person, and that everyone — a graduate, a plumber, a babysitter — needs a way to be seen in motion, not described on paper. This chapter traces the idea from a single insight to a nine-claim patent brief and seven interconnected products, and the discipline of writing the idea down formally before building a single screen.',
+    topics: [
+      'The one-sentence insight everything else derives from',
+      'Talent Identity Object: designing the atomic unit before the app around it',
+      'Two-sided platform design — publish first, discover second',
+      'Writing the patent brief before the product, not after',
+    ],
+    note: '"Until now, the only tool anyone had was paper. This is the first time a person can sell themselves in motion." — from the founding patent disclosure, written before most of the product existed.',
+  },
+  {
+    id: 'ch9', part: 'Part II · The Platform', num: '09', title: 'Working with Claude Code',
+    teaser: 'The only engineering partner on this entire build.',
+    status: 'draft',
+    synopsis: 'The meta-chapter: what it actually looks like to build production infrastructure — auth, payments-adjacent billing, video pipelines, multi-tenant accounts — with an AI as the only other engineer in the room. Not a tools listicle. A description of the operating model that emerged: CLAUDE.md as institutional memory that survives every session reset, a running incident log so mistakes are made once, and the discipline of treating every AI session like a new hire who read the handbook but wasn\'t there for the war stories.',
+    topics: [
+      'CLAUDE.md as the memory a solo founder\'s team would otherwise carry in their heads',
+      'Writing incidents down at the moment they\'re fixed, not after — while the "why" is still fresh',
+      'Where to trust the AI fully, where to verify every claim yourself',
+      'What changes when your only reviewer never gets tired, and never quietly lets a bad pattern slide out of politeness',
+    ],
+  },
+  {
+    id: 'ch10', part: 'Part II · The Platform', num: '10', title: 'Sales & Marketing, Patenting and Trademarks',
+    teaser: 'Nine patent claims, one trademark question, and a launch strategy.',
+    status: 'empty',
+    synopsis: 'What it actually costs — in money and in time — to protect a solo founder\'s IP before a big launch, versus after. Trademark registration, provisional patent filing, defensive publication, and the DIY-vs-agent decision at each stage. Paired with the go-to-market side: pre-launch visibility platforms, the first thousand users, and turning a "Like" on a verified interview into a growth loop.',
+    topics: [
+      'Trademark vs patent vs defensive publication — what each actually protects',
+      'What\'s realistic to self-file before paying an agent',
+      'Pre-launch visibility: where early-stage products get their first real audience',
+      'Turning a product mechanic (the Like) into a distribution engine',
+    ],
+  },
+  {
+    id: 'ch11', part: 'Part III · The Founder', num: '11', title: 'Working Solo (Solopreneur)',
+    teaser: 'The lonely journey — and what actually got me through it.',
+    status: 'draft',
+    synopsis: 'The chapter that matters most: what it\'s genuinely like to carry seven products, alone, through the parts nobody sees — the 2am bug that\'s definitely your fault, the week a GitHub Actions outage looked exactly like your own broken pipeline, the health journey running underneath all of it. Not motivational-poster resilience. A specific, honest account of the discipline that keeps a solo build moving without a team to absorb the bad days.',
+    topics: [
+      'The difference between "alone" and "unsupported" — and why that distinction matters',
+      'Recognising when the platform is down vs. when you are',
+      'Building a support structure with no co-founder: mentors, communities, one AI',
+      'What the health journey taught about sustainable pace',
+    ],
+  },
+  {
+    id: 'ch12', part: 'Part III · The Founder', num: '12', title: 'Raising Venture Capital',
+    teaser: 'Not done yet — the forward-looking chapter, written honestly as "not yet."',
+    status: 'empty',
+    synopsis: 'Written last, and updated as it actually happens rather than retrofitted after the fact: preparing the metrics, the story, and the deck for outside capital — bootstrapped-to-VC as a deliberate sequencing choice, not a default. What a technical solo founder needs to translate architecture decisions into a story an investor can underwrite.',
+    topics: [
+      'Why bootstrap first — what it proves that a deck alone can\'t',
+      'Translating a nine-claim patent brief into an investor-legible moat',
+      'The metrics that matter before 1M subscribers, not after',
+      'Choosing investors the way you\'d choose a co-founder',
+    ],
+  },
+];
+
+const STORAGE_KEY = 'zeroTo1M.studied';
+const THEME_KEY = 'zeroTo1M.theme';
+
+function loadStudied() {
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+function saveStudied(set) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch {}
+}
+
+let studied = loadStudied();
+let activeId = null; // null = cover
+let searchTerm = '';
+
+const chapterListEl = document.getElementById('chapterList');
+const mainInnerEl = document.getElementById('mainInner');
+const progressCountEl = document.getElementById('progressCount');
+const progressFillEl = document.getElementById('progressFill');
+const searchBoxEl = document.getElementById('searchBox');
+
+function statusLabel(s) { return s === 'done' ? 'Studied' : s === 'draft' ? 'Notes Started' : 'Not Started'; }
+function statusClass(s) { return s === 'done' ? 'ch-status-done' : s === 'draft' ? 'ch-status-draft' : 'ch-status-empty'; }
+
+function renderProgress() {
+  const count = studied.size;
+  progressCountEl.textContent = count + ' / ' + CHAPTERS.length;
+  progressFillEl.style.width = Math.round((count / CHAPTERS.length) * 100) + '%';
+}
+
+function renderSidebar() {
+  const term = searchTerm.trim().toLowerCase();
+  const filtered = CHAPTERS.filter(c =>
+    !term || c.title.toLowerCase().includes(term) || c.teaser.toLowerCase().includes(term)
+  );
+  let html = '';
+  let lastPart = null;
+  filtered.forEach(c => {
+    if (c.part !== lastPart) {
+      html += '<div class="sb-part-label">' + c.part + '</div>';
+      lastPart = c.part;
+    }
+    const isActive = c.id === activeId;
+    const isChecked = studied.has(c.id);
+    html += '<button class="sb-item' + (isActive ? ' active' : '') + '" data-id="' + c.id + '">'
+      + '<span class="sb-num">' + c.num + '</span>'
+      + '<span class="sb-item-body">'
+      + '<div class="sb-item-title">' + c.title + '</div>'
+      + '<div class="sb-item-teaser">' + c.teaser + '</div>'
+      + '</span>'
+      + '<span class="sb-check' + (isChecked ? ' checked' : '') + '" data-check="' + c.id + '" title="Mark studied">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+      + '</span>'
+      + '</button>';
+  });
+  chapterListEl.innerHTML = html || '<div style="padding:20px 12px;color:var(--text-3);font-size:13px;">No chapters match "' + searchTerm + '".</div>';
+
+  chapterListEl.querySelectorAll('.sb-item').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('[data-check]')) return;
+      selectChapter(el.getAttribute('data-id'));
+    });
+  });
+  chapterListEl.querySelectorAll('[data-check]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = el.getAttribute('data-check');
+      if (studied.has(id)) studied.delete(id); else studied.add(id);
+      saveStudied(studied);
+      renderProgress();
+      renderSidebar();
+      if (activeId === id) renderMain();
+    });
+  });
+}
+
+function renderCover() {
+  mainInnerEl.innerHTML =
+    '<div class="cover">'
+    + '<div class="cover-kicker">A Founder\'s Field Guide · 13 Chapters</div>'
+    + '<div class="cover-title">Zero to 1M</div>'
+    + '<div class="cover-sub">Building a world-class digital platform — alone.</div>'
+    + '<p class="cover-body">This is the book I\'m writing as the platform gets built, not after — a working record of what it actually takes to go from an empty repo to a real product, with no co-founder and no team, across seven interconnected products. Every chapter is grounded in something that really happened: a bug, a bill, a 2am decision.</p>'
+    + '<p class="cover-body">Right now this is a scaffold — the shape of the book and an honest first pass at what each chapter will cover. Some are already drafted from real incidents; some are marked "Not Started" on purpose, because pretending otherwise would defeat the point of the book.</p>'
+    + '<div class="cover-quote">"Life is about selling yourself. Whether you\'re a teenager starting out, a dog walker, or an electrician — you have to find a way to show who you are. Until now, the only tool anyone had was paper."</div>'
+    + '<button class="cover-cta" id="startReading">Start with the Preface →</button>'
+    + '</div>';
+  document.getElementById('startReading').addEventListener('click', () => selectChapter('preface'));
+}
+
+function renderChapter(c) {
+  const idx = CHAPTERS.findIndex(x => x.id === c.id);
+  const prev = CHAPTERS[idx - 1];
+  const next = CHAPTERS[idx + 1];
+  const isChecked = studied.has(c.id);
+
+  let html = '';
+  html += '<div class="ch-eyebrow-row">'
+    + '<span class="ch-tag ' + statusClass(c.status) + '">' + statusLabel(c.status) + '</span>'
+    + '</div>';
+  html += '<div class="ch-num">' + c.part + ' · Chapter ' + c.num + '</div>';
+  html += '<h1 class="ch-title">' + c.title + '</h1>';
+  html += '<p class="ch-synopsis">' + c.synopsis + '</p>';
+
+  html += '<div class="ch-block">'
+    + '<div class="ch-block-label">What This Chapter Covers</div>'
+    + '<ul class="topic-list">' + c.topics.map(t => '<li>' + t + '</li>').join('') + '</ul>'
+    + '</div>';
+
+  if (c.note) {
+    html += '<div class="ch-block">'
+      + '<div class="ch-block-label">Field Note</div>'
+      + '<div class="field-note"><div class="field-note-label">From the build log</div><p>' + c.note + '</p></div>'
+      + '</div>';
+  }
+
+  html += '<div class="ch-footer">'
+    + '<button class="studied-toggle' + (isChecked ? ' on' : '') + '" id="studiedToggle">'
+    + '<span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>'
+    + (isChecked ? 'Studied' : 'Mark as Studied')
+    + '</button>'
+    + '<div class="nav-btns">'
+    + '<button class="nav-btn" id="prevBtn" ' + (prev ? '' : 'disabled') + '>← <span class="lbl">' + (prev ? prev.title : 'Start') + '</span></button>'
+    + '<button class="nav-btn" id="nextBtn" ' + (next ? '' : 'disabled') + '><span class="lbl">' + (next ? next.title : 'End') + '</span> →</button>'
+    + '</div>'
+    + '</div>';
+
+  mainInnerEl.innerHTML = html;
+  window.scrollTo({ top: 0, behavior: 'instant' });
+
+  document.getElementById('studiedToggle').addEventListener('click', () => {
+    if (studied.has(c.id)) studied.delete(c.id); else studied.add(c.id);
+    saveStudied(studied);
+    renderProgress();
+    renderSidebar();
+    renderMain();
+  });
+  if (prev) document.getElementById('prevBtn').addEventListener('click', () => selectChapter(prev.id));
+  if (next) document.getElementById('nextBtn').addEventListener('click', () => selectChapter(next.id));
+}
+
+function renderMain() {
+  if (!activeId) { renderCover(); return; }
+  const c = CHAPTERS.find(x => x.id === activeId);
+  if (!c) { renderCover(); return; }
+  renderChapter(c);
+}
+
+function selectChapter(id) {
+  activeId = id;
+  renderSidebar();
+  renderMain();
+  closeMobileSidebar();
+}
+
+searchBoxEl.addEventListener('input', (e) => { searchTerm = e.target.value; renderSidebar(); });
+
+// Theme
+function applyTheme(choice) {
+  const root = document.documentElement;
+  if (choice === 'light') root.setAttribute('data-theme', 'light');
+  else if (choice === 'dark') root.setAttribute('data-theme', 'dark');
+  else root.removeAttribute('data-theme');
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-theme-choice') === choice));
+  try { localStorage.setItem(THEME_KEY, choice); } catch {}
+}
+document.querySelectorAll('.theme-btn').forEach(b => {
+  b.addEventListener('click', () => applyTheme(b.getAttribute('data-theme-choice')));
+});
+try {
+  const savedTheme = localStorage.getItem(THEME_KEY);
+  if (savedTheme) applyTheme(savedTheme);
+} catch {}
+
+// Mobile sidebar
+const sidebarEl = document.getElementById('sidebar');
+const backdropEl = document.getElementById('backdrop');
+function openMobileSidebar() { sidebarEl.classList.add('open'); backdropEl.style.display = 'block'; }
+function closeMobileSidebar() { sidebarEl.classList.remove('open'); backdropEl.style.display = 'none'; }
+document.getElementById('menuBtn').addEventListener('click', openMobileSidebar);
+backdropEl.addEventListener('click', closeMobileSidebar);
+
+renderProgress();
+renderSidebar();
+renderMain();
+</script>
+</body>
+</html>

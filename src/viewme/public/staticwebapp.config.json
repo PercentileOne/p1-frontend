@@ -21,6 +21,10 @@
     {
       "route": "/contact",
       "rewrite": "/contact.html"
+    },
+    {
+      "route": "/book",
+      "rewrite": "/book.html"
     }
   ],
   "navigationFallback": {
