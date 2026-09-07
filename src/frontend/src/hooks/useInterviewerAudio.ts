@@ -369,19 +369,28 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
         }
       };
 
-      const useSarahVideo = sessionLanguage === 'en';
-      if (useSarahVideo) {
+      // James's ambient idle loop plays under his slot for as long as Sarah's own intro is
+      // being delivered, however that happens — true regardless of which of the three paths
+      // below actually speaks it.
+      setJamesAmbientVideoActive(true);
+
+      if (liveAvatarActive && liveAvatarSpeak) {
+        // Sarah's full presence — intro included, not just her questions — now prefers the
+        // live avatar. This is also the earliest point in the whole session where connecting
+        // makes sense: liveAvatarSpeak connects lazily on first use, so triggering it here
+        // (her first line) rather than at her first *question* (after the full Mike + intro
+        // sequence) front-loads the connection's few seconds of latency onto the most
+        // tolerable possible moment, instead of a mid-interview question. Falls through to
+        // the pre-existing paths below only if the live avatar isn't active at all.
+        cancelSpeakRef.current = liveAvatarSpeak(sarahText, afterSarahIntro, (a) => setHrAnalyser(a));
+      } else if (sessionLanguage === 'en') {
         sarahIntroDoneRef.current = afterSarahIntro;
         setSarahIntroVideoActive(true);
-        // James's silent idle loop starts in the same tick as Sarah's video — both are
-        // fixed-length clips starting together, so whatever motion James's clip was
-        // authored with lines up naturally against Sarah's own timing, no runtime cue needed.
-        setJamesAmbientVideoActive(true);
       } else {
         cancelSpeakRef.current = speak(sarahText, 'hr', afterSarahIntro, (a) => setHrAnalyser(a));
       }
     }, 600);
-  }, [effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage, jamesGreetingUrl, aiQuestionsLoaded, setPhase, chapterMarkersRef, recordingStartTimeRef, setHighlightRecord]);
+  }, [effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage, jamesGreetingUrl, aiQuestionsLoaded, setPhase, chapterMarkersRef, recordingStartTimeRef, setHighlightRecord, liveAvatarSpeak, liveAvatarActive]);
 
   const beginInterviewIntroRef = useRef(beginInterviewIntro);
   useEffect(() => { beginInterviewIntroRef.current = beginInterviewIntro; }, [beginInterviewIntro]);
