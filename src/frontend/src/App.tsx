@@ -84,6 +84,7 @@ import ParentShell from "./pages/ParentShell";
 import TeacherShell from "./pages/TeacherShell";
 import UniversityShell from "./pages/UniversityShell";
 import InterviewRoomPage from "./pages/InterviewRoomPage";
+import AvatarTestPage from "./pages/dev/AvatarTestPage";
 import InterviewPackStart from "./pages/InterviewPackStart";
 import InterviewSummaryPage from "./pages/InterviewSummaryPage";
 import SharedInterviewPage from "./pages/SharedInterviewPage";
@@ -220,6 +221,7 @@ export default function App() {
       <Route path="/interview/:packId" element={<RequirePermission permission="CAN_START_INTERVIEW"><InterviewRoomPage /></RequirePermission>} />
       <Route path="/interview-summary/:id" element={<RequirePermission permission="CAN_START_INTERVIEW"><InterviewSummaryPage /></RequirePermission>} />
       <Route path="/shared/:token" element={<SharedInterviewPage />} />
+      <Route path="/dev/avatar-test" element={<AvatarTestPage />} />
       <Route path="/interviews" element={<RequirePermission permission="CAN_START_INTERVIEW"><MyInterviewsPage /></RequirePermission>} />
 
       {/* Demo — reached from the Dashboard's "Demo" nav item, opens in a new tab */}

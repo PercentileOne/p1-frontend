@@ -12,6 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@heygen/liveavatar-web-sdk": "^0.0.18",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.21.0",
     "mammoth": "^1.12.0",
