@@ -62,6 +62,15 @@ export interface UseInterviewerAudioParams {
   ctxSelectedLanguage?: string;
   setHighlightRecord: (v: boolean) => void;
   setAudioCheckState: (s: 'idle' | 'playing' | 'done') => void;
+  /** Opt-in LiveAvatar path for Sarah's actual interview questions specifically — every other
+   * call site in this hook (intro, James, Mike, follow-up handoffs) is deliberately untouched
+   * for now. Same (text, onEnd, onAnalyser) => cancelFn contract as ttsApi.ts's speak(), just
+   * pre-bound to the 'hr' role and backed by a live avatar session instead of audio-only TTS.
+   * Only used when liveAvatarActive is true (the session is actually connected) — askQuestion
+   * silently falls back to the existing speak() path otherwise, so a slow/failed avatar
+   * connection never blocks or breaks a real interview. */
+  liveAvatarSpeak?: (text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => () => void;
+  liveAvatarActive?: boolean;
 }
 
 export interface UseInterviewerAudioReturn {
@@ -137,6 +146,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     chapterMarkersRef, recordingStartTimeRef,
     phase2ReadyRef, phase2WaitersRef,
     jobSpecText, cvText, ctxSelectedLanguage, setHighlightRecord, setAudioCheckState,
+    liveAvatarSpeak, liveAvatarActive,
   } = params;
 
   const [hrState, setHrState] = useState<AvatarState>('idle');
@@ -215,11 +225,14 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
       thinkStartRef.current = Date.now();
       setPhase('answering');
     };
-    cancelSpeakRef.current = speak(spokenTextOverride ?? question.questionText, interviewer, onDone, (a) => {
-      if (interviewer === 'hr') setHrAnalyser(a);
-      else setTechAnalyser(a);
-    });
-  }, [questions, setPhase, chapterMarkersRef, recordingStartTimeRef]);
+    const spokenText = spokenTextOverride ?? question.questionText;
+    cancelSpeakRef.current = (interviewer === 'hr' && liveAvatarActive && liveAvatarSpeak)
+      ? liveAvatarSpeak(spokenText, onDone, (a) => setHrAnalyser(a))
+      : speak(spokenText, interviewer, onDone, (a) => {
+          if (interviewer === 'hr') setHrAnalyser(a);
+          else setTechAnalyser(a);
+        });
+  }, [questions, setPhase, chapterMarkersRef, recordingStartTimeRef, liveAvatarSpeak, liveAvatarActive]);
 
   // Always-fresh reference to askQuestion — needed by finishJamesIntro below, which lives
   // inside beginInterviewIntro's body. That body is guarded to run exactly once per session

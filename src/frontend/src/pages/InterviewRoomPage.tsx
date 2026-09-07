@@ -22,6 +22,7 @@ import { useAnswerScoring } from '../hooks/useAnswerScoring';
 import { useInterviewerAudio } from '../hooks/useInterviewerAudio';
 import { useMcqBonusRound, type McqGenParams } from '../hooks/useMcqBonusRound';
 import { useGoDeeperFollowUps, GO_DEEPER_LIMITS } from '../hooks/useGoDeeperFollowUps';
+import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -250,6 +251,29 @@ export default function InterviewRoomPage() {
     submitAnswer: scoreAnswer, recordPassedAnswer, resetForNextQuestion,
   } = useAnswerScoring({ cvCtx, jobCtx, companyKeywords, sessionLanguage, selectedDifficulty });
 
+  // LiveAvatar — real-time video avatar, wired into Sarah's actual interview questions only
+  // (see useInterviewerAudio's liveAvatarSpeak param doc). Deliberately connects lazily, on
+  // first use, rather than on room mount: HeyGen's sandbox sessions cap at ~1 minute, and the
+  // Mike + Sarah/James intro sequence ahead of the first real question can easily take longer
+  // than that on its own — connecting early would burn the sandbox session before Sarah ever
+  // asks anything. Still sandbox credentials as of this build (see AvatarSession's backend
+  // config) — a real Sarah avatar swaps in via config, not a code change, once created.
+  const liveAvatar = useLiveAvatarSession();
+  const liveAvatarSpeak = useCallback((text: string, onEnd: () => void) => {
+    let cancelled = false;
+    (async () => {
+      try {
+        if (liveAvatar.status !== 'connected') await liveAvatar.connect();
+        await liveAvatar.speak(text, 'hr');
+      } catch (err) {
+        console.error('[InterviewRoom] LiveAvatar speak failed:', err);
+      } finally {
+        if (!cancelled) onEnd();
+      }
+    })();
+    return () => { cancelled = true; liveAvatar.interrupt(); };
+  }, [liveAvatar]);
+
   const {
     hrState, techState, hrAnalyser, techAnalyser,
     sarahIntroVideoActive, jamesGreetingVideoActive, jamesGreetingUrl, jamesIntroVideoActive, jamesAmbientVideoActive, sarahAmbientVideoActive, awaitingHandoff,
@@ -269,6 +293,7 @@ export default function InterviewRoomPage() {
     phase2ReadyRef, phase2WaitersRef,
     jobSpecText: ctx.jobSpecText, cvText: ctx.cvText, ctxSelectedLanguage: ctx.selectedLanguage,
     setHighlightRecord, setAudioCheckState,
+    liveAvatarSpeak, liveAvatarActive: true,
   });
 
   const {
@@ -809,14 +834,29 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               transition={{ duration: 0.6 }}
               style={{ display: 'flex', gap: '16px' }}
             >
-              <InterviewerAvatar
-                role="hr" state={hrState} active={hrState === 'speaking'} analyserNode={hrAnalyser}
-                videoUrl={sarahIntroVideoActive ? '/images/sarah-intro-v1.mp4' : sarahAmbientVideoActive ? '/images/sarah-idle-v1.mp4' : null}
-                onVideoEnded={sarahIntroVideoActive ? handleSarahIntroVideoEnded : () => onDoneRef.current?.()}
-                onVideoAnalyser={sarahAmbientVideoActive ? undefined : handleSarahVideoAnalyser}
-                loop={sarahAmbientVideoActive}
-                muted={sarahAmbientVideoActive}
-              />
+              <div style={{ position: 'relative', flex: 1, display: 'flex' }}>
+                <InterviewerAvatar
+                  role="hr" state={hrState} active={hrState === 'speaking'} analyserNode={hrAnalyser}
+                  videoUrl={sarahIntroVideoActive ? '/images/sarah-intro-v1.mp4' : sarahAmbientVideoActive ? '/images/sarah-idle-v1.mp4' : null}
+                  onVideoEnded={sarahIntroVideoActive ? handleSarahIntroVideoEnded : () => onDoneRef.current?.()}
+                  onVideoAnalyser={sarahAmbientVideoActive ? undefined : handleSarahVideoAnalyser}
+                  loop={sarahAmbientVideoActive}
+                  muted={sarahAmbientVideoActive}
+                />
+                {/* LiveAvatar overlay — real-time video, takes over Sarah's slot the moment the
+                    session connects (lazily, on her first real question; see liveAvatarSpeak
+                    above). Still the sandbox "Wayne" avatar, not Sarah's likeness, until a real
+                    avatar is created in the LiveAvatar dashboard — visual identity is a config
+                    swap away, not a code change. */}
+                {liveAvatar.status === 'connected' && (
+                  <video
+                    ref={liveAvatar.setVideoEl}
+                    autoPlay
+                    playsInline
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
+                  />
+                )}
+              </div>
               <InterviewerAvatar
                 role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} analyserNode={techAnalyser}
                 videoUrl={jamesGreetingVideoActive ? jamesGreetingUrl : jamesIntroVideoActive ? '/images/james-intro-v1.mp4' : jamesAmbientVideoActive ? '/images/james-idle-v1.mp4' : null}
