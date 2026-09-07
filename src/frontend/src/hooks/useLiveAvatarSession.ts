@@ -15,6 +15,7 @@ export function useLiveAvatarSession() {
   const sessionRef = useRef<LiveAvatarSession | null>(null);
   const videoElRef = useRef<HTMLVideoElement | null>(null);
   const streamReadyRef = useRef(false);
+  const keepAliveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // The actual source of truth for "is it safe to call speak() right now" — status (React
   // state) lags behind this by one render, which is exactly the bug this ref exists to avoid:
   // connect() awaiting session.start() then immediately calling speak() in the same async
@@ -58,6 +59,7 @@ export function useLiveAvatarSession() {
         sessionRef.current = null;
         connectedRef.current = false;
         streamReadyRef.current = false;
+        if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }
       });
 
       await session.start();
@@ -67,6 +69,15 @@ export function useLiveAvatarSession() {
       ]);
       connectedRef.current = true;
       setStatus('connected');
+
+      // LiveAvatar sessions carry their own 5-minute inactivity timeout, separate from — and
+      // shorter than — a real plan's overall session-duration cap. Nothing else in this hook
+      // sends the session anything during a long candidate answer, so without this a session
+      // could die from inactivity with plenty of duration budget still unused. 2 minutes keeps
+      // a comfortable margin under the 5-minute limit.
+      keepAliveTimerRef.current = setInterval(() => {
+        sessionRef.current?.keepAlive().catch(err => console.warn('[LiveAvatar] keepAlive failed:', err));
+      }, 120_000);
     } catch (err) {
       console.error('[LiveAvatar] Session failed to start:', err);
       sessionRef.current = null;
@@ -76,6 +87,7 @@ export function useLiveAvatarSession() {
   }, [attachIfReady]);
 
   const disconnect = useCallback(async () => {
+    if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }
     await sessionRef.current?.stop();
     sessionRef.current = null;
     connectedRef.current = false;
@@ -115,7 +127,10 @@ export function useLiveAvatarSession() {
 
   // Always tear the session down on unmount — a live avatar session left open is a billable
   // connection nobody's watching.
-  useEffect(() => () => { sessionRef.current?.stop(); }, []);
+  useEffect(() => () => {
+    if (keepAliveTimerRef.current) clearInterval(keepAliveTimerRef.current);
+    sessionRef.current?.stop();
+  }, []);
 
   return { status, connect, disconnect, speak, startListening, stopListening, interrupt, setVideoEl };
 }
