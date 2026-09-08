@@ -432,14 +432,16 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
         }
       }, 0);
 
-      // Phase 2: fires in parallel — doesn't wait for the setTimeout above. Widened from 35s
-      // to 55s — sessionPrepareClient's question-count retry/top-up loop (now actually
-      // enforcing the configured count, see its own comments) can legitimately need up to 3
-      // full generation calls plus a top-up call to land on an exact count, which pushed real
-      // Phase 2 completions closer to or past the old 35s cap more often than before. When
-      // this fallback fires before the real data arrives, Sarah/James silently fall back to
-      // their generic, name-less lines — that's what "James stopped saying my name" was.
-      phase2Timeout = setTimeout(resolvePhase2, 55000);
+      // Phase 2: fires in parallel — doesn't wait for the setTimeout above. Widened 35s -> 55s
+      // -> 90s (2026-09-08) — chatJSON's own retry loop (aiScoring.ts) can burn up to ~90s
+      // worst-case on its own (three 429 retries at up to 30s each), before sessionPrepareClient's
+      // question-count top-up logic even runs, and this recurred live the same day two
+      // concurrent LiveAvatar sessions started sharing the same backend, making that worst
+      // case more likely to actually happen, not just theoretical. When this fallback fires
+      // before the real data arrives, Amina/Wayne silently fall back to their generic,
+      // name-less lines — that's what "James stopped saying my name" was, and what "Amina
+      // didn't say my name" was too.
+      phase2Timeout = setTimeout(resolvePhase2, 90000);
       return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount, ctx.company || undefined);
 
     }).then(result => {

@@ -335,14 +335,21 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     });
     setTimeout(() => {
       setHrState('speaking');
-      const sarahText = effectiveSarahIntro ?? SARAH_INTROS[sessionLanguage] ?? SARAH_INTROS.en;
+      // The candidate's name is ours to insert regardless of whether the real AI-generated
+      // intro (which already names them, per its own prompt rules) landed in time — the
+      // fallback text is entirely our own copy, so there's no reason it has to be name-less
+      // just because a slow generation call timed out. Only prepended when falling back
+      // (effectiveSarahIntro/effectiveJamesIntro absent) — the AI version already handles
+      // this itself, prepending here too would say the name twice.
+      const namePrefix = resolvedPreferredName ? `${resolvedPreferredName} — ` : '';
+      const sarahText = effectiveSarahIntro ?? `${namePrefix}${SARAH_INTROS[sessionLanguage] ?? SARAH_INTROS.en}`;
       // Pulse the Record button ~8s in — when Sarah says "click the Record button"
       const pulseOuter = setTimeout(() => {
         setHighlightRecord(true);
         setTimeout(() => setHighlightRecord(false), 6000);
       }, 8000);
       const jamesText = effectiveJamesIntro ??
-        "And I'm Wayne — looking forward to hearing about your experience. Let's get started.";
+        `${namePrefix}And I'm Wayne — looking forward to hearing about your experience. Let's get started.`;
 
       const afterSarahIntro = () => {
         clearTimeout(pulseOuter);
