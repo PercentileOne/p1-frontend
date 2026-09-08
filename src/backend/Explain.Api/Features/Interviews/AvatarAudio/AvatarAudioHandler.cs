@@ -51,7 +51,7 @@ public class AvatarAudioHandler(
         // adding this) is the real lever for pace, not something LiveAvatar controls; it just
         // lip-syncs to whatever audio we generate. Scoped to hr/technical only — Mike/MCQ
         // weren't reported as slow, and speeding up every voice equally wasn't asked for.
-        var speed = cmd.Role is "hr" or "technical" ? 1.15 : 1.0;
+        var speed = cmd.Role is "hr" or "technical" ? 1.08 : 1.0;
 
         // Cache key folds speed in when non-default — otherwise a pre-existing cached clip
         // generated at the old 1.0 pace would keep being served forever after this change,

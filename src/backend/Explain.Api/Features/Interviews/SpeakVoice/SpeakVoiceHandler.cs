@@ -53,7 +53,7 @@ public class SpeakVoiceHandler(
 
         // Same pace fix and reasoning as AvatarAudioHandler — see its own comment. Scoped to
         // hr/technical only; Mike/MCQ voices weren't reported as slow.
-        var speed = cmd.Role is "hr" or "technical" ? 1.15 : 1.0;
+        var speed = cmd.Role is "hr" or "technical" ? 1.08 : 1.0;
 
         // Cache key folds speed in when non-default — see AvatarAudioHandler's identical
         // comment for why (a pre-existing 1.0-pace cached clip would otherwise keep being
