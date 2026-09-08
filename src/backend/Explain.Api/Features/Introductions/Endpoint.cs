@@ -189,8 +189,8 @@ public static class Endpoint
         }
 
         var smtpPort  = int.Parse(config["Email:SmtpPort"] ?? "587");
-        var fromEmail = config["Email:FromEmail"] ?? "noreply@interviewme.global";
-        var fromName  = config["Email:FromName"] ?? "InterviewMe";
+        var fromEmail = config["Email:FromEmail"] ?? "noreply@theinterviewchair.com";
+        var fromName  = config["Email:FromName"] ?? "TheInterviewChair.com";
 
         var watchUrl = $"https://employer.interviewme.global/watch/{intro.id}";
         var scoreLine = intro.overallScore is not null ? $" — scored {intro.overallScore}%" : "";
@@ -205,7 +205,7 @@ public static class Endpoint
               <div style="max-width:560px;margin:40px auto;padding:0 20px;">
                 <div style="text-align:center;margin-bottom:28px;">
                   <p style="font-size:18px;font-weight:700;color:#fff;margin:0;">
-                    <strong style="color:#fff">Interview</strong><strong style="color:#34D399">Me</strong><span style="color:#4F8EF7;font-weight:400">.global</span>
+                    <strong style="color:#34D399">The</strong><strong style="color:#fff">Interview</strong><strong style="color:#34D399">Chair</strong><span style="color:rgba(255,255,255,0.55);font-weight:400">.com</span>
                   </p>
                 </div>
                 <div style="background:linear-gradient(160deg,#0d1117 0%,#0f1b16 100%);border:1px solid rgba(52,211,153,0.25);border-radius:20px;padding:44px 36px 36px;box-shadow:0 0 60px rgba(52,211,153,0.08);">

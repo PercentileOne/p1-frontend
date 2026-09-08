@@ -190,7 +190,7 @@ export default function RegisterPage() {
         >
           <ChairLogo size={96} showText={false} />
           <span style={{ fontWeight: 800, fontSize: 17, color: "#fff", letterSpacing: "-.02em" }}>
-            InterviewMe<span style={{ color: "#34D399" }}>.global</span>
+            <span style={{ color: "#34D399" }}>The</span>Interview<span style={{ color: "#34D399" }}>Chair</span><span style={{ opacity: 0.55, fontWeight: 500 }}>.com</span>
           </span>
         </motion.div>
 

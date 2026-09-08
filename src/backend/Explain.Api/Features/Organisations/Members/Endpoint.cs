@@ -155,13 +155,13 @@ public static class Endpoint
         }
 
         var smtpPort  = int.Parse(config["Email:SmtpPort"] ?? "587");
-        var fromEmail = config["Email:FromEmail"] ?? "noreply@interviewme.global";
-        var fromName  = config["Email:FromName"] ?? "InterviewMe";
+        var fromEmail = config["Email:FromEmail"] ?? "noreply@theinterviewchair.com";
+        var fromName  = config["Email:FromName"] ?? "TheInterviewChair.com";
 
         // Candidate portal owns the reset-password page and the shared /login role dropdown —
         // after setting a password the person lands on /login, picks Recruiter/Employer, and
         // the existing redirect logic sends them to the right portal's /auth/callback.
-        var setupUrl = $"https://candidate.interviewme.global/reset-password?token={token}";
+        var setupUrl = $"https://candidate.theinterviewchair.com/reset-password?token={token}";
 
         var body = $"""
             <!DOCTYPE html>
@@ -170,13 +170,13 @@ public static class Endpoint
               <div style="max-width:560px;margin:40px auto;padding:0 20px;">
                 <div style="text-align:center;margin-bottom:28px;">
                   <p style="font-size:18px;font-weight:700;color:#fff;margin:0;">
-                    <strong style="color:#fff">Interview</strong><strong style="color:#34D399">Me</strong><span style="color:#4F8EF7;font-weight:400">.global</span>
+                    <strong style="color:#34D399">The</strong><strong style="color:#fff">Interview</strong><strong style="color:#34D399">Chair</strong><span style="color:rgba(255,255,255,0.55);font-weight:400">.com</span>
                   </p>
                 </div>
                 <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:40px 36px;">
                   <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0 0 12px;">You've been added to {WebEncode(org.Name)}</h1>
                   <p style="font-size:15px;color:rgba(255,255,255,0.6);line-height:1.7;margin:0 0 32px;">
-                    Hi {WebEncode(user.FirstName)}, {WebEncode(org.ContactName)} has set you up with an InterviewMe.global account for {WebEncode(org.Name)}. Choose a password to get started — this link expires in <strong style="color:#fff">7 days</strong>.
+                    Hi {WebEncode(user.FirstName)}, {WebEncode(org.ContactName)} has set you up with a TheInterviewChair.com account for {WebEncode(org.Name)}. Choose a password to get started — this link expires in <strong style="color:#fff">7 days</strong>.
                   </p>
                   <div style="text-align:center;margin-bottom:32px;">
                     <a href="{setupUrl}" style="display:inline-block;background:linear-gradient(135deg,#34D399,#059669);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:12px;">
@@ -200,7 +200,7 @@ public static class Endpoint
         using var message = new MailMessage
         {
             From       = new MailAddress(fromEmail, fromName),
-            Subject    = $"You've been invited to join {org.Name} on InterviewMe.global",
+            Subject    = $"You've been invited to join {org.Name} on TheInterviewChair.com",
             Body       = body,
             IsBodyHtml = true,
         };

@@ -1,5 +1,5 @@
 // Receives the cross-domain handoff from another origin's login (the neutral gate at
-// interviewme.global/login, or the recruiter/employer role-mismatch recovery flow) — the
+// theinterviewchair.com/login, or the recruiter/employer role-mismatch recovery flow) — the
 // token is validated against the shared backend (GET /auth/me) via authApi.getSession
 // before being trusted, not just decoded and accepted at face value. Mirrors
 // src/recruiter-portal/src/pages/AuthCallback.tsx — same pattern, different store.

@@ -1742,7 +1742,7 @@ export default function ProfilePage() {
                 <SectionCard>
                   <SectionHeading emoji="🎥" title="Profile Introduction Video" />
                   <p className="text-[12px] text-slate-500 mb-5 leading-relaxed">
-                    Record a short personal introduction — employers and recruiters see this on your InterviewMe profile. Sarah will guide you through 5 relaxed questions with personalised coaching after each answer.
+                    Record a short personal introduction — employers and recruiters see this on your TheInterviewChair.com profile. Amina will guide you through 5 relaxed questions with personalised coaching after each answer.
                   </p>
                   <div className="flex flex-col items-center gap-4">
                     <div className="w-full aspect-video rounded-2xl bg-slate-900/60 border border-slate-700/40 flex items-center justify-center">

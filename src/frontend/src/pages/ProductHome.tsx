@@ -1,9 +1,10 @@
 import { useEffect, useRef } from "react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   ProductHome — InterviewMe.global cinematic PRODUCT PAGE
-   Deployed at: product.InterviewMe.global  →  route "/"
-   NOT the main platform (InterviewMe.global). This page showcases what's coming.
+   ProductHome — TheInterviewChair.com cinematic PRODUCT PAGE
+   Deployed at: www.theinterviewchair.com  →  route "/"
+   This page showcases what's coming, alongside the live candidate portal
+   (candidate.theinterviewchair.com) in the same app.
 ───────────────────────────────────────────────────────────────────────────── */
 
 export default function ProductHome() {
@@ -50,7 +51,7 @@ export default function ProductHome() {
     if (!lG || !nG) return;
     const ns = "http://www.w3.org/2000/svg";
     const nodes = [
-      { id:"hub",   label:"InterviewMe.global",    x:400, y:250, r:28, main:true },
+      { id:"hub",   label:"TheInterviewChair.com",    x:400, y:250, r:28, main:true },
       { id:"cand",  label:"Candidate Portal",   x:180, y:130, r:18, main:false },
       { id:"rec",   label:"Recruiter Portal",   x:620, y:130, r:18, main:false },
       { id:"learn", label:"Learn Engine",       x:120, y:300, r:18, main:false },
@@ -102,12 +103,12 @@ export default function ProductHome() {
         fetch("https://formspree.io/f/maqrzpvk", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          body: JSON.stringify({ email, source: "InterviewMe.global" }),
+          body: JSON.stringify({ email, source: "TheInterviewChair.com" }),
         }),
         fetch("/api/join-waitlist", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, source: "InterviewMe.global" }),
+          body: JSON.stringify({ email, source: "TheInterviewChair.com" }),
         }).catch(() => {}),
       ]);
     } catch { /* fail silently — UI confirms regardless */ }
@@ -385,9 +386,9 @@ export default function ProductHome() {
 
       {/* NAV */}
       <nav className="ph-nav">
-        <div className="ph-nav-logo"><span className="ph-ex">InterviewMe</span><span className="ph-gl">.global</span><em className="ph-nav-by">by Percentile.One</em></div>
+        <div className="ph-nav-logo"><span className="ph-ex">TheInterviewChair</span><span className="ph-gl">.com</span><em className="ph-nav-by">by Percentile.One</em></div>
         <ul className="ph-nav-links">
-          <li><a href="#ph-why">Why InterviewMe</a></li>
+          <li><a href="#ph-why">Why TheInterviewChair.com</a></li>
           <li><a href="#ph-global">Global</a></li>
           <li><a href="#ph-learn">Learn Engine</a></li>
           <li><a href="#ph-ir">The Interview Chair</a></li>
@@ -437,23 +438,23 @@ export default function ProductHome() {
               </div>
               <div className="ph-irm-tiles">
                 <div className="ph-irm-tile ph-irm-tile-active">
-                  <img src="/images/sarah.jpg" alt="Sarah Mitchell" />
+                  <img src="/images/amina-static-image-1.png" alt="Amina" />
                   <div className="ph-irm-tile-vignette" />
                   <div className="ph-irm-tile-wave">
                     {[14,22,18,26,20,16,24,18].map((h,i)=><span key={i} style={{height:h}} />)}
                   </div>
-                  <div className="ph-irm-tile-name"><strong>Sarah Mitchell</strong><span>HR Director</span></div>
+                  <div className="ph-irm-tile-name"><strong>Amina</strong><span>HR Director</span></div>
                 </div>
                 <div className="ph-irm-tile ph-irm-tile-james">
-                  <img src="/images/james.jpg" alt="James Okafor" />
+                  <img src="/images/wayne-static-photo.png" alt="Wayne Liang" />
                   <div className="ph-irm-tile-vignette" />
                   <div className="ph-irm-tile-status">Ready</div>
-                  <div className="ph-irm-tile-name"><strong>James Okafor</strong><span>Hiring Manager</span></div>
+                  <div className="ph-irm-tile-name"><strong>Wayne Liang</strong><span>Hiring Manager</span></div>
                 </div>
               </div>
               <div className="ph-irm-qcard">
                 <div className="ph-irm-qtags">
-                  <span className="ph-irm-qtag-blue">JAMES · HIRING MANAGER</span>
+                  <span className="ph-irm-qtag-blue">WAYNE · HIRING MANAGER</span>
                   <span className="ph-irm-qtag-grey">Medium</span>
                   <div className="ph-irm-qbtns">
                     <button className="ph-irm-qbtn">↩ Repeat</button>
@@ -538,7 +539,7 @@ export default function ProductHome() {
         <div className="ph-c" style={{textAlign:"center"}}>
           <div className="ph-r" data-ph="" style={{marginBottom:24}}>
             <div className="ph-r ph-nav-logo" data-ph="" style={{fontSize:32,fontWeight:900,letterSpacing:"-.04em",textShadow:"0 0 60px rgba(79,142,247,.7)"}}>
-              <span className="ph-ex">InterviewMe</span><span className="ph-gl">.global</span>
+              <span className="ph-ex">TheInterviewChair</span><span className="ph-gl">.com</span>
             </div>
           </div>
           <h2 className="ph-mission-hl ph-r" data-ph="" data-d="1">The Interview<br /><span style={{color:"#4F8EF7"}}>Intelligence Platform</span></h2>
@@ -547,7 +548,7 @@ export default function ProductHome() {
           </p>
           <div className="ph-r" data-ph="" data-d="3" style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap",marginTop:44}}>
             <a href="/register" className="ph-btn-primary">Get Started →</a>
-            <a href="#ph-why" className="ph-btn-ghost">Why InterviewMe</a>
+            <a href="#ph-why" className="ph-btn-ghost">Why TheInterviewChair.com</a>
           </div>
         </div>
       </section>
@@ -585,7 +586,7 @@ export default function ProductHome() {
                 <p className="ph-pack-card-hl">Get your tailored Interview Pack for this exact role — only £1</p>
                 <p className="ph-pack-card-desc">20 AI-generated practice questions · Tailored to your CV · Tailored to this job · Instant access</p>
                 <button className="ph-pack-card-btn">Get Interview Pack — £1</button>
-                <div className="ph-pack-card-footer">No login needed · Instant access<br />Powered by <strong>InterviewMe.global</strong></div>
+                <div className="ph-pack-card-footer">No login needed · Instant access<br />Powered by <strong>TheInterviewChair.com</strong></div>
               </div>
             </div>
           </div>
@@ -599,21 +600,21 @@ export default function ProductHome() {
         <div className="ph-c">
           <div className="ph-why-grid">
             <div className="ph-manifesto">
-              <div className="ph-lbl ph-r" data-ph="">Why InterviewMe Exists</div>
+              <div className="ph-lbl ph-r" data-ph="">Why TheInterviewChair.com Exists</div>
               <p className="ph-r" data-ph="" data-d="1">People don't fail interviews because they're not good enough.</p>
               <p className="ph-r" data-ph="" data-d="2">They fail because they've never actually <strong style={{color:"#F0F4FF"}}>practised</strong>. Not once. Not properly. Most people walk into the most important conversation of their career having rehearsed nothing — because there was nowhere to rehearse.</p>
               <p className="ph-em1 ph-r" data-ph="" data-d="3">The first time they sit<br />in the chair —<br />is the real interview.</p>
               <p className="ph-em2 ph-r" data-ph="" data-d="4">That ends now.</p>
-              <div className="ph-tagline ph-r" data-ph="" data-d="5"><p>InterviewMe is the world's first <strong>AI interview practice platform</strong> that feels like the real thing. So when the real thing comes — you're already ready.</p></div>
+              <div className="ph-tagline ph-r" data-ph="" data-d="5"><p>TheInterviewChair.com is the world's first <strong>AI interview practice platform</strong> that feels like the real thing. So when the real thing comes — you're already ready.</p></div>
             </div>
             <div>
               <div className="ph-pillars">
                 {[
                   ["💡","Clarity","Know exactly what to expect","We remove the mystery of interviews. You see the question structure, the competencies being assessed, and the benchmark before you walk in. Clarity is the most underrated competitive advantage.","Prepared minds perform."],
                   ["📐","Structure","A framework that turns pressure into performance","Every session follows a proven architecture — opening, competency questions, HR questions, debrief. You learn to map your experience to what interviewers actually need. No more guessing.","Structure beats talent in the room."],
-                  ["🎯","Coaching","Real-time guidance, not post-match analysis","While you answer, InterviewMe's coaching engine watches your delivery, flags hesitations, and surfaces cues in real time. You don't just practice — you improve with every question.","The best coaches speak during the game."],
+                  ["🎯","Coaching","Real-time guidance, not post-match analysis","While you answer, TheInterviewChair.com's coaching engine watches your delivery, flags hesitations, and surfaces cues in real time. You don't just practice — you improve with every question.","The best coaches speak during the game."],
                   ["📊","Scoring","Honest scores. No vanity metrics.","After each answer, you receive a breakdown across Clarity, Depth, Confidence, and Delivery — calibrated against the Top 5% benchmark for your specific role and industry.","You can't improve what you can't measure."],
-                  ["⚡","Confidence","Walk in ready. Walk out proud.","Confidence isn't fake it till you make it. It's the natural result of genuine preparation. After enough sessions with InterviewMe, you don't just feel ready — you are ready.","Confidence is a skill. We build it."],
+                  ["⚡","Confidence","Walk in ready. Walk out proud.","Confidence isn't fake it till you make it. It's the natural result of genuine preparation. After enough sessions with TheInterviewChair.com, you don't just feel ready — you are ready.","Confidence is a skill. We build it."],
                 ].map(([icon,name,hl,body,micro],i) => (
                   <div className="ph-pillar ph-r" data-ph="" data-d={String(i+1)} key={name} style={{flexDirection:"column",alignItems:"flex-start",gap:10}}>
                     <div style={{display:"flex",alignItems:"center",gap:12}}>
@@ -628,7 +629,7 @@ export default function ProductHome() {
                   </div>
                 ))}
               </div>
-              <p className="ph-r" data-ph="" data-d="6" style={{marginTop:24,fontSize:14,color:"#4F8EF7",fontWeight:700,textAlign:"center"}}>InterviewMe.global gives every candidate all five.</p>
+              <p className="ph-r" data-ph="" data-d="6" style={{marginTop:24,fontSize:14,color:"#4F8EF7",fontWeight:700,textAlign:"center"}}>TheInterviewChair.com gives every candidate all five.</p>
             </div>
           </div>
         </div>
@@ -643,7 +644,7 @@ export default function ProductHome() {
             <div className="ph-lbl ph-r" data-ph="">Global by Design</div>
             <h2 className="ph-global-hl ph-r" data-ph="" data-d="1">Any language.<br /><span style={{color:"#4F8EF7"}}>Any job.</span><br />Any job spec.</h2>
             <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:"rgba(240,244,255,.65)",maxWidth:540,margin:"0 auto 0"}}>
-              InterviewMe.global works in any language, for any role, in any industry — anywhere in the world. Upload a job spec in Portuguese. Interview in French. Get coached in Mandarin. We handle the rest.
+              TheInterviewChair.com works in any language, for any role, in any industry — anywhere in the world. Upload a job spec in Portuguese. Interview in French. Get coached in Mandarin. We handle the rest.
             </p>
           </div>
           <div className="ph-lang-ticker ph-r" data-ph="" data-d="2">
@@ -671,7 +672,7 @@ export default function ProductHome() {
             <div className="ph-lbl ph-r" data-ph="">Coming Soon</div>
             <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">The <span style={{color:"#4F8EF7"}}>Learn Engine</span></h2>
             <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:"rgba(240,244,255,.65)",maxWidth:520,margin:"16px auto 0"}}>Enter any subject. Receive a full structured lesson — concepts, glossary, exam questions, and a quiz — generated by AI in seconds.</p>
-            <div className="ph-r" data-ph="" data-d="3" style={{marginTop:20}}><span className="ph-badge-gold">Launching with InterviewMe.global</span></div>
+            <div className="ph-r" data-ph="" data-d="3" style={{marginTop:20}}><span className="ph-badge-gold">Launching with TheInterviewChair.com</span></div>
           </div>
           <div className="ph-learn-grid ph-r" data-ph="" data-d="2">
             <div className="ph-card">
@@ -796,8 +797,8 @@ export default function ProductHome() {
           <div className="ph-lbl ph-r" data-ph="">The Ecosystem</div>
           <h2 className="ph-h-xl ph-r" data-ph="" data-d="1">One <span style={{color:"#4F8EF7"}}>constellation</span></h2>
           <p className="ph-r" data-ph="" data-d="2" style={{fontSize:18,lineHeight:1.75,color:"rgba(240,244,255,.65)",maxWidth:480,margin:"16px auto 0"}}>Every product connects. One unified ecosystem for the world of work.</p>
-          <svg id="ph-eco-svg" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",maxWidth:800,display:"block",margin:"40px auto 0",overflow:"visible"}} role="img" aria-label="InterviewMe.global ecosystem constellation">
-            <title>InterviewMe.global Ecosystem</title>
+          <svg id="ph-eco-svg" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",maxWidth:800,display:"block",margin:"40px auto 0",overflow:"visible"}} role="img" aria-label="TheInterviewChair.com ecosystem constellation">
+            <title>TheInterviewChair.com Ecosystem</title>
             <g id="ph-eco-lines" /><g id="ph-eco-nodes" />
           </svg>
         </div>
@@ -818,8 +819,8 @@ export default function ProductHome() {
               {n:3,done:false,phase:"Phase 3 — Coming Soon",title:"Interview Chair",sub:"Live AI voice interviewer with real-time scoring, coaching overlays, and full session recording.",badge:"coming",label:"In Development"},
               {n:4,done:false,phase:"Phase 4 — Coming Soon",title:"Interview Packs",sub:"Role-specific preparation bundles distributed through partner recruitment agencies globally.",badge:"coming",label:"Planned"},
               {n:5,done:false,phase:"Phase 5 — Coming Soon",title:"Recruiter Portal",sub:"Full recruiter intelligence suite — pack builder, candidate flow management, scoring, and insights.",badge:"coming",label:"Planned"},
-              {n:6,done:false,phase:"Phase 6 — Vision",title:"Global Distribution",sub:"InterviewMe Interview Packs available through the world's leading recruitment agencies and job boards.",badge:"coming",label:"Vision"},
-              {n:7,done:false,phase:"Phase 7 — Vision",title:"InterviewMe AI + Percentile.One",sub:"The full Percentile.One ecosystem: Learn, Work, Grow — unified under one AI intelligence layer.",badge:"coming",label:"Vision"},
+              {n:6,done:false,phase:"Phase 6 — Vision",title:"Global Distribution",sub:"TheInterviewChair.com Interview Packs available through the world's leading recruitment agencies and job boards.",badge:"coming",label:"Vision"},
+              {n:7,done:false,phase:"Phase 7 — Vision",title:"TheInterviewChair.com AI + Percentile.One",sub:"The full Percentile.One ecosystem: Learn, Work, Grow — unified under one AI intelligence layer.",badge:"coming",label:"Vision"},
             ].map(r=>(
               <div className="ph-road-item" key={r.n}>
                 <div className={`ph-road-num${r.done?" done":""}`}>{r.n}</div>
@@ -860,7 +861,7 @@ export default function ProductHome() {
           <div className="ph-lbl ph-r" data-ph="" style={{textAlign:"center",marginBottom:32}}>A Message from the Founder</div>
           <div className="ph-founder-card ph-r" data-ph="" style={{maxWidth:760}}>
             <p style={{fontSize:16,color:"rgba(240,244,255,.5)",lineHeight:1.85,marginBottom:20,position:"relative",zIndex:1,fontWeight:500}}>
-              I built InterviewMe because I lived the problem.
+              I built TheInterviewChair.com because I lived the problem.
             </p>
             <p style={{fontSize:16,color:"rgba(240,244,255,.6)",lineHeight:1.85,marginBottom:20,position:"relative",zIndex:1}}>
               I have sat in interview rooms and watched people who were brilliant — genuinely brilliant — walk out empty-handed. Not because they weren't good enough. Because the process was a black box. It rewarded those who had been coached, those who had insider knowledge, those who had simply <em style={{fontStyle:"normal",color:"#F0F4FF",fontWeight:700}}>done it before</em>.
@@ -883,7 +884,7 @@ export default function ProductHome() {
               <div style={{width:44,height:44,borderRadius:"50%",background:"linear-gradient(135deg,#4F8EF7,#2D5BFF)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:16,color:"#fff",flexShrink:0}}>FC</div>
               <div>
                 <div style={{fontSize:14,fontWeight:800,color:"#F0F4FF"}}>Francis Cobbinah</div>
-                <div style={{fontSize:11,color:"rgba(240,244,255,.35)",marginTop:2}}>Founder · InterviewMe.global · Percentile.One</div>
+                <div style={{fontSize:11,color:"rgba(240,244,255,.35)",marginTop:2}}>Founder · TheInterviewChair.com · Percentile.One</div>
               </div>
             </div>
           </div>
@@ -893,13 +894,13 @@ export default function ProductHome() {
       {/* FOOTER */}
       <footer className="ph-footer">
         <div className="ph-footer-inner">
-          <div style={{fontSize:15,fontWeight:900,letterSpacing:"-.03em"}}><span className="ph-ex">InterviewMe</span><span className="ph-gl">.global</span></div>
+          <div style={{fontSize:15,fontWeight:900,letterSpacing:"-.03em"}}><span className="ph-ex">TheInterviewChair</span><span className="ph-gl">.com</span></div>
           <div className="ph-footer-links">
-            <a href="#ph-why">Why InterviewMe</a><a href="#ph-global">Global</a>
+            <a href="#ph-why">Why TheInterviewChair.com</a><a href="#ph-global">Global</a>
             <a href="#ph-learn">Learn Engine</a><a href="#ph-eco">Ecosystem</a>
             <a href="#ph-wait">Waitlist</a>
           </div>
-          <div style={{fontSize:11,color:"rgba(240,244,255,.35)"}}>© 2026 Percentile.One · product.InterviewMe.global · All rights reserved</div>
+          <div style={{fontSize:11,color:"rgba(240,244,255,.35)"}}>© 2026 Percentile.One · theinterviewchair.com · All rights reserved</div>
         </div>
       </footer>
     </>

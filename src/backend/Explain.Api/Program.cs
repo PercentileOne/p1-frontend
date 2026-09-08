@@ -75,7 +75,10 @@ builder.Services.AddCors(options =>
         var configOrigins = raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var knownOrigins = new[]
         {
-            "https://candidate.interviewme.global",
+            "https://candidate.theinterviewchair.com",
+            "https://www.theinterviewchair.com",
+            "https://theinterviewchair.com",
+            "https://candidate.interviewme.global", // legacy domain, now redirects — kept until DNS fully propagates
             "https://recruiter.interviewme.global",
             "https://employer.interviewme.global",
             "https://explain.global",

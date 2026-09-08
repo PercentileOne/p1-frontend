@@ -245,10 +245,10 @@ public static class Endpoint
         }
 
         var smtpPort  = int.Parse(config["Email:SmtpPort"] ?? "587");
-        var fromEmail = config["Email:FromEmail"] ?? "noreply@interviewme.global";
-        var fromName  = config["Email:FromName"] ?? "InterviewMe";
+        var fromEmail = config["Email:FromEmail"] ?? "noreply@theinterviewchair.com";
+        var fromName  = config["Email:FromName"] ?? "TheInterviewChair.com";
 
-        var registerUrl = "https://candidate.interviewme.global/register" +
+        var registerUrl = "https://candidate.theinterviewchair.com/register" +
             $"?email={Uri.EscapeDataString(prep.email)}" +
             $"&firstName={Uri.EscapeDataString(prep.firstName)}" +
             $"&lastName={Uri.EscapeDataString(prep.lastName)}";
@@ -278,7 +278,7 @@ public static class Endpoint
               <div style="max-width:560px;margin:40px auto;padding:0 20px;">
                 <div style="text-align:center;margin-bottom:28px;">
                   <p style="font-size:18px;font-weight:700;color:#fff;margin:0;">
-                    <strong style="color:#fff">Interview</strong><strong style="color:#34D399">Me</strong><span style="color:#4F8EF7;font-weight:400">.global</span>
+                    <strong style="color:#34D399">The</strong><strong style="color:#fff">Interview</strong><strong style="color:#34D399">Chair</strong><span style="color:rgba(255,255,255,0.55);font-weight:400">.com</span>
                   </p>
                 </div>
 
@@ -295,7 +295,7 @@ public static class Endpoint
                   </h1>
 
                   <p style="text-align:center;font-size:14px;color:rgba(255,255,255,0.55);line-height:1.7;margin:0 0 28px;">
-                    {WebUtility.HtmlEncode(prep.recruiterName)} wants you walking into your interview on <strong style="color:#fff">{interviewDateStr}</strong> feeling fully prepared — so they've unlocked free access to InterviewMe, built just for this role.
+                    {WebUtility.HtmlEncode(prep.recruiterName)} wants you walking into your interview on <strong style="color:#fff">{interviewDateStr}</strong> feeling fully prepared — so they've unlocked free access to TheInterviewChair.com, built just for this role.
                   </p>
 
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 30px;">
@@ -315,7 +315,7 @@ public static class Endpoint
                 </div>
 
                 <p style="text-align:center;font-size:12px;color:rgba(255,255,255,0.25);margin-top:24px;">
-                  A gift from {WebUtility.HtmlEncode(prep.recruiterName)}, sent via InterviewMe.global
+                  A gift from {WebUtility.HtmlEncode(prep.recruiterName)}, sent via TheInterviewChair.com
                 </p>
               </div>
             </body>

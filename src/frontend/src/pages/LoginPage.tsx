@@ -134,11 +134,11 @@ export default function LoginPage() {
 
   const handleDemo = () => {
     setPhase("loading");
-    notifyEmailJS("demo@InterviewMe.global", "Demo user login (Continue as Demo User)");
+    notifyEmailJS("demo@theinterviewchair.com", "Demo user login (Continue as Demo User)");
     setTimeout(() => {
       storeLogin("demo-token", {
         id:        "0",
-        email:     "demo@InterviewMe.global",
+        email:     "demo@theinterviewchair.com",
         name:      "Francis Cobbinah",
         firstName: "Francis",
         role:      "candidate",
@@ -199,7 +199,7 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.55, duration: 0.7, ease: "easeOut" }}
         >
-          <strong style={{ color: "#fff" }}>Interview</strong><strong style={{ color: "#34D399" }}>Me</strong><span style={{ color: "#4F8EF7", fontWeight: 400 }}>.global</span>
+          <strong style={{ color: "#34D399" }}>The</strong><strong style={{ color: "#fff" }}>Interview</strong><strong style={{ color: "#34D399" }}>Chair</strong><span style={{ opacity: 0.55, fontWeight: 400 }}>.com</span>
         </motion.p>
 
         {/* Tagline */}

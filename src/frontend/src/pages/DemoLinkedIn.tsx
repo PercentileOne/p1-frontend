@@ -146,7 +146,7 @@ export default function DemoLinkedIn() {
             ))}
           </div>
           <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e0e0e0', padding: '20px' }}>
-            <div style={{ fontSize: '13px', color: '#000', fontWeight: 700, marginBottom: '6px' }}>Powered by InterviewMe AI</div>
+            <div style={{ fontSize: '13px', color: '#000', fontWeight: 700, marginBottom: '6px' }}>Powered by TheInterviewChair.com AI</div>
             <div style={{ fontSize: '12px', color: '#666', lineHeight: 1.6 }}>
               Get 20 AI‑generated interview questions tailored to this exact role and your CV.
             </div>

@@ -114,7 +114,7 @@ export default function InterviewRoomPage() {
   useEffect(() => {
     const previousTitle = document.title;
     const jobTitle = ctx.jobTitle?.trim();
-    if (jobTitle) document.title = `${jobTitle} — Interview | InterviewMe.global`;
+    if (jobTitle) document.title = `${jobTitle} — Interview | TheInterviewChair.com`;
     return () => { document.title = previousTitle; };
   }, [ctx.jobTitle]);
   const authUser = useAuthStore(s => s.user);
@@ -691,7 +691,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--blue)' }}>
-            InterviewMe · Interview Room
+            TheInterviewChair.com · Interview Room
           </div>
           {phase !== 'intro' && phase !== 'mike' && (
             <>

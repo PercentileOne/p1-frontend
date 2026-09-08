@@ -36,7 +36,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ChairLogo size={32} showText={false} />
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.01em' }}>Admin Portal</div>
-            <div style={{ fontSize: 10, color: 'var(--text-3)' }}>InterviewMe</div>
+            <div style={{ fontSize: 10, color: 'var(--text-3)' }}>TheInterviewChair.com</div>
           </div>
         </div>
 

@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// InterviewMe.global — Multi-Portal Permission Matrix
+// TheInterviewChair.com — Multi-Portal Permission Matrix
 //
 // This file is the SINGLE SOURCE OF TRUTH for all access control decisions.
 // It is enforced at three levels:
@@ -23,7 +23,7 @@ export type Portal =
 
 /** The subdomain each portal lives at. Used for cross-portal redirects. */
 export const PORTAL_ORIGINS: Record<Portal, string> = {
-  candidate: 'https://candidate.interviewme.global',
+  candidate: 'https://candidate.theinterviewchair.com',
   recruiter: 'https://recruiter.interviewme.global',
   employer:  'https://employer.interviewme.global',
   admin:     'https://admin.interviewme.global',

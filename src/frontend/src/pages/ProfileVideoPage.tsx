@@ -547,7 +547,7 @@ export default function ProfileVideoPage() {
             <div style={{ fontSize: 56, marginBottom: 20 }}>🎉</div>
             <h2 style={{ fontSize: 'clamp(1.4rem,4vw,2rem)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 12 }}>All 5 answers recorded!</h2>
             <p style={{ fontSize: 15, color: 'rgba(241,245,249,0.5)', lineHeight: 1.7, maxWidth: 400, margin: '0 auto 32px' }}>
-              Your profile introduction is ready. Save it to publish it on your InterviewMe profile.
+              Your profile introduction is ready. Save it to publish it on your TheInterviewChair.com profile.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32, textAlign: 'left' }}>
               {QUESTIONS.map((q, i) => {
@@ -564,7 +564,7 @@ export default function ProfileVideoPage() {
               <div style={{ padding: '20px', borderRadius: 14, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.25)' }}>
                 <div style={{ fontSize: 20, marginBottom: 6 }}>✅</div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: '#34D399', marginBottom: 4 }}>Profile video saved!</div>
-                <div style={{ fontSize: 13, color: 'rgba(241,245,249,0.4)', marginBottom: 16 }}>It will appear on your InterviewMe profile within a few minutes.</div>
+                <div style={{ fontSize: 13, color: 'rgba(241,245,249,0.4)', marginBottom: 16 }}>It will appear on your TheInterviewChair.com profile within a few minutes.</div>
                 <button onClick={() => navigate('/profile')} style={{ padding: '12px 28px', borderRadius: 10, background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.3)', color: '#4F8EF7', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   Go to my profile →
                 </button>

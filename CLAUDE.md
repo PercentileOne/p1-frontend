@@ -1,4 +1,6 @@
-# P1 — Percentile.One / Explain / InterviewMe ecosystem
+# P1 — Percentile.One / Explain / TheInterviewChair.com ecosystem
+
+**Brand note, 2026-09-08:** The candidate-facing product is rebranding from "InterviewMe" to **TheInterviewChair.com** (a real .com, bought same day). `candidate.interviewme.global` and its siblings (`www.`, `product.`) now 301-redirect to their `theinterviewchair.com` equivalents; `recruiter.interviewme.global` and `employer.interviewme.global` stay on the old domain until their own portals get renamed in a later pass — don't "fix" their branding to match without checking first, the mismatch there is intentional for now. `src/viewme/public/` (the old dedicated marketing site) is retired — nothing points at it anymore. The live marketing homepage is now `ProductHome` inside `src/frontend`, served at `"/"` on `www.theinterviewchair.com`.
 
 This file is read automatically by every Claude Code session working in this repo. These rules override default behavior. If you are a different AI tool or a human contributor, read this before touching anything — it exists because rules that only lived in one person's head or one session's memory got silently dropped and cost real money (see **Security** below).
 
@@ -14,9 +16,9 @@ This file is read automatically by every Claude Code session working in this rep
 
 | Portal | Codebase | Live domain | Notes |
 |---|---|---|---|
-| Candidate portal | `src/frontend/` | `candidate.explain.global`, `candidate.interviewme.global` | PRIMARY — Learn Engine, Careers, Interview Room, My Interviews, Profile all live here |
-| Recruiter portal | `src/recruiter-portal/` | `recruiter.explain.global` | Job posts, screen candidates, league table |
-| InterviewMe hub / marketing | `src/viewme/public/` | `product.interviewme.global` | **Not** `src/interviewme/` — that folder is a disconnected sibling with its own unused dev server. Check the `paths:` trigger in `.github/workflows/deploy-*.yml` if unsure which folder actually backs a domain. |
+| Candidate portal + marketing homepage | `src/frontend/` | `candidate.theinterviewchair.com`, `www.theinterviewchair.com`, `candidate.explain.global`, `candidate.interviewme.global` (legacy, redirects) | PRIMARY — Learn Engine, Careers, Interview Room, My Interviews, Profile, and the `ProductHome` marketing page (route `"/"`) all live here |
+| Recruiter portal | `src/recruiter-portal/` | `recruiter.explain.global`, `recruiter.interviewme.global` | Job posts, screen candidates, league table. Still branded "InterviewMe" — not yet renamed, domain not yet moved |
+| ~~InterviewMe hub / marketing~~ (retired) | `src/viewme/public/` | none — `product.interviewme.global` now redirects away | **Not** `src/interviewme/` — that folder is a disconnected sibling with its own unused dev server, and was already dead before the rebrand. Neither folder needs maintenance; the real marketing page is `ProductHome` in `src/frontend` now. |
 | Explain hub | `src/explain-global/` | `explain.global` | Public hub — login, register, jobs, learn, community |
 | .NET backend | `src/backend/Explain.Api/` | `api.explain.global` / `localhost:5000` | Shared backend for every portal above |
 

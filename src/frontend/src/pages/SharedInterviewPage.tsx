@@ -70,10 +70,10 @@ export default function SharedInterviewPage() {
   // cvCtx is only populated if a CV happened to be parsed for this specific session —
   // candidateName (the real account name) is always available, so it's the reliable fallback.
   const name = [data.cvCtx?.firstName, data.cvCtx?.lastName].filter(Boolean).join(' ') || data.candidateName || '';
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://candidate.interviewme.global/shared/${token}`;
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://candidate.theinterviewchair.com/shared/${token}`;
   const shareText = name
-    ? `Watch ${name}'s ${data.role ?? 'interview'} on InterviewMe.global:`
-    : `Watch this ${data.role ?? 'interview'} on InterviewMe.global:`;
+    ? `Watch ${name}'s ${data.role ?? 'interview'} on TheInterviewChair.com:`
+    : `Watch this ${data.role ?? 'interview'} on TheInterviewChair.com:`;
   const copyLink = async () => {
     await navigator.clipboard.writeText(shareUrl);
     setLinkCopied(true);
@@ -92,9 +92,9 @@ export default function SharedInterviewPage() {
           width: 32, height: 32, borderRadius: 9, flexShrink: 0,
           background: 'linear-gradient(135deg, #34D399, #4F8EF7)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: '#fff',
-        }}>IM</div>
+        }}>TC</div>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)' }}>
-          InterviewMe.global · Shared Interview
+          TheInterviewChair.com · Shared Interview
         </div>
       </div>
 
@@ -102,7 +102,7 @@ export default function SharedInterviewPage() {
         <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: '0 0 6px' }}>
           {name ? `${name}'s ` : ''}{data.role ? `${data.role} Interview` : 'Interview'}{data.company ? ` at ${data.company}` : ''}
         </h1>
-        <div style={{ fontSize: 13, color: 'var(--text-3)' }}>Recorded on InterviewMe.global — the world's first interview broadcast platform.</div>
+        <div style={{ fontSize: 13, color: 'var(--text-3)' }}>Recorded on TheInterviewChair.com — the world's first interview broadcast platform.</div>
         {createdAtLabel && <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{createdAtLabel}</div>}
       </div>
 
@@ -161,7 +161,7 @@ export default function SharedInterviewPage() {
       </div>
 
       <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-3)', marginTop: 12 }}>
-        Powered by InterviewMe.global — practice interviews, free forever.
+        Powered by TheInterviewChair.com — practice interviews, free forever.
       </div>
     </div>
   );

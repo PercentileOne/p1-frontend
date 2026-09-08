@@ -1,6 +1,6 @@
 // Ported from src/recruiter-portal/src/components/LogoMark.tsx — the small circular "chair"
 // mark used consistently across auth-adjacent screens. showText defaults to false here since
-// callers on this portal already render their own InterviewMe.global wordmark alongside it.
+// callers on this portal already render their own TheInterviewChair.com wordmark alongside it.
 interface ChairLogoProps {
   size?: number
   showText?: boolean
@@ -21,7 +21,7 @@ export function ChairLogo({ size = 96, showText = false }: ChairLogoProps) {
       }}>
         <img
           src="/images/mastermind-chair-tight.png"
-          alt="InterviewMe"
+          alt="TheInterviewChair.com"
           style={{
             width: '100%', height: '100%',
             objectFit: 'cover',
@@ -44,7 +44,8 @@ export function ChairLogo({ size = 96, showText = false }: ChairLogoProps) {
           lineHeight: 1,
           fontFamily: "-apple-system,'Segoe UI',system-ui,sans-serif",
         }}>
-          Interview<span style={{ color: '#34D399' }}>Me</span><span style={{ color: '#4F8EF7' }}>.global</span>
+          <span style={{ color: '#34D399' }}>The</span>Interview<span style={{ color: '#34D399' }}>Chair</span>
+          <span style={{ opacity: 0.55, fontWeight: 500 }}>.com</span>
         </div>
       )}
     </div>

@@ -25,9 +25,9 @@ public static class Endpoint
             var smtpUser  = config["Email:SmtpUser"]  ?? throw new InvalidOperationException("Email:SmtpUser not configured");
             var smtpPass  = config["Email:SmtpPass"]  ?? throw new InvalidOperationException("Email:SmtpPass not configured");
             var fromEmail = config["Email:FromEmail"] ?? "lessons@talktolearn.app";
-            var fromName  = config["Email:FromName"]  ?? "InterviewMe";
+            var fromName  = config["Email:FromName"]  ?? "TheInterviewChair.com";
 
-            var subject = $"InterviewMe Contact: {req.Type ?? "Enquiry"} — {req.Name}";
+            var subject = $"TheInterviewChair.com Contact: {req.Type ?? "Enquiry"} — {req.Name}";
             var body = $"""
                 <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
                   <h2 style="color:#34d399;">New contact form submission</h2>
@@ -38,7 +38,7 @@ public static class Endpoint
                     <tr><td style="padding:8px 0;color:#666;vertical-align:top;">Message</td><td style="padding:8px 0;">{req.Message ?? "No message provided."}</td></tr>
                   </table>
                   <hr style="border:none;border-top:1px solid #eee;margin:24px 0;"/>
-                  <p style="color:#999;font-size:12px;">Sent from product.interviewme.global/contact</p>
+                  <p style="color:#999;font-size:12px;">Sent from www.theinterviewchair.com/contact</p>
                 </div>
                 """;
 

@@ -21,7 +21,7 @@ namespace Explain.Api.Features.Interviews;
 /// </summary>
 public static class Endpoint
 {
-    private const string ShareBaseUrl = "https://candidate.interviewme.global/shared";
+    private const string ShareBaseUrl = "https://candidate.theinterviewchair.com/shared";
 
     public static void Map(WebApplication app)
     {

@@ -16,7 +16,7 @@ import SettingsPage from "./SettingsPage";
 import DemoPanel from "./DemoPanel";
 
 /* ══════════════════════════════════════════════════════════════
-   CANDIDATE DASHBOARD — cockpit-grade portal for InterviewMe.global
+   CANDIDATE DASHBOARD — cockpit-grade portal for TheInterviewChair.com
    ══════════════════════════════════════════════════════════════ */
 
 type CardSlide = { label: string; value: string; change: string };
@@ -271,8 +271,8 @@ export default function CandidateDashboard() {
   async function handleLogout() {
     await logout();
     // The neutral gate, not this portal's own /login — signing out shouldn't land you back
-    // on a page that assumes you're a candidate, same reasoning as the interviewme.global work.
-    window.location.href = "https://www.interviewme.global/login";
+    // on a page that assumes you're a candidate, same reasoning as the theinterviewchair.com work.
+    window.location.href = "https://www.theinterviewchair.com/login";
   }
 
   function navTo(label: string) {

@@ -5,7 +5,7 @@
 // WhatsApp etc. shows the same generic homepage preview, since those crawlers never
 // run JavaScript and only ever see whatever static HTML index.html always contains.
 const EXPLAIN_API_URL = process.env.EXPLAIN_API_URL || 'https://explain-api.azurewebsites.net';
-const FALLBACK_IMAGE = 'https://product.interviewme.global/im-social-card.png';
+const FALLBACK_IMAGE = 'https://www.theinterviewchair.com/im-social-card.png';
 
 function escapeHtml(str) {
   return String(str)
@@ -44,10 +44,10 @@ module.exports = async function (context, req) {
       const pct = Math.round(data?.overallScore || 0);
 
       const title = escapeHtml(
-        name ? `Watch ${name}'s ${role} interview — InterviewMe.global` : `Watch this ${role} interview — InterviewMe.global`
+        name ? `Watch ${name}'s ${role} interview — TheInterviewChair.com` : `Watch this ${role} interview — TheInterviewChair.com`
       );
       const description = escapeHtml(
-        `Scored ${pct}/100 on InterviewMe.global — the world's first interview broadcast platform. Watch the full interview.`
+        `Scored ${pct}/100 on TheInterviewChair.com — the world's first interview broadcast platform. Watch the full interview.`
       );
       const url = `${origin}/shared/${encodeURIComponent(token)}`;
 

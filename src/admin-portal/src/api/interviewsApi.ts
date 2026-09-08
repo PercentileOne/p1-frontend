@@ -47,4 +47,4 @@ export const interviewsApi = {
   },
 };
 
-export const SHARED_VIEW_BASE = 'https://candidate.interviewme.global/shared';
+export const SHARED_VIEW_BASE = 'https://candidate.theinterviewchair.com/shared';

@@ -79,7 +79,7 @@ export default function Login() {
           transition={{ delay: 0.4, duration: 0.7, ease: 'easeOut' }}
         >
           <div style={{ fontSize: 17, fontWeight: 700, letterSpacing: '0.04em', color: '#e8eaf0', userSelect: 'none' }}>
-            InterviewMe<span style={{ color: '#4F8EF7' }}>.global</span>
+            <span style={{ color: '#34D399' }}>The</span>Interview<span style={{ color: '#34D399' }}>Chair</span><span style={{ opacity: 0.55, fontWeight: 500 }}>.com</span>
           </div>
         </motion.div>
 

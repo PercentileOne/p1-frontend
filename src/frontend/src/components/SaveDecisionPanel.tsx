@@ -26,7 +26,7 @@ export const SHARE_PLATFORMS = [
   {
     id: 'email', label: 'Email', color: '#94a3b8',
     icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
-    getUrl: (url: string, text: string) => `mailto:?subject=${encodeURIComponent('My InterviewMe Score')}&body=${encodeURIComponent(`${text}\n\n${url}`)}`,
+    getUrl: (url: string, text: string) => `mailto:?subject=${encodeURIComponent('My TheInterviewChair.com Score')}&body=${encodeURIComponent(`${text}\n\n${url}`)}`,
   },
 ];
 
@@ -141,7 +141,7 @@ export function SaveDecisionPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [alreadyShared, candidateId, interviewId]);
 
-  const shareText = `I scored ${score}% on my ${role ?? 'job'} interview with InterviewMe — the AI interview platform. Watch my full session:`;
+  const shareText = `I scored ${score}% on my ${role ?? 'job'} interview with TheInterviewChair.com — the AI interview platform. Watch my full session:`;
 
   // The recording + full answer data are already uploaded automatically the moment the
   // interview room closes — "Save" here just needs to publish a share link + QR for it.
@@ -205,7 +205,7 @@ export function SaveDecisionPanel({
     if (!qrDataUri) return;
     const a = document.createElement('a');
     a.href = qrDataUri;
-    a.download = 'interviewme-qr.png';
+    a.download = 'theinterviewchair-qr.png';
     a.click();
   };
 

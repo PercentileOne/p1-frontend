@@ -50,14 +50,14 @@ public static class Endpoint
         db.PasswordResetTokens.Add(resetToken);
         await db.SaveChangesAsync();
 
-        var appUrl      = "https://candidate.interviewme.global";
+        var appUrl      = "https://candidate.theinterviewchair.com";
         var resetUrl    = $"{appUrl}/reset-password?token={token}";
         var smtpHost    = config["Email:SmtpHost"]  ?? throw new InvalidOperationException("Email:SmtpHost not configured");
         var smtpPort    = int.Parse(config["Email:SmtpPort"] ?? "587");
         var smtpUser    = config["Email:SmtpUser"]  ?? throw new InvalidOperationException("Email:SmtpUser not configured");
         var smtpPass    = config["Email:SmtpPass"]  ?? throw new InvalidOperationException("Email:SmtpPass not configured");
-        var fromEmail   = config["Email:FromEmail"] ?? "noreply@interviewme.global";
-        var fromName    = config["Email:FromName"]  ?? "InterviewMe";
+        var fromEmail   = config["Email:FromEmail"] ?? "noreply@theinterviewchair.com";
+        var fromName    = config["Email:FromName"]  ?? "TheInterviewChair.com";
 
         var firstName = user.FirstName ?? "there";
         var body = $"""
@@ -67,13 +67,13 @@ public static class Endpoint
               <div style="max-width:560px;margin:40px auto;padding:0 20px;">
                 <div style="text-align:center;margin-bottom:32px;">
                   <p style="font-size:18px;font-weight:700;color:#fff;margin:0;">
-                    <strong style="color:#fff">Interview</strong><strong style="color:#34D399">Me</strong><span style="color:#4F8EF7;font-weight:400">.global</span>
+                    <strong style="color:#34D399">The</strong><strong style="color:#fff">Interview</strong><strong style="color:#34D399">Chair</strong><span style="color:rgba(255,255,255,0.55);font-weight:400">.com</span>
                   </p>
                 </div>
                 <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:40px 36px;">
                   <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0 0 12px;">Reset your password</h1>
                   <p style="font-size:15px;color:rgba(255,255,255,0.6);line-height:1.7;margin:0 0 32px;">
-                    Hi {firstName}, we received a request to reset your InterviewMe.global password. Click the button below — this link expires in <strong style="color:#fff">2 hours</strong>.
+                    Hi {firstName}, we received a request to reset your TheInterviewChair.com password. Click the button below — this link expires in <strong style="color:#fff">2 hours</strong>.
                   </p>
                   <div style="text-align:center;margin-bottom:32px;">
                     <a href="{resetUrl}" style="display:inline-block;background:linear-gradient(135deg,#34D399,#059669);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:12px;">
@@ -102,7 +102,7 @@ public static class Endpoint
             using var message = new MailMessage
             {
                 From       = new MailAddress(fromEmail, fromName),
-                Subject    = "Reset your InterviewMe.global password",
+                Subject    = "Reset your TheInterviewChair.com password",
                 Body       = body,
                 IsBodyHtml = true,
             };

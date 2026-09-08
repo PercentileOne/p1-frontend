@@ -116,7 +116,7 @@ function PremiumCard({ onOpen }: { onOpen: () => void }) {
         marginTop: 4,
       }}>
         No login needed · Instant access<br />
-        <span style={{ color: '#4F8EF7', fontWeight: 700 }}>Powered by InterviewMe.Global</span>
+        <span style={{ color: '#4F8EF7', fontWeight: 700 }}>Powered by TheInterviewChair.com</span>
       </div>
     </div>
   );
