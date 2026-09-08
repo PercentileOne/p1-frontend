@@ -138,10 +138,14 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
           micGainNodeRef.current = micGain;
           audioCtx.createMediaStreamSource(micStream).connect(micGain).connect(compressor);
         }
-        // Tab-audio-capture (above) reliably grabs regular ElevenLabs TTS but NOT LiveAvatar's
-        // WebRTC-attached <video> audio — this is the other half of that fix, mixing whatever
-        // useLiveAvatarSession has tapped into the same compressor/dest as everything else.
-        setLiveAvatarRecordingDestination(dest, compressor);
+        // NOT calling setLiveAvatarRecordingDestination here, deliberately — LiveAvatar's audio
+        // now routes through getMasterGain() -> audioCtx.destination (see
+        // liveAvatarRecordingBus.ts's tap), the exact same path regular ElevenLabs TTS already
+        // uses, which tab-audio-capture (above) already grabs reliably. Wiring the recording
+        // bus in too on desktop double-captured every avatar utterance — once via tab-capture
+        // picking up the real speaker output, once via the explicit bus — producing an echo
+        // that regular TTS never had (single path only). Mobile still needs the explicit bus:
+        // no tab-capture exists there to catch the destination-routed copy on its own.
 
         compositeStream = new MediaStream([...tabStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
 
@@ -150,7 +154,6 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
           // Disconnect only — audioCtx is the shared TTS context now, other things in the app
           // still need it, so it must never be closed here.
           compressor.disconnect();
-          setLiveAvatarRecordingDestination(null);
         });
       } else {
         // Mobile — no browser exposes screen/tab capture to web content here at all, so
