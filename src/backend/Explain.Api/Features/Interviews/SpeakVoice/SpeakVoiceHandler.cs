@@ -51,7 +51,15 @@ public class SpeakVoiceHandler(
         if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(voiceId))
             return Result<SpeakVoiceDto>.Failure("Interview voice isn't configured.", 500);
 
-        var key = TtsCacheService.KeyFor(voiceId, cmd.Text);
+        // Same pace fix and reasoning as AvatarAudioHandler — see its own comment. Scoped to
+        // hr/technical only; Mike/MCQ voices weren't reported as slow.
+        var speed = cmd.Role is "hr" or "technical" ? 1.15 : 1.0;
+
+        // Cache key folds speed in when non-default — see AvatarAudioHandler's identical
+        // comment for why (a pre-existing 1.0-pace cached clip would otherwise keep being
+        // served forever after this change).
+        var cacheVoiceId = speed != 1.0 ? $"{voiceId}@speed{speed}" : voiceId;
+        var key = TtsCacheService.KeyFor(cacheVoiceId, cmd.Text);
         var cached = await cache.GetReadUrlIfCachedAsync(key);
         if (cached is not null)
             return Result<SpeakVoiceDto>.Success(new SpeakVoiceDto(cached));
@@ -66,7 +74,7 @@ public class SpeakVoiceHandler(
             {
                 text = cmd.Text,
                 model_id = Model,
-                voice_settings = new { stability = 0.5, similarity_boost = 0.75 },
+                voice_settings = new { stability = 0.5, similarity_boost = 0.75, speed },
             });
 
             using var resp = await client.SendAsync(msg, ct);

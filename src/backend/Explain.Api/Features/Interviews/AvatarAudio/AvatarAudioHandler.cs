@@ -46,9 +46,19 @@ public class AvatarAudioHandler(
         if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(voiceId))
             return Result<AvatarAudioDto>.Failure("Interview voice isn't configured.", 500);
 
-        // Same (voiceId, text) hash as SpeakVoiceHandler's cache entries — safe to share since
-        // the "pcm" extension keeps this in a completely separate blob from the MP3 version.
-        var key = TtsCacheService.KeyFor(voiceId, cmd.Text);
+        // Amina/Wayne reported live as speaking noticeably too slowly — ElevenLabs' own
+        // voice_settings.speed (0.7-1.2, default 1.0, verified against their docs before
+        // adding this) is the real lever for pace, not something LiveAvatar controls; it just
+        // lip-syncs to whatever audio we generate. Scoped to hr/technical only — Mike/MCQ
+        // weren't reported as slow, and speeding up every voice equally wasn't asked for.
+        var speed = cmd.Role is "hr" or "technical" ? 1.15 : 1.0;
+
+        // Cache key folds speed in when non-default — otherwise a pre-existing cached clip
+        // generated at the old 1.0 pace would keep being served forever after this change,
+        // since KeyFor only hashes (voiceId, text). Default speed keeps the exact same key
+        // as before (no cache-busting for Mike/MCQ, which never changed).
+        var cacheVoiceId = speed != 1.0 ? $"{voiceId}@speed{speed}" : voiceId;
+        var key = TtsCacheService.KeyFor(cacheVoiceId, cmd.Text);
         var cached = await cache.GetReadUrlIfCachedAsync(key, extension: "pcm");
         if (cached is not null)
             return Result<AvatarAudioDto>.Success(new AvatarAudioDto(cached, PcmSampleRate));
@@ -64,7 +74,7 @@ public class AvatarAudioHandler(
             {
                 text = cmd.Text,
                 model_id = Model,
-                voice_settings = new { stability = 0.5, similarity_boost = 0.75 },
+                voice_settings = new { stability = 0.5, similarity_boost = 0.75, speed },
             });
 
             using var resp = await client.SendAsync(msg, ct);
