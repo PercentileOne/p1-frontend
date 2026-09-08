@@ -271,9 +271,9 @@ export default function InterviewPackStart() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: 'linear-gradient(135deg,#34D399,#047857)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 900, color: '#fff', letterSpacing: '-0.05em' }}>IM</div>
+            <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: 'linear-gradient(135deg,#34D399,#047857)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em' }}>TIC</div>
             <span style={{ fontWeight: 800, fontSize: '20px', color: '#fff' }}>
-              Interview<span style={{ color: '#34D399' }}>Me</span><span style={{ color: '#4F8EF7' }}>.global</span>
+              <span style={{ color: '#34D399' }}>The</span>Interview<span style={{ color: '#34D399' }}>Chair</span><span style={{ color: 'rgba(255,255,255,0.55)' }}>.com</span>
             </span>
           </div>
 

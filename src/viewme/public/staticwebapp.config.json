@@ -2,12 +2,12 @@
   "routes": [
     {
       "route": "/login",
-      "redirect": "https://candidate.interviewme.global/login",
+      "redirect": "https://candidate.theinterviewchair.com/login",
       "statusCode": 302
     },
     {
       "route": "/register",
-      "redirect": "https://candidate.interviewme.global/register",
+      "redirect": "https://candidate.theinterviewchair.com/register",
       "statusCode": 302
     },
     {

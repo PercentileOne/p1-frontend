@@ -92,7 +92,7 @@ export default function SharedInterviewPage() {
           width: 32, height: 32, borderRadius: 9, flexShrink: 0,
           background: 'linear-gradient(135deg, #34D399, #4F8EF7)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: '#fff',
-        }}>TC</div>
+        }}>TIC</div>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)' }}>
           TheInterviewChair.com · Shared Interview
         </div>
