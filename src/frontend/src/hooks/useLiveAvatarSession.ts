@@ -41,25 +41,45 @@ export function useLiveAvatarSession(role: 'hr' | 'technical') {
   // threw, and the caller's catch swallowed it as silence — exactly the "no talking" failure
   // mode this was built to prevent.
   const connectPromiseRef = useRef<Promise<void> | null>(null);
-  // Tracks which <video> DOM element has already had its audio tapped into the recording bus
-  // — createMediaElementSource() throws if called twice on the same element, and attachIfReady
-  // can legitimately run more than once (setVideoEl firing, then SESSION_STREAM_READY firing)
-  // for the same element.
-  const tappedVideoElRef = useRef<HTMLVideoElement | null>(null);
+  // Tracks which session has already had its audio tapped into the recording bus — the tap is
+  // now per-session (see attachIfReady's own comment for why it moved off the <video> element),
+  // and attachIfReady can legitimately run more than once (setVideoEl firing, then
+  // SESSION_STREAM_READY firing) for the same session.
+  const tappedSessionRef = useRef<LiveAvatarSession | null>(null);
   const untapAudioRef = useRef<(() => void) | null>(null);
 
   const attachIfReady = useCallback(() => {
     if (streamReadyRef.current && videoElRef.current && sessionRef.current) {
       sessionRef.current.attach(videoElRef.current);
+      const session = sessionRef.current;
       const el = videoElRef.current;
-      if (tappedVideoElRef.current !== el) {
+      if (tappedSessionRef.current !== session) {
         untapAudioRef.current?.();
-        tappedVideoElRef.current = el;
-        // Fire-and-forget — getTTSAudioContext() is async only because it may need to
-        // resume() a suspended context; the tap itself doesn't need to block attach().
-        getTTSAudioContext().then(ctx => {
-          if (tappedVideoElRef.current === el) untapAudioRef.current = tapLiveAvatarAudioForRecording(el, ctx);
-        });
+        tappedSessionRef.current = session;
+        // createMediaElementSource() on the <video> element (the original approach) proved
+        // unreliable for this SDK's WebRTC-sourced audio — confirmed live via 20 consecutive
+        // 1-second samples of pure silence despite the element being correctly unmuted, the
+        // AudioContext running, and no errors anywhere in the chain. createMediaStreamSource()
+        // on the RAW MediaStreamTrack, bypassing the element's decode/render pipeline entirely,
+        // is the standard, reliable way to capture WebRTC audio for Web Audio API. The SDK's
+        // public surface has no accessor for that raw track — only .attach(element) — so this
+        // reaches past the declared (TypeScript-only, not JS-enforced) `private` on
+        // _remoteAudioTrack, verified directly against the installed package's compiled JS.
+        // Re-verify this still exists if @heygen/liveavatar-web-sdk is ever upgraded.
+        const rawAudioTrack = (session as unknown as {
+          _remoteAudioTrack?: { mediaStreamTrack?: MediaStreamTrack };
+        })._remoteAudioTrack?.mediaStreamTrack;
+        if (rawAudioTrack) {
+          // Fire-and-forget — getTTSAudioContext() is async only because it may need to
+          // resume() a suspended context; the tap itself doesn't need to block attach().
+          getTTSAudioContext().then(ctx => {
+            if (tappedSessionRef.current === session) {
+              untapAudioRef.current = tapLiveAvatarAudioForRecording(rawAudioTrack, el, ctx);
+            }
+          });
+        } else {
+          console.warn('[LiveAvatar] No raw audio track available to tap — SDK internals may have changed; recording will miss this avatar\'s voice.');
+        }
       }
     }
   }, []);
@@ -132,7 +152,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical') {
     if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }
     untapAudioRef.current?.();
     untapAudioRef.current = null;
-    tappedVideoElRef.current = null;
+    tappedSessionRef.current = null;
     await sessionRef.current?.stop();
     sessionRef.current = null;
     connectedRef.current = false;

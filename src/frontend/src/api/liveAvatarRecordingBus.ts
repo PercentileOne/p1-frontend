@@ -1,13 +1,18 @@
 // Bridges LiveAvatar's WebRTC audio into the interview recording. Kept as a separate module
-// from ttsApi.ts's setTTSRecordingDestination, deliberately: LiveAvatar's <video> element
-// plays its own WebRTC-attached audio track natively — it was never routed through the Web
-// Audio graph at all — whereas desktop recording relies on getDisplayMedia's tab-audio-capture
-// (audio: true) to grab whatever's audible in the tab. That reliably captures regular
-// ElevenLabs TTS (a normal AudioContext->destination path) but does NOT reliably capture
-// WebRTC-sourced audio attached to a <video> element the same way, which is why recordings
-// had lip-synced avatar video with no voice at all. Reusing ttsApi.ts's destination for this
-// too would risk DOUBLE-capturing regular TTS on desktop (tab-capture already gets it
-// independently) — a separate bus avoids that entirely.
+// from ttsApi.ts's setTTSRecordingDestination, deliberately: LiveAvatar's audio arrives over
+// WebRTC, not through the same AudioContext->destination path regular ElevenLabs TTS already
+// uses — desktop recording relies on getDisplayMedia's tab-audio-capture (audio: true) to grab
+// whatever's audible in the tab, which reliably captures that regular TTS path but not this
+// one. Reusing ttsApi.ts's destination for this too would risk DOUBLE-capturing regular TTS on
+// desktop (tab-capture already gets it independently) — a separate bus avoids that entirely.
+//
+// The audio source itself: originally this tapped the <video> element LiveAvatar's SDK attaches
+// to, via createMediaElementSource(). That proved unreliable for this SDK's WebRTC-sourced audio
+// — confirmed live via 20 consecutive 1-second samples of pure silence despite the element being
+// correctly unmuted, the AudioContext running, and no errors anywhere in the chain. Now taps the
+// RAW MediaStreamTrack directly instead (see useLiveAvatarSession.ts's attachIfReady for how
+// it's obtained) via createMediaStreamSource() — the standard, reliable way to capture WebRTC
+// audio for Web Audio API, bypassing the <video> element's decode/render pipeline entirely.
 
 import { getMasterGain } from './ttsApi';
 
@@ -47,44 +52,36 @@ export function setLiveAvatarRecordingDestination(
   if (dest && _recordingBusGain) {
     _recordingBusGain.connect(compressor ?? dest);
   }
-  // TEMP diagnostic logging — remove once the "no sound in recording" bug is confirmed fixed.
-  // Plain string, not an object — nothing to expand/click, shows fully in one line.
-  console.log(`[DIAG] setLiveAvatarRecordingDestination: destSet=${!!dest} busExistedAlready=${!!_recordingBusGain}`);
 }
 
-// Routes one LiveAvatar <video> element's audio into the shared bus. Must reconnect back to
-// the AudioContext's own destination too — createMediaElementSource() silently takes over the
-// element's native audio output, so skipping that step would make the avatar go silent for
-// the candidate even though it still plays fine visually (same caveat InterviewerAvatar.tsx's
-// pre-rendered-video audio tap already documents). Safe to call once per real <video> element
-// — createMediaElementSource throws if called twice on the same element, which is why callers
-// must guard against re-tapping the same element instance.
-export function tapLiveAvatarAudioForRecording(videoEl: HTMLVideoElement, audioCtx: AudioContext): () => void {
+// Routes one LiveAvatar seat's raw audio track into the shared bus, and into the candidate's
+// own listening path (via the master gain, so the volume slider and the boost above both
+// apply). videoEl is muted here rather than left alone — createMediaStreamSource does NOT take
+// over an element's native output the way createMediaElementSource did, so without this the
+// candidate would hear the avatar twice: once from the element's own native WebRTC playback,
+// once from this tap's route through the master gain to the same destination.
+export function tapLiveAvatarAudioForRecording(
+  rawAudioTrack: MediaStreamTrack,
+  videoEl: HTMLVideoElement,
+  audioCtx: AudioContext,
+): () => void {
   try {
-    const source = audioCtx.createMediaElementSource(videoEl);
+    videoEl.muted = true;
+    const source = audioCtx.createMediaStreamSource(new MediaStream([rawAudioTrack]));
     const boost = audioCtx.createGain();
     boost.gain.value = LIVE_AVATAR_VOLUME_BOOST;
     source.connect(boost);
-    // Through the shared master gain (not straight to destination) — this is what makes the
-    // volume slider actually affect the avatars' live voices at all, on top of the boost above.
     boost.connect(getMasterGain(audioCtx));
-    const bus = getRecordingBus(audioCtx);
-    boost.connect(bus);
+    boost.connect(getRecordingBus(audioCtx));
     // A freshly-created AudioContext can start life 'suspended' per the browser's autoplay
     // policy — same resume-defensively pattern as ttsApi.ts and InterviewerAvatar.tsx's own
     // video-analyser tap.
     if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
-    // TEMP diagnostic logging — remove once the "no sound in recording" bug is confirmed fixed.
-    // Plain string, not an object — nothing to expand/click, shows fully in one line.
-    console.log(`[DIAG] tapped video element: audioCtxState=${audioCtx.state} destRegistered=${!!_currentDest} videoElMuted=${videoEl.muted} videoElVolume=${videoEl.volume}`);
-    // Real signal check, not just wiring — a single sample at a fixed delay caught genuine
-    // silence the first time this ran (peak=0 at 3s), which turned out to prove nothing: the
-    // gap between "tapped" and "actually speaking" includes generating the audio via
-    // ElevenLabs, encoding it, and handing it to the avatar, which can easily exceed 3s —
-    // especially for a first, longer intro line. Samples every second for 20s instead, so
-    // whenever speech actually starts, some sample catches it — a real answer either way
-    // (every sample near-zero for the whole window = the pipe genuinely is broken; any
-    // non-zero sample = it works and the earlier single-check timing was just too early).
+    // TEMP diagnostic logging — remove once the "no sound in recording" bug is confirmed fixed
+    // against this new raw-track approach. Samples every second for 20s: any non-zero sample
+    // confirms real audio is flowing through this specific tap; all-zero for the whole window
+    // would mean something is still wrong even with the raw track.
+    console.log(`[DIAG v2] tapped raw audio track: audioCtxState=${audioCtx.state} destRegistered=${!!_currentDest} trackReadyState=${rawAudioTrack.readyState} trackEnabled=${rawAudioTrack.enabled} trackMuted=${rawAudioTrack.muted}`);
     const levelCheck = audioCtx.createAnalyser();
     levelCheck.fftSize = 256;
     boost.connect(levelCheck);
@@ -95,7 +92,7 @@ export function tapLiveAvatarAudioForRecording(videoEl: HTMLVideoElement, audioC
       levelCheck.getByteFrequencyData(data);
       const peak = Math.max(...data);
       const avg = data.reduce((a, b) => a + b, 0) / data.length;
-      console.log(`[DIAG] level sample #${sampleCount} (t=${sampleCount}s): peak=${peak} avg=${avg.toFixed(1)} (0=silence, up to 255)`);
+      console.log(`[DIAG v2] level sample #${sampleCount} (t=${sampleCount}s): peak=${peak} avg=${avg.toFixed(1)} (0=silence, up to 255)`);
       if (sampleCount >= 20) {
         clearInterval(intervalId);
         try { levelCheck.disconnect(); } catch { /* already gone */ }
@@ -103,7 +100,7 @@ export function tapLiveAvatarAudioForRecording(videoEl: HTMLVideoElement, audioC
     }, 1000);
     return () => { try { source.disconnect(); boost.disconnect(); } catch { /* already disconnected */ } };
   } catch (err) {
-    console.warn('[LiveAvatar] Could not tap video audio for recording:', err);
+    console.warn('[LiveAvatar] Could not tap raw audio track for recording:', err);
     return () => {};
   }
 }
