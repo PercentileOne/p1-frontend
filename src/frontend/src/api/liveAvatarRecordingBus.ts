@@ -10,25 +10,32 @@
 // independently) — a separate bus avoids that entirely.
 
 let _recordingBusGain: GainNode | null = null;
+// The destination most recently registered by useInterviewRecording. Kept even when no bus
+// exists yet — recording almost always starts BEFORE either avatar has connected (it starts
+// near the top of the room's lifecycle; avatars connect later, during their own intro lines),
+// so setLiveAvatarRecordingDestination typically runs first, with nothing to connect to yet.
+// Remembering it here means getRecordingBus can wire a freshly-created bus straight to it the
+// moment the first avatar actually taps in, instead of only handling the reverse order.
+let _currentDest: MediaStreamAudioDestinationNode | null = null;
+let _currentCompressor: DynamicsCompressorNode | null = null;
 
 function getRecordingBus(ctx: AudioContext): GainNode {
   if (!_recordingBusGain || _recordingBusGain.context !== ctx) {
     _recordingBusGain = ctx.createGain();
     _recordingBusGain.gain.value = 1;
+    if (_currentDest) _recordingBusGain.connect(_currentCompressor ?? _currentDest);
   }
   return _recordingBusGain;
 }
 
-// Called by useInterviewRecording when a recording starts/stops — the bus itself is created
-// lazily on first avatar tap, so this can be called before or after any avatar has connected,
-// in either order, without losing audio either way. The bus's own connection is the only
-// state that needs to persist between calls; dest/compressor are only ever needed for this
-// one connect() call, not stored beyond it.
+// Called by useInterviewRecording when a recording starts/stops.
 export function setLiveAvatarRecordingDestination(
   dest: MediaStreamAudioDestinationNode | null,
   compressor?: DynamicsCompressorNode | null,
 ) {
   _recordingBusGain?.disconnect();
+  _currentDest = dest;
+  _currentCompressor = compressor ?? null;
   if (dest && _recordingBusGain) {
     _recordingBusGain.connect(compressor ?? dest);
   }
