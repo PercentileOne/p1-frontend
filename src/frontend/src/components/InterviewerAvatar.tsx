@@ -28,7 +28,10 @@ interface Props {
   onVideoAnalyser?: (node: AnalyserNode) => void;
 }
 
-const PROFILES = {
+// Exported so InterviewRoomPage.tsx can render the same name/title/colour overlay on top of
+// the LiveAvatar <video> element, which sits above (and visually hides) this component's own
+// copy of that overlay once a live session connects.
+export const PROFILES = {
   hr: {
     name: 'Amina',
     title: 'HR Director',

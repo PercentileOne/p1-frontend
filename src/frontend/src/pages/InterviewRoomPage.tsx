@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { InterviewerAvatar } from '../components/InterviewerAvatar';
+import { InterviewerAvatar, PROFILES, WaveformBars } from '../components/InterviewerAvatar';
 import { MouthOverlay, MOUTH_POSITIONS, MOUTH_OVERLAY_ENABLED } from '../components/MouthOverlay';
 import { YouCamera } from '../components/YouCamera';
 import { VoiceInput, type TranscriptMeta } from '../components/VoiceInput';
@@ -265,8 +265,15 @@ export default function InterviewRoomPage() {
   // sessions cap at ~1 minute, and the Mike + intro sequence ahead of the first real question
   // can easily take longer than that on its own — connecting early would burn the session
   // before either avatar ever speaks.
-  const liveAvatarHr = useLiveAvatarSession('hr');
-  const liveAvatarTechnical = useLiveAvatarSession('technical');
+  // Dedicated analyser state for the live-video overlay's own WaveformBars — kept separate
+  // from hrAnalyser/techAnalyser (owned by useInterviewerAudio, fed only by the pre-rendered-
+  // video/plain-TTS paths) rather than threading it through that hook, since useInterviewerAudio
+  // is constructed AFTER these two hooks (it needs liveAvatarSpeakHr/Technical as params), so
+  // its own analyser setters don't exist yet at this point in the component.
+  const [liveHrAnalyser, setLiveHrAnalyser] = useState<AnalyserNode | null>(null);
+  const [liveTechAnalyser, setLiveTechAnalyser] = useState<AnalyserNode | null>(null);
+  const liveAvatarHr = useLiveAvatarSession('hr', setLiveHrAnalyser);
+  const liveAvatarTechnical = useLiveAvatarSession('technical', setLiveTechAnalyser);
 
   const liveAvatarSpeakHr = useCallback((text: string, onEnd: () => void) => {
     let cancelled = false;
@@ -887,12 +894,39 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     above). No pre-rendered clip exists for her, so the static photo below is
                     the only thing visible during the brief pre-connection gap. */}
                 {liveAvatarHr.status === 'connected' && (
-                  <video
-                    ref={liveAvatarHr.setVideoEl}
-                    autoPlay
-                    playsInline
-                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
-                  />
+                  <>
+                    <video
+                      ref={liveAvatarHr.setVideoEl}
+                      autoPlay
+                      playsInline
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
+                    />
+                    {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
+                        needed here too since this <video> sits on top of (and hides) that
+                        component's own copy of it. */}
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 18px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', userSelect: 'none', pointerEvents: 'none' }}>
+                      <div>
+                        <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>{PROFILES.hr.name}</div>
+                        <div style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>{PROFILES.hr.title}</div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                        {hrState === 'speaking' ? (
+                          <WaveformBars active color={PROFILES.hr.barColor} analyserNode={liveHrAnalyser} />
+                        ) : (
+                          <div style={{ fontSize: '10px', fontWeight: 600, color: hrState === 'listening' ? '#4F8EF7' : 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>
+                            {hrState === 'listening' ? 'Listening' : hrState === 'thinking' ? 'Thinking…' : 'Ready'}
+                          </div>
+                        )}
+                        <div style={{
+                          width: '10px', height: '10px', borderRadius: '50%',
+                          background: hrState === 'speaking' ? '#34D399' : hrState === 'listening' ? '#4F8EF7' : 'rgba(255,255,255,0.25)',
+                          border: '2px solid rgba(0,0,0,0.5)',
+                          boxShadow: hrState === 'speaking' ? `0 0 6px ${PROFILES.hr.ring}` : 'none',
+                          transition: 'background 0.3s',
+                        }} />
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
               <div style={{ position: 'relative', flex: 1, display: 'flex' }}>
@@ -908,12 +942,39 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     useInterviewerAudio as unreachable fallback wiring (liveAvatarActiveTechnical
                     is on whenever the kill switch is), not deleted outright. */}
                 {liveAvatarTechnical.status === 'connected' && (
-                  <video
-                    ref={liveAvatarTechnical.setVideoEl}
-                    autoPlay
-                    playsInline
-                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
-                  />
+                  <>
+                    <video
+                      ref={liveAvatarTechnical.setVideoEl}
+                      autoPlay
+                      playsInline
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
+                    />
+                    {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
+                        needed here too since this <video> sits on top of (and hides) that
+                        component's own copy of it. */}
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 18px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', userSelect: 'none', pointerEvents: 'none' }}>
+                      <div>
+                        <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>{PROFILES.technical.name}</div>
+                        <div style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>{specialistTitle ?? PROFILES.technical.title}</div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                        {techState === 'speaking' ? (
+                          <WaveformBars active color={PROFILES.technical.barColor} analyserNode={liveTechAnalyser} />
+                        ) : (
+                          <div style={{ fontSize: '10px', fontWeight: 600, color: techState === 'listening' ? '#4F8EF7' : 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>
+                            {techState === 'listening' ? 'Listening' : techState === 'thinking' ? 'Thinking…' : 'Ready'}
+                          </div>
+                        )}
+                        <div style={{
+                          width: '10px', height: '10px', borderRadius: '50%',
+                          background: techState === 'speaking' ? '#34D399' : techState === 'listening' ? '#4F8EF7' : 'rgba(255,255,255,0.25)',
+                          border: '2px solid rgba(0,0,0,0.5)',
+                          boxShadow: techState === 'speaking' ? `0 0 6px ${PROFILES.technical.ring}` : 'none',
+                          transition: 'background 0.3s',
+                        }} />
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
               <YouCamera cameraOn={cameraOn} speaking={phase === 'answering'} onToggle={() => setCameraOn(v => !v)} />

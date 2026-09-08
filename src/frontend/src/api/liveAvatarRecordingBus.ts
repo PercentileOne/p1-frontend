@@ -60,10 +60,16 @@ export function setLiveAvatarRecordingDestination(
 // over an element's native output the way createMediaElementSource did, so without this the
 // candidate would hear the avatar twice: once from the element's own native WebRTC playback,
 // once from this tap's route through the master gain to the same destination.
+//
+// onAnalyser, if given, is handed a live AnalyserNode fed from the SAME boosted signal — lets
+// the room's own WaveformBars react to the avatar's real voice instead of sitting on synthetic
+// simulation, the same contract ttsApi.ts's speak() and InterviewerAvatar's own pre-rendered-
+// video tap already give their callers.
 export function tapLiveAvatarAudioForRecording(
   rawAudioTrack: MediaStreamTrack,
   videoEl: HTMLVideoElement,
   audioCtx: AudioContext,
+  onAnalyser?: (a: AnalyserNode | null) => void,
 ): () => void {
   try {
     videoEl.muted = true;
@@ -73,32 +79,22 @@ export function tapLiveAvatarAudioForRecording(
     source.connect(boost);
     boost.connect(getMasterGain(audioCtx));
     boost.connect(getRecordingBus(audioCtx));
+    let analyser: AnalyserNode | null = null;
+    if (onAnalyser) {
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64; // matches WaveformBars' own analyser sizing elsewhere in this app
+      analyser.smoothingTimeConstant = 0.75;
+      boost.connect(analyser);
+      onAnalyser(analyser);
+    }
     // A freshly-created AudioContext can start life 'suspended' per the browser's autoplay
     // policy — same resume-defensively pattern as ttsApi.ts and InterviewerAvatar.tsx's own
     // video-analyser tap.
     if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
-    // TEMP diagnostic logging — remove once the "no sound in recording" bug is confirmed fixed
-    // against this new raw-track approach. Samples every second for 20s: any non-zero sample
-    // confirms real audio is flowing through this specific tap; all-zero for the whole window
-    // would mean something is still wrong even with the raw track.
-    console.log(`[DIAG v2] tapped raw audio track: audioCtxState=${audioCtx.state} destRegistered=${!!_currentDest} trackReadyState=${rawAudioTrack.readyState} trackEnabled=${rawAudioTrack.enabled} trackMuted=${rawAudioTrack.muted}`);
-    const levelCheck = audioCtx.createAnalyser();
-    levelCheck.fftSize = 256;
-    boost.connect(levelCheck);
-    const data = new Uint8Array(levelCheck.frequencyBinCount);
-    let sampleCount = 0;
-    const intervalId = setInterval(() => {
-      sampleCount++;
-      levelCheck.getByteFrequencyData(data);
-      const peak = Math.max(...data);
-      const avg = data.reduce((a, b) => a + b, 0) / data.length;
-      console.log(`[DIAG v2] level sample #${sampleCount} (t=${sampleCount}s): peak=${peak} avg=${avg.toFixed(1)} (0=silence, up to 255)`);
-      if (sampleCount >= 20) {
-        clearInterval(intervalId);
-        try { levelCheck.disconnect(); } catch { /* already gone */ }
-      }
-    }, 1000);
-    return () => { try { source.disconnect(); boost.disconnect(); } catch { /* already disconnected */ } };
+    return () => {
+      try { source.disconnect(); boost.disconnect(); analyser?.disconnect(); } catch { /* already disconnected */ }
+      onAnalyser?.(null);
+    };
   } catch (err) {
     console.warn('[LiveAvatar] Could not tap raw audio track for recording:', err);
     return () => {};

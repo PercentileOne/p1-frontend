@@ -17,7 +17,7 @@ export type LiveAvatarStatus = 'idle' | 'connecting' | 'connected' | 'failed' | 
 // Wayne), each its own independent WebRTC session running concurrently. role is only used to
 // pick the right avatar_id when minting a session token; speak()'s own role param (used for
 // the audio-generation call) is passed separately by the caller and is expected to match.
-export function useLiveAvatarSession(role: 'hr' | 'technical') {
+export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: AnalyserNode | null) => void) {
   const [status, setStatus] = useState<LiveAvatarStatus>('idle');
   const sessionRef = useRef<LiveAvatarSession | null>(null);
   const videoElRef = useRef<HTMLVideoElement | null>(null);
@@ -74,7 +74,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical') {
           // resume() a suspended context; the tap itself doesn't need to block attach().
           getTTSAudioContext().then(ctx => {
             if (tappedSessionRef.current === session) {
-              untapAudioRef.current = tapLiveAvatarAudioForRecording(rawAudioTrack, el, ctx);
+              untapAudioRef.current = tapLiveAvatarAudioForRecording(rawAudioTrack, el, ctx, onAnalyser);
             }
           });
         } else {
@@ -82,7 +82,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical') {
         }
       }
     }
-  }, []);
+  }, [onAnalyser]);
 
   const connect = useCallback(() => {
     if (connectedRef.current) return Promise.resolve(); // already connected — no-op
