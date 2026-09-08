@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MCQQuestion } from '../api/aiScoring';
 import { getTTSAudioContext, setTTSRecordingDestination } from '../api/ttsApi';
+import { setLiveAvatarRecordingDestination } from '../api/liveAvatarRecordingBus';
 import type { CVContext, JobSpecContext } from '../utils/contextBuilder';
 import { FILTER_CSS, type FilterPreset } from './useVideoFilter';
 import type { ChapterMarker, McqResult, RoomPhase, SessionAnswer } from '../pages/interview-room/types';
@@ -115,7 +116,10 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
           micStreamRef.current = micStream;
         } catch { /* mic denied — tab audio only */ }
 
-        const audioCtx = new AudioContext();
+        // Shared TTS context, not a fresh local one — LiveAvatar's audio tap (see
+        // liveAvatarRecordingBus.ts) needs to connect into this SAME graph, and Web Audio
+        // nodes can't connect across different AudioContext instances.
+        const audioCtx = await getTTSAudioContext();
         const dest = audioCtx.createMediaStreamDestination();
         // Limiter — tab audio (already containing the AI voices at full volume) and the raw
         // mic were both connecting straight to dest with no gain staging, so Web Audio just
@@ -134,12 +138,19 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
           micGainNodeRef.current = micGain;
           audioCtx.createMediaStreamSource(micStream).connect(micGain).connect(compressor);
         }
+        // Tab-audio-capture (above) reliably grabs regular ElevenLabs TTS but NOT LiveAvatar's
+        // WebRTC-attached <video> audio — this is the other half of that fix, mixing whatever
+        // useLiveAvatarSession has tapped into the same compressor/dest as everything else.
+        setLiveAvatarRecordingDestination(dest, compressor);
 
         compositeStream = new MediaStream([...tabStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
 
         tabStream.getVideoTracks()[0]?.addEventListener('ended', () => {
           micStream?.getTracks().forEach(t => t.stop());
-          audioCtx.close();
+          // Disconnect only — audioCtx is the shared TTS context now, other things in the app
+          // still need it, so it must never be closed here.
+          compressor.disconnect();
+          setLiveAvatarRecordingDestination(null);
         });
       } else {
         // Mobile — no browser exposes screen/tab capture to web content here at all, so
@@ -216,6 +227,8 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
         micGainNodeRef.current = micGain;
         audioCtx.createMediaStreamSource(camStream).connect(micGain).connect(compressor);
         setTTSRecordingDestination(dest, compressor);
+        // Same LiveAvatar audio fix as the desktop path — see liveAvatarRecordingBus.ts.
+        setLiveAvatarRecordingDestination(dest, compressor);
 
         compositeStream = new MediaStream([...canvasStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
       }
@@ -361,6 +374,7 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
       micGainNodeRef.current = null;
       cancelAnimationFrame(recordDrawFrameRef.current);
       setTTSRecordingDestination(null);
+      setLiveAvatarRecordingDestination(null);
       setIsRecording(false);
       const mimeType = recordingChunksRef.current[0]?.type ?? 'video/webm';
       const blob = new Blob(recordingChunksRef.current, { type: mimeType });

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { LiveAvatarSession, SessionEvent, AgentEventsEnum } from '@heygen/liveavatar-web-sdk';
 import { fetchAvatarSessionToken, fetchAvatarAudioBase64 } from '../api/liveAvatarApi';
+import { getTTSAudioContext } from '../api/ttsApi';
+import { tapLiveAvatarAudioForRecording } from '../api/liveAvatarRecordingBus';
 
 export type LiveAvatarStatus = 'idle' | 'connecting' | 'connected' | 'failed' | 'closed';
 
@@ -39,10 +41,26 @@ export function useLiveAvatarSession(role: 'hr' | 'technical') {
   // threw, and the caller's catch swallowed it as silence — exactly the "no talking" failure
   // mode this was built to prevent.
   const connectPromiseRef = useRef<Promise<void> | null>(null);
+  // Tracks which <video> DOM element has already had its audio tapped into the recording bus
+  // — createMediaElementSource() throws if called twice on the same element, and attachIfReady
+  // can legitimately run more than once (setVideoEl firing, then SESSION_STREAM_READY firing)
+  // for the same element.
+  const tappedVideoElRef = useRef<HTMLVideoElement | null>(null);
+  const untapAudioRef = useRef<(() => void) | null>(null);
 
   const attachIfReady = useCallback(() => {
     if (streamReadyRef.current && videoElRef.current && sessionRef.current) {
       sessionRef.current.attach(videoElRef.current);
+      const el = videoElRef.current;
+      if (tappedVideoElRef.current !== el) {
+        untapAudioRef.current?.();
+        tappedVideoElRef.current = el;
+        // Fire-and-forget — getTTSAudioContext() is async only because it may need to
+        // resume() a suspended context; the tap itself doesn't need to block attach().
+        getTTSAudioContext().then(ctx => {
+          if (tappedVideoElRef.current === el) untapAudioRef.current = tapLiveAvatarAudioForRecording(el, ctx);
+        });
+      }
     }
   }, []);
 
@@ -112,6 +130,9 @@ export function useLiveAvatarSession(role: 'hr' | 'technical') {
 
   const disconnect = useCallback(async () => {
     if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }
+    untapAudioRef.current?.();
+    untapAudioRef.current = null;
+    tappedVideoElRef.current = null;
     await sessionRef.current?.stop();
     sessionRef.current = null;
     connectedRef.current = false;
@@ -153,6 +174,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical') {
   // connection nobody's watching.
   useEffect(() => () => {
     if (keepAliveTimerRef.current) clearInterval(keepAliveTimerRef.current);
+    untapAudioRef.current?.();
     sessionRef.current?.stop();
   }, []);
 

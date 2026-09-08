@@ -527,7 +527,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setPhase('done');
     resetForNextQuestion();
     setHrState('speaking');
-    cancelSpeakRef.current = speak(closingLine, 'hr', () => {
+    const onClosingDone = () => {
       setHrState('idle');
       navigate(`/interview-summary/${interviewIdRef.current}`, {
         state: {
@@ -536,8 +536,14 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           interviewId: interviewIdRef.current, candidateId: getCandidateId(),
         },
       });
-    }, handleSarahVideoAnalyser);
-  }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl, resetForNextQuestion, handleSarahVideoAnalyser, setHrState]);
+    };
+    // Same live-avatar-first pattern as askQuestion/beginInterviewIntro — this was the one
+    // spoken line left on the plain TTS path (deliberately deferred scope), which is why
+    // Amina's lips didn't move on the goodbye line even though everything else was live.
+    cancelSpeakRef.current = avatarEnabled
+      ? liveAvatarSpeakHr(closingLine, onClosingDone)
+      : speak(closingLine, 'hr', onClosingDone, handleSarahVideoAnalyser);
+  }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl, resetForNextQuestion, handleSarahVideoAnalyser, setHrState, avatarEnabled, liveAvatarSpeakHr]);
 
   // Shared tail for every "this question is over, move on" path (a normal next-question click,
   // resuming after an MCQ bonus round, or a Pass) — previously reimplemented three times with
