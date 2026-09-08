@@ -77,20 +77,30 @@ export function tapLiveAvatarAudioForRecording(videoEl: HTMLVideoElement, audioC
     // TEMP diagnostic logging — remove once the "no sound in recording" bug is confirmed fixed.
     // Plain string, not an object — nothing to expand/click, shows fully in one line.
     console.log(`[DIAG] tapped video element: audioCtxState=${audioCtx.state} destRegistered=${!!_currentDest} videoElMuted=${videoEl.muted} videoElVolume=${videoEl.volume}`);
-    // Real signal check, not just wiring — samples actual audio level ~3s after tapping (gives
-    // the avatar time to actually be speaking) and logs whether anything above silence is
-    // flowing through THIS specific source, independent of whether the graph is "connected".
+    // Real signal check, not just wiring — a single sample at a fixed delay caught genuine
+    // silence the first time this ran (peak=0 at 3s), which turned out to prove nothing: the
+    // gap between "tapped" and "actually speaking" includes generating the audio via
+    // ElevenLabs, encoding it, and handing it to the avatar, which can easily exceed 3s —
+    // especially for a first, longer intro line. Samples every second for 20s instead, so
+    // whenever speech actually starts, some sample catches it — a real answer either way
+    // (every sample near-zero for the whole window = the pipe genuinely is broken; any
+    // non-zero sample = it works and the earlier single-check timing was just too early).
     const levelCheck = audioCtx.createAnalyser();
     levelCheck.fftSize = 256;
     boost.connect(levelCheck);
-    setTimeout(() => {
-      const data = new Uint8Array(levelCheck.frequencyBinCount);
+    const data = new Uint8Array(levelCheck.frequencyBinCount);
+    let sampleCount = 0;
+    const intervalId = setInterval(() => {
+      sampleCount++;
       levelCheck.getByteFrequencyData(data);
       const peak = Math.max(...data);
       const avg = data.reduce((a, b) => a + b, 0) / data.length;
-      console.log(`[DIAG] level check 3s after tap: peak=${peak} avg=${avg.toFixed(1)} (0=silence, up to 255)`);
-      try { levelCheck.disconnect(); } catch { /* already gone */ }
-    }, 3000);
+      console.log(`[DIAG] level sample #${sampleCount} (t=${sampleCount}s): peak=${peak} avg=${avg.toFixed(1)} (0=silence, up to 255)`);
+      if (sampleCount >= 20) {
+        clearInterval(intervalId);
+        try { levelCheck.disconnect(); } catch { /* already gone */ }
+      }
+    }, 1000);
     return () => { try { source.disconnect(); boost.disconnect(); } catch { /* already disconnected */ } };
   } catch (err) {
     console.warn('[LiveAvatar] Could not tap video audio for recording:', err);
