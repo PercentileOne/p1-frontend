@@ -9,6 +9,14 @@
 // too would risk DOUBLE-capturing regular TTS on desktop (tab-capture already gets it
 // independently) — a separate bus avoids that entirely.
 
+import { getMasterGain } from './ttsApi';
+
+// LiveAvatar's raw WebRTC audio track plays noticeably quieter than ElevenLabs' own generated
+// clips at native level — reported live the same day this tap first shipped. Applied on top of
+// (not instead of) the shared master gain, so the volume slider still scales it proportionally
+// rather than this boost fighting a user's own lower setting.
+const LIVE_AVATAR_VOLUME_BOOST = 1.6;
+
 let _recordingBusGain: GainNode | null = null;
 // The destination most recently registered by useInterviewRecording. Kept even when no bus
 // exists yet — recording almost always starts BEFORE either avatar has connected (it starts
@@ -51,13 +59,18 @@ export function setLiveAvatarRecordingDestination(
 export function tapLiveAvatarAudioForRecording(videoEl: HTMLVideoElement, audioCtx: AudioContext): () => void {
   try {
     const source = audioCtx.createMediaElementSource(videoEl);
-    source.connect(audioCtx.destination);
-    source.connect(getRecordingBus(audioCtx));
+    const boost = audioCtx.createGain();
+    boost.gain.value = LIVE_AVATAR_VOLUME_BOOST;
+    source.connect(boost);
+    // Through the shared master gain (not straight to destination) — this is what makes the
+    // volume slider actually affect the avatars' live voices at all, on top of the boost above.
+    boost.connect(getMasterGain(audioCtx));
+    boost.connect(getRecordingBus(audioCtx));
     // A freshly-created AudioContext can start life 'suspended' per the browser's autoplay
     // policy — same resume-defensively pattern as ttsApi.ts and InterviewerAvatar.tsx's own
     // video-analyser tap.
     if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
-    return () => { try { source.disconnect(); } catch { /* already disconnected */ } };
+    return () => { try { source.disconnect(); boost.disconnect(); } catch { /* already disconnected */ } };
   } catch (err) {
     console.warn('[LiveAvatar] Could not tap video audio for recording:', err);
     return () => {};

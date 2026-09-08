@@ -58,6 +58,12 @@ export interface UseInterviewerAudioParams {
   bgMikeScriptRef: React.RefObject<string | null>;
   specialistTitle: string;
   resolvedPreferredName?: string;
+  /** The role the candidate is actually interviewing for (e.g. ".NET Programmer") — distinct
+   * from specialistTitle, which is Wayne's own interviewer persona title (e.g. "Engineering
+   * Manager"). Woven into the fallback intro the same way resolvedPreferredName is, so the
+   * candidate hears which role they're being assessed for even when the AI-generated intro
+   * hasn't landed yet. */
+  jobTitle?: string;
   authToken: string | null;
   selectedDifficulty: string;
   aiQuestionsLoaded: boolean;
@@ -154,7 +160,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
   const {
     questions, qIndex, setPhase, sessionLanguage,
     effectiveSarahIntro, effectiveJamesIntro, bgMikeScriptRef, specialistTitle,
-    resolvedPreferredName, authToken, selectedDifficulty, aiQuestionsLoaded,
+    resolvedPreferredName, jobTitle, authToken, selectedDifficulty, aiQuestionsLoaded,
     chapterMarkersRef, recordingStartTimeRef,
     phase2ReadyRef, phase2WaitersRef,
     jobSpecText, cvText, ctxSelectedLanguage, setHighlightRecord, setAudioCheckState,
@@ -356,8 +362,14 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
         setHighlightRecord(true);
         setTimeout(() => setHighlightRecord(false), 6000);
       }, 8000);
+      // Job title, same reasoning as namePrefix above — ours to insert regardless of whether
+      // the AI-generated version (which mentions it via its own prompt) landed in time. Lives
+      // on Wayne's line specifically rather than Amina's, so the role only gets said once
+      // across both intros, and because he's already the role-specific interviewer (see
+      // specialistTitle's own pairing with him in the UI).
+      const jobTitlePhrase = jobTitle?.trim() ? ` for the ${jobTitle.trim()} role` : '';
       const jamesText = effectiveJamesIntro ??
-        `${namePrefix}And I'm Wayne — looking forward to hearing about your experience. Let's get started.`;
+        `${namePrefix}And I'm Wayne — looking forward to hearing about your experience${jobTitlePhrase}. Let's get started.`;
 
       const afterSarahIntro = () => {
         clearTimeout(pulseOuter);
@@ -418,7 +430,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
         cancelSpeakRef.current = speak(sarahText, 'hr', afterSarahIntro, (a) => setHrAnalyser(a));
       }
     }, 600);
-  }, [effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage, jamesGreetingUrl, aiQuestionsLoaded, setPhase, chapterMarkersRef, recordingStartTimeRef, setHighlightRecord, liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical]);
+  }, [effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage, jamesGreetingUrl, aiQuestionsLoaded, setPhase, chapterMarkersRef, recordingStartTimeRef, setHighlightRecord, liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical, resolvedPreferredName, jobTitle]);
 
   const beginInterviewIntroRef = useRef(beginInterviewIntro);
   useEffect(() => { beginInterviewIntroRef.current = beginInterviewIntro; }, [beginInterviewIntro]);

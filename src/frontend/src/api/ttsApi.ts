@@ -108,7 +108,10 @@ export function setInterviewerVolume(volume: number) {
   try { localStorage.setItem(INTERVIEWER_VOLUME_KEY, String(clamped)); } catch { /* private mode, etc. */ }
 }
 
-function getMasterGain(ctx: AudioContext): GainNode {
+// Exported so liveAvatarRecordingBus.ts can route LiveAvatar's audio through this SAME node —
+// otherwise the volume slider (setInterviewerVolume) would silently have zero effect on the
+// avatars' live voices, only on Mike/MCQ/fallback TTS.
+export function getMasterGain(ctx: AudioContext): GainNode {
   if (!_masterGain) {
     _masterGain = ctx.createGain();
     _masterGain.gain.value = getStoredInterviewerVolume();
