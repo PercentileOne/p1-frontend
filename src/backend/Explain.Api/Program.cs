@@ -78,6 +78,7 @@ builder.Services.AddCors(options =>
             "https://candidate.theinterviewchair.com",
             "https://www.theinterviewchair.com",
             "https://theinterviewchair.com",
+            "https://login.theinterviewchair.com", // the neutral role-picker gate — moved here from www.interviewme.global
             "https://candidate.interviewme.global", // legacy domain, now redirects — kept until DNS fully propagates
             "https://recruiter.interviewme.global",
             "https://employer.interviewme.global",
@@ -86,7 +87,7 @@ builder.Services.AddCors(options =>
             "https://candidate.explain.global",
             "https://recruiter.explain.global",
             "https://interviewme.global",
-            "https://www.interviewme.global", // the actual working neutral gate domain (interviewme.global apex only redirects via GoDaddy, never serves real content)
+            "https://www.interviewme.global", // legacy gate domain, now GoDaddy-forwards away — kept as a harmless leftover
             "https://admin.interviewme.global",
             "http://localhost:5173",
             "http://localhost:5174",
