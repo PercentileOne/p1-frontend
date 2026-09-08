@@ -19,7 +19,7 @@ import { buildDemoQuestions } from './interview-room/demoQuestions';
 import type { RoomPhase, SessionAnswer } from './interview-room/types';
 import { useInterviewRecording } from '../hooks/useInterviewRecording';
 import { useAnswerScoring } from '../hooks/useAnswerScoring';
-import { useInterviewerAudio } from '../hooks/useInterviewerAudio';
+import { useInterviewerAudio, MIKE_VIDEO_ENABLED } from '../hooks/useInterviewerAudio';
 import { useMcqBonusRound, type McqGenParams } from '../hooks/useMcqBonusRound';
 import { useGoDeeperFollowUps, GO_DEEPER_LIMITS } from '../hooks/useGoDeeperFollowUps';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
@@ -1043,7 +1043,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   {/* Mike's photo — or, in English, his real pre-rendered talking-head clip
                       (see startMike/handleMikeIntroDone above). */}
                   <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', margin: '0 auto 20px', borderRadius: '16px', overflow: 'hidden', background: 'var(--bg3)', border: '3px solid var(--blue)' }}>
-                    {sessionLanguage === 'en' ? (
+                    {sessionLanguage === 'en' && MIKE_VIDEO_ENABLED ? (
                       <video
                         ref={mikeVideoRef}
                         src="/images/mike-intro-v1.mp4"

@@ -37,6 +37,14 @@ function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// mike-intro-v1.mp4 (see project-photoreal-intro-avatars-plan memory) was recorded once via
+// DeeVid, weeks before Sarah->Wayne->Amina/Wayne — its baked-in audio literally says "Sarah
+// and James", which is now flatly wrong. Disabled until a new video is recorded with correct
+// names; falls through to the live-TTS + static-photo path (used for every non-English session
+// already) instead of leaving a video actively saying the wrong interviewer names. Same
+// disabled-not-deleted pattern as MOUTH_OVERLAY_ENABLED elsewhere in this codebase.
+export const MIKE_VIDEO_ENABLED = false;
+
 // Mike's fallback script — used if AI hasn't loaded yet (it usually finishes before Mike speaks)
 const FALLBACK_MIKE_SCRIPT = `Hi there — I'm Mike, your recruitment consultant. I've set up your interview today and I want to give you a quick briefing before you meet the panel. Your interviewers today are Amina, who heads up HR, and Wayne, who'll be assessing you on the role itself. They'll guide you through everything — just follow Amina's instructions on the controls and you'll be absolutely fine. I'll be here throughout if you need anything. The best thing you can do is be specific: use real examples from your experience. Back yourself — you've got this. Good luck!`;
 
@@ -459,11 +467,11 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
       });
     }
     logFlowEvent('MIKE_INTRO_STARTED', { hasJobSpec: Boolean(jobSpecText), hasCv: Boolean(cvText), selectedLanguage: ctxSelectedLanguage });
-    // English: mike-intro-v1.mp4 (real lip-synced video, generic script, generated once and
-    // reused forever — see project-photoreal-intro-avatars-plan memory) plays instead, wired
-    // in the room's own JSX; its own onEnded calls handleMikeIntroDone directly, no TTS needed.
-    // Every other language keeps the original live-TTS + static-photo path.
-    if (sessionLanguage !== 'en') {
+    // English, when MIKE_VIDEO_ENABLED: mike-intro-v1.mp4 (real lip-synced video) plays
+    // instead, wired in the room's own JSX; its own onEnded calls handleMikeIntroDone
+    // directly, no TTS needed. Currently disabled (see MIKE_VIDEO_ENABLED's own comment) —
+    // every language runs the live-TTS + static-photo path below for now.
+    if (sessionLanguage !== 'en' || !MIKE_VIDEO_ENABLED) {
       cancelSpeakRef.current = speak(bgMikeScriptRef.current ?? FALLBACK_MIKE_SCRIPT, 'technical', handleMikeIntroDone, (a) => setTechAnalyser(a));
     }
   }, [jobSpecText, cvText, ctxSelectedLanguage, sessionLanguage, handleMikeIntroDone, setPhase, chapterMarkersRef, recordingStartTimeRef, bgMikeScriptRef]);
