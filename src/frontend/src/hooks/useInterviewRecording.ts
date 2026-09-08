@@ -144,6 +144,12 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
         setLiveAvatarRecordingDestination(dest, compressor);
 
         compositeStream = new MediaStream([...tabStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
+        // TEMP diagnostic logging — remove once the "no sound in recording" bug is confirmed fixed.
+        console.log('[Recording][diag] desktop compositeStream built', {
+          videoTracks: compositeStream.getVideoTracks().length,
+          audioTracks: compositeStream.getAudioTracks().map(t => ({ id: t.id, readyState: t.readyState, enabled: t.enabled, muted: t.muted })),
+          tabAudioTracksCaptured: tabAudioTracks.length,
+        });
 
         tabStream.getVideoTracks()[0]?.addEventListener('ended', () => {
           micStream?.getTracks().forEach(t => t.stop());

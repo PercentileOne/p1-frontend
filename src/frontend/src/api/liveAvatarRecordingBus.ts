@@ -47,6 +47,10 @@ export function setLiveAvatarRecordingDestination(
   if (dest && _recordingBusGain) {
     _recordingBusGain.connect(compressor ?? dest);
   }
+  // TEMP diagnostic logging — remove once the "no sound in recording" bug is confirmed fixed.
+  console.log('[LiveAvatar][RecordingBus] setLiveAvatarRecordingDestination', {
+    destSet: !!dest, busExistedAlready: !!_recordingBusGain,
+  });
 }
 
 // Routes one LiveAvatar <video> element's audio into the shared bus. Must reconnect back to
@@ -65,11 +69,17 @@ export function tapLiveAvatarAudioForRecording(videoEl: HTMLVideoElement, audioC
     // Through the shared master gain (not straight to destination) — this is what makes the
     // volume slider actually affect the avatars' live voices at all, on top of the boost above.
     boost.connect(getMasterGain(audioCtx));
-    boost.connect(getRecordingBus(audioCtx));
+    const bus = getRecordingBus(audioCtx);
+    boost.connect(bus);
     // A freshly-created AudioContext can start life 'suspended' per the browser's autoplay
     // policy — same resume-defensively pattern as ttsApi.ts and InterviewerAvatar.tsx's own
     // video-analyser tap.
     if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+    // TEMP diagnostic logging — remove once the "no sound in recording" bug is confirmed fixed.
+    console.log('[LiveAvatar][RecordingBus] tapped video element', {
+      videoElId: videoEl.id || '(no id)', audioCtxState: audioCtx.state,
+      destCurrentlyRegistered: !!_currentDest, videoElMuted: videoEl.muted, videoElVolume: videoEl.volume,
+    });
     return () => { try { source.disconnect(); boost.disconnect(); } catch { /* already disconnected */ } };
   } catch (err) {
     console.warn('[LiveAvatar] Could not tap video audio for recording:', err);
