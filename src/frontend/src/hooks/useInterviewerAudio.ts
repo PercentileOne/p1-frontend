@@ -6,25 +6,25 @@ import { nameGreetingsApi } from '../api/nameGreetingsApi';
 import { logFlowEvent } from '../api/flowLogger';
 import type { ChapterMarker, RoomPhase } from '../pages/interview-room/types';
 
-// ── Multilingual Sarah intro fallbacks — used only when no real AI-generated intro landed ──
+// ── Multilingual Amina intro fallbacks — used only when no real AI-generated intro landed ──
 const SARAH_INTROS: Record<string, string> = {
-  en: "Hi — I'm Wayne, HR Director. Lovely to have you here. I'll be joined by James, who'll lead the role-specific questions. When each question appears, click the Record button to start your answer, and click Stop when you've finished. You can also use the Repeat button if you'd like to hear a question again, or Pause if you need a moment. Just speak naturally, take your time, and don't worry about being perfect. Ready when you are.",
-  fr: "Bonjour — je suis Wayne, Directeur des Ressources Humaines. Ravi de vous accueillir. James me rejoindra pour les questions spécifiques au poste. Lorsqu'une question apparaît, cliquez sur Enregistrer pour commencer votre réponse, et sur Stop quand vous avez terminé. Vous pouvez aussi utiliser Répéter pour réécouter une question, ou Pause si vous avez besoin d'un moment. Parlez naturellement, prenez votre temps. Prêt quand vous l'êtes.",
-  es: "Hola — soy Wayne, Director de Recursos Humanos. Encantado de tenerte aquí. James se unirá para las preguntas específicas del puesto. Cuando aparezca cada pregunta, haz clic en Grabar para comenzar tu respuesta y en Detener cuando hayas terminado. También puedes usar Repetir para escuchar la pregunta de nuevo, o Pausar si necesitas un momento. Habla con naturalidad, tómate tu tiempo. Listo cuando quieras.",
-  de: "Hallo — ich bin Wayne, HR-Direktor. Schön, dass Sie hier sind. James wird sich für die rollenspezifischen Fragen zu mir gesellen. Wenn eine Frage erscheint, klicken Sie auf Aufnehmen, um Ihre Antwort zu beginnen, und auf Stopp, wenn Sie fertig sind. Sie können auch Wiederholen verwenden, um eine Frage nochmals zu hören, oder Pause, wenn Sie einen Moment brauchen. Sprechen Sie natürlich, lassen Sie sich Zeit.",
-  pt: "Olá — sou Wayne, Director de Recursos Humanos. Prazer em tê-lo aqui. James juntar-se-á a mim para as perguntas específicas da função. Quando cada pergunta aparecer, clique em Gravar para iniciar a sua resposta e em Parar quando terminar. Pode usar Repetir para ouvir novamente uma pergunta, ou Pausar se precisar de um momento. Fale naturalmente, leve o seu tempo.",
-  pl: "Cześć — jestem Wayne, Dyrektor HR. Miło mieć cię tutaj. Dołączy do mnie James z pytaniami dotyczącymi stanowiska. Gdy pojawi się pytanie, kliknij Nagraj, aby rozpocząć odpowiedź, a Stop gdy skończysz. Możesz też użyć Powtórz, by ponownie usłyszeć pytanie, lub Pauza, jeśli potrzebujesz chwili. Mów naturalnie, nie spiesz się.",
-  nl: "Hoi — ik ben Wayne, HR-directeur. Fijn dat je er bent. James sluit zich bij me aan voor de functiespecifieke vragen. Als er een vraag verschijnt, klik op Opnemen om te beginnen en op Stop als je klaar bent. Je kunt ook Herhalen gebruiken om een vraag opnieuw te horen, of Pauze als je even nodig hebt. Spreek gewoon, neem de tijd.",
-  it: "Ciao — sono Wayne, Direttore delle Risorse Umane. Piacere di averti qui. James si unirà a me per le domande specifiche al ruolo. Quando appare una domanda, clicca Registra per iniziare la risposta e Stop quando hai finito. Puoi usare Ripeti per riascoltare una domanda, o Pausa se hai bisogno di un momento. Parla naturalmente, prenditi il tempo che ti serve.",
-  tr: "Merhaba — ben Wayne, İK Direktörü. Burada olmanıza sevindik. James, role özel sorular için bana katılacak. Her soru göründüğünde, cevabınıza başlamak için Kayıt düğmesine tıklayın ve bitirdiğinizde Durdur'a tıklayın. Bir soruyu tekrar duymak için Tekrar'ı, bir anlığına durmak için Duraklat'ı kullanabilirsiniz. Doğal konuşun, acele etmeyin.",
-  ar: "مرحباً — أنا واين، مدير الموارد البشرية. يسعدنا وجودك معنا. سينضم إليّ جيمس للأسئلة المتعلقة بالوظيفة. عندما تظهر كل سؤال، انقر على زر التسجيل لبدء إجابتك، وانقر إيقاف عند الانتهاء. يمكنك أيضاً استخدام إعادة لسماع السؤال مرة أخرى، أو إيقاف مؤقت إذا احتجت لحظة. تحدث بشكل طبيعي وخذ وقتك.",
-  zh: "您好 — 我是 Wayne，人力资源总监。很高兴您能来。James 将加入我进行岗位相关问题的提问。当每道题出现时，请点击录音按钮开始作答，完成后点击停止。如果您想重听题目，可以点击重复；需要暂停时，点击暂停即可。请自然地回答，慢慢来，不必紧张。",
-  hi: "नमस्ते — मैं Wayne हूँ, HR Director। आपका यहाँ स्वागत है। James मेरे साथ भूमिका-विशिष्ट प्रश्नों के लिए जुड़ेंगे। जब प्रत्येक प्रश्न दिखे, तो Record बटन दबाएं और उत्तर देना शुरू करें, तथा समाप्त होने पर Stop दबाएं। Repeat बटन से प्रश्न फिर सुन सकते हैं, या Pause से थोड़ा रुक सकते हैं। स्वाभाविक रूप से बोलें, समय लें।",
+  en: "Hi — I'm Amina, HR Director. Lovely to have you here. I'll be joined by Wayne, who'll lead the role-specific questions. When each question appears, click the Record button to start your answer, and click Stop when you've finished. You can also use the Repeat button if you'd like to hear a question again, or Pause if you need a moment. Just speak naturally, take your time, and don't worry about being perfect. Ready when you are.",
+  fr: "Bonjour — je suis Amina, Directrice des Ressources Humaines. Ravie de vous accueillir. Wayne me rejoindra pour les questions spécifiques au poste. Lorsqu'une question apparaît, cliquez sur Enregistrer pour commencer votre réponse, et sur Stop quand vous avez terminé. Vous pouvez aussi utiliser Répéter pour réécouter une question, ou Pause si vous avez besoin d'un moment. Parlez naturellement, prenez votre temps. Prête quand vous l'êtes.",
+  es: "Hola — soy Amina, Directora de Recursos Humanos. Encantada de tenerte aquí. Wayne se unirá para las preguntas específicas del puesto. Cuando aparezca cada pregunta, haz clic en Grabar para comenzar tu respuesta y en Detener cuando hayas terminado. También puedes usar Repetir para escuchar la pregunta de nuevo, o Pausar si necesitas un momento. Habla con naturalidad, tómate tu tiempo. Lista cuando quieras.",
+  de: "Hallo — ich bin Amina, HR-Direktorin. Schön, dass Sie hier sind. Wayne wird sich für die rollenspezifischen Fragen zu mir gesellen. Wenn eine Frage erscheint, klicken Sie auf Aufnehmen, um Ihre Antwort zu beginnen, und auf Stopp, wenn Sie fertig sind. Sie können auch Wiederholen verwenden, um eine Frage nochmals zu hören, oder Pause, wenn Sie einen Moment brauchen. Sprechen Sie natürlich, lassen Sie sich Zeit.",
+  pt: "Olá — sou Amina, Directora de Recursos Humanos. Prazer em tê-lo aqui. Wayne juntar-se-á a mim para as perguntas específicas da função. Quando cada pergunta aparecer, clique em Gravar para iniciar a sua resposta e em Parar quando terminar. Pode usar Repetir para ouvir novamente uma pergunta, ou Pausar se precisar de um momento. Fale naturalmente, leve o seu tempo.",
+  pl: "Cześć — jestem Amina, Dyrektor HR. Miło mieć cię tutaj. Dołączy do mnie Wayne z pytaniami dotyczącymi stanowiska. Gdy pojawi się pytanie, kliknij Nagraj, aby rozpocząć odpowiedź, a Stop gdy skończysz. Możesz też użyć Powtórz, by ponownie usłyszeć pytanie, lub Pauza, jeśli potrzebujesz chwili. Mów naturalnie, nie spiesz się.",
+  nl: "Hoi — ik ben Amina, HR-directeur. Fijn dat je er bent. Wayne sluit zich bij me aan voor de functiespecifieke vragen. Als er een vraag verschijnt, klik op Opnemen om te beginnen en op Stop als je klaar bent. Je kunt ook Herhalen gebruiken om een vraag opnieuw te horen, of Pauze als je even nodig hebt. Spreek gewoon, neem de tijd.",
+  it: "Ciao — sono Amina, Direttrice delle Risorse Umane. Piacere di averti qui. Wayne si unirà a me per le domande specifiche al ruolo. Quando appare una domanda, clicca Registra per iniziare la risposta e Stop quando hai finito. Puoi usare Ripeti per riascoltare una domanda, o Pausa se hai bisogno di un momento. Parla naturalmente, prenditi il tempo che ti serve.",
+  tr: "Merhaba — ben Amina, İK Direktörü. Burada olmanıza sevindik. Wayne, role özel sorular için bana katılacak. Her soru göründüğünde, cevabınıza başlamak için Kayıt düğmesine tıklayın ve bitirdiğinizde Durdur'a tıklayın. Bir soruyu tekrar duymak için Tekrar'ı, bir anlığına durmak için Duraklat'ı kullanabilirsiniz. Doğal konuşun, acele etmeyin.",
+  ar: "مرحباً — أنا أمينة، مديرة الموارد البشرية. يسعدنا وجودك معنا. سينضم إليّ واين للأسئلة المتعلقة بالوظيفة. عندما تظهر كل سؤال، انقر على زر التسجيل لبدء إجابتك، وانقر إيقاف عند الانتهاء. يمكنك أيضاً استخدام إعادة لسماع السؤال مرة أخرى، أو إيقاف مؤقت إذا احتجت لحظة. تحدث بشكل طبيعي وخذ وقتك.",
+  zh: "您好 — 我是 Amina，人力资源总监。很高兴您能来。Wayne 将加入我进行岗位相关问题的提问。当每道题出现时，请点击录音按钮开始作答，完成后点击停止。如果您想重听题目，可以点击重复；需要暂停时，点击暂停即可。请自然地回答，慢慢来，不必紧张。",
+  hi: "नमस्ते — मैं Amina हूँ, HR Director। आपका यहाँ स्वागत है। Wayne मेरे साथ भूमिका-विशिष्ट प्रश्नों के लिए जुड़ेंगे। जब प्रत्येक प्रश्न दिखे, तो Record बटन दबाएं और उत्तर देना शुरू करें, तथा समाप्त होने पर Stop दबाएं। Repeat बटन से प्रश्न फिर सुन सकते हैं, या Pause से थोड़ा रुक सकते हैं। स्वाभाविक रूप से बोलें, समय लें।",
 };
 
 const HANDOFF_LINES: Record<'hr' | 'technical', string[]> = {
-  hr: ['James, anything you\'d like to add to that?', 'James, did you want to follow up on that one?'],
-  technical: ['Wayne, do you have anything to add to that?', 'Wayne, anything you wanted to dig into there?'],
+  hr: ['Wayne, anything you\'d like to add to that?', 'Wayne, did you want to follow up on that one?'],
+  technical: ['Amina, do you have anything to add to that?', 'Amina, anything you wanted to dig into there?'],
 };
 
 const HANDOFF_ACCEPT_LINES = [
@@ -38,7 +38,7 @@ function pickRandom<T>(arr: T[]): T {
 }
 
 // Mike's fallback script — used if AI hasn't loaded yet (it usually finishes before Mike speaks)
-const FALLBACK_MIKE_SCRIPT = `Hi there — I'm Mike, your recruitment consultant. I've set up your interview today and I want to give you a quick briefing before you meet the panel. Your interviewers today are Wayne, who heads up HR, and James, who'll be assessing you on the role itself. They'll guide you through everything — just follow Wayne's instructions on the controls and you'll be absolutely fine. I'll be here throughout if you need anything. The best thing you can do is be specific: use real examples from your experience. Back yourself — you've got this. Good luck!`;
+const FALLBACK_MIKE_SCRIPT = `Hi there — I'm Mike, your recruitment consultant. I've set up your interview today and I want to give you a quick briefing before you meet the panel. Your interviewers today are Amina, who heads up HR, and Wayne, who'll be assessing you on the role itself. They'll guide you through everything — just follow Amina's instructions on the controls and you'll be absolutely fine. I'll be here throughout if you need anything. The best thing you can do is be specific: use real examples from your experience. Back yourself — you've got this. Good luck!`;
 
 export interface UseInterviewerAudioParams {
   questions: InterviewQuestion[];
@@ -62,15 +62,19 @@ export interface UseInterviewerAudioParams {
   ctxSelectedLanguage?: string;
   setHighlightRecord: (v: boolean) => void;
   setAudioCheckState: (s: 'idle' | 'playing' | 'done') => void;
-  /** Opt-in LiveAvatar path for Sarah's actual interview questions specifically — every other
-   * call site in this hook (intro, James, Mike, follow-up handoffs) is deliberately untouched
-   * for now. Same (text, onEnd, onAnalyser) => cancelFn contract as ttsApi.ts's speak(), just
+  /** LiveAvatar path for Amina's (hr) intro + real interview questions. Follow-up handoffs,
+   * Mike's briefing, and the closing line are deliberately untouched for now — still plain
+   * speak(). Same (text, onEnd, onAnalyser) => cancelFn contract as ttsApi.ts's speak(), just
    * pre-bound to the 'hr' role and backed by a live avatar session instead of audio-only TTS.
-   * Only used when liveAvatarActive is true (the session is actually connected) — askQuestion
-   * silently falls back to the existing speak() path otherwise, so a slow/failed avatar
-   * connection never blocks or breaks a real interview. */
+   * Only used when liveAvatarActive is true (the kill switch is on) — askQuestion/
+   * beginInterviewIntro silently fall back to the existing speak() path otherwise, so the
+   * switch being off (or a slow/failed avatar connection) never blocks or breaks a real
+   * interview. */
   liveAvatarSpeak?: (text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => () => void;
   liveAvatarActive?: boolean;
+  /** Same contract as liveAvatarSpeak, for Wayne's (technical) seat. */
+  liveAvatarSpeakTechnical?: (text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => () => void;
+  liveAvatarActiveTechnical?: boolean;
 }
 
 export interface UseInterviewerAudioReturn {
@@ -146,7 +150,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     chapterMarkersRef, recordingStartTimeRef,
     phase2ReadyRef, phase2WaitersRef,
     jobSpecText, cvText, ctxSelectedLanguage, setHighlightRecord, setAudioCheckState,
-    liveAvatarSpeak, liveAvatarActive,
+    liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical,
   } = params;
 
   const [hrState, setHrState] = useState<AvatarState>('idle');
@@ -226,13 +230,17 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
       setPhase('answering');
     };
     const spokenText = spokenTextOverride ?? question.questionText;
-    cancelSpeakRef.current = (interviewer === 'hr' && liveAvatarActive && liveAvatarSpeak)
-      ? liveAvatarSpeak(spokenText, onDone, (a) => setHrAnalyser(a))
-      : speak(spokenText, interviewer, onDone, (a) => {
-          if (interviewer === 'hr') setHrAnalyser(a);
-          else setTechAnalyser(a);
-        });
-  }, [questions, setPhase, chapterMarkersRef, recordingStartTimeRef, liveAvatarSpeak, liveAvatarActive]);
+    if (interviewer === 'hr' && liveAvatarActive && liveAvatarSpeak) {
+      cancelSpeakRef.current = liveAvatarSpeak(spokenText, onDone, (a) => setHrAnalyser(a));
+    } else if (interviewer === 'technical' && liveAvatarActiveTechnical && liveAvatarSpeakTechnical) {
+      cancelSpeakRef.current = liveAvatarSpeakTechnical(spokenText, onDone, (a) => setTechAnalyser(a));
+    } else {
+      cancelSpeakRef.current = speak(spokenText, interviewer, onDone, (a) => {
+        if (interviewer === 'hr') setHrAnalyser(a);
+        else setTechAnalyser(a);
+      });
+    }
+  }, [questions, setPhase, chapterMarkersRef, recordingStartTimeRef, liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical]);
 
   // Always-fresh reference to askQuestion — needed by finishJamesIntro below, which lives
   // inside beginInterviewIntro's body. That body is guarded to run exactly once per session
@@ -252,8 +260,8 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
 
   const testAudio = useCallback(() => {
     setAudioCheckState('playing');
-    speak("Hi there! I'm Wayne, your HR interviewer.", 'hr', () => {
-      speak("And I'm James. Great — you can hear us both clearly!", 'technical', () => setAudioCheckState('done'));
+    speak("Hi there! I'm Amina, your HR interviewer.", 'hr', () => {
+      speak("And I'm Wayne. Great — you can hear us both clearly!", 'technical', () => setAudioCheckState('done'));
     });
   }, [setAudioCheckState]);
 
@@ -311,11 +319,11 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     cancelSpeakRef.current = null;
     setPhase('interviewer-intro');
     // Chapter marker for the same reason as Mike's above — one combined entry for both
-    // Sarah's and James's intro lines, since they play back to back with no natural split.
+    // Amina's and Wayne's intro lines, since they play back to back with no natural split.
     if (recordingStartTimeRef.current > 0) {
       chapterMarkersRef.current.push({
         questionIndex: -1,
-        questionText: "Wayne & James's Introduction",
+        questionText: "Amina & Wayne's Introduction",
         competency: '',
         offsetSeconds: Math.round((Date.now() - recordingStartTimeRef.current) / 1000),
       });
@@ -334,12 +342,12 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
         setTimeout(() => setHighlightRecord(false), 6000);
       }, 8000);
       const jamesText = effectiveJamesIntro ??
-        "And I'm James — looking forward to hearing about your experience. Let's get started.";
+        "And I'm Wayne — looking forward to hearing about your experience. Let's get started.";
 
       const afterSarahIntro = () => {
         clearTimeout(pulseOuter);
         setHighlightRecord(false);
-        // 'listening' (not 'idle') — James is about to introduce himself, and this is exactly
+        // 'listening' (not 'idle') — Wayne is about to introduce himself, and this is exactly
         // the hrState==='listening' && techState==='speaking' combination sarahAmbientVideoActive
         // already watches for, so her idle loop now covers his intro moment too, not just his
         // later interview questions, for free — no separate on/off wiring needed here.
@@ -353,12 +361,17 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
           setTimeout(() => askQuestionRef.current(0), 500);
         };
 
-        // Name Bank pilot: a cached personalised greeting for this candidate's name, if one
-        // exists, fully replaces James's live line (including its difficulty/language mention)
-        // — an accepted trade-off for the pilot. A miss falls through to james-intro-v1.mp4
-        // (English) — the generic pre-rendered clip matching Sarah's/Mike's own — and only
-        // falls all the way through to live TTS for non-English sessions, where no video exists.
-        if (sessionLanguage === 'en' && jamesGreetingUrl) {
+        if (liveAvatarActiveTechnical && liveAvatarSpeakTechnical) {
+          // Wayne's full presence — intro included, not just his questions — prefers the live
+          // avatar, same as Amina's above. Falls through to the pre-existing paths below only
+          // if his live avatar isn't active at all.
+          cancelSpeakRef.current = liveAvatarSpeakTechnical(jamesText, finishJamesIntro, (a) => setTechAnalyser(a));
+        } else if (sessionLanguage === 'en' && jamesGreetingUrl) {
+          // Name Bank pilot: a cached personalised greeting for this candidate's name, if one
+          // exists, fully replaces this live line (including its difficulty/language mention)
+          // — an accepted trade-off for the pilot. A miss falls through to james-intro-v1.mp4
+          // (English) — the generic pre-rendered clip matching Amina's/Mike's own — and only
+          // falls all the way through to live TTS for non-English sessions, where no video exists.
           jamesGreetingDoneRef.current = finishJamesIntro;
           setJamesGreetingVideoActive(true);
         } else if (sessionLanguage === 'en') {
@@ -390,7 +403,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
         cancelSpeakRef.current = speak(sarahText, 'hr', afterSarahIntro, (a) => setHrAnalyser(a));
       }
     }, 600);
-  }, [effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage, jamesGreetingUrl, aiQuestionsLoaded, setPhase, chapterMarkersRef, recordingStartTimeRef, setHighlightRecord, liveAvatarSpeak, liveAvatarActive]);
+  }, [effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage, jamesGreetingUrl, aiQuestionsLoaded, setPhase, chapterMarkersRef, recordingStartTimeRef, setHighlightRecord, liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical]);
 
   const beginInterviewIntroRef = useRef(beginInterviewIntro);
   useEffect(() => { beginInterviewIntroRef.current = beginInterviewIntro; }, [beginInterviewIntro]);

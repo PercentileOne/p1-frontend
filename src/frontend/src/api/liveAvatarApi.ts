@@ -10,11 +10,29 @@ export interface AvatarSessionInfo {
   isSandbox: boolean;
 }
 
-export async function fetchAvatarSessionToken(): Promise<AvatarSessionInfo> {
-  const res = await fetch(`${API_BASE}/interviews/avatar-session`, { method: 'POST' });
+export async function fetchAvatarSessionToken(role: 'hr' | 'technical'): Promise<AvatarSessionInfo> {
+  const res = await fetch(`${API_BASE}/interviews/avatar-session`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ role }),
+  });
   if (!res.ok) throw new Error(`avatar-session failed: HTTP ${res.status}`);
   const data = await res.json() as { sessionId: string; sessionToken: string; isSandbox: boolean };
   return { sessionId: data.sessionId, sessionToken: data.sessionToken, isSandbox: data.isSandbox };
+}
+
+// The LiveAvatar kill switch — read once per room mount, before either seat attempts to
+// connect. A failed fetch (network hiccup, backend blip) fails OPEN (enabled: true) rather
+// than silently killing a working feature over a transient error; the actual off-switch is
+// the Cosmos-backed admin setting, not this call's success/failure.
+export async function fetchAvatarConfig(): Promise<{ enabled: boolean }> {
+  try {
+    const res = await fetch(`${API_BASE}/interviews/avatar-config`);
+    if (!res.ok) return { enabled: true };
+    return await res.json() as { enabled: boolean };
+  } catch {
+    return { enabled: true };
+  }
 }
 
 // Fetches the raw PCM clip (see Features/Interviews/AvatarAudio) and base64-encodes it —

@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useLiveAvatarSession } from '../../hooks/useLiveAvatarSession';
 
 export default function AvatarTestPage() {
-  const { status, connect, disconnect, speak, startListening, stopListening, setVideoEl } = useLiveAvatarSession();
+  const { status, connect, disconnect, speak, startListening, stopListening, setVideoEl } = useLiveAvatarSession('hr');
   const [text, setText] = useState('Hello, this is a test of the live avatar integration.');
   const [speaking, setSpeaking] = useState(false);
   const [error, setError] = useState<string | null>(null);

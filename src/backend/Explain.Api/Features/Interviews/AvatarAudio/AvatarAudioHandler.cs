@@ -37,9 +37,10 @@ public class AvatarAudioHandler(
         // kept in sync deliberately (copy, not shared helper, per this app's existing precedent).
         var voiceId = cmd.Role switch
         {
-            "hr"   => config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],
-            "mike" => config["ElevenLabs:VoiceMike"] ?? config["ElevenLabs:VoiceTech"],
-            _      => config["ElevenLabs:VoiceTech"],
+            "hr"        => config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],
+            "mike"      => config["ElevenLabs:VoiceMike"] ?? config["ElevenLabs:VoiceTech"],
+            "technical" => config["ElevenLabs:VoiceInterviewTechnical"] ?? config["ElevenLabs:VoiceTech"],
+            _           => config["ElevenLabs:VoiceInterviewTechnical"] ?? config["ElevenLabs:VoiceTech"],
         };
         var apiKey = config["ElevenLabs:ApiKey"];
         if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(voiceId))

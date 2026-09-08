@@ -365,8 +365,8 @@ export async function generateIntros(
   jobCtx: JobSpecContext,
 ): Promise<{ sarahIntro: string; jamesIntro: string }> {
   const systemPrompt = `You are writing natural, varied spoken dialogue for two AI interviewers.
-Wayne Liang is the HR Director — warm, professional, observant about people and culture.
-James Jacobs is the specialist interviewer — direct, curious, focused on role competencies and how the candidate performs in practice.
+Amina is the HR Director — warm, professional, observant about people and culture.
+Wayne Liang is the specialist interviewer — direct, curious, focused on role competencies and how the candidate performs in practice.
 Each session should sound slightly different — vary sentence structure, word choice, and what details they pick up on.
 
 STRICT MODE — ZERO HALLUCINATION POLICY:
@@ -401,7 +401,7 @@ Return ONLY valid JSON.`;
   const styles = ['warm and encouraging', 'direct and professional', 'curious and engaged', 'brisk and businesslike'];
   const chosenStyle = styles[Math.floor(Math.random() * styles.length)];
 
-  const userPrompt = `Write natural spoken intros for Wayne and James for this interview session. Session style this time: ${chosenStyle}.
+  const userPrompt = `Write natural spoken intros for Amina and Wayne for this interview session. Session style this time: ${chosenStyle}.
 
 ═══ CANDIDATE PROFILE (use ONLY these facts) ═══
 ${cvSummary}
@@ -410,13 +410,13 @@ ${cvSummary}
 ${jobSummary}
 
 ═══ RULES ═══
-- Wayne goes first. Address candidate by first name (${firstName}) once. Welcome them warmly, then explain the controls naturally: click Record to start answering, click Stop when finished, and they can use Repeat to hear a question again or Pause if they need a moment. Mention ONE specific fact from their work history above, then say "Let's begin."
-- James goes second (starts with "Thanks Wayne." or similar). Address candidate by first name once. Mention ONE specific fact from their work history (a role title, a company name, or their career span) — NEVER mention any technology, programming language, or tool. Say what he'll focus on — frame it around the role competencies, not "technical questions" specifically.
+- Amina goes first. Address candidate by first name (${firstName}) once. Welcome them warmly, then explain the controls naturally: click Record to start answering, click Stop when finished, and they can use Repeat to hear a question again or Pause if they need a moment. Mention ONE specific fact from their work history above, then say "Let's begin."
+- Wayne goes second (starts with "Thanks Amina." or similar). Address candidate by first name once. Mention ONE specific fact from their work history (a role title, a company name, or their career span) — NEVER mention any technology, programming language, or tool. Say what he'll focus on — frame it around the role competencies, not "technical questions" specifically.
 - Each intro: 3–5 sentences, natural spoken pace, no bullet points, no em dashes.
-- Vary the opening — Wayne should NOT always start with "Welcome". Use "Great to have you here", "Thanks for joining us", "Good to meet you", etc.
+- Vary the opening — Amina should NOT always start with "Welcome". Use "Great to have you here", "Thanks for joining us", "Good to meet you", etc.
 - Sound like real humans. Different each session.
 - Keep each intro under 80 words.
-- CRITICAL: Do NOT reference any technology, tool, language, or framework — not in Wayne's intro, not in James's intro.
+- CRITICAL: Do NOT reference any technology, tool, language, or framework — not in Amina's intro, not in Wayne's intro.
 
 Return JSON:
 {
@@ -626,7 +626,7 @@ ${jobSummary}
 Mike's briefing should:
 - Open with: "Hi ${firstName}, I'm Mike — I've set up today's interview for you."
 - Mention the company name, what they do, their size/culture, and 1-2 things they're known for or proud of
-- Briefly explain the interview format (two interviewers, Wayne and James)
+- Briefly explain the interview format (two interviewers, Amina and Wayne)
 - Give 1-2 quick tips based on the role
 - Close warmly and wish them luck
 - Be 60-90 words total — spoken naturally, no lists
@@ -719,7 +719,7 @@ STRUCTURE (spoken naturally as one flowing paragraph — no lists):
 2. "You're here for the [job title] position at [company name]."
 3. One warm sentence about the company or role.
 4. Difficulty framing (use the exact framing given above, naturally worded).
-5. "You'll be meeting Wayne from HR and James, who'll be leading the role-specific questions."
+5. "You'll be meeting Amina from HR and Wayne, who'll be leading the role-specific questions."
 6. One specific tip for this role.
 7. Warm close: "You've got this. Good luck."
 
@@ -806,8 +806,8 @@ export async function sessionPrepareClient(
   const difficultyLevel = selectedDifficulty || 'Standard';
   const difficultyLine = `\nSession Difficulty: ${difficultyLevel} (${difficultyLabel})`;
   const preferredNameLine = preferredName?.trim()
-    ? `\nCandidate Name: "${preferredName.trim()}" — explicitly set by the candidate. Use this name in ALL spoken scripts (Mike, Wayne, James). Do NOT use any other name.`
-    : `\nCandidate Name: NOT explicitly set — you MUST extract the candidate's first name from the CV and use it in ALL spoken scripts (Mike, Wayne, James). NEVER say "there" or omit the name when a CV is provided.`;
+    ? `\nCandidate Name: "${preferredName.trim()}" — explicitly set by the candidate. Use this name in ALL spoken scripts (Mike, Amina, Wayne). Do NOT use any other name.`
+    : `\nCandidate Name: NOT explicitly set — you MUST extract the candidate's first name from the CV and use it in ALL spoken scripts (Mike, Amina, Wayne). NEVER say "there" or omit the name when a CV is provided.`;
 
   // Always explicit, including for English — rule 1 below tells the model to detect language
   // from the job spec, and with no override for the 'en' case that rule ran unconstrained: if
@@ -824,7 +824,7 @@ CRITICAL RULES — READ CAREFULLY:
 2. NEVER assume any industry or role type. Read the job spec and base EVERYTHING on what it actually says.
 3. NEVER generate IT or software engineering questions unless the job spec explicitly requires them. A barista needs questions about coffee craft and customer service. A nurse needs questions about patient care and clinical judgement. A lorry driver needs questions about road safety and logistics.
 4. Questions must be specific to THIS role at THIS company — not generic questions that could fit any employer.
-5. All spoken scripts (Mike, Wayne, James) must sound natural when read aloud. No bullet points, no lists, no asterisks.
+5. All spoken scripts (Mike, Amina, Wayne) must sound natural when read aloud. No bullet points, no lists, no asterisks.
 6. Return ONLY valid JSON — no markdown, no explanation, no code fences.
 7. COMPANY NAMING: if the Session Context gives you a confirmed company, use that exact name everywhere — never invent a different one. Otherwise, if no company is named anywhere in the job spec, invent ONE single plausible, realistic company name whose industry genuinely fits THIS job title (e.g. a supermarket or retail chain for a Shop Sales Assistant, a stables or equestrian centre for a Horse Trainer, a hospital or clinic for a Nurse, a haulage firm for a Lorry Driver) — never a mismatched real company (a software/finance/tech giant is almost never the right invented employer for a non-corporate role) and never a vague placeholder like "the company" or "your employer". Use that one invented name consistently in the questions, both intros, and companyFacts.`;
 
@@ -845,10 +845,10 @@ Return this exact JSON:
   "company": "the company name actually used for this session — the confirmed one from Session Context, or your own invented one per the COMPANY NAMING rule; never null and never a generic placeholder",
   "country": "country or region this role is based in",
   "industry": "industry sector (e.g. Fast Food, Healthcare, Construction, Finance, Education)",
-  "specialistTitle": "James's interviewer title — role-appropriate, e.g. 'Restaurant Manager' for hospitality, 'Ward Sister' for nursing, 'Site Foreman' for construction, 'Finance Director' for accounting. NEVER use 'Technical Lead' unless the role is genuinely technical.",
+  "specialistTitle": "Wayne's interviewer title — role-appropriate, e.g. 'Restaurant Manager' for hospitality, 'Ward Sister' for nursing, 'Site Foreman' for construction, 'Finance Director' for accounting. NEVER use 'Technical Lead' unless the role is genuinely technical.",
   "companyFacts": ["3 specific facts about this company or role the candidate should know before walking in"],
-  "sarahIntro": "Wayne's spoken welcome, 50–75 words. HR Director, warm and professional. Address the candidate by their Preferred Name if set, otherwise extract their first name from the CV, otherwise use no name. Introduces himself by name (Wayne), briefly mentions James will be joining him, then explains the controls: click Record to start answering, click Stop when finished, use Repeat to hear the question again, and Pause if they need a moment. Sets a positive tone and tells the candidate to speak naturally and take their time.",
-  "jamesIntro": "James's spoken intro, 30–45 words. Direct and role-focused. Address the candidate by their Preferred Name (see Session Context above). Introduces himself, then MUST reference the exact Session Difficulty from the Session Context — use the difficulty level name naturally in speech: if Beginner say something like 'You've gone with Beginner level, so no pressure — we'll keep this friendly and foundational'; if Standard say something like 'You've gone with Standard difficulty, so we'll work through this steadily'; if Pro say 'You've chosen Pro level, so expect some probing questions'; if Expert say 'You've opted for Expert level — these questions will really test your depth of knowledge'. If the session language is not English, also mention it e.g. 'and we'll be doing this in French'. Then briefly states what he will be focusing on.",
+  "sarahIntro": "Amina's spoken welcome, 50–75 words. HR Director, warm and professional. Address the candidate by their Preferred Name if set, otherwise extract their first name from the CV, otherwise use no name. Introduces herself by name (Amina), briefly mentions Wayne will be joining her, then explains the controls: click Record to start answering, click Stop when finished, use Repeat to hear the question again, and Pause if they need a moment. Sets a positive tone and tells the candidate to speak naturally and take their time.",
+  "jamesIntro": "Wayne's spoken intro, 30–45 words. Direct and role-focused. Address the candidate by their Preferred Name (see Session Context above). Introduces himself, then MUST reference the exact Session Difficulty from the Session Context — use the difficulty level name naturally in speech: if Beginner say something like 'You've gone with Beginner level, so no pressure — we'll keep this friendly and foundational'; if Standard say something like 'You've gone with Standard difficulty, so we'll work through this steadily'; if Pro say 'You've chosen Pro level, so expect some probing questions'; if Expert say 'You've opted for Expert level — these questions will really test your depth of knowledge'. If the session language is not English, also mention it e.g. 'and we'll be doing this in French'. Then briefly states what he will be focusing on.",
   "mcqQuestions": [
     {
       "questionText": "First hard multiple-choice question directly relevant to this role",

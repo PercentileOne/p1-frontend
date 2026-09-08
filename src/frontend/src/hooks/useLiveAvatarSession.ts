@@ -4,13 +4,18 @@ import { fetchAvatarSessionToken, fetchAvatarAudioBase64 } from '../api/liveAvat
 
 export type LiveAvatarStatus = 'idle' | 'connecting' | 'connected' | 'failed' | 'closed';
 
-// Wraps the official LiveAvatar Web SDK for one interview's avatar session. voiceChat is
+// Wraps the official LiveAvatar Web SDK for one interview seat's avatar session. voiceChat is
 // deliberately never enabled — that SDK feature captures the browser's own microphone for a
-// built-in voice round-trip, which is not what we want: we generate Sarah/James/Mike's audio
+// built-in voice round-trip, which is not what we want: we generate Amina/Wayne/Mike's audio
 // ourselves (ElevenLabs, via fetchAvatarAudioBase64) and push it in with repeatAudio(), same
 // division of responsibility as the "we handle the questions, they do the talking" architecture
 // this was built around.
-export function useLiveAvatarSession() {
+//
+// One instance per seat — InterviewRoomPage creates two (role 'hr' for Amina, 'technical' for
+// Wayne), each its own independent WebRTC session running concurrently. role is only used to
+// pick the right avatar_id when minting a session token; speak()'s own role param (used for
+// the audio-generation call) is passed separately by the caller and is expected to match.
+export function useLiveAvatarSession(role: 'hr' | 'technical') {
   const [status, setStatus] = useState<LiveAvatarStatus>('idle');
   const sessionRef = useRef<LiveAvatarSession | null>(null);
   const videoElRef = useRef<HTMLVideoElement | null>(null);
@@ -35,7 +40,7 @@ export function useLiveAvatarSession() {
     if (sessionRef.current) return; // already connecting/connected
     setStatus('connecting');
     try {
-      const { sessionToken } = await fetchAvatarSessionToken();
+      const { sessionToken } = await fetchAvatarSessionToken(role);
       const session = new LiveAvatarSession(sessionToken, { voiceChat: false });
       sessionRef.current = session;
 
@@ -84,7 +89,7 @@ export function useLiveAvatarSession() {
       connectedRef.current = false;
       setStatus('failed');
     }
-  }, [attachIfReady]);
+  }, [attachIfReady, role]);
 
   const disconnect = useCallback(async () => {
     if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }

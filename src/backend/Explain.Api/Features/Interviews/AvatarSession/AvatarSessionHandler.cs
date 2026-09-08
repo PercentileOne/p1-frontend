@@ -26,11 +26,18 @@ public class AvatarSessionHandler(
         if (string.IsNullOrWhiteSpace(apiKey))
             return Result<AvatarSessionDto>.Failure("Avatar session isn't configured.", 500);
 
-        // Sandbox stays the default until real Sarah/James avatars exist in the LiveAvatar
-        // dashboard and LiveAvatar:AvatarId / LiveAvatar:Sandbox get set for production — this
-        // is a one-line config change, not a code change, when that day comes.
         var isSandbox = config.GetValue<bool?>("LiveAvatar:Sandbox") ?? true;
-        var avatarId = config["LiveAvatar:AvatarId"] ?? "dd73ea75-1218-4ef3-92ce-606d5f7fbc0a";
+
+        // Real named avatars now exist in the LiveAvatar dashboard — Amina (hr) and Wayne
+        // (technical, moved here from hr). Config keys let either be swapped without a
+        // redeploy; the hardcoded fallbacks are today's actual avatar_ids so this still works
+        // even if the config keys are never set.
+        var avatarId = cmd.Role switch
+        {
+            "hr" => config["LiveAvatar:AvatarIdHr"] ?? "40b4f000-f783-4bba-a327-ea58b1a6fdf2",
+            "technical" => config["LiveAvatar:AvatarIdTechnical"] ?? "dd73ea75-1218-4ef3-92ce-606d5f7fbc0a",
+            _ => config["LiveAvatar:AvatarIdHr"] ?? "40b4f000-f783-4bba-a327-ea58b1a6fdf2",
+        };
 
         var client = httpFactory.CreateClient();
         using var msg = new HttpRequestMessage(HttpMethod.Post, "https://api.liveavatar.com/v1/sessions/token");

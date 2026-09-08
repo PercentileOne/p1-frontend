@@ -30,20 +30,20 @@ interface Props {
 
 const PROFILES = {
   hr: {
-    name: 'Wayne Liang',
+    name: 'Amina',
     title: 'HR Director',
-    initials: 'WL',
-    photo: '/images/wayne-static-photo.png',
+    initials: 'AM',
+    photo: '/images/amina-static-photo.png',
     gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     ring: '#a78bfa',
     barColor: '#a78bfa',
     bg: 'linear-gradient(160deg, #1a1040 0%, #0f0c29 100%)',
   },
   technical: {
-    name: 'James Jacobs',
+    name: 'Wayne Liang',
     title: 'Hiring Manager',
-    initials: 'JJ',
-    photo: '/images/james.jpg',
+    initials: 'WL',
+    photo: '/images/wayne-static-photo.png',
     gradient: 'linear-gradient(135deg, #1B3A6B 0%, #2563eb 100%)',
     ring: '#4F8EF7',
     barColor: '#4F8EF7',

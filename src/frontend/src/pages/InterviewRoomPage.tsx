@@ -23,6 +23,7 @@ import { useInterviewerAudio } from '../hooks/useInterviewerAudio';
 import { useMcqBonusRound, type McqGenParams } from '../hooks/useMcqBonusRound';
 import { useGoDeeperFollowUps, GO_DEEPER_LIMITS } from '../hooks/useGoDeeperFollowUps';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
+import { fetchAvatarConfig } from '../api/liveAvatarApi';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -251,34 +252,56 @@ export default function InterviewRoomPage() {
     submitAnswer: scoreAnswer, recordPassedAnswer, resetForNextQuestion,
   } = useAnswerScoring({ cvCtx, jobCtx, companyKeywords, sessionLanguage, selectedDifficulty });
 
-  // LiveAvatar — real-time video avatar, wired into Sarah's actual interview questions only
-  // (see useInterviewerAudio's liveAvatarSpeak param doc). Deliberately connects lazily, on
-  // first use, rather than on room mount: HeyGen's sandbox sessions cap at ~1 minute, and the
-  // Mike + Sarah/James intro sequence ahead of the first real question can easily take longer
-  // than that on its own — connecting early would burn the sandbox session before Sarah ever
-  // asks anything. Still sandbox credentials as of this build (see AvatarSession's backend
-  // config) — a real Sarah avatar swaps in via config, not a code change, once created.
-  const liveAvatar = useLiveAvatarSession();
-  const liveAvatarSpeak = useCallback((text: string, onEnd: () => void) => {
+  // LiveAvatar kill switch — read once per room mount, before either seat attempts to connect.
+  // Defaults true (fail open) until the fetch resolves, and stays true if the fetch itself
+  // fails — an admin's explicit "off" is a real Cosmos doc, not something a network hiccup
+  // should be able to fake. See PlatformSettings' liveAvatar setting for the actual toggle.
+  const [avatarEnabled, setAvatarEnabled] = useState(true);
+  useEffect(() => { fetchAvatarConfig().then(cfg => setAvatarEnabled(cfg.enabled)); }, []);
+
+  // LiveAvatar — real-time video avatars, one concurrent session per seat (Amina on hr, Wayne
+  // on technical; see useInterviewerAudio's liveAvatarSpeak/liveAvatarSpeakTechnical param
+  // docs). Each connects lazily, on first use, rather than on room mount: HeyGen's sandbox
+  // sessions cap at ~1 minute, and the Mike + intro sequence ahead of the first real question
+  // can easily take longer than that on its own — connecting early would burn the session
+  // before either avatar ever speaks.
+  const liveAvatarHr = useLiveAvatarSession('hr');
+  const liveAvatarTechnical = useLiveAvatarSession('technical');
+
+  const liveAvatarSpeakHr = useCallback((text: string, onEnd: () => void) => {
     let cancelled = false;
     (async () => {
       try {
-        if (liveAvatar.status !== 'connected') await liveAvatar.connect();
-        await liveAvatar.speak(text, 'hr');
+        if (liveAvatarHr.status !== 'connected') await liveAvatarHr.connect();
+        await liveAvatarHr.speak(text, 'hr');
       } catch (err) {
-        console.error('[InterviewRoom] LiveAvatar speak failed:', err);
+        console.error('[InterviewRoom] LiveAvatar (hr) speak failed:', err);
       } finally {
         if (!cancelled) onEnd();
       }
     })();
-    return () => { cancelled = true; liveAvatar.interrupt(); };
-  }, [liveAvatar]);
+    return () => { cancelled = true; liveAvatarHr.interrupt(); };
+  }, [liveAvatarHr]);
+
+  const liveAvatarSpeakTechnical = useCallback((text: string, onEnd: () => void) => {
+    let cancelled = false;
+    (async () => {
+      try {
+        if (liveAvatarTechnical.status !== 'connected') await liveAvatarTechnical.connect();
+        await liveAvatarTechnical.speak(text, 'technical');
+      } catch (err) {
+        console.error('[InterviewRoom] LiveAvatar (technical) speak failed:', err);
+      } finally {
+        if (!cancelled) onEnd();
+      }
+    })();
+    return () => { cancelled = true; liveAvatarTechnical.interrupt(); };
+  }, [liveAvatarTechnical]);
 
   const {
     hrState, techState, hrAnalyser, techAnalyser,
-    jamesGreetingVideoActive, jamesGreetingUrl, jamesIntroVideoActive, jamesAmbientVideoActive, awaitingHandoff,
+    awaitingHandoff,
     handleSarahVideoAnalyser, handleJamesVideoAnalyser,
-    handleJamesGreetingVideoEnded, handleJamesIntroVideoEnded,
     stopAllInterviewerAudio,
     askQuestion, repeatQuestion, testAudio, startMike, handleMikeIntroDone,
     askFollowUpWithHandoff,
@@ -293,7 +316,8 @@ export default function InterviewRoomPage() {
     phase2ReadyRef, phase2WaitersRef,
     jobSpecText: ctx.jobSpecText, cvText: ctx.cvText, ctxSelectedLanguage: ctx.selectedLanguage,
     setHighlightRecord, setAudioCheckState,
-    liveAvatarSpeak, liveAvatarActive: true,
+    liveAvatarSpeak: liveAvatarSpeakHr, liveAvatarActive: avatarEnabled,
+    liveAvatarSpeakTechnical, liveAvatarActiveTechnical: avatarEnabled,
   });
 
   const {
@@ -486,7 +510,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
   const closeInterview = useCallback((answers: SessionAnswer[], mcqRes: typeof mcqResults, bonusPts: number) => {
     const name = resolvedPreferredName ? `, ${resolvedPreferredName}` : '';
-    const closingLine = `Well${name}, that brings us to the end of your interview — thank you so much for your time today. I'm going to have a quick word with James, and then your agent Mike will be in touch shortly with some feedback. In the meantime, you can watch your full interview replay on the next screen, and retake it anytime you like. Best of luck!`;
+    const closingLine = `Well${name}, that brings us to the end of your interview — thank you so much for your time today. I'm going to have a quick word with Wayne, and then your agent Mike will be in touch shortly with some feedback. In the meantime, you can watch your full interview replay on the next screen, and retake it anytime you like. Best of luck!`;
     cancelSpeakRef.current?.();
     // Whichever path got us here (normal coaching flow, Pass, or an MCQ finish),
     // leave 'done' so the answer/coaching panels can't stay mounted and clickable
@@ -726,7 +750,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     style={{ width: '100%', accentColor: '#a78bfa', cursor: 'pointer' }}
                   />
                   <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 6, lineHeight: 1.4 }}>
-                    Controls Wayne, James &amp; Mike only — not your recording.
+                    Controls Amina, Wayne &amp; Mike only — not your recording.
                   </div>
                 </div>
               </>
@@ -824,7 +848,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       {/* Main content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: '960px', width: '100%', margin: '0 auto', padding: '24px 24px 32px', gap: '20px' }}>
 
-        {/* Sarah + James — hidden while Mike is speaking, fade in after */}
+        {/* Amina + Wayne — hidden while Mike is speaking, fade in after */}
         <AnimatePresence>
           {showInterviewers && (
             <motion.div
@@ -841,28 +865,40 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   onVideoEnded={() => onDoneRef.current?.()}
                   onVideoAnalyser={handleSarahVideoAnalyser}
                 />
-                {/* LiveAvatar overlay — real-time video, takes over Wayne's slot the moment the
-                    session connects (lazily, on his first real line; see liveAvatarSpeak above).
-                    Sarah's pre-rendered intro/idle clips are gone (Wayne has no pre-rendered
-                    equivalent yet), so the static photo below is the only thing visible during
-                    the brief pre-connection gap. */}
-                {liveAvatar.status === 'connected' && (
+                {/* LiveAvatar overlay — real-time video, takes over Amina's slot the moment the
+                    session connects (lazily, on her first real line; see liveAvatarSpeakHr
+                    above). No pre-rendered clip exists for her, so the static photo below is
+                    the only thing visible during the brief pre-connection gap. */}
+                {liveAvatarHr.status === 'connected' && (
                   <video
-                    ref={liveAvatar.setVideoEl}
+                    ref={liveAvatarHr.setVideoEl}
                     autoPlay
                     playsInline
                     style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
                   />
                 )}
               </div>
-              <InterviewerAvatar
-                role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} analyserNode={techAnalyser}
-                videoUrl={jamesGreetingVideoActive ? jamesGreetingUrl : jamesIntroVideoActive ? '/images/james-intro-v1.mp4' : jamesAmbientVideoActive ? '/images/james-idle-v1.mp4' : null}
-                onVideoEnded={jamesGreetingVideoActive ? handleJamesGreetingVideoEnded : jamesIntroVideoActive ? handleJamesIntroVideoEnded : () => onDoneRef.current?.()}
-                onVideoAnalyser={jamesAmbientVideoActive ? undefined : handleJamesVideoAnalyser}
-                loop={jamesAmbientVideoActive}
-                muted={jamesAmbientVideoActive}
-              />
+              <div style={{ position: 'relative', flex: 1, display: 'flex' }}>
+                <InterviewerAvatar
+                  role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} analyserNode={techAnalyser}
+                  videoUrl={null}
+                  onVideoEnded={() => onDoneRef.current?.()}
+                  onVideoAnalyser={handleJamesVideoAnalyser}
+                />
+                {/* LiveAvatar overlay — Wayne's slot, same treatment as Amina's above. James's
+                    pre-rendered intro/greeting/idle clips (jamesGreetingVideoActive etc.) are
+                    retired along with James himself — those states are still returned by
+                    useInterviewerAudio as unreachable fallback wiring (liveAvatarActiveTechnical
+                    is on whenever the kill switch is), not deleted outright. */}
+                {liveAvatarTechnical.status === 'connected' && (
+                  <video
+                    ref={liveAvatarTechnical.setVideoEl}
+                    autoPlay
+                    playsInline
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
+                  />
+                )}
+              </div>
               <YouCamera cameraOn={cameraOn} speaking={phase === 'answering'} onToggle={() => setCameraOn(v => !v)} />
             </motion.div>
           )}
@@ -913,7 +949,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '11px 16px', borderBottom: '1px solid var(--border)' }}>
                     <span style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', userSelect: 'none' }}>Questions</span>
-                    <span style={{ fontSize: '13px', color: 'var(--text)', userSelect: 'none' }}>{questions.length} · Wayne &amp; James</span>
+                    <span style={{ fontSize: '13px', color: 'var(--text)', userSelect: 'none' }}>{questions.length} · Amina &amp; Wayne</span>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '11px 16px', borderBottom: '1px solid var(--border)' }}>
@@ -1028,7 +1064,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                             transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
                             style={{ width: 28, height: 28, borderRadius: '50%', border: '2.5px solid rgba(79,142,247,0.25)', borderTopColor: 'var(--blue)' }}
                           />
-                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Bringing in Wayne &amp; James…</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Bringing in Amina &amp; Wayne…</div>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -1159,7 +1195,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         style={{ width: '7px', height: '7px', borderRadius: '50%', background: isHrQuestion ? '#a78bfa' : 'var(--blue)', flexShrink: 0 }} />
                     )}
                     <span style={{ fontSize: '10px', fontWeight: 700, color: isHrQuestion ? '#a78bfa' : 'var(--blue)', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', padding: '3px 8px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                      {isHrQuestion ? 'Wayne · HR' : `James · ${specialistTitle}`}
+                      {isHrQuestion ? 'Amina · HR' : `Wayne · ${specialistTitle}`}
                     </span>
                     <span style={{ fontSize: '10px', color: 'var(--text-3)', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', padding: '3px 8px' }}>{selectedDifficulty}</span>
                     {phase === 'answering' && (
