@@ -33,7 +33,7 @@ const PROFILES = {
     name: 'Amina',
     title: 'HR Director',
     initials: 'AM',
-    photo: '/images/amina-static-photo.png',
+    photo: '/images/amina-static-image-1.png',
     gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     ring: '#a78bfa',
     barColor: '#a78bfa',
