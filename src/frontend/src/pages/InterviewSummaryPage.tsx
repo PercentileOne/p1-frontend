@@ -651,7 +651,7 @@ export default function InterviewSummaryPage() {
     `).join('');
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
-<title>Interview Summary — Explain AI</title>
+<title>Interview Summary — InterviewMe</title>
 <style>
   @page { margin: 24mm 20mm; }
   body { font-family: -apple-system,'Segoe UI',Arial,sans-serif; color:#1a1a2e; font-size:13px; line-height:1.6; }
@@ -670,7 +670,7 @@ export default function InterviewSummaryPage() {
   .footer { margin-top:32px; padding-top:12px; border-top:1px solid #eee; font-size:10px; color:#aaa; text-align:center; }
 </style></head><body>
 <div class="header">
-  <div class="brand">Explain AI · Interview Summary</div>
+  <div class="brand">InterviewMe · Interview Summary</div>
   <h1>Interview Practice Session</h1>
   <div class="meta">${date} · ${answers.length} questions${pdfCandidateName ? ` · ${pdfCandidateName}` : ''}${jobCtx?.title ? ` · ${jobCtx.title}` : ''}</div>
   <div class="overall">${Math.round(overall * 100)}<span style="font-size:16px;color:#888">/100</span></div>
@@ -729,7 +729,7 @@ ${questionsHtml}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <BackToCockpit to="/dashboard" />
           <div>
-            <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '4px' }}>Explain · Interview Summary</div>
+            <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '4px' }}>InterviewMe · Interview Summary</div>
             <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>Session Complete</div>
             {(pdfCandidateName || jobCtx?.title) && (
               <div style={{ fontSize: '13px', color: 'var(--text-2)', fontWeight: 600, marginTop: '4px' }}>
