@@ -13,7 +13,7 @@
     },
     {
       "route": "/*",
-      "redirect": "https://product.interviewme.global",
+      "redirect": "https://www.theinterviewchair.com",
       "statusCode": 301
     }
   ],
