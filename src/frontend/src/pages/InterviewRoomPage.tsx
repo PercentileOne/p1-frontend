@@ -270,32 +270,41 @@ export default function InterviewRoomPage() {
 
   const liveAvatarSpeakHr = useCallback((text: string, onEnd: () => void) => {
     let cancelled = false;
+    let fallbackCancel: (() => void) | null = null;
     (async () => {
       try {
         if (liveAvatarHr.status !== 'connected') await liveAvatarHr.connect();
         await liveAvatarHr.speak(text, 'hr');
-      } catch (err) {
-        console.error('[InterviewRoom] LiveAvatar (hr) speak failed:', err);
-      } finally {
         if (!cancelled) onEnd();
+      } catch (err) {
+        // A failed connect/speak used to just call onEnd() here — the candidate got silence
+        // with no indication anything went wrong (this is exactly what happened live when
+        // Amina's avatar_id turned out not to be sandbox-eligible: her connect() rejected
+        // instantly, onEnd() fired instantly, and the whole intro sequence appeared to
+        // "skip" straight to the first question with no audio at all). Falling back to plain
+        // TTS here means a genuine avatar failure degrades to "she just talks, no video"
+        // instead of dead air.
+        console.error('[InterviewRoom] LiveAvatar (hr) speak failed, falling back to TTS:', err);
+        if (!cancelled) fallbackCancel = speak(text, 'hr', onEnd);
       }
     })();
-    return () => { cancelled = true; liveAvatarHr.interrupt(); };
+    return () => { cancelled = true; fallbackCancel?.(); liveAvatarHr.interrupt(); };
   }, [liveAvatarHr]);
 
   const liveAvatarSpeakTechnical = useCallback((text: string, onEnd: () => void) => {
     let cancelled = false;
+    let fallbackCancel: (() => void) | null = null;
     (async () => {
       try {
         if (liveAvatarTechnical.status !== 'connected') await liveAvatarTechnical.connect();
         await liveAvatarTechnical.speak(text, 'technical');
-      } catch (err) {
-        console.error('[InterviewRoom] LiveAvatar (technical) speak failed:', err);
-      } finally {
         if (!cancelled) onEnd();
+      } catch (err) {
+        console.error('[InterviewRoom] LiveAvatar (technical) speak failed, falling back to TTS:', err);
+        if (!cancelled) fallbackCancel = speak(text, 'technical', onEnd);
       }
     })();
-    return () => { cancelled = true; liveAvatarTechnical.interrupt(); };
+    return () => { cancelled = true; fallbackCancel?.(); liveAvatarTechnical.interrupt(); };
   }, [liveAvatarTechnical]);
 
   const {

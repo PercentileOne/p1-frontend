@@ -29,6 +29,16 @@ export function useLiveAvatarSession(role: 'hr' | 'technical') {
   // but the avatar never actually spoke. Same "always-fresh reference" idiom already used
   // elsewhere in this codebase (askQuestionRef, beginInterviewIntroRef) for the same reason.
   const connectedRef = useRef(false);
+  // Caches the in-flight connect() attempt so a second caller (e.g. this seat's own first
+  // question, firing right after its intro line's connect+speak) awaits the SAME handshake
+  // instead of getting a premature resolved promise back. The old guard here just checked
+  // `if (sessionRef.current) return` — sessionRef.current is set synchronously the moment
+  // `new LiveAvatarSession(...)` runs, well before the handshake (session.start() +
+  // SESSION_STREAM_READY) actually finishes, so a second connect() call during that window
+  // returned instantly, the caller's speak() then ran against a not-yet-connected session and
+  // threw, and the caller's catch swallowed it as silence — exactly the "no talking" failure
+  // mode this was built to prevent.
+  const connectPromiseRef = useRef<Promise<void> | null>(null);
 
   const attachIfReady = useCallback(() => {
     if (streamReadyRef.current && videoElRef.current && sessionRef.current) {
@@ -36,59 +46,68 @@ export function useLiveAvatarSession(role: 'hr' | 'technical') {
     }
   }, []);
 
-  const connect = useCallback(async () => {
-    if (sessionRef.current) return; // already connecting/connected
-    setStatus('connecting');
-    try {
-      const { sessionToken } = await fetchAvatarSessionToken(role);
-      const session = new LiveAvatarSession(sessionToken, { voiceChat: false });
-      sessionRef.current = session;
+  const connect = useCallback(() => {
+    if (connectedRef.current) return Promise.resolve(); // already connected — no-op
+    if (connectPromiseRef.current) return connectPromiseRef.current; // already connecting — wait for that attempt
+    const attempt = (async () => {
+      setStatus('connecting');
+      try {
+        const { sessionToken } = await fetchAvatarSessionToken(role);
+        const session = new LiveAvatarSession(sessionToken, { voiceChat: false });
+        sessionRef.current = session;
 
-      // session.start() resolves once the WebRTC/WebSocket handshake completes — that's not
-      // the same moment LiveAvatar's own rendering pipeline has actually finished warming up
-      // and subscribed the real video/audio tracks. Calling speak() in that gap is exactly
-      // what caused the very first question of a session to silently misfire live (text
-      // displayed, Wayne never moved, only Repeat — running well after the gap had closed —
-      // worked). SESSION_STREAM_READY is the SDK's own explicit "tracks are actually here"
-      // signal; connect() now waits for it too, with a safety timeout in case it never fires
-      // for some reason, so a stalled stream can't hang the whole interview indefinitely.
-      const streamReadyPromise = new Promise<void>((resolve) => {
-        session.on(SessionEvent.SESSION_STREAM_READY, () => {
-          streamReadyRef.current = true;
-          attachIfReady();
-          resolve();
+        // session.start() resolves once the WebRTC/WebSocket handshake completes — that's not
+        // the same moment LiveAvatar's own rendering pipeline has actually finished warming up
+        // and subscribed the real video/audio tracks. Calling speak() in that gap is exactly
+        // what caused the very first question of a session to silently misfire live (text
+        // displayed, Wayne never moved, only Repeat — running well after the gap had closed —
+        // worked). SESSION_STREAM_READY is the SDK's own explicit "tracks are actually here"
+        // signal; connect() now waits for it too, with a safety timeout in case it never fires
+        // for some reason, so a stalled stream can't hang the whole interview indefinitely.
+        const streamReadyPromise = new Promise<void>((resolve) => {
+          session.on(SessionEvent.SESSION_STREAM_READY, () => {
+            streamReadyRef.current = true;
+            attachIfReady();
+            resolve();
+          });
         });
-      });
-      session.on(SessionEvent.SESSION_DISCONNECTED, () => {
-        setStatus('closed');
+        session.on(SessionEvent.SESSION_DISCONNECTED, () => {
+          setStatus('closed');
+          sessionRef.current = null;
+          connectedRef.current = false;
+          streamReadyRef.current = false;
+          if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }
+        });
+
+        await session.start();
+        await Promise.race([
+          streamReadyPromise,
+          new Promise<void>(resolve => setTimeout(resolve, 5000)),
+        ]);
+        connectedRef.current = true;
+        setStatus('connected');
+
+        // LiveAvatar sessions carry their own 5-minute inactivity timeout, separate from — and
+        // shorter than — a real plan's overall session-duration cap. Nothing else in this hook
+        // sends the session anything during a long candidate answer, so without this a session
+        // could die from inactivity with plenty of duration budget still unused. 2 minutes keeps
+        // a comfortable margin under the 5-minute limit.
+        keepAliveTimerRef.current = setInterval(() => {
+          sessionRef.current?.keepAlive().catch(err => console.warn('[LiveAvatar] keepAlive failed:', err));
+        }, 120_000);
+      } catch (err) {
+        console.error('[LiveAvatar] Session failed to start:', err);
         sessionRef.current = null;
         connectedRef.current = false;
-        streamReadyRef.current = false;
-        if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }
-      });
-
-      await session.start();
-      await Promise.race([
-        streamReadyPromise,
-        new Promise<void>(resolve => setTimeout(resolve, 5000)),
-      ]);
-      connectedRef.current = true;
-      setStatus('connected');
-
-      // LiveAvatar sessions carry their own 5-minute inactivity timeout, separate from — and
-      // shorter than — a real plan's overall session-duration cap. Nothing else in this hook
-      // sends the session anything during a long candidate answer, so without this a session
-      // could die from inactivity with plenty of duration budget still unused. 2 minutes keeps
-      // a comfortable margin under the 5-minute limit.
-      keepAliveTimerRef.current = setInterval(() => {
-        sessionRef.current?.keepAlive().catch(err => console.warn('[LiveAvatar] keepAlive failed:', err));
-      }, 120_000);
-    } catch (err) {
-      console.error('[LiveAvatar] Session failed to start:', err);
-      sessionRef.current = null;
-      connectedRef.current = false;
-      setStatus('failed');
-    }
+        setStatus('failed');
+        throw err; // propagate — connectPromiseRef callers (including this seat's own next
+                   // speak()) need to see the rejection, not a silently-resolved connect().
+      } finally {
+        connectPromiseRef.current = null;
+      }
+    })();
+    connectPromiseRef.current = attempt;
+    return attempt;
   }, [attachIfReady, role]);
 
   const disconnect = useCallback(async () => {
