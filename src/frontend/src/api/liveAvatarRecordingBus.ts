@@ -48,9 +48,8 @@ export function setLiveAvatarRecordingDestination(
     _recordingBusGain.connect(compressor ?? dest);
   }
   // TEMP diagnostic logging — remove once the "no sound in recording" bug is confirmed fixed.
-  console.log('[LiveAvatar][RecordingBus] setLiveAvatarRecordingDestination', {
-    destSet: !!dest, busExistedAlready: !!_recordingBusGain,
-  });
+  // Plain string, not an object — nothing to expand/click, shows fully in one line.
+  console.log(`[DIAG] setLiveAvatarRecordingDestination: destSet=${!!dest} busExistedAlready=${!!_recordingBusGain}`);
 }
 
 // Routes one LiveAvatar <video> element's audio into the shared bus. Must reconnect back to
@@ -76,10 +75,22 @@ export function tapLiveAvatarAudioForRecording(videoEl: HTMLVideoElement, audioC
     // video-analyser tap.
     if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
     // TEMP diagnostic logging — remove once the "no sound in recording" bug is confirmed fixed.
-    console.log('[LiveAvatar][RecordingBus] tapped video element', {
-      videoElId: videoEl.id || '(no id)', audioCtxState: audioCtx.state,
-      destCurrentlyRegistered: !!_currentDest, videoElMuted: videoEl.muted, videoElVolume: videoEl.volume,
-    });
+    // Plain string, not an object — nothing to expand/click, shows fully in one line.
+    console.log(`[DIAG] tapped video element: audioCtxState=${audioCtx.state} destRegistered=${!!_currentDest} videoElMuted=${videoEl.muted} videoElVolume=${videoEl.volume}`);
+    // Real signal check, not just wiring — samples actual audio level ~3s after tapping (gives
+    // the avatar time to actually be speaking) and logs whether anything above silence is
+    // flowing through THIS specific source, independent of whether the graph is "connected".
+    const levelCheck = audioCtx.createAnalyser();
+    levelCheck.fftSize = 256;
+    boost.connect(levelCheck);
+    setTimeout(() => {
+      const data = new Uint8Array(levelCheck.frequencyBinCount);
+      levelCheck.getByteFrequencyData(data);
+      const peak = Math.max(...data);
+      const avg = data.reduce((a, b) => a + b, 0) / data.length;
+      console.log(`[DIAG] level check 3s after tap: peak=${peak} avg=${avg.toFixed(1)} (0=silence, up to 255)`);
+      try { levelCheck.disconnect(); } catch { /* already gone */ }
+    }, 3000);
     return () => { try { source.disconnect(); boost.disconnect(); } catch { /* already disconnected */ } };
   } catch (err) {
     console.warn('[LiveAvatar] Could not tap video audio for recording:', err);
