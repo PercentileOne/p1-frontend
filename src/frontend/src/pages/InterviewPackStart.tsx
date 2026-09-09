@@ -5,6 +5,8 @@ import { ArrowLeft } from 'lucide-react';
 import { FileUpload } from '../components/FileUpload';
 import { logFlowEvent } from '../api/flowLogger';
 import { type Career, searchCareers, reportMissingCareerTitle } from '../api/careersApi';
+import { generateHotTopics } from '../api/aiScoring';
+import { logInDemandSubjects } from '../api/inDemandSubjectsApi';
 import { useAuthStore } from '../auth/authStore';
 
 const LANGUAGES = [
@@ -98,6 +100,7 @@ export default function InterviewPackStart() {
   // noticing, at which point Sarah/James's AI intros have no name to say at all. Still
   // fully editable for the real reason this was blank before: testing someone else's CV.
   const authFirstName = useAuthStore(s => s.user?.firstName);
+  const authToken = useAuthStore(s => s.token);
   const [preferredName, setPreferredName] = useState(incoming.preferredName ?? authFirstName ?? '');
   const [jobSpec, setJobSpec] = useState(incoming.jobSpec ?? '');
   const [jobSpecFileName, setJobSpecFileName] = useState('');
@@ -134,6 +137,36 @@ export default function InterviewPackStart() {
   // a faster, more recent keystroke's search already showed.
   const jobTitleRequestIdRef = useRef(0);
   const lastMatchedTitleRef = useRef<string | null>(null); // avoids re-reporting the same free-typed title repeatedly
+
+  // Special Focus — optional topics that narrow question generation toward specific subjects
+  // (see sessionPrepareClient's specialFocus param), typed manually and/or suggested by
+  // "What's Hot". Kept as chips, not a single string, since "What's Hot" can suggest several
+  // and the candidate keeps whichever are actually relevant.
+  const [specialFocusInput, setSpecialFocusInput] = useState('');
+  const [specialFocusChips, setSpecialFocusChips] = useState<string[]>([]);
+  const [hotTopicsLoading, setHotTopicsLoading] = useState(false);
+
+  const addSpecialFocusChip = useCallback((raw: string) => {
+    const value = raw.trim();
+    if (!value) return;
+    setSpecialFocusChips(prev => prev.some(c => c.toLowerCase() === value.toLowerCase()) ? prev : [...prev, value]);
+  }, []);
+
+  const removeSpecialFocusChip = useCallback((value: string) => {
+    setSpecialFocusChips(prev => prev.filter(c => c !== value));
+  }, []);
+
+  const handleWhatsHot = useCallback(async () => {
+    if (!jobTitle.trim() || hotTopicsLoading) return;
+    setHotTopicsLoading(true);
+    logFlowEvent('WHATS_HOT_CLICKED', { jobTitle: jobTitle.trim() });
+    try {
+      const topics = await generateHotTopics(jobTitle.trim());
+      topics.forEach(addSpecialFocusChip);
+    } finally {
+      setHotTopicsLoading(false);
+    }
+  }, [jobTitle, hotTopicsLoading, addSpecialFocusChip]);
 
   const handleJobTitleChange = useCallback((value: string) => {
     setJobTitle(value);
@@ -199,7 +232,13 @@ export default function InterviewPackStart() {
       selectedLanguage,
       selectedDifficulty,
       selectedQuestionCount,
+      specialFocusCount: specialFocusChips.length,
     });
+    // Only what the candidate actually kept at this exact moment — never the raw "What's
+    // Hot" suggestions, and never fired just for viewing/generating them.
+    if (authToken && jobTitle.trim() && specialFocusChips.length > 0) {
+      void logInDemandSubjects(authToken, jobTitle.trim(), specialFocusChips);
+    }
     navigate('/interview/standard', {
       state: {
         jobTitle: jobTitle.trim() || incoming.jobTitle || '',
@@ -212,6 +251,7 @@ export default function InterviewPackStart() {
         questionCount: selectedQuestionCount,
         autoStart: true,
         consentToRecord,
+        specialFocus: specialFocusChips.length > 0 ? specialFocusChips : undefined,
       },
     });
   };
@@ -343,6 +383,82 @@ export default function InterviewPackStart() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Special Focus — optional topics that narrow question generation; "What's Hot"
+            suggests currently in-demand ones for the named role, candidate keeps/discards */}
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 28px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Special Focus</span>
+            <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 400 }}>(optional — narrows questions to specific topics)</span>
+          </div>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <input
+              type="text"
+              value={specialFocusInput}
+              onChange={e => setSpecialFocusInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ',') {
+                  e.preventDefault();
+                  addSpecialFocusChip(specialFocusInput);
+                  setSpecialFocusInput('');
+                }
+              }}
+              placeholder="e.g. Agentic AI Patterns — press Enter to add"
+              style={{
+                flex: 1, background: 'var(--bg3)', border: '1px solid var(--border)',
+                borderRadius: '10px', padding: '13px 16px', color: 'var(--text)', fontSize: '14px',
+                fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleWhatsHot}
+              disabled={!jobTitle.trim() || hotTopicsLoading}
+              title={!jobTitle.trim() ? 'Enter a job title first' : undefined}
+              style={{
+                flexShrink: 0, display: 'flex', alignItems: 'center', gap: '7px',
+                background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.35)',
+                borderRadius: '10px', padding: '0 18px', color: '#a78bfa', fontSize: '13px', fontWeight: 700,
+                fontFamily: 'inherit', cursor: !jobTitle.trim() || hotTopicsLoading ? 'not-allowed' : 'pointer',
+                opacity: !jobTitle.trim() ? 0.5 : 1,
+              }}
+            >
+              {hotTopicsLoading ? (
+                <span style={{
+                  display: 'inline-block', width: '13px', height: '13px', borderRadius: '50%',
+                  border: '2px solid rgba(167,139,250,0.25)', borderTopColor: '#a78bfa',
+                  animation: 'jobTitleSpin 0.7s linear infinite',
+                }} />
+              ) : '🔥'}
+              What's Hot
+            </button>
+          </div>
+          {specialFocusChips.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '14px' }}>
+              {specialFocusChips.map(chip => (
+                <span key={chip} style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.3)',
+                  borderRadius: '20px', padding: '6px 8px 6px 14px', fontSize: '12.5px', color: 'var(--text)', fontWeight: 600,
+                }}>
+                  {chip}
+                  <button
+                    type="button"
+                    onClick={() => removeSpecialFocusChip(chip)}
+                    aria-label={`Remove ${chip}`}
+                    style={{
+                      width: '18px', height: '18px', borderRadius: '50%', border: 'none',
+                      background: 'rgba(255,255,255,0.08)', color: 'var(--text-3)', fontSize: '12px',
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+                    }}
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Language + Difficulty + Question Count — the primary path now that a CV isn't

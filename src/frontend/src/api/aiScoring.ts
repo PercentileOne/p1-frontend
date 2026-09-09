@@ -781,6 +781,7 @@ export async function sessionPrepareClient(
   preferredName?: string,
   questionCount?: number,
   companyName?: string,
+  specialFocus?: string[],
 ): Promise<ClientSessionResult> {
   // 4:1 role-to-HR split, same ratio as the original fixed 8+2 — the last HR question is
   // always "what do you know about the company", every other slot is role/competency.
@@ -797,6 +798,13 @@ export async function sessionPrepareClient(
     : 'Standard — well-rounded questions to build confidence and preparation';
 
   const jobTitleLine = jobTitle ? `\nJob Title (explicitly confirmed by candidate): ${jobTitle}` : '';
+  // Candidate-directed topic focus (intake screen's "Special Focus" field, optionally seeded
+  // by the "What's Hot" suggestions) — see item 5 on /patent. Deliberately worded as "at
+  // least half" rather than "every" role question: a candidate naming 2-3 topics still wants
+  // a real interview covering the whole role, not a quiz on just those topics.
+  const specialFocusLine = specialFocus && specialFocus.length > 0
+    ? `\nSpecial Focus Topics (explicitly requested by candidate — weight questions toward these): ${specialFocus.join(', ')}`
+    : '';
   // Real company, when one is actually known (e.g. a recruiter's prep link) — otherwise the
   // model invents one itself (see COMPANY NAMING rule below). Previously only ever reached
   // Mike's separate Phase 1 script call, never this one, so Sarah/James/the questions/the
@@ -833,7 +841,7 @@ CRITICAL RULES — READ CAREFULLY:
   const userPrompt = `Generate a complete interview session for the job specification below. Session ID: ${sessionSeed} — this is unique to this session. You MUST generate completely fresh questions every time. Never repeat or reuse questions from any prior generation. Vary question wording, angle, and which competencies you probe.
 ${cvSection ? 'A candidate CV is also provided — use it to personalise questions and intros.' : 'No CV provided — base questions purely on the role requirements.'}
 
-═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${preferredNameLine}
+═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${specialFocusLine}${preferredNameLine}
 
 ═══ JOB SPECIFICATION ═══
 ${jobSpecText.slice(0, 4000)}${cvSection}
@@ -877,7 +885,7 @@ Return this exact JSON:
 }
 
 Generate exactly ${totalQuestions} questions total:
-- ${roleQuestionCount} role/competency questions (source: "Role") — based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover DIFFERENT competencies each time — do NOT reuse the same question themes across sessions. Use the session seed to pick a fresh angle on the role. Avoid generic questions like "tell me about yourself" or "describe a challenge" — make them specific to this exact role and company.
+- ${roleQuestionCount} role/competency questions (source: "Role") — based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover DIFFERENT competencies each time — do NOT reuse the same question themes across sessions. Use the session seed to pick a fresh angle on the role. Avoid generic questions like "tell me about yourself" or "describe a challenge" — make them specific to this exact role and company.${specialFocus && specialFocus.length > 0 ? ` At least half of these role questions must be hard, specific questions directly testing one of the Special Focus Topics named in the Session Context (${specialFocus.join(', ')}) — not just generically related to the role.` : ''}
 - ${hrQuestionCount} HR/culture question${hrQuestionCount === 1 ? '' : 's'} (source: "HR") — the last one must ask what the candidate knows about the company and why this role appeals to them specifically
 
 CRITICAL: The JSON must contain "mcqQuestions" (plural, an array of exactly 2 objects) — NOT "mcqQuestion" (singular). This is mandatory.
@@ -955,7 +963,7 @@ IMPORTANT: The two MCQ questions and ALL interview questions MUST be completely 
 
 ═══ JOB SPECIFICATION ═══
 ${jobSpecText.slice(0, 4000)}${cvSection}
-${jobTitleLine}${companyLine}${difficultyLine}
+${jobTitleLine}${companyLine}${difficultyLine}${specialFocusLine}
 
 ═══ QUESTIONS ALREADY IN THIS SESSION — do not repeat these themes ═══
 ${existingTexts}
@@ -1091,6 +1099,35 @@ Return JSON:
       // Question 1 was prompted to test focus1, question 2 focus2 — known before the call,
       // no need to ask the AI to echo it back.
       .map((q, i) => ({ questionText: q.questionText, options: q.options, correctIndex: q.correctIndex ?? 0, explanation: q.explanation ?? '', topic: i === 0 ? focus1 : focus2 }));
+  } catch {
+    return [];
+  }
+}
+
+// ── "What's Hot" — in-demand focus-topic suggestions ────────────────────────────
+
+// Powers the intake screen's "What's Hot" button next to Special Focus. Deliberately
+// job-title-only (no CV/job-spec context) — this is meant to answer "what's trending for
+// this role in general", not "what does this specific job spec mention", which is exactly
+// the candidate-directed topic-focus use case (see item 5 on /patent) it feeds into.
+export async function generateHotTopics(jobTitle: string): Promise<string[]> {
+  const systemPrompt = `You identify the specific skills, technologies, and topics currently most talked about and tested for a given job role in real interviews. Return ONLY valid JSON — no markdown, no explanation.`;
+
+  const userPrompt = `Role: ${jobTitle}
+
+List exactly 4 specific, currently in-demand subjects, technologies, or methodologies that someone interviewing for this role today should be ready to discuss — the kind of thing that shows up repeatedly in recent job postings and interview loops for this role.
+
+Rules:
+- Each item is a short, specific name (2-4 words) — a real named technology, pattern, framework, or methodology, not a vague category. "Agentic AI patterns" not "AI knowledge". "Zero Trust Architecture" not "security".
+- Genuinely specific to THIS role — not generic soft skills like "communication" or "teamwork".
+- No duplicates, no near-duplicates of each other.
+
+Return JSON:
+{ "topics": ["...", "...", "...", "..."] }`;
+
+  try {
+    const result = await chatJSON<{ topics: string[] }>(systemPrompt, userPrompt, 0.8);
+    return (result.topics ?? []).filter(t => typeof t === 'string' && t.trim().length > 0).slice(0, 4);
   } catch {
     return [];
   }

@@ -48,6 +48,7 @@ export interface RoomState {
   company?: string;
   consentToRecord?: boolean;
   goDeeperEnabled?: boolean;
+  specialFocus?: string[];
 }
 
 // ── Coaching cues — rotate during answering phase ────────────────────────────
@@ -450,7 +451,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       // name-less lines — that's what "James stopped saying my name" was, and what "Amina
       // didn't say my name" was too.
       phase2Timeout = setTimeout(resolvePhase2, 90000);
-      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount, ctx.company || undefined);
+      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount, ctx.company || undefined, ctx.specialFocus);
 
     }).then(result => {
       bgLoadedRef.current = true;

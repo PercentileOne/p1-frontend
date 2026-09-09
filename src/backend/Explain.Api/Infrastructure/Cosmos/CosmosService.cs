@@ -105,6 +105,16 @@ public class CosmosService
         // cross-partition; this is a low-volume analytics sink, not a hot read path.
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("qaLog", "/candidateId"));
+
+        // "In Demand Subjects" — one document per (job title, subject) pair, counters
+        // incremented every time a candidate keeps that subject in the intake screen's
+        // Special Focus field when actually starting an interview (never for a suggestion
+        // they discarded, never just for viewing "What's Hot"). Partition key = /jobTitleKey
+        // (normalised lowercase job title) so "every subject logged for this role" is a
+        // single-partition read — the actual query this container exists to serve, for
+        // reporting and for informing future interview-prompt design.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("inDemandSubjects", "/jobTitleKey"));
     }
 
     public Container GetContainer(string name) => _database.GetContainer(name);
