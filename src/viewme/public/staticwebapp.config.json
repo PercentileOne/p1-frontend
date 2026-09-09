@@ -25,6 +25,10 @@
     {
       "route": "/book",
       "rewrite": "/book.html"
+    },
+    {
+      "route": "/patent",
+      "rewrite": "/patent.html"
     }
   ],
   "navigationFallback": {
