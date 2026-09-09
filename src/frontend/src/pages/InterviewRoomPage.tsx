@@ -108,7 +108,7 @@ export default function InterviewRoomPage() {
   const location = useLocation();
   const ctx = (location.state ?? {}) as RoomState;
   const cvCtx = ctx.cvCtx;
-  const jobCtx = ctx.jobCtx;
+  const rawJobCtx = ctx.jobCtx;
 
   // The tab title otherwise stays the generic app name for the whole session — no way to
   // tell at a glance (browser tab, screen-share thumbnail, demo recording) which interview
@@ -142,6 +142,21 @@ export default function InterviewRoomPage() {
   const [bgResolvedCompany, setBgResolvedCompany] = useState<string | null>(null);
   const bgLoadRef = useRef(false);
   const bgLoadedRef = useRef(false); // true once AI results arrive
+
+  // rawJobCtx (the full parsed JobSpecContext) is only ever populated by the full intake
+  // flow — sessions started via the quicker path (just a job title, no CV/job-spec upload,
+  // which is the common case) never build one. This single fallback is the ONLY place that
+  // gap gets filled — every consumer (scoring, Tell Me The Answer, both uploadRecording call
+  // sites, and the summary page navigate) reads this, not rawJobCtx directly, specifically so
+  // they can't drift out of sync again: this exact bug previously existed because the
+  // summary-page navigate had its own local fallback that the upload calls never saw, so a
+  // freshly-finished interview looked fine (from route state) but the SAVED copy — what you
+  // get back later from the list — was missing title/company. Found live 2026-09-09.
+  const jobCtx = rawJobCtx ?? {
+    rawText: '', title: ctx.jobTitle ?? '', company: bgResolvedCompany ?? ctx.company,
+    requiredSkills: [], techStack: [], responsibilities: [], behaviouralThemes: [],
+    leadershipExpectations: [], seniority: '',
+  };
 
   // MCQ bonus round generation params — set once Phase 2 hands back a real job spec; see
   // useMcqBonusRound's own doc comment for why this is the "session prep succeeded" signal.
@@ -541,21 +556,9 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setHrState('speaking');
     const onClosingDone = () => {
       setHrState('idle');
-      // jobCtx (the full parsed JobSpecContext) is only ever populated by the full intake flow
-      // — sessions started via a quicker path (no CV/job-spec upload) never build one, leaving
-      // the summary page's title/company line blank even though the session unmistakably had a
-      // real job title and (often AI-resolved) company the whole way through, per every AI
-      // prompt and Mike's own briefing. Filling in title/company here guarantees the summary
-      // always has them, same fallback (bgResolvedCompany ?? ctx.company) useInterviewRecording
-      // already uses for what actually gets saved, so the two can't disagree.
-      const summaryJobCtx = jobCtx ?? {
-        rawText: '', title: ctx.jobTitle ?? '', company: bgResolvedCompany ?? ctx.company,
-        requiredSkills: [], techStack: [], responsibilities: [], behaviouralThemes: [],
-        leadershipExpectations: [], seniority: '',
-      };
       navigate(`/interview-summary/${interviewIdRef.current}`, {
         state: {
-          answers, cvCtx, jobCtx: summaryJobCtx, mcqResults: mcqRes, mcqQuestions, mcqBonusPoints: bonusPts,
+          answers, cvCtx, jobCtx, mcqResults: mcqRes, mcqQuestions, mcqBonusPoints: bonusPts,
           playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current,
           interviewId: interviewIdRef.current, candidateId: getCandidateId(),
         },
