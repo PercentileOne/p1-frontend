@@ -13,6 +13,14 @@ const DIMS = [
   { key: 'confidence', label: 'Confidence' },
 ] as const;
 
+// Only ever present on the two guaranteed measure questions (see ScoreResponse's own comment)
+// — rendered conditionally below, never assumed present the way DIMS above always are.
+const EXTRA_DIMS = [
+  { key: 'ownership', label: 'Ownership' },
+  { key: 'execution', label: 'Execution' },
+  { key: 'proactiveness', label: 'Proactiveness' },
+] as const;
+
 function scoreColor(v: number) {
   if (v >= 0.70) return '#34D399';
   if (v >= 0.45) return '#F59E0B';
@@ -78,6 +86,33 @@ export function ScoringDisplay({ score, compact }: Props) {
           </div>
         );
       })}
+
+      {/* Extra dimensions — only ever present on the two guaranteed measure questions */}
+      {EXTRA_DIMS.some(({ key }) => score[key] !== undefined) && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: compact ? '10px' : '14px', paddingTop: '4px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#a78bfa' }}>Leadership signal</div>
+          {EXTRA_DIMS.filter(({ key }) => score[key] !== undefined).map(({ key, label }) => {
+            const val = score[key] ?? 0;
+            const color = scoreColor(val);
+            return (
+              <div key={key}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-2)' }}>{label}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color, fontVariantNumeric: 'tabular-nums' }}>{Math.round(val * 100)}%</span>
+                </div>
+                <div style={{ height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${val * 100}%` }}
+                    transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
+                    style={{ height: '100%', background: color, borderRadius: '2px' }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Feedback items */}
       {!compact && score.feedback.length > 0 && (

@@ -34,6 +34,21 @@ function overallAvg(answers: SessionAnswer[]) {
   return answers.reduce((s, a) => s + a.score.overallScore, 0) / answers.length;
 }
 
+// Same formula as useInterviewRecording.ts / InterviewResultsBody.tsx's identical
+// computation — must stay in sync, see useInterviewRecording.ts's own comment for the
+// full reasoning.
+function measureBonus(answers: SessionAnswer[]) {
+  return answers.reduce((sum, a) => {
+    if (a.score.ownership !== undefined || a.score.execution !== undefined) {
+      return sum + ((a.score.ownership ?? 0) + (a.score.execution ?? 0)) / 2 * 10;
+    }
+    if (a.score.proactiveness !== undefined) {
+      return sum + a.score.proactiveness * 10;
+    }
+    return sum;
+  }, 0);
+}
+
 // ── Send Feedback to Candidate Tab ────────────────────────────────────────────
 
 const OUTCOME_OPTIONS: { value: FeedbackOutcome; label: string; sub: string; color: string; bg: string }[] = [
@@ -523,9 +538,10 @@ export default function InterviewSummaryPage() {
   const [savedShareUrl, setSavedShareUrl] = useState<string | null>(null);
 
   const mcqBonusPoints = mcqResults.filter(r => r.correct).length * 10;
+  const measureBonusPoints = measureBonus(answers);
   // Matches InterviewResultsBody's own blending exactly — Mike's spoken percentage would
   // otherwise mismatch the score card sitting right next to his debrief banner.
-  const overall = Math.min(1, overallAvg(answers) + mcqBonusPoints / 100);
+  const overall = Math.min(1, overallAvg(answers) + (mcqBonusPoints + measureBonusPoints) / 100);
   const strengths = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) >= 0.65);
   const improvements = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) < 0.55);
 

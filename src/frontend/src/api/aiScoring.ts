@@ -13,6 +13,42 @@ const MODEL = 'gpt-4o-mini';
 // which holds the key securely and avoids browser CORS issues.
 export const aiScoringConfigured = true;
 
+// Marker tags on an InterviewQuestion's competencyTags — how scoreWithAI knows to ask for
+// the extra dimensions on these two specific questions and no others. Checked by reference
+// to these exact strings, not by matching question text, so the tag is the single source of
+// truth end to end.
+export const OWNERSHIP_SIGNAL_TAG = 'ownership-signal';
+export const PROACTIVENESS_SIGNAL_TAG = 'proactiveness-signal';
+
+// The two guaranteed-every-interview HR questions (Francis, 2026-09-09): hardcoded rather
+// than AI-generated so they're 100% reliable — no risk of the model paraphrasing them away or
+// skipping them under prompt pressure. Spliced into every session's question set by
+// sessionPrepareClient below, always asked by Amina (HR), always the same two dimensions:
+// "what are you proud of" surfaces ownership/leadership AND execution (did they actually
+// drive it AND see it through) in one answer; "5 years" surfaces proactiveness/forward
+// planning. Scored once per interview each, never per-question — see ScoreResponse's own
+// comment on why.
+export const MANDATORY_MEASURE_QUESTIONS: InterviewQuestion[] = [
+  {
+    questionId: 'q-ownership-measure',
+    questionText: "Tell us about a project or accomplishment you're most proud of.",
+    modelAnswer: 'A strong answer names a specific project, is clear about what the candidate personally drove or decided — not just what "we" did — and describes a concrete outcome they saw through to completion, not just a good idea that stalled.',
+    questionType: 'Behavioural',
+    difficulty: 'Medium',
+    source: 'HR',
+    competencyTags: [OWNERSHIP_SIGNAL_TAG],
+  },
+  {
+    questionId: 'q-proactiveness-measure',
+    questionText: "Where do you see yourself in five years' time?",
+    modelAnswer: 'A strong answer shows genuine, specific forward planning and initiative for getting there — realistic and grounded in this field, not a vague or clearly rehearsed non-answer.',
+    questionType: 'Behavioural',
+    difficulty: 'Medium',
+    source: 'HR',
+    competencyTags: [PROACTIVENESS_SIGNAL_TAG],
+  },
+];
+
 async function chatJSON<T>(systemPrompt: string, userPrompt: string, temperature = 0.3): Promise<T> {
   const body = JSON.stringify({
     model: MODEL,
@@ -291,6 +327,8 @@ export async function scoreWithAI(
   goDeeper?: { enabled: boolean; difficulty: string },
   selectedLanguage?: string,
 ): Promise<ScoreResponse> {
+  const isOwnershipQuestion = question.competencyTags?.includes(OWNERSHIP_SIGNAL_TAG) ?? false;
+  const isProactivenessQuestion = question.competencyTags?.includes(PROACTIVENESS_SIGNAL_TAG) ?? false;
   const goDeeperOn = goDeeper?.enabled === true;
   const aggression = goDeeper?.difficulty === 'Expert'
     ? 'Be genuinely probing — the kind of question that exposes someone who oversold their experience. Ask for a specific tool, number, or exact step they personally performed.'
@@ -318,7 +356,19 @@ Return ONLY a valid JSON object — no markdown, no explanation.`;
     jobCtx?.requiredSkills?.length ? `Required skills: ${jobCtx.requiredSkills.slice(0, 5).join(', ')}` : null,
   ].filter(Boolean).join('\n');
 
-  const userPrompt = `Score this interview answer across 4 dimensions (0.0–1.0).
+  const extraDimensionsGuide = isOwnershipQuestion
+    ? `\n- ownership: does the candidate speak as the one who personally drove/decided/led this, not just "we"? Genuine leadership and initiative, not just involvement.
+- execution: did they actually see it through to a real, concrete outcome — follow-through, not just a good idea that stalled?`
+    : isProactivenessQuestion
+    ? `\n- proactiveness: is there genuine, specific forward planning and initiative here, or a vague/rehearsed non-answer?`
+    : '';
+  const extraDimensionsJson = isOwnershipQuestion
+    ? `,\n  "ownership": 0.0,\n  "execution": 0.0`
+    : isProactivenessQuestion
+    ? `,\n  "proactiveness": 0.0`
+    : '';
+
+  const userPrompt = `Score this interview answer across ${isOwnershipQuestion || isProactivenessQuestion ? 'the usual 4 dimensions plus the extra one(s) noted below' : '4 dimensions'} (0.0–1.0).
 
 Question: ${question.questionText}
 Model answer hint: ${question.modelAnswer}
@@ -330,7 +380,7 @@ Scoring guide:
 - clarity: is it well-structured, easy to follow, and articulate?
 - depth: are there specific examples, metrics, or outcomes — not just generalities?
 - confidence: does the language sound assured, or is it hedged with "maybe", "I think", "kind of"?
-- overallScore: weighted average (relevance 35%, clarity 25%, depth 25%, confidence 15%)
+- overallScore: weighted average (relevance 35%, clarity 25%, depth 25%, confidence 15%) — do NOT factor the extra dimension(s) below into this number, they're scored and used separately.${extraDimensionsGuide}
 ${goDeeperOn ? `
 Also decide: does this answer warrant a probing follow-up (see system prompt)? If yes, write ONE natural, spoken follow-up question — one or two sentences, conversational, no bullet points, no em dashes, going straight to the probe (don't repeat the original question or restate what they said).` : ''}
 
@@ -344,7 +394,7 @@ Return JSON:
   "feedback": [
     { "dimension": "relevance|clarity|depth|confidence", "message": "one specific observation", "severity": "high|medium|low" }
   ],
-  "suggestions": ["one actionable improvement tip"]${goDeeperOn ? `,
+  "suggestions": ["one actionable improvement tip"]${extraDimensionsJson}${goDeeperOn ? `,
   "needsFollowUp": false,
   "followUpQuestion": null` : ''}
 }`;
@@ -353,6 +403,8 @@ Return JSON:
   const score = await chatJSON<ScoreResponse>(systemPrompt, userPrompt);
   console.group('[Explain AI] SCORE RECEIVED');
   console.log(`Overall: ${Math.round(score.overallScore * 100)}% | Relevance: ${Math.round((score.relevance ?? 0) * 100)}% | Clarity: ${Math.round((score.clarity ?? 0) * 100)}% | Depth: ${Math.round((score.depth ?? 0) * 100)}% | Confidence: ${Math.round((score.confidence ?? 0) * 100)}%`);
+  if (isOwnershipQuestion) console.log(`Ownership: ${Math.round((score.ownership ?? 0) * 100)}% | Execution: ${Math.round((score.execution ?? 0) * 100)}%`);
+  if (isProactivenessQuestion) console.log(`Proactiveness: ${Math.round((score.proactiveness ?? 0) * 100)}%`);
   if (goDeeperOn) console.log(`Go Deeper: needsFollowUp=${score.needsFollowUp} — ${score.followUpQuestion ?? '(none)'}`);
   console.groupEnd();
   return score;
@@ -1001,8 +1053,23 @@ Return this exact JSON:
     .filter(q => q?.questionText && q?.options?.length === 4)
     .map(q => ({ questionText: q.questionText, options: q.options, correctIndex: q.correctIndex ?? 0, explanation: q.explanation ?? '' }));
 
+  // Guarantee the two mandatory measure questions (see MANDATORY_MEASURE_QUESTIONS) are
+  // always present, positioned right before the existing "what do you know about the
+  // company" closer (assumed to be the last HR question, per this prompt's own rule above) so
+  // that convention stays intact. Replaces 3 slots with 3 (2 mandatory + the re-appended
+  // company question) to keep the total exactly at what the candidate configured, rather than
+  // silently inflating the session length.
+  const baseQuestions = result.questions ?? [];
+  const companyQuestion = baseQuestions.length > 0 ? baseQuestions[baseQuestions.length - 1] : undefined;
+  const remainingQuestions = companyQuestion
+    ? baseQuestions.slice(0, Math.max(0, baseQuestions.length - 3))
+    : baseQuestions.slice(0, Math.max(0, baseQuestions.length - 2));
+  const finalQuestions = companyQuestion
+    ? [...remainingQuestions, ...MANDATORY_MEASURE_QUESTIONS, companyQuestion]
+    : [...remainingQuestions, ...MANDATORY_MEASURE_QUESTIONS];
+
   return {
-    questions: result.questions ?? [],
+    questions: finalQuestions,
     sarahIntro: ensureNameSpoken(result.sarahIntro ?? '', preferredName),
     jamesIntro: ensureNameSpoken(result.jamesIntro ?? '', preferredName),
     mikeScript: result.mikeScript ?? null,

@@ -38,6 +38,20 @@ function overallAvg(answers: ResultAnswer[]) {
   return answers.reduce((s, a) => s + a.score.overallScore, 0) / answers.length;
 }
 
+// Same formula as useInterviewRecording.ts's identical computation — must stay in sync, see
+// that file's own comment for the full reasoning.
+function measureBonus(answers: ResultAnswer[]) {
+  return answers.reduce((sum, a) => {
+    if (a.score.ownership !== undefined || a.score.execution !== undefined) {
+      return sum + ((a.score.ownership ?? 0) + (a.score.execution ?? 0)) / 2 * 10;
+    }
+    if (a.score.proactiveness !== undefined) {
+      return sum + a.score.proactiveness * 10;
+    }
+    return sum;
+  }, 0);
+}
+
 function scoreColor(v: number) {
   if (v >= 0.7) return '#34D399';
   if (v >= 0.45) return '#F59E0B';
@@ -67,12 +81,13 @@ export function InterviewResultsBody({
   const strengths = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) >= 0.65);
   const improvements = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) < 0.55);
   const mcqBonusPoints = mcqResults.filter(r => r.correct).length * 10;
+  const measureBonusPoints = measureBonus(answers);
   const revealedCount = answers.filter(a => a.revealedAnswer).length;
   // MCQ bonus now genuinely lifts the headline score — it used to render as a disconnected
   // "+N MCQ bonus" side-note next to a percentage it never actually affected, which is exactly
   // why answering the bonus round well never showed up anywhere in the number itself. Capped at
   // 100 so a perfect MCQ round can't push a middling set of real answers above full marks.
-  const overall = Math.min(1, baseScore + mcqBonusPoints / 100);
+  const overall = Math.min(1, baseScore + (mcqBonusPoints + measureBonusPoints) / 100);
 
   return (
     <>
@@ -84,6 +99,9 @@ export function InterviewResultsBody({
           <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>Overall Score</div>
           {mcqBonusPoints > 0 && (
             <div style={{ fontSize: '12px', color: '#34D399', fontWeight: 700, marginTop: '4px' }}>+{mcqBonusPoints} MCQ bonus</div>
+          )}
+          {measureBonusPoints > 0 && (
+            <div style={{ fontSize: '12px', color: '#a78bfa', fontWeight: 700, marginTop: '4px' }}>+{Math.round(measureBonusPoints)} leadership signal</div>
           )}
           {revealedCount > 0 && (
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>💡 Asked for Answer: {revealedCount}/{answers.length}</div>

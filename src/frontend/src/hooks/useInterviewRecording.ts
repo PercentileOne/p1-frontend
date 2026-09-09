@@ -288,13 +288,27 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
         const baseScore = answers.length
           ? answers.reduce((s, a) => s + a.score.overallScore, 0) / answers.length
           : 0;
+        // Ownership/execution/proactiveness (see ScoreResponse's own comment) are up to 10
+        // points each — one guaranteed question each (MANDATORY_MEASURE_QUESTIONS), never
+        // scored per-answer. Same "bake the bonus into the persisted overallScore itself"
+        // reasoning as mcqBonusPoints below, so it actually moves the number everywhere it's
+        // shown rather than sitting decoratively unused.
+        const measureBonusPoints = answers.reduce((sum, a) => {
+          if (a.score.ownership !== undefined || a.score.execution !== undefined) {
+            return sum + ((a.score.ownership ?? 0) + (a.score.execution ?? 0)) / 2 * 10;
+          }
+          if (a.score.proactiveness !== undefined) {
+            return sum + a.score.proactiveness * 10;
+          }
+          return sum;
+        }, 0);
         // MCQ bonus is now baked into the persisted overallScore itself, not just carried
         // alongside it as a decorative mcqBonusPoints field nothing downstream actually applied
         // — that's why answering the bonus round well never moved the number anywhere it's
         // shown (summary page, My Interviews list, recruiter views). Capped at 100 so a perfect
         // MCQ round can't push a middling set of real answers above full marks. Matches the
         // identical blend in InterviewResultsBody.tsx / InterviewSummaryPage.tsx exactly.
-        const overallScore = Math.min(1, baseScore + extra.mcqBonusPoints / 100);
+        const overallScore = Math.min(1, baseScore + (extra.mcqBonusPoints + measureBonusPoints) / 100);
         const metadata = JSON.stringify({
           candidateId,
           interviewId,
@@ -305,6 +319,7 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
           mcqQuestions: extra.mcqQuestions,
           mcqResults: extra.mcqResults,
           mcqBonusPoints: extra.mcqBonusPoints,
+          measureBonusPoints,
           chapters: chapterMarkersRef.current,
           cvCtx: extra.cvCtx,
           jobCtx: extra.jobCtx,

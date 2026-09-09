@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 import type { InterviewQuestion } from '../api/explainApi';
 import type { SessionAnswer } from '../pages/interview-room/types';
+import { OWNERSHIP_SIGNAL_TAG, PROACTIVENESS_SIGNAL_TAG } from '../api/aiScoring';
 
 export const GO_DEEPER_LIMITS: Record<string, { max: number; chance: number }> = {
   // Beginner is meant to be pressure-free — no dynamic probing at all, however shallow an answer is.
@@ -60,6 +61,13 @@ export function decideGoDeeperFollowUp(
     questionId: `${lastAnswer.question.questionId}-followup-${firedCount + 1}`,
     questionText: followUpText,
     questionType: 'Follow-up',
+    // Strip the ownership/proactiveness measure markers specifically — the spread above would
+    // otherwise carry them onto the follow-up, and scoreWithAI would score the same dimension
+    // a second time for one interview, which is exactly what Francis said not to do (once per
+    // interview, not per question). Any other legitimate tags are kept.
+    competencyTags: (lastAnswer.question.competencyTags ?? []).filter(
+      t => t !== OWNERSHIP_SIGNAL_TAG && t !== PROACTIVENESS_SIGNAL_TAG,
+    ),
   };
 
   const doHandoff = rng() < 0.5;
