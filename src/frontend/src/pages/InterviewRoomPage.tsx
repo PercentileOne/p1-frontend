@@ -336,6 +336,7 @@ export default function InterviewRoomPage() {
     setHighlightRecord, setAudioCheckState,
     liveAvatarSpeak: liveAvatarSpeakHr, liveAvatarActive: avatarEnabled,
     liveAvatarSpeakTechnical, liveAvatarActiveTechnical: avatarEnabled,
+    liveAvatarConnect: liveAvatarHr.connect, liveAvatarConnectTechnical: liveAvatarTechnical.connect,
   });
 
   const {

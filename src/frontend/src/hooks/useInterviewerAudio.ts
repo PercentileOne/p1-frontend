@@ -89,6 +89,16 @@ export interface UseInterviewerAudioParams {
   /** Same contract as liveAvatarSpeak, for Wayne's (technical) seat. */
   liveAvatarSpeakTechnical?: (text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => () => void;
   liveAvatarActiveTechnical?: boolean;
+  /** Raw connect() from useLiveAvatarSession, separate from liveAvatarSpeak's combined
+   * connect+speak — fired proactively the instant Mike's intro starts (startMike below),
+   * so the WebRTC handshake's several seconds of latency happen during his ~15-30s intro
+   * instead of after it. Both idempotent (see useLiveAvatarSession's own connectedRef/
+   * connectPromiseRef guards) — calling this here is purely additive warm-up; the later
+   * liveAvatarSpeak call in beginInterviewIntro just finds an already-connected session (or
+   * awaits the same in-flight promise) instead of starting the handshake from scratch. */
+  liveAvatarConnect?: () => Promise<void>;
+  /** Same, for Wayne's (technical) seat. */
+  liveAvatarConnectTechnical?: () => Promise<void>;
 }
 
 export interface UseInterviewerAudioReturn {
@@ -165,6 +175,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     phase2ReadyRef, phase2WaitersRef,
     jobSpecText, cvText, ctxSelectedLanguage, setHighlightRecord, setAudioCheckState,
     liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical,
+    liveAvatarConnect, liveAvatarConnectTechnical,
   } = params;
 
   const [hrState, setHrState] = useState<AvatarState>('idle');
@@ -466,6 +477,15 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
 
   const startMike = useCallback(() => {
     setPhase('mike');
+    // Warm-start Amina and Wayne's LiveAvatar sessions the instant Mike begins talking, not
+    // when it's actually their turn to speak (previously: not until beginInterviewIntro,
+    // i.e. after his entire intro finishes) — front-loads the WebRTC handshake's several
+    // seconds of latency onto his ~15-30s intro window instead of a dead-air gap after it.
+    // Fire-and-forget: a connection failure here is silently absorbed by the real speak()
+    // call's own connect-if-needed + fallback-to-TTS logic later, exactly as before this
+    // existed — this is pure warm-up, nothing here is on the critical path.
+    if (liveAvatarActive) void liveAvatarConnect?.().catch(() => {});
+    if (liveAvatarActiveTechnical) void liveAvatarConnectTechnical?.().catch(() => {});
     // Chapter marker so the replay's "Jump to question" list can jump back to the intros too,
     // not just the interview questions — negative questionIndex sentinels (-2 Mike, -1 Sarah
     // & James) keep these out of the real 0-based question range; InterviewSummaryPage.tsx's
@@ -486,7 +506,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     if (sessionLanguage !== 'en' || !MIKE_VIDEO_ENABLED) {
       cancelSpeakRef.current = speak(bgMikeScriptRef.current ?? FALLBACK_MIKE_SCRIPT, 'technical', handleMikeIntroDone, (a) => setTechAnalyser(a));
     }
-  }, [jobSpecText, cvText, ctxSelectedLanguage, sessionLanguage, handleMikeIntroDone, setPhase, chapterMarkersRef, recordingStartTimeRef, bgMikeScriptRef]);
+  }, [jobSpecText, cvText, ctxSelectedLanguage, sessionLanguage, handleMikeIntroDone, setPhase, chapterMarkersRef, recordingStartTimeRef, bgMikeScriptRef, liveAvatarActive, liveAvatarConnect, liveAvatarActiveTechnical, liveAvatarConnectTechnical]);
 
   useEffect(() => { startMikeRef.current = startMike; }, [startMike]);
 
