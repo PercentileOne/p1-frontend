@@ -207,9 +207,9 @@
   </div>
 
   <div class="item">
-    <div class="item-name"><span class="item-num">5.</span>Candidate-directed topic focus ("With special focus on")<span class="status-pill status-planned">Planned, not yet built</span></div>
-    <div class="item-desc">An optional field alongside the job title at intake where a candidate names a specific topic or technology, causing the AI's question generation to replace its default generic/CV-inferred questions with hard, targeted questions specifically on that named topic — layered on top of the same CV- and job-spec-driven generation already used for the rest of the interview.</div>
-    <div class="item-why"><b>Possible angle:</b> candidate-directed narrowing of AI-generated interview content to a named topic, rather than only inferring focus areas automatically — the candidate steering the difficulty/subject matter of their own practice session in real time.</div>
+    <div class="item-name"><span class="item-num">5.</span>Candidate-directed topic focus ("With special focus on")<span class="status-pill status-live">Live</span></div>
+    <div class="item-desc">An optional field alongside the job title at intake. A "What's Hot" button AI-generates 3-4 currently in-demand subjects for that exact job title (e.g. "Agentic AI Patterns", "Zero Trust Architecture" for a Software Architect role); the candidate keeps, discards, or replaces any of them, and can type their own topics directly too. Whatever survives that curation is woven into the AI's question generation, replacing default generic/CV-inferred questions with hard, targeted questions on those exact topics, and the technical interviewer explicitly names one or two of them out loud in his own spoken intro — a deterministic, guaranteed acknowledgement, not left to chance.</div>
+    <div class="item-why"><b>Possible angle:</b> AI-suggested, then candidate-curated, topic selection — the suggestion is a starting point, not the final input, and only what the candidate actively chooses to keep shapes the actual interview content and gets spoken back to them by name.</div>
   </div>
 
   <h2><span class="cat-num">02</span>Scoring, coaching &amp; results</h2>
@@ -315,6 +315,15 @@
     <div class="item-name"><span class="item-num">20.</span>Spoken, personalized "tell me about this role" career guide<span class="status-pill status-planned">Planned, not yet built</span></div>
     <div class="item-desc">The AI interviewer gives a candidate a personalized spoken walkthrough of a specific career/role, drawing on that candidate's own profile and CV data, framed as a natural conversational answer rather than a static content page.</div>
     <div class="item-why"><b>Possible angle:</b> personalized spoken career content generated live from the candidate's own data, delivered in the same avatar/voice apparatus used for interviewing.</div>
+  </div>
+
+  <h2><span class="cat-num">07</span>Aggregate market intelligence</h2>
+  <div class="cat-note">A byproduct of item 5's curation step — a real, cross-candidate dataset, not a single candidate's data.</div>
+
+  <div class="item">
+    <div class="item-name"><span class="item-num">21.</span>Cross-candidate "in-demand subjects" dataset from real curation choices<span class="status-pill status-live">Live</span></div>
+    <div class="item-desc">Every topic a candidate actually keeps (not just what the AI suggested) from item 5's "What's Hot" step is logged against that job title, aggregated across every candidate who has ever interviewed for that role — one running counter per (role, subject) pair, not a raw per-candidate log. A query for any job title returns the subjects real candidates have judged worth practicing, ranked by how often they were kept, ready to feed public-facing reporting or back into the AI's own future question-generation prompts.</div>
+    <div class="item-why"><b>Possible angle:</b> the underlying signal is a real human decision (keep vs. discard an AI suggestion), aggregated at scale into a dataset about what a job market actually cares about — distinct from both a single candidate's data and from the AI's own unverified suggestion, since only what candidates chose to keep counts.</div>
   </div>
 
   <div class="footer-note">This list was compiled by reviewing the actual live product and its architecture — it's a starting inventory for evaluation, not a claim that any item here is in fact novel or non-obvious in the legal sense. Happy to go deeper on the technical mechanism behind any item, or pull supporting detail (dates first built, any prior art we're aware of) on request.</div>
