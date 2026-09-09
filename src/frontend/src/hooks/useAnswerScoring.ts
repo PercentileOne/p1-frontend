@@ -39,6 +39,11 @@ export interface UseAnswerScoringReturn {
    * caller (handlePass) needs the up-to-date answers list in the SAME tick to upload/close the
    * interview on the final question — it can't wait for a re-render to see the new state. */
   recordPassedAnswer: (q: InterviewQuestion, thinkTimeMs?: number) => SessionAnswer;
+  /** "Tell Me The Answer"'s own path — same zero-score, no-AI-call shape as recordPassedAnswer,
+   * but tagged revealedAnswer=true with the AI-generated model answer actually shown to the
+   * candidate attached, so the summary page and the qaLog can tell "gave up" apart from
+   * "asked to learn the answer instead". */
+  recordRevealedAnswer: (q: InterviewQuestion, revealedAnswerText: string, thinkTimeMs?: number) => SessionAnswer;
   /** Clears currentScore/coachingMessage ahead of the next question — collapses what used to
    * be duplicated inline in nextQuestion and handlePass into one place. */
   resetForNextQuestion: () => void;
@@ -94,10 +99,25 @@ export function useAnswerScoring(params: UseAnswerScoringParams): UseAnswerScori
     return entry;
   }, []);
 
+  const recordRevealedAnswer = useCallback((q: InterviewQuestion, revealedAnswerText: string, thinkTimeMs?: number): SessionAnswer => {
+    const revealScore: ScoreResponse = {
+      clarity: 0, relevance: 0, depth: 0, confidence: 0, overallScore: 0,
+      feedback: [{ dimension: 'overall', message: 'Answer revealed — not scored as an attempt.', severity: 'high' }],
+      suggestions: ['Come back to this topic and try answering it yourself next time.'],
+    };
+    const entry: SessionAnswer = {
+      question: q, answerText: '', score: revealScore, answeredByVoice: false, thinkTimeMs,
+      revealedAnswer: true, revealedAnswerText,
+    };
+    setRunningScores(prev => [...prev, 0]);
+    setSessionAnswers(prev => [...prev, entry]);
+    return entry;
+  }, []);
+
   const resetForNextQuestion = useCallback(() => {
     setCurrentScore(null);
     setCoachingMessage(null);
   }, []);
 
-  return { currentScore, sessionAnswers, runningScores, coachingMessage, submitAnswer, recordPassedAnswer, resetForNextQuestion };
+  return { currentScore, sessionAnswers, runningScores, coachingMessage, submitAnswer, recordPassedAnswer, recordRevealedAnswer, resetForNextQuestion };
 }

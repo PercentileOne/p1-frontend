@@ -105,6 +105,19 @@ public static class Endpoint
                 logger.LogWarning(ex, "Alert matching / best-score update failed for interview {Id}", interviewId);
             }
 
+            // One flat, queryable qaLog document per question — see CosmosService's own comment
+            // on that container for why this exists alongside sessionDataJson above (which has
+            // the same data, just buried in opaque per-candidate JSON). Best-effort, same as the
+            // alert/best-score block above — must never block the candidate's own save.
+            try
+            {
+                await WriteQaLogAsync(candidateId, interviewId, metadataJson, cosmos, logger);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "qaLog write failed for interview {Id}", interviewId);
+            }
+
             return Results.Ok(new { id = interviewId, videoSaved = hasVideo });
         }).RequireAuthorization().DisableAntiforgery();
 
@@ -298,6 +311,64 @@ public static class Endpoint
         }
     }
 
+    // Deliberately re-parses the raw metadataJson rather than taking a typed answers list —
+    // this endpoint's whole design is "the client's opaque blob is the source of truth" (see
+    // class doc above), so this reads it the same defensive way ToSummary does: best-effort,
+    // tolerant of fields being absent, never throws past its own try/catch.
+    private static async Task WriteQaLogAsync(string candidateId, string interviewId, string metadataJson, CosmosService cosmos, ILogger logger)
+    {
+        using var doc = JsonDocument.Parse(metadataJson);
+        var root = doc.RootElement;
+        if (!root.TryGetProperty("answers", out var answersEl) || answersEl.ValueKind != JsonValueKind.Array) return;
+
+        string? role = root.TryGetProperty("role", out var r) && r.ValueKind == JsonValueKind.String ? r.GetString() : null;
+        string? company = root.TryGetProperty("company", out var c) && c.ValueKind == JsonValueKind.String ? c.GetString() : null;
+        var createdAt = DateTimeOffset.UtcNow.ToString("o");
+        var container = cosmos.GetContainer("qaLog");
+
+        var index = 0;
+        foreach (var a in answersEl.EnumerateArray())
+        {
+            index++;
+            if (!a.TryGetProperty("question", out var q) || q.ValueKind != JsonValueKind.Object) continue;
+
+            string? Str(JsonElement el, string name) =>
+                el.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+            double? Num(JsonElement el, string name) =>
+                el.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetDouble() : null;
+            bool Bool(JsonElement el, string name) =>
+                el.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.True;
+
+            string[]? tags = null;
+            if (q.TryGetProperty("competencyTags", out var tagsEl) && tagsEl.ValueKind == JsonValueKind.Array)
+                tags = tagsEl.EnumerateArray().Where(t => t.ValueKind == JsonValueKind.String).Select(t => t.GetString()!).ToArray();
+
+            double? overallScore = a.TryGetProperty("score", out var scoreEl) && scoreEl.ValueKind == JsonValueKind.Object
+                ? Num(scoreEl, "overallScore") : null;
+
+            var entry = new QaLogEntry(
+                id: $"{interviewId}:{index}",
+                candidateId: candidateId,
+                interviewId: interviewId,
+                questionId: Str(q, "questionId") ?? Guid.NewGuid().ToString(),
+                questionText: Str(q, "questionText") ?? "",
+                questionType: Str(q, "questionType"),
+                competencyTags: tags,
+                answerText: Str(a, "answerText"),
+                revealedAnswer: Bool(a, "revealedAnswer"),
+                revealedAnswerText: Str(a, "revealedAnswerText"),
+                overallScore: overallScore,
+                role: role,
+                company: company,
+                createdAt: createdAt);
+
+            using var body = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(entry));
+            using var response = await container.UpsertItemStreamAsync(body, new PartitionKey(candidateId));
+            if (!response.IsSuccessStatusCode)
+                logger.LogWarning("qaLog upsert failed for {Id}: {Status}", entry.id, response.StatusCode);
+        }
+    }
+
     // internal, not private — Features/CandidateSearch/Endpoint.cs reuses this exact
     // parse-from-opaque-JSON logic for the candidate-interviews endpoint.
     internal static InterviewSummary ToSummary(InterviewEnvelope env)
@@ -372,3 +443,23 @@ public record InterviewSummary(
 
 // Body for POST /api/interviews/visibility — the My Interviews page's bulk public/private toggle.
 public record VisibilityRequest(bool IsPublic);
+
+// One document per question asked in a live interview — see CosmosService's own comment on the
+// qaLog container for why this exists as a flat sibling to the opaque sessionDataJson blob above.
+// id = "{interviewId}:{index}" (1-based, order the questions were asked in), so re-uploading the
+// same interview overwrites the same rows instead of duplicating them.
+public record QaLogEntry(
+    string id,
+    string candidateId,
+    string interviewId,
+    string questionId,
+    string questionText,
+    string? questionType,
+    string[]? competencyTags,
+    string? answerText,
+    bool revealedAnswer,
+    string? revealedAnswerText,
+    double? overallScore,
+    string? role,
+    string? company,
+    string createdAt);

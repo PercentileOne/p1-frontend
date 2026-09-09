@@ -10,6 +10,8 @@ export interface ResultAnswer {
   answeredByVoice?: boolean;
   meta?: TranscriptMeta;
   thinkTimeMs?: number;
+  revealedAnswer?: boolean;
+  revealedAnswerText?: string;
 }
 
 export interface MCQQuestionResult {
@@ -65,6 +67,7 @@ export function InterviewResultsBody({
   const strengths = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) >= 0.65);
   const improvements = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) < 0.55);
   const mcqBonusPoints = mcqResults.filter(r => r.correct).length * 10;
+  const revealedCount = answers.filter(a => a.revealedAnswer).length;
   // MCQ bonus now genuinely lifts the headline score — it used to render as a disconnected
   // "+N MCQ bonus" side-note next to a percentage it never actually affected, which is exactly
   // why answering the bonus round well never showed up anywhere in the number itself. Capped at
@@ -81,6 +84,9 @@ export function InterviewResultsBody({
           <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>Overall Score</div>
           {mcqBonusPoints > 0 && (
             <div style={{ fontSize: '12px', color: '#34D399', fontWeight: 700, marginTop: '4px' }}>+{mcqBonusPoints} MCQ bonus</div>
+          )}
+          {revealedCount > 0 && (
+            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>💡 Asked for Answer: {revealedCount}/{answers.length}</div>
           )}
         </div>
         <div style={{ flex: 1 }}>
@@ -194,7 +200,8 @@ export function InterviewResultsBody({
                     : <span style={{ fontSize: '11px', fontWeight: 700, background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: '4px', padding: '2px 8px', color: 'var(--blue)' }}>Q{mainQNum}</span>}
                   {!isFollowUp && <span style={{ fontSize: '11px', color: 'var(--text-3)', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', padding: '2px 8px' }}>{a.question.questionType}</span>}
                 {a.answeredByVoice && <span style={{ fontSize: '11px', color: '#34D399', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: '4px', padding: '2px 8px' }}>🎤 Voice</span>}
-                {!a.answerText && <span style={{ fontSize: '11px', color: 'var(--red)', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '4px', padding: '2px 8px' }}>Passed</span>}
+                {a.revealedAnswer && <span style={{ fontSize: '11px', color: '#34D399', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: '4px', padding: '2px 8px' }}>💡 Answer revealed</span>}
+                {!a.answerText && !a.revealedAnswer && <span style={{ fontSize: '11px', color: 'var(--red)', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '4px', padding: '2px 8px' }}>Passed</span>}
                 {a.thinkTimeMs !== undefined && (
                   <span style={{ fontSize: '11px', color: a.thinkTimeMs > 30000 ? 'var(--amber)' : 'var(--text-3)', background: 'rgba(0,0,0,0.15)', borderRadius: '4px', padding: '2px 8px' }}>
                     Think time: {Math.round(a.thinkTimeMs / 1000)}s
@@ -205,9 +212,13 @@ export function InterviewResultsBody({
             </div>
             <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '8px' }}>Your Answer</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.65, background: 'var(--bg3)', borderRadius: '8px', padding: '12px 14px' }}>
-                  {a.answerText || <em style={{ color: 'var(--text-3)' }}>No answer recorded</em>}
+                <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: a.revealedAnswer ? '#34D399' : 'var(--text-3)', marginBottom: '8px' }}>
+                  {a.revealedAnswer ? 'Model Answer Shown' : 'Your Answer'}
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.65, background: a.revealedAnswer ? 'rgba(52,211,153,0.06)' : 'var(--bg3)', border: a.revealedAnswer ? '1px solid rgba(52,211,153,0.15)' : 'none', borderRadius: '8px', padding: '12px 14px' }}>
+                  {a.revealedAnswer
+                    ? a.revealedAnswerText
+                    : (a.answerText || <em style={{ color: 'var(--text-3)' }}>No answer recorded</em>)}
                 </div>
                 {a.meta && (
                   <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>

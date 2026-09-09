@@ -1095,3 +1095,44 @@ Return JSON:
     return [];
   }
 }
+
+// ── "Tell Me The Answer" ────────────────────────────────────────────────────────
+
+// question.modelAnswer is deliberately terse — a 2-3 sentence scoring-rubric hint fed back into
+// scoreWithAI's prompt above, not something meant to stand alone as a worked example (it's also
+// shown as-is on the pre-interview prep page's "Reveal model answer" toggle). A live in-room
+// reveal reads better as a fuller, freshly-generated answer in the same voice as coachWithAI's
+// feedback, so this is its own AI call rather than just echoing question.modelAnswer verbatim.
+export async function generateModelAnswer(
+  question: InterviewQuestion,
+  cvCtx?: CVContext,
+  jobCtx?: JobSpecContext,
+  selectedLanguage?: string,
+): Promise<string> {
+  const context = [
+    jobCtx?.title ? `Role: ${jobCtx.title}` : null,
+    jobCtx?.requiredSkills?.length ? `Required skills: ${jobCtx.requiredSkills.slice(0, 5).join(', ')}` : null,
+    cvCtx?.roles?.[0] ? `Candidate's current/most recent role (for context, not to tailor around): ${cvCtx.roles[0]}` : null,
+  ].filter(Boolean).join('\n');
+
+  const languageNote = `Write the answer in the language the candidate selected in the UI — ISO code "${selectedLanguage || 'en'}" — regardless of what language the question text below happens to be in.`;
+
+  const systemPrompt = `You are an expert interviewer showing a candidate what a strong answer to one of your own questions looks like, because they asked to see it instead of attempting it themselves. Write in first person, as if you were the one answering. ${languageNote}
+Return ONLY a valid JSON object — no markdown, no explanation.`;
+
+  const userPrompt = `Question: ${question.questionText}
+Scoring-rubric hint (what a strong answer covers, for your reference — don't just restate this verbatim, write a real worked answer): ${question.modelAnswer}
+${context}
+
+Write a strong, specific, first-person example answer — 3-5 sentences, concrete rather than generic (a real approach, a plausible specific example, not platitudes). This is a model answer for learning, not an actual candidate's answer.
+
+Return JSON: { "answer": "..." }`;
+
+  try {
+    const result = await chatJSON<{ answer: string }>(systemPrompt, userPrompt, 0.7);
+    return result.answer?.trim() || question.modelAnswer;
+  } catch (err) {
+    console.error('[aiScoring] generateModelAnswer failed, falling back to the terse hint:', err);
+    return question.modelAnswer;
+  }
+}

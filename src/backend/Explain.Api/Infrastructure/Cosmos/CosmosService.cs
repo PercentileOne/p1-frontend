@@ -92,6 +92,19 @@ public class CosmosService
         // queue is the one deliberately cross-partition query — see Features/Comments/Admin/Endpoint.cs.
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("profile-comments", "/profileUserId"));
+
+        // One document per question asked in a live interview (every question, not just
+        // "answer revealed" ones) — question text, the candidate's answer, score, and whether
+        // they used "Tell Me The Answer" instead of answering. Flat and queryable by design,
+        // unlike the "interviews" container above where the same data is buried inside one
+        // opaque per-candidate sessionDataJson blob — this container exists specifically so
+        // cross-candidate analysis (which questions get revealed most, score patterns, etc.)
+        // doesn't need to deserialize every interview's JSON blob to answer a simple question.
+        // Partition key = /candidateId, matching "interviews" above, for consistency — the
+        // cross-candidate analysis queries this container exists for are deliberately
+        // cross-partition; this is a low-volume analytics sink, not a hot read path.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("qaLog", "/candidateId"));
     }
 
     public Container GetContainer(string name) => _database.GetContainer(name);

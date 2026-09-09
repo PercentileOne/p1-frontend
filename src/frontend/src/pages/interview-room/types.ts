@@ -22,6 +22,11 @@ export interface SessionAnswer {
   score: ScoreResponse;
   answeredByVoice: boolean;
   thinkTimeMs?: number;
+  // Set when the candidate used "Tell Me The Answer" instead of answering — answerText is
+  // empty/a placeholder in that case, revealedAnswerText holds the AI-generated model answer
+  // actually shown to them. See generateModelAnswer() in api/aiScoring.ts.
+  revealedAnswer?: boolean;
+  revealedAnswerText?: string;
 }
 
 export interface ChapterMarker {

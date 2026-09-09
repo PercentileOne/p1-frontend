@@ -9,9 +9,10 @@ import type { InterviewQuestion } from '../api/explainApi';
 import { speak, elevenLabsConfigured, getStoredInterviewerVolume, setInterviewerVolume } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
-import { sessionPrepareClient, generateMikeScriptOnly } from '../api/aiScoring';
+import { sessionPrepareClient, generateMikeScriptOnly, generateModelAnswer } from '../api/aiScoring';
 import { ChairSpinner } from '../components/ChairSpinner';
 import CinematicMCQ from '../components/CinematicMCQ';
+import AnswerRevealOverlay from '../components/AnswerRevealOverlay';
 import { logFlowEvent } from '../api/flowLogger';
 import { useAuthStore } from '../auth/authStore';
 import { FILTER_CSS, FILTER_LABELS, FILTER_PRESETS, type FilterPreset } from '../hooks/useVideoFilter';
@@ -249,7 +250,7 @@ export default function InterviewRoomPage() {
 
   const {
     currentScore, sessionAnswers, runningScores, coachingMessage,
-    submitAnswer: scoreAnswer, recordPassedAnswer, resetForNextQuestion,
+    submitAnswer: scoreAnswer, recordPassedAnswer, recordRevealedAnswer, resetForNextQuestion,
   } = useAnswerScoring({ cvCtx, jobCtx, companyKeywords, sessionLanguage, selectedDifficulty });
 
   // LiveAvatar kill switch — read once per room mount, before either seat attempts to connect.
@@ -617,6 +618,36 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     advanceOrClose([...sessionAnswers, passedEntry], mcqResults, mcqBonusPoints);
   }, [q, qIndex, sessionAnswers, mcqResults, mcqBonusPoints, maybeFireMcq, recordPassedAnswer, resetForNextQuestion, advanceOrClose]);
 
+  // "Tell Me The Answer" — shown instead of guessing/passing blind, so a candidate who genuinely
+  // doesn't know leaves with something instead of nothing. Two-phase overlay: opens immediately
+  // in a loading state (the AI call takes a couple of seconds), then shows the generated answer;
+  // "Continue" is what actually records the reveal and advances, same tail as Pass, so closing
+  // the overlay before the answer loads can't record a reveal with no answer text attached.
+  const [revealState, setRevealState] = useState<{ loading: boolean; answerText: string | null } | null>(null);
+
+  const handleTellMeTheAnswer = useCallback(() => {
+    if (!q) return;
+    setRevealState({ loading: true, answerText: null });
+    generateModelAnswer(q, cvCtx, jobCtx, sessionLanguage)
+      .then(answer => setRevealState({ loading: false, answerText: answer }))
+      .catch(() => setRevealState({ loading: false, answerText: q.modelAnswer }));
+  }, [q, cvCtx, jobCtx, sessionLanguage]);
+
+  const handleRevealContinue = useCallback(() => {
+    if (!q || !revealState || revealState.loading || revealState.answerText === null) return;
+    const thinkTimeMs = thinkStartRef.current > 0 ? Date.now() - thinkStartRef.current : undefined;
+    thinkStartRef.current = 0;
+    const revealedEntry = recordRevealedAnswer(q, revealState.answerText, thinkTimeMs);
+    setRevealState(null);
+    resetForNextQuestion();
+    setTypedAnswer('');
+    logFlowEvent('QUESTION_COMPLETED', { questionId: q.questionId, index: qIndex, revealed: true });
+
+    if (maybeFireMcq(qIndex)) return;
+    // Same reasoning as Pass — no attempted answer, nothing for Go Deeper to probe.
+    advanceOrClose([...sessionAnswers, revealedEntry], mcqResults, mcqBonusPoints);
+  }, [q, qIndex, revealState, sessionAnswers, mcqResults, mcqBonusPoints, maybeFireMcq, recordRevealedAnswer, resetForNextQuestion, advanceOrClose]);
+
   // Thin wrapper: phase/avatar-state transitions stay here (orchestrator territory, same as
   // askQuestion/beginInterviewIntro's setPhase calls), scoring itself is useAnswerScoring's job.
   const submitAnswer = useCallback(async (text: string, meta?: TranscriptMeta, byVoice = false) => {
@@ -681,6 +712,14 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           candidateName={resolvedPreferredName}
           questionOrdinal={activeMcqOrdinal}
           onComplete={resumeAfterMCQ}
+        />
+      )}
+      {revealState && q && (
+        <AnswerRevealOverlay
+          questionText={q.questionText}
+          loading={revealState.loading}
+          answerText={revealState.answerText}
+          onContinue={handleRevealContinue}
         />
       )}
       {/* Top bar */}
@@ -1299,6 +1338,9 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         </button>
                         <button onClick={handlePause} disabled={isCapturingAnswer} title={isCapturingAnswer ? "Stop recording first" : undefined} style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.30)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: '#34D399', cursor: isCapturingAnswer ? 'not-allowed' : 'pointer', opacity: isCapturingAnswer ? 0.4 : 1 }}>
                           ⏸ Pause
+                        </button>
+                        <button onClick={handleTellMeTheAnswer} disabled={isCapturingAnswer} title={isCapturingAnswer ? "Stop recording first" : "See a model answer instead of guessing"} style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: '#34D399', cursor: isCapturingAnswer ? 'not-allowed' : 'pointer', opacity: isCapturingAnswer ? 0.4 : 1 }}>
+                          💡 Tell Me The Answer
                         </button>
                         <button onClick={handlePass} disabled={isCapturingAnswer} title={isCapturingAnswer ? "Stop recording first" : undefined} style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: '#EF4444', cursor: isCapturingAnswer ? 'not-allowed' : 'pointer', opacity: isCapturingAnswer ? 0.4 : 1 }}>
                           Pass →
