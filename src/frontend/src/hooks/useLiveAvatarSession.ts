@@ -168,11 +168,37 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
     if (!session || !connectedRef.current) throw new Error('Avatar session is not connected');
 
     const audioBase64 = await fetchAvatarAudioBase64(text, role);
-    return new Promise<void>((resolve) => {
+    // Safety timeout: AVATAR_SPEAK_ENDED can simply never fire if the underlying session has
+    // gone quietly dead — the SDK's own keepAlive() fire-and-forgets its network call (never
+    // awaits sessionClient.keepAlive() internally), so a failed keep-alive is invisible to us,
+    // and the session can die from candidate inactivity without SESSION_DISCONNECTED firing
+    // client-side. Without this timeout, speak() hangs forever, which hangs askQuestion's whole
+    // onDone chain: phase never advances to "answering", so Record/Pass never render and the
+    // avatar never speaks again — exactly the "everything freezes on a long answer" bug this
+    // fixes. A generous length-based floor (15s minimum) lets it fail loud instead of silent,
+    // and forcibly tears down the stale session so the *next* speak() reconnects fresh instead
+    // of hitting this same hang again.
+    const timeoutMs = Math.max(15_000, text.split(/\s+/).length * 500);
+    return new Promise<void>((resolve, reject) => {
+      let settled = false;
       const onEnded = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
         session.off(AgentEventsEnum.AVATAR_SPEAK_ENDED, onEnded);
         resolve();
       };
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        session.off(AgentEventsEnum.AVATAR_SPEAK_ENDED, onEnded);
+        sessionRef.current = null;
+        connectedRef.current = false;
+        streamReadyRef.current = false;
+        setStatus('closed');
+        if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }
+        reject(new Error(`Avatar speak timed out after ${timeoutMs}ms — session went stale`));
+      }, timeoutMs);
       session.on(AgentEventsEnum.AVATAR_SPEAK_ENDED, onEnded);
       session.repeatAudio(audioBase64);
     });
