@@ -36,6 +36,8 @@ jobs:
           cp src/viewme/public/contact.html deploy-product/contact.html
           cp src/viewme/public/profile.html deploy-product/profile.html
           cp src/viewme/public/patent.html deploy-product/patent.html
+          mkdir -p deploy-product/patent-files
+          cp src/viewme/public/patent-files/*.png deploy-product/patent-files/
           cp src/viewme/public/staticwebapp.config.json deploy-product/staticwebapp.config.json
           cp src/viewme/public/im-social-card.svg deploy-product/im-social-card.svg
           cp src/viewme/public/im-social-card.png deploy-product/im-social-card.png

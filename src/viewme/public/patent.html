@@ -59,6 +59,13 @@
   .status-planned{background:rgba(245,158,11,0.1); color:#b45309; border:1px solid rgba(245,158,11,0.25)}
   @media (prefers-color-scheme: dark){.status-planned{color:#F59E0B}}
   .footer-note{margin-top:48px; padding-top:20px; border-top:1px solid var(--border); font-size:12.5px; color:var(--muted); line-height:1.7}
+  .walk-intro{font-size:14px; color:var(--ink2); line-height:1.7; margin-bottom:28px}
+  .walk-step{margin-bottom:40px}
+  .walk-label{font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--mint); margin-bottom:8px; text-align:center}
+  .walk-step img{display:block; margin:0 auto 14px; width:100%; max-width:460px; border-radius:10px; border:1px solid var(--border); box-shadow:0 8px 28px rgba(0,0,0,0.10)}
+  .walk-step img.walk-phone{max-width:230px}
+  .walk-caption{font-size:13.5px; color:var(--ink2); line-height:1.65; text-align:center; max-width:520px; margin:0 auto}
+  .walk-tag{font-size:11.5px; color:var(--muted); text-align:center; margin-top:9px; font-style:italic}
 </style>
 </head>
 <body>
@@ -72,6 +79,76 @@
 
   <div class="frame-box">
     <b>Context from our call:</b> the sausage-machine example stuck with us — the meat guy and the skin guy both being individually "nothing new" doesn't stop the machine that combines them into something neither could argue against. Several items below are exactly that shape: individually unremarkable pieces (an AI call, a video avatar, a scoring rubric) combined into a specific sequence or mechanism that, as far as we know, nobody else has assembled this way. We've flagged which items are live in the product today versus designed-but-not-yet-built, in case that distinction matters for filing strategy.
+  </div>
+
+  <h2 style="margin-top:8px">Seeing it in action</h2>
+  <div class="walk-intro">One real, complete session — start to finish — so the mechanism behind each numbered item below is something you can actually see rather than take on description alone.</div>
+
+  <div class="walk-step">
+    <div class="walk-label">Step 1 — Setup</div>
+    <img src="/patent-files/patent-1-intake-screen.png" alt="Interview setup screen">
+    <div class="walk-caption">The candidate names the role (or uploads a job spec), sets difficulty and length, and can name a CV for extra personalisation — every question that follows is generated against this, not drawn from a fixed bank.</div>
+  </div>
+
+  <div class="walk-step">
+    <div class="walk-label">Step 2 — Before it begins</div>
+    <img src="/patent-files/patent-2-intro-screen.png" alt="Interview room landing screen">
+    <div class="walk-caption">Confirms who's conducting the interview — Amina and Wayne, both live — and offers "Go Deeper", the opt-in for dynamic follow-up probing.</div>
+    <div class="walk-tag">→ related to items 3, 5</div>
+  </div>
+
+  <div class="walk-step">
+    <div class="walk-label">Step 3 — Mike, the recruitment consultant</div>
+    <img src="/patent-files/patent-3-mike-intro.png" alt="Mike, the recruitment consultant avatar">
+    <div class="walk-caption">A third, separate AI avatar frames the session before handing over to the two interviewers proper.</div>
+  </div>
+
+  <div class="walk-step">
+    <div class="walk-label">Step 4 — Two interviewers, one session</div>
+    <img src="/patent-files/patent-4-amina-intro.png" alt="Amina and Wayne introducing themselves together, live">
+    <div class="walk-caption">Amina (HR) and Wayne (technical) are both live, both on camera, at the same time — not a single interviewer, not a pre-recorded sequence.</div>
+    <div class="walk-tag">→ item 1</div>
+  </div>
+
+  <div class="walk-step">
+    <div class="walk-label">Step 5 — A real question, live</div>
+    <img src="/patent-files/patent-5-question1.png" alt="A live interview question with the Tell Me The Answer button, coaching tip, and percentile benchmark visible">
+    <div class="walk-caption">Wayne asks a scenario question built specifically for "Software Architect". Note the button row: Repeat, Pause, <b>Tell Me The Answer</b>, Pass — and, in the sidebar, a live coaching tip and a percentile benchmark against other candidates who've faced this same role.</div>
+    <div class="walk-tag">→ items 1, 4, 5</div>
+  </div>
+
+  <div class="walk-step">
+    <div class="walk-label">Step 6 — Scored and coached, immediately</div>
+    <img src="/patent-files/patent-6-guardian-angel.png" alt="AI coaching feedback with a multi-dimensional score breakdown">
+    <div class="walk-caption">Seconds after answering, the candidate gets specific coaching referencing exactly what they said — plus a live breakdown across four independent scoring dimensions (relevance, clarity, depth, confidence), before the next question even loads.</div>
+    <div class="walk-tag">→ items 5, 6</div>
+  </div>
+
+  <div class="walk-step">
+    <div class="walk-label">Step 7 — The bonus round</div>
+    <img src="/patent-files/patent-7-mcq.png" alt="Mid-interview cinematic multiple-choice bonus round">
+    <div class="walk-caption">A surprise knowledge check fires mid-interview, in character, with a full worked explanation regardless of the answer chosen.</div>
+    <div class="walk-tag">→ items 2, 8</div>
+  </div>
+
+  <div class="walk-step">
+    <div class="walk-label">Step 8 — Session complete</div>
+    <img src="/patent-files/patent-8-save-interview.png" alt="Interview summary screen with the option to save the interview">
+    <div class="walk-caption">The candidate chooses whether this session gets kept — nothing is published without an explicit decision here.</div>
+  </div>
+
+  <div class="walk-step">
+    <div class="walk-label">Step 9 — Broadcast, not just saved</div>
+    <img src="/patent-files/patent-9-qr-code.png" alt="Publishing the interview with a downloadable QR code for a CV">
+    <div class="walk-caption">Saving generates a shareable link and a scannable QR code the candidate can paste directly onto a CV — this is the "broadcast" in the product's name.</div>
+    <div class="walk-tag">→ items 11, 13</div>
+  </div>
+
+  <div class="walk-step">
+    <div class="walk-label">Step 10 — What the recruiter actually sees</div>
+    <img class="walk-phone" src="/patent-files/patent-10-mobile-phone-qr-code-view.png" alt="A recruiter's phone view after scanning the QR code, showing the full interview replay with timestamped questions">
+    <div class="walk-caption">Scanning that QR code opens the full interview replay on any phone, with every question timestamped and clickable — a recruiter watches the actual session, not a summary of it.</div>
+    <div class="walk-tag">→ item 11</div>
   </div>
 
   <h2><span class="cat-num">01</span>Interview delivery &amp; format</h2>
