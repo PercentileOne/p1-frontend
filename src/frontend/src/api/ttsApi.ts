@@ -9,8 +9,13 @@
 // Phonetic substitutions so TTS pronounces tech terms correctly
 const PHONETIC: [RegExp, string][] = [
   // Must run before generic rules that overlap
-  [/\bASP\.NET\b/gi, 'A S P dot NET'],
-  [/\b\.NET\b/g, 'dot NET'],
+  // Plain "A S P dot NET" produced a stretched, hesitant "AAAASSSSSSP" — likely two compounding
+  // TTS quirks: bare capital letters "A S P" can collide with the real word "asp" (the snake),
+  // and all-caps "NET" reads as emphasis/shouting to the model. Phonetic letter names (hyphenated,
+  // which most TTS engines treat as an explicit spell-out marker) plus mixed-case "Net" sidesteps
+  // both at once.
+  [/\bASP\.NET\b/gi, 'Ay-Ess-Pee dot Net'],
+  [/\b\.NET\b/g, 'dot Net'],
   [/\bNode\.js\b/gi, 'Node JS'],
   [/\bVue\.js\b/gi, 'Vue JS'],
   [/\bNext\.js\b/gi, 'Next JS'],
