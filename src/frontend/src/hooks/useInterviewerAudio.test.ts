@@ -4,19 +4,15 @@ import { useInterviewerAudio, type UseInterviewerAudioParams } from './useInterv
 import type { InterviewQuestion } from '../api/explainApi';
 
 // Regression coverage for the "2-3 overlapping voices" bug: cancelSpeakRef alone did nothing
-// when a video (Sarah's intro or James's Name Bank greeting) was the active audio source,
-// since neither video path ever touched cancelSpeakRef — only live TTS did. Skip Intro (and
-// every other interrupt point) must be able to silence whichever source is actually live.
+// when a video (Sarah's or James's intro) was the active audio source, since neither video
+// path ever touched cancelSpeakRef — only live TTS did. Skip Intro (and every other interrupt
+// point) must be able to silence whichever source is actually live.
 vi.mock('../api/ttsApi', () => ({
   speak: vi.fn(() => vi.fn()),
   elevenLabsConfigured: true,
 }));
-vi.mock('../api/nameGreetingsApi', () => ({
-  nameGreetingsApi: { get: vi.fn() },
-}));
 vi.mock('../api/flowLogger', () => ({ logFlowEvent: vi.fn() }));
 
-import { nameGreetingsApi } from '../api/nameGreetingsApi';
 import { speak } from '../api/ttsApi';
 
 const mockQuestions: InterviewQuestion[] = [
@@ -45,8 +41,6 @@ function baseParams(overrides: Partial<UseInterviewerAudioParams> = {}): UseInte
     bgMikeScriptRef: { current: null },
     specialistTitle: 'Hiring Manager',
     resolvedPreferredName: 'Alex',
-    authToken: 'fake-token',
-    selectedDifficulty: 'Standard',
     aiQuestionsLoaded: true,
     chapterMarkersRef: { current: [] },
     recordingStartTimeRef: { current: 0 },
@@ -60,7 +54,6 @@ function baseParams(overrides: Partial<UseInterviewerAudioParams> = {}): UseInte
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(nameGreetingsApi.get).mockResolvedValue(null);
   vi.useFakeTimers();
 });
 
@@ -81,7 +74,6 @@ describe('useInterviewerAudio — stopAllInterviewerAudio', () => {
   });
 
   it("silences Sarah's intro video, even with a live TTS cancel fn also seeded", async () => {
-    vi.mocked(nameGreetingsApi.get).mockResolvedValue(null);
     const { result } = renderHook(() => useInterviewerAudio(baseParams()));
 
     act(() => { result.current.beginInterviewIntroRef.current(); });
@@ -96,31 +88,6 @@ describe('useInterviewerAudio — stopAllInterviewerAudio', () => {
     expect(cancelFn).toHaveBeenCalledTimes(1);
     expect(result.current.cancelSpeakRef.current).toBeNull();
     expect(result.current.sarahIntroVideoActive).toBe(false);
-  });
-
-  it("silences James's Name Bank greeting video, even with a live TTS cancel fn also seeded", async () => {
-    vi.mocked(nameGreetingsApi.get).mockResolvedValue({ videoUrl: 'https://example.com/james-alex.mp4' });
-    const { result } = renderHook(() => useInterviewerAudio(baseParams()));
-
-    // Let the Name Bank lookup effect resolve before starting the intro.
-    await act(async () => { await Promise.resolve(); });
-
-    act(() => { result.current.beginInterviewIntroRef.current(); });
-    await act(async () => { await vi.advanceTimersByTimeAsync(600); });
-    expect(result.current.sarahIntroVideoActive).toBe(true);
-
-    // Sarah's video "ends" — hands off to James, whose personalised greeting video takes over.
-    act(() => { result.current.handleSarahIntroVideoEnded(); });
-    expect(result.current.jamesGreetingVideoActive).toBe(true);
-
-    const cancelFn = vi.fn();
-    act(() => { result.current.cancelSpeakRef.current = cancelFn; });
-
-    act(() => { result.current.stopAllInterviewerAudio(); });
-
-    expect(cancelFn).toHaveBeenCalledTimes(1);
-    expect(result.current.cancelSpeakRef.current).toBeNull();
-    expect(result.current.jamesGreetingVideoActive).toBe(false);
   });
 
   it("silences James's ambient idle loop (active alongside Sarah's intro video), even with a live TTS cancel fn also seeded", async () => {
@@ -144,20 +111,16 @@ describe('useInterviewerAudio — stopAllInterviewerAudio', () => {
     expect(result.current.jamesAmbientVideoActive).toBe(false);
   });
 
-  it("silences James's generic intro video (no Name Bank hit), even with a live TTS cancel fn also seeded", async () => {
-    vi.mocked(nameGreetingsApi.get).mockResolvedValue(null); // no personalised clip for this candidate
+  it("silences James's generic intro video, even with a live TTS cancel fn also seeded", async () => {
     const { result } = renderHook(() => useInterviewerAudio(baseParams()));
-
-    await act(async () => { await Promise.resolve(); });
 
     act(() => { result.current.beginInterviewIntroRef.current(); });
     await act(async () => { await vi.advanceTimersByTimeAsync(600); });
     expect(result.current.sarahIntroVideoActive).toBe(true);
 
-    // Sarah's video "ends" — falls through to james-intro-v1.mp4 since there's no Name Bank hit.
+    // Sarah's video "ends" — hands off to james-intro-v1.mp4.
     act(() => { result.current.handleSarahIntroVideoEnded(); });
     expect(result.current.jamesIntroVideoActive).toBe(true);
-    expect(result.current.jamesGreetingVideoActive).toBe(false);
 
     const cancelFn = vi.fn();
     act(() => { result.current.cancelSpeakRef.current = cancelFn; });
@@ -196,15 +159,13 @@ describe('useInterviewerAudio — sarahAmbientVideoActive', () => {
   });
 
   it("is also true during James's own intro, right after Sarah's intro video ends", async () => {
-    vi.mocked(nameGreetingsApi.get).mockResolvedValue(null);
     const { result } = renderHook(() => useInterviewerAudio(baseParams()));
-    await act(async () => { await Promise.resolve(); });
 
     act(() => { result.current.beginInterviewIntroRef.current(); });
     await act(async () => { await vi.advanceTimersByTimeAsync(600); });
     expect(result.current.sarahAmbientVideoActive).toBe(false); // Sarah's own video is playing, she's not "listening" yet
 
-    // Sarah's intro video ends — hands off to James's intro (his generic clip, no Name Bank hit).
+    // Sarah's intro video ends — hands off to James's generic intro clip.
     act(() => { result.current.handleSarahIntroVideoEnded(); });
     expect(result.current.jamesIntroVideoActive).toBe(true);
     expect(result.current.sarahAmbientVideoActive).toBe(true);

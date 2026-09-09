@@ -328,7 +328,7 @@ export default function InterviewRoomPage() {
   } = useInterviewerAudio({
     questions, qIndex, setPhase, sessionLanguage,
     effectiveSarahIntro, effectiveJamesIntro, bgMikeScriptRef, specialistTitle,
-    resolvedPreferredName, jobTitle: ctx.jobTitle, authToken, selectedDifficulty,
+    resolvedPreferredName, jobTitle: ctx.jobTitle,
     aiQuestionsLoaded: bgLoadedRef.current,
     chapterMarkersRef, recordingStartTimeRef,
     phase2ReadyRef, phase2WaitersRef,
@@ -999,11 +999,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   onVideoEnded={() => onDoneRef.current?.()}
                   onVideoAnalyser={handleJamesVideoAnalyser}
                 />
-                {/* LiveAvatar overlay — Wayne's slot, same treatment as Amina's above. James's
-                    pre-rendered intro/greeting/idle clips (jamesGreetingVideoActive etc.) are
-                    retired along with James himself — those states are still returned by
-                    useInterviewerAudio as unreachable fallback wiring (liveAvatarActiveTechnical
-                    is on whenever the kill switch is), not deleted outright. */}
+                {/* LiveAvatar overlay — Wayne's slot, same treatment as Amina's above. */}
                 {liveAvatarTechnical.status === 'connected' && (
                   <>
                     <video

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AvatarState } from '../components/InterviewerAvatar';
 import type { InterviewQuestion } from '../api/explainApi';
 import { speak } from '../api/ttsApi';
-import { nameGreetingsApi } from '../api/nameGreetingsApi';
 import { logFlowEvent } from '../api/flowLogger';
 import type { ChapterMarker, RoomPhase } from '../pages/interview-room/types';
 
@@ -64,8 +63,6 @@ export interface UseInterviewerAudioParams {
    * candidate hears which role they're being assessed for even when the AI-generated intro
    * hasn't landed yet. */
   jobTitle?: string;
-  authToken: string | null;
-  selectedDifficulty: string;
   aiQuestionsLoaded: boolean;
   chapterMarkersRef: React.RefObject<ChapterMarker[]>;
   recordingStartTimeRef: React.RefObject<number>;
@@ -107,11 +104,8 @@ export interface UseInterviewerAudioReturn {
   hrAnalyser: AnalyserNode | null;
   techAnalyser: AnalyserNode | null;
   sarahIntroVideoActive: boolean;
-  jamesGreetingVideoActive: boolean;
-  jamesGreetingUrl: string | null;
-  /** English, no Name Bank hit — james-intro-v1.mp4, the generic pre-rendered clip matching
-   * Sarah's/Mike's own. Only ever active in the gap Name Bank's personalised clip would
-   * otherwise leave James on the static photo. */
+  /** English only — james-intro-v1.mp4, the generic pre-rendered clip matching Sarah's/Mike's
+   * own. Superseded by the live avatar whenever it's active (see liveAvatarActiveTechnical). */
   jamesIntroVideoActive: boolean;
   /** English only — james-idle-v1.mp4, a silent looping "listening" clip that plays under
    * James's slot for as long as Sarah's own intro video is playing (see the state's own
@@ -130,7 +124,6 @@ export interface UseInterviewerAudioReturn {
   handleSarahVideoAnalyser: (a: AnalyserNode | null) => void;
   handleJamesVideoAnalyser: (a: AnalyserNode | null) => void;
   handleSarahIntroVideoEnded: () => void;
-  handleJamesGreetingVideoEnded: () => void;
   handleJamesIntroVideoEnded: () => void;
   /** The one function every interruption point (Skip buttons, question transitions, ending
    * the interview early) must call instead of cancelSpeakRef directly — see its own doc
@@ -170,7 +163,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
   const {
     questions, qIndex, setPhase, sessionLanguage,
     effectiveSarahIntro, effectiveJamesIntro, bgMikeScriptRef, specialistTitle,
-    resolvedPreferredName, jobTitle, authToken, selectedDifficulty, aiQuestionsLoaded,
+    resolvedPreferredName, jobTitle, aiQuestionsLoaded,
     chapterMarkersRef, recordingStartTimeRef,
     phase2ReadyRef, phase2WaitersRef,
     jobSpecText, cvText, ctxSelectedLanguage, setHighlightRecord, setAudioCheckState,
@@ -201,27 +194,6 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
   // output — closing the AudioContext on cleanup then froze the video mid-playback.
   const handleSarahVideoAnalyser = useCallback((a: AnalyserNode | null) => setHrAnalyser(a), []);
   const handleJamesVideoAnalyser = useCallback((a: AnalyserNode | null) => setTechAnalyser(a), []);
-
-  // Name Bank — a cached personalised "Hi <name>, I'm James — you've chosen <difficulty>..."
-  // clip, looked up as early as possible (page mount) so it has the whole CV-upload/intake
-  // flow to resolve before James's line is ever reached. One of 3 pre-generated variants per
-  // name (Standard/Pro/Expert), so the difficulty-level mention James's live line always gives
-  // isn't lost even when a personalised clip plays. A miss (404, or just "hasn't resolved
-  // yet") is silent and falls through to today's unchanged live-TTS line — nobody ever waits.
-  const [jamesGreetingUrl, setJamesGreetingUrl] = useState<string | null>(null);
-  useEffect(() => {
-    if (!authToken || !resolvedPreferredName || sessionLanguage !== 'en') return;
-    nameGreetingsApi.get(authToken, 'james', resolvedPreferredName, selectedDifficulty)
-      .then(res => setJamesGreetingUrl(res?.videoUrl ?? null))
-      .catch(() => { /* treat any failure as a miss — never block James's line on this */ });
-  }, [authToken, resolvedPreferredName, sessionLanguage, selectedDifficulty]);
-
-  const [jamesGreetingVideoActive, setJamesGreetingVideoActive] = useState(false);
-  const jamesGreetingDoneRef = useRef<() => void>(() => {});
-  const handleJamesGreetingVideoEnded = useCallback(() => {
-    setJamesGreetingVideoActive(false);
-    jamesGreetingDoneRef.current();
-  }, []);
 
   const cancelSpeakRef = useRef<(() => void) | null>(null);
   const thinkStartRef = useRef<number>(0);
@@ -320,19 +292,18 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
   const [jamesAmbientVideoActive, setJamesAmbientVideoActive] = useState(false);
 
   // Single place that knows about every audio source this room can have active at once —
-  // live TTS (cancelSpeakRef) AND every pre-rendered/personalised video clip (Sarah's intro,
-  // James's Name Bank greeting, James's generic intro), which each carry their own embedded
-  // audio and were added later without the original "skip"/"interrupt" points ever being
-  // updated to know about them. Calling cancelSpeakRef alone (the old behaviour) left a
-  // still-playing video's audio running underneath whatever started next — that's the
-  // "2-3 voices at once" bug. Every interruption point (Skip buttons, question transitions,
-  // ending the interview early) should call this instead of cancelSpeakRef directly. Any new
-  // video-active flag added to this hook must be added here too.
+  // live TTS (cancelSpeakRef) AND every pre-rendered video clip (Sarah's intro, James's
+  // generic intro), which each carry their own embedded audio and were added later without
+  // the original "skip"/"interrupt" points ever being updated to know about them. Calling
+  // cancelSpeakRef alone (the old behaviour) left a still-playing video's audio running
+  // underneath whatever started next — that's the "2-3 voices at once" bug. Every
+  // interruption point (Skip buttons, question transitions, ending the interview early)
+  // should call this instead of cancelSpeakRef directly. Any new video-active flag added to
+  // this hook must be added here too.
   const stopAllInterviewerAudio = useCallback(() => {
     cancelSpeakRef.current?.();
     cancelSpeakRef.current = null;
     setSarahIntroVideoActive(false);
-    setJamesGreetingVideoActive(false);
     setJamesIntroVideoActive(false);
     setJamesAmbientVideoActive(false);
   }, []);
@@ -404,14 +375,6 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
           // avatar, same as Amina's above. Falls through to the pre-existing paths below only
           // if his live avatar isn't active at all.
           cancelSpeakRef.current = liveAvatarSpeakTechnical(jamesText, finishJamesIntro, (a) => setTechAnalyser(a));
-        } else if (sessionLanguage === 'en' && jamesGreetingUrl) {
-          // Name Bank pilot: a cached personalised greeting for this candidate's name, if one
-          // exists, fully replaces this live line (including its difficulty/language mention)
-          // — an accepted trade-off for the pilot. A miss falls through to james-intro-v1.mp4
-          // (English) — the generic pre-rendered clip matching Amina's/Mike's own — and only
-          // falls all the way through to live TTS for non-English sessions, where no video exists.
-          jamesGreetingDoneRef.current = finishJamesIntro;
-          setJamesGreetingVideoActive(true);
         } else if (sessionLanguage === 'en') {
           jamesIntroDoneRef.current = finishJamesIntro;
           setJamesIntroVideoActive(true);
@@ -441,7 +404,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
         cancelSpeakRef.current = speak(sarahText, 'hr', afterSarahIntro, (a) => setHrAnalyser(a));
       }
     }, 600);
-  }, [effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage, jamesGreetingUrl, aiQuestionsLoaded, setPhase, chapterMarkersRef, recordingStartTimeRef, setHighlightRecord, liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical, resolvedPreferredName, jobTitle]);
+  }, [effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage, aiQuestionsLoaded, setPhase, chapterMarkersRef, recordingStartTimeRef, setHighlightRecord, liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical, resolvedPreferredName, jobTitle]);
 
   const beginInterviewIntroRef = useRef(beginInterviewIntro);
   useEffect(() => { beginInterviewIntroRef.current = beginInterviewIntro; }, [beginInterviewIntro]);
@@ -556,9 +519,9 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
 
   return {
     hrState, techState, hrAnalyser, techAnalyser,
-    sarahIntroVideoActive, jamesGreetingVideoActive, jamesGreetingUrl, jamesIntroVideoActive, jamesAmbientVideoActive, sarahAmbientVideoActive, awaitingHandoff,
+    sarahIntroVideoActive, jamesIntroVideoActive, jamesAmbientVideoActive, sarahAmbientVideoActive, awaitingHandoff,
     handleSarahVideoAnalyser, handleJamesVideoAnalyser,
-    handleSarahIntroVideoEnded, handleJamesGreetingVideoEnded, handleJamesIntroVideoEnded,
+    handleSarahIntroVideoEnded, handleJamesIntroVideoEnded,
     stopAllInterviewerAudio,
     askQuestion, repeatQuestion, testAudio, startMike, handleMikeIntroDone,
     beginInterviewIntroRef,
