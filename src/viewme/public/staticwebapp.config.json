@@ -29,6 +29,10 @@
     {
       "route": "/patent",
       "rewrite": "/patent.html"
+    },
+    {
+      "route": "/how-we-score",
+      "rewrite": "/how-we-score.html"
     }
   ],
   "navigationFallback": {

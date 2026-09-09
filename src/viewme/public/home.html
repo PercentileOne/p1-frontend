@@ -85,6 +85,11 @@
   .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); background: rgba(61,126,246,0.1); border: 1px solid var(--border); border-radius: 20px; padding: 5px 14px; margin-bottom: 24px; }
   .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+  .nav-story-pulse { animation: storyGlowPulse 2.4s ease-in-out infinite; }
+  @keyframes storyGlowPulse {
+    0%,100% { text-shadow: 0 0 10px rgba(52,211,153,0.4); }
+    50% { text-shadow: 0 0 22px rgba(52,211,153,0.9); }
+  }
   h1 { font-size: clamp(2.4rem, 5.5vw, 4rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1.05; color: var(--pearl); max-width: 820px; margin: 0 auto 20px; text-wrap: balance; }
   h1 em { font-style: normal; color: var(--blue); }
   .hero-sub { font-size: clamp(1rem, 2vw, 1.2rem); color: var(--muted); max-width: 520px; margin: 0 auto 36px; line-height: 1.6; }
@@ -377,9 +382,10 @@
   </a>
   <div class="nav-links">
     <a href="#how">How it works</a>
+    <a href="/how-we-score" class="nav-story-pulse" style="color:#34D399;font-weight:700">How We Score Interviews</a>
     <a href="#pricing">Pricing</a>
     <a href="/contact">Contact Us</a>
-    <a href="#" onclick="openAboutModal();return false;" style="color:#34D399;font-weight:700;text-shadow:0 0 12px rgba(52,211,153,0.5);transition:text-shadow 0.2s" onmouseover="this.style.textShadow='0 0 20px rgba(52,211,153,0.85)'" onmouseout="this.style.textShadow='0 0 12px rgba(52,211,153,0.5)'">Our Story</a>
+    <a href="#" onclick="openAboutModal();return false;" class="nav-story-pulse" style="color:#34D399;font-weight:700">Our Story</a>
   </div>
   <!-- Hamburger (mobile only) -->
   <button class="nav-burger" onclick="toggleMobileMenu()" aria-label="Menu">
@@ -388,6 +394,7 @@
   <!-- Mobile dropdown menu -->
   <div class="nav-mobile-menu" id="navMobileMenu">
     <a href="#how" onclick="toggleMobileMenu()">How it works</a>
+    <a href="/how-we-score" style="color:#34D399;font-weight:700">How We Score Interviews</a>
     <a href="#pricing" onclick="toggleMobileMenu()">Pricing</a>
     <a href="/contact">Contact Us</a>
     <a href="#" onclick="openAboutModal();return false;" style="color:#34D399;font-weight:700">Our Story</a>
