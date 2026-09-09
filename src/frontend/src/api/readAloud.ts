@@ -6,6 +6,7 @@
 // script such as the career guide).
 
 import { useAuthStore } from '../auth/authStore';
+import { sanitiseForTTS } from './ttsApi';
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 
@@ -47,7 +48,7 @@ async function fetchChunks(text: string, gender: ReadAloudGender, signal: AbortS
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify({ text, gender }),
+    body: JSON.stringify({ text: sanitiseForTTS(text), gender }),
     signal,
   });
   if (!res.ok) throw new Error(`read-aloud failed: ${res.status}`);

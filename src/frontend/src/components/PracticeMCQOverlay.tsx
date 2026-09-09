@@ -199,14 +199,14 @@ export default function PracticeMCQOverlay({ mcq, ordinal, total, onComplete, on
             position: 'fixed', inset: 0, zIndex: 200,
             background: 'rgba(4,8,18,0.82)',
             backdropFilter: 'blur(18px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '24px',
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+            padding: '24px', overflowY: 'auto',
           }}
         >
           {/* Confetti canvas */}
           <canvas
             ref={canvasRef}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10 }}
+            style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10 }}
           />
 
           {/* Close */}
@@ -214,7 +214,7 @@ export default function PracticeMCQOverlay({ mcq, ordinal, total, onComplete, on
             onClick={() => { stopSpeech(); onClose(); }}
             aria-label="Close practice"
             style={{
-              position: 'absolute', top: 20, right: 20, zIndex: 30,
+              position: 'fixed', top: 20, right: 20, zIndex: 30,
               width: 36, height: 36, borderRadius: '50%',
               background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
               color: 'rgba(240,244,255,0.6)', fontSize: 16, cursor: 'pointer',
@@ -237,6 +237,7 @@ export default function PracticeMCQOverlay({ mcq, ordinal, total, onComplete, on
               borderRadius: '24px',
               padding: '40px 40px 36px',
               maxWidth: '680px', width: '100%',
+              margin: 'auto 0',
               boxShadow: '0 40px 100px rgba(0,0,0,0.65), 0 0 80px rgba(167,139,250,0.08)',
             }}
           >

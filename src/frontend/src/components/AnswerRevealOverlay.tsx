@@ -27,8 +27,8 @@ export default function AnswerRevealOverlay({ questionText, loading, answerText,
           position: 'fixed', inset: 0, zIndex: 200,
           background: 'rgba(4,8,18,0.82)',
           backdropFilter: 'blur(18px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '24px',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+          padding: '24px', overflowY: 'auto',
         }}
       >
         <motion.div
@@ -43,6 +43,7 @@ export default function AnswerRevealOverlay({ questionText, loading, answerText,
             borderRadius: '24px',
             padding: '40px 40px 36px',
             maxWidth: '680px', width: '100%',
+            margin: 'auto 0',
             boxShadow: '0 40px 100px rgba(0,0,0,0.65), 0 0 80px rgba(52,211,153,0.08)',
           }}
         >

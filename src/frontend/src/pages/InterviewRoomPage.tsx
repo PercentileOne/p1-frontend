@@ -631,12 +631,22 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     if (!q) return;
     setRevealState({ loading: true, answerText: null });
     generateModelAnswer(q, cvCtx, jobCtx, sessionLanguage)
-      .then(answer => setRevealState({ loading: false, answerText: answer }))
-      .catch(() => setRevealState({ loading: false, answerText: q.modelAnswer }));
-  }, [q, cvCtx, jobCtx, sessionLanguage]);
+      .then(answer => {
+        setRevealState({ loading: false, answerText: answer });
+        // Same narrator voice as the MCQ Bonus Round's own explanation panel ("Guardian
+        // Angel" — always plain 'hr' TTS, not the live avatar, regardless of which
+        // interviewer actually asked the question) — Francis's own steer: same function.
+        cancelSpeakRef.current = speak(answer, 'hr', () => {});
+      })
+      .catch(() => {
+        setRevealState({ loading: false, answerText: q.modelAnswer });
+        cancelSpeakRef.current = speak(q.modelAnswer, 'hr', () => {});
+      });
+  }, [q, cvCtx, jobCtx, sessionLanguage, cancelSpeakRef]);
 
   const handleRevealContinue = useCallback(() => {
     if (!q || !revealState || revealState.loading || revealState.answerText === null) return;
+    cancelSpeakRef.current?.(); // stop the model-answer narration if it's still playing
     const thinkTimeMs = thinkStartRef.current > 0 ? Date.now() - thinkStartRef.current : undefined;
     thinkStartRef.current = 0;
     const revealedEntry = recordRevealedAnswer(q, revealState.answerText, thinkTimeMs);

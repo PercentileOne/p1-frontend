@@ -207,14 +207,14 @@ export default function CinematicMCQ({ mcq, candidateName, questionOrdinal, onCo
             position: 'fixed', inset: 0, zIndex: 200,
             background: 'rgba(4,8,18,0.82)',
             backdropFilter: 'blur(18px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '24px',
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+            padding: '24px', overflowY: 'auto',
           }}
         >
           {/* Confetti canvas */}
           <canvas
             ref={canvasRef}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10 }}
+            style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10 }}
           />
 
           {/* Card */}
@@ -230,6 +230,7 @@ export default function CinematicMCQ({ mcq, candidateName, questionOrdinal, onCo
               borderRadius: '24px',
               padding: '40px 40px 36px',
               maxWidth: '680px', width: '100%',
+              margin: 'auto 0',
               boxShadow: '0 40px 100px rgba(0,0,0,0.65), 0 0 80px rgba(167,139,250,0.08)',
             }}
           >
