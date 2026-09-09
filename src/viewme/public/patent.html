@@ -121,7 +121,7 @@
     <div class="walk-label">Step 6 — Scored and coached, immediately</div>
     <img src="/patent-files/patent-6-guardian-angel.png" alt="AI coaching feedback with a multi-dimensional score breakdown">
     <div class="walk-caption">Seconds after answering, the candidate gets specific coaching referencing exactly what they said — plus a live breakdown across four independent scoring dimensions (relevance, clarity, depth, confidence), before the next question even loads.</div>
-    <div class="walk-tag">→ items 5, 6</div>
+    <div class="walk-tag">→ items 6, 7</div>
   </div>
 
   <div class="walk-step">
@@ -140,8 +140,8 @@
   <div class="walk-step">
     <div class="walk-label">Step 9 — Broadcast, not just saved</div>
     <img src="/patent-files/patent-9-qr-code.png" alt="Publishing the interview with a downloadable QR code for a CV">
-    <div class="walk-caption">Saving generates a shareable link and a scannable QR code the candidate can paste directly onto a CV — this is the "broadcast" in the product's name.</div>
-    <div class="walk-tag">→ items 11, 13</div>
+    <div class="walk-caption">Saving generates a shareable link and a scannable QR code the candidate can paste directly onto a CV — this is the "broadcast" in the product's name. Note "Public — visible in Candidate Search": the same recording also enters the searchable pool.</div>
+    <div class="walk-tag">→ items 11, 12, 14</div>
   </div>
 
   <div class="walk-step">
@@ -230,13 +230,19 @@
   </div>
 
   <div class="item">
-    <div class="item-name"><span class="item-num">12.</span>Two-sided live matching / alert engine<span class="status-pill status-live">Live</span></div>
+    <div class="item-name"><span class="item-num">12.</span>Searchable pool of live-recorded interviews<span class="status-pill status-live">Live</span></div>
+    <div class="item-desc">Every completed, opted-in interview recording becomes part of a pool recruiters and employers can search directly — by role, score, and competency — rather than relying only on push-based alerts (item 13) or a traditional keyword search over static CV text. The searchable unit is the actual interview recording and its structured scoring data, not a self-written summary of it.</div>
+    <div class="item-why"><b>Possible angle:</b> search built directly on top of real completed interview sessions and their AI-generated scoring, as the primary discovery mechanism, rather than on CVs or profile text.</div>
+  </div>
+
+  <div class="item">
+    <div class="item-name"><span class="item-num">13.</span>Two-sided live matching / alert engine<span class="status-pill status-live">Live</span></div>
     <div class="item-desc">Recruiters and employers set standing criteria ("notify me when a candidate scores above X for role Y") that fire in real time as new interviews complete. Candidates simultaneously see a live feed of demand signals matching their own profile — a bidirectional system rather than one-directional job-board search.</div>
     <div class="item-why"><b>Possible angle:</b> the symmetry — both sides get live, standing, criteria-based push notifications from the same underlying event, rather than one side searching a static listing.</div>
   </div>
 
   <div class="item">
-    <div class="item-name"><span class="item-num">13.</span>Reversible per-interview visibility with bulk toggle<span class="status-pill status-live">Live</span></div>
+    <div class="item-name"><span class="item-num">14.</span>Reversible per-interview visibility with bulk toggle<span class="status-pill status-live">Live</span></div>
     <div class="item-desc">A candidate can publish or unpublish any individual completed interview — or all of them at once — for recruiter discovery at any time after the fact, rather than a one-way "submit" action that can't be undone.</div>
     <div class="item-why"><b>Possible angle:</b> narrower than most items here, but the reversibility itself (versus every competing platform's one-way submission model) is a deliberate, arguably non-obvious design choice.</div>
   </div>
@@ -245,7 +251,7 @@
   <div class="cat-note">Making expensive AI generation affordable per-candidate.</div>
 
   <div class="item">
-    <div class="item-name"><span class="item-num">14.</span>Shared personalized-greeting cache keyed by first name<span class="status-pill status-live">Live</span></div>
+    <div class="item-name"><span class="item-num">15.</span>Shared personalized-greeting cache keyed by first name<span class="status-pill status-live">Live</span></div>
     <div class="item-desc">A synthesized, lip-synced "Hi [Name]" video greeting moment is generated once per first name and reused for every candidate who shares that name, rather than regenerating an expensive personalized video clip per individual candidate.</div>
     <div class="item-why"><b>Possible angle:</b> a specific caching architecture that makes personalized AI video economically viable at scale — the "key by first name, not by person" choice is the actual mechanism, not just "we cache things".</div>
   </div>
@@ -254,19 +260,19 @@
   <div class="cat-note">Weaker candidates than the above — more conventional engineering — included per your instruction to send everything.</div>
 
   <div class="item">
-    <div class="item-name"><span class="item-num">15.</span>Single neutral role-routing authentication gate<span class="status-pill status-live">Live</span></div>
+    <div class="item-name"><span class="item-num">16.</span>Single neutral role-routing authentication gate<span class="status-pill status-live">Live</span></div>
     <div class="item-desc">One shared login/registration entry point authenticates a user once and routes them into the correct one of several otherwise-independent applications (candidate, recruiter, employer, admin) based on their role, rather than each portal running its own separate authentication silo.</div>
     <div class="item-why"><b>Possible angle:</b> likely the weakest item on this list — single sign-on with role routing is a common pattern — but included since the specific "neutral gate" implementation across genuinely separate applications may still be worth a look.</div>
   </div>
 
   <div class="item">
-    <div class="item-name"><span class="item-num">16.</span>Business-plan pitch as a formal interview type<span class="status-pill status-planned">Planned, not yet built</span></div>
+    <div class="item-name"><span class="item-num">17.</span>Business-plan pitch as a formal interview type<span class="status-pill status-planned">Planned, not yet built</span></div>
     <div class="item-desc">Treating a founder's business plan pitch as its own interview type, run through the same AI scoring/coaching apparatus (multi-dimensional scoring, live coaching, follow-up probing) built for job interviews.</div>
     <div class="item-why"><b>Possible angle:</b> extending the same underlying interview-and-score mechanism to a materially different use case (pitching, not job-seeking) — the transferability of the mechanism itself may be worth protecting ahead of building it.</div>
   </div>
 
   <div class="item">
-    <div class="item-name"><span class="item-num">17.</span>Spoken, personalized "tell me about this role" career guide<span class="status-pill status-planned">Planned, not yet built</span></div>
+    <div class="item-name"><span class="item-num">18.</span>Spoken, personalized "tell me about this role" career guide<span class="status-pill status-planned">Planned, not yet built</span></div>
     <div class="item-desc">The AI interviewer gives a candidate a personalized spoken walkthrough of a specific career/role, drawing on that candidate's own profile and CV data, framed as a natural conversational answer rather than a static content page.</div>
     <div class="item-why"><b>Possible angle:</b> personalized spoken career content generated live from the candidate's own data, delivered in the same avatar/voice apparatus used for interviewing.</div>
   </div>
