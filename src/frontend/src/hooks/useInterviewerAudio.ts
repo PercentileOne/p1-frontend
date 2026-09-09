@@ -63,6 +63,10 @@ export interface UseInterviewerAudioParams {
    * candidate hears which role they're being assessed for even when the AI-generated intro
    * hasn't landed yet. */
   jobTitle?: string;
+  /** Intake screen's Special Focus chips — ours to guarantee Wayne actually says out loud
+   * (see jobTitlePhrase's own reasoning just below: the AI-generated intro is asked to
+   * mention these too, but only the fallback text here is ours to promise unconditionally). */
+  specialFocus?: string[];
   aiQuestionsLoaded: boolean;
   chapterMarkersRef: React.RefObject<ChapterMarker[]>;
   recordingStartTimeRef: React.RefObject<number>;
@@ -163,7 +167,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
   const {
     questions, qIndex, setPhase, sessionLanguage,
     effectiveSarahIntro, effectiveJamesIntro, bgMikeScriptRef, specialistTitle,
-    resolvedPreferredName, jobTitle, aiQuestionsLoaded,
+    resolvedPreferredName, jobTitle, specialFocus, aiQuestionsLoaded,
     chapterMarkersRef, recordingStartTimeRef,
     phase2ReadyRef, phase2WaitersRef,
     jobSpecText, cvText, ctxSelectedLanguage, setHighlightRecord, setAudioCheckState,
@@ -350,8 +354,17 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
       // across both intros, and because he's already the role-specific interviewer (see
       // specialistTitle's own pairing with him in the UI).
       const jobTitlePhrase = jobTitle?.trim() ? ` for the ${jobTitle.trim()} role` : '';
+      // Ours to guarantee, same reasoning as namePrefix/jobTitlePhrase above — a candidate who
+      // named specific topics should always hear at least one or two mentioned back,
+      // regardless of whether the AI generation call happens to land in time (it's also asked
+      // to mention these itself, see sessionPrepareClient's specialFocusLine — but only this
+      // fallback path is ours to promise unconditionally). Capped at 2 even when more were
+      // kept — reading out a long list sounds robotic, not reassuring.
+      const specialFocusPhrase = specialFocus && specialFocus.length > 0
+        ? ` I understand you want to focus on ${specialFocus.slice(0, 2).join(' and ')} today, so we'll dig into ${specialFocus.length > 1 ? 'those' : 'that'}.`
+        : '';
       const jamesText = effectiveJamesIntro ??
-        `${namePrefix}And I'm Wayne — looking forward to hearing about your experience${jobTitlePhrase}. Let's get started.`;
+        `${namePrefix}And I'm Wayne — looking forward to hearing about your experience${jobTitlePhrase}.${specialFocusPhrase} Let's get started.`;
 
       const afterSarahIntro = () => {
         clearTimeout(pulseOuter);
@@ -404,7 +417,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
         cancelSpeakRef.current = speak(sarahText, 'hr', afterSarahIntro, (a) => setHrAnalyser(a));
       }
     }, 600);
-  }, [effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage, aiQuestionsLoaded, setPhase, chapterMarkersRef, recordingStartTimeRef, setHighlightRecord, liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical, resolvedPreferredName, jobTitle]);
+  }, [effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage, aiQuestionsLoaded, setPhase, chapterMarkersRef, recordingStartTimeRef, setHighlightRecord, liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical, resolvedPreferredName, jobTitle, specialFocus]);
 
   const beginInterviewIntroRef = useRef(beginInterviewIntro);
   useEffect(() => { beginInterviewIntroRef.current = beginInterviewIntro; }, [beginInterviewIntro]);

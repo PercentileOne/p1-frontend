@@ -328,7 +328,7 @@ export default function InterviewRoomPage() {
   } = useInterviewerAudio({
     questions, qIndex, setPhase, sessionLanguage,
     effectiveSarahIntro, effectiveJamesIntro, bgMikeScriptRef, specialistTitle,
-    resolvedPreferredName, jobTitle: ctx.jobTitle,
+    resolvedPreferredName, jobTitle: ctx.jobTitle, specialFocus: ctx.specialFocus,
     aiQuestionsLoaded: bgLoadedRef.current,
     chapterMarkersRef, recordingStartTimeRef,
     phase2ReadyRef, phase2WaitersRef,
