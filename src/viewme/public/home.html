@@ -382,7 +382,7 @@
   </a>
   <div class="nav-links">
     <a href="#how">How it works</a>
-    <a href="/how-we-score" class="nav-story-pulse" style="color:#34D399;font-weight:700">How We Score Interviews</a>
+    <a href="#" onclick="openScoreModal();return false;" class="nav-story-pulse" style="color:#34D399;font-weight:700">How We Score Interviews</a>
     <a href="#pricing">Pricing</a>
     <a href="/contact">Contact Us</a>
     <a href="#" onclick="openAboutModal();return false;" class="nav-story-pulse" style="color:#34D399;font-weight:700">Our Story</a>
@@ -394,7 +394,7 @@
   <!-- Mobile dropdown menu -->
   <div class="nav-mobile-menu" id="navMobileMenu">
     <a href="#how" onclick="toggleMobileMenu()">How it works</a>
-    <a href="/how-we-score" style="color:#34D399;font-weight:700">How We Score Interviews</a>
+    <a href="#" onclick="openScoreModal();toggleMobileMenu();return false;" style="color:#34D399;font-weight:700">How We Score Interviews</a>
     <a href="#pricing" onclick="toggleMobileMenu()">Pricing</a>
     <a href="/contact">Contact Us</a>
     <a href="#" onclick="openAboutModal();return false;" style="color:#34D399;font-weight:700">Our Story</a>
@@ -2224,7 +2224,7 @@
     // Allow nav-logo, nav links, language selector, hamburger
     if (btn.closest('.nav-logo') || btn.closest('.nav-links') ||
         btn.closest('.nav-mobile-menu') || btn.closest('#langMenu') ||
-        btn.closest('#about-overlay') ||
+        btn.closest('#about-overlay') || btn.closest('#score-overlay') ||
         btn.classList.contains('nav-burger') ||
         btn.id === 'notif-pause-btn') return;
     // Allow specific nav anchors — block everything else including buttons and mailto: links
@@ -2384,6 +2384,139 @@
     m.classList.remove('open');
     setTimeout(function() {
       document.getElementById('about-overlay').style.display = 'none';
+      document.body.style.overflow = '';
+    }, 420);
+  }
+
+  /* ── SCORE MODAL ─────────────────────────────────────── */
+  (function() {
+    var overlay = document.createElement('div');
+    overlay.id = 'score-overlay';
+    overlay.style.cssText = 'display:none;position:fixed;inset:0;z-index:9000;background:rgba(4,5,10,0.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);overflow-y:auto;-webkit-overflow-scrolling:touch';
+
+    overlay.innerHTML = `
+      <style>
+        #score-modal{max-width:860px;margin:60px auto 60px;background:#0b0d16;border:1px solid rgba(61,126,246,0.25);border-radius:24px;overflow:hidden;transform:translateY(40px);opacity:0;transition:transform 0.45s cubic-bezier(.22,1,.36,1),opacity 0.4s ease;position:relative;box-shadow:0 0 100px rgba(61,126,246,0.18),0 30px 90px rgba(0,0,0,0.55)}
+        #score-modal.open{transform:translateY(0);opacity:1}
+        #score-close{position:sticky;top:0;left:0;right:0;display:flex;justify-content:flex-end;padding:18px 24px;background:rgba(11,13,22,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.06);z-index:10}
+        #score-close button{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(240,242,255,0.6);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-family:inherit;line-height:1}
+        #score-close button:hover{background:rgba(255,255,255,0.12);color:#fff}
+        .sm-body{padding:56px 64px 72px;font-family:-apple-system,'Segoe UI',sans-serif;color:#f0f2ff;-webkit-font-smoothing:antialiased}
+        .sm-group-title{font-size:20px;font-weight:800;color:#f0f2ff;letter-spacing:-0.01em;margin:48px 0 8px}
+        .sm-group-note{font-size:13.5px;color:rgba(240,242,255,0.45);margin-bottom:22px;max-width:600px;line-height:1.7}
+        .sm-dim{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:22px 24px;margin-bottom:14px}
+        .sm-dim.lead{border-color:rgba(167,139,250,0.28)}
+        .sm-dim-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px;flex-wrap:wrap}
+        .sm-dim-name{font-size:15px;font-weight:800;color:#f0f2ff}
+        .sm-dim.lead .sm-dim-name{color:#a78bfa}
+        .sm-dim-weight{font-size:10.5px;font-weight:700;color:rgba(240,242,255,0.4);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:3px 9px}
+        .sm-dim-desc{font-size:13.5px;color:rgba(240,242,255,0.6);line-height:1.65;margin-bottom:14px}
+        .sm-dim-example{background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px 16px}
+        .sm-dim-example-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(240,242,255,0.4);margin-bottom:7px}
+        .sm-dim-example-body{font-size:13px;color:rgba(240,242,255,0.55);line-height:1.6}
+        .sm-real{background:linear-gradient(160deg,#0c1a2e 0%,#070b14 100%);border:1px solid rgba(79,142,247,0.3);border-radius:16px;padding:24px 26px;margin:22px 0 12px}
+        .sm-real-tag{font-size:10.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#64B5F6;margin-bottom:11px}
+        .sm-real-q{font-size:13.5px;color:#f0f2ff;line-height:1.6;margin-bottom:14px;font-weight:600}
+        .sm-real-a{font-size:12.5px;color:rgba(240,242,255,0.55);line-height:1.6;margin-bottom:16px;font-style:italic}
+        .sm-bar-row{display:flex;align-items:center;gap:12px;margin-bottom:9px}
+        .sm-bar-label{font-size:12px;font-weight:600;color:rgba(240,242,255,0.6);width:82px;flex-shrink:0}
+        .sm-bar-track{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+        .sm-bar-fill{height:100%;border-radius:3px}
+        .sm-bar-val{font-size:12px;font-weight:700;width:38px;text-align:right;flex-shrink:0}
+        .sm-real-note{margin-top:14px;font-size:12.5px;color:rgba(240,242,255,0.4);line-height:1.65}
+        .sm-cta{text-align:center;padding:36px 24px;background:rgba(255,255,255,0.02);border-radius:18px;border:1px solid rgba(255,255,255,0.07);margin-top:32px}
+        .sm-cta h3{font-size:19px;font-weight:800;color:#f0f2ff;margin-bottom:8px}
+        .sm-cta p{font-size:13px;color:rgba(240,242,255,0.45);margin-bottom:20px}
+        .sm-cta-btn{display:inline-block;background:linear-gradient(135deg,#3D7EF6,#a78bfa);color:#fff;font-weight:800;font-size:13.5px;padding:12px 26px;border-radius:24px;text-decoration:none}
+        @media(max-width:600px){.sm-body{padding:32px 24px 48px}.sm-dim-head{flex-direction:column;align-items:flex-start;gap:5px}}
+      </style>
+      <div id="score-modal">
+        <div id="score-close"><button onclick="closeScoreModal()" aria-label="Close">✕</button></div>
+        <div class="sm-body">
+          <span class="am-eyebrow">Scoring &amp; Feedback</span>
+          <h2 class="am-hero">How we score every interview.</h2>
+          <p class="am-sub">No black box. Every answer is scored across real dimensions, each explained below with a genuine example — including one from an actual candidate's live session, mistakes and all.</p>
+
+          <h3 class="sm-group-title">The core four — every answer, every time</h3>
+          <p class="sm-group-note">These four score every single answer, weighted into one overall percentage: Relevance 35%, Clarity 25%, Depth 25%, Confidence 15%.</p>
+
+          <div class="sm-dim">
+            <div class="sm-dim-head"><span class="sm-dim-name">Relevance</span><span class="sm-dim-weight">35% weight</span></div>
+            <div class="sm-dim-desc">Does the answer actually address what was asked, and match what the role genuinely requires — not just talk in the right general direction?</div>
+            <div class="sm-dim-example"><div class="sm-dim-example-label">Example</div><div class="sm-dim-example-body">Asked how to keep a transactional endpoint consistent if a downstream step fails, an answer about general code readability would score low — however well written, it isn't answering what was actually asked.</div></div>
+          </div>
+          <div class="sm-dim">
+            <div class="sm-dim-head"><span class="sm-dim-name">Clarity</span><span class="sm-dim-weight">25% weight</span></div>
+            <div class="sm-dim-desc">Is the answer well-structured and easy to follow, or does the candidate have to be untangled to find the actual point?</div>
+            <div class="sm-dim-example"><div class="sm-dim-example-label">Example</div><div class="sm-dim-example-body">"I'd wrap the write and the message in one transaction, and roll back if either fails" scores high — one clean sentence, the point is immediately obvious.</div></div>
+          </div>
+          <div class="sm-dim">
+            <div class="sm-dim-head"><span class="sm-dim-name">Depth</span><span class="sm-dim-weight">25% weight</span></div>
+            <div class="sm-dim-desc">Are there specific examples, named tools, real numbers, or genuine outcomes — or generalities that could apply to almost any answer?</div>
+            <div class="sm-dim-example"><div class="sm-dim-example-label">Example</div><div class="sm-dim-example-body">"I'd make it robust" has no depth. "I'd use an outbox table so the message only publishes after the transaction commits" does — it names the actual mechanism.</div></div>
+          </div>
+          <div class="sm-dim">
+            <div class="sm-dim-head"><span class="sm-dim-name">Confidence</span><span class="sm-dim-weight">15% weight</span></div>
+            <div class="sm-dim-desc">Does the language sound assured, or is it hedged with "maybe", "I think", "kind of" — even when the underlying idea is correct?</div>
+            <div class="sm-dim-example"><div class="sm-dim-example-label">Example</div><div class="sm-dim-example-body">"I think maybe we'd sort of use a transaction, possibly?" scores low even if a transaction genuinely is right — the hedging undercuts it.</div></div>
+          </div>
+
+          <div class="sm-real">
+            <div class="sm-real-tag">A real, unedited scored answer</div>
+            <div class="sm-real-q">"CivicForge Solutions asks you to expose an ASP.NET Core endpoint that creates a case and publishes a notification, but the database write and message publication must not leave the system inconsistent if either operation fails. How would you design the endpoint and surrounding components?"</div>
+            <div class="sm-real-a">"well I would definitely design them around a single transaction and roll back if there was an error"</div>
+            <div class="sm-bar-row"><span class="sm-bar-label">Relevance</span><div class="sm-bar-track"><div class="sm-bar-fill" style="width:15%;background:#EF4444"></div></div><span class="sm-bar-val" style="color:#EF4444">15%</span></div>
+            <div class="sm-bar-row"><span class="sm-bar-label">Clarity</span><div class="sm-bar-track"><div class="sm-bar-fill" style="width:70%;background:#34D399"></div></div><span class="sm-bar-val" style="color:#34D399">70%</span></div>
+            <div class="sm-bar-row"><span class="sm-bar-label">Depth</span><div class="sm-bar-track"><div class="sm-bar-fill" style="width:5%;background:#EF4444"></div></div><span class="sm-bar-val" style="color:#EF4444">5%</span></div>
+            <div class="sm-bar-row"><span class="sm-bar-label">Confidence</span><div class="sm-bar-track"><div class="sm-bar-fill" style="width:85%;background:#34D399"></div></div><span class="sm-bar-val" style="color:#34D399">85%</span></div>
+            <div class="sm-real-note">Notice clarity and confidence both score well — it's a short, assured sentence — but relevance and depth are honest about the real gap: the transaction alone doesn't guarantee the message publishes, and the answer names no mechanism for that. That's the point of scoring these separately instead of one blended number.</div>
+          </div>
+
+          <h3 class="sm-group-title">Leadership signal — two guaranteed questions, every interview</h3>
+          <p class="sm-group-note">Every interview includes two fixed questions asked by Amina (HR): "Tell us about a project or accomplishment you're most proud of," and "Where do you see yourself in five years?" Each is scored once, not on top of every answer.</p>
+          <div class="sm-dim lead">
+            <div class="sm-dim-head"><span class="sm-dim-name">Ownership &amp; Execution</span><span class="sm-dim-weight">from "proudest accomplishment"</span></div>
+            <div class="sm-dim-desc">Ownership — did they personally drive or decide this, not just describe what "we" did? Execution — did they see it through to a real outcome, not just have a good idea that stalled?</div>
+            <div class="sm-dim-example"><div class="sm-dim-example-label">Example</div><div class="sm-dim-example-body">"Our team shipped a big project" shows neither. "I noticed the process was broken, proposed the fix, got buy-in, and shipped it three weeks later" shows both.</div></div>
+          </div>
+          <div class="sm-dim lead">
+            <div class="sm-dim-head"><span class="sm-dim-name">Proactiveness</span><span class="sm-dim-weight">from "five years"</span></div>
+            <div class="sm-dim-desc">Genuine, specific forward planning and initiative — or a vague, clearly rehearsed non-answer?</div>
+            <div class="sm-dim-example"><div class="sm-dim-example-label">Example</div><div class="sm-dim-example-body">"Somewhere senior, I guess" scores low. "I want to be leading the platform team — I'm already picking up architecture reviews to get there" scores high.</div></div>
+          </div>
+
+          <h3 class="sm-group-title">Bonus round — a live knowledge check</h3>
+          <p class="sm-group-note">Partway through most interviews, a surprise multiple-choice question fires — hard, role-specific, worth real points that lift the final score. Answered correctly, it genuinely raises the headline percentage; answered wrong, you get the full explanation on the spot.</p>
+
+          <div class="sm-cta">
+            <h3>See it happen in your own interview.</h3>
+            <p>Every dimension above, scored live, on a role you actually name.</p>
+            <a class="sm-cta-btn" href="https://login.theinterviewchair.com/register">Start Practising →</a>
+          </div>
+        </div>
+      </div>`;
+
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) closeScoreModal();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeScoreModal();
+    });
+  })();
+
+  function openScoreModal() {
+    var o = document.getElementById('score-overlay');
+    o.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    setTimeout(function() { document.getElementById('score-modal').classList.add('open'); }, 20);
+  }
+  function closeScoreModal() {
+    var m = document.getElementById('score-modal');
+    m.classList.remove('open');
+    setTimeout(function() {
+      document.getElementById('score-overlay').style.display = 'none';
       document.body.style.overflow = '';
     }, 420);
   }
