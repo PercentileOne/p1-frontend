@@ -28,6 +28,8 @@ jobs:
           cp src/viewme/public/hero-2.jpg deploy-product/hero-2.jpg
           cp src/viewme/public/hero-3.jpg deploy-product/hero-3.jpg
           cp src/viewme/public/interview-room-latest.png deploy-product/interview-room-latest.png
+          cp src/viewme/public/hero-preview.mp4 deploy-product/hero-preview.mp4
+          cp src/viewme/public/hero-preview.webm deploy-product/hero-preview.webm
           cp src/viewme/public/viewme-trade-1.png deploy-product/viewme-trade-1.png
           cp src/viewme/public/viewme-trade-2.png deploy-product/viewme-trade-2.png
           cp src/viewme/public/viewme-trade-3.png deploy-product/viewme-trade-3.png
