@@ -142,7 +142,8 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
             resolve();
           });
         });
-        session.on(SessionEvent.SESSION_DISCONNECTED, () => {
+        session.on(SessionEvent.SESSION_DISCONNECTED, (reason?: unknown) => {
+          timingLog(role, `SESSION_DISCONNECTED fired (reason: ${JSON.stringify(reason)}) — this seat will show frozen/silent until re-connected`);
           setStatus('closed');
           sessionRef.current = null;
           connectedRef.current = false;
