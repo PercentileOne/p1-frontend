@@ -439,7 +439,7 @@ export function InterviewReplayPlayer({ url, chapters }: { url: string; chapters
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-type Tab = 'interview' | 'learn' | 'feedback' | 'coming-soon';
+type Tab = 'interview' | 'learn' | 'feedback';
 
 export default function InterviewSummaryPage() {
   const location = useLocation();
@@ -707,7 +707,6 @@ ${questionsHtml}
   const TABS: { id: Tab; label: string }[] = [
     { id: 'interview', label: '🎤 Interview Room' },
     { id: 'learn', label: '📚 Learn' },
-    { id: 'coming-soon', label: '⚡ Coming Soon' },
   ];
 
   if (!hasRouteState && fetchState === 'loading') {
@@ -981,42 +980,6 @@ ${questionsHtml}
         {/* ── FEEDBACK TAB ── */}
         {activeTab === 'feedback' && (
           <SendFeedbackTab cvCtx={cvCtx} jobCtx={jobCtx} />
-        )}
-
-        {/* ── COMING SOON TAB ── */}
-        {activeTab === 'coming-soon' && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-            <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '40px 32px', textAlign: 'center', marginBottom: '20px' }}>
-              <div style={{ fontSize: '40px', marginBottom: '16px' }}>⚡</div>
-              <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)', marginBottom: '10px' }}>More coming soon</div>
-              <div style={{ fontSize: '14px', color: 'var(--text-2)', lineHeight: 1.65, maxWidth: '420px', margin: '0 auto 28px' }}>
-                We're building visa interview prep, court preparation, driving theory, and more — because Explain isn't just for job interviews.
-              </div>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {['Visa Interviews', 'Driving Theory', 'Citizenship Tests', 'Court Preparation', 'Academic Admissions', 'Assessment Centres'].map(s => (
-                  <span key={s} style={{ fontSize: '12px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '20px', padding: '5px 14px', color: '#a78bfa', fontWeight: 600 }}>{s}</span>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '24px' }}>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', marginBottom: '16px' }}>Product Roadmap</div>
-              {[
-                { q: 'Q3 2025', items: ['AI video interviewer (D-ID integration)', 'ElevenLabs voice upgrades', 'Interview pack sharing'] },
-                { q: 'Q4 2025', items: ['Visa interview module', 'Academic admissions prep', 'Team practice sessions'] },
-                { q: '2026', items: ['Mobile app (iOS + Android)', 'Employer dashboard', 'Industry-specific packs'] },
-              ].map(r => (
-                <div key={r.q} style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--blue)', background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: '6px', padding: '3px 10px', whiteSpace: 'nowrap', height: 'fit-content', marginTop: '2px' }}>{r.q}</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    {r.items.map(item => (
-                      <div key={item} style={{ fontSize: '13px', color: 'var(--text-2)' }}>• {item}</div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
         )}
 
       </div>
