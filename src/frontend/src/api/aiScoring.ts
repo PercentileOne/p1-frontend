@@ -935,27 +935,7 @@ Return this exact JSON:
       "source": "Role",
       "competencyTags": ["relevant tag"]
     }
-  ],
-  "characterQuestions": [
-    {
-      "questionText": "an open-ended character/ethics question that surfaces whether the candidate personally drove something and saw it through",
-      "modelAnswer": "what a strong answer covers",
-      "dimension": "ownership"
-    },
-    {
-      "questionText": "a different open-ended character question that surfaces genuine forward planning and self-driven initiative",
-      "modelAnswer": "what a strong answer covers",
-      "dimension": "proactiveness"
-    }
-  ],
-  "teamFitQuestion": {
-    "questionText": "one open-ended question about how the candidate works with others, handles disagreement, or adapts to a team",
-    "modelAnswer": "what a strong answer covers"
-  },
-  "companyQuestion": {
-    "questionText": "what do you know about this company, and why does this specific role appeal to you",
-    "modelAnswer": "what a strong answer covers"
-  }
+  ]
 }
 
 Generate exactly ${totalQuestions} questions in the "questions" array — ALL of them role/competency questions (source: "Role"), based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover DIFFERENT competencies each time — do NOT reuse the same question themes across sessions. Use the session seed to pick a fresh angle on the role. Avoid generic questions like "tell me about yourself" or "describe a challenge" — make them specific to this exact role and company.${specialFocus && specialFocus.length > 0 ? ` Weight these role questions toward the Special Focus Topics named in the Session Context (${specialFocus.join(', ')}) — give each named topic its own dedicated, hard, specific question if there are enough role-question slots to do so; if there are more topics than slots, cover as many DIFFERENT topics as possible rather than spending two questions on the same one. Any slots left over after covering the topics go to other important aspects of the role.` : ''}
@@ -968,12 +948,47 @@ Also generate TWO multiple-choice bonus questions in the "mcqQuestions" array �
 - correctIndex: 0-based index of the correct answer — MUST vary between questions, NEVER always 0. Choose different values (0, 1, 2, or 3) for each question based on where the correct answer actually falls in your options list.
 - explanation: one clear sentence explaining why the correct answer is right
 
-Separately from the ${totalQuestions} role questions above, and NEVER counted against that number, also generate these — they are asked by Amina (HR), on top of the role questions, not instead of any of them:
-- "characterQuestions": exactly 2 open-ended, character-and-ethics-probing questions. These MUST be fresh every session — draw from a wide rotating pool of angles (a difficult ethical call, taking ownership of a mistake, going beyond what was asked, handling a conflict with a colleague, learning from a failure, helping or mentoring someone else, standing up for something they believed was right, balancing competing priorities under pressure, self-driven growth or upskilling, long-term career direction) so that no two candidates — and no candidate sitting a second interview — reliably gets the same pair. This matters: candidates must not be able to predict these questions in advance. Exactly one question must set "dimension": "ownership" and clearly surface whether the candidate personally drove a decision or project (not just contributed to one) and saw it through to a real outcome. The other must set "dimension": "proactiveness" and clearly surface genuine forward planning and self-driven initiative, not vague aspiration. Never reuse the same phrasing twice — "tell us about a project you're proud of" and "where do you see yourself in five years" are two examples among many possible angles, not fixed wording.
-- "teamFitQuestion": one open-ended question probing how the candidate works with others — collaboration, handling disagreement, adapting to a team's way of working. Vary the angle each session.
-- "companyQuestion": one closing question asking what the candidate knows about this company and why this specific role appeals to them.
+IMPORTANT: The two MCQ questions and the ${totalQuestions} role questions MUST all be completely different every single session. Never repeat questions from any previous generation. Use the session seed above to vary your selection.`;
 
-IMPORTANT: The two MCQ questions, the ${totalQuestions} role questions, and the character/team-fit/company questions MUST all be completely different every single session. Never repeat questions from any previous generation. Use the session seed above to vary your selection.`;
+  // Fired CONCURRENTLY with the main call above, not folded into it (Francis, 2026-09-10,
+  // same day as the fix below) — these were briefly fields on that one mega-call, which
+  // measurably fattened its output and is the most likely reason Phase 2 (InterviewRoomPage.
+  // tsx's background AI load) started crowding Mike's ~45-60s intro window far more often,
+  // surfacing as a live-reported "waiting up to a minute after Mike finishes" regression.
+  // This call is small and fast (4 short open-ended questions, no job-spec text, no per-role
+  // rules) — running it alongside the main call costs nothing on the critical path instead of
+  // adding to it. See MANDATORY_MEASURE_QUESTIONS for the fallback if this call fails outright.
+  const hrUserPrompt = `Write open-ended HR interview questions for a real interview session. Session ID: ${sessionSeed}-hr — unique to this session, you MUST write completely fresh questions every time, never reuse wording from any previous generation.
+
+═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${preferredNameLine}
+
+Return ONLY this exact JSON — no markdown, no explanation, no code fences:
+{
+  "characterQuestions": [
+    { "questionText": "an open-ended character/ethics question that surfaces whether the candidate personally drove something and saw it through", "modelAnswer": "what a strong answer covers", "dimension": "ownership" },
+    { "questionText": "a different open-ended character question that surfaces genuine forward planning and self-driven initiative", "modelAnswer": "what a strong answer covers", "dimension": "proactiveness" }
+  ],
+  "teamFitQuestion": { "questionText": "one open-ended question about how the candidate works with others, handles disagreement, or adapts to a team", "modelAnswer": "what a strong answer covers" },
+  "companyQuestion": { "questionText": "what do you know about this company, and why does this specific role appeal to you", "modelAnswer": "what a strong answer covers" }
+}
+
+"characterQuestions": exactly 2 open-ended, character-and-ethics-probing questions. These MUST be fresh every session — draw from a wide rotating pool of angles (a difficult ethical call, taking ownership of a mistake, going beyond what was asked, handling a conflict with a colleague, learning from a failure, helping or mentoring someone else, standing up for something they believed was right, balancing competing priorities under pressure, self-driven growth or upskilling, long-term career direction) so that no two candidates — and no candidate sitting a second interview — reliably gets the same pair. This matters: candidates must not be able to predict these questions in advance. Exactly one question must set "dimension": "ownership" and clearly surface whether the candidate personally drove a decision or project (not just contributed to one) and saw it through to a real outcome. The other must set "dimension": "proactiveness" and clearly surface genuine forward planning and self-driven initiative, not vague aspiration. Never reuse the same phrasing twice — "tell us about a project you're proud of" and "where do you see yourself in five years" are two examples among many possible angles, not fixed wording.
+"teamFitQuestion": one open-ended question probing how the candidate works with others — collaboration, handling disagreement, adapting to a team's way of working. Vary the angle each session.
+"companyQuestion": one closing question asking what the candidate knows about this company and why this specific role appeals to them.`;
+
+  type HrRawResult = {
+    characterQuestions?: Array<{ questionText: string; modelAnswer?: string; dimension?: 'ownership' | 'proactiveness' | string }>;
+    teamFitQuestion?: { questionText: string; modelAnswer?: string };
+    companyQuestion?: { questionText: string; modelAnswer?: string };
+  };
+  const hrQuestionsPromise: Promise<HrRawResult> = chatJSON<HrRawResult>(
+    `You write short, open-ended HR interview questions for a global hiring platform. Return ONLY valid JSON — no markdown, no explanation, no code fences.${languageOverride}`,
+    hrUserPrompt,
+    0.9,
+  ).catch(err => {
+    console.warn('[Explain AI] HR questions call failed — falling back to the static character-question pair:', err);
+    return {};
+  });
 
   type RawResult = {
     language: string;
@@ -999,13 +1014,6 @@ IMPORTANT: The two MCQ questions, the ${totalQuestions} role questions, and the 
       correctIndex: number;
       explanation: string;
     };
-    characterQuestions?: Array<{
-      questionText: string;
-      modelAnswer?: string;
-      dimension?: 'ownership' | 'proactiveness' | string;
-    }>;
-    teamFitQuestion?: { questionText: string; modelAnswer?: string };
-    companyQuestion?: { questionText: string; modelAnswer?: string };
   };
 
   // The prompt asks for "exactly N" but nothing enforces that on a JSON-mode LLM call — it
@@ -1086,6 +1094,10 @@ Return this exact JSON:
     .filter(q => q?.questionText && q?.options?.length === 4)
     .map(q => ({ questionText: q.questionText, options: q.options, correctIndex: q.correctIndex ?? 0, explanation: q.explanation ?? '' }));
 
+  // Awaited here (not right after firing it above) so it's had the whole main-call+top-up
+  // duration to resolve concurrently — by this point it's almost always already settled.
+  const hrResult = await hrQuestionsPromise;
+
   // The 2 character questions (ownership + proactiveness), the team-fit question, and the
   // company-knowledge closer are all ADDED on top of the role questions above, never spliced
   // in to replace any of them (Francis, 2026-09-10) — a candidate who selects N questions gets
@@ -1094,7 +1106,7 @@ Return this exact JSON:
   // now only a last-resort fallback if the model omits a dimension, guaranteeing the scoring
   // feature never silently loses one of its two required signals.
   const byDimension = new Map<'ownership' | 'proactiveness', { questionText: string; modelAnswer?: string }>();
-  for (const cq of result.characterQuestions ?? []) {
+  for (const cq of hrResult.characterQuestions ?? []) {
     const dim = cq.dimension === 'ownership' || cq.dimension === 'proactiveness' ? cq.dimension : undefined;
     if (dim && !byDimension.has(dim) && cq.questionText) byDimension.set(dim, cq);
   }
@@ -1114,11 +1126,11 @@ Return this exact JSON:
   };
   const characterQuestions = [buildCharacterQuestion('ownership'), buildCharacterQuestion('proactiveness')];
 
-  const teamFitQuestion: InterviewQuestion | null = result.teamFitQuestion?.questionText
+  const teamFitQuestion: InterviewQuestion | null = hrResult.teamFitQuestion?.questionText
     ? {
         questionId: 'q-team-fit',
-        questionText: result.teamFitQuestion.questionText,
-        modelAnswer: result.teamFitQuestion.modelAnswer || 'A strong answer gives a specific, honest example of working with others — how they communicated, handled disagreement, or adapted to the team — not just a generic claim that they are "a team player".',
+        questionText: hrResult.teamFitQuestion.questionText,
+        modelAnswer: hrResult.teamFitQuestion.modelAnswer || 'A strong answer gives a specific, honest example of working with others — how they communicated, handled disagreement, or adapted to the team — not just a generic claim that they are "a team player".',
         questionType: 'Behavioural',
         difficulty: 'Medium',
         source: 'HR',
@@ -1128,8 +1140,8 @@ Return this exact JSON:
 
   const companyQuestion: InterviewQuestion = {
     questionId: 'q-company-knowledge',
-    questionText: result.companyQuestion?.questionText || 'What do you know about this company, and why does this specific role appeal to you?',
-    modelAnswer: result.companyQuestion?.modelAnswer || 'A strong answer shows genuine research into the company and a specific, credible reason this particular role appeals to them.',
+    questionText: hrResult.companyQuestion?.questionText || 'What do you know about this company, and why does this specific role appeal to you?',
+    modelAnswer: hrResult.companyQuestion?.modelAnswer || 'A strong answer shows genuine research into the company and a specific, credible reason this particular role appeals to them.',
     questionType: 'Behavioural',
     difficulty: 'Easy',
     source: 'HR',

@@ -438,6 +438,11 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     cancelSpeakRef.current = null;
     setAwaitingHandoff(true);
     logFlowEvent('MIKE_INTRO_COMPLETED', {});
+    // Temporary diagnostic (Francis, 2026-09-10) — pins down whether a "waiting after Mike"
+    // complaint is Phase 2 (background AI load) still being in flight at this exact moment,
+    // vs. something else. Same [Phase2 TIMING] prefix as InterviewRoomPage.tsx's own markers
+    // — filter the console for "TIMING" to see both together in order.
+    console.log(`[Phase2 TIMING] Mike's audio ended @ ${Math.round(performance.now())}ms — phase2ReadyRef is ${phase2ReadyRef.current ? 'true (no wait)' : 'FALSE (will wait for Phase 2)'}`);
     // Give Sarah/James's real AI intros (with the candidate's name) a chance to land even
     // if Phase 2 is still in flight — same wait pattern as Mike's own sessionReadyRef gate.
     // Always deferred by one tick, even when phase2ReadyRef.current is ALREADY true: if

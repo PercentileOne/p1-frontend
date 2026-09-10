@@ -415,10 +415,14 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     // 35s fallback for Phase 2 (Sarah/James) — started once Phase 2 actually begins, below.
     // Generous on purpose: see the phase2ReadyRef comment for why a short cap defeats itself.
     let phase2Timeout: ReturnType<typeof setTimeout> | undefined;
-    const resolvePhase2 = () => {
+    const resolvePhase2 = (via: 'real-data' | '90s-timeout-fallback' = 'real-data') => {
       if (phase2Timeout) clearTimeout(phase2Timeout);
       if (phase2ReadyRef.current) return;
       phase2ReadyRef.current = true;
+      // Temporary diagnostic (Francis, 2026-09-10) — see handleMikeIntroDone's matching
+      // [Phase2 TIMING] log. "90s-timeout-fallback" here means the real AI data never arrived
+      // in time and Sarah/James fell back to generic, name-less lines.
+      console.log(`[Phase2 TIMING] Phase 2 resolved (${via}) @ ${Math.round(performance.now())}ms`);
       // setTimeout(0) gives React one tick to flush the setBgSarahIntro/setBgJamesIntro
       // calls that precede this so beginInterviewIntroRef.current (only updated by its own
       // effect after a render commits) has already picked up the fresh text — same pattern,
@@ -466,7 +470,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       // before the real data arrives, Amina/Wayne silently fall back to their generic,
       // name-less lines — that's what "James stopped saying my name" was, and what "Amina
       // didn't say my name" was too.
-      phase2Timeout = setTimeout(resolvePhase2, 90000);
+      phase2Timeout = setTimeout(() => resolvePhase2('90s-timeout-fallback'), 90000);
+      console.log(`[Phase2 TIMING] sessionPrepareClient() call starting @ ${Math.round(performance.now())}ms`);
       return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount, ctx.company || undefined, ctx.specialFocus);
 
     }).then(result => {
@@ -937,32 +942,6 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
       {/* Main content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: '960px', width: '100%', margin: '0 auto', padding: '24px 24px 32px', gap: '20px' }}>
-
-        {/* Off-screen warm-up video elements — mounted the instant each LiveAvatar session
-            connects (early, during Mike's ~30-45s intro, thanks to yesterday's warm-start),
-            NOT gated behind showInterviewers like the real panel below. Root cause of "Amina's
-            lips move for 3-6s, then audio races to catch up" (confirmed via the 2026-09-10
-            timing logs): the real <video> below — the only element attach() had to work with —
-            was hidden by showInterviewers this whole time, so attach()+mute+the audio tap
-            never actually ran until showInterviewers flipped true, ~44 SECONDS after
-            SESSION_STREAM_READY, mere milliseconds before beginInterviewIntro called speak().
-            That's a cold first-attach of an already-44-seconds-old stream happening in the
-            same breath as her first real line. These elements let that cold-attach (and the
-            audio tap that rides along with it) happen here instead, invisibly, during Mike's
-            intro — so by the time the real panel mounts and setVideoEl re-attaches to IT, the
-            stream's already been decoding and the audio tap's already been live for tens of
-            seconds; re-attaching an already-warm stream to a new element is a much smaller ask
-            than a cold first attach. Rendered only while the real panel ISN'T (mutually
-            exclusive with it), so there's never any ambiguity about which element setVideoEl's
-            ref callback currently points at. */}
-        {!showInterviewers && liveAvatarHr.status === 'connected' && (
-          <video ref={liveAvatarHr.setVideoEl} autoPlay playsInline muted
-            style={{ position: 'absolute', width: '2px', height: '2px', opacity: 0, pointerEvents: 'none' }} />
-        )}
-        {!showInterviewers && liveAvatarTechnical.status === 'connected' && (
-          <video ref={liveAvatarTechnical.setVideoEl} autoPlay playsInline muted
-            style={{ position: 'absolute', width: '2px', height: '2px', opacity: 0, pointerEvents: 'none' }} />
-        )}
 
         {/* Amina + Wayne — hidden while Mike is speaking, fade in after */}
         <AnimatePresence>
