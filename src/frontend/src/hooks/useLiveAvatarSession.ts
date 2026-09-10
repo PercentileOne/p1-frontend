@@ -6,6 +6,17 @@ import { tapLiveAvatarAudioForRecording } from '../api/liveAvatarRecordingBus';
 
 export type LiveAvatarStatus = 'idle' | 'connecting' | 'connected' | 'failed' | 'closed';
 
+// Temporary diagnostic instrumentation (Francis, 2026-09-10) — the first attempted fix for
+// "Amina's lips move 3-6s before sound, then audio races to catch up" (muting the <video>
+// element synchronously at attach time) did NOT resolve it live, so guessing again without
+// real data risks the same result. These timestamps pin down exactly where the gap actually
+// is: client-side tap wiring, client-side audio generation, or HeyGen's own server-side
+// pipeline (visible as a gap between repeatAudio() being sent and AVATAR_SPEAK_STARTED coming
+// back). Safe to remove once the real cause is confirmed from a live console capture.
+const timingLog = (role: string, label: string) => {
+  console.log(`[LiveAvatar TIMING][${role}] ${label} @ ${Math.round(performance.now())}ms`);
+};
+
 // Wraps the official LiveAvatar Web SDK for one interview seat's avatar session. voiceChat is
 // deliberately never enabled — that SDK feature captures the browser's own microphone for a
 // built-in voice round-trip, which is not what we want: we generate Amina/Wayne/Mike's audio
@@ -69,6 +80,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
       // closes that window entirely: the only audio the candidate ever hears is our tap below,
       // which starts a moment later in real time but never audibly "catches up".
       videoElRef.current.muted = true;
+      timingLog(role, 'attach() + synchronous mute done');
       const session = sessionRef.current;
       const el = videoElRef.current;
       if (tappedSessionRef.current !== session) {
@@ -93,6 +105,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
           getTTSAudioContext().then(ctx => {
             if (tappedSessionRef.current === session) {
               untapAudioRef.current = tapLiveAvatarAudioForRecording(rawAudioTrack, el, ctx, onAnalyser);
+              timingLog(role, 'audio tap connected (candidate can now hear this seat)');
             }
           });
         } else {
@@ -120,8 +133,10 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
         // worked). SESSION_STREAM_READY is the SDK's own explicit "tracks are actually here"
         // signal; connect() now waits for it too, with a safety timeout in case it never fires
         // for some reason, so a stalled stream can't hang the whole interview indefinitely.
+        timingLog(role, 'connect() starting (session token requested)');
         const streamReadyPromise = new Promise<void>((resolve) => {
           session.on(SessionEvent.SESSION_STREAM_READY, () => {
+            timingLog(role, 'SESSION_STREAM_READY fired');
             streamReadyRef.current = true;
             attachIfReady();
             resolve();
@@ -185,7 +200,9 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
     const session = sessionRef.current;
     if (!session || !connectedRef.current) throw new Error('Avatar session is not connected');
 
+    timingLog(role, 'speak() called — requesting audio generation');
     const audioBase64 = await fetchAvatarAudioBase64(text, role);
+    timingLog(role, 'audio generation done — about to send repeatAudio()');
     // Safety timeout: AVATAR_SPEAK_ENDED can simply never fire if the underlying session has
     // gone quietly dead — the SDK's own keepAlive() fire-and-forgets its network call (never
     // awaits sessionClient.keepAlive() internally), so a failed keep-alive is invisible to us,
@@ -199,16 +216,24 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
     const timeoutMs = Math.max(15_000, text.split(/\s+/).length * 500);
     return new Promise<void>((resolve, reject) => {
       let settled = false;
+      // Never listened to before — this is HeyGen's own server-pushed confirmation that the
+      // talk has actually begun (a real WebSocket event, "agent.speak_started"), distinct from
+      // merely having SENT repeatAudio() below. A large gap between the "sending repeatAudio()"
+      // log above and this one firing would confirm the delay is server-side (HeyGen's own
+      // generation pipeline), not anything in our own tap-wiring or audio-generation code.
+      const onStarted = () => timingLog(role, 'AVATAR_SPEAK_STARTED fired (HeyGen confirms talk began)');
       const onEnded = () => {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
+        session.off(AgentEventsEnum.AVATAR_SPEAK_STARTED, onStarted);
         session.off(AgentEventsEnum.AVATAR_SPEAK_ENDED, onEnded);
         resolve();
       };
       const timer = setTimeout(() => {
         if (settled) return;
         settled = true;
+        session.off(AgentEventsEnum.AVATAR_SPEAK_STARTED, onStarted);
         session.off(AgentEventsEnum.AVATAR_SPEAK_ENDED, onEnded);
         sessionRef.current = null;
         connectedRef.current = false;
@@ -217,8 +242,10 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
         if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }
         reject(new Error(`Avatar speak timed out after ${timeoutMs}ms — session went stale`));
       }, timeoutMs);
+      session.on(AgentEventsEnum.AVATAR_SPEAK_STARTED, onStarted);
       session.on(AgentEventsEnum.AVATAR_SPEAK_ENDED, onEnded);
       session.repeatAudio(audioBase64);
+      timingLog(role, 'repeatAudio() sent');
     });
   }, []);
 
