@@ -22,7 +22,8 @@ import DemoPanel from "./DemoPanel";
 type CardSlide = { label: string; value: string; change: string };
 type LiveCard  = { color: string; bg: string; border: string; shadow: string; interval: number; slides: CardSlide[] };
 
-interface NewsItem { tag: string; timeAgo: string; headline: string; source: string; color: string }
+interface NewsItem { tag: string; headline: string; source: string; url: string; publishedAt: string; color: string }
+interface FeaturedStat { value: string; label: string; sourceLabel?: string; sourceUrl?: string }
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 
@@ -122,14 +123,18 @@ const PROFILE_ITEMS = [
   { label: "Certifications",       done: false },
 ];
 
-const FALLBACK_NEWS: NewsItem[] = [
-  { tag: "Education",   timeAgo: "1h ago",  headline: "Record number of students achieve top A Level grades — universities brace for clearing surge",          source: "BBC News",             color: "#4F8EF7" },
-  { tag: "Tech Jobs",   timeAgo: "2h ago",  headline: "UK tech hiring rebounds sharply in Q3 as AI-adjacent roles surge 34% — latest REC data",                source: "TechMarket",           color: "#34D399" },
-  { tag: "AI & Work",   timeAgo: "4h ago",  headline: "Candidates using AI interview prep are landing roles 2× faster — new research confirms",                 source: "HR Magazine",          color: "#A78BFA" },
-  { tag: "Salaries",    timeAgo: "6h ago",  headline: ".NET and cloud engineer salaries up 12% year-on-year as enterprise demand outpaces supply",              source: "LinkedIn Economic Graph", color: "#F59E0B" },
-];
-
 const NEWS_COLORS = ["#4F8EF7", "#34D399", "#A78BFA", "#F59E0B"];
+
+// "Xh ago" / "Xd ago" from a real publishedAt timestamp — computed at render time (not
+// baked in server-side) so it stays correct regardless of the backend's 20-minute cache.
+function timeAgoFrom(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.max(1, Math.round(diffMs / 60000));
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.round(hours / 24)}d ago`;
+}
 
 function getGreeting(): string {
   const h = new Date().getHours();
@@ -144,32 +149,32 @@ function getTodayLabel(): string {
   });
 }
 
-async function fetchTodaysNews(role: string): Promise<NewsItem[]> {
-  const today = getTodayLabel();
-
+// Real articles from real publishers' own RSS feeds (see backend CareerNews/Endpoint.cs) —
+// replaces a prior version that had GPT-4o-mini invent headlines and attribute them to real
+// outlets (BBC News, LinkedIn Economic Graph, etc.), discovered live 2026-09-10 when the same
+// four fabricated headlines had sat there unchanged for weeks. jobTitle personalisation isn't
+// wired in yet — nothing on this dashboard currently holds a real job-title signal for the
+// logged-in candidate (user.role is their account permission role, e.g. "Admin"/"Candidate",
+// not a job title — sending that as "jobTitle" would personalise by the wrong thing entirely).
+async function fetchCareerNews(): Promise<NewsItem[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/ai-proxy`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `You are a career intelligence agent. Today is ${today}. Generate 4 topical career and job market news items relevant for a ${role || "professional"} who is actively job seeking. Include any real-world events from today if you know of them (e.g. A Level results, economic data, tech announcements). Return a JSON object with key "news" — an array of: { tag: string, timeAgo: string, headline: string, source: string }. timeAgo examples: "1h ago", "3h ago". Headlines should feel like real, specific, breaking news — never generic.`,
-          },
-          { role: "user", content: "Generate the 4 news items now." },
-        ],
-        response_format: { type: "json_object" },
-        max_tokens: 700,
-        temperature: 0.7,
-      }),
-    });
-    const data = await res.json() as { choices: { message: { content: string } }[] };
-    const parsed = JSON.parse(data.choices[0].message.content) as { news: Omit<NewsItem, "color">[] };
-    return parsed.news.slice(0, 4).map((item, i) => ({ ...item, color: NEWS_COLORS[i % 4] }));
+    const res = await fetch(`${API_BASE}/api/career-news`);
+    if (!res.ok) return [];
+    const data = await res.json() as { news: Array<{ tag: string; headline: string; source: string; url: string; publishedAt: string }> };
+    return data.news.map((item, i) => ({ ...item, color: NEWS_COLORS[i % NEWS_COLORS.length] }));
   } catch {
-    return FALLBACK_NEWS;
+    return [];
+  }
+}
+
+async function fetchFeaturedStat(): Promise<FeaturedStat | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/platform-stats`);
+    if (!res.ok) return null;
+    const data = await res.json() as { stats: Array<{ value: string; label: string; sourceLabel?: string; sourceUrl?: string }> };
+    return data.stats[0] ?? null;
+  } catch {
+    return null;
   }
 }
 
@@ -253,8 +258,9 @@ export default function CandidateDashboard() {
   // straight into the weak area that sent the candidate here.
   const studyTopic = (location.state as { studyTopic?: string } | null)?.studyTopic;
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
-  const [news,      setNews]      = useState<NewsItem[]>(FALLBACK_NEWS);
-  const [newsReady, setNewsReady] = useState(false);
+  const [news,          setNews]          = useState<NewsItem[]>([]);
+  const [newsReady,     setNewsReady]     = useState(false);
+  const [featuredStat,  setFeaturedStat]  = useState<FeaturedStat | null>(null);
 
   const firstName = user?.firstName ?? user?.name?.split(" ")[0] ?? "there";
   const role      = user?.role ?? "Candidate";
@@ -265,8 +271,9 @@ export default function CandidateDashboard() {
   const profilePct  = Math.round((profileDone / PROFILE_ITEMS.length) * 100);
 
   useEffect(() => {
-    fetchTodaysNews(role).then(items => { setNews(items); setNewsReady(true); });
-  }, [role]);
+    fetchCareerNews().then(items => { setNews(items); setNewsReady(true); });
+    fetchFeaturedStat().then(setFeaturedStat);
+  }, []);
 
   async function handleLogout() {
     await logout();
@@ -424,8 +431,30 @@ export default function CandidateDashboard() {
           {/* LEFT */}
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
-            {/* Today's Career Intelligence */}
+            {/* Today's Career Intelligence — real articles from real publishers' own RSS
+                feeds (see fetchCareerNews's own comment for why this replaced an AI that
+                was inventing headlines). Featured stat banner up top is the same live data
+                shown on the marketing site — one shared source, so a number updated once by
+                an admin updates it everywhere at once. */}
             <DashCard title="📰 Today's Career Intelligence" action={newsReady ? "More" : undefined}>
+              {featuredStat && (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", marginBottom: 16,
+                  background: "rgba(167,139,250,0.07)", border: "1px solid rgba(167,139,250,0.25)", borderRadius: 12,
+                }}>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: "#A78BFA", letterSpacing: "-0.02em", flexShrink: 0 }}>{featuredStat.value}</div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.4, fontWeight: 600 }}>{featuredStat.label}</div>
+                    {featuredStat.sourceLabel && (
+                      <div style={{ fontSize: 10, color: "var(--text-3)", marginTop: 3 }}>
+                        {featuredStat.sourceUrl ? (
+                          <a href={featuredStat.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-3)" }}>{featuredStat.sourceLabel}</a>
+                        ) : featuredStat.sourceLabel}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               {!newsReady ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {[1, 2, 3, 4].map(i => (
@@ -433,17 +462,24 @@ export default function CandidateDashboard() {
                   ))}
                   <style>{`@keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.8} }`}</style>
                 </div>
+              ) : news.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "16px 0", color: "var(--text-3)", fontSize: 13 }}>
+                  Couldn't reach the news feeds right now — check back shortly.
+                </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   {news.map((n, i) => (
-                    <div key={i} style={{ paddingBottom: 14, borderBottom: i < news.length - 1 ? "1px solid var(--border)" : "none" }}>
+                    <a key={i} href={n.url} target="_blank" rel="noopener noreferrer" style={{
+                      display: "block", paddingBottom: 14, textDecoration: "none",
+                      borderBottom: i < news.length - 1 ? "1px solid var(--border)" : "none",
+                    }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
                         <span style={{ fontSize: 10, fontWeight: 700, color: n.color, background: `${n.color}18`, padding: "2px 8px", borderRadius: 20 }}>{n.tag}</span>
-                        <span style={{ fontSize: 10, color: "var(--text-3)" }}>{n.timeAgo}</span>
+                        <span style={{ fontSize: 10, color: "var(--text-3)" }}>{timeAgoFrom(n.publishedAt)}</span>
                         <span style={{ fontSize: 10, color: "var(--text-3)", marginLeft: "auto" }}>{n.source}</span>
                       </div>
                       <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.5, fontWeight: 600 }}>{n.headline}</div>
-                    </div>
+                    </a>
                   ))}
                 </div>
               )}
