@@ -7,6 +7,7 @@ import { logFlowEvent } from '../api/flowLogger';
 import { type Career, searchCareers, reportMissingCareerTitle } from '../api/careersApi';
 import { generateHotTopics } from '../api/aiScoring';
 import { logInDemandSubjects } from '../api/inDemandSubjectsApi';
+import { submitConfidenceSurvey, type ConfidenceResponse } from '../api/confidenceSurveyApi';
 import { useAuthStore } from '../auth/authStore';
 
 const LANGUAGES = [
@@ -102,6 +103,14 @@ export default function InterviewPackStart() {
   const authFirstName = useAuthStore(s => s.user?.firstName);
   const authToken = useAuthStore(s => s.token);
   const [preferredName, setPreferredName] = useState(incoming.preferredName ?? authFirstName ?? '');
+  // Optional self-report, feeds the "live stats" section on the marketing site (Francis,
+  // 2026-09-10) — deliberately fire-and-forget and skippable, never gates starting the
+  // interview. undefined = not yet answered.
+  const [confidenceResponse, setConfidenceResponse] = useState<ConfidenceResponse | undefined>(undefined);
+  const handleConfidenceAnswer = (response: ConfidenceResponse) => {
+    setConfidenceResponse(response);
+    if (authToken) void submitConfidenceSurvey(authToken, response);
+  };
   const [jobSpec, setJobSpec] = useState(incoming.jobSpec ?? '');
   const [jobSpecFileName, setJobSpecFileName] = useState('');
   const [jobSpecExtracting, setJobSpecExtracting] = useState(false);
@@ -572,6 +581,50 @@ export default function InterviewPackStart() {
             </div>
           </div>
 
+        </div>
+
+        {/* Confidence self-report — optional, single question, feeds the live stats shown on
+            the marketing site (Francis, 2026-09-10). Deliberately lightweight (no card
+            styling like the settings above) so it reads as a quick aside, not another
+            required field — never gates starting the interview either way. */}
+        <div style={{
+          background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px',
+          padding: '16px 20px', marginBottom: '16px', display: 'flex', alignItems: 'center',
+          gap: '16px', flexWrap: 'wrap',
+        }}>
+          {confidenceResponse ? (
+            <div style={{ fontSize: '13px', color: '#34D399' }}>
+              ✓ Thanks — that helps us track how candidates actually feel about interviews, over time.
+            </div>
+          ) : (
+            <>
+              <div style={{ fontSize: '13px', color: 'var(--text-2)', flex: '1 1 260px' }}>
+                Quick one before you start — how confident do you feel about real job interviews right now?
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => handleConfidenceAnswer('confident')}
+                  style={{
+                    background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.3)',
+                    borderRadius: '10px', padding: '9px 16px', color: '#34D399', fontSize: '13px',
+                    fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  }}
+                >
+                  Confident
+                </button>
+                <button
+                  onClick={() => handleConfidenceAnswer('not-confident')}
+                  style={{
+                    background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)',
+                    borderRadius: '10px', padding: '9px 16px', color: 'var(--text-2)', fontSize: '13px',
+                    fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  }}
+                >
+                  Not really
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Job Spec + CV — collapsed by default now that a CV isn't required to start; opens
