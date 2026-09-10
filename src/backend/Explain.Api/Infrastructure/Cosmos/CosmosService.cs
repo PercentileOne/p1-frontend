@@ -1,5 +1,6 @@
 using Microsoft.Azure.Cosmos;
 using Explain.Api.Features.PlatformStats;
+using Explain.Api.Features.CareerNews;
 
 namespace Explain.Api.Infrastructure.Cosmos;
 
@@ -135,7 +136,15 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("confidenceSurvey", "/countryCode"));
 
+        // Admin-manageable RSS feed sources for the real "Career Intelligence" panel
+        // (Francis, 2026-09-10) — replaces a prior version that had an LLM invent headlines
+        // and attribute them to real outlets. Small, hand-curated list — single logical
+        // partition, same reasoning as platformStats above.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("newsFeedSources", "/pk"));
+
         await SeedPlatformStatsAsync();
+        await SeedNewsFeedSourcesAsync();
     }
 
     // Only ever fires if the container is genuinely empty (a fresh environment, or the first
@@ -189,6 +198,30 @@ public class CosmosService
 
         foreach (var doc in seed)
             await container.UpsertItemAsync(doc, new PartitionKey("stat"));
+    }
+
+    // Only fires on a genuinely empty container — never overwrites an admin's own additions
+    // or removals. Three real, currently-live RSS feeds, each a publisher's own public feed
+    // (verified reachable before writing this), not a third-party aggregator with usage
+    // restrictions — see CareerNews/Endpoint.cs's own comment on why Google News RSS was
+    // deliberately ruled out.
+    private async Task SeedNewsFeedSourcesAsync()
+    {
+        var container = _database.GetContainer("newsFeedSources");
+        var existing = container.GetItemQueryIterator<int>(
+            new QueryDefinition("SELECT VALUE COUNT(1) FROM c"));
+        var count = (await existing.ReadNextAsync()).FirstOrDefault();
+        if (count > 0) return;
+
+        var seed = new[]
+        {
+            new NewsFeedSourceDoc("bbc-news", "feed", "BBC News", "World", "http://feeds.bbci.co.uk/news/rss.xml", true, DateTimeOffset.UtcNow),
+            new NewsFeedSourceDoc("sky-news", "feed", "Sky News", "World", "https://feeds.skynews.com/feeds/rss/home.xml", true, DateTimeOffset.UtcNow),
+            new NewsFeedSourceDoc("indeed-hiring-lab", "feed", "Indeed Hiring Lab", "Careers", "https://www.hiringlab.org/feed/", true, DateTimeOffset.UtcNow),
+        };
+
+        foreach (var doc in seed)
+            await container.UpsertItemAsync(doc, new PartitionKey("feed"));
     }
 
     public Container GetContainer(string name) => _database.GetContainer(name);
