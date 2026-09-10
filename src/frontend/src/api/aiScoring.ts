@@ -1183,7 +1183,14 @@ export function ensureNameSpoken(text: string, name?: string): string {
   const n = name.trim();
   const escaped = n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   if (new RegExp(`\\b${escaped}\\b`, 'i').test(text)) return text;
-  return `${n}, ${text}`;
+  // "Hi <name> — " reads as one natural greeting to a TTS voice; a bare "<name>, " (the
+  // previous format) is an unusual sentence-opening vocative-address pattern several voices
+  // render with odd emphasis/pause, sounding like a separately bolted-on name announcement
+  // rather than part of the same spoken line (Francis, 2026-09-10 — Mike's fallback: "Francis,
+  // I'm Mike..." sounded like a different voice/accent just for the name). Strips any leading
+  // "Hi"/"Hello" the text already has first, so this never produces a doubled greeting.
+  const stripped = text.replace(/^\s*(hi|hello)\b[\s,—-]*/i, '');
+  return `Hi ${n} — ${stripped}`;
 }
 
 // ── Dedicated MCQ generation ───────────────────────────────────────────────────

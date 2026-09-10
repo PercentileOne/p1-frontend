@@ -118,8 +118,10 @@ describe('useInterviewerAudio — stopAllInterviewerAudio', () => {
     await act(async () => { await vi.advanceTimersByTimeAsync(600); });
     expect(result.current.sarahIntroVideoActive).toBe(true);
 
-    // Sarah's video "ends" — hands off to james-intro-v1.mp4.
+    // Sarah's video "ends" — hands off to james-intro-v1.mp4, after the 500ms buffer that
+    // prevents her own audio's tail overlapping his (see afterSarahIntro's own comment).
     act(() => { result.current.handleSarahIntroVideoEnded(); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(500); });
     expect(result.current.jamesIntroVideoActive).toBe(true);
 
     const cancelFn = vi.fn();
@@ -165,8 +167,11 @@ describe('useInterviewerAudio — sarahAmbientVideoActive', () => {
     await act(async () => { await vi.advanceTimersByTimeAsync(600); });
     expect(result.current.sarahAmbientVideoActive).toBe(false); // Sarah's own video is playing, she's not "listening" yet
 
-    // Sarah's intro video ends — hands off to James's generic intro clip.
+    // Sarah's intro video ends — hands off to James's generic intro clip, after the 500ms
+    // buffer that prevents her own audio's tail overlapping his (see afterSarahIntro's own
+    // comment).
     act(() => { result.current.handleSarahIntroVideoEnded(); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(500); });
     expect(result.current.jamesIntroVideoActive).toBe(true);
     expect(result.current.sarahAmbientVideoActive).toBe(true);
   });

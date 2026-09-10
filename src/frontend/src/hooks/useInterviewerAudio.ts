@@ -387,17 +387,29 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
           setTimeout(() => askQuestionRef.current(0), 500);
         };
 
-        if (liveAvatarActiveTechnical && liveAvatarSpeakTechnical) {
-          // Wayne's full presence — intro included, not just his questions — prefers the live
-          // avatar, same as Amina's above. Falls through to the pre-existing paths below only
-          // if his live avatar isn't active at all.
-          cancelSpeakRef.current = liveAvatarSpeakTechnical(jamesText, finishJamesIntro, (a) => setTechAnalyser(a));
-        } else if (sessionLanguage === 'en') {
-          jamesIntroDoneRef.current = finishJamesIntro;
-          setJamesIntroVideoActive(true);
-        } else {
-          cancelSpeakRef.current = speak(jamesText, 'technical', finishJamesIntro, (a) => setTechAnalyser(a));
-        }
+        // Same 500ms buffer finishJamesIntro above already gives the Wayne->Q1 handoff — this
+        // transition had none at all, the only back-to-back avatar handoff in the whole flow
+        // without one. AVATAR_SPEAK_ENDED (which resolves Amina's speak() and fires this whole
+        // callback) is a server-pushed "utterance ended" signal, not a guarantee her actual
+        // local audio output has finished draining its last buffered samples — the same class
+        // of server-event-vs-real-playback gap already found elsewhere in this LiveAvatar
+        // integration. Starting Wayne's own, entirely separate session's audio in the exact
+        // same synchronous tick risked briefly overlapping her still-draining tail, heard live
+        // as a small garbled extra sound right at the join (Francis, 2026-09-10, isolated to
+        // exactly this one transition — nowhere else in the flow).
+        setTimeout(() => {
+          if (liveAvatarActiveTechnical && liveAvatarSpeakTechnical) {
+            // Wayne's full presence — intro included, not just his questions — prefers the live
+            // avatar, same as Amina's above. Falls through to the pre-existing paths below only
+            // if his live avatar isn't active at all.
+            cancelSpeakRef.current = liveAvatarSpeakTechnical(jamesText, finishJamesIntro, (a) => setTechAnalyser(a));
+          } else if (sessionLanguage === 'en') {
+            jamesIntroDoneRef.current = finishJamesIntro;
+            setJamesIntroVideoActive(true);
+          } else {
+            cancelSpeakRef.current = speak(jamesText, 'technical', finishJamesIntro, (a) => setTechAnalyser(a));
+          }
+        }, 500);
       };
 
       // James's ambient idle loop plays under his slot for as long as Sarah's own intro is
