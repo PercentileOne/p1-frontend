@@ -248,6 +248,7 @@ Explain.Api.Features.NameGreetings.Endpoint.Map(app);
 Explain.Api.Features.NameGreetings.Admin.Endpoint.Map(app);
 Explain.Api.Features.PlatformSettings.Endpoint.Map(app);
 Explain.Api.Features.InDemandSubjects.Endpoint.Map(app);
+Explain.Api.Features.PlatformStats.Endpoint.Map(app);
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
    .AllowAnonymous();

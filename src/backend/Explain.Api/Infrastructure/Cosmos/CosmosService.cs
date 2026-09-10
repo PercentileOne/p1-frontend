@@ -115,6 +115,24 @@ public class CosmosService
         // reporting and for informing future interview-prompt design.
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("inDemandSubjects", "/jobTitleKey"));
+
+        // Admin-curated marketing stats ("80% of candidates feel unprepared for interviews —
+        // LinkedIn, 2026") shown live across the marketing site and every portal, read from
+        // one shared endpoint so updating a value once updates it everywhere instantly.
+        // Small, hand-curated dataset (a handful of documents, ever) — single logical
+        // partition is fine, same reasoning as platformSettings above.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("platformStats", "/pk"));
+
+        // Candidates' own self-reported interview confidence, captured as a single optional
+        // question on the intake screen (Francis, 2026-09-10) — the seed for turning the
+        // marketing stats above into TheInterviewChair's own proprietary, continuously-growing
+        // data instead of permanently quoting third-party research everyone else cites too.
+        // Partition key = /countryCode: the stat this container exists to serve is "confidence
+        // %, broken down by country", so a single country's responses landing in one partition
+        // is the query this needs to be cheap, not an afterthought.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("confidenceSurvey", "/countryCode"));
     }
 
     public Container GetContainer(string name) => _database.GetContainer(name);
