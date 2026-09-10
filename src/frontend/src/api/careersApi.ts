@@ -105,6 +105,21 @@ export async function getCareersByCategory(category: string): Promise<Career[]> 
   } catch { return []; }
 }
 
+export interface MarketOverview { region: 'uk' | 'us'; inDemand: Career[]; emerging: Career[] }
+
+// "Live Job Market" dashboard view (Francis, 2026-09-10) — only 'uk'/'us' have real data
+// behind them (see careers-agent's own comment on why), so those are the only two valid
+// values; anything else the caller passes is meaningless to the backend, which itself falls
+// back to 'uk' rather than erroring.
+export async function getMarketOverview(country: 'uk' | 'us', top = 6): Promise<MarketOverview | null> {
+  try {
+    const res = await fetch(`${PROXY_BASE}/market-overview?country=${country}&top=${top}`);
+    if (!res.ok) throw new Error('api');
+    const data = await res.json() as MarketOverview;
+    return { ...data, inDemand: data.inDemand.map(normalise), emerging: data.emerging.map(normalise) };
+  } catch { return null; }
+}
+
 // Some lifestyle fields (e.g. environment) come back as a raw pipe-delimited enum like
 // "office|remote|hybrid" rather than prose — turn that into readable text instead of
 // leaking the pipes verbatim. Leaves already-prose values (no pipe) untouched.

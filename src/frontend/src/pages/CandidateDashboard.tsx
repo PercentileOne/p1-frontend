@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuthStore } from "../auth/authStore";
 import { profileApi } from "../api/profileApi";
+import { getMarketOverview, type MarketOverview } from "../api/careersApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
   MessageSquare, Settings, LogOut, ChevronRight, CheckCircle2, Circle, Compass, Gift, Zap,
@@ -97,13 +98,20 @@ const UPCOMING_INTERVIEWS = [
   { company: "Apex Tech Solutions",  role: "Cloud Engineer",         date: "Wed 20 Aug · 2:30pm",  interviewer: "James Carter",   statusColor: "#4F8EF7" },
 ];
 
-const JOB_DEMAND = [
-  { role: ".NET Developer",  demand: 94, trend: "+12%" },
-  { role: "Cloud Engineer",  demand: 87, trend: "+8%"  },
-  { role: "DevOps / SRE",    demand: 79, trend: "+21%" },
-  { role: "Product Manager", demand: 65, trend: "+4%"  },
-  { role: "Data Engineer",   demand: 58, trend: "+17%" },
-];
+// Default country for the Live Job Market card — only 'uk'/'us' have real data behind them
+// (see careers-agent's own comment on why). Timezone is a real, zero-cost client-side signal
+// for a first guess; the candidate can always switch via the dropdown regardless.
+function guessMarketCountry(): 'uk' | 'us' {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('America/') ? 'us' : 'uk';
+  } catch {
+    return 'uk';
+  }
+}
+
+function fmtSalaryK(n: number): string {
+  return n >= 1000 ? `${Math.round(n / 1000)}k` : String(n);
+}
 
 const QUOTES = [
   { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
@@ -287,6 +295,10 @@ export default function CandidateDashboard() {
   const [news,          setNews]          = useState<NewsItem[]>([]);
   const [newsReady,     setNewsReady]     = useState(false);
   const [featuredStat,  setFeaturedStat]  = useState<FeaturedStat | null>(null);
+  const [marketCountry, setMarketCountry] = useState<'uk' | 'us'>(guessMarketCountry);
+  const [market,        setMarket]        = useState<MarketOverview | null>(null);
+  const [marketReady,   setMarketReady]   = useState(false);
+  const [marketTab,     setMarketTab]     = useState<'inDemand' | 'emerging'>('inDemand');
 
   const firstName = user?.firstName ?? user?.name?.split(" ")[0] ?? "there";
   const role      = user?.role ?? "Candidate";
@@ -305,6 +317,11 @@ export default function CandidateDashboard() {
     })();
     fetchFeaturedStat().then(setFeaturedStat);
   }, [authToken]);
+
+  useEffect(() => {
+    setMarketReady(false);
+    getMarketOverview(marketCountry, 5).then(data => { setMarket(data); setMarketReady(true); });
+  }, [marketCountry]);
 
   async function handleLogout() {
     await logout();
@@ -462,6 +479,97 @@ export default function CandidateDashboard() {
           {/* LEFT */}
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
+            {/* Live Job Market — real top careers by demand score and by 5-year growth, from
+                the same careers-agent database the Careers module uses (Francis, 2026-09-10:
+                "similar to our Careers module, but condensed"). Sits above Career
+                Intelligence per Francis's own placement. Only UK/US have real data behind
+                them — see careers-agent's own comment on why a full country list isn't
+                possible yet; the dropdown is honestly scoped to just those two. */}
+            <DashCard title="📊 Live Job Market" action="Explore jobs" onAction={() => navigate("/jobs")}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, gap: 10, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: 3 }}>
+                  {(["inDemand", "emerging"] as const).map(tab => (
+                    <button
+                      key={tab}
+                      onClick={() => setMarketTab(tab)}
+                      style={{
+                        fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 6, border: "none", cursor: "pointer",
+                        fontFamily: "inherit", background: marketTab === tab ? "rgba(52,211,153,0.15)" : "transparent",
+                        color: marketTab === tab ? "#34D399" : "var(--text-3)",
+                      }}
+                    >
+                      {tab === "inDemand" ? "In Demand" : "Emerging"}
+                    </button>
+                  ))}
+                </div>
+                <select
+                  value={marketCountry}
+                  onChange={e => setMarketCountry(e.target.value as "uk" | "us")}
+                  style={{
+                    fontSize: 11, fontWeight: 700, color: "var(--text-2)", background: "rgba(255,255,255,0.04)",
+                    border: "1px solid var(--border)", borderRadius: 6, padding: "5px 8px", fontFamily: "inherit", cursor: "pointer",
+                  }}
+                >
+                  <option value="uk">🇬🇧 UK</option>
+                  <option value="us">🇺🇸 US</option>
+                </select>
+              </div>
+
+              {!marketReady ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {[1, 2, 3].map(i => (
+                    <div key={i} style={{ height: 40, borderRadius: 8, background: "rgba(255,255,255,0.04)", animation: "pulse 1.6s ease-in-out infinite" }} />
+                  ))}
+                </div>
+              ) : !market || market[marketTab].length === 0 ? (
+                <div style={{ textAlign: "center", padding: "16px 0", color: "var(--text-3)", fontSize: 13 }}>
+                  Couldn't reach live market data right now — check back shortly.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {market[marketTab].map((c, i) => {
+                    // futureScore, not demand.uk/demand.us — those turned out to be
+                    // inconsistently scaled across records once checked against real data
+                    // (e.g. 2500 vs 92, clearly not the same 0-100 scale), while futureScore
+                    // is reliably 0-100 everywhere checked. See careers-agent's own comment.
+                    const demand = c.demand?.futureScore ?? 0;
+                    const growth = c.workforce?.[marketCountry]?.growthPct5yr ?? 0;
+                    const salary = c.salary?.[marketCountry];
+                    const barValue = marketTab === "inDemand" ? demand : Math.min(100, Math.round(growth * 2.5));
+                    return (
+                      <div key={c.id ?? i}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 5, gap: 10 }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-2)" }}>{c.title}</span>
+                          <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
+                            {salary && salary.starting > 0 && (
+                              <span style={{ fontSize: 10.5, color: "var(--text-3)" }}>
+                                {salary.currency === "GBP" ? "£" : salary.currency === "USD" ? "$" : ""}{fmtSalaryK(salary.starting)}–{fmtSalaryK(salary.senior)}
+                              </span>
+                            )}
+                            <span style={{ fontSize: 11, color: growth >= 0 ? "#34D399" : "#EF4444", fontWeight: 700 }}>
+                              {growth > 0 ? "+" : ""}{growth}%
+                            </span>
+                            <span style={{ fontSize: 12, fontWeight: 800, color: demand >= 80 ? "#34D399" : demand >= 65 ? "#F59E0B" : "#EF4444" }}>{demand}%</span>
+                          </div>
+                        </div>
+                        <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
+                          <div style={{
+                            height: "100%", width: `${barValue}%`, borderRadius: 3,
+                            background: demand >= 80
+                              ? "linear-gradient(90deg,#34D399,#6ee7b7)"
+                              : demand >= 65
+                                ? "linear-gradient(90deg,#F59E0B,#fcd34d)"
+                                : "linear-gradient(90deg,#EF4444,#f87171)",
+                            transition: "width 1s ease",
+                          }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </DashCard>
+
             {/* Today's Career Intelligence — real articles from real publishers' own RSS
                 feeds (see fetchCareerNews's own comment for why this replaced an AI that
                 was inventing headlines). Featured stat banner up top is the same live data
@@ -547,34 +655,6 @@ export default function CandidateDashboard() {
                   ))}
                 </div>
               )}
-            </DashCard>
-
-            {/* Job Market Demand */}
-            <DashCard title="📊 Job Market Demand — Your Field" action="Explore jobs" onAction={() => navigate("/jobs")}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {JOB_DEMAND.map((r, i) => (
-                  <div key={i}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-2)" }}>{r.role}</span>
-                      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                        <span style={{ fontSize: 11, color: "#34D399", fontWeight: 700 }}>{r.trend}</span>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: r.demand >= 80 ? "#34D399" : r.demand >= 65 ? "#F59E0B" : "#EF4444" }}>{r.demand}%</span>
-                      </div>
-                    </div>
-                    <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
-                      <div style={{
-                        height: "100%", width: `${r.demand}%`, borderRadius: 3,
-                        background: r.demand >= 80
-                          ? "linear-gradient(90deg,#34D399,#6ee7b7)"
-                          : r.demand >= 65
-                            ? "linear-gradient(90deg,#F59E0B,#fcd34d)"
-                            : "linear-gradient(90deg,#EF4444,#f87171)",
-                        transition: "width 1s ease",
-                      }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
             </DashCard>
 
           </div>
