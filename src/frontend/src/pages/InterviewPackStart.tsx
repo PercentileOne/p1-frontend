@@ -486,7 +486,7 @@ export default function InterviewPackStart() {
               ))}
             </select>
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
-              Sarah and James will speak, ask, and respond entirely in {LANGUAGES.find(l => l.code === selectedLanguage)?.name ?? 'English'}.
+              Amina and Wayne will speak, ask, and respond entirely in {LANGUAGES.find(l => l.code === selectedLanguage)?.name ?? 'English'}.
             </div>
           </div>
 
@@ -541,6 +541,34 @@ export default function InterviewPackStart() {
             </select>
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
               Job-specific questions — plus a few open-ended HR questions every session, always. Just want a quick run-through? Pick 5.
+            </div>
+          </div>
+
+          {/* Known As — moved out of the collapsed "Add your CV or job spec" section
+              (2026-09-10, Francis: didn't realise it still existed — buried two clicks deep,
+              inside a collapsed panel AND behind its own CV/Job Spec tab, for a field that
+              personalises every spoken line in the entire interview, Mike included). Kept in
+              this same always-visible row, matching card style, instead of tucked away. */}
+          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
+              Known As
+            </div>
+            <input
+              type="text"
+              value={preferredName}
+              onChange={e => setPreferredName(e.target.value)}
+              placeholder="e.g. Clifford, Alex, Dr. Patel…"
+              style={{
+                width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+                borderRadius: '10px', padding: '12px 14px', color: 'var(--text)', fontSize: '14px',
+                fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+                transition: 'border-color 0.15s',
+              }}
+              onFocus={e => { e.target.style.borderColor = 'rgba(79,142,247,0.5)'; }}
+              onBlur={e => { e.target.style.borderColor = 'var(--border)'; }}
+            />
+            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
+              Optional — overrides your account name. Mike, Amina and Wayne will all use this.
             </div>
           </div>
 
@@ -620,28 +648,6 @@ export default function InterviewPackStart() {
 
             {activeTab === 'cv' && (
               <>
-                {/* Known As */}
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Known As</span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 400 }}>(optional — overrides your account name)</span>
-                  </div>
-                  <input
-                    type="text"
-                    value={preferredName}
-                    onChange={e => setPreferredName(e.target.value)}
-                    placeholder="e.g. Clifford, Alex, Dr. Patel…"
-                    style={{
-                      width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
-                      borderRadius: '10px', padding: '13px 16px', color: 'var(--text)', fontSize: '14px',
-                      fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
-                      transition: 'border-color 0.15s',
-                    }}
-                    onFocus={e => { e.target.style.borderColor = 'rgba(79,142,247,0.5)'; }}
-                    onBlur={e => { e.target.style.borderColor = 'var(--border)'; }}
-                  />
-                </div>
-
                 {attachedCv && (
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 10, marginBottom: '16px',
