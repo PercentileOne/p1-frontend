@@ -24,28 +24,38 @@ interface SessionAnswer {
   thinkTimeMs?: number;
 }
 
+// Core job-interview stats (score, strengths, improvements) are derived from ROLE questions
+// only (Francis, 2026-09-10) — HR questions (the character pair, team-fit, company-knowledge)
+// never count toward them, they only ever contribute bonus points, see hrBonus below.
+function roleOnly(answers: SessionAnswer[]) {
+  return answers.filter(a => a.question.source === 'Role');
+}
+
 function avg(answers: SessionAnswer[], key: 'clarity' | 'relevance' | 'depth' | 'confidence') {
-  if (!answers.length) return 0;
-  return answers.reduce((s, a) => s + (a.score as unknown as Record<string, number>)[key], 0) / answers.length;
+  const roleAnswers = roleOnly(answers);
+  if (!roleAnswers.length) return 0;
+  return roleAnswers.reduce((s, a) => s + (a.score as unknown as Record<string, number>)[key], 0) / roleAnswers.length;
 }
 
 function overallAvg(answers: SessionAnswer[]) {
-  if (!answers.length) return 0;
-  return answers.reduce((s, a) => s + a.score.overallScore, 0) / answers.length;
+  const roleAnswers = roleOnly(answers);
+  if (!roleAnswers.length) return 0;
+  return roleAnswers.reduce((s, a) => s + a.score.overallScore, 0) / roleAnswers.length;
 }
 
 // Same formula as useInterviewRecording.ts / InterviewResultsBody.tsx's identical
 // computation — must stay in sync, see useInterviewRecording.ts's own comment for the
-// full reasoning.
-function measureBonus(answers: SessionAnswer[]) {
+// full reasoning. Covers every HR-sourced answer, not just the two scored dimensions.
+function hrBonus(answers: SessionAnswer[]) {
   return answers.reduce((sum, a) => {
+    if (a.question.source !== 'HR') return sum;
     if (a.score.ownership !== undefined || a.score.execution !== undefined) {
       return sum + ((a.score.ownership ?? 0) + (a.score.execution ?? 0)) / 2 * 10;
     }
     if (a.score.proactiveness !== undefined) {
       return sum + a.score.proactiveness * 10;
     }
-    return sum;
+    return sum + a.score.overallScore * 10;
   }, 0);
 }
 
@@ -538,10 +548,10 @@ export default function InterviewSummaryPage() {
   const [savedShareUrl, setSavedShareUrl] = useState<string | null>(null);
 
   const mcqBonusPoints = mcqResults.filter(r => r.correct).length * 10;
-  const measureBonusPoints = measureBonus(answers);
+  const hrBonusPoints = hrBonus(answers);
   // Matches InterviewResultsBody's own blending exactly — Mike's spoken percentage would
   // otherwise mismatch the score card sitting right next to his debrief banner.
-  const overall = Math.min(1, overallAvg(answers) + (mcqBonusPoints + measureBonusPoints) / 100);
+  const overall = Math.min(1, overallAvg(answers) + (mcqBonusPoints + hrBonusPoints) / 100);
   const strengths = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) >= 0.65);
   const improvements = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) < 0.55);
 

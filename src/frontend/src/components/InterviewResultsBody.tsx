@@ -28,27 +28,41 @@ export interface MCQAnswerResult {
   questionIndex: number;
 }
 
+// Core job-interview stats (score, strengths, improvements) are derived from ROLE questions
+// only (Francis, 2026-09-10) — HR questions (the character pair, team-fit, company-knowledge)
+// never count toward them, they only ever contribute bonus points, see hrBonus below. A couple
+// of generic "where do you see yourself" answers used to quietly drag down (or prop up) the
+// number that's actually meant to measure job fit.
+function roleOnly(answers: ResultAnswer[]) {
+  return answers.filter(a => a.question.source === 'Role');
+}
+
 function avg(answers: ResultAnswer[], key: 'clarity' | 'relevance' | 'depth' | 'confidence') {
-  if (!answers.length) return 0;
-  return answers.reduce((s, a) => s + (a.score as unknown as Record<string, number>)[key], 0) / answers.length;
+  const roleAnswers = roleOnly(answers);
+  if (!roleAnswers.length) return 0;
+  return roleAnswers.reduce((s, a) => s + (a.score as unknown as Record<string, number>)[key], 0) / roleAnswers.length;
 }
 
 function overallAvg(answers: ResultAnswer[]) {
-  if (!answers.length) return 0;
-  return answers.reduce((s, a) => s + a.score.overallScore, 0) / answers.length;
+  const roleAnswers = roleOnly(answers);
+  if (!roleAnswers.length) return 0;
+  return roleAnswers.reduce((s, a) => s + a.score.overallScore, 0) / roleAnswers.length;
 }
 
 // Same formula as useInterviewRecording.ts's identical computation — must stay in sync, see
-// that file's own comment for the full reasoning.
-function measureBonus(answers: ResultAnswer[]) {
+// that file's own comment for the full reasoning. Covers every HR-sourced answer (the
+// ownership/proactiveness character pair, team-fit, company-knowledge) — not just the two
+// scored dimensions — so ALL of it lands as bonus, never as core score.
+function hrBonus(answers: ResultAnswer[]) {
   return answers.reduce((sum, a) => {
+    if (a.question.source !== 'HR') return sum;
     if (a.score.ownership !== undefined || a.score.execution !== undefined) {
       return sum + ((a.score.ownership ?? 0) + (a.score.execution ?? 0)) / 2 * 10;
     }
     if (a.score.proactiveness !== undefined) {
       return sum + a.score.proactiveness * 10;
     }
-    return sum;
+    return sum + a.score.overallScore * 10;
   }, 0);
 }
 
@@ -81,13 +95,13 @@ export function InterviewResultsBody({
   const strengths = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) >= 0.65);
   const improvements = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) < 0.55);
   const mcqBonusPoints = mcqResults.filter(r => r.correct).length * 10;
-  const measureBonusPoints = measureBonus(answers);
+  const hrBonusPoints = hrBonus(answers);
   const revealedCount = answers.filter(a => a.revealedAnswer).length;
   // MCQ bonus now genuinely lifts the headline score — it used to render as a disconnected
   // "+N MCQ bonus" side-note next to a percentage it never actually affected, which is exactly
   // why answering the bonus round well never showed up anywhere in the number itself. Capped at
-  // 100 so a perfect MCQ round can't push a middling set of real answers above full marks.
-  const overall = Math.min(1, baseScore + (mcqBonusPoints + measureBonusPoints) / 100);
+  // 100 so a perfect MCQ/HR round can't push a middling set of real role answers above full marks.
+  const overall = Math.min(1, baseScore + (mcqBonusPoints + hrBonusPoints) / 100);
 
   return (
     <>
@@ -100,8 +114,8 @@ export function InterviewResultsBody({
           {mcqBonusPoints > 0 && (
             <div style={{ fontSize: '12px', color: '#34D399', fontWeight: 700, marginTop: '4px' }}>+{mcqBonusPoints} MCQ bonus</div>
           )}
-          {measureBonusPoints > 0 && (
-            <div style={{ fontSize: '12px', color: '#a78bfa', fontWeight: 700, marginTop: '4px' }}>+{Math.round(measureBonusPoints)} leadership signal</div>
+          {hrBonusPoints > 0 && (
+            <div style={{ fontSize: '12px', color: '#a78bfa', fontWeight: 700, marginTop: '4px' }}>+{Math.round(hrBonusPoints)} HR bonus</div>
           )}
           {revealedCount > 0 && (
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>💡 Asked for Answer: {revealedCount}/{answers.length}</div>

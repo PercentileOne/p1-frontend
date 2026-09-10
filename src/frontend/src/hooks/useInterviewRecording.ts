@@ -285,30 +285,41 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
     const finish = async (videoBlob: Blob | null) => {
       setUploadStatus('uploading');
       try {
-        const baseScore = answers.length
-          ? answers.reduce((s, a) => s + a.score.overallScore, 0) / answers.length
+        // Core job-interview score is the average of ROLE questions only (Francis,
+        // 2026-09-10) — HR questions (the ownership/proactiveness character pair, team-fit,
+        // company-knowledge) never count toward it, they only ever contribute bonus points
+        // below, same treatment as the MCQ bonus round. Previously every HR answer was
+        // averaged in equally with the real role answers, letting a couple of generic "where
+        // do you see yourself" answers quietly drag down (or prop up) the number that's
+        // actually meant to measure job fit.
+        const roleAnswers = answers.filter(a => a.question.source === 'Role');
+        const baseScore = roleAnswers.length
+          ? roleAnswers.reduce((s, a) => s + a.score.overallScore, 0) / roleAnswers.length
           : 0;
-        // Ownership/execution/proactiveness (see ScoreResponse's own comment) are up to 10
-        // points each — one guaranteed question each (MANDATORY_MEASURE_QUESTIONS), never
-        // scored per-answer. Same "bake the bonus into the persisted overallScore itself"
+        // Every HR-sourced answer becomes bonus points instead of counting toward baseScore
+        // above. Ownership/execution/proactiveness (see ScoreResponse's own comment) use their
+        // own 0-10 dimension scores; team-fit and company-knowledge (no special dimensions) use
+        // their plain overallScore on the same 0-10 scale, so all HR bonus sits on one
+        // consistent scale. Same "bake the bonus into the persisted overallScore itself"
         // reasoning as mcqBonusPoints below, so it actually moves the number everywhere it's
         // shown rather than sitting decoratively unused.
-        const measureBonusPoints = answers.reduce((sum, a) => {
+        const hrBonusPoints = answers.reduce((sum, a) => {
+          if (a.question.source !== 'HR') return sum;
           if (a.score.ownership !== undefined || a.score.execution !== undefined) {
             return sum + ((a.score.ownership ?? 0) + (a.score.execution ?? 0)) / 2 * 10;
           }
           if (a.score.proactiveness !== undefined) {
             return sum + a.score.proactiveness * 10;
           }
-          return sum;
+          return sum + a.score.overallScore * 10;
         }, 0);
         // MCQ bonus is now baked into the persisted overallScore itself, not just carried
         // alongside it as a decorative mcqBonusPoints field nothing downstream actually applied
         // — that's why answering the bonus round well never moved the number anywhere it's
         // shown (summary page, My Interviews list, recruiter views). Capped at 100 so a perfect
-        // MCQ round can't push a middling set of real answers above full marks. Matches the
-        // identical blend in InterviewResultsBody.tsx / InterviewSummaryPage.tsx exactly.
-        const overallScore = Math.min(1, baseScore + (extra.mcqBonusPoints + measureBonusPoints) / 100);
+        // MCQ/HR round can't push a middling set of real role answers above full marks. Matches
+        // the identical blend in InterviewResultsBody.tsx / InterviewSummaryPage.tsx exactly.
+        const overallScore = Math.min(1, baseScore + (extra.mcqBonusPoints + hrBonusPoints) / 100);
         const metadata = JSON.stringify({
           candidateId,
           interviewId,
@@ -319,7 +330,7 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
           mcqQuestions: extra.mcqQuestions,
           mcqResults: extra.mcqResults,
           mcqBonusPoints: extra.mcqBonusPoints,
-          measureBonusPoints,
+          hrBonusPoints,
           chapters: chapterMarkersRef.current,
           cvCtx: extra.cvCtx,
           jobCtx: extra.jobCtx,

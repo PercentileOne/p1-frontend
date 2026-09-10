@@ -540,7 +540,7 @@ export default function InterviewPackStart() {
               ))}
             </select>
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
-              Just want a quick run-through? Pick 5.
+              Job-specific questions — plus a few open-ended HR questions every session, always. Just want a quick run-through? Pick 5.
             </div>
           </div>
 
