@@ -200,28 +200,36 @@ public class CosmosService
             await container.UpsertItemAsync(doc, new PartitionKey("stat"));
     }
 
-    // Only fires on a genuinely empty container — never overwrites an admin's own additions
-    // or removals. Three real, currently-live RSS feeds, each a publisher's own public feed
-    // (verified reachable before writing this), not a third-party aggregator with usage
+    // Per-item, not "only if the container is entirely empty" — new default feeds added here
+    // in a later deploy (e.g. Sport, added same day on request) would otherwise silently never
+    // seed for any environment that had already seeded the original set. Still never touches
+    // an EXISTING id — an admin's own edit or a deliberate deactivation is never overwritten,
+    // this only ever fills in ids that are missing entirely. Each is a publisher's own public
+    // feed (verified reachable before writing this), not a third-party aggregator with usage
     // restrictions — see CareerNews/Endpoint.cs's own comment on why Google News RSS was
     // deliberately ruled out.
     private async Task SeedNewsFeedSourcesAsync()
     {
         var container = _database.GetContainer("newsFeedSources");
-        var existing = container.GetItemQueryIterator<int>(
-            new QueryDefinition("SELECT VALUE COUNT(1) FROM c"));
-        var count = (await existing.ReadNextAsync()).FirstOrDefault();
-        if (count > 0) return;
-
         var seed = new[]
         {
             new NewsFeedSourceDoc("bbc-news", "feed", "BBC News", "World", "http://feeds.bbci.co.uk/news/rss.xml", true, DateTimeOffset.UtcNow),
             new NewsFeedSourceDoc("sky-news", "feed", "Sky News", "World", "https://feeds.skynews.com/feeds/rss/home.xml", true, DateTimeOffset.UtcNow),
             new NewsFeedSourceDoc("indeed-hiring-lab", "feed", "Indeed Hiring Lab", "Careers", "https://www.hiringlab.org/feed/", true, DateTimeOffset.UtcNow),
+            new NewsFeedSourceDoc("bbc-sport", "feed", "BBC Sport", "Sport", "http://feeds.bbci.co.uk/sport/rss.xml", true, DateTimeOffset.UtcNow),
         };
 
         foreach (var doc in seed)
-            await container.UpsertItemAsync(doc, new PartitionKey("feed"));
+        {
+            try
+            {
+                await container.ReadItemAsync<NewsFeedSourceDoc>(doc.id, new PartitionKey("feed"));
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                await container.CreateItemAsync(doc, new PartitionKey("feed"));
+            }
+        }
     }
 
     public Container GetContainer(string name) => _database.GetContainer(name);

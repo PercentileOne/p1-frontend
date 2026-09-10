@@ -92,10 +92,31 @@ public static class Endpoint
 
         var sources = await GetActiveFeedSourcesAsync(cosmos);
         var results = await Task.WhenAll(sources.Select(FetchFeedAsync));
-        var merged = results.SelectMany(r => r).OrderByDescending(i => i.publishedAt).ToList();
+        var merged = InterleaveByCategory(results.SelectMany(r => r));
 
         _cache[cacheKey] = (DateTimeOffset.UtcNow.Add(CacheTtl), merged);
         return merged;
+    }
+
+    // A flat recency sort across all feeds lets one high-frequency source (BBC News posts far
+    // more often than a hiring blog) crowd out every other category entirely — confirmed live:
+    // the first real deploy returned 8/8 "World" items, zero "Careers", despite both feeds
+    // being active. Grouping by category first, then round-robin interleaving, guarantees
+    // every active category gets real representation regardless of how often each one publishes.
+    private static List<NewsItem> InterleaveByCategory(IEnumerable<NewsItem> items)
+    {
+        var byCategory = items
+            .GroupBy(i => i.tag)
+            .Select(g => new Queue<NewsItem>(g.OrderByDescending(i => i.publishedAt).Take(6)))
+            .ToList();
+
+        var result = new List<NewsItem>();
+        while (byCategory.Any(q => q.Count > 0))
+        {
+            foreach (var queue in byCategory)
+                if (queue.TryDequeue(out var item)) result.Add(item);
+        }
+        return result;
     }
 
     private static async Task<List<NewsFeedSourceDoc>> GetActiveFeedSourcesAsync(CosmosService cosmos)
