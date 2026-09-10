@@ -575,6 +575,22 @@
   .hero-preview-frame img { width: 100%; height: 520px; object-fit: cover; object-position: center top; display: block; }
   .hero-preview-frame video { width: 100%; height: 460px; object-fit: cover; object-position: center top; display: block; }
 
+  /* Live stats section — reads /api/platform-stats, same data every portal shares */
+  .stats-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); margin-bottom: 18px; }
+  .stats-h2 { font-size: clamp(1.7rem, 3.6vw, 2.4rem); font-weight: 900; color: #e8eeff; letter-spacing: -0.02em; line-height: 1.2; margin: 0 0 40px; max-width: 680px; text-wrap: balance; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; }
+  .stat-card { background: rgba(255,255,255,0.025); border: 1px solid var(--border); border-radius: 20px; padding: 30px 26px; position: relative; overflow: hidden; min-height: 180px; }
+  .stat-card-skeleton { background: linear-gradient(100deg, rgba(255,255,255,0.02) 30%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.02) 70%); background-size: 200% 100%; animation: statSkeleton 1.6s ease-in-out infinite; }
+  @keyframes statSkeleton { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .stat-card-number { font-size: clamp(2.2rem, 4.4vw, 3rem); font-weight: 900; letter-spacing: -0.03em; color: var(--green); line-height: 1; margin-bottom: 14px; }
+  .stat-card-label { font-size: 14.5px; color: var(--pearl); line-height: 1.55; margin-bottom: 16px; }
+  .stat-card-breakdown { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .stat-card-breakdown-row { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--muted); }
+  .stat-card-breakdown-row b { color: var(--pearl); font-weight: 700; }
+  .stat-card-source { font-size: 11px; color: var(--muted); }
+  .stat-card-source a { color: var(--muted); text-decoration: underline; text-underline-offset: 2px; }
+  .stat-card-source a:hover { color: var(--green); }
+
   /* Mobile */
   @media (max-width: 860px) {
     .scroll-section { padding: 130px 24px 60px; min-height: auto; }
@@ -678,6 +694,22 @@
         </div>
       </div>
     </div><!-- /s1-hero-split -->
+  </div>
+</div>
+
+<div class="scroll-divider"></div>
+
+<!-- SECTION 1.1: LIVE STATS — real research, read live from the backend so every portal
+     stays in sync the moment an admin updates a value. See /api/platform-stats. -->
+<div class="scroll-section" id="s-stats" style="background: var(--bg2);">
+  <div class="scroll-inner">
+    <div class="stats-eyebrow reveal"><span class="pulse" style="background:var(--green)"></span> The numbers behind why we built this — live</div>
+    <h2 class="stats-h2 reveal reveal-delay-1">Most candidates walk in without a real chance.</h2>
+    <div id="stats-grid" class="stats-grid reveal reveal-delay-2">
+      <div class="stat-card stat-card-skeleton"></div>
+      <div class="stat-card stat-card-skeleton"></div>
+      <div class="stat-card stat-card-skeleton"></div>
+    </div>
   </div>
 </div>
 
@@ -1061,6 +1093,72 @@
     document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   })();
 
+</script>
+
+<!-- Live stats section (see #s-stats above) — reads GET /api/platform-stats, the same
+     endpoint every portal reads, so an admin updating one value updates it everywhere at
+     once. Built with createElement/textContent throughout rather than innerHTML string
+     concatenation — the content is admin-curated today, but there's no reason for the
+     render path itself to trust it blindly. Fails silently (skeleton just hides) rather than
+     showing a broken section if the API is unreachable. -->
+<script>
+  (function() {
+    var API_BASE = 'https://api.explain.global';
+    var grid = document.getElementById('stats-grid');
+    if (!grid) return;
+
+    function el(tag, className, text) {
+      var e = document.createElement(tag);
+      if (className) e.className = className;
+      if (text !== undefined) e.textContent = text;
+      return e;
+    }
+
+    function buildCard(stat) {
+      var card = el('div', 'stat-card');
+      card.appendChild(el('div', 'stat-card-number', stat.value || ''));
+      card.appendChild(el('div', 'stat-card-label', stat.label || ''));
+
+      if (stat.breakdown && stat.breakdown.length) {
+        var bd = el('div', 'stat-card-breakdown');
+        stat.breakdown.forEach(function(row) {
+          var r = el('div', 'stat-card-breakdown-row');
+          r.appendChild(el('span', null, row.segment || ''));
+          r.appendChild(el('b', null, row.value || ''));
+          bd.appendChild(r);
+        });
+        card.appendChild(bd);
+      }
+
+      if (stat.sourceLabel) {
+        var src = el('div', 'stat-card-source');
+        if (stat.sourceUrl) {
+          var a = el('a', null, stat.sourceLabel);
+          a.href = stat.sourceUrl;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          src.appendChild(a);
+        } else {
+          src.textContent = stat.sourceLabel;
+        }
+        card.appendChild(src);
+      }
+      return card;
+    }
+
+    fetch(API_BASE + '/api/platform-stats')
+      .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function(data) {
+        var stats = (data && data.stats) || [];
+        if (!stats.length) { grid.closest('#s-stats').style.display = 'none'; return; }
+        grid.innerHTML = '';
+        stats.forEach(function(stat) { grid.appendChild(buildCard(stat)); });
+      })
+      .catch(function() {
+        var section = document.getElementById('s-stats');
+        if (section) section.style.display = 'none';
+      });
+  })();
 </script>
 
 <!-- END SCROLL SECTIONS -->
