@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AvatarState } from '../components/InterviewerAvatar';
 import type { InterviewQuestion } from '../api/explainApi';
 import { speak } from '../api/ttsApi';
+import { ensureNameSpoken } from '../api/aiScoring';
 import { logFlowEvent } from '../api/flowLogger';
 import type { ChapterMarker, RoomPhase } from '../pages/interview-room/types';
 
@@ -44,8 +45,11 @@ function pickRandom<T>(arr: T[]): T {
 // disabled-not-deleted pattern as MOUTH_OVERLAY_ENABLED elsewhere in this codebase.
 export const MIKE_VIDEO_ENABLED = false;
 
-// Mike's fallback script — used if AI hasn't loaded yet (it usually finishes before Mike speaks)
-const FALLBACK_MIKE_SCRIPT = `Hi there — I'm Mike, your recruitment consultant. I've set up your interview today and I want to give you a quick briefing before you meet the panel. Your interviewers today are Amina, who heads up HR, and Wayne, who'll be assessing you on the role itself. They'll guide you through everything — just follow Amina's instructions on the controls and you'll be absolutely fine. I'll be here throughout if you need anything. The best thing you can do is be specific: use real examples from your experience. Back yourself — you've got this. Good luck!`;
+// Mike's fallback script — used if AI hasn't loaded yet (it usually finishes before Mike speaks).
+// Deliberately doesn't open with "Hi there" — ensureNameSpoken (see startMike below) prepends
+// "<name>, " when a preferred name is known and the text doesn't already contain it, and that
+// reads naturally straight onto "I'm Mike..." but awkwardly onto a leftover "Hi there".
+const FALLBACK_MIKE_SCRIPT = `I'm Mike, your recruitment consultant. I've set up your interview today and I want to give you a quick briefing before you meet the panel. Your interviewers today are Amina, who heads up HR, and Wayne, who'll be assessing you on the role itself. They'll guide you through everything — just follow Amina's instructions on the controls and you'll be absolutely fine. I'll be here throughout if you need anything. The best thing you can do is be specific: use real examples from your experience. Back yourself — you've got this. Good luck!`;
 
 export interface UseInterviewerAudioParams {
   questions: InterviewQuestion[];
@@ -485,9 +489,16 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     // directly, no TTS needed. Currently disabled (see MIKE_VIDEO_ENABLED's own comment) —
     // every language runs the live-TTS + static-photo path below for now.
     if (sessionLanguage !== 'en' || !MIKE_VIDEO_ENABLED) {
-      cancelSpeakRef.current = speak(bgMikeScriptRef.current ?? FALLBACK_MIKE_SCRIPT, 'technical', handleMikeIntroDone, (a) => setTechAnalyser(a));
+      // Guaranteed deterministically, same as Sarah/James's intros below (see
+      // ensureNameSpoken's own comment) — Mike previously had no such guarantee at all: the
+      // AI-generated script was assumed reliable enough not to need one, and the hardcoded
+      // FALLBACK_MIKE_SCRIPT (used whenever Phase 1's own 5s timeout beats the AI call) never
+      // mentioned a name at all. Mike has no LiveAvatar video, so his own name-drop is one of
+      // the only personalisation cues candidates get from him.
+      const mikeText = ensureNameSpoken(bgMikeScriptRef.current ?? FALLBACK_MIKE_SCRIPT, resolvedPreferredName);
+      cancelSpeakRef.current = speak(mikeText, 'technical', handleMikeIntroDone, (a) => setTechAnalyser(a));
     }
-  }, [jobSpecText, cvText, ctxSelectedLanguage, sessionLanguage, handleMikeIntroDone, setPhase, chapterMarkersRef, recordingStartTimeRef, bgMikeScriptRef, liveAvatarActive, liveAvatarConnect, liveAvatarActiveTechnical, liveAvatarConnectTechnical]);
+  }, [jobSpecText, cvText, ctxSelectedLanguage, sessionLanguage, handleMikeIntroDone, setPhase, chapterMarkersRef, recordingStartTimeRef, bgMikeScriptRef, liveAvatarActive, liveAvatarConnect, liveAvatarActiveTechnical, liveAvatarConnectTechnical, resolvedPreferredName]);
 
   useEffect(() => { startMikeRef.current = startMike; }, [startMike]);
 

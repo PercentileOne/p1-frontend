@@ -1169,11 +1169,16 @@ Return this exact JSON:
 
 // Sarah/James's intros are two fields among many in one large JSON generation (10
 // questions + 2 MCQs + 3 intros), and the model doesn't reliably follow the "use this
-// name" instruction there even though it's stated explicitly — unlike Mike's script,
-// which is a separate, focused call and does comply reliably. Same shape of problem as
+// name" instruction there even though it's stated explicitly. Same shape of problem as
 // the earlier question-count drift: prompting harder wasn't reliable, so guarantee it
-// deterministically in code instead of trusting the model.
-function ensureNameSpoken(text: string, name?: string): string {
+// deterministically in code instead of trusting the model. Exported so
+// useInterviewerAudio.ts's startMike can apply the SAME guarantee to Mike's line
+// (2026-09-10, Francis: "especially as there's no movement" — Mike has no LiveAvatar
+// video, so hearing his own name is one of the only personalisation cues he gets) — his
+// script previously had no guarantee at all: the AI-generated version was assumed
+// reliable enough not to need one, and the hardcoded FALLBACK_MIKE_SCRIPT (used whenever
+// Phase 1's own tight 5s timeout fires before the AI call lands) never mentioned a name.
+export function ensureNameSpoken(text: string, name?: string): string {
   if (!text.trim() || !name?.trim()) return text;
   const n = name.trim();
   const escaped = n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
