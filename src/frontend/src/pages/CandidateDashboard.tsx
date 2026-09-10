@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuthStore } from "../auth/authStore";
+import { profileApi } from "../api/profileApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
   MessageSquare, Settings, LogOut, ChevronRight, CheckCircle2, Circle, Compass, Gift, Zap,
@@ -152,19 +153,43 @@ function getTodayLabel(): string {
 // Real articles from real publishers' own RSS feeds (see backend CareerNews/Endpoint.cs) —
 // replaces a prior version that had GPT-4o-mini invent headlines and attribute them to real
 // outlets (BBC News, LinkedIn Economic Graph, etc.), discovered live 2026-09-10 when the same
-// four fabricated headlines had sat there unchanged for weeks. jobTitle personalisation isn't
-// wired in yet — nothing on this dashboard currently holds a real job-title signal for the
-// logged-in candidate (user.role is their account permission role, e.g. "Admin"/"Candidate",
-// not a job title — sending that as "jobTitle" would personalise by the wrong thing entirely).
-async function fetchCareerNews(): Promise<NewsItem[]> {
+// four fabricated headlines had sat there unchanged for weeks.
+async function fetchCareerNews(jobTitle?: string): Promise<NewsItem[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/career-news`);
+    const qs = jobTitle ? `?jobTitle=${encodeURIComponent(jobTitle)}` : "";
+    const res = await fetch(`${API_BASE}/api/career-news${qs}`);
     if (!res.ok) return [];
     const data = await res.json() as { news: Array<{ tag: string; headline: string; source: string; url: string; publishedAt: string }> };
     return data.news.map((item, i) => ({ ...item, color: NEWS_COLORS[i % NEWS_COLORS.length] }));
   } catch {
     return [];
   }
+}
+
+// Priority (Francis, 2026-09-10): most recent interview's job title > their profile's own
+// job title > "Student" if that's their life stage > nothing (generic mix). Field-of-study
+// isn't captured anywhere in onboarding yet ("we'll build better intelligence into onboarding
+// to make this easier, later") — Student alone is the best available signal until then.
+// Previously this dashboard sent user.role (an account PERMISSION role, e.g. "Admin") as the
+// personalisation signal, which never made sense — this replaces that with real signals.
+async function resolvePersonalizationTitle(token: string): Promise<string | undefined> {
+  try {
+    const res = await fetch(`${API_BASE}/api/interviews`, { headers: { Authorization: `Bearer ${token}` } });
+    if (res.ok) {
+      const interviews = await res.json() as Array<{ role?: string | null }>;
+      const mostRecentRole = interviews[0]?.role; // backend already returns newest-first
+      if (mostRecentRole) return mostRecentRole;
+    }
+  } catch { /* fall through to profile */ }
+
+  try {
+    const profile = await profileApi.getProfile(token);
+    if (profile.jobTitle) return profile.jobTitle;
+    if (profile.jobRole) return profile.jobRole;
+    if (profile.lifeStage?.toLowerCase().includes("student")) return "Student";
+  } catch { /* fall through to generic mix */ }
+
+  return undefined;
 }
 
 async function fetchFeaturedStat(): Promise<FeaturedStat | null> {
@@ -250,6 +275,7 @@ export default function CandidateDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const user     = useAuthStore(s => s.user);
+  const authToken = useAuthStore(s => s.token);
   const logout   = useAuthStore(s => s.logout);
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -271,9 +297,14 @@ export default function CandidateDashboard() {
   const profilePct  = Math.round((profileDone / PROFILE_ITEMS.length) * 100);
 
   useEffect(() => {
-    fetchCareerNews().then(items => { setNews(items); setNewsReady(true); });
+    (async () => {
+      const personalizationTitle = authToken ? await resolvePersonalizationTitle(authToken) : undefined;
+      const items = await fetchCareerNews(personalizationTitle);
+      setNews(items);
+      setNewsReady(true);
+    })();
     fetchFeaturedStat().then(setFeaturedStat);
-  }, []);
+  }, [authToken]);
 
   async function handleLogout() {
     await logout();
