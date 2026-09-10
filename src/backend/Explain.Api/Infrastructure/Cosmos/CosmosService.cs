@@ -1,4 +1,5 @@
 using Microsoft.Azure.Cosmos;
+using Explain.Api.Features.PlatformStats;
 
 namespace Explain.Api.Infrastructure.Cosmos;
 
@@ -133,6 +134,61 @@ public class CosmosService
         // is the query this needs to be cheap, not an afterthought.
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("confidenceSurvey", "/countryCode"));
+
+        await SeedPlatformStatsAsync();
+    }
+
+    // Only ever fires if the container is genuinely empty (a fresh environment, or the first
+    // deploy after this shipped) — never overwrites an admin's own edits. Three deliberately
+    // conservative choices, each with a real, checkable primary source, not the widest or most
+    // dramatic number found during research (application/interview funnel figures vary 10x
+    // across sources — see this feature's own PR description) — credibility matters more than
+    // impact for numbers that are about to go on a public marketing page.
+    private async Task SeedPlatformStatsAsync()
+    {
+        var container = _database.GetContainer("platformStats");
+        var existing = container.GetItemQueryIterator<int>(
+            new QueryDefinition("SELECT VALUE COUNT(1) FROM c"));
+        var count = (await existing.ReadNextAsync()).FirstOrDefault();
+        if (count > 0) return;
+
+        var seed = new[]
+        {
+            new PlatformStatDoc(
+                id: "unprepared-2026", pk: "stat",
+                label: "of professionals feel unprepared to find a job",
+                value: "80%",
+                sourceLabel: "LinkedIn Global Research, 2026 — 19,000 professionals, 5 countries",
+                sourceUrl: "https://blog.theinterviewguys.com/job-search-paradox/",
+                breakdownLabel: null, breakdown: null,
+                order: 1, active: true, updatedAt: DateTimeOffset.UtcNow),
+            new PlatformStatDoc(
+                id: "confidence-by-generation-2025", pk: "stat",
+                label: "Interview confidence is a bigger struggle for some generations than others",
+                value: "25.7%",
+                sourceLabel: "iHire 2025 Multi-Generational Workforce Report",
+                sourceUrl: "https://www.ihire.com/resourcecenter/employer/pages/inside-the-multi-generational-workforce-2025-report",
+                breakdownLabel: "Said interview confidence was a real pain point, by generation",
+                breakdown: new List<PlatformStatBreakdownItem>
+                {
+                    new("Millennials", "25.7%"),
+                    new("Gen X", "23.7%"),
+                    new("Gen Z", "20.8%"),
+                    new("Baby Boomers", "18.8%"),
+                },
+                order: 2, active: true, updatedAt: DateTimeOffset.UtcNow),
+            new PlatformStatDoc(
+                id: "application-to-interview-rate", pk: "stat",
+                label: "of job applications typically lead to an interview",
+                value: "2–3%",
+                sourceLabel: "Industry recruiting data (Ashby, Contentree) — varies by role and industry",
+                sourceUrl: "https://standout-cv.com/stats/job-interview-statistics",
+                breakdownLabel: null, breakdown: null,
+                order: 3, active: true, updatedAt: DateTimeOffset.UtcNow),
+        };
+
+        foreach (var doc in seed)
+            await container.UpsertItemAsync(doc, new PartitionKey("stat"));
     }
 
     public Container GetContainer(string name) => _database.GetContainer(name);

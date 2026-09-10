@@ -38,7 +38,7 @@ public static class Endpoint
         app.MapGet("/api/admin/platform-stats", async (CosmosService cosmos) =>
         {
             var container = cosmos.GetContainer("platformStats");
-            var query = new QueryDefinition("SELECT * FROM c ORDER BY c.order");
+            var query = new QueryDefinition("SELECT * FROM c ORDER BY c[\"order\"]");
             var results = new List<PlatformStatDoc>();
             using var feed = container.GetItemQueryIterator<PlatformStatDoc>(query);
             while (feed.HasMoreResults) results.AddRange(await feed.ReadNextAsync());
@@ -110,7 +110,7 @@ public static class Endpoint
     private static async Task<List<PlatformStatDoc>> GetActiveStatsAsync(CosmosService cosmos)
     {
         var container = cosmos.GetContainer("platformStats");
-        var query = new QueryDefinition("SELECT * FROM c WHERE c.active = true ORDER BY c.order");
+        var query = new QueryDefinition("SELECT * FROM c WHERE c.active = true ORDER BY c[\"order\"]");
         var results = new List<PlatformStatDoc>();
         using var feed = container.GetItemQueryIterator<PlatformStatDoc>(query);
         while (feed.HasMoreResults) results.AddRange(await feed.ReadNextAsync());
