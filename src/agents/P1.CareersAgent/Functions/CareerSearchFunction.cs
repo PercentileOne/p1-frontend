@@ -73,6 +73,32 @@ public class CareerSearchFunction(CosmosCareerService cosmos)
         return await OkJson(req, results);
     }
 
+    // GET /api/careers/market-overview?country=uk&top=6 — "Live Job Market" view (Francis,
+    // 2026-09-10): top careers by demand score and by 5-year growth, for one region. Only
+    // "uk"/"us" have real data (the underlying model is soc_uk/onet_us-classified, nothing
+    // else) — any other value falls back to "uk" rather than erroring, so a candidate portal
+    // that hasn't resolved the user's country yet still gets a sensible default.
+    [Function("CareersMarketOverview")]
+    public async Task<HttpResponseData> MarketOverview(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "careers/market-overview")] HttpRequestData req,
+        FunctionContext context)
+    {
+        var log = context.GetLogger<CareerSearchFunction>();
+        var country = (req.Query["country"] ?? "uk").ToLowerInvariant();
+        var region = country == "us" ? "us" : "uk";
+
+        int.TryParse(req.Query["top"], out var top);
+        if (top <= 0) top = 6;
+
+        log.LogInformation("Market overview: region={Region} top={Top}", region, top);
+
+        var inDemandTask = cosmos.GetTopByDemandAsync(region, top);
+        var emergingTask = cosmos.GetTopByGrowthAsync(region, top);
+        await Task.WhenAll(inDemandTask, emergingTask);
+
+        return await OkJson(req, new { region, inDemand = inDemandTask.Result, emerging = emergingTask.Result });
+    }
+
     // GET /api/careers/categories
     [Function("CareerCategories")]
     public async Task<HttpResponseData> Categories(

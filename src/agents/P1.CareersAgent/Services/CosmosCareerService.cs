@@ -164,6 +164,27 @@ public class CosmosCareerService
         await _container.DeleteItemAsync<CareerDocument>(id, new PartitionKey(category));
     }
 
+    // "Live Job Market" dashboard view (Francis, 2026-09-10) — top careers by demand score
+    // and by 5-year growth, per region. country is whitelisted to "uk"/"us" by the caller
+    // (RegionField below) before ever reaching this string-interpolated query — Cosmos SQL
+    // has no parameter syntax for a PROPERTY PATH (only for values), so this is the safe way
+    // to do it: never raw user input, always one of exactly two known-good literals.
+    public async Task<List<CareerDocument>> GetTopByDemandAsync(string region, int top = 6)
+    {
+        var sql = new QueryDefinition($"SELECT TOP @top * FROM c ORDER BY c.demand.{region} DESC")
+            .WithParameter("@top", top);
+        return await DrainQueryIterator(_container.GetItemQueryIterator<CareerDocument>(sql));
+    }
+
+    public async Task<List<CareerDocument>> GetTopByGrowthAsync(string region, int top = 6)
+    {
+        var sql = new QueryDefinition(
+            $"SELECT TOP @top * FROM c WHERE IS_DEFINED(c.workforce.{region}.growthPct5yr) " +
+            $"ORDER BY c.workforce.{region}.growthPct5yr DESC")
+            .WithParameter("@top", top);
+        return await DrainQueryIterator(_container.GetItemQueryIterator<CareerDocument>(sql));
+    }
+
     public async Task<List<CategoryCount>> GetCategoryCountsAsync()
     {
         var sql = new QueryDefinition(
