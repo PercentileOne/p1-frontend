@@ -320,7 +320,7 @@ export default function CandidateDashboard() {
 
   useEffect(() => {
     setMarketReady(false);
-    getMarketOverview(marketCountry, 5).then(data => { setMarket(data); setMarketReady(true); });
+    getMarketOverview(marketCountry, 10).then(data => { setMarket(data); setMarketReady(true); });
   }, [marketCountry]);
 
   async function handleLogout() {
@@ -526,7 +526,9 @@ export default function CandidateDashboard() {
                   Couldn't reach live market data right now — check back shortly.
                 </div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                // Fixed height ≈ 5 rows, scrollable for the rest — keeps the card the same
+                // height at top 10 as it was at top 5 (Francis, 2026-09-10).
+                <div style={{ display: "flex", flexDirection: "column", gap: 14, maxHeight: 250, overflowY: "auto", paddingRight: 4 }}>
                   {market[marketTab].map((c, i) => {
                     // futureScore, not demand.uk/demand.us — those turned out to be
                     // inconsistently scaled across records once checked against real data
@@ -535,7 +537,12 @@ export default function CandidateDashboard() {
                     const demand = c.demand?.futureScore ?? 0;
                     const growth = c.workforce?.[marketCountry]?.growthPct5yr ?? 0;
                     const salary = c.salary?.[marketCountry];
-                    const barValue = marketTab === "inDemand" ? demand : Math.min(100, Math.round(growth * 2.5));
+                    // Direct growth%, capped at 100 — NOT growth*2.5 (the previous formula),
+                    // which saturated the bar at 100 for any growth above 40%. Every real
+                    // "Emerging" role clears that easily (80%+ is typical), so every bar
+                    // rendered visually identical regardless of the real spread between them
+                    // — caught live: "It's interesting that they're all 100%".
+                    const barValue = marketTab === "inDemand" ? demand : Math.min(100, Math.round(growth));
                     return (
                       <div key={c.id ?? i}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 5, gap: 10 }}>
