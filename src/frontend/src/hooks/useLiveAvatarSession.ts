@@ -51,6 +51,24 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   const attachIfReady = useCallback(() => {
     if (streamReadyRef.current && videoElRef.current && sessionRef.current) {
       sessionRef.current.attach(videoElRef.current);
+      // Mute SYNCHRONOUSLY, in the same tick as attach() — this is the actual fix for the
+      // "lips move for 3-6s, then audio races to catch up" bug reported live 2026-09-10 (first
+      // utterance of a session only — Amina's intro, never Wayne's, since he always speaks
+      // second and the gap below has long since closed by his turn). Root cause: this element
+      // was previously left UNMUTED until the async tap below finished wiring (an awaited
+      // getTTSAudioContext() call, possibly a real user-perceptible delay the very first time
+      // it's ever invoked in a session). Video frames render the instant attach() runs above,
+      // but during that async gap the element's OWN native WebRTC audio track — a brand new
+      // session's first-ever audio decode, which browsers are well known to cold-start slower
+      // than video — was free to play, and browsers' native <video>/<audio> A/V sync includes
+      // its own catch-up mechanism (briefly speeding up audio playback to resync to the video
+      // position) for exactly this situation. That native catch-up is what candidates actually
+      // heard as audio "racing" to catch up — not anything in our own tap, which (being a plain
+      // live MediaStreamSource pull, not a buffered element) has no such speed-up behaviour.
+      // Muting here, before the browser has a chance to render a single frame of native audio,
+      // closes that window entirely: the only audio the candidate ever hears is our tap below,
+      // which starts a moment later in real time but never audibly "catches up".
+      videoElRef.current.muted = true;
       const session = sessionRef.current;
       const el = videoElRef.current;
       if (tappedSessionRef.current !== session) {

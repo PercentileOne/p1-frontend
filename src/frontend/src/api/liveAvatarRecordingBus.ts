@@ -56,8 +56,14 @@ export function setLiveAvatarRecordingDestination(
 
 // Routes one LiveAvatar seat's raw audio track into the shared bus, and into the candidate's
 // own listening path (via the master gain, so the volume slider and the boost above both
-// apply). videoEl is muted here rather than left alone — createMediaStreamSource does NOT take
-// over an element's native output the way createMediaElementSource did, so without this the
+// apply). videoEl is muted here too (belt-and-braces — the authoritative mute now happens
+// synchronously in useLiveAvatarSession.ts's attachIfReady, in the same tick as attach(), to
+// close a real race: leaving it unmuted until THIS async tap finished wiring let the element's
+// own native WebRTC audio play briefly, and a brand-new session's first-ever audio decode is
+// well known to cold-start slower than video — browsers' native A/V sync then audibly sped
+// audio up to resync, which is what candidates heard as "catching up" on Amina's first line
+// every session, 2026-09-10). Kept here regardless: createMediaStreamSource does NOT take over
+// an element's native output the way createMediaElementSource did, so without this the
 // candidate would hear the avatar twice: once from the element's own native WebRTC playback,
 // once from this tap's route through the master gain to the same destination.
 //
