@@ -557,17 +557,17 @@ export default function CandidateDashboard() {
                                 {salary.currency === "GBP" ? "£" : salary.currency === "USD" ? "$" : ""}{fmtSalaryK(salary.starting)}–{fmtSalaryK(salary.senior)}
                               </span>
                             )}
-                            <span style={{ fontSize: 11, color: growth >= 0 ? "#4F8EF7" : "#EF4444", fontWeight: 700 }}>
+                            <span style={{ fontSize: 11, color: growth >= 0 ? "#2F6FE4" : "#EF4444", fontWeight: 700 }}>
                               {growth > 0 ? "+" : ""}{growth}%
                             </span>
-                            <span style={{ fontSize: 12, fontWeight: 800, color: demand >= 80 ? "#4F8EF7" : demand >= 65 ? "#F59E0B" : "#EF4444" }}>{demand}%</span>
+                            <span style={{ fontSize: 12, fontWeight: 800, color: demand >= 80 ? "#2F6FE4" : demand >= 65 ? "#F59E0B" : "#EF4444" }}>{demand}%</span>
                           </div>
                         </div>
                         <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
                           <div style={{
                             height: "100%", width: `${barValue}%`, borderRadius: 3,
                             background: demand >= 80
-                              ? "linear-gradient(90deg,#4F8EF7,#93c5fd)"
+                              ? "linear-gradient(90deg,#2F6FE4,#60A5FA)"
                               : demand >= 65
                                 ? "linear-gradient(90deg,#F59E0B,#fcd34d)"
                                 : "linear-gradient(90deg,#EF4444,#f87171)",
