@@ -3,6 +3,10 @@ import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuthStore } from "../auth/authStore";
 import { profileApi } from "../api/profileApi";
 import { getMarketOverview, type MarketOverview } from "../api/careersApi";
+import { getProfileEngagement, type ProfileEngagement } from "../api/profileEngagementApi";
+import { getRoleActivity, type RoleActivity } from "../api/roleActivityApi";
+import { getInDemandSubjects, type InDemandSubject } from "../api/inDemandSubjectsApi";
+import { getTopLearnTopics, type LearnTopicStat } from "../api/learnTopicsApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
   MessageSquare, Settings, LogOut, ChevronRight, ChevronDown, CheckCircle2, Circle, Compass, Gift, Zap,
@@ -48,53 +52,72 @@ const NAV_ITEMS = [
   { Icon: Settings,        label: "Settings",         slug: "settings" },
 ] as const;
 
-const LIVE_STATS: LiveCard[] = [
-  {
-    color: "#34D399", bg: "rgba(52,211,153,0.08)", border: "rgba(52,211,153,0.2)", shadow: "52,211,153",
-    interval: 12000,
-    slides: [
-      { label: "Profile Score",    value: "78%",    change: "Above average for your role"      },
-      { label: "Profile Strength", value: "Strong", change: "3 items left to complete"          },
-      { label: "Visibility",       value: "High",   change: "Appearing in 94% of role searches" },
-    ],
-  },
-  {
-    color: "#4F8EF7", bg: "rgba(79,142,247,0.08)", border: "rgba(79,142,247,0.2)", shadow: "79,142,247",
-    interval: 13000,
-    slides: [
-      { label: "Interviews Completed", value: "3",     change: "Last score: 84%"        },
-      { label: "Best Score",           value: "84%",   change: "vs. 71% role average"   },
-      { label: "Interview Status",     value: "Ready", change: "All modules complete"    },
-    ],
-  },
-  {
-    color: "#A78BFA", bg: "rgba(167,139,250,0.08)", border: "rgba(167,139,250,0.2)", shadow: "167,139,250",
-    interval: 14000,
-    slides: [
-      { label: "Employers Watching", value: "12",  change: "+3 new this week"          },
-      { label: "Profile Saves",      value: "8",   change: "2 employers messaged you"  },
-      { label: "Match Rate",         value: "91%", change: "Matching active job specs" },
-    ],
-  },
-  {
-    color: "#F59E0B", bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.2)", shadow: "245,158,11",
-    interval: 15000,
-    slides: [
-      { label: "Profile Views",  value: "47",   change: "+8 today"                    },
-      { label: "This Week",      value: "23",   change: "Trending up 34%"             },
-      { label: "Top Role Match", value: ".NET", change: "Most searched role this week" },
-    ],
-  },
-  {
-    color: "#F472B6", bg: "rgba(244,114,182,0.08)", border: "rgba(244,114,182,0.2)", shadow: "244,114,182",
-    interval: 16000,
-    slides: [
-      { label: "Paid Contacts This Week", value: "3",   change: "Employers paid to reach you"  },
-      { label: "Total Paid Contacts",     value: "11",  change: "Since you went live"           },
-      { label: "Your Earning Power",      value: "£55", change: "Value generated this month"    },
-    ],
-  },
-];
+// Five real, live-sourced dashboard cards (Francis, 2026-09-11) — replaces an earlier version
+// where every number on every card was hardcoded placeholder data ("Employers Watching: 12",
+// "Your Earning Power: £55", never wired to anything real). Each card's data source:
+//   1. Your Profile Buzz  — GET /profile/engagement (real views/likes/interview-views)
+//   2. Candidate Activity — GET /api/role-activity + /api/in-demand-subjects/{title} (real,
+//      logged from InterviewPackStart.tsx; in-demand-subjects existed since 2026-08 but was
+//      never read into any UI until now)
+//   3. What People Study  — GET /api/learn-topics (real, logged from LearnPanel.tsx)
+//   4. Business Pulse     — GET /api/business-news (real RSS, same architecture as Career News)
+//   5. Career & Life Wisdom — GET /api/platform-stats (real, sourced) + the existing QUOTES list
+const CARD_STYLES = [
+  { color: "#34D399", bg: "rgba(52,211,153,0.08)", border: "rgba(52,211,153,0.2)", shadow: "52,211,153", interval: 12000 },
+  { color: "#4F8EF7", bg: "rgba(79,142,247,0.08)", border: "rgba(79,142,247,0.2)", shadow: "79,142,247", interval: 13000 },
+  { color: "#A78BFA", bg: "rgba(167,139,250,0.08)", border: "rgba(167,139,250,0.2)", shadow: "167,139,250", interval: 14000 },
+  { color: "#F59E0B", bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.2)", shadow: "245,158,11", interval: 15000 },
+  { color: "#F472B6", bg: "rgba(244,114,182,0.08)", border: "rgba(244,114,182,0.2)", shadow: "244,114,182", interval: 16000 },
+] as const;
+
+const LOADING_SLIDES: CardSlide[] = [{ label: "Loading…", value: "—", change: "Fetching the latest" }];
+
+function titleCase(s: string): string {
+  return s.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function buildLiveStats(data: {
+  engagement: ProfileEngagement | null;
+  roleActivity: RoleActivity[];
+  topSubjects: InDemandSubject[];
+  topRole: string | null;
+  learnTopics: LearnTopicStat[];
+  businessNews: NewsItem[];
+  featuredStats: FeaturedStat[];
+}): LiveCard[] {
+  const cardSlides: CardSlide[][] = [
+    data.engagement ? [
+      { label: "Profile Views",   value: String(data.engagement.profileViews),   change: "People who've viewed your profile" },
+      { label: "Profile Likes",   value: String(data.engagement.likes),          change: "Real likes from other candidates" },
+      { label: "Interview Views", value: String(data.engagement.interviewViews), change: "Opens on your shared interview links" },
+    ] : LOADING_SLIDES,
+
+    (data.roleActivity.length || data.topSubjects.length || data.topRole) ? [
+      ...(data.roleActivity[0] ? [{ label: "Most Active Role", value: titleCase(data.roleActivity[0].jobTitle), change: `${data.roleActivity[0].count} candidates interviewing this week` }] : []),
+      ...(data.topSubjects[0] ? [{ label: "Top Requested Focus", value: titleCase(data.topSubjects[0].subject), change: `Most kept by candidates in this role` }] : []),
+      ...(data.topRole ? [{ label: "Trending Search", value: data.topRole, change: "Most searched role right now" }] : []),
+    ] : LOADING_SLIDES,
+
+    data.learnTopics.length ? data.learnTopics.slice(0, 3).map((t, i) => ({
+      label: i === 0 ? "Most Studied Topic" : `#${i + 1} Trending Topic`,
+      value: titleCase(t.topic),
+      change: `${t.count} candidate${t.count === 1 ? "" : "s"} studying this`,
+    })) : LOADING_SLIDES,
+
+    data.businessNews.length ? data.businessNews.slice(0, 3).map(n => ({
+      label: n.tag,
+      value: n.source,
+      change: n.headline,
+    })) : LOADING_SLIDES,
+
+    data.featuredStats.length ? [
+      ...data.featuredStats.slice(0, 2).map(s => ({ label: s.label, value: s.value, change: s.sourceLabel ?? "" })),
+      { label: "Today's Wisdom", value: QUOTES[new Date().getDay() % QUOTES.length].author, change: `"${QUOTES[new Date().getDay() % QUOTES.length].text}"` },
+    ] : LOADING_SLIDES,
+  ];
+
+  return CARD_STYLES.map((style, i) => ({ ...style, slides: cardSlides[i] }));
+}
 
 const UPCOMING_INTERVIEWS = [
   { company: "Vallum Associates",    role: "Senior .NET Developer",  date: "Mon 18 Aug · 10:00am", interviewer: "Sarah Mitchell", statusColor: "#34D399" },
@@ -203,22 +226,37 @@ async function resolvePersonalizationTitle(token: string): Promise<string | unde
   return undefined;
 }
 
-async function fetchFeaturedStat(): Promise<FeaturedStat | null> {
+async function fetchFeaturedStats(): Promise<FeaturedStat[]> {
   try {
     const res = await fetch(`${API_BASE}/api/platform-stats`);
-    if (!res.ok) return null;
-    const data = await res.json() as { stats: Array<{ value: string; label: string; sourceLabel?: string; sourceUrl?: string }> };
-    return data.stats[0] ?? null;
+    if (!res.ok) return [];
+    const data = await res.json() as { stats: FeaturedStat[] };
+    return data.stats ?? [];
   } catch {
-    return null;
+    return [];
+  }
+}
+
+// Real RSS business/startup news for the "Startup & Business Pulse" card — same architecture
+// as fetchCareerNews above (see backend CareerNews/Endpoint.cs's /api/business-news route),
+// kept in its own feed "section" so it never mixes into Career Intelligence.
+async function fetchBusinessNews(): Promise<NewsItem[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/business-news`);
+    if (!res.ok) return [];
+    const data = await res.json() as { news: Array<{ tag: string; headline: string; source: string; url: string; publishedAt: string }> };
+    return data.news.map((item, i) => ({ ...item, color: NEWS_COLORS[i % NEWS_COLORS.length] }));
+  } catch {
+    return [];
   }
 }
 
 /* ── Sub-components ──────────────────────────────────────────── */
 
-function LiveStatCard({ card }: { card: LiveCard }) {
+function LiveStatCard({ card, onClick }: { card: LiveCard; onClick: () => void }) {
   const [idx,     setIdx]     = useState(0);
   const [visible, setVisible] = useState(true);
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -231,20 +269,35 @@ function LiveStatCard({ card }: { card: LiveCard }) {
   const slide = card.slides[idx];
 
   return (
-    <div style={{
-      background: card.bg, border: `1px solid ${card.border}`, borderRadius: 14,
-      padding: "20px 22px 16px", position: "relative", overflow: "hidden", minHeight: 110,
-      boxShadow: `0 4px 24px rgba(${card.shadow},0.18), 0 1px 4px rgba(0,0,0,0.4)`,
-      userSelect: "none", WebkitUserSelect: "none", cursor: "default",
-    }}>
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: card.bg, border: `1px solid ${hovered ? card.color : card.border}`, borderRadius: 14,
+        padding: "20px 22px 16px", position: "relative", overflow: "hidden", minHeight: 110,
+        boxShadow: hovered
+          ? `0 6px 28px rgba(${card.shadow},0.28), 0 1px 4px rgba(0,0,0,0.4)`
+          : `0 4px 24px rgba(${card.shadow},0.18), 0 1px 4px rgba(0,0,0,0.4)`,
+        transform: hovered ? "translateY(-2px)" : "translateY(0)",
+        transition: "border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease",
+        userSelect: "none", WebkitUserSelect: "none", cursor: "pointer",
+      }}
+    >
       <div style={{
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(6px)",
         transition: "opacity 0.28s ease, transform 0.28s ease",
       }}>
         <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: card.color, marginBottom: 10 }}>{slide.label}</div>
-        <div style={{ fontSize: 32, fontWeight: 900, letterSpacing: "-0.03em", color: "var(--text)", lineHeight: 1 }}>{slide.value}</div>
-        <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 6 }}>{slide.change}</div>
+        <div style={{
+          fontSize: 22, fontWeight: 900, letterSpacing: "-0.02em", color: "var(--text)", lineHeight: 1.15,
+          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+        }}>{slide.value}</div>
+        <div style={{
+          fontSize: 11, color: "var(--text-3)", marginTop: 6, lineHeight: 1.5,
+          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+        }}>{slide.change}</div>
       </div>
       <div style={{ display: "flex", gap: 4, position: "absolute", bottom: 12, right: 14 }}>
         {card.slides.map((_, i) => (
@@ -280,6 +333,180 @@ function DashCard({ title, action, onAction, children }: { title: string; action
   );
 }
 
+const CARD_TITLES = ["💜 Your Profile Buzz", "🌍 What Candidates Are Doing", "📚 What People Are Studying", "🚀 Startup & Business Pulse", "✨ Career & Life Wisdom"];
+
+// The "immersive detail" behind each of the five stat cards — same real data the rotating
+// slides are built from (buildLiveStats), just shown in full rather than one slide at a time.
+function CardDetailModal({ cardIndex, onClose, engagement, roleActivity, topSubjects, candidateTitle, learnTopics, businessNews, featuredStats, navigate }: {
+  cardIndex: number;
+  onClose: () => void;
+  engagement: ProfileEngagement | null;
+  roleActivity: RoleActivity[];
+  topSubjects: InDemandSubject[];
+  candidateTitle: string | undefined;
+  learnTopics: LearnTopicStat[];
+  businessNews: NewsItem[];
+  featuredStats: FeaturedStat[];
+  navigate: (path: string, opts?: { state?: unknown }) => void;
+}) {
+  useEffect(() => {
+    const onEsc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onEsc);
+    return () => document.removeEventListener("keydown", onEsc);
+  }, [onClose]);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 200, background: "rgba(4,6,12,0.75)",
+        display: "flex", alignItems: "center", justifyContent: "center", padding: 40,
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: "min(640px, 100%)", maxHeight: "85vh", overflow: "auto",
+          background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 16,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+        }}
+      >
+        <div style={{
+          position: "sticky", top: 0, background: "var(--bg2)", zIndex: 1,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "18px 22px", borderBottom: "1px solid var(--border)",
+        }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: "var(--text)" }}>{CARD_TITLES[cardIndex]}</div>
+          <button onClick={onClose} title="Close (Esc)" style={{
+            width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(255,255,255,0.06)", border: "1px solid var(--border)", color: "var(--text-2)", cursor: "pointer",
+          }}>✕</button>
+        </div>
+
+        <div style={{ padding: "20px 22px 26px" }}>
+          {cardIndex === 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+                {[
+                  { label: "Profile Views", value: engagement?.profileViews ?? 0, color: "#34D399" },
+                  { label: "Profile Likes", value: engagement?.likes ?? 0, color: "#F472B6" },
+                  { label: "Interview Views", value: engagement?.interviewViews ?? 0, color: "#4F8EF7" },
+                ].map(s => (
+                  <div key={s.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", borderRadius: 12, padding: "16px 14px", textAlign: "center" }}>
+                    <div style={{ fontSize: 28, fontWeight: 900, color: s.color }}>{s.value}</div>
+                    <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 4 }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: 12.5, color: "var(--text-2)", lineHeight: 1.7 }}>
+                Every number here is real — genuine views on your profile, real likes from other candidates, and real opens on the interviews you've shared. Keep your profile complete and your best interview shared to grow all three.
+              </div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => { onClose(); navigate("/dashboard?tab=profile"); }} style={{ flex: 1, padding: "10px 16px", borderRadius: 10, border: "none", fontWeight: 700, fontSize: 12.5, cursor: "pointer", background: "linear-gradient(135deg,#a78bfa,#7c3aed)", color: "#fff", fontFamily: "inherit" }}>View My Profile</button>
+                <button onClick={() => { onClose(); navigate("/dashboard?tab=interviews"); }} style={{ flex: 1, padding: "10px 16px", borderRadius: 10, border: "1px solid var(--border)", fontWeight: 700, fontSize: 12.5, cursor: "pointer", background: "rgba(255,255,255,0.04)", color: "var(--text)", fontFamily: "inherit" }}>Share an Interview</button>
+              </div>
+            </div>
+          )}
+
+          {cardIndex === 1 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              <ModalSection title="Most Active Roles Right Now" empty={roleActivity.length === 0} emptyText="Not enough activity logged yet — check back soon.">
+                {roleActivity.slice(0, 6).map(r => (
+                  <ModalRow key={r.jobTitle} label={titleCase(r.jobTitle)} value={`${r.count} interviewing`} />
+                ))}
+              </ModalSection>
+              <ModalSection title={candidateTitle ? `Most-Kept Focus Topics for ${candidateTitle}` : "Most-Kept Focus Topics"} empty={topSubjects.length === 0} emptyText="No Special Focus data for your role yet.">
+                {topSubjects.slice(0, 6).map(s => (
+                  <ModalRow key={s.subject} label={titleCase(s.subject)} value={`kept ${s.keptCount}×`} />
+                ))}
+              </ModalSection>
+            </div>
+          )}
+
+          {cardIndex === 2 && (
+            <ModalSection title="Most Studied Topics" empty={learnTopics.length === 0} emptyText="Not enough Learn activity logged yet.">
+              {learnTopics.slice(0, 8).map(t => (
+                <div key={t.topic} onClick={() => { onClose(); navigate("/dashboard?tab=learn", { state: { studyTopic: titleCase(t.topic) } }); }} style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+                  padding: "10px 4px", borderBottom: "1px solid var(--border)", cursor: "pointer",
+                }}>
+                  <span style={{ fontSize: 13, color: "var(--text)", fontWeight: 600 }}>{titleCase(t.topic)}</span>
+                  <span style={{ fontSize: 11, color: "var(--text-3)", flexShrink: 0 }}>{t.count} studying →</span>
+                </div>
+              ))}
+            </ModalSection>
+          )}
+
+          {cardIndex === 3 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {businessNews.length === 0 && <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>Couldn't reach the business feeds right now — check back shortly.</div>}
+              {businessNews.map((n, i) => (
+                <a key={i} href={n.url} target="_blank" rel="noopener noreferrer" style={{
+                  display: "block", paddingBottom: 14, textDecoration: "none",
+                  borderBottom: i < businessNews.length - 1 ? "1px solid var(--border)" : "none",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: n.color, background: `${n.color}18`, padding: "2px 8px", borderRadius: 20 }}>{n.tag}</span>
+                    <span style={{ fontSize: 10, color: "var(--text-3)" }}>{timeAgoFrom(n.publishedAt)}</span>
+                    <span style={{ fontSize: 10, color: "var(--text-3)", marginLeft: "auto" }}>{n.source}</span>
+                  </div>
+                  <div style={{ fontSize: 13.5, color: "var(--text)", lineHeight: 1.5, fontWeight: 600 }}>{n.headline}</div>
+                </a>
+              ))}
+            </div>
+          )}
+
+          {cardIndex === 4 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              {featuredStats.map(s => (
+                <div key={s.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", borderRadius: 12, padding: "16px 18px" }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 6 }}>
+                    <div style={{ fontSize: 26, fontWeight: 900, color: "#A78BFA" }}>{s.value}</div>
+                    <div style={{ fontSize: 13, color: "var(--text)", fontWeight: 600 }}>{s.label}</div>
+                  </div>
+                  {s.sourceLabel && (
+                    <div style={{ fontSize: 11, color: "var(--text-3)" }}>
+                      {s.sourceUrl ? <a href={s.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-3)" }}>{s.sourceLabel}</a> : s.sourceLabel}
+                    </div>
+                  )}
+                </div>
+              ))}
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-3)", marginBottom: 10 }}>Words to Carry With You</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {QUOTES.map(q => (
+                    <div key={q.text} style={{ fontSize: 13, color: "var(--text-2)", lineHeight: 1.6, fontStyle: "italic" }}>
+                      "{q.text}" <span style={{ color: "var(--text-3)", fontStyle: "normal" }}>— {q.author}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ModalSection({ title, empty, emptyText, children }: { title: string; empty: boolean; emptyText: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-3)", marginBottom: 10 }}>{title}</div>
+      {empty ? <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>{emptyText}</div> : <div>{children}</div>}
+    </div>
+  );
+}
+
+function ModalRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "9px 4px", borderBottom: "1px solid var(--border)" }}>
+      <span style={{ fontSize: 13, color: "var(--text)", fontWeight: 600 }}>{label}</span>
+      <span style={{ fontSize: 11, color: "var(--text-3)", flexShrink: 0 }}>{value}</span>
+    </div>
+  );
+}
+
 /* ── Main export ─────────────────────────────────────────────── */
 
 export default function CandidateDashboard() {
@@ -297,13 +524,23 @@ export default function CandidateDashboard() {
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const [news,          setNews]          = useState<NewsItem[]>([]);
   const [newsReady,     setNewsReady]     = useState(false);
-  const [featuredStat,  setFeaturedStat]  = useState<FeaturedStat | null>(null);
+  const [featuredStats, setFeaturedStats] = useState<FeaturedStat[]>([]);
+  const featuredStat = featuredStats[0] ?? null;
   const [marketCountry, setMarketCountry] = useState<'uk' | 'us'>(guessMarketCountry);
   const [market,        setMarket]        = useState<MarketOverview | null>(null);
   const [marketReady,   setMarketReady]   = useState(false);
   const [marketTab,     setMarketTab]     = useState<'inDemand' | 'emerging'>('inDemand');
   const [countryMenuOpen, setCountryMenuOpen] = useState(false);
   const countryMenuRef = useRef<HTMLDivElement>(null);
+
+  // Real data for the five dashboard stat cards (see buildLiveStats's own comment).
+  const [candidateTitle, setCandidateTitle] = useState<string | undefined>(undefined);
+  const [engagement,   setEngagement]   = useState<ProfileEngagement | null>(null);
+  const [roleActivity, setRoleActivity] = useState<RoleActivity[]>([]);
+  const [topSubjects,  setTopSubjects]  = useState<InDemandSubject[]>([]);
+  const [learnTopics,  setLearnTopics]  = useState<LearnTopicStat[]>([]);
+  const [businessNews, setBusinessNews] = useState<NewsItem[]>([]);
+  const [openCard,     setOpenCard]     = useState<number | null>(null);
 
   useEffect(() => {
     if (!countryMenuOpen) return;
@@ -327,17 +564,39 @@ export default function CandidateDashboard() {
   useEffect(() => {
     (async () => {
       const personalizationTitle = authToken ? await resolvePersonalizationTitle(authToken) : undefined;
+      setCandidateTitle(personalizationTitle);
       const items = await fetchCareerNews(personalizationTitle);
       setNews(items);
       setNewsReady(true);
     })();
-    fetchFeaturedStat().then(setFeaturedStat);
+    fetchFeaturedStats().then(setFeaturedStats);
+    fetchBusinessNews().then(setBusinessNews);
+    getRoleActivity().then(setRoleActivity).catch(() => setRoleActivity([]));
+    getTopLearnTopics().then(setLearnTopics).catch(() => setLearnTopics([]));
+    if (authToken) getProfileEngagement(authToken).then(setEngagement).catch(() => {});
   }, [authToken]);
 
   useEffect(() => {
     setMarketReady(false);
     getMarketOverview(marketCountry, 10).then(data => { setMarket(data); setMarketReady(true); });
   }, [marketCountry]);
+
+  // Card 2's "Top Requested Focus" slide — the real, previously-unwired in-demand-subjects
+  // data (see buildLiveStats's own comment), scoped to this candidate's own role once resolved.
+  useEffect(() => {
+    if (!candidateTitle) return;
+    getInDemandSubjects(candidateTitle).then(setTopSubjects).catch(() => setTopSubjects([]));
+  }, [candidateTitle]);
+
+  const liveStats = buildLiveStats({
+    engagement,
+    roleActivity,
+    topSubjects,
+    topRole: market?.inDemand?.[0]?.title ?? null,
+    learnTopics,
+    businessNews,
+    featuredStats,
+  });
 
   async function handleLogout() {
     await logout();
@@ -487,8 +746,22 @@ export default function CandidateDashboard() {
 
         {/* ── STATS ROW ── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>
-          {LIVE_STATS.map((s, i) => <LiveStatCard key={i} card={s} />)}
+          {liveStats.map((s, i) => <LiveStatCard key={i} card={s} onClick={() => setOpenCard(i)} />)}
         </div>
+        {openCard !== null && (
+          <CardDetailModal
+            cardIndex={openCard}
+            onClose={() => setOpenCard(null)}
+            engagement={engagement}
+            roleActivity={roleActivity}
+            topSubjects={topSubjects}
+            candidateTitle={candidateTitle}
+            learnTopics={learnTopics}
+            businessNews={businessNews}
+            featuredStats={featuredStats}
+            navigate={navigate}
+          />
+        )}
 
         {/* ── TWO-COL LAYOUT ── */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 }}>

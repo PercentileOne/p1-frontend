@@ -163,6 +163,26 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("careerCoachUsage", "/candidateId") { DefaultTimeToLive = 172800 });
 
+        // Dashboard "What People Are Studying" card (Francis, 2026-09-11) — one document per
+        // studied topic (candidates type free-text course titles, so this is topic-keyed, not
+        // role-keyed like inDemandSubjects above) with a running count, same single-partition
+        // "cheap top-N read" shape as that container.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("learnTopics", "/pk"));
+
+        // Dashboard "Your Profile Buzz" card — real view counters (likes already exist via the
+        // reactions container above). Partition key = /candidateId: a candidate's own view count
+        // is always a single-partition point read, and the increment-on-someone-else's-view
+        // write only ever touches that one candidate's partition.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("profileViewCounters", "/candidateId"));
+
+        // Dashboard "What Candidates Are Doing" card — real cross-candidate activity: which
+        // roles people are actually interviewing for right now. One document per role with a
+        // running count, same shape as inDemandSubjects/learnTopics above.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("roleActivity", "/pk"));
+
         await SeedPlatformStatsAsync();
         await SeedNewsFeedSourcesAsync();
     }
@@ -237,6 +257,14 @@ public class CosmosService
             new NewsFeedSourceDoc("sky-news", "feed", "Sky News", "World", "https://feeds.skynews.com/feeds/rss/home.xml", true, DateTimeOffset.UtcNow),
             new NewsFeedSourceDoc("indeed-hiring-lab", "feed", "Indeed Hiring Lab", "Careers", "https://www.hiringlab.org/feed/", true, DateTimeOffset.UtcNow),
             new NewsFeedSourceDoc("bbc-sport", "feed", "BBC Sport", "Sport", "http://feeds.bbci.co.uk/sport/rss.xml", true, DateTimeOffset.UtcNow),
+            // Dashboard's "Startup & Business Pulse" card — same architecture, own section so it
+            // never mixes into the Career Intelligence panel above. Every URL verified reachable
+            // and returning real, recent <item> entries before being added here (2026-09-11).
+            new NewsFeedSourceDoc("techcrunch-startups", "feed", "TechCrunch", "Startups", "https://techcrunch.com/category/startups/feed/", true, DateTimeOffset.UtcNow, section: "business"),
+            new NewsFeedSourceDoc("crunchbase-news", "feed", "Crunchbase News", "Venture Capital", "https://news.crunchbase.com/feed/", true, DateTimeOffset.UtcNow, section: "business"),
+            new NewsFeedSourceDoc("sifted", "feed", "Sifted", "European Tech", "https://sifted.eu/feed", true, DateTimeOffset.UtcNow, section: "business"),
+            new NewsFeedSourceDoc("yc-blog", "feed", "Y Combinator", "Founders", "https://www.ycombinator.com/blog/rss", true, DateTimeOffset.UtcNow, section: "business"),
+            new NewsFeedSourceDoc("fastcompany-startups", "feed", "Fast Company", "Business", "https://www.fastcompany.com/section/startups/rss", true, DateTimeOffset.UtcNow, section: "business"),
         };
 
         foreach (var doc in seed)

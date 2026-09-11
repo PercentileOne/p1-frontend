@@ -15,3 +15,18 @@ export async function logInDemandSubjects(token: string, jobTitle: string, subje
     });
   } catch { /* best-effort only — never blocks starting the interview */ }
 }
+
+export interface InDemandSubject {
+  jobTitle: string;
+  subject: string;
+  keptCount: number;
+}
+
+// Dashboard "What Candidates Are Doing" card — real top-kept Special Focus subjects for a
+// role, most-kept first. Was logged from day one (see logInDemandSubjects above) but never
+// read back into any UI until now.
+export async function getInDemandSubjects(jobTitle: string): Promise<InDemandSubject[]> {
+  const res = await fetch(`${API_BASE}/api/in-demand-subjects/${encodeURIComponent(jobTitle)}`);
+  if (!res.ok) throw new Error(`Failed to load in-demand subjects: ${res.status}`);
+  return res.json();
+}

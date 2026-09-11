@@ -256,7 +256,15 @@ public static class Endpoint
             {
                 var page = await feed.ReadNextAsync();
                 var envelope = page.FirstOrDefault();
-                if (envelope is not null) return Results.Text(BuildResponseJson(envelope, blob), "application/json");
+                if (envelope is not null)
+                {
+                    // "Your Profile Buzz" dashboard card's real interview-views counter — see
+                    // Features/Profile/Endpoint.cs's IncrementCounterAsync for the shared
+                    // patch-or-create logic. Anonymous here (this route has no viewer identity
+                    // to exclude self-views), best-effort, never blocks the actual response.
+                    await Explain.Api.Features.Profile.Endpoint.IncrementCounterAsync(cosmos, envelope.candidateId, "/interviewViews");
+                    return Results.Text(BuildResponseJson(envelope, blob), "application/json");
+                }
             }
             return Results.NotFound();
         }).AllowAnonymous();

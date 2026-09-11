@@ -7,6 +7,7 @@ import { logFlowEvent } from '../api/flowLogger';
 import { type Career, searchCareers, reportMissingCareerTitle } from '../api/careersApi';
 import { generateHotTopics } from '../api/aiScoring';
 import { logInDemandSubjects } from '../api/inDemandSubjectsApi';
+import { logRoleActivity } from '../api/roleActivityApi';
 import { submitConfidenceSurvey, type ConfidenceResponse } from '../api/confidenceSurveyApi';
 import { useAuthStore } from '../auth/authStore';
 
@@ -247,6 +248,11 @@ export default function InterviewPackStart() {
     // Hot" suggestions, and never fired just for viewing/generating them.
     if (authToken && jobTitle.trim() && specialFocusChips.length > 0) {
       void logInDemandSubjects(authToken, jobTitle.trim(), specialFocusChips);
+    }
+    // Dashboard "What Candidates Are Doing" card's real role-activity signal — logged
+    // regardless of Special Focus usage, since starting the interview itself is the real signal.
+    if (authToken && jobTitle.trim()) {
+      void logRoleActivity(authToken, jobTitle.trim());
     }
     navigate('/interview/standard', {
       state: {

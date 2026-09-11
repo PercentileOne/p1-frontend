@@ -33,9 +33,19 @@ public static class Endpoint
     {
         app.MapGet("/api/career-news", async (string? jobTitle, CosmosService cosmos) =>
         {
-            var items = await GetAllNewsAsync(cosmos);
+            var items = await GetAllNewsAsync(cosmos, "career");
             var ranked = string.IsNullOrWhiteSpace(jobTitle) ? items : RankByRelevance(items, jobTitle);
             return Results.Ok(new { news = ranked.Take(8) });
+        }).AllowAnonymous();
+
+        // Dashboard's "Startup & Business Pulse" card — same real-RSS architecture and the same
+        // container, kept in its own section (see SeedNewsFeedSourcesAsync) so it never mixes
+        // into the Career Intelligence panel. No per-candidate relevance ranking — this is meant
+        // to read like an industry pulse everyone sees, not something personalised.
+        app.MapGet("/api/business-news", async (CosmosService cosmos) =>
+        {
+            var items = await GetAllNewsAsync(cosmos, "business");
+            return Results.Ok(new { news = items.Take(8) });
         }).AllowAnonymous();
 
         app.MapGet("/api/admin/news-feeds", async (CosmosService cosmos) =>
@@ -60,7 +70,8 @@ public static class Endpoint
                 category: req.Category.Trim(),
                 url: req.Url.Trim(),
                 active: req.Active,
-                updatedAt: DateTimeOffset.UtcNow);
+                updatedAt: DateTimeOffset.UtcNow,
+                section: string.IsNullOrWhiteSpace(req.Section) ? "career" : req.Section.Trim());
 
             var container = cosmos.GetContainer("newsFeedSources");
             await container.UpsertItemAsync(doc, new PartitionKey("feed"));
@@ -84,17 +95,16 @@ public static class Endpoint
         }).RequireAuthorization(Permissions.ViewSystemSettings);
     }
 
-    private static async Task<List<NewsItem>> GetAllNewsAsync(CosmosService cosmos)
+    private static async Task<List<NewsItem>> GetAllNewsAsync(CosmosService cosmos, string section)
     {
-        const string cacheKey = "all";
-        if (_cache.TryGetValue(cacheKey, out var cached) && cached.expiresAt > DateTimeOffset.UtcNow)
+        if (_cache.TryGetValue(section, out var cached) && cached.expiresAt > DateTimeOffset.UtcNow)
             return cached.items;
 
-        var sources = await GetActiveFeedSourcesAsync(cosmos);
+        var sources = await GetActiveFeedSourcesAsync(cosmos, section);
         var results = await Task.WhenAll(sources.Select(FetchFeedAsync));
         var merged = InterleaveByCategory(results.SelectMany(r => r));
 
-        _cache[cacheKey] = (DateTimeOffset.UtcNow.Add(CacheTtl), merged);
+        _cache[section] = (DateTimeOffset.UtcNow.Add(CacheTtl), merged);
         return merged;
     }
 
@@ -119,10 +129,16 @@ public static class Endpoint
         return result;
     }
 
-    private static async Task<List<NewsFeedSourceDoc>> GetActiveFeedSourcesAsync(CosmosService cosmos)
+    // Feeds seeded before "section" existed have no such property stored in Cosmos at all
+    // (schemaless) — c.section = 'career' evaluates to undefined, not true, for those, so the
+    // NOT IS_DEFINED fallback is required to keep every pre-existing career feed active rather
+    // than silently dropping out of the panel the moment this shipped.
+    private static async Task<List<NewsFeedSourceDoc>> GetActiveFeedSourcesAsync(CosmosService cosmos, string section)
     {
         var container = cosmos.GetContainer("newsFeedSources");
-        var query = new QueryDefinition("SELECT * FROM c WHERE c.active = true");
+        var query = new QueryDefinition(
+            "SELECT * FROM c WHERE c.active = true AND (c.section = @section OR (NOT IS_DEFINED(c.section) AND @section = 'career'))")
+            .WithParameter("@section", section);
         var results = new List<NewsFeedSourceDoc>();
         using var feed = container.GetItemQueryIterator<NewsFeedSourceDoc>(query);
         while (feed.HasMoreResults) results.AddRange(await feed.ReadNextAsync());
@@ -180,7 +196,7 @@ public static class Endpoint
     }
 }
 
-public record UpsertFeedRequest(string? Id, string Label, string Category, string Url, bool Active);
+public record UpsertFeedRequest(string? Id, string Label, string Category, string Url, bool Active, string? Section = null);
 
 public record NewsFeedSourceDoc(
     string id,
@@ -189,6 +205,7 @@ public record NewsFeedSourceDoc(
     string category,
     string url,
     bool active,
-    DateTimeOffset updatedAt);
+    DateTimeOffset updatedAt,
+    string section = "career");
 
 public record NewsItem(string tag, string headline, string source, string url, DateTimeOffset publishedAt);

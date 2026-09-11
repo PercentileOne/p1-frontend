@@ -6,6 +6,8 @@ import type { RoomState } from './InterviewRoomPage';
 import type { InterviewQuestion } from '../api/explainApi';
 import { createReadAloudPlayer, extractReadableText, type ReadAloudState, type ReadAloudGender } from '../api/readAloud';
 import MiniPracticeSession from '../components/MiniPracticeSession';
+import { useAuthStore } from '../auth/authStore';
+import { logLearnTopic } from '../api/learnTopicsApi';
 
 mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'strict' });
 
@@ -1225,6 +1227,7 @@ function CourseView({ course, onBack, onUpdateCourse }: { course: Course; onBack
 // ── Main LearnPanel ────────────────────────────────────────────────────────────
 
 export default function LearnPanel({ initialTopic }: { initialTopic?: string } = {}) {
+  const authToken = useAuthStore(s => s.token);
   const [query, setQuery] = useState(initialTopic ?? '');
   const [level, setLevel] = useState<'Beginner' | 'Intermediate' | 'Expert'>('Intermediate');
   const [generating, setGenerating] = useState(false);
@@ -1293,6 +1296,11 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
       return;
     }
     setError('');
+
+    // Dashboard "What People Are Studying" card's real signal — every path below (local
+    // cache, platform cache, fresh generation) means the candidate is genuinely opening this
+    // course, so logging here once covers all three rather than duplicating the call per path.
+    if (authToken) void logLearnTopic(authToken, t);
 
     // 1. Local browser cache (instant)
     const localCached = findCached(t, level);
