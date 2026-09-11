@@ -143,6 +143,26 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("newsFeedSources", "/pk"));
 
+        // "My Career Coach" (Francis, 2026-09-11) — multiple named threads per candidate, each
+        // a self-contained document with its own embedded messages array (same "opaque blob
+        // per session" shape as the interviews container above, not a normalised messages
+        // table) — a topic-scoped thread realistically never approaches Cosmos's 2MB document
+        // limit, and this keeps "load one thread" a single-partition point read instead of a
+        // paginated query. Partition key = /candidateId so "list my threads" is single-partition.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("careerCoachThreads", "/candidateId"));
+
+        // Daily message-count backstop for the hard cap on My Career Coach (Francis: cost is
+        // the real risk on an "unlimited" chat feature — every message is a fresh AI call, so
+        // this is the one thing standing between normal use and unbounded spend). One tiny
+        // document per candidate per day, id = "{candidateId}:{yyyy-MM-dd}", incremented
+        // atomically per message — a separate counter rather than counting messages across a
+        // candidate's threads on every send, which would mean re-reading every thread document
+        // just to answer "how many did they send today". 2-day TTL: only today's (and
+        // yesterday's, for safety around midnight boundaries) count ever matters.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("careerCoachUsage", "/candidateId") { DefaultTimeToLive = 172800 });
+
         await SeedPlatformStatsAsync();
         await SeedNewsFeedSourcesAsync();
     }

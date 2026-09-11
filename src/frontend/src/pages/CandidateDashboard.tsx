@@ -6,6 +6,7 @@ import { getMarketOverview, type MarketOverview } from "../api/careersApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
   MessageSquare, Settings, LogOut, ChevronRight, CheckCircle2, Circle, Compass, Gift, Zap,
+  HeartHandshake,
 } from "lucide-react";
 import LearnPanel from "./LearnPanel";
 import CareersPanel from "./CareersPanel";
@@ -16,6 +17,7 @@ import JobsHome from "./JobsHome";
 import MessagesPage from "./MessagesPage";
 import SettingsPage from "./SettingsPage";
 import DemoPanel from "./DemoPanel";
+import CareerCoachPanel from "./CareerCoachPanel";
 
 /* ══════════════════════════════════════════════════════════════
    CANDIDATE DASHBOARD — cockpit-grade portal for TheInterviewChair.com
@@ -34,6 +36,7 @@ const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ??
 // back / our own Back button lands on the tab you were actually looking at, not a reset one.
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: "Dashboard",       slug: null },
+  { Icon: HeartHandshake,  label: "My Career Coach", slug: "career-coach" },
   { Icon: User,            label: "My Profile",      slug: "profile" },
   { Icon: Video,           label: "My Interviews",   slug: "interviews" },
   { Icon: Gift,            label: "Interview Preps", slug: "interview-preps" },
@@ -456,6 +459,7 @@ export default function CandidateDashboard() {
         </div>
 
         {/* ── PANEL OVERRIDES ── */}
+        {activeNav === "My Career Coach" && <CareerCoachPanel />}
         {activeNav === "Learn"          && <LearnPanel initialTopic={studyTopic} />}
         {activeNav === "Careers"        && <CareersPanel />}
         {activeNav === "My Interviews"  && <MyInterviewsPage />}

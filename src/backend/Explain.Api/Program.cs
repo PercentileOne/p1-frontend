@@ -250,6 +250,7 @@ Explain.Api.Features.PlatformSettings.Endpoint.Map(app);
 Explain.Api.Features.InDemandSubjects.Endpoint.Map(app);
 Explain.Api.Features.PlatformStats.Endpoint.Map(app);
 Explain.Api.Features.CareerNews.Endpoint.Map(app);
+Explain.Api.Features.CareerCoach.Endpoint.Map(app);
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
    .AllowAnonymous();
