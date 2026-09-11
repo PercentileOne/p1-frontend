@@ -554,7 +554,14 @@ function DiagramBlock({ diagram }: { diagram: Diagram }) {
           <div
             onClick={e => e.stopPropagation()}
             className="diagram-zoom-content"
-            style={{ maxWidth: '90vw', maxHeight: '90vh', overflow: 'auto', cursor: 'default' }}
+            // width (not maxWidth) is the fix — the backdrop is a centring flex container, so
+            // a flex child with only a maxWidth shrink-wraps to its content's intrinsic size
+            // by default. That left the SVG's own "width:100%" resolving against an
+            // effectively auto-sized box, which circularly falls back to the SVG's ORIGINAL
+            // small intrinsic size — reported live 2026-09-11: "still too small to see", and
+            // confirmed from a screenshot showing the zoomed diagram barely any bigger. A
+            // real, explicit width gives the SVG something concrete to actually size against.
+            style={{ width: '90vw', maxHeight: '90vh', overflow: 'auto', cursor: 'default' }}
           >
             {/* Mermaid's own <svg> carries an inline max-width style sized for the small
                 inline view — without overriding it here, "zoom" would just show the same
