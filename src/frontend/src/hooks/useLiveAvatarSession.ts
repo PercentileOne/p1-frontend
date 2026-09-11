@@ -200,7 +200,11 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   // Speaks pre-generated audio through the avatar and resolves when it finishes — same
   // onEnd-callback contract ttsApi.ts's speak() already gives useInterviewerAudio.ts, so this
   // can slot into the same call sites without reshaping the state machine around it.
-  const speak = useCallback(async (text: string, role: 'hr' | 'technical' | 'mike'): Promise<void> => {
+  // onSpeakStarted fires on AVATAR_SPEAK_STARTED — HeyGen's own confirmation the avatar has
+  // actually begun talking, distinct from (and meaningfully later than) the moment this speak()
+  // call was made. Lets a caller delay UI (e.g. the on-screen question text) until speech has
+  // genuinely started instead of the moment it was requested — see InterviewRoomPage's use of it.
+  const speak = useCallback(async (text: string, role: 'hr' | 'technical' | 'mike', onSpeakStarted?: () => void): Promise<void> => {
     const session = sessionRef.current;
     if (!session || !connectedRef.current) throw new Error('Avatar session is not connected');
 
@@ -225,7 +229,10 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
       // merely having SENT repeatAudio() below. A large gap between the "sending repeatAudio()"
       // log above and this one firing would confirm the delay is server-side (HeyGen's own
       // generation pipeline), not anything in our own tap-wiring or audio-generation code.
-      const onStarted = () => timingLog(role, 'AVATAR_SPEAK_STARTED fired (HeyGen confirms talk began)');
+      const onStarted = () => {
+        timingLog(role, 'AVATAR_SPEAK_STARTED fired (HeyGen confirms talk began)');
+        onSpeakStarted?.();
+      };
       const onEnded = () => {
         if (settled) return;
         settled = true;

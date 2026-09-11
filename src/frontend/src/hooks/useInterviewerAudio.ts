@@ -111,6 +111,10 @@ export interface UseInterviewerAudioReturn {
   techState: AvatarState;
   hrAnalyser: AnalyserNode | null;
   techAnalyser: AnalyserNode | null;
+  /** True once the current question's audio has actually started (not just been requested) —
+   * gates the on-screen question text so it doesn't print ahead of the interviewer speaking it.
+   * Reset to false at the top of every askQuestion() call. */
+  speechStarted: boolean;
   sarahIntroVideoActive: boolean;
   /** English only — james-intro-v1.mp4, the generic pre-rendered clip matching Sarah's/Mike's
    * own. Superseded by the live avatar whenever it's active (see liveAvatarActiveTechnical). */
@@ -183,6 +187,14 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
   const [techState, setTechState] = useState<AvatarState>('idle');
   const [hrAnalyser, setHrAnalyser] = useState<AnalyserNode | null>(null);
   const [techAnalyser, setTechAnalyser] = useState<AnalyserNode | null>(null);
+  // Gates the on-screen question text — phase flips to 'asking' the instant askQuestion() is
+  // called, well before the interviewer's audio has actually started (speak() still has to
+  // request/generate audio first, ~1-2s even in the fast path). Showing the text immediately
+  // made it look "out of sync" with the speaker, even though audio/video themselves were fine
+  // (Francis, live testing 2026-09-11). Reset to false at the top of every askQuestion() call,
+  // flipped true by the same onAnalyser-slot callback both the LiveAvatar and plain-TTS paths
+  // already call the moment real speech begins (see liveAvatarSpeakHr/Technical's own comment).
+  const [speechStarted, setSpeechStarted] = useState(false);
 
   // English only: sarah-idle-v1.mp4 — a silent, looping "listening" clip (nods, glances)
   // that plays under Sarah's static slot for as long as James is actively speaking. Unlike
@@ -225,6 +237,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     }
     const interviewer: 'hr' | 'technical' = interviewerOverride ?? (question.source === 'HR' ? 'hr' : 'technical');
     setPhase('asking');
+    setSpeechStarted(false);
     onDoneRef.current = null;
     if (interviewer === 'hr') { setHrState('speaking'); setTechState('listening'); }
     else { setTechState('speaking'); setHrState('listening'); }
@@ -236,13 +249,14 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     };
     const spokenText = spokenTextOverride ?? question.questionText;
     if (interviewer === 'hr' && liveAvatarActive && liveAvatarSpeak) {
-      cancelSpeakRef.current = liveAvatarSpeak(spokenText, onDone, (a) => setHrAnalyser(a));
+      cancelSpeakRef.current = liveAvatarSpeak(spokenText, onDone, (a) => { setHrAnalyser(a); setSpeechStarted(true); });
     } else if (interviewer === 'technical' && liveAvatarActiveTechnical && liveAvatarSpeakTechnical) {
-      cancelSpeakRef.current = liveAvatarSpeakTechnical(spokenText, onDone, (a) => setTechAnalyser(a));
+      cancelSpeakRef.current = liveAvatarSpeakTechnical(spokenText, onDone, (a) => { setTechAnalyser(a); setSpeechStarted(true); });
     } else {
       cancelSpeakRef.current = speak(spokenText, interviewer, onDone, (a) => {
         if (interviewer === 'hr') setHrAnalyser(a);
         else setTechAnalyser(a);
+        setSpeechStarted(true);
       });
     }
   }, [questions, setPhase, chapterMarkersRef, recordingStartTimeRef, liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical]);
@@ -559,7 +573,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
   }, [setPhase, chapterMarkersRef, recordingStartTimeRef]);
 
   return {
-    hrState, techState, hrAnalyser, techAnalyser,
+    hrState, techState, hrAnalyser, techAnalyser, speechStarted,
     sarahIntroVideoActive, jamesIntroVideoActive, jamesAmbientVideoActive, sarahAmbientVideoActive, awaitingHandoff,
     handleSarahVideoAnalyser, handleJamesVideoAnalyser,
     handleSarahIntroVideoEnded, handleJamesIntroVideoEnded,

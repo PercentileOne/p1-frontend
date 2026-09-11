@@ -292,13 +292,16 @@ export default function InterviewRoomPage() {
   const liveAvatarHr = useLiveAvatarSession('hr', setLiveHrAnalyser);
   const liveAvatarTechnical = useLiveAvatarSession('technical', setLiveTechAnalyser);
 
-  const liveAvatarSpeakHr = useCallback((text: string, onEnd: () => void) => {
+  const liveAvatarSpeakHr = useCallback((text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => {
     let cancelled = false;
     let fallbackCancel: (() => void) | null = null;
     (async () => {
       try {
         if (liveAvatarHr.status !== 'connected') await liveAvatarHr.connect();
-        await liveAvatarHr.speak(text, 'hr');
+        // LiveAvatar has no Web Audio analyser to hand back (the video's lip-sync isn't driven
+        // through the Web Audio graph the plain-TTS path uses) — this reuses the same callback
+        // slot purely as a "speech has genuinely started" timing signal, called with null.
+        await liveAvatarHr.speak(text, 'hr', () => onAnalyser?.(null));
         if (!cancelled) onEnd();
       } catch (err) {
         // A failed connect/speak used to just call onEnd() here — the candidate got silence
@@ -309,23 +312,23 @@ export default function InterviewRoomPage() {
         // TTS here means a genuine avatar failure degrades to "she just talks, no video"
         // instead of dead air.
         console.error('[InterviewRoom] LiveAvatar (hr) speak failed, falling back to TTS:', err);
-        if (!cancelled) fallbackCancel = speak(text, 'hr', onEnd);
+        if (!cancelled) fallbackCancel = speak(text, 'hr', onEnd, onAnalyser);
       }
     })();
     return () => { cancelled = true; fallbackCancel?.(); liveAvatarHr.interrupt(); };
   }, [liveAvatarHr]);
 
-  const liveAvatarSpeakTechnical = useCallback((text: string, onEnd: () => void) => {
+  const liveAvatarSpeakTechnical = useCallback((text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => {
     let cancelled = false;
     let fallbackCancel: (() => void) | null = null;
     (async () => {
       try {
         if (liveAvatarTechnical.status !== 'connected') await liveAvatarTechnical.connect();
-        await liveAvatarTechnical.speak(text, 'technical');
+        await liveAvatarTechnical.speak(text, 'technical', () => onAnalyser?.(null));
         if (!cancelled) onEnd();
       } catch (err) {
         console.error('[InterviewRoom] LiveAvatar (technical) speak failed, falling back to TTS:', err);
-        if (!cancelled) fallbackCancel = speak(text, 'technical', onEnd);
+        if (!cancelled) fallbackCancel = speak(text, 'technical', onEnd, onAnalyser);
       }
     })();
     return () => { cancelled = true; fallbackCancel?.(); liveAvatarTechnical.interrupt(); };
@@ -360,7 +363,7 @@ export default function InterviewRoomPage() {
   }, [phase, avatarEnabled]);
 
   const {
-    hrState, techState, hrAnalyser, techAnalyser,
+    hrState, techState, hrAnalyser, techAnalyser, speechStarted,
     awaitingHandoff,
     handleSarahVideoAnalyser, handleJamesVideoAnalyser,
     stopAllInterviewerAudio,
@@ -715,7 +718,13 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setPhase('coaching');
   }, [q, scoreAnswer, goDeeperEnabled, selectedDifficulty]);
 
-  const displayedQuestion = useTypewriter(q?.questionText ?? '', phase === 'asking');
+  // Withholding the text itself (not just toggling `active`) until speechStarted is
+  // deliberate — useTypewriter's `!active` branch shows the FULL text instantly, so gating on
+  // `active` alone would dump the whole question on screen the moment phase flips to 'asking',
+  // the exact "text prints before the speaker" bug this fixes (Francis, live testing
+  // 2026-09-11). Once speechStarted flips true, `text` changes from '' to the real question,
+  // and the effect below picks that up as a genuinely new value and starts typing it out.
+  const displayedQuestion = useTypewriter(speechStarted ? (q?.questionText ?? '') : '', phase === 'asking');
   const coachingCue = useCoachingCue(phase === 'answering');
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
