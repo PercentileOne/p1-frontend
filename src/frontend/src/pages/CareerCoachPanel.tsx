@@ -50,6 +50,8 @@ export default function CareerCoachPanel() {
     setCappedMessage(null);
     try {
       setActiveThread(await getThread(token, id));
+    } catch {
+      setCappedMessage("Couldn't load that conversation — please try again in a moment.");
     } finally {
       setLoadingThread(false);
     }
@@ -100,6 +102,7 @@ export default function CareerCoachPanel() {
         background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: 16,
       }}>
         <button
+          type="button"
           onClick={startNewThread}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -137,6 +140,7 @@ export default function CareerCoachPanel() {
                 <div style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 2 }}>{timeAgo(t.lastMessageAt)}</div>
               </div>
               <button
+                type="button"
                 onClick={e => handleDelete(t.id, e)}
                 title="Delete conversation"
                 style={{
@@ -193,6 +197,7 @@ export default function CareerCoachPanel() {
             }}
           />
           <button
+            type="button"
             onClick={() => handleSend(draft)}
             disabled={sending || !draft.trim() || !!cappedMessage}
             style={{
@@ -223,6 +228,7 @@ function EmptyState({ onPick, sending }: { onPick: (text: string) => void; sendi
         {SAMPLE_PROMPTS.map(p => (
           <button
             key={p}
+            type="button"
             disabled={sending}
             onClick={() => onPick(p)}
             style={{
