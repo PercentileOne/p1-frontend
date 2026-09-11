@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuthStore } from "../auth/authStore";
 import { profileApi } from "../api/profileApi";
 import { getMarketOverview, type MarketOverview } from "../api/careersApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
-  MessageSquare, Settings, LogOut, ChevronRight, CheckCircle2, Circle, Compass, Gift, Zap,
+  MessageSquare, Settings, LogOut, ChevronRight, ChevronDown, CheckCircle2, Circle, Compass, Gift, Zap,
   HeartHandshake,
 } from "lucide-react";
 import LearnPanel from "./LearnPanel";
@@ -302,6 +302,19 @@ export default function CandidateDashboard() {
   const [market,        setMarket]        = useState<MarketOverview | null>(null);
   const [marketReady,   setMarketReady]   = useState(false);
   const [marketTab,     setMarketTab]     = useState<'inDemand' | 'emerging'>('inDemand');
+  const [countryMenuOpen, setCountryMenuOpen] = useState(false);
+  const countryMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!countryMenuOpen) return;
+    const onClickOutside = (e: MouseEvent) => {
+      if (countryMenuRef.current && !countryMenuRef.current.contains(e.target as Node)) {
+        setCountryMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [countryMenuOpen]);
 
   const firstName = user?.firstName ?? user?.name?.split(" ")[0] ?? "there";
   const role      = user?.role ?? "Candidate";
@@ -506,17 +519,45 @@ export default function CandidateDashboard() {
                     </button>
                   ))}
                 </div>
-                <select
-                  value={marketCountry}
-                  onChange={e => setMarketCountry(e.target.value as "uk" | "us")}
-                  style={{
-                    fontSize: 11, fontWeight: 700, color: "var(--text-2)", background: "rgba(255,255,255,0.04)",
-                    border: "1px solid var(--border)", borderRadius: 6, padding: "5px 8px", fontFamily: "inherit", cursor: "pointer",
-                  }}
-                >
-                  <option value="uk">🇬🇧 UK</option>
-                  <option value="us">🇺🇸 US</option>
-                </select>
+                <div ref={countryMenuRef} style={{ position: "relative" }}>
+                  <button
+                    type="button"
+                    onClick={() => setCountryMenuOpen(o => !o)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6,
+                      fontSize: 11, fontWeight: 700, color: "var(--text-2)", background: "rgba(255,255,255,0.04)",
+                      border: "1px solid var(--border)", borderRadius: 6, padding: "5px 8px", fontFamily: "inherit", cursor: "pointer",
+                    }}
+                  >
+                    {marketCountry === "uk" ? "🇬🇧 UK" : "🇺🇸 US"}
+                    <ChevronDown size={12} style={{ opacity: 0.6, transform: countryMenuOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+                  </button>
+                  {countryMenuOpen && (
+                    <div style={{
+                      position: "absolute", top: "calc(100% + 4px)", right: 0, zIndex: 20, minWidth: 100,
+                      background: "var(--bg3, #111827)", border: "1px solid var(--border)", borderRadius: 8,
+                      padding: 4, boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                    }}>
+                      {([["uk", "🇬🇧 UK"], ["us", "🇺🇸 US"]] as const).map(([code, label]) => (
+                        <button
+                          key={code}
+                          type="button"
+                          onClick={() => { setMarketCountry(code); setCountryMenuOpen(false); }}
+                          style={{
+                            display: "block", width: "100%", textAlign: "left", fontFamily: "inherit",
+                            fontSize: 11, fontWeight: 700, padding: "6px 8px", borderRadius: 5, border: "none",
+                            cursor: "pointer", color: marketCountry === code ? "#34D399" : "var(--text-2)",
+                            background: marketCountry === code ? "rgba(52,211,153,0.12)" : "transparent",
+                          }}
+                          onMouseEnter={e => { if (marketCountry !== code) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.06)"; }}
+                          onMouseLeave={e => { if (marketCountry !== code) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {!marketReady ? (
