@@ -119,10 +119,26 @@ function buildLiveStats(data: {
   return CARD_STYLES.map((style, i) => ({ ...style, slides: cardSlides[i] }));
 }
 
-const UPCOMING_INTERVIEWS = [
-  { company: "Vallum Associates",    role: "Senior .NET Developer",  date: "Mon 18 Aug · 10:00am", interviewer: "Sarah Mitchell", statusColor: "#34D399" },
-  { company: "Apex Tech Solutions",  role: "Cloud Engineer",         date: "Wed 20 Aug · 2:30pm",  interviewer: "James Carter",   statusColor: "#4F8EF7" },
-];
+interface RecentInterview {
+  id: string;
+  createdAt: string;
+  role: string | null;
+  company: string | null;
+  overallScore: number;
+}
+
+// Same thresholds/copy as MyInterviewsPage.tsx's scoreColor/fmtDate — kept in sync there.
+function interviewScoreColor(pct: number) {
+  if (pct >= 70) return "#34D399";
+  if (pct >= 50) return "#F59E0B";
+  return "#EF4444";
+}
+
+function fmtInterviewDate(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+    + " · " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+}
 
 // Default country for the Live Job Market card — only 'uk'/'us' have real data behind them
 // (see careers-agent's own comment on why). Timezone is a real, zero-cost client-side signal
@@ -541,6 +557,7 @@ export default function CandidateDashboard() {
   const [learnTopics,  setLearnTopics]  = useState<LearnTopicStat[]>([]);
   const [businessNews, setBusinessNews] = useState<NewsItem[]>([]);
   const [openCard,     setOpenCard]     = useState<number | null>(null);
+  const [recentInterviews, setRecentInterviews] = useState<RecentInterview[] | null>(null);
 
   useEffect(() => {
     if (!countryMenuOpen) return;
@@ -574,6 +591,12 @@ export default function CandidateDashboard() {
     getRoleActivity().then(setRoleActivity).catch(() => setRoleActivity([]));
     getTopLearnTopics().then(setLearnTopics).catch(() => setLearnTopics([]));
     if (authToken) getProfileEngagement(authToken).then(setEngagement).catch(() => {});
+    if (authToken) {
+      fetch(`${API_BASE}/api/interviews`, { headers: { Authorization: `Bearer ${authToken}` } })
+        .then(res => res.ok ? res.json() as Promise<RecentInterview[]> : Promise.reject())
+        .then(items => setRecentInterviews(items.slice(0, 4)))
+        .catch(() => setRecentInterviews([]));
+    }
   }, [authToken]);
 
   useEffect(() => {
@@ -949,32 +972,41 @@ export default function CandidateDashboard() {
               )}
             </DashCard>
 
-            {/* Upcoming Interviews */}
-            <DashCard title="📅 Upcoming Interviews" action="View all" onAction={() => navigate("/interviews")}>
-              {UPCOMING_INTERVIEWS.length === 0 ? (
+            {/* Recent Interviews — real completed interviews, replaces a previous hardcoded
+                "Upcoming Interviews" list (fake companies/interviewers/dates); this app has no
+                real interview-scheduling system, so the real, useful equivalent is your own
+                actual interview history with real scores. */}
+            <DashCard title="🎬 Recent Interviews" action="View all" onAction={() => navigate("/interviews")}>
+              {recentInterviews === null ? (
+                <div style={{ textAlign: "center", padding: "24px 0", color: "var(--text-3)", fontSize: 13 }}>Loading…</div>
+              ) : recentInterviews.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "24px 0", color: "var(--text-3)", fontSize: 13 }}>
-                  No interviews scheduled yet.
+                  No interviews yet — your first one is a great place to start.
                   <br />
-                  <button onClick={() => navigate("/jobs")} style={{ marginTop: 10, color: "#34D399", background: "none", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13, fontFamily: "inherit" }}>
-                    Browse matching jobs →
+                  <button onClick={() => navigate("/interview-pack/start", { state: { preferredName: firstName } })} style={{ marginTop: 10, color: "#34D399", background: "none", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13, fontFamily: "inherit" }}>
+                    Start a practice interview →
                   </button>
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {UPCOMING_INTERVIEWS.map((p, i) => (
-                    <div key={i} style={{
-                      display: "flex", alignItems: "center", justifyContent: "space-between",
-                      padding: "12px 14px", borderRadius: 10,
-                      background: "rgba(52,211,153,0.06)", border: "1px solid rgba(52,211,153,0.15)",
-                      userSelect: "none", WebkitUserSelect: "none",
-                    }}>
+                  {recentInterviews.map(iv => (
+                    <div
+                      key={iv.id}
+                      onClick={() => navigate(`/interview-summary/${iv.id}`)}
+                      style={{
+                        display: "flex", alignItems: "center", justifyContent: "space-between",
+                        padding: "12px 14px", borderRadius: 10, cursor: "pointer",
+                        background: "rgba(52,211,153,0.06)", border: "1px solid rgba(52,211,153,0.15)",
+                        userSelect: "none", WebkitUserSelect: "none",
+                      }}
+                    >
                       <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>{p.company}</div>
-                        <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 2 }}>{p.role}</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>{iv.company || "Practice Interview"}</div>
+                        <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 2 }}>{iv.role || "General"}</div>
                       </div>
                       <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: p.statusColor }}>{p.date}</div>
-                        <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 2 }}>with {p.interviewer}</div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: interviewScoreColor(iv.overallScore) }}>{Math.round(iv.overallScore)}%</div>
+                        <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 2 }}>{fmtInterviewDate(iv.createdAt)}</div>
                       </div>
                     </div>
                   ))}
