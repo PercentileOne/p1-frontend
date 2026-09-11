@@ -1660,7 +1660,7 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
             {savedCourses.map(course => (
               <div key={course.id} style={{ position: 'relative' }}>
-                <CourseCard course={course} onClick={() => setActiveCourse(course)} />
+                <CourseCard course={course} onClick={() => { if (authToken) void logLearnTopic(authToken, course.title); setActiveCourse(course); }} />
                 <button
                   onClick={e => handleDelete(course.id, e)}
                   title="Remove course"
