@@ -152,6 +152,9 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
         });
 
         await session.start();
+        // Logged for HeyGen support tickets — their reproduction request always asks for the
+        // session ID alongside console logs/HAR (see the first-utterance desync investigation).
+        timingLog(role, `session.start() resolved, sessionId=${session.sessionId ?? 'null'}`);
         await Promise.race([
           streamReadyPromise,
           new Promise<void>(resolve => setTimeout(resolve, 5000)),
