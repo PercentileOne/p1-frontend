@@ -461,6 +461,17 @@ function DiagramBlock({ diagram }: { diagram: Diagram }) {
   const id = useId().replace(/:/g, '');
   const [svg, setSvg] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  // Zoom modal (Francis, 2026-09-11: "the writing is quite tiny and you can't zoom in
+  // easily") — reuses the SAME rendered SVG at a much larger size rather than re-rendering
+  // Mermaid a second time.
+  const [zoomed, setZoomed] = useState(false);
+
+  useEffect(() => {
+    if (!zoomed) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setZoomed(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [zoomed]);
 
   useEffect(() => {
     let cancelled = false;
@@ -487,20 +498,73 @@ function DiagramBlock({ diagram }: { diagram: Diagram }) {
   if (failed) return null; // malformed AI-generated diagram — fail silently rather than break the lesson
 
   return (
-    <div style={{
-      margin: '20px 0', borderRadius: 12, overflow: 'hidden',
-      border: '1px solid rgba(255,255,255,0.08)', background: '#0a0c12',
-      padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
-    }}>
-      {svg ? (
-        <div style={{ maxWidth: '100%', overflowX: 'auto' }} dangerouslySetInnerHTML={{ __html: svg }} />
-      ) : (
-        <div style={{ fontSize: 12, color: TEXT3, padding: '20px 0' }}>Rendering diagram…</div>
+    <>
+      <div style={{
+        margin: '20px 0', borderRadius: 12, overflow: 'hidden', position: 'relative',
+        border: '1px solid rgba(255,255,255,0.08)', background: '#0a0c12',
+        padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+      }}>
+        {svg ? (
+          <>
+            <button
+              onClick={() => setZoomed(true)}
+              title="Zoom in"
+              style={{
+                position: 'absolute', top: 10, right: 10, width: 30, height: 30, borderRadius: 8,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(255,255,255,0.06)', border: `1px solid ${BORDER}`,
+                color: TEXT2, cursor: 'pointer', fontSize: 14,
+              }}
+            >
+              🔍
+            </button>
+            <div
+              onClick={() => setZoomed(true)}
+              style={{ maxWidth: '100%', overflowX: 'auto', cursor: 'zoom-in' }}
+              dangerouslySetInnerHTML={{ __html: svg }}
+            />
+          </>
+        ) : (
+          <div style={{ fontSize: 12, color: TEXT3, padding: '20px 0' }}>Rendering diagram…</div>
+        )}
+        {diagram.caption && svg && (
+          <div style={{ fontSize: 12, color: TEXT3, fontStyle: 'italic', textAlign: 'center' }}>{diagram.caption}</div>
+        )}
+      </div>
+
+      {zoomed && svg && (
+        <div
+          onClick={() => setZoomed(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,6,12,0.92)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40, cursor: 'zoom-out',
+          }}
+        >
+          <button
+            onClick={() => setZoomed(false)}
+            title="Close (Esc)"
+            style={{
+              position: 'absolute', top: 20, right: 24, width: 36, height: 36, borderRadius: 10,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
+              background: 'rgba(255,255,255,0.08)', border: `1px solid ${BORDER}`, color: TEXT2, cursor: 'pointer',
+            }}
+          >
+            ✕
+          </button>
+          <div
+            onClick={e => e.stopPropagation()}
+            className="diagram-zoom-content"
+            style={{ maxWidth: '90vw', maxHeight: '90vh', overflow: 'auto', cursor: 'default' }}
+          >
+            {/* Mermaid's own <svg> carries an inline max-width style sized for the small
+                inline view — without overriding it here, "zoom" would just show the same
+                small diagram centred on a dark backdrop, not actually larger. */}
+            <style>{`.diagram-zoom-content svg { width: 100% !important; height: auto !important; max-width: none !important; }`}</style>
+            <div dangerouslySetInnerHTML={{ __html: svg }} />
+          </div>
+        </div>
       )}
-      {diagram.caption && svg && (
-        <div style={{ fontSize: 12, color: TEXT3, fontStyle: 'italic', textAlign: 'center' }}>{diagram.caption}</div>
-      )}
-    </div>
+    </>
   );
 }
 
@@ -557,6 +621,18 @@ function ReadAloudButton({ text }: { text: string }) {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, userSelect: 'none' }}>
+      {speaking && (
+        <button
+          onClick={() => playerRef.current?.back()}
+          title="Back one paragraph"
+          style={{
+            fontSize: 13, padding: '5px 9px', borderRadius: 7,
+            background: BG3, border: `1px solid ${BORDER}`, color: TEXT2, cursor: 'pointer',
+          }}
+        >
+          ⏮
+        </button>
+      )}
       <button
         onClick={() => {
           if (loading) return;
@@ -575,6 +651,18 @@ function ReadAloudButton({ text }: { text: string }) {
       >
         {loading ? '⏳ Loading…' : state === 'playing' ? '⏸ Pause' : state === 'paused' ? '▶ Resume' : '🔊 Read Aloud'}
       </button>
+      {speaking && (
+        <button
+          onClick={() => playerRef.current?.forward()}
+          title="Forward one paragraph"
+          style={{
+            fontSize: 13, padding: '5px 9px', borderRadius: 7,
+            background: BG3, border: `1px solid ${BORDER}`, color: TEXT2, cursor: 'pointer',
+          }}
+        >
+          ⏭
+        </button>
+      )}
       {speaking && (
         <>
           <select
@@ -1242,6 +1330,15 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
       // time — so clicking ahead to module 6 never means waiting on modules 2-5's turn in a
       // queue first. Each module still retries independently; the UI updates as each one
       // finishes, in whatever order they actually complete.
+      //
+      // Module 1 is the one exception: almost every candidate starts reading there
+      // immediately, and full concurrency gave it no better odds than any other module of
+      // finishing first — reported live 2026-09-11 (Francis: on a fresh GraphQL course,
+      // Module 1 was the LAST to complete, so he had to wait for the entire course before
+      // reading the one module he actually wanted first). Awaiting it alone before firing
+      // the rest guarantees it's ready essentially immediately, while modules 2+ still race
+      // concurrently exactly as before — jumping ahead to module 6 still never waits behind
+      // 2-5's turn in a queue.
       const filled = { ...skeleton, modules: [...skeletonModules] };
       const fillModule = async (i: number) => {
         let lectures: Lecture[] | null = null;
@@ -1258,7 +1355,8 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
         filled.modules[i] = { ...filled.modules[i], lectures: lectures ?? [], loading: false };
         setActiveCourse({ ...filled, modules: [...filled.modules] });
       };
-      await Promise.allSettled(outline.modules.map((_, i) => fillModule(i)));
+      await fillModule(0);
+      await Promise.allSettled(outline.modules.slice(1).map((_, i) => fillModule(i + 1)));
 
       // All done — save complete course locally regardless of per-module failures,
       // but only push to the shared platform cache if every module actually generated —

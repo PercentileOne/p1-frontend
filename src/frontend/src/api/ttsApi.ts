@@ -30,12 +30,16 @@ const PHONETIC: [RegExp, string][] = [
   [/\bCSS\b/g, 'C S S'],
   [/\bHTML\b/g, 'H T M L'],
   [/\bHTTPS?\b/g, 'H T T P S'],
-  [/\bAPI\b/g, 'A P I'],
-  [/\bAPIs\b/g, 'A P I s'],
-  [/\bUI\b/g, 'U I'],
+  // Hyphenated phonetic spelling, not bare spaced capitals ("A P I") — a lone capital "I" is
+  // exactly the same class of bug as ASP.NET's "A S P" above: it collides with the real word
+  // "I" and gets mispronounced inconsistently depending on surrounding context (reported live
+  // 2026-09-11: "A-P-ONE" / "A-P-WHY" depending on the word before it). Same fix as ASP.NET.
+  [/\bAPI\b/g, 'Ay-Pee-Eye'],
+  [/\bAPIs\b/g, 'Ay-Pee-Eyes'],
+  [/\bUI\b/g, 'You-Eye'],
   [/\bUX\b/g, 'U X'],
-  [/\bCI\/CD\b/gi, 'C I C D'],
-  [/\bCI\b/g, 'C I'],
+  [/\bCI\/CD\b/gi, 'See-Eye See-Dee'],
+  [/\bCI\b/g, 'See-Eye'],
   [/\bCD\b/g, 'C D'],
   [/\bAWS\b/g, 'A W S'],
   [/\bGCP\b/g, 'G C P'],

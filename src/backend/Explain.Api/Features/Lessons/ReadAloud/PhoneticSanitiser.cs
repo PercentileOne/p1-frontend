@@ -25,12 +25,18 @@ public static class PhoneticSanitiser
         (@"\bCSS\b", "C S S"),
         (@"\bHTML\b", "H T M L"),
         (@"\bHTTPS?\b", "H T T P S"),
-        (@"\bAPI\b", "A P I"),
-        (@"\bAPIs\b", "A P I s"),
-        (@"\bUI\b", "U I"),
+        // Hyphenated phonetic spelling, not bare spaced capitals ("A P I") — a lone capital
+        // "I" is exactly the same class of bug as ASP.NET's "A S P" above: it collides with
+        // the real word "I" and gets mispronounced inconsistently depending on surrounding
+        // context (reported live 2026-09-11: "A-P-ONE" / "A-P-WHY" depending on the word
+        // before it). Same fix as ASP.NET: hyphens are a spell-out marker most TTS engines
+        // respect reliably, sidestepping the word collision entirely.
+        (@"\bAPI\b", "Ay-Pee-Eye"),
+        (@"\bAPIs\b", "Ay-Pee-Eyes"),
+        (@"\bUI\b", "You-Eye"),
         (@"\bUX\b", "U X"),
-        (@"\bCI/CD\b", "C I C D"),
-        (@"\bCI\b", "C I"),
+        (@"\bCI/CD\b", "See-Eye See-Dee"),
+        (@"\bCI\b", "See-Eye"),
         (@"\bCD\b", "C D"),
         (@"\bAWS\b", "A W S"),
         (@"\bGCP\b", "G C P"),

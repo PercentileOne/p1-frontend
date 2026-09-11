@@ -18,6 +18,11 @@ export interface ReadAloudPlayer {
   pause: () => void;
   resume: () => void;
   stop: () => void;
+  /** Jumps to the previous ~260-char chunk (roughly one paragraph of lesson prose) and plays
+   * it from the start — a no-op before the first play() has loaded any chunks. */
+  back: () => void;
+  /** Same, one chunk forward. No-op past the last chunk (use stop()/let it finish instead). */
+  forward: () => void;
   setRate: (rate: number) => void;
   setGender: (gender: ReadAloudGender) => void;
 }
@@ -129,6 +134,14 @@ export function createReadAloudPlayer(
       abortController?.abort();
       teardownAudio();
       emit('idle');
+    },
+    back() {
+      if (chunks.length === 0) return; // nothing loaded yet — play() hasn't run
+      playChunk(Math.max(0, index - 1));
+    },
+    forward() {
+      if (chunks.length === 0) return;
+      playChunk(Math.min(chunks.length - 1, index + 1));
     },
     setRate(r) {
       rate = r;
