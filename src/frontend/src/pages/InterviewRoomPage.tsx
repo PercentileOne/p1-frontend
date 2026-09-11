@@ -331,6 +331,34 @@ export default function InterviewRoomPage() {
     return () => { cancelled = true; fallbackCancel?.(); liveAvatarTechnical.interrupt(); };
   }, [liveAvatarTechnical]);
 
+  // Cost control (Francis, 2026-09-11): HeyGen bills LiveAvatar per minute of a CONNECTED
+  // session, not per minute of actual talking — before this, both avatars connected once for
+  // the intro and then simply stayed connected, billed, and idle-blinking for the candidate's
+  // entire thinking/answering time on every question (often the longest part of the interview
+  // by far). Disconnecting here and reconnecting when the candidate submits is the fix, at a
+  // real cost: it means a fresh WebRTC handshake before every single question instead of once
+  // per interview, which is exactly the code path behind the still-open HeyGen first-utterance
+  // lip-sync ticket — if that glitch starts showing up on questions beyond the first, THIS is
+  // the first place to suspect and revert (see project-liveavatar-lipsync-investigation memory).
+  // Reconnecting both seats on 'scoring' rather than just whichever one asks the next question
+  // is deliberate: with handoffs (either interviewer can interject after either's question) and
+  // mixed HR/technical question ordering, knowing which single seat will actually be needed next
+  // isn't reliably knowable here — the brief double-connect during this warm-up window is a few
+  // seconds, not the multi-minute idle window this whole change exists to eliminate.
+  useEffect(() => {
+    if (!avatarEnabled) return;
+    if (phase === 'answering') {
+      if (liveAvatarHr.status === 'connected') void liveAvatarHr.disconnect();
+      if (liveAvatarTechnical.status === 'connected') void liveAvatarTechnical.disconnect();
+    } else if (phase === 'scoring') {
+      void liveAvatarHr.connect();
+      void liveAvatarTechnical.connect();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- connect/disconnect/status change
+    // identity on every render (useLiveAvatarSession isn't memoised for that); depending only on
+    // the two real triggers keeps this from firing on every unrelated re-render.
+  }, [phase, avatarEnabled]);
+
   const {
     hrState, techState, hrAnalyser, techAnalyser,
     awaitingHandoff,
