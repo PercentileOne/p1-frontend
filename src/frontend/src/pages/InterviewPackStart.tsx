@@ -72,6 +72,8 @@ interface IncomingState {
   questionCount?: number;
 }
 
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+
 const QUESTION_COUNTS = [5, 10, 15, 20];
 
 const SELECT_CHEVRON = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`;
@@ -227,6 +229,25 @@ export default function InterviewPackStart() {
     logFlowEvent('UPLOAD_SCREEN_VIEW', { hasIncomingJobSpec: Boolean(incoming.jobSpec) });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Pre-fill Job Title from the candidate's own most recent interview (Francis, 2026-09-12) —
+  // so a returning candidate doesn't have to retype the same role every time. Only runs on a
+  // fresh dashboard start: a recruiter's prep link already seeds jobTitle/jobSpec itself, and
+  // that always wins. Guards against clobbering anything the candidate already typed by the
+  // time the fetch resolves.
+  useEffect(() => {
+    if (incoming.jobTitle || incoming.jobSpec || !authToken) return;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/interviews`, { headers: { Authorization: `Bearer ${authToken}` } });
+        if (!res.ok) return;
+        const interviews = await res.json() as Array<{ role?: string | null }>;
+        const lastRole = interviews[0]?.role; // backend returns newest-first
+        if (lastRole) setJobTitle(prev => prev.trim() ? prev : lastRole);
+      } catch { /* silently leave the field blank — free text still works fine */ }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authToken]);
 
   const handleStart = () => {
     if (stillExtracting) return;
