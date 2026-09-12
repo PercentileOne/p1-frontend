@@ -60,6 +60,13 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("interviews", "/candidateId"));
 
+        // Completed "My Talks" sessions — same opaque-envelope shape as "interviews" above
+        // (subject, transcript, scores, recording, share state all live in one sessionDataJson
+        // blob), same partition key for the same reason: a candidate's own talks are
+        // single-partition. See Features/Talks/Endpoint.cs.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("talks", "/candidateId"));
+
         // Recruiter-sent candidate interview preps. Partition key = /recruiterId so a
         // recruiter's own sent list is single-partition.
         await _database.CreateContainerIfNotExistsAsync(
