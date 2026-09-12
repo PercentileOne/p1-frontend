@@ -228,6 +228,7 @@ Explain.Api.Features.Interviews.AvatarSession.Endpoint.Map(app);
 Explain.Api.Features.Interviews.AvatarAudio.Endpoint.Map(app);
 Explain.Api.Features.InterviewPreps.Endpoint.Map(app);
 
+Explain.Api.Features.Talks.Endpoint.Map(app);
 Explain.Api.Features.Talks.Score.Endpoint.Map(app);
 Explain.Api.Features.Talks.WayneTips.Endpoint.Map(app);
 Explain.Api.Features.Introductions.Endpoint.Map(app);
