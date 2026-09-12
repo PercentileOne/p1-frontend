@@ -147,7 +147,16 @@ export default function TalkRoomPage() {
     });
   }, [talkAvatars, transcript, subject, elapsed, targetDurationSeconds, isPersonalStory, authUser, navigate]);
 
-  useEffect(() => () => { talkAvatars.stopAll(); }, [talkAvatars]);
+  // Always-fresh ref, not a direct dependency — useTalkAvatars returns a brand-new object
+  // literal every render (its own hrState/techState legitimately change constantly while an
+  // avatar is speaking), so `[talkAvatars]` as a dependency array made this cleanup fire after
+  // EVERY re-render, not just true unmount — interrupting both avatar sessions moments after
+  // connect() had been kicked off, before the handshake even finished, which is exactly what
+  // crashed the page (found live 2026-09-12). Same idiom already used elsewhere in this
+  // codebase (askQuestionRef, beginInterviewIntroRef) for the same class of stale-closure risk.
+  const talkAvatarsRef = useRef(talkAvatars);
+  useEffect(() => { talkAvatarsRef.current = talkAvatars; });
+  useEffect(() => () => { talkAvatarsRef.current.stopAll(); }, []);
 
   const showAvatars = phase !== 'intro';
   const progress = Math.min(1, elapsed / targetDurationSeconds);

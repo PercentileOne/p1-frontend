@@ -296,9 +296,24 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   // Maps to the reactive listening behaviour LiveAvatar's own demo showed off — call
   // startListening while the candidate is answering, stopListening right before the next
   // speak() call.
-  const startListening = useCallback(() => sessionRef.current?.startListening(), []);
-  const stopListening = useCallback(() => sessionRef.current?.stopListening(), []);
-  const interrupt = useCallback(() => sessionRef.current?.interrupt(), []);
+  //
+  // All three wrapped in try/catch (found live 2026-09-12, Talk Room): the SDK's own
+  // interrupt()/startListening()/stopListening() throw a real, uncaught "Session needs to be
+  // connected to send command event" if the session object exists (connect() already ran) but
+  // the underlying handshake hasn't actually finished yet — e.g. a cleanup/interrupt firing
+  // moments after connect() was kicked off, well before it resolves. With nothing catching it,
+  // that crashed the whole page to a blank screen. These are best-effort control commands —
+  // there's nothing useful to do with "couldn't interrupt a session that was never connected"
+  // beyond not crashing, so swallow it here once rather than at every call site.
+  const startListening = useCallback(() => {
+    try { sessionRef.current?.startListening(); } catch { /* not connected yet — nothing to start */ }
+  }, []);
+  const stopListening = useCallback(() => {
+    try { sessionRef.current?.stopListening(); } catch { /* not connected yet — nothing to stop */ }
+  }, []);
+  const interrupt = useCallback(() => {
+    try { sessionRef.current?.interrupt(); } catch { /* not connected yet — nothing to interrupt */ }
+  }, []);
 
   const setVideoEl = useCallback((el: HTMLVideoElement | null) => {
     videoElRef.current = el;
