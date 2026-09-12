@@ -88,6 +88,8 @@ import AvatarTestPage from "./pages/dev/AvatarTestPage";
 import InterviewPackStart from "./pages/InterviewPackStart";
 import TalkPackStart from "./pages/TalkPackStart";
 import TalkRoomPage from "./pages/TalkRoomPage";
+import TalkSummaryPage from "./pages/TalkSummaryPage";
+import SharedTalkPage from "./pages/SharedTalkPage";
 import InterviewSummaryPage from "./pages/InterviewSummaryPage";
 import SharedInterviewPage from "./pages/SharedInterviewPage";
 import MyInterviewsPage from "./pages/MyInterviewsPage";
@@ -225,6 +227,8 @@ export default function App() {
       <Route path="/interview/:packId" element={<RequirePermission permission="CAN_START_INTERVIEW"><InterviewRoomPage /></RequirePermission>} />
       <Route path="/interview-summary/:id" element={<RequirePermission permission="CAN_START_INTERVIEW"><InterviewSummaryPage /></RequirePermission>} />
       <Route path="/shared/:token" element={<SharedInterviewPage />} />
+      <Route path="/talk-summary/:id" element={<RequirePermission permission="CAN_START_INTERVIEW"><TalkSummaryPage /></RequirePermission>} />
+      <Route path="/shared-talk/:token" element={<SharedTalkPage />} />
       <Route path="/dev/avatar-test" element={<AvatarTestPage />} />
       <Route path="/interviews" element={<RequirePermission permission="CAN_START_INTERVIEW"><MyInterviewsPage /></RequirePermission>} />
 
