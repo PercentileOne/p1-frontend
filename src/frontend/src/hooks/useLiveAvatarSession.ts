@@ -81,23 +81,6 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   // SESSION_STREAM_READY firing) for the same session.
   const tappedSessionRef = useRef<LiveAvatarSession | null>(null);
   const untapAudioRef = useRef<(() => void) | null>(null);
-  // Experiment, 2026-09-12 (Francis) — HeyGen's frame-cap diagnosis for the lips-before-sound
-  // glitch is disproven: a live test with WebSocket chunking CONFIRMED active the whole time
-  // (ws_url granted, socket OPEN at every repeatAudio() call, both seats) still glitched. The one
-  // variable that's correlated with the glitch across every test so far: whichever avatar speaks
-  // FIRST in a session does so ~570-600ms after attach() and always glitches; the second speaker,
-  // 15-17s+ after their own attach(), never has. attachedAtRef/hasSpokenRef let speak() add a
-  // short settle delay before ONLY that very first utterance, closing the gap that's glitched
-  // every time without adding Wayne-style dead air to every question. hasSpokenRef intentionally
-  // never resets on reconnect — the cost-control disconnect/reconnect cycle (see
-  // useInterviewerAudio's per-question reconnects) creates fresh sessions/attaches all game, but
-  // per real live-test data only the very first one of the whole interview has ever glitched.
-  const attachedAtRef = useRef<number | null>(null);
-  const hasSpokenRef = useRef(false);
-  // First guess at the settle threshold, not a measured value — comfortably over the ~570-600ms
-  // that's glitched every time, well under Wayne's 15-17s that's never glitched. Adjust from here
-  // based on the next live test rather than re-guessing from scratch.
-  const FIRST_SPEAK_SETTLE_MS = 2000;
 
   const attachIfReady = useCallback(() => {
     if (streamReadyRef.current && videoElRef.current && sessionRef.current) {
@@ -120,7 +103,6 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
       // closes that window entirely: the only audio the candidate ever hears is our tap below,
       // which starts a moment later in real time but never audibly "catches up".
       videoElRef.current.muted = true;
-      attachedAtRef.current = performance.now();
       timingLog(role, 'attach() + synchronous mute done');
       const session = sessionRef.current;
       const el = videoElRef.current;
@@ -261,21 +243,6 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
     const overLimit = audioBase64.length > 1_048_576;
     console.log(`[LiveAvatar TIMING][${role}] audioBase64 length: ${audioBase64.length} chars (~${(audioBase64.length / 64000).toFixed(1)}s of audio, per HeyGen's ~64,000 chars/sec figure) — ${overLimit ? 'OVER the 1MB/1,048,576 char LITE frame limit' : 'under the 1MB frame limit'}`);
     timingLog(role, 'audio generation done — about to send repeatAudio()');
-
-    // Settle-delay experiment (see attachedAtRef's comment above) — only ever applies once per
-    // seat, on its first-ever speak() call, and only if that call is happening very soon after
-    // attach. In every live test so far this is a no-op for whichever avatar speaks second (they
-    // don't reach this point until 15-17s+ after their own attach, already well past the
-    // threshold) — it only ever delays the one utterance that's glitched every time.
-    if (!hasSpokenRef.current) {
-      hasSpokenRef.current = true;
-      const elapsedSinceAttach = attachedAtRef.current !== null ? performance.now() - attachedAtRef.current : Infinity;
-      const remaining = FIRST_SPEAK_SETTLE_MS - elapsedSinceAttach;
-      if (remaining > 0) {
-        timingLog(role, `first speak of session, only ${Math.round(elapsedSinceAttach)}ms after attach — waiting ${Math.round(remaining)}ms more before repeatAudio()`);
-        await new Promise(resolve => setTimeout(resolve, remaining));
-      }
-    }
     // Safety timeout: AVATAR_SPEAK_ENDED can simply never fire if the underlying session has
     // gone quietly dead — the SDK's own keepAlive() fire-and-forgets its network call (never
     // awaits sessionClient.keepAlive() internally), so a failed keep-alive is invisible to us,
