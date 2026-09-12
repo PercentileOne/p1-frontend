@@ -67,6 +67,15 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("talks", "/candidateId"));
 
+        // One document per candidate holding their whole pinned-TED-talks list as an array —
+        // a small, bounded personal shelf, not a growing collection, so a single point read/
+        // write per candidate is simpler than one document per pinned video. Partition key path
+        // is /id since the document's own id IS the candidateId (see Features/Talks/TedTalks/
+        // Endpoint.cs) — same "id = the partition value itself" pattern as a few other
+        // single-document-per-user containers in this codebase.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("pinnedTalks", "/id"));
+
         // Recruiter-sent candidate interview preps. Partition key = /recruiterId so a
         // recruiter's own sent list is single-partition.
         await _database.CreateContainerIfNotExistsAsync(

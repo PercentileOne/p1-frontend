@@ -43,6 +43,7 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddScoped<PermissionLoader>();
 builder.Services.AddSingleton<AnthropicService>();
+builder.Services.AddSingleton<Explain.Api.Infrastructure.YouTube.YouTubeService>();
 builder.Services.AddSingleton<Explain.Api.Features.NameGreetings.DidGenerationService>();
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
@@ -231,6 +232,7 @@ Explain.Api.Features.InterviewPreps.Endpoint.Map(app);
 Explain.Api.Features.Talks.Endpoint.Map(app);
 Explain.Api.Features.Talks.Score.Endpoint.Map(app);
 Explain.Api.Features.Talks.WayneTips.Endpoint.Map(app);
+Explain.Api.Features.Talks.TedTalks.Endpoint.Map(app);
 Explain.Api.Features.Introductions.Endpoint.Map(app);
 Explain.Api.Features.Alerts.Endpoint.Map(app);
 
