@@ -93,6 +93,7 @@ import SharedTalkPage from "./pages/SharedTalkPage";
 import InterviewSummaryPage from "./pages/InterviewSummaryPage";
 import SharedInterviewPage from "./pages/SharedInterviewPage";
 import MyInterviewsPage from "./pages/MyInterviewsPage";
+import MyTalksPage from "./pages/MyTalksPage";
 import LearnFlashTalkPage from "./pages/LearnFlashTalkPage";
 import DemoLinkedIn from "./pages/DemoLinkedIn";
 import DemoVallumPaid from "./pages/DemoVallumPaid";
@@ -231,6 +232,7 @@ export default function App() {
       <Route path="/shared-talk/:token" element={<SharedTalkPage />} />
       <Route path="/dev/avatar-test" element={<AvatarTestPage />} />
       <Route path="/interviews" element={<RequirePermission permission="CAN_START_INTERVIEW"><MyInterviewsPage /></RequirePermission>} />
+      <Route path="/talks" element={<RequirePermission permission="CAN_START_INTERVIEW"><MyTalksPage /></RequirePermission>} />
 
       {/* Demo — reached from the Dashboard's "Demo" nav item, opens in a new tab */}
       <Route path="/demo/linkedin-job" element={<RequirePermission permission="CAN_START_INTERVIEW"><DemoLinkedIn /></RequirePermission>} />
