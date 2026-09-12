@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, ChevronUp, ChevronDown, Trash2, Globe, Lock } from 'lucide-react';
 import { useAuthStore } from '../auth/authStore';
+import { WatchAndLearnRow } from '../components/WatchAndLearnRow';
 
 interface TalkSummary {
   id: string;
@@ -158,6 +159,7 @@ export default function MyTalksPage() {
 
   return (
     <div style={{ padding: '0 0 40px' }}>
+      <WatchAndLearnRow />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 16, flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>My Talks</h1>
