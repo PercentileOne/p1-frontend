@@ -17,6 +17,29 @@ const timingLog = (role: string, label: string) => {
   console.log(`[LiveAvatar TIMING][${role}] ${label} @ ${Math.round(performance.now())}ms`);
 };
 
+// Temporary diagnostic (Francis, 2026-09-12) — HeyGen support's diagnosis for the lips-before-sound
+// glitch was that repeatAudio() sends one unchunked WebSocket frame over LITE mode's 1MB cap. But
+// a shortened intro (802,484 base64 chars, well under that cap) just glitched identically live,
+// which falsifies frame length as the cause — AND the SDK's own compiled source (verified against
+// both the installed node_modules package and HeyGen's upstream GitHub repo, including their own
+// unit test) shows repeatAudio() already chunks correctly via agent.speak/agent.speak_end whenever
+// a WebSocket transport is open. This reads whether that WebSocket actually IS open at the moments
+// that matter, to settle it definitively instead of guessing again. _sessionEventSocket/_sessionInfo
+// are declared `protected` in the SDK's TypeScript source but are plain fields in the compiled JS
+// actually shipped — same reach-past-declared-visibility precedent already used for
+// _remoteAudioTrack below. Pure read, no behavior change. Safe to remove once the branch is confirmed.
+const logWebSocketState = (role: string, label: string, session: LiveAvatarSession) => {
+  const internals = session as unknown as {
+    _sessionEventSocket?: WebSocket | null;
+    _sessionInfo?: { ws_url?: string } | null;
+  };
+  const socket = internals._sessionEventSocket;
+  const readyStateNames: Record<number, string> = { 0: 'CONNECTING', 1: 'OPEN', 2: 'CLOSING', 3: 'CLOSED' };
+  const socketState = socket ? (readyStateNames[socket.readyState] ?? String(socket.readyState)) : 'null';
+  const grantedWsUrl = Boolean(internals._sessionInfo?.ws_url);
+  console.log(`[LiveAvatar TIMING][${role}] ${label} — ws_url granted by HeyGen: ${grantedWsUrl}, _sessionEventSocket: ${socketState}`);
+};
+
 // Wraps the official LiveAvatar Web SDK for one interview seat's avatar session. voiceChat is
 // deliberately never enabled — that SDK feature captures the browser's own microphone for a
 // built-in voice round-trip, which is not what we want: we generate Amina/Wayne/Mike's audio
@@ -155,6 +178,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
         // Logged for HeyGen support tickets — their reproduction request always asks for the
         // session ID alongside console logs/HAR (see the first-utterance desync investigation).
         timingLog(role, `session.start() resolved, sessionId=${session.sessionId ?? 'null'}`);
+        logWebSocketState(role, 'session.start() resolved', session);
         await Promise.race([
           streamReadyPromise,
           new Promise<void>(resolve => setTimeout(resolve, 5000)),
@@ -263,6 +287,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
       }, timeoutMs);
       session.on(AgentEventsEnum.AVATAR_SPEAK_STARTED, onStarted);
       session.on(AgentEventsEnum.AVATAR_SPEAK_ENDED, onEnded);
+      logWebSocketState(role, 'about to call repeatAudio()', session);
       session.repeatAudio(audioBase64);
       timingLog(role, 'repeatAudio() sent');
     });
