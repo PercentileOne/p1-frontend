@@ -210,6 +210,14 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
 
     timingLog(role, 'speak() called — requesting audio generation');
     const audioBase64 = await fetchAvatarAudioBase64(text, role);
+    // HeyGen support (2026-09-12): LITE mode's WebSocket frame caps at 1MB (1,048,576 chars of
+    // base64 PCM16/24kHz — roughly 16.4s of audio), and repeatAudio() sends the WHOLE clip as a
+    // single frame with no chunking. Their working theory for the first-utterance desync: Amina's
+    // intro alone likely exceeds that in one shot, while every question after it is short enough
+    // to fit — matching exactly what's been observed (only ever the first, longest utterance).
+    // Logged here to confirm before committing to the real fix (chunked agent.speak frames).
+    const overLimit = audioBase64.length > 1_048_576;
+    console.log(`[LiveAvatar TIMING][${role}] audioBase64 length: ${audioBase64.length} chars (~${(audioBase64.length / 64000).toFixed(1)}s of audio, per HeyGen's ~64,000 chars/sec figure) — ${overLimit ? 'OVER the 1MB/1,048,576 char LITE frame limit' : 'under the 1MB frame limit'}`);
     timingLog(role, 'audio generation done — about to send repeatAudio()');
     // Safety timeout: AVATAR_SPEAK_ENDED can simply never fire if the underlying session has
     // gone quietly dead — the SDK's own keepAlive() fire-and-forgets its network call (never
