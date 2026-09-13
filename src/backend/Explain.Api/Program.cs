@@ -45,6 +45,7 @@ builder.Services.AddScoped<PermissionLoader>();
 builder.Services.AddSingleton<AnthropicService>();
 builder.Services.AddSingleton<Explain.Api.Infrastructure.YouTube.YouTubeService>();
 builder.Services.AddSingleton<Explain.Api.Features.NameGreetings.DidGenerationService>();
+builder.Services.AddHostedService<Explain.Api.Features.LearnAlerts.LearnAlertsSendService>();
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
@@ -236,6 +237,7 @@ Explain.Api.Features.Talks.TedTalks.Endpoint.Map(app);
 Explain.Api.Features.Talks.ProductivityVideos.Endpoint.Map(app);
 Explain.Api.Features.Introductions.Endpoint.Map(app);
 Explain.Api.Features.Alerts.Endpoint.Map(app);
+Explain.Api.Features.LearnAlerts.Endpoint.Map(app);
 
 Explain.Api.Features.Auth.ForgotPassword.Endpoint.Map(app);
 Explain.Api.Features.Auth.ResetPassword.Endpoint.Map(app);

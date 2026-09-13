@@ -199,6 +199,16 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("roleActivity", "/pk"));
 
+        // Candidate-side "Learn Alerts" — spaced-repetition MCQ practice by email. One doc per
+        // alert a candidate configures, one doc per individual question ever sent, both
+        // partitioned by /candidateId so a candidate's own alerts/history are single-partition;
+        // LearnAlertsSendService's "which alerts are due" scan is the one deliberately
+        // cross-partition query, same trade-off as alerts/alertMatches above.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("learnAlerts", "/candidateId"));
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("learnAlertQuestions", "/candidateId"));
+
         await SeedPlatformStatsAsync();
         await SeedNewsFeedSourcesAsync();
     }

@@ -10,12 +10,13 @@ import { getTopLearnTopics, type LearnTopicStat } from "../api/learnTopicsApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
   MessageSquare, Settings, LogOut, ChevronRight, ChevronDown, CheckCircle2, Circle, Compass, Gift, Zap,
-  HeartHandshake, Mic,
+  HeartHandshake, Mic, BellRing,
 } from "lucide-react";
 import LearnPanel from "./LearnPanel";
 import CareersPanel from "./CareersPanel";
 import MyInterviewsPage from "./MyInterviewsPage";
 import MyTalksPage from "./MyTalksPage";
+import LearnAlertsPage from "./LearnAlertsPage";
 import ReceivedPreps from "./ReceivedPreps";
 import ProfilePage from "./ProfilePage";
 import JobsHome from "./JobsHome";
@@ -45,6 +46,7 @@ const NAV_ITEMS = [
   { Icon: User,            label: "My Profile",      slug: "profile" },
   { Icon: Video,           label: "My Interviews",   slug: "interviews" },
   { Icon: Mic,             label: "My Talks",        slug: "talks" },
+  { Icon: BellRing,        label: "Learn Alerts",    slug: "learn-alerts" },
   { Icon: Gift,            label: "Interview Preps", slug: "interview-preps" },
   { Icon: Briefcase,       label: "Jobs",             slug: "jobs" },
   { Icon: BookOpen,        label: "Learn",            slug: "learn" },
@@ -761,6 +763,7 @@ export default function CandidateDashboard() {
         {activeNav === "Careers"        && <CareersPanel />}
         {activeNav === "My Interviews"  && <MyInterviewsPage />}
         {activeNav === "My Talks"       && <MyTalksPage />}
+        {activeNav === "Learn Alerts"   && <LearnAlertsPage />}
         {activeNav === "Interview Preps" && <ReceivedPreps />}
         {activeNav === "My Profile"     && <ProfilePage />}
         {activeNav === "Jobs"           && <JobsHome />}
