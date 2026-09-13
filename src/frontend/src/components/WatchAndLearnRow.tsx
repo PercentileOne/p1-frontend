@@ -184,7 +184,12 @@ export function WatchAndLearnRow() {
                 <X size={18} />
               </button>
             </div>
-            <div className="watch-and-learn-grid" style={{ padding: 20, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
+            {/* Fixed-width (not 1fr) columns — 1fr let cards stretch to fill leftover row
+                space, so crossing a column-count threshold (or the scrollbar itself eating
+                ~15px once enough talks are pinned to need one) visibly shrank every card as
+                the list grew. Fixed 180px keeps every card the same size no matter how many
+                are pinned; the scrollbar (below) is what absorbs growth instead (Francis, 2026-09-13). */}
+            <div className="watch-and-learn-grid" style={{ padding: 20, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 180px)', justifyContent: 'start', gap: 14 }}>
               {(pinned ?? []).length === 0 ? (
                 <div style={{ fontSize: 13, color: 'var(--text-3)', gridColumn: '1 / -1', textAlign: 'center', padding: '40px 0' }}>
                   Nothing pinned yet — search for a talk and tap the star to save it here.
