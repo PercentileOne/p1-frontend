@@ -233,6 +233,7 @@ Explain.Api.Features.Talks.Endpoint.Map(app);
 Explain.Api.Features.Talks.Score.Endpoint.Map(app);
 Explain.Api.Features.Talks.WayneTips.Endpoint.Map(app);
 Explain.Api.Features.Talks.TedTalks.Endpoint.Map(app);
+Explain.Api.Features.Talks.ProductivityVideos.Endpoint.Map(app);
 Explain.Api.Features.Introductions.Endpoint.Map(app);
 Explain.Api.Features.Alerts.Endpoint.Map(app);
 

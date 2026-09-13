@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { X, ChevronUp, ChevronDown, Trash2, Globe, Lock } from 'lucide-react';
 import { useAuthStore } from '../auth/authStore';
 import { WatchAndLearnRow } from '../components/WatchAndLearnRow';
+import PublicTalksTab from './PublicTalksTab';
+
+type PageTab = 'mine' | 'public';
 
 interface TalkSummary {
   id: string;
@@ -50,6 +53,7 @@ export default function MyTalksPage() {
   const authToken = useAuthStore(s => s.token);
   const candidateId = useAuthStore(s => s.user?.id);
 
+  const [pageTab, setPageTab] = useState<PageTab>('mine');
   const [items, setItems] = useState<TalkSummary[] | null>(null);
   const [error, setError] = useState(false);
   const [filter, setFilter] = useState<FilterOpt>('All');
@@ -157,8 +161,25 @@ export default function MyTalksPage() {
     </th>
   );
 
+  const tabBtnStyle = (active: boolean): React.CSSProperties => ({
+    padding: '9px 18px', borderRadius: 20, border: '1px solid',
+    fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+    background: active ? 'rgba(79,142,247,0.15)' : 'transparent',
+    borderColor: active ? 'rgba(79,142,247,0.5)' : 'var(--border)',
+    color: active ? '#4F8EF7' : 'var(--text-3)',
+  });
+
   return (
     <div style={{ padding: '0 0 40px' }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+        <button onClick={() => setPageTab('mine')} style={tabBtnStyle(pageTab === 'mine')}>My Talks</button>
+        <button onClick={() => setPageTab('public')} style={tabBtnStyle(pageTab === 'public')}>🌍 Public Talks</button>
+      </div>
+
+      {pageTab === 'public' ? (
+        <PublicTalksTab />
+      ) : (
+        <>
       <WatchAndLearnRow />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 16, flexWrap: 'wrap' }}>
         <div>
@@ -360,6 +381,8 @@ export default function MyTalksPage() {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

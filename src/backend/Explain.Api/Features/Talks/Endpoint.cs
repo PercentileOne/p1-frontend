@@ -101,6 +101,32 @@ public static class Endpoint
             return Results.Ok(summaries.OrderByDescending(s => s.createdAt));
         }).RequireAuthorization();
 
+        // GET /api/talks/public?q=... — every candidate's Public talk, newest first, optionally
+        // filtered by subject. Powers the Public Talks tab. Cross-partition (no PartitionKey on
+        // the query options, unlike GET /api/talks) since "Public" is a directory across every
+        // candidate, not one candidate's own list.
+        app.MapGet("/api/talks/public", async (string? q, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var userId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+            var container = cosmos.GetContainer("talks");
+            var query = new QueryDefinition("SELECT * FROM c WHERE c.isShared = true");
+            var summaries = new List<PublicTalkSummary>();
+            using var feed = container.GetItemQueryIterator<TalkEnvelope>(query, requestOptions: new QueryRequestOptions { MaxItemCount = 200 });
+            while (feed.HasMoreResults)
+            {
+                foreach (var env in await feed.ReadNextAsync())
+                    summaries.Add(ToPublicSummary(env));
+            }
+
+            IEnumerable<PublicTalkSummary> results = summaries;
+            if (!string.IsNullOrWhiteSpace(q))
+                results = results.Where(s => (s.subject ?? "").Contains(q, StringComparison.OrdinalIgnoreCase));
+
+            return Results.Ok(results.OrderByDescending(s => s.createdAt));
+        }).RequireAuthorization();
+
         // POST /api/talks/{candidateId}/{id}/share — publishes a shareable link + QR code.
         // Idempotent, same reasoning as the interviews equivalent: reusing an already-issued
         // token means revisiting the summary page never invalidates a link already handed out.
@@ -255,6 +281,28 @@ public static class Endpoint
         return new TalkSummary(env.id, env.createdAt, subject, overallScore, env.isShared, env.hasVideo);
     }
 
+    // Same opaque-JSON parse as ToSummary, plus the author's first name (uploaded alongside
+    // subject/overallScore — see TalkRoomPage.tsx's finishTalk) and the shareToken the Public
+    // Talks tab needs to send "View" straight to the existing /shared-talk/:token page.
+    private static PublicTalkSummary ToPublicSummary(TalkEnvelope env)
+    {
+        string? subject = null;
+        string authorFirstName = "A candidate";
+        double overallScore = 0;
+        try
+        {
+            using var doc = JsonDocument.Parse(env.sessionDataJson);
+            var root = doc.RootElement;
+            if (root.TryGetProperty("subject", out var s) && s.ValueKind == JsonValueKind.String) subject = s.GetString();
+            if (root.TryGetProperty("overallScore", out var o) && o.ValueKind == JsonValueKind.Number) overallScore = o.GetDouble();
+            if (root.TryGetProperty("authorFirstName", out var a) && a.ValueKind == JsonValueKind.String && a.GetString() is { Length: > 0 } name)
+                authorFirstName = name;
+        }
+        catch (JsonException) { /* malformed sessionDataJson — summary just shows defaults */ }
+
+        return new PublicTalkSummary(env.id, authorFirstName, env.createdAt, subject, overallScore, env.hasVideo, env.shareToken);
+    }
+
     private static string BuildResponseJson(TalkEnvelope env, BlobStorageService blob)
     {
         var node = JsonNode.Parse(env.sessionDataJson)?.AsObject() ?? new JsonObject();
@@ -307,3 +355,13 @@ public record TalkSummary(
 
 // Body for POST /api/talks/visibility — the My Talks page's bulk public/private toggle.
 public record VisibilityRequest(bool IsPublic);
+
+// Row for the Public Talks tab — one candidate's talk, discoverable by anyone signed in.
+public record PublicTalkSummary(
+    string id,
+    string authorFirstName,
+    string createdAt,
+    string? subject,
+    double overallScore,
+    bool hasVideo,
+    string? shareToken);

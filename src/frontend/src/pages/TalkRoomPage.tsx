@@ -136,6 +136,9 @@ export default function TalkRoomPage() {
         durationSeconds: elapsed, targetDurationSeconds,
         overallScore: result?.overall ?? 0,
         scoreResult: result,
+        // Public Talks byline — first name only, same informal-attribution convention the
+        // dashboard's own "Good afternoon, Francis" greeting already uses.
+        authorFirstName: authUser?.firstName || 'A candidate',
       }, null);
     } catch { /* best-effort — the summary page falls back to route state if this fails */ }
 

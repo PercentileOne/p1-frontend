@@ -22,17 +22,32 @@ public class YouTubeService(IConfiguration config, ILogger<YouTubeService> logge
     private const string TedChannelId = "UCAuUUnT6oDeKwE6v1NGQxug";
     private readonly string _apiKey = config["YouTube:ApiKey"] ?? "";
 
+    // No single official channel covers "success and productivity" the way TED's own channel
+    // covers TED talks — YouTube's search.list requires a real query when it isn't scoped to a
+    // channelId, so an empty search here falls back to this seed topic instead of a channel id.
+    private const string ProductivitySeedQuery = "productivity habits success motivation";
+
     public bool IsConfigured => !string.IsNullOrWhiteSpace(_apiKey);
 
     // order: "relevance" (best match, YouTube's default), "viewCount" (most popular), or
     // "date" (latest) — passed straight through to YouTube's own search.list `order` param.
-    public async Task<List<TedTalkDto>> SearchAsync(string? query, string order, int maxResults, CancellationToken ct)
+    public Task<List<TedTalkDto>> SearchAsync(string? query, string order, int maxResults, CancellationToken ct)
+        => SearchCoreAsync(TedChannelId, query, order, maxResults, ct);
+
+    // Same shape as SearchAsync, deliberately not channel-scoped — success/productivity content
+    // comes from many different creators, not one channel — so it always sends a real query
+    // (falling back to ProductivitySeedQuery when the caller didn't type one) instead.
+    public Task<List<TedTalkDto>> SearchProductivityAsync(string? query, string order, int maxResults, CancellationToken ct)
+        => SearchCoreAsync(null, string.IsNullOrWhiteSpace(query) ? ProductivitySeedQuery : query, order, maxResults, ct);
+
+    private async Task<List<TedTalkDto>> SearchCoreAsync(string? channelId, string? query, string order, int maxResults, CancellationToken ct)
     {
         if (!IsConfigured) return [];
 
         using var client = new HttpClient();
+        var channelParam = channelId is null ? "" : $"&channelId={channelId}";
         var qParam = string.IsNullOrWhiteSpace(query) ? "" : $"&q={Uri.EscapeDataString(query)}";
-        var searchUrl = $"https://www.googleapis.com/youtube/v3/search?part=snippet&channelId={TedChannelId}&type=video&order={order}&maxResults={maxResults}{qParam}&key={_apiKey}";
+        var searchUrl = $"https://www.googleapis.com/youtube/v3/search?part=snippet{channelParam}&type=video&order={order}&maxResults={maxResults}{qParam}&key={_apiKey}";
 
         var searchResp = await client.GetAsync(searchUrl, ct);
         if (!searchResp.IsSuccessStatusCode)
@@ -72,7 +87,7 @@ public class YouTubeService(IConfiguration config, ILogger<YouTubeService> logge
                 // back as "&#39;") — decode here so the frontend shows real punctuation instead
                 // of the literal entity text (found live 2026-09-13, "We&#39;re more connected").
                 Title: WebUtility.HtmlDecode(item.Snippet?.Title ?? ""),
-                Channel: WebUtility.HtmlDecode(item.Snippet?.ChannelTitle ?? "TED"),
+                Channel: WebUtility.HtmlDecode(item.Snippet?.ChannelTitle ?? (channelId == TedChannelId ? "TED" : "")),
                 Duration: FormatDuration(details.ContentDetails?.Duration ?? "PT0S"),
                 ViewCount: long.TryParse(details.Statistics?.ViewCount, out var vc) ? vc : 0,
                 PublishedAt: item.Snippet?.PublishedAt ?? "",

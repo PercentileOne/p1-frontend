@@ -58,6 +58,23 @@ export async function fetchWayneTips(subject: string, isPersonalStory: boolean):
   }
 }
 
+export interface PublicTalkSummary {
+  id: string;
+  authorFirstName: string;
+  createdAt: string;
+  subject: string | null;
+  overallScore: number;
+  hasVideo: boolean;
+  shareToken: string | null;
+}
+
+export async function fetchPublicTalks(q?: string): Promise<PublicTalkSummary[]> {
+  const qs = q?.trim() ? `?q=${encodeURIComponent(q.trim())}` : '';
+  const res = await fetch(`${API_BASE}/api/talks/public${qs}`, { headers: authHeaders() });
+  if (!res.ok) return [];
+  return res.json() as Promise<PublicTalkSummary[]>;
+}
+
 export interface UploadTalkResult {
   id: string;
   videoSaved: boolean;
