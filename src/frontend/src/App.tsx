@@ -24,6 +24,7 @@ import LearningQueue from "./pages/LearningQueue";
 import LearningEmployer from "./pages/LearningEmployer";
 import ProfilePage from "./pages/ProfilePage";
 import ProfileVideoPage from "./pages/ProfileVideoPage";
+import DevAvatarRepro from "./pages/DevAvatarRepro";
 import CandidateDashboard from "./pages/CandidateDashboard";
 import SettingsPage from "./pages/SettingsPage";
 import GoalsPage from "./pages/GoalsPage";
@@ -189,6 +190,7 @@ export default function App() {
       {/* Profile & Identity */}
       <Route path="/dashboard" element={<RequirePermission permission="CAN_START_INTERVIEW"><CandidateDashboard /></RequirePermission>} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/dev/avatar-repro" element={<RequirePermission permission="CAN_START_INTERVIEW"><DevAvatarRepro /></RequirePermission>} />
       <Route path="/profile/video" element={<RequirePermission permission="CAN_START_INTERVIEW"><ProfileVideoPage /></RequirePermission>} />
       <Route path="/profile/:userId" element={<ProfilePage />} />
       <Route path="/awards" element={<AwardsPage />} />
