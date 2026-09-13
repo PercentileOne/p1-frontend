@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { X, Trash2, Pause, Play, Flame, Globe, Lock } from 'lucide-react';
+import { X, Trash2, Pause, Play, Flame, Globe, Lock, Pencil } from 'lucide-react';
 import {
   createLearnAlert, listLearnAlerts, updateLearnAlert, deleteLearnAlert, fetchLearnAlertsSummary,
   type LearnAlert, type LearnAlertSummary,
@@ -52,6 +52,7 @@ export default function LearnAlertsPage() {
   const [summary, setSummary] = useState<LearnAlertSummary | null>(null);
   const [error, setError] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [editingAlert, setEditingAlert] = useState<LearnAlert | null>(null);
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -176,6 +177,9 @@ export default function LearnAlertsPage() {
                       </td>
                       <td style={{ padding: '14px 16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <button title="Edit" onClick={() => setEditingAlert(alert)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', display: 'flex', padding: 2 }}>
+                            <Pencil size={13} />
+                          </button>
                           {alert.status !== 'completed' && (
                             <button onClick={() => togglePause(alert)} disabled={busy} title={alert.status === 'active' ? 'Pause' : 'Resume'}
                               style={{ background: 'none', border: 'none', cursor: busy ? 'default' : 'pointer', color: 'var(--text-3)', display: 'flex', padding: 2, opacity: busy ? 0.5 : 1 }}>
@@ -197,24 +201,35 @@ export default function LearnAlertsPage() {
       )}
 
       {createOpen && (
-        <NewAlertModal
+        <AlertModal
           onClose={() => setCreateOpen(false)}
-          onCreated={alert => { setItems(prev => [alert, ...(prev ?? [])]); setCreateOpen(false); }}
+          onSaved={alert => { setItems(prev => [alert, ...(prev ?? [])]); setCreateOpen(false); }}
+        />
+      )}
+
+      {editingAlert && (
+        <AlertModal
+          initial={editingAlert}
+          onClose={() => setEditingAlert(null)}
+          onSaved={alert => { setItems(prev => prev?.map(a => (a.id === alert.id ? alert : a)) ?? null); setEditingAlert(null); }}
         />
       )}
     </div>
   );
 }
 
-function NewAlertModal({ onClose, onCreated }: { onClose: () => void; onCreated: (a: LearnAlert) => void }) {
-  const [jobTitle, setJobTitle] = useState('');
-  const [difficulty, setDifficulty] = useState<LearnAlert['difficulty']>('Pro');
+// Doubles as both the "New Learn Alert" and "Edit Learn Alert" form — same fields either way,
+// just seeded from an existing alert and calling updateLearnAlert instead of createLearnAlert
+// when `initial` is given, rather than maintaining two near-identical forms.
+function AlertModal({ initial, onClose, onSaved }: { initial?: LearnAlert; onClose: () => void; onSaved: (a: LearnAlert) => void }) {
+  const [jobTitle, setJobTitle] = useState(initial?.jobTitle ?? '');
+  const [difficulty, setDifficulty] = useState<LearnAlert['difficulty']>(initial?.difficulty ?? 'Pro');
   const [specialFocusInput, setSpecialFocusInput] = useState('');
-  const [specialFocusChips, setSpecialFocusChips] = useState<string[]>([]);
+  const [specialFocusChips, setSpecialFocusChips] = useState<string[]>(initial?.specialFocus ?? []);
   const [hotTopicsLoading, setHotTopicsLoading] = useState(false);
-  const [intervalHours, setIntervalHours] = useState(24);
-  const [durationMonths, setDurationMonths] = useState(1);
-  const [visibility, setVisibility] = useState<LearnAlert['visibility']>('hidden');
+  const [intervalHours, setIntervalHours] = useState(initial?.intervalHours ?? 24);
+  const [durationMonths, setDurationMonths] = useState(initial?.durationMonths ?? 1);
+  const [visibility, setVisibility] = useState<LearnAlert['visibility']>(initial?.visibility ?? 'hidden');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -250,10 +265,11 @@ function NewAlertModal({ onClose, onCreated }: { onClose: () => void; onCreated:
     setBusy(true);
     setErr(null);
     try {
-      const alert = await createLearnAlert({ jobTitle: jobTitle.trim(), difficulty, specialFocus: specialFocusChips, intervalHours, durationMonths, visibility });
-      onCreated(alert);
+      const fields = { jobTitle: jobTitle.trim(), difficulty, specialFocus: specialFocusChips, intervalHours, durationMonths, visibility };
+      const alert = initial ? await updateLearnAlert(initial.id, fields) : await createLearnAlert(fields);
+      onSaved(alert);
     } catch {
-      setErr("Couldn't create that alert — try again.");
+      setErr(`Couldn't ${initial ? 'save' : 'create'} that alert — try again.`);
     } finally {
       setBusy(false);
     }
@@ -271,7 +287,7 @@ function NewAlertModal({ onClose, onCreated }: { onClose: () => void; onCreated:
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 16, padding: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>🧠 New Learn Alert</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>🧠 {initial ? 'Edit Learn Alert' : 'New Learn Alert'}</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', display: 'flex', padding: 4 }}><X size={18} /></button>
         </div>
 
@@ -359,7 +375,7 @@ function NewAlertModal({ onClose, onCreated }: { onClose: () => void; onCreated:
 
         <button onClick={submit} disabled={!canSubmit || busy}
           style={{ width: '100%', padding: '12px 16px', borderRadius: 10, border: 'none', color: '#fff', fontSize: 13, fontWeight: 800, cursor: canSubmit && !busy ? 'pointer' : 'default', fontFamily: 'inherit', background: 'linear-gradient(135deg, #34D399, #059669)', opacity: canSubmit && !busy ? 1 : 0.5 }}>
-          {busy ? 'Creating…' : 'Create Alert'}
+          {busy ? (initial ? 'Saving…' : 'Creating…') : (initial ? 'Save Changes' : 'Create Alert')}
         </button>
       </div>
     </div>
