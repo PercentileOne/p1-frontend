@@ -73,7 +73,7 @@ public class LearnAlertsSendService(
                     continue;
                 }
 
-                var generated = await Endpoint.GenerateQuestionAsync(anthropic, alert.jobTitle, alert.difficulty, logger);
+                var generated = await Endpoint.GenerateQuestionAsync(anthropic, alert.jobTitle, alert.difficulty, alert.specialFocus, logger);
                 if (generated is null)
                 {
                     // One bad AI call shouldn't strand a candidate on a multi-times-a-day cadence

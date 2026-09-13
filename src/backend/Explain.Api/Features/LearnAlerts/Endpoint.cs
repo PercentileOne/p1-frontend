@@ -42,6 +42,7 @@ public static class Endpoint
             var durationMonths = Math.Clamp(req.DurationMonths, 1, 3);
             var difficulty = req.Difficulty is "Standard" or "Pro" or "Expert" ? req.Difficulty : "Pro";
             var visibility = req.Visibility == "public" ? "public" : "hidden";
+            var specialFocus = (req.SpecialFocus ?? []).Select(f => f.Trim()).Where(f => f.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
             // Stored as "o"-formatted UTC strings, not raw DateTimeOffset — Cosmos query-side
             // comparisons (LearnAlertsSendService's "which alerts are due") are safer as fixed-
@@ -55,6 +56,7 @@ public static class Endpoint
                 candidateName: ctx.User.FindFirst("name")?.Value ?? "there",
                 jobTitle: req.JobTitle.Trim(),
                 difficulty: difficulty,
+                specialFocus: specialFocus,
                 intervalHours: intervalHours,
                 durationMonths: durationMonths,
                 visibility: visibility,
@@ -105,6 +107,7 @@ public static class Endpoint
             {
                 jobTitle = string.IsNullOrWhiteSpace(req.JobTitle) ? existing.jobTitle : req.JobTitle.Trim(),
                 difficulty = req.Difficulty is "Standard" or "Pro" or "Expert" ? req.Difficulty : existing.difficulty,
+                specialFocus = req.SpecialFocus is { } sf ? sf.Select(f => f.Trim()).Where(f => f.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).ToList() : existing.specialFocus,
                 intervalHours = req.IntervalHours is { } ih ? Math.Clamp(ih, 4, 168) : existing.intervalHours,
                 durationMonths = req.DurationMonths is { } dm ? Math.Clamp(dm, 1, 3) : existing.durationMonths,
                 visibility = req.Visibility is "public" or "hidden" ? req.Visibility : existing.visibility,
@@ -244,11 +247,21 @@ public static class Endpoint
     // ── Question generation (called by LearnAlertsSendService) ──────────────────────────────
 
     public static async Task<(string Question, List<string> Options, int CorrectIndex)?> GenerateQuestionAsync(
-        AnthropicService anthropic, string jobTitle, string difficulty, ILogger logger)
+        AnthropicService anthropic, string jobTitle, string difficulty, List<string> specialFocus, ILogger logger)
     {
+        // Same "narrow toward specific named topics" concept as InterviewPackStart.tsx's Special
+        // Focus chips (subject/aliases/tags — see careersApi's own "What's Hot" flow) — here it
+        // picks ONE of the candidate's chosen topics per question (when any are set) rather than
+        // asking about all of them at once, so a multi-topic alert still rotates through each one
+        // over successive questions instead of only ever asking about the first.
+        var focusLine = specialFocus.Count > 0
+            ? $"This question MUST specifically test knowledge of \"{specialFocus[Random.Shared.Next(specialFocus.Count)]}\" within that role — not the role in general.\n"
+            : "";
+
         var prompt =
             "Generate ONE multiple-choice interview-knowledge question testing genuine expertise a \"" +
             jobTitle + "\" candidate at \"" + difficulty + "\" difficulty should know.\n" +
+            focusLine +
             "Return JSON only, no markdown: {\"question\":\"...\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"answer\":0}\n" +
             "\"answer\" is the INDEX (0-3) of the correct option. Make the three wrong options " +
             "genuinely plausible to someone who half-knows the subject, not obviously silly.";
@@ -436,8 +449,8 @@ public static class Endpoint
         </script>
         """;
 
-    public record Request(string JobTitle, string Difficulty, int IntervalHours, int DurationMonths, string Visibility);
-    public record UpdateRequest(string? JobTitle, string? Difficulty, int? IntervalHours, int? DurationMonths, string? Visibility, string? Status);
+    public record Request(string JobTitle, string Difficulty, List<string>? SpecialFocus, int IntervalHours, int DurationMonths, string Visibility);
+    public record UpdateRequest(string? JobTitle, string? Difficulty, List<string>? SpecialFocus, int? IntervalHours, int? DurationMonths, string? Visibility, string? Status);
     public record Summary(int totalSent, int totalCorrect, int bestCurrentStreak, int bestLongestStreak);
 }
 
@@ -448,6 +461,7 @@ public record LearnAlert(
     string candidateName,
     string jobTitle,
     string difficulty,      // "Standard" | "Pro" | "Expert" — same vocabulary as interview difficulty
+    List<string> specialFocus, // optional topics narrowing questions — same concept as InterviewPackStart.tsx's Special Focus chips
     int intervalHours,      // 4-168, hours between questions — supports both "3x/day" (8) and "weekly" (168)
     int durationMonths,     // 1-3
     string visibility,      // "public" | "hidden" — reserved for a future leaderboard, unused for now

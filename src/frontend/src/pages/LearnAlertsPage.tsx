@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { X, Trash2, Pause, Play, Flame, Globe, Lock } from 'lucide-react';
 import {
   createLearnAlert, listLearnAlerts, updateLearnAlert, deleteLearnAlert, fetchLearnAlertsSummary,
   type LearnAlert, type LearnAlertSummary,
 } from '../api/learnAlertsApi';
+import { generateHotTopics } from '../api/aiScoring';
 
 const DIFFICULTIES: LearnAlert['difficulty'][] = ['Standard', 'Pro', 'Expert'];
 const DURATIONS = [1, 2, 3];
@@ -154,6 +155,11 @@ export default function LearnAlertsPage() {
                           {alert.visibility === 'public' ? <Globe size={11} /> : <Lock size={11} />}
                           {alert.visibility === 'public' ? 'Public' : 'Hidden'}
                         </div>
+                        {alert.specialFocus.length > 0 && (
+                          <div style={{ fontSize: 11, color: '#a78bfa', marginTop: 4 }}>
+                            🎯 {alert.specialFocus.join(', ')}
+                          </div>
+                        )}
                       </td>
                       <td style={{ padding: '14px 16px', fontSize: 12, color: 'var(--text-2)' }}>{alert.difficulty}</td>
                       <td style={{ padding: '14px 16px', fontSize: 12, color: 'var(--text-2)' }}>{formatInterval(alert.intervalHours)}</td>
@@ -203,6 +209,9 @@ export default function LearnAlertsPage() {
 function NewAlertModal({ onClose, onCreated }: { onClose: () => void; onCreated: (a: LearnAlert) => void }) {
   const [jobTitle, setJobTitle] = useState('');
   const [difficulty, setDifficulty] = useState<LearnAlert['difficulty']>('Pro');
+  const [specialFocusInput, setSpecialFocusInput] = useState('');
+  const [specialFocusChips, setSpecialFocusChips] = useState<string[]>([]);
+  const [hotTopicsLoading, setHotTopicsLoading] = useState(false);
   const [intervalHours, setIntervalHours] = useState(24);
   const [durationMonths, setDurationMonths] = useState(1);
   const [visibility, setVisibility] = useState<LearnAlert['visibility']>('hidden');
@@ -211,12 +220,37 @@ function NewAlertModal({ onClose, onCreated }: { onClose: () => void; onCreated:
 
   const canSubmit = jobTitle.trim().length > 2;
 
+  // Same "narrow question generation toward specific named topics" concept as
+  // InterviewPackStart.tsx's own Special Focus — reuses the identical chip-input + "What's Hot"
+  // AI-suggestion pattern (and the same generateHotTopics call) rather than reinventing it, now
+  // that Learn Alerts sends recurring questions where narrowing to real topics genuinely matters.
+  const addSpecialFocusChip = useCallback((raw: string) => {
+    const value = raw.trim();
+    if (!value) return;
+    setSpecialFocusChips(prev => prev.some(c => c.toLowerCase() === value.toLowerCase()) ? prev : [...prev, value]);
+  }, []);
+
+  const removeSpecialFocusChip = useCallback((value: string) => {
+    setSpecialFocusChips(prev => prev.filter(c => c !== value));
+  }, []);
+
+  const handleWhatsHot = useCallback(async () => {
+    if (!jobTitle.trim() || hotTopicsLoading) return;
+    setHotTopicsLoading(true);
+    try {
+      const topics = await generateHotTopics(jobTitle.trim());
+      topics.forEach(addSpecialFocusChip);
+    } finally {
+      setHotTopicsLoading(false);
+    }
+  }, [jobTitle, hotTopicsLoading, addSpecialFocusChip]);
+
   async function submit() {
     if (!canSubmit || busy) return;
     setBusy(true);
     setErr(null);
     try {
-      const alert = await createLearnAlert({ jobTitle: jobTitle.trim(), difficulty, intervalHours, durationMonths, visibility });
+      const alert = await createLearnAlert({ jobTitle: jobTitle.trim(), difficulty, specialFocus: specialFocusChips, intervalHours, durationMonths, visibility });
       onCreated(alert);
     } catch {
       setErr("Couldn't create that alert — try again.");
@@ -247,6 +281,54 @@ function NewAlertModal({ onClose, onCreated }: { onClose: () => void; onCreated:
           onChange={e => setJobTitle(e.target.value)}
           placeholder="e.g. Head of Prime Brokerage Technology"
           style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'inherit', marginBottom: 18 }} />
+
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: 6 }}>
+          Special Focus <span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional — narrows questions to specific topics)</span>
+        </label>
+        <div style={{ display: 'flex', gap: 8, marginBottom: specialFocusChips.length > 0 ? 10 : 18 }}>
+          <input
+            value={specialFocusInput}
+            onChange={e => setSpecialFocusInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                addSpecialFocusChip(specialFocusInput);
+                setSpecialFocusInput('');
+              }
+            }}
+            placeholder="e.g. Agentic AI Patterns — press Enter to add"
+            style={{ flex: 1, boxSizing: 'border-box', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'inherit' }} />
+          <button
+            type="button"
+            onClick={handleWhatsHot}
+            disabled={!jobTitle.trim() || hotTopicsLoading}
+            title={!jobTitle.trim() ? 'Enter a job title first' : undefined}
+            style={{
+              flexShrink: 0, display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(167,139,250,0.12)',
+              border: '1px solid rgba(167,139,250,0.35)', borderRadius: 8, padding: '0 16px', color: '#a78bfa',
+              fontSize: 12, fontWeight: 700, fontFamily: 'inherit', cursor: !jobTitle.trim() || hotTopicsLoading ? 'not-allowed' : 'pointer',
+              opacity: !jobTitle.trim() ? 0.5 : 1,
+            }}>
+            {hotTopicsLoading ? (
+              <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(167,139,250,0.25)', borderTopColor: '#a78bfa', animation: 'lhotspin 0.7s linear infinite' }} />
+            ) : '🔥'}
+            What's Hot
+          </button>
+        </div>
+        <style>{`@keyframes lhotspin { to { transform: rotate(360deg) } }`}</style>
+        {specialFocusChips.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
+            {specialFocusChips.map(chip => (
+              <span key={chip} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 20, padding: '5px 6px 5px 12px', fontSize: 12, color: 'var(--text)', fontWeight: 600 }}>
+                {chip}
+                <button type="button" onClick={() => removeSpecialFocusChip(chip)} aria-label={`Remove ${chip}`}
+                  style={{ width: 16, height: 16, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.08)', color: 'var(--text-3)', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
+                  ✕
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
 
         <label style={{ display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: 6 }}>Difficulty</label>
         <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>

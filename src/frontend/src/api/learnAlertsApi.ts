@@ -9,6 +9,7 @@ export interface LearnAlert {
   candidateName: string;
   jobTitle: string;
   difficulty: 'Standard' | 'Pro' | 'Expert';
+  specialFocus: string[];
   intervalHours: number;
   durationMonths: number;
   visibility: 'public' | 'hidden';
@@ -31,6 +32,7 @@ export interface LearnAlertSummary {
 export interface CreateLearnAlertRequest {
   jobTitle: string;
   difficulty: LearnAlert['difficulty'];
+  specialFocus: string[];
   intervalHours: number;
   durationMonths: number;
   visibility: LearnAlert['visibility'];
