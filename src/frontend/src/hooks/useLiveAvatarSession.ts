@@ -108,10 +108,14 @@ const pollAudioStats = (session: LiveAvatarSession, role: string, rawAudioTrack:
 
 // One-off control test HeyGen proposed (2026-09-13): if leaving the <video> element itself as
 // the audio sink (unmuted, no custom tap) plays a glitch-free first utterance, that proves our
-// tap's startup timing is the cause rather than anything server-side. Off by default — opt in
-// via ?avatarAudioControlTest=1 for a single manual test run, never shipped as real behavior.
-const AVATAR_AUDIO_CONTROL_TEST =
-  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('avatarAudioControlTest') === '1';
+// tap's startup timing is the cause rather than anything server-side.
+//
+// TEMPORARILY HARDCODED TRUE for Francis's one test run (2026-09-13) so he doesn't have to type
+// the URL param by hand — MUST be reverted to the URL-gated version below right after that test,
+// never shipped on by default.
+const AVATAR_AUDIO_CONTROL_TEST = true;
+// const AVATAR_AUDIO_CONTROL_TEST =
+//   typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('avatarAudioControlTest') === '1';
 
 // Wraps the official LiveAvatar Web SDK for one interview seat's avatar session. voiceChat is
 // deliberately never enabled — that SDK feature captures the browser's own microphone for a
