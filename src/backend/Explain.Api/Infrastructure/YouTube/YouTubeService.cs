@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml;
@@ -67,8 +68,11 @@ public class YouTubeService(IConfiguration config, ILogger<YouTubeService> logge
             if (id is null || !detailsById.TryGetValue(id, out var details)) continue;
             talks.Add(new TedTalkDto(
                 Id: id,
-                Title: item.Snippet?.Title ?? "",
-                Channel: item.Snippet?.ChannelTitle ?? "TED",
+                // YouTube's search.list snippet HTML-encodes titles (e.g. an apostrophe comes
+                // back as "&#39;") — decode here so the frontend shows real punctuation instead
+                // of the literal entity text (found live 2026-09-13, "We&#39;re more connected").
+                Title: WebUtility.HtmlDecode(item.Snippet?.Title ?? ""),
+                Channel: WebUtility.HtmlDecode(item.Snippet?.ChannelTitle ?? "TED"),
                 Duration: FormatDuration(details.ContentDetails?.Duration ?? "PT0S"),
                 ViewCount: long.TryParse(details.Statistics?.ViewCount, out var vc) ? vc : 0,
                 PublishedAt: item.Snippet?.PublishedAt ?? "",
