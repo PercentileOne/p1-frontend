@@ -40,6 +40,79 @@ const logWebSocketState = (role: string, label: string, session: LiveAvatarSessi
   console.log(`[LiveAvatar TIMING][${role}] ${label} — ws_url granted by HeyGen: ${grantedWsUrl}, _sessionEventSocket: ${socketState}`);
 };
 
+// HeyGen Advanced Support's diagnostic request (2026-09-13), point 3: the first-ever
+// agent.audio_buffer_appended and agent.speak_started timestamps on the raw socket. The SDK's
+// public AgentEventsEnum only surfaces avatar.speak_started/ended, not audio_buffer_appended,
+// so this listens on _sessionEventSocket directly — same reach as logWebSocketState above.
+// Logs each only once per session (first occurrence only, per their ask).
+const listenForBufferEvents = (role: string, session: LiveAvatarSession) => {
+  const socket = (session as unknown as { _sessionEventSocket?: WebSocket | null })._sessionEventSocket;
+  if (!socket) return;
+  let loggedAppended = false;
+  let loggedStarted = false;
+  socket.addEventListener('message', (event: MessageEvent) => {
+    if (loggedAppended && loggedStarted) return;
+    try {
+      const data = JSON.parse(event.data as string) as { type?: string };
+      if (!loggedAppended && data?.type === 'agent.audio_buffer_appended') {
+        loggedAppended = true;
+        timingLog(role, 'first agent.audio_buffer_appended received (raw WS)');
+      }
+      if (!loggedStarted && data?.type === 'agent.speak_started') {
+        loggedStarted = true;
+        timingLog(role, 'first agent.speak_started received (raw WS)');
+      }
+    } catch { /* not JSON, or not the shape we expect — ignore */ }
+  });
+};
+
+// HeyGen Advanced Support's diagnostic request (2026-09-13), point 1: getStats() on the inbound
+// audio receiver every 250ms for the first ~4s after a speak() call — packets arriving at a
+// steady rate while jitterBufferDelay grows and removedSamplesForAcceleration spikes points at
+// OUR tap not draining the buffer in time; packets arriving in a burst points at audio leaving
+// HeyGen's side late. The SDK exposes no public RTCPeerConnection accessor, so this reaches into
+// LiveKit's own internal room.engine.pcManager.subscriber._pc (the "subscriber" PC carries
+// inbound remote tracks) — verified directly against the SDK's own compiled source, which reaches
+// this exact same path internally for its own connection-quality indicator. Gated to a session's
+// first-ever speak() only (see hasPolledStatsRef in the hook below), matching their "one glitched
+// utterance" ask rather than polling on every question.
+const pollAudioStats = (session: LiveAvatarSession, role: string, rawAudioTrack: MediaStreamTrack) => {
+  const pc = (session as unknown as {
+    room?: { engine?: { pcManager?: { subscriber?: { _pc?: RTCPeerConnection } } } };
+  }).room?.engine?.pcManager?.subscriber?._pc;
+  if (!pc) {
+    console.warn('[LiveAvatar] Could not reach internal RTCPeerConnection for getStats() — SDK internals may have changed.');
+    return;
+  }
+  let samples = 0;
+  const timer = setInterval(() => {
+    samples++;
+    if (samples > 16) { clearInterval(timer); return; } // ~4s of coverage at 250ms
+    pc.getStats(rawAudioTrack).then(report => {
+      report.forEach(stat => {
+        if (stat.type === 'inbound-rtp' && stat.kind === 'audio') {
+          console.log(
+            `[LiveAvatar STATS][${role}] @ ${Math.round(performance.now())}ms — ` +
+            `packetsReceived=${stat.packetsReceived}, jitterBufferDelay=${stat.jitterBufferDelay?.toFixed?.(3)}, ` +
+            `jitterBufferEmittedCount=${stat.jitterBufferEmittedCount}, removedSamplesForAcceleration=${stat.removedSamplesForAcceleration}, ` +
+            `concealedSamples=${stat.concealedSamples}, lastPacketReceivedTimestamp=${stat.lastPacketReceivedTimestamp}`
+          );
+        }
+      });
+    }).catch(err => {
+      console.warn('[LiveAvatar] getStats() failed:', err);
+      clearInterval(timer);
+    });
+  }, 250);
+};
+
+// One-off control test HeyGen proposed (2026-09-13): if leaving the <video> element itself as
+// the audio sink (unmuted, no custom tap) plays a glitch-free first utterance, that proves our
+// tap's startup timing is the cause rather than anything server-side. Off by default — opt in
+// via ?avatarAudioControlTest=1 for a single manual test run, never shipped as real behavior.
+const AVATAR_AUDIO_CONTROL_TEST =
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('avatarAudioControlTest') === '1';
+
 // Wraps the official LiveAvatar Web SDK for one interview seat's avatar session. voiceChat is
 // deliberately never enabled — that SDK feature captures the browser's own microphone for a
 // built-in voice round-trip, which is not what we want: we generate Amina/Wayne/Mike's audio
@@ -81,6 +154,9 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   // SESSION_STREAM_READY firing) for the same session.
   const tappedSessionRef = useRef<LiveAvatarSession | null>(null);
   const untapAudioRef = useRef<(() => void) | null>(null);
+  // Gates pollAudioStats to a session's first-ever speak() only — see that function's own
+  // comment for why (HeyGen asked for data on "one glitched utterance", not every question).
+  const hasPolledStatsRef = useRef(false);
 
   const attachIfReady = useCallback(() => {
     if (streamReadyRef.current && videoElRef.current && sessionRef.current) {
@@ -123,14 +199,22 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
           _remoteAudioTrack?: { mediaStreamTrack?: MediaStreamTrack };
         })._remoteAudioTrack?.mediaStreamTrack;
         if (rawAudioTrack) {
-          // Fire-and-forget — getTTSAudioContext() is async only because it may need to
-          // resume() a suspended context; the tap itself doesn't need to block attach().
-          getTTSAudioContext().then(ctx => {
-            if (tappedSessionRef.current === session) {
-              untapAudioRef.current = tapLiveAvatarAudioForRecording(rawAudioTrack, el, ctx, onAnalyser);
-              timingLog(role, 'audio tap connected (candidate can now hear this seat)');
-            }
-          });
+          if (AVATAR_AUDIO_CONTROL_TEST) {
+            // Override the synchronous mute above for this one-off test — see
+            // AVATAR_AUDIO_CONTROL_TEST's own comment.
+            el.muted = false;
+            timingLog(role, 'CONTROL TEST MODE — native <video> is the audio sink, custom tap disabled');
+          } else {
+            // Fire-and-forget — getTTSAudioContext() is async only because it may need to
+            // resume() a suspended context; the tap itself doesn't need to block attach().
+            getTTSAudioContext().then(ctx => {
+              if (tappedSessionRef.current === session) {
+                timingLog(role, `about to tap — AudioContext.state=${ctx.state}`);
+                untapAudioRef.current = tapLiveAvatarAudioForRecording(rawAudioTrack, el, ctx, onAnalyser);
+                timingLog(role, 'audio tap connected (candidate can now hear this seat)');
+              }
+            });
+          }
         } else {
           console.warn('[LiveAvatar] No raw audio track available to tap — SDK internals may have changed; recording will miss this avatar\'s voice.');
         }
@@ -179,6 +263,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
         // session ID alongside console logs/HAR (see the first-utterance desync investigation).
         timingLog(role, `session.start() resolved, sessionId=${session.sessionId ?? 'null'}`);
         logWebSocketState(role, 'session.start() resolved', session);
+        listenForBufferEvents(role, session);
         await Promise.race([
           streamReadyPromise,
           new Promise<void>(resolve => setTimeout(resolve, 5000)),
@@ -288,6 +373,13 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
       session.on(AgentEventsEnum.AVATAR_SPEAK_STARTED, onStarted);
       session.on(AgentEventsEnum.AVATAR_SPEAK_ENDED, onEnded);
       logWebSocketState(role, 'about to call repeatAudio()', session);
+      if (!hasPolledStatsRef.current) {
+        hasPolledStatsRef.current = true;
+        const rawAudioTrack = (session as unknown as {
+          _remoteAudioTrack?: { mediaStreamTrack?: MediaStreamTrack };
+        })._remoteAudioTrack?.mediaStreamTrack;
+        if (rawAudioTrack) pollAudioStats(session, role, rawAudioTrack);
+      }
       session.repeatAudio(audioBase64);
       timingLog(role, 'repeatAudio() sent');
     });
