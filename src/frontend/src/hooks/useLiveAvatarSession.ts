@@ -151,15 +151,66 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   // threw, and the caller's catch swallowed it as silence — exactly the "no talking" failure
   // mode this was built to prevent.
   const connectPromiseRef = useRef<Promise<void> | null>(null);
-  // Tracks which session has already had its audio tapped into the recording bus — the tap is
-  // now per-session (see attachIfReady's own comment for why it moved off the <video> element),
-  // and attachIfReady can legitimately run more than once (setVideoEl firing, then
-  // SESSION_STREAM_READY firing) for the same session.
+  // Tracks which session has already had its audio tapped into the recording bus — kept
+  // separate from video-attach bookkeeping now (see wireTapIfReady's own comment for why),
+  // but still per-session since wireTapIfReady, like the old combined function, can legitimately
+  // be asked to run more than once for the same session.
   const tappedSessionRef = useRef<LiveAvatarSession | null>(null);
   const untapAudioRef = useRef<(() => void) | null>(null);
   // Gates pollAudioStats to a session's first-ever speak() only — see that function's own
   // comment for why (HeyGen asked for data on "one glitched utterance", not every question).
   const hasPolledStatsRef = useRef(false);
+
+  // Split out from attachIfReady 2026-09-13 — real data (session ID d5f2c64a, SESSION_STREAM_READY
+  // @27,902ms, attach() not until 58,309ms — 30s of the session sitting fully connected and
+  // completely idle) showed the early-connect fix (giving the intro's connect() the same head
+  // start Q2+ already gets) had ZERO effect on the actual glitch, because attach()/the tap were
+  // STILL gated on the video element existing, which only happens once the avatar tiles become
+  // visually relevant (after Mike's intro) — the connect()-to-speak() gap got much bigger, but
+  // the attach()-to-speak() gap (the one that's actually mattered every single time) never
+  // changed at all. The raw audio track this taps (_remoteAudioTrack.mediaStreamTrack) comes
+  // straight off the `session` object, NOT off the attached <video> element — it never actually
+  // needed attach() to run first, that coupling was just how the original code happened to be
+  // written. Wiring the tap here, gated ONLY on the session being stream-ready, lets it sit
+  // "warmed up" and draining audio for the whole idle window instead of starting cold ~570ms
+  // before the first speak() call.
+  //
+  // Deliberately does NOT touch anything about the <video> element or when it becomes visible —
+  // attachIfReady below is completely unchanged, so the one thing that broke last time this
+  // "attach earlier" idea was tried (avatars taking 45-60s to visually appear) has no surface
+  // area to regress here at all.
+  const wireTapIfReady = useCallback(() => {
+    if (!streamReadyRef.current || !sessionRef.current) return;
+    const session = sessionRef.current;
+    if (tappedSessionRef.current === session) return; // already wired for this session
+    tappedSessionRef.current = session;
+    // Same reach-past-declared-visibility as elsewhere in this file — see attachIfReady's own
+    // comment (below) for the full history of why this specific reach is trusted.
+    const rawAudioTrack = (session as unknown as {
+      _remoteAudioTrack?: { mediaStreamTrack?: MediaStreamTrack };
+    })._remoteAudioTrack?.mediaStreamTrack;
+    if (!rawAudioTrack) {
+      console.warn('[LiveAvatar] No raw audio track available to tap — SDK internals may have changed; recording will miss this avatar\'s voice.');
+      return;
+    }
+    if (AVATAR_AUDIO_CONTROL_TEST) {
+      // No tap at all in control-test mode — the <video> element (unmuted, see attachIfReady)
+      // is left as the only audio sink, whenever it eventually attaches.
+      timingLog(role, 'CONTROL TEST MODE — tap wiring skipped entirely, native <video> will be the only audio sink');
+      return;
+    }
+    untapAudioRef.current?.();
+    // Fire-and-forget — getTTSAudioContext() is async only because it may need to resume() a
+    // suspended context; nothing here needs to block on it.
+    getTTSAudioContext().then(ctx => {
+      if (tappedSessionRef.current !== session) return; // superseded by a newer session already
+      timingLog(role, `about to tap (stream-ready-driven, not attach-driven) — AudioContext.state=${ctx.state}`);
+      // videoEl is null here on purpose — this tap no longer needs one (see this function's own
+      // comment above) and attach() may not have happened yet at all.
+      untapAudioRef.current = tapLiveAvatarAudioForRecording(rawAudioTrack, null, ctx, onAnalyser);
+      timingLog(role, 'audio tap connected (candidate can now hear this seat)');
+    });
+  }, [onAnalyser, role]);
 
   const attachIfReady = useCallback(() => {
     if (streamReadyRef.current && videoElRef.current && sessionRef.current) {
@@ -179,15 +230,15 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
       // heard as audio "racing" to catch up — not anything in our own tap, which (being a plain
       // live MediaStreamSource pull, not a buffered element) has no such speed-up behaviour.
       // Muting here, before the browser has a chance to render a single frame of native audio,
-      // closes that window entirely: the only audio the candidate ever hears is our tap below,
-      // which starts a moment later in real time but never audibly "catches up".
+      // closes that window entirely: the only audio the candidate ever hears is our tap (now
+      // wired independently by wireTapIfReady, see its own comment for why), which by this point
+      // has typically already been running for a while, not starting fresh here.
       // Real bug found live 2026-09-13: this used to run unconditionally on EVERY call to
       // attachIfReady() — but this function can legitimately re-run for the same session
-      // (setVideoEl firing, then SESSION_STREAM_READY firing — see tappedSessionRef's own
-      // comment below). The control-test un-mute further down only runs on the FIRST such call
-      // (guarded by tappedSessionRef), so a second invocation was silently re-muting the video
-      // and skipping that branch entirely — meaning the control test was never actually
-      // exercising what it claimed to. Now skipped outright in control-test mode.
+      // (setVideoEl firing, then SESSION_STREAM_READY firing). The control-test un-mute further
+      // down only ran on the FIRST such call, so a second invocation was silently re-muting the
+      // video and skipping that branch entirely — meaning the control test was never actually
+      // exercising what it claimed to. Now skipped outright in control-test mode on every call.
       if (!AVATAR_AUDIO_CONTROL_TEST) {
         videoElRef.current.muted = true;
         timingLog(role, 'attach() + synchronous mute done');
@@ -195,47 +246,13 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
         videoElRef.current.muted = false;
         timingLog(role, 'CONTROL TEST MODE — attach() done, mute skipped (video element stays the audio sink on every call)');
       }
-      const session = sessionRef.current;
-      const el = videoElRef.current;
-      if (tappedSessionRef.current !== session) {
-        untapAudioRef.current?.();
-        tappedSessionRef.current = session;
-        // createMediaElementSource() on the <video> element (the original approach) proved
-        // unreliable for this SDK's WebRTC-sourced audio — confirmed live via 20 consecutive
-        // 1-second samples of pure silence despite the element being correctly unmuted, the
-        // AudioContext running, and no errors anywhere in the chain. createMediaStreamSource()
-        // on the RAW MediaStreamTrack, bypassing the element's decode/render pipeline entirely,
-        // is the standard, reliable way to capture WebRTC audio for Web Audio API. The SDK's
-        // public surface has no accessor for that raw track — only .attach(element) — so this
-        // reaches past the declared (TypeScript-only, not JS-enforced) `private` on
-        // _remoteAudioTrack, verified directly against the installed package's compiled JS.
-        // Re-verify this still exists if @heygen/liveavatar-web-sdk is ever upgraded.
-        const rawAudioTrack = (session as unknown as {
-          _remoteAudioTrack?: { mediaStreamTrack?: MediaStreamTrack };
-        })._remoteAudioTrack?.mediaStreamTrack;
-        if (rawAudioTrack) {
-          if (AVATAR_AUDIO_CONTROL_TEST) {
-            // Override the synchronous mute above for this one-off test — see
-            // AVATAR_AUDIO_CONTROL_TEST's own comment.
-            el.muted = false;
-            timingLog(role, 'CONTROL TEST MODE — native <video> is the audio sink, custom tap disabled');
-          } else {
-            // Fire-and-forget — getTTSAudioContext() is async only because it may need to
-            // resume() a suspended context; the tap itself doesn't need to block attach().
-            getTTSAudioContext().then(ctx => {
-              if (tappedSessionRef.current === session) {
-                timingLog(role, `about to tap — AudioContext.state=${ctx.state}`);
-                untapAudioRef.current = tapLiveAvatarAudioForRecording(rawAudioTrack, el, ctx, onAnalyser);
-                timingLog(role, 'audio tap connected (candidate can now hear this seat)');
-              }
-            });
-          }
-        } else {
-          console.warn('[LiveAvatar] No raw audio track available to tap — SDK internals may have changed; recording will miss this avatar\'s voice.');
-        }
-      }
+      // Tap wiring used to live here, gated on the video element existing — now handled
+      // independently by wireTapIfReady (called from SESSION_STREAM_READY directly, well before
+      // this ever runs in practice). Still called here too, harmlessly, in case attach() somehow
+      // runs before stream-ready did for some reason — wireTapIfReady no-ops if already wired.
+      wireTapIfReady();
     }
-  }, [onAnalyser]);
+  }, [wireTapIfReady]);
 
   const connect = useCallback(() => {
     if (connectedRef.current) return Promise.resolve(); // already connected — no-op
@@ -260,7 +277,8 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
           session.on(SessionEvent.SESSION_STREAM_READY, () => {
             timingLog(role, 'SESSION_STREAM_READY fired');
             streamReadyRef.current = true;
-            attachIfReady();
+            wireTapIfReady(); // audio tap — independent of the video element, see its own comment
+            attachIfReady(); // video attach — unchanged, still gated on the element existing
             resolve();
           });
         });
@@ -307,7 +325,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
     })();
     connectPromiseRef.current = attempt;
     return attempt;
-  }, [attachIfReady, role]);
+  }, [attachIfReady, wireTapIfReady, role]);
 
   const disconnect = useCallback(async () => {
     if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }

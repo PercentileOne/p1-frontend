@@ -56,16 +56,22 @@ export function setLiveAvatarRecordingDestination(
 
 // Routes one LiveAvatar seat's raw audio track into the shared bus, and into the candidate's
 // own listening path (via the master gain, so the volume slider and the boost above both
-// apply). videoEl is muted here too (belt-and-braces — the authoritative mute now happens
-// synchronously in useLiveAvatarSession.ts's attachIfReady, in the same tick as attach(), to
-// close a real race: leaving it unmuted until THIS async tap finished wiring let the element's
-// own native WebRTC audio play briefly, and a brand-new session's first-ever audio decode is
-// well known to cold-start slower than video — browsers' native A/V sync then audibly sped
-// audio up to resync, which is what candidates heard as "catching up" on Amina's first line
-// every session, 2026-09-10). Kept here regardless: createMediaStreamSource does NOT take over
-// an element's native output the way createMediaElementSource did, so without this the
+// apply). videoEl, when given, is muted here too (belt-and-braces — the authoritative mute now
+// happens synchronously in useLiveAvatarSession.ts's attachIfReady, in the same tick as
+// attach(), to close a real race: leaving it unmuted until THIS async tap finished wiring let
+// the element's own native WebRTC audio play briefly, and a brand-new session's first-ever
+// audio decode is well known to cold-start slower than video — browsers' native A/V sync then
+// audibly sped audio up to resync, which is what candidates heard as "catching up" on Amina's
+// first line every session, 2026-09-10). Kept here regardless: createMediaStreamSource does NOT
+// take over an element's native output the way createMediaElementSource did, so without this the
 // candidate would hear the avatar twice: once from the element's own native WebRTC playback,
 // once from this tap's route through the master gain to the same destination.
+//
+// videoEl is nullable since 2026-09-13 — this tap is now wired as soon as a session is
+// stream-ready (useLiveAvatarSession.ts's wireTapIfReady), which can happen well before the
+// <video> element even exists (it only mounts once the avatar becomes visually relevant). No
+// element to mute yet in that case is fine: nothing's attached to it, so it has no native audio
+// to leak in the first place — the mute above only ever mattered once attach() actually runs.
 //
 // onAnalyser, if given, is handed a live AnalyserNode fed from the SAME boosted signal — lets
 // the room's own WaveformBars react to the avatar's real voice instead of sitting on synthetic
@@ -73,12 +79,12 @@ export function setLiveAvatarRecordingDestination(
 // video tap already give their callers.
 export function tapLiveAvatarAudioForRecording(
   rawAudioTrack: MediaStreamTrack,
-  videoEl: HTMLVideoElement,
+  videoEl: HTMLVideoElement | null,
   audioCtx: AudioContext,
   onAnalyser?: (a: AnalyserNode | null) => void,
 ): () => void {
   try {
-    videoEl.muted = true;
+    if (videoEl) videoEl.muted = true;
     const source = audioCtx.createMediaStreamSource(new MediaStream([rawAudioTrack]));
     const boost = audioCtx.createGain();
     boost.gain.value = LIVE_AVATAR_VOLUME_BOOST;
