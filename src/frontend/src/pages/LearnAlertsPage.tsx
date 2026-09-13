@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { X, Trash2, Pause, Play, Flame, Globe, Lock, Pencil } from 'lucide-react';
+import { X, Trash2, Pause, Play, Flame, Globe, Lock, Pencil, ChevronDown } from 'lucide-react';
 import {
   createLearnAlert, listLearnAlerts, updateLearnAlert, deleteLearnAlert, fetchLearnAlertsSummary,
   type LearnAlert, type LearnAlertSummary,
@@ -55,6 +55,9 @@ export default function LearnAlertsPage() {
   const [editingAlert, setEditingAlert] = useState<LearnAlert | null>(null);
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
   const [actionError, setActionError] = useState<string | null>(null);
+  const [visibilityMenuOpen, setVisibilityMenuOpen] = useState(false);
+  const [bulkConfirmTarget, setBulkConfirmTarget] = useState<boolean | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const load = () => {
     listLearnAlerts().then(setItems).catch(() => setError(true));
@@ -76,6 +79,38 @@ export default function LearnAlertsPage() {
     }
   }
 
+  async function toggleVisibility(alert: LearnAlert) {
+    setBusyIds(prev => new Set(prev).add(alert.id));
+    try {
+      const nextVisibility = alert.visibility === 'public' ? 'hidden' : 'public';
+      const updated = await updateLearnAlert(alert.id, { visibility: nextVisibility });
+      setItems(prev => prev?.map(a => (a.id === alert.id ? updated : a)) ?? null);
+    } catch {
+      setActionError(`Couldn't update "${alert.jobTitle}" — try again.`);
+    } finally {
+      setBusyIds(prev => { const n = new Set(prev); n.delete(alert.id); return n; });
+    }
+  }
+
+  // No dedicated bulk endpoint on the backend (unlike Talks' POST /api/talks/visibility) — at
+  // Learn Alerts' realistic per-candidate volume (a handful of alerts, not hundreds), a plain
+  // Promise.all of the same per-item PATCH the row toggle already uses is simpler than adding
+  // one just for this.
+  async function applyBulkVisibility(isPublic: boolean) {
+    if (!items || items.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const targetVisibility: LearnAlert['visibility'] = isPublic ? 'public' : 'hidden';
+      const updated = await Promise.all(items.map(a => updateLearnAlert(a.id, { visibility: targetVisibility })));
+      setItems(updated);
+      setBulkConfirmTarget(null);
+    } catch {
+      setActionError("Couldn't update all your alerts — try again.");
+    } finally {
+      setBulkBusy(false);
+    }
+  }
+
   async function handleDelete(alert: LearnAlert) {
     setItems(prev => prev?.filter(a => a.id !== alert.id) ?? null);
     try { await deleteLearnAlert(alert.id); } catch { /* best-effort */ }
@@ -92,11 +127,35 @@ export default function LearnAlertsPage() {
               : 'One quick multiple-choice question at a time, straight to your inbox.'}
           </p>
         </div>
-        <button
-          onClick={() => setCreateOpen(true)}
-          style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #34D399, #4F8EF7)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-          🧠 New Alert
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {items && items.length > 0 && (
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setVisibilityMenuOpen(v => !v)}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-2)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                Alert Visibility <ChevronDown size={13} />
+              </button>
+              {visibilityMenuOpen && (
+                <>
+                  <div onClick={() => setVisibilityMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 20 }} />
+                  <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 21, minWidth: 240, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 10, boxShadow: '0 12px 32px rgba(0,0,0,0.4)', overflow: 'hidden' }}>
+                    <button onClick={() => { setBulkConfirmTarget(true); setVisibilityMenuOpen(false); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: 'none', border: 'none', borderBottom: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                      <Globe size={15} color="#34D399" /> Make all alerts Public
+                    </button>
+                    <button onClick={() => { setBulkConfirmTarget(false); setVisibilityMenuOpen(false); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: 'none', border: 'none', color: 'var(--text)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                      <Lock size={15} color="var(--text-3)" /> Make all alerts Hidden
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          <button
+            onClick={() => setCreateOpen(true)}
+            style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #34D399, #4F8EF7)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+            🧠 New Alert
+          </button>
+        </div>
       </div>
 
       {actionError && (
@@ -141,6 +200,7 @@ export default function LearnAlertsPage() {
                   <th style={thStyle}>Every</th>
                   <th style={thStyle}>Streak</th>
                   <th style={thStyle}>Correct</th>
+                  <th style={thStyle}>Visibility</th>
                   <th style={thStyle}>Status</th>
                   <th style={thStyle} />
                 </tr>
@@ -152,10 +212,6 @@ export default function LearnAlertsPage() {
                     <tr key={alert.id} style={{ background: i % 2 === 1 ? 'rgba(255,255,255,0.025)' : 'transparent' }}>
                       <td style={{ padding: '14px 16px' }}>
                         <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{alert.jobTitle}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                          {alert.visibility === 'public' ? <Globe size={11} /> : <Lock size={11} />}
-                          {alert.visibility === 'public' ? 'Public' : 'Hidden'}
-                        </div>
                         {alert.specialFocus.length > 0 && (
                           <div style={{ fontSize: 11, color: '#a78bfa', marginTop: 4 }}>
                             🎯 {alert.specialFocus.join(', ')}
@@ -170,6 +226,22 @@ export default function LearnAlertsPage() {
                         </span>
                       </td>
                       <td style={{ padding: '14px 16px', fontSize: 12, color: 'var(--text-2)' }}>{alert.correctCount}/{alert.sentCount}</td>
+                      <td style={{ padding: '14px 16px' }}>
+                        <button
+                          onClick={() => toggleVisibility(alert)}
+                          disabled={busy}
+                          title={alert.visibility === 'public' ? 'Public — click to make hidden.' : 'Hidden — click to make public.'}
+                          style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: busy ? 'default' : 'pointer', padding: 0, opacity: busy ? 0.5 : 1, fontFamily: 'inherit' }}
+                        >
+                          <span style={{ width: 34, height: 18, borderRadius: 20, background: alert.visibility === 'public' ? '#34D399' : 'rgba(255,255,255,0.14)', position: 'relative', flexShrink: 0 }}>
+                            <span style={{ position: 'absolute', top: 2, left: alert.visibility === 'public' ? 18 : 2, width: 14, height: 14, borderRadius: '50%', background: '#fff' }} />
+                          </span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: alert.visibility === 'public' ? '#34D399' : 'var(--text-3)' }}>
+                            {alert.visibility === 'public' ? <Globe size={12} /> : <Lock size={12} />}
+                            {alert.visibility === 'public' ? 'Public' : 'Hidden'}
+                          </span>
+                        </button>
+                      </td>
                       <td style={{ padding: '14px 16px' }}>
                         <span style={{ fontSize: 11, fontWeight: 700, color: statusColor(alert.status), background: `${statusColor(alert.status)}18`, padding: '4px 10px', borderRadius: 20, textTransform: 'capitalize' }}>
                           {alert.status}
@@ -213,6 +285,29 @@ export default function LearnAlertsPage() {
           onClose={() => setEditingAlert(null)}
           onSaved={alert => { setItems(prev => prev?.map(a => (a.id === alert.id ? alert : a)) ?? null); setEditingAlert(null); }}
         />
+      )}
+
+      {bulkConfirmTarget !== null && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 30, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+          onClick={() => !bulkBusy && setBulkConfirmTarget(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 420, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 16, padding: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              {bulkConfirmTarget ? <Globe size={20} color="#34D399" /> : <Lock size={20} color="var(--text-3)" />}
+              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>Make all alerts {bulkConfirmTarget ? 'Public' : 'Hidden'}?</div>
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6, marginBottom: 24 }}>
+              {bulkConfirmTarget
+                ? `This makes all ${(items ?? []).length} of your Learn Alerts visible to other candidates.`
+                : `This immediately hides all ${(items ?? []).length} of your Learn Alerts from other candidates. Nothing is deleted or paused.`}
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setBulkConfirmTarget(null)} disabled={bulkBusy} style={{ flex: 1, padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-2)', fontSize: 13, fontWeight: 700, cursor: bulkBusy ? 'default' : 'pointer', fontFamily: 'inherit' }}>Cancel</button>
+              <button onClick={() => applyBulkVisibility(bulkConfirmTarget)} disabled={bulkBusy} style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: 'none', color: '#fff', fontSize: 13, fontWeight: 800, cursor: bulkBusy ? 'default' : 'pointer', fontFamily: 'inherit', background: bulkConfirmTarget ? 'linear-gradient(135deg, #34D399, #059669)' : 'linear-gradient(135deg, #64748b, #475569)', opacity: bulkBusy ? 0.7 : 1 }}>
+                {bulkBusy ? 'Updating…' : `Yes, make all ${bulkConfirmTarget ? 'Public' : 'Hidden'}`}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
