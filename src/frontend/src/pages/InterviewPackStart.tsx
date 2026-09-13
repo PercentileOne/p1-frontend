@@ -122,15 +122,15 @@ export default function InterviewPackStart() {
   // a file is dropped launches the interview with whatever cvText/jobSpec held before the
   // upload (usually empty), silently dropping the CV/job spec that was "just" uploaded.
   const stillExtracting = jobSpecExtracting || cvExtracting;
-  const [activeTab, setActiveTab] = useState<'jobspec' | 'cv'>('cv');
+  // Which of the three role-input tabs is showing. Defaults to Job Title — the primary path
+  // for most candidates now — but opens straight to whichever tab already has real content
+  // (a recruiter's prep link attaching a CV or job spec) so nothing pre-filled is ever hidden,
+  // same principle the old separately-collapsed CV/Job Spec panel used to follow.
+  const [activeTab, setActiveTab] = useState<'jobTitle' | 'jobspec' | 'cv'>(
+    incoming.jobSpec ? 'jobspec' : (incoming.cvText || incoming.cvFileUrl) ? 'cv' : 'jobTitle'
+  );
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedDifficulty, setSelectedDifficulty] = useState(incoming.difficulty ?? 'Pro');
-  // Closed by default — most candidates now start from just a job title. Opens automatically
-  // when there's already CV/job-spec content to show (e.g. a recruiter's prep link), so nothing
-  // that arrived pre-filled is ever hidden from view.
-  const [cvSectionOpen, setCvSectionOpen] = useState(
-    Boolean(incoming.cvText || incoming.jobSpec || incoming.cvFileUrl)
-  );
   const [selectedQuestionCount, setSelectedQuestionCount] = useState(incoming.questionCount ?? 10);
   const [consentToRecord, setConsentToRecord] = useState(true);
   // Only shown after a blocked attempt to start — not on first load, so an empty form
@@ -372,51 +372,174 @@ export default function InterviewPackStart() {
           </p>
         </div>
 
-        {/* Job Title */}
-        <div style={{ background: 'var(--bg2)', border: `1px solid ${attemptedStart && !hasRole ? 'rgba(245,158,11,0.5)' : 'var(--border)'}`, borderRadius: '16px', padding: '24px 28px', marginBottom: '16px', transition: 'border-color 0.15s' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Job Title</span>
-            <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 400 }}>(or upload a Job Spec)</span>
+        {/* Role input — one card, three tabs, all visible in the same strip (Francis, 2026-09-13:
+            the old layout split Job Title (always-visible, top) from Job Spec/CV (collapsed,
+            bottom), which read as if a Job Spec was some secondary afterthought rather than a
+            full alternative to typing a title at all). Tabs are just alternate ways to fill in
+            the SAME role — switching tabs never clears another tab's content, so someone can
+            type a title, peek at Job Spec, and come back to find it untouched. */}
+        <div style={{ background: 'var(--bg2)', border: `1px solid ${attemptedStart && !hasRole ? 'rgba(245,158,11,0.5)' : 'var(--border)'}`, borderRadius: '16px', marginBottom: '16px', overflow: 'hidden', transition: 'border-color 0.15s' }}>
+          <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
+            <button style={tabStyle(activeTab === 'jobTitle')} onClick={() => setActiveTab('jobTitle')}>
+              💼 Job Title {jobTitle.trim() ? '✓' : ''}
+            </button>
+            <button style={tabStyle(activeTab === 'jobspec')} onClick={() => setActiveTab('jobspec')}>
+              📄 Job Spec {jobSpec.trim() || jobSpecFileName ? '✓' : '(optional)'}
+            </button>
+            <button style={tabStyle(activeTab === 'cv')} onClick={() => setActiveTab('cv')}>
+              👤 CV {cvText || cvFileName ? '✓' : '(optional)'}
+            </button>
           </div>
-          <div style={{ position: 'relative' }}>
-            <input
-              type="text"
-              value={jobTitle}
-              onChange={e => handleJobTitleChange(e.target.value)}
-              onFocus={e => { e.target.style.borderColor = 'rgba(79,142,247,0.5)'; if (jobTitleSuggestions.length > 0) setShowJobTitleSuggestions(true); }}
-              onBlur={e => { e.target.style.borderColor = 'var(--border)'; handleJobTitleBlur(); }}
-              placeholder="e.g. Head of Engineering, Senior Product Manager, Registered Nurse…"
-              style={{
-                width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
-                borderRadius: '10px', padding: '13px 16px', color: 'var(--text)', fontSize: '14px',
-                fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
-                transition: 'border-color 0.15s',
-              }}
-            />
-            {showJobTitleSuggestions && (searchingJobTitle || jobTitleSuggestions.length > 0) && (
-              <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, background: '#0d0c1e', border: '1px solid rgba(79,142,247,0.3)', borderRadius: '10px', overflow: 'hidden', zIndex: 20, boxShadow: '0 16px 48px rgba(0,0,0,0.6)' }}>
-                {searchingJobTitle ? (
-                  <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--text-3)' }}>
-                    <span style={{
-                      display: 'inline-block', width: '13px', height: '13px', borderRadius: '50%',
-                      border: '2px solid rgba(79,142,247,0.25)', borderTopColor: 'var(--blue)',
-                      animation: 'jobTitleSpin 0.7s linear infinite',
-                    }} />
-                    Searching…
+
+          <div style={{ padding: '24px 28px' }}>
+            {activeTab === 'jobTitle' && (
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  value={jobTitle}
+                  onChange={e => handleJobTitleChange(e.target.value)}
+                  onFocus={e => { e.target.style.borderColor = 'rgba(79,142,247,0.5)'; if (jobTitleSuggestions.length > 0) setShowJobTitleSuggestions(true); }}
+                  onBlur={e => { e.target.style.borderColor = 'var(--border)'; handleJobTitleBlur(); }}
+                  placeholder="e.g. Head of Engineering, Senior Product Manager, Registered Nurse…"
+                  style={{
+                    width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+                    borderRadius: '10px', padding: '13px 16px', color: 'var(--text)', fontSize: '14px',
+                    fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+                    transition: 'border-color 0.15s',
+                  }}
+                />
+                {showJobTitleSuggestions && (searchingJobTitle || jobTitleSuggestions.length > 0) && (
+                  <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, background: '#0d0c1e', border: '1px solid rgba(79,142,247,0.3)', borderRadius: '10px', overflow: 'hidden', zIndex: 20, boxShadow: '0 16px 48px rgba(0,0,0,0.6)' }}>
+                    {searchingJobTitle ? (
+                      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--text-3)' }}>
+                        <span style={{
+                          display: 'inline-block', width: '13px', height: '13px', borderRadius: '50%',
+                          border: '2px solid rgba(79,142,247,0.25)', borderTopColor: 'var(--blue)',
+                          animation: 'jobTitleSpin 0.7s linear infinite',
+                        }} />
+                        Searching…
+                      </div>
+                    ) : jobTitleSuggestions.map(c => (
+                      <div
+                        key={c.id}
+                        onMouseDown={() => selectJobTitleSuggestion(c)}
+                        style={{ padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(79,142,247,0.1)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
+                      >
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{c.title}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-3)' }}>{c.category}</div>
+                      </div>
+                    ))}
                   </div>
-                ) : jobTitleSuggestions.map(c => (
-                  <div
-                    key={c.id}
-                    onMouseDown={() => selectJobTitleSuggestion(c)}
-                    style={{ padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(79,142,247,0.1)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
-                  >
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{c.title}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-3)' }}>{c.category}</div>
-                  </div>
-                ))}
+                )}
+                <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
+                  Or switch to the Job Spec or CV tab above — either one is enough to start on its own.
+                </div>
               </div>
+            )}
+
+            {activeTab === 'jobspec' && (
+              <>
+                <FileUpload
+                  label="Job Spec"
+                  onExtracted={(text, name) => {
+                    setJobSpec(text);
+                    setJobSpecFileName(name);
+                    logFlowEvent('JOB_SPEC_UPLOADED', { fileName: name, charCount: text.length });
+                  }}
+                  onExtractingChange={setJobSpecExtracting}
+                />
+                {!jobSpecFileName && (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '16px 0' }}>
+                      <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+                      <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>or paste below</span>
+                      <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+                    </div>
+                    <textarea
+                      value={jobSpec}
+                      onChange={e => setJobSpec(e.target.value)}
+                      placeholder="Paste the full job description here…"
+                      rows={6}
+                      style={{
+                        width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+                        borderRadius: '10px', padding: '14px', color: 'var(--text)', fontSize: '13px',
+                        lineHeight: 1.65, resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+                      }}
+                    />
+                  </>
+                )}
+                {jobSpecFileName && (
+                  <div style={{ marginTop: '8px', fontSize: '12px', color: '#34D399' }}>✓ {jobSpecFileName} loaded</div>
+                )}
+              </>
+            )}
+
+            {activeTab === 'cv' && (
+              <>
+                {attachedCv && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 10, marginBottom: '16px',
+                    background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.25)',
+                    borderRadius: '10px', padding: '12px 14px',
+                  }}>
+                    <span style={{ fontSize: 18 }}>📄</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{attachedCv.name}</div>
+                      <div style={{ fontSize: '11px', color: '#34D399' }}>Attached by your recruiter</div>
+                    </div>
+                    <a href={attachedCv.url} target="_blank" rel="noreferrer" style={{ fontSize: '12px', fontWeight: 700, color: 'var(--blue)', textDecoration: 'none', flexShrink: 0 }}>
+                      View ↗
+                    </a>
+                  </div>
+                )}
+
+                {/* CV input tabs */}
+                <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '16px' }}>
+                  {(['upload', 'text'] as const).map(t => (
+                    <button key={t} onClick={() => setCvInputTab(t)} style={{
+                      padding: '7px 16px', border: 'none', background: 'none', cursor: 'pointer',
+                      fontSize: '12px', fontWeight: 700, fontFamily: 'inherit',
+                      color: cvInputTab === t ? 'var(--blue)' : 'var(--text-3)',
+                      borderBottom: cvInputTab === t ? '2px solid var(--blue)' : '2px solid transparent',
+                      marginBottom: '-1px', transition: 'all 0.15s',
+                    }}>
+                      {t === 'upload' ? 'CV Upload' : 'CV Text'}
+                    </button>
+                  ))}
+                </div>
+                {cvInputTab === 'upload' && (
+                  <>
+                    <FileUpload
+                      label="CV"
+                      onExtracted={(text, name) => {
+                        setCvText(text);
+                        setCvFileName(name);
+                        setAttachedCv(null); // replacing the recruiter's attached CV for this session
+                        logFlowEvent('CV_UPLOADED', { fileName: name, charCount: text.length });
+                      }}
+                      onExtractingChange={setCvExtracting}
+                    />
+                    {cvFileName && (
+                      <div style={{ marginTop: '8px', fontSize: '12px', color: '#34D399' }}>✓ {cvFileName} loaded</div>
+                    )}
+                  </>
+                )}
+                {cvInputTab === 'text' && (
+                  <textarea
+                    value={cvText}
+                    onChange={e => { setCvText(e.target.value); setCvFileName(''); setAttachedCv(null); }}
+                    placeholder="Paste your CV / résumé text here — skills, experience, achievements…"
+                    rows={8}
+                    style={{
+                      width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+                      borderRadius: '10px', padding: '14px', color: 'var(--text)', fontSize: '13px',
+                      lineHeight: 1.6, resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+                    }}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>
@@ -653,148 +776,6 @@ export default function InterviewPackStart() {
             </>
           )}
         </div>
-
-        {/* Job Spec + CV — collapsed by default now that a CV isn't required to start; opens
-            automatically when a recruiter's prep link already attached one (see cvSectionOpen's
-            initial state above), so nothing pre-filled is ever hidden from view. */}
-        <button
-          onClick={() => setCvSectionOpen(v => !v)}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
-            background: 'var(--bg2)', border: '1px solid var(--border)',
-            borderRadius: cvSectionOpen ? '16px 16px 0 0' : '16px',
-            padding: '16px 22px', marginBottom: cvSectionOpen ? 0 : '16px', cursor: 'pointer',
-            fontFamily: 'inherit', textAlign: 'left', color: 'var(--text)',
-          }}
-        >
-          <span style={{ fontSize: '13px', fontWeight: 700 }}>
-            📄 Add your CV or job spec <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>— optional, makes it more personalised</span>
-          </span>
-          <span style={{ fontSize: '12px', color: 'var(--text-3)', transform: cvSectionOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s', flexShrink: 0, marginLeft: '12px' }}>▾</span>
-        </button>
-
-        {cvSectionOpen && (
-        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 16px 16px', marginBottom: '16px', overflow: 'hidden' }}>
-
-          {/* Tab bar */}
-          <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
-            <button style={tabStyle(activeTab === 'cv')} onClick={() => setActiveTab('cv')}>
-              👤 Your CV {cvText || cvFileName ? '✓' : '(optional)'}
-            </button>
-            <button style={tabStyle(activeTab === 'jobspec')} onClick={() => setActiveTab('jobspec')}>
-              📄 Job Spec {incoming.jobSpec ? '✓' : '(optional)'}
-            </button>
-          </div>
-
-          {/* Tab content */}
-          <div style={{ padding: '24px 28px' }}>
-
-            {activeTab === 'jobspec' && (
-              <>
-                <FileUpload
-                  label="Job Spec"
-                  onExtracted={(text, name) => {
-                    setJobSpec(text);
-                    setJobSpecFileName(name);
-                    logFlowEvent('JOB_SPEC_UPLOADED', { fileName: name, charCount: text.length });
-                  }}
-                  onExtractingChange={setJobSpecExtracting}
-                />
-                {!jobSpecFileName && (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '16px 0' }}>
-                      <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-                      <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>or paste below</span>
-                      <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-                    </div>
-                    <textarea
-                      value={jobSpec}
-                      onChange={e => setJobSpec(e.target.value)}
-                      placeholder="Paste the full job description here…"
-                      rows={6}
-                      style={{
-                        width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
-                        borderRadius: '10px', padding: '14px', color: 'var(--text)', fontSize: '13px',
-                        lineHeight: 1.65, resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
-                      }}
-                    />
-                  </>
-                )}
-                {jobSpecFileName && (
-                  <div style={{ marginTop: '8px', fontSize: '12px', color: '#34D399' }}>✓ {jobSpecFileName} loaded</div>
-                )}
-              </>
-            )}
-
-            {activeTab === 'cv' && (
-              <>
-                {attachedCv && (
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 10, marginBottom: '16px',
-                    background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.25)',
-                    borderRadius: '10px', padding: '12px 14px',
-                  }}>
-                    <span style={{ fontSize: 18 }}>📄</span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{attachedCv.name}</div>
-                      <div style={{ fontSize: '11px', color: '#34D399' }}>Attached by your recruiter</div>
-                    </div>
-                    <a href={attachedCv.url} target="_blank" rel="noreferrer" style={{ fontSize: '12px', fontWeight: 700, color: 'var(--blue)', textDecoration: 'none', flexShrink: 0 }}>
-                      View ↗
-                    </a>
-                  </div>
-                )}
-
-                {/* CV input tabs */}
-                <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '16px' }}>
-                  {(['upload', 'text'] as const).map(t => (
-                    <button key={t} onClick={() => setCvInputTab(t)} style={{
-                      padding: '7px 16px', border: 'none', background: 'none', cursor: 'pointer',
-                      fontSize: '12px', fontWeight: 700, fontFamily: 'inherit',
-                      color: cvInputTab === t ? 'var(--blue)' : 'var(--text-3)',
-                      borderBottom: cvInputTab === t ? '2px solid var(--blue)' : '2px solid transparent',
-                      marginBottom: '-1px', transition: 'all 0.15s',
-                    }}>
-                      {t === 'upload' ? 'CV Upload' : 'CV Text'}
-                    </button>
-                  ))}
-                </div>
-                {cvInputTab === 'upload' && (
-                  <>
-                    <FileUpload
-                      label="CV"
-                      onExtracted={(text, name) => {
-                        setCvText(text);
-                        setCvFileName(name);
-                        setAttachedCv(null); // replacing the recruiter's attached CV for this session
-                        logFlowEvent('CV_UPLOADED', { fileName: name, charCount: text.length });
-                      }}
-                      onExtractingChange={setCvExtracting}
-                    />
-                    {cvFileName && (
-                      <div style={{ marginTop: '8px', fontSize: '12px', color: '#34D399' }}>✓ {cvFileName} loaded</div>
-                    )}
-                  </>
-                )}
-                {cvInputTab === 'text' && (
-                  <textarea
-                    value={cvText}
-                    onChange={e => { setCvText(e.target.value); setCvFileName(''); setAttachedCv(null); }}
-                    placeholder="Paste your CV / résumé text here — skills, experience, achievements…"
-                    rows={8}
-                    style={{
-                      width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
-                      borderRadius: '10px', padding: '14px', color: 'var(--text)', fontSize: '13px',
-                      lineHeight: 1.6, resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
-                    }}
-                  />
-                )}
-              </>
-            )}
-
-          </div>
-        </div>
-        )}
 
         {/* Recording consent — record widget toggle */}
         <button
