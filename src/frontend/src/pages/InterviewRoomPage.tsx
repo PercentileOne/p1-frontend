@@ -409,11 +409,26 @@ export default function InterviewRoomPage() {
   }, [phase, paused]);
 
   const startInterview = useCallback(async () => {
+    // Fire both avatars' connect() as early as humanly possible — the whole recording-consent
+    // dialog plus Mike's entire spoken intro become free warm-up time before either avatar ever
+    // has to speak. Found live 2026-09-13: the intro's own speak() call was the FIRST thing that
+    // ever triggered connect() for either seat (liveAvatarSpeakHr/Technical connect lazily, on
+    // first use) — meaning it fired with zero head start, unlike every question from Q2 onward,
+    // which already gets pre-connected during the previous question's 'scoring' phase (see that
+    // effect's own comment a few lines up — it explicitly anticipated this exact investigation).
+    // That gap, not anything about the intro's content, is the leading suspect for why only ever
+    // the first utterance of a session has glitched. Fire-and-forget, same pattern as the
+    // Q2+ reconnect — liveAvatarHr/Technical.connect() are themselves idempotent no-ops if
+    // already connected or connecting.
+    if (avatarEnabled) {
+      void liveAvatarHr.connect();
+      void liveAvatarTechnical.connect();
+    }
     if (consentToRecord) {
       await startRecording(); // wait for browser share dialog before Mike speaks
     }
     startMike();
-  }, [startMike, startRecording, consentToRecord]);
+  }, [startMike, startRecording, consentToRecord, avatarEnabled, liveAvatarHr, liveAvatarTechnical]);
 
   // ── Two-phase AI loading ──────────────────────────────────────────────────────
   // Phase 1 (fast ~2s): Mike's script only — unblocks Mike immediately
