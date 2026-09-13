@@ -8,6 +8,27 @@ import {
 const DIFFICULTIES: LearnAlert['difficulty'][] = ['Standard', 'Pro', 'Expert'];
 const DURATIONS = [1, 2, 3];
 
+// Hours between questions, not days — someone prepping for an interview 3 days out wants
+// several questions a day, not one every few days (Francis, 2026-09-13). Spans "3x/day" (8h)
+// through to a once-a-week trickle.
+const INTERVAL_PRESETS: { label: string; hours: number }[] = [
+  { label: 'Every 4 hrs', hours: 4 },
+  { label: 'Every 6 hrs', hours: 6 },
+  { label: 'Every 8 hrs', hours: 8 },
+  { label: 'Every 12 hrs', hours: 12 },
+  { label: 'Daily', hours: 24 },
+  { label: 'Every 2 days', hours: 48 },
+  { label: 'Every 3 days', hours: 72 },
+  { label: 'Every 5 days', hours: 120 },
+  { label: 'Weekly', hours: 168 },
+];
+
+function formatInterval(hours: number): string {
+  const preset = INTERVAL_PRESETS.find(p => p.hours === hours);
+  if (preset) return preset.label;
+  return hours < 24 ? `Every ${hours} hrs` : `Every ${Math.round(hours / 24)} days`;
+}
+
 function statusColor(status: LearnAlert['status']) {
   if (status === 'active') return '#34D399';
   if (status === 'paused') return '#F59E0B';
@@ -135,7 +156,7 @@ export default function LearnAlertsPage() {
                         </div>
                       </td>
                       <td style={{ padding: '14px 16px', fontSize: 12, color: 'var(--text-2)' }}>{alert.difficulty}</td>
-                      <td style={{ padding: '14px 16px', fontSize: 12, color: 'var(--text-2)' }}>{alert.frequencyDays} day{alert.frequencyDays === 1 ? '' : 's'}</td>
+                      <td style={{ padding: '14px 16px', fontSize: 12, color: 'var(--text-2)' }}>{formatInterval(alert.intervalHours)}</td>
                       <td style={{ padding: '14px 16px' }}>
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: alert.currentStreak > 0 ? '#F59E0B' : 'var(--text-3)' }}>
                           <Flame size={13} fill={alert.currentStreak > 0 ? '#F59E0B' : 'none'} /> {alert.currentStreak} <span style={{ color: 'var(--text-3)', fontWeight: 400 }}>(best {alert.longestStreak})</span>
@@ -182,7 +203,7 @@ export default function LearnAlertsPage() {
 function NewAlertModal({ onClose, onCreated }: { onClose: () => void; onCreated: (a: LearnAlert) => void }) {
   const [jobTitle, setJobTitle] = useState('');
   const [difficulty, setDifficulty] = useState<LearnAlert['difficulty']>('Pro');
-  const [frequencyDays, setFrequencyDays] = useState(3);
+  const [intervalHours, setIntervalHours] = useState(24);
   const [durationMonths, setDurationMonths] = useState(1);
   const [visibility, setVisibility] = useState<LearnAlert['visibility']>('hidden');
   const [busy, setBusy] = useState(false);
@@ -195,7 +216,7 @@ function NewAlertModal({ onClose, onCreated }: { onClose: () => void; onCreated:
     setBusy(true);
     setErr(null);
     try {
-      const alert = await createLearnAlert({ jobTitle: jobTitle.trim(), difficulty, frequencyDays, durationMonths, visibility });
+      const alert = await createLearnAlert({ jobTitle: jobTitle.trim(), difficulty, intervalHours, durationMonths, visibility });
       onCreated(alert);
     } catch {
       setErr("Couldn't create that alert — try again.");
@@ -233,10 +254,13 @@ function NewAlertModal({ onClose, onCreated }: { onClose: () => void; onCreated:
         </div>
 
         <label style={{ display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: 6 }}>
-          Frequency — every {frequencyDays} day{frequencyDays === 1 ? '' : 's'}
+          Frequency — {formatInterval(intervalHours).toLowerCase()}
         </label>
-        <input type="range" min={1} max={7} value={frequencyDays} onChange={e => setFrequencyDays(Number(e.target.value))}
-          style={{ width: '100%', marginBottom: 18 }} />
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 18 }}>
+          {INTERVAL_PRESETS.map(p => (
+            <button key={p.hours} onClick={() => setIntervalHours(p.hours)} style={pill(intervalHours === p.hours)}>{p.label}</button>
+          ))}
+        </div>
 
         <label style={{ display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: 6 }}>Duration</label>
         <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>

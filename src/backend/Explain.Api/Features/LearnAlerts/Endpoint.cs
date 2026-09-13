@@ -38,7 +38,7 @@ public static class Endpoint
             if (string.IsNullOrWhiteSpace(req.JobTitle))
                 return Results.BadRequest(new { error = "A job title is required." });
 
-            var frequencyDays = Math.Clamp(req.FrequencyDays, 1, 7);
+            var intervalHours = Math.Clamp(req.IntervalHours, 4, 168);
             var durationMonths = Math.Clamp(req.DurationMonths, 1, 3);
             var difficulty = req.Difficulty is "Standard" or "Pro" or "Expert" ? req.Difficulty : "Pro";
             var visibility = req.Visibility == "public" ? "public" : "hidden";
@@ -55,13 +55,13 @@ public static class Endpoint
                 candidateName: ctx.User.FindFirst("name")?.Value ?? "there",
                 jobTitle: req.JobTitle.Trim(),
                 difficulty: difficulty,
-                frequencyDays: frequencyDays,
+                intervalHours: intervalHours,
                 durationMonths: durationMonths,
                 visibility: visibility,
                 status: "active",
                 createdAt: nowIso,
                 // First question goes out on the very next send-service tick, not after a full
-                // frequencyDays wait — a candidate who just set this up expects to see it work.
+                // intervalHours wait — a candidate who just set this up expects to see it work.
                 nextSendAt: nowIso,
                 sentCount: 0,
                 correctCount: 0,
@@ -105,7 +105,7 @@ public static class Endpoint
             {
                 jobTitle = string.IsNullOrWhiteSpace(req.JobTitle) ? existing.jobTitle : req.JobTitle.Trim(),
                 difficulty = req.Difficulty is "Standard" or "Pro" or "Expert" ? req.Difficulty : existing.difficulty,
-                frequencyDays = req.FrequencyDays is { } fd ? Math.Clamp(fd, 1, 7) : existing.frequencyDays,
+                intervalHours = req.IntervalHours is { } ih ? Math.Clamp(ih, 4, 168) : existing.intervalHours,
                 durationMonths = req.DurationMonths is { } dm ? Math.Clamp(dm, 1, 3) : existing.durationMonths,
                 visibility = req.Visibility is "public" or "hidden" ? req.Visibility : existing.visibility,
                 status = req.Status is "active" or "paused" ? req.Status : existing.status,
@@ -159,7 +159,7 @@ public static class Endpoint
                 return Results.Content(RenderMessagePage("Something's off", "That answer link looks incomplete."), "text/html");
 
             if (question.answeredAt is not null)
-                return Results.Content(RenderResultPage(question, question.selectedIndex == question.correctIndex, alreadyAnswered: true, frequencyDays: null), "text/html");
+                return Results.Content(RenderResultPage(question, question.selectedIndex == question.correctIndex, alreadyAnswered: true, intervalHours: null), "text/html");
 
             return Results.Content(RenderConfirmPage(question, choice.Value), "text/html");
         }).AllowAnonymous();
@@ -183,7 +183,7 @@ public static class Endpoint
             {
                 // Already recorded (e.g. the candidate hit Confirm twice) — show the same result,
                 // don't touch the streak again.
-                return Results.Content(RenderResultPage(question, question.selectedIndex == question.correctIndex, alreadyAnswered: true, frequencyDays: null), "text/html");
+                return Results.Content(RenderResultPage(question, question.selectedIndex == question.correctIndex, alreadyAnswered: true, intervalHours: null), "text/html");
             }
 
             var isCorrect = choice == question.correctIndex;
@@ -200,7 +200,7 @@ public static class Endpoint
                 alert = null;
             }
 
-            int? frequencyDays = alert?.frequencyDays;
+            int? intervalHours = alert?.intervalHours;
             if (alert is not null)
             {
                 var newStreak = isCorrect ? alert.currentStreak + 1 : 0;
@@ -213,7 +213,7 @@ public static class Endpoint
                 await alertsContainer.UpsertItemAsync(updatedAlert, new PartitionKey(updatedAlert.candidateId));
             }
 
-            return Results.Content(RenderResultPage(answered, isCorrect, alreadyAnswered: false, frequencyDays: frequencyDays), "text/html");
+            return Results.Content(RenderResultPage(answered, isCorrect, alreadyAnswered: false, intervalHours: intervalHours), "text/html");
         }).AllowAnonymous().DisableAntiforgery();
     }
 
@@ -362,7 +362,7 @@ public static class Endpoint
             """);
     }
 
-    private static string RenderResultPage(LearnAlertQuestion q, bool isCorrect, bool alreadyAnswered, int? frequencyDays)
+    private static string RenderResultPage(LearnAlertQuestion q, bool isCorrect, bool alreadyAnswered, int? intervalHours)
     {
         var correctText = WebUtility.HtmlEncode(q.options[q.correctIndex]);
         var prefix = alreadyAnswered ? "<p style=\"font-size:12px;color:rgba(255,255,255,0.4);margin:0 0 14px;\">You already answered this one.</p>" : "";
@@ -379,9 +379,18 @@ public static class Endpoint
                 <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0 0 10px;">Never mind!</h1>
                 <p style="font-size:15px;color:rgba(255,255,255,0.75);margin:0 0 6px;">The correct answer was <strong style="color:#fff;">{correctText}</strong>.</p>
                 <p style="font-size:13px;color:rgba(255,255,255,0.5);margin:0;">
-                  {(frequencyDays is { } fd ? $"You'll get another one in about {fd} day{(fd == 1 ? "" : "s")}." : "")}
+                  {(intervalHours is { } ih ? $"You'll get another one in about {FormatInterval(ih)}." : "")}
                 </p>
                 """);
+    }
+
+    // "in about 8 hours" for sub-daily cadences, "in about 3 days" once it rounds to a whole day
+    // or more — matches how the frequency itself is presented in the create form.
+    private static string FormatInterval(int hours)
+    {
+        if (hours < 24) return $"{hours} hour{(hours == 1 ? "" : "s")}";
+        var days = hours / 24;
+        return $"{days} day{(days == 1 ? "" : "s")}";
     }
 
     private static string RenderMessagePage(string title, string message) => WrapPage($"""
@@ -427,8 +436,8 @@ public static class Endpoint
         </script>
         """;
 
-    public record Request(string JobTitle, string Difficulty, int FrequencyDays, int DurationMonths, string Visibility);
-    public record UpdateRequest(string? JobTitle, string? Difficulty, int? FrequencyDays, int? DurationMonths, string? Visibility, string? Status);
+    public record Request(string JobTitle, string Difficulty, int IntervalHours, int DurationMonths, string Visibility);
+    public record UpdateRequest(string? JobTitle, string? Difficulty, int? IntervalHours, int? DurationMonths, string? Visibility, string? Status);
     public record Summary(int totalSent, int totalCorrect, int bestCurrentStreak, int bestLongestStreak);
 }
 
@@ -439,7 +448,7 @@ public record LearnAlert(
     string candidateName,
     string jobTitle,
     string difficulty,      // "Standard" | "Pro" | "Expert" — same vocabulary as interview difficulty
-    int frequencyDays,      // 1-7, days between questions
+    int intervalHours,      // 4-168, hours between questions — supports both "3x/day" (8) and "weekly" (168)
     int durationMonths,     // 1-3
     string visibility,      // "public" | "hidden" — reserved for a future leaderboard, unused for now
     string status,          // "active" | "paused" | "completed"

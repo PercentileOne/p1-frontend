@@ -76,9 +76,10 @@ public class LearnAlertsSendService(
                 var generated = await Endpoint.GenerateQuestionAsync(anthropic, alert.jobTitle, alert.difficulty, logger);
                 if (generated is null)
                 {
-                    // Don't strand the alert on a permanent short retry loop after one bad AI
-                    // call — push nextSendAt out by a day and try again on the normal cadence.
-                    await alertsContainer.UpsertItemAsync(alert with { nextSendAt = now.AddDays(1).ToString("o") }, new PartitionKey(alert.candidateId), cancellationToken: ct);
+                    // One bad AI call shouldn't strand a candidate on a multi-times-a-day cadence
+                    // waiting a full interval — retry in an hour rather than pushing nextSendAt
+                    // out by the alert's own (possibly much longer) interval.
+                    await alertsContainer.UpsertItemAsync(alert with { nextSendAt = now.AddHours(1).ToString("o") }, new PartitionKey(alert.candidateId), cancellationToken: ct);
                     continue;
                 }
 
@@ -99,7 +100,7 @@ public class LearnAlertsSendService(
 
                 await Endpoint.SendQuestionEmailAsync(alert, question, config, logger);
 
-                var updatedAlert = alert with { sentCount = alert.sentCount + 1, nextSendAt = now.AddDays(alert.frequencyDays).ToString("o") };
+                var updatedAlert = alert with { sentCount = alert.sentCount + 1, nextSendAt = now.AddHours(alert.intervalHours).ToString("o") };
                 await alertsContainer.UpsertItemAsync(updatedAlert, new PartitionKey(updatedAlert.candidateId), cancellationToken: ct);
             }
             catch (Exception ex)
