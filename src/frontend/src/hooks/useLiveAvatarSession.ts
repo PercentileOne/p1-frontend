@@ -182,8 +182,20 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
       // Muting here, before the browser has a chance to render a single frame of native audio,
       // closes that window entirely: the only audio the candidate ever hears is our tap below,
       // which starts a moment later in real time but never audibly "catches up".
-      videoElRef.current.muted = true;
-      timingLog(role, 'attach() + synchronous mute done');
+      // Real bug found live 2026-09-13: this used to run unconditionally on EVERY call to
+      // attachIfReady() — but this function can legitimately re-run for the same session
+      // (setVideoEl firing, then SESSION_STREAM_READY firing — see tappedSessionRef's own
+      // comment below). The control-test un-mute further down only runs on the FIRST such call
+      // (guarded by tappedSessionRef), so a second invocation was silently re-muting the video
+      // and skipping that branch entirely — meaning the control test was never actually
+      // exercising what it claimed to. Now skipped outright in control-test mode.
+      if (!AVATAR_AUDIO_CONTROL_TEST) {
+        videoElRef.current.muted = true;
+        timingLog(role, 'attach() + synchronous mute done');
+      } else {
+        videoElRef.current.muted = false;
+        timingLog(role, 'CONTROL TEST MODE — attach() done, mute skipped (video element stays the audio sink on every call)');
+      }
       const session = sessionRef.current;
       const el = videoElRef.current;
       if (tappedSessionRef.current !== session) {
