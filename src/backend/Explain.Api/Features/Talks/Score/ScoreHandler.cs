@@ -46,7 +46,8 @@ public class ScoreHandler(
             Engagement:      new DimensionScore(Clamp(raw.Engagement), raw.EngagementDesc ?? ""),
             TimeManagement:  ComputeTimeManagement(cmd.DurationSeconds, cmd.TargetDurationSeconds),
             OverallFeedback: raw.OverallFeedback ?? "",
-            WordCount:       wordCount
+            WordCount:       wordCount,
+            Takeaways:       raw.Takeaways ?? []
         );
 
         return Result<ScoreResult>.Success(result);
@@ -80,7 +81,7 @@ public class ScoreHandler(
             ? "This is a PERSONAL/EXPERIENTIAL talk — the speaker is sharing something they lived through, not reciting facts. Weight accuracy toward internal consistency and authenticity rather than factual correctness, since there's no external truth to check a lived experience against."
             : "This is a FACTUAL/INFORMATIONAL talk — score accuracy against genuine subject-matter correctness.";
 
-        return $@"You are an expert presentation coach and educator. Score this spoken talk on 6 dimensions.
+        return $@"You are an expert presentation coach and educator. Score this spoken talk on 6 dimensions, and separately extract its takeaways.
 
 TOPIC: {subject}
 {framing}
@@ -94,7 +95,7 @@ Return ONLY valid JSON (no markdown, no explanation):
   ""clarity"": <0-100>,
   ""clarityDesc"": ""one sentence specific to this transcript"",
   ""structure"": <0-100>,
-  ""structureDesc"": ""one sentence specific to this transcript, on intro/body/conclusion flow"",
+  ""structureDesc"": ""one sentence specific to this transcript, on intro/body/conclusion flow AND specifically whether the opening hooks attention and the closing reinforces the single most important point — the primacy/recency effect trial lawyers build closing arguments around, since listeners remember the beginning and end far better than the middle"",
   ""depth"": <0-100>,
   ""depthDesc"": ""one sentence specific to this transcript"",
   ""accuracy"": <0-100>,
@@ -103,13 +104,15 @@ Return ONLY valid JSON (no markdown, no explanation):
   ""confidenceDesc"": ""one sentence specific to this transcript, on delivery/hedging/filler language visible in the transcript"",
   ""engagement"": <0-100>,
   ""engagementDesc"": ""one sentence on how likely this would hold a listener's attention"",
-  ""overallFeedback"": ""2-3 sentence paragraph: what they did well, one concrete improvement, one motivating closing line""
+  ""overallFeedback"": ""2-3 sentence paragraph: what they did well, one concrete improvement, one motivating closing line"",
+  ""takeaways"": [""a concrete, memorable point a listener would actually walk away with and could repeat back afterward"", ""...""]
 }}
 
 Scoring guide:
 - overall: weighted average (clarity 20%, structure 20%, depth 20%, accuracy 15%, confidence 15%, engagement 10%)
 - Be honest but constructive. A blank or off-topic response scores 0-20. A strong, well-delivered talk scores 85-100.
-- Scores must be integers. Descriptions must be specific to THIS transcript, not generic.";
+- Scores must be integers. Descriptions must be specific to THIS transcript, not generic.
+- takeaways: this is a count as much as a list — only genuinely distinct, concrete points, not a sentence-by-sentence summary. Most solid talks yield 2-5. A rambling or unfocused talk may genuinely yield 0 or 1 — don't stretch to pad the count, an honest low number is more useful feedback than an inflated one. Each entry should be short (under 15 words) and phrased as the point itself (""X causes Y""), not as a description of the talk (""explained X"").";
     }
 
     private static int Clamp(int v) => Math.Max(0, Math.Min(100, v));
@@ -138,5 +141,6 @@ Scoring guide:
         [JsonPropertyName("engagement")]      public int Engagement       { get; set; }
         [JsonPropertyName("engagementDesc")]  public string? EngagementDesc { get; set; }
         [JsonPropertyName("overallFeedback")] public string? OverallFeedback { get; set; }
+        [JsonPropertyName("takeaways")]       public List<string>? Takeaways { get; set; }
     }
 }

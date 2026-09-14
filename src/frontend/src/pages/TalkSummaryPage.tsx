@@ -80,13 +80,52 @@ export default function TalkSummaryPage() {
 
         <h1 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--text)', marginBottom: '6px' }}>🎤 {subject}</h1>
 
-        {scoreResult ? (
+        {scoreResult ? (() => {
+          // Talks saved before the Takeaway Score existed have no `takeaways` field at all in
+          // their stored JSON — fall back to null (not shown) rather than crashing on
+          // .length/.map for those older records.
+          const takeaways = scoreResult.takeaways ?? null;
+          return (
           <>
             <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 28px', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '18px' }}>
                 <div style={{ fontSize: '40px', fontWeight: 900, color: scoreColor(scoreResult.overall) }}>{scoreResult.overall}</div>
                 <div style={{ fontSize: '16px', color: 'var(--text-3)' }}>/ 100 — {scoreResult.grade}</div>
               </div>
+
+              {/* Takeaway Score — a count, not a rating: the distinct points a listener would
+                  actually walk away with. Given its own prominent slot rather than folded into
+                  the six dimension rows below, since it's a fundamentally different kind of
+                  measure (what stuck, not how well it was delivered) and a genuinely useful
+                  number on its own — zero is a real, meaningful result, not a bug. */}
+              {takeaways && (
+                <div style={{
+                  background: takeaways.length === 0 ? 'rgba(239,68,68,0.06)' : 'rgba(52,211,153,0.06)',
+                  border: `1px solid ${takeaways.length === 0 ? 'rgba(239,68,68,0.25)' : 'rgba(52,211,153,0.25)'}`,
+                  borderRadius: '12px', padding: '16px 18px', marginBottom: '18px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: takeaways.length > 0 ? '10px' : 0 }}>
+                    <div style={{ fontSize: '26px', fontWeight: 900, color: takeaways.length === 0 ? '#EF4444' : '#34D399' }}>
+                      {takeaways.length}
+                    </div>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      Takeaway{takeaways.length === 1 ? '' : 's'} a listener would walk away with
+                    </div>
+                  </div>
+                  {takeaways.length > 0 ? (
+                    <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {takeaways.map((takeaway, i) => (
+                        <li key={i} style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.5 }}>{takeaway}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.5 }}>
+                      Nothing distinct enough for a listener to walk away with — worth tightening around one or two clear points next time.
+                    </div>
+                  )}
+                </div>
+              )}
+
               <DimensionRow label="Clarity" dim={scoreResult.clarity} />
               <DimensionRow label="Structure" dim={scoreResult.structure} />
               <DimensionRow label="Depth" dim={scoreResult.depth} />
@@ -111,7 +150,8 @@ export default function TalkSummaryPage() {
               />
             </div>
           </>
-        ) : (
+          );
+        })() : (
           <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '10px', padding: '16px', fontSize: '13px', color: 'var(--amber)', marginBottom: '20px' }}>
             Scoring didn't complete for this talk, but it was still saved.
           </div>

@@ -24,7 +24,11 @@ public record ScoreResult(
     DimensionScore Engagement,
     DimensionScore TimeManagement,
     string OverallFeedback,
-    int WordCount
+    int WordCount,
+    // The distinct, concrete points a listener would actually walk away with — not a quality
+    // judgment like the six dimensions above, a literal count of what stuck. An empty list is a
+    // real, meaningful result (the talk didn't land anything memorable), not a missing value.
+    IReadOnlyList<string> Takeaways
 );
 
 public record DimensionScore(int Score, string Description);

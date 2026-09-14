@@ -20,6 +20,10 @@ export interface TalkScoreResult {
   timeManagement: DimensionScore;
   overallFeedback: string;
   wordCount: number;
+  // The distinct, concrete points a listener would actually walk away with — a count as much as
+  // a list. Genuinely can be an empty array (an unfocused talk landed nothing memorable, not a
+  // missing value) — but optional/undefined for talks saved before this field existed.
+  takeaways?: string[];
 }
 
 function authHeaders(): Record<string, string> {
