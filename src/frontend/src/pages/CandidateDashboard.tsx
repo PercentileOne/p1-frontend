@@ -159,6 +159,67 @@ function fmtSalaryK(n: number): string {
   return n >= 1000 ? `${Math.round(n / 1000)}k` : String(n);
 }
 
+// Live Job Market card, redesigned 2026-09-14 (Francis: "a different arrangement... maybe a
+// vertical bar chart") — a vertical bar chart was considered and rejected: these job titles
+// ("AI Red-Teaming Specialist", "Machine Learning Engineer") are too long to sit as rotated
+// axis labels without hurting readability, the actual problem with the old horizontal-list
+// layout wasn't solving. A grid of compact cards with a radial ring sidesteps that entirely —
+// each label sits naturally with its own card instead of fighting for space under a bar.
+function MarketRoleCard({ title, salaryText, growth, value, color, metricLabel }: {
+  title: string; salaryText: string | null; growth: number; value: number; color: string;
+  // What the ring actually measures — differs by tab (demand score vs 5-year growth), so the
+  // card alone doesn't make that explicit; the hover tooltip does (Francis, 2026-09-14).
+  metricLabel: string;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const size = 64;
+  const strokeWidth = 6;
+  const r = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * r;
+  const offset = circumference * (1 - value / 100);
+  const tooltip = [
+    title,
+    `${metricLabel}: ${value}%`,
+    `5-year growth: ${growth > 0 ? "+" : ""}${growth}%`,
+    salaryText ? `Salary: ${salaryText}` : null,
+  ].filter(Boolean).join("\n");
+  return (
+    <div
+      title={tooltip}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: hovered ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.03)",
+        border: `1px solid ${hovered ? color + "55" : "var(--border)"}`, borderRadius: 12,
+        padding: "14px 12px 12px", display: "flex", flexDirection: "column", alignItems: "center",
+        textAlign: "center", gap: 6, cursor: "default",
+        transform: hovered ? "translateY(-2px)" : "none",
+        boxShadow: hovered ? "0 6px 16px rgba(0,0,0,0.25)" : "none",
+        transition: "background 0.15s, border-color 0.15s, transform 0.15s, box-shadow 0.15s",
+      }}
+    >
+      <div style={{ position: "relative", width: size, height: size }}>
+        <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+          <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.08)" strokeWidth={strokeWidth} fill="none" />
+          <circle
+            cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={strokeWidth} fill="none"
+            strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
+            style={{ transition: "stroke-dashoffset 1s ease" }}
+          />
+        </svg>
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "var(--text)" }}>
+          {value}%
+        </div>
+      </div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)", lineHeight: 1.3, minHeight: 30 }}>{title}</div>
+      {salaryText && <div style={{ fontSize: 10.5, color: "var(--text-3)" }}>{salaryText}</div>}
+      <div style={{ fontSize: 11, fontWeight: 700, color: growth >= 0 ? "#2F6FE4" : "#EF4444" }}>
+        {growth > 0 ? "+" : ""}{growth}% growth
+      </div>
+    </div>
+  );
+}
+
 const QUOTES = [
   { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
   { text: "Success is not the key to happiness. Happiness is the key to success.", author: "Albert Schweitzer" },
@@ -873,9 +934,10 @@ export default function CandidateDashboard() {
                   Couldn't reach live market data right now — check back shortly.
                 </div>
               ) : (
-                // Fixed height ≈ 5 rows, scrollable for the rest — keeps the card the same
-                // height at top 10 as it was at top 5 (Francis, 2026-09-10).
-                <div style={{ display: "flex", flexDirection: "column", gap: 14, maxHeight: 250, overflowY: "auto", paddingRight: 4 }}>
+                // Grid of radial-ring cards, replacing the old horizontal-bar list (Francis,
+                // 2026-09-14) — same max-height/scroll behaviour so the card doesn't grow
+                // unbounded at top 10, just laid out as a responsive grid instead of stacked rows.
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12, maxHeight: 320, overflowY: "auto", paddingRight: 4 }}>
                   {market[marketTab].map((c, i) => {
                     // futureScore, not demand.uk/demand.us — those turned out to be
                     // inconsistently scaled across records once checked against real data
@@ -885,39 +947,20 @@ export default function CandidateDashboard() {
                     const growth = c.workforce?.[marketCountry]?.growthPct5yr ?? 0;
                     const salary = c.salary?.[marketCountry];
                     // Direct growth%, capped at 100 — NOT growth*2.5 (the previous formula),
-                    // which saturated the bar at 100 for any growth above 40%. Every real
-                    // "Emerging" role clears that easily (80%+ is typical), so every bar
+                    // which saturated the ring at 100 for any growth above 40%. Every real
+                    // "Emerging" role clears that easily (80%+ is typical), so every ring
                     // rendered visually identical regardless of the real spread between them
                     // — caught live: "It's interesting that they're all 100%".
-                    const barValue = marketTab === "inDemand" ? demand : Math.min(100, Math.round(growth));
+                    const ringValue = marketTab === "inDemand" ? demand : Math.min(100, Math.round(growth));
+                    const color = demand >= 80 ? "#2F6FE4" : demand >= 65 ? "#F59E0B" : "#EF4444";
+                    const salaryText = salary && salary.starting > 0
+                      ? `${salary.currency === "GBP" ? "£" : salary.currency === "USD" ? "$" : ""}${fmtSalaryK(salary.starting)}–${fmtSalaryK(salary.senior)}`
+                      : null;
                     return (
-                      <div key={c.id ?? i}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 5, gap: 10 }}>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-2)" }}>{c.title}</span>
-                          <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
-                            {salary && salary.starting > 0 && (
-                              <span style={{ fontSize: 10.5, color: "var(--text-3)" }}>
-                                {salary.currency === "GBP" ? "£" : salary.currency === "USD" ? "$" : ""}{fmtSalaryK(salary.starting)}–{fmtSalaryK(salary.senior)}
-                              </span>
-                            )}
-                            <span style={{ fontSize: 11, color: growth >= 0 ? "#2F6FE4" : "#EF4444", fontWeight: 700 }}>
-                              {growth > 0 ? "+" : ""}{growth}%
-                            </span>
-                            <span style={{ fontSize: 12, fontWeight: 800, color: demand >= 80 ? "#2F6FE4" : demand >= 65 ? "#F59E0B" : "#EF4444" }}>{demand}%</span>
-                          </div>
-                        </div>
-                        <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
-                          <div style={{
-                            height: "100%", width: `${barValue}%`, borderRadius: 3,
-                            background: demand >= 80
-                              ? "linear-gradient(90deg,#2F6FE4,#60A5FA)"
-                              : demand >= 65
-                                ? "linear-gradient(90deg,#F59E0B,#fcd34d)"
-                                : "linear-gradient(90deg,#EF4444,#f87171)",
-                            transition: "width 1s ease",
-                          }} />
-                        </div>
-                      </div>
+                      <MarketRoleCard
+                        key={c.id ?? i} title={c.title} salaryText={salaryText} growth={growth} value={ringValue} color={color}
+                        metricLabel={marketTab === "inDemand" ? "Demand score" : "5-year growth"}
+                      />
                     );
                   })}
                 </div>
