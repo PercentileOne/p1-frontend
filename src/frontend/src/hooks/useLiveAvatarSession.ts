@@ -6,115 +6,14 @@ import { tapLiveAvatarAudioForRecording } from '../api/liveAvatarRecordingBus';
 
 export type LiveAvatarStatus = 'idle' | 'connecting' | 'connected' | 'failed' | 'closed';
 
-// Temporary diagnostic instrumentation (Francis, 2026-09-10) — the first attempted fix for
-// "Amina's lips move 3-6s before sound, then audio races to catch up" (muting the <video>
-// element synchronously at attach time) did NOT resolve it live, so guessing again without
-// real data risks the same result. These timestamps pin down exactly where the gap actually
-// is: client-side tap wiring, client-side audio generation, or HeyGen's own server-side
-// pipeline (visible as a gap between repeatAudio() being sent and AVATAR_SPEAK_STARTED coming
-// back). Safe to remove once the real cause is confirmed from a live console capture.
+// Lightweight breadcrumbs, not the heavier investigation instrumentation this file used to carry
+// (getStats polling, raw-socket buffer-event listening, ws-transport-state logging) — those
+// answered specific questions during the lips-before-sound investigation that are now closed.
+// Kept minimal and permanent: cheap insurance for spotting a future regression's rough shape
+// (which call, how long after which event) without needing to re-instrument from scratch.
 const timingLog = (role: string, label: string) => {
-  console.log(`[LiveAvatar TIMING][${role}] ${label} @ ${Math.round(performance.now())}ms`);
+  console.log(`[LiveAvatar][${role}] ${label} @ ${Math.round(performance.now())}ms`);
 };
-
-// Temporary diagnostic (Francis, 2026-09-12) — HeyGen support's diagnosis for the lips-before-sound
-// glitch was that repeatAudio() sends one unchunked WebSocket frame over LITE mode's 1MB cap. But
-// a shortened intro (802,484 base64 chars, well under that cap) just glitched identically live,
-// which falsifies frame length as the cause — AND the SDK's own compiled source (verified against
-// both the installed node_modules package and HeyGen's upstream GitHub repo, including their own
-// unit test) shows repeatAudio() already chunks correctly via agent.speak/agent.speak_end whenever
-// a WebSocket transport is open. This reads whether that WebSocket actually IS open at the moments
-// that matter, to settle it definitively instead of guessing again. _sessionEventSocket/_sessionInfo
-// are declared `protected` in the SDK's TypeScript source but are plain fields in the compiled JS
-// actually shipped — same reach-past-declared-visibility precedent already used for
-// _remoteAudioTrack below. Pure read, no behavior change. Safe to remove once the branch is confirmed.
-const logWebSocketState = (role: string, label: string, session: LiveAvatarSession) => {
-  const internals = session as unknown as {
-    _sessionEventSocket?: WebSocket | null;
-    _sessionInfo?: { ws_url?: string } | null;
-  };
-  const socket = internals._sessionEventSocket;
-  const readyStateNames: Record<number, string> = { 0: 'CONNECTING', 1: 'OPEN', 2: 'CLOSING', 3: 'CLOSED' };
-  const socketState = socket ? (readyStateNames[socket.readyState] ?? String(socket.readyState)) : 'null';
-  const grantedWsUrl = Boolean(internals._sessionInfo?.ws_url);
-  console.log(`[LiveAvatar TIMING][${role}] ${label} — ws_url granted by HeyGen: ${grantedWsUrl}, _sessionEventSocket: ${socketState}`);
-};
-
-// HeyGen Advanced Support's diagnostic request (2026-09-13), point 3: the first-ever
-// agent.audio_buffer_appended and agent.speak_started timestamps on the raw socket. The SDK's
-// public AgentEventsEnum only surfaces avatar.speak_started/ended, not audio_buffer_appended,
-// so this listens on _sessionEventSocket directly — same reach as logWebSocketState above.
-// Logs each only once per session (first occurrence only, per their ask).
-const listenForBufferEvents = (role: string, session: LiveAvatarSession) => {
-  const socket = (session as unknown as { _sessionEventSocket?: WebSocket | null })._sessionEventSocket;
-  if (!socket) return;
-  let loggedAppended = false;
-  let loggedStarted = false;
-  socket.addEventListener('message', (event: MessageEvent) => {
-    if (loggedAppended && loggedStarted) return;
-    try {
-      const data = JSON.parse(event.data as string) as { type?: string };
-      if (!loggedAppended && data?.type === 'agent.audio_buffer_appended') {
-        loggedAppended = true;
-        timingLog(role, 'first agent.audio_buffer_appended received (raw WS)');
-      }
-      if (!loggedStarted && data?.type === 'agent.speak_started') {
-        loggedStarted = true;
-        timingLog(role, 'first agent.speak_started received (raw WS)');
-      }
-    } catch { /* not JSON, or not the shape we expect — ignore */ }
-  });
-};
-
-// HeyGen Advanced Support's diagnostic request (2026-09-13), point 1: getStats() on the inbound
-// audio receiver every 250ms for the first ~4s after a speak() call — packets arriving at a
-// steady rate while jitterBufferDelay grows and removedSamplesForAcceleration spikes points at
-// OUR tap not draining the buffer in time; packets arriving in a burst points at audio leaving
-// HeyGen's side late. The SDK exposes no public RTCPeerConnection accessor, so this reaches into
-// LiveKit's own internal room.engine.pcManager.subscriber._pc (the "subscriber" PC carries
-// inbound remote tracks) — verified directly against the SDK's own compiled source, which reaches
-// this exact same path internally for its own connection-quality indicator. Gated to a session's
-// first-ever speak() only (see hasPolledStatsRef in the hook below), matching their "one glitched
-// utterance" ask rather than polling on every question.
-const pollAudioStats = (session: LiveAvatarSession, role: string, rawAudioTrack: MediaStreamTrack) => {
-  const pc = (session as unknown as {
-    room?: { engine?: { pcManager?: { subscriber?: { _pc?: RTCPeerConnection } } } };
-  }).room?.engine?.pcManager?.subscriber?._pc;
-  if (!pc) {
-    console.warn('[LiveAvatar] Could not reach internal RTCPeerConnection for getStats() — SDK internals may have changed.');
-    return;
-  }
-  let samples = 0;
-  const timer = setInterval(() => {
-    samples++;
-    if (samples > 16) { clearInterval(timer); return; } // ~4s of coverage at 250ms
-    pc.getStats(rawAudioTrack).then(report => {
-      report.forEach(stat => {
-        if (stat.type === 'inbound-rtp' && stat.kind === 'audio') {
-          console.log(
-            `[LiveAvatar STATS][${role}] @ ${Math.round(performance.now())}ms — ` +
-            `packetsReceived=${stat.packetsReceived}, jitterBufferDelay=${stat.jitterBufferDelay?.toFixed?.(3)}, ` +
-            `jitterBufferEmittedCount=${stat.jitterBufferEmittedCount}, removedSamplesForAcceleration=${stat.removedSamplesForAcceleration}, ` +
-            `concealedSamples=${stat.concealedSamples}, lastPacketReceivedTimestamp=${stat.lastPacketReceivedTimestamp}`
-          );
-        }
-      });
-    }).catch(err => {
-      console.warn('[LiveAvatar] getStats() failed:', err);
-      clearInterval(timer);
-    });
-  }, 250);
-};
-
-// One-off control test HeyGen proposed (2026-09-13): if leaving the <video> element itself as
-// the audio sink (unmuted, no custom tap) plays a glitch-free first utterance, that proves our
-// tap's startup timing is the cause rather than anything server-side. Reverted back to
-// URL-gated (off by default) — a new hypothesis (missing early-connect head start on the very
-// first utterance, see startInterview in InterviewRoomPage.tsx) is being tested now instead, and
-// leaving the tap disabled would confound that test with this one. Re-enable via
-// ?avatarAudioControlTest=1 if this control test still needs revisiting later.
-const AVATAR_AUDIO_CONTROL_TEST =
-  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('avatarAudioControlTest') === '1';
 
 // Wraps the official LiveAvatar Web SDK for one interview seat's avatar session. voiceChat is
 // deliberately never enabled — that SDK feature captures the browser's own microphone for a
@@ -122,6 +21,19 @@ const AVATAR_AUDIO_CONTROL_TEST =
 // ourselves (ElevenLabs, via fetchAvatarAudioBase64) and push it in with repeatAudio(), same
 // division of responsibility as the "we handle the questions, they do the talking" architecture
 // this was built around.
+//
+// 2026-09-14 — the audible path is now just the SDK's own native <video> playback, full stop.
+// The lips-before-sound investigation traced the glitch to our own tap being a SECOND,
+// independent audio pipeline (raw track -> our own Web Audio graph -> speakers) racing the native
+// one — confirmed by HeyGen support and by a clean, repeated control test (element unmuted, no
+// tap at all). A follow-up attempt routed the tap through LiveKit's own official `webAudioMix`
+// mechanism instead of a hand-rolled one, which still turned out to be Web Audio processing in
+// the audible path — same class of problem, still regressed live. The tap now ONLY feeds the
+// recording bus + waveform analyser (see liveAvatarRecordingBus.ts) — never speakers — and the
+// volume boost that used to live on a destination-side gain node is applied to the raw PCM
+// samples themselves before they're ever sent to HeyGen (see liveAvatarApi.ts), so the native
+// element already plays back boosted audio with zero Web Audio involvement in what a candidate
+// actually hears.
 //
 // One instance per seat — InterviewRoomPage creates two (role 'hr' for Amina, 'technical' for
 // Wayne), each its own independent WebRTC session running concurrently. role is only used to
@@ -152,40 +64,22 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   // mode this was built to prevent.
   const connectPromiseRef = useRef<Promise<void> | null>(null);
   // Tracks which session has already had its audio tapped into the recording bus — kept
-  // separate from video-attach bookkeeping now (see wireTapIfReady's own comment for why),
-  // but still per-session since wireTapIfReady, like the old combined function, can legitimately
-  // be asked to run more than once for the same session.
+  // separate from video-attach bookkeeping (see wireTapIfReady's own comment for why), but
+  // still per-session since wireTapIfReady can legitimately be asked to run more than once for
+  // the same session.
   const tappedSessionRef = useRef<LiveAvatarSession | null>(null);
   const untapAudioRef = useRef<(() => void) | null>(null);
-  // Gates pollAudioStats to a session's first-ever speak() only — see that function's own
-  // comment for why (HeyGen asked for data on "one glitched utterance", not every question).
-  const hasPolledStatsRef = useRef(false);
 
-  // Split out from attachIfReady 2026-09-13 — real data (session ID d5f2c64a, SESSION_STREAM_READY
-  // @27,902ms, attach() not until 58,309ms — 30s of the session sitting fully connected and
-  // completely idle) showed the early-connect fix (giving the intro's connect() the same head
-  // start Q2+ already gets) had ZERO effect on the actual glitch, because attach()/the tap were
-  // STILL gated on the video element existing, which only happens once the avatar tiles become
-  // visually relevant (after Mike's intro) — the connect()-to-speak() gap got much bigger, but
-  // the attach()-to-speak() gap (the one that's actually mattered every single time) never
-  // changed at all. The raw audio track this taps (_remoteAudioTrack.mediaStreamTrack) comes
-  // straight off the `session` object, NOT off the attached <video> element — it never actually
-  // needed attach() to run first, that coupling was just how the original code happened to be
-  // written. Wiring the tap here, gated ONLY on the session being stream-ready, lets it sit
-  // "warmed up" and draining audio for the whole idle window instead of starting cold ~570ms
-  // before the first speak() call.
-  //
-  // Deliberately does NOT touch anything about the <video> element or when it becomes visible —
-  // attachIfReady below is completely unchanged, so the one thing that broke last time this
-  // "attach earlier" idea was tried (avatars taking 45-60s to visually appear) has no surface
-  // area to regress here at all.
+  // Wired on SESSION_STREAM_READY, independent of the <video> element existing (it only mounts
+  // once the avatar tiles become visually relevant) — lets the recording tap sit warmed up for
+  // however long the avatar is idle before its first speak(), rather than starting cold right
+  // before it. Purely a recording-bus feed now — see liveAvatarRecordingBus.ts's own comment on
+  // why it never touches speaker output.
   const wireTapIfReady = useCallback(() => {
     if (!streamReadyRef.current || !sessionRef.current) return;
     const session = sessionRef.current;
     if (tappedSessionRef.current === session) return; // already wired for this session
     tappedSessionRef.current = session;
-    // Same reach-past-declared-visibility as elsewhere in this file — see attachIfReady's own
-    // comment (below) for the full history of why this specific reach is trusted.
     const rawAudioTrack = (session as unknown as {
       _remoteAudioTrack?: { mediaStreamTrack?: MediaStreamTrack };
     })._remoteAudioTrack?.mediaStreamTrack;
@@ -193,66 +87,21 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
       console.warn('[LiveAvatar] No raw audio track available to tap — SDK internals may have changed; recording will miss this avatar\'s voice.');
       return;
     }
-    if (AVATAR_AUDIO_CONTROL_TEST) {
-      // No tap at all in control-test mode — the <video> element (unmuted, see attachIfReady)
-      // is left as the only audio sink, whenever it eventually attaches.
-      timingLog(role, 'CONTROL TEST MODE — tap wiring skipped entirely, native <video> will be the only audio sink');
-      return;
-    }
     untapAudioRef.current?.();
-    // Fire-and-forget — getTTSAudioContext() is async only because it may need to resume() a
-    // suspended context; nothing here needs to block on it.
     getTTSAudioContext().then(ctx => {
       if (tappedSessionRef.current !== session) return; // superseded by a newer session already
-      timingLog(role, `about to tap (stream-ready-driven, not attach-driven) — AudioContext.state=${ctx.state}`);
-      // videoEl is null here on purpose — this tap no longer needs one (see this function's own
-      // comment above) and attach() may not have happened yet at all.
-      untapAudioRef.current = tapLiveAvatarAudioForRecording(rawAudioTrack, null, ctx, onAnalyser);
-      timingLog(role, 'audio tap connected (candidate can now hear this seat)');
+      untapAudioRef.current = tapLiveAvatarAudioForRecording(rawAudioTrack, ctx, onAnalyser);
+      timingLog(role, 'recording tap connected');
     });
   }, [onAnalyser, role]);
 
   const attachIfReady = useCallback(() => {
     if (streamReadyRef.current && videoElRef.current && sessionRef.current) {
       sessionRef.current.attach(videoElRef.current);
-      // Mute SYNCHRONOUSLY, in the same tick as attach() — this is the actual fix for the
-      // "lips move for 3-6s, then audio races to catch up" bug reported live 2026-09-10 (first
-      // utterance of a session only — Amina's intro, never Wayne's, since he always speaks
-      // second and the gap below has long since closed by his turn). Root cause: this element
-      // was previously left UNMUTED until the async tap below finished wiring (an awaited
-      // getTTSAudioContext() call, possibly a real user-perceptible delay the very first time
-      // it's ever invoked in a session). Video frames render the instant attach() runs above,
-      // but during that async gap the element's OWN native WebRTC audio track — a brand new
-      // session's first-ever audio decode, which browsers are well known to cold-start slower
-      // than video — was free to play, and browsers' native <video>/<audio> A/V sync includes
-      // its own catch-up mechanism (briefly speeding up audio playback to resync to the video
-      // position) for exactly this situation. That native catch-up is what candidates actually
-      // heard as audio "racing" to catch up — not anything in our own tap, which (being a plain
-      // live MediaStreamSource pull, not a buffered element) has no such speed-up behaviour.
-      // Muting here, before the browser has a chance to render a single frame of native audio,
-      // closes that window entirely: the only audio the candidate ever hears is our tap (now
-      // wired independently by wireTapIfReady, see its own comment for why), which by this point
-      // has typically already been running for a while, not starting fresh here.
-      // Real bug found live 2026-09-13: this used to run unconditionally on EVERY call to
-      // attachIfReady() — but this function can legitimately re-run for the same session
-      // (setVideoEl firing, then SESSION_STREAM_READY firing). The control-test un-mute further
-      // down only ran on the FIRST such call, so a second invocation was silently re-muting the
-      // video and skipping that branch entirely — meaning the control test was never actually
-      // exercising what it claimed to. Now skipped outright in control-test mode on every call.
-      if (!AVATAR_AUDIO_CONTROL_TEST) {
-        videoElRef.current.muted = true;
-        timingLog(role, 'attach() + synchronous mute done');
-      } else {
-        videoElRef.current.muted = false;
-        timingLog(role, 'CONTROL TEST MODE — attach() done, mute skipped (video element stays the audio sink on every call)');
-      }
-      // Tap wiring used to live here, gated on the video element existing — now handled
-      // independently by wireTapIfReady (called from SESSION_STREAM_READY directly, well before
-      // this ever runs in practice). Still called here too, harmlessly, in case attach() somehow
-      // runs before stream-ready did for some reason — wireTapIfReady no-ops if already wired.
+      timingLog(role, 'attach() done — native element is the only audio sink');
       wireTapIfReady();
     }
-  }, [wireTapIfReady]);
+  }, [wireTapIfReady, role]);
 
   const connect = useCallback(() => {
     if (connectedRef.current) return Promise.resolve(); // already connected — no-op
@@ -268,22 +117,21 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
         // the same moment LiveAvatar's own rendering pipeline has actually finished warming up
         // and subscribed the real video/audio tracks. Calling speak() in that gap is exactly
         // what caused the very first question of a session to silently misfire live (text
-        // displayed, Wayne never moved, only Repeat — running well after the gap had closed —
-        // worked). SESSION_STREAM_READY is the SDK's own explicit "tracks are actually here"
-        // signal; connect() now waits for it too, with a safety timeout in case it never fires
-        // for some reason, so a stalled stream can't hang the whole interview indefinitely.
-        timingLog(role, 'connect() starting (session token requested)');
+        // displayed, avatar never moved). SESSION_STREAM_READY is the SDK's own explicit "tracks
+        // are actually here" signal; connect() waits for it too, with a safety timeout in case it
+        // never fires for some reason, so a stalled stream can't hang the whole interview.
+        timingLog(role, 'connect() starting');
         const streamReadyPromise = new Promise<void>((resolve) => {
           session.on(SessionEvent.SESSION_STREAM_READY, () => {
             timingLog(role, 'SESSION_STREAM_READY fired');
             streamReadyRef.current = true;
-            wireTapIfReady(); // audio tap — independent of the video element, see its own comment
-            attachIfReady(); // video attach — unchanged, still gated on the element existing
+            wireTapIfReady();
+            attachIfReady();
             resolve();
           });
         });
         session.on(SessionEvent.SESSION_DISCONNECTED, (reason?: unknown) => {
-          timingLog(role, `SESSION_DISCONNECTED fired (reason: ${JSON.stringify(reason)}) — this seat will show frozen/silent until re-connected`);
+          timingLog(role, `SESSION_DISCONNECTED fired (reason: ${JSON.stringify(reason)})`);
           setStatus('closed');
           sessionRef.current = null;
           connectedRef.current = false;
@@ -292,11 +140,6 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
         });
 
         await session.start();
-        // Logged for HeyGen support tickets — their reproduction request always asks for the
-        // session ID alongside console logs/HAR (see the first-utterance desync investigation).
-        timingLog(role, `session.start() resolved, sessionId=${session.sessionId ?? 'null'}`);
-        logWebSocketState(role, 'session.start() resolved', session);
-        listenForBufferEvents(role, session);
         await Promise.race([
           streamReadyPromise,
           new Promise<void>(resolve => setTimeout(resolve, 5000)),
@@ -350,17 +193,8 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
     const session = sessionRef.current;
     if (!session || !connectedRef.current) throw new Error('Avatar session is not connected');
 
-    timingLog(role, 'speak() called — requesting audio generation');
+    timingLog(role, 'speak() called');
     const audioBase64 = await fetchAvatarAudioBase64(text, role);
-    // HeyGen support (2026-09-12): LITE mode's WebSocket frame caps at 1MB (1,048,576 chars of
-    // base64 PCM16/24kHz — roughly 16.4s of audio), and repeatAudio() sends the WHOLE clip as a
-    // single frame with no chunking. Their working theory for the first-utterance desync: Amina's
-    // intro alone likely exceeds that in one shot, while every question after it is short enough
-    // to fit — matching exactly what's been observed (only ever the first, longest utterance).
-    // Logged here to confirm before committing to the real fix (chunked agent.speak frames).
-    const overLimit = audioBase64.length > 1_048_576;
-    console.log(`[LiveAvatar TIMING][${role}] audioBase64 length: ${audioBase64.length} chars (~${(audioBase64.length / 64000).toFixed(1)}s of audio, per HeyGen's ~64,000 chars/sec figure) — ${overLimit ? 'OVER the 1MB/1,048,576 char LITE frame limit' : 'under the 1MB frame limit'}`);
-    timingLog(role, 'audio generation done — about to send repeatAudio()');
     // Safety timeout: AVATAR_SPEAK_ENDED can simply never fire if the underlying session has
     // gone quietly dead — the SDK's own keepAlive() fire-and-forgets its network call (never
     // awaits sessionClient.keepAlive() internally), so a failed keep-alive is invisible to us,
@@ -374,13 +208,8 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
     const timeoutMs = Math.max(15_000, text.split(/\s+/).length * 500);
     return new Promise<void>((resolve, reject) => {
       let settled = false;
-      // Never listened to before — this is HeyGen's own server-pushed confirmation that the
-      // talk has actually begun (a real WebSocket event, "agent.speak_started"), distinct from
-      // merely having SENT repeatAudio() below. A large gap between the "sending repeatAudio()"
-      // log above and this one firing would confirm the delay is server-side (HeyGen's own
-      // generation pipeline), not anything in our own tap-wiring or audio-generation code.
       const onStarted = () => {
-        timingLog(role, 'AVATAR_SPEAK_STARTED fired (HeyGen confirms talk began)');
+        timingLog(role, 'AVATAR_SPEAK_STARTED fired');
         onSpeakStarted?.();
       };
       const onEnded = () => {
@@ -405,14 +234,6 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
       }, timeoutMs);
       session.on(AgentEventsEnum.AVATAR_SPEAK_STARTED, onStarted);
       session.on(AgentEventsEnum.AVATAR_SPEAK_ENDED, onEnded);
-      logWebSocketState(role, 'about to call repeatAudio()', session);
-      if (!hasPolledStatsRef.current) {
-        hasPolledStatsRef.current = true;
-        const rawAudioTrack = (session as unknown as {
-          _remoteAudioTrack?: { mediaStreamTrack?: MediaStreamTrack };
-        })._remoteAudioTrack?.mediaStreamTrack;
-        if (rawAudioTrack) pollAudioStats(session, role, rawAudioTrack);
-      }
       session.repeatAudio(audioBase64);
       timingLog(role, 'repeatAudio() sent');
     });
