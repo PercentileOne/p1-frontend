@@ -138,12 +138,19 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
           micGainNodeRef.current = micGain;
           audioCtx.createMediaStreamSource(micStream).connect(micGain).connect(compressor);
         }
-        // NOT calling setLiveAvatarRecordingDestination here, deliberately — LiveAvatar's audio
-        // plays through the native <video> element only (see useLiveAvatarSession.ts), no Web
-        // Audio involvement at all, and getDisplayMedia's tab-audio-capture (above) grabs
-        // whatever's actually audible in the tab regardless of how it's being played — it
-        // already reliably captures that native playback on its own, no explicit wiring needed.
-        // Mobile still needs the explicit bus below: no tab-capture exists there to catch it.
+        // Wire the LiveAvatar recording tap in here too — found live 2026-09-14: a real
+        // interview recording had MCQ/TTS audio (Web Audio -> destination -> tab-capture) but
+        // NO avatar audio at all. getDisplayMedia's tab-audio-capture does not reliably grab a
+        // raw WebRTC <video> element's own native playback (a known browser limitation — tab/
+        // screen audio capture commonly excludes WebRTC-originated audio), even though it's
+        // genuinely audible live and genuinely captures everything else. This used to be
+        // deliberately skipped on desktop, on the assumption tab-capture would catch native
+        // playback on its own — that assumption is what this bug disproved. The double-capture/
+        // echo risk that justified skipping it no longer applies either: that risk only existed
+        // while LiveAvatar audio ALSO went through Web Audio destination (before this morning's
+        // b654002 native-<video>-only fix) — tab-capture has had nothing of this SDK's audio to
+        // pick up via that route since. Same call mobile already makes below.
+        setLiveAvatarRecordingDestination(dest, compressor);
 
         compositeStream = new MediaStream([...tabStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
 
