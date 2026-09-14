@@ -156,7 +156,7 @@ export function ProductivityVideosRow() {
         <style>{`
           .productivity-row-scroll::-webkit-scrollbar, .productivity-row-grid::-webkit-scrollbar { height: 8px; width: 8px; }
           .productivity-row-scroll::-webkit-scrollbar-track, .productivity-row-grid::-webkit-scrollbar-track { background: var(--bg3); border-radius: 4px; }
-          .productivity-row-scroll::-webkit-scrollbar-thumb, .productivity-row-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+          .productivity-row-scroll::-webkit-scrollbar-thumb, .productivity-row-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 4px; }
           .productivity-row-scroll::-webkit-scrollbar-thumb:hover, .productivity-row-grid::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
         `}</style>
         {showing.length === 0 && !searching && (

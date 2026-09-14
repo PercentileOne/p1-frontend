@@ -154,7 +154,7 @@ export function WatchAndLearnRow() {
         <style>{`
           .watch-and-learn-scroll::-webkit-scrollbar, .watch-and-learn-grid::-webkit-scrollbar { height: 8px; width: 8px; }
           .watch-and-learn-scroll::-webkit-scrollbar-track, .watch-and-learn-grid::-webkit-scrollbar-track { background: var(--bg3); border-radius: 4px; }
-          .watch-and-learn-scroll::-webkit-scrollbar-thumb, .watch-and-learn-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+          .watch-and-learn-scroll::-webkit-scrollbar-thumb, .watch-and-learn-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 4px; }
           .watch-and-learn-scroll::-webkit-scrollbar-thumb:hover, .watch-and-learn-grid::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
         `}</style>
         {showing.length === 0 && !searching && (
