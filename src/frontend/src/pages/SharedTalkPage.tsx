@@ -9,6 +9,7 @@ interface SharedTalk {
   scoreResult?: TalkScoreResult | null;
   transcript?: string;
   createdAt: string;
+  videoUrl?: string | null;
 }
 
 function scoreColor(pct: number) {
@@ -32,7 +33,7 @@ function DimensionRow({ label, dim }: { label: string; dim: DimensionScore }) {
 }
 
 // Public, unauthenticated view for a shared talk link/QR scan — sibling to
-// SharedInterviewPage.tsx, considerably simpler (no video yet, no per-question chapters).
+// SharedInterviewPage.tsx, considerably simpler (no per-question chapters).
 export default function SharedTalkPage() {
   const { token } = useParams<{ token: string }>();
   const [data, setData] = useState<SharedTalk | null>(null);
@@ -73,20 +74,60 @@ export default function SharedTalkPage() {
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px 60px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       <h1 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--text)' }}>🎤 {data.subject}</h1>
 
-      {data.scoreResult && (
+      {/* Leads with video, same as TalkSummaryPage.tsx — the recording is the primary artifact
+          a visitor came to watch. */}
+      {data.videoUrl && (
+        <div style={{ position: 'relative', background: '#000', aspectRatio: '16/9', borderRadius: '16px', overflow: 'hidden' }}>
+          <video src={data.videoUrl} controls playsInline style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+        </div>
+      )}
+
+      {data.scoreResult && (() => {
+        // Talks shared from before the Takeaway Score/Starting & Ending Strength existed have
+        // neither field in their stored JSON — same backward-compat guard as TalkSummaryPage.tsx.
+        const takeaways = data.scoreResult.takeaways ?? null;
+        const openingClosingStrength = data.scoreResult.openingClosingStrength ?? null;
+        return (
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 28px' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '18px' }}>
             <div style={{ fontSize: '40px', fontWeight: 900, color: scoreColor(data.scoreResult.overall) }}>{data.scoreResult.overall}</div>
             <div style={{ fontSize: '16px', color: 'var(--text-3)' }}>/ 100 — {data.scoreResult.grade}</div>
           </div>
+
+          {takeaways && (
+            <div style={{
+              background: takeaways.length === 0 ? 'rgba(239,68,68,0.06)' : 'rgba(52,211,153,0.06)',
+              border: `1px solid ${takeaways.length === 0 ? 'rgba(239,68,68,0.25)' : 'rgba(52,211,153,0.25)'}`,
+              borderRadius: '12px', padding: '16px 18px', marginBottom: '16px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: takeaways.length > 0 ? '10px' : 0 }}>
+                <div style={{ fontSize: '26px', fontWeight: 900, color: takeaways.length === 0 ? '#EF4444' : '#34D399' }}>
+                  {takeaways.length}
+                </div>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  Takeaway{takeaways.length === 1 ? '' : 's'} a listener would walk away with
+                </div>
+              </div>
+              {takeaways.length > 0 && (
+                <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {takeaways.map((takeaway, i) => (
+                    <li key={i} style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.5 }}>{takeaway}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
           <DimensionRow label="Clarity" dim={data.scoreResult.clarity} />
           <DimensionRow label="Structure" dim={data.scoreResult.structure} />
+          {openingClosingStrength && <DimensionRow label="Starting & Ending Strength" dim={openingClosingStrength} />}
           <DimensionRow label="Depth" dim={data.scoreResult.depth} />
           <DimensionRow label="Accuracy" dim={data.scoreResult.accuracy} />
           <DimensionRow label="Confidence" dim={data.scoreResult.confidence} />
           <DimensionRow label="Engagement" dim={data.scoreResult.engagement} />
         </div>
-      )}
+        );
+      })()}
 
       {data.transcript && (
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px 24px' }}>

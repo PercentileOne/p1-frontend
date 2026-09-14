@@ -63,6 +63,18 @@ export default function TalkSummaryPage() {
   const transcript: string = src.transcript ?? '';
   const isShared: boolean = src.isShared ?? false;
   const talkId = routeId ?? src.id;
+  // Immediately after finishing, this is a local blob: URL TalkRoomPage.tsx built from the
+  // just-uploaded recording; on a later revisit/refresh it's the real hosted URL the backend
+  // returns instead (BuildResponseJson in Features/Talks/Endpoint.cs). Null for talks recorded
+  // before this feature existed, or if recording was declined/failed.
+  const videoUrl: string | null = src.videoUrl ?? null;
+
+  // Only ever revoke a LOCAL blob: URL, never the real hosted one — same distinction
+  // useInterviewRecording.ts's own playback URL handling makes.
+  useEffect(() => {
+    if (!videoUrl?.startsWith('blob:')) return;
+    return () => URL.revokeObjectURL(videoUrl);
+  }, [videoUrl]);
 
   if (fetchState === 'loading') {
     return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-2)' }}>Loading your talk…</div>;
@@ -79,6 +91,18 @@ export default function TalkSummaryPage() {
         </button>
 
         <h1 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--text)', marginBottom: '6px' }}>🎤 {subject}</h1>
+
+        {/* Leads with video, same principle as the interview summary page — the recording is
+            the primary artifact, everything else (score, transcript) is analysis of it. A
+            simple native player is enough here: talks have no chapter markers to scrub between,
+            unlike InterviewSummaryPage.tsx's InterviewReplayPlayer. */}
+        {videoUrl && (
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ position: 'relative', background: '#000', aspectRatio: '16/9', borderRadius: '16px', overflow: 'hidden' }}>
+              <video src={videoUrl} controls playsInline style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+            </div>
+          </div>
+        )}
 
         {scoreResult ? (() => {
           // Talks saved before the Takeaway Score existed have no `takeaways` field at all in

@@ -153,10 +153,17 @@ export default function TalkRoomPage() {
       }, videoBlob);
     } catch { /* best-effort — the summary page falls back to route state if this fails */ }
 
+    // Local blob URL for immediate playback on the summary screen — same reasoning as
+    // useInterviewRecording.ts's buildPlaybackUrl: the real, hosted videoUrl only exists once
+    // BuildResponseJson (Features/Talks/Endpoint.cs) can return it on a later GET, which won't
+    // happen on this same navigate. Built from the same blob already uploaded above, not a
+    // second recording.
+    const playbackUrl = videoBlob ? URL.createObjectURL(videoBlob) : null;
+
     talkAvatars.giveOutro(result?.overall ?? null, () => {
       setPhase('done');
       navigate(`/talk-summary/${talkIdRef.current}`, {
-        state: { subject, scoreResult: result, transcript: finalTranscript, durationSeconds: elapsed, targetDurationSeconds },
+        state: { subject, scoreResult: result, transcript: finalTranscript, durationSeconds: elapsed, targetDurationSeconds, videoUrl: playbackUrl },
       });
     });
   }, [talkAvatars, transcript, recording, subject, elapsed, targetDurationSeconds, isPersonalStory, authUser, navigate]);
