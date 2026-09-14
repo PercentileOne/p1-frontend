@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
+import { YouCamera } from '../components/YouCamera';
 
 const TEST_LINE = "Hi, this is a short test line used to check whether the audio glitch happens on this very first utterance of a fresh session.";
 
@@ -129,6 +130,17 @@ function DualSeatTest() {
 
   const hr = useLiveAvatarSession('hr');
   const technical = useLiveAvatarSession('technical');
+  // 2026-09-14 — added after four other controlled variables (Mike's intro, dual-avatar
+  // concurrency, recording, 180s idle) each failed to reproduce the glitch here, while a real
+  // longtask capture showed the real room's main thread is barely busy during the same window
+  // (139ms total). The one thing every real room has that this harness never has at all: the
+  // candidate's own live webcam preview (YouCamera), which InterviewRoomPage mounts at the exact
+  // same moment both avatars attach (same showInterviewers gate) and which keeps decoding/
+  // rendering continuously afterward. Video decode work happens largely off the JS main thread,
+  // so it wouldn't show up as a longtask even if it were the real contention source. This toggle
+  // adds that same real YouCamera component (not a reimplementation) as a third concurrent video
+  // pipeline, to directly test whether ITS presence — never varied before — is what's missing.
+  const [includeCamera, setIncludeCamera] = useState(false);
 
   const addLog = (msg: string) => setLog(prev => [...prev, `${new Date().toLocaleTimeString()} — ${msg}`]);
 
@@ -178,6 +190,11 @@ function DualSeatTest() {
           style={{ background: '#151720', border: '1px solid #2a2d3a', borderRadius: '6px', padding: '8px 10px', color: '#e5e7eb', width: '100px' }} />
       </label>
 
+      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: running ? 'default' : 'pointer' }}>
+        <input type="checkbox" checked={includeCamera} onChange={e => setIncludeCamera(e.target.checked)} disabled={running} />
+        Include your own webcam preview (mirrors the real room's YouCamera — new variable, never tested)
+      </label>
+
       <div style={{ display: 'flex', gap: '10px' }}>
         <button onClick={runTrial} disabled={running || hr.status === 'connected'}
           style={{ padding: '10px 20px', borderRadius: '8px', background: running ? '#374151' : 'linear-gradient(135deg,#F59E0B,#EF4444)', color: '#fff', border: 'none', fontWeight: 700, cursor: running ? 'default' : 'pointer' }}>
@@ -202,6 +219,7 @@ function DualSeatTest() {
           <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 1, fontSize: '11px', fontWeight: 700, background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: '4px' }}>Wayne (technical)</div>
           <video ref={el => { techVideoRef.current = el; technical.setVideoEl(el); }} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
+        {includeCamera && <YouCamera cameraOn onToggle={() => {}} />}
       </div>
 
       <div>
