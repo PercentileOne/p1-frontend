@@ -57,6 +57,41 @@ const pollAudioStats = (session: LiveAvatarSession, role: string, rawAudioTrack:
   }, 250);
 };
 
+// 2026-09-14 — added after four separate controlled harness tests (Mike's spoken intro,
+// dual-avatar concurrency, recording, and a 180s idle warm-up) each failed to reproduce the
+// glitch in isolation, while the real Interview/Talk rooms keep failing intermittently with the
+// same STATS signature (climbing jitter buffer delay). The one thing never actually controlled
+// for: the isolated harness page has almost nothing else running on the main thread, while a real
+// room is much heavier (interview UI, phase transitions, Framer Motion, other effects/polling).
+// 'longtask' entries (any task blocking the main thread >50ms — the standard way to measure this)
+// give a real, comparable number instead of another guess. Logged once per hook instance, covering
+// connect()-to-first-speak() — if a real room run shows meaningfully more/longer long tasks than
+// the harness ever does, that's evidence main-thread contention (not the avatar plumbing itself)
+// is what's starving jitter-buffer drainage specifically during the intro.
+const startLongTaskObserving = (entriesOut: PerformanceEntry[]): PerformanceObserver | null => {
+  if (typeof PerformanceObserver === 'undefined' || !PerformanceObserver.supportedEntryTypes?.includes('longtask')) {
+    console.warn('[LiveAvatar] longtask entries not supported in this browser — skipping main-thread contention diagnostic.');
+    return null;
+  }
+  try {
+    const obs = new PerformanceObserver((list) => { entriesOut.push(...list.getEntries()); });
+    obs.observe({ type: 'longtask', buffered: true });
+    return obs;
+  } catch (err) {
+    console.warn('[LiveAvatar] Failed to start longtask observer:', err);
+    return null;
+  }
+};
+
+const logLongTaskSummary = (role: string, entries: PerformanceEntry[]) => {
+  const totalMs = entries.reduce((sum, e) => sum + e.duration, 0);
+  const longest = entries.reduce((max, e) => Math.max(max, e.duration), 0);
+  console.log(
+    `[LiveAvatar LONGTASK][${role}] connect()-to-first-speak() window — ${entries.length} long task(s), ` +
+    `${totalMs.toFixed(0)}ms total, longest ${longest.toFixed(0)}ms`
+  );
+};
+
 // Wraps the official LiveAvatar Web SDK for one interview seat's avatar session. voiceChat is
 // deliberately never enabled — that SDK feature captures the browser's own microphone for a
 // built-in voice round-trip, which is not what we want: we generate Amina/Wayne/Mike's audio
@@ -115,6 +150,12 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   // what's actually needed (was HeyGen's own original ask: "one glitched utterance"), not one
   // per question.
   const hasPolledStatsRef = useRef(false);
+  // See startLongTaskObserving's own comment above — same "first-ever speak() only" gate as
+  // hasPolledStatsRef, for the same reason (the intro is the one window this investigation
+  // actually cares about).
+  const longTaskEntriesRef = useRef<PerformanceEntry[]>([]);
+  const longTaskObserverRef = useRef<PerformanceObserver | null>(null);
+  const hasLoggedLongTasksRef = useRef(false);
 
   // Wired on SESSION_STREAM_READY, independent of the <video> element existing (it only mounts
   // once the avatar tiles become visually relevant) — lets the recording tap sit warmed up for
@@ -167,6 +208,9 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
         // are actually here" signal; connect() waits for it too, with a safety timeout in case it
         // never fires for some reason, so a stalled stream can't hang the whole interview.
         timingLog(role, 'connect() starting');
+        if (!longTaskObserverRef.current && !hasLoggedLongTasksRef.current) {
+          longTaskObserverRef.current = startLongTaskObserving(longTaskEntriesRef.current);
+        }
         const streamReadyPromise = new Promise<void>((resolve) => {
           session.on(SessionEvent.SESSION_STREAM_READY, () => {
             timingLog(role, 'SESSION_STREAM_READY fired');
@@ -287,6 +331,11 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
         })._remoteAudioTrack?.mediaStreamTrack;
         if (rawAudioTrack) pollAudioStats(session, role, rawAudioTrack);
       }
+      if (!hasLoggedLongTasksRef.current) {
+        hasLoggedLongTasksRef.current = true;
+        longTaskObserverRef.current?.disconnect();
+        logLongTaskSummary(role, longTaskEntriesRef.current);
+      }
       session.repeatAudio(audioBase64);
       timingLog(role, 'repeatAudio() sent');
     });
@@ -324,6 +373,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   useEffect(() => () => {
     if (keepAliveTimerRef.current) clearInterval(keepAliveTimerRef.current);
     untapAudioRef.current?.();
+    longTaskObserverRef.current?.disconnect();
     sessionRef.current?.stop();
   }, []);
 
