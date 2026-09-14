@@ -1001,18 +1001,32 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       </div>
 
       {/* Main content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: '960px', width: '100%', margin: '0 auto', padding: '24px 24px 32px', gap: '20px' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', maxWidth: '960px', width: '100%', margin: '0 auto', padding: '24px 24px 32px', gap: '20px' }}>
 
-        {/* Amina + Wayne — hidden while Mike is speaking, fade in after */}
-        <AnimatePresence>
-          {showInterviewers && (
-            <motion.div
-              key="interviewers"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6 }}
-              style={{ display: 'flex', gap: '16px' }}
-            >
+        {/* Amina + Wayne — 2026-09-14: this block (and, critically, the two <video> elements
+            inside it) is now PERMANENTLY mounted rather than gated by showInterviewers. Root
+            cause of the lips-before-sound glitch: any gap between connect()/SESSION_STREAM_READY
+            and session.attach() lets the WebRTC audio receiver's jitter buffer build a backlog
+            nothing is draining, since attach() is what starts real playback now that audio has
+            no separate tap (see useLiveAvatarSession.ts). attach() used to fire late because this
+            whole block — and the <video> tags with it — didn't exist in the DOM until
+            showInterviewers flipped true (well after connect() had already resolved during
+            Mike's intro). Fixed by never unmounting this block again: showInterviewers now
+            controls only an opacity/position reveal of the SAME never-recreated elements, so
+            attach() fires once, the instant each session's stream is ready, with zero gap —
+            confirmed against a harness reproduction that failed 100% of the time with the old
+            gated-mount shape and passed 100% of the time with this one. Deliberately NOT the
+            2026-09-10 hidden-video-elements attempt (reverted after a 45-60s appear-delay
+            regression) — that used two separate elements needing a second attach() call; this is
+            one element, attached once, never swapped. */}
+        <motion.div
+          key="interviewers"
+          animate={{ opacity: showInterviewers ? 1 : 0 }}
+          transition={{ duration: 0.6 }}
+          style={showInterviewers
+            ? { display: 'flex', gap: '16px' }
+            : { display: 'flex', gap: '16px', position: 'absolute', inset: 0, zIndex: -1, pointerEvents: 'none' }}
+        >
               <div style={{ position: 'relative', flex: 1, display: 'flex' }}>
                 <InterviewerAvatar
                   role="hr" state={hrState} active={hrState === 'speaking'} analyserNode={hrAnalyser}
@@ -1020,21 +1034,21 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   onVideoEnded={() => onDoneRef.current?.()}
                   onVideoAnalyser={handleSarahVideoAnalyser}
                 />
-                {/* LiveAvatar overlay — real-time video, takes over Amina's slot the moment the
-                    session connects (lazily, on her first real line; see liveAvatarSpeakHr
-                    above). No pre-rendered clip exists for her, so the static photo below is
-                    the only thing visible during the brief pre-connection gap. */}
+                {/* LiveAvatar overlay — real-time video, takes over Amina's slot the moment her
+                    session's stream is ready (attach() fires as soon as SESSION_STREAM_READY
+                    does, independent of visual reveal — see the block comment above). The
+                    element renders no visible pixels until then, so the static photo above
+                    shows through undisturbed in the meantime. */}
+                <video
+                  ref={liveAvatarHr.setVideoEl}
+                  autoPlay
+                  playsInline
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
+                />
+                {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
+                    needed here too since this <video> sits on top of (and hides) that
+                    component's own copy of it. */}
                 {liveAvatarHr.status === 'connected' && (
-                  <>
-                    <video
-                      ref={liveAvatarHr.setVideoEl}
-                      autoPlay
-                      playsInline
-                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
-                    />
-                    {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
-                        needed here too since this <video> sits on top of (and hides) that
-                        component's own copy of it. */}
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 18px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', userSelect: 'none', pointerEvents: 'none' }}>
                       <div>
                         <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>{PROFILES.hr.name}</div>
@@ -1057,7 +1071,6 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         }} />
                       </div>
                     </div>
-                  </>
                 )}
               </div>
               <div style={{ position: 'relative', flex: 1, display: 'flex' }}>
@@ -1068,17 +1081,16 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   onVideoAnalyser={handleJamesVideoAnalyser}
                 />
                 {/* LiveAvatar overlay — Wayne's slot, same treatment as Amina's above. */}
+                <video
+                  ref={liveAvatarTechnical.setVideoEl}
+                  autoPlay
+                  playsInline
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
+                />
+                {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
+                    needed here too since this <video> sits on top of (and hides) that
+                    component's own copy of it. */}
                 {liveAvatarTechnical.status === 'connected' && (
-                  <>
-                    <video
-                      ref={liveAvatarTechnical.setVideoEl}
-                      autoPlay
-                      playsInline
-                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
-                    />
-                    {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
-                        needed here too since this <video> sits on top of (and hides) that
-                        component's own copy of it. */}
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 18px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', userSelect: 'none', pointerEvents: 'none' }}>
                       <div>
                         <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>{PROFILES.technical.name}</div>
@@ -1101,13 +1113,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         }} />
                       </div>
                     </div>
-                  </>
                 )}
               </div>
-              <YouCamera cameraOn={cameraOn} speaking={phase === 'answering'} onToggle={() => setCameraOn(v => !v)} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+              {showInterviewers && <YouCamera cameraOn={cameraOn} speaking={phase === 'answering'} onToggle={() => setCameraOn(v => !v)} />}
+        </motion.div>
 
         <AnimatePresence mode="sync">
 

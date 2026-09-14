@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { InterviewerAvatar, PROFILES, WaveformBars } from '../components/InterviewerAvatar';
 import { YouCamera } from '../components/YouCamera';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
@@ -162,6 +162,11 @@ export default function TalkRoomPage() {
   useEffect(() => () => { talkAvatarsRef.current.stopAll(); }, []);
 
   const showAvatars = phase !== 'intro';
+  // 2026-09-14 — the moment the avatar tiles are actually revealed to the candidate; see the
+  // InterviewRoomPage.tsx block comment (same fix, ported here) for why this now controls only
+  // an opacity/position reveal of a permanently-mounted block, never the mount/unmount of the
+  // <video> elements themselves.
+  const revealAvatars = showAvatars && phase !== 'mike-prep';
   const progress = Math.min(1, elapsed / targetDurationSeconds);
   const overTarget = elapsed > targetDurationSeconds;
 
@@ -191,7 +196,7 @@ export default function TalkRoomPage() {
         </div>
       )}
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: '900px', width: '100%', margin: '0 auto', padding: '24px', gap: '20px' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', maxWidth: '900px', width: '100%', margin: '0 auto', padding: '24px', gap: '20px' }}>
 
         {phase === 'intro' && (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
@@ -215,14 +220,22 @@ export default function TalkRoomPage() {
           </div>
         )}
 
-        <AnimatePresence>
-          {showAvatars && phase !== 'mike-prep' && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', gap: '16px' }}>
+        {/* 2026-09-14 — permanently mounted (never torn down by AnimatePresence), same fix as
+            InterviewRoomPage.tsx's interviewer block: revealAvatars now controls only an
+            opacity/position reveal of the SAME never-recreated <video> elements, so attach()
+            fires once, the instant each session's stream is ready, with zero gap. See that
+            file's block comment for the full root-cause explanation. */}
+        <motion.div
+          key="avatars"
+          animate={{ opacity: revealAvatars ? 1 : 0 }}
+          style={revealAvatars
+            ? { display: 'flex', gap: '16px' }
+            : { display: 'flex', gap: '16px', position: 'absolute', inset: 0, zIndex: -1, pointerEvents: 'none' }}
+        >
               <div style={{ position: 'relative', flex: 1, display: 'flex', aspectRatio: '4/3' }}>
                 <InterviewerAvatar role="hr" state={talkAvatars.hrState} active={talkAvatars.hrState === 'speaking'} analyserNode={hrAnalyser} videoUrl={null} />
+                <video ref={liveAvatarHr.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} />
                 {liveAvatarHr.status === 'connected' && (
-                  <>
-                    <video ref={liveAvatarHr.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} />
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '14px 16px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', pointerEvents: 'none' }}>
                       <div>
                         <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{PROFILES.hr.name}</div>
@@ -232,14 +245,12 @@ export default function TalkRoomPage() {
                         ? <WaveformBars active color={PROFILES.hr.barColor} analyserNode={hrAnalyser} />
                         : <div style={{ fontSize: '10px', color: '#4F8EF7' }}>Listening</div>}
                     </div>
-                  </>
                 )}
               </div>
               <div style={{ position: 'relative', flex: 1, display: 'flex', aspectRatio: '4/3' }}>
                 <InterviewerAvatar role="technical" state={talkAvatars.techState} active={talkAvatars.techState === 'speaking'} analyserNode={techAnalyser} videoUrl={null} />
+                <video ref={liveAvatarTechnical.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} />
                 {liveAvatarTechnical.status === 'connected' && (
-                  <>
-                    <video ref={liveAvatarTechnical.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} />
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '14px 16px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', pointerEvents: 'none' }}>
                       <div>
                         <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{PROFILES.technical.name}</div>
@@ -249,12 +260,9 @@ export default function TalkRoomPage() {
                         ? <WaveformBars active color={PROFILES.technical.barColor} analyserNode={techAnalyser} />
                         : <div style={{ fontSize: '10px', color: '#4F8EF7' }}>Listening</div>}
                     </div>
-                  </>
                 )}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        </motion.div>
 
         {/* Much larger self-view than the interview room's small "YOU" tile — per Francis's own
             request, this sits BELOW the avatar row (not beside it), full width. */}
