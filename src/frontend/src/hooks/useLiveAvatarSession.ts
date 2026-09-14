@@ -15,6 +15,48 @@ const timingLog = (role: string, label: string) => {
   console.log(`[LiveAvatar][${role}] ${label} @ ${Math.round(performance.now())}ms`);
 };
 
+// Re-added 2026-09-14, after three controlled harness tests (Mike's TTS, dual-avatar
+// concurrency, and recording) each ruled out live without reproducing the glitch in isolation —
+// the harness itself has never once glitched, at any warm-up down to 0s, in any configuration.
+// That gap between "every isolated reproduction is clean" and "the real room still fails
+// intermittently" can only be answered with real packet-level data from an ACTUAL failing real-
+// room run, not another guessed variable. getStats() on the inbound audio receiver, polled every
+// 250ms for ~4s after a session's first-ever speak() — steady arrival with flat jitterBufferDelay
+// points at something client-side specific to the real room's complexity; irregular/bursty
+// arrival points at HeyGen's own delivery, not anything in our code. Same reach into LiveKit's
+// internal room.engine.pcManager.subscriber._pc as when this was first built (the SDK exposes no
+// public RTCPeerConnection accessor) — verified against the SDK's own compiled source at the
+// time, unchanged since.
+const pollAudioStats = (session: LiveAvatarSession, role: string, rawAudioTrack: MediaStreamTrack) => {
+  const pc = (session as unknown as {
+    room?: { engine?: { pcManager?: { subscriber?: { _pc?: RTCPeerConnection } } } };
+  }).room?.engine?.pcManager?.subscriber?._pc;
+  if (!pc) {
+    console.warn('[LiveAvatar] Could not reach internal RTCPeerConnection for getStats() — SDK internals may have changed.');
+    return;
+  }
+  let samples = 0;
+  const timer = setInterval(() => {
+    samples++;
+    if (samples > 16) { clearInterval(timer); return; } // ~4s of coverage at 250ms
+    pc.getStats(rawAudioTrack).then(report => {
+      report.forEach(stat => {
+        if (stat.type === 'inbound-rtp' && stat.kind === 'audio') {
+          console.log(
+            `[LiveAvatar STATS][${role}] @ ${Math.round(performance.now())}ms — ` +
+            `packetsReceived=${stat.packetsReceived}, jitterBufferDelay=${stat.jitterBufferDelay?.toFixed?.(3)}, ` +
+            `jitterBufferEmittedCount=${stat.jitterBufferEmittedCount}, removedSamplesForAcceleration=${stat.removedSamplesForAcceleration}, ` +
+            `concealedSamples=${stat.concealedSamples}, lastPacketReceivedTimestamp=${stat.lastPacketReceivedTimestamp}`
+          );
+        }
+      });
+    }).catch(err => {
+      console.warn('[LiveAvatar] getStats() failed:', err);
+      clearInterval(timer);
+    });
+  }, 250);
+};
+
 // Wraps the official LiveAvatar Web SDK for one interview seat's avatar session. voiceChat is
 // deliberately never enabled — that SDK feature captures the browser's own microphone for a
 // built-in voice round-trip, which is not what we want: we generate Amina/Wayne/Mike's audio
@@ -69,6 +111,10 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   // the same session.
   const tappedSessionRef = useRef<LiveAvatarSession | null>(null);
   const untapAudioRef = useRef<(() => void) | null>(null);
+  // Gates pollAudioStats to a session's first-ever speak() only — one capture per session is
+  // what's actually needed (was HeyGen's own original ask: "one glitched utterance"), not one
+  // per question.
+  const hasPolledStatsRef = useRef(false);
 
   // Wired on SESSION_STREAM_READY, independent of the <video> element existing (it only mounts
   // once the avatar tiles become visually relevant) — lets the recording tap sit warmed up for
@@ -234,6 +280,13 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
       }, timeoutMs);
       session.on(AgentEventsEnum.AVATAR_SPEAK_STARTED, onStarted);
       session.on(AgentEventsEnum.AVATAR_SPEAK_ENDED, onEnded);
+      if (!hasPolledStatsRef.current) {
+        hasPolledStatsRef.current = true;
+        const rawAudioTrack = (session as unknown as {
+          _remoteAudioTrack?: { mediaStreamTrack?: MediaStreamTrack };
+        })._remoteAudioTrack?.mediaStreamTrack;
+        if (rawAudioTrack) pollAudioStats(session, role, rawAudioTrack);
+      }
       session.repeatAudio(audioBase64);
       timingLog(role, 'repeatAudio() sent');
     });
