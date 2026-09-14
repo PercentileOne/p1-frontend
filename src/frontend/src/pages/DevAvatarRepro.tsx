@@ -72,7 +72,7 @@ export default function DevAvatarRepro() {
         </label>
         <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px' }}>
           Warm-up before speak() (seconds) — the variable being tested
-          <input type="number" min={0} max={90} value={warmupSeconds} onChange={e => setWarmupSeconds(Number(e.target.value))} disabled={running}
+          <input type="number" min={0} max={600} value={warmupSeconds} onChange={e => setWarmupSeconds(Number(e.target.value))} disabled={running}
             style={{ background: '#151720', border: '1px solid #2a2d3a', borderRadius: '6px', padding: '8px 10px', color: '#e5e7eb', width: '100px' }} />
         </label>
       </div>
@@ -174,7 +174,7 @@ function DualSeatTest() {
 
       <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px', width: '160px' }}>
         Warm-up before Amina speaks (seconds)
-        <input type="number" min={0} max={90} value={warmupSeconds} onChange={e => setWarmupSeconds(Number(e.target.value))} disabled={running}
+        <input type="number" min={0} max={600} value={warmupSeconds} onChange={e => setWarmupSeconds(Number(e.target.value))} disabled={running}
           style={{ background: '#151720', border: '1px solid #2a2d3a', borderRadius: '6px', padding: '8px 10px', color: '#e5e7eb', width: '100px' }} />
       </label>
 
