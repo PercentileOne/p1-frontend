@@ -55,7 +55,7 @@ export default function DevAvatarRepro() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a12', color: '#e5e7eb', fontFamily: '-apple-system,sans-serif', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '720px', margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: '#0a0a12', color: '#e5e7eb', fontFamily: '-apple-system,sans-serif', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '900px', margin: '0 auto' }}>
       <div>
         <h1 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px' }}>LiveAvatar Glitch Repro Harness</h1>
         <p style={{ fontSize: '13px', color: '#9ca3af', margin: 0 }}>Dev-only. Isolates connect() → wait → speak() for one seat — no intake screen, no Mike, no consent dialog. Each trial is a genuinely fresh session (disconnect fully resets it).</p>
@@ -98,6 +98,114 @@ export default function DevAvatarRepro() {
 
       <div>
         <div style={{ fontSize: '12px', fontWeight: 700, color: '#9ca3af', marginBottom: '6px' }}>Trial log (full detail is in the browser console — filter TIMING / STATS)</div>
+        <div style={{ background: '#0d0e14', border: '1px solid #2a2d3a', borderRadius: '8px', padding: '10px 14px', maxHeight: '240px', overflowY: 'auto', fontSize: '11px', fontFamily: 'monospace' }}>
+          {log.length === 0 ? <div style={{ color: '#6b7280' }}>No trials run yet.</div> : log.map((l, i) => <div key={i}>{l}</div>)}
+        </div>
+      </div>
+
+      <div style={{ borderTop: '1px solid #2a2d3a', paddingTop: '20px', marginTop: '4px' }}>
+        <DualSeatTest />
+      </div>
+    </div>
+  );
+}
+
+// 2026-09-14 — the single-seat test above has never once glitched across many runs, including at
+// 0s warm-up. The real rooms still glitch (now hitting Wayne too, not just Amina, even with
+// Mike's own spoken intro removed as a variable). The one thing that test has never exercised at
+// all: BOTH avatars connecting and being live at once — exactly what InterviewRoomPage.tsx's
+// startInterview always does (liveAvatarHr.connect() and liveAvatarTechnical.connect() fired
+// together). This mirrors that: connects both seats concurrently, waits, then has Amina speak
+// first and Wayne speak second — the same connect-together-but-speak-sequentially pattern the
+// real room uses — to test whether concurrency itself (not timing, not Mike) is the real factor.
+function DualSeatTest() {
+  const [warmupSeconds, setWarmupSeconds] = useState(10);
+  const [status, setStatus] = useState('idle');
+  const [log, setLog] = useState<string[]>([]);
+  const [running, setRunning] = useState(false);
+  const [trialCount, setTrialCount] = useState(0);
+  const hrVideoRef = useRef<HTMLVideoElement | null>(null);
+  const techVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  const hr = useLiveAvatarSession('hr');
+  const technical = useLiveAvatarSession('technical');
+
+  const addLog = (msg: string) => setLog(prev => [...prev, `${new Date().toLocaleTimeString()} — ${msg}`]);
+
+  const runTrial = async () => {
+    setRunning(true);
+    setStatus('connecting both seats concurrently…');
+    addLog(`Trial ${trialCount + 1} starting — BOTH seats, warmup=${warmupSeconds}s`);
+    try {
+      await Promise.all([hr.connect(), technical.connect()]);
+      setStatus(`both connected — waiting ${warmupSeconds}s`);
+      addLog(`both connect() resolved — waiting ${warmupSeconds}s`);
+      await new Promise(r => setTimeout(r, warmupSeconds * 1000));
+      setStatus('Amina speaking now — watch/listen for the glitch');
+      addLog('Amina speak() called — WATCH THE VIDEOS BELOW');
+      await hr.speak(TEST_LINE, 'hr', () => addLog('Amina AVATAR_SPEAK_STARTED fired'));
+      addLog('Amina speak() resolved');
+      setStatus('Wayne speaking now — watch/listen for the glitch');
+      addLog('Wayne speak() called');
+      await technical.speak(TEST_LINE, 'technical', () => addLog('Wayne AVATAR_SPEAK_STARTED fired'));
+      addLog('Wayne speak() resolved');
+      setStatus('done — did either avatar glitch?');
+    } catch (err) {
+      addLog(`ERROR: ${err instanceof Error ? err.message : String(err)}`);
+      setStatus('error — see log');
+    } finally {
+      setRunning(false);
+      setTrialCount(c => c + 1);
+    }
+  };
+
+  const resetForNextTrial = async () => {
+    addLog('Disconnecting both seats to reset for a genuinely fresh pair of sessions…');
+    await Promise.all([hr.disconnect(), technical.disconnect()]);
+    setStatus('idle');
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div>
+        <h2 style={{ fontSize: '17px', fontWeight: 800, marginBottom: '4px' }}>Dual Seat Test — mirrors the real room's concurrency</h2>
+        <p style={{ fontSize: '13px', color: '#9ca3af', margin: 0 }}>Connects Amina AND Wayne at the same time (like startInterview does), waits, then Amina speaks first and Wayne speaks second.</p>
+      </div>
+
+      <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px', width: '160px' }}>
+        Warm-up before Amina speaks (seconds)
+        <input type="number" min={0} max={90} value={warmupSeconds} onChange={e => setWarmupSeconds(Number(e.target.value))} disabled={running}
+          style={{ background: '#151720', border: '1px solid #2a2d3a', borderRadius: '6px', padding: '8px 10px', color: '#e5e7eb', width: '100px' }} />
+      </label>
+
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button onClick={runTrial} disabled={running || hr.status === 'connected'}
+          style={{ padding: '10px 20px', borderRadius: '8px', background: running ? '#374151' : 'linear-gradient(135deg,#F59E0B,#EF4444)', color: '#fff', border: 'none', fontWeight: 700, cursor: running ? 'default' : 'pointer' }}>
+          {running ? 'Running…' : 'Run Dual-Seat Trial'}
+        </button>
+        <button onClick={resetForNextTrial} disabled={running}
+          style={{ padding: '10px 20px', borderRadius: '8px', background: '#1f2230', border: '1px solid #2a2d3a', color: '#e5e7eb', fontWeight: 700, cursor: running ? 'default' : 'pointer' }}>
+          Disconnect & Reset Both
+        </button>
+      </div>
+
+      <div style={{ padding: '12px 16px', background: '#151720', borderRadius: '8px', fontSize: '13px' }}>
+        <strong>Status:</strong> {status} &nbsp;|&nbsp; <strong>Amina:</strong> {hr.status} &nbsp;|&nbsp; <strong>Wayne:</strong> {technical.status} &nbsp;|&nbsp; <strong>Trials run:</strong> {trialCount}
+      </div>
+
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ position: 'relative', flex: 1, aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 1, fontSize: '11px', fontWeight: 700, background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: '4px' }}>Amina (hr)</div>
+          <video ref={el => { hrVideoRef.current = el; hr.setVideoEl(el); }} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+        <div style={{ position: 'relative', flex: 1, aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 1, fontSize: '11px', fontWeight: 700, background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: '4px' }}>Wayne (technical)</div>
+          <video ref={el => { techVideoRef.current = el; technical.setVideoEl(el); }} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+      </div>
+
+      <div>
+        <div style={{ fontSize: '12px', fontWeight: 700, color: '#9ca3af', marginBottom: '6px' }}>Trial log</div>
         <div style={{ background: '#0d0e14', border: '1px solid #2a2d3a', borderRadius: '8px', padding: '10px 14px', maxHeight: '240px', overflowY: 'auto', fontSize: '11px', fontFamily: 'monospace' }}>
           {log.length === 0 ? <div style={{ color: '#6b7280' }}>No trials run yet.</div> : log.map((l, i) => <div key={i}>{l}</div>)}
         </div>
