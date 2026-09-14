@@ -28,7 +28,7 @@ function TalkCard({ v, pinned, busy, onTogglePin }: { v: TedTalk; pinned: boolea
   return (
     <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
       <a href={`https://www.youtube.com/watch?v=${v.id}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block' }}>
-        <div style={{ position: 'relative', width: '100%', height: '110px', background: '#0a0a12' }}>
+        <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#0a0a12' }}>
           <img src={v.thumbnail} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           {v.duration && (
@@ -187,9 +187,14 @@ export function WatchAndLearnRow() {
             {/* Fixed-width (not 1fr) columns — 1fr let cards stretch to fill leftover row
                 space, so crossing a column-count threshold (or the scrollbar itself eating
                 ~15px once enough talks are pinned to need one) visibly shrank every card as
-                the list grew. Fixed 180px keeps every card the same size no matter how many
-                are pinned; the scrollbar (below) is what absorbs growth instead (Francis, 2026-09-13). */}
-            <div className="watch-and-learn-grid" style={{ padding: 20, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 180px)', justifyContent: 'start', gap: 14 }}>
+                the list grew. Fixed 220px keeps every card the same size no matter how many
+                are pinned (bumped from 180px, 2026-09-14 — at 180px, many thumbnails' own
+                baked-in text was hard to read; 220px still fits exactly 3 per row in this
+                780px-wide modal). maxHeight caps the grid at roughly 4 rows (~12 cards) before
+                it scrolls, rather than relying on 80vh alone — on a tall screen 80vh fits far
+                more than that, so the scrollbar Francis wanted almost never appeared in
+                practice (Francis, 2026-09-14). */}
+            <div className="watch-and-learn-grid" style={{ padding: 20, maxHeight: 960, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 220px)', justifyContent: 'start', gap: 14 }}>
               {(pinned ?? []).length === 0 ? (
                 <div style={{ fontSize: 13, color: 'var(--text-3)', gridColumn: '1 / -1', textAlign: 'center', padding: '40px 0' }}>
                   Nothing pinned yet — search for a talk and tap the star to save it here.

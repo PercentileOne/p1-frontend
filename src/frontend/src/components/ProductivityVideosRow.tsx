@@ -31,7 +31,7 @@ function VideoCard({ v, pinned, busy, onTogglePin }: { v: TedTalk; pinned: boole
   return (
     <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
       <a href={`https://www.youtube.com/watch?v=${v.id}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block' }}>
-        <div style={{ position: 'relative', width: '100%', height: '110px', background: '#0a0a12' }}>
+        <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#0a0a12' }}>
           <img src={v.thumbnail} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           {v.duration && (
@@ -186,7 +186,12 @@ export function ProductivityVideosRow() {
                 <X size={18} />
               </button>
             </div>
-            <div className="productivity-row-grid" style={{ padding: 20, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 180px)', justifyContent: 'start', gap: 14 }}>
+            {/* 220px cards (bumped from 180px) + a maxHeight capping the grid at roughly 4
+                rows (~12 cards) before it scrolls — same fix as WatchAndLearnRow.tsx's pinned
+                modal, for the same two reasons: 180px cropped baked-in thumbnail text past
+                legibility, and 80vh alone let far more than 12 fit on a tall screen before any
+                scrollbar appeared (Francis, 2026-09-14). */}
+            <div className="productivity-row-grid" style={{ padding: 20, maxHeight: 960, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 220px)', justifyContent: 'start', gap: 14 }}>
               {(pinned ?? []).length === 0 ? (
                 <div style={{ fontSize: 13, color: 'var(--text-3)', gridColumn: '1 / -1', textAlign: 'center', padding: '40px 0' }}>
                   Nothing pinned yet — search for a video and tap the star to save it here.
