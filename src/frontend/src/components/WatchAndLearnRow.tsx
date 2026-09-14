@@ -173,13 +173,19 @@ export function WatchAndLearnRow() {
       {pinnedModalOpen && (
         <div
           onClick={() => setPinnedModalOpen(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflowY: 'auto', padding: 24 }}
         >
           {/* Single scroll container — the header's own maxHeight+overflow, nested inside a
               flex-column box, silently failed to constrain anything (19 pinned videos rendered
               fully visible with room to spare despite an explicit maxHeight, Francis, 2026-09-14).
               Matches PracticeMCQOverlay.tsx's proven pattern instead: one element owns both the
-              height cap and the scroll, not split across nested flex/grid children. Header is
+              height cap and the scroll, not split across nested flex/grid children. The BACKDROP
+              also needs alignItems:'flex-start' + its own overflowY:'auto' (not 'center' with no
+              scroll) — a centered box taller than the viewport gets clipped on both its top AND
+              bottom with no way to reach either edge by scrolling the box's own content; only the
+              page/backdrop scrolling can bring an oversized box's top and bottom into view,
+              exactly how PracticeMCQOverlay.tsx's own backdrop already works (Francis, 2026-09-14:
+              close button not reachable, couldn't scroll to the true bottom either). Header is
               sticky so it stays reachable while scrolling. */}
           <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 920, maxHeight: 850, overflowY: 'auto', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 16 }}>
             <div style={{ position: 'sticky', top: 0, zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>

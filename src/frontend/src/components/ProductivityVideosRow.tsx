@@ -175,13 +175,17 @@ export function ProductivityVideosRow() {
       {pinnedModalOpen && (
         <div
           onClick={() => setPinnedModalOpen(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflowY: 'auto', padding: 24 }}
         >
           {/* Single scroll container — same fix as WatchAndLearnRow.tsx's pinned modal: the
               grid's own maxHeight+overflow, nested inside a flex-column box, silently failed to
               constrain anything. Matches PracticeMCQOverlay.tsx's proven pattern instead: one
-              element owns both the height cap and the scroll. Header is sticky so it stays
-              reachable while scrolling. */}
+              element owns both the height cap and the scroll. The BACKDROP also needs
+              alignItems:'flex-start' + its own overflowY:'auto' (not 'center' with no scroll) —
+              a centered box taller than the viewport gets clipped on both its top AND bottom with
+              no way to reach either edge by scrolling the box's own content (Francis, 2026-09-14:
+              close button not reachable, couldn't scroll to the true bottom either). Header is
+              sticky so it stays reachable while scrolling. */}
           <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 920, maxHeight: 850, overflowY: 'auto', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 16 }}>
             <div style={{ position: 'sticky', top: 0, zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
               <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}>
