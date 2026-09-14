@@ -22,7 +22,7 @@ export interface UseTalkAvatarsParams {
 // speak-with-plain-TTS-fallback wrapper (liveAvatarSpeakHr/Technical in InterviewRoomPage.tsx),
 // and the same hrState/techState AvatarState machine.
 export function useTalkAvatars(params: UseTalkAvatarsParams) {
-  const { liveAvatarHr, liveAvatarTechnical, onHrAnalyser, onTechAnalyser, resolvedPreferredName, subject, isPersonalStory } = params;
+  const { liveAvatarHr, liveAvatarTechnical, onHrAnalyser, onTechAnalyser, subject, isPersonalStory } = params;
 
   const [hrState, setHrState] = useState<AvatarState>('idle');
   const [techState, setTechState] = useState<AvatarState>('idle');
@@ -67,10 +67,16 @@ export function useTalkAvatars(params: UseTalkAvatarsParams) {
   const startMikePrep = useCallback((onDone: () => void) => {
     void liveAvatarHr.connect().catch(() => {});
     void liveAvatarTechnical.connect().catch(() => {});
-    const name = resolvedPreferredName ? `${resolvedPreferredName}, ` : '';
-    const mikeText = `${name}I'm Mike. You're about to give a short talk on "${subject}". Amina and Wayne will be right there with you the whole time — Amina's here for encouragement, Wayne knows the subject. Take a breath, speak naturally, and remember: this is practice, not a test. Good luck.`;
-    cancelSpeakRef.current = speak(mikeText, 'technical', onDone, onTechAnalyser);
-  }, [liveAvatarHr, liveAvatarTechnical, resolvedPreferredName, subject, onTechAnalyser]);
+    // TEMPORARY, 2026-09-14: Mike's spoken line skipped (avatar connect-warmup kept) — same
+    // experiment as InterviewRoomPage.tsx's startInterview, testing whether Mike's regular
+    // ElevenLabs TTS playback (shares the AudioContext/master-gain the LiveAvatar recording tap
+    // also uses) is a factor in the lips-before-sound glitch now hitting both avatars
+    // inconsistently. Revert by restoring the mikeText/speak() call below.
+    onDone();
+    // const name = resolvedPreferredName ? `${resolvedPreferredName}, ` : '';
+    // const mikeText = `${name}I'm Mike. You're about to give a short talk on "${subject}". Amina and Wayne will be right there with you the whole time — Amina's here for encouragement, Wayne knows the subject. Take a breath, speak naturally, and remember: this is practice, not a test. Good luck.`;
+    // cancelSpeakRef.current = speak(mikeText, 'technical', onDone, onTechAnalyser);
+  }, [liveAvatarHr, liveAvatarTechnical]);
 
   // Amina's short opener + a general talk-craft tip, then Wayne's subject-specific tips
   // (fetched fresh here rather than pre-fetched on the intake screen, so it always reflects
