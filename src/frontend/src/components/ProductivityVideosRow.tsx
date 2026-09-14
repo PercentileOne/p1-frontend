@@ -177,8 +177,13 @@ export function ProductivityVideosRow() {
           onClick={() => setPinnedModalOpen(false)}
           style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
         >
-          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 920, maxHeight: '80vh', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid var(--border)' }}>
+          {/* Single scroll container — same fix as WatchAndLearnRow.tsx's pinned modal: the
+              grid's own maxHeight+overflow, nested inside a flex-column box, silently failed to
+              constrain anything. Matches PracticeMCQOverlay.tsx's proven pattern instead: one
+              element owns both the height cap and the scroll. Header is sticky so it stays
+              reachable while scrolling. */}
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 920, maxHeight: 850, overflowY: 'auto', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 16 }}>
+            <div style={{ position: 'sticky', top: 0, zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
               <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Star size={16} fill="#F59E0B" color="#F59E0B" /> My Pinned Videos ({(pinned ?? []).length})
               </div>
@@ -188,11 +193,9 @@ export function ProductivityVideosRow() {
             </div>
             {/* 200px cards — matches the exact width the horizontal "Productivity" scroller above
                 already uses for the same VideoCard (`flex: '0 0 200px'`, line ~167); grid and
-                scroller must always show cards at the same size (Francis, 2026-09-14). Modal
-                widened 780->920px so exactly 4 columns fit (842-1055px of content width gives 4,
-                not 3 or 5). maxHeight caps the grid at roughly 4 rows before it scrolls, rather
-                than relying on 80vh alone — same fix as WatchAndLearnRow.tsx's pinned modal. */}
-            <div className="productivity-row-grid" style={{ padding: 20, maxHeight: 920, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 200px)', justifyContent: 'start', gap: 14 }}>
+                scroller must always show cards at the same size. Modal widened 780->920px so
+                exactly 4 columns fit (842-1055px of content width gives 4, not 3 or 5). */}
+            <div className="productivity-row-grid" style={{ padding: 20, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 200px)', justifyContent: 'start', gap: 14 }}>
               {(pinned ?? []).length === 0 ? (
                 <div style={{ fontSize: 13, color: 'var(--text-3)', gridColumn: '1 / -1', textAlign: 'center', padding: '40px 0' }}>
                   Nothing pinned yet — search for a video and tap the star to save it here.
