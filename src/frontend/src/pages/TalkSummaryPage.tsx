@@ -128,6 +128,9 @@ export default function TalkSummaryPage() {
 
               <DimensionRow label="Clarity" dim={scoreResult.clarity} />
               <DimensionRow label="Structure" dim={scoreResult.structure} />
+              {scoreResult.openingClosingStrength && (
+                <DimensionRow label="Starting & Ending Strength" dim={scoreResult.openingClosingStrength} />
+              )}
               <DimensionRow label="Depth" dim={scoreResult.depth} />
               <DimensionRow label="Accuracy" dim={scoreResult.accuracy} />
               <DimensionRow label="Confidence" dim={scoreResult.confidence} />

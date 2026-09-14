@@ -22,6 +22,11 @@ public record ScoreResult(
     DimensionScore Accuracy,
     DimensionScore Confidence,
     DimensionScore Engagement,
+    // Split out from Structure, 2026-09-14, per Francis's own request — the primacy/recency
+    // effect trial lawyers build closing arguments around (listeners remember the opening and
+    // closing far better than the middle) is important enough to score on its own rather than
+    // being one clause inside Structure's description text.
+    DimensionScore OpeningClosingStrength,
     DimensionScore TimeManagement,
     string OverallFeedback,
     int WordCount,

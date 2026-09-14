@@ -17,6 +17,10 @@ export interface TalkScoreResult {
   accuracy: DimensionScore;
   confidence: DimensionScore;
   engagement: DimensionScore;
+  // Split out from `structure`, 2026-09-14 — the primacy/recency effect (listeners remember the
+  // opening and closing far better than the middle) scored on its own rather than as one clause
+  // inside structure's description. Optional for talks saved before this field existed.
+  openingClosingStrength?: DimensionScore;
   timeManagement: DimensionScore;
   overallFeedback: string;
   wordCount: number;
