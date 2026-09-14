@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { X, ChevronUp, ChevronDown, Trash2, Globe, Lock } from 'lucide-react';
 import { useAuthStore } from '../auth/authStore';
 import { WatchAndLearnRow } from '../components/WatchAndLearnRow';
+import { TalkCoachingOverlay } from '../components/TalkCoachingOverlay';
 import PublicTalksTab from './PublicTalksTab';
 
 type PageTab = 'mine' | 'public';
@@ -68,6 +69,7 @@ export default function MyTalksPage() {
   const [visibilityMenuOpen, setVisibilityMenuOpen] = useState(false);
   const [bulkConfirmTarget, setBulkConfirmTarget] = useState<boolean | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [showCoaching, setShowCoaching] = useState(false);
 
   const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
 
@@ -211,6 +213,16 @@ export default function MyTalksPage() {
               )}
             </div>
           )}
+          <button
+            onClick={() => setShowCoaching(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px',
+              background: 'linear-gradient(135deg, rgba(123,92,245,0.18), rgba(91,143,247,0.14))',
+              border: '1px solid rgba(120,80,255,0.4)', borderRadius: 8,
+              fontSize: 13, fontWeight: 700, color: '#c0aaff', cursor: 'pointer', fontFamily: 'inherit',
+            }}>
+            🎙️ Talk Coaching
+          </button>
           <button
             onClick={() => navigate('/talk-pack/start')}
             style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #34D399, #4F8EF7)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -384,6 +396,8 @@ export default function MyTalksPage() {
       )}
         </>
       )}
+
+      {showCoaching && <TalkCoachingOverlay onClose={() => setShowCoaching(false)} />}
     </div>
   );
 }
