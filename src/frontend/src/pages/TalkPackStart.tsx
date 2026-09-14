@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { logFlowEvent } from '../api/flowLogger';
 import { useAuthStore } from '../auth/authStore';
+import { TalkCoachingOverlay } from '../components/TalkCoachingOverlay';
 
 const LANGUAGES = [
   { code: 'en', name: 'English' },
@@ -57,6 +58,7 @@ export default function TalkPackStart() {
   // captures the whole browser tab anyway, so there's no need to upload/store them server-side.
   const [notesFiles, setNotesFiles] = useState<File[]>([]);
   const [attemptedStart, setAttemptedStart] = useState(false);
+  const [showCoaching, setShowCoaching] = useState(false);
 
   const onNotesSelected = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -139,6 +141,18 @@ export default function TalkPackStart() {
           <p style={{ fontSize: '15px', color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>
             Amina and Wayne will be right there with you — encouraging and giving tips, the whole way through
           </p>
+          <button
+            onClick={() => setShowCoaching(true)}
+            style={{
+              marginTop: 18,
+              background: 'linear-gradient(135deg, rgba(123,92,245,0.18), rgba(91,143,247,0.14))',
+              border: '1px solid rgba(120,80,255,0.4)', borderRadius: 10,
+              padding: '10px 20px', fontSize: 12.5, fontWeight: 700, color: '#c0aaff',
+              cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8,
+            }}
+          >
+            🎙️ Get Coaching on Giving a Great Talk
+          </button>
         </div>
 
         {/* Subject */}
@@ -394,6 +408,8 @@ export default function TalkPackStart() {
           This session is private and confidential.
         </p>
       </motion.div>
+
+      {showCoaching && <TalkCoachingOverlay onClose={() => setShowCoaching(false)} />}
     </div>
   );
 }
