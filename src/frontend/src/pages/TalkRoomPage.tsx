@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Check } from 'lucide-react';
 import { InterviewerAvatar, PROFILES, WaveformBars } from '../components/InterviewerAvatar';
 import { YouCamera } from '../components/YouCamera';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
@@ -26,6 +27,81 @@ function formatMmSs(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
   const s = totalSeconds % 60;
   return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+// Named after the real dimensions the AI is actually judging (see ScoreHandler.cs's
+// BuildPrompt) — ticks off in the same order the score card below lists them, so this isn't
+// generic "please wait" filler, it's a preview of what's about to appear. Francis's own
+// feedback, 2026-09-14: the gap between finishing a talk and Amina's outro was "just a dead
+// moment", then, after seeing a first version (single cycling line): a filling checklist reads
+// as real progress far better than text swapping out — same pattern well-designed "thinking"
+// indicators elsewhere use, and the whole point is to make the wait forgettable, not just filled.
+const ANALYSIS_STEPS = [
+  'Reviewing your transcript…',
+  'Checking your clarity and structure…',
+  'Weighing your opening and closing…',
+  'Assessing depth and accuracy…',
+  'Gauging confidence and engagement…',
+  'Counting your key takeaways…',
+  'Putting it all together…',
+];
+
+const ANALYSIS_ACCENT = '#7b5cf5';
+
+function AnalyzingTalk() {
+  const [completedCount, setCompletedCount] = useState(0);
+
+  useEffect(() => {
+    // Stops one short of the end deliberately — there's no real "finished" signal to tie the
+    // last step to (scoreTalk() could still be mid-flight), so it's more honest to leave the
+    // final step visibly "in progress" for however long that actually takes than to fake 100%.
+    if (completedCount >= ANALYSIS_STEPS.length - 1) return;
+    const id = setTimeout(() => setCompletedCount(c => c + 1), 1100);
+    return () => clearTimeout(id);
+  }, [completedCount]);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 0' }}>
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ repeat: Infinity, duration: 2.2, ease: 'linear' }}
+        style={{
+          width: '56px', height: '56px', borderRadius: '50%', marginBottom: '28px', flexShrink: 0,
+          background: `conic-gradient(${ANALYSIS_ACCENT}, transparent 75%)`, padding: '3px',
+        }}
+      >
+        <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>
+          📊
+        </div>
+      </motion.div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '11px', minWidth: '280px' }}>
+        {ANALYSIS_STEPS.map((label, i) => {
+          const isDone = i < completedCount;
+          const isActive = i === completedCount;
+          return (
+            <motion.div key={label} animate={{ opacity: isDone || isActive ? 1 : 0.35 }} transition={{ duration: 0.4 }}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', fontWeight: isActive ? 700 : 500, color: isDone ? 'var(--text)' : isActive ? ANALYSIS_ACCENT : 'var(--text-3)' }}>
+              <div style={{
+                width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: isDone ? '#34D399' : 'transparent',
+                border: isDone ? 'none' : `2px solid ${isActive ? ANALYSIS_ACCENT : 'var(--border)'}`,
+              }}>
+                {isDone ? (
+                  <Check size={11} strokeWidth={3.5} color="#0a0a12" />
+                ) : isActive ? (
+                  <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 0.9 }}
+                    style={{ width: 6, height: 6, borderRadius: '50%', background: ANALYSIS_ACCENT }} />
+                ) : null}
+              </div>
+              <span>{label}</span>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 // Candidate-portal "My Talks" live room — sibling to InterviewRoomPage.tsx, deliberately NOT
@@ -330,9 +406,9 @@ export default function TalkRoomPage() {
         )}
 
         {phase === 'scoring' && (
-          <div style={{ textAlign: 'center', padding: '48px 0' }}>
-            <div style={{ fontSize: '14px', color: 'var(--text-2)' }}>Scoring your talk…</div>
-            {scoringError && <div style={{ fontSize: '13px', color: '#f87171', marginTop: '10px' }}>Scoring failed — your talk was still saved.</div>}
+          <div style={{ textAlign: 'center' }}>
+            <AnalyzingTalk />
+            {scoringError && <div style={{ fontSize: '13px', color: '#f87171', marginTop: '-24px', marginBottom: '24px' }}>Scoring failed — your talk was still saved.</div>}
           </div>
         )}
 
