@@ -144,7 +144,7 @@ function fmtInterviewDate(iso: string) {
     + " · " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 }
 
-// Default country for the Live Job Market card — only 'uk'/'us' have real data behind them
+// Default country for the Career Momentum card — only 'uk'/'us' have real data behind them
 // (see careers-agent's own comment on why). Timezone is a real, zero-cost client-side signal
 // for a first guess; the candidate can always switch via the dropdown regardless.
 function guessMarketCountry(): 'uk' | 'us' {
@@ -159,8 +159,10 @@ function fmtSalaryK(n: number): string {
   return n >= 1000 ? `${Math.round(n / 1000)}k` : String(n);
 }
 
-// Live Job Market card, redesigned 2026-09-14 (Francis: "a different arrangement... maybe a
-// vertical bar chart") — a vertical bar chart was considered and rejected: these job titles
+// Career Momentum card (renamed from "Live Job Market" 2026-09-14 — Francis: the old name
+// implied actual job listings, this shows demand/growth trends instead), redesigned the same
+// day (Francis: "a different arrangement... maybe a vertical bar chart") — a vertical bar
+// chart was considered and rejected: these job titles
 // ("AI Red-Teaming Specialist", "Machine Learning Engineer") are too long to sit as rotated
 // axis labels without hurting readability, the actual problem with the old horizontal-list
 // layout wasn't solving. A grid of compact cards with a radial ring sidesteps that entirely —
@@ -859,13 +861,14 @@ export default function CandidateDashboard() {
           {/* LEFT */}
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
-            {/* Live Job Market — real top careers by demand score and by 5-year growth, from
+            {/* Career Momentum (renamed from "Live Job Market" 2026-09-14) — real top careers
+                by demand score and by 5-year growth, from
                 the same careers-agent database the Careers module uses (Francis, 2026-09-10:
                 "similar to our Careers module, but condensed"). Sits above Career
                 Intelligence per Francis's own placement. Only UK/US have real data behind
                 them — see careers-agent's own comment on why a full country list isn't
                 possible yet; the dropdown is honestly scoped to just those two. */}
-            <DashCard title="📊 Live Job Market" action="Explore jobs" onAction={() => navigate("/jobs")}>
+            <DashCard title="📊 Career Momentum" action="Explore jobs" onAction={() => navigate("/jobs")}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, gap: 10, flexWrap: "wrap" }}>
                 <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: 3 }}>
                   {(["inDemand", "emerging"] as const).map(tab => (

@@ -107,7 +107,8 @@ export async function getCareersByCategory(category: string): Promise<Career[]> 
 
 export interface MarketOverview { region: 'uk' | 'us'; inDemand: Career[]; emerging: Career[] }
 
-// "Live Job Market" dashboard view (Francis, 2026-09-10) — only 'uk'/'us' have real data
+// "Career Momentum" dashboard view (renamed from "Live Job Market" 2026-09-14; Francis,
+// 2026-09-10) — only 'uk'/'us' have real data
 // behind them (see careers-agent's own comment on why), so those are the only two valid
 // values; anything else the caller passes is meaningless to the backend, which itself falls
 // back to 'uk' rather than erroring.
