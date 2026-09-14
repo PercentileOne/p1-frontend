@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
 import { YouCamera } from '../components/YouCamera';
@@ -21,7 +21,6 @@ export default function DevAvatarRepro() {
   const [log, setLog] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
   const [trialCount, setTrialCount] = useState(0);
-  const videoElRef = useRef<HTMLVideoElement | null>(null);
 
   const avatar = useLiveAvatarSession(role);
 
@@ -95,7 +94,11 @@ export default function DevAvatarRepro() {
       </div>
 
       <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
-        <video ref={el => { videoElRef.current = el; avatar.setVideoEl(el); }} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        {/* Stable ref (matches InterviewRoomPage.tsx's `ref={liveAvatarHr.setVideoEl}`) —
+            an inline wrapper here got a new identity every render, causing React to re-invoke
+            setVideoEl -> attach() on every re-render. See useLiveAvatarSession.ts's
+            attachedSessionRef comment for the harness bug this caused. */}
+        <video ref={avatar.setVideoEl} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>
 
       <div>
@@ -126,8 +129,6 @@ function DualSeatTest() {
   const [log, setLog] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
   const [trialCount, setTrialCount] = useState(0);
-  const hrVideoRef = useRef<HTMLVideoElement | null>(null);
-  const techVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const hr = useLiveAvatarSession('hr');
   const technical = useLiveAvatarSession('technical');
@@ -156,34 +157,40 @@ function DualSeatTest() {
   // (unmounting a placeholder "waiting" card, same as Mike's card leaving in the real room),
   // triggering attach() and the camera's getUserMedia() cold-start on the exact same commit.
   const [tilesVisible, setTilesVisible] = useState(false);
-  // 2026-09-14 — CONFIRMED live (7+ tests): with tilesVisible deferring the video mount (and
-  // therefore attach()) until the warm-up elapses, ANY warm-up > 0s fails, every time; warm-up =
-  // 0s always passes. Camera on vs off made no difference once this was isolated. The actual
-  // cause is the GAP between connect()/SESSION_STREAM_READY and attach() — the underlying WebRTC
-  // audio receiver sits subscribed-but-unconsumed for that whole gap (nothing is decoding/
-  // draining it, since attach() is what starts real playback now that audio has no separate tap),
-  // and the browser has to burn through the accumulated backlog once attach() finally happens.
-  // This exactly matches "only intros glitch" — in the real room, Q2+ reconnects find the video
-  // element already mounted (it stays mounted for the rest of the interview), so attach() fires
-  // instantly with no gap; only the very first connection has one, because showInterviewers only
-  // flips true once. deferAttach toggles between the PROVEN repro (this gap present, current
-  // default) and the fix candidate (video always mounted — attach() fires the instant the stream
-  // is ready — with the visual "reveal" reduced to a pure CSS opacity fade that never unmounts or
-  // re-attaches anything, so it can't reintroduce the 2026-09-10 hidden-element regression, which
-  // was about juggling two different elements/refs, not about early attach() itself).
+  // 2026-09-14 — with tilesVisible deferring the video mount (and therefore attach()) until the
+  // warm-up elapses, ANY warm-up > 0s reliably failed in live testing; warm-up = 0s mostly passed.
+  // Leading theory at the time: the GAP between connect()/SESSION_STREAM_READY and attach() lets
+  // the WebRTC audio receiver sit subscribed-but-unconsumed, building a backlog attach() then has
+  // to burn through. deferAttach toggles between that repro shape (default) and a fix candidate
+  // (video always mounted, attach() fires at stream-ready with zero gap; the visual "reveal" is a
+  // pure CSS opacity fade on the same never-unmounted element).
+  //
+  // CAVEAT, same day: a genuinely separate bug was then found in THIS harness's own ref
+  // callbacks (see the tileChildren video refs below) — an inline arrow function gets a new
+  // identity every render, so React re-invoked setVideoEl -> attach() on every addLog()-driven
+  // re-render, including mid-speech, with no "already attached" guard at the time. That alone is
+  // enough to disrupt a live jitter buffer and could account for some or all of the "fails at
+  // >0s" results above, independent of the connect-to-attach-gap theory. Both are now fixed
+  // (stable ref callbacks here, an idempotency guard in useLiveAvatarSession.ts's attachIfReady)
+  // — the gap-vs-warmup pattern above needs a clean re-test with this confound removed before
+  // trusting it as the real mechanism again.
   const [deferAttach, setDeferAttach] = useState(true);
 
   const addLog = (msg: string) => setLog(prev => [...prev, `${new Date().toLocaleTimeString()} — ${msg}`]);
 
+  // Stable refs (matches InterviewRoomPage.tsx's `ref={liveAvatarHr.setVideoEl}`) — an inline
+  // wrapper here previously got a new identity every render, causing React to re-invoke
+  // setVideoEl -> attach() on every re-render (e.g. every addLog() call), including mid-speech.
+  // See useLiveAvatarSession.ts's attachedSessionRef comment for the harness bug this caused.
   const tileChildren = (
     <>
       <div style={{ position: 'relative', flex: 1, aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 1, fontSize: '11px', fontWeight: 700, background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: '4px' }}>Amina (hr)</div>
-        <video ref={el => { hrVideoRef.current = el; hr.setVideoEl(el); }} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <video ref={hr.setVideoEl} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>
       <div style={{ position: 'relative', flex: 1, aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 1, fontSize: '11px', fontWeight: 700, background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: '4px' }}>Wayne (technical)</div>
-        <video ref={el => { techVideoRef.current = el; technical.setVideoEl(el); }} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <video ref={technical.setVideoEl} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>
       {includeCamera && <YouCamera cameraOn onToggle={() => {}} />}
     </>

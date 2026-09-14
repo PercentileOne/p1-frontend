@@ -146,6 +146,17 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   // the same session.
   const tappedSessionRef = useRef<LiveAvatarSession | null>(null);
   const untapAudioRef = useRef<(() => void) | null>(null);
+  // 2026-09-14 — found via a harness bug, not a production one (production always passes
+  // setVideoEl directly as the ref prop, which is stable — see InterviewRoomPage.tsx's
+  // `ref={liveAvatarHr.setVideoEl}`). A DIAGNOSTIC harness variant wrapped it in an inline arrow
+  // function, which gets a new identity every render, so React re-invoked setVideoEl -> attach()
+  // on every re-render (e.g. every addLog() call), including mid-speech — attach() has no
+  // "already attached" guard, so it kept calling session.attach() on an already-playing session
+  // over and over, which is very plausibly what actually produced that harness's glitch, not
+  // (or not only) the connect-to-attach gap being tested. Guarding attach() to be idempotent per
+  // session closes this off categorically, in production and in any future harness variant,
+  // regardless of ref-callback stability.
+  const attachedSessionRef = useRef<LiveAvatarSession | null>(null);
   // Gates pollAudioStats to a session's first-ever speak() only — one capture per session is
   // what's actually needed (was HeyGen's own original ask: "one glitched utterance"), not one
   // per question.
@@ -184,6 +195,8 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
 
   const attachIfReady = useCallback(() => {
     if (streamReadyRef.current && videoElRef.current && sessionRef.current) {
+      if (attachedSessionRef.current === sessionRef.current) return; // already attached — see attachedSessionRef's comment
+      attachedSessionRef.current = sessionRef.current;
       sessionRef.current.attach(videoElRef.current);
       timingLog(role, 'attach() done — native element is the only audio sink');
       wireTapIfReady();
@@ -226,6 +239,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
           sessionRef.current = null;
           connectedRef.current = false;
           streamReadyRef.current = false;
+          attachedSessionRef.current = null;
           if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }
         });
 
@@ -265,6 +279,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
     untapAudioRef.current?.();
     untapAudioRef.current = null;
     tappedSessionRef.current = null;
+    attachedSessionRef.current = null;
     await sessionRef.current?.stop();
     sessionRef.current = null;
     connectedRef.current = false;
