@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
 import { YouCamera } from '../components/YouCamera';
 
@@ -141,18 +142,38 @@ function DualSeatTest() {
   // adds that same real YouCamera component (not a reimplementation) as a third concurrent video
   // pipeline, to directly test whether ITS presence — never varied before — is what's missing.
   const [includeCamera, setIncludeCamera] = useState(false);
+  // 2026-09-14 — webcam-alone (pre-warmed before Run Trial, steady-state throughout the warm-up)
+  // came back clean too, ruling out its mere PRESENCE. But that test never reproduced the real
+  // room's actual timing: InterviewRoomPage mounts the avatar tiles AND YouCamera together, in
+  // one React commit, inside a Framer Motion AnimatePresence transition (the 'intro'/'mike' card
+  // exit-animating out while the avatar tiles + camera enter-animate in) — the exact same tick
+  // attach() naturally fires, since attach() is gated on the video ref existing, which only
+  // happens once that block mounts. Every earlier dual-seat trial (including the camera one)
+  // rendered the video tiles unconditionally from page load, so attach() happened quietly with
+  // zero DOM/animation work timed alongside it — nothing like the real room's transition burst.
+  // tilesVisible reproduces that shape: tiles + camera are NOT in the DOM at all until the warm-up
+  // elapses, at which point they mount together inside a real AnimatePresence enter/exit pair
+  // (unmounting a placeholder "waiting" card, same as Mike's card leaving in the real room),
+  // triggering attach() and the camera's getUserMedia() cold-start on the exact same commit.
+  const [tilesVisible, setTilesVisible] = useState(false);
 
   const addLog = (msg: string) => setLog(prev => [...prev, `${new Date().toLocaleTimeString()} — ${msg}`]);
 
   const runTrial = async () => {
     setRunning(true);
     setStatus('connecting both seats concurrently…');
-    addLog(`Trial ${trialCount + 1} starting — BOTH seats, warmup=${warmupSeconds}s`);
+    addLog(`Trial ${trialCount + 1} starting — BOTH seats, warmup=${warmupSeconds}s, camera=${includeCamera}`);
     try {
       await Promise.all([hr.connect(), technical.connect()]);
-      setStatus(`both connected — waiting ${warmupSeconds}s`);
+      setStatus(`both connected — waiting ${warmupSeconds}s (tiles not mounted yet)`);
       addLog(`both connect() resolved — waiting ${warmupSeconds}s`);
       await new Promise(r => setTimeout(r, warmupSeconds * 1000));
+      setStatus('mounting tiles now — phase transition + attach() + camera cold-start together');
+      addLog('flipping tilesVisible — mirrors showInterviewers, mounts tiles/camera + fires the AnimatePresence transition');
+      setTilesVisible(true);
+      // Let the commit actually paint before speaking — same real gap the SDK's own attach()
+      // needs before repeatAudio(), not an artificial extra delay.
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
       setStatus('Amina speaking now — watch/listen for the glitch');
       addLog('Amina speak() called — WATCH THE VIDEOS BELOW');
       await hr.speak(TEST_LINE, 'hr', () => addLog('Amina AVATAR_SPEAK_STARTED fired'));
@@ -174,6 +195,7 @@ function DualSeatTest() {
   const resetForNextTrial = async () => {
     addLog('Disconnecting both seats to reset for a genuinely fresh pair of sessions…');
     await Promise.all([hr.disconnect(), technical.disconnect()]);
+    setTilesVisible(false);
     setStatus('idle');
   };
 
@@ -210,17 +232,33 @@ function DualSeatTest() {
         <strong>Status:</strong> {status} &nbsp;|&nbsp; <strong>Amina:</strong> {hr.status} &nbsp;|&nbsp; <strong>Wayne:</strong> {technical.status} &nbsp;|&nbsp; <strong>Trials run:</strong> {trialCount}
       </div>
 
-      <div style={{ display: 'flex', gap: '12px' }}>
-        <div style={{ position: 'relative', flex: 1, aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 1, fontSize: '11px', fontWeight: 700, background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: '4px' }}>Amina (hr)</div>
-          <video ref={el => { hrVideoRef.current = el; hr.setVideoEl(el); }} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-        <div style={{ position: 'relative', flex: 1, aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 1, fontSize: '11px', fontWeight: 700, background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: '4px' }}>Wayne (technical)</div>
-          <video ref={el => { techVideoRef.current = el; technical.setVideoEl(el); }} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-        {includeCamera && <YouCamera cameraOn onToggle={() => {}} />}
-      </div>
+      {/* AnimatePresence mode="sync" so the placeholder's exit and the tiles' enter run in the
+          same transition, same as InterviewRoomPage's 'intro'/'mike' card leaving while the
+          avatar block arrives — not two independent fades. */}
+      <AnimatePresence mode="sync">
+        {!tilesVisible && (
+          <motion.div key="waiting" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.8 }}
+            style={{ padding: '40px 20px', textAlign: 'center', background: '#151720', borderRadius: '12px', border: '1px solid #2a2d3a' }}>
+            <div style={{ fontSize: '14px', color: '#9ca3af' }}>
+              Waiting for warm-up to elapse — tiles/camera are not mounted yet (mirrors Mike's card being on screen before the real room's showInterviewers flip)
+            </div>
+          </motion.div>
+        )}
+        {tilesVisible && (
+          <motion.div key="tiles" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }}
+            style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ position: 'relative', flex: 1, aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 1, fontSize: '11px', fontWeight: 700, background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: '4px' }}>Amina (hr)</div>
+              <video ref={el => { hrVideoRef.current = el; hr.setVideoEl(el); }} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+            <div style={{ position: 'relative', flex: 1, aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 1, fontSize: '11px', fontWeight: 700, background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: '4px' }}>Wayne (technical)</div>
+              <video ref={el => { techVideoRef.current = el; technical.setVideoEl(el); }} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+            {includeCamera && <YouCamera cameraOn onToggle={() => {}} />}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div>
         <div style={{ fontSize: '12px', fontWeight: 700, color: '#9ca3af', marginBottom: '6px' }}>Trial log</div>
