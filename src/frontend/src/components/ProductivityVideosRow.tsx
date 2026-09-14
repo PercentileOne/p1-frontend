@@ -177,7 +177,7 @@ export function ProductivityVideosRow() {
           onClick={() => setPinnedModalOpen(false)}
           style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
         >
-          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 780, maxHeight: '80vh', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 920, maxHeight: '80vh', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Star size={16} fill="#F59E0B" color="#F59E0B" /> My Pinned Videos ({(pinned ?? []).length})
@@ -186,12 +186,13 @@ export function ProductivityVideosRow() {
                 <X size={18} />
               </button>
             </div>
-            {/* 220px cards (bumped from 180px) + a maxHeight capping the grid at roughly 4
-                rows (~12 cards) before it scrolls — same fix as WatchAndLearnRow.tsx's pinned
-                modal, for the same two reasons: 180px cropped baked-in thumbnail text past
-                legibility, and 80vh alone let far more than 12 fit on a tall screen before any
-                scrollbar appeared (Francis, 2026-09-14). */}
-            <div className="productivity-row-grid" style={{ padding: 20, maxHeight: 960, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 220px)', justifyContent: 'start', gap: 14 }}>
+            {/* 200px cards — matches the exact width the horizontal "Productivity" scroller above
+                already uses for the same VideoCard (`flex: '0 0 200px'`, line ~167); grid and
+                scroller must always show cards at the same size (Francis, 2026-09-14). Modal
+                widened 780->920px so exactly 4 columns fit (842-1055px of content width gives 4,
+                not 3 or 5). maxHeight caps the grid at roughly 4 rows before it scrolls, rather
+                than relying on 80vh alone — same fix as WatchAndLearnRow.tsx's pinned modal. */}
+            <div className="productivity-row-grid" style={{ padding: 20, maxHeight: 920, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 200px)', justifyContent: 'start', gap: 14 }}>
               {(pinned ?? []).length === 0 ? (
                 <div style={{ fontSize: 13, color: 'var(--text-3)', gridColumn: '1 / -1', textAlign: 'center', padding: '40px 0' }}>
                   Nothing pinned yet — search for a video and tap the star to save it here.

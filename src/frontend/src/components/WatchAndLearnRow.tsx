@@ -175,7 +175,7 @@ export function WatchAndLearnRow() {
           onClick={() => setPinnedModalOpen(false)}
           style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
         >
-          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 780, maxHeight: '80vh', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 920, maxHeight: '80vh', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Star size={16} fill="#F59E0B" color="#F59E0B" /> My Pinned Talks ({(pinned ?? []).length})
@@ -187,14 +187,15 @@ export function WatchAndLearnRow() {
             {/* Fixed-width (not 1fr) columns — 1fr let cards stretch to fill leftover row
                 space, so crossing a column-count threshold (or the scrollbar itself eating
                 ~15px once enough talks are pinned to need one) visibly shrank every card as
-                the list grew. Fixed 220px keeps every card the same size no matter how many
-                are pinned (bumped from 180px, 2026-09-14 — at 180px, many thumbnails' own
-                baked-in text was hard to read; 220px still fits exactly 3 per row in this
-                780px-wide modal). maxHeight caps the grid at roughly 4 rows (~12 cards) before
-                it scrolls, rather than relying on 80vh alone — on a tall screen 80vh fits far
-                more than that, so the scrollbar Francis wanted almost never appeared in
-                practice (Francis, 2026-09-14). */}
-            <div className="watch-and-learn-grid" style={{ padding: 20, maxHeight: 960, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 220px)', justifyContent: 'start', gap: 14 }}>
+                the list grew. 200px matches the exact width the horizontal "Talks Home" scroller
+                above already uses for the same TalkCard (`flex: '0 0 200px'`, line ~165) — the
+                grid and the scroller must always show cards at the same size, not each pick
+                their own (Francis, 2026-09-14). Modal widened 780->920px specifically so exactly
+                4 columns fit (842-1055px of content width gives 4, not 3 or 5 — 920px sits
+                safely inside that). maxHeight caps the grid at roughly 4 rows before it scrolls,
+                rather than relying on 80vh alone — on a tall screen 80vh fit far more than that,
+                so the scrollbar almost never appeared in practice. */}
+            <div className="watch-and-learn-grid" style={{ padding: 20, maxHeight: 920, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 200px)', justifyContent: 'start', gap: 14 }}>
               {(pinned ?? []).length === 0 ? (
                 <div style={{ fontSize: 13, color: 'var(--text-3)', gridColumn: '1 / -1', textAlign: 'center', padding: '40px 0' }}>
                   Nothing pinned yet — search for a talk and tap the star to save it here.
