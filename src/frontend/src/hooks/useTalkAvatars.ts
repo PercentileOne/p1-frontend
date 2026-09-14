@@ -113,12 +113,14 @@ export function useTalkAvatars(params: UseTalkAvatarsParams) {
     setHrState('idle'); setTechState('idle');
   }, [liveAvatarHr, liveAvatarTechnical]);
 
-  // Amina's closing line — same spirit as Mike's verbal debrief on the Interview Summary page,
-  // just delivered live in the room by whichever avatar is cast as the encouraging one.
+  // Amina's closing line — sets up the hand-off to Wayne's spoken debrief on the summary page
+  // (TalkSummaryPage.tsx's "Wayne Debrief Banner", 2026-09-14), Francis's own requested framing:
+  // Amina stays the encouraging live presence and explicitly names what happens next, rather
+  // than the summary page's feedback banner appearing with no narrative lead-in.
   const giveOutro = useCallback((overall: number | null, onDone: () => void) => {
     setHrState('speaking'); setTechState('idle');
     const scoreLine = overall !== null ? ` You scored ${overall} percent — ` : ' ';
-    const outroText = `That's it — well done!${scoreLine}I'll let you see the full breakdown now.`;
+    const outroText = `That's it — well done!${scoreLine}I'm just going to have a quick chat with Wayne, and we'll have some feedback ready for you on the next screen.`;
     cancelSpeakRef.current = speakHr(outroText, () => { setHrState('idle'); onDone(); });
   }, [speakHr]);
 

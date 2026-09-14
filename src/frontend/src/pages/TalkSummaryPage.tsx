@@ -1,10 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '../auth/authStore';
 import { TalkSaveDecisionPanel } from '../components/TalkSaveDecisionPanel';
+import { WaveformBars } from '../components/InterviewerAvatar';
+import { speak } from '../api/ttsApi';
 import type { TalkScoreResult, DimensionScore } from '../api/talksApi';
+
+// Wayne's blue, matching PROFILES.technical in InterviewerAvatar.tsx — he's the one giving
+// feedback here (Francis's own casting: Amina stays the encouraging live presence in the room,
+// Wayne — "knows the subject" per useTalkAvatars.ts's own intro line — is the natural one to
+// deliver the more analytical debrief, same split InterviewSummaryPage.tsx uses between the
+// live interviewers and Mike as a separate "just compared notes" character).
+const WAYNE_COLOR = '#4F8EF7';
 
 const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
 
@@ -76,6 +85,78 @@ export default function TalkSummaryPage() {
     return () => URL.revokeObjectURL(videoUrl);
   }, [videoUrl]);
 
+  // ── Wayne's verbal debrief ── same pattern as InterviewSummaryPage.tsx's Mike debrief:
+  // click-to-play (never autoplay — a candidate landing on this page shouldn't get spoken audio
+  // without asking for it), built from this talk's own real scoring data, not a canned line.
+  // State, not a ref — it's read during render to choose the button/status text below.
+  const [wayneSpoke, setWayneSpoke] = useState(false);
+  const [wayneActive, setWayneActive] = useState(false);
+  const cancelWayneRef = useRef<(() => void) | null>(null);
+  const [wayneAnalyser, setWayneAnalyser] = useState<AnalyserNode | null>(null);
+
+  const buildWayneScript = useCallback(() => {
+    if (!scoreResult) return '';
+    const name = authUser?.firstName ?? 'there';
+    const pct = Math.round(scoreResult.overall);
+
+    const opening = `Hi ${name}, it's Wayne — I've just had a chat with Amina about your talk on "${subject}", and she wanted me to share some feedback.`;
+
+    let scoreComment: string;
+    if (pct >= 85) scoreComment = `First of all, brilliant talk — you scored ${pct} percent overall. That's genuinely impressive.`;
+    else if (pct >= 65) scoreComment = `You scored ${pct} percent overall — a solid effort, and there's real potential here.`;
+    else scoreComment = `You scored ${pct} percent overall. It's a start, and with a bit of focused practice, you'll see that number climb quickly.`;
+
+    // Takeaway Score gets its own line — it's the measure Francis himself singled out as one
+    // of the most important, so Wayne should speak to it directly, not just the dimension list.
+    const takeaways = scoreResult.takeaways ?? [];
+    const takeawayComment = takeaways.length > 0
+      ? `You gave us ${takeaways.length} clear ${takeaways.length === 1 ? 'takeaway' : 'takeaways'} — that's exactly what a good talk should leave people with.`
+      : `One thing to work on: we couldn't pull out a single clear takeaway from this one — worth tightening around one or two central points next time.`;
+
+    // Pick the single lowest-scoring of the 7 AI-judged dimensions as the one thing to focus
+    // on — same "one concrete area, not a laundry list" approach as Mike's weakestTag logic,
+    // simplified since talks have no per-answer breakdown to draw a strength/weakness pair from.
+    const dimensions: [string, DimensionScore | undefined][] = [
+      ['clarity', scoreResult.clarity], ['structure', scoreResult.structure],
+      ['opening and closing strength', scoreResult.openingClosingStrength],
+      ['depth', scoreResult.depth], ['accuracy', scoreResult.accuracy],
+      ['confidence', scoreResult.confidence], ['engagement', scoreResult.engagement],
+    ];
+    const scored = dimensions.filter((d): d is [string, DimensionScore] => d[1] !== undefined);
+    const weakest = scored.length ? scored.reduce((min, d) => d[1].score < min[1].score ? d : min) : null;
+    const improvementComment = weakest && pct < 100
+      ? `One area to focus on next time is your ${weakest[0]} — if you can sharpen that up, it'll make a real difference.`
+      : '';
+
+    const closing = `Good luck with your next one, ${name} — every talk makes you sharper. Speak soon.`;
+
+    return [opening, scoreComment, takeawayComment, improvementComment, closing].filter(Boolean).join(' ');
+  }, [scoreResult, subject, authUser]);
+
+  function handleGetFeedback() {
+    if (wayneActive) {
+      cancelWayneRef.current?.();
+      cancelWayneRef.current = null;
+      setWayneAnalyser(null);
+      setWayneActive(false);
+      return;
+    }
+    if (!scoreResult) return;
+    setWayneSpoke(true);
+    setWayneActive(true);
+    cancelWayneRef.current = speak(buildWayneScript(), 'technical', () => {
+      setWayneActive(false);
+      setWayneAnalyser(null);
+      cancelWayneRef.current = null;
+    }, (a) => setWayneAnalyser(a));
+  }
+
+  // Stop Wayne if the candidate navigates away mid-debrief, rather than leaving him talking
+  // into an unmounted page.
+  useEffect(() => {
+    return () => { cancelWayneRef.current?.(); };
+  }, []);
+
   if (fetchState === 'loading') {
     return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-2)' }}>Loading your talk…</div>;
   }
@@ -91,6 +172,73 @@ export default function TalkSummaryPage() {
         </button>
 
         <h1 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--text)', marginBottom: '6px' }}>🎤 {subject}</h1>
+
+        {/* ── Wayne Debrief Banner ── same click-to-play pattern as InterviewSummaryPage.tsx's
+            Mike banner, sized as a card within this page's single-column layout rather than a
+            separate full-width strip, matching how every other block on this page is styled. */}
+        {scoreResult && (
+          <AnimatePresence>
+            {wayneActive ? (
+              <motion.div
+                key="wayne-speaking"
+                initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.35 }}
+                style={{
+                  background: `linear-gradient(135deg, ${WAYNE_COLOR}14, rgba(52,211,153,0.06))`,
+                  border: `1px solid ${WAYNE_COLOR}33`, borderRadius: '16px', padding: '16px 20px', marginBottom: '20px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                    <div style={{
+                      width: 44, height: 44, borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #1B3A6B, #2563eb)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '18px', fontWeight: 800, color: '#fff', position: 'relative', zIndex: 1,
+                    }}>WL</div>
+                    <div style={{ position: 'absolute', inset: -4, borderRadius: '50%', border: `2px solid ${WAYNE_COLOR}80`, animation: 'wayne-pulse 1.4s ease-in-out infinite' }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: WAYNE_COLOR, marginBottom: '2px' }}>Wayne · Feedback</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Delivering your debrief…</div>
+                  </div>
+                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <WaveformBars active={wayneActive} color={WAYNE_COLOR} analyserNode={wayneAnalyser} />
+                    <button onClick={handleGetFeedback} style={{ flexShrink: 0, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', color: '#F87171', borderRadius: '10px', padding: '9px 18px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+                      Stop Feedback
+                    </button>
+                  </div>
+                </div>
+                <style>{`@keyframes wayne-pulse { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.25);opacity:0} }`}</style>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="wayne-cta"
+                initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.35 }}
+                style={{
+                  background: `linear-gradient(135deg, ${WAYNE_COLOR}0d, rgba(52,211,153,0.04))`,
+                  border: `1px solid ${WAYNE_COLOR}26`, borderRadius: '16px', padding: '14px 18px', marginBottom: '20px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, #1B3A6B, #2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 800, color: '#fff', flexShrink: 0 }}>WL</div>
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: WAYNE_COLOR, marginBottom: '2px' }}>Wayne · Feedback</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>
+                      {wayneSpoke ? 'Want to hear that again?' : 'Ready to give you a personalised debrief on your talk.'}
+                    </div>
+                  </div>
+                  <button onClick={handleGetFeedback} style={{ marginLeft: 'auto', flexShrink: 0, background: `linear-gradient(135deg, ${WAYNE_COLOR}, #34D399)`, color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                    {wayneSpoke ? 'Play Feedback' : 'Get Feedback'}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
 
         {/* Leads with video, same principle as the interview summary page — the recording is
             the primary artifact, everything else (score, transcript) is analysis of it. A
