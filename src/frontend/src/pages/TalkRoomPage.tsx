@@ -6,6 +6,7 @@ import { YouCamera } from '../components/YouCamera';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
 import { useTalkAvatars } from '../hooks/useTalkAvatars';
 import { useTalkTranscript } from '../hooks/useTalkTranscript';
+import { useTalkRecording } from '../hooks/useTalkRecording';
 import { scoreTalk, uploadTalk, type TalkScoreResult } from '../api/talksApi';
 import { useAuthStore } from '../auth/authStore';
 
@@ -34,12 +35,12 @@ function formatMmSs(totalSeconds: number): string {
 // scoring) their own small hooks instead of forcing this shape into useInterviewerAudio/
 // useAnswerScoring, which are both built around a Q&A flow.
 //
-// Video recording is deliberately NOT wired up yet: useInterviewRecording's uploadRecording()
-// hardcodes interview-shaped metadata and POSTs to /api/interviews/upload — reusing it as-is
-// would silently write bogus documents into the wrong Cosmos container. Capturing/uploading a
-// talk recording needs its own small, dedicated extraction of just the getDisplayMedia/canvas
-// capture mechanics (no interview-specific upload logic) as deliberate follow-up work, not a
-// rushed change to that shared hook. Transcript + scoring + save all work correctly without it.
+// Video recording (2026-09-14): useTalkRecording.ts owns just the capture mechanics
+// (getDisplayMedia/canvas + MediaRecorder) — deliberately NOT useInterviewRecording, whose
+// uploadRecording() hardcodes interview-shaped metadata and POSTs to /api/interviews/upload,
+// which would silently write bogus documents into the wrong Cosmos container if reused as-is.
+// uploadTalk() already accepted a video blob from day one (Features/Talks/Endpoint.cs's
+// /api/talks/upload always supported it) — it just never received one until now.
 export default function TalkRoomPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -55,8 +56,7 @@ export default function TalkRoomPage() {
   const isPersonalStory = incoming.isPersonalStory ?? false;
   const targetDurationSeconds = incoming.targetDurationSeconds ?? 180;
   const resolvedPreferredName = incoming.preferredName || authUser?.firstName;
-  // incoming.consentToRecord isn't read yet — no video capture exists in this pass (see this
-  // file's own top comment); it'll gate the future recording start once that's built.
+  const consentToRecord = incoming.consentToRecord ?? true;
 
   const [phase, setPhase] = useState<TalkPhase>('intro');
   const [cameraOn, setCameraOn] = useState(true);
@@ -89,6 +89,7 @@ export default function TalkRoomPage() {
   });
 
   const transcript = useTalkTranscript();
+  const recording = useTalkRecording({ micOpen: phase === 'talk' });
 
   // Timer — counts UP toward the target; Time Management scoring compares this to the target
   // rather than gating anything live, so a candidate running slightly over isn't cut off mid-word.
@@ -101,7 +102,13 @@ export default function TalkRoomPage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [phase, paused]);
 
-  const beginTalk = useCallback(() => {
+  const beginTalk = useCallback(async () => {
+    // Started before Mike even speaks, same reasoning as InterviewRoomPage.tsx's
+    // startInterview — the recording captures the whole session from the top, and on desktop
+    // this is also the point the browser's share-tab permission dialog appears.
+    if (consentToRecord) {
+      await recording.startRecording();
+    }
     setPhase('mike-prep');
     talkAvatars.startMikePrep(() => {
       setPhase('wayne-tips');
@@ -112,12 +119,16 @@ export default function TalkRoomPage() {
         transcript.start(incoming.selectedLanguage ?? 'en');
       });
     });
-  }, [talkAvatars, transcript, incoming.selectedLanguage]);
+  }, [talkAvatars, transcript, incoming.selectedLanguage, consentToRecord, recording]);
 
   const finishTalk = useCallback(async () => {
     talkAvatars.endTalkPresence();
     const finalTranscript = transcript.stop();
     setPhase('scoring');
+    // Stopped before scoring/upload so the blob is ready by the time uploadTalk() needs it —
+    // recording.stopRecording() resolves null if it was never started (consent declined) or
+    // nothing was captured, same as videoBlob being null always has been.
+    const videoBlob = await recording.stopRecording();
 
     let result: TalkScoreResult | null = null;
     try {
@@ -126,8 +137,8 @@ export default function TalkRoomPage() {
       setScoringError(true);
     }
 
-    // No video yet (see this file's own top comment) — every talk still saves its transcript
-    // and scores regardless of the consentToRecord toggle, which currently has nothing to gate.
+    // Every talk still saves its transcript and scores even if the recording failed or was
+    // declined — videoBlob being null degrades gracefully, same as before video existed at all.
     try {
       await uploadTalk({
         talkId: talkIdRef.current,
@@ -139,7 +150,7 @@ export default function TalkRoomPage() {
         // Public Talks byline — first name only, same informal-attribution convention the
         // dashboard's own "Good afternoon, Francis" greeting already uses.
         authorFirstName: authUser?.firstName || 'A candidate',
-      }, null);
+      }, videoBlob);
     } catch { /* best-effort — the summary page falls back to route state if this fails */ }
 
     talkAvatars.giveOutro(result?.overall ?? null, () => {
@@ -148,7 +159,7 @@ export default function TalkRoomPage() {
         state: { subject, scoreResult: result, transcript: finalTranscript, durationSeconds: elapsed, targetDurationSeconds },
       });
     });
-  }, [talkAvatars, transcript, subject, elapsed, targetDurationSeconds, isPersonalStory, authUser, navigate]);
+  }, [talkAvatars, transcript, recording, subject, elapsed, targetDurationSeconds, isPersonalStory, authUser, navigate]);
 
   // Always-fresh ref, not a direct dependency — useTalkAvatars returns a brand-new object
   // literal every render (its own hrState/techState legitimately change constantly while an
@@ -177,6 +188,15 @@ export default function TalkRoomPage() {
         <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>🎤 {subject}</div>
         {phase === 'talk' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {consentToRecord && (recording.isRecording || recording.recordingFailed) && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '5px 10px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#EF4444', userSelect: 'none' }}>
+                {recording.isRecording ? (
+                  <><motion.span animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#EF4444', flexShrink: 0 }} /><span>Recording</span></>
+                ) : (
+                  <><span>⚠</span><span>No video — camera/mic denied</span></>
+                )}
+              </div>
+            )}
             <div style={{ fontSize: '13px', fontWeight: 700, color: overTarget ? '#f59e0b' : 'var(--text)', fontVariantNumeric: 'tabular-nums' }}>
               {formatMmSs(elapsed)} / {formatMmSs(targetDurationSeconds)}
             </div>
@@ -308,6 +328,11 @@ export default function TalkRoomPage() {
             {scoringError && <div style={{ fontSize: '13px', color: '#f87171', marginTop: '10px' }}>Scoring failed — your talk was still saved.</div>}
           </div>
         )}
+
+        {/* Hidden elements for the mobile-path recording (canvas-composited webcam) — never
+            visible, but must be real DOM elements for captureStream() to work reliably. */}
+        <video ref={recording.videoElRef} playsInline muted style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 1, height: 1 }} />
+        <canvas ref={recording.canvasElRef} style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 1, height: 1 }} />
 
       </div>
     </div>
