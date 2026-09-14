@@ -139,13 +139,11 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
           audioCtx.createMediaStreamSource(micStream).connect(micGain).connect(compressor);
         }
         // NOT calling setLiveAvatarRecordingDestination here, deliberately — LiveAvatar's audio
-        // now routes through getMasterGain() -> audioCtx.destination (see
-        // liveAvatarRecordingBus.ts's tap), the exact same path regular ElevenLabs TTS already
-        // uses, which tab-audio-capture (above) already grabs reliably. Wiring the recording
-        // bus in too on desktop double-captured every avatar utterance — once via tab-capture
-        // picking up the real speaker output, once via the explicit bus — producing an echo
-        // that regular TTS never had (single path only). Mobile still needs the explicit bus:
-        // no tab-capture exists there to catch the destination-routed copy on its own.
+        // plays through the native <video> element only (see useLiveAvatarSession.ts), no Web
+        // Audio involvement at all, and getDisplayMedia's tab-audio-capture (above) grabs
+        // whatever's actually audible in the tab regardless of how it's being played — it
+        // already reliably captures that native playback on its own, no explicit wiring needed.
+        // Mobile still needs the explicit bus below: no tab-capture exists there to catch it.
 
         compositeStream = new MediaStream([...tabStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
 

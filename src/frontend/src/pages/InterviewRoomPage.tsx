@@ -367,7 +367,7 @@ export default function InterviewRoomPage() {
     awaitingHandoff,
     handleSarahVideoAnalyser, handleJamesVideoAnalyser,
     stopAllInterviewerAudio,
-    askQuestion, repeatQuestion, testAudio, handleMikeIntroDone,
+    askQuestion, repeatQuestion, testAudio, startMike, handleMikeIntroDone,
     askFollowUpWithHandoff,
     cancelSpeakRef, thinkStartRef, onDoneRef,
     setHrState, setTechState,
@@ -427,16 +427,8 @@ export default function InterviewRoomPage() {
     if (consentToRecord) {
       await startRecording(); // wait for browser share dialog before Mike speaks
     }
-    // TEMPORARY, 2026-09-14: Mike's spoken intro bypassed entirely (straight to
-    // handleMikeIntroDone — the exact same completion path his real intro already uses once
-    // his speech ends, so Phase 2/AI-readiness gating still applies) to test whether Mike's
-    // regular ElevenLabs TTS playback — which shares the same AudioContext/master-gain
-    // infrastructure the LiveAvatar recording tap also uses — is a factor in the lips-before-
-    // sound glitch now hitting BOTH avatars inconsistently, something the isolated
-    // /dev/avatar-repro harness (which never plays any other audio) can't test.
-    // Revert: re-add `startMike` to the destructuring above and swap this back to `startMike()`.
-    handleMikeIntroDone();
-  }, [handleMikeIntroDone, startRecording, consentToRecord, avatarEnabled, liveAvatarHr, liveAvatarTechnical]);
+    startMike();
+  }, [startMike, startRecording, consentToRecord, avatarEnabled, liveAvatarHr, liveAvatarTechnical]);
 
   // ── Two-phase AI loading ──────────────────────────────────────────────────────
   // Phase 1 (fast ~2s): Mike's script only — unblocks Mike immediately
