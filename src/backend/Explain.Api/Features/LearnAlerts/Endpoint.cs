@@ -157,14 +157,14 @@ public static class Endpoint
         app.MapGet("/learn-alerts/answer/{token}", async (string token, int? choice, CosmosService cosmos) =>
         {
             var question = await FindQuestionByTokenAsync(cosmos, token);
-            if (question is null) return Results.Content(RenderMessagePage("Link not found", "This question link isn't valid — it may have already expired."), "text/html");
+            if (question is null) return Results.Content(RenderMessagePage("Link not found", "This question link isn't valid — it may have already expired."), "text/html; charset=utf-8");
             if (choice is not (>= 0 and <= 3))
-                return Results.Content(RenderMessagePage("Something's off", "That answer link looks incomplete."), "text/html");
+                return Results.Content(RenderMessagePage("Something's off", "That answer link looks incomplete."), "text/html; charset=utf-8");
 
             if (question.answeredAt is not null)
-                return Results.Content(RenderResultPage(question, question.selectedIndex == question.correctIndex, alreadyAnswered: true, intervalHours: null), "text/html");
+                return Results.Content(RenderResultPage(question, question.selectedIndex == question.correctIndex, alreadyAnswered: true, intervalHours: null), "text/html; charset=utf-8");
 
-            return Results.Content(RenderConfirmPage(question, choice.Value), "text/html");
+            return Results.Content(RenderConfirmPage(question, choice.Value), "text/html; charset=utf-8");
         }).AllowAnonymous();
 
         // POST /learn-alerts/answer/{token}/confirm — the only place an answer is actually
@@ -174,10 +174,10 @@ public static class Endpoint
         {
             var form = await req.ReadFormAsync();
             if (!int.TryParse(form["choice"], out var choice) || choice is < 0 or > 3)
-                return Results.Content(RenderMessagePage("Something's off", "That answer link looks incomplete."), "text/html");
+                return Results.Content(RenderMessagePage("Something's off", "That answer link looks incomplete."), "text/html; charset=utf-8");
 
             var question = await FindQuestionByTokenAsync(cosmos, token);
-            if (question is null) return Results.Content(RenderMessagePage("Link not found", "This question link isn't valid — it may have already expired."), "text/html");
+            if (question is null) return Results.Content(RenderMessagePage("Link not found", "This question link isn't valid — it may have already expired."), "text/html; charset=utf-8");
 
             var questionsContainer = cosmos.GetContainer("learnAlertQuestions");
             var alertsContainer = cosmos.GetContainer("learnAlerts");
@@ -186,7 +186,7 @@ public static class Endpoint
             {
                 // Already recorded (e.g. the candidate hit Confirm twice) — show the same result,
                 // don't touch the streak again.
-                return Results.Content(RenderResultPage(question, question.selectedIndex == question.correctIndex, alreadyAnswered: true, intervalHours: null), "text/html");
+                return Results.Content(RenderResultPage(question, question.selectedIndex == question.correctIndex, alreadyAnswered: true, intervalHours: null), "text/html; charset=utf-8");
             }
 
             var isCorrect = choice == question.correctIndex;
@@ -216,7 +216,7 @@ public static class Endpoint
                 await alertsContainer.UpsertItemAsync(updatedAlert, new PartitionKey(updatedAlert.candidateId));
             }
 
-            return Results.Content(RenderResultPage(answered, isCorrect, alreadyAnswered: false, intervalHours: intervalHours), "text/html");
+            return Results.Content(RenderResultPage(answered, isCorrect, alreadyAnswered: false, intervalHours: intervalHours), "text/html; charset=utf-8");
         }).AllowAnonymous().DisableAntiforgery();
     }
 
