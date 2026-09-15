@@ -198,7 +198,18 @@ export default function TalkRoomPage() {
   }, [talkAvatars, transcript, incoming.selectedLanguage, consentToRecord, recording]);
 
   const finishTalk = useCallback(async () => {
-    talkAvatars.endTalkPresence();
+    // Cost control (Francis, 2026-09-15, after watching a real End Talk sit through a long
+    // scoring/upload wait): same lesson InterviewRoomPage already learned on 2026-09-11 — HeyGen
+    // bills per minute CONNECTED, not per minute talking, so leaving both avatars connected
+    // through the whole scoring/upload wait (often the longest stretch of the whole talk) burns
+    // money for zero benefit. Disconnect immediately rather than just stopping the listening
+    // pose. This does mean Amina's live spoken outro (giveOutro, added 2026-09-14) can no longer
+    // run here — reconnecting just for a ~10s closing line would be slow and risks the exact
+    // first-utterance warm-up glitch the lipsync investigation is about, so it's dropped in favor
+    // of going straight to the summary page, matching how InterviewRoomPage's own final scoring
+    // wait already works (no live outro there either — see its own 'scoring' phase handling).
+    if (liveAvatarHr.status === 'connected') void liveAvatarHr.disconnect();
+    if (liveAvatarTechnical.status === 'connected') void liveAvatarTechnical.disconnect();
     const finalTranscript = transcript.stop();
     setPhase('scoring');
     // Stopped before scoring/upload so the blob is ready by the time uploadTalk() needs it —
@@ -236,13 +247,14 @@ export default function TalkRoomPage() {
     // second recording.
     const playbackUrl = videoBlob ? URL.createObjectURL(videoBlob) : null;
 
-    talkAvatars.giveOutro(result?.overall ?? null, () => {
-      setPhase('done');
-      navigate(`/talk-summary/${talkIdRef.current}`, {
-        state: { subject, scoreResult: result, transcript: finalTranscript, durationSeconds: elapsed, targetDurationSeconds, videoUrl: playbackUrl },
-      });
+    // Straight to the summary page — no live spoken outro now that both avatars disconnect
+    // immediately above (see that comment for why). TalkSummaryPage's own Wayne Debrief Banner
+    // still delivers Wayne's real spoken feedback, via its own fresh connect once there.
+    setPhase('done');
+    navigate(`/talk-summary/${talkIdRef.current}`, {
+      state: { subject, scoreResult: result, transcript: finalTranscript, durationSeconds: elapsed, targetDurationSeconds, videoUrl: playbackUrl },
     });
-  }, [talkAvatars, transcript, recording, subject, elapsed, targetDurationSeconds, isPersonalStory, authUser, navigate]);
+  }, [liveAvatarHr, liveAvatarTechnical, transcript, recording, subject, elapsed, targetDurationSeconds, isPersonalStory, authUser, navigate]);
 
   // Always-fresh ref, not a direct dependency — useTalkAvatars returns a brand-new object
   // literal every render (its own hrState/techState legitimately change constantly while an
@@ -255,7 +267,12 @@ export default function TalkRoomPage() {
   useEffect(() => { talkAvatarsRef.current = talkAvatars; });
   useEffect(() => () => { talkAvatarsRef.current.stopAll(); }, []);
 
-  const showAvatars = phase !== 'intro';
+  // Excludes 'scoring'/'done' too (2026-09-15, Francis: "we all sat staring at each other" during
+  // a real scoring wait) — the avatar row and self-camera were rendering unconditionally through
+  // the whole wait, pushing AnalyzingTalk's checklist below the fold even though it was correctly
+  // mounted the entire time. This still uses the same opacity/position toggle as always, never
+  // unmounting the <video> elements — see the comment below.
+  const showAvatars = phase !== 'intro' && phase !== 'scoring' && phase !== 'done';
   // 2026-09-14 — the moment the avatar tiles are actually revealed to the candidate; see the
   // InterviewRoomPage.tsx block comment (same fix, ported here) for why this now controls only
   // an opacity/position reveal of a permanently-mounted block, never the mount/unmount of the

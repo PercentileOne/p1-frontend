@@ -107,22 +107,10 @@ export function useTalkAvatars(params: UseTalkAvatarsParams) {
     liveAvatarTechnical.startListening();
   }, [liveAvatarHr, liveAvatarTechnical]);
 
-  const endTalkPresence = useCallback(() => {
-    liveAvatarHr.stopListening();
-    liveAvatarTechnical.stopListening();
-    setHrState('idle'); setTechState('idle');
-  }, [liveAvatarHr, liveAvatarTechnical]);
-
-  // Amina's closing line — sets up the hand-off to Wayne's spoken debrief on the summary page
-  // (TalkSummaryPage.tsx's "Wayne Debrief Banner", 2026-09-14), Francis's own requested framing:
-  // Amina stays the encouraging live presence and explicitly names what happens next, rather
-  // than the summary page's feedback banner appearing with no narrative lead-in.
-  const giveOutro = useCallback((overall: number | null, onDone: () => void) => {
-    setHrState('speaking'); setTechState('idle');
-    const scoreLine = overall !== null ? ` You scored ${overall} percent — ` : ' ';
-    const outroText = `That's it — well done!${scoreLine}I'm just going to have a quick chat with Wayne, and we'll have some feedback ready for you on the next screen.`;
-    cancelSpeakRef.current = speakHr(outroText, () => { setHrState('idle'); onDone(); });
-  }, [speakHr]);
+  // No more endTalkPresence/giveOutro (removed 2026-09-15) — TalkRoomPage.tsx's finishTalk now
+  // disconnects both avatars outright the moment a talk ends, rather than just switching pose,
+  // so there's no longer a live session for either a "stop listening" call or Amina's spoken
+  // outro to run on. See finishTalk's own comment for the cost/reconnect-risk reasoning.
 
   const stopAll = useCallback(() => {
     cancelSpeakRef.current?.();
@@ -135,7 +123,6 @@ export function useTalkAvatars(params: UseTalkAvatarsParams) {
   return {
     hrState, techState,
     startMikePrep, startAminaAndWayneTips,
-    beginTalkPresence, endTalkPresence,
-    giveOutro, stopAll,
+    beginTalkPresence, stopAll,
   };
 }

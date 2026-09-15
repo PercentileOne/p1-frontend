@@ -55,7 +55,7 @@ export async function fetchWayneTips(subject: string, isPersonalStory: boolean):
   try {
     const res = await fetch(`${API_BASE}/talks/wayne-tips`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({ subject, isPersonalStory }),
     });
     if (!res.ok) return [];

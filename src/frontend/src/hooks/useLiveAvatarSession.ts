@@ -243,6 +243,20 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
           if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }
         });
 
+        // Diagnostic only, added 2026-09-15 for HeyGen's own debugging request: confirming
+        // whether startListening()/stopListening() actually produce a "session.state_updated"
+        // event carrying new_state "listening"/"idle" — the thing they asked us to check before
+        // they can separate an expected listening pose from a real visual bug. The event exists
+        // at runtime (AgentEventsEnum.SESSION_STATE_UPDATED = "session.state_updated") but isn't
+        // in the SDK's own typed AgentEventCallbacks map, so the TypedEmitter .on() overload
+        // won't accept it — cast to a loosely-typed emitter just for this one listener, same
+        // "reach past the SDK's public typing for a specific answer" precedent as pollAudioStats
+        // above. Safe to remove once HeyGen's question is answered.
+        (session as unknown as { on: (event: string, cb: (payload: unknown) => void) => void })
+          .on(AgentEventsEnum.SESSION_STATE_UPDATED, (payload: unknown) => {
+            timingLog(role, `SESSION_STATE_UPDATED fired: ${JSON.stringify(payload)}`);
+          });
+
         await session.start();
         await Promise.race([
           streamReadyPromise,
