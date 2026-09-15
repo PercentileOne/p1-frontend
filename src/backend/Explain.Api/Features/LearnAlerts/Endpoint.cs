@@ -298,10 +298,14 @@ public static class Endpoint
     // ── Email (called by LearnAlertsSendService) ────────────────────────────────────────────
 
     // The backend's own public host — these links are handled by this same Minimal API
-    // (GET/POST /learn-alerts/answer/...), not a frontend SPA route, so this points at
-    // api.explain.global, not AppUrl (which is the candidate-portal frontend). Hardcoded
-    // rather than configured, same convention as Talks/Endpoint.cs's ShareBaseUrl const.
-    private const string AnswerBaseUrl = "https://api.explain.global/learn-alerts/answer";
+    // (GET/POST /learn-alerts/answer/...), not a frontend SPA route, so this points at the
+    // backend directly, not AppUrl (which is the candidate-portal frontend). Uses
+    // api.theinterviewchair.com (2026-09-15) rather than the backend's older api.explain.global
+    // hostname — same App Service, just a second bound custom domain — since this is the one
+    // hardcoded backend URL a candidate actually sees and clicks through to directly, and it
+    // should read as the current brand, not the pre-rebrand one. Hardcoded rather than
+    // configured, same convention as Talks/Endpoint.cs's ShareBaseUrl const.
+    private const string AnswerBaseUrl = "https://api.theinterviewchair.com/learn-alerts/answer";
 
     public static async Task SendQuestionEmailAsync(LearnAlert alert, LearnAlertQuestion question, IEmailSender emailSender, ILogger logger)
     {
