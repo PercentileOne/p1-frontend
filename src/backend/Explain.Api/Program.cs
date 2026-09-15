@@ -47,6 +47,7 @@ builder.Services.AddScoped<PermissionLoader>();
 builder.Services.AddSingleton<AnthropicService>();
 builder.Services.AddSingleton<Explain.Api.Infrastructure.YouTube.YouTubeService>();
 builder.Services.AddSingleton<Explain.Api.Features.NameGreetings.DidGenerationService>();
+builder.Services.AddSingleton<Explain.Api.Features.SessionPasses.SessionPassService>();
 builder.Services.AddHostedService<Explain.Api.Features.LearnAlerts.LearnAlertsSendService>();
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
@@ -281,6 +282,7 @@ Explain.Api.Features.LearnTopics.Endpoint.Map(app);
 Explain.Api.Features.RoleActivity.Endpoint.Map(app);
 Explain.Api.Features.Events.Endpoint.Map(app);
 Explain.Api.Features.Events.Admin.Endpoint.Map(app);
+Explain.Api.Features.SessionPasses.Endpoint.Map(app);
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
    .AllowAnonymous();

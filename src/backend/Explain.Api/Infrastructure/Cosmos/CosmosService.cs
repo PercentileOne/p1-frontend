@@ -227,6 +227,16 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("eventDailySummaries", "/pk"));
 
+        // "Interview Gift" + the self-purchase one-off pass (Francis, 2026-09-15) — one document
+        // per paid (or pending) session pass. Partition key = /recipientEmail, deliberately
+        // different from InterviewPreps' /recruiterId choice: there's no "sender's own dashboard"
+        // read here at all (an anonymous gift buyer never comes back), but "does this email have
+        // sessions left" is checked on every practice-interview-start attempt — the hottest read
+        // this feature has — so a single-partition read by recipient email is the right trade,
+        // not a cross-partition fan-out like InterviewPreps' comparatively rare received-list read.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("sessionPasses", "/recipientEmail"));
+
         await SeedPlatformStatsAsync();
         await SeedNewsFeedSourcesAsync();
     }
