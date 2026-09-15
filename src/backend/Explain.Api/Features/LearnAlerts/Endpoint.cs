@@ -363,7 +363,6 @@ public static class Endpoint
     private static string RenderResultPage(LearnAlertQuestion q, bool isCorrect, bool alreadyAnswered, LearnAlert? alert)
     {
         var correctText = WebUtility.HtmlEncode(q.options[q.correctIndex]);
-        var prefix = alreadyAnswered ? "<p style=\"font-size:12px;color:rgba(255,255,255,0.4);margin:0 0 14px;\">You already answered this one.</p>" : "";
         // Same "X/Y correct · 🔥 N-question streak (best M)" copy the dashboard summary card
         // already uses (LearnAlertsPage.tsx) — this is the first place a candidate actually sees
         // that number move, so it should read as the exact same stat, not a differently-worded one.
@@ -372,16 +371,33 @@ public static class Endpoint
               {alert.correctCount}/{alert.sentCount} correct · 🔥 {alert.currentStreak}-question streak (best {alert.longestStreak})
             </p>
             """;
+
+        // A repeat visit (the candidate's own second click, or an email scanner's prefetch of the
+        // GET link — see this file's own top comment) is a stale lookup, not a fresh result: it
+        // must read as one plainly, not reuse "Nailed it!"/confetti as if the moment just happened
+        // again. Francis caught this live (2026-09-15) — the heading itself needs to change, not
+        // just grow a small footnote above the same celebratory copy.
+        if (alreadyAnswered)
+        {
+            var whatHappened = isCorrect
+                ? "and you got it right"
+                : "and you got it wrong";
+            return WrapPage($"""
+                <div style="font-size:44px;margin-bottom:8px;">📋</div>
+                <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0 0 10px;">Question already answered</h1>
+                <p style="font-size:15px;color:rgba(255,255,255,0.75);margin:0;">You answered this one already, {whatHappened}. The correct answer was <strong style="color:#fff;">{correctText}</strong>.</p>
+                {streakLine}
+                """);
+        }
+
         return isCorrect
             ? WrapPage($"""
-                {prefix}
                 <div style="font-size:44px;margin-bottom:8px;">🎉</div>
                 <h1 style="font-size:22px;font-weight:800;color:#34D399;margin:0 0 10px;">Nailed it!</h1>
                 <p style="font-size:15px;color:rgba(255,255,255,0.75);margin:0;">The correct answer was <strong style="color:#fff;">{correctText}</strong>.</p>
                 {streakLine}
                 """, confetti: true)
             : WrapPage($"""
-                {prefix}
                 <div style="font-size:44px;margin-bottom:8px;">🙂</div>
                 <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0 0 10px;">Never mind!</h1>
                 <p style="font-size:15px;color:rgba(255,255,255,0.75);margin:0 0 6px;">The correct answer was <strong style="color:#fff;">{correctText}</strong>.</p>
