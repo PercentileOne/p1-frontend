@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Mail;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Explain.Api.Common;
@@ -11,6 +13,7 @@ public class LoginCommandHandler(
     AppDbContext db,
     TokenService tokens,
     PermissionLoader permissions,
+    IConfiguration config,
     ILogger<LoginCommandHandler> logger)
     : IRequestHandler<LoginCommand, Result<AuthResponse>>
 {
@@ -57,7 +60,61 @@ public class LoginCommandHandler(
         var token    = tokens.CreateSessionToken(user.Id, user.Email, name, role, perms, org?.OrgId, org?.OrgName, org?.OrgRole);
         var response = new AuthResponse(token, new UserDto(user.Id, user.Email, name, user.FirstName, username, role, org?.OrgId, org?.OrgName, org?.OrgRole));
 
+        // Fire-and-forget, not awaited — an SMTP round-trip has no business adding latency to
+        // every single login across every portal. Wrapped in its own try/catch inside the method
+        // itself (same best-effort pattern as RecordLogin), so a slow/down mail provider can
+        // never surface as a login failure. Deliberately CancellationToken.None, not the
+        // request's own `ct` — that token gets cancelled the moment the HTTP response finishes,
+        // which (since this isn't awaited) would race the still-in-flight SMTP call and kill the
+        // send before it completes.
+        _ = SendLoginAlert(email, name, role, org?.OrgName);
+
         return Result<AuthResponse>.Success(response);
+    }
+
+    // Francis wants visibility into every sign-in across every portal (2026-09-15) — candidate,
+    // recruiter, employer, admin, all of them. Deliberately success-only: alerting on every
+    // failed attempt too would mean an email per bot/typo, drowning out the signal that
+    // actually matters (a real account being accessed).
+    private async Task SendLoginAlert(string email, string name, string role, string? orgName)
+    {
+        try
+        {
+            var smtpHost = config["Email:SmtpHost"];
+            var smtpUser = config["Email:SmtpUser"];
+            var smtpPass = config["Email:SmtpPass"];
+            if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpUser) || string.IsNullOrEmpty(smtpPass))
+                return;
+
+            var smtpPort = int.Parse(config["Email:SmtpPort"] ?? "587");
+            var fromEmail = config["Email:FromEmail"] ?? "noreply@theinterviewchair.com";
+            var fromName = config["Email:FromName"] ?? "TheInterviewChair.com";
+            var alertTo = config["Email:LoginAlertRecipient"] ?? "francis@percentile.one";
+            var whenStr = DateTime.UtcNow.ToString("dd MMM yyyy, HH:mm 'UTC'");
+
+            using var client = new SmtpClient(smtpHost, smtpPort)
+            {
+                Credentials = new NetworkCredential(smtpUser, smtpPass),
+                EnableSsl   = true,
+            };
+            using var message = new MailMessage
+            {
+                From       = new MailAddress(fromEmail, fromName),
+                Subject    = $"New sign-in: {name} ({role})",
+                Body       = $"""
+                    {name} ({email}) just signed in as {role}{(orgName is null ? "" : $" — {orgName}")}.
+
+                    {whenStr}
+                    """,
+                IsBodyHtml = false,
+            };
+            message.To.Add(new MailAddress(alertTo));
+            await client.SendMailAsync(message);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to send login alert email for {Email}", email);
+        }
     }
 
     private async Task RecordLogin(string userId, string email, bool success, string? failureReason, CancellationToken ct)
