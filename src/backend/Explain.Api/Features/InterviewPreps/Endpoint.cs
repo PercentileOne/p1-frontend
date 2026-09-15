@@ -42,10 +42,12 @@ public static class Endpoint
                 return Results.BadRequest(new { error = "Level/seniority is required." });
             if (req.InterviewDate is null)
                 return Results.BadRequest(new { error = "Interview date is required." });
-            // Job spec is the recruiter's responsibility, not the candidate's — questions need
-            // to be grounded in the real role, not guessed from a one-line job title.
-            if (string.IsNullOrWhiteSpace(req.JobSpecText))
-                return Results.BadRequest(new { error = "Job spec is required." });
+            // Job Spec is no longer independently mandatory (2026-09-15) — matches the candidate
+            // side's own intake screen (InterviewPackStart.tsx), where Job Title alone is enough
+            // to ground the interview and Job Spec is an optional add-on. Role above is the real
+            // gate: the frontend only ever sends a non-empty Role when the recruiter provided a
+            // Job Title directly or a Job Spec to derive one from, so requiring Role already
+            // enforces "at least one of the two" without JobSpecText needing its own check.
 
             var recruiterName = ctx.User.FindFirst("name")?.Value ?? "Your recruiter";
             var id = Guid.NewGuid().ToString();
@@ -75,7 +77,8 @@ public static class Endpoint
                 cvText: string.IsNullOrWhiteSpace(req.CvText) ? null : req.CvText.Trim(),
                 cvFileName: cvFileName,
                 status: "sent",
-                createdAt: DateTimeOffset.UtcNow);
+                createdAt: DateTimeOffset.UtcNow,
+                specialFocus: req.SpecialFocus is { Length: > 0 } ? req.SpecialFocus : null);
 
             var container = cosmos.GetContainer("interview-preps");
             await container.UpsertItemAsync(prep, new PartitionKey(recruiterId));
@@ -113,8 +116,9 @@ public static class Endpoint
                 return Results.BadRequest(new { error = "Level/seniority is required." });
             if (req.InterviewDate is null)
                 return Results.BadRequest(new { error = "Interview date is required." });
-            if (string.IsNullOrWhiteSpace(req.JobSpecText))
-                return Results.BadRequest(new { error = "Job spec is required." });
+            if (string.IsNullOrWhiteSpace(req.Role))
+                return Results.BadRequest(new { error = "Role is required." });
+            // See the POST handler above — Job Spec is optional, Role is the real gate.
 
             var container = cosmos.GetContainer("interview-preps");
             InterviewPrep existing;
@@ -145,6 +149,7 @@ public static class Endpoint
                 jobSpecText = req.JobSpecText.Trim(),
                 cvText = string.IsNullOrWhiteSpace(req.CvText) ? null : req.CvText.Trim(),
                 cvFileName = cvFileName,
+                specialFocus = req.SpecialFocus is { Length: > 0 } ? req.SpecialFocus : null,
             };
 
             await container.UpsertItemAsync(updated, new PartitionKey(recruiterId));
@@ -255,13 +260,20 @@ public static class Endpoint
 
         var interviewDateStr = prep.interviewDate.ToString("dddd d MMMM 'at' h:mmtt");
 
-        var benefits = new[]
+        var benefits = new List<string>
         {
             "Practice with Sarah &amp; James, our AI interviewers, in a realistic mock interview",
             $"Questions tailored specifically to a {WebUtility.HtmlEncode(prep.role)} ({WebUtility.HtmlEncode(prep.level)}) role",
             "Instant, honest feedback to sharpen every answer",
             "100% free — no card, no catch",
         };
+        // Special Focus topics, when the recruiter set any — so the candidate knows what to
+        // brush up on before they even click through, not just that questions exist (2026-09-15).
+        if (prep.specialFocus is { Length: > 0 })
+        {
+            var topics = string.Join(", ", prep.specialFocus.Select(WebUtility.HtmlEncode));
+            benefits.Insert(2, $"Extra focus on: <strong style=\"color:#fff\">{topics}</strong>");
+        }
         var benefitsHtml = string.Join("\n", benefits.Select(b => $"""
                   <tr>
                     <td style="padding:0 0 14px;vertical-align:top;width:26px;">
@@ -353,7 +365,8 @@ public static class Endpoint
         // sends rather than switching to multipart, since a CV is small enough this is fine.
         string? CvFileBase64,
         string? CvFileName,
-        string? CvFileContentType);
+        string? CvFileContentType,
+        string[]? SpecialFocus = null);
 }
 
 public record InterviewPrep(
@@ -372,6 +385,11 @@ public record InterviewPrep(
     string? cvFileName,
     string status,
     DateTimeOffset createdAt,
+    // Optional topics narrowing question generation, same field candidates set for themselves
+    // on InterviewPackStart.tsx — added here 2026-09-15 since Francis's original intent was for
+    // the recruiter to be able to set this on the candidate's behalf too. Null/empty on any prep
+    // sent before this date; that's fine, question generation already treats it as "none given".
+    string[]? specialFocus,
     // Computed per-response (short-lived SAS URL), never persisted as meaningful data —
     // always null on the copy that gets upserted to Cosmos, only set on the returned copy.
     string? cvFileUrl = null);

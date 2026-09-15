@@ -15,6 +15,7 @@ export interface InterviewPrep {
   cvText:        string | null;
   cvFileName:    string | null;
   cvFileUrl:     string | null; // short-lived SAS URL, regenerated fresh on every read
+  specialFocus:  string[] | null;
   status:        string;
   createdAt:     string; // ISO
 }
@@ -32,6 +33,7 @@ export interface SendPrepRequest {
   cvFileBase64?:      string;
   cvFileName?:        string;
   cvFileContentType?: string;
+  specialFocus?:      string[];
 }
 
 export interface ApiError {

@@ -70,6 +70,10 @@ interface IncomingState {
   cvFileName?: string;
   difficulty?: string;
   questionCount?: number;
+  // Set by a recruiter on the candidate's behalf via the "Send Interview Prep" form
+  // (src/recruiter-portal/src/pages/InterviewPreps.tsx) — same field a candidate can also set
+  // for themselves below, just pre-populated when it arrives via a received prep.
+  specialFocus?: string[];
 }
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
@@ -155,7 +159,7 @@ export default function InterviewPackStart() {
   // "What's Hot". Kept as chips, not a single string, since "What's Hot" can suggest several
   // and the candidate keeps whichever are actually relevant.
   const [specialFocusInput, setSpecialFocusInput] = useState('');
-  const [specialFocusChips, setSpecialFocusChips] = useState<string[]>([]);
+  const [specialFocusChips, setSpecialFocusChips] = useState<string[]>(incoming.specialFocus ?? []);
   const [hotTopicsLoading, setHotTopicsLoading] = useState(false);
 
   const addSpecialFocusChip = useCallback((raw: string) => {

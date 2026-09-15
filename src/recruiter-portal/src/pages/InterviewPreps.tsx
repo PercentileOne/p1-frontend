@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Send, Briefcase, User, Loader2, Play, FileText, X, ChevronUp, ChevronDown } from 'lucide-react'
@@ -6,13 +6,18 @@ import { useAuth } from '../context/AuthContext'
 import { interviewPrepsApi, type InterviewPrep } from '../api/interviewPrepsApi'
 import { explainApi } from '../api/explainApi'
 import { buildCVContext, buildJobSpecContext, buildSarahIntro, buildJamesIntro, buildPersonalisedQuestions, inferSpecialistTitle } from '../utils/contextBuilder'
+import { type Career, searchCareers, reportMissingCareerTitle } from '../api/careersApi'
+import { generateHotTopics } from '../api/aiScoring'
 import { FileUpload } from '../components/FileUpload'
 import { DateTimePicker } from '../components/DateTimePicker'
 
-// Same three values, same colours, as the candidate's own "Question Difficulty" picker on
+// Same four values, same colours, as the candidate's own "Question Difficulty" picker on
 // InterviewPackStart.tsx (both candidate- and recruiter-portal copies) — Francis's explicit
 // ask: this dropdown and that one must speak the same language, not two different scales.
+// "Beginner" added 2026-09-15 to match the candidate side (was missing here, so a recruiter
+// could never send a first-timer-calibrated prep even after that tier shipped candidate-side).
 const DIFFICULTIES = [
+  { value: 'Beginner',  color: '#4F8EF7', borderColor: 'rgba(79,142,247,0.3)',  desc: 'Foundational questions with no pressure — a genuine first practice run, great if they’re new to this.' },
   { value: 'Standard', color: '#34D399', borderColor: 'rgba(52,211,153,0.3)', desc: 'Well-rounded questions to build genuine confidence and solid preparation.' },
   { value: 'Pro',       color: '#F59E0B', borderColor: 'rgba(245,158,11,0.3)', desc: 'Challenging questions that probe deeper — sharpen your edge beyond the basics.' },
   { value: 'Expert',    color: '#EF4444', borderColor: 'rgba(239,68,68,0.3)',  desc: "We'll treat you like the leading authority in your field. Intense. Technical. Unforgiving." },
@@ -66,7 +71,16 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
   const [email, setEmail] = useState(existing?.email ?? '')
   const [level, setLevel] = useState(existing?.level ?? '')
   const [interviewDate, setInterviewDate] = useState(existing ? isoToLocalInput(existing.interviewDate) : '')
-  const [jobSpecTab, setJobSpecTab] = useState<'jobspec' | 'cv'>('jobspec')
+  // Job Title is now its own tab, matching the candidate-side InterviewPackStart.tsx layout
+  // (2026-09-15 — previously this form had no Job Title field at all and silently derived one
+  // from the job spec's first line, while Job Spec was the only field actually required; the
+  // candidate side flipped to Job Title being the primary, standalone-sufficient field months
+  // ago). Prefilled from `existing.role` on edit — a best-effort starting point even though
+  // that value may itself have been auto-derived under the old behaviour.
+  const [jobTitle, setJobTitle] = useState(existing?.role ?? '')
+  const [activeTab, setActiveTab] = useState<'jobTitle' | 'jobspec' | 'cv'>(
+    existing?.jobSpecText ? 'jobspec' : (existing?.cvText || existing?.cvFileName) ? 'cv' : 'jobTitle'
+  )
   const [jobSpec, setJobSpec] = useState(existing?.jobSpecText ?? '')
   const [jobSpecFileName, setJobSpecFileName] = useState('')
   const [jobSpecExtracting, setJobSpecExtracting] = useState(false)
@@ -82,10 +96,92 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
   // a file is dropped submits whatever cvText/jobSpec held before the upload (usually empty).
   const stillExtracting = jobSpecExtracting || cvExtracting
 
-  // No separate Job Title field — the job spec already carries it, so ask for it once.
-  // buildJobSpecContext reads the spec's first line (same logic InterviewPackStart.tsx
-  // already relies on), falling back to "the role" if that line doesn't look title-like.
-  const derivedRole = useMemo(() => buildJobSpecContext(jobSpec).title, [jobSpec])
+  // Job title type-ahead — same real-careers-database search as InterviewPackStart.tsx,
+  // copied via careersApi.ts (see CLAUDE.md's "copy then trim" convention). Never blocks free
+  // text; a title genuinely missing from the database still sends fine, just gets reported.
+  const [jobTitleSuggestions, setJobTitleSuggestions] = useState<Career[]>([])
+  const [showJobTitleSuggestions, setShowJobTitleSuggestions] = useState(false)
+  const [searchingJobTitle, setSearchingJobTitle] = useState(false)
+  const jobTitleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const jobTitleRequestIdRef = useRef(0)
+  const lastMatchedTitleRef = useRef<string | null>(null)
+
+  const handleJobTitleChange = useCallback((value: string) => {
+    setJobTitle(value)
+    if (jobTitleDebounceRef.current) clearTimeout(jobTitleDebounceRef.current)
+    if (value.trim().length < 2) {
+      jobTitleRequestIdRef.current++
+      setJobTitleSuggestions([])
+      setShowJobTitleSuggestions(false)
+      setSearchingJobTitle(false)
+      return
+    }
+    jobTitleDebounceRef.current = setTimeout(async () => {
+      const requestId = ++jobTitleRequestIdRef.current
+      setSearchingJobTitle(true)
+      setShowJobTitleSuggestions(true)
+      const results = await searchCareers(value, 8)
+      if (requestId !== jobTitleRequestIdRef.current) return
+      setSearchingJobTitle(false)
+      setJobTitleSuggestions(results)
+      setShowJobTitleSuggestions(results.length > 0)
+    }, 180)
+  }, [])
+
+  const selectJobTitleSuggestion = useCallback((c: Career) => {
+    setJobTitle(c.title)
+    lastMatchedTitleRef.current = c.title
+    setShowJobTitleSuggestions(false)
+  }, [])
+
+  const handleJobTitleBlur = useCallback(() => {
+    setTimeout(() => setShowJobTitleSuggestions(false), 150)
+    const typed = jobTitle.trim()
+    if (typed.length < 3 || typed === lastMatchedTitleRef.current) return
+    const matchesKnownCareer = jobTitleSuggestions.some(c => c.title.toLowerCase() === typed.toLowerCase())
+    if (!matchesKnownCareer) {
+      lastMatchedTitleRef.current = typed
+      void reportMissingCareerTitle(typed)
+    }
+  }, [jobTitle, jobTitleSuggestions])
+
+  // Special Focus — same feature/copy as InterviewPackStart.tsx's own (candidate-side), added
+  // here 2026-09-15: Francis's original intent was for the RECRUITER to be able to set this on
+  // the candidate's behalf, not only for the candidate to set it themselves. Kept as chips, not
+  // a single string, matching the candidate-side data shape exactly (backend stores/returns the
+  // same string[]).
+  const [specialFocusInput, setSpecialFocusInput] = useState('')
+  const [specialFocusChips, setSpecialFocusChips] = useState<string[]>(existing?.specialFocus ?? [])
+  const [hotTopicsLoading, setHotTopicsLoading] = useState(false)
+
+  const addSpecialFocusChip = useCallback((raw: string) => {
+    const value = raw.trim()
+    if (!value) return
+    setSpecialFocusChips(prev => prev.some(c => c.toLowerCase() === value.toLowerCase()) ? prev : [...prev, value])
+  }, [])
+
+  const removeSpecialFocusChip = useCallback((value: string) => {
+    setSpecialFocusChips(prev => prev.filter(c => c !== value))
+  }, [])
+
+  const handleWhatsHot = useCallback(async () => {
+    if (!jobTitle.trim() || hotTopicsLoading) return
+    setHotTopicsLoading(true)
+    try {
+      const topics = await generateHotTopics(jobTitle.trim())
+      topics.forEach(addSpecialFocusChip)
+    } finally {
+      setHotTopicsLoading(false)
+    }
+  }, [jobTitle, hotTopicsLoading, addSpecialFocusChip])
+
+  // A role signal is now "Job Title OR Job Spec", matching InterviewPackStart.tsx's own
+  // hasRole check — Job Spec is no longer the sole required field. When only a Job Spec is
+  // given (no typed title), fall back to the same first-line heuristic this form used to rely
+  // on exclusively.
+  const hasJobTitle = jobTitle.trim().length > 2
+  const hasJobSpec = jobSpec.trim().length >= 20
+  const resolvedRole = hasJobTitle ? jobTitle.trim() : buildJobSpecContext(jobSpec).title
 
   function validate() {
     const e: Record<string, string> = {}
@@ -95,7 +191,7 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = 'Please enter a valid email.'
     if (!level) e.level = 'Level is required.'
     if (!interviewDate) e.interviewDate = 'Interview date is required.'
-    if (jobSpec.trim().length < 20) e.jobSpec = 'Paste or upload the job spec — questions need to be grounded in the real role.'
+    if (!hasJobTitle && !hasJobSpec) e.role = 'Add a job title, or paste/upload the job spec — questions need to be grounded in the real role.'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -112,7 +208,7 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       email: email.trim().toLowerCase(),
-      role: derivedRole,
+      role: resolvedRole,
       level,
       interviewDate: new Date(interviewDate).toISOString(),
       jobSpecText: jobSpec.trim(),
@@ -120,6 +216,7 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
       cvFileBase64: cvFilePayload?.base64,
       cvFileName: cvFile?.name,
       cvFileContentType: cvFile?.type,
+      specialFocus: specialFocusChips.length > 0 ? specialFocusChips : undefined,
     }
     try {
       const prep = existing
@@ -199,30 +296,74 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
           {errors.level && <div style={{ fontSize: 11, color: '#F87171', marginTop: 6 }}>{errors.level}</div>}
         </div>
 
-        {/* Job Spec + CV — recruiter's responsibility, not the candidate's. Grounds every
-            generated question in the real role and the real candidate, rather than a one-line
-            job title — and gives an astute interviewer's eye into things like employment dates,
-            so practice actually catches what a CV might be fudging. */}
-        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+        {/* Job Title + Job Spec + CV — recruiter's responsibility, not the candidate's. Grounds
+            every generated question in the real role and the real candidate — and, for CV, gives
+            an astute interviewer's eye into things like employment dates, so practice actually
+            catches what a CV might be fudging. Job Title added 2026-09-15 to match the
+            candidate-side InterviewPackStart.tsx three-tab layout — either Job Title or Job Spec
+            is enough to send, same as there. */}
+        <div style={{ background: 'var(--bg2)', border: `1px solid ${errors.role ? 'rgba(245,158,11,0.5)' : 'var(--border)'}`, borderRadius: 16, overflow: 'hidden' }}>
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
-            <button type="button" onClick={() => setJobSpecTab('jobspec')} style={{
-              flex: 1, padding: '12px 16px', border: 'none', background: jobSpecTab === 'jobspec' ? 'rgba(79,142,247,0.08)' : 'none', cursor: 'pointer',
-              fontSize: 12, fontWeight: 700, fontFamily: 'inherit', color: jobSpecTab === 'jobspec' ? 'var(--blue)' : 'var(--text-3)',
-              borderBottom: jobSpecTab === 'jobspec' ? '2px solid var(--blue)' : '2px solid transparent', marginBottom: -1,
+            <button type="button" onClick={() => setActiveTab('jobTitle')} style={{
+              flex: 1, padding: '12px 16px', border: 'none', background: activeTab === 'jobTitle' ? 'rgba(79,142,247,0.08)' : 'none', cursor: 'pointer',
+              fontSize: 12, fontWeight: 700, fontFamily: 'inherit', color: activeTab === 'jobTitle' ? 'var(--blue)' : 'var(--text-3)',
+              borderBottom: activeTab === 'jobTitle' ? '2px solid var(--blue)' : '2px solid transparent', marginBottom: -1,
             }}>
-              📄 Job Spec {jobSpec.trim() ? '✓' : '* required'}
+              💼 Job Title {hasJobTitle ? '✓' : ''}
             </button>
-            <button type="button" onClick={() => setJobSpecTab('cv')} style={{
-              flex: 1, padding: '12px 16px', border: 'none', background: jobSpecTab === 'cv' ? 'rgba(79,142,247,0.08)' : 'none', cursor: 'pointer',
-              fontSize: 12, fontWeight: 700, fontFamily: 'inherit', color: jobSpecTab === 'cv' ? 'var(--blue)' : 'var(--text-3)',
-              borderBottom: jobSpecTab === 'cv' ? '2px solid var(--blue)' : '2px solid transparent', marginBottom: -1,
+            <button type="button" onClick={() => setActiveTab('jobspec')} style={{
+              flex: 1, padding: '12px 16px', border: 'none', background: activeTab === 'jobspec' ? 'rgba(79,142,247,0.08)' : 'none', cursor: 'pointer',
+              fontSize: 12, fontWeight: 700, fontFamily: 'inherit', color: activeTab === 'jobspec' ? 'var(--blue)' : 'var(--text-3)',
+              borderBottom: activeTab === 'jobspec' ? '2px solid var(--blue)' : '2px solid transparent', marginBottom: -1,
+            }}>
+              📄 Job Spec {hasJobSpec ? '✓' : '(optional)'}
+            </button>
+            <button type="button" onClick={() => setActiveTab('cv')} style={{
+              flex: 1, padding: '12px 16px', border: 'none', background: activeTab === 'cv' ? 'rgba(79,142,247,0.08)' : 'none', cursor: 'pointer',
+              fontSize: 12, fontWeight: 700, fontFamily: 'inherit', color: activeTab === 'cv' ? 'var(--blue)' : 'var(--text-3)',
+              borderBottom: activeTab === 'cv' ? '2px solid var(--blue)' : '2px solid transparent', marginBottom: -1,
             }}>
               👤 Candidate CV {cvText || cvFileName ? '✓' : '(optional, recommended)'}
             </button>
           </div>
 
           <div style={{ padding: '20px' }}>
-            {jobSpecTab === 'jobspec' && (
+            {activeTab === 'jobTitle' && (
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  value={jobTitle}
+                  onChange={e => handleJobTitleChange(e.target.value)}
+                  onFocus={() => { if (jobTitleSuggestions.length > 0) setShowJobTitleSuggestions(true) }}
+                  onBlur={handleJobTitleBlur}
+                  placeholder="e.g. Head of Engineering, Senior Product Manager, Registered Nurse…"
+                  style={inputStyle}
+                />
+                {showJobTitleSuggestions && (searchingJobTitle || jobTitleSuggestions.length > 0) && (
+                  <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, background: '#0d0c1e', border: '1px solid rgba(79,142,247,0.3)', borderRadius: 10, overflow: 'hidden', zIndex: 20, boxShadow: '0 16px 48px rgba(0,0,0,0.6)' }}>
+                    {searchingJobTitle ? (
+                      <div style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-3)' }}>Searching…</div>
+                    ) : jobTitleSuggestions.map(c => (
+                      <div
+                        key={c.id}
+                        onMouseDown={() => selectJobTitleSuggestion(c)}
+                        style={{ padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(79,142,247,0.1)' }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
+                      >
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{c.title}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{c.category}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 10, lineHeight: 1.5 }}>
+                  Or switch to the Job Spec tab above — either one is enough to send on its own.
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'jobspec' && (
               <>
                 <FileUpload
                   label="Job Spec"
@@ -246,16 +387,15 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
                   </>
                 )}
                 {jobSpecFileName && <div style={{ marginTop: 8, fontSize: 12, color: '#34D399' }}>✓ {jobSpecFileName} loaded</div>}
-                {errors.jobSpec && <div style={{ fontSize: 11, color: '#F87171', marginTop: 8 }}>{errors.jobSpec}</div>}
-                {jobSpec.trim().length >= 20 && (
+                {!hasJobTitle && jobSpec.trim().length >= 20 && (
                   <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-3)' }}>
-                    Detected role: <span style={{ color: 'var(--text)', fontWeight: 700 }}>{derivedRole}</span>
+                    Detected role: <span style={{ color: 'var(--text)', fontWeight: 700 }}>{resolvedRole}</span>
                   </div>
                 )}
               </>
             )}
 
-            {jobSpecTab === 'cv' && (
+            {activeTab === 'cv' && (
               <>
                 <div style={{ fontSize: 12, color: 'var(--text-3)', lineHeight: 1.6, marginBottom: 16 }}>
                   If you have the candidate's CV, add it here — questions can then probe real experience (roles, dates, projects), not just the job spec. Great for catching an embellished CV before your client does.
@@ -290,6 +430,74 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
               </>
             )}
           </div>
+        </div>
+        {errors.role && <div style={{ fontSize: 11, color: '#F87171', marginTop: -10 }}>{errors.role}</div>}
+
+        {/* Special Focus — optional topics that narrow question generation; "What's Hot"
+            suggests currently in-demand ones for the typed role. Same feature as the candidate
+            side's own InterviewPackStart.tsx, since a recruiter should be able to set this on
+            the candidate's behalf just as well as a candidate can set it for themselves. */}
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Special Focus</span>
+            <span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 400 }}>(optional — narrows questions to specific topics)</span>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <input
+              type="text"
+              value={specialFocusInput}
+              onChange={e => setSpecialFocusInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ',') {
+                  e.preventDefault()
+                  addSpecialFocusChip(specialFocusInput)
+                  setSpecialFocusInput('')
+                }
+              }}
+              placeholder="e.g. Agentic AI Patterns — press Enter to add"
+              style={{ ...inputStyle, flex: 1 }}
+            />
+            <button
+              type="button"
+              onClick={handleWhatsHot}
+              disabled={!jobTitle.trim() || hotTopicsLoading}
+              title={!jobTitle.trim() ? 'Add a job title first' : undefined}
+              style={{
+                flexShrink: 0, display: 'flex', alignItems: 'center', gap: 7,
+                background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.35)',
+                borderRadius: 10, padding: '0 18px', color: '#a78bfa', fontSize: 13, fontWeight: 700,
+                fontFamily: 'inherit', cursor: !jobTitle.trim() || hotTopicsLoading ? 'not-allowed' : 'pointer',
+                opacity: !jobTitle.trim() ? 0.5 : 1,
+              }}
+            >
+              {hotTopicsLoading ? '…' : '🔥'} What's Hot
+            </button>
+          </div>
+          {specialFocusChips.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
+              {specialFocusChips.map(chip => (
+                <span key={chip} style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.3)',
+                  borderRadius: 20, padding: '6px 8px 6px 14px', fontSize: 12.5, color: 'var(--text)', fontWeight: 600,
+                }}>
+                  {chip}
+                  <button
+                    type="button"
+                    onClick={() => removeSpecialFocusChip(chip)}
+                    aria-label={`Remove ${chip}`}
+                    style={{
+                      width: 18, height: 18, borderRadius: '50%', border: 'none',
+                      background: 'rgba(255,255,255,0.08)', color: 'var(--text-3)', fontSize: 12,
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+                    }}
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>

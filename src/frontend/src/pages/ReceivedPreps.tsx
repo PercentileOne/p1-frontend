@@ -19,6 +19,7 @@ interface ReceivedPrep {
   cvText:        string | null;
   cvFileName:    string | null;
   cvFileUrl:     string | null; // short-lived SAS URL — the real uploaded file, not the extracted text
+  specialFocus:  string[] | null;
   status:        string;
   createdAt:     string;
 }
@@ -78,6 +79,7 @@ export default function ReceivedPreps() {
         cvFileUrl: prep.cvFileUrl ?? undefined,
         cvFileName: prep.cvFileName ?? undefined,
         difficulty: prep.level,
+        specialFocus: prep.specialFocus ?? undefined,
       },
     });
   }

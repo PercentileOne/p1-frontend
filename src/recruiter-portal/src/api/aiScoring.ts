@@ -969,3 +969,30 @@ Return JSON:
     return [];
   }
 }
+
+// Copied from src/frontend/src/api/aiScoring.ts (candidate portal) — see CLAUDE.md's "copy then
+// trim" convention. Powers "What's Hot" on the recruiter's Send Interview Prep form (2026-09-15):
+// Special Focus was originally meant to be settable by the recruiter, on the candidate's behalf,
+// not just by the candidate themselves — this closes that gap.
+export async function generateHotTopics(jobTitle: string): Promise<string[]> {
+  const systemPrompt = `You identify the specific skills, technologies, and topics currently most talked about and tested for a given job role in real interviews. Return ONLY valid JSON — no markdown, no explanation.`;
+
+  const userPrompt = `Role: ${jobTitle}
+
+List exactly 4 specific, currently in-demand subjects, technologies, or methodologies that someone interviewing for this role today should be ready to discuss — the kind of thing that shows up repeatedly in recent job postings and interview loops for this role.
+
+Rules:
+- Each item is a short, specific name (2-4 words) — a real named technology, pattern, framework, or methodology, not a vague category. "Agentic AI patterns" not "AI knowledge". "Zero Trust Architecture" not "security".
+- Genuinely specific to THIS role — not generic soft skills like "communication" or "teamwork".
+- No duplicates, no near-duplicates of each other.
+
+Return JSON:
+{ "topics": ["...", "...", "...", "..."] }`;
+
+  try {
+    const result = await chatJSON<{ topics: string[] }>(systemPrompt, userPrompt, 0.8);
+    return (result.topics ?? []).filter(t => typeof t === 'string' && t.trim().length > 0).slice(0, 4);
+  } catch {
+    return [];
+  }
+}
