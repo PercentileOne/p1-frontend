@@ -39,7 +39,13 @@ export function logEvent(
     metadata: opts.metadata,
   };
 
-  const token = localStorage.getItem('explain_token');
+  // Must match AuthContext.tsx's own TOKEN_KEY exactly — this portal's token is NOT stored
+  // under the generic 'explain_token' key (that's recruiter-portal's own key; every portal
+  // uses a different one — see AuthContext.tsx/authStore.ts). Using the wrong key here meant
+  // this fetch never found a token and every event silently logged as Anonymous, even for a
+  // fully authenticated admin — found live 2026-09-15 when Francis's own admin session showed
+  // up as Anonymous in the Activity Log he'd just built.
+  const token = localStorage.getItem('explain_admin_token');
 
   fetch(`${API_BASE}/api/events`, {
     method: 'POST',

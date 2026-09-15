@@ -39,7 +39,12 @@ export function logEvent(
     metadata: opts.metadata,
   };
 
-  const token = localStorage.getItem('explain_token');
+  // Must match AuthContext.tsx's own TOKEN_KEY exactly — this portal's token is NOT stored
+  // under the generic 'explain_token' key (that's recruiter-portal's own key; every portal
+  // uses a different one). Using the wrong key here meant this fetch never found a token and
+  // every event silently logged as Anonymous, even for a fully authenticated employer user —
+  // found live 2026-09-15 alongside the identical bug in admin-portal's own copy of this file.
+  const token = localStorage.getItem('explain_employer_token');
 
   fetch(`${API_BASE}/api/events`, {
     method: 'POST',

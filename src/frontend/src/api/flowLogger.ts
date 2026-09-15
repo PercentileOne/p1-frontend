@@ -46,7 +46,12 @@ export function logEvent(
   // Unlike the old version, this deliberately does NOT skip logging when there's no auth
   // token — anonymous events (marketing/pre-login) matter too now; the backend attaches
   // userId/email only when a valid token is actually present.
-  const token = localStorage.getItem('explain_token');
+  // Must match auth/authStore.ts's own TOKEN_KEY exactly — this portal's token is NOT stored
+  // under the generic 'explain_token' key (that's recruiter-portal's own key; every portal
+  // uses a different one). Using the wrong key here meant this fetch never found a token and
+  // every event silently logged as Anonymous, even for a fully authenticated candidate —
+  // found live 2026-09-15 alongside the identical bug in admin-portal's own copy of this file.
+  const token = localStorage.getItem('explain_auth_token');
 
   fetch(`${API_BASE}/api/events`, {
     method: 'POST',
