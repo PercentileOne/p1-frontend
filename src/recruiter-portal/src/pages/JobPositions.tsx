@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { X, ChevronUp, ChevronDown, Archive } from 'lucide-react'
+import { Pagination } from '../components/Pagination'
 
 const JOBS = [
   { id: 1,  title: 'Senior .NET Developer',  client: 'Barclays Tech',   salary: '£75k–£90k',  type: 'Permanent', status: 'Active',   candidates: 4, interviews: 2, deadline: '1 Aug',  recruiter: 'Mike Afolabi',  color: '#34D399', received: '2026-07-14' },
@@ -15,7 +16,6 @@ const JOBS = [
 ]
 
 const STATUS_OPTS = ['All', 'Active', 'On Hold', 'Draft', 'Filled']
-const PAGE_SIZE = 7
 
 type SortKey = 'received' | 'title' | 'client' | 'candidates' | 'deadline'
 
@@ -30,6 +30,7 @@ export default function JobPositions({ onViewSpec }: { onViewSpec?: (title: stri
   const [sortKey, setSortKey]     = useState<SortKey>('received')
   const [sortDir, setSortDir]     = useState<'asc' | 'desc'>('desc')
   const [page, setPage]           = useState(1)
+  const [pageSize, setPageSize]   = useState(7)
   const [archived, setArchived]   = useState<number[]>([])
 
   function toggleSort(key: SortKey) {
@@ -54,8 +55,8 @@ export default function JobPositions({ onViewSpec }: { onViewSpec?: (title: stri
       return sortDir === 'asc' ? cmp : -cmp
     })
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const visible = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const visible = filtered.slice((page - 1) * pageSize, page * pageSize)
   const active = JOBS.filter(j => j.status === 'Active' && !archived.includes(j.id)).length
   const totalCandidates = JOBS.filter(j => !archived.includes(j.id)).reduce((a, j) => a + j.candidates, 0)
 
@@ -165,33 +166,11 @@ export default function JobPositions({ onViewSpec }: { onViewSpec?: (title: stri
         {visible.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>No specs match your filter.</div>}
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
-            <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
-              Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
-            </span>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: page === 1 ? 'var(--text-3)' : 'var(--text-2)', cursor: page === 1 ? 'default' : 'pointer', fontSize: 12, fontFamily: 'inherit', opacity: page === 1 ? 0.4 : 1 }}
-              >← Prev</button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
-                <button key={n} onClick={() => setPage(n)} style={{
-                  padding: '6px 10px', borderRadius: 6, border: '1px solid', fontSize: 12, fontFamily: 'inherit', cursor: 'pointer',
-                  background: n === page ? 'rgba(79,142,247,0.15)' : 'transparent',
-                  borderColor: n === page ? 'rgba(79,142,247,0.5)' : 'var(--border)',
-                  color: n === page ? '#4F8EF7' : 'var(--text-3)',
-                }}>{n}</button>
-              ))}
-              <button
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: page === totalPages ? 'var(--text-3)' : 'var(--text-2)', cursor: page === totalPages ? 'default' : 'pointer', fontSize: 12, fontFamily: 'inherit', opacity: page === totalPages ? 0.4 : 1 }}
-              >Next →</button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          page={page} totalPages={totalPages} onPageChange={setPage}
+          pageSize={pageSize} onPageSizeChange={n => { setPageSize(n); setPage(1) }}
+          rangeStart={(page - 1) * pageSize + 1} rangeEnd={Math.min(page * pageSize, filtered.length)} total={filtered.length}
+        />
       </div>
     </div>
   )

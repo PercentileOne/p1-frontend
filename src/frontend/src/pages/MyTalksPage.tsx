@@ -5,6 +5,7 @@ import { useAuthStore } from '../auth/authStore';
 import { WatchAndLearnRow } from '../components/WatchAndLearnRow';
 import { TalkCoachingOverlay } from '../components/TalkCoachingOverlay';
 import PublicTalksTab from './PublicTalksTab';
+import { Pagination } from '../components/Pagination';
 
 type PageTab = 'mine' | 'public';
 
@@ -20,7 +21,6 @@ interface TalkSummary {
 const FILTER_OPTS = ['All', 'Public', 'Private'] as const;
 type FilterOpt = (typeof FILTER_OPTS)[number];
 type SortKey = 'createdAt' | 'subject' | 'overallScore';
-const PAGE_SIZE = 7;
 
 function scoreColor(pct: number) {
   if (pct >= 70) return '#34D399';
@@ -62,6 +62,7 @@ export default function MyTalksPage() {
   const [sortKey, setSortKey] = useState<SortKey>('createdAt');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(7);
 
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
   const [toggleError, setToggleError] = useState<string | null>(null);
@@ -146,8 +147,8 @@ export default function MyTalksPage() {
       return sortDir === 'asc' ? cmp : -cmp;
     });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const visible = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
   const sharedCount = (items ?? []).filter(i => i.isShared).length;
 
   function SortIcon({ k }: { k: SortKey }) {
@@ -354,20 +355,11 @@ export default function MyTalksPage() {
             </div>
             {visible.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>No talks match your filter.</div>}
 
-            {totalPages > 1 && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
-                <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
-                  Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
-                </span>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: page === 1 ? 'var(--text-3)' : 'var(--text-2)', cursor: page === 1 ? 'default' : 'pointer', fontSize: 12, fontFamily: 'inherit', opacity: page === 1 ? 0.4 : 1 }}>← Prev</button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
-                    <button key={n} onClick={() => setPage(n)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid', fontSize: 12, fontFamily: 'inherit', cursor: 'pointer', background: n === page ? 'rgba(79,142,247,0.15)' : 'transparent', borderColor: n === page ? 'rgba(79,142,247,0.5)' : 'var(--border)', color: n === page ? '#4F8EF7' : 'var(--text-3)' }}>{n}</button>
-                  ))}
-                  <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: page === totalPages ? 'var(--text-3)' : 'var(--text-2)', cursor: page === totalPages ? 'default' : 'pointer', fontSize: 12, fontFamily: 'inherit', opacity: page === totalPages ? 0.4 : 1 }}>Next →</button>
-                </div>
-              </div>
-            )}
+            <Pagination
+              page={page} totalPages={totalPages} onPageChange={setPage}
+              pageSize={pageSize} onPageSizeChange={n => { setPageSize(n); setPage(1) }}
+              rangeStart={(page - 1) * pageSize + 1} rangeEnd={Math.min(page * pageSize, filtered.length)} total={filtered.length}
+            />
           </div>
         </>
       )}

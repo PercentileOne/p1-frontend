@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { Plus, Search, Loader2, ChevronUp, ChevronDown } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { organisationsApi, type OrganisationSummary, type ApiError } from '../api/organisationsApi'
+import { Pagination } from '../components/Pagination'
 
 const ORG_TYPES = ['business', 'university', 'jobcentre', 'recruitment']
 
 type SortKey = 'name' | 'type' | 'contact' | 'seats' | 'seatFee' | 'perPrep' | 'members' | 'status'
 type SortDir = 'asc' | 'desc'
-const PAGE_SIZE = 10
 
 export default function Organisations() {
   const { token } = useAuth()
@@ -21,6 +21,7 @@ export default function Organisations() {
   const [error, setError] = useState('')
   const [showCreate, setShowCreate] = useState(false)
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   const load = useCallback(async () => {
     if (!token) return
@@ -69,8 +70,8 @@ export default function Organisations() {
     })
   }, [rows, search, sortKey, sortDir])
 
-  const totalPages = Math.max(1, Math.ceil(visibleRows.length / PAGE_SIZE))
-  const pageRows = visibleRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const totalPages = Math.max(1, Math.ceil(visibleRows.length / pageSize))
+  const pageRows = visibleRows.slice((page - 1) * pageSize, page * pageSize)
 
   function SortableHeader({ label, sortKeyName }: { label: string; sortKeyName: SortKey }) {
     const active = sortKey === sortKeyName
@@ -198,33 +199,11 @@ export default function Organisations() {
               })}
             </tbody>
           </table>
-          {totalPages > 1 && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
-              <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
-                Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, visibleRows.length)} of {visibleRows.length}
-              </span>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: page === 1 ? 'var(--text-3)' : 'var(--text-2)', cursor: page === 1 ? 'default' : 'pointer', fontSize: 12, fontFamily: 'inherit', opacity: page === 1 ? 0.4 : 1 }}
-                >← Prev</button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
-                  <button key={n} onClick={() => setPage(n)} style={{
-                    padding: '6px 10px', borderRadius: 6, border: '1px solid', fontSize: 12, fontFamily: 'inherit', cursor: 'pointer',
-                    background: n === page ? 'rgba(79,142,247,0.15)' : 'transparent',
-                    borderColor: n === page ? 'rgba(79,142,247,0.5)' : 'var(--border)',
-                    color: n === page ? 'var(--blue)' : 'var(--text-3)',
-                  }}>{n}</button>
-                ))}
-                <button
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: page === totalPages ? 'var(--text-3)' : 'var(--text-2)', cursor: page === totalPages ? 'default' : 'pointer', fontSize: 12, fontFamily: 'inherit', opacity: page === totalPages ? 0.4 : 1 }}
-                >Next →</button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            page={page} totalPages={totalPages} onPageChange={setPage}
+            pageSize={pageSize} onPageSizeChange={n => { setPageSize(n); setPage(1) }}
+            rangeStart={(page - 1) * pageSize + 1} rangeEnd={Math.min(page * pageSize, visibleRows.length)} total={visibleRows.length}
+          />
         </div>
       )}
 

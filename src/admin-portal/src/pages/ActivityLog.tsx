@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Search, Loader2, ChevronUp, ChevronDown } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { eventsApi, type SystemEvent, type ApiError } from '../api/eventsApi'
+import { Pagination } from '../components/Pagination'
 
 // Same sortBy values the backend's SortableFields whitelist accepts (Features/Events/Admin/
 // Endpoint.cs) — Location sorts by country, not the combined "city, country" display string,
@@ -13,8 +14,8 @@ type SortDir = 'asc' | 'desc'
 // filtering/pagination, not client-side over one fetched batch, since event volume won't fit
 // in one request the way a user list does. Only searches the hot 10-day Cosmos window — see
 // Features/Events/Admin/Endpoint.cs's own top comment on why deep historical search over the
-// permanent archive is a deliberate v2 problem, not solved here.
-const PAGE_SIZE = 50
+// permanent archive is a deliberate v2 problem, not solved here. pageSize is user-adjustable
+// (Pagination component) rather than a fixed constant — changing it re-fetches from page 1.
 const PORTALS = ['', 'candidate', 'recruiter', 'employer', 'admin'] as const
 
 const inputStyle: React.CSSProperties = {
@@ -36,6 +37,7 @@ export default function ActivityLog() {
   const [sortKey, setSortKey] = useState<SortKey>('createdAt')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(50)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -49,7 +51,7 @@ export default function ActivityLog() {
         eventType: eventType.trim() || undefined,
         portal: portal || undefined,
         sortBy: sortKey, sortDir,
-        page, size: PAGE_SIZE,
+        page, size: pageSize,
       })
       setRows(res.rows)
       setTotal(res.total)
@@ -58,7 +60,7 @@ export default function ActivityLog() {
     } finally {
       setLoading(false)
     }
-  }, [token, email, eventType, portal, sortKey, sortDir, page])
+  }, [token, email, eventType, portal, sortKey, sortDir, page, pageSize])
 
   // Same toggle contract as UserList.tsx's own sortable columns: click an inactive column to
   // sort ascending by it, click the active one again to flip direction. Re-fetches from page 1
@@ -76,7 +78,7 @@ export default function ActivityLog() {
 
   useEffect(() => { load() }, [load])
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
   function fmt(iso: string) {
     return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' })
@@ -163,26 +165,11 @@ export default function ActivityLog() {
               </tbody>
             </table>
           </div>
-          {totalPages > 1 && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
-              <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
-                Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total.toLocaleString()}
-              </span>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: page === 1 ? 'var(--text-3)' : 'var(--text-2)', cursor: page === 1 ? 'default' : 'pointer', fontSize: 12, fontFamily: 'inherit', opacity: page === 1 ? 0.4 : 1 }}
-                >← Prev</button>
-                <span style={{ fontSize: 12, color: 'var(--text-3)', padding: '6px 4px' }}>Page {page} of {totalPages}</span>
-                <button
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: page === totalPages ? 'var(--text-3)' : 'var(--text-2)', cursor: page === totalPages ? 'default' : 'pointer', fontSize: 12, fontFamily: 'inherit', opacity: page === totalPages ? 0.4 : 1 }}
-                >Next →</button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            page={page} totalPages={totalPages} onPageChange={setPage}
+            pageSize={pageSize} onPageSizeChange={n => { setPageSize(n); setPage(1) }}
+            rangeStart={(page - 1) * pageSize + 1} rangeEnd={Math.min(page * pageSize, total)} total={total}
+          />
         </div>
       )}
     </div>
