@@ -20,6 +20,7 @@ public static class Endpoint
             CosmosService cosmos,
             string? userId, string? email, string? eventType, string? portal,
             DateTimeOffset? from, DateTimeOffset? to,
+            string? sortBy, string? sortDir,
             int page = 1, int size = 50) =>
         {
             page = Math.Max(1, page);
@@ -27,6 +28,7 @@ public static class Endpoint
 
             var container = cosmos.GetContainer("systemEvents");
             var (whereClause, parameters) = BuildFilter(userId, email, eventType, portal, from, to);
+            var orderByClause = BuildOrderBy(sortBy, sortDir);
 
             var countQuery = new QueryDefinition($"SELECT VALUE COUNT(1) FROM c{whereClause}");
             foreach (var p in parameters) countQuery = countQuery.WithParameter(p.Name, p.Value);
@@ -35,7 +37,7 @@ public static class Endpoint
                 if (countFeed.HasMoreResults) total = (await countFeed.ReadNextAsync()).FirstOrDefault();
 
             var rowsQuery = new QueryDefinition(
-                $"SELECT * FROM c{whereClause} ORDER BY c.createdAt DESC OFFSET @offset LIMIT @limit")
+                $"SELECT * FROM c{whereClause}{orderByClause} OFFSET @offset LIMIT @limit")
                 .WithParameter("@offset", (page - 1) * size)
                 .WithParameter("@limit", size);
             foreach (var p in parameters) rowsQuery = rowsQuery.WithParameter(p.Name, p.Value);
@@ -56,6 +58,26 @@ public static class Endpoint
         // explicitly asked for. CAN_VIEW_ADMIN_PORTAL is confirmed granted to Admin and is the
         // baseline "can see admin-portal pages at all" gate every other read-only list here uses.
         .RequireAuthorization(Permissions.ViewAdminPortal);
+    }
+
+    // Whitelisted, not interpolated from the raw query string — sortBy/sortDir feed directly
+    // into a SQL clause, so an unrecognised value must fall back to the default rather than
+    // ever reach the query string as-is.
+    private static readonly Dictionary<string, string> SortableFields = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["createdAt"] = "c.createdAt",
+        ["email"]     = "c.email",
+        ["eventType"] = "c.eventType",
+        ["page"]      = "c.page",
+        ["portal"]    = "c.portal",
+        ["country"]   = "c.country",
+    };
+
+    private static string BuildOrderBy(string? sortBy, string? sortDir)
+    {
+        var field = SortableFields.TryGetValue(sortBy ?? "", out var mapped) ? mapped : "c.createdAt";
+        var dir = string.Equals(sortDir, "asc", StringComparison.OrdinalIgnoreCase) ? "ASC" : "DESC";
+        return $" ORDER BY {field} {dir}";
     }
 
     private static (string WhereClause, List<(string Name, object Value)> Parameters) BuildFilter(

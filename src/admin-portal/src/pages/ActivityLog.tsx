@@ -1,7 +1,13 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Search, Loader2 } from 'lucide-react'
+import { Search, Loader2, ChevronUp, ChevronDown } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { eventsApi, type SystemEvent, type ApiError } from '../api/eventsApi'
+
+// Same sortBy values the backend's SortableFields whitelist accepts (Features/Events/Admin/
+// Endpoint.cs) — Location sorts by country, not the combined "city, country" display string,
+// since Cosmos can only ORDER BY one indexed property at a time.
+type SortKey = 'createdAt' | 'email' | 'eventType' | 'page' | 'portal' | 'country'
+type SortDir = 'asc' | 'desc'
 
 // Same visual conventions as UserList.tsx (search pill, table, pager) — but SERVER-side
 // filtering/pagination, not client-side over one fetched batch, since event volume won't fit
@@ -27,6 +33,8 @@ export default function ActivityLog() {
   const [email, setEmail] = useState('')
   const [eventType, setEventType] = useState('')
   const [portal, setPortal] = useState('')
+  const [sortKey, setSortKey] = useState<SortKey>('createdAt')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -40,6 +48,7 @@ export default function ActivityLog() {
         email: email.trim() || undefined,
         eventType: eventType.trim() || undefined,
         portal: portal || undefined,
+        sortBy: sortKey, sortDir,
         page, size: PAGE_SIZE,
       })
       setRows(res.rows)
@@ -49,7 +58,21 @@ export default function ActivityLog() {
     } finally {
       setLoading(false)
     }
-  }, [token, email, eventType, portal, page])
+  }, [token, email, eventType, portal, sortKey, sortDir, page])
+
+  // Same toggle contract as UserList.tsx's own sortable columns: click an inactive column to
+  // sort ascending by it, click the active one again to flip direction. Re-fetches from page 1
+  // since this is server-side pagination — a stale later page after a sort change would be
+  // showing the wrong slice entirely, not just a wrong order.
+  function toggleSort(key: SortKey) {
+    if (key === sortKey) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(key)
+      setSortDir('asc')
+    }
+    setPage(1)
+  }
 
   useEffect(() => { load() }, [load])
 
@@ -111,11 +134,12 @@ export default function ActivityLog() {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                  {['When', 'User', 'Event', 'Page', 'Portal', 'Location'].map(label => (
-                    <th key={label} style={{ textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>
-                      {label}
-                    </th>
-                  ))}
+                  <SortableHeader label="When" sortKeyName="createdAt" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
+                  <SortableHeader label="User" sortKeyName="email" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
+                  <SortableHeader label="Event" sortKeyName="eventType" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
+                  <SortableHeader label="Page" sortKeyName="page" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
+                  <SortableHeader label="Portal" sortKeyName="portal" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
+                  <SortableHeader label="Location" sortKeyName="country" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
                 </tr>
               </thead>
               <tbody>
@@ -162,5 +186,29 @@ export default function ActivityLog() {
         </div>
       )}
     </div>
+  )
+}
+
+// Same look/click-to-toggle contract as UserList.tsx's own SortableHeader — copied rather than
+// shared since that one owns its sort state internally and this page's lives in ActivityLog
+// itself (server-side sort/paging here vs. UserList's client-side, per this file's own top
+// comment on why).
+function SortableHeader({ label, sortKeyName, sortKey, sortDir, onToggle }: {
+  label: string; sortKeyName: SortKey; sortKey: SortKey; sortDir: SortDir; onToggle: (key: SortKey) => void
+}) {
+  const active = sortKey === sortKeyName
+  return (
+    <th
+      onClick={() => onToggle(sortKeyName)}
+      style={{
+        textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
+        textTransform: 'uppercase', color: active ? 'var(--blue)' : 'var(--text-3)', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap',
+      }}
+    >
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+        {label}
+        {active && (sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />)}
+      </span>
+    </th>
   )
 }

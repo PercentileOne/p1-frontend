@@ -29,6 +29,8 @@ export interface ListEventsParams {
   portal?: string;
   from?: string;
   to?: string;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
   page?: number;
   size?: number;
 }
@@ -62,6 +64,8 @@ export const eventsApi = {
     if (params.portal) qs.set('portal', params.portal);
     if (params.from) qs.set('from', params.from);
     if (params.to) qs.set('to', params.to);
+    if (params.sortBy) qs.set('sortBy', params.sortBy);
+    if (params.sortDir) qs.set('sortDir', params.sortDir);
     qs.set('page', String(params.page ?? 1));
     qs.set('size', String(params.size ?? 50));
     return call(`/api/admin/events?${qs.toString()}`, token);
