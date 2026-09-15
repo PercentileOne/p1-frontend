@@ -1,6 +1,5 @@
-using System.Net;
-using System.Net.Mail;
 using Microsoft.EntityFrameworkCore;
+using Explain.Api.Infrastructure.Email;
 using Explain.Api.Infrastructure.Sql;
 using Explain.Api.Infrastructure.Sql.Models;
 
@@ -16,7 +15,7 @@ public static class Endpoint
            .AllowAnonymous();
     }
 
-    private static async Task<IResult> Handle(Request req, AppDbContext db, IConfiguration config, ILogger<Program> logger)
+    private static async Task<IResult> Handle(Request req, AppDbContext db, IEmailSender emailSender, ILogger<Program> logger)
     {
         if (string.IsNullOrWhiteSpace(req.Email) || !req.Email.Contains('@'))
             return Results.BadRequest(new { error = "Please enter a valid email address." });
@@ -52,12 +51,6 @@ public static class Endpoint
 
         var appUrl      = "https://candidate.theinterviewchair.com";
         var resetUrl    = $"{appUrl}/reset-password?token={token}";
-        var smtpHost    = config["Email:SmtpHost"]  ?? throw new InvalidOperationException("Email:SmtpHost not configured");
-        var smtpPort    = int.Parse(config["Email:SmtpPort"] ?? "587");
-        var smtpUser    = config["Email:SmtpUser"]  ?? throw new InvalidOperationException("Email:SmtpUser not configured");
-        var smtpPass    = config["Email:SmtpPass"]  ?? throw new InvalidOperationException("Email:SmtpPass not configured");
-        var fromEmail   = config["Email:FromEmail"] ?? "noreply@theinterviewchair.com";
-        var fromName    = config["Email:FromName"]  ?? "TheInterviewChair.com";
 
         var firstName = user.FirstName ?? "there";
         var body = $"""
@@ -94,20 +87,7 @@ public static class Endpoint
 
         try
         {
-            using var client = new SmtpClient(smtpHost, smtpPort)
-            {
-                Credentials = new NetworkCredential(smtpUser, smtpPass),
-                EnableSsl   = true,
-            };
-            using var message = new MailMessage
-            {
-                From       = new MailAddress(fromEmail, fromName),
-                Subject    = "Reset your TheInterviewChair.com password",
-                Body       = body,
-                IsBodyHtml = true,
-            };
-            message.To.Add(new MailAddress(email));
-            await client.SendMailAsync(message);
+            await emailSender.SendAsync(email, "Reset your TheInterviewChair.com password", body);
             logger.LogInformation("Password reset email sent to {Email}", email);
         }
         catch (Exception ex)

@@ -1,5 +1,5 @@
 using System.Net;
-using System.Net.Mail;
+using Explain.Api.Infrastructure.Email;
 using Microsoft.Azure.Cosmos;
 using Explain.Api.Common;
 using Explain.Api.Infrastructure.Cosmos;
@@ -170,7 +170,7 @@ public static class Endpoint
     /// </summary>
     public static async Task MatchIncomingCandidateAsync(
         string candidateId, string candidateName, string? role, double overallScore, string interviewId,
-        CosmosService cosmos, IConfiguration config, ILogger logger)
+        CosmosService cosmos, IEmailSender emailSender, ILogger logger)
     {
         if (string.IsNullOrWhiteSpace(role)) return;
 
@@ -207,7 +207,7 @@ public static class Endpoint
             {
                 try
                 {
-                    await SendAlertMatchEmailAsync(alert, match, config, logger);
+                    await SendAlertMatchEmailAsync(alert, match, emailSender, logger);
                 }
                 catch (Exception ex)
                 {
@@ -227,21 +227,8 @@ public static class Endpoint
         return a.Length > 0 && (c.Contains(a) || a.Contains(c));
     }
 
-    private static async Task SendAlertMatchEmailAsync(Alert alert, AlertMatch match, IConfiguration config, ILogger logger)
+    private static async Task SendAlertMatchEmailAsync(Alert alert, AlertMatch match, IEmailSender emailSender, ILogger logger)
     {
-        var smtpHost = config["Email:SmtpHost"];
-        var smtpUser = config["Email:SmtpUser"];
-        var smtpPass = config["Email:SmtpPass"];
-
-        if (string.IsNullOrWhiteSpace(smtpHost) || string.IsNullOrWhiteSpace(smtpUser) || string.IsNullOrWhiteSpace(smtpPass))
-        {
-            logger.LogWarning("Email:Smtp* not configured — skipping alert match email to {Email}", alert.ownerEmail);
-            return;
-        }
-
-        var smtpPort  = int.Parse(config["Email:SmtpPort"] ?? "587");
-        var fromEmail = config["Email:FromEmail"] ?? "noreply@theinterviewchair.com";
-        var fromName  = config["Email:FromName"] ?? "TheInterviewChair.com";
         var portalUrl = alert.ownerType == "employer"
             ? "https://employer.interviewme.global/dashboard"
             : "https://recruiter.interviewme.global/dashboard";
@@ -277,20 +264,7 @@ public static class Endpoint
             </html>
             """;
 
-        using var client = new SmtpClient(smtpHost, smtpPort)
-        {
-            Credentials = new NetworkCredential(smtpUser, smtpPass),
-            EnableSsl   = true,
-        };
-        using var message = new MailMessage
-        {
-            From       = new MailAddress(fromEmail, fromName),
-            Subject    = $"🔔 {match.candidateName} matches your alert — {match.role}",
-            Body       = body,
-            IsBodyHtml = true,
-        };
-        message.To.Add(new MailAddress(alert.ownerEmail));
-        await client.SendMailAsync(message);
+        await emailSender.SendAsync(alert.ownerEmail, $"🔔 {match.candidateName} matches your alert — {match.role}", body);
         logger.LogInformation("Alert match email sent to {Email} for alert {AlertId}", alert.ownerEmail, alert.id);
     }
 

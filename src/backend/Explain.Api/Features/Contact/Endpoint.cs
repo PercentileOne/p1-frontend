@@ -1,5 +1,4 @@
-using System.Net;
-using System.Net.Mail;
+using Explain.Api.Infrastructure.Email;
 
 namespace Explain.Api.Features.Contact;
 
@@ -13,20 +12,13 @@ public static class Endpoint
            .AllowAnonymous();
     }
 
-    private static async Task<IResult> Handle(Request req, IConfiguration config, ILogger<Program> logger)
+    private static async Task<IResult> Handle(Request req, IEmailSender emailSender, ILogger<Program> logger)
     {
         if (string.IsNullOrWhiteSpace(req.Name) || string.IsNullOrWhiteSpace(req.Email) || !req.Email.Contains('@'))
             return Results.BadRequest(new { error = "Name and a valid email are required." });
 
         try
         {
-            var smtpHost  = config["Email:SmtpHost"]  ?? throw new InvalidOperationException("Email:SmtpHost not configured");
-            var smtpPort  = int.Parse(config["Email:SmtpPort"] ?? "587");
-            var smtpUser  = config["Email:SmtpUser"]  ?? throw new InvalidOperationException("Email:SmtpUser not configured");
-            var smtpPass  = config["Email:SmtpPass"]  ?? throw new InvalidOperationException("Email:SmtpPass not configured");
-            var fromEmail = config["Email:FromEmail"] ?? "lessons@talktolearn.app";
-            var fromName  = config["Email:FromName"]  ?? "TheInterviewChair.com";
-
             var subject = $"TheInterviewChair.com Contact: {req.Type ?? "Enquiry"} — {req.Name}";
             var body = $"""
                 <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
@@ -42,23 +34,7 @@ public static class Endpoint
                 </div>
                 """;
 
-            using var client = new SmtpClient(smtpHost, smtpPort)
-            {
-                Credentials = new NetworkCredential(smtpUser, smtpPass),
-                EnableSsl   = true,
-            };
-
-            using var message = new MailMessage
-            {
-                From       = new MailAddress(fromEmail, fromName),
-                Subject    = subject,
-                Body       = body,
-                IsBodyHtml = true,
-            };
-            message.To.Add(new MailAddress("francis@percentile.one", "Francis Cobbinah"));
-            message.ReplyToList.Add(new MailAddress(req.Email, req.Name));
-
-            await client.SendMailAsync(message);
+            await emailSender.SendAsync("francis@percentile.one", subject, body, replyToEmail: req.Email);
 
             logger.LogInformation("Contact form submitted by {Name} <{Email}> ({Type})", req.Name, req.Email, req.Type);
             return Results.Ok(new { message = "Message sent." });

@@ -37,6 +37,7 @@ builder.Services.AddSingleton<CvFileStorageService>();
 builder.Services.AddSingleton<ProfileImageStorageService>();
 builder.Services.AddSingleton<TtsCacheService>();
 builder.Services.AddSingleton<Explain.Api.Infrastructure.Storage.NameGreetingVideoStorageService>();
+builder.Services.AddSingleton<Explain.Api.Infrastructure.Email.IEmailSender, Explain.Api.Infrastructure.Email.AcsEmailSender>();
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlDb"),
         sql => sql.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(10), errorNumbersToAdd: null)));

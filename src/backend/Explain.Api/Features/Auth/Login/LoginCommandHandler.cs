@@ -1,9 +1,8 @@
-using System.Net;
-using System.Net.Mail;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Explain.Api.Common;
 using Explain.Api.Features.Auth.Register;
+using Explain.Api.Infrastructure.Email;
 using Explain.Api.Infrastructure.Sql;
 using Explain.Api.Infrastructure.Sql.Models;
 
@@ -14,6 +13,7 @@ public class LoginCommandHandler(
     TokenService tokens,
     PermissionLoader permissions,
     IConfiguration config,
+    IEmailSender emailSender,
     ILogger<LoginCommandHandler> logger)
     : IRequestHandler<LoginCommand, Result<AuthResponse>>
 {
@@ -80,36 +80,14 @@ public class LoginCommandHandler(
     {
         try
         {
-            var smtpHost = config["Email:SmtpHost"];
-            var smtpUser = config["Email:SmtpUser"];
-            var smtpPass = config["Email:SmtpPass"];
-            if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpUser) || string.IsNullOrEmpty(smtpPass))
-                return;
-
-            var smtpPort = int.Parse(config["Email:SmtpPort"] ?? "587");
-            var fromEmail = config["Email:FromEmail"] ?? "noreply@theinterviewchair.com";
-            var fromName = config["Email:FromName"] ?? "TheInterviewChair.com";
             var alertTo = config["Email:LoginAlertRecipient"] ?? "francis@percentile.one";
             var whenStr = DateTime.UtcNow.ToString("dd MMM yyyy, HH:mm 'UTC'");
+            var body = $"""
+                {name} ({email}) just signed in as {role}{(orgName is null ? "" : $" — {orgName}")}.
 
-            using var client = new SmtpClient(smtpHost, smtpPort)
-            {
-                Credentials = new NetworkCredential(smtpUser, smtpPass),
-                EnableSsl   = true,
-            };
-            using var message = new MailMessage
-            {
-                From       = new MailAddress(fromEmail, fromName),
-                Subject    = $"New sign-in: {name} ({role})",
-                Body       = $"""
-                    {name} ({email}) just signed in as {role}{(orgName is null ? "" : $" — {orgName}")}.
-
-                    {whenStr}
-                    """,
-                IsBodyHtml = false,
-            };
-            message.To.Add(new MailAddress(alertTo));
-            await client.SendMailAsync(message);
+                {whenStr}
+                """;
+            await emailSender.SendAsync(alertTo, $"New sign-in: {name} ({role})", body.Replace("\n", "<br/>"));
         }
         catch (Exception ex)
         {

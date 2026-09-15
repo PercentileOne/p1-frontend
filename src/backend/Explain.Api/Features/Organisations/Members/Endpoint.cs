@@ -1,5 +1,5 @@
 using System.Net;
-using System.Net.Mail;
+using Explain.Api.Infrastructure.Email;
 using Microsoft.EntityFrameworkCore;
 using Explain.Api.Common;
 using Explain.Api.Infrastructure.Sql;
@@ -35,7 +35,7 @@ public static class Endpoint
 
     public static void Map(WebApplication app)
     {
-        app.MapPost("/api/admin/organisations/{id:int}/members", async (int id, AddRequest req, AppDbContext db, IConfiguration config, ILogger<Program> logger) =>
+        app.MapPost("/api/admin/organisations/{id:int}/members", async (int id, AddRequest req, AppDbContext db, IEmailSender emailSender, ILogger<Program> logger) =>
         {
             var org = await db.Organisations.FindAsync(id);
             if (org is null) return Results.NotFound(new { error = "Organisation not found." });
@@ -96,7 +96,7 @@ public static class Endpoint
             {
                 try
                 {
-                    await SendInviteEmailAsync(user, org, db, config, logger);
+                    await SendInviteEmailAsync(user, org, db, emailSender, logger);
                 }
                 catch (Exception ex)
                 {
@@ -128,7 +128,7 @@ public static class Endpoint
         .RequireAuthorization(Permissions.ManageOrganisations);
     }
 
-    private static async Task SendInviteEmailAsync(User user, Organisation org, AppDbContext db, IConfiguration config, ILogger logger)
+    private static async Task SendInviteEmailAsync(User user, Organisation org, AppDbContext db, IEmailSender emailSender, ILogger logger)
     {
         // Same PasswordResetToken table Features/Auth/ForgotPassword uses — an invite IS a
         // password-reset link, just with a longer window since it's not time-sensitive the
@@ -143,20 +143,6 @@ public static class Endpoint
             CreatedAt = DateTime.UtcNow,
         });
         await db.SaveChangesAsync();
-
-        var smtpHost = config["Email:SmtpHost"];
-        var smtpUser = config["Email:SmtpUser"];
-        var smtpPass = config["Email:SmtpPass"];
-
-        if (string.IsNullOrWhiteSpace(smtpHost) || string.IsNullOrWhiteSpace(smtpUser) || string.IsNullOrWhiteSpace(smtpPass))
-        {
-            logger.LogWarning("Email:Smtp* not configured — skipping invite email to {Email}", user.Email);
-            return;
-        }
-
-        var smtpPort  = int.Parse(config["Email:SmtpPort"] ?? "587");
-        var fromEmail = config["Email:FromEmail"] ?? "noreply@theinterviewchair.com";
-        var fromName  = config["Email:FromName"] ?? "TheInterviewChair.com";
 
         // Candidate portal owns the reset-password page and the shared /login role dropdown —
         // after setting a password the person lands on /login, picks Recruiter/Employer, and
@@ -192,20 +178,7 @@ public static class Endpoint
             </html>
             """;
 
-        using var client = new SmtpClient(smtpHost, smtpPort)
-        {
-            Credentials = new NetworkCredential(smtpUser, smtpPass),
-            EnableSsl   = true,
-        };
-        using var message = new MailMessage
-        {
-            From       = new MailAddress(fromEmail, fromName),
-            Subject    = $"You've been invited to join {org.Name} on TheInterviewChair.com",
-            Body       = body,
-            IsBodyHtml = true,
-        };
-        message.To.Add(new MailAddress(user.Email));
-        await client.SendMailAsync(message);
+        await emailSender.SendAsync(user.Email, $"You've been invited to join {org.Name} on TheInterviewChair.com", body);
         logger.LogInformation("Invite email sent to {Email} for organisation {OrgId}", user.Email, org.Id);
     }
 

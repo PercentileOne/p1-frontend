@@ -1,12 +1,11 @@
-using System.Net;
-using System.Net.Mail;
 using MediatR;
 using Explain.Api.Common;
+using Explain.Api.Infrastructure.Email;
 
 namespace Explain.Api.Features.Lessons.Export;
 
 public class ExportLessonHandler(
-    IConfiguration config,
+    IEmailSender emailSender,
     ILogger<ExportLessonHandler> logger)
     : IRequestHandler<ExportLessonCommand, Result<ExportResultDto>>
 {
@@ -41,35 +40,10 @@ public class ExportLessonHandler(
     private async Task SendEmailAsync(
         string toEmail, string toName, string lessonTitle, string html, byte[] pdfBytes, CancellationToken ct)
     {
-        var smtpHost  = config["Email:SmtpHost"]  ?? throw new InvalidOperationException("Email:SmtpHost not configured");
-        var smtpPort  = int.Parse(config["Email:SmtpPort"] ?? "587");
-        var smtpUser  = config["Email:SmtpUser"]  ?? throw new InvalidOperationException("Email:SmtpUser not configured");
-        var smtpPass  = config["Email:SmtpPass"]  ?? throw new InvalidOperationException("Email:SmtpPass not configured");
-        var fromEmail = config["Email:FromEmail"] ?? "lessons@talktolearn.app";
-        var fromName  = config["Email:FromName"]  ?? "TalkToLearn";
-
-        using var client = new SmtpClient(smtpHost, smtpPort)
-        {
-            Credentials = new NetworkCredential(smtpUser, smtpPass),
-            EnableSsl   = true,
-        };
-
         var safeTitle = string.Concat(lessonTitle.Split(Path.GetInvalidFileNameChars()));
         var fileName  = $"TalkToLearn - {safeTitle}.pdf";
+        var attachment = new EmailAttachment(fileName, "application/pdf", pdfBytes);
 
-        using var message = new MailMessage
-        {
-            From       = new MailAddress(fromEmail, fromName),
-            Subject    = $"Your TalkToLearn Lesson: {lessonTitle}",
-            Body       = html,
-            IsBodyHtml = true,
-        };
-        message.To.Add(new MailAddress(toEmail, toName));
-
-        var pdfStream  = new MemoryStream(pdfBytes);
-        var attachment = new Attachment(pdfStream, fileName, "application/pdf");
-        message.Attachments.Add(attachment);
-
-        await client.SendMailAsync(message, ct);
+        await emailSender.SendAsync(toEmail, $"Your TalkToLearn Lesson: {lessonTitle}", html, attachment: attachment, ct: ct);
     }
 }

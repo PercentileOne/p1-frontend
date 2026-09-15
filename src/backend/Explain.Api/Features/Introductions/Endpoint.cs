@@ -1,8 +1,8 @@
 using System.Net;
-using System.Net.Mail;
 using Microsoft.Azure.Cosmos;
 using Explain.Api.Common;
 using Explain.Api.Infrastructure.Cosmos;
+using Explain.Api.Infrastructure.Email;
 
 namespace Explain.Api.Features.Introductions;
 
@@ -25,7 +25,7 @@ public static class Endpoint
         // POST /api/introductions — send an employer a link to one candidate's interview.
         // Any authenticated Recruiter or Candidate can call this; which one determines whether
         // a fee applies. Not gated by a single named permission because it's legitimately either.
-        app.MapPost("/api/introductions", async (Request req, HttpContext ctx, CosmosService cosmos, IConfiguration config, ILogger<Program> logger) =>
+        app.MapPost("/api/introductions", async (Request req, HttpContext ctx, CosmosService cosmos, IEmailSender emailSender, ILogger<Program> logger) =>
         {
             var senderId = ctx.User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(senderId)) return Results.Unauthorized();
@@ -70,7 +70,7 @@ public static class Endpoint
 
             try
             {
-                await SendIntroductionEmailAsync(intro, config, logger);
+                await SendIntroductionEmailAsync(intro, emailSender, logger);
             }
             catch (Exception ex)
             {
@@ -176,21 +176,8 @@ public static class Endpoint
         }).RequireAuthorization(Permissions.ViewEmployerPortal);
     }
 
-    private static async Task SendIntroductionEmailAsync(Introduction intro, IConfiguration config, ILogger logger)
+    private static async Task SendIntroductionEmailAsync(Introduction intro, IEmailSender emailSender, ILogger logger)
     {
-        var smtpHost = config["Email:SmtpHost"];
-        var smtpUser = config["Email:SmtpUser"];
-        var smtpPass = config["Email:SmtpPass"];
-
-        if (string.IsNullOrWhiteSpace(smtpHost) || string.IsNullOrWhiteSpace(smtpUser) || string.IsNullOrWhiteSpace(smtpPass))
-        {
-            logger.LogWarning("Email:Smtp* not configured — skipping introduction email to {Email}", intro.employerEmail);
-            return;
-        }
-
-        var smtpPort  = int.Parse(config["Email:SmtpPort"] ?? "587");
-        var fromEmail = config["Email:FromEmail"] ?? "noreply@theinterviewchair.com";
-        var fromName  = config["Email:FromName"] ?? "TheInterviewChair.com";
 
         var watchUrl = $"https://employer.interviewme.global/watch/{intro.id}";
         var scoreLine = intro.overallScore is not null ? $" — scored {intro.overallScore}%" : "";
@@ -229,20 +216,7 @@ public static class Endpoint
             </html>
             """;
 
-        using var client = new SmtpClient(smtpHost, smtpPort)
-        {
-            Credentials = new NetworkCredential(smtpUser, smtpPass),
-            EnableSsl   = true,
-        };
-        using var message = new MailMessage
-        {
-            From       = new MailAddress(fromEmail, fromName),
-            Subject    = $"{intro.senderName} thinks you should meet {intro.candidateName}",
-            Body       = body,
-            IsBodyHtml = true,
-        };
-        message.To.Add(new MailAddress(intro.employerEmail));
-        await client.SendMailAsync(message);
+        await emailSender.SendAsync(intro.employerEmail, $"{intro.senderName} thinks you should meet {intro.candidateName}", body);
         logger.LogInformation("Introduction email sent to {Email}", intro.employerEmail);
     }
 

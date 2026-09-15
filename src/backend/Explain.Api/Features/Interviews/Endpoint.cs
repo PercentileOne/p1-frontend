@@ -4,6 +4,7 @@ using System.Text.Json.Nodes;
 using Microsoft.Azure.Cosmos;
 using QRCoder;
 using Explain.Api.Infrastructure.Cosmos;
+using Explain.Api.Infrastructure.Email;
 using Explain.Api.Infrastructure.Storage;
 
 namespace Explain.Api.Features.Interviews;
@@ -27,7 +28,7 @@ public static class Endpoint
     {
         // POST /api/interviews/upload — multipart/form-data: "metadata" (JSON string, required),
         // "video" (file, optional — omitted if the candidate never granted screen-recording permission).
-        app.MapPost("/api/interviews/upload", async (HttpRequest req, CosmosService cosmos, BlobStorageService blob, IConfiguration config, ILogger<Program> logger) =>
+        app.MapPost("/api/interviews/upload", async (HttpRequest req, CosmosService cosmos, BlobStorageService blob, IEmailSender emailSender, ILogger<Program> logger) =>
         {
             var userId = req.HttpContext.User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -93,7 +94,7 @@ public static class Endpoint
                     if (root.TryGetProperty("overallScore", out var s) && s.ValueKind == JsonValueKind.Number) overallScore = s.GetDouble();
                 }
                 await Explain.Api.Features.Alerts.Endpoint.MatchIncomingCandidateAsync(
-                    candidateId, candidateName, role, overallScore, interviewId, cosmos, config, logger);
+                    candidateId, candidateName, role, overallScore, interviewId, cosmos, emailSender, logger);
 
                 // Denormalize this candidate's best-ever score onto their profile so Candidate
                 // Search can filter by score without parsing every candidate's opaque

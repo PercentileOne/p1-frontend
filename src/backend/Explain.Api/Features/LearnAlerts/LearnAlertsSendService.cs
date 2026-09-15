@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using Microsoft.Azure.Cosmos;
 using Explain.Api.Infrastructure.Anthropic;
 using Explain.Api.Infrastructure.Cosmos;
+using Explain.Api.Infrastructure.Email;
 
 namespace Explain.Api.Features.LearnAlerts;
 
@@ -15,7 +16,7 @@ namespace Explain.Api.Features.LearnAlerts;
 public class LearnAlertsSendService(
     CosmosService cosmos,
     AnthropicService anthropic,
-    IConfiguration config,
+    IEmailSender emailSender,
     ILogger<LearnAlertsSendService> logger) : BackgroundService
 {
     private static readonly TimeSpan TickInterval = TimeSpan.FromMinutes(30);
@@ -98,7 +99,7 @@ public class LearnAlertsSendService(
                     isCorrect: null);
                 await questionsContainer.UpsertItemAsync(question, new PartitionKey(question.candidateId), cancellationToken: ct);
 
-                await Endpoint.SendQuestionEmailAsync(alert, question, config, logger);
+                await Endpoint.SendQuestionEmailAsync(alert, question, emailSender, logger);
 
                 var updatedAlert = alert with { sentCount = alert.sentCount + 1, nextSendAt = now.AddHours(alert.intervalHours).ToString("o") };
                 await alertsContainer.UpsertItemAsync(updatedAlert, new PartitionKey(updatedAlert.candidateId), cancellationToken: ct);

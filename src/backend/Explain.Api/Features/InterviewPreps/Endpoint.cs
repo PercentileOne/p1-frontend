@@ -1,8 +1,8 @@
 using System.Net;
-using System.Net.Mail;
 using Microsoft.Azure.Cosmos;
 using Explain.Api.Common;
 using Explain.Api.Infrastructure.Cosmos;
+using Explain.Api.Infrastructure.Email;
 using Explain.Api.Infrastructure.Storage;
 
 namespace Explain.Api.Features.InterviewPreps;
@@ -25,7 +25,7 @@ public static class Endpoint
 {
     public static void Map(WebApplication app)
     {
-        app.MapPost("/api/interview-preps", async (Request req, HttpContext ctx, CosmosService cosmos, CvFileStorageService cvFiles, IConfiguration config, ILogger<Program> logger) =>
+        app.MapPost("/api/interview-preps", async (Request req, HttpContext ctx, CosmosService cosmos, CvFileStorageService cvFiles, IEmailSender emailSender, ILogger<Program> logger) =>
         {
             var recruiterId = ctx.User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(recruiterId)) return Results.Unauthorized();
@@ -85,7 +85,7 @@ public static class Endpoint
 
             try
             {
-                await SendInviteEmailAsync(prep, config, logger);
+                await SendInviteEmailAsync(prep, emailSender, logger);
             }
             catch (Exception ex)
             {
@@ -101,7 +101,7 @@ public static class Endpoint
         // list opens this, not a live interview preview (that's its own explicit button) — the
         // realistic reason to click a sent record is fixing a typo'd name or wrong date, not
         // starting an interview you're not the candidate for.
-        app.MapPut("/api/interview-preps/{id}", async (string id, Request req, HttpContext ctx, CosmosService cosmos, CvFileStorageService cvFiles, IConfiguration config, ILogger<Program> logger) =>
+        app.MapPut("/api/interview-preps/{id}", async (string id, Request req, HttpContext ctx, CosmosService cosmos, CvFileStorageService cvFiles, IEmailSender emailSender, ILogger<Program> logger) =>
         {
             var recruiterId = ctx.User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(recruiterId)) return Results.Unauthorized();
@@ -156,7 +156,7 @@ public static class Endpoint
 
             try
             {
-                await SendInviteEmailAsync(updated, config, logger);
+                await SendInviteEmailAsync(updated, emailSender, logger);
             }
             catch (Exception ex)
             {
@@ -237,22 +237,8 @@ public static class Endpoint
         return url is null ? prep : prep with { cvFileUrl = url };
     }
 
-    private static async Task SendInviteEmailAsync(InterviewPrep prep, IConfiguration config, ILogger logger)
+    private static async Task SendInviteEmailAsync(InterviewPrep prep, IEmailSender emailSender, ILogger logger)
     {
-        var smtpHost  = config["Email:SmtpHost"];
-        var smtpUser  = config["Email:SmtpUser"];
-        var smtpPass  = config["Email:SmtpPass"];
-
-        if (string.IsNullOrWhiteSpace(smtpHost) || string.IsNullOrWhiteSpace(smtpUser) || string.IsNullOrWhiteSpace(smtpPass))
-        {
-            logger.LogWarning("Email:Smtp* not configured — skipping interview prep invite email to {Email}", prep.email);
-            return;
-        }
-
-        var smtpPort  = int.Parse(config["Email:SmtpPort"] ?? "587");
-        var fromEmail = config["Email:FromEmail"] ?? "noreply@theinterviewchair.com";
-        var fromName  = config["Email:FromName"] ?? "TheInterviewChair.com";
-
         var registerUrl = "https://candidate.theinterviewchair.com/register" +
             $"?email={Uri.EscapeDataString(prep.email)}" +
             $"&firstName={Uri.EscapeDataString(prep.firstName)}" +
@@ -334,20 +320,7 @@ public static class Endpoint
             </html>
             """;
 
-        using var client = new SmtpClient(smtpHost, smtpPort)
-        {
-            Credentials = new NetworkCredential(smtpUser, smtpPass),
-            EnableSsl   = true,
-        };
-        using var message = new MailMessage
-        {
-            From       = new MailAddress(fromEmail, fromName),
-            Subject    = $"🎁 {prep.recruiterName} sent you a free gift for your {prep.role} interview",
-            Body       = body,
-            IsBodyHtml = true,
-        };
-        message.To.Add(new MailAddress(prep.email));
-        await client.SendMailAsync(message);
+        await emailSender.SendAsync(prep.email, $"🎁 {prep.recruiterName} sent you a free gift for your {prep.role} interview", body);
         logger.LogInformation("Interview prep invite sent to {Email}", prep.email);
     }
 

@@ -1,7 +1,7 @@
 using System.Net;
-using System.Net.Mail;
 using Microsoft.EntityFrameworkCore;
 using Explain.Api.Common;
+using Explain.Api.Infrastructure.Email;
 using Explain.Api.Infrastructure.Sql;
 using Explain.Api.Infrastructure.Sql.Models;
 
@@ -23,7 +23,7 @@ public static class Endpoint
 
     public static void Map(WebApplication app)
     {
-        app.MapPost("/api/admin/users", async (CreateRequest req, AppDbContext db, IConfiguration config, ILogger<Program> logger) =>
+        app.MapPost("/api/admin/users", async (CreateRequest req, AppDbContext db, IEmailSender emailSender, ILogger<Program> logger) =>
         {
             var roleSlug = req.Role?.Trim().ToLower() ?? "";
             if (!AllowedRoles.Contains(roleSlug))
@@ -66,7 +66,7 @@ public static class Endpoint
 
             try
             {
-                await SendInviteEmailAsync(user, role.Name, db, config, logger);
+                await SendInviteEmailAsync(user, role.Name, db, emailSender, logger);
             }
             catch (Exception ex)
             {
@@ -85,7 +85,7 @@ public static class Endpoint
         .RequireAuthorization(Permissions.ManageUsers);
     }
 
-    private static async Task SendInviteEmailAsync(User user, string roleName, AppDbContext db, IConfiguration config, ILogger logger)
+    private static async Task SendInviteEmailAsync(User user, string roleName, AppDbContext db, IEmailSender emailSender, ILogger logger)
     {
         var token = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
         db.PasswordResetTokens.Add(new PasswordResetToken
@@ -97,20 +97,6 @@ public static class Endpoint
             CreatedAt = DateTime.UtcNow,
         });
         await db.SaveChangesAsync();
-
-        var smtpHost = config["Email:SmtpHost"];
-        var smtpUser = config["Email:SmtpUser"];
-        var smtpPass = config["Email:SmtpPass"];
-
-        if (string.IsNullOrWhiteSpace(smtpHost) || string.IsNullOrWhiteSpace(smtpUser) || string.IsNullOrWhiteSpace(smtpPass))
-        {
-            logger.LogWarning("Email:Smtp* not configured — skipping invite email to {Email}", user.Email);
-            return;
-        }
-
-        var smtpPort  = int.Parse(config["Email:SmtpPort"] ?? "587");
-        var fromEmail = config["Email:FromEmail"] ?? "noreply@theinterviewchair.com";
-        var fromName  = config["Email:FromName"] ?? "TheInterviewChair.com";
 
         // Candidate portal owns the reset-password page and the shared /login role dropdown —
         // after setting a password the person lands on /login, picks their portal, and the
@@ -146,20 +132,7 @@ public static class Endpoint
             </html>
             """;
 
-        using var client = new SmtpClient(smtpHost, smtpPort)
-        {
-            Credentials = new NetworkCredential(smtpUser, smtpPass),
-            EnableSsl   = true,
-        };
-        using var message = new MailMessage
-        {
-            From       = new MailAddress(fromEmail, fromName),
-            Subject    = "You've been invited to join TheInterviewChair.com",
-            Body       = body,
-            IsBodyHtml = true,
-        };
-        message.To.Add(new MailAddress(user.Email));
-        await client.SendMailAsync(message);
+        await emailSender.SendAsync(user.Email, "You've been invited to join TheInterviewChair.com", body);
         logger.LogInformation("Invite email sent to {Email}", user.Email);
     }
 

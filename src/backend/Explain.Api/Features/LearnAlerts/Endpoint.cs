@@ -1,5 +1,5 @@
 using System.Net;
-using System.Net.Mail;
+using Explain.Api.Infrastructure.Email;
 using System.Text.Json;
 using Microsoft.Azure.Cosmos;
 using Explain.Api.Infrastructure.Anthropic;
@@ -296,21 +296,8 @@ public static class Endpoint
     // rather than configured, same convention as Talks/Endpoint.cs's ShareBaseUrl const.
     private const string AnswerBaseUrl = "https://api.explain.global/learn-alerts/answer";
 
-    public static async Task SendQuestionEmailAsync(LearnAlert alert, LearnAlertQuestion question, IConfiguration config, ILogger logger)
+    public static async Task SendQuestionEmailAsync(LearnAlert alert, LearnAlertQuestion question, IEmailSender emailSender, ILogger logger)
     {
-        var smtpHost = config["Email:SmtpHost"];
-        var smtpUser = config["Email:SmtpUser"];
-        var smtpPass = config["Email:SmtpPass"];
-        if (string.IsNullOrWhiteSpace(smtpHost) || string.IsNullOrWhiteSpace(smtpUser) || string.IsNullOrWhiteSpace(smtpPass))
-        {
-            logger.LogWarning("Email:Smtp* not configured — skipping Learn Alert question email to {Email}", alert.candidateEmail);
-            return;
-        }
-
-        var smtpPort = int.Parse(config["Email:SmtpPort"] ?? "587");
-        var fromEmail = config["Email:FromEmail"] ?? "noreply@theinterviewchair.com";
-        var fromName = config["Email:FromName"] ?? "TheInterviewChair.com";
-
         var optionLinks = string.Join("", question.options.Select((opt, i) => $"""
             <a href="{AnswerBaseUrl}/{question.answerToken}?choice={i}" style="display:block;text-align:left;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:14px 18px;margin-bottom:10px;color:#fff;text-decoration:none;font-size:14px;font-weight:600;">
               {WebUtility.HtmlEncode(opt)}
@@ -344,16 +331,7 @@ public static class Endpoint
             </html>
             """;
 
-        using var client = new SmtpClient(smtpHost, smtpPort) { Credentials = new NetworkCredential(smtpUser, smtpPass), EnableSsl = true };
-        using var message = new MailMessage
-        {
-            From = new MailAddress(fromEmail, fromName),
-            Subject = $"🧠 Quick one for you: {alert.jobTitle}",
-            Body = body,
-            IsBodyHtml = true,
-        };
-        message.To.Add(new MailAddress(alert.candidateEmail));
-        await client.SendMailAsync(message);
+        await emailSender.SendAsync(alert.candidateEmail, $"🧠 Quick one for you: {alert.jobTitle}", body);
         logger.LogInformation("Learn Alert question email sent to {Email} for alert {AlertId}", alert.candidateEmail, alert.id);
     }
 
