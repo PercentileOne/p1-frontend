@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Explain.Api.Common;
@@ -121,7 +122,21 @@ builder.Services.AddHttpClient("AzureMaps", c =>
     c.Timeout = TimeSpan.FromSeconds(10);
 });
 builder.Services.AddSingleton<Explain.Api.Infrastructure.Geo.AzureMapsGeocodingService>();
+builder.Services.AddSingleton<Explain.Api.Infrastructure.Geo.IpGeoLookupService>();
+builder.Services.AddHostedService<Explain.Api.Features.Events.EventsArchiveService>();
 builder.Services.AddOpenApi();
+
+// Azure App Service always sits behind a front-end proxy, so HttpContext.Connection.RemoteIpAddress
+// is that proxy's own internal address, not the real visitor's, unless this is configured — needed
+// for the system event log's geo lookup (Features/Events) and now LoginHistory's IP capture.
+// KnownNetworks/KnownProxies are cleared because Azure's front-end IPs aren't a fixed, enumerable
+// set the way a self-hosted reverse proxy's would be — the standard guidance for this hosting model.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 // ── App ───────────────────────────────────────────────────────────────────────
 
@@ -190,6 +205,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+app.UseForwardedHeaders();
 app.UseCors("frontend");
 app.UseAuthentication();
 app.UseAuthorization();
@@ -263,6 +279,8 @@ Explain.Api.Features.CareerNews.Endpoint.Map(app);
 Explain.Api.Features.CareerCoach.Endpoint.Map(app);
 Explain.Api.Features.LearnTopics.Endpoint.Map(app);
 Explain.Api.Features.RoleActivity.Endpoint.Map(app);
+Explain.Api.Features.Events.Endpoint.Map(app);
+Explain.Api.Features.Events.Admin.Endpoint.Map(app);
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
    .AllowAnonymous();

@@ -1,5 +1,7 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { logEvent } from './api/flowLogger'
 import { Layout } from './components/Layout'
 import Login from './pages/Login'
 import Organisations from './pages/Organisations'
@@ -12,6 +14,7 @@ import Careers from './pages/Careers'
 import Moderation from './pages/Moderation'
 import NameBank from './pages/NameBank'
 import LiveAvatar from './pages/LiveAvatar'
+import ActivityLog from './pages/ActivityLog'
 
 // Redirects unauthenticated users to /login. Waits for the async session
 // re-validation (AuthProvider's isLoading) before deciding, so a page refresh
@@ -23,7 +26,17 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <Layout>{children}</Layout>
 }
 
+// One page-view event per route change — see api/flowLogger.ts's own top comment.
+function usePageViewLogging() {
+  const location = useLocation()
+  useEffect(() => {
+    logEvent('page_view', { page: location.pathname })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
+}
+
 function AppRoutes() {
+  usePageViewLogging()
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/organisations" replace />} />
@@ -39,6 +52,7 @@ function AppRoutes() {
       <Route path="/moderation" element={<RequireAuth><Moderation /></RequireAuth>} />
       <Route path="/name-bank" element={<RequireAuth><NameBank /></RequireAuth>} />
       <Route path="/live-avatar" element={<RequireAuth><LiveAvatar /></RequireAuth>} />
+      <Route path="/activity-log" element={<RequireAuth><ActivityLog /></RequireAuth>} />
 
       <Route path="*" element={<Navigate to="/organisations" replace />} />
     </Routes>

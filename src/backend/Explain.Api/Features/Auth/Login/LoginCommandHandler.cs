@@ -33,12 +33,12 @@ public class LoginCommandHandler(
         if (user is null || !BCrypt.Net.BCrypt.Verify(cmd.Password, user.PasswordHash))
         {
             logger.LogWarning("Login failed for {Email}", email);
-            await RecordLogin(user?.Id ?? "unknown", email, false, "Invalid credentials", ct);
+            await RecordLogin(user?.Id ?? "unknown", email, false, "Invalid credentials", cmd.IpAddress, cmd.UserAgent, ct);
             return Result<AuthResponse>.Failure("Incorrect email or password.", 401);
         }
 
         logger.LogInformation("Login successful for {Email}", email);
-        await RecordLogin(user.Id, email, true, null, ct);
+        await RecordLogin(user.Id, email, true, null, cmd.IpAddress, cmd.UserAgent, ct);
 
         var name     = $"{user.FirstName} {user.LastName}".Trim();
         var username = $"{user.FirstName}{user.LastName}".ToLower().Replace(" ", "");
@@ -95,7 +95,7 @@ public class LoginCommandHandler(
         }
     }
 
-    private async Task RecordLogin(string userId, string email, bool success, string? failureReason, CancellationToken ct)
+    private async Task RecordLogin(string userId, string email, bool success, string? failureReason, string? ipAddress, string? userAgent, CancellationToken ct)
     {
         try
         {
@@ -106,6 +106,10 @@ public class LoginCommandHandler(
                 Method        = "password",
                 Success       = success,
                 FailureReason = failureReason,
+                // Previously declared on the model but never actually set — see this session's
+                // wider system-event-logging work, which needed real IP capture anyway.
+                IpAddress     = ipAddress,
+                UserAgent     = userAgent,
             });
             await db.SaveChangesAsync(ct);
         }

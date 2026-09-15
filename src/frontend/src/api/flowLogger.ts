@@ -1,6 +1,13 @@
 // Fire-and-forget flow event logger.
-// Posts to /api/log-event → Azure Function → Cosmos DB (ExplainInterviewLogs/FlowLogs).
-// Never throws, never blocks the interview.
+//
+// 2026-09-15: fixed to post to an ABSOLUTE backend URL instead of a relative `/api/log-event`.
+// The relative path was the exact documented gotcha in CLAUDE.md §3 — this portal's Static Web
+// App has its own integrated Functions runtime with no `log-event` function of its own, so every
+// call silently 404'd, forever, since this was first written. It has never actually logged
+// anything. Now posts to the real unified backend endpoint (see Features/Events/Endpoint.cs) —
+// same one every other portal is moving onto — instead of the old relative path or the
+// recruiter-portal-only Node.js Functions this file's sibling copy happened to work against.
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 
 const SESSION_KEY = 'explain_session_id';
 
@@ -13,28 +20,43 @@ function getSessionId(): string {
   return id;
 }
 
+// Retained as the historical name existing call sites already use (29 of them across this
+// portal) — internally now just a thin wrapper over the shared logEvent below.
 export function logFlowEvent(
   flowStage: string,
   payload: Record<string, unknown> = {},
 ): void {
+  logEvent(flowStage, { page: window.location.pathname, metadata: payload });
+}
+
+// New, more general entry point — same transport, explicit page/portal fields (queryable on
+// the admin Activity Log) rather than burying them inside an opaque payload blob.
+export function logEvent(
+  eventType: string,
+  opts: { page?: string; metadata?: Record<string, unknown> } = {},
+): void {
   const body = {
     sessionId: getSessionId(),
-    timestamp: new Date().toISOString(),
-    flowStage,
-    payload,
+    eventType,
+    page: opts.page ?? window.location.pathname,
+    portal: 'candidate',
+    metadata: opts.metadata,
   };
 
+  // Unlike the old version, this deliberately does NOT skip logging when there's no auth
+  // token — anonymous events (marketing/pre-login) matter too now; the backend attaches
+  // userId/email only when a valid token is actually present.
   const token = localStorage.getItem('explain_token');
-  if (!token) return; // unauthenticated (demo flow) — skip logging
 
-  fetch('/api/log-event', {
+  fetch(`${API_BASE}/api/events`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify(body),
-  }).then(res => {
-    if (res.status === 401) localStorage.removeItem('explain_token');
   }).catch(() => {
-    // Logging must never break the interview — silent fail
+    // Logging must never break the interview — silent fail, same contract as before.
   });
 }
 

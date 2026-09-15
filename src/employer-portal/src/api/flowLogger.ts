@@ -35,7 +35,7 @@ export function logEvent(
     sessionId: getSessionId(),
     eventType,
     page: opts.page ?? window.location.pathname,
-    portal: 'recruiter',
+    portal: 'employer',
     metadata: opts.metadata,
   };
 
@@ -49,7 +49,7 @@ export function logEvent(
     },
     body: JSON.stringify(body),
   }).catch(() => {
-    // Logging must never break whatever the recruiter was doing — silent fail.
+    // Logging must never break whatever the employer-portal user was doing — silent fail.
   });
 }
 

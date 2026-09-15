@@ -1,5 +1,7 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { RequirePermission, UnauthorizedPage } from "./auth/RequirePermission";
+import { logEvent } from "./api/flowLogger";
 import ProductHome from "./pages/ProductHome";
 import InterviewMePrep from "./pages/InterviewMePrep";
 import InterviewMeFeedback from "./pages/InterviewMeFeedback";
@@ -99,7 +101,18 @@ import LearnFlashTalkPage from "./pages/LearnFlashTalkPage";
 import DemoLinkedIn from "./pages/DemoLinkedIn";
 import DemoVallumPaid from "./pages/DemoVallumPaid";
 
+// One page-view event per route change, wired once here rather than in every individual page —
+// see api/flowLogger.ts's own top comment for why this now actually reaches the backend.
+function usePageViewLogging() {
+  const location = useLocation();
+  useEffect(() => {
+    logEvent('page_view', { page: location.pathname });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+}
+
 export default function App() {
+  usePageViewLogging();
   return (
     <Routes>
       {/* InterviewMe public-facing routes */}

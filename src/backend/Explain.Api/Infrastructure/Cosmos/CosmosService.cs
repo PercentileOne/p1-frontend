@@ -209,6 +209,24 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("learnAlertQuestions", "/candidateId"));
 
+        // System-wide event log (Francis, 2026-09-15) — page views + significant actions across
+        // every portal, for security/audit and for a real-time (not GA's 24h-delayed) admin
+        // search page. Partition key = /sessionId, same precedent as the pre-existing (but
+        // disconnected — see Features/Events/Endpoint.cs's own top comment) recruiter-portal
+        // FlowLogs container. 10-day TTL: this is the HOT, searchable tier only — Events
+        // ArchiveService continuously copies every event into cheap permanent Blob storage
+        // before it ages out here, so nothing is actually lost at the TTL boundary, this
+        // container just stops being asked to hold it.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("systemEvents", "/sessionId") { DefaultTimeToLive = 864000 });
+
+        // Tiny permanent rollups (per day / per event type / per portal), incremented by the
+        // same archive service above — this is what actually powers a cheap "activity over
+        // time" chart later without ever re-scanning the raw archive. No TTL: these documents
+        // are small and few, unlike the raw events they summarise.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("eventDailySummaries", "/pk"));
+
         await SeedPlatformStatsAsync();
         await SeedNewsFeedSourcesAsync();
     }

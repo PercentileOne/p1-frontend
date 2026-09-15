@@ -1,5 +1,7 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { logEvent } from './api/flowLogger'
 import Login from './pages/Login'
 import AuthCallback from './pages/AuthCallback'
 import Dashboard from './pages/Dashboard'
@@ -15,7 +17,17 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+// One page-view event per route change — see api/flowLogger.ts's own top comment.
+function usePageViewLogging() {
+  const location = useLocation()
+  useEffect(() => {
+    logEvent('page_view', { page: location.pathname })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
+}
+
 function AppRoutes() {
+  usePageViewLogging()
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
