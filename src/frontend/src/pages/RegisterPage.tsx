@@ -116,7 +116,14 @@ export default function RegisterPage() {
       const permSet = new Set(session.permissions) as Set<Permission>;
       const dest    = defaultPortalForPermissions(permSet);
       setTimeout(() => {
-        if (permSet.has('CAN_START_INTERVIEW') && !permSet.has('CAN_VIEW_RECRUITER_PORTAL')) {
+        // isInvited (arrived via a recruiter's "Claim your free prep" link) means the intent is
+        // unambiguous — always a candidate registration, per this component's own top comment —
+        // so it stays on the candidate dashboard regardless of whatever OTHER roles this email
+        // might already carry (Francis's own account, testing a prep sent to himself, has Admin
+        // permissions from being the platform owner, which otherwise wins the generic "highest
+        // access" redirect below and bounces straight to admin.interviewme.global instead of
+        // letting him actually see the candidate flow he just followed a link into).
+        if (isInvited || (permSet.has('CAN_START_INTERVIEW') && !permSet.has('CAN_VIEW_RECRUITER_PORTAL'))) {
           navigate('/dashboard');
         } else {
           const isSameOrigin = dest.startsWith(window.location.origin);
