@@ -189,6 +189,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.HasIndex(x => x.UserId);
             e.HasIndex(x => x.LoginAt);
+            // Backs LoginCommandHandler's brute-force lockout check (recent failures for one
+            // email) — without this, that query is a full table scan as LoginHistory grows.
+            e.HasIndex(x => new { x.Email, x.Success, x.LoginAt });
         });
     }
 }

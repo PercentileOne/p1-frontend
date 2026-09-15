@@ -26,6 +26,22 @@ public class LoginCommandHandler(
 
         var email = cmd.Email.Trim().ToLower();
 
+        // Basic brute-force protection (Francis, 2026-09-15 — noticed bot login attempts
+        // against the admin portal and there was previously no throttling at all). Blocks
+        // further attempts against this email for a short window after repeated recent
+        // failures, using LoginHistory — already captured on every attempt, just never used
+        // for this. Checked before the DB user lookup so a locked-out attacker can't tell
+        // whether the account even exists from response timing.
+        var lockoutWindow = TimeSpan.FromMinutes(15);
+        var recentFailures = await db.LoginHistories
+            .Where(h => h.Email == email && !h.Success && h.LoginAt > DateTime.UtcNow - lockoutWindow)
+            .CountAsync(ct);
+        if (recentFailures >= 8)
+        {
+            logger.LogWarning("Login temporarily locked for {Email} after {Count} recent failures", email, recentFailures);
+            return Result<AuthResponse>.Failure("Too many failed attempts. Please try again in 15 minutes.", 429);
+        }
+
         // Single indexed lookup — no full-scan, no RU cost
         var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email, ct);
 
