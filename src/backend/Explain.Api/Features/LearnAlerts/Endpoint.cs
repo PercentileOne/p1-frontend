@@ -394,14 +394,29 @@ public static class Endpoint
     private static string WrapPage(string innerHtml, bool confetti = false) => $"""
         <!DOCTYPE html>
         <html>
-        <head><meta name="viewport" content="width=device-width, initial-scale=1" /></head>
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+        </head>
         <body style="margin:0;padding:0;background:#07080f;font-family:-apple-system,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;">
           <div style="max-width:480px;width:100%;margin:20px;padding:36px 30px;background:linear-gradient(160deg,#0d1117 0%,#0f1a14 100%);border:1px solid rgba(52,211,153,0.3);border-radius:20px;text-align:center;">
             {innerHtml}
+            {ClosePageButton}
           </div>
           {(confetti ? ConfettiScript : "")}
         </body>
         </html>
+        """;
+
+    // Best-effort only — browsers only allow window.close() on a tab/window the page itself
+    // opened via script; a tab a person opened themselves (clicking the link in their email
+    // client) can't be closed programmatically, a deliberate browser security restriction with
+    // no real workaround. Genuinely closes in some email-client webviews that do open links that
+    // way; harmlessly does nothing everywhere else, same as before this button existed.
+    private const string ClosePageButton = """
+        <button type="button" onclick="window.close()" style="margin-top:22px;padding:10px 20px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:transparent;color:rgba(255,255,255,0.5);font-size:13px;font-weight:600;cursor:pointer;">
+          Close this tab
+        </button>
         """;
 
     private const string ConfettiScript = """
