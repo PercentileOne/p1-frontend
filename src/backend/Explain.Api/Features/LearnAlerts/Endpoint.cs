@@ -379,13 +379,13 @@ public static class Endpoint
         // just grow a small footnote above the same celebratory copy.
         if (alreadyAnswered)
         {
-            var whatHappened = isCorrect
-                ? "and you got it right"
-                : "and you got it wrong";
+            var (icon, heading, color) = isCorrect
+                ? ("🎉", "You already nailed this one!", "#34D399")
+                : ("🙂", "You already tried this one!", "#fff");
             return WrapPage($"""
-                <div style="font-size:44px;margin-bottom:8px;">📋</div>
-                <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0 0 10px;">Question already answered</h1>
-                <p style="font-size:15px;color:rgba(255,255,255,0.75);margin:0;">You answered this one already, {whatHappened}. The correct answer was <strong style="color:#fff;">{correctText}</strong>.</p>
+                <div style="font-size:44px;margin-bottom:8px;">{icon}</div>
+                <h1 style="font-size:22px;font-weight:800;color:{color};margin:0 0 10px;">{heading}</h1>
+                <p style="font-size:15px;color:rgba(255,255,255,0.75);margin:0;">The correct answer was <strong style="color:#fff;">{correctText}</strong>.</p>
                 {streakLine}
                 """);
         }
