@@ -162,7 +162,10 @@ public static class Endpoint
                 return Results.Content(RenderMessagePage("Something's off", "That answer link looks incomplete."), "text/html; charset=utf-8");
 
             if (question.answeredAt is not null)
-                return Results.Content(RenderResultPage(question, question.selectedIndex == question.correctIndex, alreadyAnswered: true, intervalHours: null), "text/html; charset=utf-8");
+            {
+                var alertForResult = await TryReadAlertAsync(cosmos, question.alertId, question.candidateId);
+                return Results.Content(RenderResultPage(question, question.selectedIndex == question.correctIndex, alreadyAnswered: true, alertForResult), "text/html; charset=utf-8");
+            }
 
             return Results.Content(RenderConfirmPage(question, choice.Value), "text/html; charset=utf-8");
         }).AllowAnonymous();
@@ -186,28 +189,20 @@ public static class Endpoint
             {
                 // Already recorded (e.g. the candidate hit Confirm twice) — show the same result,
                 // don't touch the streak again.
-                return Results.Content(RenderResultPage(question, question.selectedIndex == question.correctIndex, alreadyAnswered: true, intervalHours: null), "text/html; charset=utf-8");
+                var alertForResult = await TryReadAlertAsync(cosmos, question.alertId, question.candidateId);
+                return Results.Content(RenderResultPage(question, question.selectedIndex == question.correctIndex, alreadyAnswered: true, alertForResult), "text/html; charset=utf-8");
             }
 
             var isCorrect = choice == question.correctIndex;
             var answered = question with { answeredAt = DateTimeOffset.UtcNow.ToString("o"), selectedIndex = choice, isCorrect = isCorrect };
             await questionsContainer.UpsertItemAsync(answered, new PartitionKey(answered.candidateId));
 
-            LearnAlert? alert;
-            try
-            {
-                alert = await alertsContainer.ReadItemAsync<LearnAlert>(question.alertId, new PartitionKey(question.candidateId));
-            }
-            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                alert = null;
-            }
-
-            int? intervalHours = alert?.intervalHours;
+            var alert = await TryReadAlertAsync(cosmos, question.alertId, question.candidateId);
+            LearnAlert? updatedAlert = null;
             if (alert is not null)
             {
                 var newStreak = isCorrect ? alert.currentStreak + 1 : 0;
-                var updatedAlert = alert with
+                updatedAlert = alert with
                 {
                     correctCount = alert.correctCount + (isCorrect ? 1 : 0),
                     currentStreak = newStreak,
@@ -216,8 +211,20 @@ public static class Endpoint
                 await alertsContainer.UpsertItemAsync(updatedAlert, new PartitionKey(updatedAlert.candidateId));
             }
 
-            return Results.Content(RenderResultPage(answered, isCorrect, alreadyAnswered: false, intervalHours: intervalHours), "text/html; charset=utf-8");
+            return Results.Content(RenderResultPage(answered, isCorrect, alreadyAnswered: false, updatedAlert), "text/html; charset=utf-8");
         }).AllowAnonymous().DisableAntiforgery();
+    }
+
+    private static async Task<LearnAlert?> TryReadAlertAsync(CosmosService cosmos, string alertId, string candidateId)
+    {
+        try
+        {
+            return await cosmos.GetContainer("learnAlerts").ReadItemAsync<LearnAlert>(alertId, new PartitionKey(candidateId));
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
     }
 
     private static async Task<List<LearnAlert>> ReadCandidateAlertsAsync(CosmosService cosmos, string candidateId)
@@ -353,16 +360,25 @@ public static class Endpoint
             """);
     }
 
-    private static string RenderResultPage(LearnAlertQuestion q, bool isCorrect, bool alreadyAnswered, int? intervalHours)
+    private static string RenderResultPage(LearnAlertQuestion q, bool isCorrect, bool alreadyAnswered, LearnAlert? alert)
     {
         var correctText = WebUtility.HtmlEncode(q.options[q.correctIndex]);
         var prefix = alreadyAnswered ? "<p style=\"font-size:12px;color:rgba(255,255,255,0.4);margin:0 0 14px;\">You already answered this one.</p>" : "";
+        // Same "X/Y correct · 🔥 N-question streak (best M)" copy the dashboard summary card
+        // already uses (LearnAlertsPage.tsx) — this is the first place a candidate actually sees
+        // that number move, so it should read as the exact same stat, not a differently-worded one.
+        var streakLine = alert is null ? "" : $"""
+            <p style="font-size:13px;color:rgba(255,255,255,0.45);margin:18px 0 0;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);">
+              {alert.correctCount}/{alert.sentCount} correct · 🔥 {alert.currentStreak}-question streak (best {alert.longestStreak})
+            </p>
+            """;
         return isCorrect
             ? WrapPage($"""
                 {prefix}
                 <div style="font-size:44px;margin-bottom:8px;">🎉</div>
                 <h1 style="font-size:22px;font-weight:800;color:#34D399;margin:0 0 10px;">Nailed it!</h1>
                 <p style="font-size:15px;color:rgba(255,255,255,0.75);margin:0;">The correct answer was <strong style="color:#fff;">{correctText}</strong>.</p>
+                {streakLine}
                 """, confetti: true)
             : WrapPage($"""
                 {prefix}
@@ -370,8 +386,9 @@ public static class Endpoint
                 <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0 0 10px;">Never mind!</h1>
                 <p style="font-size:15px;color:rgba(255,255,255,0.75);margin:0 0 6px;">The correct answer was <strong style="color:#fff;">{correctText}</strong>.</p>
                 <p style="font-size:13px;color:rgba(255,255,255,0.5);margin:0;">
-                  {(intervalHours is { } ih ? $"You'll get another one in about {FormatInterval(ih)}." : "")}
+                  {(alert?.intervalHours is { } ih ? $"You'll get another one in about {FormatInterval(ih)}." : "")}
                 </p>
+                {streakLine}
                 """);
     }
 
