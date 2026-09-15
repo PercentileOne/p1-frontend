@@ -79,7 +79,7 @@ export default function ActivityLog() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   function fmt(iso: string) {
-    return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' })
   }
 
   return (
