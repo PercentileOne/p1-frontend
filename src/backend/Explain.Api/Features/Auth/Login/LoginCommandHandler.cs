@@ -32,9 +32,9 @@ public class LoginCommandHandler(
         // failures, using LoginHistory — already captured on every attempt, just never used
         // for this. Checked before the DB user lookup so a locked-out attacker can't tell
         // whether the account even exists from response timing.
-        var lockoutWindow = TimeSpan.FromMinutes(15);
+        var lockoutCutoff = DateTime.UtcNow - TimeSpan.FromMinutes(15);
         var recentFailures = await db.LoginHistories
-            .Where(h => h.Email == email && !h.Success && h.LoginAt > DateTime.UtcNow - lockoutWindow)
+            .Where(h => h.Email == email && !h.Success && h.LoginAt > lockoutCutoff)
             .CountAsync(ct);
         if (recentFailures >= 8)
         {
