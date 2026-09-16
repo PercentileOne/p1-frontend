@@ -10,7 +10,7 @@ import { getTopLearnTopics, type LearnTopicStat } from "../api/learnTopicsApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
   MessageSquare, Settings, LogOut, ChevronRight, ChevronDown, CheckCircle2, Circle, Compass, Gift, Zap,
-  HeartHandshake, Mic, BellRing,
+  HeartHandshake, Mic, BellRing, PartyPopper,
 } from "lucide-react";
 import LearnPanel from "./LearnPanel";
 import CareersPanel from "./CareersPanel";
@@ -18,6 +18,7 @@ import MyInterviewsPage from "./MyInterviewsPage";
 import MyTalksPage from "./MyTalksPage";
 import LearnAlertsPage from "./LearnAlertsPage";
 import ReceivedPreps from "./ReceivedPreps";
+import ReceivedGifts from "./ReceivedGifts";
 import ProfilePage from "./ProfilePage";
 import JobsHome from "./JobsHome";
 import MessagesPage from "./MessagesPage";
@@ -48,6 +49,7 @@ const NAV_ITEMS = [
   { Icon: Mic,             label: "My Talks",        slug: "talks" },
   { Icon: BellRing,        label: "Learn Alerts",    slug: "learn-alerts" },
   { Icon: Gift,            label: "Interview Preps", slug: "interview-preps" },
+  { Icon: PartyPopper,     label: "Interview Gifts", slug: "interview-gifts" },
   { Icon: Briefcase,       label: "Jobs",             slug: "jobs" },
   { Icon: BookOpen,        label: "Learn",            slug: "learn" },
   { Icon: Compass,         label: "Careers",          slug: "careers" },
@@ -828,13 +830,14 @@ export default function CandidateDashboard() {
         {activeNav === "My Talks"       && <MyTalksPage />}
         {activeNav === "Learn Alerts"   && <LearnAlertsPage />}
         {activeNav === "Interview Preps" && <ReceivedPreps />}
+        {activeNav === "Interview Gifts" && <ReceivedGifts />}
         {activeNav === "My Profile"     && <ProfilePage />}
         {activeNav === "Jobs"           && <JobsHome />}
         {activeNav === "Messages"       && <MessagesPage />}
         {activeNav === "Demo"           && <DemoPanel />}
         {activeNav === "Settings"       && <SettingsPage />}
 
-        {!["My Career Coach", "Learn", "Careers", "My Interviews", "My Talks", "Learn Alerts", "Interview Preps", "My Profile", "Jobs", "Messages", "Demo", "Settings"].includes(activeNav) && <>
+        {!["My Career Coach", "Learn", "Careers", "My Interviews", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Settings"].includes(activeNav) && <>
 
         {/* ── STATS ROW ── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>
