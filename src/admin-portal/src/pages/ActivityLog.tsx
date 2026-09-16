@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Search, Loader2, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { eventsApi, type SystemEvent, type ApiError } from '../api/eventsApi'
@@ -27,6 +27,11 @@ const selectStyle: React.CSSProperties = {
   padding: '9px 12px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', cursor: 'pointer',
 }
 
+// Module-level (not just inside ActivityLog itself) so EventDetailModal can reuse it too.
+function fmt(iso: string) {
+  return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+}
+
 export default function ActivityLog() {
   const { token } = useAuth()
   const [rows, setRows] = useState<SystemEvent[]>([])
@@ -47,6 +52,10 @@ export default function ActivityLog() {
   const [pageSize, setPageSize] = useState(50)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  // Click a row to see everything the table doesn't have room for — full page path, IP,
+  // user agent, session/user id, raw metadata. Francis, 2026-09-16, right after using the
+  // Page column's hover tooltip to chase down a truncated /interview-summary/<guid> link.
+  const [selectedEvent, setSelectedEvent] = useState<SystemEvent | null>(null)
 
   const load = useCallback(async () => {
     if (!token) return
@@ -91,10 +100,6 @@ export default function ActivityLog() {
   useEffect(() => { load() }, [load])
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
-
-  function fmt(iso: string) {
-    return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  }
 
   return (
     <div>
@@ -193,7 +198,8 @@ export default function ActivityLog() {
                 {rows.map(e => (
                   <tr
                     key={e.id}
-                    style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.1s' }}
+                    onClick={() => setSelectedEvent(e)}
+                    style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.1s', cursor: 'pointer' }}
                     onMouseEnter={ev => (ev.currentTarget.style.background = 'rgba(79,142,247,0.08)')}
                     onMouseLeave={ev => (ev.currentTarget.style.background = 'transparent')}
                   >
@@ -222,6 +228,64 @@ export default function ActivityLog() {
           />
         </div>
       )}
+
+      {selectedEvent && <EventDetailModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />}
+    </div>
+  )
+}
+
+// ── Row detail modal — everything the table's fixed columns don't have room for ─────────────
+function DetailRow({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
+  return (
+    <div style={{ display: 'flex', gap: 16, padding: '9px 0', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ flex: '0 0 120px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', paddingTop: 2 }}>
+        {label}
+      </div>
+      <div style={{ flex: 1, fontSize: 13, color: 'var(--text)', wordBreak: 'break-word', fontFamily: mono ? 'ui-monospace, monospace' : 'inherit' }}>
+        {value}
+      </div>
+    </div>
+  )
+}
+
+function EventDetailModal({ event, onClose }: { event: SystemEvent; onClose: () => void }) {
+  const mouseDownOnBackdropRef = useRef(false)
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}
+      onMouseDown={e => { mouseDownOnBackdropRef.current = e.target === e.currentTarget }}
+      onClick={e => { if (e.target === e.currentTarget && mouseDownOnBackdropRef.current) onClose() }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{ width: '100%', maxWidth: 560, maxHeight: '85vh', overflowY: 'auto', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 16, padding: 24 }}
+      >
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div>
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{event.eventType}</h2>
+            <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{fmt(event.createdAt)}</p>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 20, lineHeight: 1, cursor: 'pointer', padding: 4 }}>×</button>
+        </div>
+
+        <DetailRow label="User" value={event.email ?? <span style={{ color: 'var(--text-3)' }}>Anonymous</span>} />
+        <DetailRow label="Role" value={event.role ?? '—'} />
+        <DetailRow label="Portal" value={event.portal ?? '—'} />
+        <DetailRow label="Page" value={event.page ?? '—'} mono />
+        <DetailRow label="Location" value={event.city && event.country ? `${event.city}, ${event.country}` : event.country ?? '—'} />
+        <DetailRow label="IP address" value={event.ipAddress ?? '—'} mono />
+        <DetailRow label="User agent" value={event.userAgent ?? '—'} />
+        <DetailRow label="Session ID" value={event.sessionId} mono />
+        <DetailRow label="User ID" value={event.userId ?? '—'} mono />
+        <DetailRow label="Event ID" value={event.id} mono />
+        {event.metadata && Object.keys(event.metadata).length > 0 && (
+          <DetailRow
+            label="Metadata"
+            mono
+            value={<pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: 12 }}>{JSON.stringify(event.metadata, null, 2)}</pre>}
+          />
+        )}
+      </div>
     </div>
   )
 }
