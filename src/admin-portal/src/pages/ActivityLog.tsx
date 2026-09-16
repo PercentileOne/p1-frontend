@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Search, Loader2, ChevronUp, ChevronDown } from 'lucide-react'
+import { Search, Loader2, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { eventsApi, type SystemEvent, type ApiError } from '../api/eventsApi'
 import { Pagination } from '../components/Pagination'
@@ -31,9 +31,16 @@ export default function ActivityLog() {
   const { token } = useAuth()
   const [rows, setRows] = useState<SystemEvent[]>([])
   const [total, setTotal] = useState(0)
-  const [email, setEmail] = useState('')
+  // A single free-text box across every displayed column (User/Event/Page/Portal/Location) —
+  // replaces the old email-only search per Francis's request 2026-09-16 ("instead of searching
+  // by email/full email, I'd like that to be an ANY search field"). Backend does the OR'ing
+  // (Features/Events/Admin/Endpoint.cs's `q` param); this is just the box + its debounce-free
+  // page-1 reset, same as every other filter here.
+  const [q, setQ] = useState('')
   const [eventType, setEventType] = useState('')
   const [portal, setPortal] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const [sortKey, setSortKey] = useState<SortKey>('createdAt')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [page, setPage] = useState(1)
@@ -47,9 +54,14 @@ export default function ActivityLog() {
     setError('')
     try {
       const res = await eventsApi.list(token, {
-        email: email.trim() || undefined,
+        q: q.trim() || undefined,
         eventType: eventType.trim() || undefined,
         portal: portal || undefined,
+        // Date-only <input type="date"> values are widened to cover the whole day in local time
+        // — `from` at 00:00:00 and `to` at 23:59:59.999 — so picking the same day for both ends
+        // is an inclusive single-day filter, not a zero-width instant that matches nothing.
+        from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
+        to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
         sortBy: sortKey, sortDir,
         page, size: pageSize,
       })
@@ -60,7 +72,7 @@ export default function ActivityLog() {
     } finally {
       setLoading(false)
     }
-  }, [token, email, eventType, portal, sortKey, sortDir, page, pageSize])
+  }, [token, q, eventType, portal, from, to, sortKey, sortDir, page, pageSize])
 
   // Same toggle contract as UserList.tsx's own sortable columns: click an inactive column to
   // sort ascending by it, click the active one again to flip direction. Re-fetches from page 1
@@ -86,11 +98,24 @@ export default function ActivityLog() {
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>Activity Log</h1>
-        <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>
-          {total.toLocaleString()} event{total === 1 ? '' : 's'} in the last 10 days — real-time, not delayed like Google Analytics.
-        </p>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, gap: 16 }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>Activity Log</h1>
+          <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>
+            {total.toLocaleString()} event{total === 1 ? '' : 's'} in the last 10 days — real-time, not delayed like Google Analytics.
+          </p>
+        </div>
+        <button
+          onClick={load}
+          disabled={loading}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
+            color: 'var(--text-2)', background: 'var(--bg3)', border: '1px solid var(--border)',
+            borderRadius: 8, padding: '7px 12px', cursor: loading ? 'default' : 'pointer', flexShrink: 0,
+          }}
+        >
+          <RefreshCw size={13} className={loading ? 'admin-spin' : ''} /> Refresh
+        </button>
       </div>
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap' }}>
@@ -101,9 +126,9 @@ export default function ActivityLog() {
         }}>
           <Search size={15} color="var(--text-3)" />
           <input
-            type="text" autoComplete="off" value={email}
-            onChange={e => { setEmail(e.target.value); setPage(1) }}
-            placeholder="Search by user email…"
+            type="text" autoComplete="off" value={q}
+            onChange={e => { setQ(e.target.value); setPage(1) }}
+            placeholder="Search anything… e.g. Anony, United States, webhook"
             style={inputStyle}
           />
         </div>
@@ -116,6 +141,26 @@ export default function ActivityLog() {
         <select value={portal} onChange={e => { setPortal(e.target.value); setPage(1) }} style={selectStyle}>
           {PORTALS.map(p => <option key={p} value={p}>{p ? p[0].toUpperCase() + p.slice(1) : 'All portals'}</option>)}
         </select>
+        <input
+          type="date" value={from} max={to || undefined}
+          onChange={e => { setFrom(e.target.value); setPage(1) }}
+          style={{ ...selectStyle, colorScheme: 'dark' }}
+          title="From date"
+        />
+        <input
+          type="date" value={to} min={from || undefined}
+          onChange={e => { setTo(e.target.value); setPage(1) }}
+          style={{ ...selectStyle, colorScheme: 'dark' }}
+          title="To date"
+        />
+        {(from || to) && (
+          <button
+            onClick={() => { setFrom(''); setTo(''); setPage(1) }}
+            style={{ ...selectStyle, color: 'var(--text-3)', cursor: 'pointer' }}
+          >
+            Clear dates
+          </button>
+        )}
       </div>
 
       {error && (

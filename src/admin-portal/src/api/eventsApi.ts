@@ -27,6 +27,7 @@ export interface ListEventsParams {
   email?: string;
   eventType?: string;
   portal?: string;
+  q?: string;
   from?: string;
   to?: string;
   sortBy?: string;
@@ -62,6 +63,7 @@ export const eventsApi = {
     if (params.email) qs.set('email', params.email);
     if (params.eventType) qs.set('eventType', params.eventType);
     if (params.portal) qs.set('portal', params.portal);
+    if (params.q) qs.set('q', params.q);
     if (params.from) qs.set('from', params.from);
     if (params.to) qs.set('to', params.to);
     if (params.sortBy) qs.set('sortBy', params.sortBy);

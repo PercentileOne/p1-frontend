@@ -18,7 +18,7 @@ public static class Endpoint
     {
         app.MapGet("/api/admin/events", async (
             CosmosService cosmos,
-            string? userId, string? email, string? eventType, string? portal,
+            string? userId, string? email, string? eventType, string? portal, string? q,
             DateTimeOffset? from, DateTimeOffset? to,
             string? sortBy, string? sortDir,
             int page = 1, int size = 50) =>
@@ -27,7 +27,7 @@ public static class Endpoint
             size = Math.Clamp(size, 1, 200);
 
             var container = cosmos.GetContainer("systemEvents");
-            var (whereClause, parameters) = BuildFilter(userId, email, eventType, portal, from, to);
+            var (whereClause, parameters) = BuildFilter(userId, email, eventType, portal, q, from, to);
             var orderByClause = BuildOrderBy(sortBy, sortDir);
 
             var countQuery = new QueryDefinition($"SELECT VALUE COUNT(1) FROM c{whereClause}");
@@ -81,7 +81,7 @@ public static class Endpoint
     }
 
     private static (string WhereClause, List<(string Name, object Value)> Parameters) BuildFilter(
-        string? userId, string? email, string? eventType, string? portal, DateTimeOffset? from, DateTimeOffset? to)
+        string? userId, string? email, string? eventType, string? portal, string? q, DateTimeOffset? from, DateTimeOffset? to)
     {
         var clauses = new List<string>();
         var parameters = new List<(string, object)>();
@@ -95,6 +95,30 @@ public static class Endpoint
         {
             clauses.Add("CONTAINS(LOWER(c.email), @email)");
             parameters.Add(("@email", email.Trim().ToLowerInvariant()));
+        }
+        // Free-text "search anything" box (admin portal's ActivityLog.tsx) — ORs a CONTAINS
+        // across every column the table actually displays (User/Event/Page/Portal/Location), so
+        // typing "States" finds "United States" and "webhook" finds an eventType, all from one
+        // box. "Anonymous" is not a real stored value — it's just how the UI labels a null email
+        // (see ActivityLog.tsx's `e.email ?? 'Anonymous'`) — so a query that could plausibly be
+        // short for "anonymous" (e.g. "Anony") also matches rows with no email, or the literal
+        // typed text would silently return zero results for a value the user can see on screen.
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var needle = q.Trim().ToLowerInvariant();
+            var orClauses = new List<string>
+            {
+                "CONTAINS(LOWER(c.email), @q)",
+                "CONTAINS(LOWER(c.eventType), @q)",
+                "CONTAINS(LOWER(c.page), @q)",
+                "CONTAINS(LOWER(c.portal), @q)",
+                "CONTAINS(LOWER(c.country), @q)",
+                "CONTAINS(LOWER(c.city), @q)",
+            };
+            parameters.Add(("@q", needle));
+            if ("anonymous".Contains(needle))
+                orClauses.Add("(NOT IS_DEFINED(c.email) OR IS_NULL(c.email))");
+            clauses.Add("(" + string.Join(" OR ", orClauses) + ")");
         }
         if (!string.IsNullOrWhiteSpace(eventType))
         {
