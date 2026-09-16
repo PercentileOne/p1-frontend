@@ -384,6 +384,7 @@
     <a href="#how">How it works</a>
     <a href="#" onclick="openScoreModal();return false;" class="nav-story-pulse" style="color:#34D399;font-weight:700">How We Score Interviews</a>
     <a href="#pricing">Pricing</a>
+    <a href="#gift" style="color:#34D399;font-weight:700">🎁 Gift an Interview</a>
     <a href="/contact">Contact Us</a>
     <a href="#" onclick="openAboutModal();return false;" class="nav-story-pulse" style="color:#34D399;font-weight:700">Our Story</a>
   </div>
@@ -396,6 +397,7 @@
     <a href="#how" onclick="toggleMobileMenu()">How it works</a>
     <a href="#" onclick="openScoreModal();toggleMobileMenu();return false;" style="color:#34D399;font-weight:700">How We Score Interviews</a>
     <a href="#pricing" onclick="toggleMobileMenu()">Pricing</a>
+    <a href="#gift" onclick="toggleMobileMenu()" style="color:#34D399;font-weight:700">🎁 Gift an Interview</a>
     <a href="/contact">Contact Us</a>
     <a href="#" onclick="openAboutModal();return false;" style="color:#34D399;font-weight:700">Our Story</a>
     <a href="https://login.theinterviewchair.com/login" style="color:var(--pearl);font-weight:700">Login</a>
@@ -1752,6 +1754,39 @@
     </div>
   </div>
 </div>
+
+<!-- GIFT AN INTERVIEW (Francis, 2026-09-16) — anchor target for the nav's "Gift an Interview"
+     button. Intake form + Stripe checkout live at /gift-interview.html, a separate static page
+     (not this one) since it needs its own form state/JS — this section is purely the explainer
+     + link out to it, styled to match the pricing section immediately above using the same
+     .section/.section-inner/.section-eyebrow/.section-title/.section-sub classes. -->
+<div class="section" id="gift" style="background:var(--bg2)">
+  <div class="section-inner">
+    <div style="text-align:center;max-width:640px;margin:0 auto 48px">
+      <div class="section-eyebrow" style="justify-content:center;display:flex">🎁 Gift an Interview</div>
+      <h2 class="section-title" style="max-width:100%">Know someone job hunting?<br><em style="color:var(--green);font-style:normal">Give them the practice.</em></h2>
+      <p class="section-sub" style="max-width:520px;margin:0 auto">Send a friend, partner, or family member a round of real, AI-conducted mock interviews — scored, structured, and ready the moment they open the email. No account needed to send it.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:640px;margin:0 auto 40px" class="how-grid">
+      <div class="pricing-card" style="text-align:center">
+        <div class="plan-name" style="color:var(--green)">3-Day Pass</div>
+        <div class="plan-price" style="color:var(--green)">£2.99</div>
+        <div class="plan-desc">3 practice interview sessions, valid for 3 days — a quick, low-commitment way to try it.</div>
+      </div>
+      <div class="pricing-card" style="text-align:center">
+        <div class="plan-name" style="color:var(--green)">1-Week Pass</div>
+        <div class="plan-price" style="color:var(--green)">£3.99</div>
+        <div class="plan-desc">5 practice interview sessions, valid for a full week — room to properly prepare.</div>
+      </div>
+    </div>
+
+    <div style="text-align:center">
+      <a href="/gift-interview.html" class="s1-btn-blue" style="background:linear-gradient(135deg,var(--green),#047857);box-shadow:0 0 22px rgba(4,120,87,0.4);display:inline-flex">Send an Interview Gift →</a>
+    </div>
+  </div>
+</div>
+
 <!-- CANDIDATE SECTION — UPSIDE DOWN -->
 <div class="section" style="background:var(--bg)">
   <div class="section-inner">

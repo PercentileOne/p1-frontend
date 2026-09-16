@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TheInterviewChair.com — Gift an Interview</title>
+<!-- Google Analytics GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VWP8MJVBCH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-VWP8MJVBCH');
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #3d7ef6; --green: #34d399; --dark-green: #047857;
+    --bg: #070d1a; --bg2: #0f1829; --pearl: #f1f5f9; --muted: #64748b;
+    --border: rgba(255,255,255,0.08); --font: -apple-system,'Segoe UI',system-ui,sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--pearl); font-family: var(--font); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+  /* ── NAV — same shape as contact.html ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 40px;
+    background: rgba(7,13,26,0.85); backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--green), var(--dark-green));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 900; color: #fff; letter-spacing: -0.04em;
+    position: relative; overflow: hidden;
+  }
+  .nav-mark::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+  }
+  .nav-wordmark { font-size: 15px; font-weight: 900; letter-spacing: -0.03em; color: #f1f5f9; }
+  .nav-wordmark .me { color: var(--green); }
+  .nav-back {
+    font-size: 13px; font-weight: 700; color: var(--muted); text-decoration: none;
+    display: flex; align-items: center; gap: 6px; transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--pearl); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 120px 24px 80px; position: relative; overflow: hidden;
+  }
+  .glow-1 {
+    position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(52,211,153,0.10) 0%, rgba(4,120,87,0.06) 40%, transparent 70%);
+    pointer-events: none;
+  }
+  .glow-2 {
+    position: absolute; bottom: -100px; right: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(61,126,246,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .grid-bg {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(52,211,153,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(52,211,153,0.03) 1px, transparent 1px);
+    background-size: 64px 64px; pointer-events: none;
+  }
+
+  .hero-inner {
+    max-width: 960px; width: 100%; display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center; position: relative; z-index: 2;
+  }
+
+  /* ── LEFT ── */
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--green); background: rgba(52,211,153,0.08);
+    border: 1px solid rgba(52,211,153,0.2); border-radius: 20px;
+    padding: 5px 14px; margin-bottom: 24px;
+  }
+  .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
+
+  h1 { font-size: clamp(2rem, 4vw, 2.6rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 20px; }
+  h1 .accent { color: var(--green); }
+  .sub { font-size: 16px; color: var(--muted); line-height: 1.7; margin-bottom: 32px; }
+
+  .benefit { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+  .benefit-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .benefit-text strong { display: block; font-size: 14px; color: var(--pearl); margin-bottom: 2px; }
+  .benefit-text span { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  /* ── RIGHT — FORM ── */
+  .form-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 24px;
+    padding: 36px; box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+  }
+  .form-title { font-size: 18px; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 6px; }
+  .form-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
+
+  /* Tier picker — two selectable cards rather than a dropdown, since the session-count/window
+     difference is worth seeing side by side, not hidden behind a closed <select>. */
+  .tier-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .tier-card {
+    background: rgba(255,255,255,0.03); border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 14px 12px; cursor: pointer; text-align: center; transition: border-color 0.15s, background 0.15s;
+  }
+  .tier-card:hover { border-color: rgba(52,211,153,0.3); }
+  .tier-card.selected { border-color: var(--green); background: rgba(52,211,153,0.06); }
+  .tier-price { font-size: 20px; font-weight: 900; color: var(--pearl); letter-spacing: -0.02em; }
+  .tier-card.selected .tier-price { color: var(--green); }
+  .tier-window { font-size: 12px; font-weight: 700; color: var(--muted); margin-top: 4px; }
+  .tier-detail { font-size: 11px; color: #475569; margin-top: 4px; }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+  .field input {
+    width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; font-size: 14px; color: var(--pearl);
+    font-family: var(--font); outline: none; transition: border-color 0.2s;
+  }
+  .field input::placeholder { color: #475569; }
+  .field input:focus { border-color: rgba(52,211,153,0.4); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field-hint { font-size: 11px; color: #475569; margin-top: 6px; line-height: 1.4; }
+
+  .submit-btn {
+    width: 100%; padding: 14px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--green), var(--dark-green));
+    border: none; color: #fff; font-size: 15px; font-weight: 800;
+    cursor: pointer; font-family: var(--font);
+    box-shadow: 0 6px 24px rgba(4,120,87,0.4); transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.01em;
+  }
+  .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 32px rgba(4,120,87,0.5); }
+  .submit-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+  .error-msg { display: none; font-size: 12px; color: #f87171; margin-top: -6px; margin-bottom: 16px; }
+
+  @media (max-width: 768px) {
+    nav { padding: 14px 20px; }
+    .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+    h1 { font-size: 2rem; }
+    .field-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-mark">TIC</div>
+    <span class="nav-wordmark"><span class="me">The</span>Interview<span class="me">Chair</span>.com</span>
+  </a>
+  <a class="nav-back" href="/">← Back to site</a>
+</nav>
+
+<section class="hero">
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+  <div class="grid-bg"></div>
+
+  <div class="hero-inner">
+
+    <!-- LEFT -->
+    <div>
+      <div class="eyebrow"><div class="pulse"></div>Gift an interview</div>
+      <h1>Give someone the practice that actually<br><span class="accent">gets them hired.</span></h1>
+      <p class="sub">A round of realistic, AI-conducted mock interviews with real feedback and a real score — the kind of practice that's usually hardest to get right before it matters.</p>
+
+      <div class="benefit">
+        <div class="benefit-icon">🎁</div>
+        <div class="benefit-text"><strong>Instant delivery</strong><span>They get access by email the moment payment completes — no shipping, no waiting.</span></div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-icon">🎯</div>
+        <div class="benefit-text"><strong>Real AI interviewers</strong><span>The same structured, scored practice interviews every TheInterviewChair.com candidate uses.</span></div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-icon">🔒</div>
+        <div class="benefit-text"><strong>No account needed to send it</strong><span>You don't need to be a candidate yourself — just an email address for who it's for.</span></div>
+      </div>
+    </div>
+
+    <!-- RIGHT — FORM -->
+    <div class="form-card">
+      <div id="form-wrap">
+        <div class="form-title">Send an Interview Gift</div>
+        <div class="form-sub">Fill in their details and pick a pass — you'll pay securely on the next step.</div>
+
+        <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;">Choose a pass</label>
+        <div class="tier-picker">
+          <div class="tier-card selected" data-tier="gift-3day" onclick="selectTier('gift-3day')">
+            <div class="tier-price">£2.99</div>
+            <div class="tier-window">3-Day Pass</div>
+            <div class="tier-detail">3 practice sessions</div>
+          </div>
+          <div class="tier-card" data-tier="gift-1week" onclick="selectTier('gift-1week')">
+            <div class="tier-price">£3.99</div>
+            <div class="tier-window">1-Week Pass</div>
+            <div class="tier-detail">5 practice sessions</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Recipient's name</label>
+          <input type="text" id="f-rname" placeholder="e.g. Sarah Mitchell" />
+        </div>
+        <div class="field">
+          <label>Recipient's email</label>
+          <input type="email" id="f-remail" placeholder="sarah@example.com" />
+          <div class="field-hint">We'll send them everything they need to get started here.</div>
+        </div>
+        <div class="field">
+          <label>Role they're interviewing for <span style="text-transform:none;font-weight:500;color:#475569">(optional)</span></label>
+          <input type="text" id="f-rjob" placeholder="e.g. Senior Product Manager" />
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Your name</label>
+            <input type="text" id="f-sname" placeholder="e.g. James" />
+          </div>
+          <div class="field">
+            <label>Your email</label>
+            <input type="email" id="f-semail" placeholder="you@example.com" />
+          </div>
+        </div>
+        <div class="field-hint" style="margin-top:-8px;margin-bottom:16px;">Your email is only used for the payment receipt.</div>
+
+        <div class="error-msg" id="error-msg"></div>
+
+        <button class="submit-btn" onclick="submitGift()">Continue to payment →</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  var API_BASE = 'https://api.explain.global';
+  var selectedTier = 'gift-3day';
+
+  function selectTier(tier) {
+    selectedTier = tier;
+    document.querySelectorAll('.tier-card').forEach(function(el) {
+      el.classList.toggle('selected', el.getAttribute('data-tier') === tier);
+    });
+  }
+
+  function showError(msg) {
+    var el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  async function submitGift() {
+    var rname  = document.getElementById('f-rname').value.trim();
+    var remail = document.getElementById('f-remail').value.trim();
+    var rjob   = document.getElementById('f-rjob').value.trim();
+    var sname  = document.getElementById('f-sname').value.trim();
+    var semail = document.getElementById('f-semail').value.trim();
+    var btn    = document.querySelector('.submit-btn');
+
+    document.getElementById('error-msg').style.display = 'none';
+
+    if (!rname)  { document.getElementById('f-rname').focus();  showError('Please enter the recipient\'s name.'); return; }
+    if (!remail || !remail.includes('@')) { document.getElementById('f-remail').focus(); showError('Please enter a valid recipient email.'); return; }
+    if (!sname)  { document.getElementById('f-sname').focus();  showError('Please enter your name.'); return; }
+    if (!semail || !semail.includes('@')) { document.getElementById('f-semail').focus(); showError('Please enter a valid email for your receipt.'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Redirecting to payment…';
+
+    try {
+      var res = await fetch(API_BASE + '/api/session-passes/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientEmail: remail,
+          recipientName: rname,
+          recipientJobTitle: rjob || null,
+          tierId: selectedTier,
+          senderName: sname,
+          senderEmail: semail
+        })
+      });
+      var data = await res.json();
+      if (!res.ok || !data.checkoutUrl) throw new Error(data.message || 'Checkout failed');
+      window.location.href = data.checkoutUrl;
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Continue to payment →';
+      showError('Something went wrong starting checkout — please try again, or email francis@percentile.one.');
+    }
+  }
+</script>
+<script src="/track.js"></script>
+</body>
+</html>
