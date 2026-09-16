@@ -200,7 +200,12 @@ export default function ActivityLog() {
                     <td style={{ padding: '12px 16px', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{fmt(e.createdAt)}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text)' }}>{e.email ?? <span style={{ color: 'var(--text-3)' }}>Anonymous</span>}</td>
                     <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)' }}>{e.eventType}</td>
-                    <td style={{ padding: '12px 16px', color: 'var(--text-3)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.page ?? '—'}</td>
+                    <td
+                      title={e.page ?? undefined}
+                      style={{ padding: '12px 16px', color: 'var(--text-3)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: e.page ? 'help' : 'default' }}
+                    >
+                      {e.page ?? '—'}
+                    </td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', textTransform: 'capitalize' }}>{e.portal ?? '—'}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>
                       {e.city && e.country ? `${e.city}, ${e.country}` : e.country ?? '—'}
