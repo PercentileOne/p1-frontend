@@ -15,6 +15,10 @@ export interface UserSummary {
   lastName: string;
   createdAt: string;
   roles: string[];
+  isLocked: boolean;
+  lockedAt: string | null;
+  lockedReason: string | null;
+  emailVerified: boolean;
 }
 
 export interface UserListResponse {
@@ -62,5 +66,32 @@ export const usersApi = {
       throw { error: text || res.statusText, status: res.status } satisfies ApiError;
     }
     return res.json() as Promise<CreateUserResult>;
+  },
+
+  // Permanent (until explicitly unlocked) — distinct from the auto-expiring brute-force
+  // lockout LoginCommandHandler already applies on its own. Backend also enforces this live on
+  // every authenticated request (not just at login), so a locked account's existing 30-day
+  // session token stops working immediately too, not just future login attempts.
+  async lock(token: string, userId: string, reason?: string): Promise<void> {
+    const res = await fetch(`${BASE}/api/admin/users/${userId}/lock`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ reason }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw { error: text || res.statusText, status: res.status } satisfies ApiError;
+    }
+  },
+
+  async unlock(token: string, userId: string): Promise<void> {
+    const res = await fetch(`${BASE}/api/admin/users/${userId}/unlock`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw { error: text || res.statusText, status: res.status } satisfies ApiError;
+    }
   },
 };

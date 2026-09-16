@@ -48,6 +48,7 @@ builder.Services.AddSingleton<AnthropicService>();
 builder.Services.AddSingleton<Explain.Api.Infrastructure.YouTube.YouTubeService>();
 builder.Services.AddSingleton<Explain.Api.Features.NameGreetings.DidGenerationService>();
 builder.Services.AddSingleton<Explain.Api.Features.SessionPasses.SessionPassService>();
+builder.Services.AddSingleton<Explain.Api.Features.Events.SecurityEventLogger>();
 // Stripe.net's service classes (SessionService, EventUtility, etc.) read this static property
 // by default rather than needing a DI-injected client — set once at startup, same secret-never-
 // hardcoded pattern as every other third-party key in this file (see LiveAvatar:ApiKey). Only
@@ -73,6 +74,30 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuer   = false,
             ValidateAudience = false,
             NameClaimType    = "sub",
+        };
+
+        // Live lockout check (Francis, 2026-09-16) — session tokens are valid for 30 DAYS
+        // (TokenService.CreateSessionToken), so an admin setting IsLocked=true in the DB alone
+        // would do nothing for someone already mid-session with a still-valid token; they'd keep
+        // full access for up to 30 more days. This runs once per authenticated request, right
+        // after signature/expiry validation and before any endpoint/authorization policy sees
+        // it, and fails the request outright the moment a token's underlying account is locked —
+        // no separate TokenVersion/mass-rotation scheme needed, this only ever affects accounts
+        // an admin has actually locked. Deliberately NOT also checking EmailVerified here:
+        // RegisterCommandHandler never issues a token for an unverified account in the first
+        // place, so no valid token can ever belong to one.
+        opt.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var userId = context.Principal?.FindFirst("sub")?.Value;
+                if (string.IsNullOrEmpty(userId)) return;
+
+                var db = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+                var isLocked = await db.Users.Where(u => u.Id == userId).Select(u => u.IsLocked).FirstOrDefaultAsync();
+                if (isLocked)
+                    context.Fail("Account locked.");
+            },
         };
     });
 builder.Services.AddPermissionPolicies();
@@ -223,6 +248,7 @@ if (app.Environment.IsDevelopment())
 
 Explain.Api.Features.Auth.Register.Endpoint.Map(app);
 Explain.Api.Features.Auth.Login.Endpoint.Map(app);
+Explain.Api.Features.Auth.Verify.Endpoint.Map(app);
 Explain.Api.Features.Auth.SendMagicLink.Endpoint.Map(app);
 Explain.Api.Features.Auth.VerifyToken.Endpoint.Map(app);
 Explain.Api.Features.Auth.GetSession.Endpoint.Map(app);
@@ -270,6 +296,7 @@ Explain.Api.Features.Organisations.Members.Endpoint.Map(app);
 Explain.Api.Features.Careers.Admin.Endpoint.Map(app);
 Explain.Api.Features.Users.List.Endpoint.Map(app);
 Explain.Api.Features.Users.Create.Endpoint.Map(app);
+Explain.Api.Features.Users.Lock.Endpoint.Map(app);
 
 Explain.Api.Features.Reactions.Endpoint.Map(app);
 Explain.Api.Features.Comments.Endpoint.Map(app);

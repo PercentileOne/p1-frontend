@@ -38,6 +38,7 @@ public static class Endpoint
                 .Select(u => new
                 {
                     u.Id, u.Email, u.FirstName, u.LastName, u.CreatedAt,
+                    u.IsLocked, u.LockedAt, u.LockedReason, u.EmailVerified,
                     Roles = db.UserRoles.Where(ur => ur.UserId == u.Id).Select(ur => ur.Role.Slug).ToList(),
                 })
                 .ToListAsync();

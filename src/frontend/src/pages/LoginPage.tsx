@@ -52,6 +52,10 @@ export default function LoginPage() {
   const [roleDropOpen, setRoleDropOpen] = useState(false);
   const [roleError, setRoleError] = useState("");
   const [roleMismatch, setRoleMismatch] = useState<RoleMismatch | null>(null);
+  // Backend's GET /api/auth/verify-email redirects here with ?verified=true once a fresh
+  // registration's email link is clicked — read once on mount, not a route param the rest of
+  // this page needs to know about otherwise.
+  const [verifiedNotice] = useState(() => new URLSearchParams(window.location.search).get('verified') === 'true');
 
   const storeLogin = useAuthStore(s => s.login);
 
@@ -336,6 +340,9 @@ export default function LoginPage() {
             />
             {authError && (
               <p className="text-[11px] text-red-400 mt-1 ml-1">{authError}</p>
+            )}
+            {verifiedNotice && !authError && (
+              <p className="text-[11px] text-emerald-400 mt-1 ml-1">Email verified — you can sign in now.</p>
             )}
           </div>
 

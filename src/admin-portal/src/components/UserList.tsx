@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
-import { Search, Loader2, ChevronUp, ChevronDown, Plus } from 'lucide-react'
+import { Search, Loader2, ChevronUp, ChevronDown, Plus, Lock, Unlock, MailWarning } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { usersApi, type UserSummary, type ApiError } from '../api/usersApi'
 import { FormField, inputStyle, buttonStyle } from '../pages/Organisations'
@@ -37,6 +37,39 @@ export function UserList({ role, title, entityLabel, searchPlaceholder }: {
   }, [token, role])
 
   useEffect(() => { load() }, [load])
+
+  const [actionError, setActionError] = useState('')
+  const [actingOn, setActingOn] = useState<string | null>(null)
+
+  async function handleLock(u: UserSummary) {
+    if (!token) return
+    const reason = window.prompt(`Lock ${u.email}? Optionally note why (shown to other admins, never to the user):`)
+    if (reason === null) return // cancelled
+    setActingOn(u.id)
+    setActionError('')
+    try {
+      await usersApi.lock(token, u.id, reason || undefined)
+      setRows(rs => rs.map(r => r.id === u.id ? { ...r, isLocked: true, lockedReason: reason || null } : r))
+    } catch (err) {
+      setActionError((err as ApiError).error ?? 'Failed to lock account.')
+    } finally {
+      setActingOn(null)
+    }
+  }
+
+  async function handleUnlock(u: UserSummary) {
+    if (!token) return
+    setActingOn(u.id)
+    setActionError('')
+    try {
+      await usersApi.unlock(token, u.id)
+      setRows(rs => rs.map(r => r.id === u.id ? { ...r, isLocked: false, lockedReason: null } : r))
+    } catch (err) {
+      setActionError((err as ApiError).error ?? 'Failed to unlock account.')
+    } finally {
+      setActingOn(null)
+    }
+  }
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
@@ -133,9 +166,9 @@ export function UserList({ role, title, entityLabel, searchPlaceholder }: {
         </div>
       </div>
 
-      {error && (
+      {(error || actionError) && (
         <div style={{ fontSize: 12, color: '#EF4444', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
-          {error}
+          {error || actionError}
         </div>
       )}
 
@@ -156,6 +189,8 @@ export function UserList({ role, title, entityLabel, searchPlaceholder }: {
                 <SortableHeader label="Email" sortKeyName="email" />
                 <SortableHeader label="Other roles" sortKeyName="roles" />
                 <SortableHeader label="Joined" sortKeyName="joined" />
+                <th style={{ textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Status</th>
+                <th style={{ padding: '10px 16px' }} />
               </tr>
             </thead>
             <tbody>
@@ -172,6 +207,34 @@ export function UserList({ role, title, entityLabel, searchPlaceholder }: {
                     <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{u.email}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', textTransform: 'capitalize' }}>{otherRoles.join(', ') || '—'}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{new Date(u.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                    <td style={{ padding: '12px 16px' }}>
+                      {u.isLocked ? (
+                        <span title={u.lockedReason ?? undefined} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: '#EF4444', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 6, padding: '3px 8px' }}>
+                          <Lock size={11} /> Locked
+                        </span>
+                      ) : !u.emailVerified ? (
+                        <span title="Hasn't clicked their verification email yet" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: '#F59E0B', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 6, padding: '3px 8px' }}>
+                          <MailWarning size={11} /> Unverified
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Active</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                      <button
+                        onClick={() => u.isLocked ? handleUnlock(u) : handleLock(u)}
+                        disabled={actingOn === u.id}
+                        title={u.isLocked ? 'Unlock account' : 'Lock account'}
+                        style={{
+                          background: 'none', border: '1px solid var(--border)', borderRadius: 7,
+                          color: u.isLocked ? '#34D399' : 'var(--text-3)', cursor: actingOn === u.id ? 'default' : 'pointer',
+                          padding: '5px 7px', display: 'inline-flex', alignItems: 'center',
+                          opacity: actingOn === u.id ? 0.5 : 1,
+                        }}
+                      >
+                        {actingOn === u.id ? <Loader2 size={13} className="admin-spin" /> : u.isLocked ? <Unlock size={13} /> : <Lock size={13} />}
+                      </button>
+                    </td>
                   </tr>
                 )
               })}

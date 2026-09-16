@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Explain.Api.Common;
 using Explain.Api.Features.Auth.Register;
+using Explain.Api.Features.Events;
 using Explain.Api.Infrastructure.Email;
 using Explain.Api.Infrastructure.Sql;
 using Explain.Api.Infrastructure.Sql.Models;
@@ -14,6 +15,7 @@ public class LoginCommandHandler(
     PermissionLoader permissions,
     IConfiguration config,
     IEmailSender emailSender,
+    SecurityEventLogger securityEvents,
     ILogger<LoginCommandHandler> logger)
     : IRequestHandler<LoginCommand, Result<AuthResponse>>
 {
@@ -51,6 +53,31 @@ public class LoginCommandHandler(
             logger.LogWarning("Login failed for {Email}", email);
             await RecordLogin(user?.Id ?? "unknown", email, false, "Invalid credentials", cmd.IpAddress, cmd.UserAgent, ct);
             return Result<AuthResponse>.Failure("Incorrect email or password.", 401);
+        }
+
+        // Admin-initiated lockout (Francis, 2026-09-16 — a suspicious account spotted live in
+        // the Activity Log). Deliberately AFTER password verification, not before — a locked
+        // account with a wrong password should still get the generic "incorrect email or
+        // password" above, never confirm the account exists via a distinct lockout message.
+        if (user.IsLocked)
+        {
+            logger.LogWarning("Login blocked for {Email} — account locked by admin", email);
+            await RecordLogin(user.Id, email, false, "Account locked", cmd.IpAddress, cmd.UserAgent, ct);
+            _ = securityEvents.LogAsync("LOGIN_BLOCKED_LOCKED", user.Id, email, cmd.IpAddress,
+                new() { ["reason"] = user.LockedReason ?? "" }, CancellationToken.None);
+            return Result<AuthResponse>.Failure("This account has been locked. Contact support.", 403);
+        }
+
+        // Email verification (Francis, 2026-09-16, same conversation — stop anyone getting a
+        // working account from a fake/throwaway address). Every account that existed before this
+        // shipped was backfilled to EmailVerified=true by the migration, so this only ever blocks
+        // brand-new, genuinely-unverified registrations.
+        if (!user.EmailVerified)
+        {
+            logger.LogWarning("Login blocked for {Email} — email not verified", email);
+            await RecordLogin(user.Id, email, false, "Email not verified", cmd.IpAddress, cmd.UserAgent, ct);
+            _ = securityEvents.LogAsync("LOGIN_BLOCKED_UNVERIFIED", user.Id, email, cmd.IpAddress, ct: CancellationToken.None);
+            return Result<AuthResponse>.Failure("Please verify your email before signing in — check your inbox for the verification link.", 403);
         }
 
         logger.LogInformation("Login successful for {Email}", email);
