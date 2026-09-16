@@ -130,6 +130,13 @@
   }
   .field input::placeholder { color: #475569; }
   .field input:focus { border-color: rgba(52,211,153,0.4); }
+  .field input:-webkit-autofill,
+  .field input:-webkit-autofill:hover,
+  .field input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--bg2) inset !important;
+    -webkit-text-fill-color: var(--pearl) !important;
+    caret-color: var(--pearl);
+  }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .field-hint { font-size: 11px; color: #475569; margin-top: 6px; line-height: 1.4; }
 
