@@ -50,10 +50,30 @@
   <div class="card">
     <div class="mark">🎁</div>
     <h1>Gift sent!</h1>
-    <p>Your payment went through and the pass is now active for your recipient — they'll be able to sign in with the email you gave us and start practicing straight away.</p>
+    <p id="gift-success-copy">Your payment went through and the pass is now active for your recipient — they'll be able to sign in with the email you gave us and start practicing straight away.</p>
     <a class="btn" href="/">← Back to TheInterviewChair.com</a>
     <div class="footer-note">Questions about your gift? Email <a href="mailto:francis@percentile.one">francis@percentile.one</a></div>
   </div>
   <script src="/track.js"></script>
+  <script>
+    // Best-effort personalization only — the generic copy above is left in the DOM as the
+    // fallback if this fetch fails or session_id is missing, so a broken/slow API never blocks
+    // the success page itself from rendering (Francis, 2026-09-16: "Danny will be able to sign
+    // in..." reads much better than "they'll be able to sign in...").
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var sessionId = params.get('session_id');
+      if (!sessionId) return;
+      fetch('https://api.explain.global/api/session-passes/checkout-session/' + encodeURIComponent(sessionId))
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          if (data && data.recipientFirstName) {
+            document.getElementById('gift-success-copy').textContent =
+              data.recipientFirstName + ' will be able to sign in with the email you gave us and start practicing straight away.';
+          }
+        })
+        .catch(function () {});
+    })();
+  </script>
 </body>
 </html>

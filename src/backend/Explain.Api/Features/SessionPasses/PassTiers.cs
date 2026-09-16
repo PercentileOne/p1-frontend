@@ -19,12 +19,15 @@ public static class PassTiers
 {
     public static readonly IReadOnlyDictionary<string, PassTier> All = new Dictionary<string, PassTier>
     {
-        ["gift-3day"] = new PassTier(Source: "gift", AmountGbp: 2.99m, SessionsTotal: 3, WindowDays: 3),
-        ["gift-1week"] = new PassTier(Source: "gift", AmountGbp: 3.99m, SessionsTotal: 5, WindowDays: 7),
-        ["self"] = new PassTier(Source: "self", AmountGbp: 5.99m, SessionsTotal: 10, WindowDays: 7),
+        ["gift-3day"] = new PassTier(Source: "gift", AmountGbp: 2.99m, SessionsTotal: 3, WindowDays: 3, Label: "3-Day Pass"),
+        ["gift-1week"] = new PassTier(Source: "gift", AmountGbp: 3.99m, SessionsTotal: 5, WindowDays: 7, Label: "1-Week Pass"),
+        ["self"] = new PassTier(Source: "self", AmountGbp: 5.99m, SessionsTotal: 10, WindowDays: 7, Label: "Interview Pass"),
     };
 
     public static PassTier? Get(string tierId) => All.GetValueOrDefault(tierId);
 }
 
-public record PassTier(string Source, decimal AmountGbp, int SessionsTotal, int WindowDays);
+// Label is the marketing-facing name (matches the "3-Day Pass"/"1-Week Pass" tier cards on
+// home.html and gift-interview.html) — used anywhere copy describes the pass by its window
+// rather than its raw session count, e.g. the recipient invite email.
+public record PassTier(string Source, decimal AmountGbp, int SessionsTotal, int WindowDays, string Label);

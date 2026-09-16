@@ -32,6 +32,12 @@ public static class Endpoint
     {
         app.MapPost("/api/session-passes/checkout", HandleCheckout).AllowAnonymous();
 
+        // Lets gift-interview-success.html (a static page with no build step, no auth) greet the
+        // recipient by name after Stripe redirects back with ?session_id=... — see
+        // SessionPassService.GetByCheckoutSessionIdAsync's own comment on why this is safe
+        // AllowAnonymous. Only ever returns the recipient's first name, nothing sensitive.
+        app.MapGet("/api/session-passes/checkout-session/{sessionId}", HandleGetByCheckoutSession).AllowAnonymous();
+
         // Raw-body access is required for Stripe's signature verification (EventUtility.
         // ConstructEvent hashes the exact bytes Stripe sent — any JSON re-serialization, even
         // semantically identical, breaks the signature) — so this reads HttpContext directly
@@ -151,6 +157,15 @@ public static class Endpoint
         await passes.AttachCheckoutSessionAsync(pass.id, pass.recipientEmail, session.Id);
 
         return Results.Ok(new { checkoutUrl = session.Url });
+    }
+
+    private static async Task<IResult> HandleGetByCheckoutSession(string sessionId, SessionPassService passes)
+    {
+        var pass = await passes.GetByCheckoutSessionIdAsync(sessionId);
+        if (pass is null) return Results.NotFound();
+
+        var firstName = pass.recipientName.Split(' ', 2)[0];
+        return Results.Ok(new { recipientFirstName = firstName });
     }
 
     private static async Task<IResult> HandleWebhook(

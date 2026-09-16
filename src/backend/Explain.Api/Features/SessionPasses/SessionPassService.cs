@@ -118,6 +118,10 @@ public class SessionPassService(CosmosService cosmos, IEmailSender emailSender, 
 
         var senderName = string.IsNullOrWhiteSpace(pass.senderName) ? "Someone" : pass.senderName;
         var expiresStr = pass.expiresAt?.ToString("dddd d MMMM") ?? "soon";
+        // Lead with the pass's marketing-facing name/window ("3-Day Pass"), not just the raw
+        // session count — matches how it's sold on the tier cards, and reads as a clear deadline
+        // rather than an abstract number (Francis, 2026-09-16).
+        var tierLabel = PassTiers.Get(pass.tierId)?.Label ?? "Interview Pass";
 
         var body = $"""
             <!DOCTYPE html>
@@ -143,27 +147,52 @@ public class SessionPassService(CosmosService cosmos, IEmailSender emailSender, 
                   </h1>
 
                   <p style="text-align:center;font-size:14px;color:rgba(255,255,255,0.55);line-height:1.7;margin:0 0 28px;">
-                    {WebUtility.HtmlEncode(senderName)} thinks you could use some interview practice — so they've sent you <strong style="color:#fff">{pass.sessionsTotal} practice interview session(s)</strong> on TheInterviewChair.com, valid until <strong style="color:#fff">{expiresStr}</strong>.
+                    {WebUtility.HtmlEncode(senderName)} thinks you could use some interview practice — so they've sent you a <strong style="color:#fff">{tierLabel}</strong> ({pass.sessionsTotal} practice interview sessions) on TheInterviewChair.com, free to use until <strong style="color:#fff">{expiresStr}</strong>.
                   </p>
 
+                  <p style="text-align:center;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin:0 0 14px;">Everything unlocked for you until then</p>
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 30px;">
                     <tr>
                       <td style="padding:0 0 14px;vertical-align:top;width:26px;">
                         <span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:rgba(52,211,153,0.15);color:#34D399;font-size:12px;font-weight:800;line-height:20px;text-align:center;">✓</span>
                       </td>
-                      <td style="padding:0 0 14px 10px;vertical-align:top;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;">Practice with Amina &amp; Wayne, our AI interviewers, in a realistic mock interview</td>
+                      <td style="padding:0 0 14px 10px;vertical-align:top;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff">Practice</strong> — realistic mock interviews with Amina &amp; Wayne, our AI interviewers, with instant, honest scoring and feedback</td>
                     </tr>
                     <tr>
                       <td style="padding:0 0 14px;vertical-align:top;width:26px;">
                         <span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:rgba(52,211,153,0.15);color:#34D399;font-size:12px;font-weight:800;line-height:20px;text-align:center;">✓</span>
                       </td>
-                      <td style="padding:0 0 14px 10px;vertical-align:top;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;">Instant, honest scoring and feedback to sharpen every answer</td>
+                      <td style="padding:0 0 14px 10px;vertical-align:top;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff">Learn</strong> — bite-sized lessons on exactly the skills interviewers test you on</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:0 0 14px;vertical-align:top;width:26px;">
+                        <span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:rgba(52,211,153,0.15);color:#34D399;font-size:12px;font-weight:800;line-height:20px;text-align:center;">✓</span>
+                      </td>
+                      <td style="padding:0 0 14px 10px;vertical-align:top;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff">My Career Coach</strong> — coaching &amp; support whenever you're stuck</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:0 0 14px;vertical-align:top;width:26px;">
+                        <span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:rgba(52,211,153,0.15);color:#34D399;font-size:12px;font-weight:800;line-height:20px;text-align:center;">✓</span>
+                      </td>
+                      <td style="padding:0 0 14px 10px;vertical-align:top;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff">My Talks</strong> — practice speaking your answers out loud, not just typing them</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:0 0 14px;vertical-align:top;width:26px;">
+                        <span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:rgba(52,211,153,0.15);color:#34D399;font-size:12px;font-weight:800;line-height:20px;text-align:center;">✓</span>
+                      </td>
+                      <td style="padding:0 0 14px 10px;vertical-align:top;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff">Careers</strong> — explore roles and what they actually require</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:0 0 14px;vertical-align:top;width:26px;">
+                        <span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:rgba(52,211,153,0.15);color:#34D399;font-size:12px;font-weight:800;line-height:20px;text-align:center;">✓</span>
+                      </td>
+                      <td style="padding:0 0 14px 10px;vertical-align:top;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff">Jobs</strong> — browse live roles while you're already here</td>
                     </tr>
                     <tr>
                       <td style="padding:0;vertical-align:top;width:26px;">
                         <span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:rgba(52,211,153,0.15);color:#34D399;font-size:12px;font-weight:800;line-height:20px;text-align:center;">✓</span>
                       </td>
-                      <td style="padding:0 0 0 10px;vertical-align:top;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;">Already paid for — nothing more for you to do but start</td>
+                      <td style="padding:0 0 0 10px;vertical-align:top;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff">Learn Alerts</strong> — short practice questions sent to your inbox so it sticks</td>
                     </tr>
                   </table>
 
@@ -193,6 +222,27 @@ public class SessionPassService(CosmosService cosmos, IEmailSender emailSender, 
             body,
             replyToEmail: pass.senderEmail);
         logger.LogInformation("Gift invite sent to {Email} for pass {PassId}", pass.recipientEmail, pass.id);
+    }
+
+    // Cross-partition lookup — the only place a pass is fetched by its Stripe Checkout Session id
+    // rather than (id, recipientEmail). Deliberately not a hot path: called once, right after
+    // Checkout redirects back to gift-interview-success.html, purely so that page can greet the
+    // recipient by name ("Danny will be able to sign in...") instead of "your recipient". The
+    // session id itself is Stripe's own opaque token, so this is safe to expose AllowAnonymous —
+    // nobody can guess or enumerate it, same trust level as the redirect URL itself.
+    public async Task<SessionPass?> GetByCheckoutSessionIdAsync(string checkoutSessionId)
+    {
+        var query = new QueryDefinition("SELECT * FROM c WHERE c.stripeCheckoutSessionId = @sid")
+            .WithParameter("@sid", checkoutSessionId);
+
+        using var feed = Container.GetItemQueryIterator<SessionPass>(query);
+        while (feed.HasMoreResults)
+        {
+            var page = await feed.ReadNextAsync();
+            var match = page.FirstOrDefault();
+            if (match is not null) return match;
+        }
+        return null;
     }
 
     // Single-partition query (see CosmosService's own comment on why /recipientEmail is the
