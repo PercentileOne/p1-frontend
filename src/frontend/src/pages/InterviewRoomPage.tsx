@@ -43,6 +43,7 @@ export interface RoomState {
   autoStart?: boolean;
   selectedLanguage?: string;
   selectedDifficulty?: string;
+  interviewRound?: string;
   questionCount?: number;
   preferredName?: string;
   company?: string;
@@ -236,6 +237,7 @@ export default function InterviewRoomPage() {
   // whatever difficulty was chosen before the room ever loaded; there's no legitimate way to
   // change it mid-session, so nothing in this file should be able to either.
   const [selectedDifficulty] = useState<string>(ctx.selectedDifficulty ?? 'Standard');
+  const [selectedInterviewRound] = useState<string>(ctx.interviewRound ?? 'First Round Interview');
   const [audioCheckState, setAudioCheckState] = useState<'idle' | 'playing' | 'done'>('idle');
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -508,6 +510,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       selectedDifficulty: ctx.selectedDifficulty,
       selectedLanguage: ctx.selectedLanguage,
       preferredName: resolvedPreferredName,
+      interviewRound: ctx.interviewRound,
     }).then(script => {
       clearTimeout(mikeTimeout);
       if (script) bgMikeScriptRef.current = script;
@@ -534,7 +537,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       // didn't say my name" was too.
       phase2Timeout = setTimeout(() => resolvePhase2('90s-timeout-fallback'), 90000);
       console.log(`[Phase2 TIMING] sessionPrepareClient() call starting @ ${Math.round(performance.now())}ms`);
-      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount, ctx.company || undefined, ctx.specialFocus);
+      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount, ctx.company || undefined, ctx.specialFocus, ctx.interviewRound);
 
     }).then(result => {
       bgLoadedRef.current = true;
@@ -1604,6 +1607,23 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         }}
                       >
                         {selectedDifficulty}
+                      </div>
+                    </div>
+
+                    {/* Round — same read-only-at-intake treatment as Difficulty above; also
+                        fixed at intake since it's baked into Mike's/Amina's/Wayne's already-
+                        generated spoken intros, not something that could change mid-session. */}
+                    <div>
+                      <div style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '6px' }}>Round</div>
+                      <div
+                        style={{
+                          width: '100%', boxSizing: 'border-box',
+                          fontSize: '11px', fontWeight: 700, padding: '6px 10px', borderRadius: '8px',
+                          background: 'rgba(79,142,247,0.1)', color: 'var(--blue)',
+                          border: '1px solid rgba(79,142,247,0.25)',
+                        }}
+                      >
+                        {selectedInterviewRound}
                       </div>
                     </div>
 

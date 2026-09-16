@@ -78,7 +78,8 @@ public static class Endpoint
                 cvFileName: cvFileName,
                 status: "sent",
                 createdAt: DateTimeOffset.UtcNow,
-                specialFocus: req.SpecialFocus is { Length: > 0 } ? req.SpecialFocus : null);
+                specialFocus: req.SpecialFocus is { Length: > 0 } ? req.SpecialFocus : null,
+                round: string.IsNullOrWhiteSpace(req.Round) ? null : req.Round.Trim());
 
             var container = cosmos.GetContainer("interview-preps");
             await container.UpsertItemAsync(prep, new PartitionKey(recruiterId));
@@ -150,6 +151,7 @@ public static class Endpoint
                 cvText = string.IsNullOrWhiteSpace(req.CvText) ? null : req.CvText.Trim(),
                 cvFileName = cvFileName,
                 specialFocus = req.SpecialFocus is { Length: > 0 } ? req.SpecialFocus : null,
+                round = string.IsNullOrWhiteSpace(req.Round) ? null : req.Round.Trim(),
             };
 
             await container.UpsertItemAsync(updated, new PartitionKey(recruiterId));
@@ -339,7 +341,12 @@ public static class Endpoint
         string? CvFileBase64,
         string? CvFileName,
         string? CvFileContentType,
-        string[]? SpecialFocus = null);
+        string[]? SpecialFocus = null,
+        // Which stage of the candidate's real process this prep is for — see INTERVIEW_ROUNDS
+        // in InterviewPackStart.tsx. Optional/nullable since it's new (2026-09-16); a null here
+        // means "recruiter didn't set it", and ReceivedPreps.tsx / InterviewPackStart.tsx both
+        // already treat a missing interviewRound as "First Round Interview" by default.
+        string? Round = null);
 }
 
 public record InterviewPrep(
@@ -365,4 +372,7 @@ public record InterviewPrep(
     string[]? specialFocus,
     // Computed per-response (short-lived SAS URL), never persisted as meaningful data —
     // always null on the copy that gets upserted to Cosmos, only set on the returned copy.
-    string? cvFileUrl = null);
+    string? cvFileUrl = null,
+    // See Request.Round above — added 2026-09-16, same "recruiter sets it on the candidate's
+    // behalf" pattern as level/specialFocus.
+    string? round = null);

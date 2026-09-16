@@ -23,6 +23,17 @@ const DIFFICULTIES = [
   { value: 'Pro',       color: '#F59E0B', borderColor: 'rgba(245,158,11,0.3)', desc: 'Challenging questions that probe deeper — sharpen your edge beyond the basics.' },
   { value: 'Expert',    color: '#EF4444', borderColor: 'rgba(239,68,68,0.3)',  desc: "We'll treat you like the leading authority in your field. Intense. Technical. Unforgiving." },
 ]
+// Same values as the candidate-side INTERVIEW_ROUNDS (InterviewPackStart.tsx) — a recruiter
+// sending a prep usually knows exactly which real stage the candidate is prepping for, so
+// this is set here rather than left for the candidate to guess when they open the prep link.
+const ROUNDS = [
+  'First Round Interview',
+  'Second Round Interview',
+  'Third Round Interview',
+  'Fourth Round Interview',
+  'Fifth Round Interview',
+  'Final Round Interview',
+]
 const TITLES = ['Mr', 'Mrs', 'Miss', 'Ms', 'Mx', 'Dr', 'Prof']
 const SELECT_CHEVRON = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`
 
@@ -71,6 +82,7 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
   const [lastName, setLastName] = useState(existing?.lastName ?? '')
   const [email, setEmail] = useState(existing?.email ?? '')
   const [level, setLevel] = useState(existing?.level ?? '')
+  const [round, setRound] = useState(existing?.round ?? ROUNDS[0])
   const [interviewDate, setInterviewDate] = useState(existing ? isoToLocalInput(existing.interviewDate) : '')
   // Job Title is now its own tab, matching the candidate-side InterviewPackStart.tsx layout
   // (2026-09-15 — previously this form had no Job Title field at all and silently derived one
@@ -211,6 +223,7 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
       email: email.trim().toLowerCase(),
       role: resolvedRole,
       level,
+      round,
       interviewDate: new Date(interviewDate).toISOString(),
       jobSpecText: jobSpec.trim(),
       cvText: cvText.trim() || undefined,
@@ -295,6 +308,17 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
             )
           })()}
           {errors.level && <div style={{ fontSize: 11, color: '#F87171', marginTop: 6 }}>{errors.level}</div>}
+        </div>
+
+        <div>
+          <FieldLabel>Interview round</FieldLabel>
+          <select
+            value={round}
+            onChange={e => setRound(e.target.value)}
+            style={{ ...inputStyle, cursor: 'pointer', appearance: 'none', backgroundImage: SELECT_CHEVRON, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}
+          >
+            {ROUNDS.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
         </div>
 
         {/* Job Title + Job Spec + CV — recruiter's responsibility, not the candidate's. Grounds

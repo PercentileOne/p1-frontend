@@ -15,6 +15,7 @@ interface ReceivedPrep {
   lastName:      string;
   role:          string;
   level:         string;
+  round:         string | null;
   interviewDate: string;
   jobSpecText:   string;
   cvText:        string | null;
@@ -80,6 +81,7 @@ export default function ReceivedPreps() {
         cvFileUrl: prep.cvFileUrl ?? undefined,
         cvFileName: prep.cvFileName ?? undefined,
         difficulty: prep.level,
+        interviewRound: prep.round ?? undefined,
         specialFocus: prep.specialFocus ?? undefined,
       },
     });

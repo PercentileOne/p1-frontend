@@ -10,6 +10,7 @@ export interface InterviewPrep {
   email:         string;
   role:          string;
   level:         string;
+  round:         string | null;
   interviewDate: string; // ISO
   jobSpecText:   string;
   cvText:        string | null;
@@ -27,6 +28,7 @@ export interface SendPrepRequest {
   email:         string;
   role:          string;
   level:         string;
+  round?:        string;
   interviewDate: string; // ISO
   jobSpecText:   string;
   cvText?:       string;

@@ -725,8 +725,20 @@ export async function generateMikeScriptOnly(params: {
   selectedDifficulty?: string;
   selectedLanguage?: string;
   preferredName?: string;
+  interviewRound?: string;
 }): Promise<string> {
-  const { jobTitle, companyName, jobSpecText, cvText, selectedDifficulty, selectedLanguage, preferredName } = params;
+  const { jobTitle, companyName, jobSpecText, cvText, selectedDifficulty, selectedLanguage, preferredName, interviewRound } = params;
+
+  // Most candidates now face 2+ real interview rounds (Francis, 2026-09-16) — a First Round
+  // practice session gets no special mention (nothing to congratulate yet), but Second Round
+  // onward gets a brief, natural "you clearly impressed them last time" beat. Same
+  // enum-to-framing-sentence pattern as difficultyFrame below, deliberately worded as a note
+  // TO the model rather than a fixed string, so it comes out sounding spoken, not templated.
+  const roundLabel = (interviewRound || 'First Round Interview').replace(' Interview', '').toLowerCase();
+  const roundFrame =
+    interviewRound && interviewRound !== 'First Round Interview'
+      ? `This is their ${roundLabel} for this real process — briefly congratulate them on getting this far, it means the employer already liked what they saw. Keep it to one short sentence, don't dwell on it.`
+      : `This is their first round for this real process — no previous rounds to reference, just a normal warm welcome.`;
 
   const difficultyFrame =
     selectedDifficulty === 'Expert'
@@ -764,17 +776,19 @@ ${cvSnippet ? `\nCANDIDATE CV (extract first name from here):\n${cvSnippet}\n` :
 CONTEXT:
 - Job title: ${jobTitle || 'not specified'}
 - Company: ${companyName || '(extract from job title or job spec if possible, otherwise omit)'}
+- Interview round: ${roundFrame}
 - Difficulty level: ${difficultyFrame}
 ${jobSpecSnippet ? `- Job spec excerpt: ${jobSpecSnippet}` : ''}
 
 STRUCTURE (spoken naturally as one flowing paragraph — no lists):
 1. "Hi [candidate name] — I'm Mike, and I've set up today's interview for you."
 2. "You're here for the [job title] position at [company name]."
-3. One warm sentence about the company or role.
-4. Difficulty framing (use the exact framing given above, naturally worded).
-5. "You'll be meeting Amina from HR and Wayne, who'll be leading the role-specific questions."
-6. One specific tip for this role.
-7. Warm close: "You've got this. Good luck."
+3. Round framing (use the exact framing given above, naturally worded) — skip entirely and say nothing about it if this is their first round.
+4. One warm sentence about the company or role.
+5. Difficulty framing (use the exact framing given above, naturally worded).
+6. "You'll be meeting Amina from HR and Wayne, who'll be leading the role-specific questions."
+7. One specific tip for this role.
+8. Warm close: "You've got this. Good luck."
 
 Return JSON: { "mikeScript": "..." }`;
 
@@ -783,6 +797,7 @@ Return JSON: { "mikeScript": "..." }`;
   console.log('companyName:', companyName ?? '(none)');
   console.log('selectedDifficulty:', selectedDifficulty ?? '(none)');
   console.log('selectedLanguage:', selectedLanguage ?? '(none)');
+  console.log('interviewRound:', interviewRound ?? '(none)');
   console.log('cvText length:', cvText?.length ?? 0, 'chars');
   console.log('cvSnippet sent:', cvSnippet || '(empty — no CV provided)');
   console.groupEnd();
@@ -835,6 +850,7 @@ export async function sessionPrepareClient(
   questionCount?: number,
   companyName?: string,
   specialFocus?: string[],
+  interviewRound?: string,
 ): Promise<ClientSessionResult> {
   // All `totalQuestions` are role/technical questions now — HR/character questions are
   // generated separately below and always ADDED on top (Francis, 2026-09-10). Previously a
@@ -867,6 +883,14 @@ export async function sessionPrepareClient(
   const companyLine = companyName?.trim() ? `\nCompany (explicitly confirmed — use this exact name, do not invent another): ${companyName.trim()}` : '';
   const difficultyLevel = selectedDifficulty || 'Standard';
   const difficultyLine = `\nSession Difficulty: ${difficultyLevel} (${difficultyLabel})`;
+  // Which stage of the candidate's REAL process this represents (see INTERVIEW_ROUNDS in
+  // InterviewPackStart.tsx) — First Round gets no mention at all; Second Round onward should
+  // both shape question depth slightly (a later round can reasonably assume more was already
+  // covered at a basic level) and let Amina's welcome briefly acknowledge how far they've come,
+  // same "influence the questions AND the spoken dialogue" intent Francis asked for, 2026-09-16.
+  const interviewRoundLabel = interviewRound || 'First Round Interview';
+  const isLaterRound = interviewRoundLabel !== 'First Round Interview';
+  const roundLine = `\nInterview Round: ${interviewRoundLabel}${isLaterRound ? ' — a LATER round in the candidate\'s real process (they already passed at least one earlier round with this employer)' : ' — their FIRST round, no earlier rounds to reference'}`;
   const preferredNameLine = preferredName?.trim()
     ? `\nCandidate Name: "${preferredName.trim()}" — explicitly set by the candidate. Use this name in ALL spoken scripts (Mike, Amina, Wayne). Do NOT use any other name.`
     : `\nCandidate Name: NOT explicitly set — you MUST extract the candidate's first name from the CV and use it in ALL spoken scripts (Mike, Amina, Wayne). NEVER say "there" or omit the name when a CV is provided.`;
@@ -895,7 +919,7 @@ CRITICAL RULES — READ CAREFULLY:
   const userPrompt = `Generate a complete interview session for the job specification below. Session ID: ${sessionSeed} — this is unique to this session. You MUST generate completely fresh questions every time. Never repeat or reuse questions from any prior generation. Vary question wording, angle, and which competencies you probe.
 ${cvSection ? 'A candidate CV is also provided — use it to personalise questions and intros.' : 'No CV provided — base questions purely on the role requirements.'}
 
-═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${specialFocusLine}${preferredNameLine}
+═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${roundLine}${specialFocusLine}${preferredNameLine}
 
 ═══ JOB SPECIFICATION ═══
 ${jobSpecText.slice(0, 4000)}${cvSection}
@@ -909,7 +933,7 @@ Return this exact JSON:
   "industry": "industry sector (e.g. Fast Food, Healthcare, Construction, Finance, Education)",
   "specialistTitle": "Wayne's interviewer title — role-appropriate, e.g. 'Restaurant Manager' for hospitality, 'Ward Sister' for nursing, 'Site Foreman' for construction, 'Finance Director' for accounting. NEVER use 'Technical Lead' unless the role is genuinely technical.",
   "companyFacts": ["3 specific facts about this company or role the candidate should know before walking in"],
-  "sarahIntro": "Amina's spoken welcome, STRICTLY 25–35 words — this is a hard limit, not a suggestion (her voice clip has a technical size ceiling; going over breaks playback). HR Director, warm and professional. Address the candidate by their Preferred Name if set, otherwise extract their first name from the CV, otherwise use no name. Introduces herself by name (Amina), briefly mentions Wayne will be joining her for the role-specific questions, sets a positive tone, and tells the candidate to speak naturally and take their time. Do NOT explain the Record/Stop/Repeat/Pause controls — that's already shown on screen as text, saying it aloud too is redundant and makes the intro too long.",
+  "sarahIntro": "Amina's spoken welcome, STRICTLY 25–35 words — this is a hard limit, not a suggestion (her voice clip has a technical size ceiling; going over breaks playback). HR Director, warm and professional. Address the candidate by their Preferred Name if set, otherwise extract their first name from the CV, otherwise use no name. Introduces herself by name (Amina), briefly mentions Wayne will be joining her for the role-specific questions, sets a positive tone, and tells the candidate to speak naturally and take their time. IF the Session Context's Interview Round is a LATER round (not their first), replace the generic positive-tone sentence with a brief, genuine congratulations on reaching this stage instead (e.g. 'Congratulations on making it to your second round — they clearly liked what they saw') — spend at most one short clause on it, then move straight on; if it's their FIRST round, say nothing about rounds at all, just the normal warm welcome. Do NOT explain the Record/Stop/Repeat/Pause controls — that's already shown on screen as text, saying it aloud too is redundant and makes the intro too long.",
   "jamesIntro": "Wayne's spoken intro, 30–55 words. Direct and role-focused. Address the candidate by their Preferred Name (see Session Context above). Introduces himself, then MUST reference the exact Session Difficulty from the Session Context — use the difficulty level name naturally in speech: if Beginner say something like 'You've gone with Beginner level, so no pressure — we'll keep this friendly and foundational'; if Standard say something like 'You've gone with Standard difficulty, so we'll work through this steadily'; if Pro say 'You've chosen Pro level, so expect some probing questions'; if Expert say 'You've opted for Expert level — these questions will really test your depth of knowledge'. If the session language is not English, also mention it e.g. 'and we'll be doing this in French'. Then briefly names the specific role/job title being interviewed for (from the Session Context's Job Title) before stating what he'll be focusing on — e.g. 'looking forward to hearing about your experience for the .NET Programmer role'. IF the Session Context includes Special Focus Topics, Wayne MUST also naturally name one or two of them in this same intro (e.g. 'and I understand you want to dig into Agentic AI Patterns today, so we'll make sure that comes up') — never read out the full list verbatim, that sounds robotic; pick whichever one or two fit the sentence most naturally.",
   "mcqQuestions": [
     {
@@ -938,7 +962,7 @@ Return this exact JSON:
   ]
 }
 
-Generate exactly ${totalQuestions} questions in the "questions" array — ALL of them role/competency questions (source: "Role"), based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover DIFFERENT competencies each time — do NOT reuse the same question themes across sessions. Use the session seed to pick a fresh angle on the role. Avoid generic questions like "tell me about yourself" or "describe a challenge" — make them specific to this exact role and company.${specialFocus && specialFocus.length > 0 ? ` Weight these role questions toward the Special Focus Topics named in the Session Context (${specialFocus.join(', ')}) — give each named topic its own dedicated, hard, specific question if there are enough role-question slots to do so; if there are more topics than slots, cover as many DIFFERENT topics as possible rather than spending two questions on the same one. Any slots left over after covering the topics go to other important aspects of the role.` : ''}
+Generate exactly ${totalQuestions} questions in the "questions" array — ALL of them role/competency questions (source: "Role"), based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover DIFFERENT competencies each time — do NOT reuse the same question themes across sessions. Use the session seed to pick a fresh angle on the role. Avoid generic questions like "tell me about yourself" or "describe a challenge" — make them specific to this exact role and company.${specialFocus && specialFocus.length > 0 ? ` Weight these role questions toward the Special Focus Topics named in the Session Context (${specialFocus.join(', ')}) — give each named topic its own dedicated, hard, specific question if there are enough role-question slots to do so; if there are more topics than slots, cover as many DIFFERENT topics as possible rather than spending two questions on the same one. Any slots left over after covering the topics go to other important aspects of the role.` : ''}${isLaterRound ? ` This is a LATER interview round (${interviewRoundLabel}) for the same real process — lean the mix slightly toward Medium/Hard over Easy compared to a first round, and favour questions that probe depth/judgement/trade-offs rather than pure surface-level basics, since the candidate already cleared an earlier round.` : ''}
 
 CRITICAL: The JSON must contain "mcqQuestions" (plural, an array of exactly 2 objects) — NOT "mcqQuestion" (singular). This is mandatory.
 

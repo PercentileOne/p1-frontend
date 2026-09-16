@@ -29,6 +29,22 @@ const LANGUAGES = [
   { code: 'ro', name: 'Romanian' },
 ];
 
+// Which stage of the candidate's REAL interview process this practice session represents —
+// most candidates now face 2+ rounds (Francis: knows someone who had 5-6 for a Barclays VP
+// role), so a First Round practice session shouldn't be scripted identically to a Final Round
+// one. Feeds the AI question-generation prompt and Mike/Amina/Wayne's spoken intros (same
+// enum-to-framing-sentence pattern DIFFICULTIES already uses below) so later rounds can open
+// with something like "congratulations on getting through the first round" instead of a
+// generic welcome — see aiScoring.ts's generateMikeScriptOnly/sessionPrepareClient.
+const INTERVIEW_ROUNDS = [
+  'First Round Interview',
+  'Second Round Interview',
+  'Third Round Interview',
+  'Fourth Round Interview',
+  'Fifth Round Interview',
+  'Final Round Interview',
+];
+
 const DIFFICULTIES = [
   {
     value: 'Beginner',
@@ -69,6 +85,10 @@ interface IncomingState {
   cvFileUrl?: string;
   cvFileName?: string;
   difficulty?: string;
+  // See INTERVIEW_ROUNDS above. Same "recruiter can set it on the candidate's behalf" seam as
+  // difficulty — set by Send Interview Prep (recruiter-portal/InterviewPreps.tsx → backend
+  // InterviewPrep.round) and read back here via ReceivedPreps.tsx's reviewAndStart.
+  interviewRound?: string;
   questionCount?: number;
   // Set by a recruiter on the candidate's behalf via the "Send Interview Prep" form
   // (src/recruiter-portal/src/pages/InterviewPreps.tsx) — same field a candidate can also set
@@ -135,6 +155,7 @@ export default function InterviewPackStart() {
   );
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedDifficulty, setSelectedDifficulty] = useState(incoming.difficulty ?? 'Pro');
+  const [selectedInterviewRound, setSelectedInterviewRound] = useState(incoming.interviewRound ?? INTERVIEW_ROUNDS[0]);
   const [selectedQuestionCount, setSelectedQuestionCount] = useState(incoming.questionCount ?? 10);
   const [consentToRecord, setConsentToRecord] = useState(true);
   // Only shown after a blocked attempt to start — not on first load, so an empty form
@@ -288,6 +309,7 @@ export default function InterviewPackStart() {
         preferredName: preferredName.trim() || undefined,
         selectedLanguage,
         selectedDifficulty,
+        interviewRound: selectedInterviewRound,
         questionCount: selectedQuestionCount,
         autoStart: true,
         consentToRecord,
@@ -555,6 +577,34 @@ export default function InterviewPackStart() {
                 )}
               </>
             )}
+          </div>
+        </div>
+
+        {/* Interview Round — see INTERVIEW_ROUNDS's own comment above. Sits right under the
+            role-input card (Francis's explicit placement request, 2026-09-16), always visible
+            regardless of which of the three role-input tabs is active, since it applies no
+            matter how the role was described. */}
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 28px', marginBottom: '16px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
+            Interview Round
+          </div>
+          <select
+            value={selectedInterviewRound}
+            onChange={e => setSelectedInterviewRound(e.target.value)}
+            style={{
+              width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+              borderRadius: '10px', padding: '12px 14px', color: 'var(--text)', fontSize: '14px',
+              fontFamily: 'inherit', outline: 'none', cursor: 'pointer', appearance: 'none',
+              backgroundImage: SELECT_CHEVRON,
+              backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
+            }}
+          >
+            {INTERVIEW_ROUNDS.map(r => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+          <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
+            Which stage of your real process is this? Mike and the panel will reference it naturally — e.g. congratulating you on reaching a later round.
           </div>
         </div>
 
