@@ -363,7 +363,12 @@ export default function TalkRoomPage() {
                       </div>
                       {talkAvatars.hrState === 'speaking'
                         ? <WaveformBars active color={PROFILES.hr.barColor} analyserNode={hrAnalyser} />
-                        : <div style={{ fontSize: '10px', color: '#4F8EF7' }}>Listening</div>}
+                        : <div style={{ fontSize: '10px', color: '#4F8EF7' }}>
+                            {/* Real HeyGen-confirmed pose (2026-09-16) where available; falls
+                                back to "Listening" (the pre-existing default) while avatarPoseState
+                                is still null, e.g. right after a fresh reconnect. */}
+                            {liveAvatarHr.avatarPoseState === 'listening' || liveAvatarHr.avatarPoseState == null ? 'Listening' : 'Idle'}
+                          </div>}
                     </div>
                 )}
               </div>
@@ -378,7 +383,9 @@ export default function TalkRoomPage() {
                       </div>
                       {talkAvatars.techState === 'speaking'
                         ? <WaveformBars active color={PROFILES.technical.barColor} analyserNode={techAnalyser} />
-                        : <div style={{ fontSize: '10px', color: '#4F8EF7' }}>Listening</div>}
+                        : <div style={{ fontSize: '10px', color: '#4F8EF7' }}>
+                            {liveAvatarTechnical.avatarPoseState === 'listening' || liveAvatarTechnical.avatarPoseState == null ? 'Listening' : 'Idle'}
+                          </div>}
                     </div>
                 )}
               </div>

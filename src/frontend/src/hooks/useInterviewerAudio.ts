@@ -111,6 +111,17 @@ export interface UseInterviewerAudioParams {
   liveAvatarConnect?: () => Promise<void>;
   /** Same, for Wayne's (technical) seat. */
   liveAvatarConnectTechnical?: () => Promise<void>;
+  /** Real startListening()/stopListening() on Amina's (hr) seat — HeyGen's own server-confirmed
+   * listening pose, not the local hrState/techState guess. Called on BOTH seats together
+   * whenever the candidate's answer phase begins/ends (see askQuestion's onDone and its own
+   * top), not just whichever interviewer asks next — see useInterviewerAudio.ts's own comment
+   * at the askQuestion call sites for why. Caller-side try/catch isn't needed here — both are
+   * already wrapped in useLiveAvatarSession.ts's own startListening/stopListening. */
+  liveAvatarStartListening?: () => void;
+  liveAvatarStopListening?: () => void;
+  /** Same, for Wayne's (technical) seat. */
+  liveAvatarStartListeningTechnical?: () => void;
+  liveAvatarStopListeningTechnical?: () => void;
 }
 
 export interface UseInterviewerAudioReturn {
@@ -188,6 +199,8 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     jobSpecText, cvText, ctxSelectedLanguage, setHighlightRecord, setAudioCheckState,
     liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical,
     liveAvatarConnect, liveAvatarConnectTechnical,
+    liveAvatarStartListening, liveAvatarStopListening,
+    liveAvatarStartListeningTechnical, liveAvatarStopListeningTechnical,
   } = params;
 
   const [hrState, setHrState] = useState<AvatarState>('idle');
@@ -246,6 +259,11 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     setPhase('asking');
     setSpeechStarted(false);
     onDoneRef.current = null;
+    // Stop any real listening pose from the candidate's PREVIOUS answer before this question's
+    // own speak() call — mirrors the startListening() call in onDone below. See that call's own
+    // comment for why both seats, not just whichever interviewer is asking now.
+    liveAvatarStopListening?.();
+    liveAvatarStopListeningTechnical?.();
     if (interviewer === 'hr') { setHrState('speaking'); setTechState('listening'); }
     else { setTechState('speaking'); setHrState('listening'); }
     logFlowEvent('QUESTION_DISPLAYED', { questionId: question.questionId, index, source: question.source });
@@ -253,6 +271,15 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
       setHrState('idle'); setTechState('idle');
       thinkStartRef.current = Date.now();
       setPhase('answering');
+      // Real HeyGen listening pose for the candidate's answer window, both seats together —
+      // startListening() doesn't know which interviewer asks NEXT (decided later, and Go
+      // Deeper/handoff can splice a question in), and InterviewRoomPage's cost-control effect
+      // disconnects both seats together on 'answering' regardless, so there's no seat to be
+      // selective about. NOTE: that same disconnect effect means this pose is only visible for
+      // a brief window right after this fires, not the candidate's whole answer — see
+      // InterviewRoomPage.tsx's cost-control effect comment. Do not "fix" that timing here.
+      liveAvatarStartListening?.();
+      liveAvatarStartListeningTechnical?.();
     };
     const spokenText = spokenTextOverride ?? question.questionText;
     if (interviewer === 'hr' && liveAvatarActive && liveAvatarSpeak) {
@@ -266,7 +293,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
         setSpeechStarted(true);
       });
     }
-  }, [questions, setPhase, chapterMarkersRef, recordingStartTimeRef, liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical]);
+  }, [questions, setPhase, chapterMarkersRef, recordingStartTimeRef, liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical, liveAvatarStartListening, liveAvatarStopListening, liveAvatarStartListeningTechnical, liveAvatarStopListeningTechnical]);
 
   // Always-fresh reference to askQuestion — needed by finishJamesIntro below, which lives
   // inside beginInterviewIntro's body. That body is guarded to run exactly once per session
@@ -566,6 +593,12 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
       setHrState('idle'); setTechState('idle');
       thinkStartRef.current = Date.now();
       setPhase('answering');
+      // Same real-listening-pose treatment as askQuestion's own onDone — this function always
+      // voices the handoff/follow-up through plain TTS (never liveAvatarSpeak, regardless of
+      // liveAvatarActive), but the candidate's answer is starting either way, so both avatar
+      // sessions still get told the same thing for consistency with askQuestion.
+      liveAvatarStartListening?.();
+      liveAvatarStartListeningTechnical?.();
     };
 
     cancelSpeakRef.current = speak(handoffLine, originalInterviewer, () => {
@@ -577,7 +610,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     }, (a) => {
       if (originalInterviewer === 'hr') setHrAnalyser(a); else setTechAnalyser(a);
     });
-  }, [setPhase, chapterMarkersRef, recordingStartTimeRef]);
+  }, [setPhase, chapterMarkersRef, recordingStartTimeRef, liveAvatarStartListening, liveAvatarStartListeningTechnical]);
 
   return {
     hrState, techState, hrAnalyser, techAnalyser, speechStarted,

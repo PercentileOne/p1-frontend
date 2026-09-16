@@ -348,6 +348,15 @@ export default function InterviewRoomPage() {
   // mixed HR/technical question ordering, knowing which single seat will actually be needed next
   // isn't reliably knowable here — the brief double-connect during this warm-up window is a few
   // seconds, not the multi-minute idle window this whole change exists to eliminate.
+  //
+  // Interaction with real listening-pose calls (2026-09-16): askQuestion's onDone (in
+  // useInterviewerAudio.ts) calls liveAvatarHr/Technical.startListening() synchronously, in the
+  // same callback that also calls setPhase('answering') — that WS frame reliably reaches a still-
+  // connected session, strictly before this effect's own disconnect runs on the next render, but
+  // the resulting "Listening" pose is only visible for that brief window, not the candidate's
+  // whole answer, since this effect tears the session down moments later. This is expected, not
+  // a bug — do not "fix" it by keeping sessions connected through answering; that reintroduces
+  // the exact idle-billing cost this effect exists to eliminate.
   useEffect(() => {
     if (!avatarEnabled) return;
     if (phase === 'answering') {
@@ -383,6 +392,13 @@ export default function InterviewRoomPage() {
     liveAvatarSpeak: liveAvatarSpeakHr, liveAvatarActive: avatarEnabled,
     liveAvatarSpeakTechnical, liveAvatarActiveTechnical: avatarEnabled,
     liveAvatarConnect: liveAvatarHr.connect, liveAvatarConnectTechnical: liveAvatarTechnical.connect,
+    // Activates real HeyGen-confirmed listening pose during the candidate's answer window
+    // (2026-09-16) — previously never called here at all (only the Talk Room called these).
+    // NOTE: InterviewRoomPage's own cost-control effect below disconnects both avatar sessions
+    // the instant phase becomes 'answering', so this pose is only visible for a brief window
+    // right after a question ends, not the candidate's whole answer — see that effect's comment.
+    liveAvatarStartListening: liveAvatarHr.startListening, liveAvatarStopListening: liveAvatarHr.stopListening,
+    liveAvatarStartListeningTechnical: liveAvatarTechnical.startListening, liveAvatarStopListeningTechnical: liveAvatarTechnical.stopListening,
   });
 
   const {
@@ -742,6 +758,16 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
   const displayedQuestion = useTypewriter(speechStarted ? (q?.questionText ?? '') : '', phase === 'asking');
   const coachingCue = useCoachingCue(phase === 'answering');
 
+  // Real HeyGen-confirmed listening pose (2026-09-16), falling back to the local hrState/
+  // techState guess while avatarPoseState is still null (e.g. right after a fresh reconnect,
+  // before the first real agent.state_updated frame has arrived) — avoids a flash of "Ready"
+  // in that window. avatarPoseState only distinguishes idle/listening; 'thinking' has no HeyGen
+  // equivalent and always wins locally regardless of what the server reports.
+  const hrShowListening = hrState !== 'thinking'
+    && (liveAvatarHr.avatarPoseState != null ? liveAvatarHr.avatarPoseState === 'listening' : hrState === 'listening');
+  const techShowListening = techState !== 'thinking'
+    && (liveAvatarTechnical.avatarPoseState != null ? liveAvatarTechnical.avatarPoseState === 'listening' : techState === 'listening');
+
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   const progress = (qIndex + (phase === 'scoring' ? 1 : 0)) / questions.length;
 
@@ -1050,13 +1076,13 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         {hrState === 'speaking' ? (
                           <WaveformBars active color={PROFILES.hr.barColor} analyserNode={liveHrAnalyser} />
                         ) : (
-                          <div style={{ fontSize: '10px', fontWeight: 600, color: hrState === 'listening' ? '#4F8EF7' : 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>
-                            {hrState === 'listening' ? 'Listening' : hrState === 'thinking' ? 'Thinking…' : 'Ready'}
+                          <div style={{ fontSize: '10px', fontWeight: 600, color: hrShowListening ? '#4F8EF7' : 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>
+                            {hrState === 'thinking' ? 'Thinking…' : hrShowListening ? 'Listening' : 'Ready'}
                           </div>
                         )}
                         <div style={{
                           width: '10px', height: '10px', borderRadius: '50%',
-                          background: hrState === 'speaking' ? '#34D399' : hrState === 'listening' ? '#4F8EF7' : 'rgba(255,255,255,0.25)',
+                          background: hrState === 'speaking' ? '#34D399' : hrShowListening ? '#4F8EF7' : 'rgba(255,255,255,0.25)',
                           border: '2px solid rgba(0,0,0,0.5)',
                           boxShadow: hrState === 'speaking' ? `0 0 6px ${PROFILES.hr.ring}` : 'none',
                           transition: 'background 0.3s',
@@ -1092,13 +1118,13 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         {techState === 'speaking' ? (
                           <WaveformBars active color={PROFILES.technical.barColor} analyserNode={liveTechAnalyser} />
                         ) : (
-                          <div style={{ fontSize: '10px', fontWeight: 600, color: techState === 'listening' ? '#4F8EF7' : 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>
-                            {techState === 'listening' ? 'Listening' : techState === 'thinking' ? 'Thinking…' : 'Ready'}
+                          <div style={{ fontSize: '10px', fontWeight: 600, color: techShowListening ? '#4F8EF7' : 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>
+                            {techState === 'thinking' ? 'Thinking…' : techShowListening ? 'Listening' : 'Ready'}
                           </div>
                         )}
                         <div style={{
                           width: '10px', height: '10px', borderRadius: '50%',
-                          background: techState === 'speaking' ? '#34D399' : techState === 'listening' ? '#4F8EF7' : 'rgba(255,255,255,0.25)',
+                          background: techState === 'speaking' ? '#34D399' : techShowListening ? '#4F8EF7' : 'rgba(255,255,255,0.25)',
                           border: '2px solid rgba(0,0,0,0.5)',
                           boxShadow: techState === 'speaking' ? `0 0 6px ${PROFILES.technical.ring}` : 'none',
                           transition: 'background 0.3s',

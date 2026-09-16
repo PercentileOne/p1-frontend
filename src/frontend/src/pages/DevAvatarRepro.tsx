@@ -87,10 +87,20 @@ export default function DevAvatarRepro() {
           style={{ padding: '10px 20px', borderRadius: '8px', background: '#1f2230', border: '1px solid #2a2d3a', color: '#e5e7eb', fontWeight: 700, cursor: running ? 'default' : 'pointer' }}>
           Disconnect & Reset for Next Trial
         </button>
+        {/* Validates avatarPoseState / the livekit-client migration (2026-09-16) — HeyGen's
+            real agent.state_updated event, not a local guess. */}
+        <button onClick={() => avatar.startListening()} disabled={avatar.status !== 'connected'}
+          style={{ padding: '10px 20px', borderRadius: '8px', background: '#1f2230', border: '1px solid #2a2d3a', color: '#e5e7eb', fontWeight: 700, cursor: avatar.status !== 'connected' ? 'default' : 'pointer' }}>
+          Start Listening
+        </button>
+        <button onClick={() => avatar.stopListening()} disabled={avatar.status !== 'connected'}
+          style={{ padding: '10px 20px', borderRadius: '8px', background: '#1f2230', border: '1px solid #2a2d3a', color: '#e5e7eb', fontWeight: 700, cursor: avatar.status !== 'connected' ? 'default' : 'pointer' }}>
+          Stop Listening
+        </button>
       </div>
 
       <div style={{ padding: '12px 16px', background: '#151720', borderRadius: '8px', fontSize: '13px' }}>
-        <strong>Status:</strong> {status} &nbsp;|&nbsp; <strong>SDK status:</strong> {avatar.status} &nbsp;|&nbsp; <strong>Trials run:</strong> {trialCount}
+        <strong>Status:</strong> {status} &nbsp;|&nbsp; <strong>SDK status:</strong> {avatar.status} &nbsp;|&nbsp; <strong>Pose:</strong> {avatar.avatarPoseState ?? '—'} &nbsp;|&nbsp; <strong>Trials run:</strong> {trialCount}
       </div>
 
       <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
@@ -272,10 +282,24 @@ function DualSeatTest() {
           style={{ padding: '10px 20px', borderRadius: '8px', background: '#1f2230', border: '1px solid #2a2d3a', color: '#e5e7eb', fontWeight: 700, cursor: running ? 'default' : 'pointer' }}>
           Disconnect & Reset Both
         </button>
+        {/* Validates avatarPoseState / the livekit-client migration (2026-09-16) on both seats
+            concurrently — the harness config closest to real room conditions. */}
+        <button
+          onClick={() => { hr.startListening(); technical.startListening(); }}
+          disabled={hr.status !== 'connected' || technical.status !== 'connected'}
+          style={{ padding: '10px 20px', borderRadius: '8px', background: '#1f2230', border: '1px solid #2a2d3a', color: '#e5e7eb', fontWeight: 700, cursor: (hr.status !== 'connected' || technical.status !== 'connected') ? 'default' : 'pointer' }}>
+          Start Listening (both)
+        </button>
+        <button
+          onClick={() => { hr.stopListening(); technical.stopListening(); }}
+          disabled={hr.status !== 'connected' || technical.status !== 'connected'}
+          style={{ padding: '10px 20px', borderRadius: '8px', background: '#1f2230', border: '1px solid #2a2d3a', color: '#e5e7eb', fontWeight: 700, cursor: (hr.status !== 'connected' || technical.status !== 'connected') ? 'default' : 'pointer' }}>
+          Stop Listening (both)
+        </button>
       </div>
 
       <div style={{ padding: '12px 16px', background: '#151720', borderRadius: '8px', fontSize: '13px' }}>
-        <strong>Status:</strong> {status} &nbsp;|&nbsp; <strong>Amina:</strong> {hr.status} &nbsp;|&nbsp; <strong>Wayne:</strong> {technical.status} &nbsp;|&nbsp; <strong>Trials run:</strong> {trialCount}
+        <strong>Status:</strong> {status} &nbsp;|&nbsp; <strong>Amina:</strong> {hr.status} ({hr.avatarPoseState ?? '—'}) &nbsp;|&nbsp; <strong>Wayne:</strong> {technical.status} ({technical.avatarPoseState ?? '—'}) &nbsp;|&nbsp; <strong>Trials run:</strong> {trialCount}
       </div>
 
       {deferAttach ? (

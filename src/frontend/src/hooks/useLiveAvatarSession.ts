@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { LiveAvatarSession, SessionEvent, AgentEventsEnum } from '@heygen/liveavatar-web-sdk';
+import { LiveAvatarLiveKitSession, LiveAvatarSessionEvent } from '../api/liveAvatarLiveKitSession';
 import { fetchAvatarSessionToken, fetchAvatarAudioBase64 } from '../api/liveAvatarApi';
 import { getTTSAudioContext } from '../api/ttsApi';
 import { tapLiveAvatarAudioForRecording } from '../api/liveAvatarRecordingBus';
@@ -24,13 +24,15 @@ const timingLog = (role: string, label: string) => {
 // 250ms for ~4s after a session's first-ever speak() — steady arrival with flat jitterBufferDelay
 // points at something client-side specific to the real room's complexity; irregular/bursty
 // arrival points at HeyGen's own delivery, not anything in our code. Same reach into LiveKit's
-// internal room.engine.pcManager.subscriber._pc as when this was first built (the SDK exposes no
-// public RTCPeerConnection accessor) — verified against the SDK's own compiled source at the
-// time, unchanged since.
-const pollAudioStats = (session: LiveAvatarSession, role: string, rawAudioTrack: MediaStreamTrack) => {
-  const pc = (session as unknown as {
-    room?: { engine?: { pcManager?: { subscriber?: { _pc?: RTCPeerConnection } } } };
-  }).room?.engine?.pcManager?.subscriber?._pc;
+// internal room.engine.pcManager.subscriber._pc as when this was first built (livekit-client
+// exposes no public per-track RTCPeerConnection accessor) — verified against the SDK's own
+// compiled source at the time, unchanged since. Reached via our own class's public `room` getter
+// now (see liveAvatarLiveKitSession.ts) rather than a private field on a third-party SDK
+// instance — same underlying livekit-client internal either way, just a cleaner path to it.
+const pollAudioStats = (session: LiveAvatarLiveKitSession, role: string, rawAudioTrack: MediaStreamTrack) => {
+  const pc = (session.room as unknown as {
+    engine?: { pcManager?: { subscriber?: { _pc?: RTCPeerConnection } } };
+  }).engine?.pcManager?.subscriber?._pc;
   if (!pc) {
     console.warn('[LiveAvatar] Could not reach internal RTCPeerConnection for getStats() — SDK internals may have changed.');
     return;
@@ -119,9 +121,9 @@ const logLongTaskSummary = (role: string, entries: PerformanceEntry[]) => {
 export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: AnalyserNode | null) => void) {
   const [status, setStatus] = useState<LiveAvatarStatus>('idle');
   // Server-reported avatar pose ("idle" | "listening" | whatever HeyGen's agent state machine
-  // sends) — see the rawSocket listener in connect() below for how this gets populated.
+  // sends) — see the AGENT_STATE_UPDATED listener in connect() below for how this gets populated.
   const [avatarPoseState, setAvatarPoseState] = useState<string | null>(null);
-  const sessionRef = useRef<LiveAvatarSession | null>(null);
+  const sessionRef = useRef<LiveAvatarLiveKitSession | null>(null);
   const videoElRef = useRef<HTMLVideoElement | null>(null);
   const streamReadyRef = useRef(false);
   const keepAliveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -137,7 +139,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   // question, firing right after its intro line's connect+speak) awaits the SAME handshake
   // instead of getting a premature resolved promise back. The old guard here just checked
   // `if (sessionRef.current) return` — sessionRef.current is set synchronously the moment
-  // `new LiveAvatarSession(...)` runs, well before the handshake (session.start() +
+  // `new LiveAvatarLiveKitSession(...)` runs, well before the handshake (session.start() +
   // SESSION_STREAM_READY) actually finishes, so a second connect() call during that window
   // returned instantly, the caller's speak() then ran against a not-yet-connected session and
   // threw, and the caller's catch swallowed it as silence — exactly the "no talking" failure
@@ -147,7 +149,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   // separate from video-attach bookkeeping (see wireTapIfReady's own comment for why), but
   // still per-session since wireTapIfReady can legitimately be asked to run more than once for
   // the same session.
-  const tappedSessionRef = useRef<LiveAvatarSession | null>(null);
+  const tappedSessionRef = useRef<LiveAvatarLiveKitSession | null>(null);
   const untapAudioRef = useRef<(() => void) | null>(null);
   // 2026-09-14 — found via a harness bug, not a production one (production always passes
   // setVideoEl directly as the ref prop, which is stable — see InterviewRoomPage.tsx's
@@ -159,7 +161,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   // (or not only) the connect-to-attach gap being tested. Guarding attach() to be idempotent per
   // session closes this off categorically, in production and in any future harness variant,
   // regardless of ref-callback stability.
-  const attachedSessionRef = useRef<LiveAvatarSession | null>(null);
+  const attachedSessionRef = useRef<LiveAvatarLiveKitSession | null>(null);
   // Gates pollAudioStats to a session's first-ever speak() only — one capture per session is
   // what's actually needed (was HeyGen's own original ask: "one glitched utterance"), not one
   // per question.
@@ -181,9 +183,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
     const session = sessionRef.current;
     if (tappedSessionRef.current === session) return; // already wired for this session
     tappedSessionRef.current = session;
-    const rawAudioTrack = (session as unknown as {
-      _remoteAudioTrack?: { mediaStreamTrack?: MediaStreamTrack };
-    })._remoteAudioTrack?.mediaStreamTrack;
+    const rawAudioTrack = session.audioTrack;
     if (!rawAudioTrack) {
       console.warn('[LiveAvatar] No raw audio track available to tap — SDK internals may have changed; recording will miss this avatar\'s voice.');
       return;
@@ -213,7 +213,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
       setStatus('connecting');
       try {
         const { sessionToken } = await fetchAvatarSessionToken(role);
-        const session = new LiveAvatarSession(sessionToken, { voiceChat: false });
+        const session = new LiveAvatarLiveKitSession(sessionToken);
         sessionRef.current = session;
 
         // session.start() resolves once the WebRTC/WebSocket handshake completes — that's not
@@ -228,7 +228,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
           longTaskObserverRef.current = startLongTaskObserving(longTaskEntriesRef.current);
         }
         const streamReadyPromise = new Promise<void>((resolve) => {
-          session.on(SessionEvent.SESSION_STREAM_READY, () => {
+          session.on(LiveAvatarSessionEvent.SESSION_STREAM_READY, () => {
             timingLog(role, 'SESSION_STREAM_READY fired');
             streamReadyRef.current = true;
             wireTapIfReady();
@@ -236,7 +236,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
             resolve();
           });
         });
-        session.on(SessionEvent.SESSION_DISCONNECTED, (reason?: unknown) => {
+        session.on(LiveAvatarSessionEvent.SESSION_DISCONNECTED, (reason?: unknown) => {
           timingLog(role, `SESSION_DISCONNECTED fired (reason: ${JSON.stringify(reason)})`);
           setStatus('closed');
           sessionRef.current = null;
@@ -245,38 +245,17 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
           attachedSessionRef.current = null;
           if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }
         });
+        // HeyGen Advanced Support, 2026-09-16: this is the event a prior raw-socket-reach-in
+        // diagnostic (commit 49526c7) was built to surface — now first-class, since
+        // liveAvatarLiveKitSession.ts's own WS handler recognizes agent.state_updated natively
+        // instead of us reaching into a private SDK field for it. See that file's
+        // handleWebSocketMessage for why the old SDK never surfaced this at all.
+        session.on(LiveAvatarSessionEvent.AGENT_STATE_UPDATED, ({ previousState, newState }: { previousState: string | null; newState: string | null }) => {
+          timingLog(role, `agent.state_updated: ${previousState} -> ${newState}`);
+          setAvatarPoseState(newState ?? null);
+        });
 
         await session.start();
-
-        // HeyGen Advanced Support, 2026-09-16: the listening-pose transition we saw is real
-        // server-side behaviour, sent as {"type": "agent.state_updated", "new_state": "listening"}
-        // — confirming the diagnostic this replaces was watching the wrong thing entirely.
-        // "session.state_updated" (AgentEventsEnum.SESSION_STATE_UPDATED, what that diagnostic
-        // used) only reports the WebSocket connection itself (new/connected/disconnected) and
-        // never carries "listening". Separately, SDK 0.0.18's LITE handler only forwards
-        // agent.speak_started/agent.speak_ended through its own typed emitter and silently drops
-        // every other frame, agent.state_updated included — so even the right event name
-        // wouldn't have worked through session.on(). Per HeyGen's own supported-for-now snippet:
-        // read raw frames straight off the private _sessionEventSocket after start() resolves.
-        // Filter on frame.type, not event_type — that's the field name the LITE socket actually
-        // uses. This reaches an unsupported internal (same precedent as pollAudioStats/
-        // _remoteAudioTrack above) — HeyGen's actually-supported path is connecting with
-        // livekit-client + the ws_url from POST /v1/sessions/start directly, bypassing the SDK
-        // wrapper entirely; worth revisiting if this internal ever breaks across an SDK bump.
-        const rawSocket = (session as unknown as { _sessionEventSocket?: WebSocket })._sessionEventSocket;
-        if (rawSocket) {
-          rawSocket.addEventListener('message', (e: MessageEvent) => {
-            try {
-              const frame = JSON.parse(e.data as string);
-              if (frame?.type === 'agent.state_updated') {
-                timingLog(role, `agent.state_updated: ${frame.previous_state} -> ${frame.new_state}`);
-                setAvatarPoseState(frame.new_state ?? null);
-              }
-            } catch { /* not a JSON frame we care about */ }
-          });
-        } else {
-          console.warn('[LiveAvatar] No _sessionEventSocket available — SDK may not have granted a WebSocket transport for this session, or internals changed.');
-        }
         await Promise.race([
           streamReadyPromise,
           new Promise<void>(resolve => setTimeout(resolve, 5000)),
@@ -354,15 +333,15 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
         if (settled) return;
         settled = true;
         clearTimeout(timer);
-        session.off(AgentEventsEnum.AVATAR_SPEAK_STARTED, onStarted);
-        session.off(AgentEventsEnum.AVATAR_SPEAK_ENDED, onEnded);
+        session.off(LiveAvatarSessionEvent.AVATAR_SPEAK_STARTED, onStarted);
+        session.off(LiveAvatarSessionEvent.AVATAR_SPEAK_ENDED, onEnded);
         resolve();
       };
       const timer = setTimeout(() => {
         if (settled) return;
         settled = true;
-        session.off(AgentEventsEnum.AVATAR_SPEAK_STARTED, onStarted);
-        session.off(AgentEventsEnum.AVATAR_SPEAK_ENDED, onEnded);
+        session.off(LiveAvatarSessionEvent.AVATAR_SPEAK_STARTED, onStarted);
+        session.off(LiveAvatarSessionEvent.AVATAR_SPEAK_ENDED, onEnded);
         sessionRef.current = null;
         connectedRef.current = false;
         streamReadyRef.current = false;
@@ -370,13 +349,11 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
         if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }
         reject(new Error(`Avatar speak timed out after ${timeoutMs}ms — session went stale`));
       }, timeoutMs);
-      session.on(AgentEventsEnum.AVATAR_SPEAK_STARTED, onStarted);
-      session.on(AgentEventsEnum.AVATAR_SPEAK_ENDED, onEnded);
+      session.on(LiveAvatarSessionEvent.AVATAR_SPEAK_STARTED, onStarted);
+      session.on(LiveAvatarSessionEvent.AVATAR_SPEAK_ENDED, onEnded);
       if (!hasPolledStatsRef.current) {
         hasPolledStatsRef.current = true;
-        const rawAudioTrack = (session as unknown as {
-          _remoteAudioTrack?: { mediaStreamTrack?: MediaStreamTrack };
-        })._remoteAudioTrack?.mediaStreamTrack;
+        const rawAudioTrack = session.audioTrack;
         if (rawAudioTrack) pollAudioStats(session, role, rawAudioTrack);
       }
       if (!hasLoggedLongTasksRef.current) {

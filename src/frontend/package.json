@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@heygen/liveavatar-web-sdk": "^0.0.18",
+    "events": "3.3.0",
     "framer-motion": "^12.38.0",
+    "livekit-client": "2.15.7",
     "lucide-react": "^1.21.0",
     "mammoth": "^1.12.0",
     "mermaid": "^11.16.1",
@@ -30,6 +32,7 @@
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.7",
+    "@types/events": "^3.0.3",
     "@types/node": "^24.12.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
