@@ -17,7 +17,12 @@ public record SessionPass(
     string recipientEmail,
     string recipientName,
     string? recipientJobTitle,
-    string source, // "gift" | "self"
+    string tierId, // looks PassTiers back up — e.g. "gift-3day" | "gift-1week" | "self" — needed
+                    // separately from source below because MarkPaidAsync needs the EXACT tier
+                    // (specifically its WindowDays) that was actually purchased, and source alone
+                    // is too coarse to distinguish gift-3day from gift-1week.
+    string source, // "gift" | "self" — the broad category (PassTiers.Get(tierId).Source), shown
+                    // to the recipient and used for payer-email/product-copy logic
     string? senderName,
     string? senderEmail,
     string status, // "pending" | "paid" | "failed"

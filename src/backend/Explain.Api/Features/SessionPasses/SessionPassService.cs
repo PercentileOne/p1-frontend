@@ -14,9 +14,9 @@ public class SessionPassService(CosmosService cosmos)
 
     public async Task<SessionPass> CreatePendingAsync(
         string recipientEmail, string recipientName, string? recipientJobTitle,
-        string source, string? senderName, string? senderEmail)
+        string tierId, string? senderName, string? senderEmail)
     {
-        var tier = PassTiers.Get(source) ?? throw new ArgumentException($"Unknown pass source: {source}");
+        var tier = PassTiers.Get(tierId) ?? throw new ArgumentException($"Unknown pass tier: {tierId}");
         var email = recipientEmail.Trim().ToLower();
 
         var pass = new SessionPass(
@@ -24,7 +24,8 @@ public class SessionPassService(CosmosService cosmos)
             recipientEmail: email,
             recipientName: recipientName.Trim(),
             recipientJobTitle: string.IsNullOrWhiteSpace(recipientJobTitle) ? null : recipientJobTitle.Trim(),
-            source: source,
+            tierId: tierId,
+            source: tier.Source,
             senderName: senderName?.Trim(),
             senderEmail: senderEmail?.Trim().ToLower(),
             status: "pending",
@@ -58,7 +59,7 @@ public class SessionPassService(CosmosService cosmos)
         var existing = await Container.ReadItemAsync<SessionPass>(passId, new PartitionKey(recipientEmail));
         if (existing.Resource.status == "paid") return existing.Resource; // already handled — Stripe redelivered the event
 
-        var tier = PassTiers.Get(existing.Resource.source);
+        var tier = PassTiers.Get(existing.Resource.tierId);
         var windowDays = tier?.WindowDays ?? 7;
         var paidAt = DateTimeOffset.UtcNow;
 

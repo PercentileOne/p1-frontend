@@ -43,7 +43,7 @@ public static class Endpoint
         string RecipientEmail,
         string RecipientName,
         string? RecipientJobTitle,
-        string Source, // "gift" | "self"
+        string TierId, // "gift-3day" | "gift-1week" | "self" — see PassTiers
         string? SenderName,
         string? SenderEmail);
 
@@ -53,30 +53,37 @@ public static class Endpoint
         if (string.IsNullOrWhiteSpace(req.RecipientEmail) || string.IsNullOrWhiteSpace(req.RecipientName))
             return Results.BadRequest(new { message = "Recipient email and name are required." });
 
-        var tier = PassTiers.Get(req.Source);
+        var tier = PassTiers.Get(req.TierId);
         if (tier is null)
-            return Results.BadRequest(new { message = $"Unknown pass source: {req.Source}" });
+            return Results.BadRequest(new { message = $"Unknown pass tier: {req.TierId}" });
 
         var pass = await passes.CreatePendingAsync(
             req.RecipientEmail, req.RecipientName, req.RecipientJobTitle,
-            req.Source, req.SenderName, req.SenderEmail);
+            req.TierId, req.SenderName, req.SenderEmail);
 
         // Whoever's actually paying gets the pre-filled Checkout email — the sender for a gift
         // (they may have no account and no relationship to recipientEmail at all), the recipient
         // themselves for a self-purchase.
-        var payerEmail = req.Source == "gift" && !string.IsNullOrWhiteSpace(req.SenderEmail)
+        var payerEmail = tier.Source == "gift" && !string.IsNullOrWhiteSpace(req.SenderEmail)
             ? req.SenderEmail
             : pass.recipientEmail;
 
-        // NOT config["AppUrl"] — confirmed live 2026-09-16 that Azure setting holds a COMMA-
-        // SEPARATED LIST of CORS origins (Program.cs's own CORS setup splits it on ','), not a
-        // single URL, and doesn't even include candidate.theinterviewchair.com (the actual
-        // current candidate portal domain per CLAUDE.md's portal map — that domain reaches CORS
-        // only via Program.cs's hardcoded knownOrigins, never through this setting). Reading it
-        // as a single URL here produced a visibly broken multi-origin string in Stripe's actual
-        // Checkout cancel-link href during live testing. CandidateAppUrl is a new, distinct
-        // setting — deliberately not reusing AppUrl, to avoid colliding with its CORS-list role.
-        var appUrl = config["CandidateAppUrl"] ?? "http://localhost:5173";
+        // Gift purchases are started from the public marketing site (src/viewme/public/
+        // home.html's "Gift an Interview" section → gift-interview.html) by someone who may have
+        // no candidate account at all, so success/cancel must land back on THAT site, not the
+        // logged-in candidate app. Self-purchases happen inside the candidate app itself.
+        //
+        // NOT config["AppUrl"] for either — confirmed live 2026-09-16 that Azure setting holds a
+        // COMMA-SEPARATED LIST of CORS origins (Program.cs's own CORS setup splits it on ','),
+        // not a single URL, and doesn't even include candidate.theinterviewchair.com (that domain
+        // reaches CORS only via Program.cs's hardcoded knownOrigins, never through this setting).
+        // Reading it as a single URL produced a visibly broken multi-origin string in Stripe's
+        // actual Checkout cancel-link href during live testing. CandidateAppUrl/MarketingAppUrl
+        // are new, distinct settings — deliberately not reusing AppUrl, to avoid colliding with
+        // its CORS-list role.
+        var appUrl = tier.Source == "gift"
+            ? config["MarketingAppUrl"] ?? "http://localhost:5178"
+            : config["CandidateAppUrl"] ?? "http://localhost:5173";
 
         var options = new SessionCreateOptions
         {
@@ -105,7 +112,7 @@ public static class Endpoint
                         UnitAmount = (long)(tier.AmountGbp * 100),
                         ProductData = new SessionLineItemPriceDataProductDataOptions
                         {
-                            Name = req.Source == "gift"
+                            Name = tier.Source == "gift"
                                 ? $"TheInterviewChair.com — Gift Interview Pass for {pass.recipientName}"
                                 : "TheInterviewChair.com — Interview Pass",
                             Description = $"{tier.SessionsTotal} practice interview session(s), valid {tier.WindowDays} days from purchase.",
@@ -113,8 +120,12 @@ public static class Endpoint
                     },
                 },
             ],
-            SuccessUrl = $"{appUrl}/interview-gift/success?session_id={{CHECKOUT_SESSION_ID}}",
-            CancelUrl = $"{appUrl}/interview-gift/cancelled",
+            SuccessUrl = tier.Source == "gift"
+                ? $"{appUrl}/gift-interview-success.html?session_id={{CHECKOUT_SESSION_ID}}"
+                : $"{appUrl}/interview-gift/success?session_id={{CHECKOUT_SESSION_ID}}",
+            CancelUrl = tier.Source == "gift"
+                ? $"{appUrl}/gift-interview.html"
+                : $"{appUrl}/interview-gift/cancelled",
             // Read back in the webhook to find the right pass — passId alone would be enough
             // (recipientEmail is derivable from it), but including both means MarkPaidAsync's
             // required (passId, recipientEmail) pair never needs a lookup-by-passId-alone query.
