@@ -77,6 +77,14 @@ public static class Endpoint
             // (its default for new accounts), which selects payment methods automatically and
             // rejects an explicit payment_method_types list as an unsupported/conflicting
             // parameter. Confirmed live 2026-09-16 via a real StripeException on this exact line.
+            //
+            // Managed Payments explicitly disabled for this session, rather than adding a
+            // product tax code (Stripe's other suggested fix) — Managed Payments' automatic tax
+            // calculation is a bigger feature/behavior change than this integration needs right
+            // now (single-country, fixed-price digital passes), also confirmed via a real
+            // StripeException ("product tax code is missing") on the first attempt at this fix.
+            ManagedPayments = new SessionManagedPaymentsOptions { Enabled = false },
+            PaymentMethodTypes = ["card"],
             CustomerEmail = payerEmail,
             LineItems =
             [
