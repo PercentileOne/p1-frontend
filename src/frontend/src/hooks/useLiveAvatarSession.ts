@@ -118,6 +118,9 @@ const logLongTaskSummary = (role: string, entries: PerformanceEntry[]) => {
 // the audio-generation call) is passed separately by the caller and is expected to match.
 export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: AnalyserNode | null) => void) {
   const [status, setStatus] = useState<LiveAvatarStatus>('idle');
+  // Server-reported avatar pose ("idle" | "listening" | whatever HeyGen's agent state machine
+  // sends) — see the rawSocket listener in connect() below for how this gets populated.
+  const [avatarPoseState, setAvatarPoseState] = useState<string | null>(null);
   const sessionRef = useRef<LiveAvatarSession | null>(null);
   const videoElRef = useRef<HTMLVideoElement | null>(null);
   const streamReadyRef = useRef(false);
@@ -243,21 +246,37 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
           if (keepAliveTimerRef.current) { clearInterval(keepAliveTimerRef.current); keepAliveTimerRef.current = null; }
         });
 
-        // Diagnostic only, added 2026-09-15 for HeyGen's own debugging request: confirming
-        // whether startListening()/stopListening() actually produce a "session.state_updated"
-        // event carrying new_state "listening"/"idle" — the thing they asked us to check before
-        // they can separate an expected listening pose from a real visual bug. The event exists
-        // at runtime (AgentEventsEnum.SESSION_STATE_UPDATED = "session.state_updated") but isn't
-        // in the SDK's own typed AgentEventCallbacks map, so the TypedEmitter .on() overload
-        // won't accept it — cast to a loosely-typed emitter just for this one listener, same
-        // "reach past the SDK's public typing for a specific answer" precedent as pollAudioStats
-        // above. Safe to remove once HeyGen's question is answered.
-        (session as unknown as { on: (event: string, cb: (payload: unknown) => void) => void })
-          .on(AgentEventsEnum.SESSION_STATE_UPDATED, (payload: unknown) => {
-            timingLog(role, `SESSION_STATE_UPDATED fired: ${JSON.stringify(payload)}`);
-          });
-
         await session.start();
+
+        // HeyGen Advanced Support, 2026-09-16: the listening-pose transition we saw is real
+        // server-side behaviour, sent as {"type": "agent.state_updated", "new_state": "listening"}
+        // — confirming the diagnostic this replaces was watching the wrong thing entirely.
+        // "session.state_updated" (AgentEventsEnum.SESSION_STATE_UPDATED, what that diagnostic
+        // used) only reports the WebSocket connection itself (new/connected/disconnected) and
+        // never carries "listening". Separately, SDK 0.0.18's LITE handler only forwards
+        // agent.speak_started/agent.speak_ended through its own typed emitter and silently drops
+        // every other frame, agent.state_updated included — so even the right event name
+        // wouldn't have worked through session.on(). Per HeyGen's own supported-for-now snippet:
+        // read raw frames straight off the private _sessionEventSocket after start() resolves.
+        // Filter on frame.type, not event_type — that's the field name the LITE socket actually
+        // uses. This reaches an unsupported internal (same precedent as pollAudioStats/
+        // _remoteAudioTrack above) — HeyGen's actually-supported path is connecting with
+        // livekit-client + the ws_url from POST /v1/sessions/start directly, bypassing the SDK
+        // wrapper entirely; worth revisiting if this internal ever breaks across an SDK bump.
+        const rawSocket = (session as unknown as { _sessionEventSocket?: WebSocket })._sessionEventSocket;
+        if (rawSocket) {
+          rawSocket.addEventListener('message', (e: MessageEvent) => {
+            try {
+              const frame = JSON.parse(e.data as string);
+              if (frame?.type === 'agent.state_updated') {
+                timingLog(role, `agent.state_updated: ${frame.previous_state} -> ${frame.new_state}`);
+                setAvatarPoseState(frame.new_state ?? null);
+              }
+            } catch { /* not a JSON frame we care about */ }
+          });
+        } else {
+          console.warn('[LiveAvatar] No _sessionEventSocket available — SDK may not have granted a WebSocket transport for this session, or internals changed.');
+        }
         await Promise.race([
           streamReadyPromise,
           new Promise<void>(resolve => setTimeout(resolve, 5000)),
@@ -406,5 +425,5 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
     sessionRef.current?.stop();
   }, []);
 
-  return { status, connect, disconnect, speak, startListening, stopListening, interrupt, setVideoEl };
+  return { status, avatarPoseState, connect, disconnect, speak, startListening, stopListening, interrupt, setVideoEl };
 }
