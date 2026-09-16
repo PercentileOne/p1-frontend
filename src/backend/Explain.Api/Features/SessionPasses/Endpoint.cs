@@ -3,9 +3,9 @@ using Explain.Api.Common;
 namespace Explain.Api.Features.SessionPasses;
 
 /// <summary>
-/// Phase 1 of the Interview Gift feature (Francis, 2026-09-15) — the entitlement core, no
-/// payment wired up yet. Checkout/webhook land separately once Stripe test keys exist (see
-/// SessionPasses/Checkout/Endpoint.cs). This file owns the candidate-facing read/consume side.
+/// Phase 1 of the Interview Gift feature (Francis, 2026-09-15) — the entitlement core. Payment
+/// (Phase 2, 2026-09-16) lives separately in Features/SessionPasses/Checkout/Endpoint.cs — this
+/// file owns only the candidate-facing read/consume side, unchanged by that addition.
 /// </summary>
 public static class Endpoint
 {

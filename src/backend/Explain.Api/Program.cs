@@ -48,6 +48,11 @@ builder.Services.AddSingleton<AnthropicService>();
 builder.Services.AddSingleton<Explain.Api.Infrastructure.YouTube.YouTubeService>();
 builder.Services.AddSingleton<Explain.Api.Features.NameGreetings.DidGenerationService>();
 builder.Services.AddSingleton<Explain.Api.Features.SessionPasses.SessionPassService>();
+// Stripe.net's service classes (SessionService, EventUtility, etc.) read this static property
+// by default rather than needing a DI-injected client — set once at startup, same secret-never-
+// hardcoded pattern as every other third-party key in this file (see LiveAvatar:ApiKey). Only
+// the SESSION_PASSES Checkout feature reads it today (Features/SessionPasses/Checkout/Endpoint.cs).
+Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 builder.Services.AddHostedService<Explain.Api.Features.LearnAlerts.LearnAlertsSendService>();
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
@@ -283,6 +288,7 @@ Explain.Api.Features.RoleActivity.Endpoint.Map(app);
 Explain.Api.Features.Events.Endpoint.Map(app);
 Explain.Api.Features.Events.Admin.Endpoint.Map(app);
 Explain.Api.Features.SessionPasses.Endpoint.Map(app);
+Explain.Api.Features.SessionPasses.Checkout.Endpoint.Map(app);
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
    .AllowAnonymous();
