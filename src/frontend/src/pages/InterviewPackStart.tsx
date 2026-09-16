@@ -320,6 +320,10 @@ export default function InterviewPackStart() {
     letterSpacing: '0.01em',
   } as React.CSSProperties);
 
+  // Drives both whether the suggestions dropdown renders (below) and whether the card wrapping
+  // it clips overflow (below) — kept as one shared boolean so they can't drift out of sync.
+  const jobTitleSuggestionsOpen = activeTab === 'jobTitle' && showJobTitleSuggestions && (searchingJobTitle || jobTitleSuggestions.length > 0);
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -382,7 +386,13 @@ export default function InterviewPackStart() {
             full alternative to typing a title at all). Tabs are just alternate ways to fill in
             the SAME role — switching tabs never clears another tab's content, so someone can
             type a title, peek at Job Spec, and come back to find it untouched. */}
-        <div style={{ background: 'var(--bg2)', border: `1px solid ${attemptedStart && !hasRole ? 'rgba(245,158,11,0.5)' : 'var(--border)'}`, borderRadius: '16px', marginBottom: '16px', overflow: 'hidden', transition: 'border-color 0.15s' }}>
+        {/* overflow toggles to 'visible' while the job-title suggestions dropdown is open — it's
+            an absolutely-positioned descendant of this card, so the card's own overflow:hidden
+            (needed the rest of the time, to clip the tab strip into these rounded corners) was
+            silently cutting the dropdown off the instant it rendered past the card's bottom edge
+            — looked like a z-index bug ("flashes then disappears underneath") but was actually
+            just being clipped, never a stacking-order problem. */}
+        <div style={{ background: 'var(--bg2)', border: `1px solid ${attemptedStart && !hasRole ? 'rgba(245,158,11,0.5)' : 'var(--border)'}`, borderRadius: '16px', marginBottom: '16px', overflow: jobTitleSuggestionsOpen ? 'visible' : 'hidden', transition: 'border-color 0.15s' }}>
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
             <button style={tabStyle(activeTab === 'jobTitle')} onClick={() => setActiveTab('jobTitle')}>
               💼 Job Title {jobTitle.trim() ? '✓' : ''}
@@ -412,7 +422,7 @@ export default function InterviewPackStart() {
                     transition: 'border-color 0.15s',
                   }}
                 />
-                {showJobTitleSuggestions && (searchingJobTitle || jobTitleSuggestions.length > 0) && (
+                {jobTitleSuggestionsOpen && (
                   <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, background: '#0d0c1e', border: '1px solid rgba(79,142,247,0.3)', borderRadius: '10px', overflow: 'hidden', zIndex: 20, boxShadow: '0 16px 48px rgba(0,0,0,0.6)' }}>
                     {searchingJobTitle ? (
                       <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--text-3)' }}>
