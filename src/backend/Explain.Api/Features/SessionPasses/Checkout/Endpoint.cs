@@ -68,7 +68,15 @@ public static class Endpoint
             ? req.SenderEmail
             : pass.recipientEmail;
 
-        var appUrl = config["AppUrl"] ?? "http://localhost:5173";
+        // NOT config["AppUrl"] — confirmed live 2026-09-16 that Azure setting holds a COMMA-
+        // SEPARATED LIST of CORS origins (Program.cs's own CORS setup splits it on ','), not a
+        // single URL, and doesn't even include candidate.theinterviewchair.com (the actual
+        // current candidate portal domain per CLAUDE.md's portal map — that domain reaches CORS
+        // only via Program.cs's hardcoded knownOrigins, never through this setting). Reading it
+        // as a single URL here produced a visibly broken multi-origin string in Stripe's actual
+        // Checkout cancel-link href during live testing. CandidateAppUrl is a new, distinct
+        // setting — deliberately not reusing AppUrl, to avoid colliding with its CORS-list role.
+        var appUrl = config["CandidateAppUrl"] ?? "http://localhost:5173";
 
         var options = new SessionCreateOptions
         {
