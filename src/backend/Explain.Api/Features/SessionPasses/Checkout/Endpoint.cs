@@ -73,7 +73,10 @@ public static class Endpoint
         var options = new SessionCreateOptions
         {
             Mode = "payment",
-            PaymentMethodTypes = ["card"],
+            // No PaymentMethodTypes here — this Stripe account has Managed Payments enabled
+            // (its default for new accounts), which selects payment methods automatically and
+            // rejects an explicit payment_method_types list as an unsupported/conflicting
+            // parameter. Confirmed live 2026-09-16 via a real StripeException on this exact line.
             CustomerEmail = payerEmail,
             LineItems =
             [
