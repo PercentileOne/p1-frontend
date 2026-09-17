@@ -1,0 +1,52 @@
+name: Deploy P1.ExamCatalogAgent → Azure Functions
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/agents/P1.ExamCatalogAgent/**'
+      - '.github/workflows/deploy-examcatalog-agent.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    name: Build and Deploy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        working-directory: src/agents/P1.ExamCatalogAgent
+        run: dotnet restore
+
+      - name: Build
+        working-directory: src/agents/P1.ExamCatalogAgent
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish
+        working-directory: src/agents/P1.ExamCatalogAgent
+        run: dotnet publish --configuration Release --no-build --output ./publish
+
+      - name: Zip publish output
+        working-directory: src/agents/P1.ExamCatalogAgent/publish
+        run: zip -r ../deploy.zip .
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_EXAMCATALOG_AGENT_CREDENTIALS }}
+
+      - name: Deploy to Azure Functions (Flex Consumption)
+        run: |
+          az functionapp deployment source config-zip \
+            --resource-group p1-core \
+            --name p1-examcatalog-agent \
+            --src src/agents/P1.ExamCatalogAgent/deploy.zip \
+            --build-remote false

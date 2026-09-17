@@ -4,7 +4,7 @@
 // private one — same "copy, not shared helper" convention this codebase already uses for every
 // other AI-proxy call site (SpeakVoiceHandler/AvatarAudioHandler, ReadAloud, etc.).
 
-import type { CertificationBankEntry } from '../data/certificationBank';
+import type { ExamCatalogEntry } from './examCatalogApi';
 import type { MCQQuestion } from './aiScoring';
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
@@ -48,7 +48,7 @@ export interface ExamQuestion extends MCQQuestion {
 // Rotates domain selection proportional to each domain's weightPct, so a 30-question mock roughly
 // mirrors the real exam's own published question distribution rather than treating every domain
 // as equally likely.
-function pickDomain(domains: CertificationBankEntry['domains']): string {
+function pickDomain(domains: ExamCatalogEntry['domains']): string {
   const total = domains.reduce((s, d) => s + d.weightPct, 0);
   let roll = Math.random() * total;
   for (const d of domains) {
@@ -61,7 +61,7 @@ function pickDomain(domains: CertificationBankEntry['domains']): string {
 // One question per call — same one-question-at-a-time shape as Learn Alerts' own question
 // generation, grounded against the cert's real domain list (not free-text) to reduce hallucinated
 // exam specifics, with an explicit rule against inventing time-sensitive pricing/portal-UI detail.
-export async function generateExamQuestion(cert: CertificationBankEntry): Promise<ExamQuestion | null> {
+export async function generateExamQuestion(cert: ExamCatalogEntry): Promise<ExamQuestion | null> {
   const domain = pickDomain(cert.domains);
 
   const systemPrompt = `You generate realistic multiple-choice practice questions for a "${cert.name}" (${cert.vendor} exam ${cert.examCode}) mock exam.
@@ -89,7 +89,7 @@ Return JSON:
   }
 }
 
-export async function generateExamQuestions(cert: CertificationBankEntry, count: number): Promise<ExamQuestion[]> {
+export async function generateExamQuestions(cert: ExamCatalogEntry, count: number): Promise<ExamQuestion[]> {
   const questions = await Promise.all(Array.from({ length: count }, () => generateExamQuestion(cert)));
   return questions.filter((q): q is ExamQuestion => q !== null);
 }
@@ -103,7 +103,7 @@ export interface ScaledResult {
   domainAccuracy: { domain: string; correct: number; total: number }[];
 }
 
-export function computeScaledScore(cert: CertificationBankEntry, answers: { question: ExamQuestion; selectedIndex: number }[]): ScaledResult {
+export function computeScaledScore(cert: ExamCatalogEntry, answers: { question: ExamQuestion; selectedIndex: number }[]): ScaledResult {
   const correctCount = answers.filter(a => a.selectedIndex === a.question.correctIndex).length;
   const total = answers.length || 1;
   const floor = cert.maxScore > 0 ? Math.round(cert.maxScore * 0.1) : 0; // never show a bare 0 for a genuine attempt

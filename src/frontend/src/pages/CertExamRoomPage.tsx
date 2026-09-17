@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../auth/authStore';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
-import { getCertificationById } from '../data/certificationBank';
+import { getExamCatalogEntry, type ExamCatalogEntry } from '../api/examCatalogApi';
 import { generateExamQuestions, computeScaledScore, saveCertExamSession, type ExamQuestion } from '../api/certExamApi';
 import { ExamQuestionCard } from '../components/ExamQuestionCard';
 import { logFlowEvent } from '../api/flowLogger';
@@ -15,6 +15,7 @@ interface IncomingState {
 }
 
 type Phase = 'briefing' | 'generating' | 'exam' | 'saving';
+type CertLoadState = 'loading' | 'ready' | 'not-found' | 'not-ready';
 
 // Deliberately NOT copy-trimmed from InterviewRoomPage.tsx — that machinery is built around
 // concurrent Sarah/James-style HR+technical avatar handoffs with real regression history (see
@@ -25,12 +26,25 @@ export default function CertExamRoomPage() {
   const location = useLocation();
   const { examId } = useParams<{ examId: string }>();
   const incoming = (location.state as IncomingState | null) ?? {};
-  const cert = getCertificationById(examId ?? incoming.certId ?? '');
+  const certId = examId ?? incoming.certId ?? '';
   const questionCount = incoming.questionCount ?? 30;
 
   const authUser = useAuthStore(s => s.user);
   const authToken = useAuthStore(s => s.token);
   const preferredName = incoming.preferredName || authUser?.firstName?.trim() || undefined;
+
+  const [cert, setCert] = useState<ExamCatalogEntry | null>(null);
+  const [certLoadState, setCertLoadState] = useState<CertLoadState>('loading');
+
+  useEffect(() => {
+    if (!certId) { setCertLoadState('not-found'); return; }
+    getExamCatalogEntry(certId).then(entry => {
+      if (!entry) { setCertLoadState('not-found'); return; }
+      if (entry.domains.length === 0) { setCertLoadState('not-ready'); return; }
+      setCert(entry);
+      setCertLoadState('ready');
+    });
+  }, [certId]);
 
   const [phase, setPhase] = useState<Phase>('briefing');
   const liveAvatarMichelle = useLiveAvatarSession('michelle');
@@ -126,11 +140,23 @@ export default function CertExamRoomPage() {
     });
   }, [answers, qIndex, questions, cert, authToken, authUser, navigate]);
 
+  if (certLoadState === 'loading') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--text-2)' }}>
+        Loading your exam…
+      </div>
+    );
+  }
+
   if (!cert) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--text)' }}>
         <div style={{ textAlign: 'center' }}>
-          <p style={{ marginBottom: 16 }}>That certification or exam isn't available yet.</p>
+          <p style={{ marginBottom: 16 }}>
+            {certLoadState === 'not-ready'
+              ? "This one's still being built out — check back soon, or try another exam."
+              : "That certification or exam isn't available yet."}
+          </p>
           <button onClick={() => navigate('/cert-exam/start')} style={{ background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', cursor: 'pointer' }}>
             Back to picker
           </button>

@@ -1,14 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { GraduationCap } from 'lucide-react';
-import { CERTIFICATION_BANK } from '../data/certificationBank';
 
 // Thin landing panel for the "Certifications & Exams" nav tab — a picker/history view will grow
 // here over time (past attempts, retake buttons); v1 is just the entry point into CertExamStart.
+// No longer reads a fixed local count (the catalog is now a live, growable database via
+// P1.ExamCatalogAgent — see examCatalogApi.ts) — the picker itself is where category/coverage
+// is actually shown via getExamCategories().
 export default function CertExamsPanel() {
   const navigate = useNavigate();
-  const enabledCount = CERTIFICATION_BANK.filter(c => c.enabled).length;
-  const comingSoonCount = CERTIFICATION_BANK.length - enabledCount;
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
@@ -30,11 +30,11 @@ export default function CertExamsPanel() {
       <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '32px', textAlign: 'center' }}>
         <GraduationCap size={40} color="#4F8EF7" style={{ marginBottom: 12 }} />
         <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>
-          {enabledCount} exam{enabledCount === 1 ? '' : 's'} ready now, {comingSoonCount} more on the way
+          A growing library of certifications and exams
         </div>
         <p style={{ fontSize: '13px', color: 'var(--text-3)', maxWidth: 420, margin: '0 auto' }}>
-          Professional certifications and GCSE/A-Level exams are being added over time. Pick a
-          ready exam to take a mock run, or check back soon for more.
+          Search for the one you're preparing for — if we don't have it yet, let us know from the
+          picker and we'll add it.
         </p>
       </div>
     </motion.div>

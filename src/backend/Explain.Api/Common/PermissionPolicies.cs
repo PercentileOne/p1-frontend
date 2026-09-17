@@ -36,6 +36,7 @@ public static class Permissions
     public const string EditRoles             = "CAN_EDIT_ROLES";
     public const string ManageOrganisations   = "CAN_MANAGE_ORGANISATIONS";
     public const string ManageCareers         = "CAN_MANAGE_CAREERS";
+    public const string ManageExamCatalog     = "CAN_MANAGE_EXAM_CATALOG";
     public const string ManageUsers           = "CAN_MANAGE_USERS";
     public const string ViewAllInterviews     = "CAN_VIEW_ALL_INTERVIEWS";
     public const string ModerateContent       = "CAN_MODERATE_CONTENT";
