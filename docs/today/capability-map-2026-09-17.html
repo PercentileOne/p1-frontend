@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TheInterviewChair.com — Capability Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7faf8;
+    --bg-elevated:#ffffff;
+    --bg-sunken:#eef2ef;
+    --border:rgba(15,23,32,0.10);
+    --border-strong:rgba(15,23,32,0.16);
+    --text:#0e1512;
+    --text-2:#475569;
+    --text-3:#8a95a3;
+    --accent:#059669;
+    --accent-soft:rgba(5,150,105,0.10);
+    --accent-2:#2563eb;
+    --accent-2-soft:rgba(37,99,235,0.10);
+    --accent-3:#7c3aed;
+    --accent-3-soft:rgba(124,58,237,0.10);
+    --gold:#b45309;
+    --gold-soft:rgba(180,83,9,0.12);
+    --shadow: 0 1px 2px rgba(15,23,32,0.04), 0 8px 24px rgba(15,23,32,0.05);
+    --font-display:'Sora',system-ui,sans-serif;
+    --font-body:'Manrope',system-ui,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0a0e16;
+      --bg-elevated:#111826;
+      --bg-sunken:#0d1320;
+      --border:rgba(255,255,255,0.09);
+      --border-strong:rgba(255,255,255,0.16);
+      --text:#f1f5f9;
+      --text-2:#a3b0c2;
+      --text-3:#5b6478;
+      --accent:#34d399;
+      --accent-soft:rgba(52,211,153,0.12);
+      --accent-2:#5b9bff;
+      --accent-2-soft:rgba(91,155,255,0.12);
+      --accent-3:#a78bfa;
+      --accent-3-soft:rgba(167,139,250,0.12);
+      --gold:#f59e0b;
+      --gold-soft:rgba(245,158,11,0.14);
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0a0e16;
+    --bg-elevated:#111826;
+    --bg-sunken:#0d1320;
+    --border:rgba(255,255,255,0.09);
+    --border-strong:rgba(255,255,255,0.16);
+    --text:#f1f5f9;
+    --text-2:#a3b0c2;
+    --text-3:#5b6478;
+    --accent:#34d399;
+    --accent-soft:rgba(52,211,153,0.12);
+    --accent-2:#5b9bff;
+    --accent-2-soft:rgba(91,155,255,0.12);
+    --accent-3:#a78bfa;
+    --accent-3-soft:rgba(167,139,250,0.12);
+    --gold:#f59e0b;
+    --gold-soft:rgba(245,158,11,0.14);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px rgba(0,0,0,0.35);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    padding-left:20px; padding-right:20px;
+  }
+  .wrap{ max-width:960px; margin:0 auto; padding:40px 0 64px; }
+
+  /* ── Masthead ───────────────────────────────────────────── */
+  .masthead{
+    display:flex; flex-direction:column; gap:18px;
+    padding-bottom:28px; margin-bottom:36px;
+    border-bottom:1px solid var(--border);
+  }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:11px; font-weight:600;
+    letter-spacing:0.12em; text-transform:uppercase; color:var(--accent);
+    display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+  h1{
+    font-family:var(--font-display); font-weight:800; letter-spacing:-0.02em;
+    font-size:clamp(28px,4.6vw,42px); line-height:1.08; margin:0;
+    text-wrap:balance;
+  }
+  h1 .dot{ color:var(--accent); }
+  .tagline{
+    font-size:15px; color:var(--text-2); max-width:58ch; line-height:1.6; margin:0;
+  }
+  .stat-strip{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+    gap:1px; background:var(--border); border:1px solid var(--border);
+    border-radius:12px; overflow:hidden; margin-top:4px;
+  }
+  .stat{
+    background:var(--bg-elevated); padding:14px 16px;
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .stat-num{ font-family:var(--font-mono); font-size:19px; font-weight:600; color:var(--text); font-variant-numeric:tabular-nums; }
+  .stat-label{ font-size:11px; color:var(--text-3); letter-spacing:0.02em; }
+
+  /* ── Portal sections ────────────────────────────────────── */
+  section.portal{ margin-bottom:40px; }
+  .portal-head{
+    display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+    margin-bottom:6px;
+  }
+  .portal-name{
+    font-family:var(--font-display); font-weight:700; font-size:20px;
+    letter-spacing:-0.01em; color:var(--text);
+  }
+  .portal-audience{
+    font-family:var(--font-mono); font-size:11px; font-weight:500;
+    color:var(--text-3); letter-spacing:0.02em;
+  }
+  .portal-rule{ height:2px; border-radius:2px; width:36px; margin-bottom:14px; }
+  .c-candidate{ background:var(--accent); }
+  .c-recruiter{ background:var(--accent-2); }
+  .c-employer{ background:var(--accent-3); }
+  .c-growth{ background:var(--gold); }
+
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:10px;
+  }
+  .card{
+    background:var(--bg-elevated); border:1px solid var(--border);
+    border-radius:10px; padding:14px 16px;
+    display:flex; flex-direction:column; gap:5px;
+  }
+  .card-name{ font-size:13.5px; font-weight:700; color:var(--text); letter-spacing:-0.005em; }
+  .card-desc{ font-size:12.5px; color:var(--text-2); line-height:1.5; }
+  .new-tag{ color:var(--accent); font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; }
+
+  /* ── Monetization panel ─────────────────────────────────── */
+  .price-grid{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:10px; margin-top:14px;
+  }
+  .price-card{
+    background:var(--bg-elevated); border:1px solid var(--border-strong);
+    border-radius:12px; padding:16px 18px;
+  }
+  .price-card.self{ border-color:var(--gold); background:var(--gold-soft); }
+  .price-tier{ font-family:var(--font-mono); font-size:10.5px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-3); }
+  .price-amount{ font-family:var(--font-mono); font-size:26px; font-weight:600; color:var(--text); margin:4px 0 2px; font-variant-numeric:tabular-nums; }
+  .price-detail{ font-size:12px; color:var(--text-2); line-height:1.5; }
+
+  /* ── Footer ─────────────────────────────────────────────── */
+  footer{
+    margin-top:44px; padding-top:20px; border-top:1px solid var(--border);
+    display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    font-size:11.5px; color:var(--text-3);
+  }
+  footer a{ color:var(--text-3); }
+
+  @media (max-width:520px){
+    .grid{ grid-template-columns:1fr; }
+    .stat-strip{ grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="eyebrow">Capability map · compiled 16 Sep 2026 · updated 17 Sep 2026</div>
+    <h1>TheInterviewChair<span class="dot">.com</span></h1>
+    <p class="tagline">Every feature currently live in the codebase, grouped by the customer it serves — built for GTM and marketing-strategy planning, not as public-facing copy.</p>
+
+    <div class="stat-strip">
+      <div class="stat"><div class="stat-num">3</div><div class="stat-label">customer-facing portals</div></div>
+      <div class="stat"><div class="stat-num">15</div><div class="stat-label">languages supported</div></div>
+      <div class="stat"><div class="stat-num">2</div><div class="stat-label">live AI interviewers</div></div>
+      <div class="stat"><div class="stat-num">£2.99+</div><div class="stat-label">live Stripe pricing from</div></div>
+    </div>
+  </div>
+
+  <section class="portal">
+    <div class="portal-head">
+      <span class="portal-name">Candidate Portal</span>
+      <span class="portal-audience">— people preparing for a real interview</span>
+    </div>
+    <div class="portal-rule c-candidate"></div>
+    <div class="grid">
+      <div class="card"><div class="card-name">Live AI Interview Room</div><div class="card-desc">Two real-time video AI interviewers, Amina (HR) and Wayne (role-specific), fully voiced and lip-synced.</div></div>
+      <div class="card"><div class="card-name">Personalised questions</div><div class="card-desc">Every question set is freshly AI-written from the job title, job spec, and/or CV.</div></div>
+      <div class="card"><div class="card-name">Interview Round awareness</div><div class="card-desc">First through Final Round selector shapes question depth and what the interviewers say.</div></div>
+      <div class="card"><div class="card-name">Four difficulty tiers</div><div class="card-desc">Beginner, Standard, Pro, and Expert — each with a genuinely different question style.</div></div>
+      <div class="card"><div class="card-name">Special Focus topics</div><div class="card-desc">Candidates narrow questions to named subjects, with AI "What's Hot" suggestions.</div></div>
+      <div class="card"><div class="card-name">Real-time coaching overlay</div><div class="card-desc">Live on-screen cues while the candidate is mid-answer.</div></div>
+      <div class="card"><div class="card-name">Go Deeper follow-ups</div><div class="card-desc">Optional AI follow-up questions that test for genuine depth of experience.</div></div>
+      <div class="card"><div class="card-name">Cinematic MCQ round</div><div class="card-desc">A mid-interview multiple-choice moment, scored on the spot.</div></div>
+      <div class="card"><div class="card-name">Instant AI scoring</div><div class="card-desc">Per-answer breakdown with percentile benchmarking against the role.</div></div>
+      <div class="card"><div class="card-name">Session recording</div><div class="card-desc">Full video/audio capture of every practice interview.</div></div>
+      <div class="card"><div class="card-name">My Interviews</div><div class="card-desc">Save, revisit, and share past sessions — reversible public/private toggle.</div></div>
+      <div class="card"><div class="card-name">Question Bank <span class="new-tag">NEW</span></div><div class="card-desc">Save any revealed model answer for later — searchable, sortable, replayable library of past questions.</div></div>
+      <div class="card"><div class="card-name">Interview Preps</div><div class="card-desc">A recruiter can send a candidate a ready-loaded prep invite by email.</div></div>
+      <div class="card"><div class="card-name">Interview Gift</div><div class="card-desc">Anyone can buy someone else a 3-day or 1-week practice pass — no account needed to send it.</div></div>
+      <div class="card"><div class="card-name">Learn Engine</div><div class="card-desc">AI-generated lessons on any subject — concepts, glossary, exam questions, a quiz.</div></div>
+      <div class="card"><div class="card-name">Read Aloud</div><div class="card-desc">Real spoken-voice narration of every Learn lesson.</div></div>
+      <div class="card"><div class="card-name">Mini MCQ Practice</div><div class="card-desc">Short, focused AI multiple-choice tests outside the full interview room.</div></div>
+      <div class="card"><div class="card-name">Learn Alerts</div><div class="card-desc">Spaced-repetition practice questions delivered straight to the inbox.</div></div>
+      <div class="card"><div class="card-name">My Talks</div><div class="card-desc">Practice spoken presentations, plus a browsable public talks feed.</div></div>
+      <div class="card"><div class="card-name">Careers Explorer</div><div class="card-desc">Search real careers, with AI-checked community additions.</div></div>
+      <div class="card"><div class="card-name">Career Coach</div><div class="card-desc">An always-available AI coaching panel.</div></div>
+      <div class="card"><div class="card-name">Career Avatar Guide</div><div class="card-desc">Spoken "tell me about this role" walkthroughs, built from real role data.</div></div>
+      <div class="card"><div class="card-name">Jobs board</div><div class="card-desc">Browse live roles without leaving the portal.</div></div>
+      <div class="card"><div class="card-name">Candidate profile</div><div class="card-desc">Custom avatar/banner, likes, and owner-toggled comments.</div></div>
+    </div>
+  </section>
+
+  <section class="portal">
+    <div class="portal-head">
+      <span class="portal-name">Recruiter Portal</span>
+      <span class="portal-audience">— agencies and in-house recruiters placing candidates</span>
+    </div>
+    <div class="portal-rule c-recruiter"></div>
+    <div class="grid">
+      <div class="card"><div class="card-name">Send Interview Prep</div><div class="card-desc">Set up a candidate's practice session remotely — CV, job spec, difficulty, and round.</div></div>
+      <div class="card"><div class="card-name">Candidate search</div><div class="card-desc">Search every candidate who's opted in to be discoverable.</div></div>
+      <div class="card"><div class="card-name">Introductions</div><div class="card-desc">Send an employer a free-to-watch link to a strong candidate's interview.</div></div>
+      <div class="card"><div class="card-name">Talent Alerts</div><div class="card-desc">Get notified the moment a candidate scores above a chosen threshold.</div></div>
+      <div class="card"><div class="card-name">Job posting</div><div class="card-desc">Post and manage live roles from inside the portal.</div></div>
+    </div>
+  </section>
+
+  <section class="portal">
+    <div class="portal-head">
+      <span class="portal-name">Employer Portal</span>
+      <span class="portal-audience">— companies hiring directly</span>
+    </div>
+    <div class="portal-rule c-employer"></div>
+    <div class="grid">
+      <div class="card"><div class="card-name">Candidate marketplace</div><div class="card-desc">Browse candidates surfaced through recruiter introductions.</div></div>
+      <div class="card"><div class="card-name">Direct hire</div><div class="card-desc">Move straight from a shared interview to an offer.</div></div>
+      <div class="card"><div class="card-name">Talent Alerts</div><div class="card-desc">The same score-threshold alerts recruiters get, tuned to your own hiring bar.</div></div>
+    </div>
+  </section>
+
+  <section class="portal">
+    <div class="portal-head">
+      <span class="portal-name">Growth, sharing &amp; monetization</span>
+      <span class="portal-audience">— the mechanics most relevant to marketing right now</span>
+    </div>
+    <div class="portal-rule c-growth"></div>
+    <div class="grid">
+      <div class="card"><div class="card-name">Interview Gift checkout</div><div class="card-desc">Stripe's hosted checkout — no card details ever touch the app itself.</div></div>
+      <div class="card"><div class="card-name">Public results sharing</div><div class="card-desc">A reversible Public/Private toggle turns any interview into shareable proof of prep.</div></div>
+      <div class="card"><div class="card-name">Public Talks feed</div><div class="card-desc">Candidates' spoken-presentation practice is discoverable by other candidates.</div></div>
+    </div>
+
+    <div class="price-grid">
+      <div class="price-card">
+        <div class="price-tier">Gift · 3-Day Pass</div>
+        <div class="price-amount">£2.99</div>
+        <div class="price-detail">3 practice sessions, valid 3 days — the low-commitment "try it" gift.</div>
+      </div>
+      <div class="price-card">
+        <div class="price-tier">Gift · 1-Week Pass</div>
+        <div class="price-amount">£3.99</div>
+        <div class="price-detail">5 practice sessions, valid 7 days — room to properly prepare.</div>
+      </div>
+      <div class="price-card self">
+        <div class="price-tier">Self-purchase</div>
+        <div class="price-amount">£5.99</div>
+        <div class="price-detail">10 sessions, valid 7 days — bought from inside the candidate app itself.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Internal ops tooling (org/candidate/recruiter admin, content moderation, live-avatar controls, account security) also exists but is left off this map — not customer-facing.</span>
+    <span>Compiled from the live P1 codebase, not marketing copy.</span>
+  </footer>
+
+</div>
+</body>
+</html>
