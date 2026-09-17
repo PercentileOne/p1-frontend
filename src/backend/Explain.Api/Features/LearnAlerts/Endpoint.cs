@@ -135,6 +135,34 @@ public static class Endpoint
             return Results.NoContent();
         }).RequireAuthorization();
 
+        // POST /api/learn-alerts/{id}/reset — zero out this alert's score/streak, keeping the
+        // alert itself (job title, cadence, visibility, status) untouched. Francis asked for
+        // this 2026-09-17 after watching a .NET Software Architect alert accumulate wrong
+        // answers early on — wants a clean 0/0 slate to restart tracking without losing the
+        // alert's setup. Doesn't touch sentCount or nextSendAt's own schedule, and deliberately
+        // leaves past learnAlertQuestions documents alone (they're just history, not part of
+        // "the score") — only the four running-total fields the dashboard actually displays.
+        app.MapPost("/api/learn-alerts/{id}/reset", async (string id, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var candidateId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(candidateId)) return Results.Unauthorized();
+
+            var container = cosmos.GetContainer("learnAlerts");
+            LearnAlert existing;
+            try
+            {
+                existing = await container.ReadItemAsync<LearnAlert>(id, new PartitionKey(candidateId));
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return Results.NotFound();
+            }
+
+            var reset = existing with { sentCount = 0, correctCount = 0, currentStreak = 0, longestStreak = 0 };
+            await container.UpsertItemAsync(reset, new PartitionKey(candidateId));
+            return Results.Ok(reset);
+        }).RequireAuthorization();
+
         // GET /api/learn-alerts/summary — aggregate across all the candidate's alerts, for both
         // the Learn Alerts page and (phase 2) the dashboard's "Most Studied Topic" card slide.
         app.MapGet("/api/learn-alerts/summary", async (HttpContext ctx, CosmosService cosmos) =>

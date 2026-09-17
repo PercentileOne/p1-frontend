@@ -76,6 +76,18 @@ export async function deleteLearnAlert(id: string): Promise<void> {
   });
 }
 
+// Zeroes sentCount/correctCount/currentStreak/longestStreak — keeps the alert itself (job
+// title, cadence, visibility, status) untouched. Separate from deleteLearnAlert on purpose —
+// Francis wants a clean 0/0 slate without losing the alert's setup.
+export async function resetLearnAlert(id: string): Promise<LearnAlert> {
+  const res = await fetch(`${API_BASE}/api/learn-alerts/${encodeURIComponent(id)}/reset`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(`Failed to reset Learn Alert: ${res.status}`);
+  return res.json() as Promise<LearnAlert>;
+}
+
 export async function fetchLearnAlertsSummary(): Promise<LearnAlertSummary | null> {
   const res = await fetch(`${API_BASE}/api/learn-alerts/summary`, { headers: authHeaders() });
   if (!res.ok) return null;

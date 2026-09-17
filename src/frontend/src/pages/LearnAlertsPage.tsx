@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { X, Trash2, Pause, Play, Flame, Globe, Lock, Pencil, ChevronDown } from 'lucide-react';
+import { X, Trash2, Pause, Play, Flame, Globe, Lock, Pencil, ChevronDown, RotateCcw } from 'lucide-react';
 import {
-  createLearnAlert, listLearnAlerts, updateLearnAlert, deleteLearnAlert, fetchLearnAlertsSummary,
+  createLearnAlert, listLearnAlerts, updateLearnAlert, deleteLearnAlert, resetLearnAlert, fetchLearnAlertsSummary,
   type LearnAlert, type LearnAlertSummary,
 } from '../api/learnAlertsApi';
 import { generateHotTopics } from '../api/aiScoring';
@@ -114,6 +114,26 @@ export default function LearnAlertsPage() {
   async function handleDelete(alert: LearnAlert) {
     setItems(prev => prev?.filter(a => a.id !== alert.id) ?? null);
     try { await deleteLearnAlert(alert.id); } catch { /* best-effort */ }
+  }
+
+  // Separate from delete — zeroes sentCount/correctCount/currentStreak/longestStreak but
+  // keeps the alert (job title, cadence, visibility, status) running exactly as set up.
+  // Confirmed first (unlike delete's instant remove-from-list above): the row it affects stays
+  // visible either way, so there's no "oops, it's gone" urgency pushing toward instant undo —
+  // but wiping a streak the candidate's been building is exactly the kind of misclick a beat of
+  // friction is worth here.
+  async function handleReset(alert: LearnAlert) {
+    if (!window.confirm(`Reset "${alert.jobTitle}" back to 0/0? This clears its score and streak — the alert itself keeps running.`)) return;
+    setBusyIds(prev => new Set(prev).add(alert.id));
+    try {
+      const updated = await resetLearnAlert(alert.id);
+      setItems(prev => prev?.map(a => (a.id === alert.id ? updated : a)) ?? null);
+      setSummary(await fetchLearnAlertsSummary());
+    } catch {
+      setActionError(`Couldn't reset "${alert.jobTitle}" — try again.`);
+    } finally {
+      setBusyIds(prev => { const n = new Set(prev); n.delete(alert.id); return n; });
+    }
   }
 
   return (
@@ -258,6 +278,9 @@ export default function LearnAlertsPage() {
                               {alert.status === 'active' ? <Pause size={14} /> : <Play size={14} />}
                             </button>
                           )}
+                          <button title="Reset score to 0/0" onClick={() => handleReset(alert)} disabled={busy} style={{ background: 'none', border: 'none', cursor: busy ? 'default' : 'pointer', color: 'var(--text-3)', display: 'flex', padding: 2, opacity: busy ? 0.5 : 0.6 }}>
+                            <RotateCcw size={13} />
+                          </button>
                           <button title="Delete" onClick={() => handleDelete(alert)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', display: 'flex', padding: 2, opacity: 0.6 }}>
                             <Trash2 size={13} />
                           </button>
