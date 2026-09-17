@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle2, XCircle, Share2, Download } from 'lucide-react';
+import { CheckCircle2, XCircle, Download } from 'lucide-react';
 import { useAuthStore } from '../auth/authStore';
 import { speak } from '../api/ttsApi';
 import { getCertExamSession, type CertExamSession, type ExamQuestion } from '../api/certExamApi';
-import { CertShareModal } from '../components/CertShareModal';
-import { logFlowEvent } from '../api/flowLogger';
+import { CertSaveDecisionPanel } from '../components/CertSaveDecisionPanel';
 
 interface IncomingState {
   certId?: string;
@@ -16,6 +15,7 @@ interface IncomingState {
   maxScore?: number;
   answers?: { question: ExamQuestion; selectedIndex: number }[];
   domainAccuracy?: { domain: string; correct: number; total: number }[];
+  isShared?: boolean;
 }
 
 // Copy-trimmed from InterviewSummaryPage.tsx's structure — downloadPdf pattern, goToLearn
@@ -32,8 +32,6 @@ export default function CertExamSummaryPage() {
   const [session, setSession] = useState<IncomingState | null>(
     incoming.certName ? incoming : null,
   );
-  const [shareOpen, setShareOpen] = useState(false);
-  const [shareUrl, setShareUrl] = useState<string | null>(null);
 
   // Reload/revisit fallback — route state is empty (e.g. a hard refresh), so hydrate from the
   // backend instead. Same "route state first, fetch as fallback" shape InterviewSummaryPage uses.
@@ -43,6 +41,7 @@ export default function CertExamSummaryPage() {
       .then((s: CertExamSession) => setSession({
         certId: s.certId, certName: s.certName, passed: s.passed, scaledScore: s.scaledScore,
         maxScore: s.maxScore, answers: s.sessionData.answers, domainAccuracy: s.sessionData.domainAccuracy,
+        isShared: s.isShared,
       }))
       .catch(() => { /* nothing to hydrate — the page below handles the empty state */ });
   }, [session, id, authUser, authToken]);
@@ -118,12 +117,6 @@ export default function CertExamSummaryPage() {
     setTimeout(() => w.print(), 500);
   };
 
-  async function openShare() {
-    logFlowEvent('CERT_EXAM_SHARE_OPENED', { certId: session?.certId, passed });
-    setShareUrl(`${window.location.origin}/cert-exam-summary/${id}`);
-    setShareOpen(true);
-  }
-
   if (!session) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--text-2)' }}>
@@ -143,6 +136,17 @@ export default function CertExamSummaryPage() {
           </h1>
           <p style={{ fontSize: '14px', color: 'var(--text-2)' }}>{session.certName}</p>
         </div>
+
+        <CertSaveDecisionPanel
+          passed={passed}
+          scaledScore={scaledScore}
+          maxScore={maxScore}
+          certName={session.certName ?? ''}
+          candidateId={authUser?.id}
+          examSessionId={id}
+          alreadyShared={session.isShared ?? false}
+          onDiscarded={() => setTimeout(() => navigate('/cert-exam/start'), 1800)}
+        />
 
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '28px', textAlign: 'center', marginBottom: '20px' }}>
           <div style={{ fontSize: '48px', fontWeight: 900, color: passed ? '#34D399' : '#EF4444', fontVariantNumeric: 'tabular-nums' }}>
@@ -184,9 +188,6 @@ export default function CertExamSummaryPage() {
           <button onClick={toggleDebrief} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '13px', color: 'var(--text)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
             {michelleActive ? 'Stop' : "Hear Michelle's feedback"}
           </button>
-          <button onClick={openShare} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '13px', color: 'var(--text)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
-            <Share2 size={14} /> Share
-          </button>
           <button onClick={downloadCertificate} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '13px', color: 'var(--text)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
             <Download size={14} /> PDF
           </button>
@@ -196,17 +197,6 @@ export default function CertExamSummaryPage() {
           Try another exam
         </button>
       </motion.div>
-
-      {shareOpen && shareUrl && (
-        <CertShareModal
-          certName={session.certName ?? ''}
-          passed={passed}
-          scaledScore={scaledScore}
-          maxScore={maxScore}
-          shareUrl={shareUrl}
-          onClose={() => setShareOpen(false)}
-        />
-      )}
     </div>
   );
 }

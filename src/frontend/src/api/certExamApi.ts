@@ -173,3 +173,18 @@ export async function shareCertExamSession(token: string, candidateId: string, i
   if (!res.ok) throw new Error(`Failed to share cert exam session: ${res.status}`);
   return res.json() as Promise<{ shareToken: string; shareUrl: string }>;
 }
+
+export async function unshareCertExamSession(token: string, candidateId: string, id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/cert-exams/${encodeURIComponent(candidateId)}/${encodeURIComponent(id)}/unshare`, {
+    method: 'POST',
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw new Error(`Failed to unshare cert exam session: ${res.status}`);
+}
+
+export async function deleteCertExamSession(token: string, candidateId: string, id: string): Promise<void> {
+  await fetch(`${API_BASE}/api/cert-exams/${encodeURIComponent(candidateId)}/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: authHeaders(token),
+  });
+}

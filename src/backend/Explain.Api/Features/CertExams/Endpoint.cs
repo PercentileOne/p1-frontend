@@ -122,6 +122,31 @@ public static class Endpoint
             return Results.Ok(new { shareToken, shareUrl });
         }).RequireAuthorization();
 
+        // POST /api/cert-exams/{candidateId}/{id}/unshare — makes a previously-shared result
+        // private again. Keeps the existing shareToken on the document rather than clearing it
+        // (mirrors Features/Interviews/Endpoint.cs's own unshare exactly) — flipping back to
+        // public later reactivates the exact same link instead of minting a new one.
+        app.MapPost("/api/cert-exams/{candidateId}/{id}/unshare", async (string candidateId, string id, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var userId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (candidateId != userId) return Results.Forbid();
+
+            var container = cosmos.GetContainer("certExamSessions");
+            var envelope = await ReadEnvelopeAsync(container, id, candidateId);
+            if (envelope is null) return Results.NotFound();
+
+            if (envelope.isShared)
+            {
+                var updated = envelope with { isShared = false };
+                using var body = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(updated));
+                using var upsertResponse = await container.UpsertItemStreamAsync(body, new PartitionKey(candidateId));
+                if (!upsertResponse.IsSuccessStatusCode)
+                    return Results.Problem("Failed to update visibility", statusCode: (int)upsertResponse.StatusCode);
+            }
+            return Results.Ok(new { isShared = false });
+        }).RequireAuthorization();
+
         // DELETE /api/cert-exams/{candidateId}/{id}
         app.MapDelete("/api/cert-exams/{candidateId}/{id}", async (string candidateId, string id, HttpContext ctx, CosmosService cosmos) =>
         {
