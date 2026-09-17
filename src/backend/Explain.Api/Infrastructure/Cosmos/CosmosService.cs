@@ -60,6 +60,12 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("interviews", "/candidateId"));
 
+        // Completed Certifications & Exams mock-exam sessions — same opaque-envelope shape as
+        // "interviews" above (certId/passed/scaledScore first-class, the rest in one JSON blob).
+        // Partition key = /candidateId, same reasoning as "interviews".
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("certExamSessions", "/candidateId"));
+
         // Completed "My Talks" sessions — same opaque-envelope shape as "interviews" above
         // (subject, transcript, scores, recording, share state all live in one sessionDataJson
         // blob), same partition key for the same reason: a candidate's own talks are

@@ -10,7 +10,7 @@ import { getTopLearnTopics, type LearnTopicStat } from "../api/learnTopicsApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
   MessageSquare, Settings, LogOut, ChevronRight, ChevronDown, CheckCircle2, Circle, Compass, Gift, Zap,
-  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked,
+  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked, GraduationCap,
 } from "lucide-react";
 import LearnPanel from "./LearnPanel";
 import CareersPanel from "./CareersPanel";
@@ -26,6 +26,7 @@ import MessagesPage from "./MessagesPage";
 import SettingsPage from "./SettingsPage";
 import DemoPanel from "./DemoPanel";
 import CareerCoachPanel from "./CareerCoachPanel";
+import CertExamsPanel from "./CertExamsPanel";
 
 /* ══════════════════════════════════════════════════════════════
    CANDIDATE DASHBOARD — cockpit-grade portal for TheInterviewChair.com
@@ -46,7 +47,8 @@ const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: "Dashboard",       slug: null },
   { Icon: HeartHandshake,  label: "My Career Coach", slug: "career-coach" },
   { Icon: User,            label: "My Profile",      slug: "profile" },
-  { Icon: Video,           label: "My Interviews",   slug: "interviews" },
+  { Icon: Video,           label: "Job Interviews",      slug: "interviews" },
+  { Icon: GraduationCap,   label: "Certifications & Exams", slug: "certifications" },
   { Icon: BookMarked,      label: "Question Bank",   slug: "question-bank" },
   { Icon: Mic,             label: "My Talks",        slug: "talks" },
   { Icon: BellRing,        label: "Learn Alerts",    slug: "learn-alerts" },
@@ -794,7 +796,7 @@ export default function CandidateDashboard() {
             </div>
           </div>
           {/* Quick actions only make sense on the Dashboard home view — every other panel
-              (Learn, Careers, My Interviews, etc.) has its own contextual primary action,
+              (Learn, Careers, Interviews, etc.) has its own contextual primary action,
               so showing these here too would just duplicate it. */}
           {activeNav === "Dashboard" && (
             <div style={{ display: "flex", gap: 10 }}>
@@ -828,7 +830,8 @@ export default function CandidateDashboard() {
         {activeNav === "My Career Coach" && <CareerCoachPanel />}
         {activeNav === "Learn"          && <LearnPanel initialTopic={studyTopic} />}
         {activeNav === "Careers"        && <CareersPanel />}
-        {activeNav === "My Interviews"  && <MyInterviewsPage />}
+        {activeNav === "Job Interviews"     && <MyInterviewsPage />}
+        {activeNav === "Certifications & Exams" && <CertExamsPanel />}
         {activeNav === "Question Bank"  && <QuestionBankPage />}
         {activeNav === "My Talks"       && <MyTalksPage />}
         {activeNav === "Learn Alerts"   && <LearnAlertsPage />}
@@ -840,7 +843,7 @@ export default function CandidateDashboard() {
         {activeNav === "Demo"           && <DemoPanel />}
         {activeNav === "Settings"       && <SettingsPage />}
 
-        {!["My Career Coach", "Learn", "Careers", "My Interviews", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Settings"].includes(activeNav) && <>
+        {!["My Career Coach", "Learn", "Careers", "Job Interviews", "Certifications & Exams", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Settings"].includes(activeNav) && <>
 
         {/* ── STATS ROW ── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>

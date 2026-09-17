@@ -1,0 +1,212 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { CheckCircle2, XCircle, Share2, Download } from 'lucide-react';
+import { useAuthStore } from '../auth/authStore';
+import { speak } from '../api/ttsApi';
+import { getCertExamSession, type CertExamSession, type ExamQuestion } from '../api/certExamApi';
+import { CertShareModal } from '../components/CertShareModal';
+import { logFlowEvent } from '../api/flowLogger';
+
+interface IncomingState {
+  certId?: string;
+  certName?: string;
+  passed?: boolean;
+  scaledScore?: number;
+  maxScore?: number;
+  answers?: { question: ExamQuestion; selectedIndex: number }[];
+  domainAccuracy?: { domain: string; correct: number; total: number }[];
+}
+
+// Copy-trimmed from InterviewSummaryPage.tsx's structure — downloadPdf pattern, goToLearn
+// weak-area linking, and Michelle's spoken debrief all reuse the exact same proven shapes, just
+// with pass/fail framing instead of a percentage rubric.
+export default function CertExamSummaryPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { id } = useParams<{ id: string }>();
+  const incoming = (location.state as IncomingState | null) ?? {};
+  const authUser = useAuthStore(s => s.user);
+  const authToken = useAuthStore(s => s.token);
+
+  const [session, setSession] = useState<IncomingState | null>(
+    incoming.certName ? incoming : null,
+  );
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+
+  // Reload/revisit fallback — route state is empty (e.g. a hard refresh), so hydrate from the
+  // backend instead. Same "route state first, fetch as fallback" shape InterviewSummaryPage uses.
+  useEffect(() => {
+    if (session || !id || !authUser?.id || !authToken) return;
+    getCertExamSession(authToken, authUser.id, id)
+      .then((s: CertExamSession) => setSession({
+        certId: s.certId, certName: s.certName, passed: s.passed, scaledScore: s.scaledScore,
+        maxScore: s.maxScore, answers: s.sessionData.answers, domainAccuracy: s.sessionData.domainAccuracy,
+      }))
+      .catch(() => { /* nothing to hydrate — the page below handles the empty state */ });
+  }, [session, id, authUser, authToken]);
+
+  const passed = session?.passed ?? false;
+  const scaledScore = session?.scaledScore ?? 0;
+  const maxScore = session?.maxScore ?? 1000;
+  const domainAccuracy = session?.domainAccuracy ?? [];
+  const weakestDomain = [...domainAccuracy]
+    .filter(d => d.total > 0)
+    .sort((a, b) => a.correct / a.total - b.correct / b.total)[0]?.domain ?? null;
+
+  // ── Michelle's verbal debrief ──────────────────────────────────────────────
+  const [michelleActive, setMichelleActive] = useState(false);
+  const cancelMichelleRef = useRef<(() => void) | null>(null);
+
+  const buildDebriefScript = useCallback(() => {
+    const name = authUser?.firstName ?? 'there';
+    if (passed) {
+      return `Congratulations ${name} — you passed! You scored ${scaledScore} out of ${maxScore}, well done. ${weakestDomain ? `Your strongest area was clear, though ${weakestDomain} is still worth a quick review before the real exam.` : "That's a genuinely strong result."} Good luck with the real thing.`;
+    }
+    return `Hi ${name}, it's Michelle here. You scored ${scaledScore} out of ${maxScore} on this attempt — not quite there yet, but that's exactly what practice is for. ${weakestDomain ? `Your weakest area was ${weakestDomain} — our Learn platform has a lesson ready on that right now.` : 'A bit more study and you will get there.'} Take a look, then come back and try again.`;
+  }, [authUser, passed, scaledScore, maxScore, weakestDomain]);
+
+  function toggleDebrief() {
+    if (michelleActive) {
+      cancelMichelleRef.current?.();
+      cancelMichelleRef.current = null;
+      setMichelleActive(false);
+      return;
+    }
+    setMichelleActive(true);
+    cancelMichelleRef.current = speak(buildDebriefScript(), 'michelle', () => {
+      setMichelleActive(false);
+      cancelMichelleRef.current = null;
+    });
+  }
+
+  useEffect(() => () => { cancelMichelleRef.current?.(); }, []);
+
+  // Learn is its own destination, not rendered inline here — same navigation InterviewSummaryPage
+  // uses for its own weak-area links, works unchanged for a cert domain name.
+  function goToLearn(topic?: string | null) {
+    navigate('/dashboard?tab=learn', { state: { studyTopic: topic ?? weakestDomain ?? undefined } });
+  }
+
+  const downloadCertificate = () => {
+    const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+<title>Mock Exam Result — TheInterviewChair.com</title>
+<style>
+  @page { margin: 30mm; }
+  body { font-family: -apple-system,'Segoe UI',Arial,sans-serif; color:#1a1a2e; text-align:center; }
+  .brand { font-size:12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#4F8EF7; margin-bottom:24px; }
+  h1 { font-size:26px; font-weight:800; color:#1B3A6B; margin:0 0 8px; }
+  .status { font-size:40px; font-weight:900; color:${passed ? '#059669' : '#EF4444'}; margin:24px 0; }
+  .score { font-size:20px; color:#444; margin-bottom:24px; }
+  .meta { font-size:12px; color:#888; margin-top:32px; }
+  .disclaimer { font-size:10px; color:#aaa; margin-top:40px; border-top:1px solid #eee; padding-top:12px; }
+</style></head><body>
+<div class="brand">TheInterviewChair.com · Mock Exam Result</div>
+<h1>${session?.certName ?? ''}</h1>
+<div class="status">${passed ? 'PASSED' : 'NOT YET'}</div>
+<div class="score">${scaledScore} / ${maxScore}</div>
+<div class="meta">${date}${authUser?.name ? ` · ${authUser.name}` : ''}</div>
+<div class="disclaimer">This is a practice mock exam result, not an official certification. For interview and exam preparation only.</div>
+</body></html>`;
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 500);
+  };
+
+  async function openShare() {
+    logFlowEvent('CERT_EXAM_SHARE_OPENED', { certId: session?.certId, passed });
+    setShareUrl(`${window.location.origin}/cert-exam-summary/${id}`);
+    setShareOpen(true);
+  }
+
+  if (!session) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--text-2)' }}>
+        Loading your result…
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '40px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ width: '100%', maxWidth: '600px' }}>
+
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          {passed ? <CheckCircle2 size={56} color="#34D399" /> : <XCircle size={56} color="#EF4444" />}
+          <h1 style={{ fontSize: '26px', fontWeight: 900, color: 'var(--text)', margin: '16px 0 6px' }}>
+            {passed ? 'You passed!' : 'Not quite there yet'}
+          </h1>
+          <p style={{ fontSize: '14px', color: 'var(--text-2)' }}>{session.certName}</p>
+        </div>
+
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '28px', textAlign: 'center', marginBottom: '20px' }}>
+          <div style={{ fontSize: '48px', fontWeight: 900, color: passed ? '#34D399' : '#EF4444', fontVariantNumeric: 'tabular-nums' }}>
+            {scaledScore}<span style={{ fontSize: '20px', color: 'var(--text-3)' }}>/{maxScore}</span>
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '6px' }}>Scaled score · Mock exam</div>
+        </div>
+
+        {domainAccuracy.length > 0 && (
+          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px', marginBottom: '20px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '14px' }}>
+              Breakdown by domain
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {domainAccuracy.map(d => {
+                const pct = d.total > 0 ? Math.round((d.correct / d.total) * 100) : 0;
+                return (
+                  <div key={d.domain}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-2)', marginBottom: '4px' }}>
+                      <span>{d.domain}</span>
+                      <span>{d.correct}/{d.total}</span>
+                    </div>
+                    <div style={{ height: '6px', borderRadius: '3px', background: 'var(--bg3)', overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: pct >= 65 ? '#34D399' : '#F59E0B' }} />
+                    </div>
+                    {pct < 65 && (
+                      <button onClick={() => goToLearn(d.domain)} style={{ marginTop: '6px', background: 'none', border: 'none', color: 'var(--blue)', fontSize: '11px', fontWeight: 700, cursor: 'pointer', padding: 0 }}>
+                        Study {d.domain} →
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+          <button onClick={toggleDebrief} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '13px', color: 'var(--text)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
+            {michelleActive ? 'Stop' : "Hear Michelle's feedback"}
+          </button>
+          <button onClick={openShare} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '13px', color: 'var(--text)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
+            <Share2 size={14} /> Share
+          </button>
+          <button onClick={downloadCertificate} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '13px', color: 'var(--text)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
+            <Download size={14} /> PDF
+          </button>
+        </div>
+
+        <button onClick={() => navigate('/cert-exam/start')} style={{ width: '100%', background: 'linear-gradient(135deg, #a78bfa, #7c3aed)', color: '#fff', border: 'none', borderRadius: '13px', padding: '15px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>
+          Try another exam
+        </button>
+      </motion.div>
+
+      {shareOpen && shareUrl && (
+        <CertShareModal
+          certName={session.certName ?? ''}
+          passed={passed}
+          scaledScore={scaledScore}
+          maxScore={maxScore}
+          shareUrl={shareUrl}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
+    </div>
+  );
+}
