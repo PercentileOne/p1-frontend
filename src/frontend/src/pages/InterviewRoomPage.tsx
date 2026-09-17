@@ -54,13 +54,19 @@ export interface RoomState {
   specialFocus?: string[];
 }
 
-// Same 12 languages InterviewPackStart.tsx's intake dropdown offers — single source for the
-// room's own read-only language badge, which used to duplicate this list as <option> entries
-// on what was (until 2026-09-18) a live, but non-functional, in-room switcher.
+// Same 32 languages InterviewPackStart.tsx's intake dropdown offers (LANGUAGES there — see its
+// own comment on why exactly these 32 and not more) — single source for the room's own
+// read-only language badge, which used to duplicate a smaller, out-of-sync list as <option>
+// entries on what was (until 2026-09-18) a live, but non-functional, in-room switcher.
 const LANGUAGE_LABELS: Record<string, string> = {
-  en: '🇬🇧 English (EN)', fr: '🇫🇷 French (FR)', es: '🇪🇸 Spanish (ES)', de: '🇩🇪 German (DE)',
-  pt: '🇵🇹 Portuguese (PT)', pl: '🇵🇱 Polish (PL)', nl: '🇳🇱 Dutch (NL)', it: '🇮🇹 Italian (IT)',
-  tr: '🇹🇷 Turkish (TR)', ar: '🇸🇦 Arabic (AR)', zh: '🇨🇳 Chinese (ZH)', hi: '🇮🇳 Hindi (HI)',
+  en: '🇬🇧 English (EN)', ar: '🇸🇦 Arabic (AR)', bg: '🇧🇬 Bulgarian (BG)', hr: '🇭🇷 Croatian (HR)',
+  cs: '🇨🇿 Czech (CS)', da: '🇩🇰 Danish (DA)', nl: '🇳🇱 Dutch (NL)', fil: '🇵🇭 Filipino (FIL)',
+  fi: '🇫🇮 Finnish (FI)', fr: '🇫🇷 French (FR)', de: '🇩🇪 German (DE)', el: '🇬🇷 Greek (EL)',
+  hi: '🇮🇳 Hindi (HI)', hu: '🇭🇺 Hungarian (HU)', id: '🇮🇩 Indonesian (ID)', it: '🇮🇹 Italian (IT)',
+  ja: '🇯🇵 Japanese (JA)', ko: '🇰🇷 Korean (KO)', ms: '🇲🇾 Malay (MS)', no: '🇳🇴 Norwegian (NO)',
+  pl: '🇵🇱 Polish (PL)', pt: '🇵🇹 Portuguese (PT)', ro: '🇷🇴 Romanian (RO)', ru: '🇷🇺 Russian (RU)',
+  sk: '🇸🇰 Slovak (SK)', es: '🇪🇸 Spanish (ES)', sv: '🇸🇪 Swedish (SV)', ta: '🇮🇳 Tamil (TA)',
+  tr: '🇹🇷 Turkish (TR)', uk: '🇺🇦 Ukrainian (UK)', vi: '🇻🇳 Vietnamese (VI)', zh: '🇨🇳 Chinese (ZH)',
 };
 
 // ── Coaching cues — rotate during answering phase ────────────────────────────

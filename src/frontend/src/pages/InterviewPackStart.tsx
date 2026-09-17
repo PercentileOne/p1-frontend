@@ -11,22 +11,45 @@ import { logRoleActivity } from '../api/roleActivityApi';
 import { submitConfidenceSurvey, type ConfidenceResponse } from '../api/confidenceSurveyApi';
 import { useAuthStore } from '../auth/authStore';
 
+// The exact 32 languages ElevenLabs' eleven_flash_v2_5 model (Amina/Wayne/Michelle's voice
+// model, see SpeakVoiceHandler.cs/AvatarAudioHandler.cs) genuinely supports — confirmed against
+// ElevenLabs' own docs, 2026-09-18. Previously a smaller, hand-picked 15-language list that
+// included Swahili, which ElevenLabs doesn't support at all (would have generated correct
+// Swahili text that then got spoken in an English-accented voice, the exact bug this whole
+// multilingual pass fixed for the other 12) — dropped for that reason, not an oversight.
 const LANGUAGES = [
   { code: 'en', name: 'English' },
-  { code: 'fr', name: 'French' },
-  { code: 'es', name: 'Spanish' },
-  { code: 'de', name: 'German' },
-  { code: 'pt', name: 'Portuguese' },
-  { code: 'nl', name: 'Dutch' },
-  { code: 'it', name: 'Italian' },
-  { code: 'pl', name: 'Polish' },
   { code: 'ar', name: 'Arabic' },
-  { code: 'zh', name: 'Chinese (Mandarin)' },
+  { code: 'bg', name: 'Bulgarian' },
+  { code: 'hr', name: 'Croatian' },
+  { code: 'cs', name: 'Czech' },
+  { code: 'da', name: 'Danish' },
+  { code: 'nl', name: 'Dutch' },
+  { code: 'fil', name: 'Filipino' },
+  { code: 'fi', name: 'Finnish' },
+  { code: 'fr', name: 'French' },
+  { code: 'de', name: 'German' },
+  { code: 'el', name: 'Greek' },
+  { code: 'hi', name: 'Hindi' },
+  { code: 'hu', name: 'Hungarian' },
+  { code: 'id', name: 'Indonesian' },
+  { code: 'it', name: 'Italian' },
   { code: 'ja', name: 'Japanese' },
   { code: 'ko', name: 'Korean' },
-  { code: 'hi', name: 'Hindi' },
-  { code: 'sw', name: 'Swahili' },
+  { code: 'ms', name: 'Malay' },
+  { code: 'no', name: 'Norwegian' },
+  { code: 'pl', name: 'Polish' },
+  { code: 'pt', name: 'Portuguese' },
   { code: 'ro', name: 'Romanian' },
+  { code: 'ru', name: 'Russian' },
+  { code: 'sk', name: 'Slovak' },
+  { code: 'es', name: 'Spanish' },
+  { code: 'sv', name: 'Swedish' },
+  { code: 'ta', name: 'Tamil' },
+  { code: 'tr', name: 'Turkish' },
+  { code: 'uk', name: 'Ukrainian' },
+  { code: 'vi', name: 'Vietnamese' },
+  { code: 'zh', name: 'Chinese (Mandarin)' },
 ];
 
 // Which stage of the candidate's REAL interview process this practice session represents —
