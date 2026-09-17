@@ -643,6 +643,59 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       : speak(closingLine, 'hr', onClosingDone, handleSarahVideoAnalyser);
   }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl, resetForNextQuestion, handleSarahVideoAnalyser, setHrState, avatarEnabled, liveAvatarSpeakHr]);
 
+  // Candidate-inactivity watchdog (Francis, 2026-09-17 — an interview got left open ~45
+  // minutes mid-answer, forgotten mid-school-run, which is exactly the open-ended cost/
+  // dangling-session risk this guards against). Two tiers, both measured from the candidate's
+  // own last real interaction (typing, clicking, touching), not from anything the system itself
+  // does:
+  //   30s  — belt-and-braces re-assertion that both avatars are disconnected. The cost-control
+  //          effect above already disconnects the instant phase becomes 'answering' (0s delay,
+  //          faster than this), so this tier is normally a no-op — it exists as a second,
+  //          phase-independent guarantee rather than trusting that effect alone.
+  //   5min — treats the interview as abandoned: ends it exactly like running out of questions
+  //          would (upload whatever was captured, play the same closing line, navigate to the
+  //          summary), same tail as the manual "End Session" button, so a forgotten tab can't
+  //          sit open (and reconnect-capable) indefinitely.
+  const lastActivityRef = useRef<number>(Date.now());
+  const inactivityClosedRef = useRef(false);
+
+  useEffect(() => {
+    if (phase === 'answering') lastActivityRef.current = Date.now();
+  }, [phase]);
+
+  useEffect(() => {
+    const bump = () => { lastActivityRef.current = Date.now(); };
+    window.addEventListener('keydown', bump);
+    window.addEventListener('mousedown', bump);
+    window.addEventListener('touchstart', bump);
+    return () => {
+      window.removeEventListener('keydown', bump);
+      window.removeEventListener('mousedown', bump);
+      window.removeEventListener('touchstart', bump);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (phase !== 'answering') return;
+    const id = setInterval(() => {
+      const idleMs = Date.now() - lastActivityRef.current;
+      if (idleMs >= 30_000) {
+        if (liveAvatarHr.status === 'connected') void liveAvatarHr.disconnect();
+        if (liveAvatarTechnical.status === 'connected') void liveAvatarTechnical.disconnect();
+      }
+      if (idleMs >= 5 * 60_000 && !inactivityClosedRef.current) {
+        inactivityClosedRef.current = true;
+        uploadRecording(sessionAnswers, { mcqQuestions, mcqResults, mcqBonusPoints, cvCtx, jobCtx });
+        closeInterview(sessionAnswers, mcqResults, mcqBonusPoints);
+      }
+    }, 5000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- liveAvatarHr/liveAvatarTechnical
+    // change identity every render (not memoised); the interval reads current state via the
+    // closure it's recreated with each time this effect re-runs, so that's fine — only phase
+    // actually needs to gate whether the watchdog runs at all.
+  }, [phase, sessionAnswers, mcqResults, mcqBonusPoints, mcqQuestions, cvCtx, jobCtx, uploadRecording, closeInterview]);
+
   // Shared tail for every "this question is over, move on" path (a normal next-question click,
   // resuming after an MCQ bonus round, or a Pass) — previously reimplemented three times with
   // only the answers/mcq-results/bonus-points arguments actually differing between them.
