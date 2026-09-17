@@ -729,8 +729,10 @@ export default function CandidateDashboard() {
           </div>
         </div>
 
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: "16px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
+        {/* Nav — minHeight: 0 lets this flex child actually shrink below its content size, which
+            is what makes overflowY: auto kick in instead of the whole sidebar growing past the
+            viewport (a plain flex: 1 child ignores its parent's height without it). */}
+        <nav style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "16px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
           {NAV_ITEMS.map(({ Icon, label }) => {
             const active = activeNav === label;
             const hovered = hoveredNav === label;
