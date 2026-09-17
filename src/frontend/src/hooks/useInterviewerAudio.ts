@@ -29,6 +29,28 @@ const SARAH_INTROS: Record<string, string> = {
   hi: "नमस्ते — मैं Amina हूँ, HR Director। आपका यहाँ स्वागत है। Wayne मेरे साथ भूमिका-विशिष्ट प्रश्नों के लिए जुड़ेंगे। स्वाभाविक रूप से बोलें, समय लें।",
 };
 
+// ── Multilingual Wayne intro fallbacks — same purpose as SARAH_INTROS above, added
+// 2026-09-18 after Francis found Wayne's intro speaking English even on a German session (his
+// fallback previously had no language variants at all — a single hardcoded English template).
+// Deliberately drops the jobTitlePhrase/specialFocusPhrase dynamic insertions the English
+// template used to build in — same simplification SARAH_INTROS already makes (her fallback
+// doesn't mention specific topics either); those only ever render correctly in English, so
+// keeping them out of every OTHER language's fallback avoids a mixed-language sentence.
+const JAMES_INTROS: Record<string, string> = {
+  en: "And I'm Wayne — looking forward to hearing about your experience. Let's get started.",
+  fr: "Et je suis Wayne — j'ai hâte d'en savoir plus sur votre expérience. Commençons.",
+  es: "Y yo soy Wayne — tengo muchas ganas de conocer tu experiencia. Empecemos.",
+  de: "Und ich bin Wayne — ich freue mich darauf, mehr über Ihre Erfahrung zu erfahren. Fangen wir an.",
+  pt: "E eu sou o Wayne — ansioso para ouvir sobre a sua experiência. Vamos começar.",
+  pl: "A ja jestem Wayne — z niecierpliwością czekam, by usłyszeć o twoim doświadczeniu. Zaczynajmy.",
+  nl: "En ik ben Wayne — ik kijk ernaar uit om over jouw ervaring te horen. Laten we beginnen.",
+  it: "E io sono Wayne — non vedo l'ora di sentire della tua esperienza. Iniziamo.",
+  tr: "Ve ben Wayne — deneyiminizi duymayı dört gözle bekliyorum. Hadi başlayalım.",
+  ar: "وأنا واين — أتطلع لسماع خبرتك. لنبدأ.",
+  zh: "我是 Wayne——很期待听听你的经验。我们开始吧。",
+  hi: "और मैं Wayne हूँ — आपके अनुभव के बारे में सुनने के लिए उत्सुक हूँ। चलिए शुरू करते हैं।",
+};
+
 const HANDOFF_LINES: Record<'hr' | 'technical', string[]> = {
   hr: ['Wayne, anything you\'d like to add to that?', 'Wayne, did you want to follow up on that one?'],
   technical: ['Amina, do you have anything to add to that?', 'Amina, anything you wanted to dig into there?'],
@@ -52,12 +74,28 @@ function pickRandom<T>(arr: T[]): T {
 // disabled-not-deleted pattern as MOUTH_OVERLAY_ENABLED elsewhere in this codebase.
 export const MIKE_VIDEO_ENABLED = false;
 
-// Michelle's fallback script — used if AI hasn't loaded yet (it usually finishes before she
-// speaks). Deliberately doesn't open with "Hi there" — ensureNameSpoken (see startMike below)
-// prepends "<name>, " when a preferred name is known and the text doesn't already contain it,
-// and that reads naturally straight onto "I'm Michelle..." but awkwardly onto a leftover "Hi
-// there".
-const FALLBACK_MIKE_SCRIPT = `I'm Michelle, your recruitment consultant. I've set up your interview today and I want to give you a quick briefing before you meet the panel. Your interviewers today are Amina, who heads up HR, and Wayne, who'll be assessing you on the role itself. They'll guide you through everything — just follow Amina's instructions on the controls and you'll be absolutely fine. I'll be here throughout if you need anything. The best thing you can do is be specific: use real examples from your experience. Back yourself — you've got this. Good luck!`;
+// Michelle's fallback script — used if AI hasn't loaded yet (Phase 1's 5s timeout, see
+// InterviewRoomPage.tsx's mikeTimeout, beats the AI call more often on non-English sessions,
+// which is exactly the bug this dict fixes — Francis found Michelle's intro coming out in
+// English even on a German session, and this single hardcoded string is why). Deliberately
+// doesn't open with "Hi there" — ensureNameSpoken (see startMike below) prepends "<name>, "
+// when a preferred name is known and the text doesn't already contain it, and that reads
+// naturally straight onto "I'm Michelle..." but awkwardly onto a leftover "Hi there", in every
+// language below.
+const FALLBACK_MICHELLE_SCRIPTS: Record<string, string> = {
+  en: "I'm Michelle, your recruitment consultant. I've set up your interview today and I want to give you a quick briefing before you meet the panel. Your interviewers today are Amina, who heads up HR, and Wayne, who'll be assessing you on the role itself. They'll guide you through everything — just follow Amina's instructions on the controls and you'll be absolutely fine. I'll be here throughout if you need anything. The best thing you can do is be specific: use real examples from your experience. Back yourself — you've got this. Good luck!",
+  fr: "Je suis Michelle, votre consultante en recrutement. J'ai organisé votre entretien aujourd'hui et je voulais vous donner un petit briefing avant de rencontrer le jury. Vos interlocuteurs aujourd'hui sont Amina, qui dirige les Ressources Humaines, et Wayne, qui évaluera votre candidature sur le poste lui-même. Ils vous guideront à chaque étape — suivez simplement les instructions d'Amina sur les commandes et tout se passera bien. Je serai là tout du long si vous avez besoin de quoi que ce soit. Le mieux que vous puissiez faire, c'est d'être précis : utilisez de vrais exemples tirés de votre expérience. Faites-vous confiance — vous allez y arriver. Bonne chance !",
+  es: "Soy Michelle, tu consultora de contratación. He organizado tu entrevista de hoy y quiero darte un breve resumen antes de que conozcas al panel. Tus entrevistadores hoy son Amina, que dirige Recursos Humanos, y Wayne, que te evaluará en el puesto en sí. Ellos te guiarán en todo — solo sigue las instrucciones de Amina en los controles y todo irá perfectamente. Estaré aquí durante todo el proceso si necesitas algo. Lo mejor que puedes hacer es ser específico: usa ejemplos reales de tu experiencia. Confía en ti — tú puedes con esto. ¡Buena suerte!",
+  de: "Ich bin Michelle, Ihre Recruiting-Beraterin. Ich habe Ihr heutiges Interview organisiert und möchte Ihnen ein kurzes Briefing geben, bevor Sie das Gremium treffen. Ihre Interviewer heute sind Amina, die den HR-Bereich leitet, und Wayne, der Sie zur eigentlichen Rolle beurteilen wird. Sie werden Sie durch alles führen — folgen Sie einfach Aminas Anweisungen zu den Bedienelementen, dann läuft alles bestens. Ich bin die ganze Zeit hier, falls Sie etwas brauchen. Das Beste, was Sie tun können, ist konkret zu sein: Nutzen Sie echte Beispiele aus Ihrer Erfahrung. Vertrauen Sie sich selbst — Sie schaffen das. Viel Erfolg!",
+  pt: "Sou a Michelle, a sua consultora de recrutamento. Organizei a sua entrevista de hoje e quero dar-lhe um pequeno briefing antes de conhecer o painel. Os seus entrevistadores hoje são a Amina, que lidera os Recursos Humanos, e o Wayne, que irá avaliá-lo na função em si. Eles vão guiá-lo em tudo — basta seguir as instruções da Amina nos controlos e vai correr tudo bem. Estarei aqui durante todo o processo caso precise de alguma coisa. A melhor coisa que pode fazer é ser específico: use exemplos reais da sua experiência. Confie em si — você consegue. Boa sorte!",
+  pl: "Jestem Michelle, twoja konsultantka ds. rekrutacji. Zorganizowałam dzisiejszą rozmowę i chcę dać ci krótki briefing, zanim spotkasz komisję. Twoimi rozmówcami są dziś Amina, która kieruje działem HR, oraz Wayne, który oceni cię pod kątem samego stanowiska. Poprowadzą cię przez wszystko — po prostu podążaj za wskazówkami Aminy dotyczącymi sterowania, a wszystko pójdzie świetnie. Będę tu przez cały czas, gdybyś czegoś potrzebował. Najlepsze, co możesz zrobić, to być konkretny: używaj prawdziwych przykładów ze swojego doświadczenia. Uwierz w siebie — dasz radę. Powodzenia!",
+  nl: "Ik ben Michelle, jouw recruitmentconsultant. Ik heb je sollicitatiegesprek van vandaag geregeld en wil je graag kort briefen voordat je het panel ontmoet. Je gesprekspartners vandaag zijn Amina, die HR leidt, en Wayne, die je zal beoordelen op de functie zelf. Zij begeleiden je door alles heen — volg gewoon Amina's instructies bij de bediening en het komt helemaal goed. Ik ben er de hele tijd als je iets nodig hebt. Het beste wat je kunt doen is specifiek zijn: gebruik echte voorbeelden uit je ervaring. Vertrouw op jezelf — je kunt dit. Veel succes!",
+  it: "Sono Michelle, la tua consulente per le assunzioni. Ho organizzato il tuo colloquio di oggi e voglio darti un breve briefing prima di incontrare la commissione. I tuoi intervistatori oggi sono Amina, che guida le Risorse Umane, e Wayne, che ti valuterà sul ruolo stesso. Ti guideranno in tutto — segui semplicemente le istruzioni di Amina sui controlli e andrà tutto benissimo. Sarò qui per tutto il tempo se hai bisogno di qualcosa. La cosa migliore che puoi fare è essere specifico: usa esempi reali della tua esperienza. Abbi fiducia in te stesso — ce la puoi fare. Buona fortuna!",
+  tr: "Ben Michelle, işe alım danışmanınız. Bugünkü mülakatınızı ben ayarladım ve panelle tanışmadan önce size kısa bir bilgilendirme yapmak istiyorum. Bugünkü mülakatçılarınız İK'yı yöneten Amina ve sizi doğrudan pozisyon üzerinden değerlendirecek olan Wayne. Size her konuda rehberlik edecekler — Amina'nın kontrollerle ilgili talimatlarını takip etmeniz yeterli, her şey yolunda gidecek. İhtiyacınız olursa boyunca burada olacağım. Yapabileceğiniz en iyi şey somut olmak: deneyiminizden gerçek örnekler kullanın. Kendinize güvenin — bunu başarabilirsiniz. Bol şans!",
+  ar: "أنا ميشيل، مستشارتك في التوظيف. لقد رتبت مقابلتك اليوم، وأريد أن أقدم لك إحاطة سريعة قبل أن تقابل اللجنة. المحاورون اليوم هما أمينة، التي تترأس الموارد البشرية، وواين، الذي سيقيّمك في الدور الوظيفي نفسه. سيرشدانك خلال كل شيء — فقط اتبع تعليمات أمينة بشأن عناصر التحكم وستكون الأمور على ما يرام. سأكون هنا طوال الوقت إذا احتجت إلى أي شيء. أفضل ما يمكنك فعله هو أن تكون محدداً: استخدم أمثلة حقيقية من خبرتك. ثق بنفسك — أنت قادر على هذا. حظاً موفقاً!",
+  zh: "我是 Michelle，你的招聘顾问。我安排了你今天的面试，想在你见到面试官之前给你做个简短的介绍。今天面试你的是 Amina，人力资源主管，还有 Wayne，他将从岗位本身的角度评估你。他们会全程引导你——只需按照 Amina 关于操作的说明来做就没问题。整个过程中如果你需要什么，我都会在这里。你能做的最好的事就是具体：用你自身经历中的真实例子来回答。相信自己——你可以的。祝你好运！",
+  hi: "मैं Michelle हूँ, आपकी recruitment consultant। मैंने आज आपका interview सेट किया है और panel से मिलने से पहले मैं आपको एक संक्षिप्त briefing देना चाहती हूँ। आज आपके interviewers Amina हैं, जो HR की प्रमुख हैं, और Wayne, जो आपको भूमिका के आधार पर आंकेंगे। वे आपको हर चीज़ में मार्गदर्शन देंगे — बस controls के बारे में Amina के निर्देशों का पालन करें, सब ठीक रहेगा। अगर आपको कुछ चाहिए तो मैं पूरे समय यहाँ रहूँगी। सबसे अच्छी बात जो आप कर सकते हैं वह है स्पष्ट रहना: अपने अनुभव से असली उदाहरण दें। खुद पर भरोसा रखें — आप यह कर सकते हैं। शुभकामनाएँ!",
+};
 
 export interface UseInterviewerAudioParams {
   questions: InterviewQuestion[];
@@ -412,23 +450,8 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
         setHighlightRecord(true);
         setTimeout(() => setHighlightRecord(false), 6000);
       }, 8000);
-      // Job title, same reasoning as namePrefix above — ours to insert regardless of whether
-      // the AI-generated version (which mentions it via its own prompt) landed in time. Lives
-      // on Wayne's line specifically rather than Amina's, so the role only gets said once
-      // across both intros, and because he's already the role-specific interviewer (see
-      // specialistTitle's own pairing with him in the UI).
-      const jobTitlePhrase = jobTitle?.trim() ? ` for the ${jobTitle.trim()} role` : '';
-      // Ours to guarantee, same reasoning as namePrefix/jobTitlePhrase above — a candidate who
-      // named specific topics should always hear at least one or two mentioned back,
-      // regardless of whether the AI generation call happens to land in time (it's also asked
-      // to mention these itself, see sessionPrepareClient's specialFocusLine — but only this
-      // fallback path is ours to promise unconditionally). Capped at 2 even when more were
-      // kept — reading out a long list sounds robotic, not reassuring.
-      const specialFocusPhrase = specialFocus && specialFocus.length > 0
-        ? ` I understand you want to focus on ${specialFocus.slice(0, 2).join(' and ')} today, so we'll dig into ${specialFocus.length > 1 ? 'those' : 'that'}.`
-        : '';
       const jamesText = effectiveJamesIntro ??
-        `${namePrefix}And I'm Wayne — looking forward to hearing about your experience${jobTitlePhrase}.${specialFocusPhrase} Let's get started.`;
+        `${namePrefix}${JAMES_INTROS[sessionLanguage] ?? JAMES_INTROS.en}`;
 
       const afterSarahIntro = () => {
         clearTimeout(pulseOuter);
@@ -568,9 +591,12 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
       // Guaranteed deterministically, same as Sarah/James's intros below (see
       // ensureNameSpoken's own comment) — Michelle previously had no such guarantee at all
       // (back when she was "Mike"): the AI-generated script was assumed reliable enough not to
-      // need one, and the hardcoded FALLBACK_MIKE_SCRIPT (used whenever Phase 1's own 5s
-      // timeout beats the AI call) never mentioned a name at all.
-      const michelleText = ensureNameSpoken(bgMikeScriptRef.current ?? FALLBACK_MIKE_SCRIPT, resolvedPreferredName);
+      // need one, and the hardcoded fallback (used whenever Phase 1's own 5s timeout beats the
+      // AI call) never mentioned a name at all.
+      const michelleText = ensureNameSpoken(
+        bgMikeScriptRef.current ?? FALLBACK_MICHELLE_SCRIPTS[sessionLanguage] ?? FALLBACK_MICHELLE_SCRIPTS.en,
+        resolvedPreferredName,
+      );
       // Michelle (2026-09-17) is a genuine live HeyGen seat, same connect+speak+fallback-to-TTS
       // shape as Amina/Wayne (see liveAvatarSpeakMichelle in InterviewRoomPage.tsx) — falls
       // back to plain TTS automatically if the avatar kill switch is off or her connect/speak
