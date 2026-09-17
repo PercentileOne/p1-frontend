@@ -466,12 +466,19 @@ export default function InterviewRoomPage() {
     if (avatarEnabled) {
       void liveAvatarHr.connect();
       void liveAvatarTechnical.connect();
+      // Michelle (2026-09-17) is a live avatar seat too now, but startMike() only ever
+      // triggered her connect() lazily on first speak — the exact zero-head-start gap the
+      // comment above already diagnosed for Amina/Wayne, just never carried over to her when
+      // she replaced the old static-photo Mike. Live-reported same day: she sat staring
+      // silently for a few seconds before her briefing started. Same fix — fire her connect()
+      // here too, so the recording-consent dialog becomes free warm-up time for her as well.
+      void liveAvatarMichelle.connect();
     }
     if (consentToRecord) {
       await startRecording(); // wait for browser share dialog before Mike speaks
     }
     startMike();
-  }, [startMike, startRecording, consentToRecord, avatarEnabled, liveAvatarHr, liveAvatarTechnical]);
+  }, [startMike, startRecording, consentToRecord, avatarEnabled, liveAvatarHr, liveAvatarTechnical, liveAvatarMichelle]);
 
   // ── Two-phase AI loading ──────────────────────────────────────────────────────
   // Phase 1 (fast ~2s): Mike's script only — unblocks Mike immediately
