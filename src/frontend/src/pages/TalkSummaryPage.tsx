@@ -328,7 +328,13 @@ export default function TalkSummaryPage() {
           );
         })() : (
           <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '10px', padding: '16px', fontSize: '13px', color: 'var(--amber)', marginBottom: '20px' }}>
-            Scoring didn't complete for this talk, but it was still saved.
+            {/* Distinguishes "nothing to score" (empty transcript — ScoreHandler.cs rejects this
+                before ever calling Claude) from a genuine scoring/AI failure. The generic message
+                read like a system error even when the real cause was simply not speaking during
+                the talk (Francis, 2026-09-18 — hit this live on "Being in Care"). */}
+            {!transcript.trim()
+              ? "We didn't catch any speech during that talk, so there was nothing to score — the recording is still saved. Try again and make sure your mic is picking you up."
+              : "Scoring didn't complete for this talk, but it was still saved."}
           </div>
         )}
 
