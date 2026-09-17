@@ -15,6 +15,7 @@ const TONE_CONFIG = {
   encourage: { emoji: '💡', label: 'Good — here\'s how to level up', accent: '#FBBF24', glow: 'rgba(251,191,36,0.25)' },
   delivery:  { emoji: '🎯', label: 'Watch your delivery', accent: '#A78BFA', glow: 'rgba(167,139,250,0.25)' },
   relevance: { emoji: '🔗', label: 'Connect it to the role', accent: '#60A5FA', glow: 'rgba(96,165,250,0.25)' },
+  accuracy:  { emoji: '⚠️', label: 'Fact check needed', accent: '#EF4444', glow: 'rgba(239,68,68,0.25)' },
 };
 
 export function CoachingOverlay({ message, score, onDone }: Props) {

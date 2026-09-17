@@ -17,7 +17,7 @@ function makeAnswer(overrides: Partial<SessionAnswer> = {}, questionOverrides: P
     },
     answerText: 'A somewhat vague answer.',
     score: {
-      clarity: 0.5, relevance: 0.5, depth: 0.4, confidence: 0.5, overallScore: 0.5,
+      clarity: 0.5, relevance: 0.5, accuracy: 0.75, depth: 0.4, confidence: 0.5, overallScore: 0.5,
       feedback: [], suggestions: [],
       needsFollowUp: true,
       followUpQuestion: 'Can you say more about the actual outcome?',
@@ -47,13 +47,13 @@ describe('decideGoDeeperFollowUp — gating', () => {
   });
 
   it("returns null when the score didn't flag needsFollowUp", () => {
-    const answer = makeAnswer({ score: { clarity: 0.5, relevance: 0.5, depth: 0.5, confidence: 0.5, overallScore: 0.5, feedback: [], suggestions: [], needsFollowUp: false, followUpQuestion: 'Elaborate?' } });
+    const answer = makeAnswer({ score: { clarity: 0.5, relevance: 0.5, accuracy: 0.75, depth: 0.5, confidence: 0.5, overallScore: 0.5, feedback: [], suggestions: [], needsFollowUp: false, followUpQuestion: 'Elaborate?' } });
     const decision = decideGoDeeperFollowUp(answer, { goDeeperEnabled: true, difficulty: 'Expert', firedCount: 0 }, () => 0);
     expect(decision).toBeNull();
   });
 
   it('returns null when there is no follow-up question text', () => {
-    const answer = makeAnswer({ score: { clarity: 0.5, relevance: 0.5, depth: 0.5, confidence: 0.5, overallScore: 0.5, feedback: [], suggestions: [], needsFollowUp: true, followUpQuestion: null } });
+    const answer = makeAnswer({ score: { clarity: 0.5, relevance: 0.5, accuracy: 0.75, depth: 0.5, confidence: 0.5, overallScore: 0.5, feedback: [], suggestions: [], needsFollowUp: true, followUpQuestion: null } });
     const decision = decideGoDeeperFollowUp(answer, { goDeeperEnabled: true, difficulty: 'Expert', firedCount: 0 }, () => 0);
     expect(decision).toBeNull();
   });

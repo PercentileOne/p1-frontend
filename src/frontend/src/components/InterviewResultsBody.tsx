@@ -37,7 +37,7 @@ function roleOnly(answers: ResultAnswer[]) {
   return answers.filter(a => a.question.source === 'Role');
 }
 
-function avg(answers: ResultAnswer[], key: 'clarity' | 'relevance' | 'depth' | 'confidence') {
+function avg(answers: ResultAnswer[], key: 'clarity' | 'relevance' | 'accuracy' | 'depth' | 'confidence') {
   const roleAnswers = roleOnly(answers);
   if (!roleAnswers.length) return 0;
   return roleAnswers.reduce((s, a) => s + (a.score as unknown as Record<string, number>)[key], 0) / roleAnswers.length;
@@ -92,8 +92,8 @@ export function InterviewResultsBody({
   onStudyTopic?: (tag: string) => void;
 }) {
   const baseScore = overallAvg(answers);
-  const strengths = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) >= 0.65);
-  const improvements = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) < 0.55);
+  const strengths = (['clarity', 'relevance', 'accuracy', 'depth', 'confidence'] as const).filter(d => avg(answers, d) >= 0.65);
+  const improvements = (['clarity', 'relevance', 'accuracy', 'depth', 'confidence'] as const).filter(d => avg(answers, d) < 0.55);
   const mcqBonusPoints = mcqResults.filter(r => r.correct).length * 10;
   const hrBonusPoints = hrBonus(answers);
   const revealedCount = answers.filter(a => a.revealedAnswer).length;

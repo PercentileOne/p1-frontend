@@ -61,7 +61,7 @@ describe('useAnswerScoring — AI failure fallback', () => {
 
   it('falls back to the template coaching message when coachWithAI rejects but scoreWithAI succeeds', async () => {
     vi.mocked(scoreWithAI).mockResolvedValue({
-      clarity: 0.8, relevance: 0.7, depth: 0.6, confidence: 0.7, overallScore: 0.7,
+      clarity: 0.8, relevance: 0.7, accuracy: 0.75, depth: 0.6, confidence: 0.7, overallScore: 0.7,
       feedback: [], suggestions: [],
     });
     vi.mocked(coachWithAI).mockRejectedValue(new Error('network error'));
@@ -76,7 +76,7 @@ describe('useAnswerScoring — AI failure fallback', () => {
 
   it('uses the real AI results when both calls succeed (no fallback triggered)', async () => {
     vi.mocked(scoreWithAI).mockResolvedValue({
-      clarity: 0.9, relevance: 0.9, depth: 0.9, confidence: 0.9, overallScore: 0.9,
+      clarity: 0.9, relevance: 0.9, accuracy: 0.9, depth: 0.9, confidence: 0.9, overallScore: 0.9,
       feedback: [], suggestions: [],
     });
     vi.mocked(coachWithAI).mockResolvedValue({
@@ -122,7 +122,7 @@ describe('useAnswerScoring — recordPassedAnswer', () => {
 describe('useAnswerScoring — resetForNextQuestion', () => {
   it('clears currentScore and coachingMessage but leaves sessionAnswers/runningScores intact', async () => {
     vi.mocked(scoreWithAI).mockResolvedValue({
-      clarity: 0.8, relevance: 0.8, depth: 0.8, confidence: 0.8, overallScore: 0.8,
+      clarity: 0.8, relevance: 0.8, accuracy: 0.8, depth: 0.8, confidence: 0.8, overallScore: 0.8,
       feedback: [], suggestions: [],
     });
     vi.mocked(coachWithAI).mockResolvedValue({ lines: ['Nice work.'], fullText: 'Nice work.', tone: 'strong' });

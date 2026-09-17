@@ -12,7 +12,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://www.theinterviewchair.com/how-we-score" />
 <meta property="og:title" content="How We Score Interviews — TheInterviewChair.com" />
-<meta property="og:description" content="Every dimension we score, explained in plain language with a real example of each — clarity, relevance, depth, confidence, leadership signals, and more." />
+<meta property="og:description" content="Every dimension we score, explained in plain language with a real example of each — clarity, relevance, accuracy, depth, confidence, leadership signals, and more." />
 <meta property="og:site_name" content="TheInterviewChair.com" />
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-VWP8MJVBCH"></script>
@@ -104,11 +104,11 @@
   <h1>How we score every interview.</h1>
   <p class="lede">No black box. Every answer you give is scored across real dimensions, each one explained below with a genuine example — including one from an actual candidate's live session, mistakes and all.</p>
 
-  <h2 class="group-title">The core four — every answer, every time</h2>
-  <p class="group-note">These four score every single answer in every interview, weighted into one overall percentage: Relevance 35%, Clarity 25%, Depth 25%, Confidence 15%.</p>
+  <h2 class="group-title">The core five — every answer, every time</h2>
+  <p class="group-note">These five score every single answer in every interview, weighted into one overall percentage: Relevance 25%, Accuracy 25%, Clarity 20%, Depth 20%, Confidence 10%.</p>
 
   <div class="dim-card">
-    <div class="dim-head"><span class="dim-name">Relevance</span><span class="dim-weight">35% weight</span></div>
+    <div class="dim-head"><span class="dim-name">Relevance</span><span class="dim-weight">25% weight</span></div>
     <div class="dim-desc">Does the answer actually address what was asked, and does it match what the role genuinely requires — not just talk in the right general direction?</div>
     <div class="dim-example">
       <div class="dim-example-label">Example</div>
@@ -117,7 +117,16 @@
   </div>
 
   <div class="dim-card">
-    <div class="dim-head"><span class="dim-name">Clarity</span><span class="dim-weight">25% weight</span></div>
+    <div class="dim-head"><span class="dim-name">Accuracy</span><span class="dim-weight">25% weight</span></div>
+    <div class="dim-desc">Is what the candidate actually said true? This applies to every role we interview for, not just technical ones — a confident, clearly-delivered answer built on a wrong fact still scores low here, because a real interviewer would catch it too.</div>
+    <div class="dim-example">
+      <div class="dim-example-label">Example</div>
+      <div class="dim-example-body">"HTML is the fastest programming language, and it was created in 2023" is said fluently and confidently — but it's wrong on every count, and scores accordingly low. Confidence in a false claim is worse than no claim at all.</div>
+    </div>
+  </div>
+
+  <div class="dim-card">
+    <div class="dim-head"><span class="dim-name">Clarity</span><span class="dim-weight">20% weight</span></div>
     <div class="dim-desc">Is the answer well-structured and easy to follow, or does the candidate have to be untangled to find the actual point?</div>
     <div class="dim-example">
       <div class="dim-example-label">Example</div>
@@ -126,7 +135,7 @@
   </div>
 
   <div class="dim-card">
-    <div class="dim-head"><span class="dim-name">Depth</span><span class="dim-weight">25% weight</span></div>
+    <div class="dim-head"><span class="dim-name">Depth</span><span class="dim-weight">20% weight</span></div>
     <div class="dim-desc">Are there specific examples, named tools, real numbers, or genuine outcomes — or is it generalities that could apply to almost any answer?</div>
     <div class="dim-example">
       <div class="dim-example-label">Example</div>
@@ -135,7 +144,7 @@
   </div>
 
   <div class="dim-card">
-    <div class="dim-head"><span class="dim-name">Confidence</span><span class="dim-weight">15% weight</span></div>
+    <div class="dim-head"><span class="dim-name">Confidence</span><span class="dim-weight">10% weight</span></div>
     <div class="dim-desc">Does the language sound assured, or is it hedged with "maybe", "I think", "kind of" — even when the underlying idea is actually correct?</div>
     <div class="dim-example">
       <div class="dim-example-label">Example</div>
@@ -149,11 +158,12 @@
     <div class="real-example-a">"well I would definitely design them around a single transaction and roll back if there was an error"</div>
     <div class="real-bars">
       <div class="real-bar-row"><span class="real-bar-label">Relevance</span><div class="real-bar-track"><div class="real-bar-fill" style="width:15%;background:var(--red)"></div></div><span class="real-bar-val" style="color:var(--red)">15%</span></div>
+      <div class="real-bar-row"><span class="real-bar-label">Accuracy</span><div class="real-bar-track"><div class="real-bar-fill" style="width:90%;background:var(--green)"></div></div><span class="real-bar-val" style="color:var(--green)">90%</span></div>
       <div class="real-bar-row"><span class="real-bar-label">Clarity</span><div class="real-bar-track"><div class="real-bar-fill" style="width:70%;background:var(--green)"></div></div><span class="real-bar-val" style="color:var(--green)">70%</span></div>
       <div class="real-bar-row"><span class="real-bar-label">Depth</span><div class="real-bar-track"><div class="real-bar-fill" style="width:5%;background:var(--red)"></div></div><span class="real-bar-val" style="color:var(--red)">5%</span></div>
       <div class="real-bar-row"><span class="real-bar-label">Confidence</span><div class="real-bar-track"><div class="real-bar-fill" style="width:85%;background:var(--green)"></div></div><span class="real-bar-val" style="color:var(--green)">85%</span></div>
     </div>
-    <div style="margin-top:16px;font-size:13px;color:var(--muted)">Notice clarity and confidence both score well — it's a short, assured sentence — but relevance and depth are honest about the real gap: the transaction alone doesn't actually guarantee the message publishes, and the answer names no mechanism for that. That's the whole point of scoring these separately instead of one blended "good answer" number.</div>
+    <div style="margin-top:16px;font-size:13px;color:var(--muted)">Notice accuracy, clarity and confidence all score well — nothing the candidate said was actually wrong, and it's a short, assured sentence — but relevance and depth are honest about the real gap: the transaction alone doesn't actually guarantee the message publishes, and the answer names no mechanism for that. Accuracy and depth are deliberately separate: this answer is entirely true, just incomplete. That's the whole point of scoring these separately instead of one blended "good answer" number.</div>
   </div>
 
   <h2 class="group-title">Leadership signal — two guaranteed questions, every interview</h2>

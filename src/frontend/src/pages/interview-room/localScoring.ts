@@ -16,9 +16,14 @@ export function localScore(q: InterviewQuestion, answer: string, companyKeywords
   const isCompanyKnowledgeQ = q.competencyTags.includes('company knowledge');
   const factsHit = isCompanyKnowledgeQ ? companyKeywords.filter(f => lower.includes(f)).length : 0;
   const companyBonus = isCompanyKnowledgeQ ? Math.min(0.2, factsHit * 0.05) : 0;
-  const overall = Math.min(1, Math.round((clarity * 0.25 + relevance * 0.35 + depth * 0.25 + confidence * 0.15 + companyBonus) * 10000) / 10000);
+  // No fact-checking is possible without the AI call this function exists to stand in for —
+  // string-matching keywords can't tell a true claim from a false one. Defaulting to a neutral
+  // 0.75 rather than penalizing candidates for a check that simply couldn't run this time; a
+  // real accuracy score only ever comes from scoreWithAI (aiScoring.ts).
+  const accuracy = 0.75;
+  const overall = Math.min(1, Math.round((relevance * 0.25 + accuracy * 0.25 + clarity * 0.20 + depth * 0.20 + confidence * 0.10 + companyBonus) * 10000) / 10000);
   return {
-    clarity, relevance, depth, confidence, overallScore: overall,
+    clarity, relevance, accuracy, depth, confidence, overallScore: overall,
     feedback: [
       { dimension: 'clarity', message: len < 40 ? 'Your answer is quite short — aim for at least 60 words.' : 'Good length and structure.', severity: len < 40 ? 'high' : 'low' },
       { dimension: 'depth', message: depth < 0.5 ? 'Add a concrete metric or named outcome.' : 'Good use of specifics.', severity: depth < 0.5 ? 'medium' : 'low' },

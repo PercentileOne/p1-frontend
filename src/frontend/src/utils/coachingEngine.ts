@@ -4,7 +4,7 @@ import type { CVContext, JobSpecContext } from './contextBuilder';
 export interface CoachingMessage {
   lines: string[];   // spoken sequentially
   fullText: string;  // joined for display
-  tone: 'strong' | 'encourage' | 'delivery' | 'relevance';
+  tone: 'strong' | 'encourage' | 'delivery' | 'relevance' | 'accuracy';
 }
 
 export function generateCoachingMessage(
@@ -21,6 +21,7 @@ export function generateCoachingMessage(
   const confidence = score.confidence ?? 0.55;
   const relevance = score.relevance ?? 0.55;
   const depth = score.depth ?? 0.55;
+  const accuracy = score.accuracy ?? 0.75;
 
   const company = cvCtx?.companies?.[0] ?? 'your previous role';
 
@@ -39,7 +40,20 @@ export function generateCoachingMessage(
   // Without a job spec we can't meaningfully judge relevance
   const hasJobContext = !!(jobCtx?.title || jobCtx?.requiredSkills?.length);
 
-  if (overall >= 0.70) {
+  // Checked FIRST, ahead of the "strong answer" branch — a confidently-wrong fact should never
+  // get praised as a strong answer just because it was clear and well-structured (Francis,
+  // 2026-09-17: "if I say HTML is the fastest programming language... this needs to be
+  // flagged"). Pulls the model's own specific accuracy note from score.feedback when the AI
+  // scoring path provided one (see aiScoring.ts's prompt — accuracy feedback is asked to name
+  // exactly what was wrong), falling back to a generic prompt for the local-heuristic path,
+  // which can't know what was actually inaccurate.
+  const accuracyNote = score.feedback?.find(f => f.dimension === 'accuracy' && f.severity !== 'low')?.message;
+  if (accuracy < 0.45 && accuracyNote) {
+    tone = 'accuracy';
+    lines.push(`Hold on — before we move on, one thing wasn't quite right there.`);
+    lines.push(accuracyNote);
+    lines.push(`It's worth double-checking that before your real interview.`);
+  } else if (overall >= 0.70) {
     // Strong answer
     tone = 'strong';
     lines.push(`That was a really strong answer — especially the part about ${achievement}.`);

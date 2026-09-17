@@ -17,6 +17,7 @@ describe('localScore', () => {
     const result = localScore(mockQuestion, 'I led a team of five engineers and delivered the project two weeks early.');
     expect(result).toHaveProperty('clarity');
     expect(result).toHaveProperty('relevance');
+    expect(result).toHaveProperty('accuracy');
     expect(result).toHaveProperty('depth');
     expect(result).toHaveProperty('confidence');
     expect(result).toHaveProperty('overallScore');

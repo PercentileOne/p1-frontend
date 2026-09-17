@@ -11,6 +11,11 @@ export interface InterviewQuestion {
 export interface ScoreResponse {
   clarity: number;
   relevance: number;
+  // Factual/technical correctness of the answer (Francis, 2026-09-17) — a real 5th core
+  // dimension, always scored and folded into overallScore, not an EXTRA_DIMS-style optional
+  // one. See aiScoring.ts's scoreWithAI for the exact rubric (soft on unverifiable personal
+  // stories, strict on confidently-wrong factual claims, and NOT scoped to technical roles).
+  accuracy: number;
   depth: number;
   confidence: number;
   overallScore: number;

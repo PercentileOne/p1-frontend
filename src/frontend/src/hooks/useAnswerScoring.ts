@@ -89,7 +89,7 @@ export function useAnswerScoring(params: UseAnswerScoringParams): UseAnswerScori
 
   const recordPassedAnswer = useCallback((q: InterviewQuestion, thinkTimeMs?: number): SessionAnswer => {
     const passScore: ScoreResponse = {
-      clarity: 0, relevance: 0, depth: 0, confidence: 0, overallScore: 0,
+      clarity: 0, relevance: 0, accuracy: 0, depth: 0, confidence: 0, overallScore: 0,
       feedback: [{ dimension: 'overall', message: 'Question passed — no answer given.', severity: 'high' }],
       suggestions: ['Attempt all questions in a real interview.'],
     };
@@ -101,7 +101,7 @@ export function useAnswerScoring(params: UseAnswerScoringParams): UseAnswerScori
 
   const recordRevealedAnswer = useCallback((q: InterviewQuestion, revealedAnswerText: string, thinkTimeMs?: number): SessionAnswer => {
     const revealScore: ScoreResponse = {
-      clarity: 0, relevance: 0, depth: 0, confidence: 0, overallScore: 0,
+      clarity: 0, relevance: 0, accuracy: 0, depth: 0, confidence: 0, overallScore: 0,
       feedback: [{ dimension: 'overall', message: 'Answer revealed — not scored as an attempt.', severity: 'high' }],
       suggestions: ['Come back to this topic and try answering it yourself next time.'],
     };

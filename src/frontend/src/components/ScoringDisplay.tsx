@@ -8,6 +8,7 @@ interface Props {
 
 const DIMS = [
   { key: 'relevance', label: 'Relevance' },
+  { key: 'accuracy', label: 'Accuracy' },
   { key: 'clarity', label: 'Clarity' },
   { key: 'depth', label: 'Depth' },
   { key: 'confidence', label: 'Confidence' },

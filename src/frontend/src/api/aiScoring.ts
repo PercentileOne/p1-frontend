@@ -369,7 +369,7 @@ Return ONLY a valid JSON object — no markdown, no explanation.`;
     ? `,\n  "proactiveness": 0.0`
     : '';
 
-  const userPrompt = `Score this interview answer across ${isOwnershipQuestion || isProactivenessQuestion ? 'the usual 4 dimensions plus the extra one(s) noted below' : '4 dimensions'} (0.0–1.0).
+  const userPrompt = `Score this interview answer across ${isOwnershipQuestion || isProactivenessQuestion ? 'the usual 5 dimensions plus the extra one(s) noted below' : '5 dimensions'} (0.0–1.0).
 
 Question: ${question.questionText}
 Model answer hint: ${question.modelAnswer}
@@ -378,22 +378,24 @@ ${context ? `\nContext:\n${context}` : ''}
 
 Scoring guide:
 - relevance: does it directly address what was asked and match the role requirements?
+- accuracy: are any factual, technical, or objective claims in the answer actually correct? This applies to EVERY role, not just technical ones — a retail candidate claiming "all products cost the same regardless of size" is just as inaccurate as a software candidate claiming "HTML is the fastest programming language, created in 2023." Score this LOW when the candidate states something confidently wrong, even if the rest of the answer is clear and well-structured — confidence in a false claim is worse than no claim at all. If the answer is a genuine personal story/experience with no independently-checkable factual claim (e.g. "tell me about a time you..."), there's nothing to fact-check — judge internal plausibility/consistency instead, and do NOT penalize it just for being unverifiable. Score 1.0 by default when nothing in the answer is actually wrong.
 - clarity: is it well-structured, easy to follow, and articulate?
 - depth: are there specific examples, metrics, or outcomes — not just generalities?
 - confidence: does the language sound assured, or is it hedged with "maybe", "I think", "kind of"?
-- overallScore: weighted average (relevance 35%, clarity 25%, depth 25%, confidence 15%) — do NOT factor the extra dimension(s) below into this number, they're scored and used separately.${extraDimensionsGuide}
+- overallScore: weighted average (relevance 25%, accuracy 25%, clarity 20%, depth 20%, confidence 10%) — do NOT factor the extra dimension(s) below into this number, they're scored and used separately.${extraDimensionsGuide}
 ${goDeeperOn ? `
 Also decide: does this answer warrant a probing follow-up (see system prompt)? If yes, write ONE natural, spoken follow-up question — one or two sentences, conversational, no bullet points, no em dashes, going straight to the probe (don't repeat the original question or restate what they said).` : ''}
 
 Return JSON:
 {
   "relevance": 0.0,
+  "accuracy": 0.0,
   "clarity": 0.0,
   "depth": 0.0,
   "confidence": 0.0,
   "overallScore": 0.0,
   "feedback": [
-    { "dimension": "relevance|clarity|depth|confidence", "message": "one specific observation", "severity": "high|medium|low" }
+    { "dimension": "relevance|accuracy|clarity|depth|confidence", "message": "one specific observation — if accuracy is low, name exactly what was factually wrong", "severity": "high|medium|low" }
   ],
   "suggestions": ["one actionable improvement tip"]${extraDimensionsJson}${goDeeperOn ? `,
   "needsFollowUp": false,
@@ -403,7 +405,7 @@ Return JSON:
   console.log('[Explain AI] SCORING Q:', question.questionText.slice(0, 60));
   const score = await chatJSON<ScoreResponse>(systemPrompt, userPrompt);
   console.group('[Explain AI] SCORE RECEIVED');
-  console.log(`Overall: ${Math.round(score.overallScore * 100)}% | Relevance: ${Math.round((score.relevance ?? 0) * 100)}% | Clarity: ${Math.round((score.clarity ?? 0) * 100)}% | Depth: ${Math.round((score.depth ?? 0) * 100)}% | Confidence: ${Math.round((score.confidence ?? 0) * 100)}%`);
+  console.log(`Overall: ${Math.round(score.overallScore * 100)}% | Relevance: ${Math.round((score.relevance ?? 0) * 100)}% | Accuracy: ${Math.round((score.accuracy ?? 0) * 100)}% | Clarity: ${Math.round((score.clarity ?? 0) * 100)}% | Depth: ${Math.round((score.depth ?? 0) * 100)}% | Confidence: ${Math.round((score.confidence ?? 0) * 100)}%`);
   if (isOwnershipQuestion) console.log(`Ownership: ${Math.round((score.ownership ?? 0) * 100)}% | Execution: ${Math.round((score.execution ?? 0) * 100)}%`);
   if (isProactivenessQuestion) console.log(`Proactiveness: ${Math.round((score.proactiveness ?? 0) * 100)}%`);
   if (goDeeperOn) console.log(`Go Deeper: needsFollowUp=${score.needsFollowUp} — ${score.followUpQuestion ?? '(none)'}`);

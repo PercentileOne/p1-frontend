@@ -31,7 +31,7 @@ function roleOnly(answers: SessionAnswer[]) {
   return answers.filter(a => a.question.source === 'Role');
 }
 
-function avg(answers: SessionAnswer[], key: 'clarity' | 'relevance' | 'depth' | 'confidence') {
+function avg(answers: SessionAnswer[], key: 'clarity' | 'relevance' | 'accuracy' | 'depth' | 'confidence') {
   const roleAnswers = roleOnly(answers);
   if (!roleAnswers.length) return 0;
   return roleAnswers.reduce((s, a) => s + (a.score as unknown as Record<string, number>)[key], 0) / roleAnswers.length;
@@ -552,8 +552,8 @@ export default function InterviewSummaryPage() {
   // Matches InterviewResultsBody's own blending exactly — Mike's spoken percentage would
   // otherwise mismatch the score card sitting right next to his debrief banner.
   const overall = Math.min(1, overallAvg(answers) + (mcqBonusPoints + hrBonusPoints) / 100);
-  const strengths = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) >= 0.65);
-  const improvements = (['clarity', 'relevance', 'depth', 'confidence'] as const).filter(d => avg(answers, d) < 0.55);
+  const strengths = (['clarity', 'relevance', 'accuracy', 'depth', 'confidence'] as const).filter(d => avg(answers, d) >= 0.65);
+  const improvements = (['clarity', 'relevance', 'accuracy', 'depth', 'confidence'] as const).filter(d => avg(answers, d) < 0.55);
 
   // Find the weakest competency tag across all questions
   const tagScores: Record<string, { total: number; count: number }> = {};
@@ -667,6 +667,7 @@ export default function InterviewSummaryPage() {
         <div class="label">Scores</div>
         <div class="scores">
           Relevance: ${Math.round(a.score.relevance * 100)}% &nbsp;|&nbsp;
+          Accuracy: ${Math.round(a.score.accuracy * 100)}% &nbsp;|&nbsp;
           Clarity: ${Math.round(a.score.clarity * 100)}% &nbsp;|&nbsp;
           Depth: ${Math.round(a.score.depth * 100)}% &nbsp;|&nbsp;
           Confidence: ${Math.round(a.score.confidence * 100)}% &nbsp;|&nbsp;
