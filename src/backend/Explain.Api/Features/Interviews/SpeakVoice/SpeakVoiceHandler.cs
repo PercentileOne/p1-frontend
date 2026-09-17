@@ -18,7 +18,12 @@ public class SpeakVoiceHandler(
     ILogger<SpeakVoiceHandler> logger)
     : IRequestHandler<SpeakVoiceCommand, Result<SpeakVoiceDto>>
 {
-    private const string Model = "eleven_turbo_v2";
+    // eleven_flash_v2_5 (Francis, 2026-09-18) — the old eleven_turbo_v2 is English-only;
+    // ElevenLabs' own migration guidance says it's "functionally equivalent" to eleven_flash_v2
+    // (same English-only scope, ~75ms latency either way), so this isn't a latency trade-off,
+    // just genuinely adding the 32-language multilingual support candidates in French/Spanish/etc.
+    // sessions actually need — same voice IDs work unchanged across the swap.
+    private const string Model = "eleven_flash_v2_5";
 
     // Same transient-status retry as ReadAloudHandler — ElevenLabs' 409 "already_running" and
     // 429 both self-resolve on a short retry.

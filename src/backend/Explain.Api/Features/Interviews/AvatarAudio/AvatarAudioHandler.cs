@@ -22,7 +22,10 @@ public class AvatarAudioHandler(
     ILogger<AvatarAudioHandler> logger)
     : IRequestHandler<AvatarAudioCommand, Result<AvatarAudioDto>>
 {
-    private const string Model = "eleven_turbo_v2";
+    // eleven_flash_v2_5 (Francis, 2026-09-18) — see SpeakVoiceHandler's identical comment: the
+    // old eleven_turbo_v2 is English-only; this sibling adds 32-language multilingual support at
+    // the same ~75ms latency class, same voice IDs unchanged.
+    private const string Model = "eleven_flash_v2_5";
     private const int PcmSampleRate = 24000; // LiveAvatar Lite mode's required rate — not configurable
 
     private static readonly HttpStatusCode[] TransientStatuses = [HttpStatusCode.Conflict, HttpStatusCode.TooManyRequests];
