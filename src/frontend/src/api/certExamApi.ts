@@ -149,6 +149,23 @@ function authHeaders(token: string): Record<string, string> {
   return { Authorization: `Bearer ${token}` };
 }
 
+export interface CertExamSummaryRow {
+  id: string;
+  createdAt: string;
+  certId: string;
+  certName: string;
+  passed: boolean;
+  scaledScore: number;
+  maxScore: number;
+  isShared: boolean;
+}
+
+export async function listCertExams(token: string): Promise<CertExamSummaryRow[]> {
+  const res = await fetch(`${API_BASE}/api/cert-exams`, { headers: authHeaders(token) });
+  if (!res.ok) return [];
+  return res.json() as Promise<CertExamSummaryRow[]>;
+}
+
 export async function saveCertExamSession(token: string, session: Omit<CertExamSession, 'shareToken' | 'isShared'>): Promise<{ id: string }> {
   const res = await fetch(`${API_BASE}/api/cert-exams`, {
     method: 'POST',
