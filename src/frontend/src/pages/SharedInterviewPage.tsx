@@ -24,6 +24,7 @@ interface SharedSession {
   candidateName?: string;
   mcqQuestions?: MCQQuestionResult[];
   mcqResults?: MCQAnswerResult[];
+  askInterviewerBonusPoints?: number;
 }
 
 // Public, unauthenticated view for a shared interview link / QR scan. Recruiters landing
@@ -125,6 +126,7 @@ export default function SharedInterviewPage() {
         answers={answers}
         mcqQuestions={data.mcqQuestions}
         mcqResults={data.mcqResults}
+        askInterviewerBonusPoints={data.askInterviewerBonusPoints}
       />
 
       {/* Anyone viewing — a recruiter, a colleague, a friend — can pass this along too */}

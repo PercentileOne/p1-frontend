@@ -1365,3 +1365,48 @@ Return JSON: { "answer": "..." }`;
     return question.modelAnswer;
   }
 }
+
+// ── "Ask The Interviewer" — end-of-interview candidate-questions moment ────────────────
+
+// Unlike generateModelAnswer, there's no per-question hint field to fall back to here, so this
+// small evergreen list stands in on a network/parse failure — genuinely good, role-agnostic
+// questions rather than a hard error with nothing to show.
+const CANDIDATE_QUESTION_FALLBACKS: { question: string; rationale: string }[] = [
+  { question: 'What does success in this role look like after the first six months?', rationale: 'Shows you\'re already thinking about impact, not just getting hired.' },
+  { question: "What's the biggest challenge facing the team right now?", rationale: 'Signals genuine interest in the team\'s real problems, not just the job description.' },
+  { question: 'How would you describe the team\'s current priorities, and how does this role fit into them?', rationale: 'Demonstrates you want to understand where you\'d add value, not just what the job title says.' },
+];
+
+export async function generateCandidateQuestion(
+  cvCtx?: CVContext,
+  jobCtx?: JobSpecContext,
+  selectedLanguage?: string,
+): Promise<{ question: string; rationale: string }> {
+  const context = [
+    jobCtx?.title ? `Role: ${jobCtx.title}` : null,
+    jobCtx?.requiredSkills?.length ? `Required skills: ${jobCtx.requiredSkills.slice(0, 5).join(', ')}` : null,
+    cvCtx?.roles?.[0] ? `Candidate's current/most recent role (for context, not to tailor around): ${cvCtx.roles[0]}` : null,
+  ].filter(Boolean).join('\n');
+
+  const languageNote = `Write in the language the candidate selected in the UI — ISO code "${selectedLanguage || 'en'}".`;
+
+  const systemPrompt = `You are an expert career coach helping a candidate prepare a genuinely good question to ask their interviewers at the end of the interview. It must be specific to this role/company — never a generic cliché like "what's the culture like" unless the context genuinely makes it a strong, specific choice. ${languageNote}
+Return ONLY a valid JSON object — no markdown, no explanation.`;
+
+  const userPrompt = `${context || 'No specific role context is available — write a strong, genuinely useful general question a thoughtful candidate could ask any interviewer.'}
+
+Write ONE specific, thoughtful question the candidate could ask the interviewers, plus a one-sentence rationale for why it's a strong question to ask (not what the answer would be — why asking it makes a good impression / shows genuine engagement).
+
+Return JSON: { "question": "...", "rationale": "..." }`;
+
+  try {
+    const result = await chatJSON<{ question: string; rationale: string }>(systemPrompt, userPrompt, 0.8);
+    if (result.question?.trim() && result.rationale?.trim()) {
+      return { question: result.question.trim(), rationale: result.rationale.trim() };
+    }
+    throw new Error('empty question/rationale');
+  } catch (err) {
+    console.error('[aiScoring] generateCandidateQuestion failed, falling back to an evergreen question:', err);
+    return CANDIDATE_QUESTION_FALLBACKS[Math.floor(Math.random() * CANDIDATE_QUESTION_FALLBACKS.length)];
+  }
+}

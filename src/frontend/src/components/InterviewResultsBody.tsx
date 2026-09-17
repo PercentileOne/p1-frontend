@@ -84,11 +84,13 @@ export function InterviewResultsBody({
   answers,
   mcqQuestions = [],
   mcqResults = [],
+  askInterviewerBonusPoints = 0,
   onStudyTopic,
 }: {
   answers: ResultAnswer[];
   mcqQuestions?: MCQQuestionResult[];
   mcqResults?: MCQAnswerResult[];
+  askInterviewerBonusPoints?: number;
   onStudyTopic?: (tag: string) => void;
 }) {
   const baseScore = overallAvg(answers);
@@ -101,7 +103,9 @@ export function InterviewResultsBody({
   // "+N MCQ bonus" side-note next to a percentage it never actually affected, which is exactly
   // why answering the bonus round well never showed up anywhere in the number itself. Capped at
   // 100 so a perfect MCQ/HR round can't push a middling set of real role answers above full marks.
-  const overall = Math.min(1, baseScore + (mcqBonusPoints + hrBonusPoints) / 100);
+  // askInterviewerBonusPoints joins the same blend (Francis, 2026-09-17) — a flat award for
+  // engaging with the end-of-interview "Ask The Interviewer" moment.
+  const overall = Math.min(1, baseScore + (mcqBonusPoints + hrBonusPoints + askInterviewerBonusPoints) / 100);
 
   return (
     <>
@@ -116,6 +120,9 @@ export function InterviewResultsBody({
           )}
           {hrBonusPoints > 0 && (
             <div style={{ fontSize: '12px', color: '#a78bfa', fontWeight: 700, marginTop: '4px' }}>+{Math.round(hrBonusPoints)} HR bonus</div>
+          )}
+          {askInterviewerBonusPoints > 0 && (
+            <div style={{ fontSize: '12px', color: '#4F8EF7', fontWeight: 700, marginTop: '4px' }}>+{askInterviewerBonusPoints} Ask-The-Interviewer bonus</div>
           )}
           {revealedCount > 0 && (
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>💡 Asked for Answer: {revealedCount}/{answers.length}</div>

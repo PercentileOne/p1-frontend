@@ -13,6 +13,9 @@ export type RoomPhase =
   | 'answering'
   | 'scoring'
   | 'coaching'
+  // Fires on ~half of sessions, once, right after the last question's coaching closes — Amina
+  // asks if the candidate has any questions for the interviewers, then offers to suggest one.
+  | 'candidate-questions'
   | 'done';
 
 export interface SessionAnswer {

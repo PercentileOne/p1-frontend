@@ -483,6 +483,7 @@ export default function InterviewSummaryPage() {
   const jobCtx: JobSpecContext | undefined = src.jobCtx;
   const mcqQuestions: Array<{ questionText: string; options: string[]; correctIndex: number; explanation: string; topic?: string }> = src.mcqQuestions ?? [];
   const mcqResults: Array<{ correct: boolean; selectedIndex: number; questionIndex: number }> = src.mcqResults ?? [];
+  const askInterviewerBonusPoints: number = src.askInterviewerBonusPoints ?? 0;
   const playbackUrl: string | null = src.playbackUrl ?? (typeof src.videoUrl === 'string' ? src.videoUrl : null);
   const chapters: { questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[] = src.chapters ?? [];
   const interviewId: string | undefined = src.interviewId ?? routeId;
@@ -551,7 +552,7 @@ export default function InterviewSummaryPage() {
   const hrBonusPoints = hrBonus(answers);
   // Matches InterviewResultsBody's own blending exactly — Mike's spoken percentage would
   // otherwise mismatch the score card sitting right next to his debrief banner.
-  const overall = Math.min(1, overallAvg(answers) + (mcqBonusPoints + hrBonusPoints) / 100);
+  const overall = Math.min(1, overallAvg(answers) + (mcqBonusPoints + hrBonusPoints + askInterviewerBonusPoints) / 100);
   const strengths = (['clarity', 'relevance', 'accuracy', 'depth', 'confidence'] as const).filter(d => avg(answers, d) >= 0.65);
   const improvements = (['clarity', 'relevance', 'accuracy', 'depth', 'confidence'] as const).filter(d => avg(answers, d) < 0.55);
 
@@ -973,6 +974,7 @@ ${questionsHtml}
               answers={answers}
               mcqQuestions={mcqQuestions}
               mcqResults={mcqResults}
+              askInterviewerBonusPoints={askInterviewerBonusPoints}
               onStudyTopic={goToLearn}
             />
 

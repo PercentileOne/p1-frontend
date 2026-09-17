@@ -9,11 +9,12 @@ import type { InterviewQuestion } from '../api/explainApi';
 import { speak, elevenLabsConfigured, getStoredInterviewerVolume, setInterviewerVolume } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
-import { sessionPrepareClient, generateMikeScriptOnly, generateModelAnswer } from '../api/aiScoring';
+import { sessionPrepareClient, generateMikeScriptOnly, generateModelAnswer, generateCandidateQuestion } from '../api/aiScoring';
 import { saveQuestionBankEntry } from '../api/questionBankApi';
 import { ChairSpinner } from '../components/ChairSpinner';
 import CinematicMCQ from '../components/CinematicMCQ';
 import AnswerRevealOverlay from '../components/AnswerRevealOverlay';
+import AskInterviewerOverlay from '../components/AskInterviewerOverlay';
 import { logFlowEvent } from '../api/flowLogger';
 import { useAuthStore } from '../auth/authStore';
 import { FILTER_CSS, FILTER_LABELS, FILTER_PRESETS, type FilterPreset } from '../hooks/useVideoFilter';
@@ -646,7 +647,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     return true;
   }, [evaluateGoDeeper, qIndex, questions, askQuestion, askFollowUpWithHandoff]);
 
-  const closeInterview = useCallback((answers: SessionAnswer[], mcqRes: typeof mcqResults, bonusPts: number) => {
+  const closeInterview = useCallback((answers: SessionAnswer[], mcqRes: typeof mcqResults, bonusPts: number, askInterviewerBonusPts = 0) => {
     const name = resolvedPreferredName ? `, ${resolvedPreferredName}` : '';
     const closingLine = `Well${name}, that brings us to the end of your interview — thank you so much for your time today. I'm going to have a quick word with Wayne, and then your agent Michelle will be in touch shortly with some feedback. In the meantime, you can watch your full interview replay on the next screen, and retake it anytime you like. Best of luck!`;
     cancelSpeakRef.current?.();
@@ -661,6 +662,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       navigate(`/interview-summary/${interviewIdRef.current}`, {
         state: {
           answers, cvCtx, jobCtx, mcqResults: mcqRes, mcqQuestions, mcqBonusPoints: bonusPts,
+          askInterviewerBonusPoints: askInterviewerBonusPts,
           playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current,
           interviewId: interviewIdRef.current, candidateId: getCandidateId(),
         },
@@ -673,6 +675,81 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       ? liveAvatarSpeakHr(closingLine, onClosingDone)
       : speak(closingLine, 'hr', onClosingDone, handleSarahVideoAnalyser);
   }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl, resetForNextQuestion, handleSarahVideoAnalyser, setHrState, avatarEnabled, liveAvatarSpeakHr]);
+
+  // ── "Ask The Interviewer" — end-of-interview candidate-questions moment (Francis, 2026-09-17) ──
+  // Fires on ~half of sessions (decided once here, never re-rolled mid-session), right after the
+  // last question's coaching closes and before the goodbye line. Amina asks if the candidate has
+  // any questions, then offers — same "Tell Me The Answer" shape — to suggest a genuinely good one
+  // to ask, with the same Save mechanism as the Question Bank. A plain "Continue" always exists so
+  // a candidate who already knows what to ask isn't forced through it.
+  const ASK_INTERVIEWER_BONUS_POINTS = 5;
+  const askInterviewerRollRef = useRef(Math.random() < 0.5);
+  const askInterviewerFiredRef = useRef(false);
+  const askInterviewerCloseArgsRef = useRef<{ answers: SessionAnswer[]; results: typeof mcqResults; bonusPoints: number } | null>(null);
+  const [askInterviewerReady, setAskInterviewerReady] = useState(false);
+  const [askInterviewerReveal, setAskInterviewerReveal] = useState<{ loading: boolean; question: string | null; rationale: string | null } | null>(null);
+
+  // Uploads the recording and closes — deliberately deferred until any "Ask The Interviewer"
+  // moment has fully resolved (Continue or Save & Continue), so the earned bonus (if any) can be
+  // baked into the persisted overallScore in the SAME upload, not a separate patch afterward.
+  // This also means the recording keeps rolling through the whole candidate-questions moment,
+  // which is exactly right — it's part of the interview, not a post-interview screen.
+  const finishInterview = useCallback((answers: SessionAnswer[], results: typeof mcqResults, bonusPoints: number, askBonus: number) => {
+    uploadRecording(answers, { mcqQuestions, mcqResults: results, mcqBonusPoints: bonusPoints, askInterviewerBonusPoints: askBonus, cvCtx, jobCtx });
+    closeInterview(answers, results, bonusPoints, askBonus);
+  }, [mcqQuestions, cvCtx, jobCtx, uploadRecording, closeInterview]);
+
+  const beginAskInterviewer = useCallback(() => {
+    const name = resolvedPreferredName ? `, ${resolvedPreferredName}` : '';
+    const askLine = `So${name}, is there anything you'd like to ask us before we wrap up?`;
+    cancelSpeakRef.current?.();
+    setPhase('candidate-questions');
+    setAskInterviewerReady(false);
+    setHrState('speaking');
+    const onAskDone = () => {
+      setHrState('idle');
+      setAskInterviewerReady(true);
+    };
+    cancelSpeakRef.current = avatarEnabled
+      ? liveAvatarSpeakHr(askLine, onAskDone)
+      : speak(askLine, 'hr', onAskDone, handleSarahVideoAnalyser);
+  }, [resolvedPreferredName, avatarEnabled, liveAvatarSpeakHr, handleSarahVideoAnalyser, setHrState]);
+
+  const handleAskInterviewerSuggest = useCallback(() => {
+    setAskInterviewerReveal({ loading: true, question: null, rationale: null });
+    generateCandidateQuestion(cvCtx, jobCtx, sessionLanguage).then(({ question, rationale }) => {
+      setAskInterviewerReveal({ loading: false, question, rationale });
+      cancelSpeakRef.current = speak(rationale, 'hr', () => {});
+    });
+  }, [cvCtx, jobCtx, sessionLanguage]);
+
+  const handleAskInterviewerSaveContinue = useCallback(() => {
+    if (!askInterviewerReveal || askInterviewerReveal.loading || !askInterviewerReveal.question) return;
+    cancelSpeakRef.current?.();
+    if (authToken) {
+      void saveQuestionBankEntry(authToken, {
+        questionText: askInterviewerReveal.question,
+        answerText: askInterviewerReveal.rationale ?? '',
+        questionType: 'Ask The Interviewer',
+        difficulty: null,
+        competencyTags: null,
+        jobTitle: ctx.jobTitle ?? null,
+        company: bgResolvedCompany ?? ctx.company ?? null,
+      });
+    }
+    setAskInterviewerReveal(null);
+    const args = askInterviewerCloseArgsRef.current;
+    askInterviewerCloseArgsRef.current = null;
+    if (args) finishInterview(args.answers, args.results, args.bonusPoints, ASK_INTERVIEWER_BONUS_POINTS);
+  }, [askInterviewerReveal, authToken, ctx.jobTitle, ctx.company, bgResolvedCompany, finishInterview]);
+
+  const handleAskInterviewerContinue = useCallback(() => {
+    cancelSpeakRef.current?.();
+    setAskInterviewerReveal(null);
+    const args = askInterviewerCloseArgsRef.current;
+    askInterviewerCloseArgsRef.current = null;
+    if (args) finishInterview(args.answers, args.results, args.bonusPoints, 0);
+  }, [finishInterview]);
 
   // Candidate-inactivity watchdog (Francis, 2026-09-17 — an interview got left open ~45
   // minutes mid-answer, forgotten mid-school-run, which is exactly the open-ended cost/
@@ -733,13 +810,18 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
   const advanceOrClose = useCallback((answers: SessionAnswer[], results: typeof mcqResults, bonusPoints: number) => {
     const next = qIndex + 1;
     if (next >= questions.length) {
-      uploadRecording(answers, { mcqQuestions, mcqResults: results, mcqBonusPoints: bonusPoints, cvCtx, jobCtx });
-      closeInterview(answers, results, bonusPoints);
+      if (askInterviewerRollRef.current && !askInterviewerFiredRef.current) {
+        askInterviewerFiredRef.current = true;
+        askInterviewerCloseArgsRef.current = { answers, results, bonusPoints };
+        beginAskInterviewer();
+      } else {
+        finishInterview(answers, results, bonusPoints, 0);
+      }
     } else {
       setQIndex(next);
       askQuestion(next);
     }
-  }, [qIndex, questions.length, mcqQuestions, cvCtx, jobCtx, uploadRecording, closeInterview, askQuestion]);
+  }, [qIndex, questions.length, finishInterview, beginAskInterviewer, askQuestion]);
 
   const nextQuestion = useCallback(() => {
     resetForNextQuestion();
@@ -923,6 +1005,18 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           onRepeat={revealState.answerText ? () => {
             cancelSpeakRef.current?.();
             cancelSpeakRef.current = speak(revealState.answerText!, 'hr', () => {});
+          } : undefined}
+        />
+      )}
+      {askInterviewerReveal && (
+        <AskInterviewerOverlay
+          loading={askInterviewerReveal.loading}
+          question={askInterviewerReveal.question}
+          rationale={askInterviewerReveal.rationale}
+          onSaveAndContinue={handleAskInterviewerSaveContinue}
+          onRepeat={askInterviewerReveal.rationale ? () => {
+            cancelSpeakRef.current?.();
+            cancelSpeakRef.current = speak(askInterviewerReveal.rationale!, 'hr', () => {});
           } : undefined}
         />
       )}
@@ -1767,6 +1861,33 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               )}
 
             </div>
+          )}
+
+          {/* ── ASK THE INTERVIEWER ───────────────────────────────────────── */}
+          {phase === 'candidate-questions' && (
+            <motion.div key="ask-interviewer" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '22px 24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: askInterviewerReady ? '20px' : 0 }}>
+                  {!askInterviewerReady && (
+                    <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.4 }}
+                      style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#a78bfa', flexShrink: 0 }} />
+                  )}
+                  <div style={{ fontSize: '14px', color: 'var(--text-2)' }}>
+                    {askInterviewerReady ? 'Amina asked if you have any questions for the interviewers.' : 'Amina is asking…'}
+                  </div>
+                </div>
+                {askInterviewerReady && (
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <button onClick={handleAskInterviewerSuggest} style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '10px', padding: '11px 20px', fontSize: '13px', fontWeight: 700, color: '#34D399', cursor: 'pointer' }}>
+                      💡 Suggest a good question to ask
+                    </button>
+                    <button onClick={handleAskInterviewerContinue} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '10px', padding: '11px 20px', fontSize: '13px', fontWeight: 700, color: 'var(--text-3)', cursor: 'pointer' }}>
+                      Continue →
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>

@@ -28,11 +28,12 @@ export interface UseInterviewRecordingReturn {
   recordingFailed: boolean;
   uploadStatus: 'idle' | 'uploading' | 'done' | 'error';
   startRecording: () => Promise<void>;
-  /** mcqQuestions/mcqResults/mcqBonusPoints/cvCtx/jobCtx are passed at CALL TIME, not closed
-   * over — see the doc comment above uploadRecording's definition for why that matters. */
+  /** mcqQuestions/mcqResults/mcqBonusPoints/askInterviewerBonusPoints/cvCtx/jobCtx are passed at
+   * CALL TIME, not closed over — see the doc comment above uploadRecording's definition for why
+   * that matters. */
   uploadRecording: (
     answers: SessionAnswer[],
-    extra: { mcqQuestions: MCQQuestion[]; mcqResults: McqResult[]; mcqBonusPoints: number; cvCtx?: CVContext; jobCtx?: JobSpecContext },
+    extra: { mcqQuestions: MCQQuestion[]; mcqResults: McqResult[]; mcqBonusPoints: number; askInterviewerBonusPoints?: number; cvCtx?: CVContext; jobCtx?: JobSpecContext },
   ) => void;
   buildPlaybackUrl: () => string | null;
   chapterMarkersRef: React.RefObject<ChapterMarker[]>;
@@ -280,7 +281,7 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
   // below for how the previous version had to work around it before this change.
   const uploadRecording = useCallback((
     answers: SessionAnswer[],
-    extra: { mcqQuestions: MCQQuestion[]; mcqResults: McqResult[]; mcqBonusPoints: number; cvCtx?: CVContext; jobCtx?: JobSpecContext },
+    extra: { mcqQuestions: MCQQuestion[]; mcqResults: McqResult[]; mcqBonusPoints: number; askInterviewerBonusPoints?: number; cvCtx?: CVContext; jobCtx?: JobSpecContext },
   ) => {
     const recorder = mediaRecorderRef.current;
     const interviewId = interviewIdRef.current;
@@ -324,7 +325,10 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
         // shown (summary page, My Interviews list, recruiter views). Capped at 100 so a perfect
         // MCQ/HR round can't push a middling set of real role answers above full marks. Matches
         // the identical blend in InterviewResultsBody.tsx / InterviewSummaryPage.tsx exactly.
-        const overallScore = Math.min(1, baseScore + (extra.mcqBonusPoints + hrBonusPoints) / 100);
+        // askInterviewerBonusPoints (Francis, 2026-09-17) joins the same blend — a flat award
+        // for engaging with the end-of-interview "Ask The Interviewer" moment, same treatment.
+        const askInterviewerBonusPoints = extra.askInterviewerBonusPoints ?? 0;
+        const overallScore = Math.min(1, baseScore + (extra.mcqBonusPoints + hrBonusPoints + askInterviewerBonusPoints) / 100);
         const metadata = JSON.stringify({
           candidateId,
           interviewId,
@@ -335,6 +339,7 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
           mcqQuestions: extra.mcqQuestions,
           mcqResults: extra.mcqResults,
           mcqBonusPoints: extra.mcqBonusPoints,
+          askInterviewerBonusPoints,
           hrBonusPoints,
           chapters: chapterMarkersRef.current,
           cvCtx: extra.cvCtx,
