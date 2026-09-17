@@ -10,7 +10,7 @@ import { getTopLearnTopics, type LearnTopicStat } from "../api/learnTopicsApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
   MessageSquare, Settings, LogOut, ChevronRight, ChevronDown, CheckCircle2, Circle, Compass, Gift, Zap,
-  HeartHandshake, Mic, BellRing, PartyPopper,
+  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked,
 } from "lucide-react";
 import LearnPanel from "./LearnPanel";
 import CareersPanel from "./CareersPanel";
@@ -19,6 +19,7 @@ import MyTalksPage from "./MyTalksPage";
 import LearnAlertsPage from "./LearnAlertsPage";
 import ReceivedPreps from "./ReceivedPreps";
 import ReceivedGifts from "./ReceivedGifts";
+import QuestionBankPage from "./QuestionBankPage";
 import ProfilePage from "./ProfilePage";
 import JobsHome from "./JobsHome";
 import MessagesPage from "./MessagesPage";
@@ -46,6 +47,7 @@ const NAV_ITEMS = [
   { Icon: HeartHandshake,  label: "My Career Coach", slug: "career-coach" },
   { Icon: User,            label: "My Profile",      slug: "profile" },
   { Icon: Video,           label: "My Interviews",   slug: "interviews" },
+  { Icon: BookMarked,      label: "Question Bank",   slug: "question-bank" },
   { Icon: Mic,             label: "My Talks",        slug: "talks" },
   { Icon: BellRing,        label: "Learn Alerts",    slug: "learn-alerts" },
   { Icon: Gift,            label: "Interview Preps", slug: "interview-preps" },
@@ -827,6 +829,7 @@ export default function CandidateDashboard() {
         {activeNav === "Learn"          && <LearnPanel initialTopic={studyTopic} />}
         {activeNav === "Careers"        && <CareersPanel />}
         {activeNav === "My Interviews"  && <MyInterviewsPage />}
+        {activeNav === "Question Bank"  && <QuestionBankPage />}
         {activeNav === "My Talks"       && <MyTalksPage />}
         {activeNav === "Learn Alerts"   && <LearnAlertsPage />}
         {activeNav === "Interview Preps" && <ReceivedPreps />}
@@ -837,7 +840,7 @@ export default function CandidateDashboard() {
         {activeNav === "Demo"           && <DemoPanel />}
         {activeNav === "Settings"       && <SettingsPage />}
 
-        {!["My Career Coach", "Learn", "Careers", "My Interviews", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Settings"].includes(activeNav) && <>
+        {!["My Career Coach", "Learn", "Careers", "My Interviews", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Settings"].includes(activeNav) && <>
 
         {/* ── STATS ROW ── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>

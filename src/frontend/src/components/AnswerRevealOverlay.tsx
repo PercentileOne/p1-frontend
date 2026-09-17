@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { RotateCcw } from 'lucide-react';
 
 // Copied and adapted from CinematicMCQ.tsx's shell (backdrop/card/glow/icon/header) — this
 // codebase's own established convention for this cinematic-overlay visual language is
@@ -12,9 +13,13 @@ interface Props {
   loading: boolean;
   answerText: string | null;
   onContinue: () => void;
+  // Narration already auto-plays once (InterviewRoomPage.tsx's handleTellMeTheAnswer) — this
+  // just lets a candidate hear it again without leaving/re-entering the overlay. Optional
+  // since the parent owns the actual speak() call, not this component.
+  onRepeat?: () => void;
 }
 
-export default function AnswerRevealOverlay({ questionText, loading, answerText, onContinue }: Props) {
+export default function AnswerRevealOverlay({ questionText, loading, answerText, onContinue, onRepeat }: Props) {
   return (
     <AnimatePresence>
       <motion.div
@@ -108,8 +113,24 @@ export default function AnswerRevealOverlay({ questionText, loading, answerText,
                 borderRadius: '14px', padding: '20px', marginBottom: '24px',
               }}
             >
-              <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(52,211,153,0.75)', marginBottom: '10px' }}>
-                What a strong answer sounds like
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(52,211,153,0.75)' }}>
+                  What a strong answer sounds like
+                </div>
+                {onRepeat && (
+                  <button
+                    onClick={onRepeat}
+                    title="Play the narration again"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '5px',
+                      background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)',
+                      borderRadius: '8px', padding: '5px 10px', color: '#34D399',
+                      fontSize: '11px', fontWeight: 700, cursor: 'pointer', flexShrink: 0,
+                    }}
+                  >
+                    <RotateCcw size={12} /> Repeat
+                  </button>
+                )}
               </div>
               <div style={{ fontSize: '14px', color: 'rgba(240,244,255,0.85)', lineHeight: 1.65 }}>
                 {answerText}
@@ -127,7 +148,7 @@ export default function AnswerRevealOverlay({ questionText, loading, answerText,
               fontSize: '14px', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer',
             }}
           >
-            Continue →
+            Save & Continue →
           </button>
         </motion.div>
       </motion.div>

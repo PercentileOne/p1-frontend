@@ -10,6 +10,7 @@ import { speak, elevenLabsConfigured, getStoredInterviewerVolume, setInterviewer
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
 import { sessionPrepareClient, generateMikeScriptOnly, generateModelAnswer } from '../api/aiScoring';
+import { saveQuestionBankEntry } from '../api/questionBankApi';
 import { ChairSpinner } from '../components/ChairSpinner';
 import CinematicMCQ from '../components/CinematicMCQ';
 import AnswerRevealOverlay from '../components/AnswerRevealOverlay';
@@ -723,6 +724,20 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     const thinkTimeMs = thinkStartRef.current > 0 ? Date.now() - thinkStartRef.current : undefined;
     thinkStartRef.current = 0;
     const revealedEntry = recordRevealedAnswer(q, revealState.answerText, thinkTimeMs);
+    // "Save & Continue" (Francis, 2026-09-17) — every revealed answer a candidate clicks
+    // through gets kept in their personal Question Bank, not just recorded for this session's
+    // own scoring. Fire-and-forget: a failed save must never interrupt the live interview.
+    if (authToken) {
+      void saveQuestionBankEntry(authToken, {
+        questionText: q.questionText,
+        answerText: revealState.answerText,
+        questionType: q.questionType,
+        difficulty: ctx.selectedDifficulty ?? null,
+        competencyTags: q.competencyTags,
+        jobTitle: ctx.jobTitle ?? null,
+        company: bgResolvedCompany ?? ctx.company ?? null,
+      });
+    }
     setRevealState(null);
     resetForNextQuestion();
     setTypedAnswer('');
@@ -731,7 +746,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     if (maybeFireMcq(qIndex)) return;
     // Same reasoning as Pass — no attempted answer, nothing for Go Deeper to probe.
     advanceOrClose([...sessionAnswers, revealedEntry], mcqResults, mcqBonusPoints);
-  }, [q, qIndex, revealState, sessionAnswers, mcqResults, mcqBonusPoints, maybeFireMcq, recordRevealedAnswer, resetForNextQuestion, advanceOrClose]);
+  }, [q, qIndex, revealState, sessionAnswers, mcqResults, mcqBonusPoints, maybeFireMcq, recordRevealedAnswer, resetForNextQuestion, advanceOrClose, authToken, bgResolvedCompany]);
 
   // Thin wrapper: phase/avatar-state transitions stay here (orchestrator territory, same as
   // askQuestion/beginInterviewIntro's setPhase calls), scoring itself is useAnswerScoring's job.
@@ -821,6 +836,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           loading={revealState.loading}
           answerText={revealState.answerText}
           onContinue={handleRevealContinue}
+          onRepeat={revealState.answerText ? () => {
+            cancelSpeakRef.current?.();
+            cancelSpeakRef.current = speak(revealState.answerText!, 'hr', () => {});
+          } : undefined}
         />
       )}
       {/* Top bar */}

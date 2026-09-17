@@ -124,6 +124,16 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("qaLog", "/candidateId"));
 
+        // A candidate's deliberately-kept "Question Bank" — one document per question they
+        // clicked "Save & Continue" on after revealing its model answer (Francis, 2026-09-17).
+        // Distinct from qaLog above on purpose: qaLog is an automatic, complete trail of every
+        // question asked regardless of what the candidate did with it (analytics-first); this
+        // container is explicit-opt-in only, so it only ever holds what the candidate actually
+        // chose to keep for later study — a genuine personal library, not a byproduct log.
+        // Partition key = /candidateId, same reasoning as qaLog/interviews above.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("questionBank", "/candidateId"));
+
         // "In Demand Subjects" — one document per (job title, subject) pair, counters
         // incremented every time a candidate keeps that subject in the intake screen's
         // Special Focus field when actually starting an interview (never for a suggestion
