@@ -164,9 +164,13 @@ export default function CertExamsPanel() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(item => (
-                <tr key={item.id} style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
-                  onClick={() => navigate(`/cert-exam-summary/${item.id}`)}>
+              {filtered.map((item, i) => (
+                <tr key={item.id}
+                  onClick={() => navigate(`/cert-exam-summary/${item.id}`)}
+                  style={{ borderBottom: '1px solid var(--border)', background: i % 2 === 1 ? 'rgba(255,255,255,0.025)' : 'transparent', cursor: 'pointer', transition: 'background 0.1s' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,142,247,0.06)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 1 ? 'rgba(255,255,255,0.025)' : 'transparent')}
+                >
                   <td style={{ padding: '14px 16px', fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{item.certName}</td>
                   <td style={{ padding: '14px 16px', fontSize: 12, color: 'var(--text-2)' }}>{fmtDate(item.createdAt)}</td>
                   <td style={{ padding: '14px 16px' }}>
