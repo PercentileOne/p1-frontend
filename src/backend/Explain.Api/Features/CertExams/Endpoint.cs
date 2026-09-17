@@ -32,6 +32,7 @@ public static class Endpoint
                 maxScore: req.MaxScore,
                 shareToken: null,
                 isShared: false,
+                decided: false,
                 sessionDataJson: JsonSerializer.Serialize(req.SessionData));
 
             var container = cosmos.GetContainer("certExamSessions");
@@ -57,7 +58,13 @@ public static class Endpoint
             while (feed.HasMoreResults)
             {
                 foreach (var env in await feed.ReadNextAsync())
-                    summaries.Add(new CertExamSummary(env.id, env.createdAt, env.certId, env.certName, env.passed, env.scaledScore, env.maxScore, env.isShared));
+                {
+                    // decided || isShared: a record that's already public MUST have been decided
+                    // at some point regardless of the raw stored flag (guards against pre-existing
+                    // Cosmos documents saved before this field existed, which deserialize with
+                    // decided=false by default even though some are already genuinely public).
+                    summaries.Add(new CertExamSummary(env.id, env.createdAt, env.certId, env.certName, env.passed, env.scaledScore, env.maxScore, env.isShared, env.decided || env.isShared));
+                }
             }
             return Results.Ok(summaries.OrderByDescending(s => s.createdAt));
         }).RequireAuthorization();
@@ -85,6 +92,7 @@ public static class Endpoint
                 envelope.createdAt,
                 envelope.shareToken,
                 envelope.isShared,
+                decided = envelope.decided || envelope.isShared,
                 sessionData = JsonSerializer.Deserialize<JsonElement>(envelope.sessionDataJson),
             });
         }).RequireAuthorization();
@@ -111,7 +119,7 @@ public static class Endpoint
             else
             {
                 shareToken = Guid.NewGuid().ToString("N")[..10];
-                var updated = envelope with { shareToken = shareToken, isShared = true };
+                var updated = envelope with { shareToken = shareToken, isShared = true, decided = true };
                 using var body = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(updated));
                 using var upsertResponse = await container.UpsertItemStreamAsync(body, new PartitionKey(candidateId));
                 if (!upsertResponse.IsSuccessStatusCode)
@@ -174,9 +182,15 @@ public static class Endpoint
     public record SaveRequest(string Id, string? CreatedAt, string CertId, string CertName, bool Passed, int ScaledScore, int MaxScore, JsonElement SessionData);
 }
 
-// id/candidateId/createdAt/certId/passed/scaledScore/maxScore/shareToken/isShared are first-class
-// fields; sessionDataJson holds the per-question answers + domain-accuracy breakdown, same
-// opaque-blob-for-the-rest pattern as Features/Interviews/Endpoint.cs's InterviewEnvelope.
+// id/candidateId/createdAt/certId/passed/scaledScore/maxScore/shareToken/isShared/decided are
+// first-class fields; sessionDataJson holds the per-question answers + domain-accuracy breakdown,
+// same opaque-blob-for-the-rest pattern as Features/Interviews/Endpoint.cs's InterviewEnvelope.
+// decided: false the moment an exam auto-completes (mirrors an interview's auto-upload-on-close
+// — the record exists before any candidate decision), flips true only when POST .../share is
+// ever called (the "Save" button). Distinct from isShared: a candidate can Save then later make
+// a result Private again, which stays decided=true (they made a real choice), vs. a candidate
+// who finished an exam and never touched the Save/Discard panel at all (decided=false) — the
+// history list surfaces that as "Pending," not lumped in with an explicit Private choice.
 public record CertExamEnvelope(
     string id,
     string candidateId,
@@ -188,6 +202,7 @@ public record CertExamEnvelope(
     int maxScore,
     string? shareToken,
     bool isShared,
+    bool decided,
     string sessionDataJson);
 
 public record CertExamSummary(
@@ -198,4 +213,5 @@ public record CertExamSummary(
     bool passed,
     int scaledScore,
     int maxScore,
-    bool isShared);
+    bool isShared,
+    bool decided);

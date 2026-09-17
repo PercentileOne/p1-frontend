@@ -138,6 +138,7 @@ export interface CertExamSession {
   createdAt: string;
   shareToken: string | null;
   isShared: boolean;
+  decided: boolean;
   sessionData: {
     answers: { question: ExamQuestion; selectedIndex: number }[];
     domainAccuracy: ScaledResult['domainAccuracy'];
@@ -158,6 +159,7 @@ export interface CertExamSummaryRow {
   scaledScore: number;
   maxScore: number;
   isShared: boolean;
+  decided: boolean;
 }
 
 export async function listCertExams(token: string): Promise<CertExamSummaryRow[]> {
@@ -166,7 +168,7 @@ export async function listCertExams(token: string): Promise<CertExamSummaryRow[]
   return res.json() as Promise<CertExamSummaryRow[]>;
 }
 
-export async function saveCertExamSession(token: string, session: Omit<CertExamSession, 'shareToken' | 'isShared'>): Promise<{ id: string }> {
+export async function saveCertExamSession(token: string, session: Omit<CertExamSession, 'shareToken' | 'isShared' | 'decided'>): Promise<{ id: string }> {
   const res = await fetch(`${API_BASE}/api/cert-exams`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders(token) },

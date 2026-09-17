@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { GraduationCap, Globe, Lock, Trash2, ChevronUp, ChevronDown, X } from 'lucide-react';
+import { GraduationCap, Globe, Lock, Clock, Trash2, ChevronUp, ChevronDown, X } from 'lucide-react';
 import { useAuthStore } from '../auth/authStore';
 import { listCertExams, shareCertExamSession, unshareCertExamSession, deleteCertExamSession, type CertExamSummaryRow } from '../api/certExamApi';
 
@@ -180,14 +180,21 @@ export default function CertExamsPanel() {
                     <span style={{ fontSize: 11, color: 'var(--text-3)', marginLeft: 8 }}>{item.scaledScore}/{item.maxScore}</span>
                   </td>
                   <td style={{ padding: '14px 16px' }} onClick={e => e.stopPropagation()}>
-                    <button
-                      onClick={() => toggleVisibility(item)}
-                      disabled={togglingIds.has(item.id)}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: togglingIds.has(item.id) ? 'default' : 'pointer', padding: 0, fontFamily: 'inherit', opacity: togglingIds.has(item.id) ? 0.5 : 1 }}
-                    >
-                      {item.isShared ? <Globe size={13} color="#34D399" /> : <Lock size={13} color="var(--text-3)" />}
-                      <span style={{ fontSize: 11, fontWeight: 700, color: item.isShared ? '#34D399' : 'var(--text-3)' }}>{item.isShared ? 'Public' : 'Private'}</span>
-                    </button>
+                    {!item.decided ? (
+                      <span title="This result hasn't been saved or discarded yet — open it to decide" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'default' }}>
+                        <Clock size={13} color="#F59E0B" />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#F59E0B' }}>Pending</span>
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => toggleVisibility(item)}
+                        disabled={togglingIds.has(item.id)}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: togglingIds.has(item.id) ? 'default' : 'pointer', padding: 0, fontFamily: 'inherit', opacity: togglingIds.has(item.id) ? 0.5 : 1 }}
+                      >
+                        {item.isShared ? <Globe size={13} color="#34D399" /> : <Lock size={13} color="var(--text-3)" />}
+                        <span style={{ fontSize: 11, fontWeight: 700, color: item.isShared ? '#34D399' : 'var(--text-3)' }}>{item.isShared ? 'Public' : 'Private'}</span>
+                      </button>
+                    )}
                   </td>
                   <td style={{ padding: '14px 16px', textAlign: 'right' }} onClick={e => e.stopPropagation()}>
                     <button title="Delete" onClick={() => handleDelete(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', display: 'inline-flex', padding: 2, opacity: 0.6 }}>

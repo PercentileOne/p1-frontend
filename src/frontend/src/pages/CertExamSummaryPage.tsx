@@ -16,6 +16,7 @@ interface IncomingState {
   answers?: { question: ExamQuestion; selectedIndex: number }[];
   domainAccuracy?: { domain: string; correct: number; total: number }[];
   isShared?: boolean;
+  decided?: boolean;
 }
 
 // Copy-trimmed from InterviewSummaryPage.tsx's structure — downloadPdf pattern, goToLearn
@@ -41,7 +42,7 @@ export default function CertExamSummaryPage() {
       .then((s: CertExamSession) => setSession({
         certId: s.certId, certName: s.certName, passed: s.passed, scaledScore: s.scaledScore,
         maxScore: s.maxScore, answers: s.sessionData.answers, domainAccuracy: s.sessionData.domainAccuracy,
-        isShared: s.isShared,
+        isShared: s.isShared, decided: s.decided,
       }))
       .catch(() => { /* nothing to hydrate — the page below handles the empty state */ });
   }, [session, id, authUser, authToken]);
