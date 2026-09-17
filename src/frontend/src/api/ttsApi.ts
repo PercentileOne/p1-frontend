@@ -149,7 +149,7 @@ export function setTTSRecordingDestination(node: MediaStreamAudioDestinationNode
 
 async function speakElevenLabs(
   text: string,
-  role: 'hr' | 'technical' | 'mike',
+  role: 'hr' | 'technical' | 'michelle',
   onEnd: () => void,
   volume = 1.0,
   onAnalyser?: (a: AnalyserNode) => void,
@@ -223,7 +223,7 @@ async function speakElevenLabs(
 
 function speakWebSpeech(
   text: string,
-  role: 'hr' | 'technical' | 'mike',
+  role: 'hr' | 'technical' | 'michelle',
   onEnd: () => void,
   onWordBoundary?: (charIndex: number) => void,
 ): () => void {
@@ -231,16 +231,14 @@ function speakWebSpeech(
   const utterance = new SpeechSynthesisUtterance(sanitiseForTTS(text));
   utterance.lang  = 'en-GB';
   utterance.rate  = 0.92;
-  utterance.pitch = role === 'hr' ? 1.15 : role === 'mike' ? 1.0 : 0.9;
+  utterance.pitch = role === 'hr' ? 1.15 : role === 'michelle' ? 1.15 : 0.9;
   utterance.volume = getStoredInterviewerVolume();
 
   const voices = window.speechSynthesis.getVoices();
   const preferred =
     voices.find(v =>
-      role === 'hr'
+      role === 'hr' || role === 'michelle'
         ? v.name.match(/Hazel|Libby|Susan|Female|Zira/i)
-        : role === 'mike'
-        ? v.name.match(/George|Ryan|Arthur|Male|David/i)
         : v.name.match(/George|Ryan|Arthur|Male|David/i),
     ) ?? voices.find(v => v.lang.startsWith('en')) ?? null;
   if (preferred) utterance.voice = preferred;
@@ -266,7 +264,7 @@ function speakWebSpeech(
  */
 export function speak(
   text: string,
-  role: 'hr' | 'technical' | 'mike',
+  role: 'hr' | 'technical' | 'michelle',
   onEnd: () => void,
   onAnalyser?: (a: AnalyserNode | null) => void,
 ): () => void {
@@ -278,10 +276,11 @@ export function speak(
   // anywhere justifying the imbalance. That's the "James's voice drops ~35-40% when he reads
   // questions" bug: his generic intro plays from a separately-mastered baked video (never hits
   // this code path for English sessions), so only his live-TTS lines ever carried the cut.
-  // Matching Sarah's 1.0 now; Mike's 0.65 (debrief-only, never reported as quiet) is untouched.
+  // Matching Sarah's 1.0 now; Michelle's debrief-only 0.65 (never reported as quiet, carried
+  // over unchanged from the old Mike debrief) is untouched.
   speakElevenLabs(text, role, () => {
     if (!cancelled) onEnd();
-  }, role === 'mike' ? 0.65 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined)
+  }, role === 'michelle' ? 0.65 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined)
     .then(cancel => { cancelAudio = cancel; })
     .catch((err) => {
       // Backend proxy or ElevenLabs itself failed — fall back to Web Speech. Logged (not

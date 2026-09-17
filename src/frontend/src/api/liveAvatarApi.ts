@@ -12,7 +12,7 @@ export interface AvatarSessionInfo {
   isSandbox: boolean;
 }
 
-export async function fetchAvatarSessionToken(role: 'hr' | 'technical'): Promise<AvatarSessionInfo> {
+export async function fetchAvatarSessionToken(role: 'hr' | 'technical' | 'michelle'): Promise<AvatarSessionInfo> {
   const res = await fetch(`${API_BASE}/interviews/avatar-session`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -63,7 +63,7 @@ function boostPcm16(bytes: Uint8Array, gain: number): Uint8Array {
 // it — exactly the shape LiveAvatarSession.repeatAudio() expects. Chunked conversion, not
 // String.fromCharCode(...bigArray), since that blows the call stack on anything more than a
 // few seconds of 24kHz 16-bit audio (~48,000 bytes/sec).
-export async function fetchAvatarAudioBase64(text: string, role: 'hr' | 'technical' | 'mike'): Promise<string> {
+export async function fetchAvatarAudioBase64(text: string, role: 'hr' | 'technical' | 'michelle'): Promise<string> {
   const genRes = await fetch(`${API_BASE}/interviews/avatar-audio`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

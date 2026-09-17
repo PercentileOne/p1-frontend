@@ -118,7 +118,7 @@ const logLongTaskSummary = (role: string, entries: PerformanceEntry[]) => {
 // Wayne), each its own independent WebRTC session running concurrently. role is only used to
 // pick the right avatar_id when minting a session token; speak()'s own role param (used for
 // the audio-generation call) is passed separately by the caller and is expected to match.
-export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: AnalyserNode | null) => void) {
+export function useLiveAvatarSession(role: 'hr' | 'technical' | 'michelle', onAnalyser?: (a: AnalyserNode | null) => void) {
   const [status, setStatus] = useState<LiveAvatarStatus>('idle');
   // Server-reported avatar pose ("idle" | "listening" | whatever HeyGen's agent state machine
   // sends) — see the AGENT_STATE_UPDATED listener in connect() below for how this gets populated.
@@ -306,7 +306,7 @@ export function useLiveAvatarSession(role: 'hr' | 'technical', onAnalyser?: (a: 
   // actually begun talking, distinct from (and meaningfully later than) the moment this speak()
   // call was made. Lets a caller delay UI (e.g. the on-screen question text) until speech has
   // genuinely started instead of the moment it was requested — see InterviewRoomPage's use of it.
-  const speak = useCallback(async (text: string, role: 'hr' | 'technical' | 'mike', onSpeakStarted?: () => void): Promise<void> => {
+  const speak = useCallback(async (text: string, role: 'hr' | 'technical' | 'michelle', onSpeakStarted?: () => void): Promise<void> => {
     const session = sessionRef.current;
     if (!session || !connectedRef.current) throw new Error('Avatar session is not connected');
 

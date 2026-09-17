@@ -591,7 +591,7 @@ export default function InterviewSummaryPage() {
     // Use the same topic for both the improvement comment and the Learn pitch
     const focusTopic = weakestTag ?? weakLabel ?? 'your interview technique';
 
-    let opening = `Hi ${name}, it's Mike here — I've just had a word with Sarah and James, and they wanted me to share some feedback with you.`;
+    let opening = `Hi ${name}, it's Michelle here — I've just had a word with Sarah and James, and they wanted me to share some feedback with you.`;
 
     let scoreComment = '';
     if (pct >= 85) scoreComment = `First of all, brilliant session — you scored ${pct} percent overall. That's genuinely impressive.`;
@@ -637,7 +637,7 @@ export default function InterviewSummaryPage() {
     if (!answers.length) return;
     mikeSpokeRef.current = true;
     setMikeActive(true);
-    cancelMikeRef.current = speak(buildMikeScript(), 'mike', () => {
+    cancelMikeRef.current = speak(buildMikeScript(), 'michelle', () => {
       setMikeActive(false);
       setMikeAnalyser(null);
       cancelMikeRef.current = null;
@@ -827,7 +827,7 @@ ${questionsHtml}
         </div>
       </div>
 
-      {/* ── Mike Debrief Banner ── */}
+      {/* ── Michelle Debrief Banner ── */}
       <AnimatePresence>
         {mikeActive ? (
           <motion.div
@@ -857,7 +857,7 @@ ${questionsHtml}
                 }} />
               </div>
               <div>
-                <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#34d399', marginBottom: '2px' }}>Mike · Your Agent</div>
+                <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#34d399', marginBottom: '2px' }}>Michelle · Your Agent</div>
                 <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Delivering your debrief…</div>
               </div>
               <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -900,7 +900,7 @@ ${questionsHtml}
                 fontSize: '20px', fontWeight: 800, color: '#fff', flexShrink: 0,
               }}>M</div>
               <div>
-                <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#34d399', marginBottom: '2px' }}>Mike · Your Agent</div>
+                <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#34d399', marginBottom: '2px' }}>Michelle · Your Agent</div>
                 <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>
                   {mikeSpokeRef.current ? 'Want to hear that again?' : 'Ready to give you a personalised debrief on your session.'}
                 </div>

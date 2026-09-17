@@ -604,7 +604,7 @@ export default function InterviewPackStart() {
             ))}
           </select>
           <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
-            Which stage of your real process is this? Mike and the panel will reference it naturally — e.g. congratulating you on reaching a later round.
+            Which stage of your real process is this? Michelle and the panel will reference it naturally — e.g. congratulating you on reaching a later round.
           </div>
         </div>
 
@@ -791,7 +791,7 @@ export default function InterviewPackStart() {
               onBlur={e => { e.target.style.borderColor = 'var(--border)'; }}
             />
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
-              Optional — overrides your account name. Mike, Amina and Wayne will all use this.
+              Optional — overrides your account name. Michelle, Amina and Wayne will all use this.
             </div>
           </div>
 

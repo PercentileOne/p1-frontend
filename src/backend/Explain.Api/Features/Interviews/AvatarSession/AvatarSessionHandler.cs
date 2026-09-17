@@ -28,14 +28,17 @@ public class AvatarSessionHandler(
 
         var isSandbox = config.GetValue<bool?>("LiveAvatar:Sandbox") ?? true;
 
-        // Real named avatars now exist in the LiveAvatar dashboard — Amina (hr) and Wayne
-        // (technical, moved here from hr). Config keys let either be swapped without a
-        // redeploy; the hardcoded fallbacks are today's actual avatar_ids so this still works
-        // even if the config keys are never set.
+        // Real named avatars now exist in the LiveAvatar dashboard — Amina (hr), Wayne
+        // (technical, moved here from hr), and Michelle (michelle — the "Katya Sitting" stock
+        // avatar Francis picked, 2026-09-17, replacing the old static-photo-plus-TTS "Mike"
+        // pre-interview briefing host with a genuine third live seat for that one segment).
+        // Config keys let any of them be swapped without a redeploy; the hardcoded fallbacks
+        // are today's actual avatar_ids so this still works even if the config keys are never set.
         var avatarId = cmd.Role switch
         {
             "hr" => config["LiveAvatar:AvatarIdHr"] ?? "40b4f000-f783-4bba-a327-ea58b1a6fdf2",
             "technical" => config["LiveAvatar:AvatarIdTechnical"] ?? "dd73ea75-1218-4ef3-92ce-606d5f7fbc0a",
+            "michelle" => config["LiveAvatar:AvatarIdMichelle"] ?? "073b60a9-89a8-45aa-8902-c358f64d2852",
             _ => config["LiveAvatar:AvatarIdHr"] ?? "40b4f000-f783-4bba-a327-ea58b1a6fdf2",
         };
 

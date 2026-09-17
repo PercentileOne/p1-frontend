@@ -327,7 +327,7 @@ export default function TalkRoomPage() {
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
             <h1 style={{ fontSize: '26px', fontWeight: 900, color: 'var(--text)', marginBottom: '10px' }}>Ready when you are</h1>
             <p style={{ fontSize: '14px', color: 'var(--text-2)', marginBottom: '32px' }}>
-              Mike will brief you, then Amina and Wayne will be right there the whole time.
+              Michelle will brief you, then Amina and Wayne will be right there the whole time.
             </p>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '28px' }}>
               <YouCamera cameraOn={cameraOn} onToggle={() => setCameraOn(v => !v)} width={320} height={240} />
@@ -340,8 +340,8 @@ export default function TalkRoomPage() {
 
         {phase === 'mike-prep' && (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
-            <img src="/images/mike.png" alt="Mike" style={{ width: '140px', height: '140px', borderRadius: '50%', objectFit: 'cover', marginBottom: '20px' }} />
-            <div style={{ fontSize: '14px', color: 'var(--text-2)' }}>Mike is briefing you…</div>
+            <img src="/images/mike.png" alt="Michelle" style={{ width: '140px', height: '140px', borderRadius: '50%', objectFit: 'cover', marginBottom: '20px' }} />
+            <div style={{ fontSize: '14px', color: 'var(--text-2)' }}>Michelle is briefing you…</div>
           </div>
         )}
 

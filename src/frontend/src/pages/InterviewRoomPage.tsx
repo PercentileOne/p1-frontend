@@ -292,8 +292,14 @@ export default function InterviewRoomPage() {
   // its own analyser setters don't exist yet at this point in the component.
   const [liveHrAnalyser, setLiveHrAnalyser] = useState<AnalyserNode | null>(null);
   const [liveTechAnalyser, setLiveTechAnalyser] = useState<AnalyserNode | null>(null);
+  const [liveMichelleAnalyser, setLiveMichelleAnalyser] = useState<AnalyserNode | null>(null);
   const liveAvatarHr = useLiveAvatarSession('hr', setLiveHrAnalyser);
   const liveAvatarTechnical = useLiveAvatarSession('technical', setLiveTechAnalyser);
+  // Michelle (2026-09-17, replacing the old static-photo "Mike") — a real HeyGen LiveAvatar
+  // seat exactly like Amina/Wayne, connected only for the pre-interview briefing and
+  // disconnected the moment it's over (see handleMikeIntroDone below), not a third seat that
+  // runs the whole interview.
+  const liveAvatarMichelle = useLiveAvatarSession('michelle', setLiveMichelleAnalyser);
 
   const liveAvatarSpeakHr = useCallback((text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => {
     let cancelled = false;
@@ -336,6 +342,22 @@ export default function InterviewRoomPage() {
     })();
     return () => { cancelled = true; fallbackCancel?.(); liveAvatarTechnical.interrupt(); };
   }, [liveAvatarTechnical]);
+
+  const liveAvatarSpeakMichelle = useCallback((text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => {
+    let cancelled = false;
+    let fallbackCancel: (() => void) | null = null;
+    (async () => {
+      try {
+        if (liveAvatarMichelle.status !== 'connected') await liveAvatarMichelle.connect();
+        await liveAvatarMichelle.speak(text, 'michelle', () => onAnalyser?.(null));
+        if (!cancelled) onEnd();
+      } catch (err) {
+        console.error('[InterviewRoom] LiveAvatar (michelle) speak failed, falling back to TTS:', err);
+        if (!cancelled) fallbackCancel = speak(text, 'michelle', onEnd, onAnalyser);
+      }
+    })();
+    return () => { cancelled = true; fallbackCancel?.(); liveAvatarMichelle.interrupt(); };
+  }, [liveAvatarMichelle]);
 
   // Cost control (Francis, 2026-09-11): HeyGen bills LiveAvatar per minute of a CONNECTED
   // session, not per minute of actual talking — before this, both avatars connected once for
@@ -395,6 +417,8 @@ export default function InterviewRoomPage() {
     liveAvatarSpeak: liveAvatarSpeakHr, liveAvatarActive: avatarEnabled,
     liveAvatarSpeakTechnical, liveAvatarActiveTechnical: avatarEnabled,
     liveAvatarConnect: liveAvatarHr.connect, liveAvatarConnectTechnical: liveAvatarTechnical.connect,
+    liveAvatarSpeakMichelle, liveAvatarActiveMichelle: avatarEnabled,
+    liveAvatarConnectMichelle: liveAvatarMichelle.connect, liveAvatarDisconnectMichelle: liveAvatarMichelle.disconnect,
     // Activates real HeyGen-confirmed listening pose during the candidate's answer window
     // (2026-09-16) — previously never called here at all (only the Talk Room called these).
     // NOTE: InterviewRoomPage's own cost-control effect below disconnects both avatar sessions
@@ -617,7 +641,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
   const closeInterview = useCallback((answers: SessionAnswer[], mcqRes: typeof mcqResults, bonusPts: number) => {
     const name = resolvedPreferredName ? `, ${resolvedPreferredName}` : '';
-    const closingLine = `Well${name}, that brings us to the end of your interview — thank you so much for your time today. I'm going to have a quick word with Wayne, and then your agent Mike will be in touch shortly with some feedback. In the meantime, you can watch your full interview replay on the next screen, and retake it anytime you like. Best of luck!`;
+    const closingLine = `Well${name}, that brings us to the end of your interview — thank you so much for your time today. I'm going to have a quick word with Wayne, and then your agent Michelle will be in touch shortly with some feedback. In the meantime, you can watch your full interview replay on the next screen, and retake it anytime you like. Best of luck!`;
     cancelSpeakRef.current?.();
     // Whichever path got us here (normal coaching flow, Pass, or an MCQ finish),
     // leave 'done' so the answer/coaching panels can't stay mounted and clickable
@@ -998,7 +1022,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     style={{ width: '100%', accentColor: '#a78bfa', cursor: 'pointer' }}
                   />
                   <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 6, lineHeight: 1.4 }}>
-                    Controls Amina, Wayne &amp; Mike only — not your recording.
+                    Controls Amina, Wayne &amp; Michelle only — not your recording.
                   </div>
                 </div>
               </>
@@ -1330,8 +1354,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '20px' }}>
                     Your Recruitment Consultant
                   </div>
-                  {/* Mike's photo — or, in English, his real pre-rendered talking-head clip
-                      (see startMike/handleMikeIntroDone above). */}
+                  {/* Michelle's photo/pre-rendered fallback sits underneath — the live HeyGen
+                      avatar overlay below takes over the instant her session's stream is ready,
+                      same "static frame shows through until attach() fires" pattern as Amina/
+                      Wayne's own tiles further down this page. */}
                   <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', margin: '0 auto 20px', borderRadius: '16px', overflow: 'hidden', background: 'var(--bg3)', border: '3px solid var(--blue)' }}>
                     {sessionLanguage === 'en' && MIKE_VIDEO_ENABLED ? (
                       <video
@@ -1343,13 +1369,22 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       />
                     ) : (
                       <>
-                        <img src="/images/mike.png" alt="Mike" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
+                        <img src="/images/mike.png" alt="Michelle" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
                         {/* Amplitude-driven mouth movement — only relevant on the non-English
                             live-TTS path; MOUTH_OVERLAY_ENABLED is currently false anyway
                             (see project-mouth-movement-avatars memory). */}
                         {MOUTH_OVERLAY_ENABLED && <MouthOverlay analyserNode={techAnalyser} active={phase === 'mike'} {...MOUTH_POSITIONS.mike} />}
                       </>
                     )}
+                    {/* LiveAvatar overlay — Michelle's real-time video, same treatment as Amina/
+                        Wayne's tiles: renders no visible pixels until attach() fires, so the
+                        static photo above shows through undisturbed until then. */}
+                    <video
+                      ref={liveAvatarMichelle.setVideoEl}
+                      autoPlay
+                      playsInline
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
                     {/* Pulse ring while speaking */}
                     <motion.div
                       animate={{ scale: [1, 1.03, 1], opacity: [0.6, 0.15, 0.6] }}
@@ -1376,13 +1411,22 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       )}
                     </AnimatePresence>
                   </div>
-                  <div style={{ fontSize: '21px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Mike</div>
+                  <div style={{ fontSize: '21px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Michelle</div>
                   <div style={{ fontSize: '12px', color: 'var(--text-3)', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Recruitment Consultant</div>
-                  {/* Speaking indicator */}
+                  {/* Speaking indicator — a real waveform driven by her live avatar's audio once
+                      connected (same as Amina/Wayne's own tiles), falling back to a generic
+                      pulsing dot before her session's stream is ready or if she degrades to
+                      plain TTS. */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'default', userSelect: 'none' }}>
-                    <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}
-                      style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34D399' }} />
-                    <span style={{ fontSize: '13px', color: 'var(--text-3)', userSelect: 'none' }}>Speaking…</span>
+                    {liveAvatarMichelle.status === 'connected' && liveMichelleAnalyser ? (
+                      <WaveformBars active color="#34D399" analyserNode={liveMichelleAnalyser} />
+                    ) : (
+                      <>
+                        <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}
+                          style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34D399' }} />
+                        <span style={{ fontSize: '13px', color: 'var(--text-3)', userSelect: 'none' }}>Speaking…</span>
+                      </>
+                    )}
                   </div>
                 </div>
 

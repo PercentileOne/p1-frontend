@@ -658,7 +658,7 @@ export async function generateAgentBriefing(
   cvCtx: CVContext,
   jobCtx: JobSpecContext,
 ): Promise<AgentBriefingResult> {
-  const systemPrompt = `You are Mike, a friendly and professional interview preparation consultant at Explain.
+  const systemPrompt = `You are Michelle, a friendly and professional interview preparation consultant at Explain.
 You brief candidates before their interview — giving them a personalised overview of the company and role so they walk in prepared.
 Your tone is warm, encouraging, and concise. You speak naturally — no bullet points, no lists out loud.
 You always mention 3-4 specific company facts (culture, size, mission, recent news, or values) that the interviewers are likely to probe on.
@@ -673,13 +673,13 @@ After the briefing, you generate 2 interview questions that test whether the can
 
   const firstName = cvCtx.firstName || 'there';
 
-  const userPrompt = `Generate Mike's pre-interview briefing for ${firstName}, who is interviewing for: ${jobCtx.title}${jobCtx.company ? ` at ${jobCtx.company}` : ''}.
+  const userPrompt = `Generate Michelle's pre-interview briefing for ${firstName}, who is interviewing for: ${jobCtx.title}${jobCtx.company ? ` at ${jobCtx.company}` : ''}.
 
 Job context:
 ${jobSummary}
 
-Mike's briefing should:
-- Open with: "Hi ${firstName}, I'm Mike — I've set up today's interview for you."
+Michelle's briefing should:
+- Open with: "Hi ${firstName}, I'm Michelle — I've set up today's interview for you."
 - Mention the company name, what they do, their size/culture, and 1-2 things they're known for or proud of
 - Briefly explain the interview format (two interviewers, Amina and Wayne)
 - Give 1-2 quick tips based on the role
@@ -765,13 +765,13 @@ export async function generateMikeScriptOnly(params: {
     ? `CANDIDATE NAME: Read the CV below and extract the candidate's first name. Use it in the opening greeting. NEVER say "Hi there" — always use the actual name.`
     : `CANDIDATE NAME: Unknown — use "there" only as a last resort.`;
 
-  const systemPrompt = `You are Mike, a warm and encouraging recruitment consultant at Explain.
+  const systemPrompt = `You are Michelle, a warm and encouraging recruitment consultant at Explain.
 Write a short spoken briefing for a candidate about to start their interview.
 Sound natural and personal — like you genuinely know them.
 No bullet points, no lists. Spoken prose only.
 Return ONLY valid JSON.`;
 
-  const userPrompt = `Write Mike's spoken briefing (70–100 words) for this candidate.${langNote}
+  const userPrompt = `Write Michelle's spoken briefing (70–100 words) for this candidate.${langNote}
 
 ${nameInstruction}
 ${cvSnippet ? `\nCANDIDATE CV (extract first name from here):\n${cvSnippet}\n` : ''}
@@ -783,7 +783,7 @@ CONTEXT:
 ${jobSpecSnippet ? `- Job spec excerpt: ${jobSpecSnippet}` : ''}
 
 STRUCTURE (spoken naturally as one flowing paragraph — no lists):
-1. "Hi [candidate name] — I'm Mike, and I've set up today's interview for you."
+1. "Hi [candidate name] — I'm Michelle, and I've set up today's interview for you."
 2. "You're here for the [job title] position at [company name]."
 3. Round framing (use the exact framing given above, naturally worded) — skip entirely and say nothing about it if this is their first round.
 4. One warm sentence about the company or role.
@@ -894,8 +894,8 @@ export async function sessionPrepareClient(
   const isLaterRound = interviewRoundLabel !== 'First Round Interview';
   const roundLine = `\nInterview Round: ${interviewRoundLabel}${isLaterRound ? ' — a LATER round in the candidate\'s real process (they already passed at least one earlier round with this employer)' : ' — their FIRST round, no earlier rounds to reference'}`;
   const preferredNameLine = preferredName?.trim()
-    ? `\nCandidate Name: "${preferredName.trim()}" — explicitly set by the candidate. Use this name in ALL spoken scripts (Mike, Amina, Wayne). Do NOT use any other name.`
-    : `\nCandidate Name: NOT explicitly set — you MUST extract the candidate's first name from the CV and use it in ALL spoken scripts (Mike, Amina, Wayne). NEVER say "there" or omit the name when a CV is provided.`;
+    ? `\nCandidate Name: "${preferredName.trim()}" — explicitly set by the candidate. Use this name in ALL spoken scripts (Michelle, Amina, Wayne). Do NOT use any other name.`
+    : `\nCandidate Name: NOT explicitly set — you MUST extract the candidate's first name from the CV and use it in ALL spoken scripts (Michelle, Amina, Wayne). NEVER say "there" or omit the name when a CV is provided.`;
 
   // Always explicit, including for English — rule 1 below tells the model to detect language
   // from the job spec, and with no override for the 'en' case that rule ran unconstrained: if
@@ -912,7 +912,7 @@ CRITICAL RULES — READ CAREFULLY:
 2. NEVER assume any industry or role type. Read the job spec and base EVERYTHING on what it actually says.
 3. NEVER generate IT or software engineering questions unless the job spec explicitly requires them. A barista needs questions about coffee craft and customer service. A nurse needs questions about patient care and clinical judgement. A lorry driver needs questions about road safety and logistics.
 4. Questions must be specific to THIS role at THIS company — not generic questions that could fit any employer.
-5. All spoken scripts (Mike, Amina, Wayne) must sound natural when read aloud. No bullet points, no lists, no asterisks.
+5. All spoken scripts (Michelle, Amina, Wayne) must sound natural when read aloud. No bullet points, no lists, no asterisks.
 6. Return ONLY valid JSON — no markdown, no explanation, no code fences.
 7. COMPANY NAMING: if the Session Context gives you a confirmed company, use that exact name everywhere — never invent a different one. Otherwise, if no company is named anywhere in the job spec, invent ONE single plausible, realistic company name whose industry genuinely fits THIS job title (e.g. a supermarket or retail chain for a Shop Sales Assistant, a stables or equestrian centre for a Horse Trainer, a hospital or clinic for a Nurse, a haulage firm for a Lorry Driver) — never a mismatched real company (a software/finance/tech giant is almost never the right invented employer for a non-corporate role) and never a vague placeholder like "the company" or "your employer". Use that one invented name consistently in the questions, both intros, and companyFacts.`;
 

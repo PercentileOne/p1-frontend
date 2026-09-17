@@ -62,14 +62,14 @@ export function useTalkAvatars(params: UseTalkAvatarsParams) {
     return () => { cancelled = true; fallbackCancel?.(); liveAvatarTechnical.interrupt(); };
   }, [liveAvatarTechnical, onTechAnalyser]);
 
-  // Mike has no avatar presence in the Talk room either, same as InterviewRoomPage — plain TTS
-  // over a static photo, reusing the 'technical' voice slot purely for a consistent voice actor.
+  // Michelle has no avatar presence in the Talk room (unlike the Interview Room, where she's a
+  // live HeyGen seat for the briefing) — plain TTS over a static photo, same as Mike before her.
   const startMikePrep = useCallback((onDone: () => void) => {
     void liveAvatarHr.connect().catch(() => {});
     void liveAvatarTechnical.connect().catch(() => {});
     const name = resolvedPreferredName ? `${resolvedPreferredName}, ` : '';
-    const mikeText = `${name}I'm Mike. You're about to give a short talk on "${subject}". Amina and Wayne will be right there with you the whole time — Amina's here for encouragement, Wayne knows the subject. Take a breath, speak naturally, and remember: this is practice, not a test. Good luck.`;
-    cancelSpeakRef.current = speak(mikeText, 'technical', onDone, onTechAnalyser);
+    const michelleText = `${name}I'm Michelle. You're about to give a short talk on "${subject}". Amina and Wayne will be right there with you the whole time — Amina's here for encouragement, Wayne knows the subject. Take a breath, speak naturally, and remember: this is practice, not a test. Good luck.`;
+    cancelSpeakRef.current = speak(michelleText, 'michelle', onDone, onTechAnalyser);
   }, [liveAvatarHr, liveAvatarTechnical, resolvedPreferredName, subject, onTechAnalyser]);
 
   // Amina's short opener + a general talk-craft tip, then Wayne's subject-specific tips

@@ -122,6 +122,16 @@ export interface UseInterviewerAudioParams {
   /** Same, for Wayne's (technical) seat. */
   liveAvatarStartListeningTechnical?: () => void;
   liveAvatarStopListeningTechnical?: () => void;
+  /** Michelle's (2026-09-17, replacing the old static-photo "Mike") own live-avatar path for
+   * the pre-interview briefing — same (text, onEnd, onAnalyser) => cancelFn contract as
+   * liveAvatarSpeak, pre-bound to the 'michelle' role. Unlike Amina/Wayne's seats, Michelle
+   * only ever speaks once, so there's no "active during answering" concern — she connects at
+   * the start of startMike and disconnects again in handleMikeIntroDone, before Amina/Wayne
+   * take over. */
+  liveAvatarSpeakMichelle?: (text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => () => void;
+  liveAvatarActiveMichelle?: boolean;
+  liveAvatarConnectMichelle?: () => Promise<void>;
+  liveAvatarDisconnectMichelle?: () => Promise<void>;
 }
 
 export interface UseInterviewerAudioReturn {
@@ -201,6 +211,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     liveAvatarConnect, liveAvatarConnectTechnical,
     liveAvatarStartListening, liveAvatarStopListening,
     liveAvatarStartListeningTechnical, liveAvatarStopListeningTechnical,
+    liveAvatarSpeakMichelle, liveAvatarActiveMichelle, liveAvatarDisconnectMichelle,
   } = params;
 
   const [hrState, setHrState] = useState<AvatarState>('idle');
@@ -501,6 +512,10 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
   const handleMikeIntroDone = useCallback(() => {
     cancelSpeakRef.current = null;
     setAwaitingHandoff(true);
+    // Michelle is a genuine live HeyGen seat now (2026-09-17) — disconnect her the moment her
+    // briefing ends, before Amina/Wayne take over, same billed-per-connected-minute discipline
+    // as their own disconnect/reconnect cost-control effect in InterviewRoomPage.tsx.
+    void liveAvatarDisconnectMichelle?.().catch(() => {});
     logFlowEvent('MIKE_INTRO_COMPLETED', {});
     // Temporary diagnostic (Francis, 2026-09-10) — pins down whether a "waiting after Mike"
     // complaint is Phase 2 (background AI load) still being in flight at this exact moment,
@@ -518,7 +533,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
       if (phase2ReadyRef.current) beginInterviewIntroRef.current();
       else phase2WaitersRef.current.push(() => beginInterviewIntroRef.current());
     }, 0);
-  }, [phase2ReadyRef, phase2WaitersRef]);
+  }, [phase2ReadyRef, phase2WaitersRef, liveAvatarDisconnectMichelle]);
 
   const startMike = useCallback(() => {
     setPhase('mike');
@@ -538,7 +553,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     if (recordingStartTimeRef.current > 0) {
       chapterMarkersRef.current.push({
         questionIndex: -2,
-        questionText: "Mike's Introduction",
+        questionText: "Michelle's Introduction",
         competency: '',
         offsetSeconds: Math.round((Date.now() - recordingStartTimeRef.current) / 1000),
       });
@@ -550,15 +565,22 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     // every language runs the live-TTS + static-photo path below for now.
     if (sessionLanguage !== 'en' || !MIKE_VIDEO_ENABLED) {
       // Guaranteed deterministically, same as Sarah/James's intros below (see
-      // ensureNameSpoken's own comment) — Mike previously had no such guarantee at all: the
-      // AI-generated script was assumed reliable enough not to need one, and the hardcoded
-      // FALLBACK_MIKE_SCRIPT (used whenever Phase 1's own 5s timeout beats the AI call) never
-      // mentioned a name at all. Mike has no LiveAvatar video, so his own name-drop is one of
-      // the only personalisation cues candidates get from him.
-      const mikeText = ensureNameSpoken(bgMikeScriptRef.current ?? FALLBACK_MIKE_SCRIPT, resolvedPreferredName);
-      cancelSpeakRef.current = speak(mikeText, 'technical', handleMikeIntroDone, (a) => setTechAnalyser(a));
+      // ensureNameSpoken's own comment) — Michelle previously had no such guarantee at all
+      // (back when she was "Mike"): the AI-generated script was assumed reliable enough not to
+      // need one, and the hardcoded FALLBACK_MIKE_SCRIPT (used whenever Phase 1's own 5s
+      // timeout beats the AI call) never mentioned a name at all.
+      const michelleText = ensureNameSpoken(bgMikeScriptRef.current ?? FALLBACK_MIKE_SCRIPT, resolvedPreferredName);
+      // Michelle (2026-09-17) is a genuine live HeyGen seat, same connect+speak+fallback-to-TTS
+      // shape as Amina/Wayne (see liveAvatarSpeakMichelle in InterviewRoomPage.tsx) — falls
+      // back to plain TTS automatically if the avatar kill switch is off or her connect/speak
+      // fails, exactly like the other two seats.
+      if (liveAvatarActiveMichelle && liveAvatarSpeakMichelle) {
+        cancelSpeakRef.current = liveAvatarSpeakMichelle(michelleText, handleMikeIntroDone, (a) => setTechAnalyser(a));
+      } else {
+        cancelSpeakRef.current = speak(michelleText, 'michelle', handleMikeIntroDone, (a) => setTechAnalyser(a));
+      }
     }
-  }, [jobSpecText, cvText, ctxSelectedLanguage, sessionLanguage, handleMikeIntroDone, setPhase, chapterMarkersRef, recordingStartTimeRef, bgMikeScriptRef, liveAvatarActive, liveAvatarConnect, liveAvatarActiveTechnical, liveAvatarConnectTechnical, resolvedPreferredName]);
+  }, [jobSpecText, cvText, ctxSelectedLanguage, sessionLanguage, handleMikeIntroDone, setPhase, chapterMarkersRef, recordingStartTimeRef, bgMikeScriptRef, liveAvatarActive, liveAvatarConnect, liveAvatarActiveTechnical, liveAvatarConnectTechnical, liveAvatarActiveMichelle, liveAvatarSpeakMichelle, resolvedPreferredName]);
 
   useEffect(() => { startMikeRef.current = startMike; }, [startMike]);
 

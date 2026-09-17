@@ -38,12 +38,16 @@ public class SpeakVoiceHandler(
         // VoiceInterviewHr/VoiceInterviewTechnical fall back to the shared ones only if ever
         // unset, so this can never regress to a hard failure.
         //
-        // No ElevenLabs__VoiceMike configured yet — falls back to the technical voice,
-        // matching exactly what the old client-side code did (`VOICE_MIKE || VOICE_TECH`).
+        // No ElevenLabs__VoiceMichelle configured yet — falls back to Amina's own voice
+        // (VoiceInterviewHr) rather than the old Mike fallback (Wayne's voice), since Michelle
+        // (2026-09-17, replacing "Mike") is a woman — defaulting a new female character to the
+        // existing male voice would be a worse placeholder than reusing the other female one
+        // already configured. Set ElevenLabs:VoiceMichelle in Azure once a dedicated voice is
+        // picked for her.
         var voiceId = cmd.Role switch
         {
             "hr"        => config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],
-            "mike"      => config["ElevenLabs:VoiceMike"] ?? config["ElevenLabs:VoiceTech"], // unchanged — Mike is unrelated to Wayne's move
+            "michelle"  => config["ElevenLabs:VoiceMichelle"] ?? config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],
             "technical" => config["ElevenLabs:VoiceInterviewTechnical"] ?? config["ElevenLabs:VoiceTech"],
             _           => config["ElevenLabs:VoiceInterviewTechnical"] ?? config["ElevenLabs:VoiceTech"],
         };

@@ -38,7 +38,7 @@ public class AvatarAudioHandler(
         var voiceId = cmd.Role switch
         {
             "hr"        => config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],
-            "mike"      => config["ElevenLabs:VoiceMike"] ?? config["ElevenLabs:VoiceTech"],
+            "michelle"  => config["ElevenLabs:VoiceMichelle"] ?? config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],
             "technical" => config["ElevenLabs:VoiceInterviewTechnical"] ?? config["ElevenLabs:VoiceTech"],
             _           => config["ElevenLabs:VoiceInterviewTechnical"] ?? config["ElevenLabs:VoiceTech"],
         };
@@ -49,14 +49,17 @@ public class AvatarAudioHandler(
         // Amina/Wayne reported live as speaking noticeably too slowly — ElevenLabs' own
         // voice_settings.speed (0.7-1.2, default 1.0, verified against their docs before
         // adding this) is the real lever for pace, not something LiveAvatar controls; it just
-        // lip-syncs to whatever audio we generate. Scoped to hr/technical only — Mike/MCQ
-        // weren't reported as slow, and speeding up every voice equally wasn't asked for.
-        var speed = cmd.Role is "hr" or "technical" ? 1.08 : 1.0;
+        // lip-syncs to whatever audio we generate. Scoped to every LIVE AVATAR seat
+        // (hr/technical/michelle) — MCQ narration isn't a live avatar and wasn't reported as
+        // slow, so it stays untouched. Michelle joined this list 2026-09-17 when she became a
+        // real LiveAvatar seat (replacing the old static-photo "Mike") — same underlying
+        // playback quirk applies to her exactly as it does to Amina/Wayne.
+        var speed = cmd.Role is "hr" or "technical" or "michelle" ? 1.08 : 1.0;
 
         // Cache key folds speed in when non-default — otherwise a pre-existing cached clip
         // generated at the old 1.0 pace would keep being served forever after this change,
         // since KeyFor only hashes (voiceId, text). Default speed keeps the exact same key
-        // as before (no cache-busting for Mike/MCQ, which never changed).
+        // as before (no cache-busting for MCQ narration, which never changed).
         var cacheVoiceId = speed != 1.0 ? $"{voiceId}@speed{speed}" : voiceId;
         var key = TtsCacheService.KeyFor(cacheVoiceId, cmd.Text);
         var cached = await cache.GetReadUrlIfCachedAsync(key, extension: "pcm");
