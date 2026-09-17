@@ -73,6 +73,12 @@ interface Course {
   totalHours: number;
   createdAt: string;
   modules: Module[];
+  // Optional topics narrowing every module/lecture toward specific sub-areas — same concept
+  // and UX as InterviewPackStart.tsx's Special Focus chips. Part of a course's real identity
+  // (see courseKey below), not just generation input, so "System Design" and "System Design
+  // — focus: .NET, Microservices" are treated as genuinely different courses, not a cache hit
+  // on each other.
+  specialFocus?: string[];
 }
 
 // ── Persisted course store ─────────────────────────────────────────────────────
@@ -81,7 +87,10 @@ const STORAGE_KEY = 'im_learn_courses_v1';
 const CACHE_TTL_MS = 48 * 60 * 60 * 1000; // 2 days
 
 const normaliseTitle = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
-const courseKey = (title: string, level: string) => `${normaliseTitle(title)}|${level}`;
+const normaliseFocus = (specialFocus?: string[]) =>
+  [...(specialFocus ?? [])].map(f => f.toLowerCase().trim()).sort().join(',');
+const courseKey = (title: string, level: string, specialFocus?: string[]) =>
+  `${normaliseTitle(title)}|${level}|${normaliseFocus(specialFocus)}`;
 
 // De-dupes by (title, level) — the real identity of a course on the shelf — not by the
 // internal `id`, which the platform-cache path in handleGenerate mints fresh every time
@@ -91,7 +100,7 @@ const courseKey = (title: string, level: string) => `${normaliseTitle(title)}|${
 function dedupeCourses(courses: Course[]): Course[] {
   const byKey = new Map<string, Course>();
   for (const c of courses) {
-    const key = courseKey(c.title, c.level);
+    const key = courseKey(c.title, c.level, c.specialFocus);
     const existing = byKey.get(key);
     if (!existing || new Date(c.createdAt) > new Date(existing.createdAt)) byKey.set(key, c);
   }
@@ -107,7 +116,8 @@ function loadCourses(): Course[] {
 }
 
 function saveCourse(course: Course) {
-  const existing = loadCourses().filter(c => courseKey(c.title, c.level) !== courseKey(course.title, course.level));
+  const key = courseKey(course.title, course.level, course.specialFocus);
+  const existing = loadCourses().filter(c => courseKey(c.title, c.level, c.specialFocus) !== key);
   localStorage.setItem(STORAGE_KEY, JSON.stringify([course, ...existing].slice(0, 20)));
 }
 
@@ -115,11 +125,11 @@ function deleteCourse(id: string) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(loadCourses().filter(c => c.id !== id)));
 }
 
-function findCached(title: string, level: string): Course | null {
+function findCached(title: string, level: string, specialFocus?: string[]): Course | null {
   const now = Date.now();
+  const key = courseKey(title, level, specialFocus);
   return loadCourses().find(c =>
-    normaliseTitle(c.title) === normaliseTitle(title) &&
-    c.level === level &&
+    courseKey(c.title, c.level, c.specialFocus) === key &&
     now - new Date(c.createdAt).getTime() < CACHE_TTL_MS
   ) ?? null;
 }
@@ -178,7 +188,11 @@ interface CourseOutline {
   modules: { number: number; title: string; description: string; estimatedMinutes: number }[];
 }
 
-async function generateOutline(title: string, level: string): Promise<CourseOutline> {
+async function generateOutline(title: string, level: string, specialFocus?: string[]): Promise<CourseOutline> {
+  const focusLine = specialFocus && specialFocus.length > 0
+    ? `\nThe candidate specifically wants this course to emphasize: ${specialFocus.join(', ')}. Weave these into module titles/descriptions wherever they naturally fit the subject — don't force a mention into every single module, but the course as a whole should clearly reflect this focus, not just cover "${title}" generically.\n`
+    : '';
+
   const raw = await callAI([
     {
       role: 'system',
@@ -187,10 +201,10 @@ async function generateOutline(title: string, level: string): Promise<CourseOutl
     {
       role: 'user',
       content: `Create a course outline for: "${title}" at ${level} level.
-
+${focusLine}
 Return JSON:
 {
-  "title": "full course title",
+  "title": "full course title${specialFocus && specialFocus.length > 0 ? ` — naming the special focus areas naturally, e.g. "${title}: A Deep Dive into ${specialFocus[0]}"` : ''}",
   "subtitle": "one compelling subtitle sentence",
   "level": "${level}",
   "category": "one of: Technology, Business, Finance, Healthcare, Engineering, Creative, Legal, Science, Leadership, Marketing, Data, Product",
@@ -216,7 +230,12 @@ async function generateModuleLectures(
   courseTitle: string,
   mod: { number: number; title: string; description: string },
   level: string,
+  specialFocus?: string[],
 ): Promise<Lecture[]> {
+  const focusLine = specialFocus && specialFocus.length > 0
+    ? `\nThe candidate asked for this course to emphasize: ${specialFocus.join(', ')}. Wherever this module's subject genuinely connects to one of those areas, ground the explanation, examples, and code/diagrams in it specifically — don't just teach the generic version and mention the focus in passing.\n`
+    : '';
+
   const raw = await callAI([
     {
       role: 'system',
@@ -226,6 +245,7 @@ async function generateModuleLectures(
       role: 'user',
       content: `Generate the lectures for Module ${mod.number}: "${mod.title}" of the course "${courseTitle}" (${level} level).
 Module description: ${mod.description}
+${focusLine}
 
 Return a JSON array of exactly 4 lectures:
 [
@@ -1001,7 +1021,7 @@ function CourseView({ course, onBack, onUpdateCourse }: { course: Course; onBack
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         if (attempt > 0) await new Promise(r => setTimeout(r, 2000));
-        lectures = await generateModuleLectures(course.title, course.modules[modIndex], course.level);
+        lectures = await generateModuleLectures(course.title, course.modules[modIndex], course.level, course.specialFocus);
         break;
       } catch (e) {
         console.warn(`[LearnEngine] Retry module ${modNumber} attempt ${attempt + 1} failed:`, e);
@@ -1230,6 +1250,13 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
   const authToken = useAuthStore(s => s.token);
   const [query, setQuery] = useState(initialTopic ?? '');
   const [level, setLevel] = useState<'Beginner' | 'Intermediate' | 'Expert'>('Intermediate');
+  // Special Focus — same concept/UX as InterviewPackStart.tsx's chips: optional sub-topics
+  // that narrow the generated course toward specific areas (e.g. "System Design" + focus
+  // ".NET, Microservices"), without the candidate having to type it all into one long topic
+  // string. No "What's Hot" suggestion button here (that's tied to a job-title context that
+  // doesn't apply to an arbitrary Learn topic) — just the chip input itself.
+  const [specialFocusInput, setSpecialFocusInput] = useState('');
+  const [specialFocusChips, setSpecialFocusChips] = useState<string[]>([]);
   const [generating, setGenerating] = useState(false);
   const [genStep, setGenStep] = useState(0);
   const [error, setError] = useState('');
@@ -1282,6 +1309,16 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
     }, 280);
   }
 
+  function addSpecialFocusChip(raw: string) {
+    const value = raw.trim();
+    if (!value) return;
+    setSpecialFocusChips(prev => prev.some(c => c.toLowerCase() === value.toLowerCase()) ? prev : [...prev, value]);
+  }
+
+  function removeSpecialFocusChip(value: string) {
+    setSpecialFocusChips(prev => prev.filter(c => c !== value));
+  }
+
   function handleDelete(id: string, e: React.MouseEvent) {
     e.stopPropagation();
     deleteCourse(id);
@@ -1302,27 +1339,36 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
     // course, so logging here once covers all three rather than duplicating the call per path.
     if (authToken) void logLearnTopic(authToken, t);
 
-    // 1. Local browser cache (instant)
-    const localCached = findCached(t, level);
+    const focus = specialFocusChips.length > 0 ? specialFocusChips : undefined;
+
+    // 1. Local browser cache (instant) — keyed on (title, level, specialFocus) together, so a
+    // customized course never collides with (or gets served in place of) the plain one.
+    const localCached = findCached(t, level, focus);
     if (localCached) { setActiveCourse(localCached); return; }
 
-    // 2. Platform cache (Cosmos — shared across all users)
-    try {
-      const pr = await fetch(`${API_BASE}/api/courses/cached?title=${encodeURIComponent(t)}&level=${encodeURIComponent(level)}`);
-      if (pr.ok) {
-        const platformCourse = await pr.json() as Omit<Course, 'id' | 'createdAt'>;
-        const course: Course = { ...platformCourse, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
-        saveCourse(course);
-        setSavedCourses(loadCourses());
-        setActiveCourse(course);
-        return;
-      }
-    } catch { /* platform cache unavailable — generate fresh */ }
+    // 2. Platform cache (Cosmos — shared across all users) — skipped entirely when a Special
+    // Focus is set. The backend cache key is (title, level) only; reading OR writing it for a
+    // customized course would mean either serving someone else's generic course in place of a
+    // requested focus, or polluting the shared cache with a highly specific variant that every
+    // future plain-topic viewer would then get served for the full 2-day TTL.
+    if (!focus) {
+      try {
+        const pr = await fetch(`${API_BASE}/api/courses/cached?title=${encodeURIComponent(t)}&level=${encodeURIComponent(level)}`);
+        if (pr.ok) {
+          const platformCourse = await pr.json() as Omit<Course, 'id' | 'createdAt'>;
+          const course: Course = { ...platformCourse, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
+          saveCourse(course);
+          setSavedCourses(loadCourses());
+          setActiveCourse(course);
+          return;
+        }
+      } catch { /* platform cache unavailable — generate fresh */ }
+    }
 
     // 3. Generate fresh — phase 1: outline (fast), then modules in background
     setGenerating(true);
     try {
-      const outline = await generateOutline(t, level);
+      const outline = await generateOutline(t, level, focus);
 
       // Build course skeleton with loading placeholders for all modules
       const skeletonModules: Module[] = outline.modules.map(m => ({
@@ -1336,6 +1382,7 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
         id: courseId,
         createdAt: new Date().toISOString(),
         modules: skeletonModules,
+        specialFocus: focus,
       };
 
       setActiveCourse(skeleton);
@@ -1361,7 +1408,7 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
         for (let attempt = 0; attempt < 3; attempt++) {
           try {
             if (attempt > 0) await new Promise(r => setTimeout(r, 2000));
-            lectures = await generateModuleLectures(outline.title, outline.modules[i], level);
+            lectures = await generateModuleLectures(outline.title, outline.modules[i], level, focus);
             break;
           } catch (e) {
             console.warn(`[LearnEngine] Module ${i + 1} attempt ${attempt + 1} failed:`, e);
@@ -1379,7 +1426,7 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
       // served that same broken snapshot for the full 2-day Cosmos TTL.
       saveCourse(filled);
       setSavedCourses(loadCourses());
-      if (filled.modules.every(m => m.lectures.length > 0)) {
+      if (!focus && filled.modules.every(m => m.lectures.length > 0)) {
         fetch(`${API_BASE}/api/courses`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1612,6 +1659,58 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
         {error && (
           <div style={{ fontSize: 12, color: '#f87171', marginTop: 8 }}>{error}</div>
         )}
+
+        {/* Special Focus — same chip UX as InterviewPackStart.tsx's, optional topics that
+            narrow module/lecture content toward specific sub-areas within the main subject. */}
+        <div style={{ background: BG3, border: `1px solid ${BORDER}`, borderRadius: 12, padding: '18px 20px', marginTop: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT1 }}>Special Focus</span>
+            <span style={{ fontSize: 11, color: TEXT3, fontWeight: 400 }}>(optional — narrows the course to specific sub-topics)</span>
+          </div>
+          <input
+            type="text"
+            value={specialFocusInput}
+            onChange={e => setSpecialFocusInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                addSpecialFocusChip(specialFocusInput);
+                setSpecialFocusInput('');
+              }
+            }}
+            placeholder="e.g. .NET, Microservices — press Enter to add"
+            style={{
+              width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', border: `1px solid ${BORDER}`,
+              borderRadius: 10, padding: '12px 16px', color: TEXT1, fontSize: 14,
+              fontFamily: 'inherit', outline: 'none',
+            }}
+          />
+          {specialFocusChips.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+              {specialFocusChips.map(chip => (
+                <span key={chip} style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.3)',
+                  borderRadius: 20, padding: '6px 8px 6px 14px', fontSize: 12.5, color: TEXT1, fontWeight: 600,
+                }}>
+                  {chip}
+                  <button
+                    type="button"
+                    onClick={() => removeSpecialFocusChip(chip)}
+                    aria-label={`Remove ${chip}`}
+                    style={{
+                      width: 18, height: 18, borderRadius: '50%', border: 'none',
+                      background: 'rgba(255,255,255,0.08)', color: TEXT3, fontSize: 12,
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+                    }}
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Suggested topics */}
