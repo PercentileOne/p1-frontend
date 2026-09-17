@@ -52,11 +52,12 @@ function pickRandom<T>(arr: T[]): T {
 // disabled-not-deleted pattern as MOUTH_OVERLAY_ENABLED elsewhere in this codebase.
 export const MIKE_VIDEO_ENABLED = false;
 
-// Mike's fallback script — used if AI hasn't loaded yet (it usually finishes before Mike speaks).
-// Deliberately doesn't open with "Hi there" — ensureNameSpoken (see startMike below) prepends
-// "<name>, " when a preferred name is known and the text doesn't already contain it, and that
-// reads naturally straight onto "I'm Mike..." but awkwardly onto a leftover "Hi there".
-const FALLBACK_MIKE_SCRIPT = `I'm Mike, your recruitment consultant. I've set up your interview today and I want to give you a quick briefing before you meet the panel. Your interviewers today are Amina, who heads up HR, and Wayne, who'll be assessing you on the role itself. They'll guide you through everything — just follow Amina's instructions on the controls and you'll be absolutely fine. I'll be here throughout if you need anything. The best thing you can do is be specific: use real examples from your experience. Back yourself — you've got this. Good luck!`;
+// Michelle's fallback script — used if AI hasn't loaded yet (it usually finishes before she
+// speaks). Deliberately doesn't open with "Hi there" — ensureNameSpoken (see startMike below)
+// prepends "<name>, " when a preferred name is known and the text doesn't already contain it,
+// and that reads naturally straight onto "I'm Michelle..." but awkwardly onto a leftover "Hi
+// there".
+const FALLBACK_MIKE_SCRIPT = `I'm Michelle, your recruitment consultant. I've set up your interview today and I want to give you a quick briefing before you meet the panel. Your interviewers today are Amina, who heads up HR, and Wayne, who'll be assessing you on the role itself. They'll guide you through everything — just follow Amina's instructions on the controls and you'll be absolutely fine. I'll be here throughout if you need anything. The best thing you can do is be specific: use real examples from your experience. Back yourself — you've got this. Good luck!`;
 
 export interface UseInterviewerAudioParams {
   questions: InterviewQuestion[];
