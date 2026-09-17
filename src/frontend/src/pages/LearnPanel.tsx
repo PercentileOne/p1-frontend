@@ -188,6 +188,42 @@ interface CourseOutline {
   modules: { number: number; title: string; description: string; estimatedMinutes: number }[];
 }
 
+// "What's Hot" — same concept as aiScoring.ts's generateHotTopics (used on the interview
+// intake screen), but worded for a Learn subject rather than a job role: not every course is
+// interview prep, so "currently in-demand for interviews" framing wouldn't make sense for e.g.
+// "Plumbing Fundamentals". A local helper here, not a shared one, matching this file's own
+// existing convention of keeping its AI calls (generateOutline, generateModuleLectures) local
+// rather than importing from aiScoring.ts.
+async function generateHotLearnTopics(topic: string): Promise<string[]> {
+  const raw = await callAI([
+    {
+      role: 'system',
+      content: 'You identify the specific sub-topics, technologies, and skills currently most important or in-demand within a given subject. Return ONLY valid JSON — no markdown, no explanation.',
+    },
+    {
+      role: 'user',
+      content: `Subject: ${topic}
+
+List exactly 4 specific, currently in-demand sub-topics, technologies, or methodologies within this subject that someone learning it today should focus on — the kind of thing that shows up repeatedly in recent job postings, industry discussion, or real-world practice for this subject right now.
+
+Rules:
+- Each item is a short, specific name (2-4 words) — a real named technology, pattern, framework, or methodology, not a vague category. "Agentic AI Patterns" not "AI knowledge". "Zero Trust Architecture" not "security".
+- Genuinely specific to THIS subject — not generic learning advice.
+- No duplicates, no near-duplicates of each other.
+
+Return JSON:
+{ "topics": ["...", "...", "...", "..."] }`,
+    },
+  ], 500);
+
+  try {
+    const parsed = JSON.parse(raw) as { topics: string[] };
+    return (parsed.topics ?? []).filter(t => typeof t === 'string' && t.trim().length > 0).slice(0, 4);
+  } catch {
+    return [];
+  }
+}
+
 async function generateOutline(title: string, level: string, specialFocus?: string[]): Promise<CourseOutline> {
   const focusLine = specialFocus && specialFocus.length > 0
     ? `\nThe candidate specifically wants this course to emphasize: ${specialFocus.join(', ')}. Weave these into module titles/descriptions wherever they naturally fit the subject — don't force a mention into every single module, but the course as a whole should clearly reflect this focus, not just cover "${title}" generically.\n`
@@ -1257,6 +1293,7 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
   // doesn't apply to an arbitrary Learn topic) — just the chip input itself.
   const [specialFocusInput, setSpecialFocusInput] = useState('');
   const [specialFocusChips, setSpecialFocusChips] = useState<string[]>([]);
+  const [hotTopicsLoading, setHotTopicsLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [genStep, setGenStep] = useState(0);
   const [error, setError] = useState('');
@@ -1317,6 +1354,17 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
 
   function removeSpecialFocusChip(value: string) {
     setSpecialFocusChips(prev => prev.filter(c => c !== value));
+  }
+
+  async function handleWhatsHot() {
+    if (!query.trim() || hotTopicsLoading) return;
+    setHotTopicsLoading(true);
+    try {
+      const topics = await generateHotLearnTopics(query.trim());
+      topics.forEach(addSpecialFocusChip);
+    } finally {
+      setHotTopicsLoading(false);
+    }
   }
 
   function handleDelete(id: string, e: React.MouseEvent) {
@@ -1618,13 +1666,91 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
           </div>
         )}
 
+        {/* Special Focus — same chip UX and layout as InterviewPackStart.tsx's (input + 🔥
+            What's Hot side by side, chips below), optional topics that narrow module/lecture
+            content toward specific sub-areas within the main subject. */}
+        <div style={{ background: BG3, border: `1px solid ${BORDER}`, borderRadius: 12, padding: '18px 20px', marginTop: 16, marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT1 }}>Special Focus</span>
+            <span style={{ fontSize: 11, color: TEXT3, fontWeight: 400 }}>(optional — narrows the course to specific sub-topics)</span>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <input
+              type="text"
+              value={specialFocusInput}
+              onChange={e => setSpecialFocusInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ',') {
+                  e.preventDefault();
+                  addSpecialFocusChip(specialFocusInput);
+                  setSpecialFocusInput('');
+                }
+              }}
+              placeholder="e.g. .NET, Microservices — press Enter to add"
+              style={{
+                flex: 1, background: 'rgba(255,255,255,0.05)', border: `1px solid ${BORDER}`,
+                borderRadius: 10, padding: '13px 16px', color: TEXT1, fontSize: 14,
+                fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleWhatsHot}
+              disabled={!query.trim() || hotTopicsLoading}
+              title={!query.trim() ? 'Enter a topic first' : undefined}
+              style={{
+                flexShrink: 0, display: 'flex', alignItems: 'center', gap: 7,
+                background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.35)',
+                borderRadius: 10, padding: '0 18px', color: PURPLE, fontSize: 13, fontWeight: 700,
+                fontFamily: 'inherit', cursor: !query.trim() || hotTopicsLoading ? 'not-allowed' : 'pointer',
+                opacity: !query.trim() ? 0.5 : 1,
+              }}
+            >
+              {hotTopicsLoading ? (
+                <span style={{
+                  display: 'inline-block', width: 13, height: 13, borderRadius: '50%',
+                  border: '2px solid rgba(167,139,250,0.25)', borderTopColor: PURPLE,
+                  animation: 'learnFocusSpin 0.7s linear infinite',
+                }} />
+              ) : '🔥'}
+              What's Hot
+            </button>
+          </div>
+          {specialFocusChips.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
+              {specialFocusChips.map(chip => (
+                <span key={chip} style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.3)',
+                  borderRadius: 20, padding: '6px 8px 6px 14px', fontSize: 12.5, color: TEXT1, fontWeight: 600,
+                }}>
+                  {chip}
+                  <button
+                    type="button"
+                    onClick={() => removeSpecialFocusChip(chip)}
+                    aria-label={`Remove ${chip}`}
+                    style={{
+                      width: 18, height: 18, borderRadius: '50%', border: 'none',
+                      background: 'rgba(255,255,255,0.08)', color: TEXT3, fontSize: 12,
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+                    }}
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <style>{`@keyframes learnFocusSpin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+
         {/* Level + generate */}
         <div style={{
           display: 'flex', alignItems: 'stretch',
           background: BG3,
           border: `1.5px solid rgba(167,139,250,0.25)`,
-          borderTop: 'none',
-          borderRadius: '0 0 12px 12px',
+          borderRadius: 12,
+          overflow: 'hidden',
         }}>
           {(['Beginner', 'Intermediate', 'Expert'] as const).map(l => (
             <button
@@ -1659,58 +1785,6 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
         {error && (
           <div style={{ fontSize: 12, color: '#f87171', marginTop: 8 }}>{error}</div>
         )}
-
-        {/* Special Focus — same chip UX as InterviewPackStart.tsx's, optional topics that
-            narrow module/lecture content toward specific sub-areas within the main subject. */}
-        <div style={{ background: BG3, border: `1px solid ${BORDER}`, borderRadius: 12, padding: '18px 20px', marginTop: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT1 }}>Special Focus</span>
-            <span style={{ fontSize: 11, color: TEXT3, fontWeight: 400 }}>(optional — narrows the course to specific sub-topics)</span>
-          </div>
-          <input
-            type="text"
-            value={specialFocusInput}
-            onChange={e => setSpecialFocusInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ',') {
-                e.preventDefault();
-                addSpecialFocusChip(specialFocusInput);
-                setSpecialFocusInput('');
-              }
-            }}
-            placeholder="e.g. .NET, Microservices — press Enter to add"
-            style={{
-              width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', border: `1px solid ${BORDER}`,
-              borderRadius: 10, padding: '12px 16px', color: TEXT1, fontSize: 14,
-              fontFamily: 'inherit', outline: 'none',
-            }}
-          />
-          {specialFocusChips.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
-              {specialFocusChips.map(chip => (
-                <span key={chip} style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.3)',
-                  borderRadius: 20, padding: '6px 8px 6px 14px', fontSize: 12.5, color: TEXT1, fontWeight: 600,
-                }}>
-                  {chip}
-                  <button
-                    type="button"
-                    onClick={() => removeSpecialFocusChip(chip)}
-                    aria-label={`Remove ${chip}`}
-                    style={{
-                      width: 18, height: 18, borderRadius: '50%', border: 'none',
-                      background: 'rgba(255,255,255,0.08)', color: TEXT3, fontSize: 12,
-                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
-                    }}
-                  >
-                    ✕
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Suggested topics */}
