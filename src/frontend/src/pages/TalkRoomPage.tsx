@@ -237,6 +237,11 @@ export default function TalkRoomPage() {
         // Public Talks byline — first name only, same informal-attribution convention the
         // dashboard's own "Good afternoon, Francis" greeting already uses.
         authorFirstName: authUser?.firstName || 'A candidate',
+        // Full name (Francis, 2026-09-17) — lets the Public Talks table link straight to the
+        // talker's own profile ("...because you might want to Connect/Friend them"). `name` is
+        // already the full "First Last" string the backend computes at login (LoginCommandHandler),
+        // not something reconstructed here.
+        authorFullName: authUser?.name || authUser?.firstName || 'A candidate',
       }, videoBlob);
     } catch { /* best-effort — the summary page falls back to route state if this fails */ }
 

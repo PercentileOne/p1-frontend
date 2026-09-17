@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X } from 'lucide-react';
-import { fetchPublicTalks, type PublicTalkSummary } from '../api/talksApi';
+import { Search, X, Star, User } from 'lucide-react';
+import { fetchPublicTalks, fetchPinnedPublicTalks, pinPublicTalk, unpinPublicTalk, type PublicTalkSummary } from '../api/talksApi';
 import { ProductivityVideosRow } from '../components/ProductivityVideosRow';
 
 type SortOrder = 'newest' | 'topScore';
@@ -47,15 +47,41 @@ export default function PublicTalksTab() {
   const [error, setError] = useState(false);
   const [search, setSearch] = useState('');
   const [order, setOrder] = useState<SortOrder>('newest');
+  // Pinned Public Talks — "do you think people will want to Pin/Save Public Talks to their own
+  // library" (Francis, 2026-09-17). Kept as a Set of talk ids for O(1) lookups per row; the
+  // "Pinned" filter reuses this same page/table rather than a separate list, matching the
+  // Sort/Search chrome already here.
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
+  const [showPinnedOnly, setShowPinnedOnly] = useState(false);
+  const [pinBusy, setPinBusy] = useState<Set<string>>(new Set());
 
   const load = useCallback((q: string) => {
     fetchPublicTalks(q).then(setItems).catch(() => setError(true));
   }, []);
 
   useEffect(() => { load(''); }, [load]);
+  useEffect(() => { fetchPinnedPublicTalks().then(talks => setPinnedIds(new Set(talks.map(t => t.id)))); }, []);
 
-  const sorted = [...(items ?? [])].sort((a, b) =>
-    order === 'topScore' ? b.overallScore - a.overallScore : (a.createdAt < b.createdAt ? 1 : -1));
+  async function togglePin(item: PublicTalkSummary) {
+    const isPinned = pinnedIds.has(item.id);
+    setPinBusy(prev => new Set(prev).add(item.id));
+    setPinnedIds(prev => {
+      const next = new Set(prev);
+      isPinned ? next.delete(item.id) : next.add(item.id);
+      return next;
+    });
+    try {
+      if (isPinned) await unpinPublicTalk(item.id);
+      else await pinPublicTalk(item.id, item.candidateId);
+    } finally {
+      setPinBusy(prev => { const next = new Set(prev); next.delete(item.id); return next; });
+    }
+  }
+
+  const sorted = [...(items ?? [])]
+    .filter(item => !showPinnedOnly || pinnedIds.has(item.id))
+    .sort((a, b) =>
+      order === 'topScore' ? b.overallScore - a.overallScore : (a.createdAt < b.createdAt ? 1 : -1));
 
   return (
     <div>
@@ -91,6 +117,16 @@ export default function PublicTalksTab() {
               color: order === tab.order ? '#4F8EF7' : 'var(--text-3)',
             }}>{tab.label}</button>
           ))}
+          <button onClick={() => setShowPinnedOnly(v => !v)} style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+            padding: '8px 14px', borderRadius: 20, border: '1px solid',
+            fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+            background: showPinnedOnly ? 'rgba(245,158,11,0.15)' : 'transparent',
+            borderColor: showPinnedOnly ? 'rgba(245,158,11,0.5)' : 'var(--border)',
+            color: showPinnedOnly ? '#F59E0B' : 'var(--text-3)',
+          }}>
+            <Star size={12} fill={showPinnedOnly ? '#F59E0B' : 'none'} /> Pinned
+          </button>
         </div>
       </div>
 
@@ -118,7 +154,17 @@ export default function PublicTalksTab() {
         </div>
       )}
 
-      {items && items.length > 0 && (
+      {items && items.length > 0 && sorted.length === 0 && showPinnedOnly && (
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 16, padding: '56px 32px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+          <div style={{ fontSize: 32 }}>⭐</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>Nothing pinned yet</div>
+          <div style={{ fontSize: 13, color: 'var(--text-3)', maxWidth: 380 }}>
+            Click the star on any talk below to save it here for later.
+          </div>
+        </div>
+      )}
+
+      {items && items.length > 0 && sorted.length > 0 && (
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', minWidth: 640, borderCollapse: 'collapse' }}>
@@ -136,6 +182,8 @@ export default function PublicTalksTab() {
                   const pct = Math.round(item.overallScore);
                   const color = scoreColor(pct);
                   const viewHref = item.shareToken ? `/shared-talk/${item.shareToken}` : null;
+                  const isPinned = pinnedIds.has(item.id);
+                  const isPinBusy = pinBusy.has(item.id);
                   return (
                     <tr key={item.id}
                       onClick={() => viewHref && navigate(viewHref)}
@@ -147,16 +195,39 @@ export default function PublicTalksTab() {
                       <td style={{ padding: '14px 16px' }}>
                         <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>🎤 {item.subject ?? 'Practice Talk'}</div>
                       </td>
-                      <td style={{ padding: '14px 16px', fontSize: 12, color: 'var(--text-2)' }}>{item.authorFirstName}</td>
+                      <td style={{ padding: '14px 16px', fontSize: 12 }}>
+                        {/* Links to the talker's own profile — "because you might want to
+                            Connect/Friend them" (Francis, 2026-09-17). Same /profile/:userId
+                            route ProfilePage.tsx already serves for viewing another candidate. */}
+                        <button
+                          onClick={e => { e.stopPropagation(); navigate(`/profile/${item.candidateId}`); }}
+                          title={`View ${item.authorFullName}'s profile`}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', fontSize: 12, color: 'var(--text-2)' }}
+                          onMouseEnter={e => (e.currentTarget.style.color = '#4F8EF7')}
+                          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-2)')}
+                        >
+                          <User size={12} /> {item.authorFullName}
+                        </button>
+                      </td>
                       <td style={{ padding: '14px 16px' }}>
                         <span style={{ fontSize: 11, fontWeight: 700, color, background: `${color}18`, padding: '4px 10px', borderRadius: 20 }}>
                           {pct} · {scoreLabel(pct)}
                         </span>
                       </td>
                       <td style={{ padding: '14px 16px' }}>
-                        {viewHref && (
-                          <button onClick={e => { e.stopPropagation(); navigate(viewHref); }} style={{ fontSize: 11, color: '#4F8EF7', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, whiteSpace: 'nowrap' }}>View →</button>
-                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'flex-end' }}>
+                          <button
+                            onClick={e => { e.stopPropagation(); togglePin(item); }}
+                            disabled={isPinBusy}
+                            title={isPinned ? 'Remove from your pinned talks' : 'Pin to your library'}
+                            style={{ background: 'none', border: 'none', cursor: isPinBusy ? 'default' : 'pointer', padding: 0, display: 'flex', opacity: isPinBusy ? 0.5 : 1 }}
+                          >
+                            <Star size={14} color={isPinned ? '#F59E0B' : 'var(--text-3)'} fill={isPinned ? '#F59E0B' : 'none'} />
+                          </button>
+                          {viewHref && (
+                            <button onClick={e => { e.stopPropagation(); navigate(viewHref); }} style={{ fontSize: 11, color: '#4F8EF7', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, whiteSpace: 'nowrap' }}>View →</button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

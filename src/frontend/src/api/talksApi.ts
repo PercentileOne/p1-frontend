@@ -74,6 +74,8 @@ export interface PublicTalkSummary {
   overallScore: number;
   hasVideo: boolean;
   shareToken: string | null;
+  candidateId: string;
+  authorFullName: string;
 }
 
 export async function fetchPublicTalks(q?: string): Promise<PublicTalkSummary[]> {
@@ -81,6 +83,29 @@ export async function fetchPublicTalks(q?: string): Promise<PublicTalkSummary[]>
   const res = await fetch(`${API_BASE}/api/talks/public${qs}`, { headers: authHeaders() });
   if (!res.ok) return [];
   return res.json() as Promise<PublicTalkSummary[]>;
+}
+
+// Pinning a fellow candidate's Public Talk to your own shelf — same "pinnedTalks" concept as
+// the curated TED-talk row above, just for a peer's own recorded practice talk instead.
+export async function fetchPinnedPublicTalks(): Promise<PublicTalkSummary[]> {
+  const res = await fetch(`${API_BASE}/api/pinned-public-talks`, { headers: authHeaders() });
+  if (!res.ok) return [];
+  return res.json() as Promise<PublicTalkSummary[]>;
+}
+
+export async function pinPublicTalk(talkId: string, candidateId: string): Promise<void> {
+  await fetch(`${API_BASE}/api/pinned-public-talks`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ talkId, candidateId }),
+  });
+}
+
+export async function unpinPublicTalk(talkId: string): Promise<void> {
+  await fetch(`${API_BASE}/api/pinned-public-talks/${encodeURIComponent(talkId)}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
 }
 
 export interface UploadTalkResult {

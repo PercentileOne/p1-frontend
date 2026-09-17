@@ -284,10 +284,13 @@ public static class Endpoint
     // Same opaque-JSON parse as ToSummary, plus the author's first name (uploaded alongside
     // subject/overallScore — see TalkRoomPage.tsx's finishTalk) and the shareToken the Public
     // Talks tab needs to send "View" straight to the existing /shared-talk/:token page.
-    private static PublicTalkSummary ToPublicSummary(TalkEnvelope env)
+    // internal, not private — PinnedPublicTalks/Endpoint.cs reuses this exact transform so a
+    // re-fetched pinned talk renders identically to one found via search, not a hand-rolled copy.
+    internal static PublicTalkSummary ToPublicSummary(TalkEnvelope env)
     {
         string? subject = null;
         string authorFirstName = "A candidate";
+        string authorFullName = "A candidate";
         double overallScore = 0;
         try
         {
@@ -297,10 +300,14 @@ public static class Endpoint
             if (root.TryGetProperty("overallScore", out var o) && o.ValueKind == JsonValueKind.Number) overallScore = o.GetDouble();
             if (root.TryGetProperty("authorFirstName", out var a) && a.ValueKind == JsonValueKind.String && a.GetString() is { Length: > 0 } name)
                 authorFirstName = name;
+            if (root.TryGetProperty("authorFullName", out var fn) && fn.ValueKind == JsonValueKind.String && fn.GetString() is { Length: > 0 } fullName)
+                authorFullName = fullName;
+            else
+                authorFullName = authorFirstName; // talks uploaded before authorFullName existed
         }
         catch (JsonException) { /* malformed sessionDataJson — summary just shows defaults */ }
 
-        return new PublicTalkSummary(env.id, authorFirstName, env.createdAt, subject, overallScore, env.hasVideo, env.shareToken);
+        return new PublicTalkSummary(env.id, authorFirstName, env.createdAt, subject, overallScore, env.hasVideo, env.shareToken, env.candidateId, authorFullName);
     }
 
     private static string BuildResponseJson(TalkEnvelope env, BlobStorageService blob)
@@ -357,6 +364,10 @@ public record TalkSummary(
 public record VisibilityRequest(bool IsPublic);
 
 // Row for the Public Talks tab — one candidate's talk, discoverable by anyone signed in.
+// candidateId + authorFullName (Francis, 2026-09-17) let the table link straight to the
+// talker's own profile ("...because you might want to Connect/Friend them") — candidateId is
+// already a first-class field on every envelope (env.candidateId), never anything parsed from
+// the client-supplied JSON blob, so it can't be spoofed the way authorFullName technically can.
 public record PublicTalkSummary(
     string id,
     string authorFirstName,
@@ -364,4 +375,6 @@ public record PublicTalkSummary(
     string? subject,
     double overallScore,
     bool hasVideo,
-    string? shareToken);
+    string? shareToken,
+    string candidateId,
+    string authorFullName);
