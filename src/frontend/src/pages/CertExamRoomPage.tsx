@@ -163,7 +163,7 @@ export default function CertExamRoomPage() {
 
         {phase === 'exam' && questions[qIndex] && (
           <ExamQuestionCard
-            key="exam"
+            key={qIndex}
             question={questions[qIndex]}
             index={qIndex}
             total={questions.length}
