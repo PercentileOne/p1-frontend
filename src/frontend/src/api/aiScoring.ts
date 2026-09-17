@@ -782,15 +782,17 @@ CONTEXT:
 - Difficulty level: ${difficultyFrame}
 ${jobSpecSnippet ? `- Job spec excerpt: ${jobSpecSnippet}` : ''}
 
-STRUCTURE (spoken naturally as one flowing paragraph — no lists):
-1. "Hi [candidate name] — I'm Michelle, and I've set up today's interview for you."
-2. "You're here for the [job title] position at [company name]."
+STRUCTURE (spoken naturally as one flowing paragraph — no lists; written in ENGLISH below only
+to describe what each beat should cover, NOT as literal text to copy — every beat must be
+composed fresh, entirely in the language specified above):
+1. Greet the candidate by name, introduce yourself as Michelle, and say you've set up today's interview for them.
+2. Say which role and company this interview is for.
 3. Round framing (use the exact framing given above, naturally worded) — skip entirely and say nothing about it if this is their first round.
 4. One warm sentence about the company or role.
 5. Difficulty framing (use the exact framing given above, naturally worded).
-6. "You'll be meeting Amina from HR and Wayne, who'll be leading the role-specific questions."
+6. Tell them they'll be meeting Amina from HR and Wayne, who'll be leading the role-specific questions (keep the names "Michelle", "Amina", and "Wayne" exactly as given — proper nouns, never translated or transliterated).
 7. One specific tip for this role.
-8. Warm close: "You've got this. Good luck."
+8. A warm closing line wishing them good luck.
 
 Return JSON: { "mikeScript": "..." }`;
 
@@ -914,7 +916,8 @@ CRITICAL RULES — READ CAREFULLY:
 4. Questions must be specific to THIS role at THIS company — not generic questions that could fit any employer.
 5. All spoken scripts (Michelle, Amina, Wayne) must sound natural when read aloud. No bullet points, no lists, no asterisks.
 6. Return ONLY valid JSON — no markdown, no explanation, no code fences.
-7. COMPANY NAMING: if the Session Context gives you a confirmed company, use that exact name everywhere — never invent a different one. Otherwise, if no company is named anywhere in the job spec, invent ONE single plausible, realistic company name whose industry genuinely fits THIS job title (e.g. a supermarket or retail chain for a Shop Sales Assistant, a stables or equestrian centre for a Horse Trainer, a hospital or clinic for a Nurse, a haulage firm for a Lorry Driver) — never a mismatched real company (a software/finance/tech giant is almost never the right invented employer for a non-corporate role) and never a vague placeholder like "the company" or "your employer". Use that one invented name consistently in the questions, both intros, and companyFacts.`;
+7. COMPANY NAMING: if the Session Context gives you a confirmed company, use that exact name everywhere — never invent a different one. Otherwise, if no company is named anywhere in the job spec, invent ONE single plausible, realistic company name whose industry genuinely fits THIS job title (e.g. a supermarket or retail chain for a Shop Sales Assistant, a stables or equestrian centre for a Horse Trainer, a hospital or clinic for a Nurse, a haulage firm for a Lorry Driver) — never a mismatched real company (a software/finance/tech giant is almost never the right invented employer for a non-corporate role) and never a vague placeholder like "the company" or "your employer". Use that one invented name consistently in the questions, both intros, and companyFacts.
+8. Several field instructions below (sarahIntro, jamesIntro) include short EXAMPLE phrases in quotes, written in English, to illustrate tone and structure only — e.g. how to naturally work a difficulty level or a special focus topic into a sentence. These are NEVER text to copy verbatim. Every word you actually output must be freshly composed in the language set by rule 1/${selectedLanguage || 'en'} above — an English example phrase must become an equally natural ORIGINAL sentence in that language, not a translated-in-place or literally-copied one. This applies to every spoken script in this response (Michelle, Amina, Wayne) without exception.`;
 
   const sessionSeed = `${Date.now()}-${crypto.randomUUID()}`; // unique per session — never reuse
 
