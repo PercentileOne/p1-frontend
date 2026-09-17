@@ -153,10 +153,26 @@ export default function CertExamRoomPage() {
                 transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
                 style={{ position: 'absolute', inset: -8, borderRadius: '20px', border: '2px solid var(--blue)', pointerEvents: 'none' }}
               />
+              {/* HeyGen's cold-start handshake can take 30-40s — the pulsing border ring alone
+                  wasn't a clear enough "something is happening" signal (live-reported: "she's
+                  just staring at me"). A real spinner + explicit copy while not yet connected,
+                  swapped out the instant her session goes live. */}
+              {liveAvatarMichelle.status !== 'connected' && (
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(7,11,20,0.72)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                    style={{ width: 34, height: 34, borderRadius: '50%', border: '3px solid rgba(79,142,247,0.25)', borderTopColor: 'var(--blue)' }}
+                  />
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>Connecting you to Michelle…</div>
+                </div>
+              )}
             </div>
             <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)', marginBottom: '6px' }}>Michelle</div>
             <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>
-              {phase === 'briefing' ? 'Briefing you on your mock exam…' : 'Preparing your questions…'}
+              {liveAvatarMichelle.status !== 'connected'
+                ? 'Setting up your live briefing — this can take up to a minute…'
+                : phase === 'briefing' ? 'Briefing you on your mock exam…' : 'Preparing your questions…'}
             </div>
           </motion.div>
         )}
