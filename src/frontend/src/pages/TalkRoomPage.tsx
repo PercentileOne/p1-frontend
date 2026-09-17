@@ -340,7 +340,7 @@ export default function TalkRoomPage() {
 
         {phase === 'mike-prep' && (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
-            <img src="/images/mike.png" alt="Michelle" style={{ width: '140px', height: '140px', borderRadius: '50%', objectFit: 'cover', marginBottom: '20px' }} />
+            <img src="/images/michelle-static-avatar.png" alt="Michelle" style={{ width: '140px', height: '140px', borderRadius: '50%', objectFit: 'cover', marginBottom: '20px' }} />
             <div style={{ fontSize: '14px', color: 'var(--text-2)' }}>Michelle is briefing you…</div>
           </div>
         )}
