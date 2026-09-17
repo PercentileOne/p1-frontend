@@ -54,6 +54,15 @@ export interface RoomState {
   specialFocus?: string[];
 }
 
+// Same 12 languages InterviewPackStart.tsx's intake dropdown offers — single source for the
+// room's own read-only language badge, which used to duplicate this list as <option> entries
+// on what was (until 2026-09-18) a live, but non-functional, in-room switcher.
+const LANGUAGE_LABELS: Record<string, string> = {
+  en: '🇬🇧 English (EN)', fr: '🇫🇷 French (FR)', es: '🇪🇸 Spanish (ES)', de: '🇩🇪 German (DE)',
+  pt: '🇵🇹 Portuguese (PT)', pl: '🇵🇱 Polish (PL)', nl: '🇳🇱 Dutch (NL)', it: '🇮🇹 Italian (IT)',
+  tr: '🇹🇷 Turkish (TR)', ar: '🇸🇦 Arabic (AR)', zh: '🇨🇳 Chinese (ZH)', hi: '🇮🇳 Hindi (HI)',
+};
+
 // ── Coaching cues — rotate during answering phase ────────────────────────────
 
 const COACHING_CUES = [
@@ -232,7 +241,12 @@ export default function InterviewRoomPage() {
   // below so a mistimed click can't land while an answer recording is live (that's how a
   // repeated question ended up baked into a candidate's own answer clip).
   const [isCapturingAnswer, setIsCapturingAnswer] = useState(false);
-  const [sessionLanguage, setSessionLanguage] = useState(ctx.selectedLanguage ?? 'en');
+  // Fixed at intake, same read-only-after-the-fact treatment as Difficulty/Round below — the
+  // in-room switcher used to let candidates change this live, but the interview's questions are
+  // all generated once, right after Michelle's briefing, in whatever language was selected on
+  // the intake screen; switching later couldn't retroactively translate already-generated
+  // question text, so the control looked live but silently did nothing (Francis, 2026-09-18).
+  const [sessionLanguage] = useState(ctx.selectedLanguage ?? 'en');
   const [elapsed, setElapsed] = useState(0);
   const [paused, setPaused] = useState(false);
   // Fixed at intake — no setter. Questions/scoring/Go Deeper limits are all built around
@@ -1057,30 +1071,21 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {/* Language switcher — always visible so candidates can switch any time */}
-          <select
-            value={sessionLanguage}
-            onChange={e => setSessionLanguage(e.target.value)}
-            title="Switch language"
+          {/* Language — read-only here, fixed at intake (see sessionLanguage's own comment for
+              why: the interview's questions are all generated once, in whatever language was
+              selected before the session started, so a live in-room switcher couldn't actually
+              translate anything already generated). Same read-only-badge treatment as
+              Difficulty/Round further down this sidebar. */}
+          <div
+            title="Set on the intake screen"
             style={{
               fontSize: '11px', fontWeight: 600, padding: '5px 8px', borderRadius: '7px',
               background: 'var(--bg3)', border: '1px solid var(--border)',
-              color: 'var(--text-2)', cursor: 'pointer', outline: 'none',
+              color: 'var(--text-2)', cursor: 'default', userSelect: 'none',
             }}
           >
-            <option value="en">🇬🇧 English (EN)</option>
-            <option value="fr">🇫🇷 French (FR)</option>
-            <option value="es">🇪🇸 Spanish (ES)</option>
-            <option value="de">🇩🇪 German (DE)</option>
-            <option value="pt">🇵🇹 Portuguese (PT)</option>
-            <option value="pl">🇵🇱 Polish (PL)</option>
-            <option value="nl">🇳🇱 Dutch (NL)</option>
-            <option value="it">🇮🇹 Italian (IT)</option>
-            <option value="tr">🇹🇷 Turkish (TR)</option>
-            <option value="ar">🇸🇦 Arabic (AR)</option>
-            <option value="zh">🇨🇳 Chinese (ZH)</option>
-            <option value="hi">🇮🇳 Hindi (HI)</option>
-          </select>
+            {LANGUAGE_LABELS[sessionLanguage] ?? LANGUAGE_LABELS.en}
+          </div>
 
           {/* Interviewer volume — always visible, independent of OS/browser volume */}
           <div style={{ position: 'relative' }}>
