@@ -72,6 +72,17 @@ const LANGUAGE_LABELS: Record<string, string> = {
   tr: '🇹🇷 Turkish (TR)', uk: '🇺🇦 Ukrainian (UK)', vi: '🇻🇳 Vietnamese (VI)', zh: '🇨🇳 Chinese (ZH)',
 };
 
+// Wayne's brief closing sign-off, spoken alongside Amina's own goodbye — see closeInterview's
+// own comment for why. `name` already carries its own leading ", " (matches closeInterview's
+// existing `name` construction), so each entry reads naturally as e.g. "Bye, Francis!".
+const WAYNE_GOODBYES: Array<(name: string) => string> = [
+  name => `Bye${name}!`,
+  name => `Good luck${name}.`,
+  name => `Take care${name}.`,
+  name => `All the best${name}.`,
+  name => `Thanks for your time${name}.`,
+];
+
 // ── Coaching cues — rotate during answering phase ────────────────────────────
 
 const COACHING_CUES = [
@@ -740,7 +751,24 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     cancelSpeakRef.current = avatarEnabled
       ? liveAvatarSpeakHr(closingLine, onClosingDone)
       : speak(closingLine, 'hr', onClosingDone, handleSarahVideoAnalyser);
-  }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl, resetForNextQuestion, handleSarahVideoAnalyser, setHrState, avatarEnabled, liveAvatarSpeakHr]);
+
+    // Wayne's own brief sign-off, spoken at the SAME time as Amina's — real interview panels
+    // naturally overlap short goodbyes rather than queueing one after another (Francis,
+    // 2026-09-18: he used to just silently look at the candidate the whole time). Purely a
+    // realism flourish: fire-and-forget, never gates navigation (Amina's own line already
+    // carries the information the candidate actually needs), and its own cancel/cleanup is
+    // deliberately not captured — it's a few words, always finishes well before Amina's much
+    // longer line does, so there's no meaningful risk of it outliving the navigate() below.
+    // Both avatars are already connected here (the 'scoring' reconnect earlier never
+    // disconnects again before this point), so this costs no extra LiveAvatar connect time.
+    if (name) {
+      const wayneGoodbye = WAYNE_GOODBYES[Math.floor(Math.random() * WAYNE_GOODBYES.length)](name);
+      setTechState('speaking');
+      const onWayneGoodbyeDone = () => setTechState('idle');
+      if (avatarEnabled) liveAvatarSpeakTechnical(wayneGoodbye, onWayneGoodbyeDone);
+      else speak(wayneGoodbye, 'technical', onWayneGoodbyeDone);
+    }
+  }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl, resetForNextQuestion, handleSarahVideoAnalyser, setHrState, setTechState, avatarEnabled, liveAvatarSpeakHr, liveAvatarSpeakTechnical]);
 
   // ── "Ask The Interviewer" — end-of-interview candidate-questions moment (Francis, 2026-09-17) ──
   // Fires on ~half of sessions (decided once here, never re-rolled mid-session), right after the
