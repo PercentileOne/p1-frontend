@@ -6,6 +6,7 @@ on:
     paths:
       - 'src/viewme/public/gate.html'
       - 'src/viewme/public/gate-staticwebapp.config.json'
+      - 'src/viewme/public/track.js'
       - '.github/workflows/deploy-interviewme.yml'
   workflow_dispatch:
 
@@ -29,6 +30,10 @@ jobs:
           cp src/viewme/public/gate.html deploy-gate/login.html
           cp src/viewme/public/gate.html deploy-gate/register.html
           cp src/viewme/public/gate-staticwebapp.config.json deploy-gate/staticwebapp.config.json
+          # Never in this list before (Francis, 2026-09-18) — gate.html's own <script
+          # src="/track.js"> tag has been 404ing on login.theinterviewchair.com since the
+          # page-view logger was built. Same fix as deploy-product-interviewme.yml.
+          cp src/viewme/public/track.js deploy-gate/track.js
           # Image assets gate.html references — never copied before, hence the broken chair
           # image Francis spotted live.
           cp src/viewme/public/the-interview-chair.png deploy-gate/the-interview-chair.png

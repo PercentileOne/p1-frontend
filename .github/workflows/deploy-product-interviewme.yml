@@ -41,6 +41,10 @@ jobs:
           cp src/viewme/public/how-we-score.html deploy-product/how-we-score.html
           cp src/viewme/public/gift-interview.html deploy-product/gift-interview.html
           cp src/viewme/public/gift-interview-success.html deploy-product/gift-interview-success.html
+          # Never in this list before (Francis, 2026-09-18) — every page's <script src="/track.js">
+          # tag has been 404ing on this domain since the page-view logger was built, regardless of
+          # where in the page it sat. Found live: a genuine 404 on https://www.theinterviewchair.com/track.js.
+          cp src/viewme/public/track.js deploy-product/track.js
           mkdir -p deploy-product/patent-files
           cp src/viewme/public/patent-files/*.png deploy-product/patent-files/
           cp src/viewme/public/staticwebapp.config.json deploy-product/staticwebapp.config.json
