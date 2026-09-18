@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { LayoutDashboard, BarChart2, Settings, Send, Bell, Search } from 'lucide-react'
+import { LayoutDashboard, BarChart2, Settings, Send, Bell, Search, Wallet } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { CvAnalysisModal } from '../components/CvAnalysisModal'
 import InterviewPacks from './InterviewPacks'
 import InterviewPreps from './InterviewPreps'
 import Candidates from './Candidates'
@@ -25,6 +26,7 @@ import Alerts from './Alerts'
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: 'Dashboard' },
   { Icon: Send,            label: 'Interview Preps' },
+  { Icon: Wallet,          label: 'CV/Salary' },
   { Icon: Bell,            label: 'Alerts' },
   { Icon: Search,          label: 'Candidate Marketplace' },
   { Icon: BarChart2,       label: 'Analytics' },
@@ -257,6 +259,7 @@ export default function Dashboard() {
         {activeNav === 'Interview Preps' && <InterviewPreps />}
         {activeNav === 'Interview Packs' && <InterviewPacks />}
         {activeNav === 'Candidates' && <Candidates />}
+        {activeNav === 'CV/Salary' && <CvAnalysisModal onClose={() => setActiveNav('Dashboard')} />}
         {activeNav === 'Candidate Marketplace' && <CandidateSearch />}
         {activeNav === 'Screen' && <ScreenCandidates />}
         {activeNav === 'Analytics' && <Analytics />}
@@ -267,7 +270,7 @@ export default function Dashboard() {
         {activeNav === 'Pack History' && <PackHistory />}
         {activeNav === 'My Interviews' && <InterviewHistory />}
         {activeNav === 'Alerts' && <Alerts />}
-        {activeNav !== 'Dashboard' && activeNav !== 'Interview Preps' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'Candidate Marketplace' && activeNav !== 'Screen' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && activeNav !== 'Pack History' && activeNav !== 'My Interviews' && activeNav !== 'Alerts' && (
+        {activeNav !== 'Dashboard' && activeNav !== 'Interview Preps' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'CV/Salary' && activeNav !== 'Candidate Marketplace' && activeNav !== 'Screen' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && activeNav !== 'Pack History' && activeNav !== 'My Interviews' && activeNav !== 'Alerts' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--text-3)', fontSize: 14 }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
             <div style={{ fontWeight: 700, color: 'var(--text-2)' }}>{activeNav}</div>
