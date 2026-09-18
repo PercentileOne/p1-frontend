@@ -5,7 +5,7 @@ import { FileUpload } from './FileUpload';
 import { ChairSpinner } from './ChairSpinner';
 import { CvAnalysisVoiceOverlay } from './CvAnalysisVoiceOverlay';
 import { analyzeCv, matchRolesToCareers, saveCvAnalysisHistory, shareCvAnalysisHistory, type CvAnalysisResult, type CvRoleMatch } from '../api/cvAnalysisApi';
-import { generateHotTopics } from '../api/aiScoring';
+import { generateHotTopicsWithReasons, type HotTopicWithReason } from '../api/aiScoring';
 import { useAuthStore } from '../auth/authStore';
 
 interface Props {
@@ -55,12 +55,17 @@ function topicColor(topic: string, skills: CvAnalysisResult['skills']): string {
 // Appended to narrativeScript (not just shown as its own text block) so Amina actually SAYS it
 // in the voice walkthrough — Francis's own ask, live-tested 2026-09-18: "xyz and yyt are very
 // much in demand... we noticed they're not factored into your CV... course waiting on Learn."
-function buildHotTopicGapSentence(hotTopics: string[], role: string, skills: CvAnalysisResult['skills']): string {
-  const gaps = hotTopics.filter(t => topicColor(t, skills) === '#EF4444');
+// Follow-up the same day: a flat list of jargon with no context isn't useful on its own — each
+// item now carries a "reason" (shown in the UI list), and the spoken line uses his own suggested
+// framing ("sought after by hiring managers right now for your type of role") rather than just
+// naming the gaps.
+function buildHotTopicGapSentence(hotTopics: HotTopicWithReason[], role: string, skills: CvAnalysisResult['skills']): string {
+  const gaps = hotTopics.filter(t => topicColor(t.name, skills) === '#EF4444');
   if (gaps.length === 0) return '';
-  const list = gaps.length === 1 ? gaps[0] : `${gaps.slice(0, -1).join(', ')} and ${gaps[gaps.length - 1]}`;
-  const plural = gaps.length > 1;
-  return ` One more thing — ${list} ${plural ? 'are' : 'is'} very much in demand for ${role} roles right now, and we noticed ${plural ? "they're" : "it's"} not factored into your CV. It'd be worth looking into ${plural ? 'those' : 'that'} to really boost it — we've got a course waiting for you on our Learn platform whenever you're ready.`;
+  const names = gaps.map(g => g.name);
+  const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+  const plural = names.length > 1;
+  return ` One more thing — ${plural ? 'these skills are' : 'this skill is'} sought after by hiring managers right now for ${role} roles, so it'd be good to get more familiar with ${plural ? 'them' : 'it'}: ${list}. We've got a course waiting for you on our Learn platform whenever you're ready.`;
 }
 
 // Full-screen modal, same CareersPanel.tsx detail-card visual language (eyebrow label, bold
@@ -75,8 +80,9 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
   const [roleMatches, setRoleMatches] = useState<CvRoleMatch[]>([]);
   const [rolesLoaded, setRolesLoaded] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
-  const [hotTopics, setHotTopics] = useState<string[]>([]);
+  const [hotTopics, setHotTopics] = useState<HotTopicWithReason[]>([]);
   const [hotTopicsRole, setHotTopicsRole] = useState('');
+  const [hotTopicsLoading, setHotTopicsLoading] = useState(false);
 
   // "Copy and/or Share" (Francis, 2026-09-18) — a candidate sharing their OWN CV analysis with a
   // friend or mentor. One combined action (unlike the recruiter portal's separate Save/Share
@@ -112,7 +118,8 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
         if (!isRecruiterView && matches[0]) {
           const topRole = matches[0].career!.title;
           setHotTopicsRole(topRole);
-          generateHotTopics(topRole).then(setHotTopics).catch(() => setHotTopics([]));
+          setHotTopicsLoading(true);
+          generateHotTopicsWithReasons(topRole).then(setHotTopics).catch(() => setHotTopics([])).finally(() => setHotTopicsLoading(false));
         }
       }).catch(() => { setRoleMatches([]); setRolesLoaded(true); });
     } catch (e) {
@@ -150,7 +157,10 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
       >
-        <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} />
+        {/* No onClick here — an accidental click outside used to silently discard the whole
+            analysis (Francis, 2026-09-18: "it needs to be a proper modal"). Closing now only
+            happens via the explicit X button. */}
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} />
         <motion.div
           initial={{ scale: 0.95, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: -12 }}
           style={{
@@ -266,21 +276,32 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
                   )}
                 </section>
 
-                {/* What's Hot for the top suggested role — candidate-only nudge into Learn */}
+                {/* What's Hot for the top suggested role — candidate-only nudge into Learn.
+                    Explicit loading line while this (third, chained) AI call is in flight — see
+                    the recruiter portal's CvAnalysisResultsView.tsx for the full reasoning. */}
+                {!isRecruiterView && hotTopicsLoading && hotTopics.length === 0 && (
+                  <section>
+                    <SectionHeading icon={<Flame size={13} />}>What's Hot for {hotTopicsRole}</SectionHeading>
+                    <div style={{ fontSize: 12, color: '#8080b0', padding: '8px 0' }}>Checking what's trending for this role…</div>
+                  </section>
+                )}
                 {!isRecruiterView && hotTopics.length > 0 && (
                   <section>
                     <SectionHeading icon={<Flame size={13} />}>What's Hot for {hotTopicsRole}</SectionHeading>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {hotTopics.map(topic => (
-                        <div key={topic} style={{
-                          display: 'flex', alignItems: 'center', gap: 10,
+                        <div key={topic.name} style={{
+                          display: 'flex', alignItems: 'flex-start', gap: 10,
                           border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 12px',
                         }}>
-                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: topicColor(topic, result.skills), flexShrink: 0 }} />
-                          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#fff' }}>{topic}</span>
+                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: topicColor(topic.name, result.skills), flexShrink: 0, marginTop: 5 }} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{topic.name}</div>
+                            <div style={{ fontSize: 11.5, color: '#8080b0', marginTop: 2, lineHeight: 1.4 }}>{topic.reason}</div>
+                          </div>
                           {onStudyTopic && (
                             <button
-                              onClick={() => onStudyTopic(topic)}
+                              onClick={() => onStudyTopic(topic.name)}
                               style={{
                                 background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)',
                                 borderRadius: 7, padding: '5px 10px', fontSize: 11, fontWeight: 700, color: ACCENT,
