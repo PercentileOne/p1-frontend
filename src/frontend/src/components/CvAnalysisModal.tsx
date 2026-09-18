@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, TrendingUp, AlertTriangle, Mic } from 'lucide-react';
+import { X, Sparkles, TrendingUp, AlertTriangle, Mic, Flame } from 'lucide-react';
 import { FileUpload } from './FileUpload';
 import { ChairSpinner } from './ChairSpinner';
 import { CvAnalysisVoiceOverlay } from './CvAnalysisVoiceOverlay';
 import { analyzeCv, matchRolesToCareers, type CvAnalysisResult, type CvRoleMatch } from '../api/cvAnalysisApi';
+import { generateHotTopics } from '../api/aiScoring';
 import { useAuthStore } from '../auth/authStore';
 
 interface Props {
@@ -12,6 +13,11 @@ interface Props {
   // 'candidate' = a recruiter analysing someone ELSE's CV — third-person, hiring-fit framing
   // throughout, both in the AI prompt (see Endpoint.cs) and the copy in this component.
   audience?: 'self' | 'candidate';
+  // Only wired up by the candidate portal (CandidateDashboard.tsx navigates to Learn with the
+  // topic pre-filled, same pattern as the "Most Studied Topics" modal already uses). Left
+  // undefined for the recruiter portal — this is a self-directed "go study this" nudge, it
+  // doesn't make sense when the audience is evaluating someone ELSE's CV.
+  onStudyTopic?: (topic: string) => void;
 }
 
 type Step = 'upload' | 'analyzing' | 'results' | 'error';
@@ -28,17 +34,35 @@ function fmtK(n: number) {
   return n >= 1000 ? `£${Math.round(n / 1000)}k` : `£${n}`;
 }
 
+// Grounds the hot-topic bar in the candidate's OWN detected skills rather than an arbitrary
+// colour — green if a matching skill is already strong (level >= 7), amber if there's some
+// exposure, red if the topic isn't reflected in their CV at all (a genuine gap worth studying).
+// Deliberately simple substring matching, not fuzzy/AI matching — a topic that doesn't literally
+// overlap with anything in their skills list defaulting to "worth studying" is the safer error
+// to make here, not the reverse.
+function topicColor(topic: string, skills: CvAnalysisResult['skills']): string {
+  const norm = topic.toLowerCase();
+  const match = skills.find(s => {
+    const sName = s.name.toLowerCase();
+    return sName.includes(norm) || norm.includes(sName);
+  });
+  if (!match) return '#EF4444';
+  return match.level >= 7 ? '#34D399' : '#F59E0B';
+}
+
 // Full-screen modal, same CareersPanel.tsx detail-card visual language (eyebrow label, bold
 // title, primary voice button up top, icon-labeled sections below) — copy-trimmed shell, new
 // content. Works identically in the candidate portal, recruiter portal (audience='candidate'),
 // and — via the same component, just without an authToken — the public product page.
-export function CvAnalysisModal({ onClose, audience = 'self' }: Props) {
+export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Props) {
   const authToken = useAuthStore(s => s.token);
   const [step, setStep] = useState<Step>('upload');
   const [errorMsg, setErrorMsg] = useState('');
   const [result, setResult] = useState<CvAnalysisResult | null>(null);
   const [roleMatches, setRoleMatches] = useState<CvRoleMatch[]>([]);
   const [showVoice, setShowVoice] = useState(false);
+  const [hotTopics, setHotTopics] = useState<string[]>([]);
+  const [hotTopicsRole, setHotTopicsRole] = useState('');
 
   const isRecruiterView = audience === 'candidate';
   const subjectLabel = isRecruiterView ? "This Candidate's CV" : 'Your CV';
@@ -54,7 +78,18 @@ export function CvAnalysisModal({ onClose, audience = 'self' }: Props) {
       // Fire-and-forget-ish: results render immediately with an empty table, then fill in as
       // real salary matches land — matching cost, giving useful content sooner than waiting on
       // every one of 5-8 searchCareers calls to finish before showing anything at all.
-      matchRolesToCareers(analysis.suggestedRoles).then(setRoleMatches).catch(() => setRoleMatches([]));
+      matchRolesToCareers(analysis.suggestedRoles).then(matches => {
+        setRoleMatches(matches);
+        // "What's Hot for [top role]" — candidate-only (see onStudyTopic's own comment), keyed
+        // off the highest-salary match since that's what the roles table already leads with.
+        // Reuses generateHotTopics exactly as the intake screen's own "What's Hot" button does —
+        // job-title-only, no CV context, same "what's trending for this role generally" intent.
+        if (!isRecruiterView && matches[0]) {
+          const topRole = matches[0].career!.title;
+          setHotTopicsRole(topRole);
+          generateHotTopics(topRole).then(setHotTopics).catch(() => setHotTopics([]));
+        }
+      }).catch(() => setRoleMatches([]));
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : 'Something went wrong analysing this CV — please try again.');
       setStep('error');
@@ -178,6 +213,36 @@ export function CvAnalysisModal({ onClose, audience = 'self' }: Props) {
                     </div>
                   )}
                 </section>
+
+                {/* What's Hot for the top suggested role — candidate-only nudge into Learn */}
+                {!isRecruiterView && hotTopics.length > 0 && (
+                  <section>
+                    <SectionHeading icon={<Flame size={13} />}>What's Hot for {hotTopicsRole}</SectionHeading>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {hotTopics.map(topic => (
+                        <div key={topic} style={{
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 12px',
+                        }}>
+                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: topicColor(topic, result.skills), flexShrink: 0 }} />
+                          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#fff' }}>{topic}</span>
+                          {onStudyTopic && (
+                            <button
+                              onClick={() => onStudyTopic(topic)}
+                              style={{
+                                background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)',
+                                borderRadius: 7, padding: '5px 10px', fontSize: 11, fontWeight: 700, color: ACCENT,
+                                cursor: 'pointer', flexShrink: 0,
+                              }}
+                            >
+                              Study on Learn →
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
 
                 {/* Strengths / weaknesses / inconsistencies */}
                 <NarrativeList title="Strengths" items={result.strengths} color="#34D399" />

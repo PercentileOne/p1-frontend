@@ -836,7 +836,7 @@ export default function CandidateDashboard() {
         {activeNav === "Careers"        && <CareersPanel />}
         {activeNav === "Job Interviews"     && <MyInterviewsPage />}
         {activeNav === "Certifications & Exams" && <CertExamsPanel />}
-        {activeNav === "What Am I Worth?" && <CvAnalysisModal onClose={() => navTo("Dashboard")} />}
+        {activeNav === "What Am I Worth?" && <CvAnalysisModal onClose={() => navTo("Dashboard")} onStudyTopic={(topic) => navigate("/dashboard?tab=learn", { state: { studyTopic: topic } })} />}
         {activeNav === "Question Bank"  && <QuestionBankPage />}
         {activeNav === "My Talks"       && <MyTalksPage />}
         {activeNav === "Learn Alerts"   && <LearnAlertsPage />}
