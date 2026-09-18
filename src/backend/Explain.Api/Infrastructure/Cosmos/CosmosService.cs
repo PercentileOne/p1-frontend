@@ -253,6 +253,15 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("sessionPasses", "/recipientEmail"));
 
+        // CV/Salary Analyzer (Francis, 2026-09-18) — same daily-cap-backstop shape as
+        // careerCoachUsage above, for the same reason: this feature makes a real, uncached AI
+        // call per submission, and the marketing-page version is anonymous/public with no login
+        // to naturally bound abuse. Key = candidateId when authenticated, client IP when
+        // anonymous (see Features/CvAnalysis/Endpoint.cs). 2-day TTL, same midnight-boundary
+        // safety margin.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("cvAnalysisUsage", "/rateLimitKey") { DefaultTimeToLive = 172800 });
+
         await SeedPlatformStatsAsync();
         await SeedNewsFeedSourcesAsync();
     }

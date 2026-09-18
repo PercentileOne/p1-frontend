@@ -10,8 +10,9 @@ import { getTopLearnTopics, type LearnTopicStat } from "../api/learnTopicsApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
   MessageSquare, Settings, LogOut, ChevronRight, ChevronDown, CheckCircle2, Circle, Compass, Gift, Zap,
-  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked, GraduationCap,
+  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked, GraduationCap, Wallet,
 } from "lucide-react";
+import { CvAnalysisModal } from "../components/CvAnalysisModal";
 import LearnPanel from "./LearnPanel";
 import CareersPanel from "./CareersPanel";
 import MyInterviewsPage from "./MyInterviewsPage";
@@ -49,6 +50,7 @@ const NAV_ITEMS = [
   { Icon: User,            label: "My Profile",      slug: "profile" },
   { Icon: Video,           label: "Job Interviews",      slug: "interviews" },
   { Icon: GraduationCap,   label: "Certifications & Exams", slug: "certifications" },
+  { Icon: Wallet,          label: "CV/Salary",       slug: "cv-salary" },
   { Icon: BookMarked,      label: "Question Bank",   slug: "question-bank" },
   { Icon: Mic,             label: "My Talks",        slug: "talks" },
   { Icon: BellRing,        label: "Learn Alerts",    slug: "learn-alerts" },
@@ -834,6 +836,7 @@ export default function CandidateDashboard() {
         {activeNav === "Careers"        && <CareersPanel />}
         {activeNav === "Job Interviews"     && <MyInterviewsPage />}
         {activeNav === "Certifications & Exams" && <CertExamsPanel />}
+        {activeNav === "CV/Salary" && <CvAnalysisModal onClose={() => navTo("Dashboard")} />}
         {activeNav === "Question Bank"  && <QuestionBankPage />}
         {activeNav === "My Talks"       && <MyTalksPage />}
         {activeNav === "Learn Alerts"   && <LearnAlertsPage />}
@@ -845,7 +848,7 @@ export default function CandidateDashboard() {
         {activeNav === "Demo"           && <DemoPanel />}
         {activeNav === "Settings"       && <SettingsPage />}
 
-        {!["My Career Coach", "Learn", "Careers", "Job Interviews", "Certifications & Exams", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Settings"].includes(activeNav) && <>
+        {!["My Career Coach", "Learn", "Careers", "Job Interviews", "Certifications & Exams", "CV/Salary", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Settings"].includes(activeNav) && <>
 
         {/* ── STATS ROW ── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>
