@@ -173,6 +173,13 @@
   .role-salary { color: var(--green); font-weight: 700; font-variant-numeric: tabular-nums; }
   .roles-loading { font-size: 12px; color: var(--muted); padding: 6px 0; }
 
+  .hot-topic-row {
+    display: flex; align-items: center; gap: 10px; border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--pearl);
+  }
+  .hot-topic-row .dot { width: 6px; height: 6px; flex-shrink: 0; }
+  .hot-topics-loading { font-size: 12px; color: var(--muted); padding: 6px 0; }
+
   ul.narrative { list-style: none; display: flex; flex-direction: column; gap: 7px; }
   ul.narrative li { font-size: 13px; color: #e0dcff; line-height: 1.6; padding-left: 16px; position: relative; }
   ul.narrative li::before { content: '—'; position: absolute; left: 0; color: var(--muted); }
@@ -281,6 +288,12 @@
         <div class="section">
           <div class="section-h">✨ Roles You Could Apply For</div>
           <div id="roles-list"><div class="roles-loading">Matching against real roles…</div></div>
+        </div>
+
+        <div class="section" id="hot-topics-section" style="display:none">
+          <div class="section-h">🔥 What's Hot for <span id="hot-topics-role"></span></div>
+          <div id="hot-topics-list"></div>
+          <div id="hot-topics-note" style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5">Courses for any gaps here are available on our Learn platform.</div>
         </div>
 
         <div class="section" id="strengths-section">
@@ -412,6 +425,8 @@
     document.getElementById('share-btn').disabled = false;
     document.getElementById('share-btn').textContent = '🔗 Share this analysis';
     document.getElementById('share-error').style.display = 'none';
+    document.getElementById('hot-topics-section').style.display = 'none';
+    lastHotTopics = [];
   });
 
   // "Share this analysis" — the viral spin (Francis, 2026-09-18): anonymous visitors can share
@@ -664,6 +679,63 @@
       return '<div class="role-row"><span class="role-title">' + escapeHtml(m.career.title) + '</span>' +
         '<span class="role-salary">' + fmtK(m.career.salary.uk.starting) + ' – ' + fmtK(m.career.salary.uk.expert) + '</span></div>';
     }).join('') + '</div>';
+
+    loadHotTopics(real[0].career.title);
+  }
+
+  // "What's Hot for [top role]" — Francis's own framing, 2026-09-18: "it's our whole advertising
+  // angle for the portal", so this now lives everywhere a CV analysis renders, not just the
+  // recruiter portal it started on. This page has no OpenAI proxy of its own (no client-side key,
+  // per this repo's #1 rule) — goes through a real backend endpoint instead of the portals' own
+  // client-side generateHotTopics(). A THIRD sequential AI call (after CV analysis and role
+  // matching), so it lands a few seconds after everything else — the explicit loading line here
+  // matters for the same reason it did in the recruiter portal: silence reads as "not there".
+  var lastHotTopics = [];
+  function topicColor(topic, skills) {
+    var norm = topic.toLowerCase();
+    var match = null;
+    for (var i = 0; i < skills.length; i++) {
+      var sName = skills[i].name.toLowerCase();
+      if (sName.indexOf(norm) !== -1 || norm.indexOf(sName) !== -1) { match = skills[i]; break; }
+    }
+    if (!match) return 'var(--red)';
+    return match.level >= 7 ? 'var(--green)' : 'var(--amber)';
+  }
+
+  function buildHotTopicGapSentence(hotTopics, role, skills) {
+    var gaps = hotTopics.filter(function(t) { return topicColor(t, skills) === 'var(--red)'; });
+    if (gaps.length === 0) return '';
+    var list = gaps.length === 1 ? gaps[0] : gaps.slice(0, -1).join(', ') + ' and ' + gaps[gaps.length - 1];
+    var plural = gaps.length > 1;
+    return ' One more thing — ' + list + (plural ? ' are' : ' is') + ' very much in demand for ' + role + ' roles right now, and we noticed ' + (plural ? "they're" : "it's") + ' not factored into your CV. It\'d be worth looking into ' + (plural ? 'those' : 'that') + ' to really boost it — we\'ve got a course waiting for you on our Learn platform whenever you\'re ready.';
+  }
+
+  async function loadHotTopics(role) {
+    var section = document.getElementById('hot-topics-section');
+    var roleEl = document.getElementById('hot-topics-role');
+    var list = document.getElementById('hot-topics-list');
+    var note = document.getElementById('hot-topics-note');
+    roleEl.textContent = role;
+    section.style.display = 'block';
+    list.innerHTML = '<div class="hot-topics-loading">Checking what\'s trending for this role…</div>';
+    note.style.display = 'none';
+    try {
+      var res = await fetch(API_BASE + '/api/cv-analysis/hot-topics', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobTitle: role }),
+      });
+      var data = await res.json();
+      var topics = (data && data.topics) || [];
+      lastHotTopics = topics;
+      if (topics.length === 0) { section.style.display = 'none'; return; }
+      var skills = (lastResult && lastResult.skills) || [];
+      list.innerHTML = topics.map(function(t) {
+        return '<div class="hot-topic-row"><span class="dot" style="border-radius:50%;background:' + topicColor(t, skills) + '"></span><span>' + escapeHtml(t) + '</span></div>';
+      }).join('');
+      note.style.display = 'block';
+    } catch (e) {
+      section.style.display = 'none';
+    }
   }
 
   // ── VOICE OVERLAY ──
@@ -673,7 +745,8 @@
 
   document.getElementById('voice-btn').addEventListener('click', function() {
     if (!lastResult) return;
-    openVoiceOverlay(lastResult.narrativeScript || '');
+    var gapSentence = buildHotTopicGapSentence(lastHotTopics, document.getElementById('hot-topics-role').textContent, lastResult.skills || []);
+    openVoiceOverlay((lastResult.narrativeScript || '') + gapSentence);
   });
   document.getElementById('voice-close-btn').addEventListener('click', closeVoiceOverlay);
 

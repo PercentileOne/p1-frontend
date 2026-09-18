@@ -117,6 +117,13 @@
   .skill-fill { height: 100%; border-radius: 4px; width: 0; transition: width 0.6s ease; }
 
   .roles-table { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+
+  .hot-topic-row {
+    display: flex; align-items: center; gap: 10px; border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--pearl);
+  }
+  .hot-topic-row .dot { width: 6px; height: 6px; flex-shrink: 0; }
+  .hot-topics-loading { font-size: 12px; color: var(--muted); padding: 6px 0; }
   .role-row {
     display: flex; justify-content: space-between; align-items: center;
     padding: 12px 14px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -231,6 +238,12 @@
           <div id="roles-list"></div>
         </div>
 
+        <div class="section" id="hot-topics-section" style="display:none">
+          <div class="section-h">🔥 What's Hot for <span id="hot-topics-role"></span></div>
+          <div id="hot-topics-list"></div>
+          <div id="hot-topics-note" style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5">Courses for any gaps here are available on our Learn platform.</div>
+        </div>
+
         <div class="section" id="strengths-section" style="display:none">
           <div class="section-h"><span class="dot" style="background:var(--green)"></span> Strengths</div>
           <ul class="narrative" id="strengths-list"></ul>
@@ -297,6 +310,7 @@
   }
 
   var lastNarrativeScript = '';
+  var lastSkills = [];
 
   function showState(state) {
     document.getElementById('loading-state').style.display = state === 'loading' ? 'block' : 'none';
@@ -327,6 +341,7 @@
   function renderRecord(record) {
     var analysis = record.analysis;
     lastNarrativeScript = analysis.narrativeScript || '';
+    lastSkills = analysis.skills || [];
 
     var titleText = record.candidateName ? ('CV Analysis for ' + record.candidateName) : 'CV Analysis';
     document.getElementById('page-title').textContent = titleText;
@@ -353,11 +368,63 @@
         return '<div class="role-row"><span class="role-title">' + escapeHtml(m.careerTitle) + '</span>' +
           '<span class="role-salary">' + fmtK(m.salaryUkStarting) + ' – ' + fmtK(m.salaryUkExpert) + '</span></div>';
       }).join('') + '</div>';
+      loadHotTopics(roleMatches[0].careerTitle, analysis.skills || []);
     }
 
     renderNarrativeList('strengths-list', 'strengths-section', analysis.strengths);
     renderNarrativeList('weaknesses-list', 'weaknesses-section', analysis.weaknesses);
     renderNarrativeList('inconsistencies-list', 'inconsistencies-section', analysis.inconsistencies);
+  }
+
+  // Same "What's Hot" cross-sell as cv-salary.html — see that file's own comment for why this
+  // goes through a real backend endpoint rather than a client-side OpenAI call.
+  var lastHotTopics = [];
+  var lastHotTopicsRole = '';
+  function topicColor(topic, skills) {
+    var norm = topic.toLowerCase();
+    var match = null;
+    for (var i = 0; i < skills.length; i++) {
+      var sName = skills[i].name.toLowerCase();
+      if (sName.indexOf(norm) !== -1 || norm.indexOf(sName) !== -1) { match = skills[i]; break; }
+    }
+    if (!match) return 'var(--red)';
+    return match.level >= 7 ? 'var(--green)' : 'var(--amber)';
+  }
+
+  function buildHotTopicGapSentence(hotTopics, role, skills) {
+    var gaps = hotTopics.filter(function(t) { return topicColor(t, skills) === 'var(--red)'; });
+    if (gaps.length === 0) return '';
+    var list = gaps.length === 1 ? gaps[0] : gaps.slice(0, -1).join(', ') + ' and ' + gaps[gaps.length - 1];
+    var plural = gaps.length > 1;
+    return ' One more thing — ' + list + (plural ? ' are' : ' is') + ' very much in demand for ' + role + ' roles right now, and they\'re not reflected in this CV.';
+  }
+
+  async function loadHotTopics(role, skills) {
+    var section = document.getElementById('hot-topics-section');
+    var roleEl = document.getElementById('hot-topics-role');
+    var list = document.getElementById('hot-topics-list');
+    var note = document.getElementById('hot-topics-note');
+    lastHotTopicsRole = role;
+    roleEl.textContent = role;
+    section.style.display = 'block';
+    list.innerHTML = '<div class="hot-topics-loading">Checking what\'s trending for this role…</div>';
+    note.style.display = 'none';
+    try {
+      var res = await fetch(API_BASE + '/api/cv-analysis/hot-topics', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobTitle: role }),
+      });
+      var data = await res.json();
+      var topics = (data && data.topics) || [];
+      lastHotTopics = topics;
+      if (topics.length === 0) { section.style.display = 'none'; return; }
+      list.innerHTML = topics.map(function(t) {
+        return '<div class="hot-topic-row"><span class="dot" style="border-radius:50%;background:' + topicColor(t, skills) + '"></span><span>' + escapeHtml(t) + '</span></div>';
+      }).join('');
+      note.style.display = 'block';
+    } catch (e) {
+      section.style.display = 'none';
+    }
   }
 
   // This page's own URL already IS the share link (it's how we got here) — no new API call
@@ -390,7 +457,8 @@
 
   document.getElementById('voice-btn').addEventListener('click', function() {
     if (!lastNarrativeScript) return;
-    openVoiceOverlay(lastNarrativeScript);
+    var gapSentence = buildHotTopicGapSentence(lastHotTopics, lastHotTopicsRole, lastSkills);
+    openVoiceOverlay(lastNarrativeScript + gapSentence);
   });
   document.getElementById('voice-close-btn').addEventListener('click', closeVoiceOverlay);
 
