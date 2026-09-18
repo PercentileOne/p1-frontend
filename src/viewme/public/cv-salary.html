@@ -745,6 +745,9 @@
   var linesEl = document.getElementById('voice-lines');
   var currentAudio = null;
   var overlayTimer = null;
+  // Bumped on every open/close so a narration fetch that resolves AFTER the overlay was closed
+  // knows it is stale and stays silent (Francis, 2026-09-18: audio kept playing after closing).
+  var speakSession = 0;
 
   document.getElementById('voice-btn').addEventListener('click', function() {
     if (!lastResult) return;
@@ -756,6 +759,8 @@
   function closeVoiceOverlay() {
     overlay.classList.remove('open');
     clearTimeout(overlayTimer);
+    speakSession++;
+    try { window.speechSynthesis.cancel(); } catch (e) {}
     if (currentAudio) { try { currentAudio.pause(); } catch (e) {} currentAudio = null; }
   }
 
@@ -774,7 +779,7 @@
       wordCount += line.split(' ').length;
     });
 
-    speakNarrative(narrativeScript);
+    speakNarrative(narrativeScript, ++speakSession);
 
     // Hard safety timeout — dismiss after 90s no matter what
     // Safety net only, scaled to the script length — a flat 90s cut Amina off mid-sentence once
@@ -788,7 +793,7 @@
   // (Features/Interviews/SpeakVoice) — no Web Audio graph needed for this standalone page
   // (no volume slider, no recording tap), falls back to the browser's own speechSynthesis
   // if the fetch fails, matching ttsApi.ts's speak() fallback behaviour.
-  async function speakNarrative(text) {
+  async function speakNarrative(text, session) {
     try {
       var genRes = await fetch(API_BASE + '/interviews/speak', {
         method: 'POST',
@@ -797,10 +802,11 @@
       });
       if (!genRes.ok) throw new Error('speak proxy error');
       var data = await genRes.json();
+      if (session !== speakSession) return; // overlay closed while the clip was loading
       currentAudio = new Audio(data.audioUrl);
       currentAudio.play().catch(function() { speakWebSpeechFallback(text); });
     } catch (e) {
-      speakWebSpeechFallback(text);
+      if (session === speakSession) speakWebSpeechFallback(text);
     }
   }
 

@@ -86,6 +86,7 @@ async function speakElevenLabs(
   onEnd: () => void,
   volume = 1.0,
   onAnalyser?: (a: AnalyserNode) => void,
+  isCancelled?: () => boolean,
 ): Promise<() => void> {
   // Resume the AudioContext FIRST — as the very first await, before any network
   // call — so the browser still considers it part of the click that got us here.
@@ -116,6 +117,11 @@ async function speakElevenLabs(
   const arrayBuffer = await blob.arrayBuffer();
   URL.revokeObjectURL(url);
   const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+
+  // The caller may have cancelled while the clip was still being generated/fetched/decoded —
+  // their cancel function can't stop a source that doesn't exist yet, so without this check the
+  // audio would start anyway after they'd already closed the dialog.
+  if (isCancelled?.()) return () => {};
 
   const source = ctx.createBufferSource();
   source.buffer = audioBuffer;
@@ -207,7 +213,7 @@ export function speak(
 
   speakElevenLabs(text, role, () => {
     if (!cancelled) onEnd();
-  }, role === 'technical' ? 0.5 : role === 'mike' ? 0.65 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined)
+  }, role === 'technical' ? 0.5 : role === 'mike' ? 0.65 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined, () => cancelled)
     .then(cancel => { cancelAudio = cancel; })
     .catch((err) => {
       // Backend proxy or ElevenLabs itself failed — fall back to Web Speech. Logged so the
@@ -215,7 +221,9 @@ export function speak(
       console.warn(`[TTS] Neural voice failed for role "${role}", falling back to Web Speech:`, err);
       if (!cancelled) {
         onAnalyser?.(null);
-        speakWebSpeech(text, role, onEnd);
+        // Keep this cancel too — it used to be dropped, so cancelling during the fallback voice
+        // never actually stopped it.
+        cancelAudio = speakWebSpeech(text, role, onEnd);
       }
     });
 
