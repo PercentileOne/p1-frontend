@@ -96,7 +96,7 @@ public static class Endpoint
             var countryCode = string.IsNullOrWhiteSpace(req.CountryCode) ? "unknown" : req.CountryCode.Trim().ToUpperInvariant();
             var doc = new ConfidenceSurveyDoc(
                 id: Guid.NewGuid().ToString(),
-                pk: countryCode,
+                countryCode: countryCode,
                 candidateId: candidateId,
                 response: req.Response,
                 createdAt: DateTimeOffset.UtcNow);
@@ -168,9 +168,16 @@ public record PlatformStatBreakdownItem(string segment, string value);
 
 public record SubmitConfidenceRequest(string Response, string? CountryCode);
 
+// countryCode (not the old "pk") — must exactly match the container's real partition key path
+// ("/countryCode", see CosmosService.cs's own registration) or every write throws Cosmos'
+// "PartitionKey extracted from document doesn't match the one specified in the header" — found
+// live 2026-09-18: this field really was misnamed "pk" since the endpoint was built, so every
+// single confidence-survey submission has failed with a 500 (misread as a CORS error in the
+// browser, since a 500 response drops the Access-Control-Allow-Origin header the preflight
+// already promised) for as long as this endpoint has existed.
 public record ConfidenceSurveyDoc(
     string id,
-    string pk,
+    string countryCode,
     string candidateId,
     string response,
     DateTimeOffset createdAt);

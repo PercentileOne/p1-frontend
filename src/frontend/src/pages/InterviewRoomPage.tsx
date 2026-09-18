@@ -335,15 +335,34 @@ export default function InterviewRoomPage() {
   const liveAvatarSpeakHr = useCallback((text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => {
     let cancelled = false;
     let fallbackCancel: (() => void) | null = null;
+    // Set the instant AVATAR_SPEAK_STARTED fires (see useLiveAvatarSession.ts's speak() — HeyGen's
+    // own confirmation the avatar has genuinely begun talking). Distinguishes the catch block's
+    // two real failure shapes, which need OPPOSITE handling: (a) speak() rejected before ever
+    // starting (dead air — TTS fallback is correct, see comment below) vs (b) speak() rejected
+    // only via its own safety TIMEOUT after speech had already started (the documented HeyGen
+    // AVATAR_SPEAK_ENDED-never-fires gap — the avatar already spoke the full text out loud, it
+    // just never confirmed finishing). Falling back to TTS in case (b) re-speaks the exact same
+    // line a second time — Wayne's audible "said his intro twice" (Francis, 2026-09-18) was
+    // exactly this: his real timeout is proportional to word count, so a normal-length intro's
+    // natural speaking duration routinely runs right up against it.
+    let speechStarted = false;
     (async () => {
       try {
         if (liveAvatarHr.status !== 'connected') await liveAvatarHr.connect();
         // LiveAvatar has no Web Audio analyser to hand back (the video's lip-sync isn't driven
         // through the Web Audio graph the plain-TTS path uses) — this reuses the same callback
         // slot purely as a "speech has genuinely started" timing signal, called with null.
-        await liveAvatarHr.speak(text, 'hr', () => onAnalyser?.(null));
+        await liveAvatarHr.speak(text, 'hr', () => { speechStarted = true; onAnalyser?.(null); });
         if (!cancelled) onEnd();
       } catch (err) {
+        if (speechStarted) {
+          // Case (b) above — treat the timeout as a natural completion, not a failure. Same
+          // "the safety timeout firing is expected, not a new bug" reasoning already established
+          // for this HeyGen gap elsewhere in the room.
+          console.warn('[InterviewRoom] LiveAvatar (hr) speak timed out after already starting — treating as complete, not re-speaking:', err);
+          if (!cancelled) onEnd();
+          return;
+        }
         // A failed connect/speak used to just call onEnd() here — the candidate got silence
         // with no indication anything went wrong (this is exactly what happened live when
         // Amina's avatar_id turned out not to be sandbox-eligible: her connect() rejected
@@ -361,12 +380,19 @@ export default function InterviewRoomPage() {
   const liveAvatarSpeakTechnical = useCallback((text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => {
     let cancelled = false;
     let fallbackCancel: (() => void) | null = null;
+    // See liveAvatarSpeakHr's own comment for the full reasoning on speechStarted.
+    let speechStarted = false;
     (async () => {
       try {
         if (liveAvatarTechnical.status !== 'connected') await liveAvatarTechnical.connect();
-        await liveAvatarTechnical.speak(text, 'technical', () => onAnalyser?.(null));
+        await liveAvatarTechnical.speak(text, 'technical', () => { speechStarted = true; onAnalyser?.(null); });
         if (!cancelled) onEnd();
       } catch (err) {
+        if (speechStarted) {
+          console.warn('[InterviewRoom] LiveAvatar (technical) speak timed out after already starting — treating as complete, not re-speaking:', err);
+          if (!cancelled) onEnd();
+          return;
+        }
         console.error('[InterviewRoom] LiveAvatar (technical) speak failed, falling back to TTS:', err);
         if (!cancelled) fallbackCancel = speak(text, 'technical', onEnd, onAnalyser);
       }
@@ -377,12 +403,19 @@ export default function InterviewRoomPage() {
   const liveAvatarSpeakMichelle = useCallback((text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => {
     let cancelled = false;
     let fallbackCancel: (() => void) | null = null;
+    // See liveAvatarSpeakHr's own comment for the full reasoning on speechStarted.
+    let speechStarted = false;
     (async () => {
       try {
         if (liveAvatarMichelle.status !== 'connected') await liveAvatarMichelle.connect();
-        await liveAvatarMichelle.speak(text, 'michelle', () => onAnalyser?.(null));
+        await liveAvatarMichelle.speak(text, 'michelle', () => { speechStarted = true; onAnalyser?.(null); });
         if (!cancelled) onEnd();
       } catch (err) {
+        if (speechStarted) {
+          console.warn('[InterviewRoom] LiveAvatar (michelle) speak timed out after already starting — treating as complete, not re-speaking:', err);
+          if (!cancelled) onEnd();
+          return;
+        }
         console.error('[InterviewRoom] LiveAvatar (michelle) speak failed, falling back to TTS:', err);
         if (!cancelled) fallbackCancel = speak(text, 'michelle', onEnd, onAnalyser);
       }
