@@ -479,6 +479,14 @@
     // match, not a genuine role fit — found live 2026-09-18: a software-engineering CV matched
     // "Skilled metal, electrical and electronic trades supervisors" with £0–£0 bands.
     var real = matches.filter(function(m) { return m !== null && (m.career.salary.uk.starting || 0) > 0; });
+    // The AI can suggest two similarly-worded titles that both resolve to the SAME real career
+    // record — seen live 2026-09-18 as a duplicate row. Dedupe by the career's own id.
+    var seenIds = {};
+    real = real.filter(function(m) {
+      if (seenIds[m.career.id]) return false;
+      seenIds[m.career.id] = true;
+      return true;
+    });
     real.sort(function(a, b) {
       return (b.career.salary.uk.starting || 0) - (a.career.salary.uk.starting || 0);
     });

@@ -77,5 +77,10 @@ export async function matchRolesToCareers(suggestedRoles: string[]): Promise<CvR
     // software-engineering CV matched "Skilled metal, electrical and electronic trades
     // supervisors" with £0–£0 bands.
     .filter((m): m is CvRoleMatch & { career: Career } => m.career !== null && (m.career.salary?.uk?.starting ?? 0) > 0)
+    // The AI can suggest two similarly-worded titles (e.g. "Senior Software Engineer" and
+    // "Senior .NET Developer") that both resolve to the SAME real career record — seen live
+    // 2026-09-18 as a duplicate row in the roles table. Dedupe by the career's own id, keeping
+    // whichever AI-suggested title matched it first.
+    .filter((m, i, arr) => arr.findIndex(x => x.career.id === m.career.id) === i)
     .sort((a, b) => (b.career.salary?.uk?.starting ?? 0) - (a.career.salary?.uk?.starting ?? 0));
 }
