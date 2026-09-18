@@ -744,6 +744,7 @@
   var overlay = document.getElementById('voice-overlay');
   var linesEl = document.getElementById('voice-lines');
   var currentAudio = null;
+  var overlayTimer = null;
 
   document.getElementById('voice-btn').addEventListener('click', function() {
     if (!lastResult) return;
@@ -754,6 +755,7 @@
 
   function closeVoiceOverlay() {
     overlay.classList.remove('open');
+    clearTimeout(overlayTimer);
     if (currentAudio) { try { currentAudio.pause(); } catch (e) {} currentAudio = null; }
   }
 
@@ -775,7 +777,11 @@
     speakNarrative(narrativeScript);
 
     // Hard safety timeout — dismiss after 90s no matter what
-    setTimeout(closeVoiceOverlay, 90000);
+    // Safety net only, scaled to the script length — a flat 90s cut Amina off mid-sentence once
+    // the "What's Hot" sentence made the script longer (Francis, 2026-09-18). Cleared on close so a
+    // stale timer from an earlier open can't kill a later one.
+    clearTimeout(overlayTimer);
+    overlayTimer = setTimeout(closeVoiceOverlay, Math.max(90000, 30000 + wordCount * 700));
   }
 
   // Plain <audio> playback via the same backend TTS proxy the rest of the product uses

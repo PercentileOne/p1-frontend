@@ -38,7 +38,9 @@ export function CvAnalysisVoiceOverlay({ narrativeScript, title, onClose }: Prop
 
     // Hard safety timeout — dismiss after 90s no matter what (longer than the career guide's
     // 60s: this script runs longer, 150-250 words vs. a handful of short lines).
-    timers.push(setTimeout(onClose, 90_000));
+    // Safety net only, scaled to the script length. It was a flat 90s, which cut Amina off
+    // mid-sentence once the "What's Hot" gap sentence made the script longer (Francis, 2026-09-18).
+    timers.push(setTimeout(onClose, Math.max(90_000, 30_000 + wordCount * 700)));
 
     return () => {
       cancelRef.current?.();
