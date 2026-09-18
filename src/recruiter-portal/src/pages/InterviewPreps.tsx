@@ -34,6 +34,15 @@ const ROUNDS = [
   'Fifth Round Interview',
   'Final Round Interview',
 ]
+// Same values as the candidate-side SALARY_BANDS (InterviewPackStart.tsx) — a recruiter
+// sending a real prep genuinely knows the role's actual salary, unlike a candidate
+// self-selecting an aspirational band for solo practice (Francis, 2026-09-18). The
+// difficulty-blend math itself lives server-side (sessionPrepareClient in aiScoring.ts) — this
+// list is just the labels, kept in sync by hand the same way ROUNDS/DIFFICULTIES already are.
+const SALARY_BANDS = [
+  'N/A', 'Under £25k', '£25k+', '£35k+', '£45k+', '£55k+', '£65k+', '£80k+', '£100k+',
+  '£140k+', '£200k+', '£300k+', '£400k+', '£500k+', '£750k+', '£1M+',
+]
 const TITLES = ['Mr', 'Mrs', 'Miss', 'Ms', 'Mx', 'Dr', 'Prof']
 const SELECT_CHEVRON = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`
 
@@ -83,6 +92,7 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
   const [email, setEmail] = useState(existing?.email ?? '')
   const [level, setLevel] = useState(existing?.level ?? '')
   const [round, setRound] = useState(existing?.round ?? ROUNDS[0])
+  const [salaryExpectation, setSalaryExpectation] = useState(existing?.salaryExpectation ?? SALARY_BANDS[0])
   const [interviewDate, setInterviewDate] = useState(existing ? isoToLocalInput(existing.interviewDate) : '')
   // Job Title is now its own tab, matching the candidate-side InterviewPackStart.tsx layout
   // (2026-09-15 — previously this form had no Job Title field at all and silently derived one
@@ -224,6 +234,7 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
       role: resolvedRole,
       level,
       round,
+      salaryExpectation: salaryExpectation === 'N/A' ? undefined : salaryExpectation,
       interviewDate: new Date(interviewDate).toISOString(),
       jobSpecText: jobSpec.trim(),
       cvText: cvText.trim() || undefined,
@@ -318,6 +329,17 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
             style={{ ...inputStyle, cursor: 'pointer', appearance: 'none', backgroundImage: SELECT_CHEVRON, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}
           >
             {ROUNDS.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <FieldLabel optional>Salary expectation</FieldLabel>
+          <select
+            value={salaryExpectation}
+            onChange={e => setSalaryExpectation(e.target.value)}
+            style={{ ...inputStyle, cursor: 'pointer', appearance: 'none', backgroundImage: SELECT_CHEVRON, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}
+          >
+            {SALARY_BANDS.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
 

@@ -844,6 +844,26 @@ export interface ClientSessionResult {
   resolvedCompany: string | null;
 }
 
+// Mirrors InterviewPackStart.tsx's SALARY_BANDS (its own comment has the full reasoning) — kept
+// as a separate lookup here rather than importing that page's const, same "copy, not shared
+// helper across unrelated layers" precedent this codebase already uses. boost 4 is also the
+// Gauntlet-question threshold (£500k+ only).
+const SALARY_BOOSTS: Record<string, number> = {
+  'N/A': 0, 'Under £25k': 0, '£25k+': 0, '£35k+': 0, '£45k+': 0, '£55k+': 0, '£65k+': 0,
+  '£80k+': 1, '£100k+': 1, '£140k+': 2, '£200k+': 2, '£300k+': 3, '£400k+': 3,
+  '£500k+': 4, '£750k+': 4, '£1M+': 4,
+};
+
+function salaryBoostFraming(boost: number): string {
+  switch (boost) {
+    case 1: return 'push noticeably sharper than the stated difficulty alone would suggest';
+    case 2: return 'treat this as a full tier harder than stated — Standard should feel like Pro, Pro should feel like Expert';
+    case 3: return 'this is final-round-at-a-serious-company intensity, regardless of the stated difficulty';
+    case 4: return 'this is boardroom-level scrutiny — assume nothing is spoon-fed, ambiguity is deliberate, and a mediocre answer here would end a real interview at this level';
+    default: return '';
+  }
+}
+
 export async function sessionPrepareClient(
   jobSpecText: string,
   cvText?: string,
@@ -855,6 +875,7 @@ export async function sessionPrepareClient(
   companyName?: string,
   specialFocus?: string[],
   interviewRound?: string,
+  salaryExpectation?: string,
 ): Promise<ClientSessionResult> {
   // All `totalQuestions` are role/technical questions now — HR/character questions are
   // generated separately below and always ADDED on top (Francis, 2026-09-10). Previously a
@@ -862,6 +883,13 @@ export async function sessionPrepareClient(
   // real generated role questions to make room (a 5-question session kept only 2 of its 4
   // requested role questions) and left Special Focus topics with nowhere to fit.
   const totalQuestions = questionCount && [5, 10, 15, 20].includes(questionCount) ? questionCount : 10;
+  // Salary Expectation (Francis, 2026-09-18) — optional, BLENDS into the difficulty above rather
+  // than replacing it; never lowers it. Deliberately kept separate from `totalQuestions`'s own
+  // bucket constraint above — the Gauntlet question (boost 4 only) is requested as a genuine
+  // extra, not folded into that count.
+  const salaryBoost = SALARY_BOOSTS[salaryExpectation ?? 'N/A'] ?? 0;
+  const hasGauntletQuestion = salaryBoost === 4;
+  const roleQuestionTarget = totalQuestions + (hasGauntletQuestion ? 1 : 0);
   const cvSection = cvText?.trim()
     ? `\n\n═══ CANDIDATE CV ═══\n${cvText.slice(0, 3000)}`
     : '';
@@ -887,6 +915,12 @@ export async function sessionPrepareClient(
   const companyLine = companyName?.trim() ? `\nCompany (explicitly confirmed — use this exact name, do not invent another): ${companyName.trim()}` : '';
   const difficultyLevel = selectedDifficulty || 'Standard';
   const difficultyLine = `\nSession Difficulty: ${difficultyLevel} (${difficultyLabel})`;
+  // Salary Expectation (Francis, 2026-09-18) — BLENDS into the difficulty above, never lowers
+  // it. Present on both the role-questions prompt and the HR/character-questions prompt below
+  // (Amina's own questions should feel just as senior at a £1M+ session, not just Wayne's).
+  const salaryLine = salaryBoost > 0
+    ? `\nCandidate's Target Salary: ${salaryExpectation} — this candidate has deliberately chosen to practice at this compensation level. Real interviews at this level are measurably harder: sharper follow-up pressure, less hand-holding, higher expectation of polish and judgement under ambiguity. Blend this INTO the Session Difficulty above (never below it) — ${salaryBoostFraming(salaryBoost)}.`
+    : '';
   // Which stage of the candidate's REAL process this represents (see INTERVIEW_ROUNDS in
   // InterviewPackStart.tsx) — First Round gets no mention at all; Second Round onward should
   // both shape question depth slightly (a later round can reasonably assume more was already
@@ -924,7 +958,7 @@ CRITICAL RULES — READ CAREFULLY:
   const userPrompt = `Generate a complete interview session for the job specification below. Session ID: ${sessionSeed} — this is unique to this session. You MUST generate completely fresh questions every time. Never repeat or reuse questions from any prior generation. Vary question wording, angle, and which competencies you probe.
 ${cvSection ? 'A candidate CV is also provided — use it to personalise questions and intros.' : 'No CV provided — base questions purely on the role requirements.'}
 
-═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${roundLine}${specialFocusLine}${preferredNameLine}
+═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${salaryLine}${roundLine}${specialFocusLine}${preferredNameLine}
 
 ═══ JOB SPECIFICATION ═══
 ${jobSpecText.slice(0, 4000)}${cvSection}
@@ -967,7 +1001,9 @@ Return this exact JSON:
   ]
 }
 
-Generate exactly ${totalQuestions} questions in the "questions" array — ALL of them role/competency questions (source: "Role"), based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover DIFFERENT competencies each time — do NOT reuse the same question themes across sessions. Use the session seed to pick a fresh angle on the role. Avoid generic questions like "tell me about yourself" or "describe a challenge" — make them specific to this exact role and company.${specialFocus && specialFocus.length > 0 ? ` Weight these role questions toward the Special Focus Topics named in the Session Context (${specialFocus.join(', ')}) — give each named topic its own dedicated, hard, specific question if there are enough role-question slots to do so; if there are more topics than slots, cover as many DIFFERENT topics as possible rather than spending two questions on the same one. Any slots left over after covering the topics go to other important aspects of the role.` : ''}${isLaterRound ? ` This is a LATER interview round (${interviewRoundLabel}) for the same real process — lean the mix slightly toward Medium/Hard over Easy compared to a first round, and favour questions that probe depth/judgement/trade-offs rather than pure surface-level basics, since the candidate already cleared an earlier round.` : ''}
+Generate exactly ${roleQuestionTarget} questions in the "questions" array — ALL of them role/competency questions (source: "Role"), based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover DIFFERENT competencies each time — do NOT reuse the same question themes across sessions. Use the session seed to pick a fresh angle on the role. Avoid generic questions like "tell me about yourself" or "describe a challenge" — make them specific to this exact role and company.${specialFocus && specialFocus.length > 0 ? ` Weight these role questions toward the Special Focus Topics named in the Session Context (${specialFocus.join(', ')}) — give each named topic its own dedicated, hard, specific question if there are enough role-question slots to do so; if there are more topics than slots, cover as many DIFFERENT topics as possible rather than spending two questions on the same one. Any slots left over after covering the topics go to other important aspects of the role.` : ''}${isLaterRound ? ` This is a LATER interview round (${interviewRoundLabel}) for the same real process — lean the mix slightly toward Medium/Hard over Easy compared to a first round, and favour questions that probe depth/judgement/trade-offs rather than pure surface-level basics, since the candidate already cleared an earlier round.` : ''}${hasGauntletQuestion ? `
+
+Additionally, generate ONE extra question beyond the ${totalQuestions} above — a genuine gauntlet, the single hardest question in the whole session, calibrated to a ${salaryExpectation} role. Multi-layered, ambiguous, judgement-heavy — the kind of question that would visibly separate a true expert from someone merely experienced. Set this question's "questionType" to "Gauntlet" (every other field the same shape as normal) and place it LAST in the "questions" array.` : ''}
 
 CRITICAL: The JSON must contain "mcqQuestions" (plural, an array of exactly 2 objects) — NOT "mcqQuestion" (singular). This is mandatory.
 
@@ -977,7 +1013,7 @@ Also generate TWO multiple-choice bonus questions in the "mcqQuestions" array �
 - correctIndex: 0-based index of the correct answer — MUST vary between questions, NEVER always 0. Choose different values (0, 1, 2, or 3) for each question based on where the correct answer actually falls in your options list.
 - explanation: one clear sentence explaining why the correct answer is right
 
-IMPORTANT: The two MCQ questions and the ${totalQuestions} role questions MUST all be completely different every single session. Never repeat questions from any previous generation. Use the session seed above to vary your selection.`;
+IMPORTANT: The two MCQ questions and the ${roleQuestionTarget} role questions MUST all be completely different every single session. Never repeat questions from any previous generation. Use the session seed above to vary your selection.`;
 
   // Fired CONCURRENTLY with the main call above, not folded into it (Francis, 2026-09-10,
   // same day as the fix below) — these were briefly fields on that one mega-call, which
@@ -989,7 +1025,7 @@ IMPORTANT: The two MCQ questions and the ${totalQuestions} role questions MUST a
   // adding to it. See MANDATORY_MEASURE_QUESTIONS for the fallback if this call fails outright.
   const hrUserPrompt = `Write open-ended HR interview questions for a real interview session. Session ID: ${sessionSeed}-hr — unique to this session, you MUST write completely fresh questions every time, never reuse wording from any previous generation.
 
-═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${preferredNameLine}
+═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${salaryLine}${preferredNameLine}
 
 Return ONLY this exact JSON — no markdown, no explanation, no code fences:
 {
@@ -1060,25 +1096,29 @@ Return ONLY this exact JSON — no markdown, no explanation, no code fences:
   // object, including the first call's already-good sarahIntro/jamesIntro, even though nothing
   // was wrong with them. Going straight to the top-up is both faster and never touches them.
   //
-  // Every target below is `totalQuestions` (the candidate's configured count), not a literal
-  // 10 — this whole block was written before the question-count dropdown existed, when 10 was
-  // the only option, and never got updated when that became configurable. That's exactly why
-  // selecting 5 on the intake screen still produced a 10-question session: the AI was very
+  // Every target below is `roleQuestionTarget` (the candidate's configured count, plus the
+  // Gauntlet question when salary boost is at its max — see that const's own comment), not a
+  // literal 10 — this whole block was written before the question-count dropdown existed, when
+  // 10 was the only option, and never got updated when that became configurable. That's exactly
+  // why selecting 5 on the intake screen still produced a 10-question session: the AI was very
   // likely honouring "generate exactly 5" in the main prompt, and this safety net then padded
-  // the result straight back up to a hardcoded 10 regardless.
+  // the result straight back up to a hardcoded 10 regardless. Using roleQuestionTarget (not the
+  // base totalQuestions) here specifically matters for the Gauntlet case — it's placed LAST in
+  // the array by the prompt above, so capping/topping-up against the wrong (smaller) count would
+  // silently chop it back off.
   const result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
-  if (result.questions?.length > totalQuestions) result.questions = result.questions.slice(0, totalQuestions);
+  if (result.questions?.length > roleQuestionTarget) result.questions = result.questions.slice(0, roleQuestionTarget);
 
   // Logged unconditionally (not just on shortfall) so this doubles as the denominator —
   // count QUESTION_COUNT_FIRST_ATTEMPT events with shortfall:0 against total sessions to get
   // a real "how often did the first call get the exact count right" rate, not just a tally of
   // failures with no base to compare it against.
   const firstAttemptCount = result.questions?.length ?? 0;
-  const shortfall = totalQuestions - firstAttemptCount;
-  logFlowEvent('QUESTION_COUNT_FIRST_ATTEMPT', { requested: totalQuestions, received: firstAttemptCount, shortfall: Math.max(shortfall, 0) });
+  const shortfall = roleQuestionTarget - firstAttemptCount;
+  logFlowEvent('QUESTION_COUNT_FIRST_ATTEMPT', { requested: roleQuestionTarget, received: firstAttemptCount, shortfall: Math.max(shortfall, 0) });
 
   if (shortfall > 0) {
-    console.warn(`[Explain AI] Session prep returned ${firstAttemptCount} questions instead of ${totalQuestions} — topping up ${shortfall} more directly.`);
+    console.warn(`[Explain AI] Session prep returned ${firstAttemptCount} questions instead of ${roleQuestionTarget} — topping up ${shortfall} more directly.`);
     try {
       const existingTexts = (result.questions ?? []).map(q => `- ${q.questionText}`).join('\n');
       const topUpPrompt = `Generate exactly ${shortfall} more interview question(s) for the same role, continuing this session (do not repeat any theme from the list below).
@@ -1094,19 +1134,19 @@ Return this exact JSON:
 { "questions": [ { "questionId": "qX", "questionText": "...", "modelAnswer": "what a strong answer covers — specific to this role", "questionType": "Competency", "difficulty": "Medium", "source": "Role", "competencyTags": ["relevant tag"] } ] }`;
       const topUp = await chatJSON<{ questions: InterviewQuestion[] }>(systemPrompt, topUpPrompt, 0.9);
       if (topUp.questions?.length) {
-        result.questions = [...(result.questions ?? []), ...topUp.questions].slice(0, totalQuestions);
+        result.questions = [...(result.questions ?? []), ...topUp.questions].slice(0, roleQuestionTarget);
       }
       logFlowEvent('QUESTION_COUNT_TOPUP_RESULT', {
-        requested: totalQuestions,
+        requested: roleQuestionTarget,
         shortfall,
         topUpReceived: topUp.questions?.length ?? 0,
         finalCount: result.questions?.length ?? 0,
-        fullyResolved: (result.questions?.length ?? 0) >= totalQuestions,
+        fullyResolved: (result.questions?.length ?? 0) >= roleQuestionTarget,
       });
     } catch (err) {
       console.error('[Explain AI] Question top-up failed — session will run short:', err);
       logFlowEvent('QUESTION_COUNT_TOPUP_FAILED', {
-        requested: totalQuestions,
+        requested: roleQuestionTarget,
         shortfall,
         finalCount: firstAttemptCount,
         error: err instanceof Error ? err.message : String(err),

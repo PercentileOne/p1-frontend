@@ -79,7 +79,8 @@ public static class Endpoint
                 status: "sent",
                 createdAt: DateTimeOffset.UtcNow,
                 specialFocus: req.SpecialFocus is { Length: > 0 } ? req.SpecialFocus : null,
-                round: string.IsNullOrWhiteSpace(req.Round) ? null : req.Round.Trim());
+                round: string.IsNullOrWhiteSpace(req.Round) ? null : req.Round.Trim(),
+                salaryExpectation: string.IsNullOrWhiteSpace(req.SalaryExpectation) ? null : req.SalaryExpectation.Trim());
 
             var container = cosmos.GetContainer("interview-preps");
             await container.UpsertItemAsync(prep, new PartitionKey(recruiterId));
@@ -152,6 +153,7 @@ public static class Endpoint
                 cvFileName = cvFileName,
                 specialFocus = req.SpecialFocus is { Length: > 0 } ? req.SpecialFocus : null,
                 round = string.IsNullOrWhiteSpace(req.Round) ? null : req.Round.Trim(),
+                salaryExpectation = string.IsNullOrWhiteSpace(req.SalaryExpectation) ? null : req.SalaryExpectation.Trim(),
             };
 
             await container.UpsertItemAsync(updated, new PartitionKey(recruiterId));
@@ -346,7 +348,12 @@ public static class Endpoint
         // in InterviewPackStart.tsx. Optional/nullable since it's new (2026-09-16); a null here
         // means "recruiter didn't set it", and ReceivedPreps.tsx / InterviewPackStart.tsx both
         // already treat a missing interviewRound as "First Round Interview" by default.
-        string? Round = null);
+        string? Round = null,
+        // See SALARY_BANDS in InterviewPackStart.tsx — added 2026-09-18, same "recruiter sets it
+        // on the candidate's behalf" pattern as Level/Round/SpecialFocus. Real value here: a
+        // recruiter genuinely knows the real salary for the role, unlike a candidate
+        // self-selecting an aspirational band for solo practice.
+        string? SalaryExpectation = null);
 }
 
 public record InterviewPrep(
@@ -375,4 +382,6 @@ public record InterviewPrep(
     string? cvFileUrl = null,
     // See Request.Round above — added 2026-09-16, same "recruiter sets it on the candidate's
     // behalf" pattern as level/specialFocus.
-    string? round = null);
+    string? round = null,
+    // See Request.SalaryExpectation above — added 2026-09-18.
+    string? salaryExpectation = null);

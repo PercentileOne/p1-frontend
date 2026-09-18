@@ -68,6 +68,34 @@ const INTERVIEW_ROUNDS = [
   'Final Round Interview',
 ];
 
+// Optional — lets a candidate deliberately practice at a salary level above their comfort zone
+// (Francis, 2026-09-18: many people mentally rule themselves out of £100k+/£200k+ roles before
+// ever trying — the perceived difficulty is itself the barrier). `boost` feeds
+// sessionPrepareClient's own difficulty blending (see aiScoring.ts) — it BLENDS into whichever
+// Beginner/Standard/Pro/Expert difficulty was picked, never overriding or lowering it, and never
+// touches the literal difficulty enum/badge anywhere else in the app. Covers realistic LOW
+// salaries too, not just an "aspirational executive" range — every band below £80k+ carries no
+// boost at all, same as N/A. boost 4 (£500k+ only) is also the threshold for the one extra
+// "Gauntlet" question — see sessionPrepareClient's own comment on why that's deliberately rare.
+const SALARY_BANDS = [
+  { value: 'N/A', label: 'N/A', boost: 0 },
+  { value: 'Under £25k', label: 'Under £25k', boost: 0 },
+  { value: '£25k+', label: '£25k+', boost: 0 },
+  { value: '£35k+', label: '£35k+', boost: 0 },
+  { value: '£45k+', label: '£45k+', boost: 0 },
+  { value: '£55k+', label: '£55k+', boost: 0 },
+  { value: '£65k+', label: '£65k+', boost: 0 },
+  { value: '£80k+', label: '£80k+', boost: 1 },
+  { value: '£100k+', label: '£100k+', boost: 1 },
+  { value: '£140k+', label: '£140k+', boost: 2 },
+  { value: '£200k+', label: '£200k+', boost: 2 },
+  { value: '£300k+', label: '£300k+', boost: 3 },
+  { value: '£400k+', label: '£400k+', boost: 3 },
+  { value: '£500k+', label: '£500k+', boost: 4 },
+  { value: '£750k+', label: '£750k+', boost: 4 },
+  { value: '£1M+', label: '£1M+', boost: 4 },
+] as const;
+
 const DIFFICULTIES = [
   {
     value: 'Beginner',
@@ -112,6 +140,8 @@ interface IncomingState {
   // difficulty — set by Send Interview Prep (recruiter-portal/InterviewPreps.tsx → backend
   // InterviewPrep.round) and read back here via ReceivedPreps.tsx's reviewAndStart.
   interviewRound?: string;
+  // See SALARY_BANDS above — optional, blends into the difficulty prompt, never overrides it.
+  salaryExpectation?: string;
   questionCount?: number;
   // Set by a recruiter on the candidate's behalf via the "Send Interview Prep" form
   // (src/recruiter-portal/src/pages/InterviewPreps.tsx) — same field a candidate can also set
@@ -179,6 +209,7 @@ export default function InterviewPackStart() {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedDifficulty, setSelectedDifficulty] = useState(incoming.difficulty ?? 'Pro');
   const [selectedInterviewRound, setSelectedInterviewRound] = useState(incoming.interviewRound ?? INTERVIEW_ROUNDS[0]);
+  const [selectedSalary, setSelectedSalary] = useState(incoming.salaryExpectation ?? 'N/A');
   const [selectedQuestionCount, setSelectedQuestionCount] = useState(incoming.questionCount ?? 10);
   const [consentToRecord, setConsentToRecord] = useState(true);
   // Only shown after a blocked attempt to start — not on first load, so an empty form
@@ -310,6 +341,7 @@ export default function InterviewPackStart() {
       hasJobTitle: Boolean(jobTitle.trim()),
       selectedLanguage,
       selectedDifficulty,
+      selectedSalary,
       selectedQuestionCount,
       specialFocusCount: specialFocusChips.length,
     });
@@ -333,6 +365,7 @@ export default function InterviewPackStart() {
         selectedLanguage,
         selectedDifficulty,
         interviewRound: selectedInterviewRound,
+        salaryExpectation: selectedSalary,
         questionCount: selectedQuestionCount,
         autoStart: true,
         consentToRecord,
@@ -628,6 +661,32 @@ export default function InterviewPackStart() {
           </select>
           <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
             Which stage of your real process is this? Michelle and the panel will reference it naturally — e.g. congratulating you on reaching a later round.
+          </div>
+        </div>
+
+        {/* Salary Expectation — see SALARY_BANDS's own comment above. Optional, deliberately
+            lets a candidate practice at a level above their comfort zone. */}
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 28px', marginBottom: '16px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
+            Salary Expectation
+          </div>
+          <select
+            value={selectedSalary}
+            onChange={e => setSelectedSalary(e.target.value)}
+            style={{
+              width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+              borderRadius: '10px', padding: '12px 14px', color: 'var(--text)', fontSize: '14px',
+              fontFamily: 'inherit', outline: 'none', cursor: 'pointer', appearance: 'none',
+              backgroundImage: SELECT_CHEVRON,
+              backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
+            }}
+          >
+            {SALARY_BANDS.map(s => (
+              <option key={s.value} value={s.value}>{s.label}</option>
+            ))}
+          </select>
+          <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
+            Optional — practicing for a role above your comfort zone builds real confidence. The higher the band, the tougher we'll make it.
           </div>
         </div>
 

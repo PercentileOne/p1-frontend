@@ -225,6 +225,10 @@ export function InterviewResultsBody({
         let mainQNum = 0;
         return answers.map((a, i) => {
           const isFollowUp = a.question.questionType === 'Follow-up';
+          // Salary Expectation's £500k+ bonus question (see sessionPrepareClient's own comment)
+          // — same visual flag InterviewRoomPage.tsx gives it live, so reviewing the replay
+          // afterward still shows which question was the gauntlet one.
+          const isGauntlet = a.question.questionType === 'Gauntlet';
           if (!isFollowUp) mainQNum += 1;
           const tag = a.question.competencyTags[0];
           const pct = Math.round(a.score.overallScore * 100);
@@ -237,7 +241,8 @@ export function InterviewResultsBody({
                   {isFollowUp
                     ? <span style={{ fontSize: '11px', fontWeight: 700, background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: '4px', padding: '2px 8px', color: '#a78bfa' }}>↳ Follow-up on Q{mainQNum}</span>
                     : <span style={{ fontSize: '11px', fontWeight: 700, background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: '4px', padding: '2px 8px', color: 'var(--blue)' }}>Q{mainQNum}</span>}
-                  {!isFollowUp && <span style={{ fontSize: '11px', color: 'var(--text-3)', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', padding: '2px 8px' }}>{a.question.questionType}</span>}
+                  {!isFollowUp && !isGauntlet && <span style={{ fontSize: '11px', color: 'var(--text-3)', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', padding: '2px 8px' }}>{a.question.questionType}</span>}
+                  {isGauntlet && <span style={{ fontSize: '11px', fontWeight: 700, color: '#EF4444', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '4px', padding: '2px 8px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>⚔️ Gauntlet Question</span>}
                 {a.answeredByVoice && <span style={{ fontSize: '11px', color: '#34D399', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: '4px', padding: '2px 8px' }}>🎤 Voice</span>}
                 {a.revealedAnswer && <span style={{ fontSize: '11px', color: '#34D399', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: '4px', padding: '2px 8px' }}>💡 Answer revealed</span>}
                 {!a.answerText && !a.revealedAnswer && <span style={{ fontSize: '11px', color: 'var(--red)', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '4px', padding: '2px 8px' }}>Passed</span>}

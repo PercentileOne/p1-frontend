@@ -46,6 +46,9 @@ export interface RoomState {
   selectedLanguage?: string;
   selectedDifficulty?: string;
   interviewRound?: string;
+  // See SALARY_BANDS in InterviewPackStart.tsx — optional, blends into sessionPrepareClient's
+  // difficulty prompt, never overrides the literal Beginner/Standard/Pro/Expert selection above.
+  salaryExpectation?: string;
   questionCount?: number;
   preferredName?: string;
   company?: string;
@@ -633,7 +636,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       // didn't say my name" was too.
       phase2Timeout = setTimeout(() => resolvePhase2('90s-timeout-fallback'), 90000);
       console.log(`[Phase2 TIMING] sessionPrepareClient() call starting @ ${Math.round(performance.now())}ms`);
-      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount, ctx.company || undefined, ctx.specialFocus, ctx.interviewRound);
+      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount, ctx.company || undefined, ctx.specialFocus, ctx.interviewRound, ctx.salaryExpectation);
 
     }).then(result => {
       bgLoadedRef.current = true;
@@ -1704,6 +1707,15 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       {isHrQuestion ? 'Amina · HR' : `Wayne · ${specialistTitle}`}
                     </span>
                     <span style={{ fontSize: '10px', color: 'var(--text-3)', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', padding: '3px 8px' }}>{selectedDifficulty}</span>
+                    {/* Gauntlet question (Salary Expectation £500k+ only — see sessionPrepareClient's
+                        own comment) — visually flagged so the candidate consciously recognises
+                        "this is the big one" the moment it appears, the psychological beat the
+                        whole feature is built around. Asked in its normal turn, no timing change. */}
+                    {q?.questionType === 'Gauntlet' && (
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#EF4444', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '4px', padding: '3px 8px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                        ⚔️ Gauntlet Question
+                      </span>
+                    )}
                     {phase === 'answering' && (
                       <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
                         {/* Disabled while actually recording a voice answer — a mistimed click used
