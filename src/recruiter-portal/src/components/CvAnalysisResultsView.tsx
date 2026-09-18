@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, TrendingUp, Flame } from 'lucide-react';
 import type { CvAnalysisResult, CvRoleMatch, SavedRoleMatch } from '../api/cvAnalysisApi';
-import { generateHotTopics } from '../api/aiScoring';
+import { generateHotTopicsWithReasons, type HotTopicWithReason } from '../api/aiScoring';
 
 const ACCENT = '#34D399';
 
@@ -33,13 +33,17 @@ function topicColor(topic: string, skills: CvAnalysisResult['skills']): string {
 // Third-person version of the candidate portal's buildHotTopicGapSentence() — Amina should
 // mention this in the recruiter portal too (Francis, 2026-09-18: "it's our whole advertising
 // angle for the portal" — the Learn cross-sell is a selling point recruiters should see/hear,
-// not just candidates). Client-side string assembly, no extra AI call.
-export function buildHotTopicGapSentence(hotTopics: string[], role: string, skills: CvAnalysisResult['skills']): string {
-  const gaps = hotTopics.filter(t => topicColor(t, skills) === '#EF4444');
+// not just candidates). Client-side string assembly, no extra AI call. Francis's own follow-up,
+// same day: a flat list of jargon with no context isn't useful — the spoken line should explain
+// WHY it matters (per-item reasons are shown in the UI list; the narration stays a general framing
+// line, matching his own suggested wording, rather than reading out every individual reason).
+export function buildHotTopicGapSentence(hotTopics: HotTopicWithReason[], role: string, skills: CvAnalysisResult['skills']): string {
+  const gaps = hotTopics.filter(t => topicColor(t.name, skills) === '#EF4444');
   if (gaps.length === 0) return '';
-  const list = gaps.length === 1 ? gaps[0] : `${gaps.slice(0, -1).join(', ')} and ${gaps[gaps.length - 1]}`;
-  const plural = gaps.length > 1;
-  return ` One more thing — ${list} ${plural ? 'are' : 'is'} very much in demand for ${role} roles right now, and ${plural ? "they're" : "it's"} not reflected in this candidate's CV. Worth asking about at interview — and if they want to brush up, we've got a course waiting for them on our Learn platform.`;
+  const names = gaps.map(g => g.name);
+  const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+  const plural = names.length > 1;
+  return ` One more thing — ${plural ? 'these skills are' : 'this skill is'} sought after by hiring managers right now for ${role} roles, so it'd be worth this candidate getting more familiar with ${plural ? 'them' : 'it'}: ${list}.`;
 }
 
 // Normalized shape both the live-view CvRoleMatch (full Career object) and the persisted
@@ -68,7 +72,7 @@ interface Props {
   rolesLoaded: boolean;
   // Fires once hot topics are fetched for the top role, so the parent (modal / shared page) can
   // fold buildHotTopicGapSentence() into whatever narrativeScript it hands the voice overlay.
-  onHotTopics?: (topics: string[], role: string) => void;
+  onHotTopics?: (topics: HotTopicWithReason[], role: string) => void;
 }
 
 // Extracted from CvAnalysisModal.tsx (Francis, 2026-09-18) — skills chart through narrative
@@ -76,7 +80,7 @@ interface Props {
 // analysis flow (CvAnalysisModal) and the public shared-view page (SharedCvAnalysisPage), so a
 // recruiter's colleague sees exactly the same breakdown without duplicating this JSX.
 export function CvAnalysisResultsView({ result, roleRows, rolesLoaded, onHotTopics }: Props) {
-  const [hotTopics, setHotTopics] = useState<string[]>([]);
+  const [hotTopics, setHotTopics] = useState<HotTopicWithReason[]>([]);
   const [hotTopicsRole, setHotTopicsRole] = useState('');
   const [hotTopicsLoading, setHotTopicsLoading] = useState(false);
 
@@ -100,7 +104,7 @@ export function CvAnalysisResultsView({ result, roleRows, rolesLoaded, onHotTopi
     if (topRole === hotTopicsRole) return;
     setHotTopicsRole(topRole);
     setHotTopicsLoading(true);
-    generateHotTopics(topRole).then(topics => {
+    generateHotTopicsWithReasons(topRole).then(topics => {
       setHotTopics(topics);
       onHotTopics?.(topics, topRole);
     }).catch(() => setHotTopics([])).finally(() => setHotTopicsLoading(false));
@@ -174,12 +178,15 @@ export function CvAnalysisResultsView({ result, roleRows, rolesLoaded, onHotTopi
           <SectionHeading icon={<Flame size={13} />}>What's Hot for {hotTopicsRole}</SectionHeading>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {hotTopics.map(topic => (
-              <div key={topic} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
+              <div key={topic.name} style={{
+                display: 'flex', alignItems: 'flex-start', gap: 10,
                 border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 12px',
               }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: topicColor(topic, result.skills), flexShrink: 0 }} />
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{topic}</span>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: topicColor(topic.name, result.skills), flexShrink: 0, marginTop: 5 }} />
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{topic.name}</div>
+                  <div style={{ fontSize: 11.5, color: '#8080b0', marginTop: 2, lineHeight: 1.4 }}>{topic.reason}</div>
+                </div>
               </div>
             ))}
           </div>

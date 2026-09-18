@@ -996,3 +996,33 @@ Return JSON:
     return [];
   }
 }
+
+export interface HotTopicWithReason { name: string; reason: string; }
+
+// CV Analyzer-specific variant of generateHotTopics() above — a separate function rather than
+// changing that one's return shape, since it's shared by InterviewPreps/InterviewPackStart/
+// LearnAlertsPage which all just want plain names. Each item carries a one-line "reason" too
+// (Francis, 2026-09-18: a flat list of jargon with no context isn't useful on its own).
+export async function generateHotTopicsWithReasons(jobTitle: string): Promise<HotTopicWithReason[]> {
+  const systemPrompt = `You identify the specific skills, technologies, and topics currently most talked about and tested for a given job role in real interviews. Return ONLY valid JSON — no markdown, no explanation.`;
+
+  const userPrompt = `Role: ${jobTitle}
+
+List exactly 4 specific, currently in-demand subjects, technologies, or methodologies that someone interviewing for this role today should be ready to discuss — the kind of thing that shows up repeatedly in recent job postings and interview loops for this role.
+
+Rules:
+- Each item's "name" is short and specific (2-4 words) — a real named technology, pattern, framework, or methodology, not a vague category. "Agentic AI patterns" not "AI knowledge". "Zero Trust Architecture" not "security".
+- Each item's "reason" is ONE short sentence (under 20 words) explaining concretely why THIS role's interviews care about it right now — not generic filler.
+- Genuinely specific to THIS role — not generic soft skills like "communication" or "teamwork".
+- No duplicates, no near-duplicates of each other.
+
+Return JSON:
+{ "topics": [ { "name": "...", "reason": "..." }, { "name": "...", "reason": "..." }, { "name": "...", "reason": "..." }, { "name": "...", "reason": "..." } ] }`;
+
+  try {
+    const result = await chatJSON<{ topics: HotTopicWithReason[] }>(systemPrompt, userPrompt, 0.8);
+    return (result.topics ?? []).filter(t => t && typeof t.name === 'string' && t.name.trim().length > 0).slice(0, 4);
+  } catch {
+    return [];
+  }
+}

@@ -5,6 +5,7 @@ import { FileUpload } from './FileUpload';
 import { ChairSpinner } from './ChairSpinner';
 import { CvAnalysisVoiceOverlay } from './CvAnalysisVoiceOverlay';
 import { CvAnalysisResultsView, toRoleRows, savedToRoleRows, buildHotTopicGapSentence, type CvRoleRow } from './CvAnalysisResultsView';
+import type { HotTopicWithReason } from '../api/aiScoring';
 import {
   analyzeCv, matchRolesToCareers, saveCvAnalysisHistory, shareCvAnalysisHistory,
   type CvAnalysisResult, type CvRoleMatch,
@@ -47,7 +48,7 @@ export function CvAnalysisModal({ onClose, initialData, onSaved }: Props) {
   const [roleRows, setRoleRows] = useState<CvRoleRow[]>(initialData?.roleRows ?? []);
   const [rolesLoaded, setRolesLoaded] = useState(!!initialData);
   const [showVoice, setShowVoice] = useState(false);
-  const [hotTopics, setHotTopics] = useState<string[]>([]);
+  const [hotTopics, setHotTopics] = useState<HotTopicWithReason[]>([]);
   const [hotTopicsRole, setHotTopicsRole] = useState('');
 
   // Save — Francis's own steer: nothing is persisted automatically, only on an explicit click.
@@ -127,7 +128,10 @@ export function CvAnalysisModal({ onClose, initialData, onSaved }: Props) {
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
       >
-        <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} />
+        {/* No onClick here — an accidental click outside used to silently discard the whole
+            analysis (Francis, 2026-09-18: "it needs to be a proper modal"). Closing now only
+            happens via the explicit X button. */}
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} />
         <motion.div
           initial={{ scale: 0.95, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: -12 }}
           style={{

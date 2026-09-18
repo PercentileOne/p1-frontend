@@ -4,6 +4,7 @@ import { Mic } from 'lucide-react';
 import { CvAnalysisResultsView, savedToRoleRows, buildHotTopicGapSentence } from '../components/CvAnalysisResultsView';
 import { CvAnalysisVoiceOverlay } from '../components/CvAnalysisVoiceOverlay';
 import { fetchSharedCvAnalysis, type CvAnalysisHistoryRecord } from '../api/cvAnalysisApi';
+import type { HotTopicWithReason } from '../api/aiScoring';
 
 const ACCENT = '#34D399';
 
@@ -17,7 +18,7 @@ export default function SharedCvAnalysisPage() {
   const [state, setState] = useState<'loading' | 'done' | 'error'>('loading');
   const [errorMsg, setErrorMsg] = useState('');
   const [showVoice, setShowVoice] = useState(false);
-  const [hotTopics, setHotTopics] = useState<string[]>([]);
+  const [hotTopics, setHotTopics] = useState<HotTopicWithReason[]>([]);
   const [hotTopicsRole, setHotTopicsRole] = useState('');
 
   useEffect(() => {
