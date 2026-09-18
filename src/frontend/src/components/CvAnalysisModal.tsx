@@ -50,6 +50,19 @@ function topicColor(topic: string, skills: CvAnalysisResult['skills']): string {
   return match.level >= 7 ? '#34D399' : '#F59E0B';
 }
 
+// Client-side, not another AI call — the gap topics are already known once hotTopics/skills are
+// in hand, so this is plain string assembly rather than a second Model Router round trip.
+// Appended to narrativeScript (not just shown as its own text block) so Amina actually SAYS it
+// in the voice walkthrough — Francis's own ask, live-tested 2026-09-18: "xyz and yyt are very
+// much in demand... we noticed they're not factored into your CV... course waiting on Learn."
+function buildHotTopicGapSentence(hotTopics: string[], role: string, skills: CvAnalysisResult['skills']): string {
+  const gaps = hotTopics.filter(t => topicColor(t, skills) === '#EF4444');
+  if (gaps.length === 0) return '';
+  const list = gaps.length === 1 ? gaps[0] : `${gaps.slice(0, -1).join(', ')} and ${gaps[gaps.length - 1]}`;
+  const plural = gaps.length > 1;
+  return ` One more thing — ${list} ${plural ? 'are' : 'is'} very much in demand for ${role} roles right now, and we noticed ${plural ? "they're" : "it's"} not factored into your CV. It'd be worth looking into ${plural ? 'those' : 'that'} to really boost it — we've got a course waiting for you on our Learn platform whenever you're ready.`;
+}
+
 // Full-screen modal, same CareersPanel.tsx detail-card visual language (eyebrow label, bold
 // title, primary voice button up top, icon-labeled sections below) — copy-trimmed shell, new
 // content. Works identically in the candidate portal, recruiter portal (audience='candidate'),
@@ -256,7 +269,11 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
         </motion.div>
 
         {showVoice && result && (
-          <CvAnalysisVoiceOverlay narrativeScript={result.narrativeScript} title={subjectLabel} onClose={() => setShowVoice(false)} />
+          <CvAnalysisVoiceOverlay
+            narrativeScript={result.narrativeScript + (isRecruiterView ? '' : buildHotTopicGapSentence(hotTopics, hotTopicsRole, result.skills))}
+            title={subjectLabel}
+            onClose={() => setShowVoice(false)}
+          />
         )}
       </motion.div>
     </AnimatePresence>
