@@ -269,6 +269,7 @@
       <div id="step-error" class="error-box"></div>
 
       <div id="step-results" style="display:none">
+        <div id="results-name-heading" style="display:none;font-size:16px;font-weight:800;color:var(--pearl);margin-bottom:14px"></div>
         <button class="voice-btn" id="voice-btn">🎙️ Talk Me Through My CV</button>
 
         <div class="section">
@@ -519,6 +520,18 @@
 
   function renderResults(result) {
     lastResult = result;
+
+    // "CV Analysis for [Name]" — same convention the candidate/recruiter portals and the
+    // shared-view page already use. Francis's own ask, live: "Doesn't mention the name of the
+    // cv owner... probably should be just above the Tell me about this CV banner."
+    var nameHeading = document.getElementById('results-name-heading');
+    if (result.candidateName) {
+      nameHeading.textContent = 'CV Analysis for ' + result.candidateName;
+      nameHeading.style.display = 'block';
+      document.title = 'CV Analysis for ' + result.candidateName + ' — TheInterviewChair.com';
+    } else {
+      nameHeading.style.display = 'none';
+    }
 
     var skillsList = document.getElementById('skills-list');
     skillsList.innerHTML = (result.skills || []).map(function(s) {

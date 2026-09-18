@@ -304,7 +304,9 @@
     var analysis = record.analysis;
     lastNarrativeScript = analysis.narrativeScript || '';
 
-    document.getElementById('page-title').textContent = record.candidateName ? ('CV Analysis for ' + record.candidateName) : 'CV Analysis';
+    var titleText = record.candidateName ? ('CV Analysis for ' + record.candidateName) : 'CV Analysis';
+    document.getElementById('page-title').textContent = titleText;
+    document.title = titleText + ' — TheInterviewChair.com';
     document.getElementById('voice-title').textContent = 'Amina on ' + (record.candidateName || 'this CV');
 
     var skillsList = document.getElementById('skills-list');
