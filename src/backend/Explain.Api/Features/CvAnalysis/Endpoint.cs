@@ -51,8 +51,12 @@ public static class Endpoint
             var rateLimitKey = isAuthenticated ? candidateId! : $"ip:{ip}";
             var cap = isAuthenticated ? DailyCapAuthenticated : DailyCapAnonymous;
 
+            // TEMP (Francis, 2026-09-18): cap enforcement disabled while he does heavy manual
+            // testing — still incrementing the usage counter below so the history isn't lost,
+            // just not blocking on it. Restore by uncommenting the line below.
             var (allowed, _) = await CheckAndIncrementDailyUsageAsync(rateLimitKey, cap, cosmos);
-            if (!allowed) return CappedResponse(cap);
+            _ = allowed;
+            // if (!allowed) return CappedResponse(cap);
 
             AnalysisResult result;
             try { result = await CallAnalysisModelAsync(req.CvText.Trim(), req.Audience ?? "self", factory, config); }
