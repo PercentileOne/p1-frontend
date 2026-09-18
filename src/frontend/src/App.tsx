@@ -95,6 +95,7 @@ import TalkSummaryPage from "./pages/TalkSummaryPage";
 import SharedTalkPage from "./pages/SharedTalkPage";
 import InterviewSummaryPage from "./pages/InterviewSummaryPage";
 import SharedInterviewPage from "./pages/SharedInterviewPage";
+import SharedCvAnalysisPage from "./pages/SharedCvAnalysisPage";
 import CertExamStart from "./pages/CertExamStart";
 import CertExamRoomPage from "./pages/CertExamRoomPage";
 import CertExamSummaryPage from "./pages/CertExamSummaryPage";
@@ -246,6 +247,7 @@ export default function App() {
       <Route path="/interview/:packId" element={<RequirePermission permission="CAN_START_INTERVIEW"><InterviewRoomPage /></RequirePermission>} />
       <Route path="/interview-summary/:id" element={<RequirePermission permission="CAN_START_INTERVIEW"><InterviewSummaryPage /></RequirePermission>} />
       <Route path="/shared/:token" element={<SharedInterviewPage />} />
+      <Route path="/shared/cv-analysis/:token" element={<SharedCvAnalysisPage />} />
 
       {/* Certifications & Exams */}
       <Route path="/cert-exam/start" element={<RequirePermission permission="CAN_START_INTERVIEW"><CertExamStart /></RequirePermission>} />

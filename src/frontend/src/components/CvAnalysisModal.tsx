@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, TrendingUp, AlertTriangle, Mic, Flame } from 'lucide-react';
+import { X, Sparkles, TrendingUp, AlertTriangle, Mic, Flame, Share2, Check } from 'lucide-react';
 import { FileUpload } from './FileUpload';
 import { ChairSpinner } from './ChairSpinner';
 import { CvAnalysisVoiceOverlay } from './CvAnalysisVoiceOverlay';
-import { analyzeCv, matchRolesToCareers, type CvAnalysisResult, type CvRoleMatch } from '../api/cvAnalysisApi';
+import { analyzeCv, matchRolesToCareers, saveCvAnalysisHistory, shareCvAnalysisHistory, type CvAnalysisResult, type CvRoleMatch } from '../api/cvAnalysisApi';
 import { generateHotTopics } from '../api/aiScoring';
 import { useAuthStore } from '../auth/authStore';
 
@@ -78,6 +78,16 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
   const [hotTopics, setHotTopics] = useState<string[]>([]);
   const [hotTopicsRole, setHotTopicsRole] = useState('');
 
+  // "Copy and/or Share" (Francis, 2026-09-18) — a candidate sharing their OWN CV analysis with a
+  // friend or mentor. One combined action (unlike the recruiter portal's separate Save/Share
+  // steps — candidates don't browse a history list here, so there's no reason to make them save
+  // first): clicking Share saves the record if it isn't already, then immediately mints the link.
+  const [sharing, setSharing] = useState(false);
+  const [savedRecordId, setSavedRecordId] = useState<string | null>(null);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [shareError, setShareError] = useState('');
+
   const isRecruiterView = audience === 'candidate';
   const subjectLabel = isRecruiterView ? "This Candidate's CV" : 'Your CV';
   const rolesHeading = isRecruiterView ? 'Roles This Candidate Is Suited For' : 'Roles You Could Apply For';
@@ -109,6 +119,29 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
       setErrorMsg(e instanceof Error ? e.message : 'Something went wrong analysing this CV — please try again.');
       setStep('error');
     }
+  }
+
+  async function handleShare() {
+    if (!result || !authToken) return;
+    setSharing(true);
+    setShareError('');
+    try {
+      const recordId = savedRecordId ?? (await saveCvAnalysisHistory(result, roleMatches, authToken)).id;
+      setSavedRecordId(recordId);
+      const { shareUrl: url } = await shareCvAnalysisHistory(recordId, authToken);
+      setShareUrl(url);
+    } catch (e) {
+      setShareError(e instanceof Error ? e.message : 'Failed to create a share link — please try again.');
+    } finally {
+      setSharing(false);
+    }
+  }
+
+  async function copyShareUrl() {
+    if (!shareUrl) return;
+    await navigator.clipboard.writeText(shareUrl);
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2000);
   }
 
   return (
@@ -268,6 +301,42 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
                 <NarrativeList title="Weaknesses" items={result.weaknesses} color="#F59E0B" />
                 {result.inconsistencies.length > 0 && (
                   <NarrativeList title="Inconsistencies Worth Addressing" items={result.inconsistencies} color="#EF4444" />
+                )}
+
+                {/* Share this analysis — a friend or mentor can open it without an account */}
+                {!isRecruiterView && (
+                  <section style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20 }}>
+                    {!shareUrl ? (
+                      <button
+                        onClick={handleShare}
+                        disabled={sharing}
+                        style={{
+                          width: '100%', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 10,
+                          padding: '11px 16px', fontSize: 12.5, fontWeight: 700, color: '#A78BFA',
+                          cursor: sharing ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                          opacity: sharing ? 0.6 : 1,
+                        }}
+                      >
+                        <Share2 size={14} /> {sharing ? 'Creating link…' : 'Share this analysis'}
+                      </button>
+                    ) : (
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '8px 8px 8px 14px' }}>
+                        <span style={{ flex: 1, fontSize: 12, color: '#c0bcd0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shareUrl}</span>
+                        <button
+                          onClick={copyShareUrl}
+                          style={{
+                            background: shareCopied ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.06)',
+                            border: 'none', borderRadius: 6, padding: '7px 12px',
+                            fontSize: 11.5, fontWeight: 700, color: shareCopied ? ACCENT : '#c0bcd0', cursor: 'pointer', flexShrink: 0,
+                            display: 'flex', alignItems: 'center', gap: 5,
+                          }}
+                        >
+                          {shareCopied ? <><Check size={12} /> Copied</> : 'Copy'}
+                        </button>
+                      </div>
+                    )}
+                    {shareError && <div style={{ fontSize: 11, color: '#EF4444', marginTop: 8 }}>{shareError}</div>}
+                  </section>
                 )}
               </div>
             )}
