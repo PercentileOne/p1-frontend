@@ -59,10 +59,9 @@ public static class Endpoint
             catch (Exception ex)
             {
                 logger.LogError(ex, "CV Analysis: model call failed");
-                // TEMP DIAGNOSTIC (2026-09-18) — App Insights/filesystem logging aren't surfacing
-                // exception detail in this environment; exposing ex.Message here only to
-                // pinpoint the live 502 during Phase 1 verification. Revert before shipping.
-                return Results.Problem($"CV analysis is temporarily unavailable — please try again in a moment. [DEBUG: {ex.Message}]", statusCode: 502);
+                // { error } shape, not Results.Problem's ProblemDetails { detail } shape — the
+                // frontend (cvAnalysisApi.ts) only reads .error, matching the BadRequest above.
+                return Results.Json(new { error = "CV analysis is temporarily unavailable — please try again in a moment." }, statusCode: 502);
             }
 
             return Results.Ok(result);
@@ -153,7 +152,6 @@ List 6-10 skills (a genuine mix, not padded to hit a number), 5-8 suggested role
             model = "model-router",
             temperature = 0.6,
             response_format = new { type = "json_object" },
-            max_tokens = 1800,
             messages = new object[]
             {
                 new { role = "system", content = systemPrompt },
