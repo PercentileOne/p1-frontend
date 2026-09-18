@@ -78,6 +78,29 @@ public static class Endpoint
             return Results.Ok(result);
         });
 
+        // POST /api/cv-analysis/hot-topics — "What's Hot for [role]" Learn cross-sell, server-side
+        // for the public marketing page specifically (Francis, 2026-09-18: "it's our whole
+        // advertising angle" — wants it everywhere, not just the recruiter portal it started on).
+        // The React portals already have their own client-side generateHotTopics() going through
+        // their own portal's /api/ai-proxy Function (a sanctioned exception, see CLAUDE.md) — the
+        // static product page has no such proxy and never should per the no-client-key rule, so
+        // this is a real, small backend endpoint instead. AllowAnonymous like the main endpoint.
+        app.MapPost("/api/cv-analysis/hot-topics", async (
+            HotTopicsRequest req, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
+        {
+            if (string.IsNullOrWhiteSpace(req.JobTitle)) return Results.BadRequest(new { error = "jobTitle is required" });
+            try
+            {
+                var topics = await CallHotTopicsModelAsync(req.JobTitle.Trim(), factory, config);
+                return Results.Ok(new { topics });
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "CV Analysis: hot-topics model call failed");
+                return Results.Ok(new { topics = Array.Empty<string>() });
+            }
+        }).AllowAnonymous();
+
         // POST /api/cv-analysis/history — explicit "Save to List" action from the recruiter
         // portal (Francis, 2026-09-18): the live analysis itself is never persisted automatically
         // — only when a recruiter reviews it and decides it's worth keeping. Body carries the
@@ -348,10 +371,66 @@ List 6-10 skills (a genuine mix, not padded to hit a number), 5-8 suggested role
             ?? throw new InvalidOperationException("Failed to deserialise analysis response");
     }
 
+    // Same prompt as the portals' own client-side generateHotTopics() (aiScoring.ts) — kept in
+    // sync by hand since it's a small, stable prompt; not worth sharing across a Node Function and
+    // a C# backend for four lines of text.
+    private static async Task<string[]> CallHotTopicsModelAsync(string jobTitle, IHttpClientFactory factory, IConfiguration config)
+    {
+        var apiKey = config["ModelRouter:ApiKey"] ?? throw new InvalidOperationException("ModelRouter:ApiKey not configured");
+        var endpoint = config["ModelRouter:Endpoint"] ?? throw new InvalidOperationException("ModelRouter:Endpoint not configured");
+
+        var systemPrompt = "You identify the specific skills, technologies, and topics currently most talked about and tested for a given job role in real interviews. Return ONLY valid JSON — no markdown, no explanation.";
+        var userPrompt = $@"Role: {jobTitle}
+
+List exactly 4 specific, currently in-demand subjects, technologies, or methodologies that someone interviewing for this role today should be ready to discuss — the kind of thing that shows up repeatedly in recent job postings and interview loops for this role.
+
+Rules:
+- Each item is a short, specific name (2-4 words) — a real named technology, pattern, framework, or methodology, not a vague category. ""Agentic AI patterns"" not ""AI knowledge"". ""Zero Trust Architecture"" not ""security"".
+- Genuinely specific to THIS role — not generic soft skills like ""communication"" or ""teamwork"".
+- No duplicates, no near-duplicates of each other.
+
+Return JSON:
+{{ ""topics"": [""..."", ""..."", ""..."", ""...""] }}";
+
+        var body = JsonSerializer.Serialize(new
+        {
+            model = "model-router",
+            temperature = 0.8,
+            response_format = new { type = "json_object" },
+            messages = new object[]
+            {
+                new { role = "system", content = systemPrompt },
+                new { role = "user", content = userPrompt },
+            },
+        });
+
+        var client = factory.CreateClient();
+        using var msg = new HttpRequestMessage(HttpMethod.Post, $"{endpoint.TrimEnd('/')}/openai/v1/chat/completions");
+        msg.Headers.Add("api-key", apiKey);
+        msg.Content = new StringContent(body, Encoding.UTF8, "application/json");
+
+        using var resp = await client.SendAsync(msg);
+        var responseBody = await resp.Content.ReadAsStringAsync();
+        if (!resp.IsSuccessStatusCode)
+            throw new InvalidOperationException($"Model Router returned {resp.StatusCode}: {responseBody}");
+
+        using var doc = JsonDocument.Parse(responseBody);
+        var content = doc.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString()
+            ?? throw new InvalidOperationException("Empty model response");
+
+        var parsed = JsonSerializer.Deserialize<HotTopicsModelResponse>(content, JsonOpts);
+        return (parsed?.Topics ?? [])
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Take(4)
+            .ToArray();
+    }
+
     private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNameCaseInsensitive = true };
 }
 
 public record Request(string CvText, string? Audience);
+public record HotTopicsRequest(string JobTitle);
+public record HotTopicsModelResponse([property: JsonPropertyName("topics")] string[]? Topics);
 
 public record SkillLevel(
     [property: JsonPropertyName("name")] string Name,
