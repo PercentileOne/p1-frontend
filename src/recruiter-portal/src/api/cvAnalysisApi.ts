@@ -71,6 +71,11 @@ export async function matchRolesToCareers(suggestedRoles: string[]): Promise<CvR
     return { title, career: results[0] ?? null };
   }));
   return matches
-    .filter((m): m is CvRoleMatch & { career: Career } => m.career !== null)
+    // A career whose Careers Agent record has no real UK salary data (starting <= 0) is a
+    // low-relevance/incomplete match, not a genuine role fit — showing "£0 – £0" undermines the
+    // "every number here is real" promise this feature is built on. Found live 2026-09-18: a
+    // software-engineering CV matched "Skilled metal, electrical and electronic trades
+    // supervisors" with £0–£0 bands.
+    .filter((m): m is CvRoleMatch & { career: Career } => m.career !== null && (m.career.salary?.uk?.starting ?? 0) > 0)
     .sort((a, b) => (b.career.salary?.uk?.starting ?? 0) - (a.career.salary?.uk?.starting ?? 0));
 }

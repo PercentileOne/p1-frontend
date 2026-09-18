@@ -475,7 +475,10 @@
         return null;
       }
     }));
-    var real = matches.filter(function(m) { return m !== null; });
+    // A career with no real UK salary data (starting <= 0) is a low-relevance/incomplete
+    // match, not a genuine role fit — found live 2026-09-18: a software-engineering CV matched
+    // "Skilled metal, electrical and electronic trades supervisors" with £0–£0 bands.
+    var real = matches.filter(function(m) { return m !== null && (m.career.salary.uk.starting || 0) > 0; });
     real.sort(function(a, b) {
       return (b.career.salary.uk.starting || 0) - (a.career.salary.uk.starting || 0);
     });

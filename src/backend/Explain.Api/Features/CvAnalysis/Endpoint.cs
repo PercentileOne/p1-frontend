@@ -27,7 +27,7 @@ public static class Endpoint
     // as CareerCoach's own DailyMessageCap. A real signed-in account is a meaningfully higher
     // bar against abuse than a bare IP address, hence the split.
     private const int DailyCapAuthenticated = 20;
-    private const int DailyCapAnonymous = 50; // TEMP (2026-09-18): raised to unblock Phase 3 live verification — revert to 5 once confirmed.
+    private const int DailyCapAnonymous = 5;
 
     public static void Map(WebApplication app)
     {
