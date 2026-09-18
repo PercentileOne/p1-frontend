@@ -102,8 +102,12 @@ export interface UseInterviewerAudioParams {
   qIndex: number;
   setPhase: (phase: RoomPhase) => void;
   sessionLanguage: string;
-  effectiveSarahIntro?: string;
-  effectiveJamesIntro?: string;
+  // Sync refs, current the instant Phase 2 resolves — beginInterviewIntro reads these directly
+  // (not via React state/closures) so its own identity never needs to change when Phase 2's
+  // data lands — see InterviewRoomPage.tsx's own comment for the real race this replaced
+  // (reliably reproduced by skipping Michelle's intro early).
+  bgSarahIntroRef: React.RefObject<string | null>;
+  bgJamesIntroRef: React.RefObject<string | null>;
   bgMikeScriptRef: React.RefObject<string | null>;
   specialistTitle: string;
   resolvedPreferredName?: string;
@@ -241,7 +245,7 @@ export interface UseInterviewerAudioReturn {
 export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInterviewerAudioReturn {
   const {
     questions, qIndex, setPhase, sessionLanguage,
-    effectiveSarahIntro, effectiveJamesIntro, bgMikeScriptRef, specialistTitle,
+    bgSarahIntroRef, bgJamesIntroRef, bgMikeScriptRef, specialistTitle,
     resolvedPreferredName, jobTitle, specialFocus, aiQuestionsLoaded,
     chapterMarkersRef, recordingStartTimeRef,
     phase2ReadyRef, phase2WaitersRef,
@@ -441,16 +445,19 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
       // intro (which already names them, per its own prompt rules) landed in time — the
       // fallback text is entirely our own copy, so there's no reason it has to be name-less
       // just because a slow generation call timed out. Only prepended when falling back
-      // (effectiveSarahIntro/effectiveJamesIntro absent) — the AI version already handles
-      // this itself, prepending here too would say the name twice.
+      // (bgSarahIntroRef/bgJamesIntroRef absent) — the AI version already handles this itself,
+      // prepending here too would say the name twice.
       const namePrefix = resolvedPreferredName ? `${resolvedPreferredName} — ` : '';
-      const sarahText = effectiveSarahIntro ?? `${namePrefix}${SARAH_INTROS[sessionLanguage] ?? SARAH_INTROS.en}`;
+      // Read the sync refs, not the effectiveSarahIntro/effectiveJamesIntro props — see this
+      // param's own interface comment for why (the exact race skipping Michelle's intro early
+      // reliably hit).
+      const sarahText = bgSarahIntroRef.current ?? `${namePrefix}${SARAH_INTROS[sessionLanguage] ?? SARAH_INTROS.en}`;
       // Pulse the Record button ~8s in — when Sarah says "click the Record button"
       const pulseOuter = setTimeout(() => {
         setHighlightRecord(true);
         setTimeout(() => setHighlightRecord(false), 6000);
       }, 8000);
-      const jamesText = effectiveJamesIntro ??
+      const jamesText = bgJamesIntroRef.current ??
         `${namePrefix}${JAMES_INTROS[sessionLanguage] ?? JAMES_INTROS.en}`;
 
       const afterSarahIntro = () => {
@@ -516,7 +523,13 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
         cancelSpeakRef.current = speak(sarahText, 'hr', afterSarahIntro, (a) => setHrAnalyser(a));
       }
     }, 600);
-  }, [effectiveSarahIntro, effectiveJamesIntro, questions.length, specialistTitle, sessionLanguage, aiQuestionsLoaded, setPhase, chapterMarkersRef, recordingStartTimeRef, setHighlightRecord, liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical, resolvedPreferredName, jobTitle, specialFocus]);
+  // Deliberately NOT dependent on effectiveSarahIntro/effectiveJamesIntro (or the sync refs,
+  // which are stable objects) — beginInterviewIntro now reads bgSarahIntroRef/bgJamesIntroRef
+  // directly at CALL time, not at closure-creation time, so its own identity no longer needs to
+  // change when Phase 2's data lands. That's the actual fix: previously this closure WAS
+  // recreated on every Phase 2 update, which is what made the beginInterviewIntroRef sync-effect
+  // timing race (see InterviewRoomPage.tsx's comment) possible in the first place.
+  }, [questions.length, specialistTitle, sessionLanguage, aiQuestionsLoaded, setPhase, chapterMarkersRef, recordingStartTimeRef, setHighlightRecord, liveAvatarSpeak, liveAvatarActive, liveAvatarSpeakTechnical, liveAvatarActiveTechnical, resolvedPreferredName, jobTitle, specialFocus]);
 
   const beginInterviewIntroRef = useRef(beginInterviewIntro);
   useEffect(() => { beginInterviewIntroRef.current = beginInterviewIntro; }, [beginInterviewIntro]);

@@ -39,6 +39,8 @@ function baseParams(overrides: Partial<UseInterviewerAudioParams> = {}): UseInte
     setPhase: vi.fn(),
     sessionLanguage: 'en',
     bgMikeScriptRef: { current: null },
+    bgSarahIntroRef: { current: null },
+    bgJamesIntroRef: { current: null },
     specialistTitle: 'Hiring Manager',
     resolvedPreferredName: 'Alex',
     aiQuestionsLoaded: true,

@@ -149,9 +149,21 @@ export default function InterviewRoomPage() {
 
   // Background AI session prep results
   const [bgQuestions, setBgQuestions] = useState<InterviewQuestion[] | null>(null);
-  const [bgSarahIntro, setBgSarahIntro] = useState<string | null>(null);
-  const [bgJamesIntro, setBgJamesIntro] = useState<string | null>(null);
   const bgMikeScriptRef = useRef<string | null>(null); // sync ref — always current when startMike fires
+  // Same sync-ref treatment as bgMikeScriptRef, added 2026-09-18 — beginInterviewIntro previously
+  // read effectiveSarahIntro/effectiveJamesIntro, derived from their own bgSarahIntro/bgJamesIntro
+  // state, through an extra layer of indirection: beginInterviewIntroRef, kept current by its own
+  // useEffect that only
+  // runs after a render commits. Skipping Michelle's intro early made handleMikeIntroDone's own
+  // "is Phase 2 ready" check race that effect — phase2ReadyRef could already read true (it's set
+  // synchronously) before React had actually re-rendered with the new intro text AND run the
+  // ref-sync effect, so beginInterviewIntroRef.current still pointed at the closure from before
+  // Phase 2 landed, falling back to generic/fallback intros despite the real data already being
+  // in state (Francis, 2026-09-18: "skip during Michelle's intro" reliably reproduced this).
+  // Reading these refs directly inside beginInterviewIntro removes that race the same way
+  // bgMikeScriptRef already does for Michelle's own script.
+  const bgSarahIntroRef = useRef<string | null>(null);
+  const bgJamesIntroRef = useRef<string | null>(null);
   const [bgCompanyFacts, setBgCompanyFacts] = useState<string[]>([]);
   const [bgSpecialistTitle, setBgSpecialistTitle] = useState<string | null>(null);
   // The company Sarah/James/the questions actually named this session — echoes ctx.company
@@ -203,8 +215,6 @@ export default function InterviewRoomPage() {
   // specific employer (see buildDemoQuestions), so there's nothing sensible to score against yet.
   const companyKeywords = bgCompanyFacts;
   const specialistTitle = bgSpecialistTitle ?? 'Hiring Manager';
-  const effectiveSarahIntro = bgSarahIntro ?? undefined;
-  const effectiveJamesIntro = bgJamesIntro ?? undefined;
 
   const authToken = useAuthStore(s => s.token);
 
@@ -428,7 +438,7 @@ export default function InterviewRoomPage() {
     setHrState, setTechState,
   } = useInterviewerAudio({
     questions, qIndex, setPhase, sessionLanguage,
-    effectiveSarahIntro, effectiveJamesIntro, bgMikeScriptRef, specialistTitle,
+    bgSarahIntroRef, bgJamesIntroRef, bgMikeScriptRef, specialistTitle,
     resolvedPreferredName, jobTitle: ctx.jobTitle, specialFocus: ctx.specialFocus,
     aiQuestionsLoaded: bgLoadedRef.current,
     chapterMarkersRef, recordingStartTimeRef,
@@ -596,8 +606,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       bgLoadedRef.current = true;
       if (!result) { resolvePhase2(); return; }
       setBgQuestions(result.questions);
-      if (result.sarahIntro) setBgSarahIntro(result.sarahIntro);
-      if (result.jamesIntro) setBgJamesIntro(result.jamesIntro);
+      if (result.sarahIntro) bgSarahIntroRef.current = result.sarahIntro;
+      if (result.jamesIntro) bgJamesIntroRef.current = result.jamesIntro;
       if (result.companyFacts?.length) setBgCompanyFacts(result.companyFacts);
       if (result.specialistTitle) setBgSpecialistTitle(result.specialistTitle);
       if (result.resolvedCompany) setBgResolvedCompany(result.resolvedCompany);
