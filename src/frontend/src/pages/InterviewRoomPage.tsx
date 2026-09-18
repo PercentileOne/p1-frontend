@@ -734,8 +734,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setPhase('done');
     resetForNextQuestion();
     setHrState('speaking');
-    const onClosingDone = () => {
-      setHrState('idle');
+    const goToSummary = () => {
       navigate(`/interview-summary/${interviewIdRef.current}`, {
         state: {
           answers, cvCtx, jobCtx, mcqResults: mcqRes, mcqQuestions, mcqBonusPoints: bonusPts,
@@ -745,29 +744,30 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
         },
       });
     };
+    const onClosingDone = () => {
+      setHrState('idle');
+      // Wayne's own brief sign-off — fires here, AFTER Amina finishes, not alongside her (Francis,
+      // 2026-09-18, after live-testing both: "he's supposed to say it on her very last utterance...
+      // might be better for him to just say it right at the end, so he's the last voice you hear").
+      // Genuinely sequential: navigation waits for his own onEnd, not a guessed delay — his speak()
+      // call already has the same safety-timeout fallback every other avatar line does, so this
+      // can't hang the interview even if his own AVATAR_SPEAK_ENDED never arrives.
+      if (name) {
+        const wayneGoodbye = WAYNE_GOODBYES[Math.floor(Math.random() * WAYNE_GOODBYES.length)](name);
+        setTechState('speaking');
+        const onWayneGoodbyeDone = () => { setTechState('idle'); goToSummary(); };
+        if (avatarEnabled) liveAvatarSpeakTechnical(wayneGoodbye, onWayneGoodbyeDone);
+        else speak(wayneGoodbye, 'technical', onWayneGoodbyeDone);
+      } else {
+        goToSummary();
+      }
+    };
     // Same live-avatar-first pattern as askQuestion/beginInterviewIntro — this was the one
     // spoken line left on the plain TTS path (deliberately deferred scope), which is why
     // Amina's lips didn't move on the goodbye line even though everything else was live.
     cancelSpeakRef.current = avatarEnabled
       ? liveAvatarSpeakHr(closingLine, onClosingDone)
       : speak(closingLine, 'hr', onClosingDone, handleSarahVideoAnalyser);
-
-    // Wayne's own brief sign-off, spoken at the SAME time as Amina's — real interview panels
-    // naturally overlap short goodbyes rather than queueing one after another (Francis,
-    // 2026-09-18: he used to just silently look at the candidate the whole time). Purely a
-    // realism flourish: fire-and-forget, never gates navigation (Amina's own line already
-    // carries the information the candidate actually needs), and its own cancel/cleanup is
-    // deliberately not captured — it's a few words, always finishes well before Amina's much
-    // longer line does, so there's no meaningful risk of it outliving the navigate() below.
-    // Both avatars are already connected here (the 'scoring' reconnect earlier never
-    // disconnects again before this point), so this costs no extra LiveAvatar connect time.
-    if (name) {
-      const wayneGoodbye = WAYNE_GOODBYES[Math.floor(Math.random() * WAYNE_GOODBYES.length)](name);
-      setTechState('speaking');
-      const onWayneGoodbyeDone = () => setTechState('idle');
-      if (avatarEnabled) liveAvatarSpeakTechnical(wayneGoodbye, onWayneGoodbyeDone);
-      else speak(wayneGoodbye, 'technical', onWayneGoodbyeDone);
-    }
   }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl, resetForNextQuestion, handleSarahVideoAnalyser, setHrState, setTechState, avatarEnabled, liveAvatarSpeakHr, liveAvatarSpeakTechnical]);
 
   // ── "Ask The Interviewer" — end-of-interview candidate-questions moment (Francis, 2026-09-17) ──
