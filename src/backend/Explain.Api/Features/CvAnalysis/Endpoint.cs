@@ -373,8 +373,10 @@ List 6-10 skills (a genuine mix, not padded to hit a number), 5-8 suggested role
 
     // Same prompt as the portals' own client-side generateHotTopics() (aiScoring.ts) — kept in
     // sync by hand since it's a small, stable prompt; not worth sharing across a Node Function and
-    // a C# backend for four lines of text.
-    private static async Task<string[]> CallHotTopicsModelAsync(string jobTitle, IHttpClientFactory factory, IConfiguration config)
+    // a C# backend for four lines of text. Each topic now carries a one-line "reason" alongside
+    // its name (Francis, 2026-09-18: a flat list of jargon with no context isn't useful — wants
+    // to know WHY each one matters, both in the UI and spoken by Amina).
+    private static async Task<HotTopicItem[]> CallHotTopicsModelAsync(string jobTitle, IHttpClientFactory factory, IConfiguration config)
     {
         var apiKey = config["ModelRouter:ApiKey"] ?? throw new InvalidOperationException("ModelRouter:ApiKey not configured");
         var endpoint = config["ModelRouter:Endpoint"] ?? throw new InvalidOperationException("ModelRouter:Endpoint not configured");
@@ -385,12 +387,13 @@ List 6-10 skills (a genuine mix, not padded to hit a number), 5-8 suggested role
 List exactly 4 specific, currently in-demand subjects, technologies, or methodologies that someone interviewing for this role today should be ready to discuss — the kind of thing that shows up repeatedly in recent job postings and interview loops for this role.
 
 Rules:
-- Each item is a short, specific name (2-4 words) — a real named technology, pattern, framework, or methodology, not a vague category. ""Agentic AI patterns"" not ""AI knowledge"". ""Zero Trust Architecture"" not ""security"".
+- Each item's ""name"" is short and specific (2-4 words) — a real named technology, pattern, framework, or methodology, not a vague category. ""Agentic AI patterns"" not ""AI knowledge"". ""Zero Trust Architecture"" not ""security"".
+- Each item's ""reason"" is ONE short sentence (under 20 words) explaining concretely why THIS role's interviews care about it right now — not generic filler.
 - Genuinely specific to THIS role — not generic soft skills like ""communication"" or ""teamwork"".
 - No duplicates, no near-duplicates of each other.
 
 Return JSON:
-{{ ""topics"": [""..."", ""..."", ""..."", ""...""] }}";
+{{ ""topics"": [ {{ ""name"": ""..."", ""reason"": ""...""  }}, {{ ""name"": ""..."", ""reason"": ""...""  }}, {{ ""name"": ""..."", ""reason"": ""...""  }}, {{ ""name"": ""..."", ""reason"": ""...""  }} ] }}";
 
         var body = JsonSerializer.Serialize(new
         {
@@ -420,7 +423,7 @@ Return JSON:
 
         var parsed = JsonSerializer.Deserialize<HotTopicsModelResponse>(content, JsonOpts);
         return (parsed?.Topics ?? [])
-            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Where(t => !string.IsNullOrWhiteSpace(t.Name))
             .Take(4)
             .ToArray();
     }
@@ -430,7 +433,10 @@ Return JSON:
 
 public record Request(string CvText, string? Audience);
 public record HotTopicsRequest(string JobTitle);
-public record HotTopicsModelResponse([property: JsonPropertyName("topics")] string[]? Topics);
+public record HotTopicItem(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("reason")] string Reason);
+public record HotTopicsModelResponse([property: JsonPropertyName("topics")] HotTopicItem[]? Topics);
 
 public record SkillLevel(
     [property: JsonPropertyName("name")] string Name,
