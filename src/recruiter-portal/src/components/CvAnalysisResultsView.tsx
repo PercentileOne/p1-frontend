@@ -78,20 +78,32 @@ interface Props {
 export function CvAnalysisResultsView({ result, roleRows, rolesLoaded, onHotTopics }: Props) {
   const [hotTopics, setHotTopics] = useState<string[]>([]);
   const [hotTopicsRole, setHotTopicsRole] = useState('');
+  const [hotTopicsLoading, setHotTopicsLoading] = useState(false);
 
   // "What's Hot for [top role]" — keyed off the highest-salary match, same as the candidate
   // portal's own version. Fires on every results view (live, saved-record replay, and the public
   // shared page) rather than caching with the saved record — deliberate, since Francis wants this
   // visible everywhere a recruiter or their colleague looks at an analysis.
+  //
+  // This is a THIRD sequential AI call (after the CV analysis itself and the Careers Agent role
+  // match), so it lands several seconds after everything else on the page has already settled.
+  // Without hotTopicsLoading, that gap silently looks like the section is just missing — Francis
+  // hit exactly this live, 2026-09-18: reported the section "not listed" and tried listening to
+  // Amina's narration for it, when it just hadn't arrived yet. The explicit loading line below
+  // fixes the visible symptom; it also means a click on "Talk Me Through This CV" BEFORE this
+  // resolves still won't have the gap sentence in that narration (buildHotTopicGapSentence reads
+  // whatever hotTopics is at click time) — a real but lower-priority race condition, not fixed
+  // here.
   useEffect(() => {
     if (!rolesLoaded || roleRows.length === 0) return;
     const topRole = roleRows[0].careerTitle;
     if (topRole === hotTopicsRole) return;
     setHotTopicsRole(topRole);
+    setHotTopicsLoading(true);
     generateHotTopics(topRole).then(topics => {
       setHotTopics(topics);
       onHotTopics?.(topics, topRole);
-    }).catch(() => setHotTopics([]));
+    }).catch(() => setHotTopics([])).finally(() => setHotTopicsLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rolesLoaded, roleRows]);
 
@@ -148,7 +160,15 @@ export function CvAnalysisResultsView({ result, roleRows, rolesLoaded, onHotTopi
 
       {/* What's Hot for the top suggested role — a screening insight for the recruiter AND the
           product's own Learn cross-sell, informational here (no deep-link target for a recruiter
-          to click through to, unlike the candidate portal's "Study on Learn" button). */}
+          to click through to, unlike the candidate portal's "Study on Learn" button). Explicit
+          loading line while the (third, chained) AI call is in flight — see the useEffect's own
+          comment for why this matters here specifically. */}
+      {hotTopicsLoading && hotTopics.length === 0 && (
+        <section>
+          <SectionHeading icon={<Flame size={13} />}>What's Hot for {hotTopicsRole}</SectionHeading>
+          <div style={{ fontSize: 12, color: '#8080b0', padding: '8px 0' }}>Checking what's trending for this role…</div>
+        </section>
+      )}
       {hotTopics.length > 0 && (
         <section>
           <SectionHeading icon={<Flame size={13} />}>What's Hot for {hotTopicsRole}</SectionHeading>
