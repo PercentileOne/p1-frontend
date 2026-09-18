@@ -96,6 +96,21 @@ const SALARY_BANDS = [
   { value: '£1M+', label: '£1M+', boost: 4 },
 ] as const;
 
+// A candidate shouldn't be able to pick "Standard" difficulty alongside a £500k+ salary — the
+// two would visibly contradict each other (Francis, 2026-09-18: "I shouldn't be able to say
+// Standard and set my salary expectation to 500k"). Maps a salary band's boost straight onto
+// DIFFICULTIES' own index (0=Beginner..3=Expert) as a FLOOR, not a fixed value — a candidate can
+// still go higher than the floor, just never lower. boost 2 and 3 share the same floor (Pro) —
+// the escalation between them still comes through in the AI prompt's framing language, it just
+// doesn't need a stricter UI floor until boost 4 (the Gauntlet-question tier), which is
+// Expert-only.
+function minDifficultyIndexForSalary(salaryValue: string): number {
+  const boost = SALARY_BANDS.find(s => s.value === salaryValue)?.boost ?? 0;
+  if (boost <= 1) return boost;       // 0 -> no floor, 1 -> Standard floor
+  if (boost === 4) return 3;          // Expert only
+  return 2;                           // boost 2 or 3 -> Pro floor
+}
+
 const DIFFICULTIES = [
   {
     value: 'Beginner',
@@ -211,6 +226,16 @@ export default function InterviewPackStart() {
   const [selectedInterviewRound, setSelectedInterviewRound] = useState(incoming.interviewRound ?? INTERVIEW_ROUNDS[0]);
   const [selectedSalary, setSelectedSalary] = useState(incoming.salaryExpectation ?? 'N/A');
   const [selectedQuestionCount, setSelectedQuestionCount] = useState(incoming.questionCount ?? 10);
+  // Keeps Difficulty and Salary Expectation from ever showing a contradictory combo (Francis,
+  // 2026-09-18) — bumps Difficulty UP to the salary's floor whenever the current selection falls
+  // below it (a high salary picked after a low difficulty, or a received prep that set both
+  // independently). Never bumps it back DOWN if salary is later lowered — Difficulty is the
+  // candidate's own deliberate choice once they've raised it themselves.
+  useEffect(() => {
+    const floorIndex = minDifficultyIndexForSalary(selectedSalary);
+    const currentIndex = DIFFICULTIES.findIndex(d => d.value === selectedDifficulty);
+    if (currentIndex < floorIndex) setSelectedDifficulty(DIFFICULTIES[floorIndex].value);
+  }, [selectedSalary, selectedDifficulty]);
   const [consentToRecord, setConsentToRecord] = useState(true);
   // Only shown after a blocked attempt to start — not on first load, so an empty form
   // doesn't look like it's already in an error state before the candidate's done anything.
@@ -813,12 +838,15 @@ export default function InterviewPackStart() {
                 backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
               }}
             >
-              {DIFFICULTIES.map(d => (
-                <option key={d.value} value={d.value} style={{ color: d.color, background: '#0c1220' }}>{d.value}</option>
+              {DIFFICULTIES.map((d, i) => (
+                <option key={d.value} value={d.value} disabled={i < minDifficultyIndexForSalary(selectedSalary)} style={{ color: d.color, background: '#0c1220' }}>{d.value}</option>
               ))}
             </select>
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
               {difficulty.desc}
+              {minDifficultyIndexForSalary(selectedSalary) > 0 && (
+                <><br />Bumped up to match your Salary Expectation below — roles at that level aren't realistically {DIFFICULTIES[minDifficultyIndexForSalary(selectedSalary) - 1].value.toLowerCase()} or easier.</>
+              )}
             </div>
           </div>
 
