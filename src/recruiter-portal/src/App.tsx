@@ -17,6 +17,7 @@ import LearnHome from './pages/learn/LearnHome'
 import LessonViewer from './pages/learn/LessonViewer'
 import LearnBookshelf from './pages/learn/LearnBookshelf'
 import CandidateHome from './pages/candidate/CandidateHome'
+import SharedCvAnalysisPage from './pages/SharedCvAnalysisPage'
 
 // Redirects unauthenticated users to /login. Waits for the async session
 // re-validation (AuthProvider's isLoading) before deciding, so a page refresh
@@ -61,6 +62,9 @@ function AppRoutes() {
 
       {/* Candidate portal */}
       <Route path="/candidate/home" element={<CandidateHome />} />
+
+      {/* Public, no-login — a colleague opening a shared CV Analyzer link */}
+      <Route path="/shared/cv-analysis/:token" element={<SharedCvAnalysisPage />} />
 
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

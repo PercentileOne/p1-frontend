@@ -1,43 +1,65 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, TrendingUp, AlertTriangle, Mic } from 'lucide-react';
+import { X, Mic, AlertTriangle, Save, Share2, Check } from 'lucide-react';
 import { FileUpload } from './FileUpload';
 import { ChairSpinner } from './ChairSpinner';
 import { CvAnalysisVoiceOverlay } from './CvAnalysisVoiceOverlay';
-import { analyzeCv, matchRolesToCareers, type CvAnalysisResult, type CvRoleMatch } from '../api/cvAnalysisApi';
+import { CvAnalysisResultsView, toRoleRows, savedToRoleRows, type CvRoleRow } from './CvAnalysisResultsView';
+import {
+  analyzeCv, matchRolesToCareers, saveCvAnalysisHistory, shareCvAnalysisHistory,
+  type CvAnalysisResult, type CvRoleMatch,
+} from '../api/cvAnalysisApi';
 import { useAuth } from '../context/AuthContext';
+
+interface InitialData {
+  result: CvAnalysisResult;
+  roleRows: CvRoleRow[];
+  recordId: string;
+  isShared: boolean;
+  shareToken: string | null;
+}
 
 interface Props {
   onClose: () => void;
+  // Present when opened from the history list (a saved record) — skips straight to 'results'
+  // using this data instead of running a live analysis, and swaps the Save button for Share
+  // (it's already saved). Undefined for the normal "+ Analyze New CV" flow.
+  initialData?: InitialData;
+  // Fires after a successful Save so the history list can refetch without closing the modal.
+  onSaved?: () => void;
 }
 
 type Step = 'upload' | 'analyzing' | 'results' | 'error';
 
 const ACCENT = '#34D399';
 
-function levelColor(level: number) {
-  if (level >= 7) return '#34D399';
-  if (level >= 4) return '#F59E0B';
-  return '#EF4444';
-}
-
-function fmtK(n: number) {
-  return n >= 1000 ? `£${Math.round(n / 1000)}k` : `£${n}`;
-}
-
 // Copy-trimmed from the candidate portal's CvAnalysisModal.tsx — same CareersPanel-style visual
 // shell (eyebrow label, bold title, primary voice button up top, icon-labeled sections below).
 // Always third-person/hiring-fit framing here (audience='candidate') — this portal only ever
 // analyses a CANDIDATE's CV, never the recruiter's own, so there's no self/candidate toggle to
 // wire up like the shared candidate-portal component has.
-export function CvAnalysisModal({ onClose }: Props) {
+export function CvAnalysisModal({ onClose, initialData, onSaved }: Props) {
   const { token } = useAuth();
-  const [step, setStep] = useState<Step>('upload');
+  const [step, setStep] = useState<Step>(initialData ? 'results' : 'upload');
   const [errorMsg, setErrorMsg] = useState('');
-  const [result, setResult] = useState<CvAnalysisResult | null>(null);
+  const [result, setResult] = useState<CvAnalysisResult | null>(initialData?.result ?? null);
   const [roleMatches, setRoleMatches] = useState<CvRoleMatch[]>([]);
-  const [rolesLoaded, setRolesLoaded] = useState(false);
+  const [roleRows, setRoleRows] = useState<CvRoleRow[]>(initialData?.roleRows ?? []);
+  const [rolesLoaded, setRolesLoaded] = useState(!!initialData);
   const [showVoice, setShowVoice] = useState(false);
+
+  // Save — Francis's own steer: nothing is persisted automatically, only on an explicit click.
+  const [saving, setSaving] = useState(false);
+  const [savedRecordId, setSavedRecordId] = useState<string | null>(initialData?.recordId ?? null);
+  const [saveError, setSaveError] = useState('');
+
+  // Share — "send this to a colleague in another department" (Francis, 2026-09-18). Only
+  // available once a record has an id (either just saved, or opened from history).
+  const [sharing, setSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(
+    initialData?.isShared && initialData.shareToken ? `https://recruiter.interviewme.global/shared/cv-analysis/${initialData.shareToken}` : null,
+  );
+  const [shareCopied, setShareCopied] = useState(false);
 
   async function handleExtracted(text: string) {
     setStep('analyzing');
@@ -49,12 +71,53 @@ export function CvAnalysisModal({ onClose }: Props) {
       // Fire-and-forget-ish: results render immediately with an empty table, then fill in as
       // real salary matches land — matching cost, giving useful content sooner than waiting on
       // every one of 5-8 searchCareers calls to finish before showing anything at all.
-      matchRolesToCareers(analysis.suggestedRoles).then(matches => { setRoleMatches(matches); setRolesLoaded(true); }).catch(() => { setRoleMatches([]); setRolesLoaded(true); });
+      matchRolesToCareers(analysis.suggestedRoles).then(matches => {
+        setRoleMatches(matches);
+        setRoleRows(toRoleRows(matches));
+        setRolesLoaded(true);
+      }).catch(() => { setRoleMatches([]); setRoleRows([]); setRolesLoaded(true); });
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : 'Something went wrong analysing this CV — please try again.');
       setStep('error');
     }
   }
+
+  async function handleSave() {
+    if (!result || !token) return;
+    setSaving(true);
+    setSaveError('');
+    try {
+      const record = await saveCvAnalysisHistory(result, roleMatches, token);
+      setSavedRecordId(record.id);
+      onSaved?.();
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to save — please try again.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleShare() {
+    if (!savedRecordId || !token) return;
+    setSharing(true);
+    try {
+      const { shareUrl: url } = await shareCvAnalysisHistory(savedRecordId, token);
+      setShareUrl(url);
+    } catch {
+      setSaveError('Failed to create a share link — please try again.');
+    } finally {
+      setSharing(false);
+    }
+  }
+
+  async function copyShareUrl() {
+    if (!shareUrl) return;
+    await navigator.clipboard.writeText(shareUrl);
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2000);
+  }
+
+  const subjectLabel = result?.candidateName || "This Candidate's CV";
 
   return (
     <AnimatePresence>
@@ -79,7 +142,7 @@ export function CvAnalysisModal({ onClose }: Props) {
                   CV Analyzer · Candidate Evaluation
                 </div>
                 <h2 style={{ fontSize: 20, fontWeight: 800, color: '#fff', margin: 0 }}>
-                  What roles fit this candidate?
+                  {result?.candidateName ? `CV Analysis for ${result.candidateName}` : 'What roles fit this candidate?'}
                 </h2>
               </div>
               <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, color: '#9090b0', cursor: 'pointer', padding: '7px 9px', display: 'flex' }}>
@@ -92,18 +155,75 @@ export function CvAnalysisModal({ onClose }: Props) {
               </p>
             )}
             {result && step === 'results' && (
-              <button
-                onClick={() => setShowVoice(true)}
-                style={{
-                  marginTop: 14, width: '100%',
-                  background: 'linear-gradient(135deg, rgba(52,211,153,0.18), rgba(52,211,153,0.10))',
-                  border: '1px solid rgba(52,211,153,0.4)', borderRadius: 10,
-                  padding: '10px 16px', fontSize: 12.5, fontWeight: 700, color: ACCENT,
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                }}
-              >
-                <Mic size={14} /> Talk Me Through This CV
-              </button>
+              <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={() => setShowVoice(true)}
+                    style={{
+                      flex: 1,
+                      background: 'linear-gradient(135deg, rgba(52,211,153,0.18), rgba(52,211,153,0.10))',
+                      border: '1px solid rgba(52,211,153,0.4)', borderRadius: 10,
+                      padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: ACCENT,
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                    }}
+                  >
+                    <Mic size={14} /> Talk Me Through This CV
+                  </button>
+                  {!savedRecordId ? (
+                    <button
+                      onClick={handleSave}
+                      disabled={saving}
+                      style={{
+                        flex: 1,
+                        background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.3)', borderRadius: 10,
+                        padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: '#4F8EF7',
+                        cursor: saving ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                        opacity: saving ? 0.6 : 1,
+                      }}
+                    >
+                      <Save size={14} /> {saving ? 'Saving…' : 'Save to List'}
+                    </button>
+                  ) : (
+                    <div style={{
+                      flex: 1, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 10,
+                      padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: ACCENT,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                    }}>
+                      <Check size={14} /> Saved to List
+                    </div>
+                  )}
+                </div>
+                {!!savedRecordId && !shareUrl && (
+                  <button
+                    onClick={handleShare}
+                    disabled={sharing}
+                    style={{
+                      background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 10,
+                      padding: '9px 14px', fontSize: 12, fontWeight: 700, color: '#A78BFA',
+                      cursor: sharing ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                      opacity: sharing ? 0.6 : 1,
+                    }}
+                  >
+                    <Share2 size={13} /> {sharing ? 'Creating link…' : 'Share with a colleague →'}
+                  </button>
+                )}
+                {shareUrl && (
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '6px 6px 6px 12px' }}>
+                    <span style={{ flex: 1, fontSize: 11, color: '#c0bcd0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shareUrl}</span>
+                    <button
+                      onClick={copyShareUrl}
+                      style={{
+                        background: shareCopied ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.06)',
+                        border: 'none', borderRadius: 6, padding: '6px 10px',
+                        fontSize: 11, fontWeight: 700, color: shareCopied ? ACCENT : '#c0bcd0', cursor: 'pointer', flexShrink: 0,
+                      }}
+                    >
+                      {shareCopied ? 'Copied ✓' : 'Copy'}
+                    </button>
+                  </div>
+                )}
+                {saveError && <div style={{ fontSize: 11, color: '#EF4444' }}>{saveError}</div>}
+              </div>
             )}
           </div>
 
@@ -126,93 +246,17 @@ export function CvAnalysisModal({ onClose }: Props) {
             )}
 
             {step === 'results' && result && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                {/* Skills bar chart */}
-                <section>
-                  <SectionHeading icon={<TrendingUp size={13} />}>Skills Breakdown</SectionHeading>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {result.skills.map(s => (
-                      <div key={s.name}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#c0bcd0', marginBottom: 4 }}>
-                          <span style={{ fontWeight: 600 }}>{s.name}</span>
-                          <span style={{ color: '#8080b0' }}>{s.yearsNote ?? ''}</span>
-                        </div>
-                        <div style={{ height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                          <motion.div
-                            initial={{ width: 0 }} animate={{ width: `${s.level * 10}%` }} transition={{ duration: 0.6 }}
-                            style={{ height: '100%', background: levelColor(s.level), borderRadius: 4 }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                {/* Roles table */}
-                <section>
-                  <SectionHeading icon={<Sparkles size={13} />}>Roles This Candidate Is Suited For</SectionHeading>
-                  {!rolesLoaded ? (
-                    <div style={{ fontSize: 12, color: '#8080b0', padding: '8px 0' }}>Matching against real roles…</div>
-                  ) : roleMatches.length === 0 ? (
-                    <div style={{ fontSize: 12, color: '#8080b0', padding: '8px 0', lineHeight: 1.6 }}>
-                      This candidate's background is senior or specialised enough that we couldn't find a close match in our current roles database — that's a gap in our database coverage, not a reflection on the CV. The skills and strengths analysis above is still accurate.
-                    </div>
-                  ) : (
-                    <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, overflow: 'hidden' }}>
-                      {roleMatches.map((m, i) => (
-                        <div key={m.title} style={{
-                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                          padding: '12px 14px', fontSize: 13,
-                          borderBottom: i < roleMatches.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                          background: i % 2 === 1 ? 'rgba(255,255,255,0.02)' : 'transparent',
-                        }}>
-                          <span style={{ fontWeight: 600, color: '#fff' }}>{m.career!.title}</span>
-                          <span style={{ color: ACCENT, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
-                            {fmtK(m.career!.salary.uk.starting)} – {fmtK(m.career!.salary.uk.expert)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </section>
-
-                {/* Strengths / weaknesses / inconsistencies */}
-                <NarrativeList title="Strengths" items={result.strengths} color="#34D399" />
-                <NarrativeList title="Weaknesses" items={result.weaknesses} color="#F59E0B" />
-                {result.inconsistencies.length > 0 && (
-                  <NarrativeList title="Inconsistencies Worth Addressing" items={result.inconsistencies} color="#EF4444" />
-                )}
-              </div>
+              <CvAnalysisResultsView result={result} roleRows={roleRows} rolesLoaded={rolesLoaded} />
             )}
           </div>
         </motion.div>
 
         {showVoice && result && (
-          <CvAnalysisVoiceOverlay narrativeScript={result.narrativeScript} title="This Candidate's CV" onClose={() => setShowVoice(false)} />
+          <CvAnalysisVoiceOverlay narrativeScript={result.narrativeScript} title={subjectLabel} onClose={() => setShowVoice(false)} />
         )}
       </motion.div>
     </AnimatePresence>
   );
 }
 
-function SectionHeading({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#8080b0', marginBottom: 12 }}>
-      {icon} {children}
-    </div>
-  );
-}
-
-function NarrativeList({ title, items, color }: { title: string; items: string[]; color: string }) {
-  if (items.length === 0) return null;
-  return (
-    <section>
-      <SectionHeading icon={<span style={{ width: 6, height: 6, borderRadius: '50%', background: color, display: 'inline-block' }} />}>{title}</SectionHeading>
-      <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {items.map((item, i) => (
-          <li key={i} style={{ fontSize: 13, color: '#e0dcff', lineHeight: 1.6 }}>{item}</li>
-        ))}
-      </ul>
-    </section>
-  );
-}
+export { savedToRoleRows };

@@ -28,6 +28,12 @@ public static class Endpoint
     // bar against abuse than a bare IP address, hence the split.
     private const int DailyCapAuthenticated = 20;
     private const int DailyCapAnonymous = 5;
+    // Share links need to point at the portal the record was actually saved from — a candidate
+    // sharing their own "What Am I Worth?" analysis needs a candidate.theinterviewchair.com
+    // link, not a recruiter one. Domain per Alerts/Endpoint.cs's own recruiter-link convention
+    // and Interviews/Endpoint.cs's own ShareBaseUrl for the candidate side.
+    private const string RecruiterPortalUrl = "https://recruiter.interviewme.global";
+    private const string CandidatePortalUrl = "https://candidate.theinterviewchair.com";
 
     public static void Map(WebApplication app)
     {
@@ -70,6 +76,140 @@ public static class Endpoint
 
             return Results.Ok(result);
         });
+
+        // POST /api/cv-analysis/history — explicit "Save to List" action from the recruiter
+        // portal (Francis, 2026-09-18): the live analysis itself is never persisted automatically
+        // — only when a recruiter reviews it and decides it's worth keeping. Body carries the
+        // already-computed AnalysisResult + roleMatches (the frontend already has both from the
+        // live call, no need to redo the Model Router or Careers Agent calls here).
+        app.MapPost("/api/cv-analysis/history", async (SaveHistoryRequest req, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var ownerId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(ownerId)) return Results.Unauthorized();
+
+            var record = new CvAnalysisHistoryRecord(
+                Guid.NewGuid().ToString(),
+                ownerId,
+                req.CandidateName,
+                DateTimeOffset.UtcNow.ToString("O"),
+                req.Analysis,
+                req.RoleMatches,
+                portal: req.Portal == "candidate" ? "candidate" : "recruiter");
+
+            var container = cosmos.GetContainer("cvAnalysisHistory");
+            await container.CreateItemAsync(record, new PartitionKey(ownerId));
+            return Results.Ok(record);
+        }).RequireAuthorization();
+
+        // GET /api/cv-analysis/history — every saved analysis for the current recruiter, newest
+        // first. Same shape as Interviews/Endpoint.cs's GET /api/interviews (query-by-partition,
+        // full records — volume here is nowhere near enough to warrant a lightweight-summary
+        // projection like that endpoint uses).
+        app.MapGet("/api/cv-analysis/history", async (HttpContext ctx, CosmosService cosmos) =>
+        {
+            var ownerId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(ownerId)) return Results.Unauthorized();
+
+            var container = cosmos.GetContainer("cvAnalysisHistory");
+            var query = new QueryDefinition("SELECT * FROM c WHERE c.ownerId = @oid")
+                .WithParameter("@oid", ownerId);
+            var records = new List<CvAnalysisHistoryRecord>();
+            using var feed = container.GetItemQueryIterator<CvAnalysisHistoryRecord>(
+                query, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(ownerId) });
+            while (feed.HasMoreResults)
+                records.AddRange(await feed.ReadNextAsync());
+
+            return Results.Ok(records.OrderByDescending(r => r.createdAt));
+        }).RequireAuthorization();
+
+        // DELETE /api/cv-analysis/history/{id} — DeleteItemAsync scoped to the caller's own
+        // partition (ownerId from the JWT, not a route param) means there's no separate ownership
+        // check to get wrong, same as CareerCoach/Endpoint.cs's thread delete.
+        app.MapDelete("/api/cv-analysis/history/{id}", async (string id, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var ownerId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(ownerId)) return Results.Unauthorized();
+
+            var container = cosmos.GetContainer("cvAnalysisHistory");
+            try
+            {
+                await container.DeleteItemAsync<CvAnalysisHistoryRecord>(id, new PartitionKey(ownerId));
+                return Results.Ok();
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return Results.NotFound();
+            }
+        }).RequireAuthorization();
+
+        // POST /api/cv-analysis/history/{id}/share — "send this to a colleague in another
+        // department" (Francis, 2026-09-18): mints a public, no-login link to a saved analysis.
+        // Idempotent — reuses an already-issued token rather than minting a fresh one each call,
+        // same reasoning as Interviews/Endpoint.cs's own /share route (a link already handed out
+        // should keep working).
+        app.MapPost("/api/cv-analysis/history/{id}/share", async (string id, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var ownerId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(ownerId)) return Results.Unauthorized();
+
+            var container = cosmos.GetContainer("cvAnalysisHistory");
+            CvAnalysisHistoryRecord record;
+            try { record = await container.ReadItemAsync<CvAnalysisHistoryRecord>(id, new PartitionKey(ownerId)); }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { return Results.NotFound(); }
+
+            var shareToken = record.isShared && !string.IsNullOrEmpty(record.shareToken)
+                ? record.shareToken
+                : GenerateShareToken();
+            var updated = record with { isShared = true, shareToken = shareToken };
+            await container.UpsertItemAsync(updated, new PartitionKey(ownerId));
+
+            var portalUrl = record.portal == "candidate" ? CandidatePortalUrl : RecruiterPortalUrl;
+            var shareUrl = $"{portalUrl}/shared/cv-analysis/{shareToken}";
+            return Results.Ok(new { shareToken, shareUrl });
+        }).RequireAuthorization();
+
+        // POST /api/cv-analysis/history/{id}/unshare — revokes the link (keeps the token itself,
+        // so re-sharing later reactivates the same link rather than minting a new one).
+        app.MapPost("/api/cv-analysis/history/{id}/unshare", async (string id, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var ownerId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(ownerId)) return Results.Unauthorized();
+
+            var container = cosmos.GetContainer("cvAnalysisHistory");
+            CvAnalysisHistoryRecord record;
+            try { record = await container.ReadItemAsync<CvAnalysisHistoryRecord>(id, new PartitionKey(ownerId)); }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { return Results.NotFound(); }
+
+            if (record.isShared)
+                await container.UpsertItemAsync(record with { isShared = false }, new PartitionKey(ownerId));
+            return Results.Ok(new { isShared = false });
+        }).RequireAuthorization();
+
+        // GET /api/cv-analysis/history/shared/{shareToken} — public view, no login. Cross-partition
+        // query by token (same shape as Interviews/Endpoint.cs's own GET .../shared/{shareToken} —
+        // there's no ownerId to scope by from a bare token).
+        app.MapGet("/api/cv-analysis/history/shared/{shareToken}", async (string shareToken, CosmosService cosmos) =>
+        {
+            var container = cosmos.GetContainer("cvAnalysisHistory");
+            var query = new QueryDefinition("SELECT * FROM c WHERE c.shareToken = @token AND c.isShared = true")
+                .WithParameter("@token", shareToken);
+            using var feed = container.GetItemQueryIterator<CvAnalysisHistoryRecord>(query);
+            if (feed.HasMoreResults)
+            {
+                var page = await feed.ReadNextAsync();
+                var record = page.FirstOrDefault();
+                if (record is not null) return Results.Ok(record);
+            }
+            return Results.NotFound();
+        }).AllowAnonymous();
+    }
+
+    // Mirrors Interviews/Endpoint.cs's own GenerateShareToken exactly.
+    private static string GenerateShareToken()
+    {
+        const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        var bytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(10);
+        return new string(bytes.Select(b => chars[b % chars.Length]).ToArray());
     }
 
     private static IResult CappedResponse(int cap) =>
@@ -142,6 +282,7 @@ CRITICAL RULES:
 
 Return this exact JSON:
 {{
+  ""candidateName"": ""the CV owner's full name if clearly stated in the CV, otherwise null"",
   ""skills"": [ {{ ""name"": ""..."", ""level"": <1-10 integer, your honest estimate of proficiency/seniority in this skill from the CV's own evidence>, ""yearsNote"": ""short note, e.g. '10 years' or 'Recently learned'"" }} ],
   ""suggestedRoles"": [""Real job-board-style title"", ""...""],
   ""strengths"": [""genuine strength, specific to this CV""],
@@ -193,6 +334,7 @@ public record SkillLevel(
     [property: JsonPropertyName("yearsNote")] string? YearsNote);
 
 public record AnalysisResult(
+    [property: JsonPropertyName("candidateName")] string? CandidateName,
     [property: JsonPropertyName("skills")] List<SkillLevel> Skills,
     [property: JsonPropertyName("suggestedRoles")] List<string> SuggestedRoles,
     [property: JsonPropertyName("strengths")] List<string> Strengths,
@@ -201,3 +343,33 @@ public record AnalysisResult(
     [property: JsonPropertyName("narrativeScript")] string NarrativeScript);
 
 public record UsageDoc(string id, string rateLimitKey, int count);
+
+// Persisted "Save to List" record (recruiter portal only) — roleMatches is a small snapshot
+// (not the full live Career object) so a saved record's roles table still renders correctly even
+// if the Careers Agent catalog changes later, and so viewing history never needs a fresh
+// Careers Agent round trip.
+public record SavedRoleMatch(
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("careerId")] string CareerId,
+    [property: JsonPropertyName("careerTitle")] string CareerTitle,
+    [property: JsonPropertyName("salaryUkStarting")] int SalaryUkStarting,
+    [property: JsonPropertyName("salaryUkExpert")] int SalaryUkExpert);
+
+public record SaveHistoryRequest(
+    [property: JsonPropertyName("candidateName")] string? CandidateName,
+    [property: JsonPropertyName("analysis")] AnalysisResult Analysis,
+    [property: JsonPropertyName("roleMatches")] List<SavedRoleMatch> RoleMatches,
+    // "recruiter" (default) or "candidate" — which portal this was saved from, so a share link
+    // points at the right live domain. See Endpoint.cs's CandidatePortalUrl/RecruiterPortalUrl.
+    [property: JsonPropertyName("portal")] string? Portal = null);
+
+public record CvAnalysisHistoryRecord(
+    string id,
+    string ownerId,
+    string? candidateName,
+    string createdAt,
+    AnalysisResult analysis,
+    List<SavedRoleMatch> roleMatches,
+    string portal = "recruiter",
+    bool isShared = false,
+    string? shareToken = null);

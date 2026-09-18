@@ -19,6 +19,7 @@ export interface CvSkill {
 }
 
 export interface CvAnalysisResult {
+  candidateName: string | null;
   skills: CvSkill[];
   suggestedRoles: string[];
   strengths: string[];
@@ -30,6 +31,26 @@ export interface CvAnalysisResult {
 export interface CvRoleMatch {
   title: string;
   career: Career | null; // null if no real match was found — dropped from the UI, never shown with a guessed salary
+}
+
+// Saved-record shapes — Features/CvAnalysis/Endpoint.cs's SavedRoleMatch/CvAnalysisHistoryRecord.
+export interface SavedRoleMatch {
+  title: string;
+  careerId: string;
+  careerTitle: string;
+  salaryUkStarting: number;
+  salaryUkExpert: number;
+}
+
+export interface CvAnalysisHistoryRecord {
+  id: string;
+  ownerId: string;
+  candidateName: string | null;
+  createdAt: string;
+  analysis: CvAnalysisResult;
+  roleMatches: SavedRoleMatch[];
+  isShared: boolean;
+  shareToken: string | null;
 }
 
 export interface CvAnalysisCappedError {
@@ -150,4 +171,83 @@ export async function matchRolesToCareers(suggestedRoles: string[]): Promise<CvR
   }
 
   return real.sort((a, b) => (b.career.salary?.uk?.starting ?? 0) - (a.career.salary?.uk?.starting ?? 0));
+}
+
+// Converts the live-view CvRoleMatch[] (full Career objects) into the small snapshot
+// Endpoint.cs's SavedRoleMatch expects — only what's needed to redraw the roles table from
+// history without hitting the Careers Agent again.
+function toSavedRoleMatches(roleMatches: CvRoleMatch[]): SavedRoleMatch[] {
+  return roleMatches
+    .filter((m): m is CvRoleMatch & { career: Career } => m.career !== null)
+    .map(m => ({
+      title: m.title,
+      careerId: m.career.id,
+      careerTitle: m.career.title,
+      salaryUkStarting: m.career.salary.uk.starting,
+      salaryUkExpert: m.career.salary.uk.expert,
+    }));
+}
+
+// Explicit "Save to List" — Francis's own steer: nothing is saved automatically, only when a
+// recruiter reviews an analysis and decides it's worth keeping.
+export async function saveCvAnalysisHistory(
+  result: CvAnalysisResult, roleMatches: CvRoleMatch[], authToken: string,
+): Promise<CvAnalysisHistoryRecord> {
+  const res = await fetch(`${API_BASE}/api/cv-analysis/history`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+    body: JSON.stringify({
+      candidateName: result.candidateName,
+      analysis: result,
+      roleMatches: toSavedRoleMatches(roleMatches),
+      portal: 'recruiter',
+    }),
+  });
+  if (!res.ok) throw new Error(`Failed to save (${res.status})`);
+  return res.json();
+}
+
+export async function fetchCvAnalysisHistory(authToken: string): Promise<CvAnalysisHistoryRecord[]> {
+  const res = await fetch(`${API_BASE}/api/cv-analysis/history`, {
+    headers: { Authorization: `Bearer ${authToken}` },
+  });
+  if (!res.ok) throw new Error(`Failed to load history (${res.status})`);
+  return res.json();
+}
+
+export async function deleteCvAnalysisHistoryRecord(id: string, authToken: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/cv-analysis/history/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${authToken}` },
+  });
+  if (!res.ok) throw new Error(`Failed to delete (${res.status})`);
+}
+
+// "Send this to a colleague in another department" (Francis, 2026-09-18) — mints a public,
+// no-login link. Anonymous viewers can see AND listen to the saved analysis: the shared-view
+// page never needs a token (GET .../history/shared/{token} is anonymous, and the voice
+// walkthrough's own /interviews/speak call has never required auth — same as the public
+// marketing page's CV Analyzer).
+export async function shareCvAnalysisHistory(id: string, authToken: string): Promise<{ shareToken: string; shareUrl: string }> {
+  const res = await fetch(`${API_BASE}/api/cv-analysis/history/${encodeURIComponent(id)}/share`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${authToken}` },
+  });
+  if (!res.ok) throw new Error(`Failed to create share link (${res.status})`);
+  return res.json();
+}
+
+export async function unshareCvAnalysisHistory(id: string, authToken: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/cv-analysis/history/${encodeURIComponent(id)}/unshare`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${authToken}` },
+  });
+  if (!res.ok) throw new Error(`Failed to revoke share link (${res.status})`);
+}
+
+// Public, anonymous — powers the shared-view page. No Authorization header at all.
+export async function fetchSharedCvAnalysis(shareToken: string): Promise<CvAnalysisHistoryRecord> {
+  const res = await fetch(`${API_BASE}/api/cv-analysis/history/shared/${encodeURIComponent(shareToken)}`);
+  if (!res.ok) throw new Error(res.status === 404 ? 'This shared analysis link is no longer available.' : `Failed to load (${res.status})`);
+  return res.json();
 }

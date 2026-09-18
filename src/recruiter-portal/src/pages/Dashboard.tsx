@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { LayoutDashboard, BarChart2, Settings, Send, Bell, Search, Wallet } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { CvAnalysisModal } from '../components/CvAnalysisModal'
+import CvAnalysisHistory from './CvAnalysisHistory'
 import InterviewPacks from './InterviewPacks'
 import InterviewPreps from './InterviewPreps'
 import Candidates from './Candidates'
@@ -259,7 +259,7 @@ export default function Dashboard() {
         {activeNav === 'Interview Preps' && <InterviewPreps />}
         {activeNav === 'Interview Packs' && <InterviewPacks />}
         {activeNav === 'Candidates' && <Candidates />}
-        {activeNav === 'CV Insights' && <CvAnalysisModal onClose={() => setActiveNav('Dashboard')} />}
+        {activeNav === 'CV Insights' && <CvAnalysisHistory />}
         {activeNav === 'Candidate Marketplace' && <CandidateSearch />}
         {activeNav === 'Screen' && <ScreenCandidates />}
         {activeNav === 'Analytics' && <Analytics />}

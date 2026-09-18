@@ -262,6 +262,12 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("cvAnalysisUsage", "/rateLimitKey") { DefaultTimeToLive = 172800 });
 
+        // CV Analyzer "Save to List" (Francis, 2026-09-18) — a recruiter's explicitly-saved CV
+        // analyses, partitioned by their own ownerId. No TTL — these are deliberate saves, not a
+        // usage counter, so they persist like every other recruiter-owned record in this app.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("cvAnalysisHistory", "/ownerId"));
+
         await SeedPlatformStatsAsync();
         await SeedNewsFeedSourcesAsync();
     }

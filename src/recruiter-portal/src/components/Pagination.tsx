@@ -1,10 +1,6 @@
-// Shared pager for this portal's list pages (JobPositions, InterviewPreps) — extracted from
-// what was 2 near-identical copy-pasted blocks, each with its own hardcoded, non-adjustable
-// PAGE_SIZE. Francis: "that's what we've done everywhere" — one reusable control, not
-// per-page hand-tweaks. Same #4F8EF7 active-page color already used in both original blocks.
-//
-// The size selector is shown even when there's only one page — otherwise a list that currently
-// fits on one page at the default size gives no way to discover a smaller size exists.
+// Shared pager for this portal's list pages — copy-trimmed from the candidate portal's own
+// Pagination.tsx (src/frontend/src/components/Pagination.tsx), same component, separate Vite
+// app so it can't be imported directly.
 export const PAGE_SIZE_OPTIONS = [7, 10, 25, 50] as const;
 
 const navBtnStyle = (disabled: boolean): React.CSSProperties => ({
@@ -15,6 +11,7 @@ const navBtnStyle = (disabled: boolean): React.CSSProperties => ({
 
 export function Pagination({
   page, totalPages, onPageChange, pageSize, onPageSizeChange, rangeStart, rangeEnd, total,
+  accentColor = '#4F8EF7', accentColorRgb = '79,142,247',
 }: {
   page: number;
   totalPages: number;
@@ -24,6 +21,8 @@ export function Pagination({
   rangeStart: number;
   rangeEnd: number;
   total: number;
+  accentColor?: string;
+  accentColorRgb?: string;
 }) {
   return (
     <div style={{
@@ -56,9 +55,9 @@ export function Pagination({
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
             <button key={n} onClick={() => onPageChange(n)} style={{
               padding: '6px 10px', borderRadius: 6, border: '1px solid', fontSize: 12, fontFamily: 'inherit', cursor: 'pointer',
-              background: n === page ? 'rgba(79,142,247,0.15)' : 'transparent',
-              borderColor: n === page ? 'rgba(79,142,247,0.5)' : 'var(--border)',
-              color: n === page ? '#4F8EF7' : 'var(--text-3)',
+              background: n === page ? `rgba(${accentColorRgb},0.15)` : 'transparent',
+              borderColor: n === page ? `rgba(${accentColorRgb},0.5)` : 'var(--border)',
+              color: n === page ? accentColor : 'var(--text-3)',
             }}>{n}</button>
           ))}
           <button onClick={() => onPageChange(Math.min(totalPages, page + 1))} disabled={page === totalPages} style={navBtnStyle(page === totalPages)}>
