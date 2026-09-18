@@ -181,6 +181,22 @@
     padding: 11px 16px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; font-family: var(--font);
   }
 
+  .share-btn {
+    width: 100%; background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.3); border-radius: 10px;
+    padding: 11px 16px; font-size: 12.5px; font-weight: 700; color: #A78BFA; cursor: pointer; font-family: var(--font);
+  }
+  .share-btn:disabled { opacity: 0.6; cursor: default; }
+  .share-link-box {
+    display: flex; gap: 6px; align-items: center; background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 8px 8px 14px; margin-top: 10px;
+  }
+  .share-link-box span { flex: 1; font-size: 12px; color: #c0bcd0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .share-link-box button {
+    background: rgba(255,255,255,0.06); border: none; border-radius: 6px; padding: 7px 12px;
+    font-size: 11.5px; font-weight: 700; color: #c0bcd0; cursor: pointer; flex-shrink: 0; font-family: var(--font);
+  }
+  .share-link-box button.copied { background: rgba(52,211,153,0.15); color: var(--green); }
+
   /* ── VOICE OVERLAY ── */
   #voice-overlay {
     display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.82);
@@ -278,6 +294,15 @@
         <div class="section" id="inconsistencies-section" style="display:none">
           <div class="section-h"><span class="dot" style="background:var(--red)"></span> Inconsistencies Worth Addressing</div>
           <ul class="narrative" id="inconsistencies-list"></ul>
+        </div>
+
+        <div class="section" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:20px">
+          <button class="share-btn" id="share-btn">🔗 Share this analysis</button>
+          <div class="share-link-box" id="share-link-box" style="display:none">
+            <span id="share-link-text"></span>
+            <button id="share-copy-btn">Copy</button>
+          </div>
+          <div id="share-error" style="display:none;font-size:11px;color:var(--red);margin-top:8px"></div>
         </div>
 
         <button class="analyze-again" id="analyze-again-btn">Analyse another CV</button>
@@ -379,6 +404,60 @@
   document.getElementById('analyze-again-btn').addEventListener('click', function() {
     fileInput.value = '';
     showStep('upload');
+    // Reset share state too, so a re-analysed CV doesn't show the previous one's link.
+    document.getElementById('share-link-box').style.display = 'none';
+    document.getElementById('share-btn').style.display = 'block';
+    document.getElementById('share-btn').disabled = false;
+    document.getElementById('share-btn').textContent = '🔗 Share this analysis';
+    document.getElementById('share-error').style.display = 'none';
+  });
+
+  // "Share this analysis" — the viral spin (Francis, 2026-09-18): anonymous visitors can share
+  // their result with no account. One call does save+share together (see Endpoint.cs's
+  // POST /api/cv-analysis/public-share own comment for why there's no separate save step here).
+  function toSavedRoleMatches(matches) {
+    return matches.map(function(m) {
+      return { title: m.title, careerId: m.career.id, careerTitle: m.career.title, salaryUkStarting: m.career.salary.uk.starting, salaryUkExpert: m.career.salary.uk.expert };
+    });
+  }
+
+  document.getElementById('share-btn').addEventListener('click', async function() {
+    if (!lastResult) return;
+    var btn = document.getElementById('share-btn');
+    var errorEl = document.getElementById('share-error');
+    btn.disabled = true;
+    btn.textContent = 'Creating link…';
+    errorEl.style.display = 'none';
+    try {
+      var res = await fetch(API_BASE + '/api/cv-analysis/public-share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          candidateName: lastResult.candidateName,
+          analysis: lastResult,
+          roleMatches: toSavedRoleMatches(lastRoleMatches),
+          portal: 'public'
+        })
+      });
+      if (!res.ok) throw new Error('Failed to create share link (' + res.status + ')');
+      var data = await res.json();
+      btn.style.display = 'none';
+      var box = document.getElementById('share-link-box');
+      document.getElementById('share-link-text').textContent = data.shareUrl;
+      box.style.display = 'flex';
+      document.getElementById('share-copy-btn').onclick = async function() {
+        await navigator.clipboard.writeText(data.shareUrl);
+        var copyBtn = document.getElementById('share-copy-btn');
+        copyBtn.textContent = 'Copied ✓';
+        copyBtn.classList.add('copied');
+        setTimeout(function() { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 2000);
+      };
+    } catch (e) {
+      errorEl.textContent = 'Failed to create a share link — please try again.';
+      errorEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '🔗 Share this analysis';
+    }
   });
 
   async function handleFile(file) {
@@ -412,6 +491,7 @@
 
   // ── RESULTS RENDERING ──
   var lastResult = null;
+  var lastRoleMatches = [];
 
   function levelColor(level) {
     if (level >= 7) return 'var(--green)';
@@ -560,6 +640,7 @@
       return (b.career.salary.uk.starting || 0) - (a.career.salary.uk.starting || 0);
     });
 
+    lastRoleMatches = real;
     var rolesList = document.getElementById('roles-list');
     if (real.length === 0) {
       rolesList.innerHTML = '<div class="roles-loading">Your background is senior or specialised enough that we couldn\'t find a close match in our current roles database — that\'s a gap in our database coverage, not a reflection on the CV. The skills and strengths analysis above is still accurate.</div>';

@@ -34,6 +34,7 @@ public static class Endpoint
     // and Interviews/Endpoint.cs's own ShareBaseUrl for the candidate side.
     private const string RecruiterPortalUrl = "https://recruiter.interviewme.global";
     private const string CandidatePortalUrl = "https://candidate.theinterviewchair.com";
+    private const string MarketingSiteUrl = "https://www.theinterviewchair.com";
 
     public static void Map(WebApplication app)
     {
@@ -201,6 +202,30 @@ public static class Endpoint
                 if (record is not null) return Results.Ok(record);
             }
             return Results.NotFound();
+        }).AllowAnonymous();
+
+        // POST /api/cv-analysis/public-share — the anonymous marketing-page version (Francis,
+        // 2026-09-18): "a viral spin — people/recruiters/candidates/everyone can use our site
+        // just to analyse CVs... sharing will be enough, no need to save [a browsable list]...
+        // but we'd have to save them somewhere for people to share." No account to attach a
+        // saved-list entry to here, so save+share happen as ONE atomic action rather than the
+        // authenticated portals' separate Save-then-Share steps — there's nothing for an
+        // anonymous visitor to come back and manage later. ownerId is a fresh, per-record GUID
+        // (its own Cosmos partition) purely to satisfy the container's partition-key requirement
+        // — it identifies nothing about the visitor.
+        app.MapPost("/api/cv-analysis/public-share", async (SaveHistoryRequest req, CosmosService cosmos) =>
+        {
+            var ownerId = $"anon:{Guid.NewGuid()}";
+            var shareToken = GenerateShareToken();
+            var record = new CvAnalysisHistoryRecord(
+                Guid.NewGuid().ToString(), ownerId, req.CandidateName, DateTimeOffset.UtcNow.ToString("O"),
+                req.Analysis, req.RoleMatches, portal: "public", isShared: true, shareToken: shareToken);
+
+            var container = cosmos.GetContainer("cvAnalysisHistory");
+            await container.CreateItemAsync(record, new PartitionKey(ownerId));
+
+            var shareUrl = $"{MarketingSiteUrl}/shared-cv-analysis.html?token={shareToken}";
+            return Results.Ok(new { shareToken, shareUrl });
         }).AllowAnonymous();
     }
 

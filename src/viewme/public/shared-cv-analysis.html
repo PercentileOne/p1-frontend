@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TheInterviewChair.com — Shared CV Analysis</title>
+<meta name="description" content="A CV analysis shared from TheInterviewChair.com — real roles, real salary bands, and an AI voice walkthrough of the CV's strengths and weaknesses.">
+<!-- Our own anonymous page-view log — BEFORE Google Analytics, same pattern as every other
+     page in this folder (see home.html's own comment on this exact block). -->
+<script src="/track.js"></script>
+<!-- Google Analytics GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VWP8MJVBCH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-VWP8MJVBCH');
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #3d7ef6; --green: #34d399; --dark-green: #047857;
+    --bg: #070d1a; --bg2: #0f1829; --pearl: #f1f5f9; --muted: #64748b;
+    --border: rgba(255,255,255,0.08); --font: -apple-system,'Segoe UI',system-ui,sans-serif;
+    --amber: #f59e0b; --red: #ef4444;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--pearl); font-family: var(--font); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 40px;
+    background: rgba(7,13,26,0.85); backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--green), var(--dark-green));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 900; color: #fff; letter-spacing: -0.04em;
+    position: relative; overflow: hidden;
+  }
+  .nav-mark::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+  }
+  .nav-wordmark { font-size: 15px; font-weight: 900; letter-spacing: -0.03em; color: #f1f5f9; }
+  .nav-wordmark .me { color: var(--green); }
+  .nav-back {
+    font-size: 13px; font-weight: 700; color: var(--muted); text-decoration: none;
+    display: flex; align-items: center; gap: 6px; transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--pearl); }
+
+  .hero { min-height: 100vh; display: flex; justify-content: center; padding: 100px 24px 60px; position: relative; overflow: hidden; }
+  .glow-1 {
+    position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(52,211,153,0.10) 0%, rgba(4,120,87,0.06) 40%, transparent 70%);
+    pointer-events: none;
+  }
+  .grid-bg {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(52,211,153,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(52,211,153,0.03) 1px, transparent 1px);
+    background-size: 64px 64px; pointer-events: none;
+  }
+
+  .wrap { max-width: 680px; width: 100%; position: relative; z-index: 2; }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--green); background: rgba(52,211,153,0.08);
+    border: 1px solid rgba(52,211,153,0.2); border-radius: 20px;
+    padding: 5px 14px; margin-bottom: 14px;
+  }
+  h1 { font-size: clamp(1.6rem, 3.4vw, 2.1rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 8px; }
+  .sub { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 24px; padding: 32px; box-shadow: 0 32px 80px rgba(0,0,0,0.4); }
+
+  .loading { text-align: center; padding: 60px 0; }
+  .spinner {
+    width: 44px; height: 44px; border: 3px solid var(--border); border-top-color: var(--green);
+    border-radius: 50%; margin: 0 auto 16px; animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-box { text-align: center; padding: 60px 24px; }
+  .error-box .icon { font-size: 32px; margin-bottom: 12px; }
+  .error-box .title { font-size: 16px; font-weight: 700; color: var(--pearl); margin-bottom: 8px; }
+  .error-box .msg { font-size: 13px; color: var(--muted); }
+
+  .voice-btn {
+    width: 100%; margin-bottom: 24px;
+    background: linear-gradient(135deg, rgba(52,211,153,0.18), rgba(52,211,153,0.10));
+    border: 1px solid rgba(52,211,153,0.4); border-radius: 10px;
+    padding: 12px 16px; font-size: 13px; font-weight: 700; color: var(--green);
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--font);
+  }
+
+  .section { margin-bottom: 28px; }
+  .section-h {
+    display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+
+  .skill-row { margin-bottom: 12px; }
+  .skill-top { display: flex; justify-content: space-between; font-size: 12px; color: #c0bcd0; margin-bottom: 5px; }
+  .skill-top strong { color: var(--pearl); font-weight: 600; }
+  .skill-track { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.06); overflow: hidden; }
+  .skill-fill { height: 100%; border-radius: 4px; width: 0; transition: width 0.6s ease; }
+
+  .roles-table { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .role-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 14px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .role-row:last-child { border-bottom: none; }
+  .role-row:nth-child(even) { background: rgba(255,255,255,0.02); }
+  .role-title { font-weight: 600; color: var(--pearl); }
+  .role-salary { color: var(--green); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  ul.narrative { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  ul.narrative li { font-size: 13px; color: #e0dcff; line-height: 1.6; padding-left: 16px; position: relative; }
+  ul.narrative li::before { content: '—'; position: absolute; left: 0; color: var(--muted); }
+
+  .cta-band {
+    margin-top: 8px; text-align: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 24px;
+  }
+  .cta-band p { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  .cta-btn {
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+    background: linear-gradient(135deg, var(--green), var(--dark-green));
+    color: #fff; font-size: 13px; font-weight: 800; padding: 12px 24px; border-radius: 10px;
+    box-shadow: 0 6px 24px rgba(4,120,87,0.4);
+  }
+
+  /* ── VOICE OVERLAY ── */
+  #voice-overlay {
+    display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.82);
+    backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 24px;
+  }
+  #voice-overlay.open { display: flex; }
+  .voice-card {
+    width: 100%; max-width: 520px; max-height: 80vh; overflow-y: auto; background: #0a0818;
+    border: 1px solid rgba(52,211,153,0.2); border-radius: 24px; padding: 36px 32px; position: relative;
+    box-shadow: 0 0 90px rgba(52,211,153,0.28), 0 24px 64px rgba(0,0,0,0.5);
+  }
+  .voice-orb {
+    width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 12px;
+    background: linear-gradient(135deg, rgba(52,211,153,0.44), rgba(52,211,153,0.22));
+    border: 2px solid rgba(52,211,153,0.66); display: flex; align-items: center; justify-content: center;
+    font-size: 30px; box-shadow: 0 0 0 8px rgba(52,211,153,0.28);
+  }
+  .voice-title { text-align: center; font-size: 13px; font-weight: 700; color: var(--green); margin-bottom: 24px; }
+  #voice-lines p { font-size: 14px; font-weight: 500; color: #e0dcff; line-height: 1.65; margin-bottom: 14px; opacity: 0; transition: opacity 0.4s ease; }
+  #voice-lines p.shown { opacity: 1; }
+  .voice-close {
+    display: block; margin: 24px 0 0 auto; background: none; border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 7px 18px; font-size: 12px; color: var(--muted); cursor: pointer; font-family: var(--font);
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 14px 20px; }
+    .card { padding: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-mark">TIC</div>
+    <span class="nav-wordmark"><span class="me">The</span>Interview<span class="me">Chair</span>.com</span>
+  </a>
+  <a class="nav-back" href="/">← Back to site</a>
+</nav>
+
+<section class="hero">
+  <div class="glow-1"></div>
+  <div class="grid-bg"></div>
+
+  <div class="wrap">
+    <div id="loading-state" class="card loading">
+      <div class="spinner"></div>
+      <div style="font-size:13px;color:var(--muted)">Loading CV analysis…</div>
+    </div>
+
+    <div id="error-state" class="card error-box" style="display:none">
+      <div class="icon">🔍</div>
+      <div class="title">This link isn't available</div>
+      <div class="msg" id="error-msg"></div>
+    </div>
+
+    <div id="content-state" style="display:none">
+      <div class="eyebrow">🔗 Shared CV Analysis</div>
+      <h1 id="page-title">CV Analysis</h1>
+      <p class="sub">Shared from TheInterviewChair.com — no account needed to view.</p>
+
+      <div class="card">
+        <button class="voice-btn" id="voice-btn">🎙️ Talk Me Through This CV</button>
+
+        <div class="section">
+          <div class="section-h">📈 Skills Breakdown</div>
+          <div id="skills-list"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-h">✨ Roles Worth Applying For</div>
+          <div id="roles-list"></div>
+        </div>
+
+        <div class="section" id="strengths-section" style="display:none">
+          <div class="section-h"><span class="dot" style="background:var(--green)"></span> Strengths</div>
+          <ul class="narrative" id="strengths-list"></ul>
+        </div>
+
+        <div class="section" id="weaknesses-section" style="display:none">
+          <div class="section-h"><span class="dot" style="background:var(--amber)"></span> Weaknesses</div>
+          <ul class="narrative" id="weaknesses-list"></ul>
+        </div>
+
+        <div class="section" id="inconsistencies-section" style="display:none">
+          <div class="section-h"><span class="dot" style="background:var(--red)"></span> Inconsistencies Worth Addressing</div>
+          <ul class="narrative" id="inconsistencies-list"></ul>
+        </div>
+
+        <div class="cta-band">
+          <p>Want to know what YOUR CV says about you?</p>
+          <a class="cta-btn" href="/cv-salary.html">Analyse My CV Free →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="voice-overlay">
+  <div class="voice-card">
+    <div class="voice-orb">🎙️</div>
+    <div class="voice-title" id="voice-title">Amina on this CV</div>
+    <div id="voice-lines"></div>
+    <button class="voice-close" id="voice-close-btn">Close ✕</button>
+  </div>
+</div>
+
+<script>
+  var API_BASE = 'https://api.explain.global';
+
+  function fmtK(n) {
+    return n >= 1000 ? ('£' + Math.round(n / 1000) + 'k') : ('£' + n);
+  }
+  function levelColor(level) {
+    if (level >= 7) return 'var(--green)';
+    if (level >= 4) return 'var(--amber)';
+    return 'var(--red)';
+  }
+  function escapeHtml(s) {
+    var div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+  function renderNarrativeList(id, sectionId, items) {
+    var list = document.getElementById(id);
+    var section = document.getElementById(sectionId);
+    if (!items || items.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    list.innerHTML = items.map(function(item) { return '<li>' + escapeHtml(item) + '</li>'; }).join('');
+  }
+
+  var lastNarrativeScript = '';
+
+  function showState(state) {
+    document.getElementById('loading-state').style.display = state === 'loading' ? 'block' : 'none';
+    document.getElementById('error-state').style.display = state === 'error' ? 'block' : 'none';
+    document.getElementById('content-state').style.display = state === 'content' ? 'block' : 'none';
+  }
+
+  (async function load() {
+    var params = new URLSearchParams(window.location.search);
+    var token = params.get('token');
+    if (!token) {
+      document.getElementById('error-msg').textContent = 'No share link token was provided.';
+      showState('error');
+      return;
+    }
+    try {
+      var res = await fetch(API_BASE + '/api/cv-analysis/history/shared/' + encodeURIComponent(token));
+      if (!res.ok) throw new Error(String(res.status));
+      var record = await res.json();
+      renderRecord(record);
+      showState('content');
+    } catch (e) {
+      document.getElementById('error-msg').textContent = 'This shared analysis link is no longer available.';
+      showState('error');
+    }
+  })();
+
+  function renderRecord(record) {
+    var analysis = record.analysis;
+    lastNarrativeScript = analysis.narrativeScript || '';
+
+    document.getElementById('page-title').textContent = record.candidateName ? ('CV Analysis for ' + record.candidateName) : 'CV Analysis';
+    document.getElementById('voice-title').textContent = 'Amina on ' + (record.candidateName || 'this CV');
+
+    var skillsList = document.getElementById('skills-list');
+    skillsList.innerHTML = (analysis.skills || []).map(function(s) {
+      return '<div class="skill-row">' +
+        '<div class="skill-top"><strong>' + escapeHtml(s.name) + '</strong><span>' + escapeHtml(s.yearsNote || '') + '</span></div>' +
+        '<div class="skill-track"><div class="skill-fill" style="background:' + levelColor(s.level) + '" data-level="' + (s.level * 10) + '"></div></div>' +
+        '</div>';
+    }).join('');
+    requestAnimationFrame(function() {
+      document.querySelectorAll('.skill-fill').forEach(function(el) { el.style.width = el.getAttribute('data-level') + '%'; });
+    });
+
+    var roleMatches = record.roleMatches || [];
+    var rolesList = document.getElementById('roles-list');
+    if (roleMatches.length === 0) {
+      rolesList.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">No close real-role matches were found for this CV.</div>';
+    } else {
+      rolesList.innerHTML = '<div class="roles-table">' + roleMatches.map(function(m) {
+        return '<div class="role-row"><span class="role-title">' + escapeHtml(m.careerTitle) + '</span>' +
+          '<span class="role-salary">' + fmtK(m.salaryUkStarting) + ' – ' + fmtK(m.salaryUkExpert) + '</span></div>';
+      }).join('') + '</div>';
+    }
+
+    renderNarrativeList('strengths-list', 'strengths-section', analysis.strengths);
+    renderNarrativeList('weaknesses-list', 'weaknesses-section', analysis.weaknesses);
+    renderNarrativeList('inconsistencies-list', 'inconsistencies-section', analysis.inconsistencies);
+  }
+
+  // ── VOICE OVERLAY ──
+  var overlay = document.getElementById('voice-overlay');
+  var linesEl = document.getElementById('voice-lines');
+  var currentAudio = null;
+
+  document.getElementById('voice-btn').addEventListener('click', function() {
+    if (!lastNarrativeScript) return;
+    openVoiceOverlay(lastNarrativeScript);
+  });
+  document.getElementById('voice-close-btn').addEventListener('click', closeVoiceOverlay);
+
+  function closeVoiceOverlay() {
+    overlay.classList.remove('open');
+    if (currentAudio) { try { currentAudio.pause(); } catch (e) {} currentAudio = null; }
+  }
+
+  function openVoiceOverlay(narrativeScript) {
+    var lines = narrativeScript.split(/(?<=[.!?])\s+/).map(function(s) { return s.trim(); }).filter(Boolean);
+    linesEl.innerHTML = lines.map(function(l) { return '<p>' + escapeHtml(l) + '</p>'; }).join('');
+    overlay.classList.add('open');
+
+    var msPerWord = 320;
+    var wordCount = 0;
+    var pEls = linesEl.querySelectorAll('p');
+    lines.forEach(function(line, i) {
+      var delay = wordCount * msPerWord + 300;
+      setTimeout(function() { pEls[i].classList.add('shown'); }, delay);
+      wordCount += line.split(' ').length;
+    });
+
+    speakNarrative(narrativeScript);
+    setTimeout(closeVoiceOverlay, 90000);
+  }
+
+  async function speakNarrative(text) {
+    try {
+      var genRes = await fetch(API_BASE + '/interviews/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text, role: 'hr' })
+      });
+      if (!genRes.ok) throw new Error('speak proxy error');
+      var data = await genRes.json();
+      currentAudio = new Audio(data.audioUrl);
+      currentAudio.play().catch(function() { speakWebSpeechFallback(text); });
+    } catch (e) {
+      speakWebSpeechFallback(text);
+    }
+  }
+
+  function speakWebSpeechFallback(text) {
+    try {
+      window.speechSynthesis.cancel();
+      var utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-GB';
+      utterance.rate = 0.92;
+      utterance.pitch = 1.15;
+      window.speechSynthesis.speak(utterance);
+    } catch (e) { /* no TTS available — the written lines are still shown */ }
+  }
+</script>
+</body>
+</html>

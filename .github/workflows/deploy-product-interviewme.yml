@@ -42,6 +42,7 @@ jobs:
           cp src/viewme/public/gift-interview.html deploy-product/gift-interview.html
           cp src/viewme/public/gift-interview-success.html deploy-product/gift-interview-success.html
           cp src/viewme/public/cv-salary.html deploy-product/cv-salary.html
+          cp src/viewme/public/shared-cv-analysis.html deploy-product/shared-cv-analysis.html
           # Never in this list before (Francis, 2026-09-18) — every page's <script src="/track.js">
           # tag has been 404ing on this domain since the page-view logger was built, regardless of
           # where in the page it sat. Found live: a genuine 404 on https://www.theinterviewchair.com/track.js.
