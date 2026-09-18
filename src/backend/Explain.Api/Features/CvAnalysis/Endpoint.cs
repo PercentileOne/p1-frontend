@@ -59,7 +59,10 @@ public static class Endpoint
             catch (Exception ex)
             {
                 logger.LogError(ex, "CV Analysis: model call failed");
-                return Results.Problem("CV analysis is temporarily unavailable — please try again in a moment.", statusCode: 502);
+                // TEMP DIAGNOSTIC (2026-09-18) — App Insights/filesystem logging aren't surfacing
+                // exception detail in this environment; exposing ex.Message here only to
+                // pinpoint the live 502 during Phase 1 verification. Revert before shipping.
+                return Results.Problem($"CV analysis is temporarily unavailable — please try again in a moment. [DEBUG: {ex.Message}]", statusCode: 502);
             }
 
             return Results.Ok(result);
