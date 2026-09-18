@@ -1794,6 +1794,23 @@
   </div>
 </div>
 
+<!-- CV / SALARY (Francis, 2026-09-18) — free, no-account AI CV analysis as a standalone lead-magnet
+     tool. Explainer + link out to /cv-salary.html, a separate static page since it needs its own
+     upload/extraction/results JS state — same pattern as the Gift section immediately above. -->
+<div class="section" id="cv-salary" style="background:var(--bg)">
+  <div class="section-inner">
+    <div style="text-align:center;max-width:640px;margin:0 auto 48px">
+      <div class="section-eyebrow" style="justify-content:center;display:flex">🎙️ Free CV / Salary Analysis</div>
+      <h2 class="section-title" style="max-width:100%">Not sure what you're<br><em style="color:var(--green);font-style:normal">actually worth on paper?</em></h2>
+      <p class="section-sub" style="max-width:560px;margin:0 auto">Upload your CV and our AI will tell you which real roles you're suited for and what they pay — highest first — then talk you through your genuine strengths and weaknesses out loud. Free, no account needed.</p>
+    </div>
+
+    <div style="text-align:center">
+      <a href="/cv-salary.html" class="s1-btn-blue" style="background:linear-gradient(135deg,var(--green),#047857);box-shadow:0 0 22px rgba(4,120,87,0.4);display:inline-flex">Analyse My CV Free →</a>
+    </div>
+  </div>
+</div>
+
 <!-- CANDIDATE SECTION — UPSIDE DOWN -->
 <div class="section" style="background:var(--bg)">
   <div class="section-inner">
@@ -2361,7 +2378,7 @@
 
   // ── REDIRECT ALL CTAs TO CONTACT PAGE ─────────────────
   // Redirect every button and link to /contact — except nav links and the logo
-  var ALLOW_HREFS = ['/', '#how', '#pricing', '/contact', '/about', '/gift-interview.html'];
+  var ALLOW_HREFS = ['/', '#how', '#pricing', '/contact', '/about', '/gift-interview.html', '/cv-salary.html'];
   document.addEventListener('click', function(e) {
     var el = e.target;
     // Find closest anchor or button

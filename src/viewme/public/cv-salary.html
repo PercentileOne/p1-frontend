@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TheInterviewChair.com — Free AI CV &amp; Salary Analysis</title>
+<meta name="description" content="Upload your CV and get a free, genuinely intelligent AI breakdown: what real roles you're suited for, what they pay, and your strengths, weaknesses and inconsistencies — spoken out loud.">
+<!-- Our own anonymous page-view log — BEFORE Google Analytics, same pattern as every other
+     page in this folder (see home.html's own comment on this exact block). -->
+<script src="/track.js"></script>
+<!-- Google Analytics GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VWP8MJVBCH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-VWP8MJVBCH');
+</script>
+<!-- mammoth (UMD/global build) — pdf.js loads as an ES module further down, since its own
+     cdnjs build only ships .mjs for this version; mixing the two needs mammoth loaded as a
+     plain global first. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.12.0/mammoth.browser.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #3d7ef6; --green: #34d399; --dark-green: #047857;
+    --bg: #070d1a; --bg2: #0f1829; --pearl: #f1f5f9; --muted: #64748b;
+    --border: rgba(255,255,255,0.08); --font: -apple-system,'Segoe UI',system-ui,sans-serif;
+    --amber: #f59e0b; --red: #ef4444;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--pearl); font-family: var(--font); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+  /* ── NAV — same shape as gift-interview.html ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 40px;
+    background: rgba(7,13,26,0.85); backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--green), var(--dark-green));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 900; color: #fff; letter-spacing: -0.04em;
+    position: relative; overflow: hidden;
+  }
+  .nav-mark::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+  }
+  .nav-wordmark { font-size: 15px; font-weight: 900; letter-spacing: -0.03em; color: #f1f5f9; }
+  .nav-wordmark .me { color: var(--green); }
+  .nav-back {
+    font-size: 13px; font-weight: 700; color: var(--muted); text-decoration: none;
+    display: flex; align-items: center; gap: 6px; transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--pearl); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 120px 24px 80px; position: relative; overflow: hidden;
+  }
+  .glow-1 {
+    position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(52,211,153,0.10) 0%, rgba(4,120,87,0.06) 40%, transparent 70%);
+    pointer-events: none;
+  }
+  .glow-2 {
+    position: absolute; bottom: -100px; right: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(61,126,246,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .grid-bg {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(52,211,153,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(52,211,153,0.03) 1px, transparent 1px);
+    background-size: 64px 64px; pointer-events: none;
+  }
+
+  .wrap { max-width: 680px; width: 100%; position: relative; z-index: 2; }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--green); background: rgba(52,211,153,0.08);
+    border: 1px solid rgba(52,211,153,0.2); border-radius: 20px;
+    padding: 5px 14px; margin-bottom: 20px;
+  }
+  .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
+
+  .center { text-align: center; margin-bottom: 40px; }
+  h1 { font-size: clamp(1.9rem, 4vw, 2.5rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1.15; margin-bottom: 16px; }
+  h1 .accent { color: var(--green); }
+  .sub { font-size: 15px; color: var(--muted); line-height: 1.7; max-width: 520px; margin: 0 auto; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 24px;
+    padding: 32px; box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+  }
+
+  /* Upload dropzone */
+  .dropzone {
+    border: 2px dashed var(--border); border-radius: 16px; padding: 48px 24px;
+    text-align: center; cursor: pointer; transition: all 0.2s; caret-color: transparent; user-select: none;
+  }
+  .dropzone:hover, .dropzone.dragging { border-color: rgba(52,211,153,0.4); background: rgba(52,211,153,0.04); }
+  .dropzone .icon { font-size: 34px; margin-bottom: 12px; }
+  .dropzone .title { font-size: 15px; font-weight: 700; color: var(--pearl); margin-bottom: 6px; }
+  .dropzone .title .browse { color: var(--green); }
+  .dropzone .hint { font-size: 12px; color: var(--muted); }
+  #file-input { display: none; }
+
+  /* Loading */
+  .loading { text-align: center; padding: 36px 0; }
+  .spinner {
+    width: 44px; height: 44px; border: 3px solid var(--border); border-top-color: var(--green);
+    border-radius: 50%; margin: 0 auto 16px; animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-label { font-size: 13px; color: var(--muted); }
+
+  /* Error */
+  .error-box {
+    background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 12px;
+    padding: 18px; font-size: 13px; color: #f0f2ff; line-height: 1.6; display: none;
+  }
+  .error-box .retry {
+    display: inline-block; margin-top: 12px; background: var(--blue); color: #fff; border: none;
+    border-radius: 7px; padding: 7px 16px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: var(--font);
+  }
+
+  /* Results header + voice button */
+  .voice-btn {
+    width: 100%; margin-bottom: 24px;
+    background: linear-gradient(135deg, rgba(52,211,153,0.18), rgba(52,211,153,0.10));
+    border: 1px solid rgba(52,211,153,0.4); border-radius: 10px;
+    padding: 12px 16px; font-size: 13px; font-weight: 700; color: var(--green);
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--font);
+  }
+
+  .section { margin-bottom: 28px; }
+  .section-h {
+    display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+
+  /* Skills bars */
+  .skill-row { margin-bottom: 12px; }
+  .skill-top { display: flex; justify-content: space-between; font-size: 12px; color: #c0bcd0; margin-bottom: 5px; }
+  .skill-top strong { color: var(--pearl); font-weight: 600; }
+  .skill-track { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.06); overflow: hidden; }
+  .skill-fill { height: 100%; border-radius: 4px; width: 0; transition: width 0.6s ease; }
+
+  /* Roles table */
+  .roles-table { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .role-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 14px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .role-row:last-child { border-bottom: none; }
+  .role-row:nth-child(even) { background: rgba(255,255,255,0.02); }
+  .role-title { font-weight: 600; color: var(--pearl); }
+  .role-salary { color: var(--green); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .roles-loading { font-size: 12px; color: var(--muted); padding: 6px 0; }
+
+  ul.narrative { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  ul.narrative li { font-size: 13px; color: #e0dcff; line-height: 1.6; padding-left: 16px; position: relative; }
+  ul.narrative li::before { content: '—'; position: absolute; left: 0; color: var(--muted); }
+
+  .analyze-again {
+    width: 100%; margin-top: 8px; background: none; border: 1px solid var(--border); border-radius: 10px;
+    padding: 11px 16px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; font-family: var(--font);
+  }
+
+  /* ── VOICE OVERLAY ── */
+  #voice-overlay {
+    display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.82);
+    backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 24px;
+  }
+  #voice-overlay.open { display: flex; }
+  .voice-card {
+    width: 100%; max-width: 520px; max-height: 80vh; overflow-y: auto; background: #0a0818;
+    border: 1px solid rgba(52,211,153,0.2); border-radius: 24px; padding: 36px 32px; position: relative;
+    box-shadow: 0 0 90px rgba(52,211,153,0.28), 0 24px 64px rgba(0,0,0,0.5);
+  }
+  .voice-orb {
+    width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 12px;
+    background: linear-gradient(135deg, rgba(52,211,153,0.44), rgba(52,211,153,0.22));
+    border: 2px solid rgba(52,211,153,0.66); display: flex; align-items: center; justify-content: center;
+    font-size: 30px; box-shadow: 0 0 0 8px rgba(52,211,153,0.28);
+  }
+  .voice-title { text-align: center; font-size: 13px; font-weight: 700; color: var(--green); margin-bottom: 24px; }
+  #voice-lines p { font-size: 14px; font-weight: 500; color: #e0dcff; line-height: 1.65; margin-bottom: 14px; opacity: 0; transition: opacity 0.4s ease; }
+  #voice-lines p.shown { opacity: 1; }
+  .voice-close {
+    display: block; margin: 24px 0 0 auto; background: none; border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 7px 18px; font-size: 12px; color: var(--muted); cursor: pointer; font-family: var(--font);
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 14px 20px; }
+    h1 { font-size: 1.9rem; }
+    .card { padding: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-mark">TIC</div>
+    <span class="nav-wordmark"><span class="me">The</span>Interview<span class="me">Chair</span>.com</span>
+  </a>
+  <a class="nav-back" href="/">← Back to site</a>
+</nav>
+
+<section class="hero">
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+  <div class="grid-bg"></div>
+
+  <div class="wrap">
+    <div class="center">
+      <div class="eyebrow" style="justify-content:center"><div class="pulse"></div>Free · No account needed</div>
+      <h1>What roles could you<br><span class="accent">actually apply for?</span></h1>
+      <p class="sub">Upload your CV and our AI will tell you which real roles fit, what they pay — highest first — and talk you through your genuine strengths and weaknesses out loud.</p>
+    </div>
+
+    <div class="card">
+      <div id="step-upload">
+        <div class="dropzone" id="dropzone">
+          <div class="icon">📄</div>
+          <div class="title">Drop your CV here or <span class="browse">browse</span></div>
+          <div class="hint">PDF, DOCX, or TXT · Max 10MB</div>
+        </div>
+        <input type="file" id="file-input" accept=".pdf,.docx,.doc,.txt" />
+      </div>
+
+      <div id="step-loading" class="loading" style="display:none">
+        <div class="spinner"></div>
+        <div class="loading-label" id="loading-label">Extracting text…</div>
+      </div>
+
+      <div id="step-error" class="error-box"></div>
+
+      <div id="step-results" style="display:none">
+        <button class="voice-btn" id="voice-btn">🎙️ Talk Me Through My CV</button>
+
+        <div class="section">
+          <div class="section-h">📈 Skills Breakdown</div>
+          <div id="skills-list"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-h">✨ Roles You Could Apply For</div>
+          <div id="roles-list"><div class="roles-loading">Matching against real roles…</div></div>
+        </div>
+
+        <div class="section" id="strengths-section">
+          <div class="section-h"><span class="dot" style="background:var(--green)"></span> Strengths</div>
+          <ul class="narrative" id="strengths-list"></ul>
+        </div>
+
+        <div class="section" id="weaknesses-section">
+          <div class="section-h"><span class="dot" style="background:var(--amber)"></span> Weaknesses</div>
+          <ul class="narrative" id="weaknesses-list"></ul>
+        </div>
+
+        <div class="section" id="inconsistencies-section" style="display:none">
+          <div class="section-h"><span class="dot" style="background:var(--red)"></span> Inconsistencies Worth Addressing</div>
+          <ul class="narrative" id="inconsistencies-list"></ul>
+        </div>
+
+        <button class="analyze-again" id="analyze-again-btn">Analyse another CV</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="voice-overlay">
+  <div class="voice-card">
+    <div class="voice-orb">🎙️</div>
+    <div class="voice-title">Amina on Your CV</div>
+    <div id="voice-lines"></div>
+    <button class="voice-close" id="voice-close-btn">Close ✕</button>
+  </div>
+</div>
+
+<script type="module">
+  import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/6.1.200/pdf.min.mjs';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/6.1.200/pdf.worker.min.mjs';
+
+  var API_BASE = 'https://api.explain.global';
+  var CAREERS_BASE = 'https://p1-careers-agent-gbgyheascwc2fpfr.uksouth-01.azurewebsites.net/api/careers';
+
+  // ── FILE EXTRACTION — ported from src/frontend/src/utils/fileExtractor.ts ──
+  async function extractPdf(file) {
+    var buffer = await file.arrayBuffer();
+    var pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+    var pages = [];
+    for (var i = 1; i <= pdf.numPages; i++) {
+      var page = await pdf.getPage(i);
+      var content = await page.getTextContent();
+      pages.push(content.items.map(function(item) { return item.str || ''; }).join(' '));
+    }
+    return pages.join('\n');
+  }
+
+  async function extractDocx(file) {
+    var buffer = await file.arrayBuffer();
+    var result = await window.mammoth.extractRawText({ arrayBuffer: buffer });
+    return result.value;
+  }
+
+  function extractTxt(file) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result || ''); };
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  }
+
+  async function extractTextFromFile(file) {
+    var ext = (file.name.split('.').pop() || '').toLowerCase();
+    var text = '';
+    if (ext === 'pdf') text = await extractPdf(file);
+    else if (ext === 'docx' || ext === 'doc') text = await extractDocx(file);
+    else if (ext === 'txt') text = await extractTxt(file);
+    else throw new Error('Unsupported file type: .' + ext + '. Please use PDF, DOCX, or TXT.');
+    if (!text.trim()) throw new Error('Could not extract text from this file. Please try a different one.');
+    return text.trim();
+  }
+
+  // ── UI STATE ──
+  var stepUpload   = document.getElementById('step-upload');
+  var stepLoading  = document.getElementById('step-loading');
+  var stepError    = document.getElementById('step-error');
+  var stepResults  = document.getElementById('step-results');
+  var loadingLabel = document.getElementById('loading-label');
+  var dropzone     = document.getElementById('dropzone');
+  var fileInput    = document.getElementById('file-input');
+
+  function showStep(step) {
+    stepUpload.style.display  = step === 'upload'  ? 'block' : 'none';
+    stepLoading.style.display = step === 'loading' ? 'block' : 'none';
+    stepError.style.display   = step === 'error'   ? 'block' : 'none';
+    stepResults.style.display = step === 'results' ? 'block' : 'none';
+  }
+
+  function showError(msg) {
+    stepError.innerHTML = msg + '<br><button class="retry" id="retry-btn">Try again</button>';
+    showStep('error');
+    document.getElementById('retry-btn').onclick = function() { showStep('upload'); };
+  }
+
+  dropzone.addEventListener('click', function() { fileInput.click(); });
+  dropzone.addEventListener('dragover', function(e) { e.preventDefault(); dropzone.classList.add('dragging'); });
+  dropzone.addEventListener('dragleave', function() { dropzone.classList.remove('dragging'); });
+  dropzone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    dropzone.classList.remove('dragging');
+    var file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  });
+  fileInput.addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (file) handleFile(file);
+  });
+  document.getElementById('analyze-again-btn').addEventListener('click', function() {
+    fileInput.value = '';
+    showStep('upload');
+  });
+
+  async function handleFile(file) {
+    showStep('loading');
+    loadingLabel.textContent = 'Extracting text from ' + file.name + '…';
+    try {
+      var text = await extractTextFromFile(file);
+      loadingLabel.textContent = 'Reading between the lines…';
+      var analysis = await analyzeCv(text);
+      renderResults(analysis);
+      showStep('results');
+      matchRolesToCareers(analysis.suggestedRoles || []);
+    } catch (err) {
+      showError(err && err.message ? err.message : 'Something went wrong analysing this CV — please try again.');
+    }
+  }
+
+  async function analyzeCv(cvText) {
+    var res = await fetch(API_BASE + '/api/cv-analysis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cvText: cvText, audience: 'self' })
+    });
+    var data = await res.json().catch(function() { return null; });
+    if (!res.ok) {
+      if (data && data.capped) throw new Error(data.message);
+      throw new Error((data && data.error) || ('CV analysis failed (' + res.status + ')'));
+    }
+    return data;
+  }
+
+  // ── RESULTS RENDERING ──
+  var lastResult = null;
+
+  function levelColor(level) {
+    if (level >= 7) return 'var(--green)';
+    if (level >= 4) return 'var(--amber)';
+    return 'var(--red)';
+  }
+
+  function fmtK(n) {
+    return n >= 1000 ? ('£' + Math.round(n / 1000) + 'k') : ('£' + n);
+  }
+
+  function renderNarrativeList(id, sectionId, items) {
+    var list = document.getElementById(id);
+    var section = document.getElementById(sectionId);
+    if (!items || items.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    list.innerHTML = items.map(function(item) { return '<li>' + escapeHtml(item) + '</li>'; }).join('');
+  }
+
+  function escapeHtml(s) {
+    var div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  function renderResults(result) {
+    lastResult = result;
+
+    var skillsList = document.getElementById('skills-list');
+    skillsList.innerHTML = (result.skills || []).map(function(s) {
+      return '<div class="skill-row">' +
+        '<div class="skill-top"><strong>' + escapeHtml(s.name) + '</strong><span>' + escapeHtml(s.yearsNote || '') + '</span></div>' +
+        '<div class="skill-track"><div class="skill-fill" style="background:' + levelColor(s.level) + '" data-level="' + (s.level * 10) + '"></div></div>' +
+        '</div>';
+    }).join('');
+    // Animate bars in on next frame, same as the React version's initial-width-0 transition
+    requestAnimationFrame(function() {
+      document.querySelectorAll('.skill-fill').forEach(function(el) {
+        el.style.width = el.getAttribute('data-level') + '%';
+      });
+    });
+
+    document.getElementById('roles-list').innerHTML = '<div class="roles-loading">Matching against real roles…</div>';
+
+    renderNarrativeList('strengths-list', 'strengths-section', result.strengths);
+    renderNarrativeList('weaknesses-list', 'weaknesses-section', result.weaknesses);
+    renderNarrativeList('inconsistencies-list', 'inconsistencies-section', result.inconsistencies);
+  }
+
+  // Matches AI-suggested role titles against the real, live Careers Agent database — same
+  // anti-hallucination design as the candidate/recruiter portals: the backend only suggests
+  // TITLES, every salary number shown here is real data, never an AI guess.
+  async function matchRolesToCareers(suggestedRoles) {
+    var matches = await Promise.all(suggestedRoles.map(async function(title) {
+      try {
+        var res = await fetch(CAREERS_BASE + '/search?q=' + encodeURIComponent(title) + '&limit=1');
+        if (!res.ok) return null;
+        var data = await res.json();
+        return data && data[0] ? { title: title, career: data[0] } : null;
+      } catch (e) {
+        return null;
+      }
+    }));
+    var real = matches.filter(function(m) { return m !== null; });
+    real.sort(function(a, b) {
+      return (b.career.salary.uk.starting || 0) - (a.career.salary.uk.starting || 0);
+    });
+
+    var rolesList = document.getElementById('roles-list');
+    if (real.length === 0) {
+      rolesList.innerHTML = '<div class="roles-loading">No close real-role matches found for this CV.</div>';
+      return;
+    }
+    rolesList.innerHTML = '<div class="roles-table">' + real.map(function(m) {
+      return '<div class="role-row"><span class="role-title">' + escapeHtml(m.career.title) + '</span>' +
+        '<span class="role-salary">' + fmtK(m.career.salary.uk.starting) + ' – ' + fmtK(m.career.salary.uk.expert) + '</span></div>';
+    }).join('') + '</div>';
+  }
+
+  // ── VOICE OVERLAY ──
+  var overlay = document.getElementById('voice-overlay');
+  var linesEl = document.getElementById('voice-lines');
+  var currentAudio = null;
+
+  document.getElementById('voice-btn').addEventListener('click', function() {
+    if (!lastResult) return;
+    openVoiceOverlay(lastResult.narrativeScript || '');
+  });
+  document.getElementById('voice-close-btn').addEventListener('click', closeVoiceOverlay);
+
+  function closeVoiceOverlay() {
+    overlay.classList.remove('open');
+    if (currentAudio) { try { currentAudio.pause(); } catch (e) {} currentAudio = null; }
+  }
+
+  function openVoiceOverlay(narrativeScript) {
+    var lines = narrativeScript.split(/(?<=[.!?])\s+/).map(function(s) { return s.trim(); }).filter(Boolean);
+    linesEl.innerHTML = lines.map(function(l) { return '<p>' + escapeHtml(l) + '</p>'; }).join('');
+    overlay.classList.add('open');
+
+    // Word-synced reveal, same pacing as the React voice overlay (320ms/word)
+    var msPerWord = 320;
+    var wordCount = 0;
+    var pEls = linesEl.querySelectorAll('p');
+    lines.forEach(function(line, i) {
+      var delay = wordCount * msPerWord + 300;
+      setTimeout(function() { pEls[i].classList.add('shown'); }, delay);
+      wordCount += line.split(' ').length;
+    });
+
+    speakNarrative(narrativeScript);
+
+    // Hard safety timeout — dismiss after 90s no matter what
+    setTimeout(closeVoiceOverlay, 90000);
+  }
+
+  // Plain <audio> playback via the same backend TTS proxy the rest of the product uses
+  // (Features/Interviews/SpeakVoice) — no Web Audio graph needed for this standalone page
+  // (no volume slider, no recording tap), falls back to the browser's own speechSynthesis
+  // if the fetch fails, matching ttsApi.ts's speak() fallback behaviour.
+  async function speakNarrative(text) {
+    try {
+      var genRes = await fetch(API_BASE + '/interviews/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text, role: 'hr' })
+      });
+      if (!genRes.ok) throw new Error('speak proxy error');
+      var data = await genRes.json();
+      currentAudio = new Audio(data.audioUrl);
+      currentAudio.play().catch(function() { speakWebSpeechFallback(text); });
+    } catch (e) {
+      speakWebSpeechFallback(text);
+    }
+  }
+
+  function speakWebSpeechFallback(text) {
+    try {
+      window.speechSynthesis.cancel();
+      var utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-GB';
+      utterance.rate = 0.92;
+      utterance.pitch = 1.15;
+      window.speechSynthesis.speak(utterance);
+    } catch (e) { /* no TTS available — the written lines are still shown */ }
+  }
+</script>
+</body>
+</html>
