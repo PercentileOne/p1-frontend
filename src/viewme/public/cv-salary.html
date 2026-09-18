@@ -471,6 +471,48 @@
     return TITLE_SEARCH_SYNONYMS[title.trim().toLowerCase()] || title;
   }
 
+  var STRIP_PREFIXES = [
+    /^global\s+/i,
+    /^senior\s+vice\s+president,?\s*/i,
+    /^vice\s+president,?\s*/i,
+    /^chief\s+/i,
+    /^head\s+of\s+/i,
+    /^director\s+of\s+/i,
+    /^senior\s+/i,
+    /^lead\s+/i,
+    /^principal\s+/i,
+  ];
+
+  // Zero-cost fallback (no extra AI call) for when a CV is so senior/niche every AI-suggested
+  // title misses the catalog entirely. Strips common seniority/scope qualifiers one at a time
+  // and retries, so "Global Head of Markets Technology" also tries "Head of Markets Technology",
+  // then "Markets Technology". Only runs when the normal pass comes up completely empty.
+  function broadenedTitleVariants(title) {
+    var variants = [];
+    var current = title.trim();
+    for (var i = 0; i < STRIP_PREFIXES.length; i++) {
+      var stripped = current.replace(STRIP_PREFIXES[i], '').trim();
+      if (stripped && stripped.toLowerCase() !== current.toLowerCase()) {
+        variants.push(stripped);
+        current = stripped;
+      }
+    }
+    return variants;
+  }
+
+  async function searchBroadened(title) {
+    var variants = broadenedTitleVariants(title);
+    for (var i = 0; i < variants.length; i++) {
+      try {
+        var res = await fetch(CAREERS_BASE + '/search?q=' + encodeURIComponent(variants[i]) + '&limit=1');
+        if (!res.ok) continue;
+        var data = await res.json();
+        if (data && data[0] && (data[0].salary.uk.starting || 0) > 0) return data[0];
+      } catch (e) { /* try next variant */ }
+    }
+    return null;
+  }
+
   // Matches AI-suggested role titles against the real, live Careers Agent database — same
   // anti-hallucination design as the candidate/recruiter portals: the backend only suggests
   // TITLES, every salary number shown here is real data, never an AI guess.
@@ -497,13 +539,30 @@
       seenIds[m.career.id] = true;
       return true;
     });
+    // Every suggested title was too senior/niche to match anything — broaden and retry rather
+    // than showing an empty roles table. Found live 2026-09-18: a 27-year MD-level finance-tech
+    // CV's AI-suggested titles missed the catalog entirely on some runs.
+    if (real.length === 0) {
+      var fallback = await Promise.all(suggestedRoles.map(async function(title) {
+        var career = await searchBroadened(title);
+        return career ? { title: title, career: career } : null;
+      }));
+      var fbSeenIds = {};
+      real = fallback.filter(function(m) {
+        if (!m) return false;
+        if (fbSeenIds[m.career.id]) return false;
+        fbSeenIds[m.career.id] = true;
+        return true;
+      });
+    }
+
     real.sort(function(a, b) {
       return (b.career.salary.uk.starting || 0) - (a.career.salary.uk.starting || 0);
     });
 
     var rolesList = document.getElementById('roles-list');
     if (real.length === 0) {
-      rolesList.innerHTML = '<div class="roles-loading">No close real-role matches found for this CV.</div>';
+      rolesList.innerHTML = '<div class="roles-loading">Your background is senior or specialised enough that we couldn\'t find a close match in our current roles database — that\'s a gap in our database coverage, not a reflection on the CV. The skills and strengths analysis above is still accurate.</div>';
       return;
     }
     rolesList.innerHTML = '<div class="roles-table">' + real.map(function(m) {

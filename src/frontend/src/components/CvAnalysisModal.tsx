@@ -73,6 +73,7 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
   const [errorMsg, setErrorMsg] = useState('');
   const [result, setResult] = useState<CvAnalysisResult | null>(null);
   const [roleMatches, setRoleMatches] = useState<CvRoleMatch[]>([]);
+  const [rolesLoaded, setRolesLoaded] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
   const [hotTopics, setHotTopics] = useState<string[]>([]);
   const [hotTopicsRole, setHotTopicsRole] = useState('');
@@ -93,6 +94,7 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
       // every one of 5-8 searchCareers calls to finish before showing anything at all.
       matchRolesToCareers(analysis.suggestedRoles).then(matches => {
         setRoleMatches(matches);
+        setRolesLoaded(true);
         // "What's Hot for [top role]" — candidate-only (see onStudyTopic's own comment), keyed
         // off the highest-salary match since that's what the roles table already leads with.
         // Reuses generateHotTopics exactly as the intake screen's own "What's Hot" button does —
@@ -102,7 +104,7 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
           setHotTopicsRole(topRole);
           generateHotTopics(topRole).then(setHotTopics).catch(() => setHotTopics([]));
         }
-      }).catch(() => setRoleMatches([]));
+      }).catch(() => { setRoleMatches([]); setRolesLoaded(true); });
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : 'Something went wrong analysing this CV — please try again.');
       setStep('error');
@@ -206,8 +208,12 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
                 {/* Roles table */}
                 <section>
                   <SectionHeading icon={<Sparkles size={13} />}>{rolesHeading}</SectionHeading>
-                  {roleMatches.length === 0 ? (
+                  {!rolesLoaded ? (
                     <div style={{ fontSize: 12, color: '#8080b0', padding: '8px 0' }}>Matching against real roles…</div>
+                  ) : roleMatches.length === 0 ? (
+                    <div style={{ fontSize: 12, color: '#8080b0', padding: '8px 0', lineHeight: 1.6 }}>
+                      {isRecruiterView ? "This candidate's" : 'Your'} background is senior or specialised enough that we couldn't find a close match in our current roles database — that's a gap in our database coverage, not a reflection on the CV. The skills and strengths analysis above is still accurate.
+                    </div>
                   ) : (
                     <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, overflow: 'hidden' }}>
                       {roleMatches.map((m, i) => (

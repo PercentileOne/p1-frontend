@@ -56,6 +56,46 @@ function normalizeSearchTitle(title: string): string {
   return TITLE_SEARCH_SYNONYMS[title.trim().toLowerCase()] ?? title;
 }
 
+const STRIP_PREFIXES = [
+  /^global\s+/i,
+  /^senior\s+vice\s+president,?\s*/i,
+  /^vice\s+president,?\s*/i,
+  /^chief\s+/i,
+  /^head\s+of\s+/i,
+  /^director\s+of\s+/i,
+  /^senior\s+/i,
+  /^lead\s+/i,
+  /^principal\s+/i,
+];
+
+// Zero-cost fallback (no extra AI call — Francis's own ask was "search until it finds a match"
+// but without adding spend while the daily cap is disabled) for when a CV is so senior/niche
+// every AI-suggested title misses the catalog entirely. Strips common seniority/scope qualifiers
+// one at a time and retries, so "Global Head of Markets Technology" also tries "Head of Markets
+// Technology", then "Markets Technology". Only runs when the normal pass comes up completely
+// empty, so it never affects a CV that already has real matches.
+function broadenedTitleVariants(title: string): string[] {
+  const variants: string[] = [];
+  let current = title.trim();
+  for (const prefix of STRIP_PREFIXES) {
+    const stripped = current.replace(prefix, '').trim();
+    if (stripped && stripped.toLowerCase() !== current.toLowerCase()) {
+      variants.push(stripped);
+      current = stripped;
+    }
+  }
+  return variants;
+}
+
+async function searchBroadened(title: string): Promise<Career | null> {
+  for (const variant of broadenedTitleVariants(title)) {
+    const results = await searchCareers(variant, 1);
+    const hit = results[0];
+    if (hit && (hit.salary?.uk?.starting ?? 0) > 0) return hit;
+  }
+  return null;
+}
+
 // 'self' (default) = second-person coaching framing, for a candidate analysing their own CV.
 // 'candidate' = third-person hiring-fit framing, for a recruiter analysing someone else's CV —
 // see Endpoint.cs's own audienceFraming comment.
@@ -85,7 +125,7 @@ export async function matchRolesToCareers(suggestedRoles: string[]): Promise<CvR
     const results = await searchCareers(normalizeSearchTitle(title), 1);
     return { title, career: results[0] ?? null };
   }));
-  return matches
+  let real = matches
     // A career whose Careers Agent record has no real UK salary data (starting <= 0) is a
     // low-relevance/incomplete match, not a genuine role fit — showing "£0 – £0" undermines the
     // "every number here is real" promise this feature is built on. Found live 2026-09-18: a
@@ -96,6 +136,18 @@ export async function matchRolesToCareers(suggestedRoles: string[]): Promise<CvR
     // "Senior .NET Developer") that both resolve to the SAME real career record — seen live
     // 2026-09-18 as a duplicate row in the roles table. Dedupe by the career's own id, keeping
     // whichever AI-suggested title matched it first.
-    .filter((m, i, arr) => arr.findIndex(x => x.career.id === m.career.id) === i)
-    .sort((a, b) => (b.career.salary?.uk?.starting ?? 0) - (a.career.salary?.uk?.starting ?? 0));
+    .filter((m, i, arr) => arr.findIndex(x => x.career.id === m.career.id) === i);
+
+  // Every suggested title was too senior/niche to match anything — broaden and retry rather
+  // than showing an empty roles table. Found live 2026-09-18: a 27-year MD-level finance-tech
+  // CV's AI-suggested titles ("Global Head of Markets Technology" etc.) missed the catalog
+  // entirely on some runs (the AI's own suggestions vary run to run via Model Router).
+  if (real.length === 0) {
+    const fallback = await Promise.all(suggestedRoles.map(async title => ({ title, career: await searchBroadened(title) })));
+    real = fallback
+      .filter((m): m is CvRoleMatch & { career: Career } => m.career !== null)
+      .filter((m, i, arr) => arr.findIndex(x => x.career.id === m.career.id) === i);
+  }
+
+  return real.sort((a, b) => (b.career.salary?.uk?.starting ?? 0) - (a.career.salary?.uk?.starting ?? 0));
 }

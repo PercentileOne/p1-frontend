@@ -36,6 +36,7 @@ export function CvAnalysisModal({ onClose }: Props) {
   const [errorMsg, setErrorMsg] = useState('');
   const [result, setResult] = useState<CvAnalysisResult | null>(null);
   const [roleMatches, setRoleMatches] = useState<CvRoleMatch[]>([]);
+  const [rolesLoaded, setRolesLoaded] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
 
   async function handleExtracted(text: string) {
@@ -48,7 +49,7 @@ export function CvAnalysisModal({ onClose }: Props) {
       // Fire-and-forget-ish: results render immediately with an empty table, then fill in as
       // real salary matches land — matching cost, giving useful content sooner than waiting on
       // every one of 5-8 searchCareers calls to finish before showing anything at all.
-      matchRolesToCareers(analysis.suggestedRoles).then(setRoleMatches).catch(() => setRoleMatches([]));
+      matchRolesToCareers(analysis.suggestedRoles).then(matches => { setRoleMatches(matches); setRolesLoaded(true); }).catch(() => { setRoleMatches([]); setRolesLoaded(true); });
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : 'Something went wrong analysing this CV — please try again.');
       setStep('error');
@@ -150,8 +151,12 @@ export function CvAnalysisModal({ onClose }: Props) {
                 {/* Roles table */}
                 <section>
                   <SectionHeading icon={<Sparkles size={13} />}>Roles This Candidate Is Suited For</SectionHeading>
-                  {roleMatches.length === 0 ? (
+                  {!rolesLoaded ? (
                     <div style={{ fontSize: 12, color: '#8080b0', padding: '8px 0' }}>Matching against real roles…</div>
+                  ) : roleMatches.length === 0 ? (
+                    <div style={{ fontSize: 12, color: '#8080b0', padding: '8px 0', lineHeight: 1.6 }}>
+                      This candidate's background is senior or specialised enough that we couldn't find a close match in our current roles database — that's a gap in our database coverage, not a reflection on the CV. The skills and strengths analysis above is still accurate.
+                    </div>
                   ) : (
                     <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, overflow: 'hidden' }}>
                       {roleMatches.map((m, i) => (

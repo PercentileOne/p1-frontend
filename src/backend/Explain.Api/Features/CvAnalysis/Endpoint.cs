@@ -132,6 +132,7 @@ public static class Endpoint
 CRITICAL RULES:
 - Only report strengths, weaknesses, and inconsistencies that are ACTUALLY PRESENT in the CV text below — never invent one to seem thorough. An inconsistency must be something a sharp human reviewer would genuinely notice (an unexplained employment gap, a seniority claim that doesn't match the years described, a skill claimed with more years than the technology has plausibly existed, mismatched dates). If there are genuinely none, return an empty array — don't stretch to find one.
 - Suggested role titles must be phrased the way real job boards phrase them (e.g. ""Senior Backend Engineer"", not ""someone who codes""), since they get matched against a real careers database afterward — vague or invented titles won't match anything real.
+- That careers database has broad, common titles, not every hyper-specific executive variant. For senior/niche profiles, include a genuine MIX: some specific titles that match the CV precisely, AND at least 2-3 broader, more commonly-listed equivalents (e.g. alongside ""Global Head of Equity Trading Technology"", also suggest something like ""Chief Technology Officer"" or ""Head of Technology"") — so there's a real chance of matching a broad general database even when the CV itself is extremely senior or narrow.
 - Never invent salary figures yourself — that is handled separately, from real data, after this call returns. Just suggest the roles.
 - Return ONLY valid JSON — no markdown, no explanation.";
 
