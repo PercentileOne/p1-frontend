@@ -461,13 +461,23 @@
     renderNarrativeList('inconsistencies-list', 'inconsistencies-section', result.inconsistencies);
   }
 
+  // Known near-synonym mismatches against the Careers Agent catalog's own alias lists — e.g.
+  // "Solutions Architect" (plural) vs the canonical "Software Architect" record's alias list,
+  // which only has "Solution Architect" (singular) — a real duplicate row, found live
+  // 2026-09-18. Data-completeness gap in the shared catalog, not fixable here in general, so
+  // this is a growable list of known cases, not fuzzy matching.
+  var TITLE_SEARCH_SYNONYMS = { 'solutions architect': 'Software Architect' };
+  function normalizeSearchTitle(title) {
+    return TITLE_SEARCH_SYNONYMS[title.trim().toLowerCase()] || title;
+  }
+
   // Matches AI-suggested role titles against the real, live Careers Agent database — same
   // anti-hallucination design as the candidate/recruiter portals: the backend only suggests
   // TITLES, every salary number shown here is real data, never an AI guess.
   async function matchRolesToCareers(suggestedRoles) {
     var matches = await Promise.all(suggestedRoles.map(async function(title) {
       try {
-        var res = await fetch(CAREERS_BASE + '/search?q=' + encodeURIComponent(title) + '&limit=1');
+        var res = await fetch(CAREERS_BASE + '/search?q=' + encodeURIComponent(normalizeSearchTitle(title)) + '&limit=1');
         if (!res.ok) return null;
         var data = await res.json();
         return data && data[0] ? { title: title, career: data[0] } : null;

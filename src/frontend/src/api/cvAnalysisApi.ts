@@ -41,6 +41,21 @@ function isCapped(x: unknown): x is CvAnalysisCappedError {
   return typeof x === 'object' && x !== null && (x as { capped?: unknown }).capped === true;
 }
 
+// Known near-synonym mismatches against the Careers Agent catalog's own alias lists — e.g. the
+// AI suggested "Solutions Architect" (plural), but the canonical "Software Architect" record's
+// aliases only list "Solution Architect" (singular), so the search missed the alias and fell
+// through to a separate, less-complete "Solutions Architect" catalog entry instead — a real
+// duplicate row, found live 2026-09-18. This is a data-completeness gap in the shared catalog,
+// not something fixable here in general, so it's a growable list of known cases rather than a
+// fuzzy-matching attempt (which risks hiding genuinely distinct roles from other CVs).
+const TITLE_SEARCH_SYNONYMS: Record<string, string> = {
+  'solutions architect': 'Software Architect',
+};
+
+function normalizeSearchTitle(title: string): string {
+  return TITLE_SEARCH_SYNONYMS[title.trim().toLowerCase()] ?? title;
+}
+
 // 'self' (default) = second-person coaching framing, for a candidate analysing their own CV.
 // 'candidate' = third-person hiring-fit framing, for a recruiter analysing someone else's CV —
 // see Endpoint.cs's own audienceFraming comment.
@@ -67,7 +82,7 @@ export async function analyzeCv(cvText: string, audience: 'self' | 'candidate' =
 // this platform's home market; both uk/us bands are still shown per row.
 export async function matchRolesToCareers(suggestedRoles: string[]): Promise<CvRoleMatch[]> {
   const matches = await Promise.all(suggestedRoles.map(async title => {
-    const results = await searchCareers(title, 1);
+    const results = await searchCareers(normalizeSearchTitle(title), 1);
     return { title, career: results[0] ?? null };
   }));
   return matches
