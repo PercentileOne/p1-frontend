@@ -4,7 +4,7 @@ import { X, Mic, AlertTriangle, Save, Share2, Check } from 'lucide-react';
 import { FileUpload } from './FileUpload';
 import { ChairSpinner } from './ChairSpinner';
 import { CvAnalysisVoiceOverlay } from './CvAnalysisVoiceOverlay';
-import { CvAnalysisResultsView, toRoleRows, savedToRoleRows, type CvRoleRow } from './CvAnalysisResultsView';
+import { CvAnalysisResultsView, toRoleRows, savedToRoleRows, buildHotTopicGapSentence, type CvRoleRow } from './CvAnalysisResultsView';
 import {
   analyzeCv, matchRolesToCareers, saveCvAnalysisHistory, shareCvAnalysisHistory,
   type CvAnalysisResult, type CvRoleMatch,
@@ -47,6 +47,8 @@ export function CvAnalysisModal({ onClose, initialData, onSaved }: Props) {
   const [roleRows, setRoleRows] = useState<CvRoleRow[]>(initialData?.roleRows ?? []);
   const [rolesLoaded, setRolesLoaded] = useState(!!initialData);
   const [showVoice, setShowVoice] = useState(false);
+  const [hotTopics, setHotTopics] = useState<string[]>([]);
+  const [hotTopicsRole, setHotTopicsRole] = useState('');
 
   // Save — Francis's own steer: nothing is persisted automatically, only on an explicit click.
   const [saving, setSaving] = useState(false);
@@ -246,13 +248,19 @@ export function CvAnalysisModal({ onClose, initialData, onSaved }: Props) {
             )}
 
             {step === 'results' && result && (
-              <CvAnalysisResultsView result={result} roleRows={roleRows} rolesLoaded={rolesLoaded} />
+              <CvAnalysisResultsView
+                result={result} roleRows={roleRows} rolesLoaded={rolesLoaded}
+                onHotTopics={(topics, role) => { setHotTopics(topics); setHotTopicsRole(role); }}
+              />
             )}
           </div>
         </motion.div>
 
         {showVoice && result && (
-          <CvAnalysisVoiceOverlay narrativeScript={result.narrativeScript} title={subjectLabel} onClose={() => setShowVoice(false)} />
+          <CvAnalysisVoiceOverlay
+            narrativeScript={result.narrativeScript + buildHotTopicGapSentence(hotTopics, hotTopicsRole, result.skills)}
+            title={subjectLabel} onClose={() => setShowVoice(false)}
+          />
         )}
       </motion.div>
     </AnimatePresence>

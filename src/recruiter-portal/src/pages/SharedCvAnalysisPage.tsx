@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Mic } from 'lucide-react';
-import { CvAnalysisResultsView, savedToRoleRows } from '../components/CvAnalysisResultsView';
+import { CvAnalysisResultsView, savedToRoleRows, buildHotTopicGapSentence } from '../components/CvAnalysisResultsView';
 import { CvAnalysisVoiceOverlay } from '../components/CvAnalysisVoiceOverlay';
 import { fetchSharedCvAnalysis, type CvAnalysisHistoryRecord } from '../api/cvAnalysisApi';
 
@@ -17,6 +17,8 @@ export default function SharedCvAnalysisPage() {
   const [state, setState] = useState<'loading' | 'done' | 'error'>('loading');
   const [errorMsg, setErrorMsg] = useState('');
   const [showVoice, setShowVoice] = useState(false);
+  const [hotTopics, setHotTopics] = useState<string[]>([]);
+  const [hotTopicsRole, setHotTopicsRole] = useState('');
 
   useEffect(() => {
     if (!token) { setState('error'); return; }
@@ -74,11 +76,17 @@ export default function SharedCvAnalysisPage() {
           <Mic size={15} /> Talk Me Through This CV
         </button>
 
-        <CvAnalysisResultsView result={analysis} roleRows={savedToRoleRows(record.roleMatches)} rolesLoaded />
+        <CvAnalysisResultsView
+          result={analysis} roleRows={savedToRoleRows(record.roleMatches)} rolesLoaded
+          onHotTopics={(topics, role) => { setHotTopics(topics); setHotTopicsRole(role); }}
+        />
       </div>
 
       {showVoice && (
-        <CvAnalysisVoiceOverlay narrativeScript={analysis.narrativeScript} title={subjectLabel} onClose={() => setShowVoice(false)} />
+        <CvAnalysisVoiceOverlay
+          narrativeScript={analysis.narrativeScript + buildHotTopicGapSentence(hotTopics, hotTopicsRole, analysis.skills)}
+          title={subjectLabel} onClose={() => setShowVoice(false)}
+        />
       )}
     </div>
   );

@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, TrendingUp } from 'lucide-react';
+import { Sparkles, TrendingUp, Flame } from 'lucide-react';
 import type { CvAnalysisResult, CvRoleMatch, SavedRoleMatch } from '../api/cvAnalysisApi';
+import { generateHotTopics } from '../api/aiScoring';
 
 const ACCENT = '#34D399';
 
@@ -12,6 +14,32 @@ function levelColor(level: number) {
 
 function fmtK(n: number) {
   return n >= 1000 ? `£${Math.round(n / 1000)}k` : `£${n}`;
+}
+
+// Grounds the hot-topic bar in the candidate's OWN detected skills rather than an arbitrary
+// colour — green if a matching skill is already strong (level >= 7), amber if there's some
+// exposure, red if the topic isn't reflected in their CV at all (a genuine gap worth probing at
+// interview). Copy-trimmed from the candidate portal's own topicColor(), same substring matching.
+function topicColor(topic: string, skills: CvAnalysisResult['skills']): string {
+  const norm = topic.toLowerCase();
+  const match = skills.find(s => {
+    const sName = s.name.toLowerCase();
+    return sName.includes(norm) || norm.includes(sName);
+  });
+  if (!match) return '#EF4444';
+  return match.level >= 7 ? '#34D399' : '#F59E0B';
+}
+
+// Third-person version of the candidate portal's buildHotTopicGapSentence() — Amina should
+// mention this in the recruiter portal too (Francis, 2026-09-18: "it's our whole advertising
+// angle for the portal" — the Learn cross-sell is a selling point recruiters should see/hear,
+// not just candidates). Client-side string assembly, no extra AI call.
+export function buildHotTopicGapSentence(hotTopics: string[], role: string, skills: CvAnalysisResult['skills']): string {
+  const gaps = hotTopics.filter(t => topicColor(t, skills) === '#EF4444');
+  if (gaps.length === 0) return '';
+  const list = gaps.length === 1 ? gaps[0] : `${gaps.slice(0, -1).join(', ')} and ${gaps[gaps.length - 1]}`;
+  const plural = gaps.length > 1;
+  return ` One more thing — ${list} ${plural ? 'are' : 'is'} very much in demand for ${role} roles right now, and ${plural ? "they're" : "it's"} not reflected in this candidate's CV. Worth asking about at interview — and if they want to brush up, we've got a course waiting for them on our Learn platform.`;
 }
 
 // Normalized shape both the live-view CvRoleMatch (full Career object) and the persisted
@@ -38,13 +66,35 @@ interface Props {
   result: CvAnalysisResult;
   roleRows: CvRoleRow[];
   rolesLoaded: boolean;
+  // Fires once hot topics are fetched for the top role, so the parent (modal / shared page) can
+  // fold buildHotTopicGapSentence() into whatever narrativeScript it hands the voice overlay.
+  onHotTopics?: (topics: string[], role: string) => void;
 }
 
 // Extracted from CvAnalysisModal.tsx (Francis, 2026-09-18) — skills chart through narrative
 // lists, everything the 'results' step renders once an analysis exists. Reused by both the live
 // analysis flow (CvAnalysisModal) and the public shared-view page (SharedCvAnalysisPage), so a
 // recruiter's colleague sees exactly the same breakdown without duplicating this JSX.
-export function CvAnalysisResultsView({ result, roleRows, rolesLoaded }: Props) {
+export function CvAnalysisResultsView({ result, roleRows, rolesLoaded, onHotTopics }: Props) {
+  const [hotTopics, setHotTopics] = useState<string[]>([]);
+  const [hotTopicsRole, setHotTopicsRole] = useState('');
+
+  // "What's Hot for [top role]" — keyed off the highest-salary match, same as the candidate
+  // portal's own version. Fires on every results view (live, saved-record replay, and the public
+  // shared page) rather than caching with the saved record — deliberate, since Francis wants this
+  // visible everywhere a recruiter or their colleague looks at an analysis.
+  useEffect(() => {
+    if (!rolesLoaded || roleRows.length === 0) return;
+    const topRole = roleRows[0].careerTitle;
+    if (topRole === hotTopicsRole) return;
+    setHotTopicsRole(topRole);
+    generateHotTopics(topRole).then(topics => {
+      setHotTopics(topics);
+      onHotTopics?.(topics, topRole);
+    }).catch(() => setHotTopics([]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rolesLoaded, roleRows]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Skills bar chart */}
@@ -95,6 +145,29 @@ export function CvAnalysisResultsView({ result, roleRows, rolesLoaded }: Props) 
           </div>
         )}
       </section>
+
+      {/* What's Hot for the top suggested role — a screening insight for the recruiter AND the
+          product's own Learn cross-sell, informational here (no deep-link target for a recruiter
+          to click through to, unlike the candidate portal's "Study on Learn" button). */}
+      {hotTopics.length > 0 && (
+        <section>
+          <SectionHeading icon={<Flame size={13} />}>What's Hot for {hotTopicsRole}</SectionHeading>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {hotTopics.map(topic => (
+              <div key={topic} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 12px',
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: topicColor(topic, result.skills), flexShrink: 0 }} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{topic}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: 11, color: '#8080b0', marginTop: 8, lineHeight: 1.5 }}>
+            Courses for any gaps here are available on our Learn platform.
+          </div>
+        </section>
+      )}
 
       {/* Strengths / weaknesses / inconsistencies */}
       <NarrativeList title="Strengths" items={result.strengths} color="#34D399" />
