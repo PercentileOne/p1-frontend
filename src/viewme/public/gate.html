@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Our own anonymous page-view log — as early in <head> as possible, same reasoning as
+     home.html's own comment on this block (was at the bottom of the file, missed by fast
+     navigation — this page in particular is the login gate, the single highest-traffic page
+     for exactly the kind of fast click-through that was silently losing its log entry). -->
+<script src="/track.js"></script>
 <title>TheInterviewChair.com — Interview Once. Get Seen by Thousands.</title>
 <meta name="description" content="Record your interview once. Let hundreds of employers find you. The world's first interview broadcast platform." />
 <meta property="og:type" content="website" />
@@ -1491,7 +1496,6 @@
     return false;
   }
 </script>
-<script src="/track.js"></script>
 </body>
 </html>
 

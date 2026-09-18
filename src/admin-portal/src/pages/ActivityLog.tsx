@@ -16,7 +16,11 @@ type SortDir = 'asc' | 'desc'
 // Features/Events/Admin/Endpoint.cs's own top comment on why deep historical search over the
 // permanent archive is a deliberate v2 problem, not solved here. pageSize is user-adjustable
 // (Pagination component) rather than a fixed constant — changing it re-fetches from page 1.
-const PORTALS = ['', 'candidate', 'recruiter', 'employer', 'admin'] as const
+// 'marketing' added 2026-09-18 (Francis) — track.js (src/viewme/public) already posts
+// page_view events with portal: 'marketing' for the static homepage/login-gate/etc., but this
+// dropdown never had an option for it, so those events were only ever reachable via "All
+// portals" mixed in with everything else, not filterable on their own.
+const PORTALS = ['', 'candidate', 'recruiter', 'employer', 'admin', 'marketing'] as const
 
 const inputStyle: React.CSSProperties = {
   flex: 1, background: 'transparent', border: 'none', outline: 'none',

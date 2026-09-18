@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Our own anonymous page-view log — as early in <head> as possible, same reasoning as
+     home.html's own comment on this block (was at the bottom of the file, missed by fast
+     navigation). -->
+<script src="/track.js"></script>
 <title>Zero to 1M — A Founder's Field Guide</title>
 <meta name="description" content="Francis Cobbinah's field guide to building a world-class digital platform alone — from first commit to a million subscribers.">
 <style>
@@ -617,6 +621,5 @@ renderProgress();
 renderSidebar();
 renderMain();
 </script>
-<script src="/track.js"></script>
 </body>
 </html>

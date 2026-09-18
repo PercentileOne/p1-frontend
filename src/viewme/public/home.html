@@ -25,6 +25,13 @@
 <meta name="twitter:description" content="The World's First Interview Broadcast Platform. Record your interview once from home and get seen by thousands of recruiters and employers — simultaneously, 24/7." />
 <meta name="twitter:image" content="https://www.theinterviewchair.com/im-social-card.png" />
 
+<!-- Our own anonymous page-view log — deliberately BEFORE Google Analytics, not after: it used
+     to sit at the very bottom of this file, which meant a fast page-to-page visitor (e.g.
+     landing here then immediately clicking through to Login) could navigate away before the
+     browser ever parsed that far down, so the visit was silently never logged at all (Francis,
+     2026-09-18 — traced from an Activity Log entry that started mid-session with no page view
+     before it). Same early, load-blocking placement GA already uses for exactly this reason. -->
+<script src="/track.js"></script>
 <!-- Google Analytics GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-VWP8MJVBCH"></script>
 <script>
@@ -2678,6 +2685,5 @@
     }, 420);
   }
 </script>
-<script src="/track.js"></script>
 </body>
 </html>
