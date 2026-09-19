@@ -103,4 +103,22 @@ public class ExamCatalogEntry
 
     [JsonPropertyName("lastVerifiedAt")]
     public string LastVerifiedAt { get; set; } = string.Empty;
+
+    // ── Weekly refresh job (Explain.Api Features/ExamCatalog/Refresh) ──────────────────────────
+    // The OFFICIAL page for this exam (Microsoft study guide, College Board course page...). The job
+    // fetches it weekly, compares sourceHash, and — when it changed — re-extracts the blueprint from
+    // that page's own text rather than from the AI's memory.
+    [JsonPropertyName("sourceUrl")]
+    public string SourceUrl { get; set; } = string.Empty;
+
+    // SHA-256 of the page's normalised text at the last check.
+    [JsonPropertyName("sourceHash")]
+    public string SourceHash { get; set; } = string.Empty;
+
+    [JsonPropertyName("sourceCheckedAt")]
+    public string SourceCheckedAt { get; set; } = string.Empty;
+
+    // "" | "ok" | "unreachable" — a page that stops loading is reported to the admin, never auto-retired.
+    [JsonPropertyName("sourceStatus")]
+    public string SourceStatus { get; set; } = string.Empty;
 }

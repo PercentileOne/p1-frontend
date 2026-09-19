@@ -117,6 +117,10 @@ public class AddExamFunction(CosmosExamCatalogService cosmos)
         if (body?.BlueprintGeneratedAt is not null) existing.BlueprintGeneratedAt = body.BlueprintGeneratedAt;
         if (!string.IsNullOrWhiteSpace(body?.Status)) existing.Status = body.Status.Trim();
         if (body?.LastVerifiedAt is not null) existing.LastVerifiedAt = body.LastVerifiedAt;
+        if (body?.SourceUrl is not null) existing.SourceUrl = body.SourceUrl.Trim();
+        if (body?.SourceHash is not null) existing.SourceHash = body.SourceHash;
+        if (body?.SourceCheckedAt is not null) existing.SourceCheckedAt = body.SourceCheckedAt;
+        if (body?.SourceStatus is not null) existing.SourceStatus = body.SourceStatus;
 
         if (categoryChanged)
         {
@@ -149,5 +153,6 @@ public class AddExamFunction(CosmosExamCatalogService cosmos)
         int? MinScore = null, string? Region = null, string? Board = null, string? Level = null, string? Subject = null, string? ScoringModel = null, string? BlueprintStatus = null);
     private record EditRequest(string? Name, string? Category, string? Vendor, string? ExamCode, List<string>? Aliases, List<DomainWeightRequest>? Domains, int? PassScore, int? MaxScore,
         int? MinScore = null, string? Region = null, string? Board = null, string? Level = null, string? Subject = null, string? ScoringModel = null,
-        string? BlueprintStatus = null, string? BlueprintGeneratedAt = null, string? Status = null, string? LastVerifiedAt = null);
+        string? BlueprintStatus = null, string? BlueprintGeneratedAt = null, string? Status = null, string? LastVerifiedAt = null,
+        string? SourceUrl = null, string? SourceHash = null, string? SourceCheckedAt = null, string? SourceStatus = null);
 }
