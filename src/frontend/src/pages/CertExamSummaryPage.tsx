@@ -13,6 +13,8 @@ interface IncomingState {
   passed?: boolean;
   scaledScore?: number;
   maxScore?: number;
+  gradeLabel?: string;
+  blueprintStatus?: string;
   answers?: { question: ExamQuestion; selectedIndex: number }[];
   domainAccuracy?: { domain: string; correct: number; total: number }[];
   isShared?: boolean;
@@ -41,7 +43,8 @@ export default function CertExamSummaryPage() {
     getCertExamSession(authToken, authUser.id, id)
       .then((s: CertExamSession) => setSession({
         certId: s.certId, certName: s.certName, passed: s.passed, scaledScore: s.scaledScore,
-        maxScore: s.maxScore, answers: s.sessionData.answers, domainAccuracy: s.sessionData.domainAccuracy,
+        maxScore: s.maxScore, gradeLabel: s.sessionData.gradeLabel, blueprintStatus: s.sessionData.blueprintStatus,
+        answers: s.sessionData.answers, domainAccuracy: s.sessionData.domainAccuracy,
         isShared: s.isShared, decided: s.decided,
       }))
       .catch(() => { /* nothing to hydrate — the page below handles the empty state */ });
@@ -50,6 +53,8 @@ export default function CertExamSummaryPage() {
   const passed = session?.passed ?? false;
   const scaledScore = session?.scaledScore ?? 0;
   const maxScore = session?.maxScore ?? 1000;
+  const gradeLabel = session?.gradeLabel;
+  const isDraft = session?.blueprintStatus === 'ai-draft';
   const domainAccuracy = session?.domainAccuracy ?? [];
   const weakestDomain = [...domainAccuracy]
     .filter(d => d.total > 0)
@@ -62,10 +67,10 @@ export default function CertExamSummaryPage() {
   const buildDebriefScript = useCallback(() => {
     const name = authUser?.firstName ?? 'there';
     if (passed) {
-      return `Congratulations ${name} — you passed! You scored ${scaledScore} out of ${maxScore}, well done. ${weakestDomain ? `Your strongest area was clear, though ${weakestDomain} is still worth a quick review before the real exam.` : "That's a genuinely strong result."} Good luck with the real thing.`;
+      return `Congratulations ${name} — you passed! ${gradeLabel ? `That is roughly ${gradeLabel}, and ${scaledScore} out of ${maxScore}.` : `You scored ${scaledScore} out of ${maxScore}, well done.`} ${weakestDomain ? `Your strongest area was clear, though ${weakestDomain} is still worth a quick review before the real exam.` : "That's a genuinely strong result."} Good luck with the real thing.`;
     }
-    return `Hi ${name}, it's Michelle here. You scored ${scaledScore} out of ${maxScore} on this attempt — not quite there yet, but that's exactly what practice is for. ${weakestDomain ? `Your weakest area was ${weakestDomain} — our Learn platform has a lesson ready on that right now.` : 'A bit more study and you will get there.'} Take a look, then come back and try again.`;
-  }, [authUser, passed, scaledScore, maxScore, weakestDomain]);
+    return `Hi ${name}, it's Michelle here. ${gradeLabel ? `That comes out at roughly ${gradeLabel}, ${scaledScore} out of ${maxScore}` : `You scored ${scaledScore} out of ${maxScore} on this attempt`} — not quite there yet, but that's exactly what practice is for. ${weakestDomain ? `Your weakest area was ${weakestDomain} — our Learn platform has a lesson ready on that right now.` : 'A bit more study and you will get there.'} Take a look, then come back and try again.`;
+  }, [authUser, passed, scaledScore, maxScore, weakestDomain, gradeLabel]);
 
   function toggleDebrief() {
     if (michelleActive) {
@@ -153,7 +158,17 @@ export default function CertExamSummaryPage() {
           <div style={{ fontSize: '48px', fontWeight: 900, color: passed ? '#34D399' : '#EF4444', fontVariantNumeric: 'tabular-nums' }}>
             {scaledScore}<span style={{ fontSize: '20px', color: 'var(--text-3)' }}>/{maxScore}</span>
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '6px' }}>Scaled score · Mock exam</div>
+          {gradeLabel && (
+            <div style={{ fontSize: '20px', fontWeight: 800, color: passed ? '#34D399' : '#EF4444', marginTop: '4px' }}>{gradeLabel} <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-3)' }}>(indicative)</span></div>
+          )}
+          <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '6px' }}>
+            {gradeLabel ? 'Mock exam · real grade boundaries change every year, so treat this as a guide' : 'Scaled score · Mock exam'}
+          </div>
+          {isDraft && (
+            <div style={{ fontSize: '11px', color: '#fbbf24', marginTop: '10px', lineHeight: 1.5 }}>
+              AI-drafted practice exam — topic areas may differ from the official specification.
+            </div>
+          )}
         </div>
 
         {domainAccuracy.length > 0 && (

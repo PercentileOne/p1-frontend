@@ -8,6 +8,10 @@
 // (az functionapp create names it with a random suffix, e.g. p1-examcatalog-agent-xxxxxxxx,
 // same shape as PROXY_BASE in careersApi.ts). Provisioning is a deliberate, separate checkpoint
 // (new recurring Azure cost), not done as part of writing this code.
+// Absolute URL to the real backend — never a relative /api path (this SWA's own Functions runtime
+// would silently 404 it; see CLAUDE.md).
+const EXPLAIN_API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+
 export const PROXY_BASE = 'https://p1-examcatalog-agent.azurewebsites.net/api/examcatalog';
 
 export interface DomainWeight {
@@ -23,6 +27,8 @@ export interface ExamCatalogSummary {
   examCode: string;
 }
 
+export type ScoringModel = 'scaled' | 'grade-9-1' | 'grade-a-star-e' | 'ap-1-5';
+
 export interface ExamCatalogEntry extends ExamCatalogSummary {
   aliases: string[];
   domains: DomainWeight[];
@@ -30,6 +36,17 @@ export interface ExamCatalogEntry extends ExamCatalogSummary {
   maxScore: number;
   source: string;
   createdAt: string;
+  // "Any US/UK exam" fields (2026-09-19). All optional — records created before these existed
+  // simply don't have them, and everything below treats a missing value as the old behaviour.
+  region?: string;          // 'uk' | 'us' | 'global'
+  board?: string;
+  level?: string;
+  subject?: string;
+  scoringModel?: ScoringModel;
+  minScore?: number;
+  // '' / undefined with domains = curated; 'stub' = no blueprint yet; 'ai-draft' = AI-generated,
+  // unreviewed (show a warning); 'reviewed' = an admin has checked it.
+  blueprintStatus?: '' | 'stub' | 'ai-draft' | 'reviewed';
 }
 
 export interface CategoryCount {
@@ -37,10 +54,11 @@ export interface CategoryCount {
   count: number;
 }
 
-export async function searchExamCatalog(q: string, category?: string, limit = 12): Promise<ExamCatalogEntry[]> {
+export async function searchExamCatalog(q: string, category?: string, limit = 12, region?: string): Promise<ExamCatalogEntry[]> {
   try {
     const params = new URLSearchParams({ q, top: String(limit) });
     if (category) params.set('category', category);
+    if (region) params.set('region', region);
     const res = await fetch(`${PROXY_BASE}/search?${params.toString()}`);
     if (!res.ok) throw new Error('api');
     return await res.json() as ExamCatalogEntry[];
@@ -61,6 +79,29 @@ export async function getExamCategories(): Promise<CategoryCount[]> {
       { category: 'a-level', count: 0 },
     ];
   }
+}
+
+// Every active entry in one category — powers the picker's browse grid (GCSE/A-level/AP subjects
+// etc.), since type-ahead search needs 2+ typed characters and is no use for "show me the subjects".
+export async function browseExamCategory(category: string, region?: string): Promise<ExamCatalogEntry[]> {
+  try {
+    const params = new URLSearchParams({ category });
+    if (region) params.set('region', region);
+    const res = await fetch(`${PROXY_BASE}/browse?${params.toString()}`);
+    if (!res.ok) throw new Error('api');
+    return await res.json() as ExamCatalogEntry[];
+  } catch { return []; }
+}
+
+// A stub entry (no blueprint yet) is made takeable on demand: the backend drafts the blueprint
+// once, saves it into the catalog flagged 'ai-draft', and returns the full updated entry. Returns
+// null on failure so the room can show a retry rather than a dead end.
+export async function ensureExamBlueprint(id: string): Promise<ExamCatalogEntry | null> {
+  try {
+    const res = await fetch(`${EXPLAIN_API_BASE}/api/exam-catalog/${encodeURIComponent(id)}/blueprint`, { method: 'POST' });
+    if (!res.ok) return null;
+    return await res.json() as ExamCatalogEntry;
+  } catch { return null; }
 }
 
 export async function getExamCatalogEntry(id: string): Promise<ExamCatalogEntry | null> {
@@ -88,7 +129,12 @@ const CATEGORY_LABELS: Record<string, string> = {
   certification: 'Professional Certifications',
   gcse: 'GCSE',
   'a-level': 'A-Level',
+  ap: 'AP (Advanced Placement)',
+  admissions: 'College & Grad Admissions',
+  'official-tests': 'Official Tests',
 };
+
+export const REGION_LABELS: Record<string, string> = { uk: 'UK', us: 'US', global: 'International' };
 
 export function categoryLabel(category: string): string {
   return CATEGORY_LABELS[category] ?? category.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());

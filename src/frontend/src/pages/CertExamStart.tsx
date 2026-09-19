@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { logFlowEvent } from '../api/flowLogger';
 import {
-  searchExamCatalog, getExamCategories, reportMissingExam, categoryLabel,
+  searchExamCatalog, getExamCategories, browseExamCategory, reportMissingExam, categoryLabel, REGION_LABELS,
   type ExamCatalogEntry, type CategoryCount,
 } from '../api/examCatalogApi';
 
@@ -18,13 +18,34 @@ import {
 // exactly rather than inventing new ones.
 
 const QUESTION_COUNTS = [15, 30, 60];
-const DEFAULT_CATEGORY = 'certification';
+// '' = search across every exam type (the default since the catalog grew beyond one certification).
+const REGIONS: { value: string; label: string }[] = [
+  { value: '', label: 'All' }, { value: 'uk', label: REGION_LABELS.uk }, { value: 'us', label: REGION_LABELS.us }, { value: 'global', label: REGION_LABELS.global },
+];
+
+function chipStyle(active: boolean): React.CSSProperties {
+  return {
+    padding: '8px 14px', borderRadius: '999px', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+    background: active ? 'rgba(79,142,247,0.12)' : 'var(--bg3)',
+    border: `1px solid ${active ? 'var(--blue)' : 'var(--border)'}`,
+    color: active ? 'var(--blue)' : 'var(--text-2)',
+  };
+}
+
+function entrySub(entry: ExamCatalogEntry, showCategory: boolean): string {
+  return [
+    entry.board || entry.vendor, entry.examCode,
+    showCategory ? categoryLabel(entry.category) : '', entry.region ? REGION_LABELS[entry.region] ?? '' : '',
+  ].filter(Boolean).join(' · ');
+}
 
 export default function CertExamStart() {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState<CategoryCount[]>([{ category: DEFAULT_CATEGORY, count: 0 }]);
-  const [category, setCategory] = useState(DEFAULT_CATEGORY);
-  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<CategoryCount[]>([]);
+  const [category, setCategory] = useState('');
+  const [region, setRegion] = useState('');
+  const [browse, setBrowse] = useState<ExamCatalogEntry[]>([]);
+  const [browseLoading, setBrowseLoading] = useState(false);
 
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<ExamCatalogEntry | null>(null);
@@ -44,14 +65,24 @@ export default function CertExamStart() {
     getExamCategories().then(cats => { if (cats.length > 0) setCategories(cats); });
   }, []);
 
-  function changeCategory(next: string) {
-    setCategory(next);
-    setCategoryMenuOpen(false);
+  function resetSelection() {
     setQuery('');
     setSelected(null);
     setSuggestions([]);
     setShowSuggestions(false);
   }
+  function changeCategory(next: string) { setCategory(next); resetSelection(); }
+  function changeRegion(next: string) { setRegion(next); resetSelection(); }
+
+  // Browse list for a chosen exam type — type-ahead needs 2+ typed characters, which is no use to a
+  // student who just wants to see "which GCSE subjects are there".
+  useEffect(() => {
+    if (!category) { setBrowse([]); return; }
+    let cancelled = false;
+    setBrowseLoading(true);
+    browseExamCategory(category, region || undefined).then(rows => { if (!cancelled) { setBrowse(rows); setBrowseLoading(false); } });
+    return () => { cancelled = true; };
+  }, [category, region]);
 
   const handleQueryChange = useCallback((value: string) => {
     setQuery(value);
@@ -68,13 +99,13 @@ export default function CertExamStart() {
       const requestId = ++requestIdRef.current;
       setSearching(true);
       setShowSuggestions(true);
-      const results = await searchExamCatalog(value, category, 8);
+      const results = await searchExamCatalog(value, category || undefined, 8, region || undefined);
       if (requestId !== requestIdRef.current) return; // a newer keystroke superseded this
       setSearching(false);
       setSuggestions(results);
       setShowSuggestions(results.length > 0);
     }, 180);
-  }, [category]);
+  }, [category, region]);
 
   const selectSuggestion = useCallback((entry: ExamCatalogEntry) => {
     setSelected(entry);
@@ -95,8 +126,8 @@ export default function CertExamStart() {
   async function handleReportMissing() {
     const typed = query.trim();
     if (!typed) return;
-    await reportMissingExam(typed, category);
-    logFlowEvent('CERT_EXAM_REPORTED_MISSING', { name: typed, category });
+    await reportMissingExam(typed, category || 'certification');
+    logFlowEvent('CERT_EXAM_REPORTED_MISSING', { name: typed, category: category || 'all' });
   }
 
   function handleStart() {
@@ -153,40 +184,26 @@ export default function CertExamStart() {
           background: 'var(--bg2)',
           border: `1px solid ${attemptedStart && !selected ? 'rgba(239,68,68,0.5)' : 'var(--border)'}`,
           borderRadius: '16px', marginBottom: '16px', padding: '20px',
-          overflow: (suggestionsOpen || categoryMenuOpen) ? 'visible' : 'hidden',
+          overflow: suggestionsOpen ? 'visible' : 'hidden',
           transition: 'border-color 0.15s',
         }}>
           <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>
-            Category
+            Region
           </div>
-          <div style={{ position: 'relative', marginBottom: '20px' }}>
-            <button
-              onClick={() => setCategoryMenuOpen(v => !v)}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '10px',
-                padding: '13px 16px', color: 'var(--text)', fontSize: '14px', fontWeight: 700,
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}
-            >
-              {categoryLabel(category)}
-              <ChevronDown size={16} style={{ transform: categoryMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
-            </button>
-            {categoryMenuOpen && (
-              <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, background: '#0d0c1e', border: '1px solid rgba(79,142,247,0.3)', borderRadius: '10px', overflow: 'hidden', zIndex: 21, boxShadow: '0 16px 48px rgba(0,0,0,0.6)' }}>
-                {categories.map(c => (
-                  <div
-                    key={c.category}
-                    onMouseDown={() => changeCategory(c.category)}
-                    style={{ padding: '11px 16px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: c.category === category ? 'var(--blue)' : 'var(--text)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(79,142,247,0.1)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
-                  >
-                    {categoryLabel(c.category)}
-                  </div>
-                ))}
-              </div>
-            )}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '18px' }}>
+            {REGIONS.map(r => (
+              <button key={r.value || 'all'} onClick={() => changeRegion(r.value)} style={chipStyle(region === r.value)}>{r.label}</button>
+            ))}
+          </div>
+
+          <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>
+            Exam type
+          </div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+            <button onClick={() => changeCategory('')} style={chipStyle(category === '')}>All exams</button>
+            {categories.filter(c => c.count > 0).map(c => (
+              <button key={c.category} onClick={() => changeCategory(c.category)} style={chipStyle(category === c.category)}>{categoryLabel(c.category)}</button>
+            ))}
           </div>
 
           <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '10px' }}>
@@ -197,7 +214,7 @@ export default function CertExamStart() {
               value={query}
               onChange={e => handleQueryChange(e.target.value)}
               onBlur={handleBlur}
-              placeholder={`Search ${categoryLabel(category).toLowerCase()}…`}
+              placeholder={category ? `Search ${categoryLabel(category).toLowerCase()}…` : 'Search every exam — e.g. GCSE Maths, SAT, AZ-104'}
               style={{
                 width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
                 borderRadius: '10px', padding: '13px 16px', color: 'var(--text)', fontSize: '14px',
@@ -225,15 +242,36 @@ export default function CertExamStart() {
                     onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
                   >
                     <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{entry.name}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-3)' }}>{entry.vendor}{entry.examCode ? ` · ${entry.examCode}` : ''}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-3)' }}>{entrySub(entry, !category)}</div>
                     {entry.domains.length === 0 && (
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: '#F59E0B', marginTop: '3px' }}>Still being built out</div>
+                      <div style={{ fontSize: '10px', fontWeight: 700, color: '#F59E0B', marginTop: '3px' }}>Set up on first use — takes a few seconds</div>
                     )}
                   </div>
                 ))}
               </div>
             )}
           </div>
+
+          {category && !selected && query.trim().length < 2 && (
+            <div style={{ marginTop: '12px', maxHeight: '300px', overflowY: 'auto', border: '1px solid var(--border)', borderRadius: '10px' }}>
+              {browseLoading ? (
+                <div style={{ padding: '14px 16px', fontSize: '13px', color: 'var(--text-3)' }}>Loading…</div>
+              ) : browse.length === 0 ? (
+                <div style={{ padding: '14px 16px', fontSize: '13px', color: 'var(--text-3)' }}>Nothing here yet for this region — try another, or search above.</div>
+              ) : browse.map(entry => (
+                <div
+                  key={entry.id}
+                  onClick={() => selectSuggestion(entry)}
+                  style={{ padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(79,142,247,0.1)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
+                >
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{entry.name}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-3)' }}>{entrySub(entry, false)}</div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {query.trim().length >= 2 && !selected && (
             <button
@@ -245,7 +283,7 @@ export default function CertExamStart() {
           )}
 
           {attemptedStart && !selected && (
-            <div style={{ fontSize: '12px', color: '#EF4444', marginTop: '10px' }}>Search and pick a certification or exam to continue.</div>
+            <div style={{ fontSize: '12px', color: '#EF4444', marginTop: '10px' }}>Search or browse and pick an exam to continue.</div>
           )}
         </div>
 

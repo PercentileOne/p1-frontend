@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../auth/authStore';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
-import { getExamCatalogEntry, type ExamCatalogEntry } from '../api/examCatalogApi';
+import { getExamCatalogEntry, ensureExamBlueprint, type ExamCatalogEntry } from '../api/examCatalogApi';
 import { generateExamQuestions, computeScaledScore, saveCertExamSession, type ExamQuestion } from '../api/certExamApi';
 import { ExamQuestionCard } from '../components/ExamQuestionCard';
 import { logFlowEvent } from '../api/flowLogger';
@@ -15,7 +15,8 @@ interface IncomingState {
 }
 
 type Phase = 'briefing' | 'generating' | 'exam' | 'saving';
-type CertLoadState = 'loading' | 'ready' | 'not-found' | 'not-ready';
+// 'preparing' = a stub entry with no blueprint yet, being generated on demand (a few seconds, one-off).
+type CertLoadState = 'loading' | 'preparing' | 'ready' | 'not-found' | 'not-ready';
 
 // Deliberately NOT copy-trimmed from InterviewRoomPage.tsx — that machinery is built around
 // concurrent Sarah/James-style HR+technical avatar handoffs with real regression history (see
@@ -36,15 +37,30 @@ export default function CertExamRoomPage() {
   const [cert, setCert] = useState<ExamCatalogEntry | null>(null);
   const [certLoadState, setCertLoadState] = useState<CertLoadState>('loading');
 
+  const [loadAttempt, setLoadAttempt] = useState(0);
   useEffect(() => {
     if (!certId) { setCertLoadState('not-found'); return; }
-    getExamCatalogEntry(certId).then(entry => {
+    let cancelled = false;
+    setCertLoadState('loading');
+    getExamCatalogEntry(certId).then(async entry => {
+      if (cancelled) return;
       if (!entry) { setCertLoadState('not-found'); return; }
-      if (entry.domains.length === 0) { setCertLoadState('not-ready'); return; }
+      if (entry.domains.length === 0) {
+        // A stub — draft its blueprint now instead of dead-ending (2026-09-19). Saved into the
+        // catalog server-side, so this only ever costs anything for the first person to pick it.
+        setCertLoadState('preparing');
+        const prepared = await ensureExamBlueprint(certId);
+        if (cancelled) return;
+        if (!prepared || prepared.domains.length === 0) { setCertLoadState('not-ready'); return; }
+        setCert(prepared);
+        setCertLoadState('ready');
+        return;
+      }
       setCert(entry);
       setCertLoadState('ready');
     });
-  }, [certId]);
+    return () => { cancelled = true; };
+  }, [certId, loadAttempt]);
 
   const [phase, setPhase] = useState<Phase>('briefing');
   const liveAvatarMichelle = useLiveAvatarSession('michelle');
@@ -122,9 +138,12 @@ export default function CertExamRoomPage() {
           certName: cert.name,
           passed: result.passed,
           scaledScore: result.scaledScore,
-          maxScore: cert.maxScore,
+          maxScore: result.maxScore,
           createdAt: new Date().toISOString(),
-          sessionData: { answers: nextAnswers, domainAccuracy: result.domainAccuracy, candidateName: authUser?.name },
+          sessionData: {
+            answers: nextAnswers, domainAccuracy: result.domainAccuracy, candidateName: authUser?.name,
+            gradeLabel: result.gradeLabel, blueprintStatus: cert.blueprintStatus,
+          },
         });
       }
     } catch (err) {
@@ -134,7 +153,8 @@ export default function CertExamRoomPage() {
     navigate(`/cert-exam-summary/${sessionId}`, {
       state: {
         certId: cert.id, certName: cert.name, passed: result.passed,
-        scaledScore: result.scaledScore, maxScore: cert.maxScore,
+        scaledScore: result.scaledScore, maxScore: result.maxScore,
+        gradeLabel: result.gradeLabel, blueprintStatus: cert.blueprintStatus,
         answers: nextAnswers, domainAccuracy: result.domainAccuracy,
       },
     });
@@ -148,15 +168,35 @@ export default function CertExamRoomPage() {
     );
   }
 
+  if (certLoadState === 'preparing') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--text-2)', padding: 24 }}>
+        <div style={{ textAlign: 'center', maxWidth: 380 }}>
+          <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+            style={{ width: 34, height: 34, borderRadius: '50%', border: '3px solid rgba(79,142,247,0.25)', borderTopColor: 'var(--blue)', margin: '0 auto 16px' }} />
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>Building your exam…</div>
+          <div style={{ fontSize: 13, lineHeight: 1.6 }}>
+            We're setting up the content areas for this exam for the first time. It only takes a few seconds and only happens once.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!cert) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--text)' }}>
         <div style={{ textAlign: 'center' }}>
           <p style={{ marginBottom: 16 }}>
             {certLoadState === 'not-ready'
-              ? "This one's still being built out — check back soon, or try another exam."
+              ? "We couldn't get this exam ready just now. Please try again in a moment, or pick another exam."
               : "That certification or exam isn't available yet."}
           </p>
+          {certLoadState === 'not-ready' && (
+            <button onClick={() => setLoadAttempt(n => n + 1)} style={{ background: 'transparent', color: 'var(--blue)', border: '1px solid var(--blue)', borderRadius: 10, padding: '10px 20px', cursor: 'pointer', marginRight: 10, marginBottom: 10 }}>
+              Try again
+            </button>
+          )}
           <button onClick={() => navigate('/cert-exam/start')} style={{ background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', cursor: 'pointer' }}>
             Back to picker
           </button>
@@ -167,6 +207,11 @@ export default function CertExamRoomPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
+      {cert.blueprintStatus === 'ai-draft' && (
+        <div style={{ position: 'fixed', top: 12, left: '50%', transform: 'translateX(-50%)', zIndex: 50, maxWidth: 560, width: 'calc(100% - 32px)', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.35)', borderRadius: 10, padding: '8px 14px', fontSize: 12, lineHeight: 1.5, color: '#fbbf24', textAlign: 'center' }}>
+          AI-drafted practice exam — the topic areas may differ from the official specification. Practice only, not an official paper.
+        </div>
+      )}
       <AnimatePresence mode="wait">
         {(phase === 'briefing' || phase === 'generating') && (
           <motion.div key="briefing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
