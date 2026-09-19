@@ -268,6 +268,11 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("cvAnalysisHistory", "/ownerId"));
 
+        // Exam question bank (2026-09-19) — reusable AI-generated MCQs per exam, partitioned by exam so a
+        // whole attempt samples one partition. See Features/ExamQuestions/Endpoint.cs.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("examQuestions", "/examId"));
+
         await SeedPlatformStatsAsync();
         await SeedNewsFeedSourcesAsync();
     }

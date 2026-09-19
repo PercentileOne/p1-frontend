@@ -290,6 +290,7 @@ Explain.Api.Features.LearnAlerts.Endpoint.Map(app);
 Explain.Api.Features.CertExams.Endpoint.Map(app);
 Explain.Api.Features.ExamCatalog.Admin.Endpoint.Map(app);
 Explain.Api.Features.ExamCatalog.Blueprint.Endpoint.Map(app);
+Explain.Api.Features.ExamQuestions.Endpoint.Map(app);
 
 Explain.Api.Features.Auth.ForgotPassword.Endpoint.Map(app);
 Explain.Api.Features.Auth.ResetPassword.Endpoint.Map(app);
