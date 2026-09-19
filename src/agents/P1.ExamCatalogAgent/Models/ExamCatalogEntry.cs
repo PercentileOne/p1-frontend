@@ -57,4 +57,50 @@ public class ExamCatalogEntry
 
     [JsonPropertyName("createdAt")]
     public string CreatedAt { get; set; } = string.Empty;
+
+    // ── "Any US/UK exam" fields (2026-09-19, see ~/.claude/plans/any-exam-certifications-plan.md) ──
+    // All additive and defaulted so every pre-existing document (11 at the time) still loads.
+
+    // "uk" | "us" | "global" — drives the picker's region toggle.
+    [JsonPropertyName("region")]
+    public string Region { get; set; } = string.Empty;
+
+    // Awarding body / test owner (AQA, Edexcel, College Board, ETS...). Optional — GCSE/A-level
+    // entries start subject-level with no board, board-specific specs get added by demand.
+    [JsonPropertyName("board")]
+    public string Board { get; set; } = string.Empty;
+
+    [JsonPropertyName("level")]
+    public string Level { get; set; } = string.Empty;
+
+    [JsonPropertyName("subject")]
+    public string Subject { get; set; } = string.Empty;
+
+    // How a result is presented: "scaled" (min..max with a pass mark, the original behaviour) |
+    // "grade-9-1" (GCSE) | "grade-a-star-e" (A-level) | "ap-1-5". Grade models are always shown
+    // as INDICATIVE — real boundaries change every year, per paper and per tier.
+    [JsonPropertyName("scoringModel")]
+    public string ScoringModel { get; set; } = "scaled";
+
+    // Lowest score on the exam's scale (SAT 400, GED 100...). 0 for the original 0-based scales.
+    [JsonPropertyName("minScore")]
+    public int MinScore { get; set; }
+
+    // "" = a curated record with a real source (e.g. the original AZ-104 entry) | "stub" = name
+    // only, no blueprint yet | "ai-draft" = blueprint generated on demand by the AI, unreviewed
+    // (the UI shows "may differ from the official specification") | "reviewed" = an admin has
+    // checked it. Readiness itself is still just "domains is populated".
+    [JsonPropertyName("blueprintStatus")]
+    public string BlueprintStatus { get; set; } = string.Empty;
+
+    [JsonPropertyName("blueprintGeneratedAt")]
+    public string BlueprintGeneratedAt { get; set; } = string.Empty;
+
+    // "active" | "retired" — set by the weekly refresh job (retired exams stay searchable-off but
+    // keep their document so past sessions still resolve).
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = "active";
+
+    [JsonPropertyName("lastVerifiedAt")]
+    public string LastVerifiedAt { get; set; } = string.Empty;
 }

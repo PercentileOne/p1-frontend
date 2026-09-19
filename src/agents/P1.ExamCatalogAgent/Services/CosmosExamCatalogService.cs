@@ -34,20 +34,26 @@ public class CosmosExamCatalogService
     // Cosmos's plain result order lets a short query match mid-word in unrelated entries ahead of
     // the one real match. category, when given, is an exact-match pre-filter (it's the partition
     // key), not part of the CONTAINS clause.
-    public async Task<List<ExamCatalogEntry>> SearchAsync(string q, string? category, int top = 12)
+    public async Task<List<ExamCatalogEntry>> SearchAsync(string q, string? category, int top = 12, string? region = null)
     {
         var lower = q.ToLowerInvariant();
         const int candidatePoolSize = 80;
 
         var hasCategory = !string.IsNullOrWhiteSpace(category);
+        var hasRegion = !string.IsNullOrWhiteSpace(region);
         var sql = "SELECT TOP @top * FROM c WHERE (" +
             "CONTAINS(LOWER(c.name), @q) OR " +
             "CONTAINS(LOWER(c.vendor), @q) OR " +
             "CONTAINS(LOWER(c.examCode), @q) OR " +
+            "CONTAINS(LOWER(c.subject), @q) OR " +
+            "CONTAINS(LOWER(c.board), @q) OR " +
             "EXISTS(SELECT VALUE a FROM a IN c.aliases WHERE CONTAINS(LOWER(a), @q)))" +
-            (hasCategory ? " AND c.category = @cat" : "");
+            " AND " + ActiveFilter +
+            (hasCategory ? " AND c.category = @cat" : "") +
+            (hasRegion ? " AND c.region = @region" : "");
 
         var query = new QueryDefinition(sql).WithParameter("@q", lower).WithParameter("@top", candidatePoolSize);
+        if (hasRegion) query = query.WithParameter("@region", region);
         var requestOptions = new QueryRequestOptions();
         if (hasCategory)
         {
@@ -64,6 +70,22 @@ public class CosmosExamCatalogService
             .Take(top)
             .Select(x => x.Doc)
             .ToList();
+    }
+
+    // Legacy documents predate the status field, so a missing value counts as active.
+    private const string ActiveFilter = "(NOT IS_DEFINED(c.status) OR c.status != \"retired\")";
+
+    // Whole-category listing for the picker's browse grid (GCSE/A-level/AP subjects etc.) — search
+    // needs 2+ typed characters, which is no use to someone who just wants to see the subjects.
+    public async Task<List<ExamCatalogEntry>> BrowseAsync(string category, string? region, int top = 200)
+    {
+        var hasRegion = !string.IsNullOrWhiteSpace(region);
+        var sql = "SELECT TOP @top * FROM c WHERE c.category = @cat AND " + ActiveFilter + (hasRegion ? " AND c.region = @region" : "");
+        var query = new QueryDefinition(sql).WithParameter("@cat", category).WithParameter("@top", top);
+        if (hasRegion) query = query.WithParameter("@region", region);
+        var results = await DrainIterator(_container.GetItemQueryIterator<ExamCatalogEntry>(query,
+            requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(category) }));
+        return results.OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
     private static int RelevanceRank(ExamCatalogEntry c, string lowerQuery)

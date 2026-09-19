@@ -51,6 +51,13 @@ public class AddExamFunction(CosmosExamCatalogService cosmos)
             Domains = body?.Domains?.Select(d => new DomainWeight { Name = d.Name, WeightPct = d.WeightPct }).ToList() ?? [],
             PassScore = body?.PassScore ?? 0,
             MaxScore = body?.MaxScore ?? 0,
+            MinScore = body?.MinScore ?? 0,
+            Region = body?.Region?.Trim() ?? "",
+            Board = body?.Board?.Trim() ?? "",
+            Level = body?.Level?.Trim() ?? "",
+            Subject = body?.Subject?.Trim() ?? "",
+            ScoringModel = string.IsNullOrWhiteSpace(body?.ScoringModel) ? "scaled" : body!.ScoringModel!.Trim(),
+            BlueprintStatus = body?.BlueprintStatus?.Trim() ?? "",
             Source = "admin",
             CreatedAt = DateTime.UtcNow.ToString("o"),
         };
@@ -100,6 +107,16 @@ public class AddExamFunction(CosmosExamCatalogService cosmos)
         if (body?.Domains is not null) existing.Domains = body.Domains.Select(d => new DomainWeight { Name = d.Name, WeightPct = d.WeightPct }).ToList();
         if (body?.PassScore is not null) existing.PassScore = body.PassScore.Value;
         if (body?.MaxScore is not null) existing.MaxScore = body.MaxScore.Value;
+        if (body?.MinScore is not null) existing.MinScore = body.MinScore.Value;
+        if (body?.Region is not null) existing.Region = body.Region.Trim();
+        if (body?.Board is not null) existing.Board = body.Board.Trim();
+        if (body?.Level is not null) existing.Level = body.Level.Trim();
+        if (body?.Subject is not null) existing.Subject = body.Subject.Trim();
+        if (!string.IsNullOrWhiteSpace(body?.ScoringModel)) existing.ScoringModel = body.ScoringModel.Trim();
+        if (body?.BlueprintStatus is not null) existing.BlueprintStatus = body.BlueprintStatus.Trim();
+        if (body?.BlueprintGeneratedAt is not null) existing.BlueprintGeneratedAt = body.BlueprintGeneratedAt;
+        if (!string.IsNullOrWhiteSpace(body?.Status)) existing.Status = body.Status.Trim();
+        if (body?.LastVerifiedAt is not null) existing.LastVerifiedAt = body.LastVerifiedAt;
 
         if (categoryChanged)
         {
@@ -128,6 +145,9 @@ public class AddExamFunction(CosmosExamCatalogService cosmos)
     }
 
     private record DomainWeightRequest(string Name, int WeightPct);
-    private record AddRequest(string? Name, string? Category, string? Vendor, string? ExamCode, List<string>? Aliases, List<DomainWeightRequest>? Domains, int? PassScore, int? MaxScore);
-    private record EditRequest(string? Name, string? Category, string? Vendor, string? ExamCode, List<string>? Aliases, List<DomainWeightRequest>? Domains, int? PassScore, int? MaxScore);
+    private record AddRequest(string? Name, string? Category, string? Vendor, string? ExamCode, List<string>? Aliases, List<DomainWeightRequest>? Domains, int? PassScore, int? MaxScore,
+        int? MinScore = null, string? Region = null, string? Board = null, string? Level = null, string? Subject = null, string? ScoringModel = null, string? BlueprintStatus = null);
+    private record EditRequest(string? Name, string? Category, string? Vendor, string? ExamCode, List<string>? Aliases, List<DomainWeightRequest>? Domains, int? PassScore, int? MaxScore,
+        int? MinScore = null, string? Region = null, string? Board = null, string? Level = null, string? Subject = null, string? ScoringModel = null,
+        string? BlueprintStatus = null, string? BlueprintGeneratedAt = null, string? Status = null, string? LastVerifiedAt = null);
 }

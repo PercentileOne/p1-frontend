@@ -31,7 +31,8 @@ public class ExamCatalogSearchFunction(CosmosExamCatalogService cosmos)
 
         log.LogInformation("Exam catalog search: q={Q} category={Category} top={Top}", q, category, top);
 
-        var results = await cosmos.SearchAsync(q, category, top);
+        var region = req.Query["region"];
+        var results = await cosmos.SearchAsync(q, category, top, region);
         return await OkJson(req, results);
     }
 
@@ -47,6 +48,21 @@ public class ExamCatalogSearchFunction(CosmosExamCatalogService cosmos)
         log.LogInformation("Fetching exam catalog categories");
 
         var results = await cosmos.CategoriesAsync();
+        return await OkJson(req, results);
+    }
+
+    // GET /api/examcatalog/browse?category=gcse&region=uk — every active entry in one category, for
+    // the picker's browse grid.
+    [Function("ExamCatalogBrowse")]
+    public async Task<HttpResponseData> Browse(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "examcatalog/browse")] HttpRequestData req,
+        FunctionContext context)
+    {
+        var category = req.Query["category"];
+        if (string.IsNullOrWhiteSpace(category)) return await BadRequest(req, "category is required.");
+        int.TryParse(req.Query["top"], out var top);
+        if (top <= 0 || top > 500) top = 200;
+        var results = await cosmos.BrowseAsync(category, req.Query["region"], top);
         return await OkJson(req, results);
     }
 
