@@ -32,6 +32,7 @@ public static class Endpoint
     private const int PoolTargetFloor = 12;       // background top-up aims for at least this many per domain
     private const int MaxPerModelCall = 10;
     private const int FlagAfterDistinctReports = 3;
+    private const int TimeBoxSeconds = 45;
 
     private static readonly ConcurrentDictionary<string, Task> TopUpInFlight = new();
     private static readonly Regex StemNeeds = new(
@@ -60,32 +61,47 @@ public static class Endpoint
             var quotas = Quotas(exam.Domains, count);
             var container = cosmos.GetContainer("examQuestions");
 
-            // One task per domain: sample from the bank, generate only the shortfall.
-            var perDomain = await Task.WhenAll(exam.Domains.Select(async d =>
+            // One task per domain fills its own bucket: sample from the bank first, then generate only
+            // the shortfall. Buckets (not return values) so that if the time limit below is hit, whatever
+            // each domain has ready so far can still be served while the rest keeps generating.
+            var buckets = exam.Domains.ToDictionary(d => d.Name, _ => new List<BankQuestion>());
+            var domainTasks = exam.Domains.Select(async d =>
             {
                 var quota = quotas[d.Name];
-                if (quota == 0) return new List<BankQuestion>();
+                if (quota == 0) return;
+                var bucket = buckets[d.Name];
                 var pool = await LoadPoolAsync(container, examId, d.Name);
-                var picked = pool.OrderBy(q => q.servedCount).ThenBy(_ => Random.Shared.Next()).Take(quota).ToList();
-                // Generate only the shortfall, in rounds of up to MaxPerModelCall (a big domain on a
-                // 60-question exam can need more than one). Sequential so each round can dedupe
-                // against what the previous one just stored.
-                for (var round = 0; round < 3 && picked.Count < quota; round++)
+                lock (bucket) bucket.AddRange(pool.OrderBy(q => q.servedCount).ThenBy(_ => Random.Shared.Next()).Take(quota));
+                // Rounds of up to MaxPerModelCall. GenerateAsync over-asks to absorb verification drops,
+                // so one round is the norm; sequential so a second round can dedupe against the first.
+                for (var round = 0; round < 3; round++)
                 {
+                    int have; lock (bucket) have = bucket.Count;
+                    if (have >= quota) break;
                     try
                     {
-                        var fresh = await GenerateAsync(exam, d.Name, quota - picked.Count, pool, factory, config, container, logger);
+                        var fresh = await GenerateAsync(exam, d.Name, quota - have, pool, factory, config, container, logger);
                         if (fresh.Count == 0) break;
                         pool.AddRange(fresh);
-                        picked.AddRange(fresh.Take(quota - picked.Count));
+                        lock (bucket) bucket.AddRange(fresh.Take(quota - bucket.Count));
                     }
                     catch (Exception ex) { logger.LogError(ex, "Exam question generation failed for {Exam}/{Domain}", exam.Name, d.Name); break; }
                 }
-                return picked;
-            }));
+            }).ToList();
+
+            // One generate + verify round takes ~20s, and the gateway drops requests that run much past
+            // 60-80s (first live test: 83s -> bare 502). So the request is time-boxed: it returns
+            // whatever is ready at the limit and the unfinished domains keep filling the bank in the
+            // background, so a retry a few seconds later finds the rest.
+            var allDomains = Task.WhenAll(domainTasks);
+            var finished = await Task.WhenAny(allDomains, Task.Delay(TimeSpan.FromSeconds(TimeBoxSeconds))) == allDomains;
+            if (!finished) logger.LogWarning("Exam questions for {Exam} hit the {S}s time box; returning partial", exam.Name, TimeBoxSeconds);
+            _ = allDomains.ContinueWith(t => { if (t.IsFaulted) logger.LogError(t.Exception, "Exam question domain task faulted for {Exam}", exam.Name); }, TaskScheduler.Default);
+
+            var perDomain = buckets.Values.Select(b => { lock (b) return b.ToList(); }).ToList();
 
             var served = perDomain.SelectMany(x => x).OrderBy(_ => Random.Shared.Next()).ToList();
-            if (served.Count == 0) return Results.Json(new { error = "Couldn't prepare questions right now — please try again in a moment." }, statusCode: 502);
+            if (served.Count == 0) return Results.Json(new { error = "Still preparing this exam's questions — please try again in a few seconds.", retryAfterSeconds = 15 }, statusCode: 503);
 
             // Bookkeeping + pool top-up happen after the candidate already has their questions.
             _ = Task.Run(async () =>
@@ -189,7 +205,10 @@ public static class Endpoint
         want = Math.Min(Math.Min(want, MaxPerModelCall), Math.Max(room, 0));
         if (want <= 0) return new List<BankQuestion>();
 
-        var raw = await CallGenerateAsync(exam, domain, want + 1, existing, factory, config); // +1: some get dropped
+        // Over-ask: some get dropped as malformed/duplicate, and (STEM) some by verification. Asking for
+        // extra up front means one ~20s round almost always suffices instead of two or three.
+        var ask = Math.Min(MaxPerModelCall + 4, want + Math.Max(2, (want + 1) / 2));
+        var raw = await CallGenerateAsync(exam, domain, ask, existing, factory, config);
         var seen = existing.Select(q => q.hash).ToHashSet();
         var candidates = new List<RawQuestion>();
         foreach (var r in raw)
@@ -205,7 +224,8 @@ public static class Endpoint
             candidates = await VerifyAsync(exam, candidates, factory, config, logger);
 
         var stored = new List<BankQuestion>();
-        foreach (var c in candidates.Take(want))
+        // Store every question that survived (not just `want`) — the extras enrich the pool for later attempts.
+        foreach (var c in candidates.Take(room))
         {
             var (opts, correct) = ShuffleOptions(c.options, c.correctIndex);
             var q = new BankQuestion(Guid.NewGuid().ToString(), exam.Id, domain, c.questionText.Trim(), opts, correct,
