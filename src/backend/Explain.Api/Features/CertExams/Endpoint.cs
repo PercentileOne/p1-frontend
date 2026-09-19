@@ -126,9 +126,22 @@ public static class Endpoint
                     return Results.Problem("Failed to publish share link", statusCode: (int)upsertResponse.StatusCode);
             }
 
-            var shareUrl = $"https://candidate.theinterviewchair.com/cert-exam-summary/{id}";
+            // A dedicated PUBLIC page keyed by the share token. (It used to be the owner's own /cert-exam-summary/{id}
+            // route, which needs a login and has no public read path — so a shared link never worked for anyone else.)
+            var shareUrl = $"https://candidate.theinterviewchair.com/shared-cert-exam/{shareToken}";
             return Results.Ok(new { shareToken, shareUrl });
         }).RequireAuthorization();
+
+        // Public, read-only view of a SHARED result (Francis, 2026-09-19: "it would be nice for the public to
+        // view it without logging in"). Two lookups: by share token (new links) and by result id (links
+        // already posted before the token page existed — the id is an unguessable GUID, and only records the
+        // owner explicitly shared are ever returned). Returns the full result the owner sees — score, grade,
+        // per-domain breakdown AND the answered questions — because sharing was their explicit choice and a
+        // viewer should get the same experience (Francis: "in this kind of format", like the shared CV analysis).
+        app.MapGet("/api/cert-exams/shared/{shareToken}", (string shareToken, CosmosService cosmos) =>
+            PublicResultAsync(cosmos, "c.shareToken = @v", shareToken)).AllowAnonymous();
+        app.MapGet("/api/cert-exams/shared-by-id/{id}", (string id, CosmosService cosmos) =>
+            PublicResultAsync(cosmos, "c.id = @v", id)).AllowAnonymous();
 
         // POST /api/cert-exams/{candidateId}/{id}/unshare — makes a previously-shared result
         // private again. Keeps the existing shareToken on the document rather than clearing it
@@ -170,6 +183,38 @@ public static class Endpoint
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { /* already gone */ }
             return Results.NoContent();
         }).RequireAuthorization();
+    }
+
+    private static async Task<IResult> PublicResultAsync(CosmosService cosmos, string condition, string value)
+    {
+        var container = cosmos.GetContainer("certExamSessions");
+        // Cross-partition on purpose (no PartitionKey): a public viewer doesn't know the owner's id.
+        var query = new QueryDefinition($"SELECT * FROM c WHERE {condition} AND c.isShared = true").WithParameter("@v", value);
+        CertExamEnvelope? env = null;
+        using (var feed = container.GetItemQueryIterator<CertExamEnvelope>(query))
+            while (feed.HasMoreResults && env is null)
+                env = (await feed.ReadNextAsync()).FirstOrDefault();
+        if (env is null) return Results.NotFound();
+
+        string? candidateName = null, gradeLabel = null, blueprintStatus = null;
+        JsonElement? domains = null, answers = null;
+        try
+        {
+            using var doc = JsonDocument.Parse(env.sessionDataJson);
+            var r = doc.RootElement;
+            candidateName = r.TryGetProperty("candidateName", out var n) && n.ValueKind == JsonValueKind.String ? n.GetString() : null;
+            gradeLabel = r.TryGetProperty("gradeLabel", out var g) && g.ValueKind == JsonValueKind.String ? g.GetString() : null;
+            blueprintStatus = r.TryGetProperty("blueprintStatus", out var b) && b.ValueKind == JsonValueKind.String ? b.GetString() : null;
+            if (r.TryGetProperty("domainAccuracy", out var d) && d.ValueKind == JsonValueKind.Array) domains = d.Clone();
+            if (r.TryGetProperty("answers", out var a) && a.ValueKind == JsonValueKind.Array) answers = a.Clone();
+        }
+        catch { /* an unreadable session blob just means a result without the breakdown */ }
+
+        return Results.Ok(new
+        {
+            env.certId, env.certName, env.passed, env.scaledScore, env.maxScore, env.createdAt,
+            candidateName, gradeLabel, blueprintStatus, domainAccuracy = domains, answers,
+        });
     }
 
     private static async Task<CertExamEnvelope?> ReadEnvelopeAsync(Container container, string id, string candidateId)

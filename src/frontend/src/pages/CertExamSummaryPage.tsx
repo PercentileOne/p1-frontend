@@ -8,6 +8,7 @@ import { getCertExamSession, type CertExamSession, type ExamQuestion } from '../
 import { CertSaveDecisionPanel } from '../components/CertSaveDecisionPanel';
 import { MathText } from '../components/MathText';
 import { ReportQuestionButton } from '../components/ReportQuestionButton';
+import SharedCertExamPage from './SharedCertExamPage';
 
 interface IncomingState {
   certId?: string;
@@ -37,6 +38,8 @@ export default function CertExamSummaryPage() {
   const [session, setSession] = useState<IncomingState | null>(
     incoming.certName ? incoming : null,
   );
+  // Signed in, but this result isn't theirs (e.g. they opened a link someone shared) — show the public view.
+  const [notOwner, setNotOwner] = useState(false);
 
   // Reload/revisit fallback — route state is empty (e.g. a hard refresh), so hydrate from the
   // backend instead. Same "route state first, fetch as fallback" shape InterviewSummaryPage uses.
@@ -49,7 +52,7 @@ export default function CertExamSummaryPage() {
         answers: s.sessionData.answers, domainAccuracy: s.sessionData.domainAccuracy,
         isShared: s.isShared, decided: s.decided,
       }))
-      .catch(() => { /* nothing to hydrate — the page below handles the empty state */ });
+      .catch(() => setNotOwner(true));
   }, [session, id, authUser, authToken]);
 
   const passed = session?.passed ?? false;
@@ -125,6 +128,8 @@ export default function CertExamSummaryPage() {
     w.focus();
     setTimeout(() => w.print(), 500);
   };
+
+  if (!session && notOwner) return <SharedCertExamPage id={id} />;
 
   if (!session) {
     return (

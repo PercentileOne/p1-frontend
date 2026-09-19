@@ -98,7 +98,8 @@ import SharedInterviewPage from "./pages/SharedInterviewPage";
 import SharedCvAnalysisPage from "./pages/SharedCvAnalysisPage";
 import CertExamStart from "./pages/CertExamStart";
 import CertExamRoomPage from "./pages/CertExamRoomPage";
-import CertExamSummaryPage from "./pages/CertExamSummaryPage";
+import CertExamSummaryRoute from "./pages/CertExamSummaryRoute";
+import SharedCertExamPage from "./pages/SharedCertExamPage";
 import MyInterviewsPage from "./pages/MyInterviewsPage";
 import MyTalksPage from "./pages/MyTalksPage";
 import LearnFlashTalkPage from "./pages/LearnFlashTalkPage";
@@ -252,7 +253,8 @@ export default function App() {
       {/* Certifications & Exams */}
       <Route path="/cert-exam/start" element={<RequirePermission permission="CAN_START_INTERVIEW"><CertExamStart /></RequirePermission>} />
       <Route path="/cert-exam/:examId" element={<RequirePermission permission="CAN_START_INTERVIEW"><CertExamRoomPage /></RequirePermission>} />
-      <Route path="/cert-exam-summary/:id" element={<RequirePermission permission="CAN_START_INTERVIEW"><CertExamSummaryPage /></RequirePermission>} />
+      <Route path="/cert-exam-summary/:id" element={<CertExamSummaryRoute />} />
+      <Route path="/shared-cert-exam/:token" element={<SharedCertExamPage />} />
       <Route path="/talk-summary/:id" element={<RequirePermission permission="CAN_START_INTERVIEW"><TalkSummaryPage /></RequirePermission>} />
       <Route path="/shared-talk/:token" element={<SharedTalkPage />} />
       <Route path="/dev/avatar-test" element={<AvatarTestPage />} />

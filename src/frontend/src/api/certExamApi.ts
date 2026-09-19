@@ -309,3 +309,32 @@ export async function deleteCertExamSession(token: string, candidateId: string, 
     headers: authHeaders(token),
   });
 }
+
+// ── Public, no-login view of a SHARED result ──────────────────────────────────
+// Backed by the anonymous GET /api/cert-exams/shared/{token} and /shared-by-id/{id} routes, which only
+// ever return results whose owner switched sharing on. Returns null for "not found / not shared".
+
+export interface SharedCertExam {
+  certId: string;
+  certName: string;
+  passed: boolean;
+  scaledScore: number;
+  maxScore: number;
+  createdAt: string;
+  candidateName?: string | null;
+  gradeLabel?: string | null;
+  blueprintStatus?: string | null;
+  domainAccuracy?: { domain: string; correct: number; total: number }[] | null;
+  answers?: { question: ExamQuestion; selectedIndex: number }[] | null;
+}
+
+export async function getSharedCertExam(kind: 'token' | 'id', value: string): Promise<SharedCertExam | null> {
+  try {
+    const path = kind === 'token' ? 'shared' : 'shared-by-id';
+    const res = await fetch(`${API_BASE}/api/cert-exams/${path}/${encodeURIComponent(value)}`);
+    if (!res.ok) return null;
+    return await res.json() as SharedCertExam;
+  } catch {
+    return null;
+  }
+}
