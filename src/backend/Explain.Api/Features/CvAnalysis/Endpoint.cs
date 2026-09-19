@@ -270,7 +270,8 @@ public static class Endpoint
     // Same atomic-in-the-common-case increment CareerCoach/Endpoint.cs's own
     // CheckAndIncrementDailyUsageAsync already uses — see that file's comment for the full
     // reasoning on the Conflict-retry fallback.
-    private static async Task<(bool allowed, int count)> CheckAndIncrementDailyUsageAsync(string key, int cap, CosmosService cosmos)
+    // internal (not private): the exam catalog's "search anything" endpoint reuses this same daily counter.
+    internal static async Task<(bool allowed, int count)> CheckAndIncrementDailyUsageAsync(string key, int cap, CosmosService cosmos)
     {
         var container = cosmos.GetContainer("cvAnalysisUsage");
         var docId = $"{key}:{DateTimeOffset.UtcNow:yyyy-MM-dd}";

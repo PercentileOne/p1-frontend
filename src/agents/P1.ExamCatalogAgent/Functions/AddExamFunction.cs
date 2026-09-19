@@ -58,7 +58,7 @@ public class AddExamFunction(CosmosExamCatalogService cosmos)
             Subject = body?.Subject?.Trim() ?? "",
             ScoringModel = string.IsNullOrWhiteSpace(body?.ScoringModel) ? "scaled" : body!.ScoringModel!.Trim(),
             BlueprintStatus = body?.BlueprintStatus?.Trim() ?? "",
-            Source = "admin",
+            Source = body?.Source is "auto-add" ? "auto-add" : "admin",
             CreatedAt = DateTime.UtcNow.ToString("o"),
         };
 
@@ -150,7 +150,8 @@ public class AddExamFunction(CosmosExamCatalogService cosmos)
 
     private record DomainWeightRequest(string Name, int WeightPct);
     private record AddRequest(string? Name, string? Category, string? Vendor, string? ExamCode, List<string>? Aliases, List<DomainWeightRequest>? Domains, int? PassScore, int? MaxScore,
-        int? MinScore = null, string? Region = null, string? Board = null, string? Level = null, string? Subject = null, string? ScoringModel = null, string? BlueprintStatus = null);
+        int? MinScore = null, string? Region = null, string? Board = null, string? Level = null, string? Subject = null, string? ScoringModel = null, string? BlueprintStatus = null,
+        string? Source = null);
     private record EditRequest(string? Name, string? Category, string? Vendor, string? ExamCode, List<string>? Aliases, List<DomainWeightRequest>? Domains, int? PassScore, int? MaxScore,
         int? MinScore = null, string? Region = null, string? Board = null, string? Level = null, string? Subject = null, string? ScoringModel = null,
         string? BlueprintStatus = null, string? BlueprintGeneratedAt = null, string? Status = null, string? LastVerifiedAt = null,

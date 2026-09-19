@@ -93,6 +93,12 @@ public class ExamCatalogRefreshService(
             var entries = await LoadCatalogAsync(baseUrl, ct);
             logger.LogInformation("Exam catalog refresh ({Trigger}): {N} entries", trigger, entries.Count);
 
+            // ── 0. Exams users added themselves ("search anything") since the last finished run ─
+            var since = (await ReadStateAsync())?.finishedAt ?? DateTime.UtcNow.AddDays(-7).ToString("o");
+            var userAdded = entries.Where(e => e.Source == "auto-add" && string.CompareOrdinal(e.CreatedAt, since) > 0).ToList();
+            if (userAdded.Count > 0)
+                AddNote(notes, $"Added by users since the last run ({userAdded.Count}): " + string.Join("; ", userAdded.Take(15).Select(e => $"{e.Name} [{e.Category}]")) + " — worth a look, and attaching an official source URL");
+
             // ── 1. Real-source checks ──────────────────────────────────────────────────────────
             var withSource = entries.Where(e => e.SourceUrl.Length > 0)
                 .OrderBy(e => e.SourceCheckedAt, StringComparer.Ordinal).Take(maxChecks ?? MaxSourceChecks).ToList();
@@ -320,7 +326,7 @@ Return JSON:
 
     private sealed class CatalogEntry
     {
-        public string Id = "", Name = "", Category = "", Vendor = "", ExamCode = "", BlueprintStatus = "", SourceUrl = "", SourceHash = "", SourceCheckedAt = "", Raw = "";
+        public string Id = "", Name = "", Category = "", Vendor = "", ExamCode = "", BlueprintStatus = "", SourceUrl = "", SourceHash = "", SourceCheckedAt = "", Raw = "", Source = "", CreatedAt = "";
         public int Domains, MaxScore;
         public string DomainsSignature = "";
     }
@@ -348,7 +354,7 @@ Return JSON:
                 all.Add(new CatalogEntry
                 {
                     Id = S("id"), Name = S("name"), Category = S("category"), Vendor = S("vendor"), ExamCode = S("examCode"),
-                    BlueprintStatus = S("blueprintStatus"), SourceUrl = S("sourceUrl"), SourceHash = S("sourceHash"), SourceCheckedAt = S("sourceCheckedAt"),
+                    BlueprintStatus = S("blueprintStatus"), Source = S("source"), CreatedAt = S("createdAt"), SourceUrl = S("sourceUrl"), SourceHash = S("sourceHash"), SourceCheckedAt = S("sourceCheckedAt"),
                     Domains = domains.Count, DomainsSignature = Signature(domains),
                     MaxScore = e.TryGetProperty("maxScore", out var ms) && ms.ValueKind == JsonValueKind.Number ? ms.GetInt32() : 0,
                     Raw = e.GetRawText(),
