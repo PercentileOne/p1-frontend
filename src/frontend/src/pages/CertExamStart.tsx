@@ -147,6 +147,12 @@ export default function CertExamStart() {
     setAddMessage({ kind: 'info', text: result.reason });
   }
 
+  // Official tests with a fixed real length (UK driving theory = 50 questions, LGV/PCV = 100) get a
+  // "full test" option alongside the usual 15/30/60, so the pass mark means what it does on the day.
+  const fullTestLength = selected && selected.category === 'official-tests' && selected.maxScore > 0 && selected.maxScore <= 100 ? selected.maxScore : 0;
+  const questionCountOptions = fullTestLength && !QUESTION_COUNTS.includes(fullTestLength)
+    ? [...QUESTION_COUNTS, fullTestLength].sort((a, b) => a - b) : QUESTION_COUNTS;
+
   function handleStart() {
     if (!selected) {
       setAttemptedStart(true);
@@ -313,7 +319,7 @@ export default function CertExamStart() {
             Number of questions
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
-            {QUESTION_COUNTS.map(n => (
+            {questionCountOptions.map(n => (
               <button
                 key={n}
                 onClick={() => setQuestionCount(n)}
@@ -325,7 +331,7 @@ export default function CertExamStart() {
                   fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
                 }}
               >
-                {n}
+                {n}{n === fullTestLength ? ' · full test' : ''}
               </button>
             ))}
           </div>
