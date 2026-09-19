@@ -71,7 +71,8 @@ public static class Endpoint
                 if (quota == 0) return;
                 var bucket = buckets[d.Name];
                 var pool = await LoadPoolAsync(container, examId, d.Name);
-                lock (bucket) bucket.AddRange(PickDistinct(pool, quota));
+                // A little spare from the bank (never generated for) so dropping cross-domain repeats below can't leave the paper short.
+                lock (bucket) bucket.AddRange(PickDistinct(pool, quota + Math.Max(1, quota / 3)));
                 // Rounds of up to MaxPerModelCall. GenerateAsync over-asks to absorb verification drops,
                 // so one round is the norm; sequential so a second round can dedupe against the first.
                 for (var round = 0; round < 3; round++)
@@ -114,8 +115,8 @@ public static class Endpoint
                 served.Add(q);
                 servedPrints.Add(fp);
             }
-            if (served.Count < shuffled.Count && repeats.Count > 0 && served.Count < count)
-                served.AddRange(repeats.Take(count - served.Count));
+            if (served.Count < count) served.AddRange(repeats.Take(count - served.Count));
+            if (served.Count > count) served = served.Take(count).ToList();
             if (served.Count == 0) return Results.Json(new { error = "Still preparing this exam's questions — please try again in a few seconds.", retryAfterSeconds = 15 }, statusCode: 503);
 
             // Bookkeeping + pool top-up happen after the candidate already has their questions.
