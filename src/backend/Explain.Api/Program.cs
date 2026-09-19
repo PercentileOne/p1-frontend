@@ -294,6 +294,7 @@ Explain.Api.Features.ExamCatalog.Admin.Endpoint.Map(app);
 Explain.Api.Features.ExamCatalog.Blueprint.Endpoint.Map(app);
 Explain.Api.Features.ExamCatalog.AutoAdd.Endpoint.Map(app);
 Explain.Api.Features.ExamQuestions.Endpoint.Map(app);
+Explain.Api.Features.Companies.Endpoint.Map(app);
 Explain.Api.Features.ExamCatalog.Refresh.Endpoint.Map(app);
 
 Explain.Api.Features.Auth.ForgotPassword.Endpoint.Map(app);

@@ -273,6 +273,11 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("examQuestions", "/examId"));
 
+        // Company Specific interviews (2026-09-19) — curated employer profiles ("interview DNA"), partitioned
+        // by id (a small fixed list, read by id). See Features/Companies/Endpoint.cs.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("companyProfiles", "/id"));
+
         await SeedPlatformStatsAsync();
         await SeedNewsFeedSourcesAsync();
     }
