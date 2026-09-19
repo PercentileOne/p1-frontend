@@ -73,7 +73,7 @@ export default function SharedCertExamPage({ id }: { id?: string }) {
     const areas = strongest
       ? ` Their strongest area was ${strongest}${weakest && weakest !== strongest ? `, and ${weakest} is where I would focus next` : ''}.`
       : '';
-    return `Here is how ${who} got on with a mock ${certName} exam. They scored ${score}. ${verdict}${areas} If you would like to try the same exam yourself, you can start right from this page.`;
+    return `Here is how ${who} got on with the TheInterviewChair.com mock ${certName} exam. They scored ${score}. ${verdict}${areas} If you would like to try the same exam yourself, you can start right from this page.`;
   }
 
   function toggleFeedback() {
@@ -97,14 +97,16 @@ export default function SharedCertExamPage({ id }: { id?: string }) {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ width: '100%', maxWidth: '600px' }}>
 
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#34D399', marginBottom: 14 }}>
-            Shared mock exam result
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#34D399', marginBottom: 14 }}>
+            TheInterviewChair.com · Mock Exam
           </div>
           {passed ? <CheckCircle2 size={56} color="#34D399" /> : <XCircle size={56} color="#EF4444" />}
-          <h1 style={{ fontSize: '26px', fontWeight: 900, color: 'var(--text)', margin: '16px 0 6px' }}>
-            {candidateName?.trim() ? `${candidateName.trim()}${passed ? ' passed' : ' — not quite there yet'}` : (passed ? 'Passed' : 'Not quite there yet')}
+          <h1 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--text)', margin: '16px 0 6px', lineHeight: 1.25 }}>
+            {passed
+              ? `${candidateName?.trim() ? candidateName.trim() : 'A candidate'} passed the TheInterviewChair.com Mock Exam`
+              : `${candidateName?.trim() ? candidateName.trim() : 'A candidate'} took the TheInterviewChair.com Mock Exam`}
           </h1>
-          <p style={{ fontSize: '14px', color: 'var(--text-2)' }}>{certName}</p>
+          <p style={{ fontSize: '15px', fontWeight: 700, color: passed ? '#34D399' : 'var(--text-2)', margin: 0 }}>{certName}</p>
         </div>
 
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '28px', textAlign: 'center', marginBottom: '20px' }}>
@@ -125,7 +127,7 @@ export default function SharedCertExamPage({ id }: { id?: string }) {
             </div>
           )}
           <div style={{ fontSize: '11px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
-            A practice mock exam on TheInterviewChair.com — not an official result.
+            A practice mock exam on TheInterviewChair.com — not an official result. Practise for any US or UK exam.
           </div>
         </div>
 
@@ -226,7 +228,7 @@ export default function SharedCertExamPage({ id }: { id?: string }) {
           onClick={tryThisExam}
           style={{ width: '100%', background: 'linear-gradient(135deg, #a78bfa, #7c3aed)', color: '#fff', border: 'none', borderRadius: '13px', padding: '15px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}
         >
-          Try this exam yourself →
+          Take the same exam on TheInterviewChair.com →
         </button>
       </motion.div>
     </div>
