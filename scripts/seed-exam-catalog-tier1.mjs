@@ -143,6 +143,10 @@ async function main() {
       for (const k of ['region', 'board', 'level', 'subject']) fill(k, e[k]);
       if (!found.scoringModel) next.scoringModel = e.scoringModel;
       if (found.minScore === undefined) next.minScore = e.minScore;
+      // Union in any aliases the seed knows (records created before the seed had none, e.g. 'GCSE Maths') so
+      // typed variants match an existing exam directly instead of costing an AI lookup.
+      const mergedAliases = [...new Set([...(found.aliases || []), ...(e.aliases || [])])];
+      if (mergedAliases.length !== (found.aliases || []).length) next.aliases = mergedAliases;
       if (!found.status) next.status = 'active';
       if (found.blueprintStatus === undefined) next.blueprintStatus = (found.domains?.length ? '' : 'stub');
       if ((!found.maxScore) && e.maxScore) { next.maxScore = e.maxScore; next.passScore = e.passScore; next.minScore = e.minScore; }

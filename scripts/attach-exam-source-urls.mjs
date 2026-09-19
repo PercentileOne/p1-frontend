@@ -31,13 +31,42 @@ async function pageText(url) {
       await new Promise(r => setTimeout(r, 8000 * (attempt + 1)));
     }
     if (!res.ok) return { ok: false, status: res.status };
+    // PDFs (AWS exam guides, some Google Cloud guides): no text check here — the weekly job extracts the
+    // text server-side and refuses to use a source that never mentions the exam's code.
+    if ((res.headers.get('content-type') || '').includes('pdf')) return { ok: true, status: res.status, pdf: true, finalUrl: res.url };
     const html = await res.text();
     const text = html.replace(/<(script|style|noscript|svg)[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
     return { ok: true, status: res.status, text, finalUrl: res.url };
   } catch (e) { return { ok: false, status: 'error: ' + e.message }; }
 }
 
+// Official exam guides. AWS publishes PDFs on awsstatic.com; Google Cloud has a guide page per exam.
+const AWS_GUIDES = {
+  'CLF-C02': 'docs-cloud-practitioner/AWS-Certified-Cloud-Practitioner_Exam-Guide.pdf',
+  'SAA-C03': 'docs-sa-assoc/AWS-Certified-Solutions-Architect-Associate_Exam-Guide.pdf',
+  'DVA-C02': 'docs-dev-associate/AWS-Certified-Developer-Associate_Exam-Guide.pdf',
+  'SOA-C02': 'docs-sysops-associate/AWS-Certified-SysOps-Administrator-Associate_Exam-Guide.pdf',
+  'SAP-C02': 'docs-sa-pro/AWS-Certified-Solutions-Architect-Professional_Exam-Guide.pdf',
+  'DOP-C02': 'docs-devops-pro/AWS-Certified-DevOps-Engineer-Professional_Exam-Guide.pdf',
+  'SCS-C02': 'docs-security-spec/AWS-Certified-Security-Specialty_Exam-Guide.pdf',
+  'MLA-C01': 'docs-machine-learning-engineer-associate/AWS-Certified-Machine-Learning-Engineer-Associate_Exam-Guide.pdf',
+  'AIF-C01': 'docs-ai-practitioner/AWS-Certified-AI-Practitioner_Exam-Guide.pdf',
+  'DEA-C01': 'docs-data-engineer-associate/AWS-Certified-Data-Engineer-Associate_Exam-Guide.pdf',
+};
+const GCP_GUIDES = {
+  'Google Cloud Digital Leader': ['cloud-digital-leader', 'Digital Leader'],
+  'Google Cloud Associate Cloud Engineer': ['cloud-engineer', 'Associate Cloud Engineer'],
+  'Google Cloud Professional Cloud Architect': ['professional-cloud-architect', 'Cloud Architect'],
+  'Google Cloud Professional Data Engineer': ['data-engineer', 'Data Engineer'],
+};
+
 function candidateFor(entry) {
+  if (entry.vendor === 'Amazon Web Services' && AWS_GUIDES[entry.examCode]) {
+    return { url: 'https://d1.awsstatic.com/training-and-certification/' + AWS_GUIDES[entry.examCode], mustMention: [] };
+  }
+  if (GCP_GUIDES[entry.name]) {
+    return { url: 'https://cloud.google.com/learn/certification/guides/' + GCP_GUIDES[entry.name][0], mustMention: [GCP_GUIDES[entry.name][1]] };
+  }
   if (entry.category === 'certification' && entry.vendor === 'Microsoft' && /^[A-Z]{2}-\d{3}$/.test(entry.examCode || '')) {
     const code = entry.examCode.toLowerCase();
     return { url: `https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/${code}`, mustMention: [entry.examCode] };
@@ -59,7 +88,7 @@ async function main() {
     if (!cand) { na++; continue; }
     const r = await pageText(cand.url);
     await new Promise(r => setTimeout(r, 1500)); // pace every request — College Board answers 429 if hit quickly
-    const mentions = r.ok && cand.mustMention.every(m => r.text.toLowerCase().includes(m.toLowerCase()));
+    const mentions = r.ok && (r.pdf || cand.mustMention.every(m => r.text.toLowerCase().includes(m.toLowerCase())));
     if (!r.ok || !mentions) {
       console.log(`  SKIP   ${e.name}  ->  ${cand.url}  (${r.ok ? 'page does not mention ' + cand.mustMention.join(',') : 'HTTP ' + r.status})`);
       skipped++; continue;

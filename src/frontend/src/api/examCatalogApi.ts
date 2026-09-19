@@ -157,6 +157,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   ap: 'AP (Advanced Placement)',
   admissions: 'College & Grad Admissions',
   'official-tests': 'Official Tests',
+  other: 'Other Exams',
 };
 
 export const REGION_LABELS: Record<string, string> = { uk: 'UK', us: 'US', global: 'International' };

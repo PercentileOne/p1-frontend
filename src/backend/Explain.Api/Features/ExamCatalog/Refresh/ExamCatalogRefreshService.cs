@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Cosmos;
+using UglyToad.PdfPig;
+using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 using Explain.Api.Features.ExamCatalog.Blueprint;
 using Explain.Api.Infrastructure.Cosmos;
 
@@ -170,6 +172,16 @@ public class ExamCatalogRefreshService(
         // The page differs from last time (or this is its first check). A page can change for reasons that
         // don't touch the blueprint (dates, banners), so the AI extraction below is what decides whether
         // the blueprint actually changed — an identical extraction only updates the fingerprint.
+        // A proper exam code (SAA-C03, AZ-104...) that the official page never mentions means the URL is
+        // probably the wrong exam. Don't build a blueprint from it — flag it for the admin instead.
+        if (Regex.IsMatch(e.ExamCode, @"^[A-Za-z]{2,4}-[A-Za-z]?\d{2,3}$") && !text.Contains(e.ExamCode, StringComparison.OrdinalIgnoreCase))
+        {
+            c.failed++;
+            AddNote(notes, $"{e.Name}: the source page never mentions {e.ExamCode} — the source URL may be wrong ({e.SourceUrl})");
+            await PatchAsync(e.Id, baseUrl, adminKey, new { sourceStatus = "suspect", sourceCheckedAt = now });
+            return;
+        }
+
         if (e.BlueprintStatus == "reviewed" && e.SourceHash.Length > 0)
         {
             c.reviewedStale++;
@@ -242,11 +254,32 @@ public class ExamCatalogRefreshService(
             }
             using var _ = res;
             if (!res.IsSuccessStatusCode) return ("unreachable", null);
+
+            // Many official exam guides (AWS, Google Cloud, DfE subject content) are PDFs.
+            if (res.Content.Headers.ContentType?.MediaType == "application/pdf" || url.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                var bytes = await res.Content.ReadAsByteArrayAsync(cts.Token);
+                if (bytes.Length > 12_000_000) return ("unreachable", null);
+                return ("ok", PdfToText(bytes));
+            }
             var html = await res.Content.ReadAsStringAsync(cts.Token);
             if (html.Length > 2_500_000) html = html[..2_500_000];
             return ("ok", HtmlToText(html));
         }
         catch { return ("unreachable", null); }
+    }
+
+    // First ~30 pages is plenty — exam guides put the content domains and weightings up front.
+    private static string PdfToText(byte[] bytes)
+    {
+        using var pdf = PdfDocument.Open(bytes);
+        var sb = new StringBuilder();
+        foreach (var page in pdf.GetPages().Take(30))
+        {
+            sb.Append(ContentOrderTextExtractor.GetText(page)).Append(' ');
+            if (sb.Length > 60_000) break;
+        }
+        return Regex.Replace(sb.ToString(), @"\s+", " ").Trim();
     }
 
     private static string HtmlToText(string html)
