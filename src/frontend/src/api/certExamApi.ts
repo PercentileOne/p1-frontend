@@ -83,6 +83,7 @@ export async function generateExamQuestion(cert: ExamCatalogEntry): Promise<Exam
 ${audienceLine(cert)}
 Each question must test genuine understanding within the given domain — never invent current pricing, exact portal UI labels, or other details that change over time. If a question involves a calculation, work it out carefully and make sure the marked correct option is genuinely correct.
 These are ORIGINAL practice questions — never reproduce real past-paper or exam-dump questions.
+Only when a question genuinely needs mathematical or scientific notation (fractions, powers, roots, chemical formulae, units), write it as LaTeX inside \\( ... \\) — e.g. \\(\\frac{3}{4}\\), \\(x^2\\), \\(\\sqrt{2}\\), \\(\\mathrm{H_2O}\\). Use those delimiters only, never $...$. Everything else stays ordinary plain text, and questions with no maths must contain no LaTeX at all.
 Return ONLY valid JSON — no markdown, no explanation outside the JSON.`;
 
   const userPrompt = `Generate ONE multiple-choice question for the domain: "${domain}".

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ExamQuestion } from '../api/certExamApi';
+import { MathText } from './MathText';
 
 interface Props {
   question: ExamQuestion;
@@ -52,7 +53,7 @@ export function ExamQuestionCard({ question, index, total, onAnswer }: Props) {
 
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '28px 26px' }}>
           <div style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text)', lineHeight: 1.5, marginBottom: '22px' }}>
-            {question.questionText}
+            <MathText text={question.questionText} />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -76,7 +77,7 @@ export function ExamQuestionCard({ question, index, total, onAnswer }: Props) {
                   <span style={{ color: 'var(--text-3)', marginRight: '10px', fontWeight: 700 }}>
                     {String.fromCharCode(65 + i)}.
                   </span>
-                  {opt}
+                  <MathText text={opt} />
                 </button>
               );
             })}
