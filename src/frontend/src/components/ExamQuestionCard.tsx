@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ExamQuestion } from '../api/certExamApi';
 import { MathText } from './MathText';
+import { ReportQuestionButton } from './ReportQuestionButton';
 
 interface Props {
   question: ExamQuestion;
   index: number;
   total: number;
   onAnswer: (selectedIndex: number) => void;
+  // Needed for "Report this question" — only shown when both this and question.id exist.
+  examId?: string;
 }
 
 // A plain, serious exam-question card — deliberately NOT CinematicMCQ, whose confetti/reveal
@@ -15,7 +18,7 @@ interface Props {
 // mock exam a candidate works through methodically. No per-question correctness reveal either —
 // real certification exams don't tell you if you got a question right until the end, and neither
 // does this.
-export function ExamQuestionCard({ question, index, total, onAnswer }: Props) {
+export function ExamQuestionCard({ question, index, total, onAnswer, examId }: Props) {
   const [selected, setSelected] = useState<number | null>(null);
 
   function choose(i: number) {
@@ -83,6 +86,12 @@ export function ExamQuestionCard({ question, index, total, onAnswer }: Props) {
             })}
           </div>
         </div>
+
+        {examId && question.id && (
+          <div style={{ marginTop: '12px', textAlign: 'right' }}>
+            <ReportQuestionButton examId={examId} questionId={question.id} />
+          </div>
+        )}
       </motion.div>
     </AnimatePresence>
   );

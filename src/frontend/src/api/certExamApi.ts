@@ -43,6 +43,9 @@ async function chatJSON<T>(systemPrompt: string, userPrompt: string, temperature
 
 export interface ExamQuestion extends MCQQuestion {
   domain: string;
+  // Bank id (server-generated questions only) — what "Report this question" refers to. Absent on
+  // questions from the client-side fallback and on sessions saved before the bank existed.
+  id?: string;
 }
 
 // Rotates domain selection proportional to each domain's weightPct, so a 30-question mock roughly
@@ -107,9 +110,37 @@ Return JSON:
   }
 }
 
+// Server question bank first (2026-09-19): reusable, deduplicated, and — for maths/science exams —
+// independently verified, so cost per attempt falls as banks fill. If the endpoint is unavailable
+// the exam still runs on the old one-call-per-question browser generation rather than failing.
 export async function generateExamQuestions(cert: ExamCatalogEntry, count: number): Promise<ExamQuestion[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/exams/${encodeURIComponent(cert.id)}/questions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ count }),
+    });
+    if (res.ok) {
+      const fromBank = await res.json() as ExamQuestion[];
+      if (fromBank.length > 0) return fromBank;
+    }
+  } catch { /* fall through to the client-side generator */ }
+
   const questions = await Promise.all(Array.from({ length: count }, () => generateExamQuestion(cert)));
   return questions.filter((q): q is ExamQuestion => q !== null);
+}
+
+// Best-effort, returns whether the report was accepted. Anonymous on the server (a reporter only
+// counts once per question) so it works for every signed-in state.
+export async function reportExamQuestion(examId: string, questionId: string, reason: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/api/exams/${encodeURIComponent(examId)}/questions/${encodeURIComponent(questionId)}/report`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason }),
+    });
+    return res.ok;
+  } catch { return false; }
 }
 
 // Pure, local, deterministic — MCQ correctness is index-match, no AI grading needed. Scales

@@ -6,6 +6,8 @@ import { useAuthStore } from '../auth/authStore';
 import { speak } from '../api/ttsApi';
 import { getCertExamSession, type CertExamSession, type ExamQuestion } from '../api/certExamApi';
 import { CertSaveDecisionPanel } from '../components/CertSaveDecisionPanel';
+import { MathText } from '../components/MathText';
+import { ReportQuestionButton } from '../components/ReportQuestionButton';
 
 interface IncomingState {
   certId?: string;
@@ -61,6 +63,7 @@ export default function CertExamSummaryPage() {
     .sort((a, b) => a.correct / a.total - b.correct / b.total)[0]?.domain ?? null;
 
   // ── Michelle's verbal debrief ──────────────────────────────────────────────
+  const [showReview, setShowReview] = useState(false);
   const [michelleActive, setMichelleActive] = useState(false);
   const cancelMichelleRef = useRef<(() => void) | null>(null);
 
@@ -197,6 +200,68 @@ export default function CertExamSummaryPage() {
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {(session.answers?.length ?? 0) > 0 && (
+          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px', marginBottom: '20px' }}>
+            <button
+              onClick={() => setShowReview(v => !v)}
+              style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)' }}>
+                Review your answers ({session.answers!.length})
+              </span>
+              <span style={{ fontSize: '12px', color: 'var(--blue)', fontWeight: 700 }}>{showReview ? 'Hide' : 'Show'}</span>
+            </button>
+            {showReview && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginTop: '16px' }}>
+                {session.answers!.map((a, qi) => {
+                  const right = a.selectedIndex === a.question.correctIndex;
+                  return (
+                    <div key={qi} style={{ borderTop: qi === 0 ? 'none' : '1px solid var(--border)', paddingTop: qi === 0 ? 0 : '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: right ? '#34D399' : '#EF4444' }}>
+                          {right ? 'Correct' : 'Incorrect'} · Q{qi + 1}
+                        </span>
+                        <span style={{ fontSize: '10px', color: 'var(--text-3)' }}>{a.question.domain}</span>
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', lineHeight: 1.5, marginBottom: '10px' }}>
+                        <MathText text={a.question.questionText} />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {a.question.options.map((opt, oi) => {
+                          const isCorrect = oi === a.question.correctIndex;
+                          const isPicked = oi === a.selectedIndex;
+                          return (
+                            <div key={oi} style={{
+                              fontSize: '13px', padding: '8px 12px', borderRadius: '8px', color: 'var(--text-2)',
+                              background: isCorrect ? 'rgba(52,211,153,0.10)' : isPicked ? 'rgba(239,68,68,0.10)' : 'var(--bg3)',
+                              border: `1px solid ${isCorrect ? 'rgba(52,211,153,0.5)' : isPicked ? 'rgba(239,68,68,0.5)' : 'var(--border)'}`,
+                            }}>
+                              <span style={{ color: 'var(--text-3)', marginRight: '8px', fontWeight: 700 }}>{String.fromCharCode(65 + oi)}.</span>
+                              <MathText text={opt} />
+                              {isCorrect && <span style={{ marginLeft: '8px', fontSize: '11px', color: '#34D399', fontWeight: 700 }}>✓ correct answer</span>}
+                              {isPicked && !isCorrect && <span style={{ marginLeft: '8px', fontSize: '11px', color: '#EF4444', fontWeight: 700 }}>your answer</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {a.question.explanation && (
+                        <div style={{ fontSize: '12px', color: 'var(--text-3)', lineHeight: 1.6, marginTop: '10px' }}>
+                          <MathText text={a.question.explanation} />
+                        </div>
+                      )}
+                      {session.certId && a.question.id && (
+                        <div style={{ marginTop: '10px' }}>
+                          <ReportQuestionButton examId={session.certId} questionId={a.question.id} compact />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 

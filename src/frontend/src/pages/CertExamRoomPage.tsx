@@ -255,6 +255,7 @@ export default function CertExamRoomPage() {
             index={qIndex}
             total={questions.length}
             onAnswer={handleAnswer}
+            examId={cert.id}
           />
         )}
 
