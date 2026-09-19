@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { CompanyPicker } from '../components/CompanyPicker';
 import { listCompanies, getCompanyProfile, defaultsFor, buildCompanyContext, type CompanySummary, type CompanyProfile } from '../api/companiesApi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -518,32 +519,13 @@ export default function InterviewPackStart() {
         </div>
 
         {/* Interview Style — Standard (the interview we've always had) or a company-specific mock (Francis,
-            2026-09-19). Deliberately styled exactly like the Interview Round card below. A native select on
-            purpose: ~70 names, keyboard type-to-jump works out of the box, and it behaves on phones. */}
+            2026-09-19). Deliberately styled like the Interview Round card below. A searchable picker, not a
+            <select>, because the list passed ~190 names — see CompanyPicker (search by name or brand). */}
         <div style={{ background: 'var(--bg2)', border: `1px solid ${companyMode ? 'rgba(52,211,153,0.35)' : 'var(--border)'}`, borderRadius: '16px', padding: '24px 28px', marginBottom: '16px' }}>
           <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
             Interview Style
           </div>
-          <select
-            value={selectedCompanyId}
-            onChange={e => { void handleCompanyChange(e.target.value); }}
-            style={{
-              width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
-              borderRadius: '10px', padding: '12px 14px', color: 'var(--text)', fontSize: '14px',
-              fontFamily: 'inherit', outline: 'none', cursor: 'pointer', appearance: 'none',
-              backgroundImage: SELECT_CHEVRON,
-              backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
-            }}
-          >
-            <option value="standard">Standard</option>
-            {companies.length > 0 && (
-              <optgroup label="Interview like a specific company">
-                {[...companies].sort((a, b) => a.name.localeCompare(b.name)).map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </optgroup>
-            )}
-          </select>
+          <CompanyPicker companies={companies} value={selectedCompanyId} onChange={id => { void handleCompanyChange(id); }} />
           {!companyMode && (
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
               Standard is a well-rounded interview for any role. Or pick a company to practise an interview modelled on how they hire — their values, style and bar.

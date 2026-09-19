@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { roleFamilyForTitle, defaultsFor, buildCompanyDigest, type CompanyProfile } from './companiesApi';
+import { roleFamilyForTitle, defaultsFor, buildCompanyDigest, searchCompanies, groupForSector, type CompanyProfile } from './companiesApi';
 
 const profile: CompanyProfile = {
   id: 'acme', name: 'Acme', aliases: [], sector: 'Retail', region: 'uk', rank: 1, status: 'ai-draft',
@@ -48,5 +48,40 @@ describe('buildCompanyDigest', () => {
     const d = buildCompanyDigest(profile, 'Lion Tamer');
     expect(d).toContain('use whichever best matches');
     expect(d).toContain('situational');
+  });
+});
+
+describe('searchCompanies', () => {
+  const list = [
+    { id: 'meta', name: 'Meta', aliases: ['Facebook', 'Instagram', 'WhatsApp'], sector: 'Technology', region: 'global', rank: 5, status: 'ai-draft' },
+    { id: 'x', name: 'X', aliases: ['Twitter'], sector: 'Technology & Media', region: 'global', rank: 9, status: 'ai-draft' },
+    { id: 'netflix', name: 'Netflix', aliases: [], sector: 'Technology & Media', region: 'global', rank: 6, status: 'ai-draft' },
+    { id: 'marks-and-spencer', name: 'Marks & Spencer', aliases: ['M&S'], sector: 'Retail', region: 'uk', rank: 40, status: 'ai-draft' },
+  ];
+  it('finds Meta by its brands and X by Twitter, and says why', () => {
+    expect(searchCompanies(list, 'facebook')[0]).toMatchObject({ company: { id: 'meta' }, via: 'Facebook' });
+    expect(searchCompanies(list, 'insta')[0]).toMatchObject({ company: { id: 'meta' }, via: 'Instagram' });
+    expect(searchCompanies(list, 'twitter')[0]).toMatchObject({ company: { id: 'x' }, via: 'Twitter' });
+  });
+  it('finds by name, ignoring case and punctuation', () => {
+    expect(searchCompanies(list, 'NETFLIX')[0].company.id).toBe('netflix');
+    expect(searchCompanies(list, 'm&s')[0].company.id).toBe('marks-and-spencer');
+    expect(searchCompanies(list, 'marks and')[0].company.id).toBe('marks-and-spencer');
+  });
+  it('returns nothing for an empty query', () => {
+    expect(searchCompanies(list, '  ')).toEqual([]);
+  });
+});
+
+describe('groupForSector', () => {
+  it('groups sensibly', () => {
+    expect(groupForSector('Technology')).toBe('Technology');
+    expect(groupForSector('Technology & Retail')).toBe('Technology');
+    expect(groupForSector('Investment Banking')).toBe('Banking & Finance');
+    expect(groupForSector('Retail')).toBe('Retail, Consumer & Food');
+    expect(groupForSector('Airlines & Travel')).toBe('Travel & Hospitality');
+    expect(groupForSector('Pharmaceuticals')).toBe('Healthcare & Pharma');
+    expect(groupForSector('Automotive')).toBe('Energy, Auto & Industry');
+    expect(groupForSector('Media & Broadcasting')).toBe('Media & Telecoms');
   });
 });

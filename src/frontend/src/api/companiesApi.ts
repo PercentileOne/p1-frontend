@@ -139,3 +139,47 @@ export function buildCompanyDigest(profile: CompanyProfile, jobTitle: string): s
 export function buildCompanyContext(profile: CompanyProfile, jobTitle: string): CompanyContext {
   return { id: profile.id, name: profile.name, sector: profile.sector, digest: buildCompanyDigest(profile, jobTitle) };
 }
+
+// ── Picker helpers ───────────────────────────────────────────────────────────────────────────────
+
+// Broad, human groups for browsing the list — derived from the free-text sector so the catalog can grow
+// without a schema change.
+export function groupForSector(sector: string): string {
+  const s = sector.toLowerCase();
+  if (/bank|invest|asset|fintech|payment|insur|financial/.test(s)) return 'Banking & Finance';
+  if (/consult|professional services/.test(s)) return 'Consulting & Professional Services';
+  if (/pharma|health/.test(s)) return 'Healthcare & Pharma';
+  if (/airline|hotel|travel/.test(s) && !/technology/.test(s)) return 'Travel & Hospitality';
+  if (/automotive|aerospace|energy|engineering|infrastructure|defence/.test(s)) return 'Energy, Auto & Industry';
+  if (/retail|consumer|luxury|fashion|food|hospitality/.test(s) && !/technology/.test(s)) return 'Retail, Consumer & Food';
+  if (/media|broadcast|publishing|telecom/.test(s) && !/technology/.test(s)) return 'Media & Telecoms';
+  if (/technology/.test(s)) return 'Technology';
+  if (/public/.test(s)) return 'Public Service';
+  return 'Other';
+}
+
+export interface CompanyMatch { company: CompanySummary; via?: string }
+
+const norm = (t: string) => t.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '');
+
+// Finds companies by name, well-known alias (Facebook/Instagram → Meta, Twitter → X), or sector.
+// An alias hit carries `via` so the picker can show "Instagram → Meta".
+export function searchCompanies(companies: CompanySummary[], query: string): CompanyMatch[] {
+  const q = norm(query);
+  if (!q) return [];
+  const scored: { m: CompanyMatch; score: number }[] = [];
+  for (const c of companies) {
+    const name = norm(c.name);
+    let best: { score: number; via?: string } | null = null;
+    if (name.startsWith(q)) best = { score: 0 };
+    else if (name.includes(q)) best = { score: 2 };
+    for (const a of c.aliases ?? []) {
+      const alias = norm(a);
+      const score = alias.startsWith(q) ? 1 : alias.includes(q) ? 3 : -1;
+      if (score >= 0 && (!best || score < best.score)) best = { score, via: a };
+    }
+    if (!best && norm(c.sector).includes(q)) best = { score: 4 };
+    if (best) scored.push({ m: { company: c, via: best.via }, score: best.score });
+  }
+  return scored.sort((a, b) => a.score - b.score || a.m.company.name.localeCompare(b.m.company.name)).map(x => x.m);
+}
