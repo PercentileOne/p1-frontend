@@ -258,10 +258,25 @@ function speakWebSpeech(
     };
   }
 
-  utterance.onend   = onEnd;
-  utterance.onerror = onEnd;
+  // Chrome/Edge's speechSynthesis sometimes never fires `end` for a longer passage (or when a voice
+  // silently fails to load), which would leave whoever is waiting on onEnd waiting forever. So
+  // completion is once-only and also backed by a duration-based timer.
+  let finished = false;
+  let safetyTimer: ReturnType<typeof setTimeout> | null = null;
+  const done = () => {
+    if (finished) return;
+    finished = true;
+    if (safetyTimer) clearTimeout(safetyTimer);
+    onEnd();
+  };
+  utterance.onend   = done;
+  utterance.onerror = done;
+  safetyTimer = setTimeout(done, utterance.text.split(/\s+/).length * 480 + 6000);
   window.speechSynthesis.speak(utterance);
-  return () => window.speechSynthesis.cancel();
+  return () => {
+    if (safetyTimer) clearTimeout(safetyTimer);
+    window.speechSynthesis.cancel();
+  };
 }
 
 /**

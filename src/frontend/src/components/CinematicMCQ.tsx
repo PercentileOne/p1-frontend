@@ -145,21 +145,48 @@ export default function CinematicMCQ({ mcq, candidateName, questionOrdinal, onCo
     cancelSpeakRef.current = null;
   }, []);
 
+  // Everything below that waits for the voice to say "I'm done" ALSO has a timer behind it. The neural
+  // voice can fail over to the browser's robotic voice, and on a long passage (a company-specific
+  // bonus question can run 50+ words) that fallback sometimes never reports it has finished — which
+  // used to leave the options dead and the interview stuck on this screen (Francis, 2026-09-19).
+  const introTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const outroTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const finishedRef = useRef(false);
+  const speechBudgetMs = (text: string) => text.split(/\s+/).length * 450 + 7000;
+
+  const enableAnswering = useCallback(() => {
+    setMcqState(s => (s === 'entering' ? 'question' : s));
+  }, []);
+
+  // Runs once, however it is triggered (voice finished, or the safety timer got there first).
+  const finish = useCallback((bonusEarned: boolean, index: number, holdMs: number) => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    if (outroTimerRef.current) clearTimeout(outroTimerRef.current);
+    setTimeout(() => { setMcqState('exiting'); setTimeout(() => onComplete(bonusEarned, index), 500); }, holdMs);
+  }, [onComplete]);
+
   // Guardian Angel intro + reads question aloud on mount
   useEffect(() => {
     const name = candidateName ? `, ${candidateName}` : '';
     const ordinalPhrase = questionOrdinal ? `your ${questionOrdinal} bonus question` : 'a bonus question';
     const line = `Okay${name}... here is ${ordinalPhrase}. ${mcq.questionText} Answer correctly and you'll earn bonus points.`;
-    cancelSpeakRef.current = speak(line, 'hr', () => {
-      setMcqState('question');
-    });
-    return stopSpeech;
+    cancelSpeakRef.current = speak(line, 'hr', enableAnswering);
+    introTimerRef.current = setTimeout(enableAnswering, speechBudgetMs(line));
+    return () => {
+      stopSpeech();
+      if (introTimerRef.current) clearTimeout(introTimerRef.current);
+      if (outroTimerRef.current) clearTimeout(outroTimerRef.current);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleOption = useCallback((index: number) => {
-    if (mcqState !== 'question') return;
+    // The options are visible while the intro is still being read, so an answer is accepted then too —
+    // making the candidate wait for the voice (or a voice that never finishes) is never right.
+    if (mcqState !== 'question' && mcqState !== 'entering') return;
     stopSpeech();
+    if (introTimerRef.current) clearTimeout(introTimerRef.current);
     setSelectedIndex(index);
 
     if (index === mcq.correctIndex) {
@@ -169,20 +196,16 @@ export default function CinematicMCQ({ mcq, candidateName, questionOrdinal, onCo
       setTimeout(() => {
         if (canvasRef.current) launchConfetti(canvasRef.current);
       }, 80);
-      cancelSpeakRef.current = speak(
-        "Fantastic! That's correct — well done. Bonus points added to your score. Back to the interview.",
-        'hr',
-        () => setTimeout(() => { setMcqState('exiting'); setTimeout(() => onComplete(true, index), 500); }, 1200),
-      );
+      const line = "Fantastic! That's correct — well done. Bonus points added to your score. Back to the interview.";
+      cancelSpeakRef.current = speak(line, 'hr', () => finish(true, index, 1200));
+      outroTimerRef.current = setTimeout(() => finish(true, index, 0), speechBudgetMs(line));
     } else {
       setMcqState('answered-wrong');
-      cancelSpeakRef.current = speak(
-        `Not quite — but no worries. ${mcq.explanation} Let's keep going.`,
-        'hr',
-        () => setTimeout(() => { setMcqState('exiting'); setTimeout(() => onComplete(false, index), 500); }, 1400),
-      );
+      const line = `Not quite — but no worries. ${mcq.explanation} Let's keep going.`;
+      cancelSpeakRef.current = speak(line, 'hr', () => finish(false, index, 1400));
+      outroTimerRef.current = setTimeout(() => finish(false, index, 0), speechBudgetMs(line));
     }
-  }, [mcqState, mcq, stopSpeech, onComplete]);
+  }, [mcqState, mcq, stopSpeech, finish]);
 
   const isAnswered = mcqState === 'answered-correct' || mcqState === 'answered-wrong';
 
@@ -292,7 +315,7 @@ export default function CinematicMCQ({ mcq, candidateName, questionOrdinal, onCo
                 <OptionCard
                   key={i}
                   label={LABELS[i]}
-                  text={opt}
+                  text={opt.replace(/^[A-D][.)]\s+/, '')}
                   state={optionState(i)}
                   delay={0.38 + i * 0.09}
                   onClick={() => handleOption(i)}
