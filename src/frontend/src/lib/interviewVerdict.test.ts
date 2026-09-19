@@ -12,8 +12,11 @@ describe('evaluateVerdict', () => {
     expect(evaluateVerdict(68, 'Beginner').verdict).toBe('pass');
     expect(evaluateVerdict(68, 'Standard').verdict).toBe('pass');
     expect(evaluateVerdict(68, 'Pro').verdict).toBe('keep-on-file');
-    expect(evaluateVerdict(68, 'Expert').verdict).toBe('keep-on-file');
-    expect(evaluateVerdict(58, 'Expert').verdict).toBe('fail');
+    expect(evaluateVerdict(68, 'Expert').verdict).toBe('fail');
+    expect(evaluateVerdict(80, 'Expert').verdict).toBe('keep-on-file');
+    expect(evaluateVerdict(89, 'Expert').verdict).toBe('keep-on-file');
+    expect(evaluateVerdict(90, 'Expert').verdict).toBe('pass');
+    expect(evaluateVerdict(74, 'Expert').verdict).toBe('fail');
   });
   it('judges an unknown or missing difficulty as Standard', () => {
     expect(evaluateVerdict(65).verdict).toBe('pass');
@@ -21,14 +24,14 @@ describe('evaluateVerdict', () => {
   });
   it('keeps the marks in step with the server copy (InterviewVerdict.cs)', () => {
     expect(VERDICT_MARKS).toEqual({
-      Beginner: { pass: 60, keep: 45 }, Standard: { pass: 65, keep: 50 }, Pro: { pass: 70, keep: 55 }, Expert: { pass: 75, keep: 60 },
+      Beginner: { pass: 60, keep: 45 }, Standard: { pass: 65, keep: 50 }, Pro: { pass: 70, keep: 55 }, Expert: { pass: 90, keep: 75 },
     });
   });
 });
 
 describe('verdictSentence', () => {
   it('congratulates a pass and names the company mock', () => {
-    const s = verdictSentence(evaluateVerdict(82, 'Expert'), 82, { employer: 'Google', mock: true, hasCv: true });
+    const s = verdictSentence(evaluateVerdict(93, 'Expert'), 93, { employer: 'Google', mock: true, hasCv: true });
     expect(s).toContain('Congratulations');
     expect(s).toContain('mock Google interview');
   });

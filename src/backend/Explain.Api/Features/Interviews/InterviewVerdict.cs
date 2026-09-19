@@ -20,7 +20,8 @@ public static class InterviewVerdict
         ["Beginner"] = (60, 45),
         ["Standard"] = (65, 50),
         ["Pro"] = (70, 55),
-        ["Expert"] = (75, 60),
+        // Expert = treated as the leading authority in the field, so 90% (Francis, 2026-09-19). Any prize is tied to this level only.
+        ["Expert"] = (90, 75),
     };
 
     public static (int pass, int keep) MarksFor(string? difficulty) =>

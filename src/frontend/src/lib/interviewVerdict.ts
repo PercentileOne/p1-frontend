@@ -10,7 +10,9 @@ export const VERDICT_MARKS: Record<string, { pass: number; keep: number }> = {
   Beginner: { pass: 60, keep: 45 },
   Standard: { pass: 65, keep: 50 },
   Pro: { pass: 70, keep: 55 },
-  Expert: { pass: 75, keep: 60 },
+  // Expert = "treated as the leading authority in their field" (Francis, 2026-09-19: 90% because they're the authority
+  // on the subject). This is also the ONLY level any prize would ever be tied to.
+  Expert: { pass: 90, keep: 75 },
 };
 
 export interface VerdictResult {
