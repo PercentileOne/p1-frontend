@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { logFlowEvent } from '../api/flowLogger';
 import {
-  searchExamCatalog, getExamCategories, browseExamCategory, reportMissingExam, categoryLabel, REGION_LABELS,
+  searchExamCatalog, getExamCategories, browseExamCategory, reportMissingExam, addExamOnDemand, categoryLabel, REGION_LABELS,
   type ExamCatalogEntry, type CategoryCount,
 } from '../api/examCatalogApi';
 
@@ -87,6 +87,7 @@ export default function CertExamStart() {
   const handleQueryChange = useCallback((value: string) => {
     setQuery(value);
     setSelected(null);
+    setAddMessage(null);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (value.trim().length < 2) {
       requestIdRef.current++;
@@ -123,11 +124,27 @@ export default function CertExamStart() {
     if (!matchesKnown) lastMatchedRef.current = typed;
   }, [query, suggestions]);
 
-  async function handleReportMissing() {
+  // "Search anything": add an exam the catalog doesn't have yet. On success it is selected straight
+  // away (its content outline is built the first time it's opened); on a rejection we still record the
+  // demand for the admin, since a human may know an exam the AI check didn't recognise.
+  const [adding, setAdding] = useState(false);
+  const [addMessage, setAddMessage] = useState<{ kind: 'ok' | 'info'; text: string } | null>(null);
+
+  async function handleAddExam() {
     const typed = query.trim();
-    if (!typed) return;
-    await reportMissingExam(typed, category || 'certification');
-    logFlowEvent('CERT_EXAM_REPORTED_MISSING', { name: typed, category: category || 'all' });
+    if (!typed || adding) return;
+    setAdding(true);
+    setAddMessage(null);
+    const result = await addExamOnDemand(typed);
+    setAdding(false);
+    logFlowEvent('CERT_EXAM_ADD_ATTEMPT', { name: typed, outcome: result.status });
+    if (result.status === 'ok') {
+      selectSuggestion(result.entry);
+      setAddMessage({ kind: 'ok', text: result.existing ? 'That one was already here — selected for you.' : 'Added! Press Begin Exam — the first time you open an exam it takes a few extra seconds to set up.' });
+      return;
+    }
+    if (result.status === 'rejected' || result.status === 'error') await reportMissingExam(typed, category || 'certification');
+    setAddMessage({ kind: 'info', text: result.reason });
   }
 
   function handleStart() {
@@ -273,13 +290,17 @@ export default function CertExamStart() {
             </div>
           )}
 
-          {query.trim().length >= 2 && !selected && (
+          {query.trim().length >= 3 && !selected && !showSuggestions && (
             <button
-              onClick={handleReportMissing}
-              style={{ marginTop: '10px', background: 'none', border: 'none', color: 'var(--blue)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', padding: 0 }}
+              onClick={handleAddExam}
+              disabled={adding}
+              style={{ marginTop: '10px', background: 'none', border: 'none', color: 'var(--blue)', fontSize: '12px', fontWeight: 700, cursor: adding ? 'default' : 'pointer', padding: 0, opacity: adding ? 0.6 : 1 }}
             >
-              Can't find it? Let us know →
+              {adding ? 'Checking that exam…' : `Can't find it? Add "${query.trim()}" →`}
             </button>
+          )}
+          {addMessage && (
+            <div style={{ fontSize: '12px', lineHeight: 1.5, marginTop: '8px', color: addMessage.kind === 'ok' ? '#34D399' : 'var(--text-3)' }}>{addMessage.text}</div>
           )}
 
           {attemptedStart && !selected && (

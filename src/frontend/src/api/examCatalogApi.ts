@@ -105,6 +105,30 @@ export async function ensureExamBlueprint(id: string): Promise<ExamCatalogEntry 
   } catch { return null; }
 }
 
+export type AddExamResult =
+  | { status: 'ok'; entry: ExamCatalogEntry; existing: boolean }
+  | { status: 'rejected'; reason: string }
+  | { status: 'limited'; reason: string }
+  | { status: 'error'; reason: string };
+
+// "Search anything": add an exam that isn't in the catalog. The server checks it's a real US/UK exam
+// (typed text is treated as untrusted), applies per-person and global daily caps, and creates a stub
+// whose blueprint is built the first time it's opened. If it already exists it just returns it.
+export async function addExamOnDemand(name: string): Promise<AddExamResult> {
+  try {
+    const res = await fetch(`${EXPLAIN_API_BASE}/api/exam-catalog/auto-add`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    const data = await res.json().catch(() => null) as { accepted?: boolean; existing?: boolean; entry?: ExamCatalogEntry; reason?: string; limited?: boolean } | null;
+    if (data?.accepted && data.entry) return { status: 'ok', entry: data.entry, existing: !!data.existing };
+    if (res.status === 429 || data?.limited) return { status: 'limited', reason: data?.reason ?? 'Please try again tomorrow.' };
+    if (data && data.accepted === false && res.ok) return { status: 'rejected', reason: data.reason ?? "We couldn't recognise that as a specific exam." };
+    return { status: 'error', reason: data?.reason ?? "We couldn't add that just now — please try again." };
+  } catch { return { status: 'error', reason: "We couldn't reach the server — please try again." }; }
+}
+
 export async function getExamCatalogEntry(id: string): Promise<ExamCatalogEntry | null> {
   try {
     const res = await fetch(`${PROXY_BASE}/entry/${encodeURIComponent(id)}`);
