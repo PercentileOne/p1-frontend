@@ -71,7 +71,7 @@ public static class Endpoint
                 if (quota == 0) return;
                 var bucket = buckets[d.Name];
                 var pool = await LoadPoolAsync(container, examId, d.Name);
-                lock (bucket) bucket.AddRange(pool.OrderBy(q => q.servedCount).ThenBy(_ => Random.Shared.Next()).Take(quota));
+                lock (bucket) bucket.AddRange(PickDistinct(pool, quota));
                 // Rounds of up to MaxPerModelCall. GenerateAsync over-asks to absorb verification drops,
                 // so one round is the norm; sequential so a second round can dedupe against the first.
                 for (var round = 0; round < 3; round++)
@@ -150,6 +150,71 @@ public static class Endpoint
             return Results.Ok(rows.OrderByDescending(r => r.reportCount));
         }).RequireAuthorization(Permissions.ManageExamCatalog);
 
+        // POST /api/admin/exam-questions/dedupe?examId=X[&dryRun=true]
+        // One-off/ops clean-up for banks filled before near-duplicate detection existed: per domain, retire
+        // questions that repeat another one's scenario (lexical test, then a model pass for reworded ones).
+        // Retired = status "duplicate": never served again, kept for the record. x-admin-key gated, like the refresh trigger.
+        app.MapPost("/api/admin/exam-questions/dedupe", async (
+            HttpContext ctx, string examId, bool? dryRun, IHttpClientFactory factory, IConfiguration config, CosmosService cosmos, ILogger<Program> logger) =>
+        {
+            var key = config["ExamCatalogAgent:AdminKey"];
+            if (string.IsNullOrEmpty(key) || ctx.Request.Headers["x-admin-key"] != key) return Results.Unauthorized();
+            var container = cosmos.GetContainer("examQuestions");
+            var rows = new List<BankQuestion>();
+            using (var feed = container.GetItemQueryIterator<BankQuestion>(
+                new QueryDefinition("SELECT * FROM c WHERE c.examId = @e AND c.status = 'active'").WithParameter("@e", examId),
+                requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(examId) }))
+                while (feed.HasMoreResults) rows.AddRange(await feed.ReadNextAsync());
+
+            var report = new List<object>();
+            foreach (var group in rows.GroupBy(r => r.domain))
+            {
+                var ordered = group.OrderBy(q => q.createdAt).ToList();
+                var drop = new HashSet<string>();
+
+                // Pass 1 — lexical.
+                var keep = new List<(BankQuestion q, Fingerprint fp)>();
+                foreach (var q in ordered)
+                {
+                    var fp = new Fingerprint(q.questionText, q.options[q.correctIndex], q.concept);
+                    if (keep.Any(k => k.fp.IsNearDuplicateOf(fp))) { drop.Add(q.id); continue; }
+                    keep.Add((q, fp));
+                }
+
+                // Pass 2 — model, on what's left, for reworded repeats the word-overlap test can't see.
+                var left = keep.Select(k => k.q).Take(MaxPoolPerDomain).ToList();
+                var modelDrops = 0;
+                if (left.Count > 1)
+                {
+                    try
+                    {
+                        var sb = new StringBuilder();
+                        for (var i = 0; i < left.Count; i++) sb.AppendLine($"{i}: {left[i].questionText} || correct: {left[i].options[left[i].correctIndex]}");
+                        using var doc = await ModelJsonAsync(
+                            "You find repeated questions in a bank of multiple-choice exam questions. Return ONLY valid JSON.",
+                            $@"Below are {left.Count} questions from one exam domain (""{group.Key}"").
+Group together questions that test the SAME scenario or the SAME specific point — questions where having both in one short exam would feel like a repeat, even if worded differently or with a different distractor set. Questions that merely share a broad topic are NOT repeats. If unsure, do not group.
+{sb}
+Return JSON: {{ ""groups"": [ [0, 5], [3, 9, 12] ] }} (only groups of 2 or more indices; empty array if none).", 0.1, factory, config);
+                        if (doc.RootElement.TryGetProperty("groups", out var gs) && gs.ValueKind == JsonValueKind.Array)
+                            foreach (var g in gs.EnumerateArray().Where(g => g.ValueKind == JsonValueKind.Array))
+                            {
+                                var idx = g.EnumerateArray().Where(e => e.ValueKind == JsonValueKind.Number).Select(e => e.GetInt32())
+                                    .Where(i => i >= 0 && i < left.Count).Distinct().OrderBy(i => i).ToList();
+                                foreach (var i in idx.Skip(1)) if (drop.Add(left[i].id)) modelDrops++;
+                            }
+                    }
+                    catch (Exception ex) { logger.LogWarning(ex, "Model dedupe pass failed for {Exam}/{Domain}", examId, group.Key); }
+                }
+
+                if (dryRun != true)
+                    foreach (var q in ordered.Where(q => drop.Contains(q.id)))
+                        await container.UpsertItemAsync(q with { status = "duplicate" }, new PartitionKey(examId));
+                report.Add(new { domain = group.Key, before = ordered.Count, retired = drop.Count, byModel = modelDrops, after = ordered.Count - drop.Count });
+            }
+            return Results.Ok(new { examId, dryRun = dryRun == true, domains = report });
+        }).AllowAnonymous();
+
         // action: "retire" (never serve again) | "restore" (clear reports, serve again)
         app.MapPost("/api/admin/exam-questions/{examId}/{questionId}/resolve", async (
             string examId, string questionId, ResolveRequest req, CosmosService cosmos) =>
@@ -210,6 +275,11 @@ public static class Endpoint
         var ask = Math.Min(MaxPerModelCall + 4, want + Math.Max(2, (want + 1) / 2));
         var raw = await CallGenerateAsync(exam, domain, ask, existing, factory, config);
         var seen = existing.Select(q => q.hash).ToHashSet();
+        // Exact-text hashes only catch verbatim repeats; the model's real habit is re-asking the SAME
+        // scenario in new words (found live 2026-09-19: four "wet road, keep a safe gap" questions in one
+        // 15-question driving test). So also reject anything that reads like a near-duplicate, or shares
+        // a concept label, with what is already banked or already accepted in this batch.
+        var kept = existing.Select(q => new Fingerprint(q.questionText, q.options[q.correctIndex], q.concept)).ToList();
         var candidates = new List<RawQuestion>();
         foreach (var raw0 in raw)
         {
@@ -223,6 +293,9 @@ public static class Endpoint
             if (!IsWellFormed(r)) continue;
             var h = Hash(r.questionText);
             if (!seen.Add(h)) continue;
+            var fp = new Fingerprint(r.questionText, r.options[r.correctIndex], r.concept);
+            if (kept.Any(k => k.IsNearDuplicateOf(fp))) continue;
+            kept.Add(fp);
             candidates.Add(r with { hash = h });
         }
 
@@ -236,12 +309,70 @@ public static class Endpoint
         {
             var (opts, correct) = ShuffleOptions(c.options, c.correctIndex);
             var q = new BankQuestion(Guid.NewGuid().ToString(), exam.Id, domain, c.questionText.Trim(), opts, correct,
-                (c.explanation ?? "").Trim(), c.hash!, DateTime.UtcNow.ToString("o"), verified);
+                (c.explanation ?? "").Trim(), c.hash!, DateTime.UtcNow.ToString("o"), verified, concept: c.concept?.Trim());
             await container.UpsertItemAsync(q, new PartitionKey(exam.Id));
             stored.Add(q);
         }
         logger.LogInformation("Exam bank: {Exam}/{Domain} +{N} ({Dropped} dropped, verified={V})", exam.Name, domain, stored.Count, raw.Count - stored.Count, verified);
         return stored;
+    }
+
+    // Least-served first (random among ties), but never two near-duplicates in the same paper.
+    private static List<BankQuestion> PickDistinct(List<BankQuestion> pool, int quota)
+    {
+        var picked = new List<BankQuestion>();
+        var prints = new List<Fingerprint>();
+        foreach (var q in pool.OrderBy(q => q.servedCount).ThenBy(_ => Random.Shared.Next()))
+        {
+            if (picked.Count >= quota) break;
+            var fp = new Fingerprint(q.questionText, q.options[q.correctIndex], q.concept);
+            if (prints.Any(p => p.IsNearDuplicateOf(fp))) continue;
+            picked.Add(q);
+            prints.Add(fp);
+        }
+        return picked;
+    }
+
+    // Cheap, lexical "reads like the same question" test. Catches reworded repeats that the exact-text
+    // hash misses; the model-based pass in the dedupe endpoint handles the subtler semantic ones.
+    internal sealed class Fingerprint
+    {
+        private static readonly HashSet<string> Stop = new(StringComparer.Ordinal)
+        {
+            "the","and","for","you","your","are","what","which","should","would","could","when","that","this","with","from","into","have","has",
+            "was","were","will","can","does","how","most","best","following","correct","statement","does","not","its","their","them","then",
+            "than","there","these","those","been","being","because","about","after","before","while","during","must","need","may","might","all",
+        };
+        private readonly HashSet<string> question, answer;
+        private readonly string? concept;
+
+        public Fingerprint(string questionText, string correctOption, string? concept)
+        {
+            question = Tokens(questionText);
+            answer = Tokens(correctOption);
+            this.concept = string.IsNullOrWhiteSpace(concept) ? null : new string(concept.ToLowerInvariant().Where(char.IsLetterOrDigit).ToArray());
+        }
+
+        internal static HashSet<string> Tokens(string s) =>
+            Regex.Matches(s.ToLowerInvariant(), "[a-z0-9]+").Select(m => m.Value)
+                .Where(w => w.Length > 2 && !Stop.Contains(w))
+                .Select(w => w.Length > 4 && w.EndsWith('s') ? w[..^1] : w).ToHashSet();
+
+        private static double Jaccard(HashSet<string> a, HashSet<string> b)
+        {
+            if (a.Count == 0 || b.Count == 0) return 0;
+            var inter = a.Count(b.Contains);
+            return (double)inter / (a.Count + b.Count - inter);
+        }
+
+        public bool IsNearDuplicateOf(Fingerprint o)
+        {
+            if (concept != null && concept == o.concept) return true;
+            var q = Jaccard(question, o.question);
+            if (q >= 0.5) return true;
+            // Same correct answer to a broadly similar question is also a repeat.
+            return q >= 0.3 && Jaccard(answer, o.answer) >= 0.6;
+        }
     }
 
     // Two backslashes followed by a letter, bracket or parenthesis -> one (see MathText.tsx's own normaliseEscapes).
@@ -304,18 +435,21 @@ These are ORIGINAL practice questions — never reproduce real past-paper or exa
 Only when a question genuinely needs mathematical or scientific notation (fractions, powers, roots, chemical formulae, units), write it as LaTeX inside \( ... \) — e.g. \(\frac{{3}}{{4}}\), \(x^2\), \(\sqrt{{2}}\), \(\mathrm{{H_2O}}\). Use those delimiters only, never $...$. Everything else is ordinary plain text; questions with no maths contain no LaTeX at all.
 Return ONLY valid JSON — no markdown, no explanation outside the JSON.";
 
-        var avoid = existing.Count == 0 ? "" : "\nDo NOT repeat or closely resemble these existing questions:\n" +
-            string.Join("\n", existing.OrderBy(_ => Random.Shared.Next()).Take(12).Select(q => "- " + (q.questionText.Length > 110 ? q.questionText[..110] : q.questionText)));
+        // Every concept already banked for this domain (short labels, so a long list still fits); legacy
+        // questions with no label are shown by their opening words instead.
+        var avoid = existing.Count == 0 ? "" : "\nThe bank ALREADY covers these scenarios/points — do NOT write another question on any of them, even reworded:\n" +
+            string.Join("\n", existing.Take(60).Select(q => "- " + (!string.IsNullOrWhiteSpace(q.concept) ? q.concept : (q.questionText.Length > 90 ? q.questionText[..90] : q.questionText))));
 
         var user = $@"Write {n} different multiple-choice questions for the domain: ""{domain}"".
 STRICT RULES:
 - Each has exactly 4 options and exactly one correct option; correctIndex is its 0-based index.
-- Each tests a DIFFERENT specific point; vary the difficulty from straightforward to demanding.
+- Each tests a DIFFERENT specific point AND a different situation: no two questions may share a scenario (e.g. do not write several ""wet road, keep a safe gap"" or ""feeling tired while driving"" questions) — spread across the whole domain. Vary the difficulty from straightforward to demanding.
+- concept: a 3-7 word label naming the specific scenario/point the question tests; every concept in your answer must be different.
 - Real understanding, not trivia; plausible wrong options; never ""all of the above"" or ""both A and B"".
 - explanation: one sentence on why the correct answer is right.{avoid}
 
 Return JSON:
-{{ ""questions"": [ {{ ""questionText"": ""..."", ""options"": [""..."", ""..."", ""..."", ""...""], ""correctIndex"": 2, ""explanation"": ""..."" }} ] }}";
+{{ ""questions"": [ {{ ""concept"": ""..."", ""questionText"": ""..."", ""options"": [""..."", ""..."", ""..."", ""...""], ""correctIndex"": 2, ""explanation"": ""..."" }} ] }}";
 
         using var doc = await ModelJsonAsync(system, user, 0.8, factory, config);
         var list = new List<RawQuestion>();
@@ -326,7 +460,8 @@ Return JSON:
             {
                 var opts = el.GetProperty("options").EnumerateArray().Select(o => o.GetString() ?? "").ToList();
                 list.Add(new RawQuestion(el.GetProperty("questionText").GetString() ?? "", opts, el.GetProperty("correctIndex").GetInt32(),
-                    el.TryGetProperty("explanation", out var ex) ? ex.GetString() : "", null));
+                    el.TryGetProperty("explanation", out var ex) ? ex.GetString() : "", null,
+                    el.TryGetProperty("concept", out var cn) && cn.ValueKind == JsonValueKind.String ? cn.GetString() : null));
             }
             catch { /* skip a malformed item */ }
         }
@@ -389,7 +524,7 @@ Return JSON: {{ ""answers"": [ {{ ""i"": 0, ""correctIndex"": 2, ""confident"": 
     // ── Shapes ───────────────────────────────────────────────────────────────────────────────────
 
     private sealed record DomainInfo(string Name, int WeightPct);
-    private sealed record RawQuestion(string questionText, List<string> options, int correctIndex, string? explanation, string? hash);
+    private sealed record RawQuestion(string questionText, List<string> options, int correctIndex, string? explanation, string? hash, string? concept = null);
 
     private sealed class ExamInfo
     {
@@ -430,4 +565,5 @@ public record BankQuestion(
     int reportCount = 0,
     List<string>? reporters = null,
     List<ReportNote>? reports = null,
-    string status = "active");
+    string status = "active",
+    string? concept = null);
