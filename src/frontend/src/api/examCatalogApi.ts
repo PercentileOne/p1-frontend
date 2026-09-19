@@ -46,7 +46,8 @@ export interface ExamCatalogEntry extends ExamCatalogSummary {
   minScore?: number;
   // '' / undefined with domains = curated; 'stub' = no blueprint yet; 'ai-draft' = AI-generated,
   // unreviewed (show a warning); 'reviewed' = an admin has checked it.
-  blueprintStatus?: '' | 'stub' | 'ai-draft' | 'reviewed';
+  // 'source-grounded' = extracted from the exam's official page by the weekly refresh job (unreviewed).
+  blueprintStatus?: '' | 'stub' | 'ai-draft' | 'source-grounded' | 'reviewed';
 }
 
 export interface CategoryCount {

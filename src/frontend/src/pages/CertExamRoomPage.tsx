@@ -212,6 +212,11 @@ export default function CertExamRoomPage() {
           AI-drafted practice exam — the topic areas may differ from the official specification. Practice only, not an official paper.
         </div>
       )}
+      {cert.blueprintStatus === 'source-grounded' && (
+        <div style={{ position: 'fixed', top: 12, left: '50%', transform: 'translateX(-50%)', zIndex: 50, maxWidth: 560, width: 'calc(100% - 32px)', background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.3)', borderRadius: 10, padding: '8px 14px', fontSize: 12, lineHeight: 1.5, color: '#93b4f7', textAlign: 'center' }}>
+          Topic areas taken from the official exam page. Questions are AI-written practice — not an official paper.
+        </div>
+      )}
       <AnimatePresence mode="wait">
         {(phase === 'briefing' || phase === 'generating') && (
           <motion.div key="briefing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
