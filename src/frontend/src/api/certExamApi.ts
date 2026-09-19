@@ -114,17 +114,28 @@ Return JSON:
 // independently verified, so cost per attempt falls as banks fill. If the endpoint is unavailable
 // the exam still runs on the old one-call-per-question browser generation rather than failing.
 export async function generateExamQuestions(cert: ExamCatalogEntry, count: number): Promise<ExamQuestion[]> {
-  try {
-    const res = await fetch(`${API_BASE}/api/exams/${encodeURIComponent(cert.id)}/questions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ count }),
-    });
-    if (res.ok) {
-      const fromBank = await res.json() as ExamQuestion[];
-      if (fromBank.length > 0) return fromBank;
-    }
-  } catch { /* fall through to the client-side generator */ }
+  // The server time-boxes each request (~45s) and keeps generating in the background, so a brand-new
+  // exam can come back short on the first call. Ask again after a pause — the bank has filled by then —
+  // and keep the fullest result. (The briefing Michelle gives runs alongside this, so the wait is hidden.)
+  let best: ExamQuestion[] = [];
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) await new Promise(r => setTimeout(r, attempt === 1 ? 8000 : 12000));
+    try {
+      const res = await fetch(`${API_BASE}/api/exams/${encodeURIComponent(cert.id)}/questions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ count }),
+      });
+      if (res.ok) {
+        const fromBank = await res.json() as ExamQuestion[];
+        if (fromBank.length > best.length) best = fromBank;
+        if (best.length >= Math.ceil(count * 0.9)) return best;
+      } else if (res.status !== 503) {
+        break; // a real failure, not "still preparing" — use the fallback below
+      }
+    } catch { break; }
+  }
+  if (best.length > 0) return best;
 
   const questions = await Promise.all(Array.from({ length: count }, () => generateExamQuestion(cert)));
   return questions.filter((q): q is ExamQuestion => q !== null);
