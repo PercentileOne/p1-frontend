@@ -55,6 +55,8 @@ builder.Services.AddSingleton<Explain.Api.Features.Events.SecurityEventLogger>()
 // the SESSION_PASSES Checkout feature reads it today (Features/SessionPasses/Checkout/Endpoint.cs).
 Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 builder.Services.AddHostedService<Explain.Api.Features.LearnAlerts.LearnAlertsSendService>();
+builder.Services.AddSingleton<Explain.Api.Features.ExamCatalog.Refresh.ExamCatalogRefreshService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<Explain.Api.Features.ExamCatalog.Refresh.ExamCatalogRefreshService>());
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
@@ -291,6 +293,7 @@ Explain.Api.Features.CertExams.Endpoint.Map(app);
 Explain.Api.Features.ExamCatalog.Admin.Endpoint.Map(app);
 Explain.Api.Features.ExamCatalog.Blueprint.Endpoint.Map(app);
 Explain.Api.Features.ExamQuestions.Endpoint.Map(app);
+Explain.Api.Features.ExamCatalog.Refresh.Endpoint.Map(app);
 
 Explain.Api.Features.Auth.ForgotPassword.Endpoint.Map(app);
 Explain.Api.Features.Auth.ResetPassword.Endpoint.Map(app);

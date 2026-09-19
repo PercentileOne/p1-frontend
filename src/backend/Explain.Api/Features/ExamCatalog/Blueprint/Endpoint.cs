@@ -58,7 +58,7 @@ public static class Endpoint
         }).AllowAnonymous();
     }
 
-    private static async Task<string?> GenerateAndPersistAsync(
+    internal static async Task<string?> GenerateAndPersistAsync(
         string id, string entryJson, string baseUrl, string adminKey,
         IHttpClientFactory factory, IConfiguration config, ILogger logger)
     {
@@ -110,8 +110,8 @@ public static class Endpoint
         }
     }
 
-    private sealed record Domain(string Name, int WeightPct);
-    private sealed record Draft(List<Domain> Domains, int MinScore, int MaxScore, int PassScore);
+    internal sealed record Domain(string Name, int WeightPct);
+    internal sealed record Draft(List<Domain> Domains, int MinScore, int MaxScore, int PassScore);
 
     private static async Task<Draft?> CallModelAsync(
         string name, string category, string region, string board, string level, string subject,
@@ -182,7 +182,7 @@ Return JSON:
     }
 
     // Largest-remainder rounding so the weights always sum to exactly 100, whatever the model returned.
-    private static List<Domain> NormaliseTo100(List<Domain> raw)
+    internal static List<Domain> NormaliseTo100(List<Domain> raw)
     {
         var total = raw.Sum(d => d.WeightPct);
         var scaled = raw.Select(d => (d, exact: d.WeightPct * 100.0 / total)).ToList();
