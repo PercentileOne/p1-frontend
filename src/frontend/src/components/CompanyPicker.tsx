@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Search } from 'lucide-react';
-import { groupForSector, searchCompanies, type CompanySummary } from '../api/companiesApi';
+import { displayCompanyName, groupForSector, searchCompanies, type CompanySummary } from '../api/companiesApi';
 
 // Searchable "Interview Style" picker (Francis, 2026-09-19). Standard first, then ~190 employers. A plain
 // <select> stopped being usable at that size — Netflix was in it but easy to miss in a long scrolling list, and
@@ -13,10 +13,11 @@ const GROUP_ORDER = [
 
 const CHEVRON = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`;
 
-export function CompanyPicker({ companies, value, onChange }: {
+export function CompanyPicker({ companies, value, brand, onChange }: {
   companies: CompanySummary[];
   value: string; // 'standard' | company id
-  onChange: (id: string) => void;
+  brand?: string; // the alias the candidate picked ("Instagram" within Meta), if any
+  onChange: (id: string, brand?: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -29,10 +30,10 @@ export function CompanyPicker({ companies, value, onChange }: {
   // Flat, ordered list of what is currently selectable (for keyboard nav): Standard, then matches or grouped browse.
   const { rows, flat } = useMemo(() => {
     const q = query.trim();
-    type Row = { kind: 'heading'; label: string } | { kind: 'item'; id: string; label: string; hint?: string; index: number };
+    type Row = { kind: 'heading'; label: string } | { kind: 'item'; id: string; brand?: string; label: string; hint?: string; index: number };
     const out: Row[] = [];
-    const ids: string[] = [];
-    const push = (id: string, label: string, hint?: string) => { out.push({ kind: 'item', id, label, hint, index: ids.length }); ids.push(id); };
+    const ids: { id: string; brand?: string }[] = [];
+    const push = (id: string, label: string, hint?: string, brand?: string) => { out.push({ kind: 'item', id, brand, label, hint, index: ids.length }); ids.push({ id, brand }); };
     if (!q) {
       push('standard', 'Standard', 'A well-rounded interview for any role');
       const groups = new Map<string, CompanySummary[]>();
@@ -47,7 +48,11 @@ export function CompanyPicker({ companies, value, onChange }: {
         for (const c of [...list].sort((a, b) => a.name.localeCompare(b.name))) push(c.id, c.name);
       }
     } else {
-      for (const m of searchCompanies(companies, q)) push(m.company.id, m.company.name, m.via ? `${m.via} → ${m.company.name}` : m.company.sector);
+      for (const m of searchCompanies(companies, q)) {
+        // An alias hit is selectable AS that brand: "Instagram", part of Meta.
+        if (m.via) push(m.company.id, m.via, `part of ${m.company.name}`, m.via);
+        else push(m.company.id, m.company.name, m.company.sector);
+      }
     }
     return { rows: out, flat: ids };
   }, [companies, query]);
@@ -63,13 +68,13 @@ export function CompanyPicker({ companies, value, onChange }: {
 
   useEffect(() => { if (open) inputRef.current?.focus(); }, [open]);
 
-  const choose = (id: string) => { onChange(id); setOpen(false); setQuery(''); };
+  const choose = (id: string, b?: string) => { onChange(id, b); setOpen(false); setQuery(''); };
 
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') { setOpen(false); return; }
     if (e.key === 'ArrowDown') { e.preventDefault(); setActive(a => Math.min(a + 1, flat.length - 1)); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(a => Math.max(a - 1, 0)); }
-    else if (e.key === 'Enter' && flat[active]) { e.preventDefault(); choose(flat[active]); }
+    else if (e.key === 'Enter' && flat[active]) { e.preventDefault(); choose(flat[active].id, flat[active].brand); }
   };
 
   // Keep the highlighted row scrolled into view while arrowing.
@@ -92,7 +97,7 @@ export function CompanyPicker({ companies, value, onChange }: {
           backgroundImage: CHEVRON, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
         }}
       >
-        {selected ? selected.name : 'Standard'}
+        {selected ? displayCompanyName(selected.name, brand) : 'Standard'}
       </button>
 
       {open && (
@@ -123,16 +128,16 @@ export function CompanyPicker({ companies, value, onChange }: {
               <div key={`h-${r.label}-${i}`} style={{ padding: '10px 10px 4px', fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)' }}>{r.label}</div>
             ) : (
               <div
-                key={r.id}
+                key={`${r.id}|${r.brand ?? ''}`}
                 data-idx={r.index}
                 role="option"
-                aria-selected={r.id === value}
+                aria-selected={r.id === value && (r.brand ?? '') === (brand ?? '')}
                 onMouseEnter={() => setActive(r.index)}
-                onClick={() => choose(r.id)}
+                onClick={() => choose(r.id, r.brand)}
                 style={{
                   padding: '9px 10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline',
                   background: r.index === active ? 'rgba(52,211,153,0.10)' : 'transparent',
-                  color: r.id === value ? '#34D399' : 'var(--text)', fontSize: '14px', fontWeight: r.id === value ? 700 : 500,
+                  color: r.id === value && (r.brand ?? '') === (brand ?? '') ? '#34D399' : 'var(--text)', fontSize: '14px', fontWeight: r.id === value && (r.brand ?? '') === (brand ?? '') ? 700 : 500,
                 }}
               >
                 <span>{r.label}</span>

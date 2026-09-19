@@ -44,6 +44,9 @@ export interface CompanyContext {
   name: string;
   sector: string;
   digest: string;
+  // The brand the candidate actually picked when it differs from the parent company whose profile is
+  // used — "Instagram" within Meta. The interviewers say the brand, and mention the parent at most once.
+  brand?: string;
 }
 
 let listCache: CompanySummary[] | null = null;
@@ -136,8 +139,13 @@ export function buildCompanyDigest(profile: CompanyProfile, jobTitle: string): s
   return lines.join('\n').slice(0, 3200);
 }
 
-export function buildCompanyContext(profile: CompanyProfile, jobTitle: string): CompanyContext {
-  return { id: profile.id, name: profile.name, sector: profile.sector, digest: buildCompanyDigest(profile, jobTitle) };
+export function buildCompanyContext(profile: CompanyProfile, jobTitle: string, brand?: string): CompanyContext {
+  return { id: profile.id, name: profile.name, sector: profile.sector, digest: buildCompanyDigest(profile, jobTitle), brand: brand || undefined };
+}
+
+// "Instagram (Meta)" — what the picker, the intake note and the interview call the employer.
+export function displayCompanyName(name: string, brand?: string): string {
+  return brand && brand !== name ? `${brand} (${name})` : name;
 }
 
 // ── Picker helpers ───────────────────────────────────────────────────────────────────────────────
@@ -179,6 +187,8 @@ export function searchCompanies(companies: CompanySummary[], query: string): Com
       if (score >= 0 && (!best || score < best.score)) best = { score, via: a };
     }
     if (!best && norm(c.sector).includes(q)) best = { score: 4 };
+    // A nickname of the company's own name ("Goldman" for Goldman Sachs) is not a separate brand.
+    if (best?.via && (name.startsWith(norm(best.via)) || norm(best.via).startsWith(name))) best = { score: best.score };
     if (best) scored.push({ m: { company: c, via: best.via }, score: best.score });
   }
   return scored.sort((a, b) => a.score - b.score || a.m.company.name.localeCompare(b.m.company.name)).map(x => x.m);

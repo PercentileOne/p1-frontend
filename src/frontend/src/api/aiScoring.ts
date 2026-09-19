@@ -920,10 +920,16 @@ export async function sessionPrepareClient(
   // company-knowledge question could each end up implying a different (or no) employer even
   // when Mike had just said a real one out loud.
   const companyLine = companyName?.trim() ? `\nCompany (explicitly confirmed — use this exact name, do not invent another): ${companyName.trim()}` : '';
+  // The name to SAY: the brand the candidate picked ("Instagram") when it differs from the parent whose profile
+  // is used ("Meta"); the profile itself always describes the parent.
+  const coName = companyContext ? (companyContext.brand && companyContext.brand !== companyContext.name ? companyContext.brand : companyContext.name) : '';
+  const brandNote = companyContext && coName !== companyContext.name
+    ? `\nThe candidate chose ${coName}, which is part of ${companyContext.name}. Name the employer as "${coName}" in every spoken script and question; mention that it is part of ${companyContext.name} at most once (in Amina's welcome). The profile below describes ${companyContext.name}'s hiring — apply it to ${coName}.`
+    : '';
   const companySection = companyContext ? `
 
-═══ COMPANY SPECIFIC INTERVIEW — ${companyContext.name} ═══
-This is a MOCK interview deliberately modelled on how ${companyContext.name} publicly describes and runs its hiring. It is a practice simulation on TheInterviewChair.com — NOT affiliated with or endorsed by ${companyContext.name}.
+═══ COMPANY SPECIFIC INTERVIEW — ${coName} ═══
+This is a MOCK interview deliberately modelled on how ${companyContext.name} publicly describes and runs its hiring. It is a practice simulation on TheInterviewChair.com — NOT affiliated with or endorsed by ${coName}${coName !== companyContext.name ? ` or ${companyContext.name}` : ''}.${brandNote}
 ${companyContext.digest}
 
 COMPANY-SPECIFIC RULES (these take priority over any generic instruction above or below):
@@ -931,7 +937,7 @@ COMPANY-SPECIFIC RULES (these take priority over any generic instruction above o
 - Write ORIGINAL questions only. Never claim or imply any question is a real ${companyContext.name} interview question, and never say you know their actual question bank.
 - Weave ${companyContext.name}'s own values/principles in by name where natural (behavioural questions framed around them) and reference its real products, brands, scale and sector accurately.
 - Respect the role family: a non-technical role (marketing, retail, HR, finance and so on) gets NO software or engineering-technical questions; a technical role gets questions at the depth this company is known for.
-- The interviewers must name ${companyContext.name} in their spoken scripts (sarahIntro, jamesIntro), and specialistTitle must be a realistic ${companyContext.name} interviewer title for this role.
+- The interviewers must name ${coName} in their spoken scripts (sarahIntro, jamesIntro), and specialistTitle must be a realistic ${coName} interviewer title for this role.
 - "companyFacts" must be accurate, stable facts drawn from the profile above.` : '';
   const difficultyLevel = selectedDifficulty || 'Standard';
   const difficultyLine = `\nSession Difficulty: ${difficultyLevel} (${difficultyLabel})`;
@@ -1047,9 +1053,9 @@ IMPORTANT: The two MCQ questions and the ${roleQuestionTarget} role questions MU
 
 ═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${salaryLine}${preferredNameLine}${companyContext ? `
 
-═══ COMPANY SPECIFIC INTERVIEW — ${companyContext.name} ═══
+═══ COMPANY SPECIFIC INTERVIEW — ${coName} ═══
 ${companyContext.digest}
-Frame the character/team-fit questions the way ${companyContext.name} publicly interviews (its values and tone), as ORIGINAL questions — never as claimed real ones. The companyQuestion must ask the candidate what they know about ${companyContext.name} and why they want to work there specifically; its modelAnswer must list the concrete facts, values and strategy from the profile above that a well-prepared candidate would mention.` : ''}
+Frame the character/team-fit questions the way ${companyContext.name} publicly interviews (its values and tone), as ORIGINAL questions — never as claimed real ones. The companyQuestion must ask the candidate what they know about ${coName}${coName !== companyContext.name ? ` (part of ${companyContext.name})` : ''} and why they want to work there specifically; its modelAnswer must list the concrete facts, values and strategy from the profile above that a well-prepared candidate would mention.` : ''}
 
 Return ONLY this exact JSON — no markdown, no explanation, no code fences:
 {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { roleFamilyForTitle, defaultsFor, buildCompanyDigest, searchCompanies, groupForSector, type CompanyProfile } from './companiesApi';
+import { roleFamilyForTitle, defaultsFor, buildCompanyDigest, searchCompanies, groupForSector, displayCompanyName, buildCompanyContext, type CompanyProfile } from './companiesApi';
 
 const profile: CompanyProfile = {
   id: 'acme', name: 'Acme', aliases: [], sector: 'Retail', region: 'uk', rank: 1, status: 'ai-draft',
@@ -83,5 +83,26 @@ describe('groupForSector', () => {
     expect(groupForSector('Pharmaceuticals')).toBe('Healthcare & Pharma');
     expect(groupForSector('Automotive')).toBe('Energy, Auto & Industry');
     expect(groupForSector('Media & Broadcasting')).toBe('Media & Telecoms');
+  });
+});
+
+describe('brands within a parent company', () => {
+  const list = [
+    { id: 'meta', name: 'Meta', aliases: ['Instagram'], sector: 'Technology', region: 'global', rank: 5, status: 'ai-draft' },
+    { id: 'goldman-sachs', name: 'Goldman Sachs', aliases: ['Goldman'], sector: 'Investment Banking', region: 'global', rank: 20, status: 'ai-draft' },
+    { id: 'arm', name: 'Arm', aliases: ['Arm Holdings'], sector: 'Technology', region: 'uk', rank: 30, status: 'ai-draft' },
+  ];
+  it('treats Instagram as a brand of Meta, but a nickname of the company itself as no brand', () => {
+    expect(searchCompanies(list, 'instagram')[0].via).toBe('Instagram');
+    expect(searchCompanies(list, 'goldman')[0].via).toBeUndefined();
+    expect(searchCompanies(list, 'arm hold')[0].via).toBeUndefined();
+  });
+  it('displays "Instagram (Meta)" and keeps the parent for the profile', () => {
+    expect(displayCompanyName('Meta', 'Instagram')).toBe('Instagram (Meta)');
+    expect(displayCompanyName('Meta')).toBe('Meta');
+    expect(displayCompanyName('Meta', 'Meta')).toBe('Meta');
+    const ctx = buildCompanyContext(profile, 'Marketing Manager', 'Acme Home');
+    expect(ctx.name).toBe('Acme');
+    expect(ctx.brand).toBe('Acme Home');
   });
 });

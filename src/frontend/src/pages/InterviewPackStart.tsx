@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { CompanyPicker } from '../components/CompanyPicker';
-import { listCompanies, getCompanyProfile, defaultsFor, buildCompanyContext, type CompanySummary, type CompanyProfile } from '../api/companiesApi';
+import { listCompanies, getCompanyProfile, defaultsFor, buildCompanyContext, displayCompanyName, type CompanySummary, type CompanyProfile } from '../api/companiesApi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
@@ -219,6 +219,7 @@ export default function InterviewPackStart() {
   // company models the whole session on how that employer publicly hires (see api/companiesApi.ts).
   const [companies, setCompanies] = useState<CompanySummary[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('standard');
+  const [selectedBrand, setSelectedBrand] = useState<string | undefined>(undefined); // "Instagram" when picked within Meta
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
   const [companyLoading, setCompanyLoading] = useState(false);
   const companyPickRef = useRef(0);
@@ -247,8 +248,9 @@ export default function InterviewPackStart() {
     if (currentIndex < floorIndex) setSelectedDifficulty(DIFFICULTIES[floorIndex].value);
   }, [selectedSalary, selectedDifficulty]);
   useEffect(() => { void listCompanies().then(setCompanies); }, []);
-  const handleCompanyChange = useCallback(async (id: string) => {
+  const handleCompanyChange = useCallback(async (id: string, brand?: string) => {
     setSelectedCompanyId(id);
+    setSelectedBrand(brand);
     const pick = ++companyPickRef.current;
     if (id === 'standard') { setCompanyProfile(null); setCompanyLoading(false); return; }
     setSelectedSalary('N/A'); // company mode replaces the salary lever — see the note on the card
@@ -412,12 +414,12 @@ export default function InterviewPackStart() {
     navigate('/interview/standard', {
       state: {
         jobTitle: jobTitle.trim() || incoming.jobTitle || '',
-        company: companyMode ? (companyProfile?.name ?? companies.find(c => c.id === selectedCompanyId)?.name ?? '') : (incoming.company || ''),
+        company: companyMode ? (selectedBrand ?? companyProfile?.name ?? companies.find(c => c.id === selectedCompanyId)?.name ?? '') : (incoming.company || ''),
         // Company Specific interview — the digest is what the interview prompts read (see api/companiesApi.ts).
         companyContext: companyMode
           ? (companyProfile
-              ? buildCompanyContext(companyProfile, jobTitle.trim())
-              : (() => { const c = companies.find(x => x.id === selectedCompanyId); return c ? { id: c.id, name: c.name, sector: c.sector, digest: `${c.name} (${c.sector}).` } : undefined; })())
+              ? buildCompanyContext(companyProfile, jobTitle.trim(), selectedBrand)
+              : (() => { const c = companies.find(x => x.id === selectedCompanyId); return c ? { id: c.id, name: c.name, sector: c.sector, digest: `${c.name} (${c.sector}).`, brand: selectedBrand } : undefined; })())
           : undefined,
         jobSpecText: jobSpec.trim() || incoming.jobSpec || '',
         cvText: cvText.trim() || undefined,
@@ -525,7 +527,7 @@ export default function InterviewPackStart() {
           <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
             Interview Style
           </div>
-          <CompanyPicker companies={companies} value={selectedCompanyId} onChange={id => { void handleCompanyChange(id); }} />
+          <CompanyPicker companies={companies} value={selectedCompanyId} brand={selectedBrand} onChange={(id, brand) => { void handleCompanyChange(id, brand); }} />
           {!companyMode && (
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
               Standard is a well-rounded interview for any role. Or pick a company to practise an interview modelled on how they hire — their values, style and bar.
@@ -533,7 +535,7 @@ export default function InterviewPackStart() {
           )}
           {companyMode && companyLoading && (
             <div style={{ fontSize: '12px', color: '#34D399', marginTop: '10px', lineHeight: 1.5 }}>
-              Researching {companies.find(c => c.id === selectedCompanyId)?.name ?? 'this company'}'s interview style… (the first time can take up to half a minute)
+              Researching {displayCompanyName(companies.find(c => c.id === selectedCompanyId)?.name ?? 'this company', selectedBrand)}'s interview style… (the first time can take up to half a minute)
             </div>
           )}
           {companyMode && !companyLoading && (
@@ -548,7 +550,7 @@ export default function InterviewPackStart() {
                 <div style={{ color: '#fbbf24', marginBottom: '8px' }}>We couldn't load this company's full profile just now — your interview will still be themed around them.</div>
               )}
               <div>
-                A practice interview in the style of {companies.find(c => c.id === selectedCompanyId)?.name ?? 'this company'}, based on publicly described hiring processes and written fresh for you — not real questions, and not affiliated with or endorsed by them. We've set a typical difficulty and number of questions for that company; change them below if you like. Salary and Special Focus aren't used here.
+                A practice interview in the style of {displayCompanyName(companies.find(c => c.id === selectedCompanyId)?.name ?? 'this company', selectedBrand)}, based on publicly described hiring processes and written fresh for you — not real questions, and not affiliated with or endorsed by them. We've set a typical difficulty and number of questions for that company; change them below if you like. Salary and Special Focus aren't used here.
               </div>
             </div>
           )}
