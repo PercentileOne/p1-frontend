@@ -100,7 +100,22 @@ public static class Endpoint
 
             var perDomain = buckets.Values.Select(b => { lock (b) return b.ToList(); }).ToList();
 
-            var served = perDomain.SelectMany(x => x).OrderBy(_ => Random.Shared.Next()).ToList();
+            // Domains are sampled separately, so the same scenario can still turn up under two headings
+            // (e.g. "level crossing" under both Rules of the road and Safety). Drop those across the paper,
+            // but backfill with the dropped ones if that would leave the paper short.
+            var shuffled = perDomain.SelectMany(x => x).OrderBy(_ => Random.Shared.Next()).ToList();
+            var served = new List<BankQuestion>();
+            var servedPrints = new List<Fingerprint>();
+            var repeats = new List<BankQuestion>();
+            foreach (var q in shuffled)
+            {
+                var fp = new Fingerprint(q.questionText, q.options[q.correctIndex], q.concept);
+                if (servedPrints.Any(p => p.IsNearDuplicateOf(fp))) { repeats.Add(q); continue; }
+                served.Add(q);
+                servedPrints.Add(fp);
+            }
+            if (served.Count < shuffled.Count && repeats.Count > 0 && served.Count < count)
+                served.AddRange(repeats.Take(count - served.Count));
             if (served.Count == 0) return Results.Json(new { error = "Still preparing this exam's questions — please try again in a few seconds.", retryAfterSeconds = 15 }, statusCode: 503);
 
             // Bookkeeping + pool top-up happen after the candidate already has their questions.
