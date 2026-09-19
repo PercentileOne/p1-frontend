@@ -10,7 +10,7 @@ interface Props {
   onClose: () => void;
 }
 
-const PLATFORMS = [
+export const PLATFORMS = [
   {
     id: 'linkedin',
     label: 'LinkedIn',

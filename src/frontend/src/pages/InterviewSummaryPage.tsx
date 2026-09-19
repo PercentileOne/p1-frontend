@@ -5,6 +5,8 @@ import BackToCockpit from '../components/BackToCockpit';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShareModal } from '../components/ShareModal';
 import { SaveDecisionPanel } from '../components/SaveDecisionPanel';
+import { evaluateVerdict, verdictSentence } from '../lib/interviewVerdict';
+import { issueCertificate } from '../api/certificateApi';
 import { InterviewResultsBody } from '../components/InterviewResultsBody';
 import { WaveformBars } from '../components/InterviewerAvatar';
 import type { InterviewQuestion, ScoreResponse } from '../api/explainApi';
@@ -485,6 +487,8 @@ export default function InterviewSummaryPage() {
   const mcqResults: Array<{ correct: boolean; selectedIndex: number; questionIndex: number }> = src.mcqResults ?? [];
   const askInterviewerBonusPoints: number = src.askInterviewerBonusPoints ?? 0;
   const companyMock: boolean = src.companyMock === true;
+  const selectedDifficulty: string | undefined = typeof src.selectedDifficulty === 'string' ? src.selectedDifficulty : undefined;
+  const hasCv: boolean = src.hasCv === true || (src.hasCv === undefined && !!cvCtx?.firstName);
   const playbackUrl: string | null = src.playbackUrl ?? (typeof src.videoUrl === 'string' ? src.videoUrl : null);
   const chapters: { questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[] = src.chapters ?? [];
   const interviewId: string | undefined = src.interviewId ?? routeId;
@@ -572,6 +576,20 @@ export default function InterviewSummaryPage() {
 
   const showLearnBanner = overall < 0.70 && weakestTag;
 
+  // Pass / Keep on file / Fail (Francis, 2026-09-19) — marks scale with the chosen difficulty (see lib/interviewVerdict.ts).
+  const scorePct = Math.round(overall * 100);
+  const verdictResult = evaluateVerdict(scorePct, selectedDifficulty);
+  const verdictText = verdictSentence(verdictResult, scorePct, { employer: companyMock ? jobCtx?.company : undefined, mock: companyMock, hasCv });
+  const [certBusy, setCertBusy] = useState(false);
+  const [certError, setCertError] = useState<string | null>(null);
+  const getCertificate = async () => {
+    if (!authToken || !candidateId || !interviewId) { setCertError('Please sign in to get your certificate.'); return; }
+    setCertBusy(true); setCertError(null);
+    const r = await issueCertificate(authToken, candidateId, interviewId);
+    setCertBusy(false);
+    if (r.ok) navigate(`/certificate/${r.token}`); else setCertError(r.reason);
+  };
+
   // Learn is a real destination in its own right (the candidate dashboard's own Learn tab),
   // not something to render inline under this page's own "Interview Summary" chrome —
   // navigate there instead, carrying the weak topic through as route state.
@@ -595,10 +613,9 @@ export default function InterviewSummaryPage() {
 
     let opening = `Hi ${name}, it's Michelle here — I've just had a word with Sarah and James, and they wanted me to share some feedback with you.`;
 
-    let scoreComment = '';
-    if (pct >= 85) scoreComment = `First of all, brilliant session — you scored ${pct} percent overall. That's genuinely impressive.`;
-    else if (pct >= 65) scoreComment = `You scored ${pct} percent overall — a solid performance, and there's real potential here.`;
-    else scoreComment = `You scored ${pct} percent overall. It's a start, and with a bit of focused practice, you'll see that number climb quickly.`;
+    // The outcome (with congratulations on a pass) leads the feedback — see verdictSentence.
+    const spokenVerdict = verdictText.replace(/(\d+)%/g, '$1 percent');
+    const scoreComment = `${pct >= 85 ? 'First of all, brilliant session. ' : ''}${spokenVerdict}${verdictResult.verdict === 'pass' ? " You've earned a certificate you can download and share — you'll find it on your results page." : ''}`;
 
     const mcqCorrectCount = mcqResults.filter(r => r.correct).length;
     const mcqTotalCount = mcqResults.length;
@@ -625,7 +642,7 @@ export default function InterviewSummaryPage() {
 
     return [opening, scoreComment, mcqComment, strengthComment, improvementComment, learnPitch, closing]
       .filter(Boolean).join(' ');
-  }, [cvCtx, overall, strengths, improvements, weakestTag, mcqResults, mcqBonusPoints]);
+  }, [cvCtx, overall, strengths, improvements, weakestTag, mcqResults, mcqBonusPoints, verdictText, verdictResult.verdict]);
 
   function handleGetFeedback() {
     // Playing — this click means Stop.
@@ -930,6 +947,45 @@ ${questionsHtml}
         {/* ── INTERVIEW TAB ── */}
         {activeTab === 'interview' && (
           <>
+            {/* ── Outcome: Pass / Keep on file / Fail ── */}
+            {answers.length > 0 && (() => {
+              const v = verdictResult.verdict;
+              const look = v === 'pass'
+                ? { icon: '🏆', title: 'Passed', color: '#34D399', bg: 'rgba(52,211,153,0.10)', border: 'rgba(52,211,153,0.4)' }
+                : v === 'keep-on-file'
+                ? { icon: '📁', title: hasCv ? 'Keep CV on File' : 'Keep Name on File', color: '#F59E0B', bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.4)' }
+                : { icon: '🎯', title: 'Not this time', color: '#EF4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.35)' };
+              return (
+                <div style={{ background: look.bg, border: `1px solid ${look.border}`, borderRadius: '16px', padding: '22px 24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '10px' }}>
+                    <div style={{ fontSize: '34px' }}>{look.icon}</div>
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)' }}>
+                        {companyMock && jobCtx?.company ? `Mock ${jobCtx.company} interview — outcome` : 'Interview outcome'}
+                      </div>
+                      <div style={{ fontSize: '24px', fontWeight: 900, color: look.color }}>{look.title} · {scorePct}%</div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '14px', color: 'var(--text-2)', lineHeight: 1.6 }}>{verdictText}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-3)', marginTop: '10px' }}>
+                    {selectedDifficulty ?? 'Standard'} level: pass {verdictResult.passMark}% · keep on file {verdictResult.keepMark}%–{verdictResult.passMark - 1}% · below {verdictResult.keepMark}% is a fail.
+                  </div>
+                  {v === 'pass' && (
+                    <div style={{ marginTop: '14px' }}>
+                      <button
+                        onClick={() => { void getCertificate(); }}
+                        disabled={certBusy}
+                        style={{ background: 'linear-gradient(135deg,#34D399,#047857)', color: '#fff', border: 'none', borderRadius: '10px', padding: '12px 22px', fontSize: '14px', fontWeight: 800, cursor: certBusy ? 'default' : 'pointer', opacity: certBusy ? 0.7 : 1 }}
+                      >
+                        {certBusy ? 'Creating your certificate…' : '🏆 Get your certificate'}
+                      </button>
+                      {certError && <div style={{ fontSize: '12px', color: '#F59E0B', marginTop: '8px' }}>{certError}</div>}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
             {/* ── Save / QR / Share decision flow ── */}
             <SaveDecisionPanel
               score={Math.round(overall * 100)}

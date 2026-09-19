@@ -313,6 +313,8 @@ export default function InterviewRoomPage() {
     jobTitle: ctx.jobTitle,
     company: bgResolvedCompany ?? ctx.company,
     companyMock: Boolean(ctx.companyContext),
+    selectedDifficulty: ctx.selectedDifficulty,
+    hasCv: Boolean(ctx.cvText?.trim()),
     candidateName: authUser?.name,
   });
 
@@ -747,6 +749,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current,
           interviewId: interviewIdRef.current, candidateId: getCandidateId(),
           companyMock: Boolean(ctx.companyContext),
+          selectedDifficulty: ctx.selectedDifficulty,
+          hasCv: Boolean(ctx.cvText?.trim()),
         },
       });
     };

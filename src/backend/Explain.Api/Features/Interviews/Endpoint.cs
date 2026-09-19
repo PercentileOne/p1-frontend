@@ -23,6 +23,7 @@ namespace Explain.Api.Features.Interviews;
 public static class Endpoint
 {
     private const string ShareBaseUrl = "https://candidate.theinterviewchair.com/shared";
+    private const string CertificateBaseUrl = "https://candidate.theinterviewchair.com/certificate";
 
     public static void Map(WebApplication app)
     {
@@ -270,6 +271,61 @@ public static class Endpoint
             return Results.NotFound();
         }).AllowAnonymous();
 
+        // POST /api/interviews/{candidateId}/{id}/certificate — mints the shareable pass certificate (Francis,
+        // 2026-09-19). PASSES ONLY, decided here from the saved score + difficulty, never from anything the
+        // client sends, so a certificate can't be produced for an interview that didn't pass. Idempotent: the
+        // same interview always gets the same link.
+        app.MapPost("/api/interviews/{candidateId}/{id}/certificate", async (string candidateId, string id, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var userId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (candidateId != userId) return Results.Forbid();
+
+            var container = cosmos.GetContainer("interviews");
+            var envelope = await ReadEnvelopeAsync(container, id, candidateId);
+            if (envelope is null) return Results.NotFound();
+
+            var facts = ReadCertificateFacts(envelope);
+            if (InterviewVerdict.Evaluate(facts.overallScore, facts.difficulty) != InterviewVerdict.Pass)
+                return Results.Json(new { error = "Certificates are only issued for a pass." }, statusCode: 403);
+
+            var token = envelope.certificateToken;
+            if (string.IsNullOrEmpty(token))
+            {
+                token = GenerateCertificateToken();
+                var updated = envelope with { certificateToken = token };
+                using var body = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(updated));
+                using var upsertResponse = await container.UpsertItemStreamAsync(body, new PartitionKey(candidateId));
+                if (!upsertResponse.IsSuccessStatusCode)
+                    return Results.Problem("Failed to issue certificate", statusCode: (int)upsertResponse.StatusCode);
+            }
+            return Results.Ok(new { certificateToken = token, certificateUrl = $"{CertificateBaseUrl}/{token}" });
+        }).RequireAuthorization();
+
+        // GET /api/certificates/{token} — public view of a certificate. Only the certificate's own facts are
+        // returned (no video, answers or CV), and only for an interview that actually passed.
+        app.MapGet("/api/certificates/{token}", async (string token, CosmosService cosmos) =>
+        {
+            if (string.IsNullOrWhiteSpace(token) || token.Length < 8) return Results.NotFound();
+            var query = new QueryDefinition("SELECT * FROM c WHERE c.certificateToken = @t").WithParameter("@t", token);
+            using var feed = cosmos.GetContainer("interviews").GetItemQueryIterator<InterviewEnvelope>(query);
+            while (feed.HasMoreResults)
+            {
+                var envelope = (await feed.ReadNextAsync()).FirstOrDefault();
+                if (envelope is null) continue;
+                var f = ReadCertificateFacts(envelope);
+                if (InterviewVerdict.Evaluate(f.overallScore, f.difficulty) != InterviewVerdict.Pass) return Results.NotFound();
+                var (passMark, _) = InterviewVerdict.MarksFor(f.difficulty);
+                return Results.Ok(new
+                {
+                    candidateName = f.candidateName, role = f.role, company = f.company, companyMock = f.companyMock,
+                    overallScore = Math.Round(f.overallScore), difficulty = f.difficulty ?? "Standard", passMark,
+                    createdAt = envelope.createdAt,
+                });
+            }
+            return Results.NotFound();
+        }).AllowAnonymous();
+
         // DELETE /api/interviews/{candidateId}/{id} — "Discard, it was practice".
         app.MapDelete("/api/interviews/{candidateId}/{id}", async (string candidateId, string id, HttpContext ctx, CosmosService cosmos, BlobStorageService blob) =>
         {
@@ -411,6 +467,38 @@ public static class Endpoint
         return node.ToJsonString();
     }
 
+    // What a certificate needs from the client's opaque metadata blob. Interviews saved before difficulty was
+    // recorded have none, and are judged at Standard.
+    private static (double overallScore, string? difficulty, string? candidateName, string? role, string? company, bool companyMock) ReadCertificateFacts(InterviewEnvelope env)
+    {
+        double score = 0; string? difficulty = null, name = null, role = null, company = null; var mock = false;
+        try
+        {
+            using var doc = JsonDocument.Parse(env.sessionDataJson);
+            var root = doc.RootElement;
+            string? Str(string p) => root.TryGetProperty(p, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+            if (root.TryGetProperty("overallScore", out var s) && s.ValueKind == JsonValueKind.Number) score = s.GetDouble();
+            difficulty = Str("selectedDifficulty"); role = Str("role"); company = Str("company");
+            name = Str("candidateName");
+            if (string.IsNullOrWhiteSpace(name) && root.TryGetProperty("cvCtx", out var cv) && cv.ValueKind == JsonValueKind.Object)
+            {
+                var first = cv.TryGetProperty("firstName", out var fn) && fn.ValueKind == JsonValueKind.String ? fn.GetString() : null;
+                var last = cv.TryGetProperty("lastName", out var ln) && ln.ValueKind == JsonValueKind.String ? ln.GetString() : null;
+                name = string.Join(' ', new[] { first, last }.Where(x => !string.IsNullOrWhiteSpace(x)));
+            }
+            mock = root.TryGetProperty("companyMock", out var m) && m.ValueKind == JsonValueKind.True;
+        }
+        catch (JsonException) { /* malformed metadata — treated as a non-pass by the caller's score of 0 */ }
+        return (score, difficulty, string.IsNullOrWhiteSpace(name) ? null : name, role, company, mock);
+    }
+
+    private static string GenerateCertificateToken()
+    {
+        const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        var bytes = RandomNumberGenerator.GetBytes(16);
+        return new string(bytes.Select(b => chars[b % chars.Length]).ToArray());
+    }
+
     private static string GenerateShareToken()
     {
         const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -438,7 +526,8 @@ public record InterviewEnvelope(
     bool hasVideo,
     string? shareToken,
     bool isShared,
-    string sessionDataJson);
+    string sessionDataJson,
+    string? certificateToken = null);
 
 // Lightweight row for the My Interviews list — no answers/transcript, just enough to render a card.
 public record InterviewSummary(

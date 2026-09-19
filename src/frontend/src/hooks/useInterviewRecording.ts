@@ -20,6 +20,9 @@ export interface UseInterviewRecordingParams {
   company?: string;
   /** Company Specific mock interview (2026-09-19) — saved so shares say "mock", never implying the real thing. */
   companyMock?: boolean;
+  /** Chosen difficulty + whether a CV was supplied — the pass mark scales with the first, the outcome wording uses the second. */
+  selectedDifficulty?: string;
+  hasCv?: boolean;
   /** Real account name — always available, unlike cvCtx.firstName/lastName, which is only
    * populated if a CV happened to be parsed for this specific session. */
   candidateName?: string;
@@ -46,7 +49,7 @@ export interface UseInterviewRecordingReturn {
 }
 
 export function useInterviewRecording(params: UseInterviewRecordingParams): UseInterviewRecordingReturn {
-  const { phase, filterPreset, questionText, candidateId, authToken, jobTitle, company, companyMock, candidateName } = params;
+  const { phase, filterPreset, questionText, candidateId, authToken, jobTitle, company, companyMock, selectedDifficulty, hasCv, candidateName } = params;
 
   const [isRecording, setIsRecording] = useState(false);
   const [recordingFailed, setRecordingFailed] = useState(false);
@@ -337,6 +340,8 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
           role: jobTitle,
           company,
           companyMock: companyMock === true,
+          selectedDifficulty,
+          hasCv: hasCv === true,
           overallScore: Math.round(overallScore * 100),
           answers,
           mcqQuestions: extra.mcqQuestions,
@@ -423,7 +428,7 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
       void finish(blob);
     };
     recorder.stop();
-  }, [candidateId, authToken, jobTitle, company, companyMock, candidateName]);
+  }, [candidateId, authToken, jobTitle, company, companyMock, selectedDifficulty, hasCv, candidateName]);
 
   // Upload if component unmounts mid-session — TRUE unmount only (empty deps). A ref
   // indirection is kept even though uploadRecording's deps are now all session-stable values
