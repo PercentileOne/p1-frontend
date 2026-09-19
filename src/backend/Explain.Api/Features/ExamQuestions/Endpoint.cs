@@ -211,8 +211,15 @@ public static class Endpoint
         var raw = await CallGenerateAsync(exam, domain, ask, existing, factory, config);
         var seen = existing.Select(q => q.hash).ToHashSet();
         var candidates = new List<RawQuestion>();
-        foreach (var r in raw)
+        foreach (var raw0 in raw)
         {
+            // The model sometimes over-escapes LaTeX (\\( for \( , \\frac for \frac) — store it clean.
+            var r = raw0 with
+            {
+                questionText = FixEscapes(raw0.questionText),
+                options = raw0.options.Select(FixEscapes).ToList(),
+                explanation = raw0.explanation is null ? null : FixEscapes(raw0.explanation),
+            };
             if (!IsWellFormed(r)) continue;
             var h = Hash(r.questionText);
             if (!seen.Add(h)) continue;
@@ -236,6 +243,9 @@ public static class Endpoint
         logger.LogInformation("Exam bank: {Exam}/{Domain} +{N} ({Dropped} dropped, verified={V})", exam.Name, domain, stored.Count, raw.Count - stored.Count, verified);
         return stored;
     }
+
+    // Two backslashes followed by a letter, bracket or parenthesis -> one (see MathText.tsx's own normaliseEscapes).
+    private static string FixEscapes(string s) => Regex.Replace(s, @"\\\\(?=[a-zA-Z()\[\]])", @"\");
 
     private static bool IsWellFormed(RawQuestion r) =>
         !string.IsNullOrWhiteSpace(r.questionText) && r.options is { Count: 4 } && r.options.All(o => !string.IsNullOrWhiteSpace(o))

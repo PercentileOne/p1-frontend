@@ -28,6 +28,17 @@ describe('splitMath', () => {
     expect(splitMath('\\[x=1\\]')[0]).toEqual({ kind: 'math', value: 'x=1', display: true });
   });
 
+  it('renders over-escaped LaTeX (doubled backslashes) the model sometimes emits', () => {
+    const q = 'Simplify \\\\(3(2x-5)-2(x+4)\\\\).';
+    expect(hasMath(q)).toBe(true);
+    expect(splitMath(q)).toEqual([
+      { kind: 'text', value: 'Simplify ' },
+      { kind: 'math', value: '3(2x-5)-2(x+4)', display: false },
+      { kind: 'text', value: '.' },
+    ]);
+    expect(splitMath('\\\\(\\\\frac{1}{2}\\\\)')[0]).toEqual({ kind: 'math', value: '\\frac{1}{2}', display: false });
+  });
+
   it('does not treat currency or dollars as maths', () => {
     expect(hasMath('The budget is $400M and $5')).toBe(false);
   });

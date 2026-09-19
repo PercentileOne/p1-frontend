@@ -10,7 +10,15 @@ type Segment = { kind: 'text' | 'math'; value: string; display?: boolean };
 
 const MATH = /\\\((.+?)\\\)|\\\[(.+?)\\\]/gs;
 
-export function splitMath(text: string): Segment[] {
+// The model sometimes over-escapes LaTeX inside its JSON: a doubled backslash before "(" or "frac"
+// instead of a single one. Collapse a doubled backslash that precedes a letter, bracket or
+// parenthesis so those questions still render.
+export function normaliseEscapes(text: string): string {
+  return text.replace(/\\\\(?=[a-zA-Z()[\]])/g, '\\');
+}
+
+export function splitMath(rawText: string): Segment[] {
+  const text = normaliseEscapes(rawText);
   const out: Segment[] = [];
   let last = 0;
   for (const m of text.matchAll(MATH)) {
@@ -27,7 +35,7 @@ export function splitMath(text: string): Segment[] {
 const HAS_MATH = /\\\((.+?)\\\)|\\\[(.+?)\\\]/s;
 
 export function hasMath(text: string): boolean {
-  return HAS_MATH.test(text);
+  return HAS_MATH.test(normaliseEscapes(text));
 }
 
 type Katex = typeof import('katex').default;
