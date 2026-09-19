@@ -10,6 +10,7 @@ import { speak, elevenLabsConfigured, getStoredInterviewerVolume, setInterviewer
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
 import { sessionPrepareClient, generateMikeScriptOnly, generateModelAnswer, generateCandidateQuestion } from '../api/aiScoring';
+import type { CompanyContext } from '../api/companiesApi';
 import { saveQuestionBankEntry } from '../api/questionBankApi';
 import { ChairSpinner } from '../components/ChairSpinner';
 import CinematicMCQ from '../components/CinematicMCQ';
@@ -52,6 +53,8 @@ export interface RoomState {
   questionCount?: number;
   preferredName?: string;
   company?: string;
+  // Company Specific interview (2026-09-19) — see api/companiesApi.ts. Present only when the candidate chose a company.
+  companyContext?: CompanyContext;
   consentToRecord?: boolean;
   goDeeperEnabled?: boolean;
   specialFocus?: string[];
@@ -309,6 +312,7 @@ export default function InterviewRoomPage() {
     authToken,
     jobTitle: ctx.jobTitle,
     company: bgResolvedCompany ?? ctx.company,
+    companyMock: Boolean(ctx.companyContext),
     candidateName: authUser?.name,
   });
 
@@ -621,6 +625,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       selectedLanguage: ctx.selectedLanguage,
       preferredName: resolvedPreferredName,
       interviewRound: ctx.interviewRound,
+      companyMock: Boolean(ctx.companyContext),
     }).then(script => {
       clearTimeout(mikeTimeout);
       if (script) bgMikeScriptRef.current = script;
@@ -647,7 +652,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       // didn't say my name" was too.
       phase2Timeout = setTimeout(() => resolvePhase2('90s-timeout-fallback'), 90000);
       console.log(`[Phase2 TIMING] sessionPrepareClient() call starting @ ${Math.round(performance.now())}ms`);
-      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount, ctx.company || undefined, ctx.specialFocus, ctx.interviewRound, ctx.salaryExpectation);
+      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount, ctx.company || undefined, ctx.specialFocus, ctx.interviewRound, ctx.salaryExpectation, ctx.companyContext);
 
     }).then(result => {
       bgLoadedRef.current = true;
@@ -741,6 +746,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           askInterviewerBonusPoints: askInterviewerBonusPts,
           playbackUrl: buildPlaybackUrl(), chapters: chapterMarkersRef.current,
           interviewId: interviewIdRef.current, candidateId: getCandidateId(),
+          companyMock: Boolean(ctx.companyContext),
         },
       });
     };

@@ -15,6 +15,7 @@ interface SharedAnswer {
 interface SharedSession {
   role?: string;
   company?: string;
+  companyMock?: boolean; // Company Specific mock — say so plainly on the public page
   overallScore: number;
   answers: SharedAnswer[];
   videoUrl: string | null;
@@ -72,7 +73,10 @@ export default function SharedInterviewPage() {
   // candidateName (the real account name) is always available, so it's the reliable fallback.
   const name = [data.cvCtx?.firstName, data.cvCtx?.lastName].filter(Boolean).join(' ') || data.candidateName || '';
   const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://candidate.theinterviewchair.com/shared/${token}`;
-  const shareText = name
+  const isMock = data.companyMock === true && !!data.company;
+  const shareText = isMock
+    ? `${name ? `${name}'s` : 'A'} mock ${data.company} interview on TheInterviewChair.com — watch it and try your own:`
+    : name
     ? `Watch ${name}'s ${data.role ?? 'interview'} on TheInterviewChair.com:`
     : `Watch this ${data.role ?? 'interview'} on TheInterviewChair.com:`;
   const copyLink = async () => {
@@ -101,9 +105,15 @@ export default function SharedInterviewPage() {
 
       <div>
         <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: '0 0 6px' }}>
-          {name ? `${name}'s ` : ''}{data.role ? `${data.role} Interview` : 'Interview'}{data.company ? ` at ${data.company}` : ''}
+          {isMock
+            ? `${name ? `${name}'s ` : ''}Mock ${data.company} Interview${data.role ? ` — ${data.role}` : ''}`
+            : `${name ? `${name}'s ` : ''}${data.role ? `${data.role} Interview` : 'Interview'}${data.company ? ` at ${data.company}` : ''}`}
         </h1>
-        <div style={{ fontSize: 13, color: 'var(--text-3)' }}>Recorded on TheInterviewChair.com — the world's first interview broadcast platform.</div>
+        <div style={{ fontSize: 13, color: 'var(--text-3)' }}>
+          {isMock
+            ? `A practice interview in the style of ${data.company}, recorded on TheInterviewChair.com. It is a mock — not a real ${data.company} interview, and not affiliated with or endorsed by ${data.company}.`
+            : "Recorded on TheInterviewChair.com — the world's first interview broadcast platform."}
+        </div>
         {createdAtLabel && <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{createdAtLabel}</div>}
       </div>
 

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface Props {
   role?: string;
   company?: string;
+  companyMock?: boolean; // a Company Specific mock — share text must say mock, not imply the real thing
   score: number; // 0–100
   shareUrl: string;
   onClose: () => void;
@@ -61,12 +62,14 @@ const PLATFORMS = [
   },
 ];
 
-export function ShareModal({ role, company, score, shareUrl, onClose }: Props) {
+export function ShareModal({ role, company, companyMock = false, score, shareUrl, onClose }: Props) {
   const [copied, setCopied] = useState(false);
 
   const roleLabel = role ?? 'this role';
   const companyLabel = company ? ` at ${company}` : '';
-  const shareText = `I just scored ${score}% on my ${roleLabel}${companyLabel} interview with Explain — the AI interview platform. Watch my full session here:`;
+  const shareText = companyMock && company
+    ? `I've just had a mock ${company} interview on TheInterviewChair.com and scored ${score}% — practise for your dream company too. Watch my full session here:`
+    : `I just scored ${score}% on my ${roleLabel}${companyLabel} interview with Explain — the AI interview platform. Watch my full session here:`;
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(shareUrl);

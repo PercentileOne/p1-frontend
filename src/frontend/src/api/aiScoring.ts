@@ -2,6 +2,7 @@
 // /api/ai-proxy (Azure AI Foundry Model Router) — no client-side key involved.
 
 import type { ScoreResponse, InterviewQuestion } from './explainApi';
+import type { CompanyContext } from './companiesApi';
 import { buildCVContext, type CVContext, type CVExperience, type JobSpecContext } from '../utils/contextBuilder';
 import type { CoachingMessage } from '../utils/coachingEngine';
 import { logFlowEvent } from './flowLogger';
@@ -728,8 +729,10 @@ export async function generateMikeScriptOnly(params: {
   selectedLanguage?: string;
   preferredName?: string;
   interviewRound?: string;
+  // Company Specific interview — Michelle frames it as a mock in that company's style, never as the real thing.
+  companyMock?: boolean;
 }): Promise<string> {
-  const { jobTitle, companyName, jobSpecText, cvText, selectedDifficulty, selectedLanguage, preferredName, interviewRound } = params;
+  const { jobTitle, companyName, jobSpecText, cvText, selectedDifficulty, selectedLanguage, preferredName, interviewRound, companyMock } = params;
 
   // Most candidates now face 2+ real interview rounds (Francis, 2026-09-16) — a First Round
   // practice session gets no special mention (nothing to congratulate yet), but Second Round
@@ -777,7 +780,8 @@ ${nameInstruction}
 ${cvSnippet ? `\nCANDIDATE CV (extract first name from here):\n${cvSnippet}\n` : ''}
 CONTEXT:
 - Job title: ${jobTitle || 'not specified'}
-- Company: ${companyName || '(extract from job title or job spec if possible, otherwise omit)'}
+- Company: ${companyName || '(extract from job title or job spec if possible, otherwise omit)'}${companyMock && companyName ? `
+- IMPORTANT: this is a company-specific MOCK interview — practice modelled on how ${companyName} publicly hires, run by TheInterviewChair.com. Say clearly that it is a ${companyName}-style practice interview (never that it is a real ${companyName} interview, and never imply any affiliation with ${companyName}). Make it feel exciting — they are practising for a dream employer.` : ''}
 - Interview round: ${roundFrame}
 - Difficulty level: ${difficultyFrame}
 ${jobSpecSnippet ? `- Job spec excerpt: ${jobSpecSnippet}` : ''}
@@ -876,6 +880,9 @@ export async function sessionPrepareClient(
   specialFocus?: string[],
   interviewRound?: string,
   salaryExpectation?: string,
+  // Company Specific interview (2026-09-19) — a curated profile of how a well-known employer publicly
+  // hires; when present the whole session is modelled on it. See companiesApi.ts.
+  companyContext?: CompanyContext,
 ): Promise<ClientSessionResult> {
   // All `totalQuestions` are role/technical questions now — HR/character questions are
   // generated separately below and always ADDED on top (Francis, 2026-09-10). Previously a
@@ -913,6 +920,19 @@ export async function sessionPrepareClient(
   // company-knowledge question could each end up implying a different (or no) employer even
   // when Mike had just said a real one out loud.
   const companyLine = companyName?.trim() ? `\nCompany (explicitly confirmed — use this exact name, do not invent another): ${companyName.trim()}` : '';
+  const companySection = companyContext ? `
+
+═══ COMPANY SPECIFIC INTERVIEW — ${companyContext.name} ═══
+This is a MOCK interview deliberately modelled on how ${companyContext.name} publicly describes and runs its hiring. It is a practice simulation on TheInterviewChair.com — NOT affiliated with or endorsed by ${companyContext.name}.
+${companyContext.digest}
+
+COMPANY-SPECIFIC RULES (these take priority over any generic instruction above or below):
+- Shape EVERY question, and the interviewers' tone, to ${companyContext.name}'s style, values and the question types listed above for this candidate's role family, so the candidate feels they are inside that company's process.
+- Write ORIGINAL questions only. Never claim or imply any question is a real ${companyContext.name} interview question, and never say you know their actual question bank.
+- Weave ${companyContext.name}'s own values/principles in by name where natural (behavioural questions framed around them) and reference its real products, brands, scale and sector accurately.
+- Respect the role family: a non-technical role (marketing, retail, HR, finance and so on) gets NO software or engineering-technical questions; a technical role gets questions at the depth this company is known for.
+- The interviewers must name ${companyContext.name} in their spoken scripts (sarahIntro, jamesIntro), and specialistTitle must be a realistic ${companyContext.name} interviewer title for this role.
+- "companyFacts" must be accurate, stable facts drawn from the profile above.` : '';
   const difficultyLevel = selectedDifficulty || 'Standard';
   const difficultyLine = `\nSession Difficulty: ${difficultyLevel} (${difficultyLabel})`;
   // Salary Expectation (Francis, 2026-09-18) — BLENDS into the difficulty above, never lowers
@@ -958,7 +978,7 @@ CRITICAL RULES — READ CAREFULLY:
   const userPrompt = `Generate a complete interview session for the job specification below. Session ID: ${sessionSeed} — this is unique to this session. You MUST generate completely fresh questions every time. Never repeat or reuse questions from any prior generation. Vary question wording, angle, and which competencies you probe.
 ${cvSection ? 'A candidate CV is also provided — use it to personalise questions and intros.' : 'No CV provided — base questions purely on the role requirements.'}
 
-═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${salaryLine}${roundLine}${specialFocusLine}${preferredNameLine}
+═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${salaryLine}${roundLine}${specialFocusLine}${preferredNameLine}${companySection}
 
 ═══ JOB SPECIFICATION ═══
 ${jobSpecText.slice(0, 4000)}${cvSection}
@@ -1025,7 +1045,11 @@ IMPORTANT: The two MCQ questions and the ${roleQuestionTarget} role questions MU
   // adding to it. See MANDATORY_MEASURE_QUESTIONS for the fallback if this call fails outright.
   const hrUserPrompt = `Write open-ended HR interview questions for a real interview session. Session ID: ${sessionSeed}-hr — unique to this session, you MUST write completely fresh questions every time, never reuse wording from any previous generation.
 
-═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${salaryLine}${preferredNameLine}
+═══ SESSION CONTEXT ═══${jobTitleLine}${companyLine}${difficultyLine}${salaryLine}${preferredNameLine}${companyContext ? `
+
+═══ COMPANY SPECIFIC INTERVIEW — ${companyContext.name} ═══
+${companyContext.digest}
+Frame the character/team-fit questions the way ${companyContext.name} publicly interviews (its values and tone), as ORIGINAL questions — never as claimed real ones. The companyQuestion must ask the candidate what they know about ${companyContext.name} and why they want to work there specifically; its modelAnswer must list the concrete facts, values and strategy from the profile above that a well-prepared candidate would mention.` : ''}
 
 Return ONLY this exact JSON — no markdown, no explanation, no code fences:
 {

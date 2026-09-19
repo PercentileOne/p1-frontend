@@ -34,6 +34,7 @@ interface Props {
   score: number;           // 0–100
   role?: string;
   company?: string;
+  companyMock?: boolean; // a Company Specific mock — share text must say mock, not imply the real thing
   candidateId?: string;
   interviewId?: string;    // the session's Cosmos doc id — set by InterviewRoomPage's auto-upload
   apiBase?: string;
@@ -50,6 +51,7 @@ export function SaveDecisionPanel({
   score,
   role,
   company,
+  companyMock = false,
   candidateId,
   interviewId,
   alreadyShared = false,
@@ -141,7 +143,9 @@ export function SaveDecisionPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [alreadyShared, candidateId, interviewId]);
 
-  const shareText = `I scored ${score}% on my ${role ?? 'job'} interview with TheInterviewChair.com — the AI interview platform. Watch my full session:`;
+  const shareText = companyMock && company
+    ? `I've just had a mock ${company} interview on TheInterviewChair.com and scored ${score}% — practise for your dream company too. Watch my full session:`
+    : `I scored ${score}% on my ${role ?? 'job'} interview with TheInterviewChair.com — the AI interview platform. Watch my full session:`;
 
   // The recording + full answer data are already uploaded automatically the moment the
   // interview room closes — "Save" here just needs to publish a share link + QR for it.

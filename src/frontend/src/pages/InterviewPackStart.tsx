@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { listCompanies, getCompanyProfile, defaultsFor, buildCompanyContext, type CompanySummary, type CompanyProfile } from '../api/companiesApi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
@@ -213,7 +214,15 @@ export default function InterviewPackStart() {
   // A multi-page PDF can take a moment to extract — without this, clicking Start the instant
   // a file is dropped launches the interview with whatever cvText/jobSpec held before the
   // upload (usually empty), silently dropping the CV/job spec that was "just" uploaded.
-  const stillExtracting = jobSpecExtracting || cvExtracting;
+  // Company Specific interview (Francis, 2026-09-19): 'standard' is the interview we've always had; picking a
+  // company models the whole session on how that employer publicly hires (see api/companiesApi.ts).
+  const [companies, setCompanies] = useState<CompanySummary[]>([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>('standard');
+  const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
+  const [companyLoading, setCompanyLoading] = useState(false);
+  const companyPickRef = useRef(0);
+  const companyMode = selectedCompanyId !== 'standard';
+  const stillExtracting = jobSpecExtracting || cvExtracting || companyLoading;
   // Which of the three role-input tabs is showing. Defaults to Job Title — the primary path
   // for most candidates now — but opens straight to whichever tab already has real content
   // (a recruiter's prep link attaching a CV or job spec) so nothing pre-filled is ever hidden,
@@ -236,6 +245,25 @@ export default function InterviewPackStart() {
     const currentIndex = DIFFICULTIES.findIndex(d => d.value === selectedDifficulty);
     if (currentIndex < floorIndex) setSelectedDifficulty(DIFFICULTIES[floorIndex].value);
   }, [selectedSalary, selectedDifficulty]);
+  useEffect(() => { void listCompanies().then(setCompanies); }, []);
+  const handleCompanyChange = useCallback(async (id: string) => {
+    setSelectedCompanyId(id);
+    const pick = ++companyPickRef.current;
+    if (id === 'standard') { setCompanyProfile(null); setCompanyLoading(false); return; }
+    setSelectedSalary('N/A'); // company mode replaces the salary lever — see the note on the card
+    setCompanyProfile(null);
+    setCompanyLoading(true);
+    const profile = await getCompanyProfile(id);
+    if (pick !== companyPickRef.current) return; // a newer pick superseded this one
+    setCompanyProfile(profile);
+    setCompanyLoading(false);
+    if (profile) {
+      const d = defaultsFor(profile, jobTitle);
+      if (d.difficulty) setSelectedDifficulty(d.difficulty);
+      if (d.questionCount) setSelectedQuestionCount(d.questionCount);
+    }
+    logFlowEvent('COMPANY_SELECTED', { company: id, hasProfile: Boolean(profile) });
+  }, [jobTitle]);
   const [consentToRecord, setConsentToRecord] = useState(true);
   // Only shown after a blocked attempt to start — not on first load, so an empty form
   // doesn't look like it's already in an error state before the candidate's done anything.
@@ -383,18 +411,24 @@ export default function InterviewPackStart() {
     navigate('/interview/standard', {
       state: {
         jobTitle: jobTitle.trim() || incoming.jobTitle || '',
-        company: incoming.company || '',
+        company: companyMode ? (companyProfile?.name ?? companies.find(c => c.id === selectedCompanyId)?.name ?? '') : (incoming.company || ''),
+        // Company Specific interview — the digest is what the interview prompts read (see api/companiesApi.ts).
+        companyContext: companyMode
+          ? (companyProfile
+              ? buildCompanyContext(companyProfile, jobTitle.trim())
+              : (() => { const c = companies.find(x => x.id === selectedCompanyId); return c ? { id: c.id, name: c.name, sector: c.sector, digest: `${c.name} (${c.sector}).` } : undefined; })())
+          : undefined,
         jobSpecText: jobSpec.trim() || incoming.jobSpec || '',
         cvText: cvText.trim() || undefined,
         preferredName: preferredName.trim() || undefined,
         selectedLanguage,
         selectedDifficulty,
         interviewRound: selectedInterviewRound,
-        salaryExpectation: selectedSalary,
+        salaryExpectation: companyMode ? 'N/A' : selectedSalary,
         questionCount: selectedQuestionCount,
         autoStart: true,
         consentToRecord,
-        specialFocus: specialFocusChips.length > 0 ? specialFocusChips : undefined,
+        specialFocus: !companyMode && specialFocusChips.length > 0 ? specialFocusChips : undefined,
       },
     });
   };
@@ -481,6 +515,61 @@ export default function InterviewPackStart() {
           <p style={{ fontSize: '15px', color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>
             Tell us about the role — we'll tailor every question to match
           </p>
+        </div>
+
+        {/* Interview Style — Standard (the interview we've always had) or a company-specific mock (Francis,
+            2026-09-19). Deliberately styled exactly like the Interview Round card below. A native select on
+            purpose: ~70 names, keyboard type-to-jump works out of the box, and it behaves on phones. */}
+        <div style={{ background: 'var(--bg2)', border: `1px solid ${companyMode ? 'rgba(52,211,153,0.35)' : 'var(--border)'}`, borderRadius: '16px', padding: '24px 28px', marginBottom: '16px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
+            Interview Style
+          </div>
+          <select
+            value={selectedCompanyId}
+            onChange={e => { void handleCompanyChange(e.target.value); }}
+            style={{
+              width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)',
+              borderRadius: '10px', padding: '12px 14px', color: 'var(--text)', fontSize: '14px',
+              fontFamily: 'inherit', outline: 'none', cursor: 'pointer', appearance: 'none',
+              backgroundImage: SELECT_CHEVRON,
+              backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
+            }}
+          >
+            <option value="standard">Standard</option>
+            {companies.length > 0 && (
+              <optgroup label="Interview like a specific company">
+                {[...companies].sort((a, b) => a.name.localeCompare(b.name)).map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+          {!companyMode && (
+            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
+              Standard is a well-rounded interview for any role. Or pick a company to practise an interview modelled on how they hire — their values, style and bar.
+            </div>
+          )}
+          {companyMode && companyLoading && (
+            <div style={{ fontSize: '12px', color: '#34D399', marginTop: '10px', lineHeight: 1.5 }}>
+              Researching {companies.find(c => c.id === selectedCompanyId)?.name ?? 'this company'}'s interview style… (the first time can take up to half a minute)
+            </div>
+          )}
+          {companyMode && !companyLoading && (
+            <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--text-3)', lineHeight: 1.55 }}>
+              {companyProfile?.interview?.overview && (
+                <div style={{ color: 'var(--text-2)', marginBottom: '8px' }}>{companyProfile.interview.overview}</div>
+              )}
+              {companyProfile?.interview?.stages && companyProfile.interview.stages.length > 0 && (
+                <div style={{ marginBottom: '8px' }}>Typical process: {companyProfile.interview.stages.map(st => st.name).join(' → ')}</div>
+              )}
+              {!companyProfile && (
+                <div style={{ color: '#fbbf24', marginBottom: '8px' }}>We couldn't load this company's full profile just now — your interview will still be themed around them.</div>
+              )}
+              <div>
+                A practice interview in the style of {companies.find(c => c.id === selectedCompanyId)?.name ?? 'this company'}, based on publicly described hiring processes and written fresh for you — not real questions, and not affiliated with or endorsed by them. We've set a typical difficulty and number of questions for that company; change them below if you like. Salary and Special Focus aren't used here.
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Role input — one card, three tabs, all visible in the same strip (Francis, 2026-09-13:
@@ -689,6 +778,8 @@ export default function InterviewPackStart() {
           </div>
         </div>
 
+        {!companyMode && (
+        <>
         {/* Salary Expectation — see SALARY_BANDS's own comment above. Optional, deliberately
             lets a candidate practice at a level above their comfort zone. */}
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 28px', marginBottom: '16px' }}>
@@ -790,6 +881,9 @@ export default function InterviewPackStart() {
             </div>
           )}
         </div>
+
+        </>
+        )}
 
         {/* Language + Difficulty + Question Count — the primary path now that a CV isn't
             required; wraps on narrow screens rather than cramming three dropdowns into one row */}
@@ -1023,7 +1117,7 @@ export default function InterviewPackStart() {
             fontFamily: 'inherit', letterSpacing: '-0.01em', transition: 'opacity 0.2s',
           }}
         >
-          {stillExtracting ? 'Extracting file text…' : 'Start Interview →'}
+          {companyLoading ? 'Researching the company…' : stillExtracting ? 'Extracting file text…' : 'Start Interview →'}
         </button>
 
         {attemptedStart && !hasEnough && (

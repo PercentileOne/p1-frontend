@@ -484,6 +484,7 @@ export default function InterviewSummaryPage() {
   const mcqQuestions: Array<{ questionText: string; options: string[]; correctIndex: number; explanation: string; topic?: string }> = src.mcqQuestions ?? [];
   const mcqResults: Array<{ correct: boolean; selectedIndex: number; questionIndex: number }> = src.mcqResults ?? [];
   const askInterviewerBonusPoints: number = src.askInterviewerBonusPoints ?? 0;
+  const companyMock: boolean = src.companyMock === true;
   const playbackUrl: string | null = src.playbackUrl ?? (typeof src.videoUrl === 'string' ? src.videoUrl : null);
   const chapters: { questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[] = src.chapters ?? [];
   const interviewId: string | undefined = src.interviewId ?? routeId;
@@ -934,6 +935,7 @@ ${questionsHtml}
               score={Math.round(overall * 100)}
               role={jobCtx?.title}
               company={jobCtx?.company}
+              companyMock={companyMock}
               candidateId={candidateId}
               interviewId={interviewId}
               alreadyShared={!!src.isShared}
@@ -1002,6 +1004,7 @@ ${questionsHtml}
         <ShareModal
           role={jobCtx?.title}
           company={jobCtx?.company}
+          companyMock={companyMock}
           score={Math.round(overall * 100)}
           shareUrl={savedShareUrl ?? `https://candidate.explain.global/shared/${savedShareToken}`}
           onClose={() => setShowShare(false)}
