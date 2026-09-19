@@ -130,15 +130,49 @@ export async function generateExamQuestions(cert: ExamCatalogEntry, count: numbe
         const fromBank = await res.json() as ExamQuestion[];
         if (fromBank.length > best.length) best = fromBank;
         if (best.length >= Math.ceil(count * 0.9)) return best;
-      } else if (res.status !== 503) {
-        break; // a real failure, not "still preparing" — use the fallback below
-      }
-    } catch { break; }
+      } else if (res.status >= 400 && res.status < 500) {
+        break; // the request itself is wrong (404/400) — retrying can't help; use the fallback below
+      } // 5xx (still preparing, a deploy restart, a gateway timeout) is transient — try again
+    } catch { /* network blip or the API restarting mid-request — try again */ }
   }
   if (best.length > 0) return best;
 
-  const questions = await Promise.all(Array.from({ length: count }, () => generateExamQuestion(cert)));
-  return questions.filter((q): q is ExamQuestion => q !== null);
+  // Fallback: no server bank, so every question is an independent one-off call — nothing stops two of
+  // them landing on the same scenario (found live 2026-09-19: a driving-theory paper with four "wet
+  // road, safe gap" questions and no question ids, i.e. this path). Over-generate, then drop repeats.
+  const generated = await Promise.all(Array.from({ length: Math.ceil(count * 1.5) }, () => generateExamQuestion(cert)));
+  return dropNearDuplicates(generated.filter((q): q is ExamQuestion => q !== null)).slice(0, count);
+}
+
+const STOP_WORDS = new Set('the and for you your are what which should would could when that this with from into have has was were will can does how most best following correct statement not its their them then than there these those been being because about after before while during must need may might all'.split(' '));
+
+function tokens(text: string): Set<string> {
+  const out = new Set<string>();
+  for (const w of text.toLowerCase().match(/[a-z0-9]+/g) ?? []) {
+    if (w.length <= 2 || STOP_WORDS.has(w)) continue;
+    out.add(w.length > 4 && w.endsWith('s') ? w.slice(0, -1) : w);
+  }
+  return out;
+}
+
+function jaccard(a: Set<string>, b: Set<string>): number {
+  if (a.size === 0 || b.size === 0) return 0;
+  let inter = 0;
+  for (const x of a) if (b.has(x)) inter++;
+  return inter / (a.size + b.size - inter);
+}
+
+// Same lexical "reads like the same question" rule as the server bank (ExamQuestions Endpoint.cs, Fingerprint).
+export function isNearDuplicate(a: ExamQuestion, b: ExamQuestion): boolean {
+  const q = jaccard(tokens(a.questionText), tokens(b.questionText));
+  if (q >= 0.5) return true;
+  return q >= 0.3 && jaccard(tokens(a.options[a.correctIndex] ?? ''), tokens(b.options[b.correctIndex] ?? '')) >= 0.6;
+}
+
+export function dropNearDuplicates(questions: ExamQuestion[]): ExamQuestion[] {
+  const kept: ExamQuestion[] = [];
+  for (const q of questions) if (!kept.some(k => isNearDuplicate(k, q))) kept.push(q);
+  return kept;
 }
 
 // Best-effort, returns whether the report was accepted. Anonymous on the server (a reporter only

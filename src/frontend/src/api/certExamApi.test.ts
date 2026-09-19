@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeScaledScore, type ExamQuestion } from './certExamApi';
+import { computeScaledScore, dropNearDuplicates, type ExamQuestion } from './certExamApi';
 import type { ExamCatalogEntry } from './examCatalogApi';
 
 // Builds `total` answered questions of which the first `correct` are right.
@@ -84,5 +84,28 @@ describe('computeScaledScore', () => {
   it('reports per-domain accuracy', () => {
     const r = computeScaledScore(cert({ maxScore: 100 }), answers(3, 4));
     expect(r.domainAccuracy).toEqual([{ domain: 'D', correct: 3, total: 4 }]);
+  });
+});
+
+describe('dropNearDuplicates', () => {
+  const q = (questionText: string, correct = 'Slow down and be prepared to stop'): ExamQuestion =>
+    ({ questionText, options: [correct, 'x1', 'x2', 'x3'], correctIndex: 0, explanation: '', domain: 'D' } as ExamQuestion);
+
+  it('drops reworded repeats of the same scenario (the driving-theory case)', () => {
+    const kept = dropNearDuplicates([
+      q('You are driving on a wet road behind a vehicle travelling at the speed limit. What should you do to maintain a safe safety margin?'),
+      q('You are driving on a wet road behind another car. What should you do to maintain a safe safety margin?'),
+      q('You are turning left into a side road and a pedestrian is waiting to cross the road you are entering. What should you do?'),
+      q('You are turning left into a side road and a pedestrian is waiting at the corner to cross that road. What should you do?'),
+    ]);
+    expect(kept).toHaveLength(2);
+  });
+
+  it('keeps genuinely different questions on the same broad topic', () => {
+    const kept = dropNearDuplicates([
+      q('What should you expect when you see a triangular warning sign with a red border showing two children?', 'Children crossing'),
+      q('What does a blue circular sign showing a white arrow pointing diagonally downwards to the left require you to do?', 'Pass on the left'),
+    ]);
+    expect(kept).toHaveLength(2);
   });
 });
