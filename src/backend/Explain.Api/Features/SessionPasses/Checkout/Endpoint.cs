@@ -184,7 +184,10 @@ public static class Endpoint
         Event stripeEvent;
         try
         {
-            stripeEvent = EventUtility.ConstructEvent(json, ctx.Request.Headers["Stripe-Signature"], webhookSecret);
+            // throwOnApiVersionMismatch: false — the signature is still fully verified; this only stops us rejecting a genuine
+            // event just because its webhook endpoint was created on a different Stripe API version than this library's (a
+            // brand-new LIVE endpoint can differ from the sandbox one). We only read stable checkout.session fields.
+            stripeEvent = EventUtility.ConstructEvent(json, ctx.Request.Headers["Stripe-Signature"], webhookSecret, throwOnApiVersionMismatch: false);
         }
         catch (StripeException ex)
         {
