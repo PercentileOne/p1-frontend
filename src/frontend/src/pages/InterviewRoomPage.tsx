@@ -6,7 +6,7 @@ import { MouthOverlay, MOUTH_POSITIONS, MOUTH_OVERLAY_ENABLED } from '../compone
 import { YouCamera } from '../components/YouCamera';
 import { VoiceInput, type TranscriptMeta } from '../components/VoiceInput';
 import type { InterviewQuestion } from '../api/explainApi';
-import { speak, elevenLabsConfigured, getStoredInterviewerVolume, setInterviewerVolume } from '../api/ttsApi';
+import { speak, elevenLabsConfigured, getStoredInterviewerVolume, setInterviewerVolume, setTTSLanguage } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
 import { sessionPrepareClient, generateMikeScriptOnly, generateModelAnswer, generateCandidateQuestion } from '../api/aiScoring';
@@ -252,6 +252,17 @@ export default function InterviewRoomPage() {
   // (see ttsApi.ts) so it carries across sessions; takes effect immediately even mid-sentence.
   const [interviewerVolume, setInterviewerVolumeUI] = useState(() => getStoredInterviewerVolume());
   const [volumeMenuOpen, setVolumeMenuOpen] = useState(false);
+  // "Test audio" only proves a clip finished, not that anyone heard it. A muted Voice Volume (it is saved in the browser and
+  // does NOT affect the avatars' own video audio) makes the test "pass" in silence, so un-mute it here and say so.
+  function onTestAudio() {
+    if (interviewerVolume === 0) {
+      handleVolumeChange(1);
+      setAudioCheckNote("Your Voice Volume was muted — we've turned it back up.");
+    } else {
+      setAudioCheckNote('');
+    }
+    testAudio();
+  }
   function handleVolumeChange(v: number) {
     setInterviewerVolumeUI(v);
     setInterviewerVolume(v);
@@ -280,6 +291,8 @@ export default function InterviewRoomPage() {
   // the intake screen; switching later couldn't retroactively translate already-generated
   // question text, so the control looked live but silently did nothing (Francis, 2026-09-18).
   const [sessionLanguage] = useState(ctx.selectedLanguage ?? 'en');
+  // Tell the voice service the interview language for the length of the session, so it never guesses it from the text.
+  useEffect(() => { setTTSLanguage(sessionLanguage); return () => setTTSLanguage('en'); }, [sessionLanguage]);
   const [elapsed, setElapsed] = useState(0);
   const [paused, setPaused] = useState(false);
   // Fixed at intake — no setter. Questions/scoring/Go Deeper limits are all built around
@@ -288,6 +301,7 @@ export default function InterviewRoomPage() {
   const [selectedDifficulty] = useState<string>(ctx.selectedDifficulty ?? 'Standard');
   const [selectedInterviewRound] = useState<string>(ctx.interviewRound ?? 'First Round Interview');
   const [audioCheckState, setAudioCheckState] = useState<'idle' | 'playing' | 'done'>('idle');
+  const [audioCheckNote, setAudioCheckNote] = useState('');
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pausedPhaseRef = useRef<RoomPhase>('answering');
@@ -1505,11 +1519,16 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '11px 16px' }}>
                     <span style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', userSelect: 'none' }}>Audio check</span>
-                    <button onClick={testAudio} disabled={audioCheckState === 'playing'}
+                    <button onClick={onTestAudio} disabled={audioCheckState === 'playing'}
                       style={{ background: 'transparent', border: `1px solid ${audioCheckState === 'done' ? 'rgba(52,211,153,0.4)' : 'var(--border)'}`, borderRadius: '8px', padding: '5px 14px', fontSize: '12px', fontWeight: 600, cursor: audioCheckState === 'playing' ? 'default' : 'pointer', color: audioCheckState === 'done' ? '#34D399' : 'var(--text-2)' }}>
-                      {audioCheckState === 'done' ? '✓ Audio OK' : audioCheckState === 'playing' ? 'Playing…' : '🔊 Test audio'}
+                      {audioCheckState === 'done' ? '✓ Played' : audioCheckState === 'playing' ? 'Playing…' : '🔊 Test audio'}
                     </button>
                   </div>
+                  {(audioCheckNote || audioCheckState === 'done') && (
+                    <div style={{ padding: '0 16px 11px', fontSize: '11.5px', lineHeight: 1.5, color: audioCheckNote ? '#F59E0B' : 'var(--text-3)' }}>
+                      {audioCheckNote || "Didn't hear us? Check the speaker icon at the top of the screen (Voice Volume) and your device's own volume."}
+                    </div>
+                  )}
                 </motion.div>
 
                 {/* Go Deeper toggle */}

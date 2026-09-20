@@ -147,6 +147,12 @@ export function setTTSRecordingDestination(node: MediaStreamAudioDestinationNode
   _recordingCompressor = compressor ?? null;
 }
 
+// The interview's language (chosen at intake), forwarded to the voice service so it never has to guess it from the
+// text — see the backend's TtsLanguage. Set by the interview room for the length of a session; 'en' otherwise.
+let ttsLanguage = 'en';
+export function setTTSLanguage(code: string | undefined | null) { ttsLanguage = code || 'en'; }
+export function getTTSLanguage() { return ttsLanguage; }
+
 async function speakElevenLabs(
   text: string,
   role: 'hr' | 'technical' | 'michelle',
@@ -170,7 +176,7 @@ async function speakElevenLabs(
   const genRes = await fetch(`${API_BASE}/interviews/speak`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: sanitiseForTTS(text), role }),
+    body: JSON.stringify({ text: sanitiseForTTS(text), role, language: ttsLanguage }),
   });
   if (!genRes.ok) throw new Error(`Interview speak proxy error: ${genRes.status}`);
   const { audioUrl } = await genRes.json() as { audioUrl: string };

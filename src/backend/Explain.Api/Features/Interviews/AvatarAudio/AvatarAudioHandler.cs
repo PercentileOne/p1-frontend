@@ -64,6 +64,10 @@ public class AvatarAudioHandler(
         // since KeyFor only hashes (voiceId, text). Default speed keeps the exact same key
         // as before (no cache-busting for MCQ narration, which never changed).
         var cacheVoiceId = speed != 1.0 ? $"{voiceId}@speed{speed}" : voiceId;
+        // Pinned language (see TtsLanguage). Folded into the cache key too, so a clip previously generated while the
+        // model was still guessing the language — possibly the wrong one — is never served again.
+        var languageCode = TtsLanguage.Normalise(cmd.Language);
+        if (languageCode is not null) cacheVoiceId += $"@lang{languageCode}";
         var key = TtsCacheService.KeyFor(cacheVoiceId, cmd.Text);
         var cached = await cache.GetReadUrlIfCachedAsync(key, extension: "pcm");
         if (cached is not null)
@@ -80,6 +84,7 @@ public class AvatarAudioHandler(
             {
                 text = cmd.Text,
                 model_id = Model,
+                language_code = languageCode,
                 voice_settings = new { stability = 0.5, similarity_boost = 0.75, speed },
             });
 

@@ -11,9 +11,9 @@ public static class Endpoint
     // treats as anonymous-but-proxied everywhere else it touches a third-party AI provider.
     public static void Map(WebApplication app) =>
         app.MapPost("/interviews/speak", async (Request req, IMediator mediator) =>
-            (await mediator.Send(new SpeakVoiceCommand(req.Text, req.Role))).ToHttpResult())
+            (await mediator.Send(new SpeakVoiceCommand(req.Text, req.Role, req.Language))).ToHttpResult())
            .WithName("InterviewSpeak").WithTags("Interviews")
            .AllowAnonymous();
 
-    private record Request(string Text, string Role);
+    private record Request(string Text, string Role, string? Language = null);
 }

@@ -2,7 +2,7 @@
 // (Features/Interviews/AvatarSession, AvatarAudio), same pattern as ttsApi.ts's relationship
 // to ElevenLabs. This file never touches a LiveAvatar credential directly.
 
-import { sanitiseForTTS } from './ttsApi';
+import { sanitiseForTTS, getTTSLanguage } from './ttsApi';
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 
@@ -67,7 +67,7 @@ export async function fetchAvatarAudioBase64(text: string, role: 'hr' | 'technic
   const genRes = await fetch(`${API_BASE}/interviews/avatar-audio`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: sanitiseForTTS(text), role }),
+    body: JSON.stringify({ text: sanitiseForTTS(text), role, language: getTTSLanguage() }),
   });
   if (!genRes.ok) throw new Error(`avatar-audio proxy error: ${genRes.status}`);
   const { audioUrl } = await genRes.json() as { audioUrl: string };
