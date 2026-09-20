@@ -3,7 +3,7 @@ import { Search, Loader2, ChevronUp, ChevronDown, RefreshCw, Trash2 } from 'luci
 import { useAuth } from '../context/AuthContext'
 import { eventsApi, type SystemEvent, type ApiError } from '../api/eventsApi'
 import { Pagination } from '../components/Pagination'
-import { describeDevice, describeLocation, ageOf } from '../lib/eventFormat'
+import { describeDevice, describeLocation, describeCityGuess, ageOf } from '../lib/eventFormat'
 
 // Same sortBy values the backend's SortableFields whitelist accepts (Features/Events/Admin/
 // Endpoint.cs) — Location sorts by country, not the combined "city, country" display string,
@@ -279,7 +279,7 @@ export default function ActivityLog() {
                   <SortableHeader label="Event" sortKeyName="eventType" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
                   <SortableHeader label="Page" sortKeyName="page" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
                   <SortableHeader label="Portal" sortKeyName="portal" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
-                  <SortableHeader label="Location (approx.)" sortKeyName="country" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
+                  <SortableHeader label="Country" sortKeyName="country" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
                   <th style={{ textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Device</th>
                   <th style={{ textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Session</th>
                 </tr>
@@ -384,7 +384,8 @@ function EventDetailModal({ event, onClose, onDelete }: { event: SystemEvent; on
         <DetailRow label="Role" value={event.role ?? '—'} />
         <DetailRow label="Portal" value={event.portal ?? '—'} />
         <DetailRow label="Page" value={event.page ?? '—'} mono />
-        <DetailRow label="Location (approx.)" value={describeLocation(event, { withRegion: true })} />
+        <DetailRow label="Country" value={describeLocation(event)} />
+        <DetailRow label="City guess" value={<span style={{ color: 'var(--text-3)' }}>{describeCityGuess(event)}</span>} />
         <DetailRow label="IP address" value={event.ipAddress ?? '—'} mono />
         <DetailRow label="Device" value={describeDevice(event.userAgent)} />
         <DetailRow label="User agent" value={event.userAgent ?? '—'} />
