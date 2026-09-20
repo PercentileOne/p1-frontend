@@ -58,7 +58,96 @@ public static class Endpoint
         // explicitly asked for. CAN_VIEW_ADMIN_PORTAL is confirmed granted to Admin and is the
         // baseline "can see admin-portal pages at all" gate every other read-only list here uses.
         .RequireAuthorization(Permissions.ViewAdminPortal);
+
+        // POST /api/admin/events/delete — remove activity records from the log (Francis, 2026-09-20: he wanted a
+        // way to clear noise such as his own open browser tabs and test traffic). Two modes:
+        //   • Items:  specific events the admin ticked/opened (id + sessionId, the container's partition key), max 500.
+        //   • Filter: EVERY event matching the current search, but only if `expectedCount` equals the live match
+        //             count — so what is deleted is exactly what the admin was shown and confirmed, never a different
+        //             set because new events arrived or a filter changed in between. Max 5,000 per request.
+        // Each deletion writes an `admin_events_deleted` audit event (who, how many, which filter) so the act of
+        // deleting is itself never invisible. This only affects the hot Activity Log copy: events are also copied
+        // to the permanent blob archive every few minutes (EventsArchiveService), and those archive copies and
+        // the anonymous daily summary counters are deliberately left untouched.
+        app.MapPost("/api/admin/events/delete", async (DeleteEventsRequest req, HttpContext ctx, CosmosService cosmos, ILogger<Program> logger) =>
+        {
+            var container = cosmos.GetContainer("systemEvents");
+            var targets = new List<EventRef>();
+            string mode;
+
+            if (req.Items is { Count: > 0 })
+            {
+                if (req.Items.Count > MaxItemsPerRequest)
+                    return Results.BadRequest(new { error = $"Select at most {MaxItemsPerRequest} events at a time." });
+                mode = "selected";
+                targets.AddRange(req.Items.Where(i => !string.IsNullOrWhiteSpace(i.Id) && !string.IsNullOrWhiteSpace(i.SessionId)));
+            }
+            else if (req.Filter is not null && req.ExpectedCount is not null)
+            {
+                mode = "matching-filter";
+                var f = req.Filter;
+                var (where, parameters) = BuildFilter(f.UserId, f.Email, f.EventType, f.Portal, f.Q, f.From, f.To);
+
+                var countQuery = new QueryDefinition($"SELECT VALUE COUNT(1) FROM c{where}");
+                foreach (var p in parameters) countQuery = countQuery.WithParameter(p.Name, p.Value);
+                var live = 0;
+                using (var countFeed = container.GetItemQueryIterator<int>(countQuery))
+                    if (countFeed.HasMoreResults) live = (await countFeed.ReadNextAsync()).FirstOrDefault();
+
+                if (live != req.ExpectedCount)
+                    return Results.Conflict(new { error = $"The number of matching events changed (now {live}). Nothing was deleted — please review and confirm again.", actualCount = live });
+                if (live > MaxMatchingPerRequest)
+                    return Results.BadRequest(new { error = $"That would delete {live} events; the limit is {MaxMatchingPerRequest} per go. Narrow the search (for example by date) first." });
+
+                var idQuery = new QueryDefinition($"SELECT c.id, c.sessionId FROM c{where}");
+                foreach (var p in parameters) idQuery = idQuery.WithParameter(p.Name, p.Value);
+                using var idFeed = container.GetItemQueryIterator<EventRef>(idQuery);
+                while (idFeed.HasMoreResults) targets.AddRange(await idFeed.ReadNextAsync());
+            }
+            else
+            {
+                return Results.BadRequest(new { error = "Provide either items, or a filter with the expected count." });
+            }
+
+            var deleted = 0;
+            foreach (var chunk in targets.Chunk(20))
+            {
+                var results = await Task.WhenAll(chunk.Select(async t =>
+                {
+                    try { await container.DeleteItemAsync<object>(t.Id, new PartitionKey(t.SessionId)); return true; }
+                    catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { return false; } // already gone
+                }));
+                deleted += results.Count(r => r);
+            }
+
+            // Audit trail for the deletion itself.
+            try
+            {
+                var actorId = ctx.User.FindFirst("sub")?.Value;
+                var actorEmail = ctx.User.FindFirst("email")?.Value;
+                var audit = new SystemEventDoc(
+                    id: Guid.NewGuid().ToString(), sessionId: "admin-audit", userId: actorId, email: actorEmail, role: ctx.User.FindFirst("role")?.Value,
+                    eventType: "admin_events_deleted", page: "/admin/activity-log", portal: "admin", ipAddress: ctx.Connection.RemoteIpAddress?.ToString(),
+                    country: null, city: null, userAgent: null,
+                    metadata: new Dictionary<string, object> { ["mode"] = mode, ["deleted"] = deleted, ["requested"] = targets.Count },
+                    createdAt: DateTimeOffset.UtcNow.ToString("o"));
+                await container.CreateItemAsync(audit, new PartitionKey(audit.sessionId));
+            }
+            catch (Exception ex) { logger.LogWarning(ex, "Could not write the audit event for an activity-log deletion."); }
+
+            logger.LogWarning("Activity log: {Deleted} event(s) deleted by {Admin} ({Mode}).", deleted, ctx.User.FindFirst("email")?.Value, mode);
+            return Results.Ok(new { deleted });
+        })
+        .WithName("DeleteSystemEvents").WithTags("Events")
+        .RequireAuthorization(Permissions.ViewAdminPortal);
     }
+
+    private const int MaxItemsPerRequest = 500;
+    private const int MaxMatchingPerRequest = 5000;
+
+    public record EventRef(string Id, string SessionId);
+    public record EventFilter(string? UserId, string? Email, string? EventType, string? Portal, string? Q, DateTimeOffset? From, DateTimeOffset? To);
+    public record DeleteEventsRequest(List<EventRef>? Items, EventFilter? Filter, int? ExpectedCount);
 
     // Whitelisted, not interpolated from the raw query string — sortBy/sortDir feed directly
     // into a SQL clause, so an unrecognised value must fall back to the default rather than

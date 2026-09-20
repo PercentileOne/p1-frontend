@@ -43,6 +43,11 @@ public static class Endpoint
                 var email  = ctx.User.FindFirst("email")?.Value;
                 var role   = ctx.User.FindFirst("role")?.Value;
 
+                // When this browser's sign-in token was issued — lets the admin log tell a fresh login from an old
+                // session left open on some device (e.g. a phone tab that reloads when the browser wakes).
+                var tokenIssuedAt = long.TryParse(ctx.User.FindFirst("iat")?.Value, out var iat)
+                    ? DateTimeOffset.FromUnixTimeSeconds(iat).ToString("o") : null;
+
                 var ip = ctx.Connection.RemoteIpAddress?.ToString();
                 var geoResult = await geo.ResolveAsync(ip, ctx.RequestAborted);
 
@@ -60,7 +65,10 @@ public static class Endpoint
                     city: geoResult.City,
                     userAgent: ctx.Request.Headers.UserAgent.ToString() is { Length: > 0 } ua ? ua : null,
                     metadata: req.Metadata,
-                    createdAt: DateTimeOffset.UtcNow.ToString("o"));
+                    createdAt: DateTimeOffset.UtcNow.ToString("o"),
+                    region: geoResult.Region,
+                    accuracyKm: geoResult.AccuracyKm,
+                    tokenIssuedAt: tokenIssuedAt);
 
                 var container = cosmos.GetContainer("systemEvents");
                 await container.CreateItemAsync(doc, new PartitionKey(doc.sessionId), cancellationToken: ctx.RequestAborted);
@@ -99,4 +107,7 @@ public record SystemEventDoc(
     // own documented reasoning (Features/LearnAlerts/Endpoint.cs): fixed-width, lexicographically
     // sortable strings are what Cosmos-side SQL range comparisons (used by EventsArchiveService's
     // "everything since last archive run" query) actually need to be reliable.
-    string createdAt);
+    string createdAt,
+    string? region = null,
+    int? accuracyKm = null,
+    string? tokenIssuedAt = null);

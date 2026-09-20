@@ -20,6 +20,9 @@
     }
   }
 
+  // Local previews talk to the real API; never log them (see the same guard in each portal's flowLogger.ts).
+  if (/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)) return;
+
   try {
     fetch(API_BASE + '/api/events', {
       method: 'POST',

@@ -4,7 +4,8 @@ using MaxMind.GeoIP2.Exceptions;
 
 namespace Explain.Api.Infrastructure.Geo;
 
-public record IpGeoResult(string? Country, string? City);
+// AccuracyKm is MaxMind's own estimate of how far off the point could be (an honest "roughly here", not a fix).
+public record IpGeoResult(string? Country, string? City, string? Region = null, int? AccuracyKm = null);
 
 /// <summary>
 /// Resolves a visitor's IP to a country/city for the system event log (see Features/Events).
@@ -70,7 +71,7 @@ public class IpGeoLookupService
         try
         {
             var city = reader.City(ipAddress);
-            return new IpGeoResult(city.Country?.Name, city.City?.Name);
+            return new IpGeoResult(city.Country?.Name, city.City?.Name, city.MostSpecificSubdivision?.Name, city.Location?.AccuracyRadius);
         }
         catch (AddressNotFoundException)
         {

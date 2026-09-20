@@ -35,6 +35,9 @@ export function logEvent(
   eventType: string,
   opts: { page?: string; metadata?: Record<string, unknown> } = {},
 ): void {
+  // Local development servers talk to the REAL API, so their page views would land in the production
+  // Activity Log looking like real visitors (found 2026-09-20). Never log from localhost.
+  if (typeof window !== 'undefined' && /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)) return;
   const body = {
     sessionId: getSessionId(),
     eventType,

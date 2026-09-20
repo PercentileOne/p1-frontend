@@ -18,6 +18,9 @@ export interface SystemEvent {
   country: string | null;
   city: string | null;
   userAgent: string | null;
+  region?: string | null;
+  accuracyKm?: number | null;
+  tokenIssuedAt?: string | null;
   metadata: Record<string, unknown> | null;
   createdAt: string;
 }
@@ -56,7 +59,33 @@ async function call<T>(path: string, token: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface DeleteEventsFilter {
+  userId?: string; email?: string; eventType?: string; portal?: string; q?: string; from?: string; to?: string;
+}
+
+async function post<T>(path: string, token: string, body: unknown): Promise<T> {
+  const res = await fetch(`${EXPLAIN_API_BASE}${path}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    let message = res.statusText;
+    try { const j = await res.json() as { error?: string }; message = j.error ?? message; } catch { /* not JSON */ }
+    throw { error: message, status: res.status } satisfies ApiError;
+  }
+  return res.json() as Promise<T>;
+}
+
 export const eventsApi = {
+  // Delete specific events (id + sessionId, the container's partition key) — max 500 per call.
+  deleteSelected(token: string, items: { id: string; sessionId: string }[]): Promise<{ deleted: number }> {
+    return post('/api/admin/events/delete', token, { items });
+  },
+  // Delete EVERY event matching the filter — the server refuses unless expectedCount equals the live match count.
+  deleteMatching(token: string, filter: DeleteEventsFilter, expectedCount: number): Promise<{ deleted: number }> {
+    return post('/api/admin/events/delete', token, { filter, expectedCount });
+  },
   list(token: string, params: ListEventsParams): Promise<ListEventsResponse> {
     const qs = new URLSearchParams();
     if (params.userId) qs.set('userId', params.userId);

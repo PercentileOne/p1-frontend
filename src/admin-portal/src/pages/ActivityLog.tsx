@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { Search, Loader2, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react'
+import { Search, Loader2, ChevronUp, ChevronDown, RefreshCw, Trash2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { eventsApi, type SystemEvent, type ApiError } from '../api/eventsApi'
 import { Pagination } from '../components/Pagination'
+import { describeDevice, describeLocation, ageOf } from '../lib/eventFormat'
 
 // Same sortBy values the backend's SortableFields whitelist accepts (Features/Events/Admin/
 // Endpoint.cs) — Location sorts by country, not the combined "city, country" display string,
@@ -29,6 +30,12 @@ const inputStyle: React.CSSProperties = {
 const selectStyle: React.CSSProperties = {
   background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 10,
   padding: '9px 12px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', cursor: 'pointer',
+}
+
+const dangerBtn: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700,
+  color: '#EF4444', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.35)',
+  borderRadius: 8, padding: '7px 12px', cursor: 'pointer', fontFamily: 'inherit',
 }
 
 // Module-level (not just inside ActivityLog itself) so EventDetailModal can reuse it too.
@@ -61,6 +68,12 @@ export default function ActivityLog() {
   // Page column's hover tooltip to chase down a truncated /interview-summary/<guid> link.
   const [selectedEvent, setSelectedEvent] = useState<SystemEvent | null>(null)
 
+  // Deleting (Francis, 2026-09-20): tick rows, or delete everything matching the current search. Always confirmed.
+  const [ticked, setTicked] = useState<Set<string>>(new Set())
+  const [confirm, setConfirm] = useState<null | { kind: 'selected' | 'matching' | 'one'; count: number; one?: SystemEvent }>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [notice, setNotice] = useState('')
+
   const load = useCallback(async () => {
     if (!token) return
     setLoading(true)
@@ -80,6 +93,7 @@ export default function ActivityLog() {
       })
       setRows(res.rows)
       setTotal(res.total)
+      setTicked(new Set())
     } catch (err) {
       setError((err as ApiError).error ?? 'Failed to load activity.')
     } finally {
@@ -102,6 +116,44 @@ export default function ActivityLog() {
   }
 
   useEffect(() => { load() }, [load])
+
+  const currentFilter = () => ({
+    q: q.trim() || undefined,
+    eventType: eventType.trim() || undefined,
+    portal: portal || undefined,
+    from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
+    to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
+  })
+
+  async function runDelete() {
+    if (!token || !confirm) return
+    setDeleting(true); setError(''); setNotice('')
+    try {
+      let deleted = 0
+      if (confirm.kind === 'one' && confirm.one) {
+        deleted = (await eventsApi.deleteSelected(token, [{ id: confirm.one.id, sessionId: confirm.one.sessionId }])).deleted
+        setSelectedEvent(null)
+      } else if (confirm.kind === 'selected') {
+        const items = rows.filter(r => ticked.has(r.id)).map(r => ({ id: r.id, sessionId: r.sessionId }))
+        deleted = (await eventsApi.deleteSelected(token, items)).deleted
+      } else {
+        deleted = (await eventsApi.deleteMatching(token, currentFilter(), confirm.count)).deleted
+      }
+      setNotice(`Deleted ${deleted.toLocaleString()} event${deleted === 1 ? '' : 's'}.`)
+      setConfirm(null)
+      setPage(1)
+      await load()
+    } catch (err) {
+      setError((err as ApiError).error ?? 'Delete failed.')
+      setConfirm(null)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const toggleTick = (id: string) => setTicked(prev => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n })
+  const allTicked = rows.length > 0 && rows.every(r => ticked.has(r.id))
+  const anyFilter = !!(q.trim() || eventType.trim() || portal || from || to)
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
@@ -126,6 +178,12 @@ export default function ActivityLog() {
           <RefreshCw size={13} className={loading ? 'admin-spin' : ''} /> Refresh
         </button>
       </div>
+
+      {notice && (
+        <div style={{ fontSize: 12, color: '#34D399', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
+          {notice}
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap' }}>
         <div style={{
@@ -172,6 +230,25 @@ export default function ActivityLog() {
         )}
       </div>
 
+      {!loading && total > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap', fontSize: 12, color: 'var(--text-3)' }}>
+          {ticked.size > 0 && (
+            <>
+              <span style={{ color: 'var(--text-2)', fontWeight: 600 }}>{ticked.size} selected</span>
+              <button onClick={() => setConfirm({ kind: 'selected', count: ticked.size })} style={dangerBtn}><Trash2 size={13} /> Delete selected</button>
+              <button onClick={() => setTicked(new Set())} style={{ ...selectStyle, cursor: 'pointer' }}>Clear selection</button>
+            </>
+          )}
+          <button
+            onClick={() => setConfirm({ kind: 'matching', count: total })}
+            style={{ ...dangerBtn, marginLeft: ticked.size > 0 ? 'auto' : 0, background: 'transparent' }}
+            title="Deletes every event that matches the current search and dates — you will be asked to confirm the count"
+          >
+            <Trash2 size={13} /> {anyFilter ? `Delete all ${total.toLocaleString()} matching this search…` : `Delete ALL ${total.toLocaleString()} events…`}
+          </button>
+        </div>
+      )}
+
       {error && (
         <div style={{ fontSize: 12, color: '#EF4444', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
           {error}
@@ -190,12 +267,21 @@ export default function ActivityLog() {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                  <th style={{ width: 36, padding: '10px 0 10px 16px' }}>
+                    <input
+                      type="checkbox" checked={allTicked} aria-label="Select all on this page"
+                      onChange={() => setTicked(allTicked ? new Set() : new Set(rows.map(r => r.id)))}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </th>
                   <SortableHeader label="When" sortKeyName="createdAt" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
-                  <SortableHeader label="User" sortKeyName="email" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
+                  <SortableHeader label="Signed in as" sortKeyName="email" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
                   <SortableHeader label="Event" sortKeyName="eventType" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
                   <SortableHeader label="Page" sortKeyName="page" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
                   <SortableHeader label="Portal" sortKeyName="portal" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
-                  <SortableHeader label="Location" sortKeyName="country" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
+                  <SortableHeader label="Location (approx.)" sortKeyName="country" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
+                  <th style={{ textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Device</th>
+                  <th style={{ textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Session</th>
                 </tr>
               </thead>
               <tbody>
@@ -207,6 +293,9 @@ export default function ActivityLog() {
                     onMouseEnter={ev => (ev.currentTarget.style.background = 'rgba(79,142,247,0.08)')}
                     onMouseLeave={ev => (ev.currentTarget.style.background = 'transparent')}
                   >
+                    <td style={{ padding: '12px 0 12px 16px', width: 36 }} onClick={ev => ev.stopPropagation()}>
+                      <input type="checkbox" checked={ticked.has(e.id)} onChange={() => toggleTick(e.id)} aria-label="Select this event" style={{ cursor: 'pointer' }} />
+                    </td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{fmt(e.createdAt)}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text)' }}>{e.email ?? <span style={{ color: 'var(--text-3)' }}>Anonymous</span>}</td>
                     <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)' }}>{e.eventType}</td>
@@ -218,8 +307,10 @@ export default function ActivityLog() {
                     </td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', textTransform: 'capitalize' }}>{e.portal ?? '—'}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>
-                      {e.city && e.country ? `${e.city}, ${e.country}` : e.country ?? '—'}
+                      {describeLocation(e)}
                     </td>
+                    <td title={e.userAgent ?? undefined} style={{ padding: '12px 16px', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>{describeDevice(e.userAgent)}</td>
+                    <td title={e.sessionId} style={{ padding: '12px 16px', color: 'var(--text-3)', whiteSpace: 'nowrap', fontFamily: 'ui-monospace, monospace', fontSize: 11 }}>{e.sessionId.slice(0, 8)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -233,7 +324,24 @@ export default function ActivityLog() {
         </div>
       )}
 
-      {selectedEvent && <EventDetailModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />}
+      {selectedEvent && (
+        <EventDetailModal
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+          onDelete={() => setConfirm({ kind: 'one', count: 1, one: selectedEvent })}
+        />
+      )}
+
+      {confirm && (
+        <ConfirmDeleteDialog
+          count={confirm.count}
+          kind={confirm.kind}
+          filterSummary={confirm.kind === 'matching' ? describeFilter({ q, eventType, portal, from, to }) : ''}
+          busy={deleting}
+          onCancel={() => setConfirm(null)}
+          onConfirm={runDelete}
+        />
+      )}
     </div>
   )
 }
@@ -252,7 +360,7 @@ function DetailRow({ label, value, mono }: { label: string; value: React.ReactNo
   )
 }
 
-function EventDetailModal({ event, onClose }: { event: SystemEvent; onClose: () => void }) {
+function EventDetailModal({ event, onClose, onDelete }: { event: SystemEvent; onClose: () => void; onDelete: () => void }) {
   const mouseDownOnBackdropRef = useRef(false)
   return (
     <div
@@ -276,9 +384,11 @@ function EventDetailModal({ event, onClose }: { event: SystemEvent; onClose: () 
         <DetailRow label="Role" value={event.role ?? '—'} />
         <DetailRow label="Portal" value={event.portal ?? '—'} />
         <DetailRow label="Page" value={event.page ?? '—'} mono />
-        <DetailRow label="Location" value={event.city && event.country ? `${event.city}, ${event.country}` : event.country ?? '—'} />
+        <DetailRow label="Location (approx.)" value={describeLocation(event, { withRegion: true })} />
         <DetailRow label="IP address" value={event.ipAddress ?? '—'} mono />
+        <DetailRow label="Device" value={describeDevice(event.userAgent)} />
         <DetailRow label="User agent" value={event.userAgent ?? '—'} />
+        {event.email && <DetailRow label="Sign-in issued" value={event.tokenIssuedAt ? `${ageOf(event.tokenIssuedAt)} (${fmt(event.tokenIssuedAt)})` : 'Not recorded for this event'} />}
         <DetailRow label="Session ID" value={event.sessionId} mono />
         <DetailRow label="User ID" value={event.userId ?? '—'} mono />
         <DetailRow label="Event ID" value={event.id} mono />
@@ -289,6 +399,59 @@ function EventDetailModal({ event, onClose }: { event: SystemEvent; onClose: () 
             value={<pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: 12 }}>{JSON.stringify(event.metadata, null, 2)}</pre>}
           />
         )}
+        <div style={{ marginTop: 18 }}>
+          <button onClick={onDelete} style={dangerBtn}><Trash2 size={13} /> Delete this event</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function describeFilter(f: { q: string; eventType: string; portal: string; from: string; to: string }): string {
+  const parts = [
+    f.q.trim() && `search "${f.q.trim()}"`,
+    f.eventType.trim() && `event type "${f.eventType.trim()}"`,
+    f.portal && `portal ${f.portal}`,
+    f.from && `from ${f.from}`,
+    f.to && `to ${f.to}`,
+  ].filter(Boolean)
+  return parts.length ? parts.join(', ') : 'no filters — this is EVERY event in the log'
+}
+
+// Always shows the exact number about to be removed; a bulk delete also has to be typed out, so it can't be a stray click.
+function ConfirmDeleteDialog({ count, kind, filterSummary, busy, onCancel, onConfirm }: {
+  count: number; kind: 'selected' | 'matching' | 'one'; filterSummary: string; busy: boolean; onCancel: () => void; onConfirm: () => void
+}) {
+  const [typed, setTyped] = useState('')
+  const needsTyping = kind === 'matching' && count > 1
+  const ok = !needsTyping || typed.trim().toUpperCase() === 'DELETE'
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 20 }}>
+      <div style={{ width: '100%', maxWidth: 460, background: 'var(--bg2)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 16, padding: 24 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', marginBottom: 10 }}>
+          Delete {count.toLocaleString()} event{count === 1 ? '' : 's'}?
+        </h2>
+        <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6, marginBottom: 10 }}>
+          {kind === 'matching' ? <>This removes every event matching: <strong>{filterSummary}</strong>.</> : 'This removes the selected event(s) from the Activity Log.'}
+        </p>
+        <p style={{ fontSize: 12, color: 'var(--text-3)', lineHeight: 1.6, marginBottom: 14 }}>
+          It can't be undone from here. A permanent archive copy may still exist in cold storage, and the deletion itself is recorded in the log.
+        </p>
+        {needsTyping && (
+          <input
+            autoFocus value={typed} onChange={e => setTyped(e.target.value)} placeholder='Type DELETE to confirm'
+            style={{ ...selectStyle, width: '100%', marginBottom: 14, boxSizing: 'border-box' }}
+          />
+        )}
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button onClick={onCancel} disabled={busy} style={{ ...selectStyle, cursor: 'pointer' }}>Cancel</button>
+          <button
+            onClick={onConfirm} disabled={!ok || busy}
+            style={{ ...dangerBtn, background: ok ? '#EF4444' : 'rgba(239,68,68,0.15)', color: ok ? '#fff' : '#EF4444', cursor: ok && !busy ? 'pointer' : 'default' }}
+          >
+            {busy ? 'Deleting…' : `Delete ${count.toLocaleString()}`}
+          </button>
+        </div>
       </div>
     </div>
   )
