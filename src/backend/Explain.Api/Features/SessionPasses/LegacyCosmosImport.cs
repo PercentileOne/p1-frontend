@@ -63,3 +63,55 @@ public static class LegacyCosmosImport
         return imported;
     }
 }
+
+/// <summary>
+/// Runs the import once the app is fully up (so its log lines reach Application Insights, which startup-time logs don't), retrying a few
+/// times in case Azure SQL or Cosmos is still waking. Idempotent, so it is harmless if the import already happened.
+/// </summary>
+public sealed class LegacyImportService(IServiceScopeFactory scopes, ILogger<LegacyImportService> logger) : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(40), stoppingToken);
+        for (var attempt = 1; attempt <= 6 && !stoppingToken.IsCancellationRequested; attempt++)
+        {
+            try
+            {
+                using var scope = scopes.CreateScope();
+                var n = await LegacyCosmosImport.RunAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), scope.ServiceProvider.GetRequiredService<CosmosService>(), logger);
+                logger.LogWarning("Legacy import check finished (attempt {Attempt}): {Imported} pass(es) copied this time.", attempt, n);
+                return;
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Legacy Cosmos -> SQL import attempt {Attempt} failed.", attempt);
+                await Task.Delay(TimeSpan.FromSeconds(45), stoppingToken);
+            }
+        }
+    }
+}
+
+public static class LegacyImportEndpoint
+{
+    // On-demand run + visible result, gated by the same shared admin key as the other ops endpoints (x-admin-key).
+    public static void Map(WebApplication app) =>
+        app.MapPost("/api/admin/legacy-import", async (HttpContext ctx, IConfiguration config, AppDbContext db, CosmosService cosmos, ILogger<LegacyImportService> logger) =>
+        {
+            var key = config["ExamCatalogAgent:AdminKey"];
+            if (string.IsNullOrEmpty(key) || ctx.Request.Headers["x-admin-key"] != key) return Results.Unauthorized();
+            try
+            {
+                var imported = await LegacyCosmosImport.RunAsync(db, cosmos, logger);
+                return Results.Ok(new
+                {
+                    imported,
+                    sqlPasses = await db.InterviewPasses.CountAsync(),
+                    sqlPaid = await db.InterviewPasses.CountAsync(p => p.Status == "paid"),
+                });
+            }
+            catch (Exception ex)
+            {
+                return Results.Json(new { error = ex.GetType().Name + ": " + ex.Message }, statusCode: 500);
+            }
+        }).AllowAnonymous();
+}

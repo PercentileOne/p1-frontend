@@ -48,6 +48,7 @@ builder.Services.AddSingleton<AnthropicService>();
 builder.Services.AddSingleton<Explain.Api.Infrastructure.YouTube.YouTubeService>();
 builder.Services.AddSingleton<Explain.Api.Features.NameGreetings.DidGenerationService>();
 builder.Services.AddScoped<Explain.Api.Features.SessionPasses.SessionPassService>();   // scoped: it uses the SQL DbContext (passes moved from Cosmos, 2026-09-21)
+builder.Services.AddHostedService<Explain.Api.Features.SessionPasses.LegacyImportService>();
 builder.Services.AddScoped<Explain.Api.Features.Entitlements.EntitlementService>();
 builder.Services.AddScoped<Explain.Api.Features.Subscriptions.CandidateSubscriptionService>();
 builder.Services.AddSingleton<Explain.Api.Features.Events.SecurityEventLogger>();
@@ -336,6 +337,7 @@ Explain.Api.Features.ExamCatalog.AutoAdd.Endpoint.Map(app);
 Explain.Api.Features.ExamQuestions.Endpoint.Map(app);
 Explain.Api.Features.Companies.Endpoint.Map(app);
 Explain.Api.Features.Entitlements.Endpoint.Map(app);
+Explain.Api.Features.SessionPasses.LegacyImportEndpoint.Map(app);
 Explain.Api.Features.Subscriptions.Endpoint.Map(app);
 Explain.Api.Features.ExamCatalog.Refresh.Endpoint.Map(app);
 
