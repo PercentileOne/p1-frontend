@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChairLogo } from '../components/LogoMark'
 import { useAuth } from '../context/AuthContext'
@@ -190,9 +190,9 @@ export default function Login() {
 
               <p style={{ textAlign: 'center', fontSize: 12, color: '#334155', marginTop: 6 }}>
                 New recruiter?{' '}
-                <Link to="/register" style={{ color: '#4F8EF7', fontWeight: 600, textDecoration: 'none' }}>
-                  Create an account
-                </Link>
+                <a href="https://www.theinterviewchair.com/contact" style={{ color: '#4F8EF7', fontWeight: 600, textDecoration: 'none' }}>
+                  Request access
+                </a>
               </p>
             </motion.form>
           </AnimatePresence>
