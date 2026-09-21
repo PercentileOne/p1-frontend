@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Explain.Api.Infrastructure.Sql;
 
@@ -13,7 +14,7 @@ public static class Endpoint
     public record DeleteRequest(string? ConfirmEmail);
 
     public static void Map(WebApplication app) =>
-        app.MapDelete("/api/users/me", async (DeleteRequest req, HttpContext ctx, AppDbContext db, AccountDeletionService deletion, CancellationToken ct) =>
+        app.MapDelete("/api/users/me", async ([FromBody] DeleteRequest req, HttpContext ctx, AppDbContext db, AccountDeletionService deletion, CancellationToken ct) =>
         {
             var userId = ctx.User.FindFirst("sub")?.Value;
             if (userId is null) return Results.Unauthorized();
