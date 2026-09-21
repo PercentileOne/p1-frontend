@@ -80,7 +80,11 @@
   .nav-logo-img img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
   .nav-wordmark { font-size: 16px; font-weight: 900; color: var(--pearl); letter-spacing: -0.02em; }
   .nav-wordmark span { color: var(--green); }
-  .nav-links { display: flex; align-items: center; gap: 28px; }
+  .nav-links { display: flex; align-items: center; gap: 24px; }
+  .nav-links a.nav-subscribe { display: inline-block; width: fit-content; background: linear-gradient(135deg,#34D399,#047857); color: #fff; padding: 7px 14px; border-radius: 9px; font-weight: 800; line-height: 1.3; }
+  .nav-links a.nav-subscribe:hover { color: #fff; filter: brightness(1.08); }
+  /* One line per menu item — a wrapped 'Subscribe · £4.99/mo' or 'Register →' made the whole bar look broken (2026-09-21) */
+  nav a, nav button { white-space: nowrap; }
   .nav-links a { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; transition: color 0.2s; }
   .nav-links a:hover { color: var(--pearl); }
   .nav-cta { font-size: 13px; font-weight: 800; color: #fff; padding: 9px 22px; border-radius: 22px; background: var(--blue); text-decoration: none; box-shadow: 0 4px 20px rgba(61,126,246,0.35); transition: transform 0.15s; }
@@ -290,6 +294,12 @@
   }
   .nav-mobile-menu a:last-child { border-bottom: none; }
 
+  /* Too narrow for the full menu on one line (below ~1280px): keep just the Subscribe button in the bar and put every link in the hamburger menu. */
+  @media (max-width:1280px) {
+    nav { padding: 12px 24px; }
+    .nav-links a:not(.nav-subscribe) { display: none; }
+    .nav-burger { display: flex; }
+  }
   @media (max-width:900px) {
     nav { padding:12px 20px; position:relative; }
     .nav-links { display:none; }
@@ -383,15 +393,14 @@
 
 <!-- NAV -->
 <nav>
-  <a class="nav-logo" href="/">
+  <a class="nav-logo" href="/" aria-label="TheInterviewChair.com — home" title="TheInterviewChair.com">
     <div class="nav-logo-img" style="background:linear-gradient(135deg,#34d399,#047857);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,0.2),transparent);"></div><span style="font-size:15px;font-weight:900;color:#fff;letter-spacing:-0.03em;position:relative;z-index:1;">TIC</span></div>
-    <span class="nav-wordmark"><span style="color:#34D399">The</span>Interview<span style="color:#34D399">Chair</span><span style="color:rgba(255,255,255,0.55);font-weight:400">.com</span></span>
   </a>
   <div class="nav-links">
     <a href="/cv-salary.html" style="color:#34D399;font-weight:700">CV Analyzer</a>
     <a href="#" onclick="openScoreModal();return false;" class="nav-story-pulse" style="color:#34D399;font-weight:700">How We Score Interviews</a>
     <a href="#pricing">Pricing</a>
-    <a href="https://candidate.theinterviewchair.com/subscription" style="background:linear-gradient(135deg,#34D399,#047857);color:#fff;padding:7px 14px;border-radius:9px;font-weight:800">Subscribe · £4.99/mo</a>
+    <a href="https://candidate.theinterviewchair.com/subscription" class="nav-subscribe">Subscribe · £4.99/mo</a>
     <a href="#gift" style="color:#34D399;font-weight:700">🎁 Gift an Interview</a>
     <a href="/contact">Contact Us</a>
     <a href="#" onclick="openAboutModal();return false;" class="nav-story-pulse" style="color:#34D399;font-weight:700">Our Story</a>
