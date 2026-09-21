@@ -41,4 +41,12 @@ public class IpGeoParsingTests
         Assert.Equal("France", r!.Country);
         Assert.Null(r.City);
     }
+
+    [Fact]
+    public void Geoapify_drops_the_bracketed_neighbourhood_from_the_city()
+    {
+        var r = IpGeoLookupService.ParseGeoapify("""{"city":{"name":"San Jose (Tasman and Zanker)"},"state":{"name":"California"},"country":{"name":"United States"}}""");
+        Assert.Equal("San Jose", r!.City);
+        Assert.Equal("California", r.Region);
+    }
 }

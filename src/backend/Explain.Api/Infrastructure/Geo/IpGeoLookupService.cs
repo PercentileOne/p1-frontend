@@ -175,7 +175,15 @@ public class IpGeoLookupService
         using var doc = JsonDocument.Parse(json);
         var r = doc.RootElement;
         if (r.ValueKind != JsonValueKind.Object) return null;
-        return new IpGeoResult(Nested(r, "country", "name"), Nested(r, "city", "name"), Nested(r, "state", "name"));
+        return new IpGeoResult(Nested(r, "country", "name"), TownOnly(Nested(r, "city", "name")), Nested(r, "state", "name"));
+    }
+
+    // Geoapify sometimes appends a neighbourhood: "San Jose (Tasman and Zanker)", "Lagos (Victoria Island Annex)" — keep just the town.
+    private static string? TownOnly(string? city)
+    {
+        if (city is null) return null;
+        var i = city.IndexOf(" (", StringComparison.Ordinal);
+        return (i > 0 ? city[..i] : city).Trim();
     }
 
     private static string? Str(JsonElement e, string name) =>

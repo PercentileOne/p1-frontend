@@ -42,6 +42,8 @@ export function describeLocation(e: LocationParts): string {
 }
 
 export function describeCityAndCountry(e: LocationParts): string {
+  // In the USA a city alone is ambiguous (Portland, Springfield…), so the state is shown too: "Austin, Texas, United States".
+  if (e.city && e.region && e.country === 'United States') return `${e.city}, ${e.region}, ${e.country}`;
   if (e.city && e.country) return `${e.city}, ${e.country}`;
   return e.city || e.country || '—';
 }

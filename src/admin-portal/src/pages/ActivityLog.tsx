@@ -337,6 +337,10 @@ export default function ActivityLog() {
         </div>
       )}
 
+      <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 10 }}>
+        Approximate locations by <a href="https://www.geoapify.com/" target="_blank" rel="noreferrer" style={{ color: 'var(--text-3)' }}>Geoapify</a> — an IP-based guess, often wrong on mobile data.
+      </div>
+
       {selectedEvent && (
         <EventDetailModal
           event={selectedEvent}
