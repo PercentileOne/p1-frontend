@@ -34,10 +34,16 @@ interface LocationParts {
 
 // An IP address says which NETWORK a device is on, not where the person is. Fixed broadband usually lands in the right
 // town, but mobile data (EE, Vodafone, O2, Three) is routed through a few big gateways, so a phone in Colchester can be
-// placed in Leyton or Walsall (Francis, 2026-09-20). Only the COUNTRY is dependable enough to show as a fact, so the
-// list shows the country alone; the city is available in the detail view, clearly labelled as a guess.
+// placed in Leyton or Walsall (Francis, 2026-09-20). The country is dependable; the city is a guess. The list shows
+// "City, Country" again (Francis, 2026-09-21, so he can see where visitors come from); the detail view keeps them apart and
+// labels the city as a guess.
 export function describeLocation(e: LocationParts): string {
   return e.country || '—';
+}
+
+export function describeCityAndCountry(e: LocationParts): string {
+  if (e.city && e.country) return `${e.city}, ${e.country}`;
+  return e.city || e.country || '—';
 }
 
 export function describeCityGuess(e: LocationParts): string {

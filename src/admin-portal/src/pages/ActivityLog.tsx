@@ -3,7 +3,7 @@ import { Search, Loader2, ChevronUp, ChevronDown, RefreshCw, Trash2 } from 'luci
 import { useAuth } from '../context/AuthContext'
 import { eventsApi, type SystemEvent, type ApiError } from '../api/eventsApi'
 import { Pagination } from '../components/Pagination'
-import { describeDevice, describeLocation, describeCityGuess, ageOf } from '../lib/eventFormat'
+import { describeDevice, describeLocation, describeCityAndCountry, describeCityGuess, ageOf } from '../lib/eventFormat'
 
 // Same sortBy values the backend's SortableFields whitelist accepts (Features/Events/Admin/
 // Endpoint.cs) — Location sorts by country, not the combined "city, country" display string,
@@ -292,7 +292,7 @@ export default function ActivityLog() {
                   <SortableHeader label="Event" sortKeyName="eventType" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
                   <SortableHeader label="Page" sortKeyName="page" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
                   <SortableHeader label="Portal" sortKeyName="portal" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
-                  <SortableHeader label="Country" sortKeyName="country" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
+                  <SortableHeader label="Location" sortKeyName="country" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
                   <th style={{ textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Device</th>
                   <th style={{ textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Session</th>
                 </tr>
@@ -320,7 +320,7 @@ export default function ActivityLog() {
                     </td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', textTransform: 'capitalize', overflowWrap: 'anywhere' }}>{e.portal ?? '—'}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere' }}>
-                      {describeLocation(e)}
+                      {describeCityAndCountry(e)}
                     </td>
                     <td title={e.userAgent ?? undefined} style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere' }}>{describeDevice(e.userAgent)}</td>
                     <td title={e.sessionId} style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere', fontFamily: 'ui-monospace, monospace', fontSize: 11 }}>{e.sessionId.slice(0, 8)}</td>
