@@ -281,7 +281,7 @@
   .nav-mobile-menu {
     display: none;
     position: absolute; top: 64px; left: 0; right: 0;
-    background: rgba(7,13,26,0.97); backdrop-filter: blur(24px);
+    background: #070d1a; backdrop-filter: blur(24px);   /* solid: at 97% the page text showed through the open menu on phones */
     border-bottom: 1px solid var(--border);
     flex-direction: column; padding: 16px 20px 20px; gap: 4px;
     z-index: 200;
@@ -293,6 +293,7 @@
     border-bottom: 1px solid var(--border);
   }
   .nav-mobile-menu a:last-child { border-bottom: none; }
+  .nav-mobile-menu a.nav-subscribe-m { background: linear-gradient(135deg,#34D399,#047857); color: #fff; text-align: center; border-radius: 12px; border-bottom: none; margin: 10px 0; padding: 13px 8px; font-weight: 800; }
 
   /* Too narrow for the full menu on one line (below ~1280px): keep just the Subscribe button in the bar and put every link in the hamburger menu. */
   @media (max-width:1280px) {
@@ -414,7 +415,7 @@
     <a href="/cv-salary.html" onclick="toggleMobileMenu()" style="color:#34D399;font-weight:700">CV Analyzer</a>
     <a href="#" onclick="openScoreModal();toggleMobileMenu();return false;" style="color:#34D399;font-weight:700">How We Score Interviews</a>
     <a href="#pricing" onclick="toggleMobileMenu()">Pricing</a>
-    <a href="https://candidate.theinterviewchair.com/subscription" style="color:#34D399;font-weight:800">Subscribe · £4.99/mo</a>
+    <a href="https://candidate.theinterviewchair.com/subscription" class="nav-subscribe-m">Subscribe · £4.99/mo</a>
     <a href="#gift" onclick="toggleMobileMenu()" style="color:#34D399;font-weight:700">🎁 Gift an Interview</a>
     <a href="/contact">Contact Us</a>
     <a href="#" onclick="openAboutModal();return false;" style="color:#34D399;font-weight:700">Our Story</a>
