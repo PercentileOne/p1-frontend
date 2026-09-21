@@ -230,7 +230,7 @@ export default function TryItLivePage() {
         {(phase === 'asking' || phase === 'answering' || phase === 'coaching' || phase === 'scoring') && start && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10, gap: 12 }}>
-              <div style={{ fontSize: 13, color: 'var(--text-3, #94a3b8)', overflowWrap: 'anywhere' }}>Interview for <strong style={{ color: 'var(--text, #f1f5f9)' }}>{start.subject}</strong></div>
+              <div style={{ fontSize: 13, color: 'var(--text-3, #94a3b8)', overflowWrap: 'anywhere' }}>Interview for <strong style={{ color: 'var(--text, #f1f5f9)' }}>{start.subject}</strong>{start.unlimited && <span style={{ marginLeft: 10, fontSize: 11, fontWeight: 800, color: AMBER }}>· demo mode — no limits</span>}</div>
               <div style={{ fontSize: 12, fontWeight: 800, color: GREEN, whiteSpace: 'nowrap' }}>Question {Math.min(index + 1, start.questions.length)} of {start.questions.length}</div>
             </div>
             <div style={{ position: 'relative', borderRadius: 18, overflow: 'hidden', background: '#05080f', border: '1px solid var(--border, rgba(255,255,255,0.1))', aspectRatio: '16 / 9' }}>

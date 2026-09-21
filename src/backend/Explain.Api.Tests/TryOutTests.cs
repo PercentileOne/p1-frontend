@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using TryOut = Explain.Api.Features.TryOut.Endpoint;
 
 namespace Explain.Api.Tests;
@@ -64,4 +66,62 @@ public class TryOutTests
     [InlineData("1234")]
     [InlineData("This name is far too long to be a real first name at all")]
     public void Odd_names_are_dropped_not_passed_on(string? raw) => Assert.Null(TryOut.CleanName(raw));
+}
+
+// Founder/demo access: staff and listed addresses are never limited; everyone else is.
+public sealed class TryOutUnlimitedTests : IDisposable
+{
+    private readonly Microsoft.Data.Sqlite.SqliteConnection _conn = new("DataSource=:memory:");
+    public TryOutUnlimitedTests() { _conn.Open(); using var db = NewDb(); db.Database.EnsureCreated(); }
+    public void Dispose() => _conn.Dispose();
+
+    private Explain.Api.Infrastructure.Sql.AppDbContext NewDb() =>
+        new(new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<Explain.Api.Infrastructure.Sql.AppDbContext>().UseSqlite(_conn).Options);
+
+    private static System.Security.Claims.ClaimsPrincipal Signed(string id, string email) =>
+        new(new System.Security.Claims.ClaimsIdentity([new("sub", id), new("email", email)], "test"));
+
+    private static Microsoft.Extensions.Configuration.IConfiguration Cfg(string? ips = null) =>
+        new Microsoft.Extensions.Configuration.ConfigurationBuilder().AddInMemoryCollection(ips is null ? [] : new Dictionary<string, string?> { ["TryOut:UnlimitedIps"] = ips }).Build();
+
+    [Fact]
+    public async Task An_anonymous_visitor_is_limited()
+    {
+        using var db = NewDb();
+        Assert.False(await TryOut.IsUnlimitedAsync(new System.Security.Claims.ClaimsPrincipal(), "203.0.113.5", db, Cfg()));
+    }
+
+    [Fact]
+    public async Task A_listed_address_is_unlimited_and_an_unlisted_one_is_not()
+    {
+        using var db = NewDb();
+        Assert.True(await TryOut.IsUnlimitedAsync(new System.Security.Claims.ClaimsPrincipal(), "203.0.113.5", db, Cfg("198.51.100.1, 203.0.113.5")));
+        Assert.False(await TryOut.IsUnlimitedAsync(new System.Security.Claims.ClaimsPrincipal(), "203.0.113.9", db, Cfg("198.51.100.1, 203.0.113.5")));
+    }
+
+    [Fact]
+    public async Task An_admin_account_is_unlimited()
+    {
+        using var db = NewDb();
+        var admin = new Explain.Api.Infrastructure.Sql.Models.User { Email = "boss@example.com", FirstName = "B", LastName = "B", PasswordHash = "x", Role = "admin" };
+        var regular = new Explain.Api.Infrastructure.Sql.Models.User { Email = "someone@example.com", FirstName = "S", LastName = "S", PasswordHash = "x", Role = "user" };
+        db.Users.AddRange(admin, regular);
+        await db.SaveChangesAsync();
+        Assert.True(await TryOut.IsUnlimitedAsync(Signed(admin.Id, admin.Email), "203.0.113.5", db, Cfg()));
+        Assert.False(await TryOut.IsUnlimitedAsync(Signed(regular.Id, regular.Email), "203.0.113.5", db, Cfg()));
+    }
+
+    [Fact]
+    public async Task An_active_staff_grant_is_unlimited_but_a_revoked_one_is_not()
+    {
+        using var db = NewDb();
+        var u = new Explain.Api.Infrastructure.Sql.Models.User { Email = "staff@example.com", FirstName = "S", LastName = "S", PasswordHash = "x", Role = "user" };
+        db.Users.Add(u);
+        db.AccessGrants.Add(new Explain.Api.Infrastructure.Sql.Models.AccessGrant { Email = "staff@example.com", UserId = u.Id, Kind = "staff" });
+        await db.SaveChangesAsync();
+        Assert.True(await TryOut.IsUnlimitedAsync(Signed(u.Id, u.Email), "203.0.113.5", db, Cfg()));
+
+        var g = db.AccessGrants.Single(); g.RevokedAt = DateTime.UtcNow; await db.SaveChangesAsync();
+        Assert.False(await TryOut.IsUnlimitedAsync(Signed(u.Id, u.Email), "203.0.113.5", db, Cfg()));
+    }
 }

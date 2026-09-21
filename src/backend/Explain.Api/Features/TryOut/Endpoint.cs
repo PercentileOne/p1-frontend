@@ -1,8 +1,11 @@
 using System.Net;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Explain.Api.Features.Entitlements;
+using Microsoft.EntityFrameworkCore;
 using Explain.Api.Infrastructure.Cosmos;
+using Explain.Api.Infrastructure.Sql;
 
 namespace Explain.Api.Features.TryOut;
 
@@ -34,18 +37,19 @@ public static class Endpoint
 
     public static void Map(WebApplication app)
     {
-        app.MapPost("/api/tryout/start", async (StartRequest req, HttpContext ctx, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
+        app.MapPost("/api/tryout/start", async (StartRequest req, HttpContext ctx, AppDbContext db, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
         {
             var topic = CleanTopic(req.Topic);
             if (topic is null) return Results.BadRequest(new { error = "Tell us a subject to be interviewed on — for example a job title, a company, or a topic you're studying." });
 
             var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var unlimited = await IsUnlimitedAsync(ctx.User, ip, db, config);
             var perVisitor = config.GetValue("TryOut:StartsPerVisitorPerDay", DefaultStartsPerVisitorPerDay);
             var global = config.GetValue("TryOut:StartsGlobalPerDay", DefaultStartsGlobalPerDay);
 
-            if (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"tryout:start:ip:{ip}", perVisitor, cosmos)).allowed)
+            if (!unlimited && !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"tryout:start:ip:{ip}", perVisitor, cosmos)).allowed)
                 return Results.Json(new { capped = true, message = "You've had your free tries for today — create a free account and your first full interview is on us." }, statusCode: (int)HttpStatusCode.TooManyRequests);
-            if (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("tryout:start:global", global, cosmos)).allowed)
+            if (!unlimited && !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("tryout:start:global", global, cosmos)).allowed)
                 return Results.Json(new { capped = true, message = "Lots of people are trying it right now — please come back a little later, or create a free account to start your full interview." }, statusCode: (int)HttpStatusCode.TooManyRequests);
 
             StartModelResult model;
@@ -60,7 +64,7 @@ public static class Endpoint
 
             // A live avatar seat costs real money, so it has its own, smaller daily allowance. Over it: voice-only, still a good experience.
             var avatarLimit = config.GetValue("TryOut:AvatarsGlobalPerDay", DefaultAvatarsGlobalPerDay);
-            var avatarAvailable = (await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("tryout:avatar:global", avatarLimit, cosmos)).allowed;
+            var avatarAvailable = unlimited || (await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("tryout:avatar:global", avatarLimit, cosmos)).allowed;
 
             var interviewer = model.Interviewer == "technical" ? "technical" : "hr";
             var ticket = avatarAvailable ? InterviewTicket.Create(config["Jwt:Secret"] ?? string.Empty, $"tryout:{ip}", DateTimeOffset.UtcNow) : null;
@@ -72,10 +76,11 @@ public static class Endpoint
                 questions = model.Questions.Take(3).Select(q => q.Trim()).Where(q => q.Length > 0).ToList(),
                 avatarAvailable,
                 ticket,
+                unlimited,
             });
         }).AllowAnonymous();
 
-        app.MapPost("/api/tryout/feedback", async (FeedbackRequest req, HttpContext ctx, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
+        app.MapPost("/api/tryout/feedback", async (FeedbackRequest req, HttpContext ctx, AppDbContext db, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
         {
             var topic = CleanTopic(req.Topic);
             var answers = CleanAnswers(req.Answers);
@@ -83,8 +88,9 @@ public static class Endpoint
                 return Results.BadRequest(new { error = "There's nothing to score yet — answer at least one question." });
 
             var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            if (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"tryout:fb:ip:{ip}", config.GetValue("TryOut:FeedbackPerVisitorPerDay", DefaultFeedbackPerVisitorPerDay), cosmos)).allowed
-                || !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("tryout:fb:global", config.GetValue("TryOut:FeedbackGlobalPerDay", DefaultFeedbackGlobalPerDay), cosmos)).allowed)
+            var unlimited = await IsUnlimitedAsync(ctx.User, ip, db, config);
+            if (!unlimited && (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"tryout:fb:ip:{ip}", config.GetValue("TryOut:FeedbackPerVisitorPerDay", DefaultFeedbackPerVisitorPerDay), cosmos)).allowed
+                || !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("tryout:fb:global", config.GetValue("TryOut:FeedbackGlobalPerDay", DefaultFeedbackGlobalPerDay), cosmos)).allowed))
                 return Results.Json(new { capped = true, message = "That's today's free scoring used up — create a free account to keep going." }, statusCode: (int)HttpStatusCode.TooManyRequests);
 
             try
@@ -101,7 +107,7 @@ public static class Endpoint
 
         // Brief spoken coaching right after each answer (the full interview does the same), so the demo never leaves the visitor
         // wondering whether something is meant to happen. Small, cheap call; capped separately from questions and scoring.
-        app.MapPost("/api/tryout/coach", async (CoachRequest req, HttpContext ctx, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
+        app.MapPost("/api/tryout/coach", async (CoachRequest req, HttpContext ctx, AppDbContext db, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
         {
             var topic = CleanTopic(req.Topic);
             var question = (req.Question ?? "").Trim();
@@ -112,8 +118,9 @@ public static class Endpoint
             answer = answer[..Math.Min(answer.Length, 1500)];
 
             var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            if (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"tryout:coach:ip:{ip}", config.GetValue("TryOut:CoachPerVisitorPerDay", DefaultCoachPerVisitorPerDay), cosmos)).allowed
-                || !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("tryout:coach:global", config.GetValue("TryOut:CoachGlobalPerDay", DefaultCoachGlobalPerDay), cosmos)).allowed)
+            var unlimited = await IsUnlimitedAsync(ctx.User, ip, db, config);
+            if (!unlimited && (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"tryout:coach:ip:{ip}", config.GetValue("TryOut:CoachPerVisitorPerDay", DefaultCoachPerVisitorPerDay), cosmos)).allowed
+                || !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("tryout:coach:global", config.GetValue("TryOut:CoachGlobalPerDay", DefaultCoachGlobalPerDay), cosmos)).allowed))
                 return Results.Json(new { capped = true, message = "That's today's free coaching used up." }, statusCode: (int)HttpStatusCode.TooManyRequests);
 
             try
@@ -127,6 +134,25 @@ public static class Endpoint
                 return Results.Json(new { error = "Coaching is unavailable right now." }, statusCode: 502);
             }
         }).AllowAnonymous();
+    }
+
+    /// <summary>
+    /// Founder/demo access (Francis, 2026-09-21): staff are never limited — anyone signed in as an admin or holding an active "staff" grant
+    /// (the Access page), from any device — and neither are addresses listed in TryOut:UnlimitedIps (comma-separated). They also don't
+    /// use up the shared daily allowances. Everyone else is capped as usual.
+    /// </summary>
+    public static async Task<bool> IsUnlimitedAsync(ClaimsPrincipal user, string ip, AppDbContext db, IConfiguration config)
+    {
+        var listed = (config["TryOut:UnlimitedIps"] ?? "").Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (listed.Contains(ip, StringComparer.OrdinalIgnoreCase)) return true;
+
+        var userId = user.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userId)) return false;
+        var email = (user.FindFirst("email")?.Value ?? "").Trim().ToLowerInvariant();
+        var now = DateTime.UtcNow;
+        if (await db.Users.AsNoTracking().AnyAsync(u => u.Id == userId && u.Role == "admin")) return true;
+        return await db.AccessGrants.AsNoTracking().AnyAsync(g => g.Kind == "staff" && g.RevokedAt == null && (g.ExpiresAt == null || g.ExpiresAt > now)
+                                                                   && (g.UserId == userId || (email != "" && g.Email == email)));
     }
 
     // ── Input hygiene (public, so nothing is trusted) ───────────────────────────────────────────────────────────────────────────
