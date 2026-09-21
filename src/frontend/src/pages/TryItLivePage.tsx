@@ -221,7 +221,16 @@ export default function TryItLivePage() {
         )}
 
         {phase === 'starting' && (
-          <div style={{ ...card, textAlign: 'center', padding: '48px 22px' }}>
+          <div style={{ ...card, textAlign: 'center', padding: '28px 22px 36px' }}>
+            {/* The iconic spotlight chair while the interview is set up (Francis, 2026-09-21). */}
+            <style>{'@keyframes tryChairGlow{0%,100%{opacity:.82;transform:scale(1)}50%{opacity:1;transform:scale(1.02)}}'}</style>
+            <img
+              src="/images/chair-spotlight.webp"
+              alt="The interview chair, waiting in the spotlight"
+              width={820}
+              height={783}
+              style={{ display: 'block', width: '100%', maxWidth: 300, height: 'auto', margin: '0 auto 18px', borderRadius: 16, animation: 'tryChairGlow 2.6s ease-in-out infinite' }}
+            />
             <div style={{ fontSize: 17, fontWeight: 700 }}>Preparing your interview…</div>
             <div style={{ fontSize: 13.5, color: 'var(--text-3, #94a3b8)', marginTop: 8 }}>{avatarState === 'connecting' ? 'Your interviewer is taking their seat' : 'Writing three questions for your role'}</div>
           </div>
