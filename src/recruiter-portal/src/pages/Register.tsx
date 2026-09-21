@@ -21,7 +21,7 @@ export default function Register() {
           be in touch to get you started.
         </p>
         <a
-          href="https://www.theinterviewchair.com/contact"
+          href="https://www.theinterviewchair.com/request-access.html"
           style={{
             display: "block", padding: "14px 20px", borderRadius: 12, textDecoration: "none", fontSize: 15, fontWeight: 700, color: "#fff",
             background: "linear-gradient(135deg,#4F8EF7,#6366f1)", boxShadow: "0 8px 24px rgba(79,142,247,0.3)",

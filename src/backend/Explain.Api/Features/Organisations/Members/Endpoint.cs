@@ -128,7 +128,7 @@ public static class Endpoint
         .RequireAuthorization(Permissions.ManageOrganisations);
     }
 
-    private static async Task SendInviteEmailAsync(User user, Organisation org, AppDbContext db, IEmailSender emailSender, ILogger logger)
+    internal static async Task SendInviteEmailAsync(User user, Organisation org, AppDbContext db, IEmailSender emailSender, ILogger logger)
     {
         // Same PasswordResetToken table Features/Auth/ForgotPassword uses — an invite IS a
         // password-reset link, just with a longer window since it's not time-sensitive the

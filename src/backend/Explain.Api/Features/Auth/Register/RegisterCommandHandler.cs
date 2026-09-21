@@ -50,7 +50,7 @@ public class RegisterCommandHandler(
             return Result<AuthResponse>.Failure("Last name is required.", 400);
 
         if (string.Equals(cmd.Role?.Trim(), "recruiter", StringComparison.OrdinalIgnoreCase) || string.Equals(cmd.Role?.Trim(), "employer", StringComparison.OrdinalIgnoreCase))
-            return Result<AuthResponse>.Failure("Recruiter and employer accounts are set up by our team. Please request access at https://www.theinterviewchair.com/contact and we'll be in touch.", 403);
+            return Result<AuthResponse>.Failure("Recruiter and employer accounts are set up by our team. Please request access at https://www.theinterviewchair.com/request-access.html and we'll be in touch.", 403);
 
         var email = cmd.Email.Trim().ToLower();
         var (roleId, roleName) = cmd.Role is not null && SelfRegisterableRoles.TryGetValue(cmd.Role, out var r)

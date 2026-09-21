@@ -169,7 +169,7 @@ public static class Endpoint
     }
 
     private static async Task<IResult> HandleWebhook(
-        HttpContext ctx, SessionPassService passes, Explain.Api.Features.Subscriptions.CandidateSubscriptionService subscriptions, IConfiguration config, ILogger<Program> logger)
+        HttpContext ctx, SessionPassService passes, Explain.Api.Features.Subscriptions.CandidateSubscriptionService subscriptions, Explain.Api.Infrastructure.Sql.AppDbContext db, Explain.Api.Infrastructure.Email.IEmailSender emailSender, IConfiguration config, ILogger<Program> logger)
     {
         var webhookSecret = config["Stripe:WebhookSecret"];
         if (string.IsNullOrWhiteSpace(webhookSecret))
@@ -204,6 +204,15 @@ public static class Endpoint
         // Subscription events (2026-09-21) share this endpoint and its signature check — one webhook destination for everything.
         if (stripeEvent.Type == "checkout.session.completed" && stripeEvent.Data.Object is Session subSession && subSession.Mode == "subscription")
         {
+            // A recruiter/employer paying via the payment link Francis sent from the admin portal (Features/AccessRequests) — not a candidate.
+            var paid = await Explain.Api.Features.AccessRequests.Endpoint.MarkPaidAsync(db, subSession);
+            if (paid is not null)
+            {
+                try { await emailSender.SendAsync(config["AccessRequests:NotifyEmail"] ?? "francis@percentile.one", $"Payment received — {paid.Company}",
+                    $"<p>{System.Net.WebUtility.HtmlEncode(paid.Company)} ({System.Net.WebUtility.HtmlEncode(paid.Email)}) has paid. Their organisation is active.</p>"); }
+                catch (Exception ex) { logger.LogWarning(ex, "Payment-received email for access request {Id} failed", paid.Id); }
+                return Results.Ok();
+            }
             await subscriptions.ApplyCheckoutCompletedAsync(subSession);
             return Results.Ok();
         }

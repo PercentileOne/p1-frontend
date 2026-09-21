@@ -15,6 +15,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<PortalFeedback>      PortalFeedbacks      => Set<PortalFeedback>();
     public DbSet<PasswordResetToken>  PasswordResetTokens  => Set<PasswordResetToken>();
     public DbSet<AccessGrant>         AccessGrants         => Set<AccessGrant>();
+    public DbSet<AccessRequest>       AccessRequests       => Set<AccessRequest>();
     public DbSet<InterviewUsage>      InterviewUsages      => Set<InterviewUsage>();
     public DbSet<InterviewPass>       InterviewPasses      => Set<InterviewPass>();
     public DbSet<EntitlementSettingsRow> EntitlementSettings => Set<EntitlementSettingsRow>();
@@ -38,6 +39,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
              .WithOne(x => x.Followee)
              .HasForeignKey(x => x.FolloweeId)
              .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        model.Entity<AccessRequest>(e =>
+        {
+            e.HasIndex(x => new { x.Status, x.CreatedAt });
+            e.HasIndex(x => x.Email);
+            e.Property(x => x.Id).HasMaxLength(50);
+            e.Property(x => x.Name).HasMaxLength(120);
+            e.Property(x => x.Company).HasMaxLength(160);
+            e.Property(x => x.Email).HasMaxLength(320);
+            e.Property(x => x.Phone).HasMaxLength(50);
+            e.Property(x => x.Type).HasMaxLength(20);
+            e.Property(x => x.Status).HasMaxLength(20);
+            e.Property(x => x.Message).HasMaxLength(2000);
+            e.Property(x => x.Notes).HasMaxLength(4000);
+            e.Property(x => x.QuotedMonthlyGbp).HasPrecision(10, 2);
         });
 
         model.Entity<AccessGrant>(e =>

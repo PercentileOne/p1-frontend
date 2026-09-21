@@ -190,7 +190,7 @@ export default function Login() {
 
               <p style={{ textAlign: 'center', fontSize: 12, color: '#334155', marginTop: 6 }}>
                 New recruiter?{' '}
-                <a href="https://www.theinterviewchair.com/contact" style={{ color: '#4F8EF7', fontWeight: 600, textDecoration: 'none' }}>
+                <a href="https://www.theinterviewchair.com/request-access.html" style={{ color: '#4F8EF7', fontWeight: 600, textDecoration: 'none' }}>
                   Request access
                 </a>
               </p>
