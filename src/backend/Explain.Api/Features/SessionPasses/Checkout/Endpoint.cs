@@ -181,13 +181,17 @@ public static class Endpoint
         using var reader = new StreamReader(ctx.Request.Body);
         var json = await reader.ReadToEndAsync();
 
+        // Stripe always sends this header; without it there is nothing to verify (and the library would throw a NullReferenceException).
+        var signatureHeader = ctx.Request.Headers["Stripe-Signature"].ToString();
+        if (string.IsNullOrWhiteSpace(signatureHeader)) return Results.BadRequest();
+
         Event stripeEvent;
         try
         {
             // throwOnApiVersionMismatch: false — the signature is still fully verified; this only stops us rejecting a genuine
             // event just because its webhook endpoint was created on a different Stripe API version than this library's (a
             // brand-new LIVE endpoint can differ from the sandbox one). We only read stable checkout.session fields.
-            stripeEvent = EventUtility.ConstructEvent(json, ctx.Request.Headers["Stripe-Signature"], webhookSecret, throwOnApiVersionMismatch: false);
+            stripeEvent = EventUtility.ConstructEvent(json, signatureHeader, webhookSecret, throwOnApiVersionMismatch: false);
         }
         catch (Exception ex) when (ex is StripeException or ArgumentException or FormatException)
         {
