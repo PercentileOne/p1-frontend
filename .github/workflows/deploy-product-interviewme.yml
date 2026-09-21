@@ -18,7 +18,8 @@ jobs:
       - name: Prepare static output
         run: |
           mkdir -p deploy-product
-          cp src/viewme/public/home.html deploy-product/index.html
+          # Homepage: the revamped page (2026-09-21). Rollback = copy home.html here instead.
+          cp src/viewme/public/home-v2.html deploy-product/index.html
           cp src/viewme/public/mastermind-chair.png deploy-product/mastermind-chair.png
           cp src/viewme/public/the-interview-chair.png deploy-product/the-interview-chair.png
           cp src/viewme/public/recruiter-phone.jpg deploy-product/recruiter-phone.jpg
@@ -50,8 +51,7 @@ jobs:
           cp src/viewme/public/track.js deploy-product/track.js
           mkdir -p deploy-product/patent-files
           cp src/viewme/public/patent-files/*.png deploy-product/patent-files/
-          # Revamped homepage, STAGING (2026-09-21): reachable at /home-v2.html (noindex) for review before it replaces home.html.
-          cp src/viewme/public/home-v2.html deploy-product/home-v2.html
+          # Images used by the homepage (WebP, 2026-09-21).
           mkdir -p deploy-product/img
           cp src/viewme/public/img/*.webp deploy-product/img/
           cp src/viewme/public/staticwebapp.config.json deploy-product/staticwebapp.config.json
