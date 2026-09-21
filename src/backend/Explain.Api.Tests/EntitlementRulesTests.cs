@@ -186,3 +186,38 @@ public class SubscriptionStatusTests
     public void Stripe_status_maps_to_ours(string? stripe, string ours)
         => Assert.Equal(ours, Explain.Api.Features.Subscriptions.CandidateSubscriptionService.MapStatus(stripe));
 }
+
+public class InterviewTicketTests
+{
+    private const string Secret = "unit-test-secret";
+    private static readonly DateTimeOffset Now = new(2026, 9, 21, 10, 0, 0, TimeSpan.Zero);
+
+    [Fact]
+    public void A_fresh_ticket_is_valid()
+        => Assert.True(InterviewTicket.IsValid(Secret, InterviewTicket.Create(Secret, "user-1", Now), Now.AddMinutes(5)));
+
+    [Fact]
+    public void A_ticket_lasts_the_whole_interview_but_not_forever()
+    {
+        var t = InterviewTicket.Create(Secret, "user-1", Now);
+        Assert.True(InterviewTicket.IsValid(Secret, t, Now.AddMinutes(89)));
+        Assert.False(InterviewTicket.IsValid(Secret, t, Now.AddMinutes(91)));
+    }
+
+    [Fact]
+    public void A_tampered_or_wrong_key_ticket_is_rejected()
+    {
+        var t = InterviewTicket.Create(Secret, "user-1", Now);
+        Assert.False(InterviewTicket.IsValid("another-secret", t, Now));
+        Assert.False(InterviewTicket.IsValid(Secret, t.Replace("user-1", "user-2"), Now));
+        Assert.False(InterviewTicket.IsValid(Secret, t + "x", Now));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("garbage")]
+    [InlineData("a.b.c")]
+    public void Missing_or_malformed_tickets_are_rejected(string? ticket)
+        => Assert.False(InterviewTicket.IsValid(Secret, ticket, Now));
+}

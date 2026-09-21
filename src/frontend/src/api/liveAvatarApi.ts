@@ -3,6 +3,7 @@
 // to ElevenLabs. This file never touches a LiveAvatar credential directly.
 
 import { sanitiseForTTS, getTTSLanguage } from './ttsApi';
+import { getInterviewTicket } from './entitlementsApi';
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 
@@ -15,7 +16,7 @@ export interface AvatarSessionInfo {
 export async function fetchAvatarSessionToken(role: 'hr' | 'technical' | 'michelle'): Promise<AvatarSessionInfo> {
   const res = await fetch(`${API_BASE}/interviews/avatar-session`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(getInterviewTicket() ? { 'X-Interview-Ticket': getInterviewTicket()! } : {}) },
     body: JSON.stringify({ role }),
   });
   if (!res.ok) throw new Error(`avatar-session failed: HTTP ${res.status}`);

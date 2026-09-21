@@ -19,14 +19,14 @@ public record EntitlementStatus(
     int PassSessionsLeft,
     bool TasterAvailable);
 
-public record StartResult(bool Allowed, bool Enforced, string Source, string Code, string Message, string? UsageId);
+public record StartResult(bool Allowed, bool Enforced, string Source, string Code, string Message, string? UsageId, string? Ticket = null);
 
 /// <summary>
 /// Gathers the facts about one person and applies EntitlementRules. "Enforced" false means the rules are still evaluated and every
 /// start is still recorded, but nobody is ever turned away — so the whole system can be shipped, watched and tested before it
 /// blocks a single real user (see the admin Access page: "would block" counts).
 /// </summary>
-public class EntitlementService(AppDbContext db, CosmosService cosmos, SessionPassService passes, ILogger<EntitlementService> logger)
+public class EntitlementService(AppDbContext db, CosmosService cosmos, SessionPassService passes, IConfiguration config, ILogger<EntitlementService> logger)
 {
     private static readonly TimeZoneInfo Uk = FindUk();
     private static TimeZoneInfo FindUk()
@@ -161,7 +161,8 @@ public class EntitlementService(AppDbContext db, CosmosService cosmos, SessionPa
             if (settings.Enforce) return new StartResult(false, true, "none", "taster-used", "You've had your free interview. Subscribe for £4.99 a month, or buy a one-off pass, to keep practising.", null);
         }
 
-        return new StartResult(true, settings.Enforce, d.Allowed ? d.Source : "enforcement-off", d.Code, d.Message, usage.Id);
+        var ticket = InterviewTicket.Create(config["Jwt:Secret"] ?? string.Empty, userId, DateTimeOffset.UtcNow);
+        return new StartResult(true, settings.Enforce, d.Allowed ? d.Source : "enforcement-off", d.Code, d.Message, usage.Id, ticket);
     }
 
     // Gives a start back (the interview never actually began). Frees the taster / a daily slot; does not refund a pass session.

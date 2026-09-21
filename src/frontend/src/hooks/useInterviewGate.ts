@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useAuthStore } from '../auth/authStore';
-import { startInterview, type StartInterviewResult } from '../api/entitlementsApi';
+import { startInterview, setInterviewTicket, type StartInterviewResult } from '../api/entitlementsApi';
 
 // The single check every "start an interview" button goes through (Francis, 2026-09-21). `begin()` asks the server whether this
 // person may start now — and, if so, records the start (using the taster / a pass session / a daily slot). It resolves to the
@@ -21,6 +21,7 @@ export function useInterviewGate() {
     try {
       const r = await startInterview(token);
       if (!r.allowed) { setBlocked(r); return { allowed: false, usageId: null }; }
+      setInterviewTicket(r.ticket);
       return { allowed: true, usageId: r.usageId };
     } finally {
       setChecking(false);

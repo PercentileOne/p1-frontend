@@ -11,6 +11,7 @@ export interface StartInterviewResult {
   code: string;        // daily-cap | monthly-cap | taster-used | verify-email | email-not-eligible | no-access | ...
   message: string;
   usageId: string | null;
+  ticket?: string | null;   // signed proof the server allowed this interview — sent with the avatar-session request
 }
 
 export interface EntitlementStatus {
@@ -22,6 +23,15 @@ export interface EntitlementStatus {
   dailyUsed: number; dailyCap: number; monthlyUsed: number; monthlyCap: number;
   passSessionsLeft: number;
   tasterAvailable: boolean;
+}
+
+// The ticket outlives page navigation and a room reload (sessionStorage), and is sent with every avatar-session request.
+const TICKET_KEY = 'interviewTicket';
+export function setInterviewTicket(ticket: string | null | undefined) {
+  try { if (ticket) sessionStorage.setItem(TICKET_KEY, ticket); else sessionStorage.removeItem(TICKET_KEY); } catch { /* private mode */ }
+}
+export function getInterviewTicket(): string | null {
+  try { return sessionStorage.getItem(TICKET_KEY); } catch { return null; }
 }
 
 const headers = (token: string) => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
