@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../auth/authStore';
 import {
-  getMyEntitlements, openSubscriptionPortal, startSubscriptionCheckout, subscriptionsAvailable,
-  type EntitlementStatus,
+  getMyEntitlements, getMySubscription, openSubscriptionPortal, startSubscriptionCheckout, subscriptionsAvailable,
+  type EntitlementStatus, type MySubscription,
 } from '../api/entitlementsApi';
 
 // "My plan" (Francis, 2026-09-21) — what you have, what's left today/this month, and a way to manage or cancel. Cancelling is done in
@@ -16,14 +16,24 @@ export default function SubscriptionPage() {
   const navigate = useNavigate();
   const token = useAuthStore(s => s.token);
   const [status, setStatus] = useState<EntitlementStatus | null>(null);
+  const [subscription, setSubscription] = useState<MySubscription | null>(null);
   const [canSubscribe, setCanSubscribe] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (token) void getMyEntitlements(token).then(setStatus);
+    if (token) {
+      void getMyEntitlements(token).then(setStatus);
+      void getMySubscription(token).then(setSubscription);
+    }
     void subscriptionsAvailable().then(setCanSubscribe);
   }, [token]);
+
+  // Paying (or paid up until the period ends) — show Manage, whatever plan label outranks "subscriber" in the entitlement order.
+  const renewsAt = subscription?.renewsAt ? new Date(subscription.renewsAt) : null;
+  const hasSubscription = !!subscription && (subscription.status === 'active' || subscription.status === 'past_due'
+    || (subscription.status === 'cancelled' && !!renewsAt && renewsAt.getTime() > Date.now()));
+  const fmtDate = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
   async function go(fn: () => Promise<{ url?: string; error?: string }>) {
     setBusy(true); setError('');
@@ -55,8 +65,15 @@ export default function SubscriptionPage() {
             </>
           )}
 
+          {hasSubscription && subscription && (
+            <div style={{ fontSize: 14, color: 'var(--text-2)', marginTop: 12 }}>
+              Subscription: <strong>{subscription.status === 'cancelled' ? 'Cancelled' : subscription.status === 'past_due' ? 'Payment overdue' : 'Active'}</strong>
+              {renewsAt && (subscription.status === 'cancelled' ? ` — access until ${fmtDate(renewsAt)}` : ` — renews ${fmtDate(renewsAt)}`)}
+            </div>
+          )}
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 20 }}>
-            {status?.plan === 'subscriber' ? (
+            {hasSubscription || status?.plan === 'subscriber' ? (
               <button disabled={busy} onClick={() => go(() => openSubscriptionPortal(token ?? ''))} style={{ background: 'var(--bg3)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 12, padding: 13, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
                 Manage or cancel subscription
               </button>

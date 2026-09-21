@@ -57,6 +57,16 @@ export async function getMyEntitlements(token: string): Promise<EntitlementStatu
   } catch { return null; }
 }
 
+// The account's Stripe subscription, if it has one — independent of `plan` (staff and complimentary accounts outrank "subscriber" there,
+// but can still hold a paid subscription that needs a Manage/cancel button).
+export interface MySubscription { status: string; plan: string; priceGbp: number; renewsAt: string | null; cancelledAt: string | null }
+export async function getMySubscription(token: string): Promise<MySubscription | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/subscriptions/me`, { headers: headers(token) });
+    return res.ok ? (await res.json() as MySubscription | null) : null;
+  } catch { return null; }
+}
+
 export async function subscriptionsAvailable(): Promise<boolean> {
   try {
     const res = await fetch(`${API_BASE}/api/subscriptions/available`);
