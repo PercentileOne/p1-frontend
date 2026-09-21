@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { CompanyPicker } from '../components/CompanyPicker';
+import { PaywallDialog } from '../components/PaywallDialog';
+import { useInterviewGate } from '../hooks/useInterviewGate';
 import { listCompanies, getCompanyProfile, defaultsFor, buildCompanyContext, displayCompanyName, type CompanySummary, type CompanyProfile } from '../api/companiesApi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -225,6 +227,8 @@ export default function InterviewPackStart() {
   const companyPickRef = useRef(0);
   const companyMode = selectedCompanyId !== 'standard';
   const stillExtracting = jobSpecExtracting || cvExtracting || companyLoading;
+  // Who may start an interview (Francis, 2026-09-21) — asks the server; while its enforcement switch is off it always says yes.
+  const gate = useInterviewGate();
   // Which of the three role-input tabs is showing. Defaults to Job Title — the primary path
   // for most candidates now — but opens straight to whichever tab already has real content
   // (a recruiter's prep link attaching a CV or job spec) so nothing pre-filled is ever hidden,
@@ -384,13 +388,17 @@ export default function InterviewPackStart() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authToken]);
 
-  const handleStart = () => {
-    if (stillExtracting) return;
+  const handleStart = async () => {
+    if (stillExtracting || gate.checking) return;
     if (!hasEnough) {
       setAttemptedStart(true);
       logFlowEvent('START_INTERVIEW_BLOCKED', { hasRole, hasCV });
       return;
     }
+    // The access check comes AFTER the form is known to be complete (a half-filled form must not use up a free interview) and
+    // BEFORE anything is logged or navigated. Being blocked shows the paywall and stops here.
+    const { allowed } = await gate.begin();
+    if (!allowed) return;
     logFlowEvent('START_INTERVIEW_CLICKED', {
       hasJobSpec: Boolean(jobSpec.trim()),
       hasCv: Boolean(cvText.trim()),
@@ -1101,7 +1109,7 @@ export default function InterviewPackStart() {
             fontFamily: 'inherit', letterSpacing: '-0.01em', transition: 'opacity 0.2s',
           }}
         >
-          {companyLoading ? 'Researching the company…' : stillExtracting ? 'Extracting file text…' : 'Start Interview →'}
+          {gate.checking ? 'Checking…' : companyLoading ? 'Researching the company…' : stillExtracting ? 'Extracting file text…' : 'Start Interview →'}
         </button>
 
         {attemptedStart && !hasEnough && (
@@ -1114,6 +1122,7 @@ export default function InterviewPackStart() {
           Your CV is never stored. This session is private and confidential.
         </p>
       </motion.div>
+      {gate.blocked && <PaywallDialog result={gate.blocked} onClose={gate.dismiss} />}
     </div>
   );
 }

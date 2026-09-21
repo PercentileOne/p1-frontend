@@ -7,6 +7,8 @@ import type { InterviewQuestion } from '../api/explainApi';
 import { createReadAloudPlayer, extractReadableText, type ReadAloudState, type ReadAloudGender } from '../api/readAloud';
 import MiniPracticeSession from '../components/MiniPracticeSession';
 import { useAuthStore } from '../auth/authStore';
+import { PaywallDialog } from '../components/PaywallDialog';
+import { useInterviewGate } from '../hooks/useInterviewGate';
 import { logLearnTopic } from '../api/learnTopicsApi';
 
 mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'strict' });
@@ -1088,7 +1090,12 @@ function CourseView({ course, onBack, onUpdateCourse }: { course: Course; onBack
     }
   }, [course.modules[0]?.lectures[0]]);
 
-  function handlePractice(question: string, lecture?: Lecture) {
+  const practiceGate = useInterviewGate();
+  async function handlePractice(question: string, lecture?: Lecture) {
+    // Learn practice opens the interview room too, so it counts as an interview and goes through the same access check.
+    if (practiceGate.checking) return;
+    const { allowed } = await practiceGate.begin();
+    if (!allowed) return;
     const questions = question && lecture
       ? buildQuestionsFromCourse(course, lecture)
       : buildQuestionsFromCourse(course);
@@ -1113,6 +1120,7 @@ function CourseView({ course, onBack, onUpdateCourse }: { course: Course; onBack
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      {practiceGate.blocked && <PaywallDialog result={practiceGate.blocked} onClose={practiceGate.dismiss} />}
 
       {/* Course header bar */}
       <div style={{

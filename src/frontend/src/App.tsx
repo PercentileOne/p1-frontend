@@ -101,6 +101,8 @@ import CertExamRoomPage from "./pages/CertExamRoomPage";
 import CertExamSummaryRoute from "./pages/CertExamSummaryRoute";
 import SharedCertExamPage from "./pages/SharedCertExamPage";
 import CertificatePage from "./pages/CertificatePage";
+import SubscriptionPage from "./pages/SubscriptionPage";
+import { AccessBanner } from "./components/AccessBanner";
 import MyInterviewsPage from "./pages/MyInterviewsPage";
 import MyTalksPage from "./pages/MyTalksPage";
 import LearnFlashTalkPage from "./pages/LearnFlashTalkPage";
@@ -120,6 +122,8 @@ function usePageViewLogging() {
 export default function App() {
   usePageViewLogging();
   return (
+    <>
+    <AccessBanner />
     <Routes>
       {/* InterviewMe public-facing routes */}
       <Route path="/" element={<ProductHome />} />
@@ -257,6 +261,7 @@ export default function App() {
       <Route path="/cert-exam-summary/:id" element={<CertExamSummaryRoute />} />
       <Route path="/shared-cert-exam/:token" element={<SharedCertExamPage />} />
       <Route path="/certificate/:token" element={<CertificatePage />} />
+      <Route path="/subscription" element={<RequirePermission permission="CAN_START_INTERVIEW"><SubscriptionPage /></RequirePermission>} />
       <Route path="/talk-summary/:id" element={<RequirePermission permission="CAN_START_INTERVIEW"><TalkSummaryPage /></RequirePermission>} />
       <Route path="/shared-talk/:token" element={<SharedTalkPage />} />
       <Route path="/dev/avatar-test" element={<AvatarTestPage />} />
@@ -270,6 +275,7 @@ export default function App() {
       {/* Access denied */}
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
     </Routes>
+    </>
   );
 }
 

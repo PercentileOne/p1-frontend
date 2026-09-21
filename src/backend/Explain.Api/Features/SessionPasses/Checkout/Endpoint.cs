@@ -128,10 +128,10 @@ public static class Endpoint
             ],
             SuccessUrl = tier.Source == "gift"
                 ? $"{appUrl}/gift-interview-success.html?session_id={{CHECKOUT_SESSION_ID}}"
-                : $"{appUrl}/interview-gift/success?session_id={{CHECKOUT_SESSION_ID}}",
+                : $"{appUrl}/dashboard?pass=purchased",
             CancelUrl = tier.Source == "gift"
                 ? $"{appUrl}/gift-interview.html"
-                : $"{appUrl}/interview-gift/cancelled",
+                : $"{appUrl}/dashboard?pass=cancelled",
             // Read back in the webhook to find the right pass — passId alone would be enough
             // (recipientEmail is derivable from it), but including both means MarkPaidAsync's
             // required (passId, recipientEmail) pair never needs a lookup-by-passId-alone query.
