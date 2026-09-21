@@ -160,6 +160,7 @@ builder.Services.AddHttpClient("AzureMaps", c =>
 builder.Services.AddSingleton<Explain.Api.Infrastructure.Geo.AzureMapsGeocodingService>();
 builder.Services.AddSingleton<Explain.Api.Infrastructure.Geo.IpGeoLookupService>();
 builder.Services.AddHostedService<Explain.Api.Features.Events.EventsArchiveService>();
+builder.Services.AddHostedService<Explain.Api.Features.Auth.LoginHistoryRetentionService>();
 builder.Services.AddOpenApi();
 
 // Azure App Service always sits behind a front-end proxy, so HttpContext.Connection.RemoteIpAddress
