@@ -189,7 +189,7 @@ public static class Endpoint
             // brand-new LIVE endpoint can differ from the sandbox one). We only read stable checkout.session fields.
             stripeEvent = EventUtility.ConstructEvent(json, ctx.Request.Headers["Stripe-Signature"], webhookSecret, throwOnApiVersionMismatch: false);
         }
-        catch (StripeException ex)
+        catch (Exception ex) when (ex is StripeException or ArgumentException or FormatException)
         {
             // Wrong/missing signature — either a misconfigured secret or a forged request. Either
             // way this is never a payload we should act on; 400 tells Stripe not to retry it.
