@@ -14,6 +14,7 @@ import DangerButton from "../components/settings/DangerButton";
 import Button from "../components/settings/Button";
 import ComingSoonCard from "../components/settings/ComingSoonCard";
 import { useAuthStore } from "../auth/authStore";
+import DeleteAccountDialog from "../components/DeleteAccountDialog";
 import { profileApi, type Profile } from "../api/profileApi";
 
 /* ══════════════════════════════════════════════════════════════
@@ -173,6 +174,7 @@ function NotificationsSection() {
    4. DATA & PRIVACY
    ──────────────────────────────────────────────────────────── */
 function PrivacySection() {
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   return (
     <SettingsSection title="Data & Privacy" subtitle="Manage your data, devices, and account.">
       <SettingsRow label="Export my data" description="Download a copy of everything you've stored in P1">
@@ -185,8 +187,9 @@ function PrivacySection() {
         <Button label="Manage" />
       </SettingsRow>
       <SettingsRow label="Delete my account" description="Permanently remove your account and all data" last>
-        <DangerButton label="Delete my account" />
+        <DangerButton label="Delete my account" onClick={() => setConfirmingDelete(true)} />
       </SettingsRow>
+      {confirmingDelete && <DeleteAccountDialog onClose={() => setConfirmingDelete(false)} />}
     </SettingsSection>
   );
 }
