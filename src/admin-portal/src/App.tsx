@@ -16,6 +16,7 @@ import NameBank from './pages/NameBank'
 import LiveAvatar from './pages/LiveAvatar'
 import ActivityLog from './pages/ActivityLog'
 import Access from './pages/Access'
+import LocationCheck from './pages/LocationCheck'
 
 // Redirects unauthenticated users to /login. Waits for the async session
 // re-validation (AuthProvider's isLoading) before deciding, so a page refresh
@@ -55,6 +56,7 @@ function AppRoutes() {
       <Route path="/live-avatar" element={<RequireAuth><LiveAvatar /></RequireAuth>} />
       <Route path="/activity-log" element={<RequireAuth><ActivityLog /></RequireAuth>} />
       <Route path="/access" element={<RequireAuth><Access /></RequireAuth>} />
+      <Route path="/location-check" element={<RequireAuth><LocationCheck /></RequireAuth>} />
 
       <Route path="*" element={<Navigate to="/organisations" replace />} />
     </Routes>
