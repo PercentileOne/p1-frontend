@@ -34,6 +34,7 @@ public class IpGeoLookupService
     private readonly string _provider;
     private readonly string? _ipInfoToken;
     private readonly string? _geoapifyKey;
+    private readonly string _geoapifyHost;
 
     // Deliberately a raw HttpClient, not IHttpClientFactory: the factory's default logging writes full request URLs (which for Geoapify
     // carry the API key) to the logs.
@@ -51,6 +52,10 @@ public class IpGeoLookupService
         _provider = (config["Geo:Provider"] ?? "maxmind").Trim().ToLowerInvariant();
         _ipInfoToken = config["Geo:IpInfoToken"];
         _geoapifyKey = config["Geo:GeoapifyKey"];
+        // api.geoapify.com runs on Cloudflare's global network; api-eu.geoapify.com keeps processing inside the EU. The key is sent to
+        // this host, so only a geoapify.com host is accepted — anything else falls back to the default.
+        var host = (config["Geo:GeoapifyHost"] ?? "").Trim().ToLowerInvariant();
+        _geoapifyHost = host.EndsWith(".geoapify.com") && host.All(c => char.IsLetterOrDigit(c) || c is '.' or '-') ? host : "api.geoapify.com";
         _reader = new Lazy<Task<DatabaseReader?>>(() => LoadAsync(config));
     }
 
@@ -142,7 +147,7 @@ public class IpGeoLookupService
             if (provider == "geoapify")
             {
                 if (string.IsNullOrWhiteSpace(_geoapifyKey)) return null;
-                using var res = await Http.GetAsync($"https://api.geoapify.com/v1/ipinfo?ip={Uri.EscapeDataString(ipAddress)}&apiKey={Uri.EscapeDataString(_geoapifyKey)}", ct);
+                using var res = await Http.GetAsync($"https://{_geoapifyHost}/v1/ipinfo?ip={Uri.EscapeDataString(ipAddress)}&apiKey={Uri.EscapeDataString(_geoapifyKey)}", ct);
                 if (!res.IsSuccessStatusCode) { _logger.LogWarning("Geoapify lookup returned {Status}", (int)res.StatusCode); return null; }
                 return ParseGeoapify(await res.Content.ReadAsStringAsync(ct));
             }
