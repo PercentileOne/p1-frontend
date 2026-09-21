@@ -14,6 +14,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<LoginHistory>       LoginHistories      => Set<LoginHistory>();
     public DbSet<PortalFeedback>      PortalFeedbacks      => Set<PortalFeedback>();
     public DbSet<PasswordResetToken>  PasswordResetTokens  => Set<PasswordResetToken>();
+    public DbSet<AccessGrant>         AccessGrants         => Set<AccessGrant>();
+    public DbSet<InterviewUsage>      InterviewUsages      => Set<InterviewUsage>();
 
     // RBAC
     public DbSet<Role>           Roles           => Set<Role>();
@@ -34,6 +36,30 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
              .WithOne(x => x.Followee)
              .HasForeignKey(x => x.FolloweeId)
              .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        model.Entity<AccessGrant>(e =>
+        {
+            e.HasIndex(x => x.Email);
+            e.HasIndex(x => x.UserId);
+            e.Property(x => x.Email).HasMaxLength(320);
+            e.Property(x => x.Kind).HasMaxLength(20);
+        });
+
+        model.Entity<InterviewUsage>(e =>
+        {
+            e.HasIndex(x => new { x.UserId, x.UkDay });
+            e.HasIndex(x => new { x.UserId, x.UkMonth });
+            e.Property(x => x.EmailKey).HasMaxLength(320);
+            e.Property(x => x.Source).HasMaxLength(20);
+            // One free taster per normalised email, enforced by the database itself (so two simultaneous requests can't both win).
+            e.HasIndex(x => x.EmailKey).IsUnique().HasFilter("[Source] = 'taster' AND [VoidedAt] IS NULL").HasDatabaseName("UX_InterviewUsage_Taster");
+        });
+
+        model.Entity<Subscription>(e =>
+        {
+            e.HasIndex(x => x.UserId);
+            e.HasIndex(x => x.StripeSubscriptionId).IsUnique().HasFilter("[StripeSubscriptionId] IS NOT NULL");
         });
 
         model.Entity<Role>(e =>
