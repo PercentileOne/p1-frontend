@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authApi, type ApiError } from '../api/authApi';
 import { useAuthStore } from '../auth/authStore';
+import { consumePostLoginPath } from '../auth/postLoginRedirect';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function AuthCallback() {
           id: session.userId, email: session.email, name: session.name,
           firstName: session.firstName, role: session.role,
         }, session.permissions);
-        navigate('/dashboard', { replace: true });
+        navigate(consumePostLoginPath('/dashboard'), { replace: true });
       })
       .catch((err: ApiError) => setError(err?.error ?? 'Sign-in failed.'));
     // eslint-disable-next-line react-hooks/exhaustive-deps

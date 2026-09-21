@@ -19,10 +19,11 @@
 //   - Authenticated and permitted           → renders children
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useAuthStore } from './authStore';
 import type { Permission } from './permissionMatrix';
+import { rememberPostLoginPath } from './postLoginRedirect';
 
 interface RequirePermissionProps {
   permission: Permission;
@@ -33,11 +34,15 @@ export function RequirePermission({ permission, children }: RequirePermissionPro
   const isLoading       = useAuthStore(s => s.isLoading);
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
   const permissions     = useAuthStore(s => s.permissions);
+  const location        = useLocation();
 
   // Still validating the stored token — render nothing to avoid a flash
   if (isLoading) return null;
 
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    rememberPostLoginPath(location.pathname + location.search);
+    return <Navigate to="/login" replace />;
+  }
 
   if (!permissions.has(permission)) return <Navigate to="/unauthorized" replace />;
 

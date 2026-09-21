@@ -5,6 +5,7 @@ import { Eye, EyeOff, Loader2, Lock, User, ChevronDown } from "lucide-react";
 import { authApi, type ApiError, type AuthUser } from "../api/authApi";
 import { useAuthStore } from "../auth/authStore";
 import type { Permission } from "../auth/permissionMatrix";
+import { consumePostLoginPath } from '../auth/postLoginRedirect';
 
 type UserRole = 'Candidate' | 'Employer' | 'Recruiter' | 'Investor';
 
@@ -89,7 +90,7 @@ export default function LoginPage() {
       // backend (GET /auth/me) before trusting it, it doesn't just decode-and-accept it.
       if (role === 'Recruiter') { window.location.href = `https://recruiter.interviewme.global/auth/callback?token=${encodeURIComponent(token)}`; return; }
       if (role === 'Employer')  { window.location.href = `https://employer.interviewme.global/auth/callback?token=${encodeURIComponent(token)}`; return; }
-      navigate('/dashboard');
+      navigate(consumePostLoginPath('/dashboard'));
     }, 2200);
   };
 
@@ -153,7 +154,7 @@ export default function LoginPage() {
         "CAN_VIEW_INTERVIEW_RESULTS",
       ]);
       setPhase("success");
-      setTimeout(() => navigate("/dashboard"), 1200);
+      setTimeout(() => navigate(consumePostLoginPath("/dashboard")), 1200);
     }, 800);
   };
 

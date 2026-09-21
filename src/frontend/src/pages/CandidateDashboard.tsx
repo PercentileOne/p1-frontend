@@ -10,8 +10,9 @@ import { getTopLearnTopics, type LearnTopicStat } from "../api/learnTopicsApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
   MessageSquare, Settings, LogOut, ChevronRight, ChevronDown, CheckCircle2, Circle, Compass, Gift, Zap,
-  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked, GraduationCap, Wallet,
+  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked, GraduationCap, Wallet, CreditCard,
 } from "lucide-react";
+import { getMyEntitlements } from "../api/entitlementsApi";
 import { CvAnalysisModal } from "../components/CvAnalysisModal";
 import LearnPanel from "./LearnPanel";
 import CareersPanel from "./CareersPanel";
@@ -61,6 +62,7 @@ const NAV_ITEMS = [
   { Icon: Compass,         label: "Careers",          slug: "careers" },
   { Icon: MessageSquare,   label: "Messages",         slug: "messages" },
   { Icon: Zap,             label: "Demo",             slug: "demo" },
+  { Icon: CreditCard,      label: "My Plan",          slug: "plan" },   // opens /subscription (a page of its own), see navTo
   { Icon: Settings,        label: "Settings",         slug: "settings" },
 ] as const;
 
@@ -613,6 +615,11 @@ export default function CandidateDashboard() {
   // straight into the weak area that sent the candidate here.
   const studyTopic = (location.state as { studyTopic?: string } | null)?.studyTopic;
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
+  // Anyone without a paid plan sees "Subscribe" in the sidebar instead of "My Plan" — the button people look for.
+  const [needsPlan, setNeedsPlan] = useState(false);
+  useEffect(() => {
+    if (authToken) void getMyEntitlements(authToken).then(s => setNeedsPlan(!!s && (s.plan === 'taster' || s.plan === 'none')));
+  }, [authToken]);
   const [news,          setNews]          = useState<NewsItem[]>([]);
   const [newsReady,     setNewsReady]     = useState(false);
   const [featuredStats, setFeaturedStats] = useState<FeaturedStat[]>([]);
@@ -704,6 +711,7 @@ export default function CandidateDashboard() {
   }
 
   function navTo(label: string) {
+    if (label === "My Plan") { navigate("/subscription"); return; }
     const item = NAV_ITEMS.find(n => n.label === label);
     setSearchParams(item?.slug ? { tab: item.slug } : {});
   }
@@ -758,7 +766,9 @@ export default function CandidateDashboard() {
                 }}
               >
                 <Icon size={15} strokeWidth={active ? 2.2 : hovered ? 2 : 1.8} />
-                {label}
+                {label === "My Plan" && needsPlan
+                  ? <span style={{ color: "#34D399", fontWeight: 800 }}>Subscribe · £4.99/mo</span>
+                  : label}
               </button>
             );
           })}
