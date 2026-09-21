@@ -10,7 +10,8 @@ public record RegisterCommand(
     string LastName,
     int? Age,
     string? Profession,
-    string? Role = null) // "recruiter" to self-register as one; anything else/omitted → Candidate. Never trust this for Employer/Admin/SuperAdmin.
+    string? Role = null, // anything but candidate is refused (recruiters/employers are onboarded by us). Never trust this for Employer/Admin/SuperAdmin.
+    string? Next = null)   // where the person was headed (only "/subscription" is honoured); carried through the verification email so it works on any device
     : IRequest<Result<AuthResponse>>;
 
 public record AuthResponse(string Token, UserDto User);

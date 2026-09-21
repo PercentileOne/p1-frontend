@@ -11,6 +11,14 @@ export function rememberPostLoginPath(path: string): void {
   } catch { /* private mode — falls back to the dashboard */ }
 }
 
+// Reads ?next= from the URL (set by the sign-in gate and the email-verification redirect) and remembers it — only /subscription is honoured.
+export function rememberNextFromSearch(search: string): void {
+  try {
+    const n = new URLSearchParams(search).get('next');
+    if (n === '/subscription') rememberPostLoginPath(n);
+  } catch { /* ignore */ }
+}
+
 export function consumePostLoginPath(fallback: string): string {
   try {
     const raw = localStorage.getItem(KEY);

@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Loader2, Lock, User, ChevronDown } from "lucide-react";
 import { authApi, type ApiError, type AuthUser } from "../api/authApi";
 import { useAuthStore } from "../auth/authStore";
 import type { Permission } from "../auth/permissionMatrix";
-import { consumePostLoginPath } from '../auth/postLoginRedirect';
+import { consumePostLoginPath, rememberNextFromSearch } from '../auth/postLoginRedirect';
 
 type UserRole = 'Candidate' | 'Employer' | 'Recruiter' | 'Investor';
 
@@ -56,6 +56,8 @@ export default function LoginPage() {
   // Backend's GET /api/auth/verify-email redirects here with ?verified=true once a fresh
   // registration's email link is clicked — read once on mount, not a route param the rest of
   // this page needs to know about otherwise.
+  // Arriving from the verification email with ?next=/subscription: remember it so sign-in lands there (works from any browser or device).
+  useEffect(() => { rememberNextFromSearch(window.location.search); }, []);
   const [verifiedNotice] = useState(() => new URLSearchParams(window.location.search).get('verified') === 'true');
 
   const storeLogin = useAuthStore(s => s.login);

@@ -14,11 +14,15 @@ namespace Explain.Api.Features.Auth.Verify;
 /// </summary>
 public static class Endpoint
 {
+    // Only a known internal page is ever carried through the email link (no open redirect): today just the subscribe page.
+    public static string? SafeNext(string? next) => next == "/subscription" ? next : null;
+
     public static void Map(WebApplication app)
     {
-        app.MapGet("/api/auth/verify-email", async (string? token, AppDbContext db, IConfiguration config, SecurityEventLogger securityEvents) =>
+        app.MapGet("/api/auth/verify-email", async (string? token, string? next, AppDbContext db, IConfiguration config, SecurityEventLogger securityEvents) =>
         {
             var candidateAppUrl = config["CandidateAppUrl"] ?? "http://localhost:5173";
+            var nextQuery = SafeNext(next) is { } safe ? $"&next={Uri.EscapeDataString(safe)}" : "";
 
             if (string.IsNullOrWhiteSpace(token))
                 return Results.Redirect($"{candidateAppUrl}/login?verifyError=missing-token");
@@ -28,7 +32,7 @@ public static class Endpoint
                 // Already used, or never existed — either way there's nothing left to verify.
                 // A used token redirecting to the same "you can sign in now" outcome is fine:
                 // clicking an already-consumed link twice shouldn't look like a hard failure.
-                return Results.Redirect($"{candidateAppUrl}/login?verified=true");
+                return Results.Redirect($"{candidateAppUrl}/login?verified=true{nextQuery}");
 
             user.EmailVerified = true;
             user.EmailVerificationToken = null;
@@ -36,7 +40,7 @@ public static class Endpoint
 
             _ = securityEvents.LogAsync("EMAIL_VERIFIED", user.Id, user.Email, null);
 
-            return Results.Redirect($"{candidateAppUrl}/login?verified=true");
+            return Results.Redirect($"{candidateAppUrl}/login?verified=true{nextQuery}");
         })
         .WithName("VerifyEmail").WithTags("Auth")
         .AllowAnonymous();

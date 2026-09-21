@@ -75,6 +75,10 @@ public class CandidateSubscriptionService(AppDbContext db, ILogger<CandidateSubs
         // Current period end lives on the subscription's item in the newer Stripe API versions.
         var periodEnd = sub.Items?.Data?.FirstOrDefault()?.CurrentPeriodEnd;
         if (periodEnd is DateTime end) row.RenewsAt = DateTime.SpecifyKind(end, DateTimeKind.Utc);
+        // A subscription that has actually ENDED (cancelled immediately — e.g. after a refund — or unpaid) has no paid-up period left:
+        // access stops when it ended, not at the old renewal date. (Cancel-at-period-end stays "active" until the period really ends.)
+        if (row.Status == "cancelled")
+            row.RenewsAt = sub.EndedAt is DateTime ended ? DateTime.SpecifyKind(ended, DateTimeKind.Utc) : DateTime.UtcNow;
         // A subscription cancelled "at period end" stays Status=active (access continues) but Stripe flags it — record that so the UI can say
         // "cancelled, access until X" instead of "renews X". If they change their mind in the portal the flag clears and so does CancelledAt.
         var willCancel = sub.CancelAtPeriodEnd || sub.CancelAt is not null;

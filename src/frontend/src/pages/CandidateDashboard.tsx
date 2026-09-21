@@ -10,7 +10,7 @@ import { getTopLearnTopics, type LearnTopicStat } from "../api/learnTopicsApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
   MessageSquare, Settings, LogOut, ChevronRight, ChevronDown, CheckCircle2, Circle, Compass, Gift, Zap,
-  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked, GraduationCap, Wallet, CreditCard,
+  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked, GraduationCap, Wallet,
 } from "lucide-react";
 import { getMyEntitlements } from "../api/entitlementsApi";
 import { CvAnalysisModal } from "../components/CvAnalysisModal";
@@ -62,7 +62,6 @@ const NAV_ITEMS = [
   { Icon: Compass,         label: "Careers",          slug: "careers" },
   { Icon: MessageSquare,   label: "Messages",         slug: "messages" },
   { Icon: Zap,             label: "Demo",             slug: "demo" },
-  { Icon: CreditCard,      label: "My Plan",          slug: "plan" },   // opens /subscription (a page of its own), see navTo
   { Icon: Settings,        label: "Settings",         slug: "settings" },
 ] as const;
 
@@ -711,7 +710,6 @@ export default function CandidateDashboard() {
   }
 
   function navTo(label: string) {
-    if (label === "My Plan") { navigate("/subscription"); return; }
     const item = NAV_ITEMS.find(n => n.label === label);
     setSearchParams(item?.slug ? { tab: item.slug } : {});
   }
@@ -766,27 +764,35 @@ export default function CandidateDashboard() {
                 }}
               >
                 <Icon size={15} strokeWidth={active ? 2.2 : hovered ? 2 : 1.8} />
-                {label === "My Plan" && needsPlan
-                  ? <span style={{ color: "#34D399", fontWeight: 800 }}>Subscribe · £4.99/mo</span>
-                  : label}
+                {label}
               </button>
             );
           })}
         </nav>
 
-        {/* User footer */}
-        <div style={{ padding: "16px", borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
-            background: "linear-gradient(135deg,#34D399,#047857)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 13, fontWeight: 800, color: "#fff",
-          }}>{initials}</div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.name ?? "Candidate"}</div>
-            <div style={{ fontSize: 10, color: "var(--text-3)" }}>{role}</div>
-          </div>
-          <button onClick={handleLogout} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "var(--text-3)", display: "flex", padding: 4 }} title="Sign out">
+        {/* User footer — also the way into "My Account" (plan, subscribing, cancelling, deleting the account) */}
+        <div style={{ padding: "12px 12px 12px 8px", borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 4 }}>
+          <button
+            onClick={() => navigate("/subscription")}
+            title="My Account"
+            style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0, background: "none", border: "none", cursor: "pointer", textAlign: "left", padding: "6px 8px", borderRadius: 10, fontFamily: "inherit" }}
+            onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+          >
+            <div style={{
+              width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+              background: "linear-gradient(135deg,#34D399,#047857)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 13, fontWeight: 800, color: "#fff",
+            }}>{initials}</div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.name ?? "Candidate"}</div>
+              {needsPlan
+                ? <div style={{ fontSize: 10.5, fontWeight: 800, color: "#34D399", whiteSpace: "nowrap" }}>Subscribe · £4.99/mo →</div>
+                : <div style={{ fontSize: 10, color: "var(--text-3)" }}>My Account</div>}
+            </div>
+          </button>
+          <button onClick={handleLogout} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-3)", display: "flex", padding: 6 }} title="Sign out">
             <LogOut size={14} />
           </button>
         </div>

@@ -155,7 +155,7 @@ public class RegisterCommandHandler(
 
         try
         {
-            await SendVerificationEmailAsync(sqlUser, verificationToken, config, emailSender, logger);
+            await SendVerificationEmailAsync(sqlUser, verificationToken, cmd.Next, config, emailSender, logger);
         }
         catch (Exception ex)
         {
@@ -177,10 +177,11 @@ public class RegisterCommandHandler(
             "Account created! Check your email to verify it, then sign in.", 403);
     }
 
-    private static async Task SendVerificationEmailAsync(SqlUser user, string token, IConfiguration config, IEmailSender emailSender, ILogger logger)
+    private static async Task SendVerificationEmailAsync(SqlUser user, string token, string? next, IConfiguration config, IEmailSender emailSender, ILogger logger)
     {
         var apiBase = config["ApiPublicUrl"] ?? "https://api.explain.global";
-        var verifyUrl = $"{apiBase}/api/auth/verify-email?token={Uri.EscapeDataString(token)}";
+        var safeNext = Explain.Api.Features.Auth.Verify.Endpoint.SafeNext(next);
+        var verifyUrl = $"{apiBase}/api/auth/verify-email?token={Uri.EscapeDataString(token)}" + (safeNext is null ? "" : $"&next={Uri.EscapeDataString(safeNext)}");
 
         var body = $"""
             <!DOCTYPE html>

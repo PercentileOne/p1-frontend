@@ -15,6 +15,7 @@ const PLAN_LABEL: Record<EntitlementStatus['plan'], string> = {
 export default function SubscriptionPage() {
   const navigate = useNavigate();
   const token = useAuthStore(s => s.token);
+  const email = useAuthStore(s => s.user?.email ?? '');
   const [status, setStatus] = useState<EntitlementStatus | null>(null);
   const [subscription, setSubscription] = useState<MySubscription | null>(null);
   const [canSubscribe, setCanSubscribe] = useState(false);
@@ -49,7 +50,8 @@ export default function SubscriptionPage() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '40px 16px', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: 520 }}>
         <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 13, cursor: 'pointer', marginBottom: 16, padding: 0 }}>← Back</button>
-        <h1 style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', margin: '0 0 18px' }}>My plan</h1>
+        <h1 style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', margin: '0 0 4px' }}>My account</h1>
+        {email && <div style={{ fontSize: 13, color: 'var(--text-3)', margin: '0 0 18px', overflowWrap: 'anywhere' }}>{email}</div>}
 
         <div style={card}>
           {!status ? <div style={{ color: 'var(--text-3)', fontSize: 14 }}>Loading…</div> : (
@@ -91,6 +93,9 @@ export default function SubscriptionPage() {
         <p style={{ fontSize: 12, color: 'var(--text-3)', lineHeight: 1.6, marginTop: 14 }}>
           A subscription includes up to 3 interviews a day and 10 a month, plus Learn, Career Coach, mock exams and more. You can cancel any time — you keep access until the end of the period you've paid for.
         </p>
+        <button onClick={() => navigate('/dashboard?tab=settings')} style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 12, textDecoration: 'underline', cursor: 'pointer', padding: 0, marginTop: 4 }}>
+          Delete my account
+        </button>
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authApi, type ApiError } from '../api/authApi';
 import { useAuthStore } from '../auth/authStore';
-import { consumePostLoginPath } from '../auth/postLoginRedirect';
+import { consumePostLoginPath, rememberNextFromSearch } from '../auth/postLoginRedirect';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ export default function AuthCallback() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    rememberNextFromSearch(window.location.search);
     const token = searchParams.get('token');
     if (!token) { setError('Missing sign-in token.'); return; }
 

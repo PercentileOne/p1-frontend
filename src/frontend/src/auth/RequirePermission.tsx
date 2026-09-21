@@ -31,7 +31,8 @@ import { rememberPostLoginPath } from './postLoginRedirect';
 function RedirectToGate({ path }: { path: string }) {
   useEffect(() => {
     const tab = path.startsWith('/subscription') ? '/register' : '/login';
-    window.location.replace(`https://login.theinterviewchair.com${tab}`);
+    const next = path.startsWith('/subscription') ? '?next=/subscription' : '';
+    window.location.replace(`https://login.theinterviewchair.com${tab}${next}`);
   }, [path]);
   return null;
 }

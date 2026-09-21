@@ -1417,7 +1417,7 @@
       // Investor has no dedicated portal yet, so it lands on the candidate portal too —
       // same fallback LoginPage.tsx uses.
       const dest = PORTAL_ORIGINS[role] || PORTAL_ORIGINS.Candidate;
-      window.location.href = `${dest}/auth/callback?token=${encodeURIComponent(token)}`;
+      window.location.href = `${dest}/auth/callback?token=${encodeURIComponent(token)}` + (NEXT ? '&next=' + encodeURIComponent(NEXT) : '');
     } catch (err) {
       errorEl.textContent = err.message || 'Something went wrong. Please try again.';
       errorEl.style.display = 'block';
@@ -1430,6 +1430,8 @@
   // ── Registration, same principle as login — a real form, not a link out to a
   // portal-specific domain, so the whole account-creation step stays on the neutral
   // theinterviewchair.com gate until there's a real destination portal to send you to.
+  // Where the person was headed before being sent here (the candidate portal sets ?next=/subscription) — only that one page is honoured.
+  var NEXT = (function () { try { var n = new URLSearchParams(location.search).get('next'); return n === '/subscription' ? n : null; } catch (e) { return null; } })();
   var signupRole = null;
 
   function selectSignupRole(role) {
@@ -1468,7 +1470,7 @@
     try {
       var res = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, firstName, lastName, role: signupRole.toLowerCase() }),
+        body: JSON.stringify({ email, password, firstName, lastName, role: signupRole.toLowerCase(), next: NEXT }),
       });
       if (!res.ok) {
         var err = await res.json().catch(() => ({}));
@@ -1479,7 +1481,7 @@
 
       submitEl.textContent = 'Redirecting…';
       var dest = PORTAL_ORIGINS[signupRole] || PORTAL_ORIGINS.Candidate;
-      window.location.href = `${dest}/auth/callback?token=${encodeURIComponent(token)}`;
+      window.location.href = `${dest}/auth/callback?token=${encodeURIComponent(token)}` + (NEXT ? '&next=' + encodeURIComponent(NEXT) : '');
     } catch (err) {
       errorEl.textContent = err.message || 'Something went wrong. Please try again.';
       errorEl.style.display = 'block';
