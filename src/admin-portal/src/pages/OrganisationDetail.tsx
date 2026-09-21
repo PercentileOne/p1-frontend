@@ -61,7 +61,7 @@ export default function OrganisationDetail() {
         <ArrowLeft size={15} /> Organisations
       </button>
 
-      <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', marginBottom: 24 }}>{org.name}</h1>
+      <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', marginBottom: 24, overflowWrap: 'anywhere' }}>{org.name}</h1>
 
       <OverviewCard org={org} token={token!} onSaved={setOrg} showToast={showToast} />
       <BillingCard org={org} token={token!} onSaved={setOrg} showToast={showToast} />
@@ -321,8 +321,8 @@ function MembersCard({ org, token, onSaved }: { org: OrgDetail; token: string; o
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{m.name || m.email}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{m.email} · {m.role}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', overflowWrap: 'anywhere' }}>{m.name || m.email}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', overflowWrap: 'anywhere' }}>{m.email} · {m.role}</div>
               </div>
               <button onClick={() => handleRemove(m.id)} title="Remove" style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: 4 }}>
                 <X size={15} />

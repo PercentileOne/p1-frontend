@@ -169,9 +169,9 @@ export default function Organisations() {
                     onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,142,247,0.08)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                   >
-                    <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)' }}>{o.name}</td>
+                    <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)', overflowWrap: 'anywhere' }}>{o.name}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-2)', textTransform: 'capitalize' }}>{o.type}</td>
-                    <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{o.contactEmail}</td>
+                    <td style={{ padding: '12px 16px', color: 'var(--text-2)', overflowWrap: 'anywhere' }}>{o.contactEmail}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{o.seatCount}</td>
                     <td style={{ padding: '12px 16px' }}>
                       {promoActive ? (

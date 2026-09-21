@@ -263,8 +263,21 @@ export default function ActivityLog() {
         <div style={{ color: 'var(--text-3)', fontSize: 13, padding: '24px 0' }}>No events match these filters.</div>
       ) : (
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          {/* Fixed column shares + wrapping text: the table always fits the screen, so there is no horizontal scrollbar (which sat at
+              the bottom of a 100-row table and jumped when clicked). */}
+          <div>
+            <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 13 }}>
+              <colgroup>
+                <col style={{ width: 40 }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '19%' }} />
+                <col style={{ width: '20%' }} />
+                <col style={{ width: '14%' }} />
+                <col style={{ width: '8%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '11%' }} />
+                <col style={{ width: '8%' }} />
+              </colgroup>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)' }}>
                   <th style={{ width: 36, padding: '10px 0 10px 16px' }}>
@@ -296,21 +309,21 @@ export default function ActivityLog() {
                     <td style={{ padding: '12px 0 12px 16px', width: 36 }} onClick={ev => ev.stopPropagation()}>
                       <input type="checkbox" checked={ticked.has(e.id)} onChange={() => toggleTick(e.id)} aria-label="Select this event" style={{ cursor: 'pointer' }} />
                     </td>
-                    <td style={{ padding: '12px 16px', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{fmt(e.createdAt)}</td>
-                    <td style={{ padding: '12px 16px', color: 'var(--text)' }}>{e.email ?? <span style={{ color: 'var(--text-3)' }}>Anonymous</span>}</td>
-                    <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)' }}>{e.eventType}</td>
+                    <td style={{ padding: '12px 16px', color: 'var(--text-2)', overflowWrap: 'anywhere' }}>{fmt(e.createdAt)}</td>
+                    <td style={{ padding: '12px 16px', color: 'var(--text)', overflowWrap: 'anywhere' }}>{e.email ?? <span style={{ color: 'var(--text-3)' }}>Anonymous</span>}</td>
+                    <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)', overflowWrap: 'anywhere' }}>{e.eventType}</td>
                     <td
                       title={e.page ?? undefined}
-                      style={{ padding: '12px 16px', color: 'var(--text-3)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: e.page ? 'help' : 'default' }}
+                      style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere', cursor: e.page ? 'help' : 'default' }}
                     >
                       {e.page ?? '—'}
                     </td>
-                    <td style={{ padding: '12px 16px', color: 'var(--text-3)', textTransform: 'capitalize' }}>{e.portal ?? '—'}</td>
-                    <td style={{ padding: '12px 16px', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '12px 16px', color: 'var(--text-3)', textTransform: 'capitalize', overflowWrap: 'anywhere' }}>{e.portal ?? '—'}</td>
+                    <td style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere' }}>
                       {describeLocation(e)}
                     </td>
-                    <td title={e.userAgent ?? undefined} style={{ padding: '12px 16px', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>{describeDevice(e.userAgent)}</td>
-                    <td title={e.sessionId} style={{ padding: '12px 16px', color: 'var(--text-3)', whiteSpace: 'nowrap', fontFamily: 'ui-monospace, monospace', fontSize: 11 }}>{e.sessionId.slice(0, 8)}</td>
+                    <td title={e.userAgent ?? undefined} style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere' }}>{describeDevice(e.userAgent)}</td>
+                    <td title={e.sessionId} style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere', fontFamily: 'ui-monospace, monospace', fontSize: 11 }}>{e.sessionId.slice(0, 8)}</td>
                   </tr>
                 ))}
               </tbody>
