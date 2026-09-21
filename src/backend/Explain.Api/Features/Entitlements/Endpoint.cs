@@ -58,6 +58,12 @@ public static class Endpoint
                     comps = grants.Count(g => g.Kind == "comp" && g.RevokedAt == null),
                     totalAccounts = await db.Users.CountAsync(),
                 },
+                passes = new
+                {
+                    total = await db.InterviewPasses.CountAsync(),
+                    paid = await db.InterviewPasses.CountAsync(p => p.Status == "paid"),
+                    sessionsRemaining = await db.InterviewPasses.Where(p => p.Status == "paid" && p.ExpiresAt > DateTime.UtcNow).SumAsync(p => (int?)(p.SessionsTotal - p.SessionsUsed)) ?? 0,
+                },
                 last7Days = new
                 {
                     started = recent.Count,

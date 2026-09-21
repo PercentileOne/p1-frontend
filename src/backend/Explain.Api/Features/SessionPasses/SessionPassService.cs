@@ -1,7 +1,8 @@
 using System.Net;
-using Microsoft.Azure.Cosmos;
-using Explain.Api.Infrastructure.Cosmos;
+using Microsoft.EntityFrameworkCore;
 using Explain.Api.Infrastructure.Email;
+using Explain.Api.Infrastructure.Sql;
+using Explain.Api.Infrastructure.Sql.Models;
 
 namespace Explain.Api.Features.SessionPasses;
 
@@ -9,10 +10,21 @@ namespace Explain.Api.Features.SessionPasses;
 /// Source-agnostic — every method here works identically for a gifted pass and a self-purchase
 /// pass, the only difference is which PassTiers entry was used to create it. Keeps the entire
 /// entitlement mechanism in one place rather than duplicating it per tier.
+///
+/// Stored in Azure SQL (table InterviewPasses) since 2026-09-21 — it used to be a Cosmos container. The public shape is still the
+/// SessionPass record, so the endpoints, the gift email and the UI are unchanged; this class maps between the two.
 /// </summary>
-public class SessionPassService(CosmosService cosmos, IEmailSender emailSender, ILogger<SessionPassService> logger)
+public class SessionPassService(AppDbContext db, IEmailSender emailSender, ILogger<SessionPassService> logger)
 {
-    private Container Container => cosmos.GetContainer("sessionPasses");
+    internal static SessionPass ToRecord(InterviewPass e) => new(
+        id: e.Id, recipientEmail: e.RecipientEmail, recipientName: e.RecipientName, recipientJobTitle: e.RecipientJobTitle,
+        tierId: e.TierId, source: e.Source, senderName: e.SenderName, senderEmail: e.SenderEmail, status: e.Status,
+        stripeCheckoutSessionId: e.StripeCheckoutSessionId, stripePaymentIntentId: e.StripePaymentIntentId,
+        amountGbp: e.AmountGbp, currency: e.Currency, sessionsTotal: e.SessionsTotal, sessionsUsed: e.SessionsUsed,
+        createdAt: Utc(e.CreatedAt), paidAt: e.PaidAt is { } p ? Utc(p) : null, expiresAt: e.ExpiresAt is { } x ? Utc(x) : null,
+        redeemedByUserId: e.RedeemedByUserId);
+
+    private static DateTimeOffset Utc(DateTime d) => new(DateTime.SpecifyKind(d, DateTimeKind.Utc));
 
     public async Task<SessionPass> CreatePendingAsync(
         string recipientEmail, string recipientName, string? recipientJobTitle,
@@ -21,35 +33,31 @@ public class SessionPassService(CosmosService cosmos, IEmailSender emailSender, 
         var tier = PassTiers.Get(tierId) ?? throw new ArgumentException($"Unknown pass tier: {tierId}");
         var email = recipientEmail.Trim().ToLower();
 
-        var pass = new SessionPass(
-            id: Guid.NewGuid().ToString(),
-            recipientEmail: email,
-            recipientName: recipientName.Trim(),
-            recipientJobTitle: string.IsNullOrWhiteSpace(recipientJobTitle) ? null : recipientJobTitle.Trim(),
-            tierId: tierId,
-            source: tier.Source,
-            senderName: senderName?.Trim(),
-            senderEmail: senderEmail?.Trim().ToLower(),
-            status: "pending",
-            stripeCheckoutSessionId: null,
-            stripePaymentIntentId: null,
-            amountGbp: tier.AmountGbp,
-            currency: "GBP",
-            sessionsTotal: tier.SessionsTotal,
-            sessionsUsed: 0,
-            createdAt: DateTimeOffset.UtcNow,
-            paidAt: null,
-            expiresAt: null,
-            redeemedByUserId: null);
-
-        await Container.CreateItemAsync(pass, new PartitionKey(email));
-        return pass;
+        var pass = new InterviewPass
+        {
+            RecipientEmail = email,
+            RecipientName = recipientName.Trim(),
+            RecipientJobTitle = string.IsNullOrWhiteSpace(recipientJobTitle) ? null : recipientJobTitle.Trim(),
+            TierId = tierId,
+            Source = tier.Source,
+            SenderName = senderName?.Trim(),
+            SenderEmail = senderEmail?.Trim().ToLower(),
+            Status = "pending",
+            AmountGbp = tier.AmountGbp,
+            Currency = "GBP",
+            SessionsTotal = tier.SessionsTotal,
+        };
+        db.InterviewPasses.Add(pass);
+        await db.SaveChangesAsync();
+        return ToRecord(pass);
     }
 
     public async Task AttachCheckoutSessionAsync(string passId, string recipientEmail, string stripeCheckoutSessionId)
     {
-        await Container.PatchItemAsync<SessionPass>(passId, new PartitionKey(recipientEmail),
-            [PatchOperation.Replace("/stripeCheckoutSessionId", stripeCheckoutSessionId)]);
+        var pass = await db.InterviewPasses.FirstOrDefaultAsync(p => p.Id == passId);
+        if (pass is null) return;
+        pass.StripeCheckoutSessionId = stripeCheckoutSessionId;
+        await db.SaveChangesAsync();
     }
 
     // Called only from the Stripe webhook (checkout.session.completed) — never from the
@@ -58,21 +66,20 @@ public class SessionPassService(CosmosService cosmos, IEmailSender emailSender, 
     // redeliver the same event more than once.
     public async Task<SessionPass?> MarkPaidAsync(string passId, string recipientEmail, string stripePaymentIntentId)
     {
-        var existing = await Container.ReadItemAsync<SessionPass>(passId, new PartitionKey(recipientEmail));
-        if (existing.Resource.status == "paid") return existing.Resource; // already handled — Stripe redelivered the event
+        var entity = await db.InterviewPasses.FirstOrDefaultAsync(p => p.Id == passId);
+        if (entity is null) return null;
+        if (entity.Status == "paid") return ToRecord(entity); // already handled — Stripe redelivered the event
 
-        var tier = PassTiers.Get(existing.Resource.tierId);
+        var tier = PassTiers.Get(entity.TierId);
         var windowDays = tier?.WindowDays ?? 7;
-        var paidAt = DateTimeOffset.UtcNow;
+        var paidAt = DateTime.UtcNow;
 
-        var updated = existing.Resource with
-        {
-            status = "paid",
-            stripePaymentIntentId = stripePaymentIntentId,
-            paidAt = paidAt,
-            expiresAt = paidAt.AddDays(windowDays),
-        };
-        await Container.ReplaceItemAsync(updated, passId, new PartitionKey(recipientEmail));
+        entity.Status = "paid";
+        entity.StripePaymentIntentId = stripePaymentIntentId;
+        entity.PaidAt = paidAt;
+        entity.ExpiresAt = paidAt.AddDays(windowDays);
+        await db.SaveChangesAsync();
+        var updated = ToRecord(entity);
 
         // Gift only — a self-purchase candidate is already logged in and already knows they just
         // paid; the recipient of a GIFT is very likely someone with no account yet who has no
@@ -224,72 +231,53 @@ public class SessionPassService(CosmosService cosmos, IEmailSender emailSender, 
         logger.LogInformation("Gift invite sent to {Email} for pass {PassId}", pass.recipientEmail, pass.id);
     }
 
-    // Cross-partition lookup — the only place a pass is fetched by its Stripe Checkout Session id
-    // rather than (id, recipientEmail). Deliberately not a hot path: called once, right after
-    // Checkout redirects back to gift-interview-success.html, purely so that page can greet the
-    // recipient by name ("Danny will be able to sign in...") instead of "your recipient". The
-    // session id itself is Stripe's own opaque token, so this is safe to expose AllowAnonymous —
-    // nobody can guess or enumerate it, same trust level as the redirect URL itself.
+    // The only place a pass is fetched by its Stripe Checkout Session id rather than by id. Deliberately not a hot path: called once,
+    // right after Checkout redirects back to gift-interview-success.html, purely so that page can greet the recipient by name
+    // ("Danny will be able to sign in...") instead of "your recipient". The session id itself is Stripe's own opaque token, so this is
+    // safe to expose AllowAnonymous — nobody can guess or enumerate it, same trust level as the redirect URL itself.
     public async Task<SessionPass?> GetByCheckoutSessionIdAsync(string checkoutSessionId)
     {
-        var query = new QueryDefinition("SELECT * FROM c WHERE c.stripeCheckoutSessionId = @sid")
-            .WithParameter("@sid", checkoutSessionId);
-
-        using var feed = Container.GetItemQueryIterator<SessionPass>(query);
-        while (feed.HasMoreResults)
-        {
-            var page = await feed.ReadNextAsync();
-            var match = page.FirstOrDefault();
-            if (match is not null) return match;
-        }
-        return null;
+        var e = await db.InterviewPasses.AsNoTracking().FirstOrDefaultAsync(p => p.StripeCheckoutSessionId == checkoutSessionId);
+        return e is null ? null : ToRecord(e);
     }
 
-    // Single-partition query (see CosmosService's own comment on why /recipientEmail is the
-    // partition key) — every active, unexpired, unexhausted pass for this candidate, soonest-
-    // expiring first so redemption naturally drains the pass closest to lapsing.
+    // Every active, unexpired, unexhausted pass for this candidate, soonest-expiring first so redemption naturally drains the pass
+    // closest to lapsing.
     public async Task<List<SessionPass>> GetActiveForEmailAsync(string email)
     {
         var normalised = email.Trim().ToLower();
-        var query = new QueryDefinition(
-            "SELECT * FROM c WHERE c.recipientEmail = @email AND c.status = 'paid' AND c.sessionsUsed < c.sessionsTotal AND c.expiresAt > @now ORDER BY c.expiresAt ASC")
-            .WithParameter("@email", normalised)
-            .WithParameter("@now", DateTimeOffset.UtcNow.ToString("o"));
-
-        var results = new List<SessionPass>();
-        using var feed = Container.GetItemQueryIterator<SessionPass>(query, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(normalised) });
-        while (feed.HasMoreResults)
-            results.AddRange(await feed.ReadNextAsync());
-        return results;
+        var now = DateTime.UtcNow;
+        var rows = await db.InterviewPasses.AsNoTracking()
+            .Where(p => p.RecipientEmail == normalised && p.Status == "paid" && p.SessionsUsed < p.SessionsTotal && p.ExpiresAt > now)
+            .OrderBy(p => p.ExpiresAt)
+            .ToListAsync();
+        return rows.Select(ToRecord).ToList();
     }
 
-    // Same "increment first, then check the result" idiom as CareerCoach's daily-usage counter
-    // — simpler than a conditional patch, and the realistic race window here (one candidate
-    // redeeming their own small session cap) doesn't justify the extra complexity of a
-    // FilterPredicate-guarded patch. Returns false (nothing consumed) if there's no active pass
-    // with room left, so the caller can show "no sessions left" rather than silently succeed.
-    // charge.refunded (2026-09-21): a refunded pass must stop working. Cross-partition lookup by the Stripe payment intent (rare event).
+    // charge.refunded: a fully refunded pass must stop working.
     public async Task MarkRefundedByPaymentIntentAsync(string paymentIntentId)
     {
-        var query = new QueryDefinition("SELECT * FROM c WHERE c.stripePaymentIntentId = @pi").WithParameter("@pi", paymentIntentId);
-        using var feed = Container.GetItemQueryIterator<SessionPass>(query);
-        while (feed.HasMoreResults)
-            foreach (var pass in await feed.ReadNextAsync())
-            {
-                if (pass.status == "refunded") continue;
-                await Container.ReplaceItemAsync(pass with { status = "refunded" }, pass.id, new PartitionKey(pass.recipientEmail));
-                logger.LogWarning("Interview pass {PassId} for {Email} refunded — no longer usable", pass.id, pass.recipientEmail);
-            }
+        var rows = await db.InterviewPasses.Where(p => p.StripePaymentIntentId == paymentIntentId && p.Status != "refunded").ToListAsync();
+        foreach (var pass in rows)
+        {
+            pass.Status = "refunded";
+            logger.LogWarning("Interview pass {PassId} for {Email} refunded — no longer usable", pass.Id, pass.RecipientEmail);
+        }
+        if (rows.Count > 0) await db.SaveChangesAsync();
     }
 
+    // Takes one session from the soonest-expiring active pass. The increment is a single guarded UPDATE
+    // (SET SessionsUsed = SessionsUsed + 1 WHERE SessionsUsed < SessionsTotal), so two simultaneous starts can never take the same
+    // last session. Returns false (nothing consumed) if no active pass has room, so the caller can say "no sessions left".
     public async Task<bool> CheckAndConsumeAsync(string email)
     {
-        var active = await GetActiveForEmailAsync(email);
-        var pass = active.FirstOrDefault();
-        if (pass is null) return false;
-
-        var patched = await Container.PatchItemAsync<SessionPass>(pass.id, new PartitionKey(pass.recipientEmail),
-            [PatchOperation.Increment("/sessionsUsed", 1)]);
-        return patched.Resource.sessionsUsed <= patched.Resource.sessionsTotal;
+        foreach (var pass in await GetActiveForEmailAsync(email))
+        {
+            var updated = await db.InterviewPasses
+                .Where(p => p.Id == pass.id && p.SessionsUsed < p.SessionsTotal)
+                .ExecuteUpdateAsync(set => set.SetProperty(p => p.SessionsUsed, p => p.SessionsUsed + 1));
+            if (updated == 1) return true;
+        }
+        return false;
     }
 }

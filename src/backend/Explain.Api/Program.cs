@@ -47,7 +47,7 @@ builder.Services.AddScoped<PermissionLoader>();
 builder.Services.AddSingleton<AnthropicService>();
 builder.Services.AddSingleton<Explain.Api.Infrastructure.YouTube.YouTubeService>();
 builder.Services.AddSingleton<Explain.Api.Features.NameGreetings.DidGenerationService>();
-builder.Services.AddSingleton<Explain.Api.Features.SessionPasses.SessionPassService>();
+builder.Services.AddScoped<Explain.Api.Features.SessionPasses.SessionPassService>();   // scoped: it uses the SQL DbContext (passes moved from Cosmos, 2026-09-21)
 builder.Services.AddScoped<Explain.Api.Features.Entitlements.EntitlementService>();
 builder.Services.AddScoped<Explain.Api.Features.Subscriptions.CandidateSubscriptionService>();
 builder.Services.AddSingleton<Explain.Api.Features.Events.SecurityEventLogger>();
@@ -245,6 +245,17 @@ async Task<bool> TryMigrateAsync()
             logger.LogWarning("Applied {Count} database migration(s): {Names}", pending.Count, string.Join(", ", pending));
         }
         logger.LogWarning("Database schema is current. Latest applied migration: {Latest}", (await db.Database.GetAppliedMigrationsAsync()).LastOrDefault());
+
+        // Copy interview passes + paywall settings from Cosmos into SQL (idempotent — see LegacyCosmosImport). A failure here must never
+        // stop the app: passes simply read as empty until the next start.
+        try
+        {
+            await Explain.Api.Features.SessionPasses.LegacyCosmosImport.RunAsync(db, scope.ServiceProvider.GetRequiredService<CosmosService>(), logger);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Legacy Cosmos -> SQL import (interview passes / paywall settings) failed; will retry on the next start.");
+        }
         return true;
     }
     catch (Exception ex)

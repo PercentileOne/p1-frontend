@@ -1,8 +1,5 @@
-using System.Net;
-using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using Explain.Api.Features.SessionPasses;
-using Explain.Api.Infrastructure.Cosmos;
 using Explain.Api.Infrastructure.Sql;
 using Explain.Api.Infrastructure.Sql.Models;
 
@@ -26,7 +23,7 @@ public record StartResult(bool Allowed, bool Enforced, string Source, string Cod
 /// start is still recorded, but nobody is ever turned away — so the whole system can be shipped, watched and tested before it
 /// blocks a single real user (see the admin Access page: "would block" counts).
 /// </summary>
-public class EntitlementService(AppDbContext db, CosmosService cosmos, SessionPassService passes, IConfiguration config, ILogger<EntitlementService> logger)
+public class EntitlementService(AppDbContext db, SessionPassService passes, IConfiguration config, ILogger<EntitlementService> logger)
 {
     private static readonly TimeZoneInfo Uk = FindUk();
     private static TimeZoneInfo FindUk()
@@ -42,29 +39,27 @@ public class EntitlementService(AppDbContext db, CosmosService cosmos, SessionPa
         return (local.ToString("yyyy-MM-dd"), local.ToString("yyyy-MM"));
     }
 
-    // ── Settings (Cosmos platformSettings, same pattern as NameBank/LiveAvatar) ────────────────
-    internal sealed record SettingsDoc(string id, string pk, bool enforce, int dailyCap, int monthlyCap, bool tasterEnabled, DateTimeOffset updatedAt, string updatedBy);
+    // ── Settings (Azure SQL, table EntitlementSettings — one row, Id = 1) ───────────────────────
     private static (EntitlementSettings s, DateTime at)? _cache; // static: the service itself is per-request, the setting is not
 
     public async Task<EntitlementSettings> GetSettingsAsync()
     {
         if (_cache is { } c && DateTime.UtcNow - c.at < TimeSpan.FromSeconds(20)) return c.s;
-        var container = cosmos.GetContainer("platformSettings");
-        EntitlementSettings result;
-        try
-        {
-            var doc = (await container.ReadItemAsync<SettingsDoc>("entitlements", new PartitionKey("entitlements"))).Resource;
-            result = new EntitlementSettings(doc.enforce, Math.Clamp(doc.dailyCap, 0, 100), Math.Clamp(doc.monthlyCap, 0, 1000), doc.tasterEnabled);
-        }
-        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { result = EntitlementSettings.Default; }
+        var row = await db.EntitlementSettings.AsNoTracking().FirstOrDefaultAsync(r => r.Id == 1);
+        var result = row is null
+            ? EntitlementSettings.Default
+            : new EntitlementSettings(row.Enforce, Math.Clamp(row.DailyCap, 0, 100), Math.Clamp(row.MonthlyCap, 0, 1000), row.TasterEnabled);
         _cache = (result, DateTime.UtcNow);
         return result;
     }
 
     public async Task SaveSettingsAsync(EntitlementSettings s, string updatedBy)
     {
-        var doc = new SettingsDoc("entitlements", "entitlements", s.Enforce, s.DailyCap, s.MonthlyCap, s.TasterEnabled, DateTimeOffset.UtcNow, updatedBy);
-        await cosmos.GetContainer("platformSettings").UpsertItemAsync(doc, new PartitionKey("entitlements"));
+        var row = await db.EntitlementSettings.FirstOrDefaultAsync(r => r.Id == 1);
+        if (row is null) { row = new Infrastructure.Sql.Models.EntitlementSettingsRow { Id = 1 }; db.EntitlementSettings.Add(row); }
+        row.Enforce = s.Enforce; row.DailyCap = s.DailyCap; row.MonthlyCap = s.MonthlyCap; row.TasterEnabled = s.TasterEnabled;
+        row.UpdatedAt = DateTime.UtcNow; row.UpdatedBy = updatedBy;
+        await db.SaveChangesAsync();
         _cache = null;
     }
 

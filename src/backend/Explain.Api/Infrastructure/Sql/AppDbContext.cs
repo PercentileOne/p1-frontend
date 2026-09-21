@@ -16,6 +16,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<PasswordResetToken>  PasswordResetTokens  => Set<PasswordResetToken>();
     public DbSet<AccessGrant>         AccessGrants         => Set<AccessGrant>();
     public DbSet<InterviewUsage>      InterviewUsages      => Set<InterviewUsage>();
+    public DbSet<InterviewPass>       InterviewPasses      => Set<InterviewPass>();
+    public DbSet<EntitlementSettingsRow> EntitlementSettings => Set<EntitlementSettingsRow>();
 
     // RBAC
     public DbSet<Role>           Roles           => Set<Role>();
@@ -54,6 +56,27 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(x => x.Source).HasMaxLength(20);
             // One free taster per normalised email, enforced by the database itself (so two simultaneous requests can't both win).
             e.HasIndex(x => x.EmailKey).IsUnique().HasFilter("[Source] = 'taster' AND [VoidedAt] IS NULL").HasDatabaseName("UX_InterviewUsage_Taster");
+        });
+
+        model.Entity<InterviewPass>(e =>
+        {
+            e.HasIndex(x => new { x.RecipientEmail, x.Status });
+            e.HasIndex(x => x.StripeCheckoutSessionId);
+            e.HasIndex(x => x.StripePaymentIntentId);
+            e.Property(x => x.RecipientEmail).HasMaxLength(320);
+            e.Property(x => x.Status).HasMaxLength(20);
+            e.Property(x => x.StripeCheckoutSessionId).HasMaxLength(255);
+            e.Property(x => x.StripePaymentIntentId).HasMaxLength(255);
+            e.Property(x => x.AmountGbp).HasPrecision(10, 2);
+        });
+
+        // One row, Id = 1, seeded with the defaults Francis chose (enforcement OFF, 3/day, 10/month, free taster on).
+        model.Entity<EntitlementSettingsRow>(e =>
+        {
+            e.ToTable("EntitlementSettings");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).ValueGeneratedNever();
+            e.HasData(new EntitlementSettingsRow { Id = 1, Enforce = false, DailyCap = 3, MonthlyCap = 10, TasterEnabled = true, UpdatedAt = new DateTime(2026, 9, 21, 0, 0, 0, DateTimeKind.Utc), UpdatedBy = "system" });
         });
 
         model.Entity<Subscription>(e =>

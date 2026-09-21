@@ -12,6 +12,7 @@ export interface AccessOverview {
   settings: AccessSettings;
   grants: AccessGrant[];
   counts: { staff: number; complimentary: number; comps: number; totalAccounts: number };
+  passes: { total: number; paid: number; sessionsRemaining: number };
   last7Days: { started: number; wouldHaveBeenBlocked: number; bySource: Record<string, number> };
 }
 export interface UsageRow { id: string; email: string; source: string; enforced: boolean; wouldBlock: boolean; startedAt: string; voidedAt: string | null }

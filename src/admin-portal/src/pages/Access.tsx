@@ -107,6 +107,10 @@ export default function Access() {
         </div>
       </div>
 
+      <div style={{ fontSize: 12, color: 'var(--text-3)', margin: '-6px 0 16px 2px' }}>
+        Interview passes (gifts &amp; one-off): <strong style={{ color: 'var(--text-2)' }}>{data.passes.paid} paid</strong> of {data.passes.total} created · {data.passes.sessionsRemaining} session(s) still to use.
+      </div>
+
       {/* Free access lists */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         {([['staff', `Staff (${data.counts.staff})`], ['free', `Complimentary & comps (${data.counts.complimentary + data.counts.comps})`], ['usage', 'Recent starts']] as [Tab, string][]).map(([t, label]) => (
