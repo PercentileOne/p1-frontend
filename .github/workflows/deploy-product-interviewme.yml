@@ -50,6 +50,10 @@ jobs:
           cp src/viewme/public/track.js deploy-product/track.js
           mkdir -p deploy-product/patent-files
           cp src/viewme/public/patent-files/*.png deploy-product/patent-files/
+          # Revamped homepage, STAGING (2026-09-21): reachable at /home-v2.html (noindex) for review before it replaces home.html.
+          cp src/viewme/public/home-v2.html deploy-product/home-v2.html
+          mkdir -p deploy-product/img
+          cp src/viewme/public/img/*.webp deploy-product/img/
           cp src/viewme/public/staticwebapp.config.json deploy-product/staticwebapp.config.json
           cp src/viewme/public/im-social-card.svg deploy-product/im-social-card.svg
           cp src/viewme/public/im-social-card.png deploy-product/im-social-card.png

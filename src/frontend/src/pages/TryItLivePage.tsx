@@ -22,7 +22,8 @@ type Phase = 'topic' | 'starting' | 'asking' | 'answering' | 'scoring' | 'result
 
 export default function TryItLivePage() {
   const [phase, setPhase] = useState<Phase>('topic');
-  const [topic, setTopic] = useState('');
+  // The marketing site's hero passes ?topic= so the visitor's subject is already filled in.
+  const [topic, setTopic] = useState(() => { try { return (new URLSearchParams(window.location.search).get('topic') ?? '').slice(0, 90); } catch { return ''; } });
   const [start, setStart] = useState<TryOutStart | null>(null);
   const [index, setIndex] = useState(0);
   const [draft, setDraft] = useState('');
