@@ -243,7 +243,7 @@ export default function TryItLivePage() {
                   </div>
                 )}
               <div style={{ position: 'absolute', left: 12, bottom: 12, background: 'rgba(0,0,0,0.6)', borderRadius: 8, padding: '5px 10px', fontSize: 12, fontWeight: 700 }}>
-                {start.interviewerName} · {start.interviewer === 'technical' ? 'Technical interviewer' : 'HR Director'}{phase === 'asking' ? ' · speaking…' : ''}
+                {start.interviewerName} · Interviewer{phase === 'asking' ? ' · speaking…' : ''}
               </div>
             </div>
 

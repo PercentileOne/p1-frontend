@@ -11,6 +11,11 @@
       "statusCode": 302
     },
     {
+      "route": "/try",
+      "redirect": "https://candidate.theinterviewchair.com/try",
+      "statusCode": 302
+    },
+    {
       "route": "/about",
       "rewrite": "/about.html"
     },
