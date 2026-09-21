@@ -226,18 +226,45 @@ catch (Exception ex)
     logger.LogWarning(ex, "TTS cache initialisation failed — Read Aloud will regenerate audio every time instead of serving cached clips.");
 }
 
-// Apply any pending EF migrations automatically on startup
-using (var scope = app.Services.CreateScope())
+// Apply any pending EF migrations automatically on startup.
+// The Azure SQL database can be asleep (serverless auto-pause) and take a minute to wake, so a single attempt used to fail with
+// "the wait operation timed out" and NEVER retry (the old log line promised "will retry on next request" — nothing did). Now: one
+// attempt in line, then, if that fails, up to 8 more in the background 20s apart. Applied migrations are logged at Warning so
+// they're visible in Application Insights (this is a rare and important event).
+async Task<bool> TryMigrateAsync()
 {
+    using var scope = app.Services.CreateScope();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
-        await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var pending = (await db.Database.GetPendingMigrationsAsync()).ToList();
+        if (pending.Count > 0)
+        {
+            await db.Database.MigrateAsync();
+            logger.LogWarning("Applied {Count} database migration(s): {Names}", pending.Count, string.Join(", ", pending));
+        }
+        logger.LogWarning("Database schema is current. Latest applied migration: {Latest}", (await db.Database.GetAppliedMigrationsAsync()).LastOrDefault());
+        return true;
     }
     catch (Exception ex)
     {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogWarning(ex, "Database migration failed on startup — the database may be paused. Will retry on next request.");
+        logger.LogWarning(ex, "Database migration attempt failed — the database may be paused; retrying in the background.");
+        return false;
     }
+}
+
+if (!await TryMigrateAsync())
+{
+    _ = Task.Run(async () =>
+    {
+        for (var attempt = 1; attempt <= 8; attempt++)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(20));
+            if (await TryMigrateAsync()) return;
+        }
+        app.Services.GetRequiredService<ILogger<Program>>().LogError("Database migrations could not be applied after 8 background retries.");
+    });
 }
 
 app.UseForwardedHeaders();
