@@ -171,3 +171,18 @@ public class EmailNormaliserTests
     public void Disposable_domains_are_recognised(string email, bool expected)
         => Assert.Equal(expected, EmailNormaliser.IsDisposable(email));
 }
+
+public class SubscriptionStatusTests
+{
+    [Theory]
+    [InlineData("active", "active")]
+    [InlineData("trialing", "active")]
+    [InlineData("past_due", "past_due")]     // Stripe is retrying the card — access continues meanwhile
+    [InlineData("unpaid", "cancelled")]
+    [InlineData("canceled", "cancelled")]
+    [InlineData("incomplete", "incomplete")]
+    [InlineData("incomplete_expired", "incomplete")]
+    [InlineData(null, "incomplete")]
+    public void Stripe_status_maps_to_ours(string? stripe, string ours)
+        => Assert.Equal(ours, Explain.Api.Features.Subscriptions.CandidateSubscriptionService.MapStatus(stripe));
+}

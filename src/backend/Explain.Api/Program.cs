@@ -49,6 +49,7 @@ builder.Services.AddSingleton<Explain.Api.Infrastructure.YouTube.YouTubeService>
 builder.Services.AddSingleton<Explain.Api.Features.NameGreetings.DidGenerationService>();
 builder.Services.AddSingleton<Explain.Api.Features.SessionPasses.SessionPassService>();
 builder.Services.AddScoped<Explain.Api.Features.Entitlements.EntitlementService>();
+builder.Services.AddScoped<Explain.Api.Features.Subscriptions.CandidateSubscriptionService>();
 builder.Services.AddSingleton<Explain.Api.Features.Events.SecurityEventLogger>();
 // Stripe.net's service classes (SessionService, EventUtility, etc.) read this static property
 // by default rather than needing a DI-injected client — set once at startup, same secret-never-
@@ -297,6 +298,7 @@ Explain.Api.Features.ExamCatalog.AutoAdd.Endpoint.Map(app);
 Explain.Api.Features.ExamQuestions.Endpoint.Map(app);
 Explain.Api.Features.Companies.Endpoint.Map(app);
 Explain.Api.Features.Entitlements.Endpoint.Map(app);
+Explain.Api.Features.Subscriptions.Endpoint.Map(app);
 Explain.Api.Features.ExamCatalog.Refresh.Endpoint.Map(app);
 
 Explain.Api.Features.Auth.ForgotPassword.Endpoint.Map(app);

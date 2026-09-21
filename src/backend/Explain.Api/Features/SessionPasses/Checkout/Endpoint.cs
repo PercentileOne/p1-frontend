@@ -169,7 +169,7 @@ public static class Endpoint
     }
 
     private static async Task<IResult> HandleWebhook(
-        HttpContext ctx, SessionPassService passes, IConfiguration config, ILogger<Program> logger)
+        HttpContext ctx, SessionPassService passes, Explain.Api.Features.Subscriptions.CandidateSubscriptionService subscriptions, IConfiguration config, ILogger<Program> logger)
     {
         var webhookSecret = config["Stripe:WebhookSecret"];
         if (string.IsNullOrWhiteSpace(webhookSecret))
@@ -195,6 +195,25 @@ public static class Endpoint
             // way this is never a payload we should act on; 400 tells Stripe not to retry it.
             logger.LogWarning(ex, "Stripe webhook signature verification failed.");
             return Results.BadRequest();
+        }
+
+        // Subscription events (2026-09-21) share this endpoint and its signature check — one webhook destination for everything.
+        if (stripeEvent.Type == "checkout.session.completed" && stripeEvent.Data.Object is Session subSession && subSession.Mode == "subscription")
+        {
+            await subscriptions.ApplyCheckoutCompletedAsync(subSession);
+            return Results.Ok();
+        }
+        if (stripeEvent.Type is "customer.subscription.created" or "customer.subscription.updated" or "customer.subscription.deleted"
+            && stripeEvent.Data.Object is Stripe.Subscription stripeSub)
+        {
+            await subscriptions.SyncAsync(stripeSub);
+            return Results.Ok();
+        }
+        // A fully refunded one-off pass stops working (partial refunds are ignored — a judgement call for a human).
+        if (stripeEvent.Type == "charge.refunded" && stripeEvent.Data.Object is Charge charge && charge.Refunded && !string.IsNullOrWhiteSpace(charge.PaymentIntentId))
+        {
+            await passes.MarkRefundedByPaymentIntentAsync(charge.PaymentIntentId);
+            return Results.Ok();
         }
 
         if (stripeEvent.Type == "checkout.session.completed" && stripeEvent.Data.Object is Session session)

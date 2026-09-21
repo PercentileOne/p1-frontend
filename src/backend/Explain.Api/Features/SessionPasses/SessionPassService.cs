@@ -268,6 +268,20 @@ public class SessionPassService(CosmosService cosmos, IEmailSender emailSender, 
     // redeeming their own small session cap) doesn't justify the extra complexity of a
     // FilterPredicate-guarded patch. Returns false (nothing consumed) if there's no active pass
     // with room left, so the caller can show "no sessions left" rather than silently succeed.
+    // charge.refunded (2026-09-21): a refunded pass must stop working. Cross-partition lookup by the Stripe payment intent (rare event).
+    public async Task MarkRefundedByPaymentIntentAsync(string paymentIntentId)
+    {
+        var query = new QueryDefinition("SELECT * FROM c WHERE c.stripePaymentIntentId = @pi").WithParameter("@pi", paymentIntentId);
+        using var feed = Container.GetItemQueryIterator<SessionPass>(query);
+        while (feed.HasMoreResults)
+            foreach (var pass in await feed.ReadNextAsync())
+            {
+                if (pass.status == "refunded") continue;
+                await Container.ReplaceItemAsync(pass with { status = "refunded" }, pass.id, new PartitionKey(pass.recipientEmail));
+                logger.LogWarning("Interview pass {PassId} for {Email} refunded — no longer usable", pass.id, pass.recipientEmail);
+            }
+    }
+
     public async Task<bool> CheckAndConsumeAsync(string email)
     {
         var active = await GetActiveForEmailAsync(email);
