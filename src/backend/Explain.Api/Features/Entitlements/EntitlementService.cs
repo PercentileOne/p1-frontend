@@ -70,6 +70,15 @@ public class EntitlementService(AppDbContext db, SessionPassService passes, ICon
     }
 
     // ── Facts ─────────────────────────────────────────────────────────────────────────────────
+    // Newtonsoft turns ISO date strings into DateTime while reading a JObject, and JToken.Value<DateTimeOffset>() then throws
+    // "Invalid cast from DateTime to DateTimeOffset" (found live 2026-09-21: every prep lookup failed and silently meant "no prep").
+    // ToObject goes through the serializer, which handles both the string and the DateTime form.
+    public static DateTimeOffset ToOffset(JToken? token)
+    {
+        if (token is null || token.Type == JTokenType.Null) return DateTimeOffset.MinValue;
+        try { return token.ToObject<DateTimeOffset>(); } catch { return DateTimeOffset.MinValue; }
+    }
+
     // Recruiter-sent interview preps (Cosmos, /recruiterId partition — so this is a cross-partition read by candidate email, the same one the
     // candidate's "Received preps" list does). Live from the day it was sent until 2 days after the interview it is preparing for.
     // Returns each usable prep with the sessions it has left, soonest interview first. Any Cosmos trouble means "no prep access" (logged),
@@ -87,8 +96,8 @@ public class EntitlementService(AppDbContext db, SessionPassService passes, ICon
             while (feed.HasMoreResults)
                 foreach (var d in await feed.ReadNextAsync())
                 {
-                    var date = d["interviewDate"]?.Value<DateTimeOffset>() ?? DateTimeOffset.MinValue;
-                    var created = d["createdAt"]?.Value<DateTimeOffset>() ?? DateTimeOffset.MinValue;
+                    var date = ToOffset(d["interviewDate"]);
+                    var created = ToOffset(d["createdAt"]);
                     if (date.UtcDateTime.AddDays(2) > now && created.UtcDateTime > now.AddDays(-120)) prepIds.Add((d["id"]!.Value<string>()!, date));
                 }
             if (prepIds.Count == 0) return result;
