@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Explain.Api.Features.Users.DeleteAccount;
+using Explain.Api.Infrastructure.Cosmos;
 using Explain.Api.Infrastructure.Sql;
 
 namespace Explain.Api.Tests;
@@ -18,6 +19,8 @@ public class EndpointMappingSmokeTests
         builder.Services.AddAuthentication();
         builder.Services.AddAuthorization();
         builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlite("DataSource=:memory:"));
+        builder.Services.AddSingleton<CosmosService>(_ => null!);   // registered so route builders see it as a service, never resolved here
+        builder.Services.AddHttpClient();
         builder.Services.AddScoped<AccountDeletionService>(_ => null!);   // registered so the route builder sees it as a service, never resolved here
         return builder.Build();
     }
@@ -29,5 +32,15 @@ public class EndpointMappingSmokeTests
         Explain.Api.Features.Users.DeleteAccount.Endpoint.Map(app);
         var endpoints = ((IEndpointRouteBuilder)app).DataSources.SelectMany(d => d.Endpoints).ToList();   // building them is the test
         Assert.Contains(endpoints, e => e is RouteEndpoint r && r.RoutePattern.RawText == "/api/users/me");
+    }
+
+    [Fact]
+    public void Try_it_live_routes_build()
+    {
+        var app = AppWithServices();
+        Explain.Api.Features.TryOut.Endpoint.Map(app);
+        var patterns = ((IEndpointRouteBuilder)app).DataSources.SelectMany(d => d.Endpoints).OfType<RouteEndpoint>().Select(r => r.RoutePattern.RawText).ToList();
+        Assert.Contains("/api/tryout/start", patterns);
+        Assert.Contains("/api/tryout/feedback", patterns);
     }
 }

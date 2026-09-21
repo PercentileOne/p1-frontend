@@ -341,6 +341,7 @@ Explain.Api.Features.Companies.Endpoint.Map(app);
 Explain.Api.Features.Entitlements.Endpoint.Map(app);
 Explain.Api.Features.SessionPasses.LegacyImportEndpoint.Map(app);
 Explain.Api.Infrastructure.Geo.GeoCompareEndpoint.Map(app);
+Explain.Api.Features.TryOut.Endpoint.Map(app);
 Explain.Api.Features.Subscriptions.Endpoint.Map(app);
 Explain.Api.Features.ExamCatalog.Refresh.Endpoint.Map(app);
 
