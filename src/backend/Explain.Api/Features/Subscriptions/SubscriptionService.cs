@@ -75,7 +75,11 @@ public class CandidateSubscriptionService(AppDbContext db, ILogger<CandidateSubs
         // Current period end lives on the subscription's item in the newer Stripe API versions.
         var periodEnd = sub.Items?.Data?.FirstOrDefault()?.CurrentPeriodEnd;
         if (periodEnd is DateTime end) row.RenewsAt = DateTime.SpecifyKind(end, DateTimeKind.Utc);
+        // A subscription cancelled "at period end" stays Status=active (access continues) but Stripe flags it — record that so the UI can say
+        // "cancelled, access until X" instead of "renews X". If they change their mind in the portal the flag clears and so does CancelledAt.
+        var willCancel = sub.CancelAtPeriodEnd || sub.CancelAt is not null;
         if (row.Status == "cancelled") row.CancelledAt ??= DateTime.UtcNow;
+        else row.CancelledAt = willCancel ? row.CancelledAt ?? DateTime.UtcNow : null;
         row.UpdatedAt = DateTime.UtcNow;
 
         await db.SaveChangesAsync();

@@ -33,7 +33,9 @@ export default function SubscriptionPage() {
   const renewsAt = subscription?.renewsAt ? new Date(subscription.renewsAt) : null;
   const hasSubscription = !!subscription && (subscription.status === 'active' || subscription.status === 'past_due'
     || (subscription.status === 'cancelled' && !!renewsAt && renewsAt.getTime() > Date.now()));
-  const fmtDate = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  // Cancelled in the portal but still paid up: Stripe keeps it "active" until the period ends, the server flags it via cancelledAt.
+  const isCancelling = !!subscription && (subscription.status === 'cancelled' || !!subscription.cancelledAt);
+  const fmtDate =(d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
   async function go(fn: () => Promise<{ url?: string; error?: string }>) {
     setBusy(true); setError('');
@@ -67,8 +69,8 @@ export default function SubscriptionPage() {
 
           {hasSubscription && subscription && (
             <div style={{ fontSize: 14, color: 'var(--text-2)', marginTop: 12 }}>
-              Subscription: <strong>{subscription.status === 'cancelled' ? 'Cancelled' : subscription.status === 'past_due' ? 'Payment overdue' : 'Active'}</strong>
-              {renewsAt && (subscription.status === 'cancelled' ? ` — access until ${fmtDate(renewsAt)}` : ` — renews ${fmtDate(renewsAt)}`)}
+              Subscription: <strong>{isCancelling ? 'Cancelled' : subscription.status === 'past_due' ? 'Payment overdue' : 'Active'}</strong>
+              {renewsAt && (isCancelling ? ` — access until ${fmtDate(renewsAt)}` : ` — renews ${fmtDate(renewsAt)}`)}
             </div>
           )}
 
