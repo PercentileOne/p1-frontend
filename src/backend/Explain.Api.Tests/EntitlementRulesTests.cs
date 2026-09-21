@@ -10,8 +10,8 @@ public class EntitlementRulesTests
 
     private static EntitlementFacts Facts(
         bool staff = false, bool comp = false, bool sub = false, int pass = 0, int daily = 0, int monthly = 0,
-        bool tasterUsed = false, bool verified = true, bool disposable = false)
-        => new(staff, comp, sub, pass, daily, monthly, tasterUsed, verified, disposable);
+        bool tasterUsed = false, bool verified = true, bool disposable = false, int prep = 0)
+        => new(staff, comp, sub, pass, daily, monthly, tasterUsed, verified, disposable, prep);
 
     [Fact]
     public void Staff_are_always_let_in_even_far_past_every_limit()
@@ -143,6 +143,36 @@ public class EntitlementRulesTests
         Assert.False(EntitlementRules.Decide(Facts(sub: true, daily: 1), s).Allowed);
         Assert.False(EntitlementRules.Decide(Facts(sub: true, monthly: 2), s).Allowed);
         Assert.True(EntitlementRules.Decide(Facts(sub: true, daily: 0, monthly: 1), s).Allowed);
+    }
+
+    [Fact]
+    public void A_recruiter_prep_lets_a_candidate_with_no_plan_in_and_keeps_their_own_taster()
+    {
+        var d = EntitlementRules.Decide(Facts(prep: 3, tasterUsed: false), S);
+        Assert.True(d.Allowed);
+        Assert.Equal("prep", d.Source);
+    }
+
+    [Fact]
+    public void A_recruiter_prep_still_works_after_the_taster_is_used_or_a_subscription_hits_its_cap()
+    {
+        Assert.Equal("prep", EntitlementRules.Decide(Facts(prep: 1, tasterUsed: true), S).Source);
+        Assert.Equal("prep", EntitlementRules.Decide(Facts(prep: 2, sub: true, daily: 3), S).Source);
+    }
+
+    [Fact]
+    public void With_no_prep_sessions_left_the_candidate_is_back_to_the_paywall()
+    {
+        var d = EntitlementRules.Decide(Facts(prep: 0, tasterUsed: true), S);
+        Assert.False(d.Allowed);
+        Assert.Equal("taster-used", d.Code);
+    }
+
+    [Fact]
+    public void Paid_access_is_used_before_a_recruiters_prep_sessions()
+    {
+        Assert.Equal("subscription", EntitlementRules.Decide(Facts(prep: 3, sub: true, daily: 0), S).Source);
+        Assert.Equal("pass", EntitlementRules.Decide(Facts(prep: 3, pass: 1), S).Source);
     }
 }
 

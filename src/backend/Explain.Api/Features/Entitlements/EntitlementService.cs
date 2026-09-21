@@ -1,5 +1,8 @@
+using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using Explain.Api.Features.SessionPasses;
+using Explain.Api.Infrastructure.Cosmos;
 using Explain.Api.Infrastructure.Sql;
 using Explain.Api.Infrastructure.Sql.Models;
 
@@ -14,7 +17,8 @@ public record EntitlementStatus(
     string Message,
     int DailyUsed, int DailyCap, int MonthlyUsed, int MonthlyCap,
     int PassSessionsLeft,
-    bool TasterAvailable);
+    bool TasterAvailable,
+    int PrepSessionsLeft = 0);
 
 public record StartResult(bool Allowed, bool Enforced, string Source, string Code, string Message, string? UsageId, string? Ticket = null);
 
@@ -23,8 +27,10 @@ public record StartResult(bool Allowed, bool Enforced, string Source, string Cod
 /// start is still recorded, but nobody is ever turned away — so the whole system can be shipped, watched and tested before it
 /// blocks a single real user (see the admin Access page: "would block" counts).
 /// </summary>
-public class EntitlementService(AppDbContext db, SessionPassService passes, IConfiguration config, ILogger<EntitlementService> logger)
+public class EntitlementService(AppDbContext db, SessionPassService passes, IConfiguration config, ILogger<EntitlementService> logger, CosmosService? cosmos = null)
 {
+    // A recruiter pays £1.99 per interview-prep link and the candidate gets up to this many free practice sessions on it (pricing model, 2026-09).
+    public const int PrepSessionsPerLink = 3;
     private static readonly TimeZoneInfo Uk = FindUk();
     private static TimeZoneInfo FindUk()
     {
@@ -64,7 +70,47 @@ public class EntitlementService(AppDbContext db, SessionPassService passes, ICon
     }
 
     // ── Facts ─────────────────────────────────────────────────────────────────────────────────
-    private async Task<(EntitlementFacts facts, int passesLeft)> GatherAsync(string userId, string email, bool adminClaim)
+    // Recruiter-sent interview preps (Cosmos, /recruiterId partition — so this is a cross-partition read by candidate email, the same one the
+    // candidate's "Received preps" list does). Live from the day it was sent until 2 days after the interview it is preparing for.
+    // Returns each usable prep with the sessions it has left, soonest interview first. Any Cosmos trouble means "no prep access" (logged),
+    // never an exception — a failed lookup must not break every interview start.
+    private async Task<List<(string PrepId, int Left)>> ActivePrepsAsync(string emailLower, string userId, DateTime now)
+    {
+        var result = new List<(string, int)>();
+        if (cosmos is null) return result;
+        try
+        {
+            var container = cosmos.GetContainer("interview-preps");
+            var prepIds = new List<(string Id, DateTimeOffset Date)>();
+            using var feed = container.GetItemQueryIterator<JObject>(
+                new QueryDefinition("SELECT c.id, c.interviewDate, c.createdAt FROM c WHERE c.email = @e").WithParameter("@e", emailLower));
+            while (feed.HasMoreResults)
+                foreach (var d in await feed.ReadNextAsync())
+                {
+                    var date = d["interviewDate"]?.Value<DateTimeOffset>() ?? DateTimeOffset.MinValue;
+                    var created = d["createdAt"]?.Value<DateTimeOffset>() ?? DateTimeOffset.MinValue;
+                    if (date.UtcDateTime.AddDays(2) > now && created.UtcDateTime > now.AddDays(-120)) prepIds.Add((d["id"]!.Value<string>()!, date));
+                }
+            if (prepIds.Count == 0) return result;
+
+            var ids = prepIds.Select(p => p.Id).ToList();
+            var used = await db.InterviewUsages.AsNoTracking()
+                .Where(u => u.Source == "prep" && u.VoidedAt == null && u.PassId != null && ids.Contains(u.PassId))
+                .GroupBy(u => u.PassId!).Select(g => new { Id = g.Key, N = g.Count() }).ToListAsync();
+            foreach (var (id, _) in prepIds.OrderBy(p => p.Date))
+            {
+                var left = PrepSessionsPerLink - (used.FirstOrDefault(x => x.Id == id)?.N ?? 0);
+                if (left > 0) result.Add((id, left));
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not read interview preps for entitlement check; treating as none.");
+        }
+        return result;
+    }
+
+    private async Task<(EntitlementFacts facts, int passesLeft, string? prepIdToUse)> GatherAsync(string userId, string email, bool adminClaim)
     {
         var now = DateTime.UtcNow;
         var emailLower = email.Trim().ToLowerInvariant();
@@ -88,6 +134,7 @@ public class EntitlementService(AppDbContext db, SessionPassService passes, ICon
         var dailyUsed = await db.InterviewUsages.AsNoTracking().CountAsync(u => u.UserId == userId && u.UkDay == day && u.VoidedAt == null && counted.Contains(u.Source));
         var monthlyUsed = await db.InterviewUsages.AsNoTracking().CountAsync(u => u.UserId == userId && u.UkMonth == month && u.VoidedAt == null && counted.Contains(u.Source));
         var tasterUsed = await db.InterviewUsages.AsNoTracking().AnyAsync(u => u.EmailKey == key && u.Source == "taster" && u.VoidedAt == null);
+        var preps = await ActivePrepsAsync(emailLower, userId, now);
 
         var facts = new EntitlementFacts(
             IsStaff: adminClaim || isAdminRole || grants.Contains("staff"),
@@ -98,31 +145,33 @@ public class EntitlementService(AppDbContext db, SessionPassService passes, ICon
             MonthlyUsed: monthlyUsed,
             TasterUsed: tasterUsed,
             EmailVerified: user?.EmailVerified ?? false,
-            DisposableEmail: EmailNormaliser.IsDisposable(email));
-        return (facts, passLeft);
+            DisposableEmail: EmailNormaliser.IsDisposable(email),
+            PrepSessionsLeft: preps.Sum(p => p.Left));
+        return (facts, passLeft, preps.Count > 0 ? preps[0].PrepId : null);
     }
 
     private static string PlanOf(EntitlementFacts f) =>
-        f.IsStaff ? "staff" : f.HasSubscription ? "subscriber" : f.HasComplimentary ? "complimentary" : f.PassSessionsLeft > 0 ? "pass" : !f.TasterUsed ? "taster" : "none";
+        f.IsStaff ? "staff" : f.HasSubscription ? "subscriber" : f.HasComplimentary ? "complimentary" : f.PassSessionsLeft > 0 ? "pass" : f.PrepSessionsLeft > 0 ? "prep" : !f.TasterUsed ? "taster" : "none";
 
     // Read-only — used by the UI to show "1 free interview available" / limits, and to decide whether to show the paywall early.
     public async Task<EntitlementStatus> GetStatusAsync(string userId, string email, bool adminClaim = false)
     {
         var settings = await GetSettingsAsync();
-        var (facts, passLeft) = await GatherAsync(userId, email, adminClaim);
+        var (facts, passLeft, _) = await GatherAsync(userId, email, adminClaim);
         var d = EntitlementRules.Decide(facts, settings);
         return new EntitlementStatus(
             Enforced: settings.Enforce, Plan: PlanOf(facts), CanStartInterview: d.Allowed || !settings.Enforce,
             Code: d.Code, Message: d.Message,
             DailyUsed: facts.DailyUsed, DailyCap: settings.DailyCap, MonthlyUsed: facts.MonthlyUsed, MonthlyCap: settings.MonthlyCap,
-            PassSessionsLeft: passLeft, TasterAvailable: settings.TasterEnabled && !facts.TasterUsed && !facts.HasSubscription && !facts.HasComplimentary && !facts.IsStaff);
+            PassSessionsLeft: passLeft, TasterAvailable: settings.TasterEnabled && !facts.TasterUsed && !facts.HasSubscription && !facts.HasComplimentary && !facts.IsStaff,
+            PrepSessionsLeft: facts.PrepSessionsLeft);
     }
 
     // The moment an interview begins: decide, and record the start (consuming a pass session / the taster when that is the source).
     public async Task<StartResult> StartInterviewAsync(string userId, string email, bool adminClaim = false)
     {
         var settings = await GetSettingsAsync();
-        var (facts, _) = await GatherAsync(userId, email, adminClaim);
+        var (facts, _, prepId) = await GatherAsync(userId, email, adminClaim);
         var d = EntitlementRules.Decide(facts, settings);
         var key = EmailNormaliser.Key(email);
         var (day, month) = UkDayAndMonth(DateTime.UtcNow);
@@ -132,7 +181,8 @@ public class EntitlementService(AppDbContext db, SessionPassService passes, ICon
             return new StartResult(false, true, "none", d.Code, d.Message, null);
 
         // From here the person is being let in — either legitimately, or because enforcement is off.
-        string? passId = null;
+        string? passId = null;   // for a prep this holds the prep's id, so its 3 sessions can be counted
+        if (d.Source == "prep") passId = prepId;
         if (d.Source == "pass")
         {
             var consumed = await passes.CheckAndConsumeAsync(email.Trim().ToLowerInvariant());

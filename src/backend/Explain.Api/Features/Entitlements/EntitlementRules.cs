@@ -20,7 +20,8 @@ public record EntitlementFacts(
     int MonthlyUsed,            // ... this UK month
     bool TasterUsed,            // this email has already had its one free interview
     bool EmailVerified,
-    bool DisposableEmail);
+    bool DisposableEmail,
+    int PrepSessionsLeft = 0);   // free practice sessions left on recruiter-sent interview preps (3 per prep)
 
 public record EntitlementDecision(bool Allowed, string Source, string Code, string Message);
 
@@ -53,6 +54,11 @@ public static class EntitlementRules
         // A pass has its own session count and expiry, so it isn't subject to the daily/monthly limits.
         if (f.PassSessionsLeft > 0)
             return new(true, "pass", "pass", "Interview pass.");
+
+        // A recruiter-sent interview prep is a gift from the recruiter (up to 3 practice sessions per prep) — it never depends on the
+        // candidate's own plan, and must not burn the candidate's own one-off taster.
+        if (f.PrepSessionsLeft > 0)
+            return new(true, "prep", "prep", "Interview prep from your recruiter.");
 
         // The taster is for people with NO other access — a subscriber or complimentary account that has hit its daily/monthly
         // limit must not silently burn it.

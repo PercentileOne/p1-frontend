@@ -9,7 +9,7 @@ import {
 // "My plan" (Francis, 2026-09-21) — what you have, what's left today/this month, and a way to manage or cancel. Cancelling is done in
 // Stripe's own customer portal (update card, invoices, cancel) so it is always one click away and never hidden.
 const PLAN_LABEL: Record<EntitlementStatus['plan'], string> = {
-  staff: 'Staff', complimentary: 'Complimentary access', subscriber: 'Subscriber', pass: 'Interview pass', taster: 'Free interview', none: 'No active plan',
+  staff: 'Staff', complimentary: 'Complimentary access', subscriber: 'Subscriber', pass: 'Interview pass', prep: 'Recruiter interview prep', taster: 'Free interview', none: 'No active plan',
 };
 
 export default function SubscriptionPage() {
@@ -61,6 +61,7 @@ export default function SubscriptionPage() {
                   Today: <strong>{status.dailyUsed}/{status.dailyCap}</strong> interviews · This month: <strong>{status.monthlyUsed}/{status.monthlyCap}</strong>
                 </div>
               )}
+              {status.plan === 'prep' && <div style={{ fontSize: 14, color: 'var(--text-2)' }}><strong>{status.prepSessionsLeft ?? 0}</strong> practice session(s) left from your recruiter</div>}
               {status.plan === 'pass' && <div style={{ fontSize: 14, color: 'var(--text-2)' }}><strong>{status.passSessionsLeft}</strong> pass interview(s) left</div>}
               {status.tasterAvailable && <div style={{ fontSize: 14, color: '#34D399' }}>You have one free interview available.</div>}
               {status.plan === 'complimentary' && <div style={{ fontSize: 14, color: 'var(--text-2)' }}>You're an early member — enjoy complimentary access. Today: {status.dailyUsed}/{status.dailyCap} interviews.</div>}

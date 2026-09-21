@@ -16,12 +16,13 @@ export interface StartInterviewResult {
 
 export interface EntitlementStatus {
   enforced: boolean;
-  plan: 'staff' | 'complimentary' | 'subscriber' | 'pass' | 'taster' | 'none';
+  plan: 'staff' | 'complimentary' | 'subscriber' | 'pass' | 'prep' | 'taster' | 'none';
   canStartInterview: boolean;
   code: string;
   message: string;
   dailyUsed: number; dailyCap: number; monthlyUsed: number; monthlyCap: number;
   passSessionsLeft: number;
+  prepSessionsLeft?: number;
   tasterAvailable: boolean;
 }
 
