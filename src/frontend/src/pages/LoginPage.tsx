@@ -137,27 +137,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemo = () => {
-    setPhase("loading");
-    notifyEmailJS("demo@theinterviewchair.com", "Demo user login (Continue as Demo User)");
-    setTimeout(() => {
-      storeLogin("demo-token", {
-        id:        "0",
-        email:     "demo@theinterviewchair.com",
-        name:      "Francis Cobbinah",
-        firstName: "Francis",
-        role:      "candidate",
-      }, [
-        "CAN_VIEW_CAREERS",
-        "CAN_START_INTERVIEW",
-        "CAN_PRACTICE_INTERVIEW",
-        "CAN_VIEW_INTERVIEW_RESULTS",
-      ]);
-      setPhase("success");
-      setTimeout(() => navigate(consumePostLoginPath("/dashboard")), 1200);
-    }, 800);
-  };
-
   return (
     <div className="relative h-screen w-screen overflow-hidden flex items-center justify-center"
          style={{ background: "linear-gradient(135deg, #060a12 0%, #080d1a 50%, #0a0f1c 100%)" }}>
@@ -416,16 +395,6 @@ export default function LoginPage() {
                 whileHover={{ x: "100%" }}
                 transition={{ duration: 0.6 }}
               />
-            </motion.button>
-
-            {/* Demo */}
-            <motion.button
-              onClick={handleDemo}
-              disabled={phase !== "idle"}
-              className="w-full h-10 rounded-xl text-sm font-medium text-slate-400 border border-white/[0.07] hover:border-white/[0.14] hover:text-slate-200 transition-all"
-              whileTap={{ scale: 0.98 }}
-            >
-              Continue as Demo User
             </motion.button>
           </div>
 

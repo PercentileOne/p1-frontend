@@ -24,12 +24,13 @@ public class RegisterCommandHandler(
     : IRequestHandler<RegisterCommand, Result<AuthResponse>>
 {
     // Only roles a stranger should be able to grant themselves through a public, anonymous
-    // endpoint. Employer/Admin/SuperAdmin are seeded (see AddRbacRolesAndPermissions migration)
-    // but deliberately absent here — those are assigned by an admin, never by self-registration.
+    // endpoint. Recruiter/Employer/Admin/SuperAdmin are deliberately absent — those are assigned by us, never by self-registration.
+    // Recruiter was removed 2026-09-21 (Francis): recruiters and employers get candidate data, so they are onboarded through
+    // "request access" -> we vet them -> an admin creates the account and sends the Stripe payment link. Left open, anyone could
+    // POST role=recruiter and skip all of that.
     private static readonly Dictionary<string, (int RoleId, string Name)> SelfRegisterableRoles = new(StringComparer.OrdinalIgnoreCase)
     {
         ["candidate"] = (1, "Candidate"),
-        ["recruiter"] = (2, "Recruiter"),
     };
 
     public async Task<Result<AuthResponse>> Handle(RegisterCommand cmd, CancellationToken ct)
@@ -47,6 +48,9 @@ public class RegisterCommandHandler(
 
         if (string.IsNullOrWhiteSpace(cmd.LastName))
             return Result<AuthResponse>.Failure("Last name is required.", 400);
+
+        if (string.Equals(cmd.Role?.Trim(), "recruiter", StringComparison.OrdinalIgnoreCase) || string.Equals(cmd.Role?.Trim(), "employer", StringComparison.OrdinalIgnoreCase))
+            return Result<AuthResponse>.Failure("Recruiter and employer accounts are set up by our team. Please request access at https://www.theinterviewchair.com/contact and we'll be in touch.", 403);
 
         var email = cmd.Email.Trim().ToLower();
         var (roleId, roleName) = cmd.Role is not null && SelfRegisterableRoles.TryGetValue(cmd.Role, out var r)

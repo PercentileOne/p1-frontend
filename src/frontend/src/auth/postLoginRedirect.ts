@@ -1,8 +1,8 @@
 // "Take me back to what I was doing" after sign-in (Francis, 2026-09-21) — e.g. someone clicks Subscribe on the marketing site, lands
 // on /subscription signed out, signs in, and should end up on /subscription, not the dashboard. Only same-site paths are ever used (no
-// open redirect), and the memory expires after 30 minutes. localStorage, not sessionStorage: the email-verification link can open a new tab.
+// open redirect), and the memory expires after 6 hours (creating an account can involve checking an email first). localStorage, not sessionStorage: the email-verification link can open a new tab.
 const KEY = 'postLoginPath';
-const TTL_MS = 30 * 60 * 1000;
+const TTL_MS = 6 * 60 * 60 * 1000;
 
 export function rememberPostLoginPath(path: string): void {
   try {

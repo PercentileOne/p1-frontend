@@ -20,11 +20,10 @@ type Phase = "idle" | "loading" | "success";
 // candidate/recruiter only — Employer/Admin/SuperAdmin are admin-assigned, never self-service).
 // Mirrors LoginPage.tsx's role dropdown pattern but deliberately doesn't include its other
 // two options, to avoid silently registering someone as Candidate when they picked Employer.
-type RegisterRole = 'Candidate' | 'Recruiter';
+type RegisterRole = 'Candidate';   // recruiters/employers are onboarded by us (2026-09-21) — see RegisterCommandHandler
 
 const REGISTER_ROLE_OPTIONS: { value: RegisterRole; label: string; emoji: string; subtitle: string }[] = [
   { value: 'Candidate', emoji: '🎓', label: 'Candidate', subtitle: "I'm preparing for interviews" },
-  { value: 'Recruiter',  emoji: '🔍', label: 'Recruiter', subtitle: 'I place candidates' },
 ];
 
 export default function RegisterPage() {
@@ -41,11 +40,7 @@ export default function RegisterPage() {
   const [phase,      setPhase]      = useState<Phase>("idle");
   const [showPass,   setShowPass]   = useState(false);
   const [showConf,   setShowConf]   = useState(false);
-  const [selectedRole, setSelectedRole] = useState<RegisterRole | null>(() => {
-    if (isInvited) return 'Candidate';
-    const r = searchParams.get('role')?.toLowerCase();
-    return r === 'recruiter' ? 'Recruiter' : r === 'candidate' ? 'Candidate' : null;
-  });
+  const [selectedRole, setSelectedRole] = useState<RegisterRole | null>('Candidate');
   const [roleDropOpen, setRoleDropOpen] = useState(false);
 
   // Fields — pre-filled from ?email=&firstName=&lastName= when arriving via a recruiter's
@@ -64,7 +59,7 @@ export default function RegisterPage() {
 
   const validateStep1 = () => {
     const e: Record<string, string> = {};
-    if (!selectedRole)                              e.role      = "Please select whether you're a candidate or recruiter.";
+    if (!selectedRole)                              e.role      = "Please choose your role.";
     if (!firstName.trim())                          e.firstName = "First name is required.";
     if (!lastName.trim())                           e.lastName  = "Last name is required.";
     if (!email.trim())                              e.email     = "Email is required.";

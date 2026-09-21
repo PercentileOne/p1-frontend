@@ -20,10 +20,23 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { Navigate, useLocation } from 'react-router-dom';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useAuthStore } from './authStore';
 import type { Permission } from './permissionMatrix';
 import { rememberPostLoginPath } from './postLoginRedirect';
+
+// On the live candidate site, signed-out visitors are sent to the neutral sign-in gate (login.theinterviewchair.com) — the same page the
+// marketing site's Login/Register buttons use — instead of this app's own older /login page (Francis, 2026-09-21). The page they wanted is
+// remembered first, so after sign-in (or after creating an account) they land back on it. /subscription opens on the Create-account tab.
+function RedirectToGate({ path }: { path: string }) {
+  useEffect(() => {
+    const tab = path.startsWith('/subscription') ? '/register' : '/login';
+    window.location.replace(`https://login.theinterviewchair.com${tab}`);
+  }, [path]);
+  return null;
+}
+
+const onLiveCandidateSite = () => window.location.hostname === 'candidate.theinterviewchair.com';
 
 interface RequirePermissionProps {
   permission: Permission;
@@ -41,6 +54,7 @@ export function RequirePermission({ permission, children }: RequirePermissionPro
 
   if (!isAuthenticated) {
     rememberPostLoginPath(location.pathname + location.search);
+    if (onLiveCandidateSite()) return <RedirectToGate path={location.pathname} />;
     return <Navigate to="/login" replace />;
   }
 
