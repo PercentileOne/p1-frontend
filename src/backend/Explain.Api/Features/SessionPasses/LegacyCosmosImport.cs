@@ -14,6 +14,9 @@ namespace Explain.Api.Features.SessionPasses;
 /// </summary>
 public static class LegacyCosmosImport
 {
+    // Reasons any documents were skipped on the last run (shown by the on-demand endpoint).
+    public static IReadOnlyList<string> LastSkipped { get; private set; } = Array.Empty<string>();
+
     // Same shape the old EntitlementService wrote to Cosmos.
     private sealed record OldSettingsDoc(string id, bool enforce, int dailyCap, int monthlyCap, bool tasterEnabled, DateTimeOffset updatedAt, string updatedBy);
 
@@ -22,25 +25,40 @@ public static class LegacyCosmosImport
         var imported = 0;
 
         var have = (await db.InterviewPasses.AsNoTracking().Select(p => p.Id).ToListAsync()).ToHashSet();
+        var skipped = new List<string>();
         using (var feed = cosmos.GetContainer("sessionPasses").GetItemQueryIterator<SessionPass>(new QueryDefinition("SELECT * FROM c")))
         {
             while (feed.HasMoreResults)
                 foreach (var p in await feed.ReadNextAsync())
                 {
-                    if (have.Contains(p.id)) continue;
-                    db.InterviewPasses.Add(new InterviewPass
+                    if (string.IsNullOrWhiteSpace(p.id) || have.Contains(p.id)) continue;
+
+                    // Early test passes pre-date some fields (e.g. tierId was added a day after the first gift), so anything missing
+                    // gets a sensible default rather than failing a NOT NULL column.
+                    var source = string.IsNullOrWhiteSpace(p.source) ? "gift" : p.source;
+                    var tierId = !string.IsNullOrWhiteSpace(p.tierId) ? p.tierId : source == "self" ? "self" : "gift-1week";
+                    var row = new InterviewPass
                     {
-                        Id = p.id, RecipientEmail = p.recipientEmail.Trim().ToLowerInvariant(), RecipientName = p.recipientName,
-                        RecipientJobTitle = p.recipientJobTitle, TierId = p.tierId, Source = p.source, SenderName = p.senderName,
-                        SenderEmail = p.senderEmail, Status = p.status, StripeCheckoutSessionId = p.stripeCheckoutSessionId,
-                        StripePaymentIntentId = p.stripePaymentIntentId, AmountGbp = p.amountGbp, Currency = p.currency,
+                        Id = p.id, RecipientEmail = (p.recipientEmail ?? "").Trim().ToLowerInvariant(), RecipientName = p.recipientName ?? "",
+                        RecipientJobTitle = p.recipientJobTitle, TierId = tierId, Source = source, SenderName = p.senderName,
+                        SenderEmail = p.senderEmail, Status = string.IsNullOrWhiteSpace(p.status) ? "pending" : p.status,
+                        StripeCheckoutSessionId = p.stripeCheckoutSessionId, StripePaymentIntentId = p.stripePaymentIntentId,
+                        AmountGbp = p.amountGbp, Currency = string.IsNullOrWhiteSpace(p.currency) ? "GBP" : p.currency,
                         SessionsTotal = p.sessionsTotal, SessionsUsed = p.sessionsUsed, CreatedAt = p.createdAt.UtcDateTime,
                         PaidAt = p.paidAt?.UtcDateTime, ExpiresAt = p.expiresAt?.UtcDateTime, RedeemedByUserId = p.redeemedByUserId,
-                    });
-                    imported++;
+                    };
+                    // One bad document must never block the rest: each is saved on its own and skipped (with the reason) if it can't be.
+                    db.InterviewPasses.Add(row);
+                    try { await db.SaveChangesAsync(); imported++; }
+                    catch (Exception ex)
+                    {
+                        db.Entry(row).State = EntityState.Detached;
+                        skipped.Add($"{p.id}: {ex.InnerException?.Message ?? ex.Message}");
+                        logger.LogWarning(ex, "Could not import interview pass {PassId} from Cosmos", p.id);
+                    }
                 }
         }
-        if (imported > 0) await db.SaveChangesAsync();
+        LastSkipped = skipped;
 
         // The settings document: copy it over only if the SQL row is still the untouched seeded default.
         var settingsCopied = false;
@@ -107,11 +125,12 @@ public static class LegacyImportEndpoint
                     imported,
                     sqlPasses = await db.InterviewPasses.CountAsync(),
                     sqlPaid = await db.InterviewPasses.CountAsync(p => p.Status == "paid"),
+                    skipped = LegacyCosmosImport.LastSkipped,
                 });
             }
             catch (Exception ex)
             {
-                return Results.Json(new { error = ex.GetType().Name + ": " + ex.Message }, statusCode: 500);
+                return Results.Json(new { error = ex.GetType().Name + ": " + (ex.InnerException?.Message ?? ex.Message) }, statusCode: 500);
             }
         }).AllowAnonymous();
 }
