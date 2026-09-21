@@ -363,7 +363,7 @@ export default function TryItLivePage() {
             </div>
 
             <div style={{ ...card, marginTop: 14, textAlign: 'center', border: '1px solid rgba(52,211,153,0.35)', background: 'linear-gradient(135deg,rgba(52,211,153,0.10),rgba(4,120,87,0.06))' }}>
-              <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 6 }}>That was 3 questions. The full interview is 10+.</div>
+              <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 6 }}>That was 3 questions. The full interview is 10–20 questions.</div>
               <div style={{ fontSize: 14.5, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', marginBottom: 16 }}>
                 Create a free account and your first full interview is on us — with both interviewers, your CV and target role, a full scored report, and a shareable profile recruiters can watch.
               </div>
