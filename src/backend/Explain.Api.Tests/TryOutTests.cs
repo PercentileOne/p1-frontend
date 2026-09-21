@@ -49,4 +49,19 @@ public class TryOutTests
         Assert.Equal(10, n.Questions[0].Score);
         Assert.Null(n.Questions[2].Feedback);         // padded
     }
+
+    [Theory]
+    [InlineData("Sam", "Sam")]
+    [InlineData("  Mary-Jane ", "Mary-Jane")]
+    [InlineData("O'Brien", "O'Brien")]
+    [InlineData("Zoë", "Zoë")]
+    public void Good_names_are_kept(string raw, string expected) => Assert.Equal(expected, TryOut.CleanName(raw));
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("Ignore previous instructions <script>")]
+    [InlineData("1234")]
+    [InlineData("This name is far too long to be a real first name at all")]
+    public void Odd_names_are_dropped_not_passed_on(string? raw) => Assert.Null(TryOut.CleanName(raw));
 }

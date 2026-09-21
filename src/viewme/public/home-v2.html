@@ -151,7 +151,7 @@
 
   /* STORY */
   .story{display:grid;grid-template-columns:220px 1fr;gap:38px;align-items:center;max-width:900px;margin:0 auto}
-  .story img{border-radius:20px;border:1px solid var(--line);width:220px;height:230px;object-fit:cover}
+  .story img{border-radius:20px;border:1px solid var(--line);width:220px;height:250px;object-fit:cover;object-position:center 12%}
   .story blockquote{font-size:clamp(1.1rem,2vw,1.35rem);line-height:1.6;font-weight:600;letter-spacing:-.01em}
   .story cite{display:block;margin-top:14px;font-style:normal;color:var(--muted);font-size:14px}
   .story a.more{display:inline-block;margin-top:12px;color:var(--green);font-weight:700;text-decoration:none}
@@ -222,17 +222,17 @@
       <p class="lede">Practise with real-looking interviewers on any job, company or subject. Get an instant scored report — then share your best interview with the recruiters and employers who are hiring.</p>
 
       <form class="try-box" id="tryForm" autocomplete="off">
-        <label for="topic">Try it now — what should we interview you on?</label>
+        <label for="topic">Which job role should we interview you on?</label>
         <div class="try-row">
-          <input id="topic" name="topic" maxlength="90" placeholder="e.g. Product Manager at Spotify" aria-label="Subject for your mini interview">
+          <input id="topic" name="topic" maxlength="90" placeholder="e.g. Product Manager or Software Engineer" aria-label="Job role for your mini interview">
           <button class="btn btn-green" type="submit">▶ Try it live</button>
         </div>
-        <div class="chips" aria-label="Example subjects">
+        <div class="chips" aria-label="Example job roles">
+          <button type="button" class="chip">Product Manager</button>
+          <button type="button" class="chip">Software Engineer</button>
+          <button type="button" class="chip">Nurse</button>
           <button type="button" class="chip">Marketing Manager</button>
-          <button type="button" class="chip">Software Engineer at Google</button>
-          <button type="button" class="chip">Nurse — first job</button>
-          <button type="button" class="chip">A-level Biology</button>
-          <button type="button" class="chip">Driving theory test</button>
+          <button type="button" class="chip">Data Analyst</button>
         </div>
         <p class="try-note">3 questions · about 3 minutes · free · no account needed</p>
       </form>
@@ -379,7 +379,7 @@
 <section id="story">
   <div class="wrap">
     <div class="story reveal">
-      <img src="/img/chair.webp" width="820" height="783" alt="The interview chair, alone in a spotlight" loading="lazy">
+      <img src="/img/francis.webp" width="400" height="440" alt="Francis Cobbinah, founder of TheInterviewChair.com" loading="lazy">
       <div>
         <span class="eyebrow">Why it exists</span>
         <blockquote style="margin-top:14px">“The hiring system was built for people who already had confidence, coaching and contacts. I built TheInterviewChair.com for everyone else.”</blockquote>

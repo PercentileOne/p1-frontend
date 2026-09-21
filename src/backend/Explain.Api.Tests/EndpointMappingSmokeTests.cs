@@ -42,5 +42,6 @@ public class EndpointMappingSmokeTests
         var patterns = ((IEndpointRouteBuilder)app).DataSources.SelectMany(d => d.Endpoints).OfType<RouteEndpoint>().Select(r => r.RoutePattern.RawText).ToList();
         Assert.Contains("/api/tryout/start", patterns);
         Assert.Contains("/api/tryout/feedback", patterns);
+        Assert.Contains("/api/tryout/coach", patterns);
     }
 }
