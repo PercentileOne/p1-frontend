@@ -53,7 +53,7 @@ export default function MessagesPage() {
       <div className="sticky top-0 z-20 bg-[#13151c] border-b border-white/[0.06] px-5 py-3">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <BackToCockpit />
+            <BackToCockpit to="/dashboard" />
             <MessageCircle size={16} className="text-indigo-400" />
             <h1 className="text-sm font-bold text-white">Messages</h1>
             {totalUnread > 0 && (

@@ -269,7 +269,7 @@ export default function ShopPage() {
       {/* Header */}
       <div className="sticky top-0 z-20 bg-[#13151c] border-b border-white/[0.06] px-5 py-3">
         <div className="flex items-center gap-3 mb-3">
-          <BackToCockpit />
+          <BackToCockpit to="/dashboard" />
           <div className="flex items-center gap-2 flex-1">
             <ShoppingBag size={15} className="text-indigo-400" />
             <h1 className="text-sm font-bold text-white">Shop</h1>

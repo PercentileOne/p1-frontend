@@ -399,7 +399,7 @@ export default function WallsPage() {
         {/* Title row */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-white/[0.04]">
           <div className="flex items-center gap-3">
-            <BackToCockpit />
+            <BackToCockpit to="/dashboard" />
             <div className="flex items-center gap-2">
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center"

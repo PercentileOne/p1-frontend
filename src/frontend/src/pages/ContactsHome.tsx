@@ -51,7 +51,7 @@ export default function ContactsHome() {
       <div className="sticky top-0 z-20 bg-[#13151c] border-b border-white/[0.06] px-6 py-3">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
-            <BackToCockpit />
+            <BackToCockpit to="/dashboard" />
             <div>
               <h1 className="text-base font-bold text-white flex items-center gap-2">
                 <Users size={16} className="text-indigo-400" /> Contacts

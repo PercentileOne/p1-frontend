@@ -294,7 +294,7 @@ export default function StoryDetailPage() {
       {/* Header */}
       <div className="sticky top-0 z-20 bg-[#13151c] border-b border-white/[0.06]">
         <div className="flex items-center gap-3 px-6 py-3">
-          <BackToCockpit />
+          <BackToCockpit to="/dashboard" />
           <button onClick={() => navigate("/stories")} className="flex items-center gap-1.5 text-[11px] text-slate-500 hover:text-slate-300 transition-colors">
             <ChevronLeft size={12} /> Stories
           </button>

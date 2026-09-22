@@ -1089,7 +1089,7 @@ export default function FeedPage() {
       {/* Sticky header */}
       <div className="sticky top-0 z-20 bg-[#13151c] border-b border-white/[0.06] px-6 py-3">
         <div className="max-w-6xl mx-auto flex items-center gap-3">
-          <BackToCockpit />
+          <BackToCockpit to="/dashboard" />
           <div className="flex items-center gap-2">
             <Rss size={15} className="text-indigo-400" />
             <h1 className="text-sm font-bold text-white">Feed</h1>
