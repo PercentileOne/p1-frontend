@@ -73,6 +73,7 @@ export default function TryItLivePage() {
   const [avatarState, setAvatarState] = useState<'off' | 'connecting' | 'live'>('off');
   const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [slowHint, setSlowHint] = useState(false);
   const cancelSpeechRef = useRef<(() => void) | null>(null);
   const busyRef = useRef(false);
 
@@ -94,6 +95,15 @@ export default function TryItLivePage() {
 
   // Never leave a billable avatar connection or a voice running when the page is left.
   useEffect(() => () => { cancelSpeechRef.current?.(); void hr.disconnect(); void technical.disconnect(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // "Preparing your interview…" can genuinely take a while (some topics route to a slower model) — a plain static line looked stuck
+  // (Francis, 2026-09-22). The progress bar below is always animated; this just adds an honest reassurance line once it's taken a
+  // little longer than the common case, so it reads as "still working" rather than "broken".
+  useEffect(() => {
+    if (phase !== 'starting') { setSlowHint(false); return; }
+    const t = setTimeout(() => setSlowHint(true), 9000);
+    return () => clearTimeout(t);
+  }, [phase]);
 
   // The interviewer speaking: the live avatar when connected, otherwise their plain voice.
   const speakLine = useCallback(async (text: string, s: TryOutStart, viaAvatar: boolean) => {
@@ -275,8 +285,9 @@ export default function TryItLivePage() {
 
         {phase === 'starting' && (
           <div style={{ ...card, textAlign: 'center', padding: '28px 22px 36px' }}>
-            {/* The iconic spotlight chair while the interview is set up (Francis, 2026-09-21). */}
-            <style>{'@keyframes tryChairGlow{0%,100%{opacity:.82;transform:scale(1)}50%{opacity:1;transform:scale(1.02)}}'}</style>
+            {/* The iconic spotlight chair while the interview is set up (Francis, 2026-09-21), plus a moving progress bar and, if it's
+                taking longer than the common case, a reassurance line — so it reads as working, not stuck (Francis, 2026-09-22). */}
+            <style>{'@keyframes tryChairGlow{0%,100%{opacity:.82;transform:scale(1)}50%{opacity:1;transform:scale(1.02)}}@keyframes tryBarSlide{0%{left:-40%}100%{left:100%}}'}</style>
             <img
               src="/images/chair-spotlight.webp"
               alt="The interview chair, waiting in the spotlight"
@@ -286,6 +297,12 @@ export default function TryItLivePage() {
             />
             <div style={{ fontSize: 17, fontWeight: 700 }}>Preparing your interview…</div>
             <div style={{ fontSize: 13.5, color: 'var(--text-3, #94a3b8)', marginTop: 8 }}>{avatarState === 'connecting' ? 'Your interviewer is taking their seat' : 'Writing three questions for your role'}</div>
+            <div style={{ width: '100%', maxWidth: 220, height: 6, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', margin: '16px auto 0', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: 0, bottom: 0, width: '40%', borderRadius: 99, background: `linear-gradient(90deg,${GREEN},#047857)`, animation: 'tryBarSlide 1.3s ease-in-out infinite' }} />
+            </div>
+            {slowHint && (
+              <div style={{ fontSize: 12.5, color: 'var(--text-3, #94a3b8)', marginTop: 14 }}>Still working — some roles take a little longer to prepare. Thanks for hanging on.</div>
+            )}
           </div>
         )}
 

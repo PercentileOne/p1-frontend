@@ -249,7 +249,16 @@ public static class Endpoint
             new DimensionScores(C(d.Clarity, 0, 10), C(d.Relevance, 0, 10), C(d.Accuracy, 0, 10), C(d.Depth, 0, 10), C(d.Confidence, 0, 10)), qs, r.NextStep?.Trim());
     }
 
+    // One automatic retry on any failure (timeout, 5xx, malformed response) — this is often a stranger's very first touch with the
+    // product, so a single slow or flaky Model Router call shouldn't be the difference between "it works" and "something went wrong"
+    // (Francis, 2026-09-22). A short pause before retrying avoids hammering a router that's already under load.
     private static async Task<string> CallModelAsync(string system, string user, double temperature, IHttpClientFactory factory, IConfiguration config)
+    {
+        try { return await CallModelOnceAsync(system, user, temperature, factory, config); }
+        catch { await Task.Delay(500); return await CallModelOnceAsync(system, user, temperature, factory, config); }
+    }
+
+    private static async Task<string> CallModelOnceAsync(string system, string user, double temperature, IHttpClientFactory factory, IConfiguration config)
     {
         var apiKey = config["ModelRouter:ApiKey"] ?? throw new InvalidOperationException("ModelRouter:ApiKey not configured");
         var endpoint = config["ModelRouter:Endpoint"] ?? throw new InvalidOperationException("ModelRouter:Endpoint not configured");
@@ -261,8 +270,11 @@ public static class Endpoint
             response_format = new { type = "json_object" },
             messages = new object[] { new { role = "system", content = system }, new { role = "user", content = user } },
         });
+        // No explicit timeout override — every other Model Router caller in this codebase (CV Analyzer, career coach, exam catalog…)
+        // uses IHttpClientFactory's default client, whose default Timeout is 100s. This endpoint used to cut off at 45s, which is
+        // tight enough that a slower-routed model on an ordinary topic genuinely timed out live (Francis, 2026-09-22 — App Insights
+        // showed a real 45.6s request, not a network blip). Match the rest of the app instead of inventing a shorter number.
         var client = factory.CreateClient();
-        client.Timeout = TimeSpan.FromSeconds(45);
         using var msg = new HttpRequestMessage(HttpMethod.Post, $"{endpoint.TrimEnd('/')}/openai/v1/chat/completions");
         msg.Headers.Add("api-key", apiKey);
         msg.Content = new StringContent(body, Encoding.UTF8, "application/json");
