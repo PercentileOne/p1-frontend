@@ -876,36 +876,48 @@ function OverviewTab({ profile }: { profile: UserProfile }) {
       {/* Achievements preview */}
       <SectionCard>
         <SectionHeading emoji="🏅" title="Recent Achievements" />
-        <div className="grid grid-cols-4 gap-3">
-          {profile.achievements.slice(0, 4).map((a, i) => (
-            <AchievementTile key={a.id} a={a} delay={i * 0.07} />
-          ))}
-        </div>
+        {profile.achievements.length === 0 ? (
+          <p className="text-[11px] text-slate-600">No achievements yet — they'll show up here as you use the platform.</p>
+        ) : (
+          <div className="grid grid-cols-4 gap-3">
+            {profile.achievements.slice(0, 4).map((a, i) => (
+              <AchievementTile key={a.id} a={a} delay={i * 0.07} />
+            ))}
+          </div>
+        )}
       </SectionCard>
 
       {/* Interests preview */}
       <SectionCard>
         <SectionHeading emoji="✨" title="Interests" />
-        <div className="flex flex-wrap gap-2">
-          {profile.interests.slice(0, 10).map(id => {
-            const interest = ALL_INTERESTS.find(i => i.id === id);
-            if (!interest) return null;
-            return (
-              <span key={id}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold text-indigo-200 bg-indigo-600/15 border border-indigo-500/20">
-                <span>{interest.emoji}</span>{interest.label}
-              </span>
-            );
-          })}
-        </div>
+        {profile.interests.length === 0 ? (
+          <p className="text-[11px] text-slate-600">No interests listed yet — click Edit Profile to add some.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {profile.interests.slice(0, 10).map(id => {
+              const interest = ALL_INTERESTS.find(i => i.id === id);
+              if (!interest) return null;
+              return (
+                <span key={id}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold text-indigo-200 bg-indigo-600/15 border border-indigo-500/20">
+                  <span>{interest.emoji}</span>{interest.label}
+                </span>
+              );
+            })}
+          </div>
+        )}
       </SectionCard>
 
       {/* Pinned walls */}
       <SectionCard>
         <SectionHeading emoji="🧱" title="Pinned Walls" />
-        <div className="grid grid-cols-3 gap-3">
-          {profile.walls.filter(w => w.pinned).map(w => <WallTileSmall key={w.id} wall={w} />)}
-        </div>
+        {profile.walls.filter(w => w.pinned).length === 0 ? (
+          <p className="text-[11px] text-slate-600">No pinned walls yet.</p>
+        ) : (
+          <div className="grid grid-cols-3 gap-3">
+            {profile.walls.filter(w => w.pinned).map(w => <WallTileSmall key={w.id} wall={w} />)}
+          </div>
+        )}
       </SectionCard>
     </div>
   );
@@ -1505,9 +1517,17 @@ export default function ProfilePage() {
       : prev));
   }
 
-  // Real identity (name/bio/profession) overlaid on the demo social content
-  // (achievements/walls/groups/posts/stats) — those aren't backed by a real
-  // API yet, so they stay as placeholder content, shown only on your own profile.
+  // Real identity (name/bio/profession/interests/avatar/banner) is genuinely backed by the Profile API.
+  // Achievements/walls/groups/posts/stats are NOT — no real backend exists for any of them yet (see
+  // Features/Profile/Endpoint.cs — there's no Achievements/Walls/Groups/Posts/Awards feature anywhere
+  // in the backend). OWN_PROFILE's rich numbers (1.2K followers, a 14-day streak, "P1 Founders" group...)
+  // are Francis's own placeholder content for what the page COULD look like — they must never be shown
+  // to an actual logged-in candidate as if they were real, or every new signup sees fabricated stats and
+  // achievements attributed to their own brand-new account (found 2026-09-22, before a new tester's first
+  // session). Gated on `authToken`, not `real`, so there's no flash of fake numbers while the real fetch
+  // is still in flight — a genuine session always sees honest zero/empty states here, same treatment
+  // `otherProfile` below already gives anyone viewing someone else's profile.
+  const hasRealSession = isOwnProfile && !!authToken;
   const ownName = real?.name || authUser?.name || OWN_PROFILE.name;
   const ownProfession = real?.jobTitle || real?.jobRole || (real ? '' : OWN_PROFILE.profession);
   const ownProfile: UserProfile = {
@@ -1524,6 +1544,11 @@ export default function ProfilePage() {
     avatarUrl: real?.avatar ?? undefined,
     bannerUrl: real?.banner ?? undefined,
     isOwnProfile: true,
+    ...(hasRealSession ? {
+      followers: 0, following: 0, storiesPublished: 0, chaptersWritten: 0,
+      savesReceived: 0, awardsWon: 0, postsPublished: 0, wallsFollowed: 0, groupsJoined: 0,
+      achievements: [], walls: [], groups: [], posts: [],
+    } : {}),
   };
 
   // Someone else's profile: real fields only. Achievements/Walls/Groups/Posts/Awards
@@ -1597,46 +1622,53 @@ export default function ProfilePage() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-6 py-6">
 
-          {/* Profile header — always visible */}
-          <ProfileHeader
-            profile={profile}
-            followed={followed}
-            onFollow={() => setFollowed(v => !v)}
-            editing={editing}
-            canEdit={isOwnProfile && !!authToken}
-            onEditClick={() => (editing ? cancelEditing() : startEditing())}
-            liked={reaction.liked}
-            likeCount={reaction.count}
-            onToggleLike={toggleLike}
-          />
+          {/* Profile header + edit panel + comments — Overview only (Francis, 2026-09-22): every other tab
+              should show just its own cards, not the big identity banner. Editing is still initiated from
+              here; switching to another tab mid-edit keeps `editing` true (the draft isn't lost), it just
+              hides the Save panel until you switch back to Overview. */}
+          {tab === "overview" && (
+            <>
+              <ProfileHeader
+                profile={profile}
+                followed={followed}
+                onFollow={() => setFollowed(v => !v)}
+                editing={editing}
+                canEdit={isOwnProfile && !!authToken}
+                onEditClick={() => (editing ? cancelEditing() : startEditing())}
+                liked={reaction.liked}
+                likeCount={reaction.count}
+                onToggleLike={toggleLike}
+              />
 
-          {editing && (
-            <ProfileEditPanel
-              draft={draft}
-              onChange={patch => setDraft(d => ({ ...d, ...patch }))}
-              onSave={saveEditing}
-              onCancel={cancelEditing}
-              saving={saving}
-              saveError={saveError}
-              avatarUrl={profile.avatarUrl}
-              bannerUrl={profile.bannerUrl}
-              initials={profile.initials}
-              onAvatarUpload={handleAvatarUpload}
-              onBannerUpload={handleBannerUpload}
-              blockedUsers={real?.blockedUsers ?? []}
-              onUnblock={handleUnblock}
-            />
-          )}
+              {editing && (
+                <ProfileEditPanel
+                  draft={draft}
+                  onChange={patch => setDraft(d => ({ ...d, ...patch }))}
+                  onSave={saveEditing}
+                  onCancel={cancelEditing}
+                  saving={saving}
+                  saveError={saveError}
+                  avatarUrl={profile.avatarUrl}
+                  bannerUrl={profile.bannerUrl}
+                  initials={profile.initials}
+                  onAvatarUpload={handleAvatarUpload}
+                  onBannerUpload={handleBannerUpload}
+                  blockedUsers={real?.blockedUsers ?? []}
+                  onUnblock={handleUnblock}
+                />
+              )}
 
-          {!editing && targetUserId && (
-            <CommentsSection
-              profileUserId={targetUserId}
-              viewerId={authUser?.id}
-              commentsEnabled={commentsEnabled}
-              isOwner={isOwnProfile}
-              authToken={authToken}
-              onBlocked={handleBlockedFromComments}
-            />
+              {!editing && targetUserId && (
+                <CommentsSection
+                  profileUserId={targetUserId}
+                  viewerId={authUser?.id}
+                  commentsEnabled={commentsEnabled}
+                  isOwner={isOwnProfile}
+                  authToken={authToken}
+                  onBlocked={handleBlockedFromComments}
+                />
+              )}
+            </>
           )}
 
           {/* Tab content */}
@@ -1664,7 +1696,11 @@ export default function ProfilePage() {
 
               {tab === "posts" && (
                 <div className="space-y-4">
-                  {profile.posts.map((p, i) => (
+                  {profile.posts.length === 0 ? (
+                    <SectionCard>
+                      <p className="text-[12px] text-slate-500 text-center py-4">No posts yet.</p>
+                    </SectionCard>
+                  ) : profile.posts.map((p, i) => (
                     <PostCard key={p.id} post={p} delay={i * 0.06} />
                   ))}
                 </div>
@@ -1673,11 +1709,15 @@ export default function ProfilePage() {
               {tab === "achievements" && (
                 <SectionCard>
                   <SectionHeading emoji="🏅" title="All Achievements" />
-                  <div className="grid grid-cols-4 gap-3">
-                    {profile.achievements.map((a, i) => (
-                      <AchievementTile key={a.id} a={a} delay={i * 0.06} />
-                    ))}
-                  </div>
+                  {profile.achievements.length === 0 ? (
+                    <p className="text-[12px] text-slate-500 text-center py-4">No achievements yet — they'll show up here as you use the platform.</p>
+                  ) : (
+                    <div className="grid grid-cols-4 gap-3">
+                      {profile.achievements.map((a, i) => (
+                        <AchievementTile key={a.id} a={a} delay={i * 0.06} />
+                      ))}
+                    </div>
+                  )}
                 </SectionCard>
               )}
 
@@ -1686,15 +1726,23 @@ export default function ProfilePage() {
                   <SectionCard>
                     <SectionHeading emoji="📌" title="Pinned Walls"
                       action={<button onClick={() => navigate("/walls")} className="text-[10px] text-slate-500 hover:text-indigo-400 transition-colors flex items-center gap-1">Explore <ChevronRight size={10} /></button>} />
-                    <div className="grid grid-cols-3 gap-3">
-                      {profile.walls.filter(w => w.pinned).map(w => <WallTileSmall key={w.id} wall={w} />)}
-                    </div>
+                    {profile.walls.filter(w => w.pinned).length === 0 ? (
+                      <p className="text-[12px] text-slate-500 text-center py-4">No pinned walls yet — explore walls to find some worth following.</p>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-3">
+                        {profile.walls.filter(w => w.pinned).map(w => <WallTileSmall key={w.id} wall={w} />)}
+                      </div>
+                    )}
                   </SectionCard>
                   <SectionCard>
                     <SectionHeading emoji="👣" title="Followed Walls" />
-                    <div className="grid grid-cols-3 gap-3">
-                      {profile.walls.filter(w => w.followed && !w.pinned).map(w => <WallTileSmall key={w.id} wall={w} />)}
-                    </div>
+                    {profile.walls.filter(w => w.followed && !w.pinned).length === 0 ? (
+                      <p className="text-[12px] text-slate-500 text-center py-4">Not following any walls yet.</p>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-3">
+                        {profile.walls.filter(w => w.followed && !w.pinned).map(w => <WallTileSmall key={w.id} wall={w} />)}
+                      </div>
+                    )}
                   </SectionCard>
                 </div>
               )}
@@ -1702,9 +1750,13 @@ export default function ProfilePage() {
               {tab === "groups" && (
                 <SectionCard>
                   <SectionHeading emoji="👥" title="Groups" />
-                  <div className="grid grid-cols-3 gap-4">
-                    {profile.groups.map(g => <GroupTile key={g.id} group={g} />)}
-                  </div>
+                  {profile.groups.length === 0 ? (
+                    <p className="text-[12px] text-slate-500 text-center py-4">Not part of any groups yet.</p>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-4">
+                      {profile.groups.map(g => <GroupTile key={g.id} group={g} />)}
+                    </div>
+                  )}
                 </SectionCard>
               )}
 
@@ -1719,7 +1771,7 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <p className="text-[11px] text-slate-600">
-                      {editing ? "Editing inline — remember to Save Changes above." : "Click Edit Profile to change these."}
+                      {editing ? "Editing inline — go to Overview to Save Changes." : "Go to Overview and click Edit Profile to change these."}
                     </p>
                     <button
                       onClick={() => navigate("/interests")}
