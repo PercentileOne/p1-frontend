@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { previewQuestion, getPreviewAnswer, getHotTopics, startQuestionPackCheckout, type QuestionPackDifficulty } from '../api/questionPacksApi';
+import { previewQuestion, getPreviewAnswer, getHotTopics, startQuestionPackCheckout, getQuestionPackPricing, type QuestionPackDifficulty } from '../api/questionPacksApi';
 import { speak } from '../api/ttsApi';
 
 // "Printable Interview Questions" (Francis, 2026-09-22) — the standalone, no-login, no-live-interview product: name a job role,
 // see one free sample question (with a revealable model answer), pay a small one-off fee, land on /questions/success with a
 // printable PDF of 25 questions + model answers. Meant to be advertised on LinkedIn and next to job adverts — the whole point
 // is minimum friction, so there's no account, no email collection here (Stripe Checkout collects the buyer's email itself).
+//
+// Price/free-launch-period is admin-controlled (Francis, 2026-09-22, from dialysis: "for now, it's free... the same way
+// other services were free to start with until they got a good amount of users") — see the admin portal's Question Packs
+// page. This page reads the live setting on mount rather than hardcoding a price, so it can never say "£1.99" while the
+// button actually delivers the pack for free, or vice versa.
 const GREEN = '#34D399';
-const PRICE = '£1.99';
 
 // Same three levels/colours as InterviewPackStart.tsx's DIFFICULTIES — Beginner deliberately excluded here (Francis,
 // 2026-09-22): this is a paid prep product for people already committing £1.99, Pro is the sensible default.
@@ -20,6 +24,12 @@ const DIFFICULTIES: { value: QuestionPackDifficulty; color: string; desc: string
 export default function QuestionPackPage() {
   const [role, setRole] = useState(() => { try { return (new URLSearchParams(window.location.search).get('role') ?? '').slice(0, 120); } catch { return ''; } });
   const [difficulty, setDifficulty] = useState<QuestionPackDifficulty>('Pro');
+
+  // null while loading — copy below renders price-agnostic text until this resolves, rather than flashing £1.99
+  // and then flipping to FREE (or vice versa) a moment later.
+  const [pricing, setPricing] = useState<{ free: boolean; priceGbp: number } | null>(null);
+  useEffect(() => { getQuestionPackPricing().then(res => { if (res.ok) setPricing(res.data); }); }, []);
+  const priceLabel = pricing ? (pricing.free ? 'FREE' : `£${pricing.priceGbp.toFixed(2)}`) : null;
 
   // Special Focus — same feature as the logged-in interview intake screen (InterviewPackStart.tsx): typed chips,
   // optionally seeded by "What's Hot" (currently in-demand topics for the named role, via its own capped endpoint —
@@ -109,10 +119,14 @@ export default function QuestionPackPage() {
       <style>{'@keyframes qpSpin{to{transform:rotate(360deg)}}'}</style>
       <div style={{ width: '100%', maxWidth: 620 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: GREEN, marginBottom: 10 }}>No account needed · No live interview</div>
-          <h1 style={{ fontSize: 32, fontWeight: 900, margin: '0 0 12px', lineHeight: 1.2 }}>Download 25 AI Interview Questions</h1>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: GREEN, marginBottom: 10 }}>
+            No account needed · {pricing?.free ? '100% Free — No Live Interview' : 'No live interview'}
+          </div>
+          <h1 style={{ fontSize: 32, fontWeight: 900, margin: '0 0 12px', lineHeight: 1.2 }}>
+            {pricing?.free ? 'Download 25 AI Interview Questions — Free' : 'Download 25 AI Interview Questions'}
+          </h1>
           <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', maxWidth: 480, margin: '0 auto', lineHeight: 1.6 }}>
-            Name the role. Get a printable PDF of 25 realistic questions with model answers — for {PRICE}, ready in seconds.
+            Name the role. Get a printable PDF of 25 realistic questions with model answers{priceLabel ? ` — ${priceLabel === 'FREE' ? 'completely free for a limited time' : `for ${priceLabel}`}, ready in seconds.` : ', ready in seconds.'}
           </p>
         </div>
 
@@ -220,9 +234,11 @@ export default function QuestionPackPage() {
             borderRadius: 14, padding: '16px', fontSize: 15.5, fontWeight: 800, cursor: buying ? 'default' : 'pointer',
             boxShadow: buying ? 'none' : `0 10px 30px ${GREEN}33`,
           }}>
-            {buying ? 'Preparing your questions…' : `Download 25 AI Interview Questions — ${PRICE}`}
+            {buying ? 'Preparing your questions…' : `Download 25 AI Interview Questions${priceLabel ? ` — ${priceLabel}` : ''}`}
           </button>
-          <div style={{ textAlign: 'center', fontSize: 11.5, color: 'rgba(255,255,255,0.35)', marginTop: 12 }}>Secure payment via Stripe. Instant PDF, no waiting.</div>
+          <div style={{ textAlign: 'center', fontSize: 11.5, color: 'rgba(255,255,255,0.35)', marginTop: 12 }}>
+            {pricing?.free ? 'No card required. Instant PDF, no waiting.' : 'Secure payment via Stripe. Instant PDF, no waiting.'}
+          </div>
         </div>
       </div>
     </div>

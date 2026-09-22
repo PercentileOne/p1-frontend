@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Loader2, FileText, RefreshCw } from 'lucide-react'
+import { Loader2, FileText, Gift, RefreshCw } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { questionPackCapsSettingsApi, type QuestionPackCapsSetting, type ApiError } from '../api/questionPackCapsSettingsApi'
+import { questionPackFreeSettingsApi, type QuestionPackFreeSetting } from '../api/questionPackFreeSettingsApi'
 
 export default function QuestionPackCaps() {
   const { token } = useAuth()
-  const [setting, setSetting] = useState<QuestionPackCapsSetting | null>(null)
+  const [caps, setCaps] = useState<QuestionPackCapsSetting | null>(null)
+  const [free, setFree] = useState<QuestionPackFreeSetting | null>(null)
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [savingCaps, setSavingCaps] = useState(false)
+  const [savingFree, setSavingFree] = useState(false)
   const [error, setError] = useState('')
 
   const load = useCallback(async () => {
@@ -15,9 +18,11 @@ export default function QuestionPackCaps() {
     setLoading(true)
     setError('')
     try {
-      setSetting(await questionPackCapsSettingsApi.get(token))
+      const [c, f] = await Promise.all([questionPackCapsSettingsApi.get(token), questionPackFreeSettingsApi.get(token)])
+      setCaps(c)
+      setFree(f)
     } catch (err) {
-      setError((err as ApiError).error ?? 'Failed to load the Question Packs setting.')
+      setError((err as ApiError).error ?? 'Failed to load the Question Packs settings.')
     } finally {
       setLoading(false)
     }
@@ -25,16 +30,29 @@ export default function QuestionPackCaps() {
 
   useEffect(() => { load() }, [load])
 
-  async function toggle() {
-    if (!token || !setting) return
-    setSaving(true)
+  async function toggleFree() {
+    if (!token || !free) return
+    setSavingFree(true)
     setError('')
     try {
-      setSetting(await questionPackCapsSettingsApi.update(token, !setting.capsEnabled))
+      setFree(await questionPackFreeSettingsApi.update(token, !free.freeEnabled))
     } catch (err) {
       setError((err as ApiError).error ?? 'Failed to update the setting.')
     } finally {
-      setSaving(false)
+      setSavingFree(false)
+    }
+  }
+
+  async function toggleCaps() {
+    if (!token || !caps) return
+    setSavingCaps(true)
+    setError('')
+    try {
+      setCaps(await questionPackCapsSettingsApi.update(token, !caps.capsEnabled))
+    } catch (err) {
+      setError((err as ApiError).error ?? 'Failed to update the setting.')
+    } finally {
+      setSavingCaps(false)
     }
   }
 
@@ -44,10 +62,7 @@ export default function QuestionPackCaps() {
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>Question Packs</h1>
           <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4, maxWidth: 640 }}>
-            Daily allowance caps for the public "Download 25 AI Interview Questions" page (/questions) — sample
-            question previews, What's Hot suggestions, and the paid 25-question generation each have their own
-            per-visitor and site-wide daily limit. Off means none of those limits apply, to anyone, until turned
-            back on — no redeploy needed.
+            Pricing and daily allowance controls for the public "Download 25 AI Interview Questions" page (/questions).
           </p>
         </div>
         <button
@@ -69,33 +84,65 @@ export default function QuestionPackCaps() {
         </div>
       )}
 
-      {loading && !setting ? (
+      {loading && !caps && !free ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-3)', fontSize: 13, padding: '24px 0' }}>
           <Loader2 size={16} className="admin-spin" /> Loading…
         </div>
-      ) : setting ? (
-        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px 24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <FileText size={16} color={setting.capsEnabled ? '#34D399' : 'var(--text-3)'} />
-              <div>
-                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
-                  Daily caps on /questions
-                </p>
-                <p style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
-                  {setting.capsEnabled ? 'On — normal per-visitor and site-wide daily limits apply' : 'Off — uncapped for everyone'}
-                </p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {free && (
+            <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Gift size={16} color={free.freeEnabled ? '#34D399' : 'var(--text-3)'} />
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
+                      Free launch period
+                    </p>
+                    <p style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2, maxWidth: 480 }}>
+                      {free.freeEnabled
+                        ? 'On — every download is free, no Stripe involved at all. Price on the page reads "FREE".'
+                        : 'Off — normal £1.99 Stripe checkout applies.'}
+                    </p>
+                  </div>
+                </div>
+                <InlineToggle checked={free.freeEnabled} onChange={toggleFree} disabled={savingFree} />
               </div>
+              {free.updatedBy && (
+                <p style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                  Last changed {formatDate(free.updatedAt)}
+                </p>
+              )}
             </div>
-            <InlineToggle checked={setting.capsEnabled} onChange={toggle} disabled={saving} />
-          </div>
-          {setting.updatedBy && (
-            <p style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
-              Last changed {formatDate(setting.updatedAt)}
-            </p>
+          )}
+
+          {caps && (
+            <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <FileText size={16} color={caps.capsEnabled ? '#34D399' : 'var(--text-3)'} />
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
+                      Daily caps on /questions
+                    </p>
+                    <p style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2, maxWidth: 480 }}>
+                      {caps.capsEnabled
+                        ? 'On — normal per-visitor and site-wide daily limits apply to previews, What’s Hot, and generation'
+                        : 'Off — uncapped for everyone'}
+                    </p>
+                  </div>
+                </div>
+                <InlineToggle checked={caps.capsEnabled} onChange={toggleCaps} disabled={savingCaps} />
+              </div>
+              {caps.updatedBy && (
+                <p style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                  Last changed {formatDate(caps.updatedAt)}
+                </p>
+              )}
+            </div>
           )}
         </div>
-      ) : null}
+      )}
     </div>
   )
 }

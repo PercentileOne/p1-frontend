@@ -22,6 +22,12 @@ async function call<T>(path: string, init?: RequestInit): Promise<QuestionPacksR
   }
 }
 
+// Reflects the SAME admin toggle the checkout endpoint itself enforces (Features/QuestionPacks/Endpoint.cs's
+// GetQuestionPackFreeOrDefaultAsync) — so the price shown on screen can never drift from what actually happens
+// when the button is clicked.
+export const getQuestionPackPricing = () =>
+  call<{ free: boolean; priceGbp: number }>('/api/question-packs/pricing', { method: 'GET' });
+
 export const previewQuestion = (jobRole: string, focus: string[], difficulty: QuestionPackDifficulty) =>
   call<{ question: string }>('/api/question-packs/preview', { method: 'POST', body: JSON.stringify({ jobRole, focus, difficulty }) });
 

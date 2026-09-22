@@ -87,6 +87,29 @@ public static class Endpoint
             await container.UpsertItemAsync(setting, new PartitionKey("questionPackCaps"));
             return Results.Ok(setting);
         }).RequireAuthorization(Permissions.ViewSystemSettings);
+
+        // Question Packs free-launch-period switch — see GetQuestionPackFreeOrDefaultAsync's own note on the
+        // default. On means the checkout endpoint skips Stripe entirely and delivers the pack for £0.
+        app.MapGet("/api/admin/settings/question-pack-free", async (CosmosService cosmos) =>
+        {
+            var setting = await GetQuestionPackFreeOrDefaultAsync(cosmos);
+            return Results.Ok(setting);
+        }).RequireAuthorization(Permissions.ViewSystemSettings);
+
+        app.MapPost("/api/admin/settings/question-pack-free", async (UpdateQuestionPackFreeRequest req, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var updatedBy = ctx.User.FindFirst("sub")?.Value ?? "unknown";
+            var setting = new QuestionPackFreeSetting(
+                id: "questionPackFree",
+                pk: "questionPackFree",
+                freeEnabled: req.FreeEnabled,
+                updatedAt: DateTimeOffset.UtcNow,
+                updatedBy: updatedBy);
+
+            var container = cosmos.GetContainer("platformSettings");
+            await container.UpsertItemAsync(setting, new PartitionKey("questionPackFree"));
+            return Results.Ok(setting);
+        }).RequireAuthorization(Permissions.ViewSystemSettings);
     }
 
     public static async Task<QuestionPackCapsSetting> GetQuestionPackCapsOrDefaultAsync(CosmosService cosmos)
@@ -100,6 +123,27 @@ public static class Endpoint
         catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
         {
             return new QuestionPackCapsSetting("questionPackCaps", "questionPackCaps", false, DateTimeOffset.MinValue, "");
+        }
+    }
+
+    /// <summary>
+    /// Missing doc = FREE (Francis, 2026-09-22, from dialysis: "for now, it's free... the same way other services
+    /// were free to start with until they got a good amount of users"). Deliberately the same "takes effect the
+    /// moment it ships, no click needed" default as GetQuestionPackCapsOrDefaultAsync above. Read by both the
+    /// checkout endpoint (whether to actually charge) and the public pricing endpoint (what to show on screen) —
+    /// see Features/QuestionPacks/Endpoint.cs.
+    /// </summary>
+    public static async Task<QuestionPackFreeSetting> GetQuestionPackFreeOrDefaultAsync(CosmosService cosmos)
+    {
+        var container = cosmos.GetContainer("platformSettings");
+        try
+        {
+            var response = await container.ReadItemAsync<QuestionPackFreeSetting>("questionPackFree", new PartitionKey("questionPackFree"));
+            return response.Resource;
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            return new QuestionPackFreeSetting("questionPackFree", "questionPackFree", true, DateTimeOffset.MinValue, "");
         }
     }
 
@@ -166,5 +210,14 @@ public record QuestionPackCapsSetting(
     string id,
     string pk,
     bool capsEnabled,
+    DateTimeOffset updatedAt,
+    string updatedBy);
+
+public record UpdateQuestionPackFreeRequest(bool FreeEnabled);
+
+public record QuestionPackFreeSetting(
+    string id,
+    string pk,
+    bool freeEnabled,
     DateTimeOffset updatedAt,
     string updatedBy);

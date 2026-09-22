@@ -46,6 +46,16 @@ public static class Endpoint
 
     public static void Map(WebApplication app)
     {
+        // Lets the public intake page show "FREE" instead of "£1.99" (and vice versa) without hardcoding either —
+        // reads the exact same admin toggle the checkout endpoint itself enforces, so the price on screen always
+        // matches what actually happens when the button is clicked.
+        app.MapGet("/api/question-packs/pricing", async (CosmosService cosmos, IConfiguration config) =>
+        {
+            var free = (await PlatformSettings.Endpoint.GetQuestionPackFreeOrDefaultAsync(cosmos)).freeEnabled;
+            var priceGbp = config.GetValue("QuestionPacks:PriceGbp", DefaultPriceGbp);
+            return Results.Ok(new { free, priceGbp });
+        }).AllowAnonymous();
+
         app.MapPost("/api/question-packs/preview", async (PreviewRequest req, HttpContext ctx, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
         {
             var role = CleanRole(req.JobRole);
@@ -152,10 +162,24 @@ public static class Endpoint
             if (questions.Count == 0)
                 return Results.Json(new { error = "We couldn't generate your questions just now — please try again." }, statusCode: 502);
 
+            var appUrl = config["CandidateAppUrl"] ?? "http://localhost:5173";
+
+            // Free launch period (Francis, 2026-09-22: "for now, it's free... the same way other services were
+            // free to start with until they got a good amount of users"). No Stripe involved at all when free —
+            // Checkout can't meaningfully process a £0 card charge anyway. The pack's own id doubles as the
+            // "session id" the success page already knows how to look up by (GetPaidByCheckoutSessionIdAsync),
+            // so the frontend needs zero changes: it just redirects to whatever checkoutUrl comes back.
+            if ((await PlatformSettings.Endpoint.GetQuestionPackFreeOrDefaultAsync(cosmos)).freeEnabled)
+            {
+                var freePack = await packs.CreatePendingAsync(role, focus is { Count: > 0 } ? string.Join(", ", focus) : null, difficulty, questions, 0m);
+                await packs.AttachCheckoutSessionAsync(freePack.Id, freePack.Id);
+                await packs.MarkPaidAsync(freePack.Id, "free", null);
+                return Results.Ok(new { checkoutUrl = $"{appUrl}/questions/success?session_id={freePack.Id}" });
+            }
+
             var priceGbp = config.GetValue("QuestionPacks:PriceGbp", DefaultPriceGbp);
             var pack = await packs.CreatePendingAsync(role, focus is { Count: > 0 } ? string.Join(", ", focus) : null, difficulty, questions, priceGbp);
 
-            var appUrl = config["CandidateAppUrl"] ?? "http://localhost:5173";
             var options = new SessionCreateOptions
             {
                 Mode = "payment",
