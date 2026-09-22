@@ -87,6 +87,10 @@ function RequestCard({ r, token, onChanged, onError }: { r: AccessRequest; token
   const [busy, setBusy] = useState(false)
   const [notes, setNotes] = useState(r.notes ?? '')
   const [price, setPrice] = useState(String(r.quotedMonthlyGbp ?? r.defaultSeatFeeGbp))
+  // Editable like price — the requester's own seat count is only ever a starting guess (Francis, 2026-09-21: Mike asked for
+  // 15, actually meant 10). The backend bills Stripe on the SAVED r.seats, not whatever's typed here, so "Send payment link"
+  // persists this first if it's changed, the same moment it persists nothing extra for price (already sent straight through).
+  const [seats, setSeats] = useState(String(r.seats))
   const [link, setLink] = useState<PaymentLinkResult | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -96,7 +100,8 @@ function RequestCard({ r, token, onChanged, onError }: { r: AccessRequest; token
     try { const x = await fn(); onChanged(done(x)) } catch (e) { onError((e as Error).message) } finally { setBusy(false) }
   }
   const perSeat = parseFloat(price) || 0
-  const total = perSeat * r.seats
+  const seatsNum = Math.max(1, Math.min(200, parseInt(seats, 10) || 0))
+  const total = perSeat * seatsNum
 
   return (
     <div style={card}>
@@ -104,7 +109,7 @@ function RequestCard({ r, token, onChanged, onError }: { r: AccessRequest; token
         <div style={{ minWidth: 0, ...wrap }}>
           <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{r.company}</div>
           <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 2 }}>
-            {r.name} · <span style={{ textTransform: 'capitalize' }}>{r.type}</span> · {r.seats} seat{r.seats === 1 ? '' : 's'}
+            {r.name} · <span style={{ textTransform: 'capitalize' }}>{r.type}</span> · {r.seats} seat{r.seats === 1 ? '' : 's'} requested
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
@@ -156,12 +161,17 @@ function RequestCard({ r, token, onChanged, onError }: { r: AccessRequest; token
               <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-3)', minWidth: 96 }}>2 · Payment</div>
               <span style={{ fontSize: 13, color: 'var(--text-2)' }}>£</span>
               <input value={price} onChange={e => setPrice(e.target.value)} inputMode="decimal" style={{ ...input, width: 84 }} aria-label="Monthly price per seat in pounds" />
-              <span style={{ fontSize: 12, color: 'var(--text-3)' }}>per seat / month × {r.seats} = <strong style={{ color: 'var(--text)' }}>£{total.toFixed(2)}</strong>/month</span>
+              <span style={{ fontSize: 12, color: 'var(--text-3)' }}>per seat / month ×</span>
+              <input value={seats} onChange={e => setSeats(e.target.value)} inputMode="numeric" style={{ ...input, width: 56 }} aria-label="Number of seats" />
+              <span style={{ fontSize: 12, color: 'var(--text-3)' }}>= <strong style={{ color: 'var(--text)' }}>£{total.toFixed(2)}</strong>/month</span>
               <button
                 style={primary}
                 disabled={busy || perSeat <= 0}
-                onClick={() => window.confirm(`Email a payment link for £${total.toFixed(2)}/month to ${r.email}?`)
-                  && void run(() => accessRequestsApi.paymentLink(token, r.id, perSeat), x => {
+                onClick={() => window.confirm(`Email a payment link for £${total.toFixed(2)}/month (${seatsNum} seat${seatsNum === 1 ? '' : 's'}) to ${r.email}?`)
+                  && void run(async () => {
+                    if (seatsNum !== r.seats) await accessRequestsApi.update(token, r.id, { seats: seatsNum })
+                    return accessRequestsApi.paymentLink(token, r.id, perSeat)
+                  }, x => {
                     setLink(x)
                     return x.emailed ? `Payment link emailed to ${r.email}.` : `Payment link created, but the email failed — copy it below and send it yourself.`
                   })}
