@@ -23,12 +23,13 @@ public class QuestionPackService(AppDbContext db)
 
     private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNameCaseInsensitive = true };
 
-    public async Task<QuestionPack> CreatePendingAsync(string jobRole, string? focusAreas, List<QaPair> questions, decimal amountGbp)
+    public async Task<QuestionPack> CreatePendingAsync(string jobRole, string? focusAreas, string difficulty, List<QaPair> questions, decimal amountGbp)
     {
         var pack = new QuestionPack
         {
             JobRole = jobRole.Trim(),
             FocusAreas = string.IsNullOrWhiteSpace(focusAreas) ? null : focusAreas.Trim(),
+            Difficulty = difficulty,
             QuestionsJson = JsonSerializer.Serialize(questions),
             Status = "pending",
             AmountGbp = amountGbp,

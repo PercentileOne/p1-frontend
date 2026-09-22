@@ -94,6 +94,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasIndex(x => x.StripePaymentIntentId);
             e.Property(x => x.JobRole).HasMaxLength(200);
             e.Property(x => x.FocusAreas).HasMaxLength(400);
+            e.Property(x => x.Difficulty).HasMaxLength(20);
             e.Property(x => x.Status).HasMaxLength(20);
             e.Property(x => x.StripeCheckoutSessionId).HasMaxLength(255);
             e.Property(x => x.StripePaymentIntentId).HasMaxLength(255);

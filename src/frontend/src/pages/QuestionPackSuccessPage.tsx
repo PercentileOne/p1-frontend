@@ -78,7 +78,7 @@ export default function QuestionPackSuccessPage() {
           <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#34D399,#047857)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900 }}>TIC</div>
           <span style={{ fontWeight: 800, fontSize: 15 }}><span style={{ color: GREEN }}>The</span>Interview<span style={{ color: GREEN }}>Chair</span>.com</span>
         </div>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: GREEN, marginTop: 18 }}>25 Interview Questions</div>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: GREEN, marginTop: 18 }}>25 Interview Questions · {pack.difficulty} Level</div>
         <h1 style={{ fontSize: 26, fontWeight: 900, margin: '6px 0 4px' }}>{pack.jobRole}</h1>
         {pack.focusAreas && <div style={{ fontSize: 13, color: '#64748b', marginBottom: 22 }}>Focus: {pack.focusAreas}</div>}
 

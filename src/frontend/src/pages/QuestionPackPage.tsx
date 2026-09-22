@@ -1,15 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { previewQuestion, getHotTopics, startQuestionPackCheckout } from '../api/questionPacksApi';
+import { previewQuestion, getPreviewAnswer, getHotTopics, startQuestionPackCheckout, type QuestionPackDifficulty } from '../api/questionPacksApi';
 
 // "Printable Interview Questions" (Francis, 2026-09-22) — the standalone, no-login, no-live-interview product: name a job role,
-// see one free sample question, pay a small one-off fee, land on /questions/success with a printable PDF of 25 questions + model
-// answers. Meant to be advertised on LinkedIn and next to job adverts — the whole point is minimum friction, so there's no
-// account, no email collection here (Stripe Checkout collects the buyer's email itself).
+// see one free sample question (with a revealable model answer), pay a small one-off fee, land on /questions/success with a
+// printable PDF of 25 questions + model answers. Meant to be advertised on LinkedIn and next to job adverts — the whole point
+// is minimum friction, so there's no account, no email collection here (Stripe Checkout collects the buyer's email itself).
 const GREEN = '#34D399';
 const PRICE = '£1.99';
 
+// Same three levels/colours as InterviewPackStart.tsx's DIFFICULTIES — Beginner deliberately excluded here (Francis,
+// 2026-09-22): this is a paid prep product for people already committing £1.99, Pro is the sensible default.
+const DIFFICULTIES: { value: QuestionPackDifficulty; color: string; desc: string }[] = [
+  { value: 'Standard', color: '#34D399', desc: 'Well-rounded questions to build genuine confidence.' },
+  { value: 'Pro', color: '#F59E0B', desc: 'Challenging questions that probe deeper.' },
+  { value: 'Expert', color: '#EF4444', desc: "Intense, technical — treated like the leading authority in the field." },
+];
+
 export default function QuestionPackPage() {
   const [role, setRole] = useState(() => { try { return (new URLSearchParams(window.location.search).get('role') ?? '').slice(0, 120); } catch { return ''; } });
+  const [difficulty, setDifficulty] = useState<QuestionPackDifficulty>('Pro');
 
   // Special Focus — same feature as the logged-in interview intake screen (InterviewPackStart.tsx): typed chips,
   // optionally seeded by "What's Hot" (currently in-demand topics for the named role, via its own capped endpoint —
@@ -20,6 +29,9 @@ export default function QuestionPackPage() {
 
   const [sample, setSample] = useState<string | null>(null);
   const [sampleLoading, setSampleLoading] = useState(false);
+  const [answer, setAnswer] = useState<string | null>(null);
+  const [answerLoading, setAnswerLoading] = useState(false);
+  const [answerRevealed, setAnswerRevealed] = useState(false);
   const [buying, setBuying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -43,23 +55,33 @@ export default function QuestionPackPage() {
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     const trimmed = role.trim();
+    setAnswer(null); setAnswerRevealed(false); // a new sample means any previously revealed answer no longer applies
     if (trimmed.length < 2) { setSample(null); return; }
     debounceRef.current = setTimeout(async () => {
       setSampleLoading(true);
-      const res = await previewQuestion(trimmed, focusChips);
+      const res = await previewQuestion(trimmed, focusChips, difficulty);
       setSampleLoading(false);
       if (res.ok) setSample(res.data.question);
     }, 700);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [role, focusChips]);
+  }, [role, focusChips, difficulty]);
+
+  const revealAnswer = async () => {
+    setAnswerRevealed(true);
+    if (answer || answerLoading || !sample) return;
+    setAnswerLoading(true);
+    const res = await getPreviewAnswer(role.trim(), sample);
+    setAnswerLoading(false);
+    setAnswer(res.ok ? res.data.answer : "Couldn't load an example answer right now — please try again.");
+  };
 
   const buy = async () => {
     const trimmed = role.trim();
     if (trimmed.length < 2) { setError('Tell us the job role first.'); return; }
     setError(null);
     setBuying(true);
-    const res = await startQuestionPackCheckout(trimmed, focusChips);
+    const res = await startQuestionPackCheckout(trimmed, focusChips, difficulty);
     if (res.ok) { window.location.href = res.data.checkoutUrl; return; }
     setBuying(false);
     setError(res.message);
@@ -85,6 +107,19 @@ export default function QuestionPackPage() {
             placeholder="e.g. Product Manager at a fintech startup"
             style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '13px 14px', fontSize: 15, color: '#fff', marginBottom: 20 }}
           />
+
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>Level</label>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+            {DIFFICULTIES.map(d => {
+              const active = difficulty === d.value;
+              return (
+                <button key={d.value} type="button" onClick={() => setDifficulty(d.value)} title={d.desc} style={{
+                  flex: 1, background: active ? `${d.color}22` : 'rgba(255,255,255,0.05)', border: `1px solid ${active ? d.color : 'rgba(255,255,255,0.12)'}`,
+                  color: active ? d.color : 'rgba(255,255,255,0.7)', borderRadius: 10, padding: '10px 8px', fontSize: 13.5, fontWeight: 700, cursor: 'pointer',
+                }}>{d.value}</button>
+              );
+            })}
+          </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>Special Focus</span>
@@ -134,6 +169,24 @@ export default function QuestionPackPage() {
             <div style={{ background: 'rgba(52,211,153,0.06)', border: `1px solid ${GREEN}33`, borderRadius: 14, padding: '16px 18px', marginBottom: 22 }}>
               <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: GREEN, marginBottom: 8 }}>Sample question — free preview</div>
               <div style={{ fontSize: 14.5, lineHeight: 1.6, color: sampleLoading ? 'rgba(255,255,255,0.4)' : '#fff' }}>{sampleLoading ? 'Thinking of a good one…' : sample}</div>
+
+              {sample && !sampleLoading && (
+                answerRevealed ? (
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px dashed rgba(255,255,255,0.12)' }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: 8 }}>Example answer</div>
+                    <div style={{ fontSize: 14, lineHeight: 1.65, color: 'rgba(255,255,255,0.85)' }}>
+                      {answerLoading ? 'Writing a strong example answer…' : answer}
+                    </div>
+                  </div>
+                ) : (
+                  <button type="button" onClick={revealAnswer} style={{
+                    marginTop: 14, background: 'none', border: 'none', color: GREEN, fontSize: 13, fontWeight: 700,
+                    cursor: 'pointer', padding: 0, textDecoration: 'underline', textUnderlineOffset: 3,
+                  }}>
+                    Reveal example answer ▾
+                  </button>
+                )
+              )}
             </div>
           )}
 
