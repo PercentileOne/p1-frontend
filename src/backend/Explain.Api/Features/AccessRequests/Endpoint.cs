@@ -21,8 +21,9 @@ namespace Explain.Api.Features.AccessRequests;
 /// </summary>
 public static class Endpoint
 {
-    public const decimal RecruiterSeatGbp = 299m;
-    public const decimal EmployerSeatGbp = 399m;
+    public const decimal RecruiterSeatGbp = 99m;   // was £299 (Francis, 2026-09-22) — the per-seat price is per individual consultant, not per agency;
+                                                    // an agency with 15 consultants is 15 seats, so this is deliberately priced for volume, not per-deal size.
+    public const decimal EmployerSeatGbp = 399m;   // unchanged — not part of this pricing decision
     private static readonly string[] Statuses = ["new", "contacted", "approved", "paid", "declined"];
 
     public record CreateRequest(string? Name, string? Company, string? Email, string? Phone, string? Type, int? Seats, string? Message, string? Website);

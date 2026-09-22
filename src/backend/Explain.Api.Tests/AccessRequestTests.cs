@@ -52,7 +52,7 @@ public class AccessRequestValidationTests
     [Fact]
     public void Standard_fees_match_the_pricing_page()
     {
-        Assert.Equal(299m, AccessReq.DefaultSeatFee("recruiter"));
+        Assert.Equal(99m, AccessReq.DefaultSeatFee("recruiter"));  // was £299 (Francis, 2026-09-22)
         Assert.Equal(399m, AccessReq.DefaultSeatFee("employer"));
     }
 }
