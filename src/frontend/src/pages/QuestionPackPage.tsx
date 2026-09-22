@@ -75,7 +75,10 @@ export default function QuestionPackPage() {
       setSampleLoading(true);
       const res = await previewQuestion(trimmed, focusChips, difficulty);
       setSampleLoading(false);
-      if (res.ok) setSample(res.data.question);
+      setSample(res.ok ? res.data.question : null);
+      // A capped/failed preview used to fail completely silently — the box just never appeared, which read as
+      // "broken" rather than "try again shortly" (Francis, 2026-09-22).
+      setError(res.ok ? null : res.message);
     }, 700);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
