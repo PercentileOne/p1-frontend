@@ -48,6 +48,11 @@ const TABS: { key: ProfileTab; label: string; emoji: string }[] = [
   { key: "video",         label: "Profile Video", emoji: "🎥" },
 ];
 
+// Hidden until their real backend exists (Francis, 2026-09-22 — see this session's build order:
+// Walls & Groups now, Story & Posts next, Achievements & Awards deliberately held back for much
+// later). Remove entries here to bring a tab back — everything else about it is untouched.
+const HIDDEN_TABS: ProfileTab[] = ["achievements", "awards"];
+
 function fmtNum(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}K` : String(n);
 }
@@ -847,44 +852,22 @@ function OverviewTab({ profile }: { profile: UserProfile }) {
     <div className="space-y-5">
       <MyStoryPanel profile={profile} />
 
-      <div className="grid grid-cols-2 gap-5">
-        {/* Quick stats */}
-        <SectionCard>
-          <SectionHeading emoji="📊" title="Stats" />
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { label: "Followers", value: fmtNum(profile.followers), color: "text-indigo-400" },
-              { label: "Following", value: fmtNum(profile.following), color: "text-violet-400" },
-              { label: "Stories",   value: String(profile.storiesPublished), color: "text-emerald-400" },
-              { label: "Awards",    value: String(profile.awardsWon),        color: "text-amber-400" },
-            ].map(({ label, value, color }) => (
-              <div key={label} className="text-center p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
-                <p className={`text-[18px] font-black ${color}`}>{value}</p>
-                <p className="text-[9px] text-slate-600 uppercase tracking-wide">{label}</p>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
-
-        {/* Awards quick view */}
-        <SectionCard>
-          <SectionHeading emoji="🏆" title="Awards" />
-          <AwardsPanelSection profile={profile} />
-        </SectionCard>
-      </div>
-
-      {/* Achievements preview */}
+      {/* Quick stats — Awards tile swapped for Posts while Achievements/Awards are hidden (see HIDDEN_TABS) */}
       <SectionCard>
-        <SectionHeading emoji="🏅" title="Recent Achievements" />
-        {profile.achievements.length === 0 ? (
-          <p className="text-[11px] text-slate-600">No achievements yet — they'll show up here as you use the platform.</p>
-        ) : (
-          <div className="grid grid-cols-4 gap-3">
-            {profile.achievements.slice(0, 4).map((a, i) => (
-              <AchievementTile key={a.id} a={a} delay={i * 0.07} />
-            ))}
-          </div>
-        )}
+        <SectionHeading emoji="📊" title="Stats" />
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { label: "Followers", value: fmtNum(profile.followers), color: "text-indigo-400" },
+            { label: "Following", value: fmtNum(profile.following), color: "text-violet-400" },
+            { label: "Stories",   value: String(profile.storiesPublished), color: "text-emerald-400" },
+            { label: "Posts",     value: String(profile.postsPublished),   color: "text-sky-400" },
+          ].map(({ label, value, color }) => (
+            <div key={label} className="text-center p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+              <p className={`text-[18px] font-black ${color}`}>{value}</p>
+              <p className="text-[9px] text-slate-600 uppercase tracking-wide">{label}</p>
+            </div>
+          ))}
+        </div>
       </SectionCard>
 
       {/* Interests preview */}
@@ -1578,7 +1561,8 @@ export default function ProfilePage() {
   const profile = isOwnProfile ? ownProfile : otherProfile;
   const commentsEnabled = isOwnProfile ? (real?.commentsEnabled ?? false) : (publicProfile?.commentsEnabled ?? false);
   const targetUserId = isOwnProfile ? (authUser?.id ?? '') : (routeUserId ?? '');
-  const visibleTabs = isOwnProfile ? TABS : TABS.filter(t => t.key === "overview" || t.key === "interests");
+  const visibleTabs = (isOwnProfile ? TABS : TABS.filter(t => t.key === "overview" || t.key === "interests"))
+    .filter(t => !HIDDEN_TABS.includes(t.key));
 
   const [tab, setTab] = useState<ProfileTab>("overview");
   const [followed, setFollowed] = useState(false);
