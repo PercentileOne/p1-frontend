@@ -45,7 +45,9 @@ export default function QuestionPackPage() {
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const [buying, setBuying] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // What was last (successfully or unsuccessfully) fetched, so blurring the role field twice without
+  // changing anything — or Level/Special Focus changing before a role is even typed — doesn't re-fire.
+  const lastFetchKeyRef = useRef<string>('');
 
   // Read-aloud, Wayne's voice (same ElevenLabs proxy + role every /try session uses — see ttsApi.ts's speak()).
   const [speakingWhich, setSpeakingWhich] = useState<'question' | 'answer' | null>(null);
@@ -75,24 +77,34 @@ export default function QuestionPackPage() {
     if (res.ok) res.data.topics.forEach(addFocusChip);
   }, [role, hotTopicsLoading, addFocusChip]);
 
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
+  // Fetches the sample question. Deliberately NOT fired on every keystroke — a 700ms keystroke debounce still
+  // fired repeatedly for ordinary human typing (any pause over 700ms, e.g. between words, re-triggered it —
+  // Francis, 2026-09-22: "it goes off and does a search on every keypress"). Instead this runs when the role
+  // field is blurred (a natural "I've finished typing this" moment) and whenever Level or Special Focus change
+  // (discrete clicks, not continuous typing, so no debounce needed there).
+  async function fetchSample() {
     const trimmed = role.trim();
+    if (trimmed.length < 2) { setSample(null); return; }
+    const key = JSON.stringify([trimmed, focusChips, difficulty]);
+    if (key === lastFetchKeyRef.current) return;
+    lastFetchKeyRef.current = key;
+
     setAnswer(null); setAnswerRevealed(false); // a new sample means any previously revealed answer no longer applies
     cancelSpeechRef.current?.(); setSpeakingWhich(null); // a new sample means any read-aloud in progress no longer matches what's on screen
-    if (trimmed.length < 2) { setSample(null); return; }
-    debounceRef.current = setTimeout(async () => {
-      setSampleLoading(true);
-      const res = await previewQuestion(trimmed, focusChips, difficulty);
-      setSampleLoading(false);
-      setSample(res.ok ? res.data.question : null);
-      // A capped/failed preview used to fail completely silently — the box just never appeared, which read as
-      // "broken" rather than "try again shortly" (Francis, 2026-09-22).
-      setError(res.ok ? null : res.message);
-    }, 700);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    setSampleLoading(true);
+    const res = await previewQuestion(trimmed, focusChips, difficulty);
+    setSampleLoading(false);
+    setSample(res.ok ? res.data.question : null);
+    // A capped/failed preview used to fail completely silently — the box just never appeared, which read as
+    // "broken" rather than "try again shortly" (Francis, 2026-09-22).
+    setError(res.ok ? null : res.message);
+  }
+
+  useEffect(() => {
+    if (role.trim().length < 2) { setSample(null); return; }
+    void fetchSample();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [role, focusChips, difficulty]);
+  }, [focusChips, difficulty]);
 
   const revealAnswer = async () => {
     setAnswerRevealed(true);
@@ -135,6 +147,8 @@ export default function QuestionPackPage() {
           <input
             value={role}
             onChange={e => setRole(e.target.value.slice(0, 120))}
+            onBlur={() => void fetchSample()}
+            onKeyDown={e => { if (e.key === 'Enter') void fetchSample(); }}
             placeholder="e.g. Product Manager at a fintech startup"
             style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '13px 14px', fontSize: 15, color: '#fff', marginBottom: 20 }}
           />
