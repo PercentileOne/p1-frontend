@@ -29,6 +29,7 @@ public static class Endpoint
 
     public record PreviewRequest(string? JobRole, List<string>? Focus);
     public record CheckoutRequest(string? JobRole, List<string>? Focus);
+    public record HotTopicsRequest(string? JobRole);
 
     public static void Map(WebApplication app)
     {
@@ -52,6 +53,33 @@ public static class Endpoint
             {
                 logger.LogError(ex, "QuestionPacks: preview generation failed");
                 return Results.Json(new { error = "We couldn't put a sample question together just now — please try again." }, statusCode: 502);
+            }
+        }).AllowAnonymous();
+
+        // "What's Hot" (Francis, 2026-09-22: the SAME feature as the logged-in interview intake screen's Special
+        // Focus button — see InterviewPackStart.tsx's handleWhatsHot / aiScoring.ts's generateHotTopics, not a
+        // made-up static chip list). Kept as its own capped endpoint rather than letting this public page call
+        // generateHotTopics' /api/ai-proxy directly — that endpoint is deliberately unauthenticated AND unmetered,
+        // same reasoning TryOut's own top comment gives for not using it from a public page.
+        app.MapPost("/api/question-packs/hot-topics", async (HotTopicsRequest req, HttpContext ctx, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
+        {
+            var role = CleanRole(req.JobRole);
+            if (role is null) return Results.BadRequest(new { error = "Tell us the job role first." });
+
+            var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            if (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"qpack:hot:ip:{ip}", config.GetValue("QuestionPacks:PreviewPerVisitorPerDay", DefaultPreviewPerVisitorPerDay), cosmos)).allowed
+                || !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("qpack:hot:global", config.GetValue("QuestionPacks:PreviewGlobalPerDay", DefaultPreviewGlobalPerDay), cosmos)).allowed)
+                return Results.Json(new { capped = true, message = "Give it a moment and try again." }, statusCode: (int)HttpStatusCode.TooManyRequests);
+
+            try
+            {
+                var topics = await CallHotTopicsModelAsync(role, factory, config);
+                return Results.Ok(new { topics });
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "QuestionPacks: hot-topics generation failed");
+                return Results.Json(new { error = "We couldn't load What's Hot just now — please try again." }, statusCode: 502);
             }
         }).AllowAnonymous();
 
@@ -192,6 +220,31 @@ public static class Endpoint
             .Take(QuestionCount)
             .ToList();
     }
+
+    // Same prompt as the candidate app's generateHotTopics (src/frontend/src/api/aiScoring.ts) — kept in lockstep
+    // deliberately so "What's Hot" means the exact same thing on both the public and logged-in intake screens.
+    private static async Task<List<string>> CallHotTopicsModelAsync(string role, IHttpClientFactory factory, IConfiguration config)
+    {
+        const string system = "You identify the specific skills, technologies, and topics currently most talked about and tested for a given job role in real interviews. Return ONLY valid JSON — no markdown, no explanation.";
+        var user = $$"""
+            Role: {{role}}
+
+            List exactly 4 specific, currently in-demand subjects, technologies, or methodologies that someone interviewing for this role today should be ready to discuss — the kind of thing that shows up repeatedly in recent job postings and interview loops for this role.
+
+            Rules:
+            - Each item is a short, specific name (2-4 words) — a real named technology, pattern, framework, or methodology, not a vague category. "Agentic AI patterns" not "AI knowledge". "Zero Trust Architecture" not "security".
+            - Genuinely specific to THIS role — not generic soft skills like "communication" or "teamwork".
+            - No duplicates, no near-duplicates of each other.
+
+            Return JSON:
+            { "topics": ["...", "...", "...", "..."] }
+            """;
+        var content = await CallModelAsync(system, user, 0.8, factory, config);
+        var parsed = JsonSerializer.Deserialize<HotTopicsModelResult>(content, JsonOpts) ?? new HotTopicsModelResult(null);
+        return (parsed.Topics ?? []).Where(t => !string.IsNullOrWhiteSpace(t)).Select(t => t.Trim()).Take(4).ToList();
+    }
+
+    private record HotTopicsModelResult(List<string>? Topics);
 
     private record FullPackQa(string? Question, string? Answer);
     private record FullPackModelResult(List<FullPackQa>? Questions);

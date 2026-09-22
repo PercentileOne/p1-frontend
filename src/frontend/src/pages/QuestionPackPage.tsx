@@ -1,26 +1,44 @@
-import { useEffect, useRef, useState } from 'react';
-import { previewQuestion, startQuestionPackCheckout } from '../api/questionPacksApi';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { previewQuestion, getHotTopics, startQuestionPackCheckout } from '../api/questionPacksApi';
 
 // "Printable Interview Questions" (Francis, 2026-09-22) — the standalone, no-login, no-live-interview product: name a job role,
 // see one free sample question, pay a small one-off fee, land on /questions/success with a printable PDF of 25 questions + model
 // answers. Meant to be advertised on LinkedIn and next to job adverts — the whole point is minimum friction, so there's no
 // account, no email collection here (Stripe Checkout collects the buyer's email itself).
 const GREEN = '#34D399';
-const FOCUS_CHIPS = ['Leadership', 'Remote work', 'Salary negotiation', 'Behavioural', 'Technical depth', 'Career change', 'First-time manager', 'AI & automation'];
 const PRICE = '£1.99';
 
 export default function QuestionPackPage() {
   const [role, setRole] = useState(() => { try { return (new URLSearchParams(window.location.search).get('role') ?? '').slice(0, 120); } catch { return ''; } });
-  const [focus, setFocus] = useState<string[]>([]);
-  const [customFocus, setCustomFocus] = useState('');
+
+  // Special Focus — same feature as the logged-in interview intake screen (InterviewPackStart.tsx): typed chips,
+  // optionally seeded by "What's Hot" (currently in-demand topics for the named role, via its own capped endpoint —
+  // see questionPacksApi.ts's own note on why this isn't the raw generateHotTopics/ai-proxy call that screen uses).
+  const [focusInput, setFocusInput] = useState('');
+  const [focusChips, setFocusChips] = useState<string[]>([]);
+  const [hotTopicsLoading, setHotTopicsLoading] = useState(false);
+
   const [sample, setSample] = useState<string | null>(null);
   const [sampleLoading, setSampleLoading] = useState(false);
   const [buying, setBuying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const toggleFocus = (chip: string) => setFocus(f => f.includes(chip) ? f.filter(c => c !== chip) : f.length < 6 ? [...f, chip] : f);
-  const allFocus = () => customFocus.trim() ? [...focus, customFocus.trim()] : focus;
+  const addFocusChip = useCallback((raw: string) => {
+    const value = raw.trim();
+    if (!value) return;
+    setFocusChips(prev => prev.some(c => c.toLowerCase() === value.toLowerCase()) ? prev : [...prev, value]);
+  }, []);
+  const removeFocusChip = useCallback((value: string) => setFocusChips(prev => prev.filter(c => c !== value)), []);
+
+  const handleWhatsHot = useCallback(async () => {
+    const trimmed = role.trim();
+    if (!trimmed || hotTopicsLoading) return;
+    setHotTopicsLoading(true);
+    const res = await getHotTopics(trimmed);
+    setHotTopicsLoading(false);
+    if (res.ok) res.data.topics.forEach(addFocusChip);
+  }, [role, hotTopicsLoading, addFocusChip]);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -28,20 +46,20 @@ export default function QuestionPackPage() {
     if (trimmed.length < 2) { setSample(null); return; }
     debounceRef.current = setTimeout(async () => {
       setSampleLoading(true);
-      const res = await previewQuestion(trimmed, allFocus());
+      const res = await previewQuestion(trimmed, focusChips);
       setSampleLoading(false);
       if (res.ok) setSample(res.data.question);
     }, 700);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [role, focus, customFocus]);
+  }, [role, focusChips]);
 
   const buy = async () => {
     const trimmed = role.trim();
     if (trimmed.length < 2) { setError('Tell us the job role first.'); return; }
     setError(null);
     setBuying(true);
-    const res = await startQuestionPackCheckout(trimmed, allFocus());
+    const res = await startQuestionPackCheckout(trimmed, focusChips);
     if (res.ok) { window.location.href = res.data.checkoutUrl; return; }
     setBuying(false);
     setError(res.message);
@@ -49,6 +67,7 @@ export default function QuestionPackPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#07080f', color: '#fff', padding: '48px 16px 80px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <style>{'@keyframes qpSpin{to{transform:rotate(360deg)}}'}</style>
       <div style={{ width: '100%', maxWidth: 620 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: GREEN, marginBottom: 10 }}>No account needed · No live interview</div>
@@ -67,24 +86,49 @@ export default function QuestionPackPage() {
             style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '13px 14px', fontSize: 15, color: '#fff', marginBottom: 20 }}
           />
 
-          <label style={{ display: 'block', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>What's hot right now? <span style={{ fontWeight: 500, textTransform: 'none', color: 'rgba(255,255,255,0.35)' }}>(optional, pick up to 6)</span></label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-            {FOCUS_CHIPS.map(chip => {
-              const active = focus.includes(chip);
-              return (
-                <button key={chip} onClick={() => toggleFocus(chip)} style={{
-                  background: active ? `${GREEN}22` : 'rgba(255,255,255,0.05)', border: `1px solid ${active ? GREEN : 'rgba(255,255,255,0.12)'}`,
-                  color: active ? GREEN : 'rgba(255,255,255,0.7)', borderRadius: 999, padding: '7px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                }}>{chip}</button>
-              );
-            })}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>Special Focus</span>
+            <span style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.35)' }}>(optional — narrows questions to specific topics)</span>
           </div>
-          <input
-            value={customFocus}
-            onChange={e => setCustomFocus(e.target.value.slice(0, 60))}
-            placeholder="Or add your own focus — e.g. a specific tool, framework, or company"
-            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '11px 14px', fontSize: 13.5, color: '#fff', marginBottom: 22 }}
-          />
+          <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+            <input
+              value={focusInput}
+              onChange={e => setFocusInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addFocusChip(focusInput); setFocusInput(''); }
+              }}
+              placeholder="e.g. Agentic AI Patterns — press Enter to add"
+              style={{ flex: 1, minWidth: 0, boxSizing: 'border-box', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '13px 14px', fontSize: 14, color: '#fff' }}
+            />
+            <button
+              type="button"
+              onClick={handleWhatsHot}
+              disabled={!role.trim() || hotTopicsLoading}
+              title={!role.trim() ? 'Enter a job role first' : undefined}
+              style={{
+                flexShrink: 0, display: 'flex', alignItems: 'center', gap: 7,
+                background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.35)',
+                borderRadius: 12, padding: '0 18px', color: '#a78bfa', fontSize: 13, fontWeight: 700,
+                cursor: !role.trim() || hotTopicsLoading ? 'not-allowed' : 'pointer', opacity: !role.trim() ? 0.5 : 1,
+              }}
+            >
+              {hotTopicsLoading ? (
+                <span style={{ display: 'inline-block', width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(167,139,250,0.25)', borderTopColor: '#a78bfa', animation: 'qpSpin 0.7s linear infinite' }} />
+              ) : '🔥'}
+              What's Hot
+            </button>
+          </div>
+
+          {focusChips.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 22 }}>
+              {focusChips.map(chip => (
+                <span key={chip} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 20, padding: '6px 8px 6px 14px', fontSize: 12.5, color: '#fff', fontWeight: 600 }}>
+                  {chip}
+                  <button type="button" onClick={() => removeFocusChip(chip)} aria-label={`Remove ${chip}`} style={{ width: 18, height: 18, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>✕</button>
+                </span>
+              ))}
+            </div>
+          )}
 
           {(sampleLoading || sample) && (
             <div style={{ background: 'rgba(52,211,153,0.06)', border: `1px solid ${GREEN}33`, borderRadius: 14, padding: '16px 18px', marginBottom: 22 }}>

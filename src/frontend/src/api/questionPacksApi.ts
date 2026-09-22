@@ -24,6 +24,12 @@ async function call<T>(path: string, init?: RequestInit): Promise<QuestionPacksR
 export const previewQuestion = (jobRole: string, focus: string[]) =>
   call<{ question: string }>('/api/question-packs/preview', { method: 'POST', body: JSON.stringify({ jobRole, focus }) });
 
+// Same "What's Hot" feature as the logged-in interview intake screen (InterviewPackStart.tsx's handleWhatsHot) —
+// just backed by its own capped public endpoint instead of the unauthenticated/unmetered /api/ai-proxy that
+// screen's generateHotTopics() calls directly (fine there, behind a login; not fine on a public page).
+export const getHotTopics = (jobRole: string) =>
+  call<{ topics: string[] }>('/api/question-packs/hot-topics', { method: 'POST', body: JSON.stringify({ jobRole }) });
+
 export const startQuestionPackCheckout = (jobRole: string, focus: string[]) =>
   call<{ checkoutUrl: string }>('/api/question-packs/checkout', { method: 'POST', body: JSON.stringify({ jobRole, focus }) });
 
