@@ -61,6 +61,46 @@ public static class Endpoint
             await container.UpsertItemAsync(setting, new PartitionKey("liveAvatar"));
             return Results.Ok(setting);
         }).RequireAuthorization(Permissions.ViewSystemSettings);
+
+        // Question Packs daily-caps switch (Francis, 2026-09-22: "please leave it uncapped for now, or add a switch
+        // in the admin portal for me to switch it on and off") — unlike LiveAvatar's default-ON, a missing document
+        // here means UNCAPPED, deliberately: the whole point of asking for this was to stop being capped starting
+        // the moment it ships, without having to flip anything on first. See Features/QuestionPacks/Endpoint.cs's
+        // CapsEnabledAsync for where this is read on every preview/hot-topics/checkout call.
+        app.MapGet("/api/admin/settings/question-pack-caps", async (CosmosService cosmos) =>
+        {
+            var setting = await GetQuestionPackCapsOrDefaultAsync(cosmos);
+            return Results.Ok(setting);
+        }).RequireAuthorization(Permissions.ViewSystemSettings);
+
+        app.MapPost("/api/admin/settings/question-pack-caps", async (UpdateQuestionPackCapsRequest req, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var updatedBy = ctx.User.FindFirst("sub")?.Value ?? "unknown";
+            var setting = new QuestionPackCapsSetting(
+                id: "questionPackCaps",
+                pk: "questionPackCaps",
+                capsEnabled: req.CapsEnabled,
+                updatedAt: DateTimeOffset.UtcNow,
+                updatedBy: updatedBy);
+
+            var container = cosmos.GetContainer("platformSettings");
+            await container.UpsertItemAsync(setting, new PartitionKey("questionPackCaps"));
+            return Results.Ok(setting);
+        }).RequireAuthorization(Permissions.ViewSystemSettings);
+    }
+
+    public static async Task<QuestionPackCapsSetting> GetQuestionPackCapsOrDefaultAsync(CosmosService cosmos)
+    {
+        var container = cosmos.GetContainer("platformSettings");
+        try
+        {
+            var response = await container.ReadItemAsync<QuestionPackCapsSetting>("questionPackCaps", new PartitionKey("questionPackCaps"));
+            return response.Resource;
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            return new QuestionPackCapsSetting("questionPackCaps", "questionPackCaps", false, DateTimeOffset.MinValue, "");
+        }
     }
 
     /// <summary>
@@ -117,5 +157,14 @@ public record LiveAvatarSetting(
     string id,
     string pk,
     bool enabled,
+    DateTimeOffset updatedAt,
+    string updatedBy);
+
+public record UpdateQuestionPackCapsRequest(bool CapsEnabled);
+
+public record QuestionPackCapsSetting(
+    string id,
+    string pk,
+    bool capsEnabled,
     DateTimeOffset updatedAt,
     string updatedBy);

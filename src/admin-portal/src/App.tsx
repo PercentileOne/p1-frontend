@@ -14,6 +14,7 @@ import Careers from './pages/Careers'
 import Moderation from './pages/Moderation'
 import NameBank from './pages/NameBank'
 import LiveAvatar from './pages/LiveAvatar'
+import QuestionPackCaps from './pages/QuestionPackCaps'
 import ActivityLog from './pages/ActivityLog'
 import Access from './pages/Access'
 import LocationCheck from './pages/LocationCheck'
@@ -55,6 +56,7 @@ function AppRoutes() {
       <Route path="/moderation" element={<RequireAuth><Moderation /></RequireAuth>} />
       <Route path="/name-bank" element={<RequireAuth><NameBank /></RequireAuth>} />
       <Route path="/live-avatar" element={<RequireAuth><LiveAvatar /></RequireAuth>} />
+      <Route path="/question-packs" element={<RequireAuth><QuestionPackCaps /></RequireAuth>} />
       <Route path="/activity-log" element={<RequireAuth><ActivityLog /></RequireAuth>} />
       <Route path="/access" element={<RequireAuth><Access /></RequireAuth>} />
       <Route path="/location-check" element={<RequireAuth><LocationCheck /></RequireAuth>} />

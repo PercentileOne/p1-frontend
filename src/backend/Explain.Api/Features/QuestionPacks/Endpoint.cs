@@ -38,6 +38,12 @@ public static class Endpoint
     public static string CleanDifficulty(string? raw) =>
         Difficulties.FirstOrDefault(d => string.Equals(d, raw, StringComparison.OrdinalIgnoreCase)) ?? "Pro";
 
+    // Admin kill switch (Francis, 2026-09-22 — see PlatformSettings/Endpoint.cs's own note): missing setting doc
+    // means UNCAPPED, so every daily-allowance check below is skipped entirely until an admin explicitly turns
+    // caps back on from the admin portal's Question Packs page.
+    private static async Task<bool> CapsEnabledAsync(CosmosService cosmos) =>
+        (await PlatformSettings.Endpoint.GetQuestionPackCapsOrDefaultAsync(cosmos)).capsEnabled;
+
     public static void Map(WebApplication app)
     {
         app.MapPost("/api/question-packs/preview", async (PreviewRequest req, HttpContext ctx, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
@@ -48,8 +54,9 @@ public static class Endpoint
             var difficulty = CleanDifficulty(req.Difficulty);
 
             var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            if (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"qpack:preview:ip:{ip}", config.GetValue("QuestionPacks:PreviewPerVisitorPerDay", DefaultPreviewPerVisitorPerDay), cosmos)).allowed
-                || !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("qpack:preview:global", config.GetValue("QuestionPacks:PreviewGlobalPerDay", DefaultPreviewGlobalPerDay), cosmos)).allowed)
+            if (await CapsEnabledAsync(cosmos) &&
+                (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"qpack:preview:ip:{ip}", config.GetValue("QuestionPacks:PreviewPerVisitorPerDay", DefaultPreviewPerVisitorPerDay), cosmos)).allowed
+                || !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("qpack:preview:global", config.GetValue("QuestionPacks:PreviewGlobalPerDay", DefaultPreviewGlobalPerDay), cosmos)).allowed))
                 return Results.Json(new { capped = true, message = "Give it a moment and try again." }, statusCode: (int)HttpStatusCode.TooManyRequests);
 
             try
@@ -77,8 +84,9 @@ public static class Endpoint
                 return Results.BadRequest(new { error = "Nothing to answer yet." });
 
             var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            if (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"qpack:previewAnswer:ip:{ip}", config.GetValue("QuestionPacks:PreviewPerVisitorPerDay", DefaultPreviewPerVisitorPerDay), cosmos)).allowed
-                || !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("qpack:previewAnswer:global", config.GetValue("QuestionPacks:PreviewGlobalPerDay", DefaultPreviewGlobalPerDay), cosmos)).allowed)
+            if (await CapsEnabledAsync(cosmos) &&
+                (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"qpack:previewAnswer:ip:{ip}", config.GetValue("QuestionPacks:PreviewPerVisitorPerDay", DefaultPreviewPerVisitorPerDay), cosmos)).allowed
+                || !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("qpack:previewAnswer:global", config.GetValue("QuestionPacks:PreviewGlobalPerDay", DefaultPreviewGlobalPerDay), cosmos)).allowed))
                 return Results.Json(new { capped = true, message = "Give it a moment and try again." }, statusCode: (int)HttpStatusCode.TooManyRequests);
 
             try
@@ -104,8 +112,9 @@ public static class Endpoint
             if (role is null) return Results.BadRequest(new { error = "Tell us the job role first." });
 
             var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            if (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"qpack:hot:ip:{ip}", config.GetValue("QuestionPacks:PreviewPerVisitorPerDay", DefaultPreviewPerVisitorPerDay), cosmos)).allowed
-                || !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("qpack:hot:global", config.GetValue("QuestionPacks:PreviewGlobalPerDay", DefaultPreviewGlobalPerDay), cosmos)).allowed)
+            if (await CapsEnabledAsync(cosmos) &&
+                (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"qpack:hot:ip:{ip}", config.GetValue("QuestionPacks:PreviewPerVisitorPerDay", DefaultPreviewPerVisitorPerDay), cosmos)).allowed
+                || !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("qpack:hot:global", config.GetValue("QuestionPacks:PreviewGlobalPerDay", DefaultPreviewGlobalPerDay), cosmos)).allowed))
                 return Results.Json(new { capped = true, message = "Give it a moment and try again." }, statusCode: (int)HttpStatusCode.TooManyRequests);
 
             try
@@ -128,8 +137,9 @@ public static class Endpoint
             var difficulty = CleanDifficulty(req.Difficulty);
 
             var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            if (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"qpack:buy:ip:{ip}", config.GetValue("QuestionPacks:PacksPerVisitorPerDay", DefaultPacksPerVisitorPerDay), cosmos)).allowed
-                || !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("qpack:buy:global", config.GetValue("QuestionPacks:PacksGlobalPerDay", DefaultPacksGlobalPerDay), cosmos)).allowed)
+            if (await CapsEnabledAsync(cosmos) &&
+                (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"qpack:buy:ip:{ip}", config.GetValue("QuestionPacks:PacksPerVisitorPerDay", DefaultPacksPerVisitorPerDay), cosmos)).allowed
+                || !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("qpack:buy:global", config.GetValue("QuestionPacks:PacksGlobalPerDay", DefaultPacksGlobalPerDay), cosmos)).allowed))
                 return Results.Json(new { capped = true, message = "Lots of people are generating packs right now — please try again shortly." }, statusCode: (int)HttpStatusCode.TooManyRequests);
 
             List<QuestionPackService.QaPair> questions;
