@@ -157,6 +157,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   ap: 'AP (Advanced Placement)',
   admissions: 'College & Grad Admissions',
   'official-tests': 'Official Tests',
+  sports: 'Sports',
   other: 'Other Exams',
 };
 
