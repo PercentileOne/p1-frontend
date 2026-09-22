@@ -82,9 +82,9 @@ export default function QuestionPackSuccessPage() {
         <h1 style={{ fontSize: 26, fontWeight: 900, margin: '6px 0 4px' }}>{pack.jobRole}</h1>
         {pack.focusAreas && <div style={{ fontSize: 13, color: '#64748b', marginBottom: 22 }}>Focus: {pack.focusAreas}</div>}
 
-        <ol style={{ padding: '0 0 0 22px', margin: '18px 0 0' }}>
+        <ol style={{ padding: '0 0 0 22px', margin: '18px 0 0', listStyleType: 'decimal', listStylePosition: 'outside' }}>
           {pack.questions.map((qa, i) => (
-            <li key={i} style={{ fontSize: 15, lineHeight: 1.7, marginBottom: 14, color: '#1e293b' }}>{qa.question}</li>
+            <li key={i} style={{ fontSize: 15, lineHeight: 1.7, marginBottom: 14, color: '#1e293b', paddingLeft: 6 }}>{qa.question}</li>
           ))}
         </ol>
 
