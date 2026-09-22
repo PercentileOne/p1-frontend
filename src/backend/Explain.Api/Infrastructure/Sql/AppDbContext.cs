@@ -18,6 +18,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<AccessRequest>       AccessRequests       => Set<AccessRequest>();
     public DbSet<InterviewUsage>      InterviewUsages      => Set<InterviewUsage>();
     public DbSet<InterviewPass>       InterviewPasses      => Set<InterviewPass>();
+    public DbSet<QuestionPack>        QuestionPacks        => Set<QuestionPack>();
     public DbSet<EntitlementSettingsRow> EntitlementSettings => Set<EntitlementSettingsRow>();
 
     // RBAC
@@ -84,6 +85,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(x => x.Status).HasMaxLength(20);
             e.Property(x => x.StripeCheckoutSessionId).HasMaxLength(255);
             e.Property(x => x.StripePaymentIntentId).HasMaxLength(255);
+            e.Property(x => x.AmountGbp).HasPrecision(10, 2);
+        });
+
+        model.Entity<QuestionPack>(e =>
+        {
+            e.HasIndex(x => x.StripeCheckoutSessionId);
+            e.HasIndex(x => x.StripePaymentIntentId);
+            e.Property(x => x.JobRole).HasMaxLength(200);
+            e.Property(x => x.FocusAreas).HasMaxLength(400);
+            e.Property(x => x.Status).HasMaxLength(20);
+            e.Property(x => x.StripeCheckoutSessionId).HasMaxLength(255);
+            e.Property(x => x.StripePaymentIntentId).HasMaxLength(255);
+            e.Property(x => x.BuyerEmail).HasMaxLength(320);
             e.Property(x => x.AmountGbp).HasPrecision(10, 2);
         });
 

@@ -169,7 +169,7 @@ public static class Endpoint
     }
 
     private static async Task<IResult> HandleWebhook(
-        HttpContext ctx, SessionPassService passes, Explain.Api.Features.Subscriptions.CandidateSubscriptionService subscriptions, Explain.Api.Infrastructure.Sql.AppDbContext db, Explain.Api.Infrastructure.Email.IEmailSender emailSender, IConfiguration config, ILogger<Program> logger)
+        HttpContext ctx, SessionPassService passes, Explain.Api.Features.QuestionPacks.QuestionPackService questionPacks, Explain.Api.Features.Subscriptions.CandidateSubscriptionService subscriptions, Explain.Api.Infrastructure.Sql.AppDbContext db, Explain.Api.Infrastructure.Email.IEmailSender emailSender, IConfiguration config, ILogger<Program> logger)
     {
         var webhookSecret = config["Stripe:WebhookSecret"];
         if (string.IsNullOrWhiteSpace(webhookSecret))
@@ -226,6 +226,16 @@ public static class Endpoint
         if (stripeEvent.Type == "charge.refunded" && stripeEvent.Data.Object is Charge charge && charge.Refunded && !string.IsNullOrWhiteSpace(charge.PaymentIntentId))
         {
             await passes.MarkRefundedByPaymentIntentAsync(charge.PaymentIntentId);
+            await questionPacks.MarkRefundedByPaymentIntentAsync(charge.PaymentIntentId);
+            return Results.Ok();
+        }
+
+        // A "Printable Interview Questions" one-off purchase (Features/QuestionPacks) — shares this endpoint and its signature
+        // check the same way the subscription/access-request branches above do.
+        if (stripeEvent.Type == "checkout.session.completed" && stripeEvent.Data.Object is Session packSession
+            && packSession.Metadata.GetValueOrDefault("questionPackId") is { Length: > 0 } questionPackId)
+        {
+            await questionPacks.MarkPaidAsync(questionPackId, packSession.PaymentIntentId, packSession.CustomerDetails?.Email);
             return Results.Ok();
         }
 

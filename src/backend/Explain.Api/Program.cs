@@ -48,6 +48,7 @@ builder.Services.AddSingleton<AnthropicService>();
 builder.Services.AddSingleton<Explain.Api.Infrastructure.YouTube.YouTubeService>();
 builder.Services.AddSingleton<Explain.Api.Features.NameGreetings.DidGenerationService>();
 builder.Services.AddScoped<Explain.Api.Features.SessionPasses.SessionPassService>();   // scoped: it uses the SQL DbContext (passes moved from Cosmos, 2026-09-21)
+builder.Services.AddScoped<Explain.Api.Features.QuestionPacks.QuestionPackService>();
 builder.Services.AddHostedService<Explain.Api.Features.SessionPasses.LegacyImportService>();
 builder.Services.AddScoped<Explain.Api.Features.Entitlements.EntitlementService>();
 builder.Services.AddScoped<Explain.Api.Features.Subscriptions.CandidateSubscriptionService>();
@@ -342,6 +343,7 @@ Explain.Api.Features.Entitlements.Endpoint.Map(app);
 Explain.Api.Features.SessionPasses.LegacyImportEndpoint.Map(app);
 Explain.Api.Infrastructure.Geo.GeoCompareEndpoint.Map(app);
 Explain.Api.Features.TryOut.Endpoint.Map(app);
+Explain.Api.Features.QuestionPacks.Endpoint.Map(app);
 Explain.Api.Features.AccessRequests.Endpoint.Map(app);
 Explain.Api.Features.Subscriptions.Endpoint.Map(app);
 Explain.Api.Features.ExamCatalog.Refresh.Endpoint.Map(app);
