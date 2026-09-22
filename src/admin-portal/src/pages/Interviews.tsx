@@ -93,7 +93,7 @@ export default function Interviews() {
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>Interviews</h1>
         <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>
-          {visibleRows.length} of {rows.length} session{rows.length === 1 ? '' : 's'} — every completed interview across every candidate.
+          {visibleRows.length} of {rows.length} session{rows.length === 1 ? '' : 's'} — every completed interview across every candidate, plus free "Try it live" demos.
         </p>
       </div>
 
@@ -165,13 +165,19 @@ export default function Interviews() {
                   <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{formatDateTime(r.createdAt)}</td>
                   <td style={{ padding: '12px 16px' }}>
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                      <span style={{
-                        fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 6,
-                        color: r.isShared ? 'var(--green)' : 'var(--text-3)',
-                        background: r.isShared ? 'rgba(52,211,153,0.1)' : 'rgba(255,255,255,0.05)',
-                      }}>
-                        {r.isShared ? 'Shared' : 'Private'}
-                      </span>
+                      {r.source === 'tryout' ? (
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 6, color: '#F59E0B', background: 'rgba(245,158,11,0.1)' }}>
+                          Demo · /try
+                        </span>
+                      ) : (
+                        <span style={{
+                          fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 6,
+                          color: r.isShared ? 'var(--green)' : 'var(--text-3)',
+                          background: r.isShared ? 'rgba(52,211,153,0.1)' : 'rgba(255,255,255,0.05)',
+                        }}>
+                          {r.isShared ? 'Shared' : 'Private'}
+                        </span>
+                      )}
                       {r.hasVideo && <Video size={13} color="var(--text-3)" />}
                     </div>
                   </td>

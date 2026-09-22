@@ -17,6 +17,11 @@ namespace Explain.Api.Features.Interviews.Admin;
 /// sessionDataJson blob each session already carries (see Features/Interviews/Endpoint.cs)
 /// rather than joining SQL — candidateName has been embedded in every upload's payload
 /// since that field was added, so no cross-database lookup is needed for the common case.
+///
+/// Also merges in free, anonymous "Try it live" demo sessions (Francis, 2026-09-22: "so I can see what people are
+/// doing") from the tryoutSessions container — see Features/TryOut/Endpoint.cs's SaveSessionAsync for where those
+/// are written. Marked with Source="tryout" so the admin UI can badge them distinctly rather than mislabel a demo
+/// as a real candidate's private interview.
 /// </summary>
 public static class Endpoint
 {
@@ -40,6 +45,8 @@ public static class Endpoint
             }
 
             var rows = envelopes.Select(ToAdminRow).ToList();
+            rows.AddRange(await LoadTryOutRowsAsync(cosmos));
+            rows = rows.OrderByDescending(r => r.CreatedAt).ToList();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -83,11 +90,34 @@ public static class Endpoint
         return new AdminInterviewRow(
             env.id, env.candidateId, candidateName, env.createdAt,
             role, company, overallScore, questionCount,
-            env.isShared, env.hasVideo, env.isShared ? env.shareToken : null);
+            env.isShared, env.hasVideo, env.isShared ? env.shareToken : null, "interview");
+    }
+
+    // Cross-partition scan of the small "tryoutSessions" container (single logical partition, see CosmosService) —
+    // fine at today's volume, same trade-off as the "interviews" container's own scan above. Best-effort: admin
+    // oversight must never 500 just because this secondary source hiccups.
+    private static async Task<List<AdminInterviewRow>> LoadTryOutRowsAsync(CosmosService cosmos)
+    {
+        try
+        {
+            var container = cosmos.GetContainer("tryoutSessions");
+            var query = new QueryDefinition("SELECT * FROM c ORDER BY c.createdAt DESC");
+            var docs = new List<Explain.Api.Features.TryOut.Endpoint.TryOutSessionDoc>();
+            using var feed = container.GetItemQueryIterator<Explain.Api.Features.TryOut.Endpoint.TryOutSessionDoc>(query, requestOptions: new QueryRequestOptions { MaxItemCount = 200 });
+            while (feed.HasMoreResults && docs.Count < 500)
+            {
+                docs.AddRange(await feed.ReadNextAsync());
+            }
+            return docs.Select(d => new AdminInterviewRow(
+                d.id, $"tryout:{d.id}", string.IsNullOrWhiteSpace(d.name) ? "Anonymous (Try it live)" : $"{d.name} (Try it live)",
+                d.createdAt, d.subject, null, d.overallScore, d.answers.Count,
+                false, false, null, "tryout")).ToList();
+        }
+        catch (Exception) { return []; } // never let a hiccup in the secondary source break admin oversight of real interviews
     }
 }
 
 public record AdminInterviewRow(
     string Id, string CandidateId, string CandidateName, string CreatedAt,
     string? Role, string? Company, double OverallScore, int QuestionCount,
-    bool IsShared, bool HasVideo, string? ShareToken);
+    bool IsShared, bool HasVideo, string? ShareToken, string Source);

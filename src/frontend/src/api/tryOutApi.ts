@@ -40,5 +40,5 @@ async function post<T>(path: string, body: unknown): Promise<TryOutResult<T>> {
 }
 
 export const startTryOut = (topic: string) => post<TryOutStart>('/api/tryout/start', { topic });
-export const scoreTryOut = (topic: string, answers: { question: string; answer: string }[]) => post<TryOutFeedback>('/api/tryout/feedback', { topic, answers });
+export const scoreTryOut = (topic: string, answers: { question: string; answer: string }[], name: string) => post<TryOutFeedback>('/api/tryout/feedback', { topic, answers, name });
 export const coachTryOut = (topic: string, question: string, answer: string, name: string) => post<TryOutCoaching>('/api/tryout/coach', { topic, question, answer, name });

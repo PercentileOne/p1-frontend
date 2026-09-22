@@ -17,6 +17,7 @@ export interface AdminInterview {
   isShared: boolean;
   hasVideo: boolean;
   shareToken: string | null;
+  source: 'interview' | 'tryout';
 }
 
 export interface AdminInterviewListResponse {

@@ -173,7 +173,7 @@ export default function TryItLivePage() {
 
     // On the last question, start scoring now so the result is ready by the time the closing words finish.
     let scoring: Promise<TryOutResult<TryOutFeedback>> | null = null;
-    if (isLast && nextAnswers.length > 0) scoring = scoreTryOut(start.subject, nextAnswers);
+    if (isLast && nextAnswers.length > 0) scoring = scoreTryOut(start.subject, nextAnswers, firstName);
 
     if (!skip) {
       const c = await coachTryOut(start.subject, q, text, firstName);

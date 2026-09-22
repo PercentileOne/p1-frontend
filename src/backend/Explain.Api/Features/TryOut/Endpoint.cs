@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Explain.Api.Features.Entitlements;
+using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using Explain.Api.Infrastructure.Cosmos;
 using Explain.Api.Infrastructure.Sql;
@@ -32,7 +33,7 @@ public static class Endpoint
 
     public record StartRequest(string? Topic);
     public record AnswerIn(string? Question, string? Answer);
-    public record FeedbackRequest(string? Topic, List<AnswerIn>? Answers);
+    public record FeedbackRequest(string? Topic, List<AnswerIn>? Answers, string? Name);
     public record CoachRequest(string? Topic, string? Question, string? Answer, string? Name);
 
     public static void Map(WebApplication app)
@@ -97,7 +98,15 @@ public static class Endpoint
             try
             {
                 var result = await CallFeedbackModelAsync(topic, answers, factory, config);
-                return Results.Ok(Normalise(result, answers.Count));
+                var normalised = Normalise(result, answers.Count);
+
+                // Best-effort — a visitor's scored result must never fail to return just because saving it for admin
+                // visibility (Features/Interviews/Admin) had a hiccup. See SaveSessionAsync's own note on why this
+                // exists: previously nothing about a /try session was ever persisted, only rate-limit counters.
+                try { await SaveSessionAsync(topic, CleanName(req.Name), answers, normalised, ip, cosmos); }
+                catch (Exception ex) { logger.LogWarning(ex, "TryOut: failed to save session for admin visibility"); }
+
+                return Results.Ok(normalised);
             }
             catch (Exception ex)
             {
@@ -287,4 +296,28 @@ public static class Endpoint
     }
 
     private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNameCaseInsensitive = true };
+
+    // ── Admin visibility (Francis, 2026-09-22: "so I can see what people are doing") ───────────────────────────────
+    // Previously a /try session left no trace anywhere except the rate-limit counters above — Features/Interviews/
+    // Admin's "every completed interview across every candidate" list had no way to show these at all. Saved once
+    // scoring succeeds (not at /start), same "completed" framing as that page already uses for real interviews;
+    // a visitor who starts but never reaches a score simply doesn't show up, same as an abandoned real interview
+    // wouldn't either. See Features/Interviews/Admin/Endpoint.cs for how this is merged into that list.
+    private static async Task SaveSessionAsync(string topic, string? name, List<(string Question, string Answer)> answers, FeedbackModelResult result, string ip, CosmosService cosmos)
+    {
+        var container = cosmos.GetContainer("tryoutSessions");
+        var doc = new TryOutSessionDoc(
+            id: Guid.NewGuid().ToString(), pk: "tryout",
+            name: name, subject: topic,
+            questions: answers.Select(a => a.Question).ToList(),
+            answers: answers.Select(a => a.Answer).ToList(),
+            overallScore: result.Overall, headline: result.Headline,
+            ip: ip, createdAt: DateTimeOffset.UtcNow.ToString("O"));
+        await container.CreateItemAsync(doc, new PartitionKey(doc.pk));
+    }
+
+    public record TryOutSessionDoc(
+        string id, string pk, string? name, string subject,
+        List<string> questions, List<string> answers,
+        int overallScore, string? headline, string ip, string createdAt);
 }

@@ -284,6 +284,13 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("teamPosts", "/organisationId"));
 
+        // Saved "Try it live" demo sessions (Francis, 2026-09-22) — so admin's Interviews list can show free, anonymous
+        // 3-question demos alongside real candidate interviews, not just the TryOut daily-cap counters. Small volume,
+        // admin-only cross-partition read (same "SELECT * FROM c ORDER BY createdAt DESC" shape as the interviews
+        // container's own admin endpoint) — single logical partition, same reasoning as platformStats/newsFeedSources.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("tryoutSessions", "/pk"));
+
         await SeedPlatformStatsAsync();
         await SeedNewsFeedSourcesAsync();
     }
