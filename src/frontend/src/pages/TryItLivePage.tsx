@@ -26,6 +26,30 @@ const DIMENSIONS: { key: keyof TryOutFeedback['dimensions']; label: string }[] =
 const scoreColour = (score: number, outOf = 10) => { const s = outOf === 100 ? score / 10 : score; return s < 3 ? RED : s < 7 ? AMBER : GREEN; };
 const coachTone = (score: number) => score >= 7 ? { emoji: '⭐', label: 'Great answer', accent: GREEN } : score >= 3 ? { emoji: '💡', label: "Good — here's how to level up", accent: AMBER } : { emoji: '🎯', label: "Let's strengthen this", accent: RED };
 
+// Full-screen popup the Guardian Angel coach speaks through after each answer — mirrors the full interview's CoachingOverlow visual
+// language (avatar disc, tone colour, glow) but is self-contained since the try-it-live coaching payload is just {text, score}, not the
+// full interview's multi-line CoachingMessage. It renders for as long as phase === 'coaching' and unmounts itself the instant the parent
+// moves phase on (Francis, 2026-09-22: this IS the "click end -> Angel responds -> auto-continues" flow, no manual dismiss).
+function TryCoachPopup({ coaching }: { coaching: { text: string; score: number } | null }) {
+  const tone = coaching ? coachTone(coaching.score) : { emoji: '👼', label: 'Reading your answer…', accent: GREEN };
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <style>{'@keyframes tryPopupBg{from{opacity:0}to{opacity:1}}@keyframes tryPopupCard{from{opacity:0;transform:scale(.94) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}@keyframes tryPopupPulse{0%,100%{box-shadow:0 0 0 8px var(--tp-glow)}50%{box-shadow:0 0 0 3px var(--tp-glow)}}'}</style>
+      <div style={{ position: 'absolute', inset: 0, animation: 'tryPopupBg 0.3s ease' }} />
+      <div style={{ position: 'relative', width: '100%', maxWidth: 480, background: 'var(--bg2, #0f1829)', border: `1px solid ${tone.accent}55`, borderRadius: 22, padding: '32px 28px', boxShadow: `0 0 70px ${tone.accent}22, 0 24px 60px rgba(0,0,0,0.5)`, textAlign: 'center', animation: 'tryPopupCard 0.4s cubic-bezier(.16,1,.3,1)' }}>
+        <div style={{
+          width: 64, height: 64, borderRadius: '50%', margin: '0 auto 16px',
+          background: `linear-gradient(135deg,${tone.accent}44,${tone.accent}22)`, border: `2px solid ${tone.accent}77`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28,
+          ['--tp-glow' as string]: `${tone.accent}33`, animation: coaching ? 'none' : 'tryPopupPulse 1.6s ease-in-out infinite',
+        }}>{tone.emoji}</div>
+        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: tone.accent, marginBottom: 14 }}>Your Guardian Angel coach · {tone.label}</div>
+        <div style={{ fontSize: 16.5, lineHeight: 1.6 }}>{coaching?.text ?? 'One moment…'}</div>
+      </div>
+    </div>
+  );
+}
+
 type Phase = 'topic' | 'starting' | 'asking' | 'answering' | 'coaching' | 'scoring' | 'results' | 'blocked';
 
 export default function TryItLivePage() {
@@ -39,9 +63,12 @@ export default function TryItLivePage() {
   const [answers, setAnswers] = useState<{ question: string; answer: string }[]>([]);
   const [skipped, setSkipped] = useState(0);
   const [coaching, setCoaching] = useState<{ text: string; score: number } | null>(null);
+  const [skipTransition, setSkipTransition] = useState(false);
   const [feedback, setFeedback] = useState<TryOutFeedback | null>(null);
   const [message, setMessage] = useState('');
-  const [capped, setCapped] = useState(false);
+  // Why the flow is showing the 'blocked' card — drives both the headline and which button we offer (Francis, 2026-09-22:
+  // skipping every question isn't an error, so it needs its own honest headline, not "Something went wrong").
+  const [blockReason, setBlockReason] = useState<'capped' | 'noAnswers' | 'error'>('error');
   const [useAvatar, setUseAvatar] = useState(false);
   const [avatarState, setAvatarState] = useState<'off' | 'connecting' | 'live'>('off');
   const [shareOpen, setShareOpen] = useState(false);
@@ -53,6 +80,17 @@ export default function TryItLivePage() {
   const technical = useLiveAvatarSession('technical');
   const avatar = start?.interviewer === 'technical' ? technical : hr;
   const firstName = name.trim().split(/\s+/)[0] ?? '';
+
+  // Desktop/laptop only for now (Francis, 2026-09-22): on a touchscreen the live-avatar flow gets stuck after question one with no
+  // sound. Detecting touch primary input catches phones and tablets even where the user agent has been disguised; the UA regex is a
+  // backstop for older browsers without matchMedia. Computed once — a device doesn't change mid-visit.
+  const [isMobile] = useState(() => {
+    try {
+      const coarse = typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      const uaMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+      return coarse || uaMobile;
+    } catch { return false; }
+  });
 
   // Never leave a billable avatar connection or a voice running when the page is left.
   useEffect(() => () => { cancelSpeechRef.current?.(); void hr.disconnect(); void technical.disconnect(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -76,7 +114,7 @@ export default function TryItLivePage() {
     const hello = firstName ? `Hi ${firstName}, I'm ${s.interviewerName}.` : `Hi, I'm ${s.interviewerName}.`;
     // The first question also tells them exactly what to do — the most common confusion in early tests was not knowing how to answer or move on.
     const line = i === 0
-      ? `${hello} Thanks for joining — let's start your ${s.subject} interview. ${q} When you're ready, click the green microphone button to answer out loud, or just type your answer below. Then click Next question — or skip it if you'd rather pass.`
+      ? `${hello} Thanks for joining — let's start your ${s.subject} interview. ${q} When you're ready, click the green microphone button to answer out loud, or just type your answer below. Then click Submit answer — or skip it if you'd rather pass.`
       : q;
     await speakLine(line, s, viaAvatar);
     setPhase('answering');
@@ -84,10 +122,10 @@ export default function TryItLivePage() {
 
   async function begin() {
     const subject = topic.trim();
-    if (subject.length < 2) return;
-    setPhase('starting'); setMessage(''); setCapped(false);
+    if (subject.length < 2 || !name.trim()) return;
+    setPhase('starting'); setMessage('');
     const r = await startTryOut(subject);
-    if (!r.ok) { setMessage(r.message); setCapped(r.capped); setPhase('blocked'); return; }
+    if (!r.ok) { setMessage(r.message); setBlockReason(r.capped ? 'capped' : 'error'); setPhase('blocked'); return; }
     const s = r.data;
     setStart(s); setIndex(0); setAnswers([]); setSkipped(0); setFeedback(null); setShareOpen(false);
     // Must begin from this click so the browser lets audio play. Connecting can fail or be slow — the interview goes ahead either way.
@@ -105,8 +143,10 @@ export default function TryItLivePage() {
     void ask(0, s, live);
   }
 
-  // Answer (or skip) the current question: the Guardian Angel coach reacts, then the interviewer carries on by themselves —
-  // no waiting for a second click, as in the full interview.
+  // Answer (or skip) the current question: clicking Submit answer means "I'm done" — the Guardian Angel coach takes over straight
+  // away in a full-screen popup (Francis, 2026-09-22: the old flow went quiet here, waiting on a "Next question" click, which felt
+  // like it was stuck), speaks its reaction, then speaks the transition itself — never Wayne/Amina — and the popup closes into the
+  // next question automatically. No second click, at any point.
   async function submit(skip: boolean) {
     if (!start || busyRef.current) return;
     const text = skip ? '' : draft.trim();
@@ -118,6 +158,7 @@ export default function TryItLivePage() {
     const isLast = index + 1 >= start.questions.length;
     const nextAnswers = skip ? answers : [...answers, { question: q, answer: text }];
     if (skip) setSkipped(n => n + 1); else setAnswers(nextAnswers);
+    setSkipTransition(skip);
     setPhase('coaching'); setCoaching(null);
 
     // On the last question, start scoring now so the result is ready by the time the closing words finish.
@@ -130,27 +171,28 @@ export default function TryItLivePage() {
       setCoaching(coach);
       await speakAsCoach(coach.text);
     }
+    // The Guardian Angel carries the conversation forward, not the interviewer — Wayne/Amina stay silent until the next question.
     const transition = skip
-      ? (isLast ? "No problem. That's your three questions — let me put your result together." : "No problem — let's move on.")
-      : (isLast ? "Thank you. That's your three questions — let me put your result together." : "Okay, let's continue your interview.");
-    await speakLine(transition, start, useAvatar);
+      ? (isLast ? "No problem. That's your three questions — let me put your result together." : "No problem — let's continue.")
+      : (isLast ? "Thank you. That's your three questions — let me put your result together." : "Let's continue.");
+    await speakAsCoach(transition);
 
     if (!isLast) { setIndex(index + 1); busyRef.current = false; void ask(index + 1, start, useAvatar); return; }
 
     // Done: stop the (billed) avatar connection straight away.
     void avatar.disconnect(); setAvatarState('off');
     setPhase('scoring');
-    if (!scoring) { setMessage("You skipped every question, so there's nothing to score yet. Try again whenever you're ready — even a short answer works."); setCapped(false); setPhase('blocked'); busyRef.current = false; return; }
+    if (!scoring) { setMessage("You didn't answer any of the questions, so there's nothing for us to score. Have another go whenever you're ready — even a short answer is enough."); setBlockReason('noAnswers'); setPhase('blocked'); busyRef.current = false; return; }
     const r = await scoring;
     busyRef.current = false;
-    if (!r.ok) { setMessage(r.message); setCapped(r.capped); setPhase('blocked'); return; }
+    if (!r.ok) { setMessage(r.message); setBlockReason(r.capped ? 'capped' : 'error'); setPhase('blocked'); return; }
     setFeedback(r.data); setPhase('results');
   }
 
   function restart() {
     cancelSpeechRef.current?.(); busyRef.current = false;
     void hr.disconnect(); void technical.disconnect();
-    setStart(null); setAnswers([]); setSkipped(0); setFeedback(null); setDraft(''); setCoaching(null); setIndex(0); setAvatarState('off'); setUseAvatar(false); setShareOpen(false); setPhase('topic');
+    setStart(null); setAnswers([]); setSkipped(0); setFeedback(null); setDraft(''); setCoaching(null); setSkipTransition(false); setIndex(0); setAvatarState('off'); setUseAvatar(false); setShareOpen(false); setPhase('topic');
   }
 
   // ── Sharing ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -185,6 +227,17 @@ export default function TryItLivePage() {
           <a href="https://www.theinterviewchair.com" style={{ fontSize: 13, color: 'var(--text-3, #94a3b8)', textDecoration: 'none' }}>← Back to site</a>
         </div>
 
+        {isMobile ? (
+          <div style={{ ...card, textAlign: 'center', padding: '40px 24px' }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>💻</div>
+            <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 10 }}>This live demo is desktop &amp; laptop only, for now</div>
+            <div style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--text-2, #cbd5e1)' }}>
+              We're still polishing the live-avatar experience for phones and tablets. Please open this page on a computer to try it — it only takes about 3 minutes.
+            </div>
+            <a href="https://www.theinterviewchair.com" style={{ ...primary, marginTop: 20 }}>← Back to the homepage</a>
+          </div>
+        ) : (<>
+
         {phase === 'topic' && (
           <div>
             <div style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: GREEN, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 20, padding: '5px 12px', marginBottom: 14 }}>Free · no account · about 3 minutes</div>
@@ -201,10 +254,10 @@ export default function TryItLivePage() {
                   <button key={x} onClick={() => setTopic(x)} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border, rgba(255,255,255,0.12))', color: 'var(--text-2, #cbd5e1)', borderRadius: 20, padding: '6px 12px', fontSize: 12.5, cursor: 'pointer' }}>{x}</button>
                 ))}
               </div>
-              <label style={labelStyle} htmlFor="tryName">How should we address you? <span style={{ fontWeight: 400 }}>(optional)</span></label>
+              <label style={labelStyle} htmlFor="tryName">What should we call you?</label>
               <input id="tryName" value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && void begin()} maxLength={30}
                 placeholder="e.g. Sam" style={{ ...inputStyle, marginBottom: 18 }} autoComplete="given-name" />
-              <button onClick={() => void begin()} disabled={topic.trim().length < 2} style={{ ...primary, width: '100%', opacity: topic.trim().length < 2 ? 0.5 : 1 }}>Start my mini interview →</button>
+              <button onClick={() => void begin()} disabled={topic.trim().length < 2 || !name.trim()} style={{ ...primary, width: '100%', opacity: (topic.trim().length < 2 || !name.trim()) ? 0.5 : 1 }}>Start my mini interview →</button>
               <div style={{ fontSize: 12, color: 'var(--text-3, #94a3b8)', marginTop: 12, textAlign: 'center' }}>You can speak your answers or type them. Nothing is saved unless you create an account.</div>
             </div>
             <div style={{ textAlign: 'center', marginTop: 16 }}>
@@ -256,41 +309,35 @@ export default function TryItLivePage() {
               </div>
             </div>
 
-            {phase !== 'scoring' && (
+            {(phase === 'asking' || phase === 'answering') && (
               <div style={{ ...card, marginTop: 14 }}>
-                {phase === 'coaching'
-                  ? (() => {
-                    const tone = coaching ? coachTone(coaching.score) : { emoji: '👼', label: 'Considering your answer…', accent: GREEN };
-                    return (
-                      <div style={{ borderLeft: `4px solid ${tone.accent}`, paddingLeft: 16, boxShadow: `0 0 34px ${tone.accent}22` }}>
-                        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: tone.accent, marginBottom: 8 }}>👼 Your Guardian Angel coach · {tone.emoji} {tone.label}</div>
-                        <div style={{ fontSize: 16, lineHeight: 1.6 }}>{coaching?.text ?? 'Listening to how you did…'}</div>
+                <div style={{ fontSize: 17, lineHeight: 1.5, fontWeight: 700, marginBottom: 14 }}>{start.questions[index]}</div>
+                {phase === 'answering' ? (
+                  <>
+                    <div style={{ fontSize: 13.5, color: 'var(--text-2, #cbd5e1)', marginBottom: 10 }}>
+                      Click the <strong style={{ color: GREEN }}>green microphone</strong> to answer out loud, or type your answer. Then click <strong>{index + 1 < start.questions.length ? 'Submit answer' : 'Finish & get my score'}</strong>.
+                    </div>
+                    <textarea value={draft} onChange={e => setDraft(e.target.value)} rows={4} placeholder="Type your answer here, or use the microphone…" style={{ ...inputStyle, resize: 'vertical' }} />
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', marginTop: 12 }}>
+                      <VoiceInput onTranscript={text => setDraft(d => (d ? d + ' ' : '') + text)} />
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        <button onClick={() => void submit(true)} style={ghost}>Skip</button>
+                        <button onClick={() => void submit(false)} disabled={!draft.trim()} style={{ ...primary, opacity: draft.trim() ? 1 : 0.5 }}>
+                          {index + 1 < start.questions.length ? 'Submit answer →' : 'Finish & get my score →'}
+                        </button>
                       </div>
-                    );
-                  })()
-                  : (
-                    <>
-                      <div style={{ fontSize: 17, lineHeight: 1.5, fontWeight: 700, marginBottom: 14 }}>{start.questions[index]}</div>
-                      {phase === 'answering' ? (
-                        <>
-                          <div style={{ fontSize: 13.5, color: 'var(--text-2, #cbd5e1)', marginBottom: 10 }}>
-                            Click the <strong style={{ color: GREEN }}>green microphone</strong> to answer out loud, or type your answer. Then click <strong>Next question</strong>.
-                          </div>
-                          <textarea value={draft} onChange={e => setDraft(e.target.value)} rows={4} placeholder="Type your answer here, or use the microphone…" style={{ ...inputStyle, resize: 'vertical' }} />
-                          <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', marginTop: 12 }}>
-                            <VoiceInput onTranscript={text => setDraft(d => (d ? d + ' ' : '') + text)} />
-                            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                              <button onClick={() => void submit(true)} style={ghost}>Skip</button>
-                              <button onClick={() => void submit(false)} disabled={!draft.trim()} style={{ ...primary, opacity: draft.trim() ? 1 : 0.5 }}>
-                                {index + 1 < start.questions.length ? 'Next question →' : 'Finish & get my score →'}
-                              </button>
-                            </div>
-                          </div>
-                        </>
-                      ) : <div style={{ fontSize: 13, color: 'var(--text-3, #94a3b8)' }}>Listen to the question — then it's your turn…</div>}
-                    </>
-                  )}
+                    </div>
+                  </>
+                ) : <div style={{ fontSize: 13, color: 'var(--text-3, #94a3b8)' }}>Listen to the question — then it's your turn…</div>}
               </div>
+            )}
+
+            {/* The moment they submit an answer, the Guardian Angel takes over in a full-screen popup — reacts, says "let's continue"
+                itself, then closes straight into the next question with no click needed (Francis, 2026-09-22). */}
+            {phase === 'coaching' && (
+              skipTransition
+                ? <div style={{ ...card, marginTop: 14, textAlign: 'center', fontSize: 13.5, color: 'var(--text-3, #94a3b8)' }}>👼 No problem — let's continue…</div>
+                : <TryCoachPopup coaching={coaching} />
             )}
             {phase === 'scoring' && <div style={{ ...card, marginTop: 14, textAlign: 'center', fontWeight: 700 }}>Scoring your answers…</div>}
           </div>
@@ -375,13 +422,16 @@ export default function TryItLivePage() {
 
         {phase === 'blocked' && (
           <div style={{ ...card, textAlign: 'center', padding: '36px 22px' }}>
-            <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 10 }}>{capped ? "That's the free tries for now" : 'Something went wrong'}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 10 }}>
+              {blockReason === 'capped' ? "That's the free tries for now" : blockReason === 'noAnswers' ? "You didn't answer any questions" : 'Something went wrong'}
+            </div>
             <div style={{ fontSize: 14.5, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', marginBottom: 20 }}>{message}</div>
-            {capped
+            {blockReason === 'capped'
               ? <a href={REGISTER_URL} style={primary}>Create a free account →</a>
               : <button onClick={restart} style={primary}>Try again</button>}
           </div>
         )}
+        </>)}
       </div>
     </div>
   );
