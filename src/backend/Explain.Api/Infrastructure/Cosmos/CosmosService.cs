@@ -278,6 +278,12 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("companyProfiles", "/id"));
 
+        // Recruiter/employer portal "Team" page (Francis, 2026-09-22) — a shared message feed an organisation's own people post to
+        // and read, like an internal Teams channel. Partition key = /organisationId so one org's whole feed is single-partition,
+        // same reasoning as interview-preps' /recruiterId above. See Features/Organisations/Team/Endpoint.cs.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("teamPosts", "/organisationId"));
+
         await SeedPlatformStatsAsync();
         await SeedNewsFeedSourcesAsync();
     }

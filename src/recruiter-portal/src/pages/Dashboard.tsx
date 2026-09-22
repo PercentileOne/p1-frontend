@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { LayoutDashboard, BarChart2, Settings, Send, Bell, Search, Wallet } from 'lucide-react'
+import { LayoutDashboard, BarChart2, Settings, Send, Bell, Search, Wallet, Users } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import CvAnalysisHistory from './CvAnalysisHistory'
 import InterviewPacks from './InterviewPacks'
@@ -15,6 +15,7 @@ import PackHistory from './PackHistory'
 import ScreenCandidates from './ScreenCandidates'
 import InterviewHistory from './InterviewHistory'
 import Alerts from './Alerts'
+import TeamPage from './TeamPage'
 
 // Streamlined 2026-08-31: Francis wants the recruiter portal to work alongside recruiters'
 // existing ATS/CRM tooling rather than replace it, so anything that overlaps with tools
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { Icon: Send,            label: 'Interview Preps' },
   { Icon: Wallet,          label: 'CV Insights' },
   { Icon: Bell,            label: 'Alerts' },
+  { Icon: Users,           label: 'Team' },
   { Icon: Search,          label: 'Candidate Marketplace' },
   { Icon: BarChart2,       label: 'Analytics' },
   { Icon: Settings,        label: 'Settings' },
@@ -270,7 +272,8 @@ export default function Dashboard() {
         {activeNav === 'Pack History' && <PackHistory />}
         {activeNav === 'My Interviews' && <InterviewHistory />}
         {activeNav === 'Alerts' && <Alerts />}
-        {activeNav !== 'Dashboard' && activeNav !== 'Interview Preps' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'CV Insights' && activeNav !== 'Candidate Marketplace' && activeNav !== 'Screen' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && activeNav !== 'Pack History' && activeNav !== 'My Interviews' && activeNav !== 'Alerts' && (
+        {activeNav === 'Team' && <TeamPage />}
+        {activeNav !== 'Dashboard' && activeNav !== 'Interview Preps' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'CV Insights' && activeNav !== 'Candidate Marketplace' && activeNav !== 'Screen' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && activeNav !== 'Pack History' && activeNav !== 'My Interviews' && activeNav !== 'Alerts' && activeNav !== 'Team' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--text-3)', fontSize: 14 }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
             <div style={{ fontWeight: 700, color: 'var(--text-2)' }}>{activeNav}</div>

@@ -69,4 +69,15 @@ public class EndpointMappingSmokeTests
         var patterns = ((IEndpointRouteBuilder)app).DataSources.SelectMany(d => d.Endpoints).OfType<RouteEndpoint>().Select(r => r.RoutePattern.RawText).ToList();
         Assert.Contains("/api/session-passes/webhook", patterns);
     }
+
+    [Fact]
+    public void Team_page_routes_build()
+    {
+        var app = AppWithServices();
+        Explain.Api.Features.Organisations.Team.Endpoint.Map(app);
+        var patterns = ((IEndpointRouteBuilder)app).DataSources.SelectMany(d => d.Endpoints).OfType<RouteEndpoint>().Select(r => r.RoutePattern.RawText).ToList();
+        Assert.Contains("/api/organisations/team", patterns);
+        Assert.Contains("/api/organisations/team/posts", patterns);
+        Assert.Contains("/api/organisations/team/posts/{id}", patterns);
+    }
 }
