@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { previewQuestion, getPreviewAnswer, getHotTopics, startQuestionPackCheckout, type QuestionPackDifficulty } from '../api/questionPacksApi';
+import { speak } from '../api/ttsApi';
 
 // "Printable Interview Questions" (Francis, 2026-09-22) — the standalone, no-login, no-live-interview product: name a job role,
 // see one free sample question (with a revealable model answer), pay a small one-off fee, land on /questions/success with a
@@ -36,6 +37,18 @@ export default function QuestionPackPage() {
   const [error, setError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Read-aloud, Wayne's voice (same ElevenLabs proxy + role every /try session uses — see ttsApi.ts's speak()).
+  const [speakingWhich, setSpeakingWhich] = useState<'question' | 'answer' | null>(null);
+  const cancelSpeechRef = useRef<(() => void) | null>(null);
+  useEffect(() => () => cancelSpeechRef.current?.(), []); // never leave audio playing after navigating away
+
+  const toggleSpeak = useCallback((which: 'question' | 'answer', text: string) => {
+    cancelSpeechRef.current?.();
+    if (speakingWhich === which) { setSpeakingWhich(null); return; }
+    setSpeakingWhich(which);
+    cancelSpeechRef.current = speak(text, 'technical', () => setSpeakingWhich(null));
+  }, [speakingWhich]);
+
   const addFocusChip = useCallback((raw: string) => {
     const value = raw.trim();
     if (!value) return;
@@ -56,6 +69,7 @@ export default function QuestionPackPage() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     const trimmed = role.trim();
     setAnswer(null); setAnswerRevealed(false); // a new sample means any previously revealed answer no longer applies
+    cancelSpeechRef.current?.(); setSpeakingWhich(null); // a new sample means any read-aloud in progress no longer matches what's on screen
     if (trimmed.length < 2) { setSample(null); return; }
     debounceRef.current = setTimeout(async () => {
       setSampleLoading(true);
@@ -167,13 +181,19 @@ export default function QuestionPackPage() {
 
           {(sampleLoading || sample) && (
             <div style={{ background: 'rgba(52,211,153,0.06)', border: `1px solid ${GREEN}33`, borderRadius: 14, padding: '16px 18px', marginBottom: 22 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: GREEN, marginBottom: 8 }}>Sample question — free preview</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: GREEN }}>Sample question — free preview</div>
+                {sample && !sampleLoading && <SpeakerButton active={speakingWhich === 'question'} onClick={() => toggleSpeak('question', sample)} />}
+              </div>
               <div style={{ fontSize: 14.5, lineHeight: 1.6, color: sampleLoading ? 'rgba(255,255,255,0.4)' : '#fff' }}>{sampleLoading ? 'Thinking of a good one…' : sample}</div>
 
               {sample && !sampleLoading && (
                 answerRevealed ? (
                   <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px dashed rgba(255,255,255,0.12)' }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: 8 }}>Example answer</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>Example answer</div>
+                      {answer && !answerLoading && <SpeakerButton active={speakingWhich === 'answer'} onClick={() => toggleSpeak('answer', answer)} />}
+                    </div>
                     <div style={{ fontSize: 14, lineHeight: 1.65, color: 'rgba(255,255,255,0.85)' }}>
                       {answerLoading ? 'Writing a strong example answer…' : answer}
                     </div>
@@ -203,5 +223,17 @@ export default function QuestionPackPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function SpeakerButton({ active, onClick }: { active: boolean; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} aria-label={active ? 'Stop reading aloud' : 'Read aloud'} title={active ? 'Stop' : "Read aloud — Wayne's voice"} style={{
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+      background: active ? `${GREEN}33` : 'rgba(255,255,255,0.08)', border: `1px solid ${active ? GREEN : 'rgba(255,255,255,0.15)'}`,
+      color: active ? GREEN : 'rgba(255,255,255,0.6)', fontSize: 11, cursor: 'pointer',
+    }}>
+      {active ? '⏸' : '🔊'}
+    </button>
   );
 }
