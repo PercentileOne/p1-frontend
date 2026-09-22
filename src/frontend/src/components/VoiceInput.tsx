@@ -409,10 +409,8 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
                 {processingLabel}
               </motion.div>
             )}
-            {micState === 'idle' && (
-              <motion.div key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                style={{ fontSize: '12px', color: 'var(--text-3)' }}>Ready</motion.div>
-            )}
+            {/* Idle shows nothing here — "Ready" was a stray, redundant label; the mic button and the "Your turn" pill already
+                say everything an idle state needs to (Francis, 2026-09-22). */}
           </AnimatePresence>
         </div>
       </div>

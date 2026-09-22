@@ -335,14 +335,17 @@ export default function TryItLivePage() {
                       Click the <strong style={{ color: GREEN }}>green microphone</strong> to answer out loud, or type your answer. Then click <strong>{index + 1 < start.questions.length ? 'Submit answer' : 'Finish & get my score'}</strong>.
                     </div>
                     <textarea value={draft} onChange={e => setDraft(e.target.value)} rows={4} placeholder="Type your answer here, or use the microphone…" style={{ ...inputStyle, resize: 'vertical' }} />
-                    <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', marginTop: 12 }}>
+                    {/* The mic always gets its own full-width row — the same layout the full interview uses. Sharing a row with
+                        the buttons let its waveform's width (and so the whole row) jump around as the card resized
+                        (Francis, 2026-09-22). */}
+                    <div style={{ marginTop: 12 }}>
                       <VoiceInput onTranscript={text => setDraft(d => (d ? d + ' ' : '') + text)} />
-                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    </div>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end', marginTop: 12 }}>
                         <button onClick={() => void submit(true)} style={ghost}>Skip</button>
                         <button onClick={() => void submit(false)} disabled={!draft.trim()} style={{ ...primary, opacity: draft.trim() ? 1 : 0.5 }}>
                           {index + 1 < start.questions.length ? 'Submit answer →' : 'Finish & get my score →'}
                         </button>
-                      </div>
                     </div>
                   </>
                 ) : <div style={{ fontSize: 13, color: 'var(--text-3, #94a3b8)' }}>Listen to the question — then it's your turn…</div>}
