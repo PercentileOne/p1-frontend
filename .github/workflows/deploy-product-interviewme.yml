@@ -56,8 +56,7 @@ jobs:
           mkdir -p deploy-product/img
           cp src/viewme/public/img/*.webp deploy-product/img/
           cp src/viewme/public/staticwebapp.config.json deploy-product/staticwebapp.config.json
-          cp src/viewme/public/im-social-card.svg deploy-product/im-social-card.svg
-          cp src/viewme/public/im-social-card.png deploy-product/im-social-card.png
+          cp src/viewme/public/social-card.png deploy-product/social-card.png
           cp src/viewme/public/favicon-512.png deploy-product/favicon-512.png
           cp src/viewme/public/favicon.ico deploy-product/favicon.ico
           cp src/viewme/public/favicon.svg deploy-product/favicon.svg

@@ -5,7 +5,7 @@
 // WhatsApp etc. shows the same generic homepage preview, since those crawlers never
 // run JavaScript and only ever see whatever static HTML index.html always contains.
 const EXPLAIN_API_URL = process.env.EXPLAIN_API_URL || 'https://explain-api.azurewebsites.net';
-const FALLBACK_IMAGE = 'https://www.theinterviewchair.com/im-social-card.png';
+const FALLBACK_IMAGE = 'https://www.theinterviewchair.com/social-card.png';
 
 function escapeHtml(str) {
   return String(str)
