@@ -1328,6 +1328,15 @@ export default function LearnPanel({ initialTopic }: { initialTopic?: string } =
     return () => { if (genTimer.current) clearInterval(genTimer.current); };
   }, [generating]);
 
+  // Arriving here with a topic already chosen (from the exam picker's "Learn this first", or an
+  // exam/interview summary's weak-area link) should go straight to a generated course, not just
+  // pre-fill the search box and wait for another click (Francis, 2026-09-23). Mount-only — a plain
+  // click on the Learn nav item passes no studyTopic, so this never fires uninvited.
+  useEffect(() => {
+    if (initialTopic && initialTopic.trim().length >= 3) void handleGenerate(initialTopic);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function handleQueryChange(val: string) {
     setQuery(val);
     setError('');

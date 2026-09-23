@@ -312,6 +312,22 @@ export default function CertExamStart() {
           {attemptedStart && !selected && (
             <div style={{ fontSize: '12px', color: '#EF4444', marginTop: '10px' }}>Search or browse and pick an exam to continue.</div>
           )}
+
+          {selected && (
+            <button
+              onClick={() => {
+                logFlowEvent('CERT_LEARN_FIRST_CLICKED', { certId: selected.id, examCode: selected.examCode });
+                navigate('/dashboard?tab=learn', { state: { studyTopic: selected.name } });
+              }}
+              style={{
+                marginTop: '14px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '12px',
+                padding: '12px', color: '#A5B4FC', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              📚 Learn this first — generate a course on {selected.name}
+            </button>
+          )}
         </div>
 
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', marginBottom: '16px', padding: '20px' }}>

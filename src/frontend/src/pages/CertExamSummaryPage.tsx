@@ -270,7 +270,7 @@ export default function CertExamSummaryPage() {
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
           <button onClick={toggleDebrief} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '13px', color: 'var(--text)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
             {michelleActive ? 'Stop' : "Hear Michelle's feedback"}
           </button>
@@ -278,6 +278,16 @@ export default function CertExamSummaryPage() {
             <Download size={14} /> PDF
           </button>
         </div>
+
+        {/* General "go study this on Learn" — distinct from the per-domain weak-area links above,
+            which only appear when a domain scored under 65%. This one's always here, keyed to the
+            exam itself, whether you passed or not (Francis, 2026-09-23). */}
+        <button
+          onClick={() => goToLearn(session.certName)}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '12px', padding: '13px', color: '#A5B4FC', fontSize: '13px', fontWeight: 700, cursor: 'pointer', marginBottom: '20px' }}
+        >
+          📚 Study {session.certName} on Learn
+        </button>
 
         <button onClick={() => navigate('/cert-exam/start')} style={{ width: '100%', background: 'linear-gradient(135deg, #a78bfa, #7c3aed)', color: '#fff', border: 'none', borderRadius: '13px', padding: '15px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>
           Try another exam
