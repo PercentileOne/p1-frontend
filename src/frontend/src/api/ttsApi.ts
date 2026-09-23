@@ -64,6 +64,10 @@ const PHONETIC: [RegExp, string][] = [
   [/\bLLMs\b/g, 'L L Ms'],
   [/\bRAG\b/g, 'R A G'],
   [/\bMLOps\b/gi, 'M L Ops'],
+  // Em/en dashes pass straight through to ElevenLabs untouched — live-reported 2026-09-23 as a
+  // garbled "waaarb..."-type blip right at the dash's position (Wayne's /try greeting: "Thanks
+  // for joining — let's start..."). Comma gives the same natural pause without the artifact.
+  [/\s*[—–]\s*/g, ', '],
   [/&amp;/g, ' and '],
   [/&/g, ' and '],
   [/\+/g, ' plus '],
