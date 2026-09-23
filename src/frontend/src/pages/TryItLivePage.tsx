@@ -83,13 +83,17 @@ export default function TryItLivePage() {
   const firstName = name.trim().split(/\s+/)[0] ?? '';
 
   // Desktop/laptop only for now (Francis, 2026-09-22): on a touchscreen the live-avatar flow gets stuck after question one with no
-  // sound. Detecting touch primary input catches phones and tablets even where the user agent has been disguised; the UA regex is a
-  // backstop for older browsers without matchMedia. Computed once — a device doesn't change mid-visit.
+  // sound. `(pointer: coarse)` ALONE false-positives on any touchscreen Windows laptop (Surface, most 2-in-1s) — Chrome reports
+  // coarse if ANY connected pointer is coarse, even with a mouse/trackpad also attached, which incorrectly gated real desktop
+  // visitors off the live demo (found 2026-09-23, right as this page went public — a false gate here is worse than no gate at all).
+  // Requiring `(hover: none)` too correctly excludes those: a touchscreen laptop still reports hover:hover because of its
+  // mouse/trackpad, while an actual phone/tablet has no hover-capable input at all. The UA regex is a backstop for older browsers
+  // without matchMedia. Computed once — a device doesn't change mid-visit.
   const [isMobile] = useState(() => {
     try {
-      const coarse = typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      const touchOnly = typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(pointer: coarse) and (hover: none)').matches;
       const uaMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
-      return coarse || uaMobile;
+      return touchOnly || uaMobile;
     } catch { return false; }
   });
 
@@ -258,6 +262,37 @@ export default function TryItLivePage() {
           </div>
         ) : (<>
 
+        {/* Interviewer video box — ALWAYS mounted from the very first non-mobile render, never
+            gated by phase/useAvatar/start. Found 2026-09-24: this page previously only rendered
+            <video ref={avatar.setVideoEl}> once useAvatar flipped true, which reintroduced the
+            exact connect()-to-attach() jitter-buffer-backlog gap already root-caused and fixed on
+            InterviewRoomPage.tsx/TalkRoomPage.tsx on 2026-09-14 (see
+            project-liveavatar-lipsync-investigation memory) — that fix never made it to this
+            page, built a week later. Both hr/technical <video> elements have STABLE refs (never
+            swapped, never conditionally rendered) so attach() fires the instant each session's
+            stream is ready, regardless of which phase the UI happens to be showing. Only one
+            ever actually connects per trial (whichever start.interviewer picks); the other stays
+            blank forever, harmless. Visibility toggles via opacity only, never mount/unmount. */}
+        <div style={
+          (phase === 'asking' || phase === 'answering' || phase === 'coaching' || phase === 'scoring')
+            ? { position: 'relative', borderRadius: 18, overflow: 'hidden', background: '#05080f', border: '1px solid var(--border, rgba(255,255,255,0.1))', aspectRatio: '16 / 9', marginBottom: 14 }
+            : { position: 'absolute', inset: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }
+        }>
+          <video ref={hr.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: useAvatar && avatar === hr ? 1 : 0 }} />
+          <video ref={technical.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: useAvatar && avatar === technical ? 1 : 0 }} />
+          {!useAvatar && start && (
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+              <div style={{ width: 84, height: 84, borderRadius: '50%', background: `linear-gradient(135deg,${GREEN},#047857)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34, fontWeight: 900, color: '#fff', boxShadow: phase === 'asking' ? '0 0 0 10px rgba(52,211,153,0.15)' : 'none', transition: 'box-shadow 0.3s' }}>{start.interviewerName[0]}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-3, #94a3b8)' }}>Voice interview</div>
+            </div>
+          )}
+          {start && (
+            <div style={{ position: 'absolute', left: 12, bottom: 12, background: 'rgba(0,0,0,0.6)', borderRadius: 8, padding: '5px 10px', fontSize: 12, fontWeight: 700 }}>
+              {start.interviewerName} · Interviewer{phase === 'asking' ? ' · speaking…' : ''}
+            </div>
+          )}
+        </div>
+
         {phase === 'topic' && (
           <div>
             <div style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: GREEN, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 20, padding: '5px 12px', marginBottom: 14 }}>Free · no account · about 3 minutes</div>
@@ -322,19 +357,7 @@ export default function TryItLivePage() {
               <div style={{ fontSize: 13, color: 'var(--text-3, #94a3b8)', overflowWrap: 'anywhere' }}>Interview for <strong style={{ color: 'var(--text, #f1f5f9)' }}>{start.subject}</strong>{start.unlimited && <span style={{ marginLeft: 10, fontSize: 11, fontWeight: 800, color: AMBER }}>· demo mode — no limits</span>}</div>
               <div style={{ fontSize: 12, fontWeight: 800, color: GREEN, whiteSpace: 'nowrap' }}>Question {Math.min(index + 1, start.questions.length)} of {start.questions.length}</div>
             </div>
-            <div style={{ position: 'relative', borderRadius: 18, overflow: 'hidden', background: '#05080f', border: '1px solid var(--border, rgba(255,255,255,0.1))', aspectRatio: '16 / 9' }}>
-              {useAvatar
-                ? <video ref={avatar.setVideoEl} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                    <div style={{ width: 84, height: 84, borderRadius: '50%', background: `linear-gradient(135deg,${GREEN},#047857)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34, fontWeight: 900, color: '#fff', boxShadow: phase === 'asking' ? '0 0 0 10px rgba(52,211,153,0.15)' : 'none', transition: 'box-shadow 0.3s' }}>{start.interviewerName[0]}</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-3, #94a3b8)' }}>Voice interview</div>
-                  </div>
-                )}
-              <div style={{ position: 'absolute', left: 12, bottom: 12, background: 'rgba(0,0,0,0.6)', borderRadius: 8, padding: '5px 10px', fontSize: 12, fontWeight: 700 }}>
-                {start.interviewerName} · Interviewer{phase === 'asking' ? ' · speaking…' : ''}
-              </div>
-            </div>
+            {/* Video box now lives permanently mounted above, outside this phase gate — see its own comment. */}
 
             {(phase === 'asking' || phase === 'answering') && (
               <div style={{ ...card, marginTop: 14 }}>
