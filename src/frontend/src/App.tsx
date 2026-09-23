@@ -17,6 +17,7 @@ import RegisterPage from "./pages/RegisterPage";
 import TryItLivePage from "./pages/TryItLivePage";
 import QuestionPackPage from "./pages/QuestionPackPage";
 import QuestionPackSuccessPage from "./pages/QuestionPackSuccessPage";
+import QuestionGiftPage from "./pages/QuestionGiftPage";
 import CockpitShell from "./pages/CockpitShell";
 import LearningShell from "./pages/LearningShell";
 import LearningCards from "./pages/LearningCards";
@@ -144,6 +145,7 @@ export default function App() {
       <Route path="/try" element={<TryItLivePage />} />   {/* public "Try it live" — no sign-in (see Features/TryOut) */}
       <Route path="/questions" element={<QuestionPackPage />} />   {/* public "Printable Interview Questions" — no sign-in (see Features/QuestionPacks) */}
       <Route path="/questions/success" element={<QuestionPackSuccessPage />} />
+      <Route path="/questions/gift/:id" element={<QuestionGiftPage />} />   {/* public — recruiter-gifted client questions, no sign-in (see Features/ClientGifts) */}
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/cockpit" element={<CockpitShell />} />

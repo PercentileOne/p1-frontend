@@ -13,17 +13,15 @@ namespace Explain.Api.Features.QuestionPacks;
 /// </summary>
 public class QuestionPackService(AppDbContext db)
 {
-    public record QaPair(string Question, string Answer);
-
-    public static List<QaPair> ParseQuestions(string json)
+    public static List<QuestionPackGenerator.QaPair> ParseQuestions(string json)
     {
-        try { return JsonSerializer.Deserialize<List<QaPair>>(json, JsonOpts) ?? []; }
+        try { return JsonSerializer.Deserialize<List<QuestionPackGenerator.QaPair>>(json, JsonOpts) ?? []; }
         catch { return []; }
     }
 
     private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNameCaseInsensitive = true };
 
-    public async Task<QuestionPack> CreatePendingAsync(string jobRole, string? focusAreas, string difficulty, List<QaPair> questions, decimal amountGbp)
+    public async Task<QuestionPack> CreatePendingAsync(string jobRole, string? focusAreas, string difficulty, List<QuestionPackGenerator.QaPair> questions, decimal amountGbp)
     {
         var pack = new QuestionPack
         {

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { LayoutDashboard, BarChart2, Settings, Send, Bell, Search, Wallet, Users } from 'lucide-react'
+import { LayoutDashboard, BarChart2, Settings, Send, Bell, Search, Wallet, Users, Gift } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import CvAnalysisHistory from './CvAnalysisHistory'
 import InterviewPacks from './InterviewPacks'
 import InterviewPreps from './InterviewPreps'
+import ClientGifts from './ClientGifts'
 import Candidates from './Candidates'
 import CandidateSearch from './CandidateSearch'
 import Analytics from './Analytics'
@@ -27,6 +28,7 @@ import TeamPage from './TeamPage'
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: 'Dashboard' },
   { Icon: Send,            label: 'Interview Preps' },
+  { Icon: Gift,            label: 'Client Gifts' },
   { Icon: Wallet,          label: 'CV Insights' },
   { Icon: Bell,            label: 'Alerts' },
   { Icon: Users,           label: 'Team' },
@@ -259,6 +261,7 @@ export default function Dashboard() {
 
         {/* ── SUB-PAGES ── */}
         {activeNav === 'Interview Preps' && <InterviewPreps />}
+        {activeNav === 'Client Gifts' && <ClientGifts />}
         {activeNav === 'Interview Packs' && <InterviewPacks />}
         {activeNav === 'Candidates' && <Candidates />}
         {activeNav === 'CV Insights' && <CvAnalysisHistory />}
@@ -273,7 +276,7 @@ export default function Dashboard() {
         {activeNav === 'My Interviews' && <InterviewHistory />}
         {activeNav === 'Alerts' && <Alerts />}
         {activeNav === 'Team' && <TeamPage />}
-        {activeNav !== 'Dashboard' && activeNav !== 'Interview Preps' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'CV Insights' && activeNav !== 'Candidate Marketplace' && activeNav !== 'Screen' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && activeNav !== 'Pack History' && activeNav !== 'My Interviews' && activeNav !== 'Alerts' && activeNav !== 'Team' && (
+        {activeNav !== 'Dashboard' && activeNav !== 'Interview Preps' && activeNav !== 'Client Gifts' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'CV Insights' && activeNav !== 'Candidate Marketplace' && activeNav !== 'Screen' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && activeNav !== 'Pack History' && activeNav !== 'My Interviews' && activeNav !== 'Alerts' && activeNav !== 'Team' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--text-3)', fontSize: 14 }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
             <div style={{ fontWeight: 700, color: 'var(--text-2)' }}>{activeNav}</div>

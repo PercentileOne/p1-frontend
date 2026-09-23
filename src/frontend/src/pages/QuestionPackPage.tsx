@@ -24,6 +24,9 @@ const DIFFICULTIES: { value: QuestionPackDifficulty; color: string; desc: string
 export default function QuestionPackPage() {
   const [role, setRole] = useState(() => { try { return (new URLSearchParams(window.location.search).get('role') ?? '').slice(0, 120); } catch { return ''; } });
   const [difficulty, setDifficulty] = useState<QuestionPackDifficulty>('Pro');
+  // 1-50 (Francis, 2026-09-23) — was a fixed 25; a dropdown so buyers can choose how many they
+  // actually want printed.
+  const [count, setCount] = useState(25);
 
   // null while loading — copy below renders price-agnostic text until this resolves, rather than flashing £1.99
   // and then flipping to FREE (or vice versa) a moment later.
@@ -120,7 +123,7 @@ export default function QuestionPackPage() {
     if (trimmed.length < 2) { setError('Tell us the job role first.'); return; }
     setError(null);
     setBuying(true);
-    const res = await startQuestionPackCheckout(trimmed, focusChips, difficulty);
+    const res = await startQuestionPackCheckout(trimmed, focusChips, difficulty, count);
     if (res.ok) { window.location.href = res.data.checkoutUrl; return; }
     setBuying(false);
     setError(res.message);
@@ -135,10 +138,10 @@ export default function QuestionPackPage() {
             No account needed · {pricing?.free ? '100% Free — No Live Interview' : 'No live interview'}
           </div>
           <h1 style={{ fontSize: 32, fontWeight: 900, margin: '0 0 12px', lineHeight: 1.2 }}>
-            {pricing?.free ? 'Download 25 AI Interview Questions — Free' : 'Download 25 AI Interview Questions'}
+            {pricing?.free ? `Download ${count} AI Interview Questions — Free` : `Download ${count} AI Interview Questions`}
           </h1>
           <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', maxWidth: 480, margin: '0 auto', lineHeight: 1.6 }}>
-            Name the role. Get a printable PDF of 25 realistic questions with model answers{priceLabel ? ` — ${priceLabel === 'FREE' ? 'completely free for a limited time' : `for ${priceLabel}`}, ready in seconds.` : ', ready in seconds.'}
+            Name the role. Get a printable PDF of realistic questions with model answers{priceLabel ? ` — ${priceLabel === 'FREE' ? 'completely free for a limited time' : `for ${priceLabel}`}, ready in seconds.` : ', ready in seconds.'}
           </p>
         </div>
 
@@ -153,17 +156,31 @@ export default function QuestionPackPage() {
             style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '13px 14px', fontSize: 15, color: '#fff', marginBottom: 20 }}
           />
 
-          <label style={{ display: 'block', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>Level</label>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-            {DIFFICULTIES.map(d => {
-              const active = difficulty === d.value;
-              return (
-                <button key={d.value} type="button" onClick={() => setDifficulty(d.value)} title={d.desc} style={{
-                  flex: 1, background: active ? `${d.color}22` : 'rgba(255,255,255,0.05)', border: `1px solid ${active ? d.color : 'rgba(255,255,255,0.12)'}`,
-                  color: active ? d.color : 'rgba(255,255,255,0.7)', borderRadius: 10, padding: '10px 8px', fontSize: 13.5, fontWeight: 700, cursor: 'pointer',
-                }}>{d.value}</button>
-              );
-            })}
+          <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>Level</label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {DIFFICULTIES.map(d => {
+                  const active = difficulty === d.value;
+                  return (
+                    <button key={d.value} type="button" onClick={() => setDifficulty(d.value)} title={d.desc} style={{
+                      flex: 1, background: active ? `${d.color}22` : 'rgba(255,255,255,0.05)', border: `1px solid ${active ? d.color : 'rgba(255,255,255,0.12)'}`,
+                      color: active ? d.color : 'rgba(255,255,255,0.7)', borderRadius: 10, padding: '10px 8px', fontSize: 13.5, fontWeight: 700, cursor: 'pointer',
+                    }}>{d.value}</button>
+                  );
+                })}
+              </div>
+            </div>
+            <div style={{ width: 110 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>How many</label>
+              <select
+                value={count}
+                onChange={e => setCount(Number(e.target.value))}
+                style={{ width: '100%', height: 40, boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '0 10px', color: '#fff', fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}
+              >
+                {Array.from({ length: 50 }, (_, i) => i + 1).map(n => <option key={n} value={n} style={{ background: '#0c1220' }}>{n}</option>)}
+              </select>
+            </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -248,7 +265,7 @@ export default function QuestionPackPage() {
             borderRadius: 14, padding: '16px', fontSize: 15.5, fontWeight: 800, cursor: buying ? 'default' : 'pointer',
             boxShadow: buying ? 'none' : `0 10px 30px ${GREEN}33`,
           }}>
-            {buying ? 'Preparing your questions…' : `Download 25 AI Interview Questions${priceLabel ? ` — ${priceLabel}` : ''}`}
+            {buying ? 'Preparing your questions…' : `Download ${count} AI Interview Questions${priceLabel ? ` — ${priceLabel}` : ''}`}
           </button>
           <div style={{ textAlign: 'center', fontSize: 11.5, color: 'rgba(255,255,255,0.35)', marginTop: 12 }}>
             {pricing?.free ? 'No card required. Instant PDF, no waiting.' : 'Secure payment via Stripe. Instant PDF, no waiting.'}

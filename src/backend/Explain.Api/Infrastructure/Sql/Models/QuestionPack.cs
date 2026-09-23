@@ -13,7 +13,7 @@ public class QuestionPack
     public string JobRole { get; set; } = string.Empty;
     public string? FocusAreas { get; set; }              // comma-separated chips/keywords the buyer picked, purely descriptive
     public string Difficulty { get; set; } = "Pro";       // Standard | Pro | Expert — see Features/QuestionPacks/Endpoint.cs's CleanDifficulty
-    public string QuestionsJson { get; set; } = "[]";     // serialized List<{question, answer}>, exactly 25 entries once generated
+    public string QuestionsJson { get; set; } = "[]";     // serialized List<{question, answer}>, 1-50 entries once generated (Count)
     public string Status { get; set; } = "pending";       // pending | paid | refunded
     public string? BuyerEmail { get; set; }               // filled in from Stripe's own checkout session once paid, not collected by us
     public string? StripeCheckoutSessionId { get; set; }

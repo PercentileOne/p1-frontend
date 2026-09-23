@@ -94,6 +94,14 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("introductions", "/senderId"));
 
+        // Recruiter gifting a batch of interview questions to their client (the hiring
+        // manager) — free with the recruiter's seat, deliberately generated in higher volume
+        // than the candidate's own pack so the client never fears they got the same list (see
+        // Features/ClientGifts/Endpoint.cs). Partition key = /recruiterId so a recruiter's own
+        // gift history AND the same-client reuse lookup are both single-partition.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("client-gifts", "/recruiterId"));
+
         // Recruiter/employer talent alerts ("notify me when a candidate scores > 90% for
         // DevOps Lead") and the matches they've fired. Both partitioned by /ownerId so an
         // alert owner's own alerts and match history are single-partition; the matching

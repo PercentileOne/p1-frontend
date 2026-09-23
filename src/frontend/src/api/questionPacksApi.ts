@@ -42,8 +42,8 @@ export const getPreviewAnswer = (jobRole: string, question: string) =>
 export const getHotTopics = (jobRole: string) =>
   call<{ topics: string[] }>('/api/question-packs/hot-topics', { method: 'POST', body: JSON.stringify({ jobRole }) });
 
-export const startQuestionPackCheckout = (jobRole: string, focus: string[], difficulty: QuestionPackDifficulty) =>
-  call<{ checkoutUrl: string }>('/api/question-packs/checkout', { method: 'POST', body: JSON.stringify({ jobRole, focus, difficulty }) });
+export const startQuestionPackCheckout = (jobRole: string, focus: string[], difficulty: QuestionPackDifficulty, count: number) =>
+  call<{ checkoutUrl: string }>('/api/question-packs/checkout', { method: 'POST', body: JSON.stringify({ jobRole, focus, difficulty, count }) });
 
 export const getQuestionPackByCheckoutSession = (sessionId: string) =>
   call<QuestionPackContent>(`/api/question-packs/checkout-session/${encodeURIComponent(sessionId)}`, { method: 'GET' });
