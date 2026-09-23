@@ -140,16 +140,26 @@ export default function TryItLivePage() {
     setStart(s); setIndex(0); setAnswers([]); setSkipped(0); setFeedback(null); setShareOpen(false);
     // Must begin from this click so the browser lets audio play. Connecting can fail or be slow — the interview goes ahead either way.
     let live = false;
+    let connectMs = 0;
     if (s.avatarAvailable) {
       setInterviewTicket(s.ticket);
       setAvatarState('connecting');
+      const connectStarted = performance.now();
       try { await (s.interviewer === 'technical' ? technical : hr).connect(); live = true; setAvatarState('live'); }
       catch { setAvatarState('off'); }
+      connectMs = performance.now() - connectStarted;
     }
     setUseAvatar(live);
     setPhase('asking');
-    // Let the video element mount and attach before the avatar's first words, or the opening of the greeting can be lost.
-    if (live) await new Promise(res => setTimeout(res, 600));
+    // Let the video element mount and attach before the avatar's first words, or the opening of the greeting can be
+    // lost/garbled (Francis, 2026-09-23: reported live before a client meeting, "jumbled" on the very first line,
+    // fine after). A flat 600ms was the original guess — too fragile on a slow connection, where the WebRTC
+    // handshake connect() just finished itself already ate several seconds and the stream is still catching up
+    // right when speech starts. Scale the wait by how long connect() itself actually took, on the theory that a
+    // slow handshake means a slow/jittery link that needs proportionally more settle time too, not a fixed guess
+    // that's equally (in)sufficient regardless of the network it's running on. Floor matches the old constant;
+    // capped so a very slow connect() doesn't make the greeting feel stalled.
+    if (live) await new Promise(res => setTimeout(res, Math.min(Math.max(connectMs, 600), 2500)));
     void ask(0, s, live);
   }
 
