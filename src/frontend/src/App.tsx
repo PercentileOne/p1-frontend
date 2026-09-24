@@ -18,6 +18,7 @@ import TryItLivePage from "./pages/TryItLivePage";
 import QuestionPackPage from "./pages/QuestionPackPage";
 import QuestionPackSuccessPage from "./pages/QuestionPackSuccessPage";
 import QuestionGiftPage from "./pages/QuestionGiftPage";
+import PublicLearnPage from "./pages/PublicLearnPage";
 import CockpitShell from "./pages/CockpitShell";
 import LearningShell from "./pages/LearningShell";
 import LearningCards from "./pages/LearningCards";
@@ -135,6 +136,7 @@ export default function App() {
       <Route path="/feedback" element={<PortalFeedbackPage />} />
       <Route path="/explain-feedback" element={<InterviewMeFeedback />} />
       <Route path="/learn" element={<LearnHome />} />
+      <Route path="/learn-anything" element={<PublicLearnPage />} />   {/* public "Learn Anything" — no sign-in (see Features/Lessons/Generate's public endpoint) */}
       <Route path="/learn/lesson/:lessonId" element={<LessonViewer />} />
       <Route path="/learn/bookshelf" element={<LearnBookshelf />} />
       <Route path="/learn/flash-talk" element={<LearnFlashTalkPage />} />

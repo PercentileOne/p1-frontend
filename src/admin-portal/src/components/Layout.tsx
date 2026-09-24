@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Building2, GraduationCap, Briefcase, UserSquare2, Compass, Video, ShieldAlert, Sparkles, Radio, FileText, Activity, KeyRound, MapPin, Inbox, LogOut, DollarSign } from 'lucide-react'
+import { Building2, GraduationCap, Briefcase, UserSquare2, Compass, Video, ShieldAlert, Sparkles, Radio, FileText, Activity, KeyRound, MapPin, Inbox, LogOut, DollarSign, BookOpen } from 'lucide-react'
 import { ChairLogo } from './LogoMark'
 import { useAuth } from '../context/AuthContext'
 
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { to: '/name-bank', Icon: Sparkles, label: 'Name Bank' },
   { to: '/live-avatar', Icon: Radio, label: 'Live Avatar' },
   { to: '/question-packs', Icon: FileText, label: 'Question Packs' },
+  { to: '/learn-caps', Icon: BookOpen, label: 'Learn' },
   { to: '/activity-log', Icon: Activity, label: 'Activity Log' },
   { to: '/access', Icon: KeyRound, label: 'Access' },
   { to: '/location-check', Icon: MapPin, label: 'Location Check' },
