@@ -8,6 +8,13 @@
 const BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined)
   ?? 'http://localhost:5130';
 
+export interface UserSubscriptionSummary {
+  plan: string;
+  status: string;          // active | cancelled | past_due | paused
+  priceGbp: number;
+  renewsAt: string | null;
+}
+
 export interface UserSummary {
   id: string;
   email: string;
@@ -19,6 +26,7 @@ export interface UserSummary {
   lockedAt: string | null;
   lockedReason: string | null;
   emailVerified: boolean;
+  subscription: UserSubscriptionSummary | null;
 }
 
 export interface UserListResponse {

@@ -345,6 +345,7 @@ Explain.Api.Infrastructure.Geo.GeoCompareEndpoint.Map(app);
 Explain.Api.Features.TryOut.Endpoint.Map(app);
 Explain.Api.Features.QuestionPacks.Endpoint.Map(app);
 Explain.Api.Features.ClientGifts.Endpoint.Map(app);
+Explain.Api.Features.Billing.Endpoint.Map(app);
 Explain.Api.Features.AccessRequests.Endpoint.Map(app);
 Explain.Api.Features.Subscriptions.Endpoint.Map(app);
 Explain.Api.Features.ExamCatalog.Refresh.Endpoint.Map(app);

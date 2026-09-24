@@ -7,6 +7,13 @@ import { Pagination } from './Pagination'
 
 type SortKey = 'name' | 'email' | 'roles' | 'joined'
 type SortDir = 'asc' | 'desc'
+type PlanFilter = 'all' | 'subscribed' | 'free'
+
+// Subscription is a candidate-only concept (recruiter/employer seats are billed at the org level —
+// see the admin Billing page instead), so this column/filter only ever renders for role="candidate".
+function isSubscribed(u: UserSummary): boolean {
+  return u.subscription?.status === 'active' || u.subscription?.status === 'past_due'
+}
 
 export function UserList({ role, title, entityLabel, searchPlaceholder }: {
   role: 'candidate' | 'recruiter' | 'employer'; title: string; entityLabel: string; searchPlaceholder: string
@@ -21,6 +28,7 @@ export function UserList({ role, title, entityLabel, searchPlaceholder }: {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [showCreate, setShowCreate] = useState(false)
+  const [planFilter, setPlanFilter] = useState<PlanFilter>('all')
 
   const load = useCallback(async () => {
     if (!token) return
@@ -83,12 +91,16 @@ export function UserList({ role, title, entityLabel, searchPlaceholder }: {
 
   const visibleRows = useMemo(() => {
     const term = search.trim().toLowerCase()
-    const filtered = term
+    let filtered = term
       ? rows.filter(u =>
           `${u.firstName} ${u.lastName}`.toLowerCase().includes(term) ||
           u.email.toLowerCase().includes(term)
         )
       : rows
+
+    if (role === 'candidate' && planFilter !== 'all') {
+      filtered = filtered.filter(u => planFilter === 'subscribed' ? isSubscribed(u) : !isSubscribed(u))
+    }
 
     const dir = sortDir === 'asc' ? 1 : -1
     return [...filtered].sort((a, b) => {
@@ -148,11 +160,11 @@ export function UserList({ role, title, entityLabel, searchPlaceholder }: {
         </button>
       </div>
 
-      <div style={{ marginBottom: 18 }}>
+      <div style={{ marginBottom: 18, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
           background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 10,
-          padding: '9px 14px', maxWidth: 360,
+          padding: '9px 14px', maxWidth: 360, flex: '1 1 260px',
         }}>
           <Search size={15} color="var(--text-3)" />
           <input
@@ -164,6 +176,18 @@ export function UserList({ role, title, entityLabel, searchPlaceholder }: {
             style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', caretColor: 'var(--blue)' }}
           />
         </div>
+        {role === 'candidate' && (
+          <div style={{ display: 'flex', gap: 6 }}>
+            {(['all', 'subscribed', 'free'] as const).map(f => (
+              <button key={f} onClick={() => { setPlanFilter(f); setPage(1) }} style={{
+                padding: '8px 14px', borderRadius: 20, border: '1px solid', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'capitalize',
+                background: planFilter === f ? 'rgba(52,211,153,0.15)' : 'transparent',
+                borderColor: planFilter === f ? 'rgba(52,211,153,0.5)' : 'var(--border)',
+                color: planFilter === f ? '#34D399' : 'var(--text-3)', transition: 'all 0.15s',
+              }}>{f}</button>
+            ))}
+          </div>
+        )}
       </div>
 
       {(error || actionError) && (
@@ -189,6 +213,9 @@ export function UserList({ role, title, entityLabel, searchPlaceholder }: {
                 <SortableHeader label="Email" sortKeyName="email" />
                 <SortableHeader label="Other roles" sortKeyName="roles" />
                 <SortableHeader label="Joined" sortKeyName="joined" />
+                {role === 'candidate' && (
+                  <th style={{ textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Plan</th>
+                )}
                 <th style={{ textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Status</th>
                 <th style={{ padding: '10px 16px' }} />
               </tr>
@@ -207,6 +234,17 @@ export function UserList({ role, title, entityLabel, searchPlaceholder }: {
                     <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{u.email}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', textTransform: 'capitalize' }}>{otherRoles.join(', ') || '—'}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{new Date(u.createdAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+                    {role === 'candidate' && (
+                      <td style={{ padding: '12px 16px' }}>
+                        {isSubscribed(u) ? (
+                          <span title={u.subscription!.renewsAt ? `Renews ${new Date(u.subscription!.renewsAt).toLocaleDateString('en-GB')}` : undefined} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: '#34D399', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 6, padding: '3px 8px', textTransform: 'capitalize' }}>
+                            {u.subscription!.plan} · £{u.subscription!.priceGbp.toFixed(2)}/mo
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Free{u.subscription?.status === 'cancelled' ? ' · cancelled' : ''}</span>
+                        )}
+                      </td>
+                    )}
                     <td style={{ padding: '12px 16px' }}>
                       {u.isLocked ? (
                         <span title={u.lockedReason ?? undefined} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: '#EF4444', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 6, padding: '3px 8px' }}>

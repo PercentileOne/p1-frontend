@@ -40,6 +40,14 @@ public static class Endpoint
                     u.Id, u.Email, u.FirstName, u.LastName, u.CreatedAt,
                     u.IsLocked, u.LockedAt, u.LockedReason, u.EmailVerified,
                     Roles = db.UserRoles.Where(ur => ur.UserId == u.Id).Select(ur => ur.Role.Slug).ToList(),
+                    // Candidate subscription status (Francis, 2026-09-24: "add the relevant info to
+                    // Candidates") — harmless null for recruiter/employer rows, which never have one.
+                    // Latest by UpdatedAt so a lapsed-then-resubscribed candidate shows their CURRENT
+                    // state, not an old cancelled row.
+                    Subscription = db.Subscriptions.Where(s => s.UserId == u.Id)
+                        .OrderByDescending(s => s.UpdatedAt)
+                        .Select(s => new { s.Plan, s.Status, s.PriceGbp, s.RenewsAt })
+                        .FirstOrDefault(),
                 })
                 .ToListAsync();
 
