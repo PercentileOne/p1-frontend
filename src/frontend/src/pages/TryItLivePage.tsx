@@ -133,7 +133,7 @@ export default function TryItLivePage() {
     const hello = firstName ? `Hi ${firstName}, I'm ${s.interviewerName}.` : `Hi, I'm ${s.interviewerName}.`;
     // The first question also tells them exactly what to do — the most common confusion in early tests was not knowing how to answer or move on.
     const line = i === 0
-      ? `${hello} Thanks for joining — let's start your ${s.subject} interview. ${q} When you're ready, click the green microphone button to answer out loud, or just type your answer below. Then click Submit answer — or skip it if you'd rather pass.`
+      ? `${hello} Thanks for joining — let's start your ${s.subject} interview. ${q} When you're ready, click the green microphone button to answer out loud — it submits automatically when you stop recording — or type your answer below and click Submit. You can also skip it if you'd rather pass.`
       : q;
     await speakLine(line, s, viaAvatar);
     setPhase('answering');
