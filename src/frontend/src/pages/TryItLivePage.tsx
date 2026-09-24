@@ -60,6 +60,11 @@ export default function TryItLivePage() {
   const [start, setStart] = useState<TryOutStart | null>(null);
   const [index, setIndex] = useState(0);
   const [draft, setDraft] = useState('');
+  // Mirrors `draft` for the voice-answer path below — submit() needs the just-transcribed text
+  // synchronously, and reading `draft` itself there would be stale (setDraft hasn't committed yet
+  // in the same tick the transcript arrives).
+  const draftRef = useRef('');
+  useEffect(() => { draftRef.current = draft; }, [draft]);
   const [answers, setAnswers] = useState<{ question: string; answer: string }[]>([]);
   const [skipped, setSkipped] = useState(0);
   const [coaching, setCoaching] = useState<{ text: string; score: number } | null>(null);
@@ -171,9 +176,9 @@ export default function TryItLivePage() {
   // away in a full-screen popup (Francis, 2026-09-22: the old flow went quiet here, waiting on a "Next question" click, which felt
   // like it was stuck), speaks its reaction, then speaks the transition itself — never Wayne/Amina — and the popup closes into the
   // next question automatically. No second click, at any point.
-  async function submit(skip: boolean) {
+  async function submit(skip: boolean, overrideText?: string) {
     if (!start || busyRef.current) return;
-    const text = skip ? '' : draft.trim();
+    const text = skip ? '' : (overrideText ?? draft).trim();
     if (!skip && !text) return;
     busyRef.current = true;
     cancelSpeechRef.current?.();
@@ -365,14 +370,22 @@ export default function TryItLivePage() {
                 {phase === 'answering' ? (
                   <>
                     <div style={{ fontSize: 13.5, color: 'var(--text-2, #cbd5e1)', marginBottom: 10 }}>
-                      Click the <strong style={{ color: GREEN }}>green microphone</strong> to answer out loud, or type your answer. Then click <strong>{index + 1 < start.questions.length ? 'Submit answer' : 'Finish & get my score'}</strong>.
+                      Click the <strong style={{ color: GREEN }}>green microphone</strong> to answer out loud — it submits automatically when you stop recording — or type your answer and click <strong>{index + 1 < start.questions.length ? 'Submit answer' : 'Finish & get my score'}</strong>.
                     </div>
                     <textarea value={draft} onChange={e => setDraft(e.target.value)} rows={4} placeholder="Type your answer here, or use the microphone…" style={{ ...inputStyle, resize: 'vertical' }} />
                     {/* The mic always gets its own full-width row — the same layout the full interview uses. Sharing a row with
                         the buttons let its waveform's width (and so the whole row) jump around as the card resized
-                        (Francis, 2026-09-22). */}
+                        (Francis, 2026-09-22). Auto-submits on transcript (Francis, 2026-09-24: "many times I've sat there
+                        waiting... realise I'm supposed to click Submit Answer, which is different to our full interview
+                        process") — matches InterviewRoomPage.tsx's VoiceInput, which calls submitAnswer() directly from
+                        onTranscript rather than requiring a separate manual click. The typed-answer path below keeps its
+                        own manual Submit button, same as the full interview does for typed answers. */}
                     <div style={{ marginTop: 12 }}>
-                      <VoiceInput onTranscript={text => setDraft(d => (d ? d + ' ' : '') + text)} />
+                      <VoiceInput onTranscript={text => {
+                        const combined = (draftRef.current ? draftRef.current + ' ' : '') + text;
+                        setDraft(combined);
+                        void submit(false, combined);
+                      }} />
                     </div>
                     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end', marginTop: 12 }}>
                         <button onClick={() => void submit(true)} style={ghost}>Skip</button>
