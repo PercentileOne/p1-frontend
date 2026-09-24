@@ -110,45 +110,6 @@ public static class Endpoint
             await container.UpsertItemAsync(setting, new PartitionKey("questionPackFree"));
             return Results.Ok(setting);
         }).RequireAuthorization(Permissions.ViewSystemSettings);
-
-        // Public Learn (Francis, 2026-09-24: "accessible without an account" from the marketing page) daily-caps
-        // switch — same shape/reasoning as Question Packs' own: missing doc = UNCAPPED, so the public /learn page
-        // isn't rate-limited the moment it ships without an admin having to click anything first. See
-        // Features/Lessons/Generate/PublicEndpoint.cs's CapsEnabledAsync for where this is read.
-        app.MapGet("/api/admin/settings/learn-caps", async (CosmosService cosmos) =>
-        {
-            var setting = await GetLearnCapsOrDefaultAsync(cosmos);
-            return Results.Ok(setting);
-        }).RequireAuthorization(Permissions.ViewSystemSettings);
-
-        app.MapPost("/api/admin/settings/learn-caps", async (UpdateLearnCapsRequest req, HttpContext ctx, CosmosService cosmos) =>
-        {
-            var updatedBy = ctx.User.FindFirst("sub")?.Value ?? "unknown";
-            var setting = new LearnCapsSetting(
-                id: "learnCaps",
-                pk: "learnCaps",
-                capsEnabled: req.CapsEnabled,
-                updatedAt: DateTimeOffset.UtcNow,
-                updatedBy: updatedBy);
-
-            var container = cosmos.GetContainer("platformSettings");
-            await container.UpsertItemAsync(setting, new PartitionKey("learnCaps"));
-            return Results.Ok(setting);
-        }).RequireAuthorization(Permissions.ViewSystemSettings);
-    }
-
-    public static async Task<LearnCapsSetting> GetLearnCapsOrDefaultAsync(CosmosService cosmos)
-    {
-        var container = cosmos.GetContainer("platformSettings");
-        try
-        {
-            var response = await container.ReadItemAsync<LearnCapsSetting>("learnCaps", new PartitionKey("learnCaps"));
-            return response.Resource;
-        }
-        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-        {
-            return new LearnCapsSetting("learnCaps", "learnCaps", false, DateTimeOffset.MinValue, "");
-        }
     }
 
     public static async Task<QuestionPackCapsSetting> GetQuestionPackCapsOrDefaultAsync(CosmosService cosmos)
@@ -261,11 +222,3 @@ public record QuestionPackFreeSetting(
     DateTimeOffset updatedAt,
     string updatedBy);
 
-public record UpdateLearnCapsRequest(bool CapsEnabled);
-
-public record LearnCapsSetting(
-    string id,
-    string pk,
-    bool capsEnabled,
-    DateTimeOffset updatedAt,
-    string updatedBy);

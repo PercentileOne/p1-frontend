@@ -1,131 +1,1822 @@
-import { useState } from 'react';
-import { generatePublicLesson, type PublicLesson } from '../api/publicLearnApi';
+import { useState, useRef, useEffect, useId } from 'react';
+import { Highlight, themes } from 'prism-react-renderer';
+import mermaid from 'mermaid';
+import { createReadAloudPlayer, extractReadableText, type ReadAloudState, type ReadAloudGender } from '../api/readAloud';
+import MiniPracticeSession from '../components/MiniPracticeSession';
 
-// "Learn Anything" (Francis, 2026-09-24) — the public, no-login taste of the Learn module for
-// visitors from the marketing site: type any topic, get a real generated lesson (key concepts,
-// misconceptions, glossary), same generation/cache the authenticated Learn module uses. The
-// spoken exam questions and MCQ practice are shown as a locked preview — full practice needs a
-// free account, matching the "watch/read free, act requires an account" pattern this app uses
-// everywhere else (Introductions, session replays). No history, no saving for anonymous visitors.
-const GREEN = '#34D399';
+// Public, no-login "Learn Anything" (Francis, 2026-09-24) — a straight copy of LearnPanel.tsx
+// (CLAUDE.md's "copy then trim" convention), not a reimplementation, per his explicit ask:
+// "exactly the same as the candidate version... same module creation configuration... just not
+// able to save unless they create an account." Same generation (Level, Special Focus), same
+// shared platform cache, same visual course/lecture browsing UI. The only real differences:
+// nothing persists to the local bookshelf (see the saveCourse() call sites below), and
+// "Practice with a real interviewer" always sends to register instead of opening a live
+// interview room — see handlePractice's own comment for why that couldn't just reuse
+// useInterviewGate unmodified. No admin caps on this page (Francis, 2026-09-24, explicit
+// decision) — the real cost/abuse gap this surfaced is /api/ai-proxy having no rate-limiting at
+// all, tracked as a separate, immediate follow-up task, not specific to this page.
 const REGISTER_URL = 'https://login.theinterviewchair.com/register';
 
-export default function PublicLearnPage() {
-  const [topic, setTopic] = useState(() => { try { return (new URLSearchParams(window.location.search).get('topic') ?? '').slice(0, 120); } catch { return ''; } });
-  const [loading, setLoading] = useState(false);
-  const [lesson, setLesson] = useState<PublicLesson | null>(null);
-  const [error, setError] = useState<string | null>(null);
+mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'strict' });
 
-  const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: '22px 24px' };
-  const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '13px 14px', fontSize: 15, color: '#fff' };
+const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
 
-  async function generate() {
-    const trimmed = topic.trim();
-    if (trimmed.length < 2) { setError('Tell us what you’d like to learn about.'); return; }
-    setError(null);
-    setLoading(true);
-    setLesson(null);
-    const res = await generatePublicLesson(trimmed);
-    setLoading(false);
-    if (res.ok) setLesson(res.data); else setError(res.message);
+// ── Design tokens ──────────────────────────────────────────────────────────────
+const BG2    = '#10131a';
+const BG3    = '#14171f';
+const BORDER = 'rgba(255,255,255,0.07)';
+const BLUE   = '#4F8EF7';
+const GREEN  = '#34D399';
+const PURPLE = '#A78BFA';
+const TEXT1  = '#e2e8f0';
+const TEXT2  = '#94a3b8';
+const TEXT3  = '#5a6478';
+
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+interface CodeSample {
+  language: string;
+  code: string;
+  caption?: string;
+}
+
+interface Diagram {
+  mermaid: string;
+  caption?: string;
+}
+
+interface Lecture {
+  number: number;
+  title: string;
+  type: 'lesson' | 'practice' | 'quiz';
+  estimatedMinutes: number;
+  content: string;
+  keyTakeaways: string[];
+  deepDive: string;
+  realWorldExample: string;
+  memoryHook: string;
+  commonMisconceptions: { myth: string; reality: string }[];
+  interviewQuestions: string[];
+  codeSamples?: CodeSample[];
+  diagrams?: Diagram[];
+  solutionCode?: CodeSample;
+}
+
+interface Module {
+  number: number;
+  title: string;
+  description: string;
+  estimatedMinutes: number;
+  lectures: Lecture[];
+  loading?: boolean; // true while content is being generated
+}
+
+interface Course {
+  id: string;
+  title: string;
+  subtitle: string;
+  level: 'Beginner' | 'Intermediate' | 'Expert';
+  category: string;
+  description: string;
+  totalHours: number;
+  createdAt: string;
+  modules: Module[];
+  // Optional topics narrowing every module/lecture toward specific sub-areas — same concept
+  // and UX as InterviewPackStart.tsx's Special Focus chips. Part of a course's real identity
+  // (see courseKey below), not just generation input, so "System Design" and "System Design
+  // — focus: .NET, Microservices" are treated as genuinely different courses, not a cache hit
+  // on each other.
+  specialFocus?: string[];
+}
+
+// ── Persisted course store ─────────────────────────────────────────────────────
+
+const STORAGE_KEY = 'im_learn_courses_v1';
+const CACHE_TTL_MS = 48 * 60 * 60 * 1000; // 2 days
+
+const normaliseTitle = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
+const normaliseFocus = (specialFocus?: string[]) =>
+  [...(specialFocus ?? [])].map(f => f.toLowerCase().trim()).sort().join(',');
+const courseKey = (title: string, level: string, specialFocus?: string[]) =>
+  `${normaliseTitle(title)}|${level}|${normaliseFocus(specialFocus)}`;
+
+// De-dupes by (title, level) — the real identity of a course on the shelf — not by the
+// internal `id`, which the platform-cache path in handleGenerate mints fresh every time
+// (so a course whose local 48h cache expired but whose shared Cosmos cache is still warm
+// used to come back as a second entry under a new id). Runs on every load so it also
+// self-heals any duplicates already sitting in localStorage from before this fix.
+function dedupeCourses(courses: Course[]): Course[] {
+  const byKey = new Map<string, Course>();
+  for (const c of courses) {
+    const key = courseKey(c.title, c.level, c.specialFocus);
+    const existing = byKey.get(key);
+    if (!existing || new Date(c.createdAt) > new Date(existing.createdAt)) byKey.set(key, c);
   }
+  return Array.from(byKey.values()).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+function loadCourses(): Course[] {
+  let courses: Course[];
+  try { courses = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'); } catch { return []; }
+  const deduped = dedupeCourses(courses);
+  if (deduped.length !== courses.length) localStorage.setItem(STORAGE_KEY, JSON.stringify(deduped));
+  return deduped;
+}
+
+// saveCourse (the local-bookshelf persist LearnPanel.tsx uses) is deliberately not defined here
+// — see this file's top-of-file note on why nothing generated on this page is ever saved.
+
+function deleteCourse(id: string) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(loadCourses().filter(c => c.id !== id)));
+}
+
+function findCached(title: string, level: string, specialFocus?: string[]): Course | null {
+  const now = Date.now();
+  const key = courseKey(title, level, specialFocus);
+  return loadCourses().find(c =>
+    courseKey(c.title, c.level, c.specialFocus) === key &&
+    now - new Date(c.createdAt).getTime() < CACHE_TTL_MS
+  ) ?? null;
+}
+
+// ── AI course generation ───────────────────────────────────────────────────────
+
+// ── Shared SSE stream reader ───────────────────────────────────────────────────
+
+async function readStream(res: Response): Promise<string> {
+  const reader = res.body!.getReader();
+  const decoder = new TextDecoder();
+  let content = '';
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const data = line.slice(6).trim();
+      if (data === '[DONE]') return content;
+      try {
+        const chunk = JSON.parse(data) as { choices: { delta: { content?: string } }[] };
+        content += chunk.choices?.[0]?.delta?.content ?? '';
+      } catch { /* ignore malformed chunks */ }
+    }
+  }
+  return content;
+}
+
+async function callAI(messages: { role: string; content: string }[], maxTokens = 4000): Promise<string> {
+  const body = JSON.stringify({
+    model: 'gpt-4o-mini',
+    temperature: 0.7,
+    max_tokens: maxTokens,
+    stream: true,
+    messages,
+  });
+
+  const res = await fetch(`${API_BASE}/api/ai-proxy`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+  if (!res.ok || !res.body) throw new Error('AI call failed');
+  return readStream(res);
+}
+
+// ── Phase 1: course outline (fast ~3s) ────────────────────────────────────────
+
+interface CourseOutline {
+  title: string;
+  subtitle: string;
+  level: 'Beginner' | 'Intermediate' | 'Expert';
+  category: string;
+  description: string;
+  totalHours: number;
+  modules: { number: number; title: string; description: string; estimatedMinutes: number }[];
+}
+
+// "What's Hot" — same concept as aiScoring.ts's generateHotTopics (used on the interview
+// intake screen), but worded for a Learn subject rather than a job role: not every course is
+// interview prep, so "currently in-demand for interviews" framing wouldn't make sense for e.g.
+// "Plumbing Fundamentals". A local helper here, not a shared one, matching this file's own
+// existing convention of keeping its AI calls (generateOutline, generateModuleLectures) local
+// rather than importing from aiScoring.ts.
+async function generateHotLearnTopics(topic: string): Promise<string[]> {
+  const raw = await callAI([
+    {
+      role: 'system',
+      content: 'You identify the specific sub-topics, technologies, and skills currently most important or in-demand within a given subject. Return ONLY valid JSON — no markdown, no explanation.',
+    },
+    {
+      role: 'user',
+      content: `Subject: ${topic}
+
+List exactly 4 specific, currently in-demand sub-topics, technologies, or methodologies within this subject that someone learning it today should focus on — the kind of thing that shows up repeatedly in recent job postings, industry discussion, or real-world practice for this subject right now.
+
+Rules:
+- Each item is a short, specific name (2-4 words) — a real named technology, pattern, framework, or methodology, not a vague category. "Agentic AI Patterns" not "AI knowledge". "Zero Trust Architecture" not "security".
+- Genuinely specific to THIS subject — not generic learning advice.
+- No duplicates, no near-duplicates of each other.
+
+Return JSON:
+{ "topics": ["...", "...", "...", "..."] }`,
+    },
+  ], 500);
+
+  try {
+    const parsed = JSON.parse(raw) as { topics: string[] };
+    return (parsed.topics ?? []).filter(t => typeof t === 'string' && t.trim().length > 0).slice(0, 4);
+  } catch {
+    return [];
+  }
+}
+
+async function generateOutline(title: string, level: string, specialFocus?: string[]): Promise<CourseOutline> {
+  const focusLine = specialFocus && specialFocus.length > 0
+    ? `\nThe candidate specifically wants this course to emphasize: ${specialFocus.join(', ')}. Weave these into module titles/descriptions wherever they naturally fit the subject — don't force a mention into every single module, but the course as a whole should clearly reflect this focus, not just cover "${title}" generically.\n`
+    : '';
+
+  const raw = await callAI([
+    {
+      role: 'system',
+      content: 'You are a world-class curriculum designer. Return ONLY valid JSON — no markdown, no explanation.',
+    },
+    {
+      role: 'user',
+      content: `Create a course outline for: "${title}" at ${level} level.
+${focusLine}
+Return JSON:
+{
+  "title": "full course title${specialFocus && specialFocus.length > 0 ? ` — naming the special focus areas naturally, e.g. "${title}: A Deep Dive into ${specialFocus[0]}"` : ''}",
+  "subtitle": "one compelling subtitle sentence",
+  "level": "${level}",
+  "category": "one of: Technology, Business, Finance, Healthcare, Engineering, Creative, Legal, Science, Leadership, Marketing, Data, Product",
+  "description": "3-4 sentence course description",
+  "totalHours": <number 8-20>,
+  "modules": [
+    { "number": 1, "title": "module title", "description": "1-2 sentence description", "estimatedMinutes": <60-120> }
+  ]
+}
+
+Requirements: exactly 10 modules. No lecture content — titles and descriptions only.`,
+    },
+  ], 1500);
+
+  const parsed = JSON.parse(raw) as CourseOutline;
+  if (!parsed.modules?.length) throw new Error('No modules in outline');
+  return parsed;
+}
+
+// ── Phase 2: one module's lectures (called 10× in background) ─────────────────
+
+async function generateModuleLectures(
+  courseTitle: string,
+  mod: { number: number; title: string; description: string },
+  level: string,
+  specialFocus?: string[],
+): Promise<Lecture[]> {
+  const focusLine = specialFocus && specialFocus.length > 0
+    ? `\nThe candidate asked for this course to emphasize: ${specialFocus.join(', ')}. Wherever this module's subject genuinely connects to one of those areas, ground the explanation, examples, and code/diagrams in it specifically — don't just teach the generic version and mention the focus in passing.\n`
+    : '';
+
+  const raw = await callAI([
+    {
+      role: 'system',
+      content: 'You are a world-class curriculum designer. Return ONLY valid JSON — no markdown, no explanation.',
+    },
+    {
+      role: 'user',
+      content: `Generate the lectures for Module ${mod.number}: "${mod.title}" of the course "${courseTitle}" (${level} level).
+Module description: ${mod.description}
+${focusLine}
+
+Return a JSON array of exactly 4 lectures:
+[
+  {
+    "number": 1,
+    "title": "lecture title",
+    "type": "lesson",
+    "estimatedMinutes": <10-25>,
+    "content": "400-500 words of expert, engaging prose. 3-4 substantive paragraphs. Include specific numbers, named tools, practical insights. No bullet lists. Whenever a code sample, worked example, framework, or diagram would genuinely clarify the concept — for ANY subject, not just technical ones — place a marker on its own line — {{CODE_1}}, {{CODE_2}}, {{DIAGRAM_1}} etc — at the exact point in the prose where that example belongs, matching the index of an entry in codeSamples/diagrams below. Omit markers only when the topic is genuinely narrative/opinion-based and nothing structured would add real value.",
+    "keyTakeaways": ["specific factual insight", "another concrete takeaway", "a third memorable fact"],
+    "deepDive": "2-3 sentences on the mechanism or theory behind this topic.",
+    "realWorldExample": "One vivid real-world scenario naming actual companies, tools, or situations. 2-3 sentences.",
+    "memoryHook": "A memorable analogy or mental model to recall this concept in an interview.",
+    "commonMisconceptions": [
+      { "myth": "common wrong belief", "reality": "accurate correction" },
+      { "myth": "another misconception", "reality": "correct understanding" }
+    ],
+    "interviewQuestions": ["realistic hiring manager question?", "deeper follow-up question?"],
+    "codeSamples": [
+      { "language": "typescript", "code": "for a CODING topic: real, correct, runnable code, 5-20 lines, realistic names, comments where they earn their place. For a MATHS topic: a worked numerical example or step-by-step derivation instead — set language to 'text'. For ELECTRONICS/hardware: pseudocode, a register/pin table, or a component listing — set language to 'text' if it isn't real code. For a PROCESS/FRAMEWORK/SOFT-SKILL topic (e.g. problem-solving, negotiation, leadership, interviewing, conflict resolution): a structured template, checklist, sample script/dialogue, or step-by-step framework — set language to 'text'. For a business/legal/clinical topic: a worked scenario, sample clause, or structured checklist — set language to 'text'.", "caption": "one-line caption" }
+    ],
+    "diagrams": [
+      { "mermaid": "valid Mermaid.js syntax. For CODING: flowchart, sequence, or state diagram of the logic/architecture. For MATHS: represent the relationship structurally with a flowchart or graph TD (e.g. a number line, a decision tree, steps of a proof) — Mermaid can't plot continuous functions, so describe the concept's structure instead. For ELECTRONICS: a block/flow diagram of signal or data flow. For ANY process, framework, or decision-based topic (problem-solving, negotiation, hiring, clinical triage, legal process, etc.): a flowchart of the steps/stages, or a decision tree of the choice points — Mermaid represents processes and hierarchies just as well as code architecture.", "caption": "one-line caption" }
+    ],
+    "solutionCode": { "language": "typescript", "code": "ONLY for type=\"practice\": a complete, correct reference solution to the exercise described in content — the whole thing, not a fragment, so the learner can compare it against what they built. For a coding/electronics/maths-heavy topic this is real code or a full worked solution; for a process/soft-skill/business topic this is a complete worked example (e.g. a filled-out framework, a full sample script) — set language to 'text'. Omit this field entirely for non-practice lectures.", "caption": "Reference solution" }
+  }
+]
+
+codeSamples and diagrams: 0-3 codeSamples and 0-2 diagrams per lecture — use judgment, not a subject allowlist. Include them for ANY subject (coding, maths, electronics, business, healthcare, leadership, law, soft skills, etc.) whenever a structured example, framework, checklist, or diagram would genuinely clarify the concept. Return empty arrays [] and use no markers only when the topic is genuinely narrative/opinion-based and nothing structured would add real value.
+
+Lecture types: "lesson" for most, "practice" for one hands-on exercise, "quiz" for one knowledge check.`,
+    },
+  ], 7000);
+
+  const parsed = JSON.parse(raw) as Lecture[];
+  if (!Array.isArray(parsed) || !parsed.length) throw new Error('No lectures parsed');
+  return parsed;
+}
+
+// ── Suggested topics ───────────────────────────────────────────────────────────
+
+const SUGGESTIONS = [
+  { title: 'System Design for Engineers', category: 'Technology', emoji: '🏗️' },
+  { title: 'Product Management Fundamentals', category: 'Product', emoji: '🎯' },
+  { title: 'Financial Modelling & Valuation', category: 'Finance', emoji: '📊' },
+  { title: 'Leadership & People Management', category: 'Leadership', emoji: '👥' },
+  { title: 'Machine Learning in Practice', category: 'Technology', emoji: '🤖' },
+  { title: 'Negotiation & Influence', category: 'Business', emoji: '🤝' },
+  { title: 'Data Analysis with Python', category: 'Data', emoji: '🐍' },
+  { title: 'Certified Chief Technology Officer', category: 'Technology', emoji: '⚡' },
+  { title: 'Digital Marketing Strategy', category: 'Marketing', emoji: '📣' },
+  { title: 'Electrical Engineering Fundamentals', category: 'Engineering', emoji: '⚡' },
+  { title: 'Healthcare Management', category: 'Healthcare', emoji: '🏥' },
+  { title: 'Contract Law Essentials', category: 'Legal', emoji: '⚖️' },
+];
+
+const LEVEL_COLOURS: Record<string, string> = {
+  Beginner: GREEN,
+  Intermediate: BLUE,
+  Expert: PURPLE,
+};
+
+const LECTURE_ICONS: Record<string, string> = {
+  lesson: '📖',
+  practice: '🛠️',
+  quiz: '❓',
+};
+
+// ── Category colours (matching mobile palette) ─────────────────────────────────
+
+const CAT_COLOURS: Record<string, { accent: string; bg: string }> = {
+  Technology:  { accent: '#4F8EF7', bg: 'rgba(79,142,247,0.12)' },
+  Business:    { accent: '#06B6D4', bg: 'rgba(6,182,212,0.12)' },
+  Finance:     { accent: '#34D399', bg: 'rgba(52,211,153,0.12)' },
+  Healthcare:  { accent: '#F87171', bg: 'rgba(248,113,113,0.12)' },
+  Engineering: { accent: '#F59E0B', bg: 'rgba(245,158,11,0.12)' },
+  Creative:    { accent: '#EC4899', bg: 'rgba(236,72,153,0.12)' },
+  Legal:       { accent: '#A78BFA', bg: 'rgba(167,139,250,0.12)' },
+  Science:     { accent: '#6EE7B7', bg: 'rgba(110,231,183,0.12)' },
+  Leadership:  { accent: '#FCD34D', bg: 'rgba(252,211,77,0.12)' },
+  Marketing:   { accent: '#FB923C', bg: 'rgba(251,146,60,0.12)' },
+  Data:        { accent: '#38BDF8', bg: 'rgba(56,189,248,0.12)' },
+  Product:     { accent: '#818CF8', bg: 'rgba(129,140,248,0.12)' },
+};
+
+function catStyle(cat: string) {
+  return CAT_COLOURS[cat] ?? { accent: PURPLE, bg: 'rgba(167,139,250,0.12)' };
+}
+
+// ── Total course minutes ───────────────────────────────────────────────────────
+
+function totalMinutes(course: Course) {
+  return course.modules.reduce((acc, m) => acc + m.lectures.reduce((a, l) => a + l.estimatedMinutes, 0), 0);
+}
+
+function fmtHours(mins: number) {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+// ── Generation steps ───────────────────────────────────────────────────────────
+
+const GEN_STEPS = [
+  'Mapping course structure…',
+  'Writing module content…',
+  'Adding interview questions…',
+  'Finalising your course…',
+];
+
+// ── My Courses shelf card ──────────────────────────────────────────────────────
+
+function CourseCard({ course, onClick }: { course: Course; onClick: () => void }) {
+  const [hov, setHov] = useState(false);
+  const { accent, bg } = catStyle(course.category);
+  const mins = totalMinutes(course);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07080f', color: '#fff', padding: '48px 16px 80px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div style={{ width: '100%', maxWidth: 720 }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: GREEN, marginBottom: 10 }}>No account needed</div>
-          <h1 style={{ fontSize: 32, fontWeight: 900, margin: '0 0 12px', lineHeight: 1.2 }}>Learn Anything</h1>
-          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', maxWidth: 480, margin: '0 auto', lineHeight: 1.6 }}>
-            Name any subject — a real generated lesson with key concepts, common misconceptions, and a glossary, ready in seconds.
-          </p>
-        </div>
-
-        <div style={card}>
-          <label style={{ display: 'block', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>What do you want to learn?</label>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <input
-              value={topic}
-              onChange={e => setTopic(e.target.value.slice(0, 120))}
-              onKeyDown={e => { if (e.key === 'Enter') void generate(); }}
-              placeholder="e.g. Kubernetes, The French Revolution, Compound Interest"
-              style={{ ...inputStyle, flex: '1 1 260px' }}
-            />
-            <button onClick={() => void generate()} disabled={loading} style={{
-              background: loading ? 'rgba(52,211,153,0.4)' : `linear-gradient(135deg,${GREEN},#047857)`, color: '#fff', border: 'none',
-              borderRadius: 12, padding: '13px 22px', fontSize: 14.5, fontWeight: 800, cursor: loading ? 'default' : 'pointer',
-            }}>
-              {loading ? 'Generating…' : 'Generate lesson →'}
-            </button>
-          </div>
-          {error && <div style={{ color: '#F87171', fontSize: 13, marginTop: 14 }}>{error}</div>}
-        </div>
-
-        {lesson && (
-          <div style={{ marginTop: 24 }}>
-            <div style={{ ...card, marginBottom: 18 }}>
-              <div style={{ fontSize: 34, marginBottom: 6 }}>{lesson.emoji}</div>
-              <h2 style={{ fontSize: 24, fontWeight: 900, margin: '0 0 8px' }}>{lesson.title}</h2>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: GREEN, marginBottom: 10 }}>{lesson.category}</div>
-              <p style={{ fontSize: 15, lineHeight: 1.6, color: 'rgba(255,255,255,0.85)', margin: 0 }}>{lesson.hook}</p>
-            </div>
-
-            <SectionTitle>Key concepts</SectionTitle>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 22 }}>
-              {lesson.keyConcepts.map((k, i) => (
-                <div key={i} style={card}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                    <span style={{ fontSize: 20 }}>{k.icon}</span>
-                    <span style={{ fontSize: 16, fontWeight: 800 }}>{k.title}</span>
-                  </div>
-                  <p style={{ fontSize: 14, lineHeight: 1.65, color: 'rgba(255,255,255,0.8)', margin: '0 0 10px' }}>{k.body}</p>
-                  <p style={{ fontSize: 13.5, lineHeight: 1.65, color: 'rgba(255,255,255,0.6)', margin: '0 0 10px' }}>{k.deepDive}</p>
-                  {k.codeSnippet && (
-                    <pre style={{ background: '#0c1220', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 14, fontSize: 12.5, overflowX: 'auto', color: '#a5f3c9', marginBottom: 10 }}>{k.codeSnippet}</pre>
-                  )}
-                  <div style={{ fontSize: 12.5, color: '#FBBF24', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 8, padding: '8px 12px' }}>
-                    ⚠️ Exam trap: {k.examTrap}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <SectionTitle>Common misconceptions</SectionTitle>
-            <div style={{ ...card, marginBottom: 22 }}>
-              {lesson.misconceptions.map((m, i) => (
-                <div key={i} style={{ marginBottom: i < lesson.misconceptions.length - 1 ? 14 : 0 }}>
-                  <div style={{ fontSize: 13.5, color: '#F87171', marginBottom: 3 }}>✗ {m.wrong}</div>
-                  <div style={{ fontSize: 13.5, color: GREEN }}>✓ {m.right}</div>
-                </div>
-              ))}
-            </div>
-
-            <SectionTitle>Glossary</SectionTitle>
-            <div style={{ ...card, marginBottom: 22, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
-              {lesson.glossary.map((g, i) => (
-                <div key={i}>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, marginBottom: 3 }}>{g.term}</div>
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>{g.def}</div>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ ...card, textAlign: 'center', border: `1px solid ${GREEN}55`, background: 'linear-gradient(135deg,rgba(52,211,153,0.10),rgba(4,120,87,0.06))' }}>
-              <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 8 }}>🔒 {lesson.examQuestions.length} spoken exam questions + {lesson.mcQuestions.length} MCQs, locked</div>
-              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', maxWidth: 460, margin: '0 auto 18px', lineHeight: 1.6 }}>
-                Create a free account to practise this exact topic out loud, take the MCQ quiz, and save it to come back to later.
-              </p>
-              <a href={REGISTER_URL} style={{ display: 'inline-block', background: `linear-gradient(135deg,${GREEN},#047857)`, color: '#fff', borderRadius: 12, padding: '13px 28px', fontWeight: 800, textDecoration: 'none' }}>
-                Create my free account →
-              </a>
-            </div>
-          </div>
-        )}
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: hov ? bg : 'rgba(255,255,255,0.03)',
+        border: `1px solid ${hov ? accent + '50' : BORDER}`,
+        borderRadius: 14, padding: '18px 20px',
+        cursor: 'pointer', transition: 'all 0.18s',
+        display: 'flex', flexDirection: 'column', gap: 10,
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: TEXT1, lineHeight: 1.3 }}>{course.title}</div>
+        <span style={{
+          fontSize: 10, fontWeight: 700, color: LEVEL_COLOURS[course.level] ?? PURPLE,
+          background: (LEVEL_COLOURS[course.level] ?? PURPLE) + '15',
+          borderRadius: 20, padding: '3px 8px', flexShrink: 0,
+        }}>{course.level}</span>
+      </div>
+      <div style={{ fontSize: 12, color: TEXT3, lineHeight: 1.5 }}>{course.subtitle}</div>
+      <div style={{ display: 'flex', gap: 12, fontSize: 11, color: TEXT3 }}>
+        <span>{course.modules.length} modules</span>
+        <span>·</span>
+        <span>{fmtHours(mins)}</span>
+        <span>·</span>
+        <span style={{ color: accent }}>{course.category}</span>
+      </div>
+      <div style={{ fontSize: 10, color: TEXT3 }}>
+        {(() => {
+          const ageMs = Date.now() - new Date(course.createdAt).getTime();
+          const ageH = Math.floor(ageMs / 3600000);
+          const ageD = Math.floor(ageMs / 86400000);
+          if (ageH < 1) return 'Generated just now';
+          if (ageH < 24) return `Generated ${ageH}h ago`;
+          return `Generated ${ageD}d ago`;
+        })()}
       </div>
     </div>
   );
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: 12 }}>{children}</div>;
+// ── Code block (syntax-highlighted, book-style) ────────────────────────────────
+
+// Languages Prism actually ships grammars for — anything else (e.g. the AI writing
+// "text" for a maths derivation or a pin/register table) renders as plain monospace
+// instead of risking Prism.tokenize() throwing on an unknown grammar.
+const KNOWN_LANGUAGES = new Set([
+  'markup', 'html', 'xml', 'svg', 'css', 'clike', 'javascript', 'js', 'jsx', 'tsx',
+  'typescript', 'ts', 'python', 'py', 'csharp', 'cs', 'c', 'cpp', 'c++', 'java', 'go',
+  'rust', 'rs', 'php', 'ruby', 'rb', 'swift', 'kotlin', 'kt', 'sql', 'bash', 'shell',
+  'sh', 'yaml', 'yml', 'json', 'markdown', 'md', 'graphql', 'diff', 'git', 'makefile',
+  'objectivec', 'scss', 'sass', 'less', 'wasm', 'docker', 'powershell', 'ps1',
+]);
+
+function CodeBlock({ sample }: { sample: CodeSample }) {
+  const [copied, setCopied] = useState(false);
+  const lang = sample.language?.toLowerCase().trim() ?? '';
+  const highlightable = KNOWN_LANGUAGES.has(lang);
+  return (
+    <div style={{
+      margin: '20px 0', borderRadius: 12, overflow: 'hidden',
+      border: '1px solid rgba(255,255,255,0.08)', background: '#0a0c12',
+    }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '8px 16px', background: 'rgba(255,255,255,0.03)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+          {sample.language}
+        </span>
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(sample.code).catch(() => {});
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+          }}
+          style={{
+            background: 'none', border: 'none', color: copied ? GREEN : TEXT3,
+            fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: '2px 6px',
+          }}>
+          {copied ? '✓ Copied' : 'Copy'}
+        </button>
+      </div>
+      {highlightable ? (
+        <Highlight theme={themes.vsDark} code={sample.code.trim()} language={lang as never}>
+          {({ style, tokens, getLineProps, getTokenProps }) => (
+            <pre style={{ ...style, margin: 0, padding: '16px 20px', fontSize: 13, lineHeight: 1.65, overflowX: 'auto', background: 'transparent' }}>
+              {tokens.map((line, i) => (
+                <div key={i} {...getLineProps({ line })}>
+                  {line.map((token, key) => (
+                    <span key={key} {...getTokenProps({ token })} />
+                  ))}
+                </div>
+              ))}
+            </pre>
+          )}
+        </Highlight>
+      ) : (
+        <pre style={{ margin: 0, padding: '16px 20px', fontSize: 13, lineHeight: 1.65, overflowX: 'auto', color: '#c0cce0', fontFamily: 'ui-monospace, monospace' }}>
+          {sample.code.trim()}
+        </pre>
+      )}
+      {sample.caption && (
+        <div style={{ padding: '8px 16px 12px', fontSize: 12, color: TEXT3, fontStyle: 'italic' }}>
+          {sample.caption}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Mermaid diagram (flowcharts, sequence/state diagrams) ─────────────────────
+
+function DiagramBlock({ diagram }: { diagram: Diagram }) {
+  const id = useId().replace(/:/g, '');
+  const [svg, setSvg] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+  // Zoom modal (Francis, 2026-09-11: "the writing is quite tiny and you can't zoom in
+  // easily") — reuses the SAME rendered SVG at a much larger size rather than re-rendering
+  // Mermaid a second time.
+  const [zoomed, setZoomed] = useState(false);
+
+  useEffect(() => {
+    if (!zoomed) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setZoomed(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [zoomed]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setSvg(null);
+    setFailed(false);
+    // On a syntax error, Mermaid doesn't just reject cleanly — it also draws its own
+    // "bomb" error graphic straight into document.body as a side effect, outside our
+    // component tree entirely, so it lingers on screen (even on a totally different page,
+    // once the SPA navigates away) no matter how we handle the rejected promise. Snapshot
+    // body's children before rendering so any it injects on failure can be identified and
+    // removed — the .catch() below only controls what WE show, not what Mermaid itself drew.
+    const bodyChildrenBefore = new Set(Array.from(document.body.children));
+    mermaid.render(`mmd-${id}`, diagram.mermaid.trim())
+      .then(({ svg }) => { if (!cancelled) setSvg(svg); })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+        for (const el of Array.from(document.body.children)) {
+          if (!bodyChildrenBefore.has(el)) el.remove();
+        }
+      });
+    return () => { cancelled = true; };
+  }, [diagram.mermaid, id]);
+
+  if (failed) return null; // malformed AI-generated diagram — fail silently rather than break the lesson
+
+  return (
+    <>
+      <div style={{
+        margin: '20px 0', borderRadius: 12, overflow: 'hidden', position: 'relative',
+        border: '1px solid rgba(255,255,255,0.08)', background: '#0a0c12',
+        padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+      }}>
+        {svg ? (
+          <>
+            <button
+              onClick={() => setZoomed(true)}
+              title="Zoom in"
+              style={{
+                position: 'absolute', top: 10, right: 10, width: 30, height: 30, borderRadius: 8,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(255,255,255,0.06)', border: `1px solid ${BORDER}`,
+                color: TEXT2, cursor: 'pointer', fontSize: 14,
+              }}
+            >
+              🔍
+            </button>
+            <div
+              onClick={() => setZoomed(true)}
+              style={{ maxWidth: '100%', overflowX: 'auto', cursor: 'zoom-in' }}
+              dangerouslySetInnerHTML={{ __html: svg }}
+            />
+          </>
+        ) : (
+          <div style={{ fontSize: 12, color: TEXT3, padding: '20px 0' }}>Rendering diagram…</div>
+        )}
+        {diagram.caption && svg && (
+          <div style={{ fontSize: 12, color: TEXT3, fontStyle: 'italic', textAlign: 'center' }}>{diagram.caption}</div>
+        )}
+      </div>
+
+      {zoomed && svg && (
+        <div
+          onClick={() => setZoomed(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,6,12,0.92)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40, cursor: 'zoom-out',
+          }}
+        >
+          <button
+            onClick={() => setZoomed(false)}
+            title="Close (Esc)"
+            style={{
+              position: 'absolute', top: 20, right: 24, width: 36, height: 36, borderRadius: 10,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
+              background: 'rgba(255,255,255,0.08)', border: `1px solid ${BORDER}`, color: TEXT2, cursor: 'pointer',
+            }}
+          >
+            ✕
+          </button>
+          <div
+            onClick={e => e.stopPropagation()}
+            className="diagram-zoom-content"
+            // width (not maxWidth) is the fix — the backdrop is a centring flex container, so
+            // a flex child with only a maxWidth shrink-wraps to its content's intrinsic size
+            // by default. That left the SVG's own "width:100%" resolving against an
+            // effectively auto-sized box, which circularly falls back to the SVG's ORIGINAL
+            // small intrinsic size — reported live 2026-09-11: "still too small to see", and
+            // confirmed from a screenshot showing the zoomed diagram barely any bigger. A
+            // real, explicit width gives the SVG something concrete to actually size against.
+            style={{ width: '90vw', maxHeight: '90vh', overflow: 'auto', cursor: 'default' }}
+          >
+            {/* Mermaid's own <svg> carries an inline max-width style sized for the small
+                inline view — without overriding it here, "zoom" would just show the same
+                small diagram centred on a dark backdrop, not actually larger. */}
+            <style>{`.diagram-zoom-content svg { width: 100% !important; height: auto !important; max-width: none !important; }`}</style>
+            <div dangerouslySetInnerHTML={{ __html: svg }} />
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ── Reference solution reveal (practice exercises) ─────────────────────────────
+
+function SolutionReveal({ sample }: { sample: CodeSample }) {
+  const [revealed, setRevealed] = useState(false);
+  return (
+    <div style={{
+      margin: '0 0 24px', borderRadius: 12, overflow: 'hidden',
+      border: '1px solid rgba(52,211,153,0.25)', background: 'rgba(52,211,153,0.04)',
+    }}>
+      <button
+        onClick={() => setRevealed(v => !v)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '14px 20px', background: 'none', border: 'none', cursor: 'pointer',
+        }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: GREEN, display: 'flex', alignItems: 'center', gap: 8 }}>
+          ✅ {revealed ? 'Hide Reference Solution' : 'Compare to Reference Solution'}
+        </span>
+        <span style={{ fontSize: 12, color: GREEN, transform: revealed ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>▾</span>
+      </button>
+      {revealed && (
+        <div style={{ padding: '0 16px 16px' }}>
+          <div style={{ fontSize: 12, color: TEXT3, marginBottom: 10 }}>
+            Built it a different way? That's fine — this is one correct approach, not the only one.
+          </div>
+          <CodeBlock sample={sample} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Read-aloud button ────────────────────────────────────────────────────────────
+
+const READ_RATES = [1, 1.25, 1.5, 2];
+
+function ReadAloudButton({ text }: { text: string }) {
+  const [state, setState] = useState<ReadAloudState>('idle');
+  const [rate, setRateValue] = useState(1);
+  const [gender, setGenderValue] = useState<ReadAloudGender>('female');
+  const playerRef = useRef<ReturnType<typeof createReadAloudPlayer> | null>(null);
+
+  useEffect(() => {
+    playerRef.current = createReadAloudPlayer(text, setState, gender);
+    return () => playerRef.current?.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const speaking = state === 'playing' || state === 'paused';
+  const loading = state === 'loading';
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, userSelect: 'none' }}>
+      {speaking && (
+        <button
+          onClick={() => playerRef.current?.back()}
+          title="Back one paragraph"
+          style={{
+            fontSize: 13, padding: '5px 9px', borderRadius: 7,
+            background: BG3, border: `1px solid ${BORDER}`, color: TEXT2, cursor: 'pointer',
+          }}
+        >
+          ⏮
+        </button>
+      )}
+      <button
+        onClick={() => {
+          if (loading) return;
+          if (state === 'playing') playerRef.current?.pause();
+          else if (state === 'paused') playerRef.current?.resume();
+          else playerRef.current?.play();
+        }}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          background: speaking ? 'rgba(79,142,247,0.14)' : 'rgba(255,255,255,0.05)',
+          border: `1px solid ${speaking ? 'rgba(79,142,247,0.4)' : BORDER}`,
+          borderRadius: 20, padding: '6px 14px', fontSize: 12, fontWeight: 700,
+          color: speaking ? BLUE : TEXT2, cursor: loading ? 'wait' : 'pointer',
+          opacity: loading ? 0.6 : 1, transition: 'all 0.15s',
+        }}
+      >
+        {loading ? '⏳ Loading…' : state === 'playing' ? '⏸ Pause' : state === 'paused' ? '▶ Resume' : '🔊 Read Aloud'}
+      </button>
+      {speaking && (
+        <button
+          onClick={() => playerRef.current?.forward()}
+          title="Forward one paragraph"
+          style={{
+            fontSize: 13, padding: '5px 9px', borderRadius: 7,
+            background: BG3, border: `1px solid ${BORDER}`, color: TEXT2, cursor: 'pointer',
+          }}
+        >
+          ⏭
+        </button>
+      )}
+      {speaking && (
+        <>
+          <select
+            value={rate}
+            onChange={e => {
+              const r = Number(e.target.value);
+              setRateValue(r);
+              playerRef.current?.setRate(r);
+            }}
+            style={{
+              fontSize: 11, fontWeight: 600, padding: '5px 8px', borderRadius: 7,
+              background: BG3, border: `1px solid ${BORDER}`, color: TEXT2, cursor: 'pointer', outline: 'none',
+            }}
+          >
+            {READ_RATES.map(r => <option key={r} value={r}>{r}×</option>)}
+          </select>
+          <button
+            onClick={() => {
+              const next: ReadAloudGender = gender === 'female' ? 'male' : 'female';
+              setGenderValue(next);
+              playerRef.current?.setGender(next);
+            }}
+            title={`Switch to ${gender === 'female' ? 'male' : 'female'} voice`}
+            style={{
+              fontSize: 13, padding: '5px 9px', borderRadius: 7,
+              background: BG3, border: `1px solid ${BORDER}`, color: TEXT2, cursor: 'pointer',
+            }}
+          >
+            {gender === 'female' ? '♀' : '♂'}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── Lecture content renderer ───────────────────────────────────────────────────
+
+function LectureView({ lecture, courseTitle, onPractice, onMiniPractice }: {
+  lecture: Lecture; courseTitle: string;
+  onPractice: (q: string, lecture?: Lecture) => void;
+  onMiniPractice: (q: string, lecture: Lecture) => void;
+}) {
+  return (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '32px 36px 60px' }}>
+      {/* Lecture header */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 18 }}>{LECTURE_ICONS[lecture.type]}</span>
+            <span style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+              color: lecture.type === 'practice' ? GREEN : lecture.type === 'quiz' ? PURPLE : BLUE,
+            }}>{lecture.type}</span>
+            <span style={{ fontSize: 11, color: TEXT3, marginLeft: 4 }}>· {lecture.estimatedMinutes} min</span>
+          </div>
+          <ReadAloudButton key={`${courseTitle}-${lecture.number}-${lecture.title}`} text={extractReadableText(lecture.content)} />
+        </div>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: TEXT1, margin: 0, letterSpacing: '-0.02em' }}>
+          {lecture.title}
+        </h2>
+      </div>
+
+      {/* Main content */}
+      <div style={{
+        fontSize: 15, color: '#c0cce0', lineHeight: 1.85,
+        marginBottom: 32,
+        borderLeft: '3px solid rgba(79,142,247,0.3)',
+        paddingLeft: 20,
+      }}>
+        {(() => {
+          const lines = lecture.content.split('\n').filter(p => p.trim());
+          const usedCode = new Set<number>();
+          const usedDiagram = new Set<number>();
+          lines.forEach(p => {
+            const t = p.trim();
+            const cm = t.match(/^\{\{CODE_(\d+)\}\}$/);
+            const dm = t.match(/^\{\{DIAGRAM_(\d+)\}\}$/);
+            if (cm) usedCode.add(Number(cm[1]) - 1);
+            if (dm) usedDiagram.add(Number(dm[1]) - 1);
+          });
+          // Anything the AI generated but forgot to (or never tried to) place inline
+          // still gets shown — appended after the prose — rather than silently dropped.
+          const leftoverCode = (lecture.codeSamples ?? []).filter((_, i) => !usedCode.has(i));
+          const leftoverDiagrams = (lecture.diagrams ?? []).filter((_, i) => !usedDiagram.has(i));
+
+          return (
+            <>
+              {lines.map((para, i) => {
+                const t = para.trim();
+                const cm = t.match(/^\{\{CODE_(\d+)\}\}$/);
+                const dm = t.match(/^\{\{DIAGRAM_(\d+)\}\}$/);
+                if (cm) {
+                  const sample = lecture.codeSamples?.[Number(cm[1]) - 1];
+                  return sample ? <CodeBlock key={i} sample={sample} /> : null;
+                }
+                if (dm) {
+                  const diagram = lecture.diagrams?.[Number(dm[1]) - 1];
+                  return diagram ? <DiagramBlock key={i} diagram={diagram} /> : null;
+                }
+                return <p key={i} style={{ margin: '0 0 16px' }}>{para}</p>;
+              })}
+              {leftoverCode.map((s, i) => <CodeBlock key={`lc-${i}`} sample={s} />)}
+              {leftoverDiagrams.map((d, i) => <DiagramBlock key={`ld-${i}`} diagram={d} />)}
+            </>
+          );
+        })()}
+      </div>
+
+      {/* Reference solution — hidden by default so it doesn't spoil the exercise */}
+      {lecture.type === 'practice' && lecture.solutionCode && (
+        <SolutionReveal sample={lecture.solutionCode} />
+      )}
+
+      {/* Key takeaways */}
+      {lecture.keyTakeaways?.length > 0 && (
+        <div style={{
+          background: 'rgba(52,211,153,0.06)',
+          border: '1px solid rgba(52,211,153,0.18)',
+          borderRadius: 12, padding: '20px 24px',
+          marginBottom: 24,
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: GREEN, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 14 }}>
+            ✦ Key Takeaways
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {lecture.keyTakeaways.map((t, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <div style={{
+                  width: 20, height: 20, borderRadius: '50%',
+                  background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 10, fontWeight: 800, color: GREEN, flexShrink: 0, marginTop: 1,
+                }}>{i + 1}</div>
+                <div style={{ fontSize: 13, color: '#9ff0d0', lineHeight: 1.5 }}>{t}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Deep Dive */}
+      {lecture.deepDive && (
+        <div style={{
+          background: 'rgba(79,142,247,0.06)', border: '1px solid rgba(79,142,247,0.18)',
+          borderRadius: 12, padding: '20px 24px', marginBottom: 16,
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: BLUE, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>
+            📖 Deep Dive
+          </div>
+          <p style={{ fontSize: 14, color: '#b8cef7', lineHeight: 1.75, margin: 0 }}>{lecture.deepDive}</p>
+        </div>
+      )}
+
+      {/* Real-World Example */}
+      {lecture.realWorldExample && (
+        <div style={{
+          background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)',
+          borderRadius: 12, padding: '20px 24px', marginBottom: 16,
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#F59E0B', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>
+            💡 Real-World Example
+          </div>
+          <p style={{ fontSize: 14, color: '#fde68a', lineHeight: 1.75, margin: 0 }}>{lecture.realWorldExample}</p>
+        </div>
+      )}
+
+      {/* Memory Hook */}
+      {lecture.memoryHook && (
+        <div style={{
+          background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.2)',
+          borderRadius: 12, padding: '20px 24px', marginBottom: 16,
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: GREEN, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>
+            🧠 Memory Hook
+          </div>
+          <p style={{ fontSize: 15, fontWeight: 600, color: '#6EE7B7', lineHeight: 1.65, margin: 0, fontStyle: 'italic' }}>{lecture.memoryHook}</p>
+        </div>
+      )}
+
+      {/* Common Misconceptions */}
+      {lecture.commonMisconceptions?.length > 0 && (
+        <div style={{
+          background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.18)',
+          borderRadius: 12, padding: '20px 24px', marginBottom: 24,
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#F87171', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 14 }}>
+            ⚠️ Common Misconceptions
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {lecture.commonMisconceptions.map((m, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <span style={{ fontSize: 13, color: '#fca5a5', lineHeight: 1.5 }}>
+                    <span style={{ fontWeight: 700 }}>✗ Myth: </span>{m.myth}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, paddingLeft: 12, borderLeft: '2px solid rgba(52,211,153,0.4)' }}>
+                  <span style={{ fontSize: 13, color: '#9ff0d0', lineHeight: 1.5 }}>
+                    <span style={{ fontWeight: 700 }}>✓ Reality: </span>{m.reality}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Interview questions */}
+      {lecture.interviewQuestions?.length > 0 && (
+        <div style={{
+          background: 'rgba(167,139,250,0.06)',
+          border: '1px solid rgba(167,139,250,0.2)',
+          borderRadius: 12, padding: '20px 24px',
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: PURPLE, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 14 }}>
+            🎤 Interview Questions on This Topic
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {lecture.interviewQuestions.map((q, i) => (
+              <div
+                key={i}
+                style={{
+                  background: 'rgba(167,139,250,0.08)',
+                  border: '1px solid rgba(167,139,250,0.18)',
+                  borderRadius: 10, padding: '12px 16px',
+                }}
+              >
+                <div style={{ fontSize: 13, color: '#d4c5ff', lineHeight: 1.5 }}>{q}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: 16 }}>
+            <button
+              onClick={() => onMiniPractice(lecture.interviewQuestions[0] ?? lecture.title, lecture)}
+              style={{
+                background: 'linear-gradient(135deg, #7b5cf5, #5b8ff7)',
+                color: '#fff', border: 'none', borderRadius: 9, padding: '10px 20px',
+                fontSize: 12, fontWeight: 700, cursor: 'pointer', width: '100%',
+              }}>
+              🎯 Take Short Multiple Choice Test →
+            </button>
+          </div>
+
+          <div style={{ marginTop: 12, padding: '14px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: `1px solid ${BORDER}` }}>
+            <div style={{ fontSize: 12, color: TEXT3, marginBottom: 8 }}>
+              Ready to be interviewed on <strong style={{ color: TEXT2 }}>{courseTitle}</strong>? Practice with James or Sarah — they'll use questions from this course.
+            </div>
+            <button
+              onClick={() => onPractice('')}
+              style={{
+                background: 'linear-gradient(135deg, #7b5cf5, #5b8ff7)',
+                color: '#fff', border: 'none', borderRadius: 9, padding: '10px 20px',
+                fontSize: 12, fontWeight: 700, cursor: 'pointer', width: '100%',
+              }}>
+              Start Full Interview Practice →
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Course view (module tree + lecture) ────────────────────────────────────────
+// buildQuestionsFromCourse (LearnPanel.tsx's helper for opening a real interview-room practice
+// session) isn't needed here — this page always sends "Practice" straight to register instead
+// (see handlePractice's own comment below).
+
+function CourseView({ course, onBack, onUpdateCourse }: { course: Course; onBack: () => void; onUpdateCourse: (course: Course) => void }) {
+  const [expandedModule, setExpandedModule] = useState<number>(1);
+  const [activeLecture, setActiveLecture] = useState<{ module: Module; lecture: Lecture } | null>(() => {
+    const firstLecture = course.modules[0]?.lectures[0];
+    return firstLecture ? { module: course.modules[0], lecture: firstLecture } : null;
+  });
+  const [retryingModule, setRetryingModule] = useState<number | null>(null);
+  const [miniPractice, setMiniPractice] = useState<{ topic: string; seedQuestion: string } | null>(null);
+  const { accent, bg } = catStyle(course.category);
+  const mins = totalMinutes(course);
+
+  async function retryModule(modNumber: number) {
+    const modIndex = course.modules.findIndex(m => m.number === modNumber);
+    if (modIndex === -1) return;
+    setRetryingModule(modNumber);
+    let lectures: Lecture[] | null = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 2000));
+        lectures = await generateModuleLectures(course.title, course.modules[modIndex], course.level, course.specialFocus);
+        break;
+      } catch (e) {
+        console.warn(`[LearnEngine] Retry module ${modNumber} attempt ${attempt + 1} failed:`, e);
+      }
+    }
+    const updatedModules = [...course.modules];
+    updatedModules[modIndex] = { ...updatedModules[modIndex], lectures: lectures ?? [], loading: false };
+    const updated = { ...course, modules: updatedModules };
+    onUpdateCourse(updated);
+    setRetryingModule(null);
+
+    // Push the corrected course back to the platform cache so it stops
+    // serving the previously-broken snapshot to other users.
+    if (lectures) {
+      fetch(`${API_BASE}/api/courses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: course.title, level: course.level, course: updated }),
+      }).catch(() => { /* non-critical */ });
+    }
+  }
+
+  // Auto-select first lecture once Module 1's content arrives (progressive load)
+  useEffect(() => {
+    if (!activeLecture) {
+      const firstLecture = course.modules[0]?.lectures[0];
+      if (firstLecture) setActiveLecture({ module: course.modules[0], lecture: firstLecture });
+    }
+  }, [course.modules[0]?.lectures[0]]);
+
+  // Public/anonymous page — there is never a logged-in candidate here, so unlike the authenticated
+  // LearnPanel this never calls useInterviewGate: that hook's own `if (!token) return { allowed:
+  // true }` fallback exists for a page that already requires login to reach at all, and would
+  // wrongly let an anonymous visitor start a full, real (avatar-costed) interview room session for
+  // free if reused here unmodified (found 2026-09-24, before shipping). Practising with a real
+  // interviewer is exactly the "act requires an account" boundary the rest of the platform already
+  // draws elsewhere (Introductions, session replays) — so this always sends straight to register.
+  function handlePractice() {
+    window.location.href = REGISTER_URL;
+  }
+
+  function handleMiniPractice(question: string, lecture: Lecture) {
+    setMiniPractice({ topic: lecture.title, seedQuestion: question });
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      {/* Course header bar */}
+      <div style={{
+        background: BG2, borderBottom: `1px solid ${BORDER}`,
+        padding: '0 24px', height: 56,
+        display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0,
+      }}>
+        <button
+          onClick={onBack}
+          style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${BORDER}`, borderRadius: 8, color: TEXT2, cursor: 'pointer', padding: '6px 12px', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+          ← Back
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: TEXT1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{course.title}</div>
+          <div style={{ fontSize: 11, color: TEXT3 }}>{course.modules.length} modules · {fmtHours(mins)} · {course.level}</div>
+        </div>
+        <span style={{
+          fontSize: 11, fontWeight: 700,
+          color: LEVEL_COLOURS[course.level] ?? PURPLE,
+          background: bg, borderRadius: 20, padding: '4px 12px',
+        }}>{course.level}</span>
+      </div>
+
+      {/* Two-column layout */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+
+        {/* Module sidebar */}
+        <div style={{
+          width: 280, flexShrink: 0,
+          background: BG2, borderRight: `1px solid ${BORDER}`,
+          overflowY: 'auto',
+        }}>
+          <div style={{ padding: '16px 16px 8px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: TEXT3, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              Course Content
+            </div>
+          </div>
+
+          {course.modules.map(mod => {
+            const isExpanded = expandedModule === mod.number;
+            const modMins = mod.lectures.reduce((a, l) => a + l.estimatedMinutes, 0);
+
+            return (
+              <div key={mod.number}>
+                {/* Module header */}
+                <div
+                  onClick={() => setExpandedModule(isExpanded ? 0 : mod.number)}
+                  style={{
+                    padding: '12px 16px',
+                    cursor: 'pointer',
+                    borderBottom: `1px solid ${BORDER}`,
+                    background: isExpanded ? 'rgba(79,142,247,0.06)' : 'transparent',
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: isExpanded ? BLUE : TEXT2 }}>
+                      Module {mod.number}
+                    </div>
+                    <div style={{ fontSize: 10, color: !mod.loading && mod.lectures.length === 0 ? '#F87171' : TEXT3 }}>
+                      {mod.loading ? '…' : mod.lectures.length === 0 ? 'Failed' : fmtHours(modMins)}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 12, color: isExpanded ? TEXT1 : TEXT2, lineHeight: 1.4, fontWeight: isExpanded ? 600 : 400 }}>
+                    {mod.title}
+                  </div>
+                </div>
+
+                {/* Lectures — show skeleton while module is loading */}
+                {isExpanded && mod.loading && (
+                  <div style={{ padding: '12px 16px 12px 28px', borderBottom: `1px solid ${BORDER}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: TEXT3, fontSize: 12 }}>
+                      <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⟳</span>
+                      Writing lectures…
+                    </div>
+                  </div>
+                )}
+
+                {/* Failed to generate — offer retry instead of leaving it silently empty */}
+                {isExpanded && !mod.loading && mod.lectures.length === 0 && (
+                  <div style={{ padding: '12px 16px 12px 28px', borderBottom: `1px solid ${BORDER}` }}>
+                    <div style={{ fontSize: 12, color: '#F87171', marginBottom: 8 }}>
+                      This module failed to generate.
+                    </div>
+                    <button
+                      onClick={() => retryModule(mod.number)}
+                      disabled={retryingModule === mod.number}
+                      style={{
+                        background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)',
+                        borderRadius: 8, color: retryingModule === mod.number ? TEXT3 : '#F87171',
+                        fontSize: 11, fontWeight: 700, padding: '6px 12px',
+                        cursor: retryingModule === mod.number ? 'default' : 'pointer',
+                        display: 'flex', alignItems: 'center', gap: 6,
+                      }}>
+                      {retryingModule === mod.number ? (
+                        <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⟳</span> Retrying…</>
+                      ) : '↻ Retry'}
+                    </button>
+                  </div>
+                )}
+                {isExpanded && !mod.loading && mod.lectures.length > 0 && mod.lectures.map(lec => {
+                  const isActive = activeLecture?.lecture.number === lec.number && activeLecture.module.number === mod.number;
+                  return (
+                    <div
+                      key={lec.number}
+                      onClick={() => setActiveLecture({ module: mod, lecture: lec })}
+                      style={{
+                        padding: '10px 16px 10px 28px',
+                        cursor: 'pointer',
+                        background: isActive ? `${accent}18` : 'transparent',
+                        borderLeft: isActive ? `3px solid ${accent}` : '3px solid transparent',
+                        borderBottom: `1px solid ${BORDER}`,
+                        transition: 'all 0.15s',
+                        display: 'flex', alignItems: 'flex-start', gap: 8,
+                      }}
+                      onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.04)'; }}
+                      onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
+                    >
+                      <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{LECTURE_ICONS[lec.type]}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, color: isActive ? TEXT1 : TEXT2, fontWeight: isActive ? 600 : 400, lineHeight: 1.4 }}>{lec.title}</div>
+                        <div style={{ fontSize: 10, color: TEXT3, marginTop: 2 }}>{lec.estimatedMinutes} min</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Lecture content */}
+        <div style={{ flex: 1, overflowY: 'auto', background: '#0c0e14' }}>
+          {activeLecture ? (
+            <LectureView
+              lecture={activeLecture.lecture}
+              courseTitle={course.title}
+              onPractice={handlePractice}
+              onMiniPractice={handleMiniPractice}
+            />
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, color: TEXT3 }}>
+              {course.modules[0]?.loading ? (
+                <>
+                  <span style={{ fontSize: 28, animation: 'spin 1.2s linear infinite', display: 'inline-block' }}>⟳</span>
+                  <div style={{ fontSize: 14 }}>Writing Module 1 lectures…</div>
+                </>
+              ) : (
+                <div style={{ fontSize: 14 }}>Select a lecture to begin</div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {miniPractice && (
+        <MiniPracticeSession
+          courseTitle={course.title}
+          topic={miniPractice.topic}
+          seedQuestion={miniPractice.seedQuestion}
+          onClose={() => setMiniPractice(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Main LearnPanel ────────────────────────────────────────────────────────────
+
+export default function PublicLearnPage() {
+  const initialTopic = (() => { try { return (new URLSearchParams(window.location.search).get('topic') ?? '').slice(0, 120) || undefined; } catch { return undefined; } })();
+  const [query, setQuery] = useState(initialTopic ?? '');
+  const [level, setLevel] = useState<'Beginner' | 'Intermediate' | 'Expert'>('Intermediate');
+  // Special Focus — same concept/UX as InterviewPackStart.tsx's chips: optional sub-topics
+  // that narrow the generated course toward specific areas (e.g. "System Design" + focus
+  // ".NET, Microservices"), without the candidate having to type it all into one long topic
+  // string. No "What's Hot" suggestion button here (that's tied to a job-title context that
+  // doesn't apply to an arbitrary Learn topic) — just the chip input itself.
+  const [specialFocusInput, setSpecialFocusInput] = useState('');
+  const [specialFocusChips, setSpecialFocusChips] = useState<string[]>([]);
+  const [hotTopicsLoading, setHotTopicsLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [genStep, setGenStep] = useState(0);
+  const [error, setError] = useState('');
+  const [activeCourse, setActiveCourse] = useState<Course | null>(null);
+  const [savedCourses, setSavedCourses] = useState<Course[]>(() => loadCourses());
+  const [suggestions, setSuggestions] = useState<{ title: string; level: string }[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggFocused, setSuggFocused] = useState(-1);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const genTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (generating) {
+      let step = 0;
+      genTimer.current = setInterval(() => {
+        step = Math.min(step + 1, GEN_STEPS.length - 1);
+        setGenStep(step);
+      }, 5000);
+    } else {
+      if (genTimer.current) clearInterval(genTimer.current);
+      setGenStep(0);
+    }
+    return () => { if (genTimer.current) clearInterval(genTimer.current); };
+  }, [generating]);
+
+  // Arriving here with a topic already chosen (from the exam picker's "Learn this first", or an
+  // exam/interview summary's weak-area link) should go straight to a generated course, not just
+  // pre-fill the search box and wait for another click (Francis, 2026-09-23). Mount-only — a plain
+  // click on the Learn nav item passes no studyTopic, so this never fires uninvited.
+  useEffect(() => {
+    if (initialTopic && initialTopic.trim().length >= 3) void handleGenerate(initialTopic);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function handleQueryChange(val: string) {
+    setQuery(val);
+    setError('');
+    setSuggFocused(-1);
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    if (val.trim().length < 2) { setSuggestions([]); setShowSuggestions(false); return; }
+    debounceTimer.current = setTimeout(async () => {
+      // Platform suggestions (courses other users have already generated)
+      const platformSuggs: { title: string; level: string }[] = [];
+      try {
+        const r = await fetch(`${API_BASE}/api/courses/suggest?q=${encodeURIComponent(val.trim())}`);
+        if (r.ok) platformSuggs.push(...(await r.json() as { title: string; level: string }[]));
+      } catch { /* ignore */ }
+      // Local SUGGESTIONS filtered by query
+      const q = val.toLowerCase();
+      const localSuggs = SUGGESTIONS
+        .filter(s => s.title.toLowerCase().includes(q))
+        .map(s => ({ title: s.title, level: '' }));
+      // Merge: platform first, then local, deduplicated
+      const seen = new Set(platformSuggs.map(s => s.title.toLowerCase()));
+      const merged = [...platformSuggs, ...localSuggs.filter(s => !seen.has(s.title.toLowerCase()))].slice(0, 8);
+      setSuggestions(merged);
+      setShowSuggestions(merged.length > 0);
+    }, 280);
+  }
+
+  function addSpecialFocusChip(raw: string) {
+    const value = raw.trim();
+    if (!value) return;
+    setSpecialFocusChips(prev => prev.some(c => c.toLowerCase() === value.toLowerCase()) ? prev : [...prev, value]);
+  }
+
+  function removeSpecialFocusChip(value: string) {
+    setSpecialFocusChips(prev => prev.filter(c => c !== value));
+  }
+
+  async function handleWhatsHot() {
+    if (!query.trim() || hotTopicsLoading) return;
+    setHotTopicsLoading(true);
+    try {
+      const topics = await generateHotLearnTopics(query.trim());
+      topics.forEach(addSpecialFocusChip);
+    } finally {
+      setHotTopicsLoading(false);
+    }
+  }
+
+  function handleDelete(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    deleteCourse(id);
+    setSavedCourses(loadCourses());
+  }
+
+  async function handleGenerate(title?: string) {
+    const t = (title ?? query).trim();
+    if (!t || t.length < 3) {
+      setError('Please enter a course topic (at least 3 characters).');
+      inputRef.current?.focus();
+      return;
+    }
+    setError('');
+
+    // No "What People Are Studying" logging here — that's tied to a real candidateId, meaningless
+    // for an anonymous visitor (see PublicLearnPage's top-of-file note).
+
+    const focus = specialFocusChips.length > 0 ? specialFocusChips : undefined;
+
+    // 1. Local browser cache (instant) — keyed on (title, level, specialFocus) together, so a
+    // customized course never collides with (or gets served in place of) the plain one.
+    const localCached = findCached(t, level, focus);
+    if (localCached) { setActiveCourse(localCached); return; }
+
+    // 2. Platform cache (Cosmos — shared across all users) — skipped entirely when a Special
+    // Focus is set. The backend cache key is (title, level) only; reading OR writing it for a
+    // customized course would mean either serving someone else's generic course in place of a
+    // requested focus, or polluting the shared cache with a highly specific variant that every
+    // future plain-topic viewer would then get served for the full 2-day TTL.
+    if (!focus) {
+      try {
+        const pr = await fetch(`${API_BASE}/api/courses/cached?title=${encodeURIComponent(t)}&level=${encodeURIComponent(level)}`);
+        if (pr.ok) {
+          const platformCourse = await pr.json() as Omit<Course, 'id' | 'createdAt'>;
+          const course: Course = { ...platformCourse, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
+          // Public/anonymous page — never persisted to the local bookshelf (see the other two
+          // saveCourse() call sites below for the full note); the shared platform cache above is
+          // still what makes repeat requests for the same topic instant.
+          setActiveCourse(course);
+          return;
+        }
+      } catch { /* platform cache unavailable — generate fresh */ }
+    }
+
+    // 3. Generate fresh — phase 1: outline (fast), then modules in background
+    setGenerating(true);
+    try {
+      const outline = await generateOutline(t, level, focus);
+
+      // Build course skeleton with loading placeholders for all modules
+      const skeletonModules: Module[] = outline.modules.map(m => ({
+        ...m,
+        lectures: [],
+        loading: true,
+      }));
+      const courseId = crypto.randomUUID();
+      const skeleton: Course = {
+        ...outline,
+        id: courseId,
+        createdAt: new Date().toISOString(),
+        modules: skeletonModules,
+        specialFocus: focus,
+      };
+
+      setActiveCourse(skeleton);
+      setGenerating(false);
+
+      // Phase 2: fill every module's lectures concurrently in the background — not one at a
+      // time — so clicking ahead to module 6 never means waiting on modules 2-5's turn in a
+      // queue first. Each module still retries independently; the UI updates as each one
+      // finishes, in whatever order they actually complete.
+      //
+      // Module 1 is the one exception: almost every candidate starts reading there
+      // immediately, and full concurrency gave it no better odds than any other module of
+      // finishing first — reported live 2026-09-11 (Francis: on a fresh GraphQL course,
+      // Module 1 was the LAST to complete, so he had to wait for the entire course before
+      // reading the one module he actually wanted first). Awaiting it alone before firing
+      // the rest guarantees it's ready essentially immediately, while modules 2+ still race
+      // concurrently exactly as before — jumping ahead to module 6 still never waits behind
+      // 2-5's turn in a queue.
+      const filled = { ...skeleton, modules: [...skeletonModules] };
+      const fillModule = async (i: number) => {
+        let lectures: Lecture[] | null = null;
+        // Three attempts per module — GPT occasionally returns malformed JSON
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            if (attempt > 0) await new Promise(r => setTimeout(r, 2000));
+            lectures = await generateModuleLectures(outline.title, outline.modules[i], level, focus);
+            break;
+          } catch (e) {
+            console.warn(`[LearnEngine] Module ${i + 1} attempt ${attempt + 1} failed:`, e);
+          }
+        }
+        filled.modules[i] = { ...filled.modules[i], lectures: lectures ?? [], loading: false };
+        setActiveCourse({ ...filled, modules: [...filled.modules] });
+      };
+      await fillModule(0);
+      await Promise.allSettled(outline.modules.slice(1).map((_, i) => fillModule(i + 1)));
+
+      // Public/anonymous page — never saved to the local bookshelf, only to the shared platform
+      // cache below (if every module actually generated — a partial course must never be cached,
+      // since every future viewer would be served that same broken snapshot for the full 2-day
+      // Cosmos TTL). Bookshelf persistence is exactly the "create a free account" boundary.
+      if (!focus && filled.modules.every(m => m.lectures.length > 0)) {
+        fetch(`${API_BASE}/api/courses`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: t, level, course: filled }),
+        }).catch(() => { /* non-critical */ });
+      }
+    } catch (e) {
+      setError('Course generation failed — please try again in a moment.');
+      setGenerating(false);
+    }
+  }
+
+  // ── Course view ──
+  if (activeCourse) {
+    return (
+      <CourseView
+        course={activeCourse}
+        onBack={() => setActiveCourse(null)}
+        onUpdateCourse={(updated) => {
+          setActiveCourse(updated);
+        }}
+      />
+    );
+  }
+
+  // ── Generating state ──
+  if (generating) {
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        minHeight: '70vh', flexDirection: 'column', gap: 24, padding: '40px 24px',
+      }}>
+        {/* Animated ring */}
+        <div style={{ position: 'relative', width: 80, height: 80 }}>
+          <svg width="80" height="80" viewBox="0 0 80 80" style={{ animation: 'spin 1.4s linear infinite' }}>
+            <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
+            <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(120,80,255,0.15)" strokeWidth="5" />
+            <circle cx="40" cy="40" r="34" fill="none" stroke="url(#grad)" strokeWidth="5"
+              strokeDasharray="60 154" strokeLinecap="round" />
+            <defs>
+              <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#7b5cf5" />
+                <stop offset="100%" stopColor="#34d399" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>📚</div>
+        </div>
+
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: TEXT1, marginBottom: 8 }}>Building your course…</div>
+          <div style={{ fontSize: 14, color: PURPLE, fontWeight: 600, marginBottom: 16 }}>
+            {query}
+            <span style={{
+              marginLeft: 8, fontSize: 11, fontWeight: 700,
+              color: LEVEL_COLOURS[level] ?? PURPLE,
+              background: (LEVEL_COLOURS[level] ?? PURPLE) + '20',
+              borderRadius: 20, padding: '2px 8px',
+            }}>{level}</span>
+          </div>
+
+          {/* Steps */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
+            {GEN_STEPS.map((step, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                fontSize: 13,
+                color: i < genStep ? GREEN : i === genStep ? TEXT1 : TEXT3,
+                fontWeight: i === genStep ? 600 : 400,
+                transition: 'color 0.4s',
+              }}>
+                <span style={{ fontSize: 14 }}>
+                  {i < genStep ? '✓' : i === genStep ? '⟳' : '○'}
+                </span>
+                {step}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: 20, fontSize: 12, color: TEXT3 }}>
+            GPT-4o is writing 10 modules with full lecture content — this takes about 20 seconds.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Home / search state ──
+  return (
+    <div style={{ padding: '32px 28px 60px' }}>
+
+      {/* Header */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: PURPLE, letterSpacing: '0.06em', marginBottom: 8 }}>✦ LEARN ENGINE</div>
+        <h1 style={{ fontSize: 28, fontWeight: 900, color: TEXT1, margin: '0 0 8px', letterSpacing: '-0.02em' }}>
+          What do you want to learn?
+        </h1>
+        <p style={{ fontSize: 14, color: TEXT3, margin: 0, lineHeight: 1.6 }}>
+          Type any topic and get a complete course — 10 modules, 40 lectures, interview questions and practice built in.
+        </p>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 14, fontSize: 12.5, color: TEXT2, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 10, padding: '8px 14px' }}>
+          🔓 No account needed to generate a course.
+          <a href={REGISTER_URL} style={{ color: PURPLE, fontWeight: 700, textDecoration: 'none' }}>Create a free account</a> to save it and come back later.
+        </div>
+      </div>
+
+      {/* Search + level */}
+      <div style={{ maxWidth: 680, marginBottom: 32, position: 'relative' }}>
+        {/* Title input */}
+        <div style={{
+          display: 'flex', alignItems: 'center',
+          background: 'rgba(255,255,255,0.05)',
+          border: `1.5px solid ${error ? '#f87171' : 'rgba(167,139,250,0.4)'}`,
+          borderRadius: showSuggestions ? '12px 12px 0 0' : '12px 12px 0 0', padding: '0 18px',
+          boxShadow: '0 0 0 4px rgba(167,139,250,0.06)',
+        }}>
+          <span style={{ fontSize: 20, marginRight: 4 }}>📚</span>
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={e => handleQueryChange(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'ArrowDown') { e.preventDefault(); setSuggFocused(i => Math.min(i + 1, suggestions.length - 1)); }
+              else if (e.key === 'ArrowUp') { e.preventDefault(); setSuggFocused(i => Math.max(i - 1, -1)); }
+              else if (e.key === 'Enter') {
+                if (suggFocused >= 0 && suggestions[suggFocused]) {
+                  const s = suggestions[suggFocused];
+                  setQuery(s.title);
+                  if (s.level) setLevel(s.level as 'Beginner' | 'Intermediate' | 'Expert');
+                  setShowSuggestions(false);
+                  setSuggFocused(-1);
+                } else { handleGenerate(); }
+              } else if (e.key === 'Escape') { setShowSuggestions(false); setSuggFocused(-1); }
+            }}
+            onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+            placeholder="e.g. Certified Chief Technology Officer, Plumbing Fundamentals, Data Science..."
+            style={{
+              flex: 1, background: 'transparent', border: 'none', outline: 'none',
+              color: TEXT1, fontSize: 15, padding: '18px 12px',
+              fontFamily: 'inherit',
+            }}
+          />
+          {query && (
+            <button onClick={() => { setQuery(''); setSuggestions([]); setShowSuggestions(false); setError(''); inputRef.current?.focus(); }}
+              style={{ background: 'none', border: 'none', color: TEXT3, cursor: 'pointer', fontSize: 18, padding: '0 4px' }}>✕</button>
+          )}
+        </div>
+
+        {/* Typeahead dropdown */}
+        {showSuggestions && suggestions.length > 0 && (
+          <div style={{
+            position: 'absolute', top: 62, left: 0, right: 0, zIndex: 50,
+            background: '#1a1d27', border: '1.5px solid rgba(167,139,250,0.35)',
+            borderTop: 'none', borderRadius: '0 0 12px 12px',
+            overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+          }}>
+            {suggestions.map((s, i) => (
+              <div
+                key={i}
+                onMouseDown={() => {
+                  setQuery(s.title);
+                  if (s.level) setLevel(s.level as 'Beginner' | 'Intermediate' | 'Expert');
+                  setShowSuggestions(false);
+                  setSuggFocused(-1);
+                  inputRef.current?.focus();
+                }}
+                style={{
+                  padding: '11px 20px', cursor: 'pointer',
+                  background: i === suggFocused ? 'rgba(167,139,250,0.12)' : 'transparent',
+                  borderBottom: i < suggestions.length - 1 ? `1px solid ${BORDER}` : 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                  transition: 'background 0.1s',
+                }}
+                onMouseEnter={() => setSuggFocused(i)}
+                onMouseLeave={() => setSuggFocused(-1)}
+              >
+                <span style={{ fontSize: 14, color: TEXT1 }}>{s.title}</span>
+                {s.level ? (
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, flexShrink: 0,
+                    color: LEVEL_COLOURS[s.level as keyof typeof LEVEL_COLOURS] ?? PURPLE,
+                    background: (LEVEL_COLOURS[s.level as keyof typeof LEVEL_COLOURS] ?? PURPLE) + '18',
+                    borderRadius: 20, padding: '2px 8px',
+                  }}>{s.level} · cached</span>
+                ) : (
+                  <span style={{ fontSize: 10, color: TEXT3, flexShrink: 0 }}>suggestion</span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Special Focus — same chip UX and layout as InterviewPackStart.tsx's (input + 🔥
+            What's Hot side by side, chips below), optional topics that narrow module/lecture
+            content toward specific sub-areas within the main subject. */}
+        <div style={{ background: BG3, border: `1px solid ${BORDER}`, borderRadius: 12, padding: '18px 20px', marginTop: 16, marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT1 }}>Special Focus</span>
+            <span style={{ fontSize: 11, color: TEXT3, fontWeight: 400 }}>(optional — narrows the course to specific sub-topics)</span>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <input
+              type="text"
+              value={specialFocusInput}
+              onChange={e => setSpecialFocusInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ',') {
+                  e.preventDefault();
+                  addSpecialFocusChip(specialFocusInput);
+                  setSpecialFocusInput('');
+                }
+              }}
+              placeholder="e.g. .NET, Microservices — press Enter to add"
+              style={{
+                flex: 1, background: 'rgba(255,255,255,0.05)', border: `1px solid ${BORDER}`,
+                borderRadius: 10, padding: '13px 16px', color: TEXT1, fontSize: 14,
+                fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleWhatsHot}
+              disabled={!query.trim() || hotTopicsLoading}
+              title={!query.trim() ? 'Enter a topic first' : undefined}
+              style={{
+                flexShrink: 0, display: 'flex', alignItems: 'center', gap: 7,
+                background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.35)',
+                borderRadius: 10, padding: '0 18px', color: PURPLE, fontSize: 13, fontWeight: 700,
+                fontFamily: 'inherit', cursor: !query.trim() || hotTopicsLoading ? 'not-allowed' : 'pointer',
+                opacity: !query.trim() ? 0.5 : 1,
+              }}
+            >
+              {hotTopicsLoading ? (
+                <span style={{
+                  display: 'inline-block', width: 13, height: 13, borderRadius: '50%',
+                  border: '2px solid rgba(167,139,250,0.25)', borderTopColor: PURPLE,
+                  animation: 'learnFocusSpin 0.7s linear infinite',
+                }} />
+              ) : '🔥'}
+              What's Hot
+            </button>
+          </div>
+          {specialFocusChips.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
+              {specialFocusChips.map(chip => (
+                <span key={chip} style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.3)',
+                  borderRadius: 20, padding: '6px 8px 6px 14px', fontSize: 12.5, color: TEXT1, fontWeight: 600,
+                }}>
+                  {chip}
+                  <button
+                    type="button"
+                    onClick={() => removeSpecialFocusChip(chip)}
+                    aria-label={`Remove ${chip}`}
+                    style={{
+                      width: 18, height: 18, borderRadius: '50%', border: 'none',
+                      background: 'rgba(255,255,255,0.08)', color: TEXT3, fontSize: 12,
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+                    }}
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <style>{`@keyframes learnFocusSpin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+
+        {/* Level + generate */}
+        <div style={{
+          display: 'flex', alignItems: 'stretch',
+          background: BG3,
+          border: `1.5px solid rgba(167,139,250,0.25)`,
+          borderRadius: 12,
+          overflow: 'hidden',
+        }}>
+          {(['Beginner', 'Intermediate', 'Expert'] as const).map(l => (
+            <button
+              key={l}
+              onClick={() => setLevel(l)}
+              style={{
+                flex: 1, padding: '12px 8px',
+                background: level === l ? (LEVEL_COLOURS[l] + '18') : 'transparent',
+                border: 'none',
+                borderRight: l !== 'Expert' ? `1px solid ${BORDER}` : 'none',
+                color: level === l ? LEVEL_COLOURS[l] : TEXT3,
+                fontSize: 12, fontWeight: level === l ? 700 : 500,
+                cursor: 'pointer', transition: 'all 0.15s',
+              }}>
+              {l}
+            </button>
+          ))}
+          <button
+            onClick={() => handleGenerate()}
+            style={{
+              flex: 2, padding: '12px 20px',
+              background: 'linear-gradient(135deg, #7b5cf5, #5b8ff7)',
+              border: 'none', borderLeft: `1px solid ${BORDER}`,
+              color: '#fff', fontSize: 13, fontWeight: 700,
+              cursor: 'pointer',
+              borderRadius: '0 0 10px 0',
+            }}>
+            Generate Course →
+          </button>
+        </div>
+
+        {error && (
+          <div style={{ fontSize: 12, color: '#f87171', marginTop: 8 }}>{error}</div>
+        )}
+      </div>
+
+      {/* Suggested topics */}
+      <div style={{ marginBottom: savedCourses.length > 0 ? 40 : 0 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: TEXT3, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>
+          Popular Topics
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {SUGGESTIONS.map(s => {
+            const { accent, bg } = catStyle(s.category);
+            return (
+              <button
+                key={s.title}
+                onClick={() => { setQuery(s.title); handleGenerate(s.title); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  background: bg, border: `1px solid ${accent}30`,
+                  borderRadius: 24, padding: '7px 14px',
+                  color: accent, fontSize: 12, fontWeight: 600,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.borderColor = accent + '60'}
+                onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.borderColor = accent + '30'}
+              >
+                <span>{s.emoji}</span>
+                {s.title}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* My Courses */}
+      {savedCourses.length > 0 && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: TEXT3, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              My Courses
+            </div>
+            <button
+              onClick={() => { localStorage.removeItem(STORAGE_KEY); setSavedCourses([]); }}
+              style={{ background: 'none', border: 'none', color: TEXT3, fontSize: 11, cursor: 'pointer' }}>
+              Clear all
+            </button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
+            {savedCourses.map(course => (
+              <div key={course.id} style={{ position: 'relative' }}>
+                <CourseCard course={course} onClick={() => setActiveCourse(course)} />
+                <button
+                  onClick={e => handleDelete(course.id, e)}
+                  title="Remove course"
+                  style={{
+                    position: 'absolute', top: 10, right: 10,
+                    background: 'rgba(255,255,255,0.06)', border: `1px solid ${BORDER}`,
+                    borderRadius: '50%', width: 22, height: 22,
+                    color: TEXT3, cursor: 'pointer', fontSize: 12, lineHeight: 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#F87171'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(248,113,113,0.4)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = TEXT3; (e.currentTarget as HTMLButtonElement).style.borderColor = BORDER; }}
+                >×</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
