@@ -71,6 +71,19 @@ export const interviewPrepsApi = {
     return res.json();
   },
 
+  async remove(token: string, ids: string[]): Promise<{ deleted: number }> {
+    const res = await fetch(`${BASE}/api/interview-preps/delete`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body:    JSON.stringify({ ids }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => null) as ApiError | null;
+      throw new Error(data?.error ?? `Failed to delete interview preps (${res.status}).`);
+    }
+    return res.json();
+  },
+
   async list(token: string): Promise<InterviewPrep[]> {
     const res = await fetch(`${BASE}/api/interview-preps`, {
       headers: { Authorization: `Bearer ${token}` },

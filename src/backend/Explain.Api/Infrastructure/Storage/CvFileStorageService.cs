@@ -50,6 +50,13 @@ public class CvFileStorageService
         });
     }
 
+    /// <summary>Best-effort removal of a prep's CV file (deleting a prep shouldn't leave the candidate's CV behind).</summary>
+    public async Task DeleteAsync(string recruiterId, string prepId, string? extension)
+    {
+        if (_container is null || string.IsNullOrEmpty(extension)) return;
+        await _container.GetBlobClient(BlobPath(recruiterId, prepId, extension)).DeleteIfExistsAsync();
+    }
+
     /// <summary>A time-limited signed URL for the CV file, or null if not configured/no file stored.</summary>
     public string? GetReadUrl(string recruiterId, string prepId, string? extension, TimeSpan? validFor = null)
     {

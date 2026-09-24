@@ -170,6 +170,35 @@ public static class Endpoint
             return Results.Ok(WithCvFileUrl(updated, cvFiles));
         }).RequireAuthorization(Permissions.ManageInterviews);
 
+        // POST /api/interview-preps/delete — removes the recruiter's OWN preps (Francis, 2026-09-24: clearing out ~50 test
+        // preps). Ownership is enforced by the Cosmos partition key (recruiterId comes from the JWT, never the body), so an
+        // id belonging to anyone else simply isn't found. The candidate's copy disappears from their received list too —
+        // it's the same record — while any interview they already completed from it lives elsewhere and is untouched.
+        // The prep's CV file (if any) is removed best-effort so personal data doesn't linger after a delete.
+        app.MapPost("/api/interview-preps/delete", async (DeleteRequest req, HttpContext ctx, CosmosService cosmos, CvFileStorageService cvFiles, ILogger<Program> logger) =>
+        {
+            var recruiterId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(recruiterId)) return Results.Unauthorized();
+            var ids = (req.Ids ?? []).Where(i => !string.IsNullOrWhiteSpace(i)).Distinct().Take(200).ToList();
+            if (ids.Count == 0) return Results.BadRequest(new { error = "No interview preps selected." });
+
+            var container = cosmos.GetContainer("interview-preps");
+            var deleted = 0;
+            foreach (var id in ids)
+            {
+                try
+                {
+                    var existing = (await container.ReadItemAsync<InterviewPrep>(id, new PartitionKey(recruiterId))).Resource;
+                    await container.DeleteItemAsync<InterviewPrep>(id, new PartitionKey(recruiterId));
+                    deleted++;
+                    try { await cvFiles.DeleteAsync(recruiterId, id, Path.GetExtension(existing.cvFileName)); }
+                    catch (Exception ex) { logger.LogWarning(ex, "Deleted prep {PrepId} but couldn't remove its CV file", id); }
+                }
+                catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { /* not theirs, or already gone */ }
+            }
+            return Results.Ok(new { deleted });
+        }).RequireAuthorization(Permissions.ManageInterviews);
+
         // GET /api/interview-preps — every prep the current recruiter has sent, newest first.
         app.MapGet("/api/interview-preps", async (HttpContext ctx, CosmosService cosmos, CvFileStorageService cvFiles) =>
         {
@@ -355,6 +384,8 @@ public static class Endpoint
         // self-selecting an aspirational band for solo practice.
         string? SalaryExpectation = null);
 }
+
+public record DeleteRequest(List<string>? Ids);
 
 public record InterviewPrep(
     string id,

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Send, Briefcase, User, Loader2, Play, FileText, X, ChevronUp, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Send, Briefcase, User, Loader2, Play, FileText, X, ChevronUp, ChevronDown, Trash2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { interviewPrepsApi, type InterviewPrep } from '../api/interviewPrepsApi'
 import { explainApi } from '../api/explainApi'
@@ -626,6 +626,29 @@ export default function InterviewPreps() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
   const [page,    setPage]    = useState(1)
   const [pageSize, setPageSize] = useState(7)
+  // Bulk delete (Francis, 2026-09-24: clearing ~50 test preps) — selection spans the whole filtered
+  // list, not just the visible page, so "select all" really means all of them.
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+
+  async function deleteSelected() {
+    if (!token || selected.size === 0 || deleting) return
+    const n = selected.size
+    if (!window.confirm(`Delete ${n} interview prep${n === 1 ? '' : 's'}? The candidate${n === 1 ? '' : 's'} will no longer see ${n === 1 ? 'it' : 'them'}, and any CV file attached will be removed. This can't be undone.`)) return
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      await interviewPrepsApi.remove(token, [...selected])
+      setPreps(p => p.filter(x => !selected.has(x.id)))
+      setSelected(new Set())
+      setPage(1)
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'Failed to delete.')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   const load = useCallback(() => {
     if (!token) return
@@ -797,7 +820,7 @@ export default function InterviewPreps() {
                   <div style={{ flex: '1 1 220px', minWidth: 0, position: 'relative' }}>
                     <input
                       value={search}
-                      onChange={e => { setSearch(e.target.value); setPage(1) }}
+                      onChange={e => { setSearch(e.target.value); setPage(1); setSelected(new Set()) }}
                       placeholder="Search candidate, role, or email…"
                       style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 36px 9px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'inherit' }} />
                     {search && (
@@ -808,7 +831,7 @@ export default function InterviewPreps() {
                   </div>
                   <div style={{ display: 'flex', gap: 6 }}>
                     {FILTER_OPTS.map(f => (
-                      <button key={f} onClick={() => { setFilter(f); setPage(1) }} style={{
+                      <button key={f} onClick={() => { setFilter(f); setPage(1); setSelected(new Set()) }} style={{
                         padding: '8px 14px', borderRadius: 20, border: '1px solid', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
                         background: filter === f ? 'rgba(79,142,247,0.15)' : 'transparent',
                         borderColor: filter === f ? 'rgba(79,142,247,0.5)' : 'var(--border)',
@@ -818,11 +841,35 @@ export default function InterviewPreps() {
                   </div>
                 </div>
 
+                {(selected.size > 0 || deleteError) && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
+                    {selected.size > 0 && (
+                      <>
+                        <span style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 600 }}>{selected.size} selected</span>
+                        <button onClick={deleteSelected} disabled={deleting} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.1)', color: '#F87171', fontSize: 12, fontWeight: 700, fontFamily: 'inherit', cursor: deleting ? 'default' : 'pointer', opacity: deleting ? 0.6 : 1 }}>
+                          {deleting ? <><Loader2 size={13} className="animate-spin" /> Deleting…</> : <><Trash2 size={13} /> Delete selected</>}
+                        </button>
+                        <button onClick={() => setSelected(new Set())} style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }}>Clear selection</button>
+                      </>
+                    )}
+                    {deleteError && <span style={{ fontSize: 12, color: '#F87171' }}>{deleteError}</span>}
+                  </div>
+                )}
+
                 <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                          <th style={{ ...thStyle, width: 40 }}>
+                            <input
+                              type="checkbox"
+                              title={`Select all ${filtered.length} matching preps`}
+                              checked={filtered.length > 0 && filtered.every(p => selected.has(p.id))}
+                              onChange={e => setSelected(e.target.checked ? new Set(filtered.map(p => p.id)) : new Set())}
+                              style={{ cursor: 'pointer' }}
+                            />
+                          </th>
                           {sortableTh('Interview Date', 'interviewDate')}
                           {sortableTh('Candidate', 'lastName')}
                           {sortableTh('Role', 'role')}
@@ -843,6 +890,14 @@ export default function InterviewPreps() {
                               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,142,247,0.06)')}
                               onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 1 ? 'rgba(255,255,255,0.025)' : 'transparent')}
                             >
+                              <td style={{ padding: '14px 8px 14px 16px', width: 40 }} onClick={e => e.stopPropagation()}>
+                                <input
+                                  type="checkbox"
+                                  checked={selected.has(prep.id)}
+                                  onChange={e => setSelected(prev => { const next = new Set(prev); if (e.target.checked) next.add(prep.id); else next.delete(prep.id); return next })}
+                                  style={{ cursor: 'pointer' }}
+                                />
+                              </td>
                               <td style={{ padding: '14px 16px', fontSize: 12, color: 'var(--text-3)', whiteSpace: 'nowrap' }}>{fmtDate(prep.interviewDate)}</td>
                               <td style={{ padding: '14px 16px' }}>
                                 <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{prep.title ? `${prep.title} ` : ''}{prep.firstName} {prep.lastName}</div>
