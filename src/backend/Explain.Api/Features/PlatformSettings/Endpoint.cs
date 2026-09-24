@@ -110,6 +110,45 @@ public static class Endpoint
             await container.UpsertItemAsync(setting, new PartitionKey("questionPackFree"));
             return Results.Ok(setting);
         }).RequireAuthorization(Permissions.ViewSystemSettings);
+
+        // /api/ai-proxy daily-ceiling switch (Francis, 2026-09-24) — unlike Question Packs' caps, a missing doc here
+        // means protection is ON: the whole point is that the unauthenticated AI proxy is never left unmetered by
+        // default. The switch exists purely as a safety valve (turn it off if the ceiling ever wrongly blocks real
+        // users, e.g. mid-demo). See Program.cs's /api/ai-proxy handler for where this is read.
+        app.MapGet("/api/admin/settings/ai-proxy-protection", async (CosmosService cosmos) =>
+        {
+            var setting = await GetAiProxyProtectionOrDefaultAsync(cosmos);
+            return Results.Ok(setting);
+        }).RequireAuthorization(Permissions.ViewSystemSettings);
+
+        app.MapPost("/api/admin/settings/ai-proxy-protection", async (UpdateAiProxyProtectionRequest req, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var updatedBy = ctx.User.FindFirst("sub")?.Value ?? "unknown";
+            var setting = new AiProxyProtectionSetting(
+                id: "aiProxyProtection",
+                pk: "aiProxyProtection",
+                protectionEnabled: req.ProtectionEnabled,
+                updatedAt: DateTimeOffset.UtcNow,
+                updatedBy: updatedBy);
+
+            var container = cosmos.GetContainer("platformSettings");
+            await container.UpsertItemAsync(setting, new PartitionKey("aiProxyProtection"));
+            return Results.Ok(setting);
+        }).RequireAuthorization(Permissions.ViewSystemSettings);
+    }
+
+    public static async Task<AiProxyProtectionSetting> GetAiProxyProtectionOrDefaultAsync(CosmosService cosmos)
+    {
+        var container = cosmos.GetContainer("platformSettings");
+        try
+        {
+            var response = await container.ReadItemAsync<AiProxyProtectionSetting>("aiProxyProtection", new PartitionKey("aiProxyProtection"));
+            return response.Resource;
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            return new AiProxyProtectionSetting("aiProxyProtection", "aiProxyProtection", true, DateTimeOffset.MinValue, "");
+        }
     }
 
     public static async Task<QuestionPackCapsSetting> GetQuestionPackCapsOrDefaultAsync(CosmosService cosmos)
@@ -210,6 +249,15 @@ public record QuestionPackCapsSetting(
     string id,
     string pk,
     bool capsEnabled,
+    DateTimeOffset updatedAt,
+    string updatedBy);
+
+public record UpdateAiProxyProtectionRequest(bool ProtectionEnabled);
+
+public record AiProxyProtectionSetting(
+    string id,
+    string pk,
+    bool protectionEnabled,
     DateTimeOffset updatedAt,
     string updatedBy);
 

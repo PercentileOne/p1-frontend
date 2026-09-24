@@ -393,8 +393,48 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime
 // see docs/specs/multi-model-strategy.html for why. Every caller (aiScoring.ts across all
 // portals) still sends a hardcoded "gpt-4o-mini" in the request body; that's rewritten to
 // the router's deployment name below so nothing upstream needed to change.
-app.MapPost("/api/ai-proxy", async (HttpRequest req, HttpResponse res, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
+//
+// Protection (Francis, 2026-09-24): this endpoint has no login requirement (it can't — the public Learn/Try pages and
+// every portal share it), so it is metered instead: an oversized-body guard plus a generous per-visitor and site-wide
+// daily ceiling, both tunable via config (AiProxy:PerVisitorPerDay / GlobalPerDay) and switchable from the admin portal.
+// One Learn course is ~12-35 calls and a full interview dozens, and offices share one IP, so the defaults are deliberately
+// high — they exist to stop a script hammering the tap, not to ration real people. The limiter itself failing (Cosmos
+// blip) fails OPEN: an outage in the meter must never take every AI feature down with it.
+app.MapPost("/api/ai-proxy", async (HttpRequest req, HttpResponse res, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger, Explain.Api.Infrastructure.Cosmos.CosmosService cosmos) =>
 {
+    const long MaxBodyBytes = 400_000;
+    if (req.ContentLength is > MaxBodyBytes)
+    {
+        res.StatusCode = StatusCodes.Status413PayloadTooLarge;
+        res.ContentType = "application/json";
+        await res.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new { error = "Request too large." }));
+        return;
+    }
+
+    try
+    {
+        if ((await Explain.Api.Features.PlatformSettings.Endpoint.GetAiProxyProtectionOrDefaultAsync(cosmos)).protectionEnabled)
+        {
+            var ip = req.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var perVisitor = config.GetValue("AiProxy:PerVisitorPerDay", 2000);
+            var global = config.GetValue("AiProxy:GlobalPerDay", 20000);
+            var visitorOk = (await Explain.Api.Features.CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"aiproxy:ip:{ip}", perVisitor, cosmos)).allowed;
+            var globalOk = visitorOk && (await Explain.Api.Features.CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("aiproxy:global", global, cosmos)).allowed;
+            if (!visitorOk || !globalOk)
+            {
+                logger.LogWarning("ai-proxy: daily ceiling reached ({Scope}) for {Ip}", visitorOk ? "global" : "visitor", ip);
+                res.StatusCode = StatusCodes.Status429TooManyRequests;
+                res.ContentType = "application/json";
+                await res.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new { capped = true, message = "Lots of people are using the AI right now — please try again shortly." }));
+                return;
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "ai-proxy: usage limiter failed — allowing the request through");
+    }
+
     var apiKey = config["ModelRouter:ApiKey"] ?? throw new InvalidOperationException("ModelRouter:ApiKey not configured");
     var endpoint = config["ModelRouter:Endpoint"] ?? throw new InvalidOperationException("ModelRouter:Endpoint not configured");
     req.EnableBuffering();

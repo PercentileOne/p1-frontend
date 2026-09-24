@@ -20,6 +20,7 @@ import Access from './pages/Access'
 import LocationCheck from './pages/LocationCheck'
 import AccessRequests from './pages/AccessRequests'
 import Billing from './pages/Billing'
+import AiProtection from './pages/AiProtection'
 
 // Redirects unauthenticated users to /login. Waits for the async session
 // re-validation (AuthProvider's isLoading) before deciding, so a page refresh
@@ -63,6 +64,7 @@ function AppRoutes() {
       <Route path="/location-check" element={<RequireAuth><LocationCheck /></RequireAuth>} />
       <Route path="/access-requests" element={<RequireAuth><AccessRequests /></RequireAuth>} />
       <Route path="/billing" element={<RequireAuth><Billing /></RequireAuth>} />
+      <Route path="/ai-protection" element={<RequireAuth><AiProtection /></RequireAuth>} />
 
       <Route path="*" element={<Navigate to="/organisations" replace />} />
     </Routes>
