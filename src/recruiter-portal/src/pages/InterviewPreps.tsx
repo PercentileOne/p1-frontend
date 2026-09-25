@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Send, Briefcase, User, Loader2, Play, FileText, X, ChevronUp, ChevronDown, Trash2 } from 'lucide-react'
+import { ArrowLeft, Send, Briefcase, User, Loader2, Play, FileText, X, ChevronUp, ChevronDown, Trash2, MailCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { interviewPrepsApi, type InterviewPrep } from '../api/interviewPrepsApi'
 import { explainApi } from '../api/explainApi'
@@ -628,6 +628,9 @@ export default function InterviewPreps() {
   const [pageSize, setPageSize] = useState(7)
   // Bulk delete (Francis, 2026-09-24: clearing ~50 test preps) — selection spans the whole filtered
   // list, not just the visible page, so "select all" really means all of them.
+  // Confirmation pop-up after a send/resend (Francis, 2026-09-25: worth having a clear "moment" on screen —
+  // it also films well — rather than the new row just appearing in the list).
+  const [sentNotice, setSentNotice] = useState<{ name: string; email: string; updated: boolean } | null>(null)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
@@ -765,6 +768,7 @@ export default function InterviewPreps() {
             onCancel={() => { setEditingPrep(null); setView('list') }}
             onSent={prep => {
               setPreps(p => editingPrep ? p.map(x => x.id === prep.id ? prep : x) : [prep, ...p])
+              setSentNotice({ name: `${prep.firstName} ${prep.lastName}`.trim(), email: prep.email, updated: !!editingPrep })
               setEditingPrep(null)
               setView('list')
             }}
@@ -958,6 +962,43 @@ export default function InterviewPreps() {
                 </div>
               </>
             )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {sentNotice && (
+          <motion.div
+            key="sent-notice"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setSentNotice(null)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.94 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+              onClick={e => e.stopPropagation()}
+              style={{ width: '100%', maxWidth: 420, textAlign: 'center', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 20, padding: '36px 32px 30px', boxShadow: '0 30px 80px rgba(0,0,0,0.5)' }}
+            >
+              <motion.div
+                initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.12, type: 'spring', stiffness: 280, damping: 16 }}
+                style={{ width: 76, height: 76, borderRadius: '50%', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#34D399,#047857)', boxShadow: '0 10px 32px rgba(52,211,153,0.35)' }}
+              >
+                <MailCheck size={36} color="#fff" strokeWidth={2} />
+              </motion.div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+                {sentNotice.updated ? 'Prep link updated and resent to' : 'Prep link sent to'}<br />{sentNotice.name}
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 10, lineHeight: 1.6 }}>
+                {sentNotice.email}<br />They can start practising straight away.
+              </div>
+              <button
+                onClick={() => setSentNotice(null)}
+                style={{ marginTop: 24, padding: '11px 32px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                Done
+              </button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
