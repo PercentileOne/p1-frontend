@@ -55,6 +55,10 @@ export const clientGiftsApi = {
     return call('/api/client-gifts', token, { method: 'POST', body: JSON.stringify(body) });
   },
 
+  remove(token: string, ids: string[]): Promise<{ deleted: number }> {
+    return call('/api/client-gifts/delete', token, { method: 'POST', body: JSON.stringify({ ids }) });
+  },
+
   list(token: string): Promise<ClientGiftSummary[]> {
     return call('/api/client-gifts', token);
   },

@@ -109,6 +109,26 @@ public static class Endpoint
             return Results.Ok(new { gift.id, reused = !regenerate && gift.sendCount > 1, gift.count });
         }).RequireAuthorization();
 
+        // POST /api/client-gifts/delete — removes the recruiter's OWN gifts (Francis, 2026-09-25: clearing out test sends).
+        // Ownership is the Cosmos partition key (recruiterId from the JWT), so anyone else's id is simply not found.
+        // The public link the client was emailed (/questions/gift/{id}) stops working once its gift is deleted.
+        app.MapPost("/api/client-gifts/delete", async (GiftDeleteRequest req, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var recruiterId = ctx.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(recruiterId)) return Results.Unauthorized();
+            var ids = (req.Ids ?? []).Where(i => !string.IsNullOrWhiteSpace(i)).Distinct().Take(200).ToList();
+            if (ids.Count == 0) return Results.BadRequest(new { error = "No client gifts selected." });
+
+            var container = cosmos.GetContainer("client-gifts");
+            var deleted = 0;
+            foreach (var id in ids)
+            {
+                try { await container.DeleteItemAsync<ClientGift>(id, new PartitionKey(recruiterId)); deleted++; }
+                catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { /* not theirs, or already gone */ }
+            }
+            return Results.Ok(new { deleted });
+        }).RequireAuthorization();
+
         // GET /api/client-gifts — this recruiter's own gift history, newest first.
         app.MapGet("/api/client-gifts", async (HttpContext ctx, CosmosService cosmos) =>
         {
@@ -203,6 +223,8 @@ public static class Endpoint
 
     private static string WebEncode(string s) => WebUtility.HtmlEncode(s);
 }
+
+public record GiftDeleteRequest(List<string>? Ids);
 
 public record ClientGift(
     string id,

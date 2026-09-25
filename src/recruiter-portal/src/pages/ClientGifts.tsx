@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Gift, ArrowLeft, Send, User } from 'lucide-react'
+import { Gift, ArrowLeft, Send, User, Trash2, Loader2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { clientGiftsApi, type ClientGiftSummary, type ApiError } from '../api/clientGiftsApi'
 import { type Career, searchCareers, reportMissingCareerTitle } from '../api/careersApi'
@@ -290,6 +290,27 @@ export default function ClientGifts() {
   const [gifts, setGifts] = useState<ClientGiftSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+  // Bulk delete (Francis, 2026-09-25: clearing out test sends). Deleting also kills the public link the client was emailed.
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+
+  async function deleteSelected() {
+    if (!token || selected.size === 0 || deleting) return
+    const n = selected.size
+    if (!window.confirm(`Delete ${n} client gift${n === 1 ? '' : 's'}? The link${n === 1 ? '' : 's'} already emailed to the client${n === 1 ? '' : 's'} will stop working. This can't be undone.`)) return
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      await clientGiftsApi.remove(token, [...selected])
+      setGifts(g => g.filter(x => !selected.has(x.id)))
+      setSelected(new Set())
+    } catch (err) {
+      setDeleteError((err as ApiError).error ?? 'Failed to delete.')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   const load = useCallback(() => {
     if (!token) return
@@ -353,11 +374,35 @@ export default function ClientGifts() {
             )}
 
             {!loading && !loadError && gifts.length > 0 && (
+              <>
+              {(selected.size > 0 || deleteError) && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
+                  {selected.size > 0 && (
+                    <>
+                      <span style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 600 }}>{selected.size} selected</span>
+                      <button onClick={deleteSelected} disabled={deleting} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.1)', color: '#F87171', fontSize: 12, fontWeight: 700, fontFamily: 'inherit', cursor: deleting ? 'default' : 'pointer', opacity: deleting ? 0.6 : 1 }}>
+                        {deleting ? <><Loader2 size={13} className="animate-spin" /> Deleting…</> : <><Trash2 size={13} /> Delete selected</>}
+                      </button>
+                      <button onClick={() => setSelected(new Set())} style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }}>Clear selection</button>
+                    </>
+                  )}
+                  {deleteError && <span style={{ fontSize: 12, color: '#F87171' }}>{deleteError}</span>}
+                </div>
+              )}
               <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                        <th style={{ ...thStyle, width: 40 }}>
+                          <input
+                            type="checkbox"
+                            title={`Select all ${gifts.length}`}
+                            checked={gifts.length > 0 && gifts.every(g => selected.has(g.id))}
+                            onChange={e => setSelected(e.target.checked ? new Set(gifts.map(g => g.id)) : new Set())}
+                            style={{ cursor: 'pointer' }}
+                          />
+                        </th>
                         <th style={thStyle}>Last Sent</th>
                         <th style={thStyle}>Client</th>
                         <th style={thStyle}>Role</th>
@@ -370,6 +415,14 @@ export default function ClientGifts() {
                         const clr = levelColor(g.difficulty)
                         return (
                           <tr key={g.id} style={{ background: i % 2 === 1 ? 'rgba(255,255,255,0.025)' : 'transparent' }}>
+                            <td style={{ padding: '14px 8px 14px 16px', width: 40 }}>
+                              <input
+                                type="checkbox"
+                                checked={selected.has(g.id)}
+                                onChange={e => setSelected(prev => { const next = new Set(prev); if (e.target.checked) next.add(g.id); else next.delete(g.id); return next })}
+                                style={{ cursor: 'pointer' }}
+                              />
+                            </td>
                             <td style={{ padding: '14px 16px', fontSize: 12, color: 'var(--text-3)', whiteSpace: 'nowrap' }}>{fmtDate(g.lastSentAt)}</td>
                             <td style={{ padding: '14px 16px' }}>
                               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{g.employerCompany ?? g.employerEmail}</div>
@@ -400,6 +453,7 @@ export default function ClientGifts() {
                   </table>
                 </div>
               </div>
+              </>
             )}
           </motion.div>
         )}
