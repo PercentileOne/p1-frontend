@@ -349,8 +349,10 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
             catches what a CV might be fudging. Job Title added 2026-09-15 to match the
             candidate-side InterviewPackStart.tsx three-tab layout — either Job Title or Job Spec
             is enough to send, same as there. */}
-        <div style={{ background: 'var(--bg2)', border: `1px solid ${errors.role ? 'rgba(245,158,11,0.5)' : 'var(--border)'}`, borderRadius: 16, overflow: 'hidden' }}>
-          <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ background: 'var(--bg2)', border: `1px solid ${errors.role ? 'rgba(245,158,11,0.5)' : 'var(--border)'}`, borderRadius: 16 }}>
+          {/* No overflow:hidden on the card — it clipped the job-title suggestions dropdown to a sliver (found
+              2026-09-25). The tab bar rounds its own top corners instead so the active tab's tint still stays inside. */}
+          <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', borderRadius: '16px 16px 0 0', overflow: 'hidden' }}>
             <button type="button" onClick={() => setActiveTab('jobTitle')} style={{
               flex: 1, padding: '12px 16px', border: 'none', background: activeTab === 'jobTitle' ? 'rgba(79,142,247,0.08)' : 'none', cursor: 'pointer',
               fontSize: 12, fontWeight: 700, fontFamily: 'inherit', color: activeTab === 'jobTitle' ? 'var(--blue)' : 'var(--text-3)',
