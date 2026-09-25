@@ -630,7 +630,14 @@ export default function InterviewPreps() {
   // list, not just the visible page, so "select all" really means all of them.
   // Confirmation pop-up after a send/resend (Francis, 2026-09-25: worth having a clear "moment" on screen —
   // it also films well — rather than the new row just appearing in the list).
-  const [sentNotice, setSentNotice] = useState<{ name: string; email: string; updated: boolean } | null>(null)
+  const [sentNotice, setSentNotice] = useState<{ name: string; email: string; updated: boolean; phase: 'sending' | 'done' } | null>(null)
+  // The send itself has already finished by the time this appears, so the "Sending…" beat is a short (1.5s) deliberate
+  // pause — it reads as the action happening, and gives the confirmation a moment to land on screen.
+  useEffect(() => {
+    if (sentNotice?.phase !== 'sending') return
+    const t = setTimeout(() => setSentNotice(n => (n ? { ...n, phase: 'done' } : n)), 1500)
+    return () => clearTimeout(t)
+  }, [sentNotice?.phase])
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
@@ -768,7 +775,7 @@ export default function InterviewPreps() {
             onCancel={() => { setEditingPrep(null); setView('list') }}
             onSent={prep => {
               setPreps(p => editingPrep ? p.map(x => x.id === prep.id ? prep : x) : [prep, ...p])
-              setSentNotice({ name: `${prep.firstName} ${prep.lastName}`.trim(), email: prep.email, updated: !!editingPrep })
+              setSentNotice({ name: `${prep.firstName} ${prep.lastName}`.trim(), email: prep.email, updated: !!editingPrep, phase: 'sending' })
               setEditingPrep(null)
               setView('list')
             }}
@@ -971,7 +978,7 @@ export default function InterviewPreps() {
           <motion.div
             key="sent-notice"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={() => setSentNotice(null)}
+            onClick={() => { if (sentNotice.phase === 'done') setSentNotice(null) }}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
           >
             <motion.div
@@ -980,24 +987,46 @@ export default function InterviewPreps() {
               onClick={e => e.stopPropagation()}
               style={{ width: '100%', maxWidth: 420, textAlign: 'center', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 20, padding: '36px 32px 30px', boxShadow: '0 30px 80px rgba(0,0,0,0.5)' }}
             >
-              <motion.div
-                initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.12, type: 'spring', stiffness: 280, damping: 16 }}
-                style={{ width: 76, height: 76, borderRadius: '50%', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#34D399,#047857)', boxShadow: '0 10px 32px rgba(52,211,153,0.35)' }}
-              >
-                <MailCheck size={36} color="#fff" strokeWidth={2} />
-              </motion.div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
-                {sentNotice.updated ? 'Prep link updated and resent to' : 'Prep link sent to'}<br />{sentNotice.name}
-              </div>
-              <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 10, lineHeight: 1.6 }}>
-                {sentNotice.email}<br />They can start practising straight away.
-              </div>
-              <button
-                onClick={() => setSentNotice(null)}
-                style={{ marginTop: 24, padding: '11px 32px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
-              >
-                Done
-              </button>
+              <AnimatePresence mode="wait" initial={false}>
+                {sentNotice.phase === 'sending' ? (
+                  <motion.div key="sending" exit={{ opacity: 0, scale: 0.8 }} transition={{ duration: 0.15 }}>
+                    <div style={{ position: 'relative', width: 76, height: 76, margin: '0 auto 20px' }}>
+                      <motion.div
+                        animate={{ scale: [1, 1.5], opacity: [0.5, 0] }} transition={{ duration: 1, repeat: Infinity, ease: 'easeOut' }}
+                        style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(79,142,247,0.45)' }}
+                      />
+                      <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#4F8EF7,#2563eb)', boxShadow: '0 10px 32px rgba(79,142,247,0.35)', overflow: 'hidden' }}>
+                        <motion.div animate={{ x: [-26, 0, 26], y: [10, 0, -10], opacity: [0, 1, 0] }} transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}>
+                          <Send size={32} color="#fff" strokeWidth={2} />
+                        </motion.div>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)', lineHeight: 1.3 }}>Sending prep link to<br />{sentNotice.name}…</div>
+                    <div style={{ height: 40 }} />
+                  </motion.div>
+                ) : (
+                  <motion.div key="done" initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }}>
+                    <motion.div
+                      initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.05, type: 'spring', stiffness: 280, damping: 16 }}
+                      style={{ width: 76, height: 76, borderRadius: '50%', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#34D399,#047857)', boxShadow: '0 10px 32px rgba(52,211,153,0.35)' }}
+                    >
+                      <MailCheck size={36} color="#fff" strokeWidth={2} />
+                    </motion.div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+                      {sentNotice.updated ? 'Prep link updated and resent to' : 'Prep link sent to'}<br />{sentNotice.name}
+                    </div>
+                    <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 10, lineHeight: 1.6 }}>
+                      {sentNotice.email}<br />They can start practising straight away.
+                    </div>
+                    <button
+                      onClick={() => setSentNotice(null)}
+                      style={{ marginTop: 24, padding: '11px 32px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+                    >
+                      Done
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           </motion.div>
         )}
