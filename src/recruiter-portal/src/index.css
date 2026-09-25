@@ -48,3 +48,16 @@ select, button, input[type="file"], input[type="radio"], input[type="checkbox"],
 input[type="text"], input[type="email"], input[type="password"], input[type="search"], textarea {
   caret-color: var(--blue);
 }
+
+/* Browsers repaint autofilled fields with a light background (found 2026-09-25: the Job Title box on Interview Preps
+   turned white when the browser remembered an earlier entry). Keep autofilled fields on the app's dark input colour. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--bg3) inset !important;
+  -webkit-text-fill-color: var(--text) !important;
+  caret-color: var(--text);
+  transition: background-color 9999s ease-in-out 0s;
+}

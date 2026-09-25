@@ -383,6 +383,7 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
                   onChange={e => handleJobTitleChange(e.target.value)}
                   onFocus={() => { if (jobTitleSuggestions.length > 0) setShowJobTitleSuggestions(true) }}
                   onBlur={handleJobTitleBlur}
+                  autoComplete="off"
                   placeholder="e.g. Head of Engineering, Senior Product Manager, Registered Nurse…"
                   style={inputStyle}
                 />
