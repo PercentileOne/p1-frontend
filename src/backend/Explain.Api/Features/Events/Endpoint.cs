@@ -97,12 +97,41 @@ public static class Endpoint
 
     // Oversized details are dropped rather than stored (the event itself is still logged).
     private const int MaxMetadataChars = 4000;
-    private static Dictionary<string, object>? SafeMetadata(Dictionary<string, object>? md)
+    private static Dictionary<string, object>? SafeMetadata(Dictionary<string, object>? md) => NormaliseMetadata(md, MaxMetadataChars);
+
+    /// <summary>
+    /// The request body is bound with System.Text.Json, which hands every metadata VALUE over as a JsonElement — and the Cosmos SDK
+    /// (Newtonsoft) then stores a JsonElement as its internal shape, `{ "ValueKind": 3 }`, instead of the actual value. Found 2026-09-26
+    /// in the admin Activity Log: every event's details (and so the whole marketing funnel) read `{ "ValueKind": 3 }`. Values are
+    /// therefore converted to plain strings / numbers / booleans / nested dictionaries and lists BEFORE they are stored.
+    /// Returns null when the details are too large (over <paramref name="maxChars"/> once serialised).
+    /// </summary>
+    public static Dictionary<string, object>? NormaliseMetadata(Dictionary<string, object>? md, int maxChars)
     {
         if (md is null || md.Count == 0) return md;
-        try { return JsonSerializer.Serialize(md).Length <= MaxMetadataChars ? md : null; }
+        try
+        {
+            var plain = new Dictionary<string, object>(md.Count);
+            foreach (var (key, value) in md) plain[key] = ToPlain(value)!;
+            return JsonSerializer.Serialize(plain).Length <= maxChars ? plain : null;
+        }
         catch { return null; }
     }
+
+    private static object? ToPlain(object? value) => value switch
+    {
+        JsonElement e => e.ValueKind switch
+        {
+            JsonValueKind.String => e.GetString(),
+            JsonValueKind.Number => e.TryGetInt64(out var l) ? (object)l : e.GetDouble(), // (object) cast: without it C# unifies both branches to double and 390 becomes 390.0
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.Object => e.EnumerateObject().ToDictionary(p => p.Name, p => ToPlain(p.Value)),
+            JsonValueKind.Array => e.EnumerateArray().Select(x => ToPlain(x)).ToList(),
+            _ => null,
+        },
+        _ => value,
+    };
 
     // Per-address sliding allowance: 400 events / 10 minutes (a real visit is ~30). In-memory on purpose — a restart just resets it.
     private static readonly ConcurrentDictionary<string, (DateTime Start, int Count)> Hits = new();
