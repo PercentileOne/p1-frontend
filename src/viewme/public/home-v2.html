@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#050810">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-512.png" sizes="512x512" type="image/png">
-<script src="/track.js"></script>
+<script src="/track.js?v=2"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-VWP8MJVBCH"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-VWP8MJVBCH');</script>
 <style>
@@ -696,6 +696,7 @@ var smLast = null;
 function openScoreModal(e) {
   if (e && e.preventDefault) e.preventDefault();
   var o = document.getElementById('sm-overlay');
+  if (window.ticTrack) window.ticTrack('modal_open', { name: 'how-we-score' });
   smLast = document.activeElement;
   o.classList.add('open'); o.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
