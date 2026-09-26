@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Loader2, RefreshCw } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { eventsApi, type FunnelResponse, type ApiError } from '../api/eventsApi'
+import { eventsApi, type FunnelResponse, type FunnelReply, type ApiError } from '../api/eventsApi'
 
 // "What do visitors actually do?" (Francis, 2026-09-26: lots of visits from GA4, no sign-ups — was it people or bots, and where do
 // the real ones stop?). Sits above the Activity Log. Numbers are per VISIT (one browser tab), from the last few days of marketing-site
@@ -29,17 +29,36 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
   const { token } = useAuth()
   const [days, setDays] = useState(7)
   const [data, setData] = useState<FunnelResponse | null>(null)
+  const [excluded, setExcluded] = useState<{ ips: string[]; visits: number }>({ ips: [], visits: 0 })
+  const [yourIp, setYourIp] = useState<string | null>(null)
+  const [ipText, setIpText] = useState('')
+  const [ipMsg, setIpMsg] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   const load = useCallback(async () => {
     if (!token) return
     setLoading(true); setError('')
-    try { setData(await eventsApi.funnel(token, days)) }
+    try {
+      const r: FunnelReply = await eventsApi.funnel(token, days)
+      setData(r.funnel); setExcluded({ ips: r.ignoredIps, visits: r.excludedVisits }); setIpText(r.ignoredIps.join(', '))
+    }
     catch (err) { setError((err as ApiError).error ?? 'Failed to load the visitor funnel.') }
     finally { setLoading(false) }
   }, [token, days])
   useEffect(() => { void load() }, [load])
+  useEffect(() => { if (token) eventsApi.getIgnoredIps(token).then(r => setYourIp(r.yourIp)).catch(() => { /* the button just won't offer the current address */ }) }, [token])
+
+  async function saveIps(list: string[]) {
+    if (!token) return
+    setIpMsg('')
+    try {
+      const r = await eventsApi.setIgnoredIps(token, list)
+      setIpText(r.ips.join(', ')); setIpMsg(r.ips.length ? 'Saved — your visits from these addresses are now left out.' : 'Saved — no addresses are being ignored.')
+      await load()
+    } catch (err) { setIpMsg((err as ApiError).error ?? 'Could not save.') }
+  }
+  const parsedIps = () => ipText.split(/[\s,;]+/).map(x => x.trim()).filter(Boolean)
 
   const visits = data?.steps.find(s => s.key === 'visits')?.sessions ?? 0
   const real = data?.steps.find(s => s.key === 'human')?.sessions ?? 0
@@ -150,6 +169,24 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
                   </tr>
                 ))}</tbody>
             </table>
+          </div>
+
+          <div style={{ marginTop: 16 }}>
+            <div style={h3}>Ignore my own visits</div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 8 }}>
+              Visits from these IP addresses are left out of every number above — past and future. Add your home, your dialysis unit, anywhere you test from.
+              Addresses can change (especially on a phone), so also open the site once with <code>?notrack=1</code> on each device.
+              {excluded.visits > 0 && <> <strong style={{ color: 'var(--text-2)' }}>{excluded.visits} visit{excluded.visits === 1 ? '' : 's'}</strong> currently left out.</>}
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <input value={ipText} onChange={e => setIpText(e.target.value)} placeholder="e.g. 37.209.211.222, 81.2.3.4" autoComplete="off"
+                style={{ ...selectStyle, flex: '1 1 280px', minWidth: 0, cursor: 'text' }} />
+              <button style={selectStyle} onClick={() => void saveIps(parsedIps())}>Save</button>
+              {yourIp && !parsedIps().includes(yourIp) && (
+                <button style={selectStyle} onClick={() => void saveIps([...parsedIps(), yourIp])}>Add my current address ({yourIp})</button>
+              )}
+            </div>
+            {ipMsg && <div style={{ fontSize: 12, color: ipMsg.startsWith('Saved') ? '#34D399' : '#EF4444', marginTop: 6 }}>{ipMsg}</div>}
           </div>
 
           <div style={{ marginTop: 16 }}>

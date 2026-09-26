@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.Azure.Cosmos;
 using Explain.Api.Common;
 using Explain.Api.Infrastructure.Cosmos;
@@ -71,23 +72,64 @@ public static class Endpoint
             var from = DateTimeOffset.UtcNow.AddDays(-days).ToString("o");
 
             var marketing = new List<FunnelEvent>();
-            var q1 = new QueryDefinition("SELECT TOP 50000 c.sessionId, c.eventType, c.page, c.metadata FROM c WHERE c.portal = 'marketing' AND c.createdAt >= @from")
+            var q1 = new QueryDefinition("SELECT TOP 50000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress FROM c WHERE c.portal = 'marketing' AND c.createdAt >= @from")
                 .WithParameter("@from", from);
             using (var feed = container.GetItemQueryIterator<FunnelEvent>(q1))
                 while (feed.HasMoreResults) marketing.AddRange(await feed.ReadNextAsync());
 
             var tryEvents = new List<FunnelEvent>();
             var q2 = new QueryDefinition(
-                "SELECT TOP 20000 c.sessionId, c.eventType, c.page, c.metadata FROM c WHERE c.portal = 'candidate' AND c.createdAt >= @from " +
+                "SELECT TOP 20000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress FROM c WHERE c.portal = 'candidate' AND c.createdAt >= @from " +
                 "AND (c.eventType IN ('try_blocked_mobile','try_started','try_first_question','try_completed','try_blocked') " +
                 "OR (c.eventType = 'page_view' AND c.page = '/try'))")
                 .WithParameter("@from", from);
             using (var feed = container.GetItemQueryIterator<FunnelEvent>(q2))
                 while (feed.HasMoreResults) tryEvents.AddRange(await feed.ReadNextAsync());
 
-            return Results.Ok(BuildFunnel(days, marketing, tryEvents));
+            // The owner's own addresses (Francis, 2026-09-26: "exclude all previous visits by me") — any visit that came from one of them is
+            // left out, old and new alike, because this is applied when the numbers are calculated, not when events are stored.
+            var ignored = await ReadIgnoredIpsAsync(cosmos);
+            var excludedVisits = 0;
+            if (ignored.Count > 0)
+            {
+                var before = marketing.Select(e => e.sessionId).Distinct().Count();
+                marketing = DropSessionsFrom(marketing, ignored);
+                tryEvents = DropSessionsFrom(tryEvents, ignored);
+                excludedVisits = before - marketing.Select(e => e.sessionId).Distinct().Count();
+            }
+
+            return Results.Ok(new { funnel = BuildFunnel(days, marketing, tryEvents), ignoredIps = ignored.OrderBy(i => i).ToList(), excludedVisits });
         })
         .WithName("MarketingFunnel").WithTags("Events")
+        .RequireAuthorization(Permissions.ViewAdminPortal);
+
+        // Addresses whose visits the funnel leaves out. GET also returns the caller's own address so the screen can offer "add my current address".
+        app.MapGet("/api/admin/events/ignored-ips", async (HttpContext ctx, CosmosService cosmos) =>
+        {
+            var ips = await ReadIgnoredIpsAsync(cosmos);
+            return Results.Ok(new { ips = ips.OrderBy(i => i).ToList(), yourIp = ctx.Connection.RemoteIpAddress?.ToString() });
+        })
+        .WithName("GetIgnoredIps").WithTags("Events")
+        .RequireAuthorization(Permissions.ViewAdminPortal);
+
+        app.MapPost("/api/admin/events/ignored-ips", async (IgnoredIpsRequest req, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var clean = new List<string>();
+            foreach (var raw in req.Ips ?? [])
+            {
+                var t = raw?.Trim();
+                if (string.IsNullOrEmpty(t)) continue;
+                if (!IPAddress.TryParse(t, out var parsed)) return Results.BadRequest(new { error = $"\"{t}\" is not a valid IP address." });
+                var normal = parsed.ToString();
+                if (!clean.Contains(normal)) clean.Add(normal);
+            }
+            if (clean.Count > 20) return Results.BadRequest(new { error = "At most 20 addresses." });
+
+            var setting = new AnalyticsIgnoreSetting("analyticsIgnore", "analyticsIgnore", clean, DateTimeOffset.UtcNow, ctx.User.FindFirst("sub")?.Value ?? "unknown");
+            await cosmos.GetContainer("platformSettings").UpsertItemAsync(setting, new PartitionKey("analyticsIgnore"));
+            return Results.Ok(new { ips = clean.OrderBy(i => i).ToList(), yourIp = ctx.Connection.RemoteIpAddress?.ToString() });
+        })
+        .WithName("SetIgnoredIps").WithTags("Events")
         .RequireAuthorization(Permissions.ViewAdminPortal);
 
         // POST /api/admin/events/delete — remove activity records from the log (Francis, 2026-09-20: he wanted a
@@ -180,8 +222,28 @@ public static class Endpoint
     public record EventFilter(string? UserId, string? Email, string? EventType, string? Portal, string? Q, DateTimeOffset? From, DateTimeOffset? To);
     public record DeleteEventsRequest(List<EventRef>? Items, EventFilter? Filter, int? ExpectedCount);
 
+    public record IgnoredIpsRequest(List<string>? Ips);
+    public record AnalyticsIgnoreSetting(string id, string pk, List<string> ips, DateTimeOffset updatedAt, string updatedBy);
+
+    private static async Task<HashSet<string>> ReadIgnoredIpsAsync(CosmosService cosmos)
+    {
+        try
+        {
+            var resp = await cosmos.GetContainer("platformSettings").ReadItemAsync<AnalyticsIgnoreSetting>("analyticsIgnore", new PartitionKey("analyticsIgnore"));
+            return new HashSet<string>(resp.Resource.ips ?? []);
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { return []; }
+    }
+
+    // Drops every visit (session) that has even one event from an ignored address.
+    public static List<FunnelEvent> DropSessionsFrom(List<FunnelEvent> events, HashSet<string> ips)
+    {
+        var bad = events.Where(e => e.ipAddress is not null && ips.Contains(e.ipAddress)).Select(e => e.sessionId).ToHashSet();
+        return bad.Count == 0 ? events : events.Where(e => !bad.Contains(e.sessionId)).ToList();
+    }
+
     // Only the fields the funnel needs — keeps the read cheap (no IPs / user agents pulled back).
-    public record FunnelEvent(string sessionId, string eventType, string? page, Dictionary<string, object>? metadata);
+    public record FunnelEvent(string sessionId, string eventType, string? page, Dictionary<string, object>? metadata, string? ipAddress = null);
 
     private static string? Meta(FunnelEvent e, string key) =>
         e.metadata is not null && e.metadata.TryGetValue(key, out var v) ? v?.ToString() : null;
@@ -198,7 +260,7 @@ public static class Endpoint
     /// Turns raw marketing events into the funnel. Sessions are grouped by sessionId (one browser tab visit); the
     /// shared 'no-session-storage' id (browsers that block storage) is left out because it would merge unrelated people.
     /// </summary>
-    private static object BuildFunnel(int days, List<FunnelEvent> marketing, List<FunnelEvent> tryEvents)
+    public static object BuildFunnel(int days, List<FunnelEvent> marketing, List<FunnelEvent> tryEvents)
     {
         var sessions = marketing
             .Where(e => e.sessionId != "no-session-storage")
@@ -337,6 +399,7 @@ public static class Endpoint
                 "CONTAINS(LOWER(c.portal), @q)",
                 "CONTAINS(LOWER(c.country), @q)",
                 "CONTAINS(LOWER(c.city), @q)",
+                "CONTAINS(c.ipAddress, @q)",
             };
             parameters.Add(("@q", needle));
             if ("anonymous".Contains(needle))

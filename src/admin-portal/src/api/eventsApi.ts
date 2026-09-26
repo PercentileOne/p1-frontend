@@ -77,6 +77,11 @@ async function post<T>(path: string, token: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface IgnoredIps { ips: string[]; yourIp: string | null }
+
+// The funnel plus which addresses were left out and how many visits that removed.
+export interface FunnelReply { funnel: FunnelResponse; ignoredIps: string[]; excludedVisits: number }
+
 export interface FunnelResponse {
   days: number;
   totalEvents: number;
@@ -99,8 +104,15 @@ export const eventsApi = {
     return post('/api/admin/events/delete', token, { filter, expectedCount });
   },
   // What do visitors actually do? Marketing-site funnel over the last N days (max 10 — the hot window).
-  funnel(token: string, days: number): Promise<FunnelResponse> {
+  funnel(token: string, days: number): Promise<FunnelReply> {
     return call(`/api/admin/events/funnel?days=${days}`, token);
+  },
+  // IP addresses whose visits the funnel leaves out (the owner's own — home, dialysis unit, office…).
+  getIgnoredIps(token: string): Promise<IgnoredIps> {
+    return call('/api/admin/events/ignored-ips', token);
+  },
+  setIgnoredIps(token: string, ips: string[]): Promise<IgnoredIps> {
+    return post('/api/admin/events/ignored-ips', token, { ips });
   },
   list(token: string, params: ListEventsParams): Promise<ListEventsResponse> {
     const qs = new URLSearchParams();
