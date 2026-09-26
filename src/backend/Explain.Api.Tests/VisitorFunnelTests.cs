@@ -84,17 +84,19 @@ public class VisitorFunnelTests
     }
 
     [Fact]
-    public void Try_page_events_count_distinct_visits()
+    public void Try_page_events_count_distinct_visits_and_split_out_phones()
     {
         var f = Run([], [
-            E("a", "page_view", page: "/try"), E("a", "try_started"), E("a", "try_first_question"), E("a", "try_completed"),
-            E("b", "page_view", page: "/try"), E("b", "try_blocked_mobile"),
-            E("c", "page_view", page: "/try"), E("c", "try_blocked_mobile"),
+            E("a", "page_view", page: "/try"), E("a", "try_started", M(("mobile", false))), E("a", "try_first_question"), E("a", "try_completed", M(("mobile", false))),
+            E("b", "page_view", page: "/try"), E("b", "try_mobile_visit"), E("b", "try_started", M(("mobile", true))), E("b", "try_completed", M(("mobile", true))),
+            E("c", "page_view", page: "/try"), E("c", "try_blocked_mobile"),   // the old "desktop only" wall — still counted as a phone visit
         ]);
         var t = f.GetProperty("tryPage");
         Assert.Equal(3, t.GetProperty("visits").GetInt32());
-        Assert.Equal(2, t.GetProperty("blockedMobile").GetInt32());
-        Assert.Equal(1, t.GetProperty("started").GetInt32());
-        Assert.Equal(1, t.GetProperty("completed").GetInt32());
+        Assert.Equal(2, t.GetProperty("phoneVisits").GetInt32());
+        Assert.Equal(2, t.GetProperty("started").GetInt32());
+        Assert.Equal(1, t.GetProperty("startedOnPhone").GetInt32());
+        Assert.Equal(2, t.GetProperty("completed").GetInt32());
+        Assert.Equal(1, t.GetProperty("completedOnPhone").GetInt32());
     }
 }

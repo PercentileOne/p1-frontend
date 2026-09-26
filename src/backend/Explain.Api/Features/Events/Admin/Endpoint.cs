@@ -80,7 +80,7 @@ public static class Endpoint
             var tryEvents = new List<FunnelEvent>();
             var q2 = new QueryDefinition(
                 "SELECT TOP 20000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress FROM c WHERE c.portal = 'candidate' AND c.createdAt >= @from " +
-                "AND (c.eventType IN ('try_blocked_mobile','try_started','try_first_question','try_completed','try_blocked') " +
+                "AND (c.eventType IN ('try_mobile_visit','try_blocked_mobile','try_started','try_first_question','try_completed','try_blocked') " +
                 "OR (c.eventType = 'page_view' AND c.page = '/try'))")
                 .WithParameter("@from", from);
             using (var feed = container.GetItemQueryIterator<FunnelEvent>(q2))
@@ -321,13 +321,19 @@ public static class Endpoint
             .Select(e => double.TryParse(Meta(e, "sec"), out var s) ? s : (double?)null).Where(s => s is not null).Select(s => s!.Value).OrderBy(s => s).ToList();
 
         int TrySessions(string type) => tryEvents.Where(e => e.eventType == type).Select(e => e.sessionId).Distinct().Count();
+        // "mobile":true is stamped on the demo's later steps by the candidate app (TryItLivePage) so phones can be compared with computers.
+        int OnPhone(string type) => tryEvents.Where(e => e.eventType == type && string.Equals(Meta(e, "mobile"), "true", StringComparison.OrdinalIgnoreCase))
+            .Select(e => e.sessionId).Distinct().Count();
         var tryPage = new
         {
             visits = tryEvents.Where(e => e.eventType == "page_view").Select(e => e.sessionId).Distinct().Count(),
-            blockedMobile = TrySessions("try_blocked_mobile"),
+            // try_blocked_mobile is the old "desktop only" wall (until 2026-09-26) — still counted so earlier days show up.
+            phoneVisits = tryEvents.Where(e => e.eventType is "try_mobile_visit" or "try_blocked_mobile").Select(e => e.sessionId).Distinct().Count(),
             started = TrySessions("try_started"),
+            startedOnPhone = OnPhone("try_started"),
             firstQuestion = TrySessions("try_first_question"),
             completed = TrySessions("try_completed"),
+            completedOnPhone = OnPhone("try_completed"),
             blocked = TrySessions("try_blocked"),
         };
 

@@ -91,7 +91,7 @@ export interface FunnelResponse {
   topClicks: { type: string; label: string; area: string; href: string; visitors: number }[];
   sections: { section: string; visitors: number }[];
   medianSecondsOnPage: number | null;
-  tryPage: { visits: number; blockedMobile: number; started: number; firstQuestion: number; completed: number; blocked: number };
+  tryPage: { visits: number; phoneVisits: number; started: number; startedOnPhone: number; firstQuestion: number; completed: number; completedOnPhone: number; blocked: number };
 }
 
 export const eventsApi = {

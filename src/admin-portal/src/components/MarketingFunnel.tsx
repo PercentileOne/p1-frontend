@@ -136,10 +136,10 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <tbody>
                   <tr><td style={td}>Visits to /try</td><td style={td}>{data.tryPage.visits}</td></tr>
-                  <tr><td style={td}>Blocked — phone/tablet ("desktop only")</td><td style={{ ...td, color: data.tryPage.blockedMobile > 0 ? '#F59E0B' : undefined, fontWeight: 700 }}>{data.tryPage.blockedMobile}</td></tr>
-                  <tr><td style={td}>Started (typed a role)</td><td style={td}>{data.tryPage.started}</td></tr>
+                  <tr><td style={td}>…of which opened on a phone/tablet</td><td style={td}>{data.tryPage.phoneVisits}</td></tr>
+                  <tr><td style={td}>Started (typed a role)</td><td style={td}>{data.tryPage.started} <span style={{ color: 'var(--text-3)' }}>({data.tryPage.startedOnPhone} on a phone)</span></td></tr>
                   <tr><td style={td}>Heard the first question</td><td style={td}>{data.tryPage.firstQuestion}</td></tr>
-                  <tr><td style={td}>Finished and got a score</td><td style={td}>{data.tryPage.completed}</td></tr>
+                  <tr><td style={td}>Finished and got a score</td><td style={td}>{data.tryPage.completed} <span style={{ color: 'var(--text-3)' }}>({data.tryPage.completedOnPhone} on a phone)</span></td></tr>
                   <tr><td style={td}>Hit an error / limit</td><td style={td}>{data.tryPage.blocked}</td></tr>
                 </tbody>
               </table>

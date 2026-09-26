@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
-import { speak as speakTts } from '../api/ttsApi';
+import { speak as speakTts, unlockTTSAudio } from '../api/ttsApi';
 import { setInterviewTicket } from '../api/entitlementsApi';
 import { VoiceInput } from '../components/VoiceInput';
 import { startTryOut, scoreTryOut, coachTryOut, type TryOutStart, type TryOutFeedback, type TryOutResult } from '../api/tryOutApi';
@@ -88,8 +88,9 @@ export default function TryItLivePage() {
   const avatar = start?.interviewer === 'technical' ? technical : hr;
   const firstName = name.trim().split(/\s+/)[0] ?? '';
 
-  // Desktop/laptop only for now (Francis, 2026-09-22): on a touchscreen the live-avatar flow gets stuck after question one with no
-  // sound. `(pointer: coarse)` ALONE false-positives on any touchscreen Windows laptop (Surface, most 2-in-1s) — Chrome reports
+  // Phone/tablet detection. Phones were BLOCKED from 2026-09-22 (the live-avatar flow got stuck after question one with no
+  // sound); from 2026-09-26 they are allowed, voice-only, with the phone's sound unlocked at the tap (see begin()). What follows is
+  // still how a phone is recognised — it now decides voice-only, not a wall. Original note on the test itself: `(pointer: coarse)` ALONE false-positives on any touchscreen Windows laptop (Surface, most 2-in-1s) — Chrome reports
   // coarse if ANY connected pointer is coarse, even with a mouse/trackpad also attached, which incorrectly gated real desktop
   // visitors off the live demo (found 2026-09-23, right as this page went public — a false gate here is worse than no gate at all).
   // Requiring `(hover: none)` too correctly excludes those: a touchscreen laptop still reports hover:hover because of its
@@ -105,14 +106,14 @@ export default function TryItLivePage() {
 
   // Where do visitors fall out of the demo? (Francis, 2026-09-26: lots of visits, no sign-ups — he wants the funnel in the admin
   // Activity Log.) The marketing site logs the click that sends people here; these events log what happens once they arrive.
-  // try_blocked_mobile = a phone/tablet visitor hit the "desktop only" wall (most social-media traffic is on phones).
-  useEffect(() => { if (isMobile) logEvent('try_blocked_mobile', { metadata: { w: window.innerWidth } }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // try_mobile_visit = someone opened this page on a phone/tablet (phones are now allowed — voice-only, see begin()); the
+  // later steps carry mobile:true so the funnel can show how phones get on compared with computers.
+  useEffect(() => { if (isMobile) logEvent('try_mobile_visit', { metadata: { w: window.innerWidth } }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (isMobile) return;
-    if (phase === 'starting') logEvent('try_started', { metadata: { topic: topic.trim().slice(0, 60) } });
-    else if (phase === 'asking' && index === 0) logEvent('try_first_question', { metadata: { avatar: useAvatar } });
-    else if (phase === 'results') logEvent('try_completed', { metadata: { score: feedback?.overall ?? null } });
-    else if (phase === 'blocked') logEvent('try_blocked', { metadata: { reason: blockReason } });
+    if (phase === 'starting') logEvent('try_started', { metadata: { topic: topic.trim().slice(0, 60), mobile: isMobile } });
+    else if (phase === 'asking' && index === 0) logEvent('try_first_question', { metadata: { avatar: useAvatar, mobile: isMobile } });
+    else if (phase === 'results') logEvent('try_completed', { metadata: { score: feedback?.overall ?? null, mobile: isMobile } });
+    else if (phase === 'blocked') logEvent('try_blocked', { metadata: { reason: blockReason, mobile: isMobile } });
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Never leave a billable avatar connection or a voice running when the page is left.
@@ -128,17 +129,22 @@ export default function TryItLivePage() {
   }, [phase]);
 
   // The interviewer speaking: the live avatar when connected, otherwise their plain voice.
+  // A hard ceiling on every spoken line: if a phone (or a bad connection) never lets the audio start or finish, the interview still
+  // moves on — the question is on screen, so nothing is lost. Without this, a silent line left the page waiting forever.
+  const withCeiling = (p: Promise<void>, text: string) =>
+    Promise.race([p, new Promise<void>(resolve => setTimeout(resolve, 8000 + text.split(/\s+/).length * 550))]);
+
   const speakLine = useCallback(async (text: string, s: TryOutStart, viaAvatar: boolean) => {
     const seat = s.interviewer === 'technical' ? technical : hr;
     if (viaAvatar) {
-      try { await seat.speak(text, s.interviewer); return; }
+      try { await withCeiling(seat.speak(text, s.interviewer), text); return; }
       catch { setUseAvatar(false); setAvatarState('off'); /* fall through to the voice-only path */ }
     }
-    await new Promise<void>(resolve => { cancelSpeechRef.current = speakTts(text, s.interviewer, resolve); });
+    await withCeiling(new Promise<void>(resolve => { cancelSpeechRef.current = speakTts(text, s.interviewer, resolve); }), text);
   }, [hr, technical]);
 
   // The Guardian Angel coach: always the plain narrator voice ('hr'), never the avatar — same as the full interview.
-  const speakAsCoach = useCallback((text: string) => new Promise<void>(resolve => { cancelSpeechRef.current = speakTts(text, 'hr', resolve); }), []);
+  const speakAsCoach = useCallback((text: string) => withCeiling(new Promise<void>(resolve => { cancelSpeechRef.current = speakTts(text, 'hr', resolve); }), text), []);
 
   const ask = useCallback(async (i: number, s: TryOutStart, viaAvatar: boolean) => {
     setPhase('asking'); setDraft(''); setCoaching(null);
@@ -155,6 +161,7 @@ export default function TryItLivePage() {
   async function begin() {
     const subject = topic.trim();
     if (subject.length < 2 || !name.trim()) return;
+    unlockTTSAudio(); // must be first — see its own note: phones only allow sound that starts inside the tap
     setPhase('starting'); setMessage('');
     const r = await startTryOut(subject);
     if (!r.ok) { setMessage(r.message); setBlockReason(r.capped ? 'capped' : 'error'); setPhase('blocked'); return; }
@@ -163,7 +170,9 @@ export default function TryItLivePage() {
     // Must begin from this click so the browser lets audio play. Connecting can fail or be slow — the interview goes ahead either way.
     let live = false;
     let connectMs = 0;
-    if (s.avatarAvailable) {
+    // Phones get the interviewer's VOICE only, no live video stream (2026-09-26): the streamed avatar needs a strong steady connection and
+    // its own fresh tap to start sound, and was what made the phone version unreliable — voice-only works on any connection and costs nothing.
+    if (s.avatarAvailable && !isMobile) {
       setInterviewTicket(s.ticket);
       setAvatarState('connecting');
       const connectStarted = performance.now();
@@ -269,16 +278,7 @@ export default function TryItLivePage() {
           <a href="https://www.theinterviewchair.com" style={{ fontSize: 13, color: 'var(--text-3, #94a3b8)', textDecoration: 'none' }}>← Back to site</a>
         </div>
 
-        {isMobile ? (
-          <div style={{ ...card, textAlign: 'center', padding: '40px 24px' }}>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>💻</div>
-            <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 10 }}>This live demo is desktop &amp; laptop only, for now</div>
-            <div style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--text-2, #cbd5e1)' }}>
-              We're still polishing the live-avatar experience for phones and tablets. Please open this page on a computer to try it — it only takes about 3 minutes.
-            </div>
-            <a href="https://www.theinterviewchair.com" style={{ ...primary, marginTop: 20 }}>← Back to the homepage</a>
-          </div>
-        ) : (<>
+        {(<>
 
         {/* Interviewer video box — ALWAYS mounted from the very first non-mobile render, never
             gated by phase/useAvatar/start. Found 2026-09-24: this page previously only rendered

@@ -94,6 +94,27 @@ export async function getTTSAudioContext(): Promise<AudioContext> {
 }
 async function getAudioContext(): Promise<AudioContext> { return getTTSAudioContext(); }
 
+/**
+ * Phones (iOS Safari especially) keep every sound switched off until it is started from inside a tap, and "inside a tap" means before
+ * the first `await` — not several seconds later after a network call. Call this straight from the button's click handler, before any
+ * fetching: it creates/resumes the shared AudioContext, plays one silent sample, and primes the browser's built-in speech voice, so the
+ * interviewer's voice can then play later without another tap. Harmless on desktop. (2026-09-26: the "Try it live" page only started
+ * audio after the questions had been generated, long after the tap, which is why it was silent on phones.)
+ */
+export function unlockTTSAudio(): void {
+  try {
+    if (!_audioCtx || _audioCtx.state === 'closed') _audioCtx = new AudioContext();
+    void _audioCtx.resume();
+    const silent = _audioCtx.createBufferSource();
+    silent.buffer = _audioCtx.createBuffer(1, 1, 22050);
+    silent.connect(_audioCtx.destination);
+    silent.start(0);
+  } catch { /* no Web Audio — the speech fallback below still applies */ }
+  try {
+    if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+  } catch { /* speech not available */ }
+}
+
 // User-controlled master volume for the interviewers' voices — separate from system/browser
 // volume, so a candidate on a shared or public machine can turn Sarah/James/Mike down without
 // hunting through OS volume mixers mid-interview. Every utterance's per-role gain node routes
