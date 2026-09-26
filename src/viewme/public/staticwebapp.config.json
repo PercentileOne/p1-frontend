@@ -2,18 +2,15 @@
   "routes": [
     {
       "route": "/login",
-      "redirect": "https://login.theinterviewchair.com/login",
-      "statusCode": 302
+      "rewrite": "/go.html"
     },
     {
       "route": "/register",
-      "redirect": "https://login.theinterviewchair.com/register",
-      "statusCode": 302
+      "rewrite": "/go.html"
     },
     {
       "route": "/try",
-      "redirect": "https://candidate.theinterviewchair.com/try",
-      "statusCode": 302
+      "rewrite": "/go.html"
     },
     {
       "route": "/about",

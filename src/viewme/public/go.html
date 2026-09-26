@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>TheInterviewChair.com — one moment…</title>
+<style>body{margin:0;background:#050810;color:#f1f5f9;font-family:-apple-system,"Segoe UI",system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center}a{color:#34d399;font-weight:700}p{color:#94a3b8}</style>
+</head>
+<body>
+<!-- Short links (theinterviewchair.com/try, /login, /register) forward to the app. The platform's own redirect rule threw away everything
+     after the address, so a tagged link such as /try?utm_source=linkedin lost its tag (found 2026-09-26). This page forwards to the same place
+     but carries the query string and #hash across. Routes in staticwebapp.config.json rewrite /try, /login and /register to this file. -->
+<div>
+  <p>One moment…</p>
+  <noscript><p>Continue to: <a href="https://candidate.theinterviewchair.com/try">Try it live</a> · <a href="https://login.theinterviewchair.com/login">Log in</a> · <a href="https://login.theinterviewchair.com/register">Register</a></p></noscript>
+</div>
+<script>
+(function () {
+  var targets = {
+    '/try': 'https://candidate.theinterviewchair.com/try',
+    '/login': 'https://login.theinterviewchair.com/login',
+    '/register': 'https://login.theinterviewchair.com/register'
+  };
+  var path = location.pathname.replace(/\/+$/, '').toLowerCase();
+  var target = targets[path] || 'https://www.theinterviewchair.com/';
+  location.replace(target + location.search + location.hash);
+})();
+</script>
+</body>
+</html>

@@ -56,6 +56,8 @@ jobs:
           mkdir -p deploy-product/img
           cp src/viewme/public/img/*.webp deploy-product/img/
           cp src/viewme/public/staticwebapp.config.json deploy-product/staticwebapp.config.json
+          # go.html: the short links /try, /login and /register rewrite to it (see staticwebapp.config.json) — it forwards to the app carrying the ?query and #hash.
+          cp src/viewme/public/go.html deploy-product/go.html
           cp src/viewme/public/social-card.png deploy-product/social-card.png
           cp src/viewme/public/favicon-512.png deploy-product/favicon-512.png
           cp src/viewme/public/favicon.ico deploy-product/favicon.ico
