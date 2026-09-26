@@ -44,6 +44,7 @@
   /* NAV */
   nav{position:fixed;inset:0 0 auto 0;z-index:100;background:rgba(5,8,16,.86);backdrop-filter:blur(20px);border-bottom:1px solid var(--line)}
   .nav-in{display:flex;align-items:center;justify-content:space-between;gap:18px;height:68px}
+  nav .wrap.nav-in{max-width:1300px}
   .logo{display:flex;align-items:center;text-decoration:none}
   .tic{width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,var(--green),var(--green2));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:#fff;letter-spacing:-.04em;box-shadow:0 4px 16px rgba(52,211,153,.25)}
   .links{display:flex;align-items:center;gap:10px}
@@ -59,7 +60,8 @@
   .drawer.open{display:block}
   .drawer a{display:block;padding:13px 4px;text-decoration:none;font-weight:700;border-bottom:1px solid var(--line)}
   .drawer .pill{display:block;text-align:center;margin-top:14px;padding:13px}
-  @media(max-width:1150px){.links{display:none}.burger{display:flex}}
+  @media(max-width:1260px){.links{display:none}.burger{display:flex}}
+  @media(max-width:760px){.nav-right .pill{display:none}}
   @media(max-width:480px){.login{display:none}}
 
   /* HERO */
@@ -179,6 +181,74 @@
   .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
   .reveal.in{opacity:1;transform:none}
   @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}.live i{animation:none}}
+
+  /* HOW WE SCORE — section + modal */
+  .score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:38px}
+  .sc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px}
+  .sc .k{display:block;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+  .sc h3{font-size:18px;letter-spacing:-.02em;margin-bottom:6px}
+  .sc p{color:var(--muted);font-size:14.5px}
+  .sc ul{list-style:none;margin-top:8px}
+  .sc li{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--muted)}
+  .sc li:last-child{border-bottom:0}
+  .sc li strong{color:var(--green);white-space:nowrap}
+  .wbar{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:13px}
+  .wbar b{width:84px;flex-shrink:0;color:var(--text);font-weight:700}
+  .wbar i{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden}
+  .wbar i::after{content:"";display:block;height:100%;width:var(--w);background:linear-gradient(90deg,var(--green),var(--green2));border-radius:3px}
+  .wbar span{width:34px;text-align:right;font-weight:800;color:var(--text)}
+  .score-cta{margin-top:34px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .score-cta small{color:var(--dim);font-size:13.5px}
+  @media(max-width:900px){.score-grid{grid-template-columns:1fr}}
+
+  #sm-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(3,5,10,.86);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px}
+  #sm-overlay.open{display:block}
+  .sm-box{max-width:820px;margin:24px auto;background:#0b1120;border:1px solid rgba(52,211,153,.25);border-radius:22px;box-shadow:0 0 90px rgba(52,211,153,.12),0 30px 90px rgba(0,0,0,.55);transform:translateY(30px);opacity:0;transition:transform .4s cubic-bezier(.22,1,.36,1),opacity .35s ease;position:relative}
+  #sm-overlay.show .sm-box{transform:none;opacity:1}
+  .sm-top{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-end;padding:14px 18px;background:rgba(11,17,32,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);border-radius:22px 22px 0 0}
+  .sm-x{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.07);color:var(--muted);font-size:17px;cursor:pointer;line-height:1;font-family:inherit}
+  .sm-x:hover{background:rgba(255,255,255,.13);color:#fff}
+  .sm-body{padding:40px 44px 52px}
+  .sm-body h2{font-size:clamp(1.7rem,4vw,2.4rem);margin:14px 0 10px}
+  .sm-body .lede{margin-bottom:6px}
+  .sm-h{font-size:20px;letter-spacing:-.01em;margin:46px 0 8px}
+  .sm-note{font-size:14px;color:var(--dim);max-width:640px;margin-bottom:20px;line-height:1.7}
+  .sm-unique{display:flex;gap:16px;align-items:flex-start;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.25);border-radius:16px;padding:18px 22px;margin:26px 0 4px}
+  .sm-unique b{display:block;color:var(--green);font-size:15px;margin-bottom:4px}
+  .sm-unique p{font-size:13.5px;color:var(--muted);line-height:1.65}
+  .sm-dim{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:12px}
+  .sm-dim.lead{border-color:rgba(167,139,250,.3)}
+  .sm-dim.bonus{border-color:rgba(251,191,36,.28)}
+  .sm-dh{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+  .sm-dn{font-size:15px;font-weight:800}
+  .sm-dim.lead .sm-dn{color:var(--violet)}
+  .sm-dim.bonus .sm-dn{color:var(--amber)}
+  .sm-w{font-size:11px;font-weight:700;color:var(--muted);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:6px;padding:3px 9px;white-space:nowrap}
+  .sm-dd{font-size:14px;color:var(--muted);margin-bottom:12px}
+  .sm-ex{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:12px;padding:12px 15px}
+  .sm-ex small{display:block;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+  .sm-ex span{font-size:13px;color:var(--muted);line-height:1.6}
+  .sm-real{background:linear-gradient(160deg,#0c1a2e,#070b14);border:1px solid rgba(79,142,247,.3);border-radius:16px;padding:22px 24px;margin:20px 0 6px}
+  .sm-real .tag{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#64b5f6;margin-bottom:10px}
+  .sm-real .q{font-size:13.5px;font-weight:600;line-height:1.6;margin-bottom:12px}
+  .sm-real .a{font-size:12.5px;color:var(--muted);font-style:italic;line-height:1.6;margin-bottom:14px}
+  .sm-real .n{margin-top:12px;font-size:12.5px;color:var(--dim);line-height:1.65}
+  .sm-bar{display:flex;align-items:center;gap:12px;margin-bottom:8px;font-size:12px}
+  .sm-bar b{width:82px;flex-shrink:0;font-weight:600;color:var(--muted)}
+  .sm-bar i{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden}
+  .sm-bar i::after{content:"";display:block;height:100%;width:var(--w);background:var(--c);border-radius:3px}
+  .sm-bar span{width:38px;text-align:right;font-weight:700;color:var(--c)}
+  .sm-tbl{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:10px}
+  .sm-tbl th{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  .sm-tbl td{padding:11px 10px;border-bottom:1px solid var(--line);color:var(--muted)}
+  .sm-tbl td:first-child{color:var(--text);font-weight:700}
+  .sm-tbl .p{color:var(--green);font-weight:800}
+  .sm-tbl .k{color:var(--amber);font-weight:700}
+  .sm-tbl .f{color:#f87171;font-weight:700}
+  .sm-cta{text-align:center;padding:34px 22px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:18px;margin-top:38px}
+  .sm-cta h3{font-size:19px;margin-bottom:8px}
+  .sm-cta p{font-size:13.5px;color:var(--dim);margin-bottom:18px}
+  @media(max-width:600px){.sm-body{padding:28px 20px 40px}.sm-dh{flex-direction:column;align-items:flex-start;gap:5px}.sm-tbl{font-size:12.5px}.sm-tbl td,.sm-tbl th{padding:9px 6px}}
 </style>
 </head>
 <body>
@@ -189,6 +259,7 @@
     <div class="links">
       <a class="try" href="#try">Try it live</a>
       <a href="#interviewers">Interviewers</a>
+      <a href="/how-we-score.html" onclick="openScoreModal(event)">How we score</a>
       <a href="#pricing">Pricing</a>
       <a href="#recruiters">Recruiters</a>
       <a href="/cv-salary.html">CV Analyzer</a>
@@ -206,6 +277,7 @@
     <a href="#try" style="color:var(--green)">Try it live</a>
     <a href="#features">What you get</a>
     <a href="#interviewers">Your interviewers</a>
+    <a href="/how-we-score.html" onclick="openScoreModal(event)">How we score</a>
     <!-- kept in the mobile drawer (plenty of room there) even though trimmed from the desktop bar for width -->
     <a href="#pricing">Pricing</a>
     <a href="#recruiters">Recruiters</a>
@@ -308,6 +380,52 @@
       <div class="person reveal"><img src="/img/amina.webp" width="480" height="276" alt="Amina, HR Director" loading="lazy"><div><h3>Amina</h3><small>HR Director</small><p>Warm but searching. Asks about your experience, motivation and how you handle people and pressure.</p></div></div>
       <div class="person reveal"><img src="/img/wayne.webp" width="480" height="266" alt="Wayne, technical interviewer" loading="lazy"><div><h3>Wayne</h3><small>Technical interviewer</small><p>Precise and practical. Probes real knowledge with scenarios, follow-ups and the questions that separate good from great.</p></div></div>
       <div class="person reveal"><img src="/img/michelle.webp" width="480" height="275" alt="Michelle, your interview host" loading="lazy"><div><h3>Michelle</h3><small>Your host</small><p>Briefs you before you begin, and talks you through your result afterwards — what worked and what to sharpen.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 4b · HOW WE SCORE ────────────────────────────────────── -->
+<section id="scoring">
+  <div class="wrap">
+    <span class="eyebrow">How we score</span>
+    <h2 class="reveal">No black box. See exactly how you&rsquo;re scored.</h2>
+    <p class="lede reveal">Every answer is marked on five things a real interviewer listens for &mdash; then come bonus points and a clear outcome, so you know precisely where you stand and what to fix.</p>
+    <div class="score-grid">
+      <div class="sc reveal">
+        <span class="k">Every answer</span>
+        <h3>Five things, weighted</h3>
+        <p>Your headline score is the average of these across your role questions.</p>
+        <div class="wbar"><b>Relevance</b><i style="--w:100%"></i><span>25%</span></div>
+        <div class="wbar"><b>Accuracy</b><i style="--w:100%"></i><span>25%</span></div>
+        <div class="wbar"><b>Clarity</b><i style="--w:80%"></i><span>20%</span></div>
+        <div class="wbar"><b>Depth</b><i style="--w:80%"></i><span>20%</span></div>
+        <div class="wbar"><b>Confidence</b><i style="--w:40%"></i><span>10%</span></div>
+      </div>
+      <div class="sc reveal">
+        <span class="k">On top</span>
+        <h3>Bonus points</h3>
+        <p>They lift your score &mdash; and it can never go above 100%.</p>
+        <ul>
+          <li>Bonus-round question, answered correctly <strong>+10</strong></li>
+          <li>Each character question <strong>up to +10</strong></li>
+          <li>Asking the interviewers a question <strong>+5</strong></li>
+        </ul>
+      </div>
+      <div class="sc reveal">
+        <span class="k">The outcome</span>
+        <h3>Pass, keep on file, or not this time</h3>
+        <p>The pass mark rises with the level you choose:</p>
+        <ul>
+          <li>Beginner <strong>60%</strong></li>
+          <li>Standard <strong>65%</strong></li>
+          <li>Pro <strong>70%</strong></li>
+          <li>Expert <strong>90%</strong></li>
+        </ul>
+      </div>
+    </div>
+    <div class="score-cta">
+      <a class="btn btn-green" href="/how-we-score.html" onclick="openScoreModal(event)">See how we score interviews &rarr;</a>
+      <small>With worked examples &mdash; including a real, unedited scored answer.</small>
     </div>
   </div>
 </section>
@@ -436,6 +554,103 @@
   </div>
 </footer>
 
+<!-- HOW WE SCORE modal (opened from the menu and the scoring section) -->
+<div id="sm-overlay" role="dialog" aria-modal="true" aria-labelledby="sm-title" aria-hidden="true">
+  <div class="sm-box">
+    <div class="sm-top"><button class="sm-x" id="sm-close" type="button" aria-label="Close">&#10005;</button></div>
+    <div class="sm-body">
+      <span class="eyebrow">Scoring &amp; feedback</span>
+      <h2 id="sm-title">How we score every interview.</h2>
+      <p class="lede">No black box. Every answer is scored across real dimensions, each explained below with an example &mdash; including a real answer from a candidate&rsquo;s live session, mistakes and all.</p>
+
+      <div class="sm-unique">
+        <span style="font-size:22px;line-height:1">&#10022;</span>
+        <div><b>Every interview is generated fresh &mdash; nobody gets the same questions twice</b>
+        <p>Every question is written new for your session, never pulled from a fixed bank. No two candidates get an identical interview, and sitting a second one won&rsquo;t repeat the first. There&rsquo;s nothing to leak, share or memorise in advance.</p></div>
+      </div>
+
+      <h3 class="sm-h">The core five &mdash; every role question, every time</h3>
+      <p class="sm-note">These five mark every answer to your role-specific questions and are weighted into one percentage: Relevance 25%, Accuracy 25%, Clarity 20%, Depth 20%, Confidence 10%. Your headline score is the average across those questions.</p>
+    <div class="sm-dim">
+      <div class="sm-dh"><span class="sm-dn">Relevance</span><span class="sm-w">25% weight</span></div>
+      <div class="sm-dd">Does the answer actually address what was asked, and match what the role genuinely requires &mdash; not just talk in the right general direction?</div>
+      <div class="sm-ex"><small>Example</small><span>Asked how to keep a transactional endpoint consistent if a downstream step fails, an answer about general code readability would score low &mdash; however well written, it isn&rsquo;t answering what was actually asked.</span></div>
+    </div>
+    <div class="sm-dim">
+      <div class="sm-dh"><span class="sm-dn">Accuracy</span><span class="sm-w">25% weight</span></div>
+      <div class="sm-dd">Is what the candidate actually said true? This applies to every role we interview for, not just technical ones &mdash; a confident, clearly delivered answer built on a wrong fact still scores low, because a real interviewer would catch it too.</div>
+      <div class="sm-ex"><small>Example</small><span>&ldquo;HTML is the fastest programming language, and it was created in 2023&rdquo; is said fluently and confidently &mdash; but it&rsquo;s wrong on every count, and scores accordingly low. Confidence in a false claim is worse than no claim at all.</span></div>
+    </div>
+    <div class="sm-dim">
+      <div class="sm-dh"><span class="sm-dn">Clarity</span><span class="sm-w">20% weight</span></div>
+      <div class="sm-dd">Is the answer well-structured and easy to follow, or does the interviewer have to untangle it to find the actual point?</div>
+      <div class="sm-ex"><small>Example</small><span>&ldquo;I&rsquo;d wrap the write and the message in one transaction, and roll back if either fails&rdquo; scores high &mdash; one clean sentence, the point is immediately obvious.</span></div>
+    </div>
+    <div class="sm-dim">
+      <div class="sm-dh"><span class="sm-dn">Depth</span><span class="sm-w">20% weight</span></div>
+      <div class="sm-dd">Are there specific examples, named tools, real numbers or genuine outcomes &mdash; or generalities that could apply to almost any answer?</div>
+      <div class="sm-ex"><small>Example</small><span>&ldquo;I&rsquo;d make it robust&rdquo; has no depth. &ldquo;I&rsquo;d use an outbox table so the message only publishes after the transaction commits&rdquo; does &mdash; it names the actual mechanism.</span></div>
+    </div>
+    <div class="sm-dim">
+      <div class="sm-dh"><span class="sm-dn">Confidence</span><span class="sm-w">10% weight</span></div>
+      <div class="sm-dd">Does the language sound assured, or is it hedged with &ldquo;maybe&rdquo;, &ldquo;I think&rdquo;, &ldquo;kind of&rdquo; &mdash; even when the underlying idea is correct?</div>
+      <div class="sm-ex"><small>Example</small><span>&ldquo;I think maybe we&rsquo;d sort of use a transaction, possibly?&rdquo; scores low even if a transaction genuinely is right &mdash; the hedging undercuts it.</span></div>
+    </div>
+
+      <div class="sm-real">
+        <div class="tag">A real, unedited scored answer</div>
+        <div class="q">&ldquo;CivicForge Solutions asks you to expose an ASP.NET Core endpoint that creates a case and publishes a notification, but the database write and message publication must not leave the system inconsistent if either operation fails. How would you design the endpoint and surrounding components?&rdquo;</div>
+        <div class="a">&ldquo;well I would definitely design them around a single transaction and roll back if there was an error&rdquo;</div>
+        <div class="sm-bar" style="--w:15%;--c:#ef4444"><b>Relevance</b><i></i><span>15%</span></div>
+        <div class="sm-bar" style="--w:90%;--c:#34d399"><b>Accuracy</b><i></i><span>90%</span></div>
+        <div class="sm-bar" style="--w:70%;--c:#34d399"><b>Clarity</b><i></i><span>70%</span></div>
+        <div class="sm-bar" style="--w:5%;--c:#ef4444"><b>Depth</b><i></i><span>5%</span></div>
+        <div class="sm-bar" style="--w:85%;--c:#34d399"><b>Confidence</b><i></i><span>85%</span></div>
+        <div class="n">Accuracy, clarity and confidence all score well &mdash; nothing said was wrong, and it&rsquo;s a short, assured sentence &mdash; but relevance and depth are honest about the real gap: the transaction alone doesn&rsquo;t guarantee the message publishes, and the answer names no mechanism for that. Accuracy and depth are deliberately separate: this answer is entirely true, just incomplete.</div>
+      </div>
+
+      <h3 class="sm-h">Bonus points &mdash; added on top</h3>
+      <p class="sm-note">Bonus points lift your headline score, but they&rsquo;re never averaged into it &mdash; so an off day on one of them can&rsquo;t drag down how you did on the questions that actually test the role. Your score can never go above 100%.</p>
+
+      <div class="sm-dim lead">
+        <div class="sm-dh"><span class="sm-dn">Character questions &mdash; ownership, execution &amp; proactiveness</span><span class="sm-w">up to +10 each</span></div>
+        <div class="sm-dd">Amina (HR) asks open-ended character questions in every interview &mdash; one probing ownership and follow-through, one probing genuine forward planning. The wording is generated fresh each session, so you won&rsquo;t get the same pair twice. They sit on top of your role questions, never in place of any of them.</div>
+        <div class="sm-ex"><small>What earns the points</small><span><b>Ownership</b> &mdash; did you personally drive or decide it, not just describe what &ldquo;we&rdquo; did? <b>Execution</b> &mdash; did you see it through to a real outcome? <b>Proactiveness</b> &mdash; genuine, specific planning, not a rehearsed non-answer. &ldquo;Our team shipped a big project&rdquo; shows neither; &ldquo;I noticed the process was broken, proposed the fix, got buy-in and shipped it three weeks later&rdquo; shows both.</span></div>
+      </div>
+      <div class="sm-dim bonus">
+        <div class="sm-dh"><span class="sm-dn">Bonus round &mdash; a live knowledge check</span><span class="sm-w">+10 per correct answer</span></div>
+        <div class="sm-dd">Partway through most interviews, a surprise multiple-choice question fires &mdash; hard and specific to your role. Get it right and you earn 10 bonus points. Get it wrong and you receive the full explanation on the spot, then move straight back into the interview &mdash; no penalty.</div>
+      </div>
+      <div class="sm-dim bonus">
+        <div class="sm-dh"><span class="sm-dn">Ask the interviewers</span><span class="sm-w">+5 points</span></div>
+        <div class="sm-dd">Near the end of about half of interviews, Amina asks whether you have any questions for the panel &mdash; the moment many candidates regret staying silent. Take it: we&rsquo;ll suggest a strong question to ask, save it to your Question Bank, and award 5 bonus points for engaging.</div>
+      </div>
+
+      <h3 class="sm-h">If you skip a question or ask for the answer</h3>
+      <p class="sm-note" style="margin-bottom:0">Pass on a question, or ask us to tell you the answer, and that question scores zero. The answer is shown so you learn it, but it isn&rsquo;t marked as an attempt &mdash; which is the honest way to see where you really stand.</p>
+
+      <h3 class="sm-h">Your outcome &mdash; pass, keep on file, or not this time</h3>
+      <p class="sm-note">Your final percentage, bonuses included, gives one of three outcomes. The bar rises with the level you choose, and an interview in a specific company&rsquo;s style uses a level that matches that company&rsquo;s bar.</p>
+      <table class="sm-tbl">
+        <thead><tr><th>Level</th><th>Pass</th><th>Keep on file</th><th>Not this time</th></tr></thead>
+        <tbody>
+          <tr><td>Beginner</td><td class="p">60%+</td><td class="k">45&ndash;59%</td><td class="f">below 45%</td></tr>
+          <tr><td>Standard</td><td class="p">65%+</td><td class="k">50&ndash;64%</td><td class="f">below 50%</td></tr>
+          <tr><td>Pro</td><td class="p">70%+</td><td class="k">55&ndash;69%</td><td class="f">below 55%</td></tr>
+          <tr><td>Expert</td><td class="p">90%+</td><td class="k">75&ndash;89%</td><td class="f">below 75%</td></tr>
+        </tbody>
+      </table>
+      <p class="sm-note" style="margin-bottom:0"><b>Keep on file</b> means a real employer would keep your CV (or name) on file for future roles. <b>A pass</b> earns a certificate you can download and share.</p>
+
+      <div class="sm-cta">
+        <h3>See it happen in your own interview.</h3>
+        <p>Every dimension above, scored live, on a role you actually name.</p>
+        <a class="btn btn-green" href="https://login.theinterviewchair.com/register">Start practising &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 (function () {
   var TRY_URL = 'https://candidate.theinterviewchair.com/try';
@@ -466,6 +681,26 @@
     els.forEach(function (el) { io.observe(el); });
   } else { els.forEach(function (el) { el.classList.add('in'); }); }
 })();
+
+// How-we-score modal: opened from the menu, the scoring section and the footer fallback link.
+var smLast = null;
+function openScoreModal(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  var o = document.getElementById('sm-overlay');
+  smLast = document.activeElement;
+  o.classList.add('open'); o.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  o.scrollTop = 0;
+  setTimeout(function () { o.classList.add('show'); document.getElementById('sm-close').focus(); }, 20);
+}
+function closeScoreModal() {
+  var o = document.getElementById('sm-overlay');
+  o.classList.remove('show'); o.setAttribute('aria-hidden', 'true');
+  setTimeout(function () { o.classList.remove('open'); document.body.style.overflow = ''; if (smLast && smLast.focus) smLast.focus(); }, 380);
+}
+document.getElementById('sm-close').addEventListener('click', closeScoreModal);
+document.getElementById('sm-overlay').addEventListener('click', function (e) { if (e.target === this) closeScoreModal(); });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.getElementById('sm-overlay').classList.contains('open')) closeScoreModal(); });
 </script>
 </body>
 </html>

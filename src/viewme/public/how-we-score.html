@@ -66,6 +66,15 @@
 
   .leadership-card { border-color: rgba(167,139,250,0.25); }
   .leadership-card .dim-name { color: var(--purple); }
+  .bonus-card { border-color: rgba(251,191,36,0.25); }
+  .bonus-card .dim-name { color: #fbbf24; }
+  .outcome-tbl { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 14px; }
+  .outcome-tbl th { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  .outcome-tbl td { padding: 11px 10px; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .outcome-tbl td:first-child { color: var(--pearl); font-weight: 700; }
+  .outcome-tbl .p { color: #34d399; font-weight: 800; }
+  .outcome-tbl .k { color: #fbbf24; font-weight: 700; }
+  .outcome-tbl .f { color: #f87171; font-weight: 700; }
 
   .real-example { background: linear-gradient(160deg, #0c1a2e 0%, #070b14 100%); border: 1px solid rgba(79,142,247,0.25); border-radius: 16px; padding: 26px 28px; margin: 24px 0 56px; }
   .real-example-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan); margin-bottom: 12px; }
@@ -107,8 +116,8 @@
   <h1>How we score every interview.</h1>
   <p class="lede">No black box. Every answer you give is scored across real dimensions, each one explained below with a genuine example — including one from an actual candidate's live session, mistakes and all.</p>
 
-  <h2 class="group-title">The core five — every answer, every time</h2>
-  <p class="group-note">These five score every single answer in every interview, weighted into one overall percentage: Relevance 25%, Accuracy 25%, Clarity 20%, Depth 20%, Confidence 10%.</p>
+  <h2 class="group-title">The core five — every role question, every time</h2>
+  <p class="group-note">These five mark every answer to your role-specific questions and are weighted into one percentage: Relevance 25%, Accuracy 25%, Clarity 20%, Depth 20%, Confidence 10%. Your headline score is the average across those questions.</p>
 
   <div class="dim-card">
     <div class="dim-head"><span class="dim-name">Relevance</span><span class="dim-weight">25% weight</span></div>
@@ -169,29 +178,43 @@
     <div style="margin-top:16px;font-size:13px;color:var(--muted)">Notice accuracy, clarity and confidence all score well — nothing the candidate said was actually wrong, and it's a short, assured sentence — but relevance and depth are honest about the real gap: the transaction alone doesn't actually guarantee the message publishes, and the answer names no mechanism for that. Accuracy and depth are deliberately separate: this answer is entirely true, just incomplete. That's the whole point of scoring these separately instead of one blended "good answer" number.</div>
   </div>
 
-  <h2 class="group-title">Leadership signal — two guaranteed questions, every interview</h2>
-  <p class="group-note">Every interview, regardless of role, includes two fixed questions asked by Amina (HR): "Tell us about a project or accomplishment you're most proud of," and "Where do you see yourself in five years?" Each is scored once, not on top of every answer.</p>
+  <h2 class="group-title">Bonus points — added on top</h2>
+  <p class="group-note">Bonus points lift your headline score, but they're never averaged into it — so an off day on one of them can't drag down how you did on the questions that actually test the role. Your score can never go above 100%.</p>
 
   <div class="dim-card leadership-card">
-    <div class="dim-head"><span class="dim-name">Ownership &amp; Execution</span><span class="dim-weight">from the "proudest accomplishment" question</span></div>
-    <div class="dim-desc"><b>Ownership</b> — did the candidate personally drive or decide this, not just describe what "we" did? <b>Execution</b> — did they actually see it through to a real outcome, not just have a good idea that stalled?</div>
+    <div class="dim-head"><span class="dim-name">Character questions — ownership, execution &amp; proactiveness</span><span class="dim-weight">up to +10 each</span></div>
+    <div class="dim-desc">Amina (HR) asks open-ended character questions in every interview — one probing ownership and follow-through, one probing genuine forward planning. The wording is generated fresh each session, so you won't get the same pair twice. They sit on top of your role questions, never in place of any of them.</div>
     <div class="dim-example">
-      <div class="dim-example-label">Example</div>
-      <div class="dim-example-body">"Our team shipped a big project" shows neither. "I noticed the process was broken, proposed the fix, got buy-in, and shipped it three weeks later" shows both — the candidate is the subject of the sentence, and there's a real ending.</div>
+      <div class="dim-example-label">What earns the points</div>
+      <div class="dim-example-body"><b>Ownership</b> — did you personally drive or decide it, not just describe what "we" did? <b>Execution</b> — did you see it through to a real outcome? <b>Proactiveness</b> — genuine, specific planning, not a rehearsed non-answer. "Our team shipped a big project" shows neither; "I noticed the process was broken, proposed the fix, got buy-in and shipped it three weeks later" shows both.</div>
     </div>
   </div>
 
-  <div class="dim-card leadership-card">
-    <div class="dim-head"><span class="dim-name">Proactiveness</span><span class="dim-weight">from the "five years" question</span></div>
-    <div class="dim-desc">Genuine, specific forward planning and initiative — or a vague, clearly rehearsed non-answer?</div>
-    <div class="dim-example">
-      <div class="dim-example-label">Example</div>
-      <div class="dim-example-body">"Somewhere senior, I guess" scores low. "I want to be leading the platform team — I'm already picking up architecture reviews to get there" scores high, because there's an actual plan behind it.</div>
-    </div>
+  <div class="dim-card bonus-card">
+    <div class="dim-head"><span class="dim-name">Bonus round — a live knowledge check</span><span class="dim-weight">+10 per correct answer</span></div>
+    <div class="dim-desc">Partway through most interviews, a surprise multiple-choice question fires — hard and specific to your role. Get it right and you earn 10 bonus points. Get it wrong and you receive the full explanation on the spot, then move straight back into the interview — no penalty.</div>
   </div>
 
-  <h2 class="group-title">Bonus round — a live knowledge check</h2>
-  <p class="group-note">Partway through most interviews, a surprise multiple-choice question fires — hard, role-specific, worth real points that lift the final score. Answered correctly, it genuinely raises the headline percentage; answered wrong, you get the full explanation on the spot and move straight back into the interview.</p>
+  <div class="dim-card bonus-card">
+    <div class="dim-head"><span class="dim-name">Ask the interviewers</span><span class="dim-weight">+5 points</span></div>
+    <div class="dim-desc">Near the end of about half of interviews, Amina asks whether you have any questions for the panel — the moment many candidates regret staying silent. Take it: we'll suggest a strong question to ask, save it to your Question Bank, and award 5 bonus points for engaging.</div>
+  </div>
+
+  <h2 class="group-title">If you skip a question or ask for the answer</h2>
+  <p class="group-note">Pass on a question, or ask us to tell you the answer, and that question scores zero. The answer is shown so you learn it, but it isn't marked as an attempt — which is the honest way to see where you really stand.</p>
+
+  <h2 class="group-title">Your outcome — pass, keep on file, or not this time</h2>
+  <p class="group-note">Your final percentage, bonuses included, gives one of three outcomes. The bar rises with the level you choose, and an interview in a specific company's style uses a level that matches that company's bar.</p>
+  <table class="outcome-tbl">
+    <thead><tr><th>Level</th><th>Pass</th><th>Keep on file</th><th>Not this time</th></tr></thead>
+    <tbody>
+      <tr><td>Beginner</td><td class="p">60%+</td><td class="k">45–59%</td><td class="f">below 45%</td></tr>
+      <tr><td>Standard</td><td class="p">65%+</td><td class="k">50–64%</td><td class="f">below 50%</td></tr>
+      <tr><td>Pro</td><td class="p">70%+</td><td class="k">55–69%</td><td class="f">below 55%</td></tr>
+      <tr><td>Expert</td><td class="p">90%+</td><td class="k">75–89%</td><td class="f">below 75%</td></tr>
+    </tbody>
+  </table>
+  <p class="group-note"><b>Keep on file</b> means a real employer would keep your CV (or name) on file for future roles. <b>A pass</b> earns a certificate you can download and share.</p>
 
   <div class="cta-band">
     <h3>See it happen in your own interview.</h3>
