@@ -1794,11 +1794,17 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       </div>
                     )}
                   </div>
-                  <div style={{ fontSize: '17px', fontWeight: 600, color: 'var(--text)', lineHeight: 1.55, minHeight: '28px' }}>
-                    {displayedQuestion}
-                    {phase === 'asking' && displayedQuestion.length < (q.questionText?.length ?? 0) && (
-                      <motion.span animate={{ opacity: [1, 0] }} transition={{ repeat: Infinity, duration: 0.5 }} style={{ marginLeft: '2px', color: isHrQuestion ? '#a78bfa' : 'var(--blue)' }}>▌</motion.span>
-                    )}
+                  {/* The question is typed out word by word (useTypewriter), and the card used to grow line by line as it went,
+                      shoving everything below it down — the page visibly jumped (Francis, 2026-09-26). An invisible copy of the
+                      FULL question reserves the card's final height from the first frame; the typed text is drawn on top of it. */}
+                  <div style={{ position: 'relative', fontSize: '17px', fontWeight: 600, color: 'var(--text)', lineHeight: 1.55, minHeight: '28px' }}>
+                    <div aria-hidden="true" style={{ visibility: 'hidden' }}>{q.questionText}</div>
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
+                      {displayedQuestion}
+                      {phase === 'asking' && displayedQuestion.length < (q.questionText?.length ?? 0) && (
+                        <motion.span animate={{ opacity: [1, 0] }} transition={{ repeat: Infinity, duration: 0.5 }} style={{ marginLeft: '2px', color: isHrQuestion ? '#a78bfa' : 'var(--blue)' }}>▌</motion.span>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               </AnimatePresence>
