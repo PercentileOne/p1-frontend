@@ -269,9 +269,9 @@ export default function TryItLivePage() {
   const labelStyle: React.CSSProperties = { display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-3, #94a3b8)', marginBottom: 8 };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg, #070d1a)', color: 'var(--text, #f1f5f9)', fontFamily: '-apple-system,"Segoe UI",system-ui,sans-serif', padding: '20px 16px 60px' }}>
-      <div style={{ maxWidth: 720, margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 26 }}>
+    <div style={{ minHeight: '100vh', width: '100%', maxWidth: '100vw', boxSizing: 'border-box', overflowX: 'hidden', WebkitTextSizeAdjust: '100%', background: 'var(--bg, #070d1a)', color: 'var(--text, #f1f5f9)', fontFamily: '-apple-system,"Segoe UI",system-ui,sans-serif', padding: '20px 16px 60px' }}>
+      <div style={{ maxWidth: 720, width: '100%', minWidth: 0, margin: '0 auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 26 }}>
           <a href="https://www.theinterviewchair.com" style={{ textDecoration: 'none', fontWeight: 900, fontSize: 16, letterSpacing: '-0.02em', color: '#fff' }}>
             <span style={{ color: GREEN }}>The</span>Interview<span style={{ color: GREEN }}>Chair</span><span style={{ color: 'rgba(255,255,255,0.55)', fontWeight: 400 }}>.com</span>
           </a>
@@ -299,10 +299,17 @@ export default function TryItLivePage() {
           <video ref={hr.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: useAvatar && avatar === hr ? 1 : 0 }} />
           <video ref={technical.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: useAvatar && avatar === technical ? 1 : 0 }} />
           {!useAvatar && start && (
-            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-              <div style={{ width: 84, height: 84, borderRadius: '50%', background: `linear-gradient(135deg,${GREEN},#047857)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34, fontWeight: 900, color: '#fff', boxShadow: phase === 'asking' ? '0 0 0 10px rgba(52,211,153,0.15)' : 'none', transition: 'box-shadow 0.3s' }}>{start.interviewerName[0]}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-3, #94a3b8)' }}>Voice interview</div>
-            </div>
+            <>
+              {/* Voice-only interview (all phones, and desktop when no live avatar is available): the interviewer's photo, with a soft green
+                  ring while they are speaking — so there is always a face, not a letter (Francis, 2026-09-26: "I can't see Wayne"). */}
+              <img
+                src={start.interviewer === 'technical' ? '/images/wayne-static-photo.png' : '/images/amina-static-image-1.png'}
+                alt={`${start.interviewerName}, your interviewer`}
+                width={520} height={288}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              <div style={{ position: 'absolute', inset: 0, borderRadius: 18, boxShadow: phase === 'asking' ? `inset 0 0 0 3px ${GREEN}88` : 'inset 0 0 0 0 transparent', transition: 'box-shadow 0.3s', pointerEvents: 'none' }} />
+            </>
           )}
           {start && (
             <div style={{ position: 'absolute', left: 12, bottom: 12, background: 'rgba(0,0,0,0.6)', borderRadius: 8, padding: '5px 10px', fontSize: 12, fontWeight: 700 }}>
@@ -371,8 +378,8 @@ export default function TryItLivePage() {
 
         {(phase === 'asking' || phase === 'answering' || phase === 'coaching' || phase === 'scoring') && start && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10, gap: 12 }}>
-              <div style={{ fontSize: 13, color: 'var(--text-3, #94a3b8)', overflowWrap: 'anywhere' }}>Interview for <strong style={{ color: 'var(--text, #f1f5f9)' }}>{start.subject}</strong>{start.unlimited && <span style={{ marginLeft: 10, fontSize: 11, fontWeight: 800, color: AMBER }}>· demo mode — no limits</span>}</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 10, gap: 4, columnGap: 12 }}>
+              <div style={{ fontSize: 13, color: 'var(--text-3, #94a3b8)', overflowWrap: 'anywhere', minWidth: 0, flex: '1 1 200px' }}>Interview for <strong style={{ color: 'var(--text, #f1f5f9)' }}>{start.subject}</strong>{start.unlimited && <span style={{ marginLeft: 10, fontSize: 11, fontWeight: 800, color: AMBER }}>· demo mode — no limits</span>}</div>
               <div style={{ fontSize: 12, fontWeight: 800, color: GREEN, whiteSpace: 'nowrap' }}>Question {Math.min(index + 1, start.questions.length)} of {start.questions.length}</div>
             </div>
             {/* Video box now lives permanently mounted above, outside this phase gate — see its own comment. */}
