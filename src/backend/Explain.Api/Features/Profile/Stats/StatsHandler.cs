@@ -120,7 +120,7 @@ public class StatsHandler(CosmosService cosmos, ILogger<StatsHandler> logger)
         overall >= 90 ? "Outstanding" :
         overall >= 80 ? "Excellent"   :
         overall >= 70 ? "Good"        :
-        overall >= 60 ? "Developing"  : "Keep Practising";
+        overall >= 60 ? "Developing"  : "Keep Practicing";
 
     private static ProfileStats EmptyStats() => new(
         TotalTalks: 0, BestScore: 0, AvgScore: 0, TotalMinutes: 0,

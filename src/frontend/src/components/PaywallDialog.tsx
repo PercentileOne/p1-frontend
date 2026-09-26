@@ -33,7 +33,7 @@ export function PaywallDialog({ result, onClose }: { result: StartInterviewResul
   const heading = needsVerify ? 'Verify your email first'
     : isLimit ? (result.code === 'daily-cap' ? "That's today's interviews done" : "That's this month's interviews done")
     : result.code === 'taster-used' ? 'You\'ve had your free interview'
-    : 'Ready to keep practising?';
+    : 'Ready to keep practicing?';
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: 20 }}>

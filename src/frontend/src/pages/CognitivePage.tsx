@@ -765,7 +765,7 @@ function computeScore(
     finalScore >= 90 ? "#FBBF24" : finalScore >= 75 ? "#34D399" : finalScore >= 60 ? "#60A5FA" : finalScore >= 40 ? "#F59E0B" : "#F87171";
   const verdict =
     finalScore >= 90 ? "Exceptional recall." : finalScore >= 75 ? "Strong performance." :
-    finalScore >= 60 ? "Solid foundation." : finalScore >= 40 ? "Keep practising." : "Review and retry.";
+    finalScore >= 60 ? "Solid foundation." : finalScore >= 40 ? "Keep practicing." : "Review and retry.";
 
   return { weightedHits, totalWeight, rawPct, diffMultiplier, speedBonus, accuracyBonus, streakBonus, misconceptionPenalty, finalScore, grade, gradeAccent, verdict };
 }

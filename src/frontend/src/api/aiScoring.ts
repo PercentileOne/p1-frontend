@@ -781,7 +781,7 @@ ${cvSnippet ? `\nCANDIDATE CV (extract first name from here):\n${cvSnippet}\n` :
 CONTEXT:
 - Job title: ${jobTitle || 'not specified'}
 - Company: ${companyName || '(extract from job title or job spec if possible, otherwise omit)'}${companyMock && companyName ? `
-- IMPORTANT: this is a company-specific MOCK interview — practice modelled on how ${companyName} publicly hires, run by TheInterviewChair.com. Say clearly that it is a ${companyName}-style practice interview (never that it is a real ${companyName} interview, and never imply any affiliation with ${companyName}). Make it feel exciting — they are practising for a dream employer.` : ''}
+- IMPORTANT: this is a company-specific MOCK interview — practice modelled on how ${companyName} publicly hires, run by TheInterviewChair.com. Say clearly that it is a ${companyName}-style practice interview (never that it is a real ${companyName} interview, and never imply any affiliation with ${companyName}). Make it feel exciting — they are practicing for a dream employer.` : ''}
 - Interview round: ${roundFrame}
 - Difficulty level: ${difficultyFrame}
 ${jobSpecSnippet ? `- Job spec excerpt: ${jobSpecSnippet}` : ''}

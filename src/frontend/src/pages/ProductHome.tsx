@@ -421,7 +421,7 @@ export default function ProductHome() {
               {["AI interviewer with voice and presence","Live waveform & speech detection","Real-time coaching overlay","Behavioural scoring engine","Instant post-interview debrief","Recruiter-shareable results"].map(li=><li key={li}>{li}</li>)}
             </ul>
             <div className="ph-r" data-ph="" data-d="4" style={{display:"flex",gap:14,flexWrap:"wrap",marginTop:36}}>
-              <a href="/register" className="ph-btn-primary">Start Practising →</a>
+              <a href="/register" className="ph-btn-primary">Start Practicing →</a>
               <a href="#ph-mission" className="ph-btn-ghost" style={{borderColor:"rgba(167,139,250,.35)",color:"#a78bfa"}}>Our Mission →</a>
             </div>
           </div>
@@ -602,7 +602,7 @@ export default function ProductHome() {
             <div className="ph-manifesto">
               <div className="ph-lbl ph-r" data-ph="">Why TheInterviewChair.com Exists</div>
               <p className="ph-r" data-ph="" data-d="1">People don't fail interviews because they're not good enough.</p>
-              <p className="ph-r" data-ph="" data-d="2">They fail because they've never actually <strong style={{color:"#F0F4FF"}}>practised</strong>. Not once. Not properly. Most people walk into the most important conversation of their career having rehearsed nothing — because there was nowhere to rehearse.</p>
+              <p className="ph-r" data-ph="" data-d="2">They fail because they've never actually <strong style={{color:"#F0F4FF"}}>practiced</strong>. Not once. Not properly. Most people walk into the most important conversation of their career having rehearsed nothing — because there was nowhere to rehearse.</p>
               <p className="ph-em1 ph-r" data-ph="" data-d="3">The first time they sit<br />in the chair —<br />is the real interview.</p>
               <p className="ph-em2 ph-r" data-ph="" data-d="4">That ends now.</p>
               <div className="ph-tagline ph-r" data-ph="" data-d="5"><p>TheInterviewChair.com is the world's first <strong>AI interview practice platform</strong> that feels like the real thing. So when the real thing comes — you're already ready.</p></div>

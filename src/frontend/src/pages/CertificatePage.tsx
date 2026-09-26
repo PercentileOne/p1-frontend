@@ -40,7 +40,7 @@ export default function CertificatePage() {
   const date = new Date(cert.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const url = typeof window !== 'undefined' ? window.location.href : '';
   const shareText = isCompanyMock
-    ? `I just passed my mock ${employer} interview on TheInterviewChair.com with ${cert.overallScore}%! 🏆 Practise for your dream company too:`
+    ? `I just passed my mock ${employer} interview on TheInterviewChair.com with ${cert.overallScore}%! 🏆 Practice for your dream company too:`
     : `I just passed my ${cert.role ? `${cert.role} ` : ''}mock interview on TheInterviewChair.com with ${cert.overallScore}%! 🏆`;
 
   const copy = async () => {
@@ -112,7 +112,7 @@ export default function CertificatePage() {
 
         <div className="cert-cta" style={{ marginTop: 28, textAlign: 'center' }}>
           <div style={{ fontSize: 14, color: 'var(--text-2)', marginBottom: 12 }}>
-            {isCompanyMock ? `Think you could pass a ${employer} interview?` : 'Think you could pass?'} Practise on any role — or interview like Google, Microsoft, M&amp;S and 190 more.
+            {isCompanyMock ? `Think you could pass a ${employer} interview?` : 'Think you could pass?'} Practice on any role — or interview like Google, Microsoft, M&amp;S and 190 more.
           </div>
           <button onClick={() => navigate('/interview-pack/start')} style={{ background: 'linear-gradient(135deg,#34D399,#047857)', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 26px', fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>
             Try your own mock interview →

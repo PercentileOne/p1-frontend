@@ -393,7 +393,7 @@ function ReInterviewTab({ session, modules, onGoLearn }: {
       <Section title="Next Steps">
         {[
           { n: 1, text: 'Complete the LEARN modules matched to your improvement areas.' },
-          { n: 2, text: 'Practise answering the questions you found most challenging using the Interview Prep tool.' },
+          { n: 2, text: 'Practice answering the questions you found most challenging using the Interview Prep tool.' },
           { n: 3, text: 'Reach out to your recruiter and let them know you are ready to be reconsidered.' },
           { n: 4, text: 'Your recruiter will contact the client and arrange a follow-up if appropriate.' },
         ].map(step => (

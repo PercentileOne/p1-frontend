@@ -124,7 +124,7 @@ Scoring guide:
         overall >= 90 ? "Outstanding" :
         overall >= 80 ? "Excellent"   :
         overall >= 70 ? "Good"        :
-        overall >= 60 ? "Developing"  : "Keep Practising";
+        overall >= 60 ? "Developing"  : "Keep Practicing";
 
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 

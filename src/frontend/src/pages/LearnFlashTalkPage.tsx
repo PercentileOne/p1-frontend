@@ -329,7 +329,7 @@ export default function LearnFlashTalkPage() {
                   {scorePct}%
                 </motion.div>
                 <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)', marginTop: '8px' }}>
-                  {scorePct >= 80 ? 'Excellent! 🏆' : scorePct >= 60 ? 'Good round! 💪' : scorePct >= 40 ? 'Keep practising 📚' : 'Tough one — review and retry'}
+                  {scorePct >= 80 ? 'Excellent! 🏆' : scorePct >= 60 ? 'Good round! 💪' : scorePct >= 40 ? 'Keep practicing 📚' : 'Tough one — review and retry'}
                 </div>
                 <div style={{ fontSize: '13px', color: 'var(--text-3)', marginTop: '6px' }}>
                   {correct} correct · {skipped} skipped · {timedOut} timed out — {profession}

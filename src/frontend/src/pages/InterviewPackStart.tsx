@@ -538,7 +538,7 @@ export default function InterviewPackStart() {
           <CompanyPicker companies={companies} value={selectedCompanyId} brand={selectedBrand} onChange={(id, brand) => { void handleCompanyChange(id, brand); }} />
           {!companyMode && (
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
-              Standard is a well-rounded interview for any role. Or pick a company to practise an interview modelled on how they hire — their values, style and bar.
+              Standard is a well-rounded interview for any role. Or pick a company to practice an interview modelled on how they hire — their values, style and bar.
             </div>
           )}
           {companyMode && companyLoading && (

@@ -1019,7 +1019,7 @@ export default function InterviewPreps() {
                       {sentNotice.updated ? 'Prep link updated and resent to' : 'Prep link sent to'}<br />{sentNotice.name}
                     </div>
                     <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 10, lineHeight: 1.6 }}>
-                      {sentNotice.email}<br />They can start practising straight away.
+                      {sentNotice.email}<br />They can start practicing straight away.
                     </div>
                     <button
                       onClick={() => setSentNotice(null)}

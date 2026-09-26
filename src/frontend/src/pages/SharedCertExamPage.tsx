@@ -127,7 +127,7 @@ export default function SharedCertExamPage({ id }: { id?: string }) {
             </div>
           )}
           <div style={{ fontSize: '11px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
-            A practice mock exam on TheInterviewChair.com — not an official result. Practise for any US or UK exam.
+            A practice mock exam on TheInterviewChair.com — not an official result. Practice for any US or UK exam.
           </div>
         </div>
 

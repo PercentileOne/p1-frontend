@@ -75,12 +75,12 @@ public static class EntitlementRules
         {
             var code = subscriptionBlockCode ?? "daily-cap";
             return code == "monthly-cap"
-                ? new(false, "none", "monthly-cap", $"You've used your {s.MonthlyCap} interviews for this month. Your allowance resets at the start of next month — or buy a one-off pass to keep practising now.")
+                ? new(false, "none", "monthly-cap", $"You've used your {s.MonthlyCap} interviews for this month. Your allowance resets at the start of next month — or buy a one-off pass to keep practicing now.")
                 : new(false, "none", "daily-cap", $"You've used your {s.DailyCap} interviews for today. Your allowance resets at midnight (UK time).");
         }
 
         if (f.TasterUsed)
-            return new(false, "none", "taster-used", "You've had your free interview. Subscribe for £4.99 a month, or buy a one-off pass, to keep practising.");
+            return new(false, "none", "taster-used", "You've had your free interview. Subscribe for £4.99 a month, or buy a one-off pass, to keep practicing.");
 
         return new(false, "none", "no-access", "Subscribe for £4.99 a month, or buy a one-off pass, to start an interview.");
     }

@@ -212,7 +212,7 @@ public class EntitlementService(AppDbContext db, SessionPassService passes, ICon
         {
             // Two simultaneous starts both saw the taster as unused; the database's unique index let exactly one through.
             logger.LogInformation(ex, "Taster already claimed for {Key} by a concurrent request", key);
-            if (settings.Enforce) return new StartResult(false, true, "none", "taster-used", "You've had your free interview. Subscribe for £4.99 a month, or buy a one-off pass, to keep practising.", null);
+            if (settings.Enforce) return new StartResult(false, true, "none", "taster-used", "You've had your free interview. Subscribe for £4.99 a month, or buy a one-off pass, to keep practicing.", null);
         }
 
         var ticket = InterviewTicket.Create(config["Jwt:Secret"] ?? string.Empty, userId, DateTimeOffset.UtcNow);

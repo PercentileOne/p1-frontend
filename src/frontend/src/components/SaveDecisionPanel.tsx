@@ -144,7 +144,7 @@ export function SaveDecisionPanel({
   }, [alreadyShared, candidateId, interviewId]);
 
   const shareText = companyMock && company
-    ? `I've just had a mock ${company} interview on TheInterviewChair.com and scored ${score}% — practise for your dream company too. Watch my full session:`
+    ? `I've just had a mock ${company} interview on TheInterviewChair.com and scored ${score}% — practice for your dream company too. Watch my full session:`
     : `I scored ${score}% on my ${role ?? 'job'} interview with TheInterviewChair.com — the AI interview platform. Watch my full session:`;
 
   // The recording + full answer data are already uploaded automatically the moment the

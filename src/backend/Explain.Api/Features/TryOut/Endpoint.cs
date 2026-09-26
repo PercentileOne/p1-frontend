@@ -236,7 +236,7 @@ public static class Endpoint
             {"overall": <0-100 integer>, "headline": "<one warm, specific sentence verdict>",
              "dimensions": {"clarity":<0-10>,"relevance":<0-10>,"accuracy":<0-10>,"depth":<0-10>,"confidence":<0-10>},
              "questions": [ {"score":<0-10>,"feedback":"<1-2 specific sentences on THIS answer>","strongerAnswer":"<2-3 sentence example of a stronger answer to that question, for this subject>"} ],
-             "nextStep": "<one sentence: the single most useful thing to practise next>"}
+             "nextStep": "<one sentence: the single most useful thing to practice next>"}
             "questions" must have exactly one entry per answer, in order.
             """;
         var sb = new StringBuilder();

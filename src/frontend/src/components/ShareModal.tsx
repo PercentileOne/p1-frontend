@@ -68,7 +68,7 @@ export function ShareModal({ role, company, companyMock = false, score, shareUrl
   const roleLabel = role ?? 'this role';
   const companyLabel = company ? ` at ${company}` : '';
   const shareText = companyMock && company
-    ? `I've just had a mock ${company} interview on TheInterviewChair.com and scored ${score}% — practise for your dream company too. Watch my full session here:`
+    ? `I've just had a mock ${company} interview on TheInterviewChair.com and scored ${score}% — practice for your dream company too. Watch my full session here:`
     : `I just scored ${score}% on my ${roleLabel}${companyLabel} interview with Explain — the AI interview platform. Watch my full session here:`;
 
   const copyLink = async () => {
