@@ -4,6 +4,7 @@ import { speak as speakTts } from '../api/ttsApi';
 import { setInterviewTicket } from '../api/entitlementsApi';
 import { VoiceInput } from '../components/VoiceInput';
 import { startTryOut, scoreTryOut, coachTryOut, type TryOutStart, type TryOutFeedback, type TryOutResult } from '../api/tryOutApi';
+import { logEvent } from '../api/flowLogger';
 
 // "Try it live" (Francis, 2026-09-21) — the public, no-account taste of the product for visitors from the marketing site and LinkedIn:
 // name a job role, a live avatar asks three questions, answer by voice or text, and after each answer the Guardian Angel coach (the same
@@ -101,6 +102,18 @@ export default function TryItLivePage() {
       return touchOnly || uaMobile;
     } catch { return false; }
   });
+
+  // Where do visitors fall out of the demo? (Francis, 2026-09-26: lots of visits, no sign-ups — he wants the funnel in the admin
+  // Activity Log.) The marketing site logs the click that sends people here; these events log what happens once they arrive.
+  // try_blocked_mobile = a phone/tablet visitor hit the "desktop only" wall (most social-media traffic is on phones).
+  useEffect(() => { if (isMobile) logEvent('try_blocked_mobile', { metadata: { w: window.innerWidth } }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (isMobile) return;
+    if (phase === 'starting') logEvent('try_started', { metadata: { topic: topic.trim().slice(0, 60) } });
+    else if (phase === 'asking' && index === 0) logEvent('try_first_question', { metadata: { avatar: useAvatar } });
+    else if (phase === 'results') logEvent('try_completed', { metadata: { score: feedback?.overall ?? null } });
+    else if (phase === 'blocked') logEvent('try_blocked', { metadata: { reason: blockReason } });
+  }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Never leave a billable avatar connection or a voice running when the page is left.
   useEffect(() => () => { cancelSpeechRef.current?.(); void hr.disconnect(); void technical.disconnect(); }, []); // eslint-disable-line react-hooks/exhaustive-deps

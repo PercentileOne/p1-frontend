@@ -59,6 +59,37 @@ public static class Endpoint
         // baseline "can see admin-portal pages at all" gate every other read-only list here uses.
         .RequireAuthorization(Permissions.ViewAdminPortal);
 
+        // GET /api/admin/events/funnel — "what do visitors actually do?" (Francis, 2026-09-26: lots of traffic, no sign-ups).
+        // Reads the hot marketing-site events (Cosmos keeps 10 days) and answers, per visit (= sessionId): how many were real
+        // people vs crawlers, how far they got, what they clicked, where they came from, phone vs desktop. "Real" = the visit
+        // fired an `interaction` event (track.js only sends that after a trusted click/tap/key/scroll/mouse movement; crawlers
+        // that just load the page never do). The candidate app's /try events are folded in so the phone "desktop only" wall shows up.
+        app.MapGet("/api/admin/events/funnel", async (CosmosService cosmos, int days = 7) =>
+        {
+            days = Math.Clamp(days, 1, 10);
+            var container = cosmos.GetContainer("systemEvents");
+            var from = DateTimeOffset.UtcNow.AddDays(-days).ToString("o");
+
+            var marketing = new List<FunnelEvent>();
+            var q1 = new QueryDefinition("SELECT TOP 50000 c.sessionId, c.eventType, c.page, c.metadata FROM c WHERE c.portal = 'marketing' AND c.createdAt >= @from")
+                .WithParameter("@from", from);
+            using (var feed = container.GetItemQueryIterator<FunnelEvent>(q1))
+                while (feed.HasMoreResults) marketing.AddRange(await feed.ReadNextAsync());
+
+            var tryEvents = new List<FunnelEvent>();
+            var q2 = new QueryDefinition(
+                "SELECT TOP 20000 c.sessionId, c.eventType, c.page, c.metadata FROM c WHERE c.portal = 'candidate' AND c.createdAt >= @from " +
+                "AND (c.eventType IN ('try_blocked_mobile','try_started','try_first_question','try_completed','try_blocked') " +
+                "OR (c.eventType = 'page_view' AND c.page = '/try'))")
+                .WithParameter("@from", from);
+            using (var feed = container.GetItemQueryIterator<FunnelEvent>(q2))
+                while (feed.HasMoreResults) tryEvents.AddRange(await feed.ReadNextAsync());
+
+            return Results.Ok(BuildFunnel(days, marketing, tryEvents));
+        })
+        .WithName("MarketingFunnel").WithTags("Events")
+        .RequireAuthorization(Permissions.ViewAdminPortal);
+
         // POST /api/admin/events/delete — remove activity records from the log (Francis, 2026-09-20: he wanted a
         // way to clear noise such as his own open browser tabs and test traffic). Two modes:
         //   • Items:  specific events the admin ticked/opened (id + sessionId, the container's partition key), max 500.
@@ -148,6 +179,109 @@ public static class Endpoint
     public record EventRef(string Id, string SessionId);
     public record EventFilter(string? UserId, string? Email, string? EventType, string? Portal, string? Q, DateTimeOffset? From, DateTimeOffset? To);
     public record DeleteEventsRequest(List<EventRef>? Items, EventFilter? Filter, int? ExpectedCount);
+
+    // Only the fields the funnel needs — keeps the read cheap (no IPs / user agents pulled back).
+    public record FunnelEvent(string sessionId, string eventType, string? page, Dictionary<string, object>? metadata);
+
+    private static string? Meta(FunnelEvent e, string key) =>
+        e.metadata is not null && e.metadata.TryGetValue(key, out var v) ? v?.ToString() : null;
+
+    private static bool IsClick(FunnelEvent e) => e.eventType is "menu_click" or "cta_click" or "link_click";
+
+    private static bool HrefHas(FunnelEvent e, params string[] needles)
+    {
+        var href = Meta(e, "href");
+        return href is not null && needles.Any(n => href.Contains(n, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Turns raw marketing events into the funnel. Sessions are grouped by sessionId (one browser tab visit); the
+    /// shared 'no-session-storage' id (browsers that block storage) is left out because it would merge unrelated people.
+    /// </summary>
+    private static object BuildFunnel(int days, List<FunnelEvent> marketing, List<FunnelEvent> tryEvents)
+    {
+        var sessions = marketing
+            .Where(e => e.sessionId != "no-session-storage")
+            .GroupBy(e => e.sessionId)
+            .Select(g =>
+            {
+                var evs = g.ToList();
+                return new
+                {
+                    Human = evs.Any(e => e.eventType == "interaction"),
+                    Device = evs.Select(e => Meta(e, "dev")).FirstOrDefault(d => !string.IsNullOrEmpty(d)) ?? "unknown",
+                    Src = evs.Select(e => Meta(e, "src")).FirstOrDefault(s => !string.IsNullOrEmpty(s)) ?? "direct",
+                    SawPricing = evs.Any(e => e.eventType == "section_view" && Meta(e, "section") == "pricing"),
+                    Tried = evs.Any(e => e.eventType == "try_submit" || (IsClick(e) && HrefHas(e, "/try"))),
+                    Signup = evs.Any(e => IsClick(e) && HrefHas(e, "/register", "/subscription", "login.theinterviewchair.com")),
+                    Sections = evs.Where(e => e.eventType == "section_view").Select(e => Meta(e, "section")).Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList(),
+                    Clicks = evs.Where(IsClick).Select(e => (Type: e.eventType, Label: Meta(e, "label") ?? "", Area: Meta(e, "area") ?? "", Href: Meta(e, "href") ?? "")).ToList(),
+                };
+            })
+            .ToList();
+
+        var human = sessions.Where(s => s.Human).ToList();
+
+        object Step(string key, string label, int n) => new { key, label, sessions = n };
+        var steps = new[]
+        {
+            Step("visits", "Visits (everything that loaded a page)", sessions.Count),
+            Step("human", "Real visitors (clicked, tapped, scrolled or moved a mouse)", human.Count),
+            Step("pricing", "Reached the pricing section", human.Count(s => s.SawPricing)),
+            Step("tried", "Tried it live (typed a role or clicked Try it live)", human.Count(s => s.Tried)),
+            Step("signup", "Clicked Register / Subscribe / Login", human.Count(s => s.Signup)),
+        };
+
+        var devices = new[] { "mobile", "desktop" }.Select(d => new
+        {
+            device = d,
+            visits = sessions.Count(s => s.Device == d),
+            real = human.Count(s => s.Device == d),
+            tried = human.Count(s => s.Device == d && s.Tried),
+        });
+
+        var sources = sessions.GroupBy(s => s.Src)
+            .Select(g => new { source = g.Key, visits = g.Count(), real = g.Count(s => s.Human) })
+            .OrderByDescending(x => x.real).ThenByDescending(x => x.visits).Take(10);
+
+        // Clicks: how many DIFFERENT real visitors clicked each thing (not raw click counts, so one person hammering a button counts once).
+        var topClicks = human
+            .SelectMany(s => s.Clicks.Select(c => (c.Type, c.Label, c.Area, c.Href)).Distinct())
+            .GroupBy(c => c)
+            .Select(g => new { type = g.Key.Type, label = g.Key.Label, area = g.Key.Area, href = g.Key.Href, visitors = g.Count() })
+            .OrderByDescending(x => x.visitors).Take(20);
+
+        var sections = human.SelectMany(s => s.Sections).GroupBy(x => x)
+            .Select(g => new { section = g.Key, visitors = g.Count() })
+            .OrderByDescending(x => x.visitors);
+
+        var leaves = marketing.Where(e => e.eventType == "page_leave")
+            .Select(e => double.TryParse(Meta(e, "sec"), out var s) ? s : (double?)null).Where(s => s is not null).Select(s => s!.Value).OrderBy(s => s).ToList();
+
+        int TrySessions(string type) => tryEvents.Where(e => e.eventType == type).Select(e => e.sessionId).Distinct().Count();
+        var tryPage = new
+        {
+            visits = tryEvents.Where(e => e.eventType == "page_view").Select(e => e.sessionId).Distinct().Count(),
+            blockedMobile = TrySessions("try_blocked_mobile"),
+            started = TrySessions("try_started"),
+            firstQuestion = TrySessions("try_first_question"),
+            completed = TrySessions("try_completed"),
+            blocked = TrySessions("try_blocked"),
+        };
+
+        return new
+        {
+            days,
+            totalEvents = marketing.Count,
+            steps,
+            devices,
+            sources,
+            topClicks,
+            sections,
+            medianSecondsOnPage = leaves.Count == 0 ? (double?)null : leaves[leaves.Count / 2],
+            tryPage,
+        };
+    }
 
     // Whitelisted, not interpolated from the raw query string — sortBy/sortDir feed directly
     // into a SQL clause, so an unrecognised value must fall back to the default rather than

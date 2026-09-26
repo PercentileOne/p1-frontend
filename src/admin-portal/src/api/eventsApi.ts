@@ -77,6 +77,18 @@ async function post<T>(path: string, token: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface FunnelResponse {
+  days: number;
+  totalEvents: number;
+  steps: { key: string; label: string; sessions: number }[];
+  devices: { device: string; visits: number; real: number; tried: number }[];
+  sources: { source: string; visits: number; real: number }[];
+  topClicks: { type: string; label: string; area: string; href: string; visitors: number }[];
+  sections: { section: string; visitors: number }[];
+  medianSecondsOnPage: number | null;
+  tryPage: { visits: number; blockedMobile: number; started: number; firstQuestion: number; completed: number; blocked: number };
+}
+
 export const eventsApi = {
   // Delete specific events (id + sessionId, the container's partition key) — max 500 per call.
   deleteSelected(token: string, items: { id: string; sessionId: string }[]): Promise<{ deleted: number }> {
@@ -85,6 +97,10 @@ export const eventsApi = {
   // Delete EVERY event matching the filter — the server refuses unless expectedCount equals the live match count.
   deleteMatching(token: string, filter: DeleteEventsFilter, expectedCount: number): Promise<{ deleted: number }> {
     return post('/api/admin/events/delete', token, { filter, expectedCount });
+  },
+  // What do visitors actually do? Marketing-site funnel over the last N days (max 10 — the hot window).
+  funnel(token: string, days: number): Promise<FunnelResponse> {
+    return call(`/api/admin/events/funnel?days=${days}`, token);
   },
   list(token: string, params: ListEventsParams): Promise<ListEventsResponse> {
     const qs = new URLSearchParams();

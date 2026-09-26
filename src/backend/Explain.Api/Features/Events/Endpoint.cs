@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Text.Json;
 using Microsoft.Azure.Cosmos;
 using Explain.Api.Infrastructure.Cosmos;
 using Explain.Api.Infrastructure.Geo;
@@ -49,22 +51,25 @@ public static class Endpoint
                     ? DateTimeOffset.FromUnixTimeSeconds(iat).ToString("o") : null;
 
                 var ip = ctx.Connection.RemoteIpAddress?.ToString();
+                // This endpoint is anonymous and public, and the marketing site now sends several events per visit — cap what
+                // one address can write, and how big one event can be, so it can never be used to flood the log (and the bill).
+                if (!AllowedFromIp(ip)) return Results.Ok(new { logged = false });
                 var geoResult = await geo.ResolveAsync(ip, ctx.RequestAborted);
 
                 var doc = new SystemEventDoc(
                     id: Guid.NewGuid().ToString(),
-                    sessionId: req.SessionId,
+                    sessionId: Clip(req.SessionId, 64)!,
                     userId: userId,
                     email: email,
                     role: role,
-                    eventType: req.EventType.Trim(),
-                    page: req.Page,
-                    portal: req.Portal,
+                    eventType: Clip(req.EventType.Trim(), 64)!,
+                    page: Clip(req.Page, 300),
+                    portal: Clip(req.Portal, 32),
                     ipAddress: ip,
                     country: geoResult.Country,
                     city: geoResult.City,
                     userAgent: ctx.Request.Headers.UserAgent.ToString() is { Length: > 0 } ua ? ua : null,
-                    metadata: req.Metadata,
+                    metadata: SafeMetadata(req.Metadata),
                     createdAt: DateTimeOffset.UtcNow.ToString("o"),
                     region: geoResult.Region,
                     accuracyKm: geoResult.AccuracyKm,
@@ -87,6 +92,32 @@ public static class Endpoint
     }
 
     private record EventRequest(string SessionId, string EventType, string? Page, string? Portal, Dictionary<string, object>? Metadata);
+
+    private static string? Clip(string? value, int max) => value is null ? null : (value.Length <= max ? value : value[..max]);
+
+    // Oversized details are dropped rather than stored (the event itself is still logged).
+    private const int MaxMetadataChars = 4000;
+    private static Dictionary<string, object>? SafeMetadata(Dictionary<string, object>? md)
+    {
+        if (md is null || md.Count == 0) return md;
+        try { return JsonSerializer.Serialize(md).Length <= MaxMetadataChars ? md : null; }
+        catch { return null; }
+    }
+
+    // Per-address sliding allowance: 400 events / 10 minutes (a real visit is ~30). In-memory on purpose — a restart just resets it.
+    private static readonly ConcurrentDictionary<string, (DateTime Start, int Count)> Hits = new();
+    private const int MaxEventsPer10Min = 400;
+    private static bool AllowedFromIp(string? ip)
+    {
+        if (string.IsNullOrEmpty(ip)) return true;
+        var now = DateTime.UtcNow;
+        var entry = Hits.AddOrUpdate(ip, _ => (now, 1),
+            (_, cur) => now - cur.Start > TimeSpan.FromMinutes(10) ? (now, 1) : (cur.Start, cur.Count + 1));
+        if (Hits.Count > 20000)
+            foreach (var stale in Hits.Where(kv => now - kv.Value.Start > TimeSpan.FromMinutes(10)).Select(kv => kv.Key).ToList())
+                Hits.TryRemove(stale, out _);
+        return entry.Count <= MaxEventsPer10Min;
+    }
 }
 
 public record SystemEventDoc(

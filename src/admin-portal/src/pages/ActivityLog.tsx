@@ -3,6 +3,7 @@ import { Search, Loader2, ChevronUp, ChevronDown, RefreshCw, Trash2 } from 'luci
 import { useAuth } from '../context/AuthContext'
 import { eventsApi, type SystemEvent, type ApiError } from '../api/eventsApi'
 import { Pagination } from '../components/Pagination'
+import { MarketingFunnel } from '../components/MarketingFunnel'
 import { describeDevice, describeLocation, describeCityAndCountry, describeCityGuess, ageOf } from '../lib/eventFormat'
 
 // Same sortBy values the backend's SortableFields whitelist accepts (Features/Events/Admin/
@@ -178,6 +179,8 @@ export default function ActivityLog() {
           <RefreshCw size={13} className={loading ? 'admin-spin' : ''} /> Refresh
         </button>
       </div>
+
+      <MarketingFunnel onBrowse={t => { setPortal('marketing'); setEventType(t); setQ(''); setPage(1) }} />
 
       {notice && (
         <div style={{ fontSize: 12, color: '#34D399', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
