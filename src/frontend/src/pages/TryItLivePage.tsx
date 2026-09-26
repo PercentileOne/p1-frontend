@@ -172,7 +172,14 @@ export default function TryItLivePage() {
     let connectMs = 0;
     // Phones get the interviewer's VOICE only, no live video stream (2026-09-26): the streamed avatar needs a strong steady connection and
     // its own fresh tap to start sound, and was what made the phone version unreliable — voice-only works on any connection and costs nothing.
-    if (s.avatarAvailable && !isMobile) {
+    // Test switch: open /try?avatar=1 on a phone to try the live video anyway (Francis wants Wayne streaming on mobile if it can be made to
+    // work). Nothing changes for normal visitors. The video elements are "blessed" inside this tap first — iOS only lets a <video> play
+    // sound later if it was started from a tap, and the stream arrives long after this tap.
+    const tryMobileAvatar = isMobile && new URLSearchParams(window.location.search).get('avatar') === '1';
+    if (tryMobileAvatar) {
+      document.querySelectorAll('video').forEach(v => { try { v.srcObject = new MediaStream(); v.muted = false; void v.play().catch(() => { /* not allowed yet — fine */ }); } catch { /* ignore */ } });
+    }
+    if (s.avatarAvailable && (!isMobile || tryMobileAvatar)) {
       setInterviewTicket(s.ticket);
       setAvatarState('connecting');
       const connectStarted = performance.now();
