@@ -104,6 +104,27 @@ export default function TryItLivePage() {
     } catch { return false; }
   });
 
+  // Wi-Fi vs mobile data (Francis, 2026-09-27: live video "worked very, very well" on Wi-Fi, same as desktop — the earlier phone
+  // problems were the browser blocking sound and a weak SIGNAL, not phones as such). The Network Information API only exists on
+  // Chrome/Android; Safari/iOS has never implemented it, so this can positively detect "wifi" or "cellular" there, but on iPhone it
+  // can only ever report 'unknown' — never guess in that case, ask the visitor instead (the toggle below).
+  type ConnectionHint = 'wifi' | 'cellular' | 'unknown';
+  const [connectionHint] = useState<ConnectionHint>(() => {
+    try {
+      const conn = (navigator as unknown as { connection?: { type?: string; effectiveType?: string } }).connection;
+      if (conn?.type === 'wifi' || conn?.type === 'ethernet') return 'wifi';
+      if (conn?.type === 'cellular') return 'cellular';
+      return 'unknown';
+    } catch { return 'unknown'; }
+  });
+  // Whether THIS visitor gets the live-video interviewer instead of voice + photo. Wi-Fi (confirmed) turns it on automatically;
+  // everyone else defaults to voice-only and can opt in themselves via the toggle on the intake screen — never guessed, since a
+  // wrong guess on a weak signal is exactly the unreliable experience this is trying to avoid. ?avatar=1 still forces it on, for testing.
+  const [wantsMobileVideo, setWantsMobileVideo] = useState(() => connectionHint === 'wifi');
+  useEffect(() => {
+    if (isMobile && new URLSearchParams(window.location.search).get('avatar') === '1') setWantsMobileVideo(true);
+  }, [isMobile]);
+
   // Where do visitors fall out of the demo? (Francis, 2026-09-26: lots of visits, no sign-ups — he wants the funnel in the admin
   // Activity Log.) The marketing site logs the click that sends people here; these events log what happens once they arrive.
   // try_mobile_visit = someone opened this page on a phone/tablet (phones are now allowed — voice-only, see begin()); the
@@ -170,16 +191,16 @@ export default function TryItLivePage() {
     // Must begin from this click so the browser lets audio play. Connecting can fail or be slow — the interview goes ahead either way.
     let live = false;
     let connectMs = 0;
-    // Phones get the interviewer's VOICE only, no live video stream (2026-09-26): the streamed avatar needs a strong steady connection and
-    // its own fresh tap to start sound, and was what made the phone version unreliable — voice-only works on any connection and costs nothing.
-    // Test switch: open /try?avatar=1 on a phone to try the live video anyway (Francis wants Wayne streaming on mobile if it can be made to
-    // work). Nothing changes for normal visitors. The video elements are "blessed" inside this tap first — iOS only lets a <video> play
-    // sound later if it was started from a tap, and the stream arrives long after this tap.
-    const tryMobileAvatar = isMobile && new URLSearchParams(window.location.search).get('avatar') === '1';
-    if (tryMobileAvatar) {
+    // Phones default to VOICE only + the interviewer's photo (2026-09-26): the streamed avatar needs a strong steady connection and its
+    // own fresh tap to start sound. Confirmed 2026-09-27: on Wi-Fi the live video is just as good as desktop — so Wi-Fi (detected, or the
+    // visitor's own opt-in via the toggle below) gets the real thing; everyone else gets the reliable, free voice-only path.
+    const useMobileVideo = isMobile && wantsMobileVideo;
+    if (useMobileVideo) {
+      // iOS only allows a <video> to play sound later if it was first "blessed" inside a real tap — this is that tap, before the
+      // stream itself even exists yet (it arrives seconds later, once WebRTC connects).
       document.querySelectorAll('video').forEach(v => { try { v.srcObject = new MediaStream(); v.muted = false; void v.play().catch(() => { /* not allowed yet — fine */ }); } catch { /* ignore */ } });
     }
-    if (s.avatarAvailable && (!isMobile || tryMobileAvatar)) {
+    if (s.avatarAvailable && (!isMobile || useMobileVideo)) {
       setInterviewTicket(s.ticket);
       setAvatarState('connecting');
       const connectStarted = performance.now();
@@ -349,6 +370,18 @@ export default function TryItLivePage() {
               <label style={labelStyle} htmlFor="tryName">What should we call you?</label>
               <input id="tryName" value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && void begin()} maxLength={30}
                 placeholder="e.g. Sam" style={{ ...inputStyle, marginBottom: 18 }} autoComplete="given-name" />
+              {isMobile && (
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border, rgba(255,255,255,0.12))', borderRadius: 12, padding: '12px 14px', marginBottom: 18, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={wantsMobileVideo} onChange={e => setWantsMobileVideo(e.target.checked)} style={{ marginTop: 2, flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, lineHeight: 1.55, color: 'var(--text-2, #cbd5e1)' }}>
+                    {connectionHint === 'cellular'
+                      ? <>Show the interviewer's <strong>live video</strong>, not just their photo. <span style={{ color: AMBER }}>You appear to be on mobile data — for the best experience, this works far better on Wi-Fi.</span></>
+                      : connectionHint === 'wifi'
+                      ? <>Show the interviewer's <strong>live video</strong> — you're on Wi-Fi, so this should work great.</>
+                      : <>Show the interviewer's <strong>live video</strong>, not just their photo. Works best on <strong>Wi-Fi</strong> — on mobile data it can be slow or unreliable, so leave this off if you're not on Wi-Fi.</>}
+                  </span>
+                </label>
+              )}
               <button onClick={() => void begin()} disabled={topic.trim().length < 2 || !name.trim()} style={{ ...primary, width: '100%', opacity: (topic.trim().length < 2 || !name.trim()) ? 0.5 : 1 }}>Start my mini interview →</button>
               <div style={{ fontSize: 12, color: 'var(--text-3, #94a3b8)', marginTop: 12, textAlign: 'center' }}>You can speak your answers or type them. Nothing is saved unless you create an account.</div>
             </div>
