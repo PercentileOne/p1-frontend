@@ -276,7 +276,12 @@ export default function TryItLivePage() {
   const labelStyle: React.CSSProperties = { display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-3, #94a3b8)', marginBottom: 8 };
 
   return (
-    <div style={{ minHeight: '100vh', width: '100%', maxWidth: '100vw', boxSizing: 'border-box', overflowX: 'hidden', WebkitTextSizeAdjust: '100%', background: 'var(--bg, #070d1a)', color: 'var(--text, #f1f5f9)', fontFamily: '-apple-system,"Segoe UI",system-ui,sans-serif', padding: '20px 16px 60px' }}>
+    <div style={{ minHeight: '100vh', width: '100%', boxSizing: 'border-box', overflowX: 'hidden', WebkitTextSizeAdjust: '100%', background: 'var(--bg, #070d1a)', color: 'var(--text, #f1f5f9)', fontFamily: '-apple-system,"Segoe UI",system-ui,sans-serif', padding: '20px 16px 60px' }}>
+      {/* No maxWidth: 100vw here (2026-09-27 fix) — on iOS Safari, `vw` units can go stale across an
+          orientation change (the classic "rotate to landscape and back, layout stays wrong" bug,
+          Francis 2026-09-27), where `%` units do not, because they resolve against the actual
+          layout viewport on every render instead of a cached viewport snapshot. width:100% +
+          overflow-x:hidden already stop the sideways-overflow bug this was originally added for. */}
       <div style={{ maxWidth: 720, width: '100%', minWidth: 0, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 26 }}>
           <a href="https://www.theinterviewchair.com" style={{ textDecoration: 'none', fontWeight: 900, fontSize: 16, letterSpacing: '-0.02em', color: '#fff' }}>
