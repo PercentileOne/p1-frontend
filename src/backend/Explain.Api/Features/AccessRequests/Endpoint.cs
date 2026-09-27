@@ -21,8 +21,9 @@ namespace Explain.Api.Features.AccessRequests;
 /// </summary>
 public static class Endpoint
 {
-    public const decimal RecruiterSeatGbp = 99m;   // was £299 (Francis, 2026-09-22) — the per-seat price is per individual consultant, not per agency;
-                                                    // an agency with 15 consultants is 15 seats, so this is deliberately priced for volume, not per-deal size.
+    public const decimal RecruiterSeatGbp = 49m;   // was £299 -> £99 (2026-09-22) -> £49 (Francis, 2026-09-28, after talking it through with Mike Petrie — his
+                                                    // own company would take ~18 seats, and this price makes it an easy internal sell). Per individual consultant,
+                                                    // not per agency; an agency with 15 consultants is 15 seats — deliberately priced for volume, not deal size.
     public const decimal EmployerSeatGbp = 399m;   // unchanged — not part of this pricing decision
     private static readonly string[] Statuses = ["new", "contacted", "approved", "paid", "declined"];
 
