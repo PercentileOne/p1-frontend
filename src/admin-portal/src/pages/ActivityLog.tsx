@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { eventsApi, type SystemEvent, type ApiError } from '../api/eventsApi'
 import { Pagination } from '../components/Pagination'
 import { MarketingFunnel } from '../components/MarketingFunnel'
-import { describeDevice, describeLocation, describeCityAndCountry, describeCityGuess, ageOf } from '../lib/eventFormat'
+import { describeDevice, describeLocation, describeCityAndCountry, describeCityGuess, describeEvent, ageOf } from '../lib/eventFormat'
 
 // Same sortBy values the backend's SortableFields whitelist accepts (Features/Events/Admin/
 // Endpoint.cs) — Location sorts by country, not the combined "city, country" display string,
@@ -314,7 +314,12 @@ export default function ActivityLog() {
                     </td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-2)', overflowWrap: 'anywhere' }}>{fmt(e.createdAt)}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text)', overflowWrap: 'anywhere' }}>{e.email ?? <span style={{ color: 'var(--text-3)' }}>Anonymous</span>}</td>
-                    <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)', overflowWrap: 'anywhere' }}>{e.eventType}</td>
+                    <td style={{ padding: '12px 16px', overflowWrap: 'anywhere' }}>
+                      <div style={{ fontWeight: 700, color: 'var(--text)' }}>{e.eventType}</div>
+                      {describeEvent(e.eventType, e.metadata) && (
+                        <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>{describeEvent(e.eventType, e.metadata)}</div>
+                      )}
+                    </td>
                     <td
                       title={e.page ?? undefined}
                       style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere', cursor: e.page ? 'help' : 'default' }}
@@ -400,6 +405,9 @@ function EventDetailModal({ event, onClose, onDelete }: { event: SystemEvent; on
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 20, lineHeight: 1, cursor: 'pointer', padding: 4 }}>×</button>
         </div>
 
+        {describeEvent(event.eventType, event.metadata) && (
+          <DetailRow label="What happened" value={<span style={{ color: 'var(--green, #34D399)', fontWeight: 700 }}>{describeEvent(event.eventType, event.metadata)}</span>} />
+        )}
         <DetailRow label="User" value={event.email ?? <span style={{ color: 'var(--text-3)' }}>Anonymous</span>} />
         <DetailRow label="Role" value={event.role ?? '—'} />
         <DetailRow label="Portal" value={event.portal ?? '—'} />

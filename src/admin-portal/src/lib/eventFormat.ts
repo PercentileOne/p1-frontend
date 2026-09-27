@@ -55,6 +55,44 @@ export function describeCityGuess(e: LocationParts): string {
   return `${e.city}${region}${miles} — an IP-based guess; often wrong, especially on mobile data`;
 }
 
+// What actually happened, in plain words, from an event's metadata (Francis, 2026-09-28: "it just says
+// 'interaction' and things like modal_open but not what modal — it would be nice to see exactly what
+// they're doing"). track.js (marketing) and flowLogger.ts (candidate app) both attach these fields — see
+// their own comments for exactly what each event type carries. Returns '' when there is nothing worth
+// showing, so callers can skip the line entirely rather than print an empty one.
+export function describeEvent(eventType: string, metadata: Record<string, unknown> | null | undefined): string {
+  const m = metadata ?? {};
+  const s = (v: unknown): string | undefined => (v === undefined || v === null || v === '' ? undefined : String(v));
+  switch (eventType) {
+    case 'menu_click': case 'cta_click': case 'link_click': {
+      const label = s(m.label); const area = s(m.area);
+      if (label && area) return `“${label}” (${area})`;
+      return label ? `“${label}”` : (area ? `in ${area}` : '');
+    }
+    case 'modal_open': { const name = s(m.name); return name ? `“${name}” modal` : ''; }
+    case 'section_view': { const sec = s(m.section); return sec ? `section: ${sec}` : ''; }
+    case 'scroll_depth': { const pct = s(m.pct); return pct ? `scrolled ${pct}%` : ''; }
+    case 'faq_open': { const q = s(m.q); return q ? `“${q}”` : ''; }
+    case 'try_submit': case 'try_started': { const topic = s(m.topic); return topic ? `role: “${topic}”` : ''; }
+    case 'try_first_question': return m.avatar ? 'live avatar' : 'voice + photo';
+    case 'try_completed': { const score = s(m.score); return score ? `score: ${score}` : ''; }
+    case 'try_blocked': { const reason = s(m.reason); return reason ? `reason: ${reason}` : ''; }
+    case 'page_leave': {
+      const sec = s(m.sec); const max = s(m.max);
+      if (!sec) return '';
+      return max ? `${sec}s on page, ${max}% scrolled` : `${sec}s on page`;
+    }
+    case 'interaction': { const kind = s(m.kind); return kind ? `first action: ${kind}` : ''; }
+    default: {
+      // Unrecognised event type — show whatever's in the metadata rather than nothing, skipping the
+      // always-present src/dev tracking fields that add no information here.
+      const entries = Object.entries(m).filter(([k, v]) => k !== 'src' && k !== 'dev' && k !== 'mobile' && s(v) !== undefined);
+      if (entries.length === 0) return '';
+      return entries.slice(0, 2).map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`).join(', ');
+    }
+  }
+}
+
 // "3 days ago" / "5 hours ago" / "just now" — for how old a sign-in token is.
 export function ageOf(iso: string | null | undefined, now = Date.now()): string {
   if (!iso) return '—';
