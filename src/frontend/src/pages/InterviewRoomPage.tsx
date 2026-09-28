@@ -749,6 +749,20 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     const name = resolvedPreferredName ? `, ${resolvedPreferredName}` : '';
     const closingLine = `Well${name}, that brings us to the end of your interview — thank you so much for your time today. I'm going to have a quick word with Wayne, and then your agent Michelle will be in touch shortly with some feedback. In the meantime, you can watch your full interview replay on the next screen, and retake it anytime you like. Best of luck!`;
     cancelSpeakRef.current?.();
+    // Chapter marker for the goodbye itself (Francis, 2026-09-28: "when she says... that's the
+    // end of the interview... and Wayne says Take Care Francis... that is currently not in the
+    // summary video"). It genuinely IS in the recording — this fires before uploadRecording's
+    // recorder.stop() in finishInterview — it just had no chapter marker, unlike the -1/-2
+    // intro sentinels below. -3 keeps it out of both the real 0-based question range and the
+    // existing -1 (Amina & Wayne's intro) / -2 (Michelle's intro) sentinels.
+    if (recordingStartTimeRef.current > 0) {
+      chapterMarkersRef.current.push({
+        questionIndex: -3,
+        questionText: "Amina & Wayne's Goodbye",
+        competency: '',
+        offsetSeconds: Math.round((Date.now() - recordingStartTimeRef.current) / 1000),
+      });
+    }
     // Whichever path got us here (normal coaching flow, Pass, or an MCQ finish),
     // leave 'done' so the answer/coaching panels can't stay mounted and clickable
     // underneath Sarah's goodbye speech.
@@ -792,7 +806,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     cancelSpeakRef.current = avatarEnabled
       ? liveAvatarSpeakHr(closingLine, onClosingDone)
       : speak(closingLine, 'hr', onClosingDone, handleSarahVideoAnalyser);
-  }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl, resetForNextQuestion, handleSarahVideoAnalyser, setHrState, setTechState, avatarEnabled, liveAvatarSpeakHr, liveAvatarSpeakTechnical]);
+  }, [resolvedPreferredName, navigate, cvCtx, jobCtx, mcqQuestions, buildPlaybackUrl, resetForNextQuestion, handleSarahVideoAnalyser, setHrState, setTechState, avatarEnabled, liveAvatarSpeakHr, liveAvatarSpeakTechnical, chapterMarkersRef, recordingStartTimeRef]);
 
   // ── "Ask The Interviewer" — end-of-interview candidate-questions moment (Francis, 2026-09-17) ──
   // Fires on ~half of sessions (decided once here, never re-rolled mid-session), right after the

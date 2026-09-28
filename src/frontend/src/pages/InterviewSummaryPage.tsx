@@ -327,16 +327,21 @@ export function InterviewReplayPlayer({ url, chapters }: { url: string; chapters
             </svg>
           )}
         </button>
-        {/* Play overlay when paused */}
-        {!playing && (
-          <button
-            onClick={togglePlay}
-            style={{
-              position: 'absolute', inset: 0, width: '100%', height: '100%',
-              background: 'rgba(0,0,0,0.35)', border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
+        {/* Click-anywhere-on-the-video play/pause (Francis, 2026-09-28: "like on a YouTube video, you can click
+            the middle of the video screen to start/stop it") — always present, not just when paused, so it
+            also PAUSES a playing video, not only starts a paused one. The big circle icon is only drawn while
+            paused, matching the same visual affordance as before; z-index kept below the fullscreen button
+            (10) so that stays clickable in both states. */}
+        <button
+          onClick={togglePlay}
+          aria-label={playing ? 'Pause' : 'Play'}
+          style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 5,
+            background: playing ? 'transparent' : 'rgba(0,0,0,0.35)', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          {!playing && (
             <div style={{
               width: '64px', height: '64px', borderRadius: '50%',
               background: 'rgba(79,142,247,0.9)',
@@ -345,8 +350,8 @@ export function InterviewReplayPlayer({ url, chapters }: { url: string; chapters
             }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
             </div>
-          </button>
-        )}
+          )}
+        </button>
       </div>
 
       {/* Controls */}
@@ -431,7 +436,10 @@ export function InterviewReplayPlayer({ url, chapters }: { url: string; chapters
                   {fmt(c.offsetSeconds)}
                 </span>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: badgeColor, background: badgeBg, borderRadius: '4px', padding: '2px 7px', flexShrink: 0, userSelect: 'none' }}>
-                  {isMcq ? `MCQ-${c.mcqOrdinal}` : c.questionIndex === -2 ? 'MIKE' : c.questionIndex === -1 ? 'INTRO' : `Q${c.questionIndex + 1}`}
+                  {/* -2 is Michelle's pre-interview briefing (Mike was replaced by Michelle, 2026-09-17 — this badge
+                      still said his name); -1 is Amina & Wayne's own combined intro; -3 is their closing
+                      goodbye (Francis, 2026-09-28 — genuinely in the recording, just missing a marker). */}
+                  {isMcq ? `MCQ-${c.mcqOrdinal}` : c.questionIndex === -2 ? 'MICHELLE' : c.questionIndex === -1 ? 'INTRO' : c.questionIndex === -3 ? 'OUTRO' : `Q${c.questionIndex + 1}`}
                 </span>
                 <span style={{ fontSize: '12px', color: isActive ? 'var(--text)' : 'var(--text-2)', lineHeight: 1.4, flex: 1, userSelect: 'none' }}>
                   {c.questionText}
