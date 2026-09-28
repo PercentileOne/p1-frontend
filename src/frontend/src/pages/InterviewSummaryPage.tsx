@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../auth/authStore';
-import BackToCockpit from '../components/BackToCockpit';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShareModal } from '../components/ShareModal';
 import { SaveDecisionPanel } from '../components/SaveDecisionPanel';
@@ -470,7 +469,17 @@ export default function InterviewSummaryPage() {
 
   // Router state only exists right after finishing an interview — a reload, a bookmark,
   // or coming back later loses it entirely, so fetch the persisted session by id instead.
-  const hasRouteState = !!location.state;
+  // Checked via `answers` specifically (not just "is location.state truthy") because
+  // Dashboard/My Interviews now also pass a lightweight state (just `from`, for the back
+  // button below) when linking here — that must NOT be mistaken for the full post-interview
+  // payload, or this page would skip the fetch and render with no real data at all.
+  const hasRouteState = !!(location.state as { answers?: unknown } | null)?.answers;
+  // Where "back" should go: the screen the candidate actually came from (Dashboard or My
+  // Interviews, passed as route state), or the dashboard by default — e.g. coming straight
+  // from finishing an interview, or a reload/bookmark that lost its state entirely
+  // (Francis, 2026-09-28: "a way of getting back to the home page, or wherever you've come
+  // from originally").
+  const backTo = (location.state as { from?: string } | null)?.from ?? '/dashboard';
   const [fetched, setFetched] = useState<Record<string, unknown> | null>(null);
   const [fetchState, setFetchState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
 
@@ -780,7 +789,17 @@ ${questionsHtml}
       {/* Header */}
       <div style={{ background: 'var(--bg2)', borderBottom: '1px solid var(--border)', padding: '20px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <BackToCockpit to="/dashboard" />
+          {/* A clearer, labelled back button — the existing BackToCockpit is a fine, tiny
+              icon-only control for the always-on-screen module nav it was built for, but
+              this page is a one-off landing spot right after finishing an interview, so it
+              needs to be unmissable (Francis, 2026-09-28). Goes to wherever the candidate
+              actually came from (Dashboard or My Interviews), falling back to Dashboard. */}
+          <button
+            onClick={() => navigate(backTo)}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '9px', padding: '9px 14px', color: 'var(--text-2)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}
+          >
+            ← {backTo === '/interviews' ? 'My Interviews' : 'Dashboard'}
+          </button>
           <div>
             <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '4px' }}>TheInterviewChair.com · Interview Summary</div>
             <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>Session Complete</div>

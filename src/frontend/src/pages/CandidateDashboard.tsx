@@ -1074,7 +1074,7 @@ export default function CandidateDashboard() {
                   {recentInterviews.map(iv => (
                     <div
                       key={iv.id}
-                      onClick={() => navigate(`/interview-summary/${iv.id}`)}
+                      onClick={() => navigate(`/interview-summary/${iv.id}`, { state: { from: '/dashboard' } })}
                       style={{
                         display: "flex", alignItems: "center", justifyContent: "space-between",
                         padding: "12px 14px", borderRadius: 10, cursor: "pointer",

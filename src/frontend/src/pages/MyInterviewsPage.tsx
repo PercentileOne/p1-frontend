@@ -302,7 +302,7 @@ export default function MyInterviewsPage() {
                     const isToggling = togglingIds.has(item.id);
                     return (
                       <tr key={item.id}
-                        onClick={() => navigate(`/interview-summary/${item.id}`)}
+                        onClick={() => navigate(`/interview-summary/${item.id}`, { state: { from: '/interviews' } })}
                         style={{ background: i % 2 === 1 ? 'rgba(255,255,255,0.025)' : 'transparent', cursor: 'pointer', transition: 'background 0.1s' }}
                         onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,142,247,0.06)')}
                         onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 1 ? 'rgba(255,255,255,0.025)' : 'transparent')}
@@ -344,7 +344,7 @@ export default function MyInterviewsPage() {
                         </td>
                         <td style={{ padding: '14px 16px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <button onClick={e => { e.stopPropagation(); navigate(`/interview-summary/${item.id}`); }} style={{ fontSize: 11, color: '#4F8EF7', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, whiteSpace: 'nowrap' }}>View →</button>
+                            <button onClick={e => { e.stopPropagation(); navigate(`/interview-summary/${item.id}`, { state: { from: '/interviews' } }); }} style={{ fontSize: 11, color: '#4F8EF7', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, whiteSpace: 'nowrap' }}>View →</button>
                             <button
                               title="Discard"
                               onClick={e => { e.stopPropagation(); handleDiscard(item.id); }}
