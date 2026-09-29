@@ -65,7 +65,7 @@ public static class Endpoint
         // people vs crawlers, how far they got, what they clicked, where they came from, phone vs desktop. "Real" = the visit
         // fired an `interaction` event (track.js only sends that after a trusted click/tap/key/scroll/mouse movement; crawlers
         // that just load the page never do). The candidate app's /try events are folded in so the phone "desktop only" wall shows up.
-        app.MapGet("/api/admin/events/funnel", async (CosmosService cosmos, int days = 7) =>
+        app.MapGet("/api/admin/events/funnel", async (CosmosService cosmos, Explain.Api.Infrastructure.Geo.IpOwnerService owners, CancellationToken ct, int days = 7) =>
         {
             days = Math.Clamp(days, 1, 10);
             var container = cosmos.GetContainer("systemEvents");
@@ -98,7 +98,9 @@ public static class Endpoint
                 excludedVisits = before - marketing.Select(e => e.sessionId).Distinct().Count();
             }
 
-            return Results.Ok(new { funnel = BuildFunnel(days, marketing, tryEvents), ignoredIps = ignored.OrderBy(i => i).ToList(), excludedVisits });
+            // Who owns each visitor's network — lets the funnel tell people on home/mobile connections from crawlers and cloud servers.
+            var ownerOf = await owners.GetResolverAsync(ct);
+            return Results.Ok(new { funnel = BuildFunnel(days, marketing, tryEvents, ownerOf), ignoredIps = ignored.OrderBy(i => i).ToList(), excludedVisits });
         })
         .WithName("MarketingFunnel").WithTags("Events")
         .RequireAuthorization(Permissions.ViewAdminPortal);
@@ -260,7 +262,7 @@ public static class Endpoint
     /// Turns raw marketing events into the funnel. Sessions are grouped by sessionId (one browser tab visit); the
     /// shared 'no-session-storage' id (browsers that block storage) is left out because it would merge unrelated people.
     /// </summary>
-    public static object BuildFunnel(int days, List<FunnelEvent> marketing, List<FunnelEvent> tryEvents)
+    public static object BuildFunnel(int days, List<FunnelEvent> marketing, List<FunnelEvent> tryEvents, Func<string?, Explain.Api.Infrastructure.Geo.IpOwner?>? ownerOf = null)
     {
         var sessions = marketing
             .Where(e => e.sessionId != "no-session-storage")
@@ -268,11 +270,16 @@ public static class Endpoint
             .Select(g =>
             {
                 var evs = g.ToList();
+                var owner = ownerOf?.Invoke(evs.Select(e => e.ipAddress).FirstOrDefault(i => !string.IsNullOrEmpty(i)));
+                var machine = owner?.IsMachine == true;
                 return new
                 {
-                    Human = evs.Any(e => e.eventType == "interaction"),
+                    Machine = machine,
+                    OwnerName = owner?.Name,
+                    // A bot driving a real browser can fire genuine click/pointer events, so an interaction only counts when the network isn't a machine's.
+                    Human = !machine && evs.Any(e => e.eventType == "interaction"),
                     // Stayed on the page 5s+ (page_leave carries visible seconds) — see track.js; counted separately from Human.
-                    Dwelled = evs.Any(e => e.eventType == "page_leave" && double.TryParse(Meta(e, "sec"), out var sec) && sec >= 5),
+                    Dwelled = !machine && evs.Any(e => e.eventType == "page_leave" && double.TryParse(Meta(e, "sec"), out var sec) && sec >= 5),
                     Device = evs.Select(e => Meta(e, "dev")).FirstOrDefault(d => !string.IsNullOrEmpty(d)) ?? "unknown",
                     Src = evs.Select(e => Meta(e, "src")).FirstOrDefault(s => !string.IsNullOrEmpty(s)) ?? "direct",
                     Country = evs.Select(e => e.country).FirstOrDefault(c => !string.IsNullOrEmpty(c)) ?? "Unknown",
@@ -291,6 +298,7 @@ public static class Endpoint
         var steps = new[]
         {
             Step("visits", "Visits (everything that loaded a page)", sessions.Count),
+            Step("people", "Visits from people's own connections (home or mobile), not crawlers or cloud servers", sessions.Count(s => !s.Machine)),
             Step("looked", "Looked around (stayed 5+ seconds but didn't click, scroll or move a mouse)", sessions.Count(s => s.Dwelled && !s.Human)),
             Step("human", "Real visitors (clicked, tapped, scrolled or moved a mouse)", human.Count),
             Step("pricing", "Reached the pricing section", human.Count(s => s.SawPricing)),
@@ -313,8 +321,13 @@ public static class Endpoint
         // Where visitors are (2026-09-29): GA showed lots of US "users" that were really crawlers — here "real" is the same
         // interaction test as the rest of the funnel, so bot-heavy countries show up as many visits, few real.
         var countries = sessions.GroupBy(s => s.Country)
-            .Select(g => new { country = g.Key, visits = g.Count(), looked = g.Count(s => s.Dwelled && !s.Human), real = g.Count(s => s.Human), tried = g.Count(s => s.Human && s.Tried) })
-            .OrderByDescending(x => x.real + x.looked).ThenByDescending(x => x.visits).Take(12);
+            .Select(g => new { country = g.Key, visits = g.Count(), people = g.Count(s => !s.Machine), looked = g.Count(s => s.Dwelled && !s.Human), real = g.Count(s => s.Human), tried = g.Count(s => s.Human && s.Tried) })
+            .OrderByDescending(x => x.people).ThenByDescending(x => x.visits); // every country — worldwide, not just a top few
+
+        // Who the machines are (Googlebot, Microsoft/LinkedIn previews, Amazon, Facebook…), by network owner.
+        var machines = sessions.Where(s => s.Machine).GroupBy(s => s.OwnerName ?? "Unknown")
+            .Select(g => new { owner = g.Key, visits = g.Count() })
+            .OrderByDescending(x => x.visits).Take(10);
 
         // Clicks: how many DIFFERENT real visitors clicked each thing (not raw click counts, so one person hammering a button counts once).
         var topClicks = human
@@ -370,6 +383,7 @@ public static class Endpoint
             devices,
             sources,
             countries,
+            machines,
             topClicks,
             sections,
             medianSecondsOnPage = leaves.Count == 0 ? (double?)null : leaves[leaves.Count / 2],

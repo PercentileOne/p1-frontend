@@ -134,13 +134,21 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
             <div>
               <div style={h3}>Where visitors are (country)</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead><tr><th style={th}>Country</th><th style={th}>Visits</th><th style={th}>Looked around</th><th style={th}>Real</th><th style={th}>Tried it</th></tr></thead>
-                <tbody>{(data.countries ?? []).length === 0 && <tr><td style={td} colSpan={5}>No data yet</td></tr>}
+                <thead><tr><th style={th}>Country</th><th style={th}>Visits</th><th style={th}>People</th><th style={th}>Looked around</th><th style={th}>Real</th><th style={th}>Tried it</th></tr></thead>
+                <tbody>{(data.countries ?? []).length === 0 && <tr><td style={td} colSpan={6}>No data yet</td></tr>}
                   {(data.countries ?? []).map(c => (
-                    <tr key={c.country}><td style={{ ...td, color: 'var(--text)' }}>{c.country}</td><td style={td}>{c.visits}</td><td style={td}>{c.looked}</td><td style={td}>{c.real}</td><td style={td}>{c.tried}</td></tr>
+                    <tr key={c.country}><td style={{ ...td, color: 'var(--text)' }}>{c.country}</td><td style={td}>{c.visits}</td><td style={td}>{c.people}</td><td style={td}>{c.looked}</td><td style={td}>{c.real}</td><td style={td}>{c.tried}</td></tr>
                   ))}</tbody>
               </table>
-              <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}>"Looked around" = stayed 5+ seconds without clicking (curious browsers; tracked from 2026-09-29, earlier days show 0). Many visits but neither looked-around nor real ones usually means crawlers. Add your own address under "ignored addresses" so your visits don't count.</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}><b>People</b> = visits from a home or mobile connection (not a crawler or cloud server — worked out from who owns the network). <b>Looked around</b> = a person who stayed 5+ seconds without clicking (tracked from 2026-09-29). <b>Real</b> = a person who clicked, scrolled or moved a mouse. Add your own address under "ignored addresses" so your visits don't count.</div>
+              <div style={{ ...h3, marginTop: 16 }}>Who the machines are</div>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead><tr><th style={th}>Network owner</th><th style={th}>Visits</th></tr></thead>
+                <tbody>{(data.machines ?? []).length === 0 && <tr><td style={td} colSpan={2}>None identified yet</td></tr>}
+                  {(data.machines ?? []).map(m => (
+                    <tr key={m.owner}><td style={{ ...td, color: 'var(--text)', overflowWrap: 'anywhere' }}>{m.owner}</td><td style={td}>{m.visits}</td></tr>
+                  ))}</tbody>
+              </table>
             </div>
 
             <div>

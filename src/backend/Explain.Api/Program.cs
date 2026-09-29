@@ -161,6 +161,7 @@ builder.Services.AddHttpClient("AzureMaps", c =>
 });
 builder.Services.AddSingleton<Explain.Api.Infrastructure.Geo.AzureMapsGeocodingService>();
 builder.Services.AddSingleton<Explain.Api.Infrastructure.Geo.IpGeoLookupService>();
+builder.Services.AddSingleton<Explain.Api.Infrastructure.Geo.IpOwnerService>();  // IP -> network owner, for the visitor funnel (local data, no visitor IPs leave the server)
 builder.Services.AddHostedService<Explain.Api.Features.Events.EventsArchiveService>();
 builder.Services.AddHostedService<Explain.Api.Features.Auth.LoginHistoryRetentionService>();
 builder.Services.AddOpenApi();
