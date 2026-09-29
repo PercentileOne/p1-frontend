@@ -124,10 +124,10 @@ export default function TryItLivePage() {
       return 'unknown';
     } catch { return 'unknown'; }
   });
-  // Whether THIS visitor gets the live-video interviewer instead of voice + photo. Wi-Fi (confirmed) turns it on automatically;
-  // everyone else defaults to voice-only and can opt in themselves via the toggle on the intake screen — never guessed, since a
-  // wrong guess on a weak signal is exactly the unreliable experience this is trying to avoid. ?avatar=1 still forces it on, for testing.
-  const [wantsMobileVideo, setWantsMobileVideo] = useState(() => connectionHint === 'wifi');
+  // Whether THIS visitor gets the live-video interviewer instead of voice + photo. Ticked BY DEFAULT (Francis, 2026-09-29: "people don't
+  // read these things properly and most people have Wi-Fi") — the only exception is a phone that positively reports mobile data (Android
+  // Chrome can), where a weak signal is a real risk. iPhones can't report it, so they get the tick and can untick it. ?avatar=1 forces it on.
+  const [wantsMobileVideo, setWantsMobileVideo] = useState(() => connectionHint !== 'cellular');
   useEffect(() => {
     if (isMobile && new URLSearchParams(window.location.search).get('avatar') === '1') setWantsMobileVideo(true);
   }, [isMobile]);
@@ -423,7 +423,7 @@ export default function TryItLivePage() {
                       ? <>Show the interviewer's <strong>live video</strong>, not just their photo. <span style={{ color: AMBER }}>You appear to be on mobile data — for the best experience, this works far better on Wi-Fi.</span></>
                       : connectionHint === 'wifi'
                       ? <>Show the interviewer's <strong>live video</strong> — you're on Wi-Fi, so this should work great.</>
-                      : <>Show the interviewer's <strong>live video</strong>, not just their photo. Works best on <strong>Wi-Fi</strong> — on mobile data it can be slow or unreliable, so leave this off if you're not on Wi-Fi.</>}
+                      : <>Show the interviewer's <strong>live video</strong>, not just their photo. Works best on <strong>Wi-Fi</strong> — if you're on mobile data and it's slow, untick this and you'll get their voice and photo instead.</>}
                   </span>
                 </label>
               )}
