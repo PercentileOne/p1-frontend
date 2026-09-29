@@ -141,9 +141,10 @@ export default function TryItLivePage() {
   // people were leaving silently mid-demo with nothing logged between Q1 and the score. try_answering = the question has been
   // read out and it's the visitor's turn; try_answer_submitted = they answered or skipped; try_left = they closed/navigated
   // away while still mid-demo (carries the phase + question number, i.e. exactly where they gave up).
-  const enteredAtRef = useRef(Date.now());
+  const enteredAtRef = useRef(0);
+  useEffect(() => { enteredAtRef.current = Date.now(); }, []);
   const midDemoRef = useRef({ phase, index });
-  midDemoRef.current = { phase, index };
+  useEffect(() => { midDemoRef.current = { phase, index }; }, [phase, index]);
   useEffect(() => {
     if (phase === 'answering') logEvent('try_answering', { metadata: { q: index + 1, mobile: isMobile } });
   }, [phase, index]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -193,7 +194,10 @@ export default function TryItLivePage() {
     const hello = firstName ? `Hi ${firstName}, I'm ${s.interviewerName}.` : `Hi, I'm ${s.interviewerName}.`;
     // The first question also tells them exactly what to do — the most common confusion in early tests was not knowing how to answer or move on.
     const line = i === 0
-      ? `${hello} Thanks for joining — let's start your ${s.subject} interview. ${q} When you're ready, click the green microphone button to answer out loud — it submits automatically when you stop recording — or type your answer below and click Submit. You can also skip it if you'd rather pass.`
+      // Kept short on purpose (2026-09-29): visitors arriving from a LinkedIn profile give it ~10 seconds, and five of five who got the
+      // live avatar heard question one and then left. The how-to-answer instructions now live on screen in the "Your turn" panel instead
+      // of being read aloud.
+      ? `${hello} Let's start your ${s.subject} interview. ${q}`
       : q;
     await speakLine(line, s, viaAvatar);
     setPhase('answering');
@@ -455,10 +459,12 @@ export default function TryItLivePage() {
                 <div style={{ fontSize: 17, lineHeight: 1.5, fontWeight: 700, marginBottom: 14 }}>{start.questions[index]}</div>
                 {phase === 'answering' ? (
                   <>
-                    <div style={{ fontSize: 13.5, color: 'var(--text-2, #cbd5e1)', marginBottom: 10 }}>
-                      Click the <strong style={{ color: GREEN }}>green microphone</strong> to answer out loud — it submits automatically when you stop recording — or type your answer and click <strong>{index + 1 < start.questions.length ? 'Submit answer' : 'Finish & get my score'}</strong>.
+                    {/* "Your turn" (2026-09-29): the moment the question has been read out has to be unmistakable, and the easiest way to
+                        answer (tap the mic and talk) comes first — typing is the fallback below it. */}
+                    <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: GREEN, marginBottom: 6 }}>🎤 Your turn</div>
+                    <div style={{ fontSize: 13.5, color: 'var(--text-2, #cbd5e1)', marginBottom: 12 }}>
+                      Tap the <strong style={{ color: GREEN }}>green microphone</strong> and answer out loud — it sends by itself when you stop. No mic? Type below instead.
                     </div>
-                    <textarea value={draft} onChange={e => setDraft(e.target.value)} rows={4} placeholder="Type your answer here, or use the microphone…" style={{ ...inputStyle, resize: 'vertical' }} />
                     {/* The mic always gets its own full-width row — the same layout the full interview uses. Sharing a row with
                         the buttons let its waveform's width (and so the whole row) jump around as the card resized
                         (Francis, 2026-09-22). Auto-submits on transcript (Francis, 2026-09-24: "many times I've sat there
@@ -473,6 +479,7 @@ export default function TryItLivePage() {
                         void submit(false, combined);
                       }} />
                     </div>
+                    <textarea value={draft} onChange={e => setDraft(e.target.value)} rows={3} placeholder="…or type your answer here" style={{ ...inputStyle, resize: 'vertical', marginTop: 12 }} />
                     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end', marginTop: 12 }}>
                         <button onClick={() => void submit(true)} style={ghost}>Skip</button>
                         <button onClick={() => void submit(false)} disabled={!draft.trim()} style={{ ...primary, opacity: draft.trim() ? 1 : 0.5 }}>
