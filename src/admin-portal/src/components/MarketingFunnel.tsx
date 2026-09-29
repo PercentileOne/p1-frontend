@@ -62,6 +62,7 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
 
   const visits = data?.steps.find(s => s.key === 'visits')?.sessions ?? 0
   const real = data?.steps.find(s => s.key === 'human')?.sessions ?? 0
+  const peopleCount = data?.steps.find(s => s.key === 'people')?.sessions ?? 0  // visits from people's own connections
 
   return (
     <div style={{ ...card, marginBottom: 22 }}>
@@ -94,7 +95,10 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
                   <span style={{ color: 'var(--text)' }}>{s.label}</span>
                   <span style={{ color: 'var(--text-2)', fontWeight: 700 }}>
                     {s.sessions.toLocaleString()}
-                    {i > 1 && <span style={{ color: 'var(--text-3)', fontWeight: 500 }}> · {pct(s.sessions, real)} of real visitors</span>}
+                    {/* Percentages are of PEOPLE (visits from home/mobile connections), not of the few who clicked or scrolled — most people just read the page and leave, which is normal. */}
+                    {i > 1 && peopleCount > 0 && ['looked', 'human'].includes(s.key) && <span style={{ color: 'var(--text-3)', fontWeight: 500 }}> · {pct(s.sessions, peopleCount)} of people</span>}
+                    {i > 1 && peopleCount > 0 && !['looked', 'human'].includes(s.key) && <span style={{ color: 'var(--text-3)', fontWeight: 500 }}> · {pct(s.sessions, peopleCount)} of people ({pct(s.sessions, real)} of those who clicked)</span>}
+                    {i > 1 && peopleCount === 0 && <span style={{ color: 'var(--text-3)', fontWeight: 500 }}> · {pct(s.sessions, real)} of real visitors</span>}
                     {i === 1 && <span style={{ color: 'var(--text-3)', fontWeight: 500 }}> · {pct(s.sessions, visits)} of visits</span>}
                   </span>
                 </div>
@@ -104,7 +108,9 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
               </div>
             ))}
             <div style={{ fontSize: 12, color: 'var(--text-3)' }}>
-              {visits - real > 0 && <>{(visits - real).toLocaleString()} of {visits.toLocaleString()} visits ({pct(visits - real, visits)}) never did anything a person does — most likely crawlers/bots. </>}
+              {peopleCount > 0
+                ? <>{peopleCount.toLocaleString()} of {visits.toLocaleString()} visits ({pct(peopleCount, visits)}) came from people's own connections; the other {(visits - peopleCount).toLocaleString()} were crawlers or cloud servers (see "Who the machines are"). Most people read the page and leave without clicking — that's normal, not a sign of a bot. </>
+                : visits - real > 0 && <>{(visits - real).toLocaleString()} of {visits.toLocaleString()} visits ({pct(visits - real, visits)}) never clicked, scrolled or moved a mouse. </>}
               {data.medianSecondsOnPage !== null && <>Real visitors' typical time on a page: {Math.round(data.medianSecondsOnPage)}s.</>}
             </div>
           </div>
@@ -113,9 +119,9 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
             <div>
               <div style={h3}>Phone vs desktop</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead><tr><th style={th}>Device</th><th style={th}>Visits</th><th style={th}>Real</th><th style={th}>Tried it</th></tr></thead>
+                <thead><tr><th style={th}>Device</th><th style={th}>Visits</th><th style={th}>People</th><th style={th}>Real</th><th style={th}>Tried it</th></tr></thead>
                 <tbody>{data.devices.map(d => (
-                  <tr key={d.device}><td style={{ ...td, textTransform: 'capitalize', color: 'var(--text)' }}>{d.device}</td><td style={td}>{d.visits}</td><td style={td}>{d.real}</td><td style={td}>{d.tried}</td></tr>
+                  <tr key={d.device}><td style={{ ...td, textTransform: 'capitalize', color: 'var(--text)' }}>{d.device}</td><td style={td}>{d.visits}</td><td style={td}>{d.people}</td><td style={td}>{d.real}</td><td style={td}>{d.tried}</td></tr>
                 ))}</tbody>
               </table>
             </div>
@@ -123,10 +129,10 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
             <div>
               <div style={h3}>Where visitors came from</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead><tr><th style={th}>Source</th><th style={th}>Visits</th><th style={th}>Real</th></tr></thead>
-                <tbody>{data.sources.length === 0 && <tr><td style={td} colSpan={3}>No data yet</td></tr>}
+                <thead><tr><th style={th}>Source</th><th style={th}>Visits</th><th style={th}>People</th><th style={th}>Real</th></tr></thead>
+                <tbody>{data.sources.length === 0 && <tr><td style={td} colSpan={4}>No data yet</td></tr>}
                   {data.sources.map(s => (
-                    <tr key={s.source}><td style={{ ...td, color: 'var(--text)', overflowWrap: 'anywhere' }}>{s.source}</td><td style={td}>{s.visits}</td><td style={td}>{s.real}</td></tr>
+                    <tr key={s.source}><td style={{ ...td, color: 'var(--text)', overflowWrap: 'anywhere' }}>{s.source}</td><td style={td}>{s.visits}</td><td style={td}>{s.people}</td><td style={td}>{s.real}</td></tr>
                   ))}</tbody>
               </table>
             </div>

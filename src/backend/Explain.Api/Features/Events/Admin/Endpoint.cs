@@ -310,13 +310,14 @@ public static class Endpoint
         {
             device = d,
             visits = sessions.Count(s => s.Device == d),
+            people = sessions.Count(s => s.Device == d && !s.Machine),
             real = human.Count(s => s.Device == d),
             tried = human.Count(s => s.Device == d && s.Tried),
         });
 
         var sources = sessions.GroupBy(s => s.Src)
-            .Select(g => new { source = g.Key, visits = g.Count(), real = g.Count(s => s.Human) })
-            .OrderByDescending(x => x.real).ThenByDescending(x => x.visits).Take(10);
+            .Select(g => new { source = g.Key, visits = g.Count(), people = g.Count(s => !s.Machine), real = g.Count(s => s.Human) })
+            .OrderByDescending(x => x.people).ThenByDescending(x => x.visits).Take(10);
 
         // Where visitors are (2026-09-29): GA showed lots of US "users" that were really crawlers — here "real" is the same
         // interaction test as the rest of the funnel, so bot-heavy countries show up as many visits, few real.
