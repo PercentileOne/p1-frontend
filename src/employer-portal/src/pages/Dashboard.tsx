@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import Introductions from './Introductions'
 import Alerts from './Alerts'
 import CandidateSearch from './CandidateSearch'
+import IndustryStatsCard from '../components/IndustryStatsCard'
 
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: 'Dashboard' },
@@ -229,6 +230,8 @@ export default function Dashboard() {
         )}
 
         {activeNav === 'Dashboard' && <>
+
+        <IndustryStatsCard />
 
         {/* ── STATS ROW ── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 28 }}>

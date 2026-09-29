@@ -12,7 +12,8 @@ import { type Career, searchCareers, reportMissingCareerTitle } from '../api/car
 import { generateHotTopics } from '../api/aiScoring';
 import { logInDemandSubjects } from '../api/inDemandSubjectsApi';
 import { logRoleActivity } from '../api/roleActivityApi';
-import { submitConfidenceSurvey, type ConfidenceResponse } from '../api/confidenceSurveyApi';
+import { submitConfidenceSurvey, submitSurveyResponse } from '../api/confidenceSurveyApi';
+import { pickSurveyQuestion, markSurveyAnswered } from '../lib/surveyQuestions';
 import { useAuthStore } from '../auth/authStore';
 
 // The exact 32 languages ElevenLabs' eleven_flash_v2_5 model (Amina/Wayne/Michelle's voice
@@ -202,13 +203,18 @@ export default function InterviewPackStart() {
   const authFirstName = useAuthStore(s => s.user?.firstName);
   const authToken = useAuthStore(s => s.token);
   const [preferredName, setPreferredName] = useState(incoming.preferredName ?? authFirstName ?? '');
-  // Optional self-report, feeds the "live stats" section on the marketing site (Francis,
-  // 2026-09-10) — deliberately fire-and-forget and skippable, never gates starting the
-  // interview. undefined = not yet answered.
-  const [confidenceResponse, setConfidenceResponse] = useState<ConfidenceResponse | undefined>(undefined);
-  const handleConfidenceAnswer = (response: ConfidenceResponse) => {
-    setConfidenceResponse(response);
-    if (authToken) void submitConfidenceSurvey(authToken, response);
+  // Optional self-report, one question per intake drawn from a rotating bank (Francis,
+  // 2026-09-29; was a single fixed confidence question) — fire-and-forget and skippable,
+  // never gates starting the interview. undefined = not yet answered.
+  const [surveyQuestion] = useState(pickSurveyQuestion);
+  const [surveyAnswered, setSurveyAnswered] = useState(false);
+  const handleSurveyAnswer = (answerId: string) => {
+    setSurveyAnswered(true);
+    markSurveyAnswered(surveyQuestion.id);
+    if (!authToken) return;
+    void submitSurveyResponse(authToken, surveyQuestion.id, answerId);
+    // The original confidence question also keeps feeding its legacy container/live stat.
+    if (surveyQuestion.id === 'interview-confidence') void submitConfidenceSurvey(authToken, answerId as 'confident' | 'not-confident');
   };
   const [jobSpec, setJobSpec] = useState(incoming.jobSpec ?? '');
   const [jobSpecFileName, setJobSpecFileName] = useState('');
@@ -993,7 +999,7 @@ export default function InterviewPackStart() {
 
         </div>
 
-        {/* Confidence self-report — optional, single question, feeds the live stats shown on
+        {/* Rotating survey question — optional, feeds the live stats shown on
             the marketing site (Francis, 2026-09-10). Deliberately lightweight (no card
             styling like the settings above) so it reads as a quick aside, not another
             required field — never gates starting the interview either way. */}
@@ -1002,36 +1008,29 @@ export default function InterviewPackStart() {
           padding: '16px 20px', marginBottom: '16px', display: 'flex', alignItems: 'center',
           gap: '16px', flexWrap: 'wrap',
         }}>
-          {confidenceResponse ? (
+          {surveyAnswered ? (
             <div style={{ fontSize: '13px', color: '#34D399' }}>
-              ✓ Thanks — that helps us track how candidates actually feel about interviews, over time.
+              ✓ Thanks — that helps us build honest, real-world numbers on how interviews actually go.
             </div>
           ) : (
             <>
               <div style={{ fontSize: '13px', color: 'var(--text-2)', flex: '1 1 260px' }}>
-                Quick one before you start — how confident do you feel about real job interviews right now?
+                Quick one before you start — {surveyQuestion.text}
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  onClick={() => handleConfidenceAnswer('confident')}
-                  style={{
-                    background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.3)',
-                    borderRadius: '10px', padding: '9px 16px', color: '#34D399', fontSize: '13px',
-                    fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                  }}
-                >
-                  Confident
-                </button>
-                <button
-                  onClick={() => handleConfidenceAnswer('not-confident')}
-                  style={{
-                    background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)',
-                    borderRadius: '10px', padding: '9px 16px', color: 'var(--text-2)', fontSize: '13px',
-                    fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                  }}
-                >
-                  Not really
-                </button>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {surveyQuestion.options.map(o => (
+                  <button
+                    key={o.id}
+                    onClick={() => handleSurveyAnswer(o.id)}
+                    style={{
+                      background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)',
+                      borderRadius: '10px', padding: '8px 14px', color: 'var(--text-2)', fontSize: '13px',
+                      fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                    }}
+                  >
+                    {o.label}
+                  </button>
+                ))}
               </div>
             </>
           )}

@@ -1180,10 +1180,10 @@
       return card;
     }
 
-    fetch(API_BASE + '/api/platform-stats')
+    fetch(API_BASE + '/api/platform-stats?audience=candidate')
       .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
       .then(function(data) {
-        var stats = (data && data.stats) || [];
+        var stats = ((data && data.stats) || []).slice(0, 6); // cap: the grid was designed for 3-6 cards
         if (!stats.length) { grid.closest('#s-stats').style.display = 'none'; return; }
         grid.innerHTML = '';
         stats.forEach(function(stat) { grid.appendChild(buildCard(stat)); });

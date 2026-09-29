@@ -19,3 +19,14 @@ export async function submitConfidenceSurvey(token: string, response: Confidence
     });
   } catch { /* best-effort only — never blocks starting the interview */ }
 }
+
+// Rotating survey (2026-09-29) — one row per candidate per question, best-effort like the above.
+export async function submitSurveyResponse(token: string, questionId: string, answerId: string): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/api/survey-response`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ questionId, answerId }),
+    });
+  } catch { /* best-effort only */ }
+}

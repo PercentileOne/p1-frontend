@@ -320,7 +320,7 @@ async function resolvePersonalizationTitle(token: string): Promise<string | unde
 
 async function fetchFeaturedStats(): Promise<FeaturedStat[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/platform-stats`);
+    const res = await fetch(`${API_BASE}/api/platform-stats?audience=candidate`);
     if (!res.ok) return [];
     const data = await res.json() as { stats: FeaturedStat[] };
     return data.stats ?? [];

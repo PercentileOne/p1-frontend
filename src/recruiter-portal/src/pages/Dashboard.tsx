@@ -17,6 +17,7 @@ import ScreenCandidates from './ScreenCandidates'
 import InterviewHistory from './InterviewHistory'
 import Alerts from './Alerts'
 import TeamPage from './TeamPage'
+import IndustryStatsCard from '../components/IndustryStatsCard'
 
 // Streamlined 2026-08-31: Francis wants the recruiter portal to work alongside recruiters'
 // existing ATS/CRM tooling rather than replace it, so anything that overlaps with tools
@@ -284,6 +285,8 @@ export default function Dashboard() {
           </div>
         )}
         {activeNav === 'Dashboard' && <>
+
+        <IndustryStatsCard />
 
         {/* ── STATS ROW ── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 28 }}>

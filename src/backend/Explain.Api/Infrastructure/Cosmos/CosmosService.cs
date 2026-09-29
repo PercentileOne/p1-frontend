@@ -176,6 +176,12 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("confidenceSurvey", "/countryCode"));
 
+        // Rotating intake-screen survey answers (Francis, 2026-09-29) — supersedes the single
+        // fixed confidence question above with a large question bank. Partition key =
+        // /questionId: every read is "all answers to question X".
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("surveyResponses", "/questionId"));
+
         // Admin-manageable RSS feed sources for the real "Career Intelligence" panel
         // (Francis, 2026-09-10) — replaces a prior version that had an LLM invent headlines
         // and attribute them to real outlets. Small, hand-curated list — single logical
@@ -312,10 +318,6 @@ public class CosmosService
     private async Task SeedPlatformStatsAsync()
     {
         var container = _database.GetContainer("platformStats");
-        var existing = container.GetItemQueryIterator<int>(
-            new QueryDefinition("SELECT VALUE COUNT(1) FROM c"));
-        var count = (await existing.ReadNextAsync()).FirstOrDefault();
-        if (count > 0) return;
 
         var seed = new[]
         {
@@ -350,10 +352,88 @@ public class CosmosService
                 sourceUrl: "https://standout-cv.com/stats/job-interview-statistics",
                 breakdownLabel: null, breakdown: null,
                 order: 3, active: true, updatedAt: DateTimeOffset.UtcNow),
+
+            // Added 2026-09-29, each checked against the publisher's own page (not an
+            // aggregator's summary of it). Deliberately NOT included: figures I couldn't trace
+            // to a primary source ("1 in 3 experienced bias", "9 in 10 companies use video").
+            new PlatformStatDoc(
+                id: "ghosted-uk-2024", pk: "stat",
+                label: "of UK job seekers say they've been ghosted after a job interview",
+                value: "61%",
+                sourceLabel: "Greenhouse, Dec 2024 — up 19 points since April 2024",
+                sourceUrl: "https://www.unleash.ai/artificial-intelligence/news/greenhouse-61-of-job-seekers-have-been-ghosted-during-the-recruitment-process",
+                breakdownLabel: null, breakdown: null,
+                order: 4, active: true, updatedAt: DateTimeOffset.UtcNow, audience: "candidate"),
+            new PlatformStatDoc(
+                id: "ai-interview-faced-2026", pk: "stat",
+                label: "of job seekers have now faced an AI interview",
+                value: "63%",
+                sourceLabel: "Greenhouse Candidate AI Interview Report, May 2026 — 2,950 job seekers",
+                sourceUrl: "https://www.greenhouse.com/newsroom/63-of-job-seekers-have-faced-an-ai-interview-most-havent-had-a-good-one-yet",
+                breakdownLabel: null, breakdown: null,
+                order: 5, active: true, updatedAt: DateTimeOffset.UtcNow, audience: "candidate"),
+            new PlatformStatDoc(
+                id: "ai-not-told-2026", pk: "stat",
+                label: "of job seekers weren't told AI was involved in their hiring process",
+                value: "70%",
+                sourceLabel: "Greenhouse Candidate AI Interview Report, May 2026 — 2,950 job seekers",
+                sourceUrl: "https://www.greenhouse.com/newsroom/63-of-job-seekers-have-faced-an-ai-interview-most-havent-had-a-good-one-yet",
+                breakdownLabel: null, breakdown: null,
+                order: 6, active: true, updatedAt: DateTimeOffset.UtcNow, audience: "candidate"),
+            new PlatformStatDoc(
+                id: "perceived-bias-2026", pk: "stat",
+                label: "of job seekers perceived age bias in interviews, from AI and human interviewers alike",
+                value: "36%",
+                sourceLabel: "Greenhouse Candidate AI Interview Report, May 2026 — self-reported perception",
+                sourceUrl: "https://www.greenhouse.com/newsroom/63-of-job-seekers-have-faced-an-ai-interview-most-havent-had-a-good-one-yet",
+                breakdownLabel: "Perceived bias, by type",
+                breakdown: new List<PlatformStatBreakdownItem> { new("Age", "36%"), new("Race / ethnicity", "27%") },
+                order: 7, active: true, updatedAt: DateTimeOffset.UtcNow, audience: "candidate,employer"),
+            new PlatformStatDoc(
+                id: "ai-interview-abandon-2026", pk: "stat",
+                label: "of candidates abandoned a hiring process that included an AI interview",
+                value: "38%",
+                sourceLabel: "Greenhouse Candidate AI Interview Report, May 2026 — a further 12% say they would",
+                sourceUrl: "https://www.greenhouse.com/newsroom/63-of-job-seekers-have-faced-an-ai-interview-most-havent-had-a-good-one-yet",
+                breakdownLabel: null, breakdown: null,
+                order: 8, active: true, updatedAt: DateTimeOffset.UtcNow, audience: "recruiter,employer"),
+            new PlatformStatDoc(
+                id: "time-to-fill-2025", pk: "stat",
+                label: "days to fill the average role in 2025 — up from 43.6 days in 2022",
+                value: "59.7",
+                sourceLabel: "Greenhouse, The Hire Standard (Mar 2026) — 6,000+ companies, 640M+ applications",
+                sourceUrl: "https://www.greenhouse.com/recruiting-benchmarks",
+                breakdownLabel: "Average days to fill, by year",
+                breakdown: new List<PlatformStatBreakdownItem> { new("2022", "43.6"), new("2023", "47.1"), new("2024", "53.0"), new("2025", "59.7") },
+                order: 9, active: true, updatedAt: DateTimeOffset.UtcNow, audience: "recruiter,employer"),
+            new PlatformStatDoc(
+                id: "jobs-closed-with-hire-2025", pk: "stat",
+                label: "of posted roles actually end in a hire — roughly 3 in 10 never do",
+                value: "69.8%",
+                sourceLabel: "Greenhouse, The Hire Standard (Mar 2026)",
+                sourceUrl: "https://www.greenhouse.com/recruiting-benchmarks",
+                breakdownLabel: null, breakdown: null,
+                order: 10, active: true, updatedAt: DateTimeOffset.UtcNow, audience: "recruiter,employer"),
+            new PlatformStatDoc(
+                id: "interviews-per-hire-2026", pk: "stat",
+                label: "more interviews needed per hire than in 2021",
+                value: "+33%",
+                sourceLabel: "Gem 2026 Recruiting Benchmarks — 1.2M hires, Jun 2021–May 2025",
+                sourceUrl: "https://www.gem.com/blog/key-takeaways-from-the-2026-recruiting-benchmarks-report",
+                breakdownLabel: null, breakdown: null,
+                order: 11, active: true, updatedAt: DateTimeOffset.UtcNow, audience: "recruiter,employer"),
         };
 
+        // Per-id, never overwriting: an admin's own edit or deactivation of an existing stat
+        // must survive a redeploy, so this only fills in ids that are missing entirely.
         foreach (var doc in seed)
-            await container.UpsertItemAsync(doc, new PartitionKey("stat"));
+        {
+            try { await container.ReadItemAsync<PlatformStatDoc>(doc.id, new PartitionKey("stat")); }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                await container.CreateItemAsync(doc, new PartitionKey("stat"));
+            }
+        }
     }
 
     // Per-item, not "only if the container is entirely empty" — new default feeds added here
