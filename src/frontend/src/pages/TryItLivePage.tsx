@@ -398,7 +398,9 @@ export default function TryItLivePage() {
           <video ref={technical.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: useAvatar && provider === 'heygen' && avatar === technical ? 1 : 0 }} />
           {/* Spatius draws into this box (transparent canvas, so the soft backdrop shows through). Always mounted, like the videos above. */}
           <div style={{ position: 'absolute', inset: 0, opacity: useAvatar && provider === 'spatius' ? 1 : 0, background: 'radial-gradient(ellipse at 15% 25%, rgba(255,255,255,0.75) 0, transparent 38%), radial-gradient(ellipse at 85% 30%, rgba(255,255,255,0.45) 0, transparent 30%), linear-gradient(180deg, #dfe4ec 0%, #c3cad6 60%, #98a2b3 100%)' }}>
-            <div ref={spatiusStageRef} style={{ position: 'absolute', inset: 0 }} />
+            {/* The avatar is drawn into a box shaped like the test page's (about 1.2 : 1) and centred in the wide 16:9 stage — in the full-width box he
+                filled the whole frame, too close to the screen (Francis, 2026-09-29). The sides just show the soft backdrop. */}
+            <div ref={spatiusStageRef} style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', transform: 'translateX(-50%)', aspectRatio: '1.2 / 1', maxWidth: '100%' }} />
           </div>
           {!useAvatar && start && (
             <>
