@@ -111,7 +111,7 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
               {peopleCount > 0
                 ? <>{peopleCount.toLocaleString()} of {visits.toLocaleString()} visits ({pct(peopleCount, visits)}) came from people's own connections; the other {(visits - peopleCount).toLocaleString()} were crawlers or cloud servers (see "Who the machines are"). Most people read the page and leave without clicking — that's normal, not a sign of a bot. </>
                 : visits - real > 0 && <>{(visits - real).toLocaleString()} of {visits.toLocaleString()} visits ({pct(visits - real, visits)}) never clicked, scrolled or moved a mouse. </>}
-              {data.medianSecondsOnPage !== null && <>Real visitors' typical time on a page: {Math.round(data.medianSecondsOnPage)}s.</>}
+              {data.medianSecondsOnPage !== null && <>People who interacted typically spend this long on a page: {Math.round(data.medianSecondsOnPage)}s.</>}
             </div>
           </div>
 
@@ -119,7 +119,7 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
             <div>
               <div style={h3}>Phone vs desktop</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead><tr><th style={th}>Device</th><th style={th}>Visits</th><th style={th}>People</th><th style={th}>Real</th><th style={th}>Tried it</th></tr></thead>
+                <thead><tr><th style={th}>Device</th><th style={th}>Visits</th><th style={th}>People</th><th style={th}>Interacted</th><th style={th}>Tried it</th></tr></thead>
                 <tbody>{data.devices.map(d => (
                   <tr key={d.device}><td style={{ ...td, textTransform: 'capitalize', color: 'var(--text)' }}>{d.device}</td><td style={td}>{d.visits}</td><td style={td}>{d.people}</td><td style={td}>{d.real}</td><td style={td}>{d.tried}</td></tr>
                 ))}</tbody>
@@ -129,7 +129,7 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
             <div>
               <div style={h3}>Where visitors came from</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead><tr><th style={th}>Source</th><th style={th}>Visits</th><th style={th}>People</th><th style={th}>Real</th></tr></thead>
+                <thead><tr><th style={th}>Source</th><th style={th}>Visits</th><th style={th}>People</th><th style={th}>Interacted</th></tr></thead>
                 <tbody>{data.sources.length === 0 && <tr><td style={td} colSpan={4}>No data yet</td></tr>}
                   {data.sources.map(s => (
                     <tr key={s.source}><td style={{ ...td, color: 'var(--text)', overflowWrap: 'anywhere' }}>{s.source}</td><td style={td}>{s.visits}</td><td style={td}>{s.people}</td><td style={td}>{s.real}</td></tr>
@@ -140,13 +140,13 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
             <div>
               <div style={h3}>Where visitors are (country)</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead><tr><th style={th}>Country</th><th style={th}>Visits</th><th style={th}>People</th><th style={th}>Looked around</th><th style={th}>Real</th><th style={th}>Tried it</th></tr></thead>
+                <thead><tr><th style={th}>Country</th><th style={th}>Visits</th><th style={th}>People</th><th style={th}>Looked around</th><th style={th}>Interacted</th><th style={th}>Tried it</th></tr></thead>
                 <tbody>{(data.countries ?? []).length === 0 && <tr><td style={td} colSpan={6}>No data yet</td></tr>}
                   {(data.countries ?? []).map(c => (
                     <tr key={c.country}><td style={{ ...td, color: 'var(--text)' }}>{c.country}</td><td style={td}>{c.visits}</td><td style={td}>{c.people}</td><td style={td}>{c.looked}</td><td style={td}>{c.real}</td><td style={td}>{c.tried}</td></tr>
                   ))}</tbody>
               </table>
-              <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}><b>People</b> = visits from a home or mobile connection (not a crawler or cloud server — worked out from who owns the network). <b>Looked around</b> = a person who stayed 5+ seconds without clicking (tracked from 2026-09-29). <b>Real</b> = a person who clicked, scrolled or moved a mouse. Add your own address under "ignored addresses" so your visits don't count.</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}><b>People</b> = visits from a home or mobile connection (not a crawler or cloud server — worked out from who owns the network). <b>Looked around</b> = a person who stayed 5+ seconds without clicking (tracked from 2026-09-29). <b>Interacted</b> = a person who also clicked, tapped, scrolled or moved a mouse (a subset of People). Add your own address under "ignored addresses" so your visits don't count.</div>
               <div style={{ ...h3, marginTop: 16 }}>Who the machines are</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead><tr><th style={th}>Network owner</th><th style={th}>Visits</th></tr></thead>

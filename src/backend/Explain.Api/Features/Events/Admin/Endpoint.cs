@@ -300,7 +300,7 @@ public static class Endpoint
             Step("visits", "Visits (everything that loaded a page)", sessions.Count),
             Step("people", "Visits from people's own connections (home or mobile), not crawlers or cloud servers", sessions.Count(s => !s.Machine)),
             Step("looked", "Looked around (stayed 5+ seconds but didn't click, scroll or move a mouse)", sessions.Count(s => s.Dwelled && !s.Human)),
-            Step("human", "Real visitors (clicked, tapped, scrolled or moved a mouse)", human.Count),
+            Step("human", "Interacted (a person who clicked, tapped, scrolled or moved a mouse)", human.Count),
             Step("pricing", "Reached the pricing section", human.Count(s => s.SawPricing)),
             Step("tried", "Tried it live (typed a role or clicked Try it live)", human.Count(s => s.Tried)),
             Step("signup", "Clicked Register / Subscribe / Login", human.Count(s => s.Signup)),
