@@ -44,6 +44,9 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   const waiterRef = useRef<(() => void) | null>(null);
   const sawPlayingRef = useRef(false);
   const connectingRef = useRef<Promise<void> | null>(null);
+  // Bumped by disconnect(): a connect() that's still in flight when the page gives up on it (timeout) notices and tears itself down
+  // instead of finishing later as a ghost, billed session.
+  const attemptRef = useRef(0);
 
   const release = useCallback(() => {
     try { ctrlRef.current?.close(); } catch { /* already closed */ }
@@ -56,12 +59,16 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
     if (ctrlRef.current) return Promise.resolve();
     if (connectingRef.current) return connectingRef.current;
     const attempt = (async () => {
+      const mine = ++attemptRef.current;
+      const cancelled = () => attemptRef.current !== mine;
       setStatus('connecting');
       try {
         const sdk = await prepareSdk(ticket);
+        if (cancelled()) throw new Error('cancelled');
         const stage = stageRef.current;
         if (!stage) throw new Error('avatar stage not mounted');
         const avatar = await sdk.AvatarManager.shared.load(avatarId);
+        if (cancelled()) throw new Error('cancelled');
         const view = new sdk.AvatarView(avatar, stage);
         const ctrl = view.controller;
         ctrl.onError = e => console.warn('[Spatius]', e.code, e.message);
@@ -70,11 +77,20 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
           else if (s === sdk.ConversationState.idle && sawPlayingRef.current) { const w = waiterRef.current; waiterRef.current = null; w?.(); }
         };
         viewRef.current = view; ctrlRef.current = ctrl;
-        await ctrl.initializeAudioContext();
+        // On iPhones the browser can leave the sound system's start-up pending forever unless it happens inside a tap — a promise that
+        // never settles. Give it a few seconds, then fail so the page can fall back (to HeyGen, then voice) instead of hanging.
+        await Promise.race([
+          ctrl.initializeAudioContext(),
+          new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('audio start timed out')), 5000)),
+        ]);
+        if (cancelled()) throw new Error('cancelled');
         await ctrl.start();
+        if (cancelled()) throw new Error('cancelled');
         setStatus('connected');
       } catch (e) {
-        release();
+        // Only tear down what this attempt created — a newer attempt may own the refs by now.
+        if (!cancelled()) release();
+        else { try { viewRef.current?.dispose(); } catch { /* ignore */ } viewRef.current = null; ctrlRef.current = null; }
         setStatus('failed');
         throw e;
       } finally { connectingRef.current = null; }
@@ -100,6 +116,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   const interrupt = useCallback(() => { try { ctrlRef.current?.interrupt(); } catch { /* nothing playing */ } }, []);
 
   const disconnect = useCallback(async () => {
+    attemptRef.current++; // cancels any connect() still in flight
     release();
     setStatus(s => (s === 'idle' ? 'idle' : 'closed'));
   }, [release]);

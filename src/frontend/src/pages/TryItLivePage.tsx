@@ -54,6 +54,13 @@ function TryCoachPopup({ coaching }: { coaching: { text: string; score: number }
 
 type Phase = 'topic' | 'starting' | 'asking' | 'answering' | 'coaching' | 'scoring' | 'results' | 'blocked';
 
+// Never let an avatar connection hold the visitor hostage: a connection that neither succeeds nor fails (seen on iPhones, 2026-09-29 — a
+// visitor sat on "taking their seat" for over four minutes) is treated as failed after a limit, and the page moves on to the next option.
+const withTimeout = <T,>(p: Promise<T>, ms: number, label: string): Promise<T> =>
+  Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`${label} timed out after ${Math.round(ms / 1000)}s`)), ms))]);
+const SPATIUS_CONNECT_LIMIT_MS = 15000;
+const HEYGEN_CONNECT_LIMIT_MS = 25000;
+
 export default function TryItLivePage() {
   const [phase, setPhase] = useState<Phase>('topic');
   // The marketing site's hero passes ?topic= so the visitor's role is already filled in.
@@ -239,12 +246,29 @@ export default function TryItLivePage() {
       // Spatius first when the server chose it for this visitor. If it can't start (token refused, browser can't render, limit hit) and the
       // admin has fallback on, quietly carry on with HeyGen — the visitor never sees an error. Logged so the Activity Log shows how often.
       if (s.avatarProvider === 'spatius' && s.spatiusAvatarId && s.ticket) {
-        try { await spatius.connect(s.spatiusAvatarId, s.ticket); live = true; providerRef.current = 'spatius'; setProvider('spatius'); setAvatarState('live'); }
-        catch (e) { logEvent('try_avatar_fallback', { metadata: { from: 'spatius', reason: String(e instanceof Error ? e.message : e).slice(0, 80), willFallBack: s.fallbackToHeygen !== false, mobile: isMobile } }); }
+        logEvent('try_avatar_connecting', { metadata: { provider: 'spatius', mobile: isMobile } });
+        try {
+          await withTimeout(spatius.connect(s.spatiusAvatarId, s.ticket), SPATIUS_CONNECT_LIMIT_MS, 'spatius');
+          live = true; providerRef.current = 'spatius'; setProvider('spatius'); setAvatarState('live');
+          logEvent('try_avatar_connected', { metadata: { provider: 'spatius', ms: Math.round(performance.now() - connectStarted), mobile: isMobile } });
+        } catch (e) {
+          void spatius.disconnect(); // also cancels a connect() still in flight, so it can't finish later as a ghost session
+          logEvent('try_avatar_fallback', { metadata: { from: 'spatius', reason: String(e instanceof Error ? e.message : e).slice(0, 80), willFallBack: s.fallbackToHeygen !== false, mobile: isMobile } });
+        }
       }
       if (!live && (s.avatarProvider !== 'spatius' || s.fallbackToHeygen !== false)) {
-        try { await (s.interviewer === 'technical' ? technical : hr).connect(); live = true; setAvatarState('live'); }
-        catch { setAvatarState('off'); }
+        const seat = s.interviewer === 'technical' ? technical : hr;
+        const heygenStarted = performance.now();
+        logEvent('try_avatar_connecting', { metadata: { provider: 'heygen', mobile: isMobile } });
+        try {
+          await withTimeout(seat.connect(), HEYGEN_CONNECT_LIMIT_MS, 'heygen');
+          live = true; setAvatarState('live');
+          logEvent('try_avatar_connected', { metadata: { provider: 'heygen', ms: Math.round(performance.now() - heygenStarted), mobile: isMobile } });
+        } catch (e) {
+          void seat.disconnect(); // stop a half-open (billed) session
+          setAvatarState('off');
+          logEvent('try_avatar_failed', { metadata: { provider: 'heygen', reason: String(e instanceof Error ? e.message : e).slice(0, 80), mobile: isMobile } });
+        }
       } else if (!live) setAvatarState('off');
       connectMs = performance.now() - connectStarted;
     }
