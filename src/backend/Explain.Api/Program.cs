@@ -37,7 +37,6 @@ builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddSingleton<CvFileStorageService>();
 builder.Services.AddSingleton<ProfileImageStorageService>();
 builder.Services.AddSingleton<TtsCacheService>();
-builder.Services.AddSingleton<Explain.Api.Infrastructure.Storage.NameGreetingVideoStorageService>();
 builder.Services.AddSingleton<Explain.Api.Infrastructure.Email.IEmailSender, Explain.Api.Infrastructure.Email.AcsEmailSender>();
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlDb"),
@@ -46,7 +45,6 @@ builder.Services.AddSingleton<TokenService>();
 builder.Services.AddScoped<PermissionLoader>();
 builder.Services.AddSingleton<AnthropicService>();
 builder.Services.AddSingleton<Explain.Api.Infrastructure.YouTube.YouTubeService>();
-builder.Services.AddSingleton<Explain.Api.Features.NameGreetings.DidGenerationService>();
 builder.Services.AddScoped<Explain.Api.Features.SessionPasses.SessionPassService>();   // scoped: it uses the SQL DbContext (passes moved from Cosmos, 2026-09-21)
 builder.Services.AddScoped<Explain.Api.Features.QuestionPacks.QuestionPackService>();
 builder.Services.AddHostedService<Explain.Api.Features.SessionPasses.LegacyImportService>();
@@ -146,14 +144,6 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddHttpClient();
-// Named client for D-ID's talking-head video API — invoked from a background task outside
-// a request scope (Name Bank auto-generation), so it wants its own explicit, generous timeout
-// rather than a per-request default.
-builder.Services.AddHttpClient("DID", c =>
-{
-    c.BaseAddress = new Uri("https://api.d-id.com");
-    c.Timeout = TimeSpan.FromSeconds(30);
-});
 builder.Services.AddHttpClient("AzureMaps", c =>
 {
     c.BaseAddress = new Uri("https://atlas.microsoft.com");
@@ -212,15 +202,6 @@ catch (Exception ex)
     logger.LogWarning(ex, "Profile image storage initialisation failed — avatar/banner uploads will fail, but profile text fields are unaffected.");
 }
 
-try
-{
-    await app.Services.GetRequiredService<Explain.Api.Infrastructure.Storage.NameGreetingVideoStorageService>().InitialiseAsync();
-}
-catch (Exception ex)
-{
-    var logger = app.Services.GetRequiredService<ILogger<Program>>();
-    logger.LogWarning(ex, "Name Bank video storage initialisation failed — auto-generated clips won't be re-hosted (D-ID's own URL would be used instead, which expires within 24h).");
-}
 try
 {
     await app.Services.GetRequiredService<TtsCacheService>().InitialiseAsync();
@@ -370,8 +351,6 @@ Explain.Api.Features.Comments.Endpoint.Map(app);
 Explain.Api.Features.Profile.Block.Endpoint.Map(app);
 Explain.Api.Features.Comments.Admin.Endpoint.Map(app);
 Explain.Api.Features.CandidateSearch.Endpoint.Map(app);
-Explain.Api.Features.NameGreetings.Endpoint.Map(app);
-Explain.Api.Features.NameGreetings.Admin.Endpoint.Map(app);
 Explain.Api.Features.PlatformSettings.Endpoint.Map(app);
 Explain.Api.Features.InDemandSubjects.Endpoint.Map(app);
 Explain.Api.Features.PlatformStats.Endpoint.Map(app);

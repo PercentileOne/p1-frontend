@@ -31,14 +31,9 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("lessons", "/pk"));
 
-        // Name Bank — a personalised interviewer greeting clip, cached per {speaker}:{name}
-        // and reused for every candidate who shares that first name. Shared across all users;
-        // partition key = the same composite key as the document id (see Features/NameGreetings).
-        await _database.CreateContainerIfNotExistsAsync(
-            new ContainerProperties("nameGreetings", "/pk"));
 
         // Global, platform-wide settings — deliberately narrow (one document per setting,
-        // e.g. "nameBank"), not a general-purpose settings blob. First of its kind in this
+        // e.g. "liveAvatar"), not a general-purpose settings blob. First of its kind in this
         // codebase; every other toggle so far has been per-record, not global.
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("platformSettings", "/pk"));
