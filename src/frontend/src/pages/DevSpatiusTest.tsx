@@ -30,7 +30,7 @@ async function ensureSdk(authToken: string): Promise<void> {
 
 type PanelHandle = { speak: (t?: string) => Promise<void> };
 
-function Panel({ name, role, storageKey, handleRef }: { name: string; role: 'hr' | 'technical'; storageKey: string; handleRef: { current: PanelHandle | null } }) {
+function Panel({ name, role, storageKey, handleRef, background }: { name: string; role: 'hr' | 'technical'; storageKey: string; handleRef: { current: PanelHandle | null }; background: string }) {
   const token = useAuthStore(s => s.token);
   const boxRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<AvatarView | null>(null);
@@ -99,7 +99,8 @@ function Panel({ name, role, storageKey, handleRef }: { name: string; role: 'hr'
       <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 8 }}>
         {name} <span style={{ color: 'var(--text-3)', fontWeight: 600, fontSize: 12 }}>({role === 'hr' ? 'HR' : 'Technical'} voice)</span>
       </div>
-      <div ref={boxRef} style={{ width: '100%', height: 420, borderRadius: 12, background: '#0b1020', overflow: 'hidden', position: 'relative' }} />
+      {/* The avatar canvas is transparent (premultiplied alpha), so whatever is behind this box shows through. */}
+      <div ref={boxRef} style={{ width: '100%', height: 420, borderRadius: 12, background, backgroundSize: 'cover', backgroundPosition: 'center', overflow: 'hidden', position: 'relative' }} />
       <div style={{ fontSize: 12, color: 'var(--text-3)', margin: '8px 0' }}>{status}</div>
       <input value={avatarId} onChange={e => setAvatarId(e.target.value)} placeholder="Spatius avatar ID (Avatar Library or your custom avatar)" style={field} />
       <textarea value={text} onChange={e => setText(e.target.value)} rows={3} style={field} />
@@ -113,9 +114,21 @@ function Panel({ name, role, storageKey, handleRef }: { name: string; role: 'hr'
   );
 }
 
+// Backgrounds to try behind the avatars. These CSS ones are stand-ins for gauging edge quality on light/warm scenes; a real office or
+// home photo can be loaded with "Use my own image" (kept in this browser only — nothing is uploaded).
+const BACKGROUNDS: { label: string; css: string }[] = [
+  { label: 'Dark (default)', css: '#0b1020' },
+  { label: 'Soft office', css: 'radial-gradient(ellipse at 15% 25%, rgba(255,255,255,0.75) 0, transparent 38%), radial-gradient(ellipse at 85% 30%, rgba(255,255,255,0.45) 0, transparent 30%), linear-gradient(180deg, #dfe4ec 0%, #c3cad6 60%, #98a2b3 100%)' },
+  { label: 'Warm home', css: 'radial-gradient(circle at 20% 30%, #f7dcae 0, transparent 42%), radial-gradient(circle at 80% 70%, #d9b88f 0, transparent 45%), linear-gradient(180deg, #ecd9c0 0%, #b89877 100%)' },
+  { label: 'Bookshelf (dark wood)', css: 'repeating-linear-gradient(90deg, rgba(0,0,0,0.18) 0 3px, transparent 3px 46px), linear-gradient(180deg, #5a4030 0%, #3a281c 100%)' },
+];
+
 export default function DevSpatiusTest() {
   const amina = useRef<PanelHandle | null>(null);
   const wayne = useRef<PanelHandle | null>(null);
+  const [bg, setBg] = useState(BACKGROUNDS[0].css);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const pickImage = (f: File | undefined) => { if (f) setBg(`url("${URL.createObjectURL(f)}")`); };
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 16px' }}>
       <h1 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 6px' }}>Spatius avatar test — Amina & Wayne</h1>
@@ -124,9 +137,19 @@ export default function DevSpatiusTest() {
         press Connect, then Speak. Sessions bill while connected, so press Disconnect when done (they also close after 5 idle minutes).
         Compare face quality, lip-sync and start-up time with the HeyGen interview.
       </p>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 14 }}>
+        <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Background</span>
+        {BACKGROUNDS.map(b => (
+          <button key={b.label} onClick={() => setBg(b.css)}
+            style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: bg === b.css ? 'rgba(52,211,153,0.14)' : 'rgba(255,255,255,0.04)', color: 'var(--text)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{b.label}</button>
+        ))}
+        <button onClick={() => fileRef.current?.click()}
+          style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: 'var(--text)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Use my own image…</button>
+        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => pickImage(e.target.files?.[0])} />
+      </div>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-        <Panel name="Amina" role="hr" storageKey="tic.spatius.amina" handleRef={amina} />
-        <Panel name="Wayne" role="technical" storageKey="tic.spatius.wayne" handleRef={wayne} />
+        <Panel name="Amina" role="hr" storageKey="tic.spatius.amina" handleRef={amina} background={bg} />
+        <Panel name="Wayne" role="technical" storageKey="tic.spatius.wayne" handleRef={wayne} background={bg} />
       </div>
       <div style={{ marginTop: 16 }}>
         <button
