@@ -245,7 +245,12 @@ export default function TryItLivePage() {
       providerRef.current = 'heygen'; setProvider('heygen');
       // Spatius first when the server chose it for this visitor. If it can't start (token refused, browser can't render, limit hit) and the
       // admin has fallback on, quietly carry on with HeyGen — the visitor never sees an error. Logged so the Activity Log shows how often.
-      if (s.avatarProvider === 'spatius' && s.spatiusAvatarId && s.ticket) {
+      // iPhones/iPads (every iOS browser is WebKit) only start a page's sound inside a tap, and Spatius's sound system starts after network waits, so
+      // it never gets going there (seen live 2026-09-29: "audio start timed out" every time). Skip straight to HeyGen rather than make the visitor
+      // wait for the timeout. Android and desktop are unaffected. A future "tap to meet your interviewer" step could bring iOS onto Spatius.
+      const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (s.avatarProvider === 'spatius' && isIos) logEvent('try_avatar_skipped', { metadata: { provider: 'spatius', reason: 'ios sound rules', mobile: isMobile } });
+      if (s.avatarProvider === 'spatius' && s.spatiusAvatarId && s.ticket && !isIos) {
         logEvent('try_avatar_connecting', { metadata: { provider: 'spatius', mobile: isMobile } });
         try {
           await withTimeout(spatius.connect(s.spatiusAvatarId, s.ticket), SPATIUS_CONNECT_LIMIT_MS, 'spatius');
