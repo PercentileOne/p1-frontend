@@ -137,6 +137,26 @@ export default function TryItLivePage() {
     else if (phase === 'blocked') logEvent('try_blocked', { metadata: { reason: blockReason, mobile: isMobile } });
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Per-question drop-off (Francis, 2026-09-29): the funnel showed 7 started, 7 heard Q1, only 2 finished, and 0 blocked — so
+  // people were leaving silently mid-demo with nothing logged between Q1 and the score. try_answering = the question has been
+  // read out and it's the visitor's turn; try_answer_submitted = they answered or skipped; try_left = they closed/navigated
+  // away while still mid-demo (carries the phase + question number, i.e. exactly where they gave up).
+  const enteredAtRef = useRef(Date.now());
+  const midDemoRef = useRef({ phase, index });
+  midDemoRef.current = { phase, index };
+  useEffect(() => {
+    if (phase === 'answering') logEvent('try_answering', { metadata: { q: index + 1, mobile: isMobile } });
+  }, [phase, index]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const onLeave = () => {
+      const { phase: p, index: i } = midDemoRef.current;
+      if (p === 'topic' || p === 'results' || p === 'blocked') return;
+      logEvent('try_left', { metadata: { phase: p, q: i + 1, mobile: isMobile, secondsOnPage: Math.round((Date.now() - enteredAtRef.current) / 1000) } });
+    };
+    window.addEventListener('pagehide', onLeave);
+    return () => window.removeEventListener('pagehide', onLeave);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Never leave a billable avatar connection or a voice running when the page is left.
   useEffect(() => () => { cancelSpeechRef.current?.(); void hr.disconnect(); void technical.disconnect(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -232,6 +252,7 @@ export default function TryItLivePage() {
     if (!skip && !text) return;
     busyRef.current = true;
     cancelSpeechRef.current?.();
+    logEvent('try_answer_submitted', { metadata: { q: index + 1, skipped: skip, chars: text.length, mobile: isMobile } });
 
     const q = start.questions[index];
     const isLast = index + 1 >= start.questions.length;

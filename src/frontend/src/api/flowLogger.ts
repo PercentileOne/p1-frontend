@@ -63,6 +63,8 @@ export function logEvent(
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(body),
+    // keepalive lets an event fired as the tab closes (e.g. try_left) still reach the server.
+    keepalive: true,
   }).catch(() => {
     // Logging must never break the interview — silent fail, same contract as before.
   });
