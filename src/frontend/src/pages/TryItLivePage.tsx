@@ -60,6 +60,10 @@ const withTimeout = <T,>(p: Promise<T>, ms: number, label: string): Promise<T> =
   Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`${label} timed out after ${Math.round(ms / 1000)}s`)), ms))]);
 const SPATIUS_CONNECT_LIMIT_MS = 15000;
 const HEYGEN_CONNECT_LIMIT_MS = 25000;
+// How wide the box Spatius draws Wayne into is, as a % of the (16:9) video stage. The avatar's own camera zooms with the box's shape, so a
+// NARROWER box pulls him back (more headroom, more of his shoulders and chest) and a wider one zooms him in. 60% ≈ a 1.07 : 1 box.
+// Tuned by eye with Francis on 2026-09-29 (full width was far too close) — change this one number to adjust.
+const SPATIUS_STAGE_WIDTH_PCT = 60;
 
 export default function TryItLivePage() {
   const [phase, setPhase] = useState<Phase>('topic');
@@ -405,7 +409,7 @@ export default function TryItLivePage() {
           <div style={{ position: 'absolute', inset: 0, opacity: useAvatar && provider === 'spatius' ? 1 : 0, background: 'radial-gradient(ellipse at 15% 25%, rgba(255,255,255,0.75) 0, transparent 38%), radial-gradient(ellipse at 85% 30%, rgba(255,255,255,0.45) 0, transparent 30%), linear-gradient(180deg, #dfe4ec 0%, #c3cad6 60%, #98a2b3 100%)' }}>
             {/* The avatar is drawn into a box shaped like the test page's (about 1.2 : 1) and centred in the wide 16:9 stage — in the full-width box he
                 filled the whole frame, too close to the screen (Francis, 2026-09-29). The sides just show the soft backdrop. */}
-            <div ref={spatiusStageRef} style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', transform: 'translateX(-50%)', aspectRatio: '1.2 / 1', maxWidth: '100%' }} />
+            <div ref={spatiusStageRef} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(100 - SPATIUS_STAGE_WIDTH_PCT) / 2}%`, width: `${SPATIUS_STAGE_WIDTH_PCT}%` }} />
           </div>
           {!useAvatar && start && (
             <>
