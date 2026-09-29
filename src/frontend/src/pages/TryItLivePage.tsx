@@ -176,6 +176,19 @@ export default function TryItLivePage() {
     return () => window.removeEventListener('pagehide', onLeave);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Cost guard (2026-09-29): the demo keeps the avatar connected while the visitor thinks, and a forgotten open tab would bill until the browser
+  // closed it (up to 60 min on the Spatius plan). If nobody has answered within 2.5 minutes, drop the avatar and carry on voice-and-photo.
+  // The next question just falls back to plain voice (speakLine already handles a disconnected avatar).
+  useEffect(() => {
+    if (phase !== 'answering' || !useAvatar) return;
+    const t = setTimeout(() => {
+      void spatius.disconnect(); void hr.disconnect(); void technical.disconnect();
+      setUseAvatar(false); setAvatarState('off');
+      logEvent('try_avatar_idle_disconnect', { metadata: { provider: providerRef.current, q: index + 1, mobile: isMobile } });
+    }, 150_000);
+    return () => clearTimeout(t);
+  }, [phase, index, useAvatar]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Never leave a billable avatar connection or a voice running when the page is left.
   useEffect(() => () => { cancelSpeechRef.current?.(); void hr.disconnect(); void technical.disconnect(); void spatius.disconnect(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
