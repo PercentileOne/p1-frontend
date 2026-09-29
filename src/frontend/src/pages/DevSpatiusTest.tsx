@@ -30,7 +30,7 @@ async function ensureSdk(authToken: string): Promise<void> {
 
 type PanelHandle = { speak: (t?: string) => Promise<void> };
 
-function Panel({ name, role, storageKey, handleRef, background }: { name: string; role: 'hr' | 'technical'; storageKey: string; handleRef: { current: PanelHandle | null }; background: string }) {
+function Panel({ name, role, storageKey, handleRef, background, blur }: { name: string; role: 'hr' | 'technical'; storageKey: string; handleRef: { current: PanelHandle | null }; background: string; blur: number }) {
   const token = useAuthStore(s => s.token);
   const boxRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<AvatarView | null>(null);
@@ -99,8 +99,12 @@ function Panel({ name, role, storageKey, handleRef, background }: { name: string
       <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 8 }}>
         {name} <span style={{ color: 'var(--text-3)', fontWeight: 600, fontSize: 12 }}>({role === 'hr' ? 'HR' : 'Technical'} voice)</span>
       </div>
-      {/* The avatar canvas is transparent (premultiplied alpha), so whatever is behind this box shows through. */}
-      <div ref={boxRef} style={{ width: '100%', height: 420, borderRadius: 12, background, backgroundSize: 'cover', backgroundPosition: 'center', overflow: 'hidden', position: 'relative' }} />
+      {/* The avatar canvas is transparent (premultiplied alpha), so whatever is behind it shows through. The background is its own layer so it
+          can be blurred (soft, out-of-focus, like a video call) without blurring the avatar, which mounts in the box above it. */}
+      <div style={{ width: '100%', height: 420, borderRadius: 12, overflow: 'hidden', position: 'relative', background: '#0b1020' }}>
+        <div style={{ position: 'absolute', inset: -20, background, backgroundSize: 'cover', backgroundPosition: 'center', filter: blur ? `blur(${blur}px)` : 'none' }} />
+        <div ref={boxRef} style={{ position: 'absolute', inset: 0 }} />
+      </div>
       <div style={{ fontSize: 12, color: 'var(--text-3)', margin: '8px 0' }}>{status}</div>
       <input value={avatarId} onChange={e => setAvatarId(e.target.value)} placeholder="Spatius avatar ID (Avatar Library or your custom avatar)" style={field} />
       <textarea value={text} onChange={e => setText(e.target.value)} rows={3} style={field} />
@@ -127,6 +131,7 @@ export default function DevSpatiusTest() {
   const amina = useRef<PanelHandle | null>(null);
   const wayne = useRef<PanelHandle | null>(null);
   const [bg, setBg] = useState(BACKGROUNDS[0].css);
+  const [blur, setBlur] = useState(6);
   const fileRef = useRef<HTMLInputElement>(null);
   const pickImage = (f: File | undefined) => { if (f) setBg(`url("${URL.createObjectURL(f)}")`); };
   return (
@@ -146,10 +151,15 @@ export default function DevSpatiusTest() {
         <button onClick={() => fileRef.current?.click()}
           style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: 'var(--text)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Use my own image…</button>
         <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => pickImage(e.target.files?.[0])} />
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 700, color: 'var(--text-2)' }}>
+          Blur
+          <input type="range" min={0} max={16} value={blur} onChange={e => setBlur(Number(e.target.value))} />
+          <span style={{ width: 28, color: 'var(--text-3)' }}>{blur}px</span>
+        </label>
       </div>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-        <Panel name="Amina" role="hr" storageKey="tic.spatius.amina" handleRef={amina} background={bg} />
-        <Panel name="Wayne" role="technical" storageKey="tic.spatius.wayne" handleRef={wayne} background={bg} />
+        <Panel name="Amina" role="hr" storageKey="tic.spatius.amina" handleRef={amina} background={bg} blur={blur} />
+        <Panel name="Wayne" role="technical" storageKey="tic.spatius.wayne" handleRef={wayne} background={bg} blur={blur} />
       </div>
       <div style={{ marginTop: 16 }}>
         <button
