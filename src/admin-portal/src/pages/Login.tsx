@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChairLogo } from '../components/LogoMark'
@@ -12,6 +13,8 @@ export default function Login() {
   const { signIn } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  // Eye button on the password field (Francis, 2026-09-29) — lets you see what you're typing; hidden again on every page load.
+  const [showPassword, setShowPassword] = useState(false)
   const [phase, setPhase] = useState<Phase>('idle')
   const [error, setError] = useState('')
 
@@ -152,9 +155,10 @@ export default function Login() {
               }}>
                 <span style={{ fontSize: 13, color: '#4b5563', flexShrink: 0 }}>🔒</span>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   className="ex-input"
                   placeholder="Your password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   style={{
@@ -162,6 +166,15 @@ export default function Login() {
                     color: '#cbd5e1', fontSize: 13, fontFamily: 'inherit', caretColor: '#4F8EF7',
                   }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                  style={{ background: 'none', border: 'none', padding: 2, cursor: 'pointer', color: '#94a3b8', display: 'flex', flexShrink: 0 }}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </label>
 
               {error && (
