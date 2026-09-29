@@ -132,6 +132,18 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
             </div>
 
             <div>
+              <div style={h3}>Where visitors are (country)</div>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead><tr><th style={th}>Country</th><th style={th}>Visits</th><th style={th}>Real</th><th style={th}>Tried it</th></tr></thead>
+                <tbody>{(data.countries ?? []).length === 0 && <tr><td style={td} colSpan={4}>No data yet</td></tr>}
+                  {(data.countries ?? []).map(c => (
+                    <tr key={c.country}><td style={{ ...td, color: 'var(--text)' }}>{c.country}</td><td style={td}>{c.visits}</td><td style={td}>{c.real}</td><td style={td}>{c.tried}</td></tr>
+                  ))}</tbody>
+              </table>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}>Many visits but few real ones usually means crawlers. Add your own address under "ignored addresses" so your visits don't count.</div>
+            </div>
+
+            <div>
               <div style={h3}>"Try it live" page (candidate app)</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <tbody>
@@ -141,6 +153,19 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
                   <tr><td style={td}>Heard the first question</td><td style={td}>{data.tryPage.firstQuestion}</td></tr>
                   <tr><td style={td}>Finished and got a score</td><td style={td}>{data.tryPage.completed} <span style={{ color: 'var(--text-3)' }}>({data.tryPage.completedOnPhone} on a phone)</span></td></tr>
                   <tr><td style={td}>Hit an error / limit</td><td style={td}>{data.tryPage.blocked}</td></tr>
+                </tbody>
+              </table>
+              <div style={{ ...h3, marginTop: 14 }}>Inside the demo, question by question</div>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead><tr><th style={th}>Question</th><th style={th}>Heard it</th><th style={th}>Answered / skipped</th><th style={th}>Left during it</th></tr></thead>
+                <tbody>{(data.tryPage.byQuestion ?? []).map(b => (
+                  <tr key={b.q}><td style={td}>Q{b.q}</td><td style={td}>{b.answering}</td><td style={td}>{b.submitted}</td><td style={td}>{b.left}</td></tr>
+                ))}
+                  {(data.tryPage.leftAt ?? []).length === 0
+                    ? <tr><td style={td} colSpan={4}>No one has left mid-demo since this tracking went live (2026-09-29).</td></tr>
+                    : (data.tryPage.leftAt ?? []).map(l => (
+                      <tr key={l.phase + l.q}><td style={td} colSpan={3}>Left while "{l.phase}" on Q{l.q}</td><td style={td}>{l.visitors}</td></tr>
+                    ))}
                 </tbody>
               </table>
             </div>

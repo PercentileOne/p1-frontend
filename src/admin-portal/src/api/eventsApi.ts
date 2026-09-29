@@ -88,10 +88,14 @@ export interface FunnelResponse {
   steps: { key: string; label: string; sessions: number }[];
   devices: { device: string; visits: number; real: number; tried: number }[];
   sources: { source: string; visits: number; real: number }[];
+  countries: { country: string; visits: number; real: number; tried: number }[];
   topClicks: { type: string; label: string; area: string; href: string; visitors: number }[];
   sections: { section: string; visitors: number }[];
   medianSecondsOnPage: number | null;
-  tryPage: { visits: number; phoneVisits: number; started: number; startedOnPhone: number; firstQuestion: number; completed: number; completedOnPhone: number; blocked: number };
+  tryPage: { visits: number; phoneVisits: number; started: number; startedOnPhone: number; firstQuestion: number; completed: number; completedOnPhone: number; blocked: number;
+    // Per-question drop-off (events exist from 2026-09-29; older days simply show zeros).
+    byQuestion: { q: number; answering: number; submitted: number; left: number }[];
+    leftAt: { phase: string; q: string; visitors: number }[] };
 }
 
 export const eventsApi = {

@@ -72,15 +72,15 @@ public static class Endpoint
             var from = DateTimeOffset.UtcNow.AddDays(-days).ToString("o");
 
             var marketing = new List<FunnelEvent>();
-            var q1 = new QueryDefinition("SELECT TOP 50000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress FROM c WHERE c.portal = 'marketing' AND c.createdAt >= @from")
+            var q1 = new QueryDefinition("SELECT TOP 50000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress, c.country FROM c WHERE c.portal = 'marketing' AND c.createdAt >= @from")
                 .WithParameter("@from", from);
             using (var feed = container.GetItemQueryIterator<FunnelEvent>(q1))
                 while (feed.HasMoreResults) marketing.AddRange(await feed.ReadNextAsync());
 
             var tryEvents = new List<FunnelEvent>();
             var q2 = new QueryDefinition(
-                "SELECT TOP 20000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress FROM c WHERE c.portal = 'candidate' AND c.createdAt >= @from " +
-                "AND (c.eventType IN ('try_mobile_visit','try_blocked_mobile','try_started','try_first_question','try_completed','try_blocked') " +
+                "SELECT TOP 20000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress, c.country FROM c WHERE c.portal = 'candidate' AND c.createdAt >= @from " +
+                "AND (c.eventType IN ('try_mobile_visit','try_blocked_mobile','try_started','try_first_question','try_completed','try_blocked','try_answering','try_answer_submitted','try_left') " +
                 "OR (c.eventType = 'page_view' AND c.page = '/try'))")
                 .WithParameter("@from", from);
             using (var feed = container.GetItemQueryIterator<FunnelEvent>(q2))
@@ -243,7 +243,7 @@ public static class Endpoint
     }
 
     // Only the fields the funnel needs — keeps the read cheap (no IPs / user agents pulled back).
-    public record FunnelEvent(string sessionId, string eventType, string? page, Dictionary<string, object>? metadata, string? ipAddress = null);
+    public record FunnelEvent(string sessionId, string eventType, string? page, Dictionary<string, object>? metadata, string? ipAddress = null, string? country = null);
 
     private static string? Meta(FunnelEvent e, string key) =>
         e.metadata is not null && e.metadata.TryGetValue(key, out var v) ? v?.ToString() : null;
@@ -273,6 +273,7 @@ public static class Endpoint
                     Human = evs.Any(e => e.eventType == "interaction"),
                     Device = evs.Select(e => Meta(e, "dev")).FirstOrDefault(d => !string.IsNullOrEmpty(d)) ?? "unknown",
                     Src = evs.Select(e => Meta(e, "src")).FirstOrDefault(s => !string.IsNullOrEmpty(s)) ?? "direct",
+                    Country = evs.Select(e => e.country).FirstOrDefault(c => !string.IsNullOrEmpty(c)) ?? "Unknown",
                     SawPricing = evs.Any(e => e.eventType == "section_view" && Meta(e, "section") == "pricing"),
                     Tried = evs.Any(e => e.eventType == "try_submit" || (IsClick(e) && HrefHas(e, "/try"))),
                     Signup = evs.Any(e => IsClick(e) && HrefHas(e, "/register", "/subscription", "login.theinterviewchair.com")),
@@ -306,6 +307,12 @@ public static class Endpoint
             .Select(g => new { source = g.Key, visits = g.Count(), real = g.Count(s => s.Human) })
             .OrderByDescending(x => x.real).ThenByDescending(x => x.visits).Take(10);
 
+        // Where visitors are (2026-09-29): GA showed lots of US "users" that were really crawlers — here "real" is the same
+        // interaction test as the rest of the funnel, so bot-heavy countries show up as many visits, few real.
+        var countries = sessions.GroupBy(s => s.Country)
+            .Select(g => new { country = g.Key, visits = g.Count(), real = g.Count(s => s.Human), tried = g.Count(s => s.Human && s.Tried) })
+            .OrderByDescending(x => x.real).ThenByDescending(x => x.visits).Take(12);
+
         // Clicks: how many DIFFERENT real visitors clicked each thing (not raw click counts, so one person hammering a button counts once).
         var topClicks = human
             .SelectMany(s => s.Clicks.Select(c => (c.Type, c.Label, c.Area, c.Href)).Distinct())
@@ -324,8 +331,23 @@ public static class Endpoint
         // "mobile":true is stamped on the demo's later steps by the candidate app (TryItLivePage) so phones can be compared with computers.
         int OnPhone(string type) => tryEvents.Where(e => e.eventType == type && string.Equals(Meta(e, "mobile"), "true", StringComparison.OrdinalIgnoreCase))
             .Select(e => e.sessionId).Distinct().Count();
+        // Per-question drop-off inside the demo (try_answering / try_answer_submitted / try_left carry a "q" = question number).
+        int TrySessionsAtQ(string type, string q) => tryEvents.Where(e => e.eventType == type && Meta(e, "q") == q).Select(e => e.sessionId).Distinct().Count();
+        var byQuestion = new[] { "1", "2", "3" }.Select(q => new
+        {
+            q = int.Parse(q),
+            answering = TrySessionsAtQ("try_answering", q),
+            submitted = TrySessionsAtQ("try_answer_submitted", q),
+            left = TrySessionsAtQ("try_left", q),
+        }).ToList();
+        var leftAt = tryEvents.Where(e => e.eventType == "try_left")
+            .GroupBy(e => (Phase: Meta(e, "phase") ?? "?", Q: Meta(e, "q") ?? "?"))
+            .Select(g => new { phase = g.Key.Phase, q = g.Key.Q, visitors = g.Select(e => e.sessionId).Distinct().Count() })
+            .OrderByDescending(x => x.visitors).ToList();
         var tryPage = new
         {
+            byQuestion,
+            leftAt,
             visits = tryEvents.Where(e => e.eventType == "page_view").Select(e => e.sessionId).Distinct().Count(),
             // try_blocked_mobile is the old "desktop only" wall (until 2026-09-26) — still counted so earlier days show up.
             phoneVisits = tryEvents.Where(e => e.eventType is "try_mobile_visit" or "try_blocked_mobile").Select(e => e.sessionId).Distinct().Count(),
@@ -344,6 +366,7 @@ public static class Endpoint
             steps,
             devices,
             sources,
+            countries,
             topClicks,
             sections,
             medianSecondsOnPage = leaves.Count == 0 ? (double?)null : leaves[leaves.Count / 2],
