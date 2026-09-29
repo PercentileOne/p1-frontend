@@ -374,6 +374,7 @@ Explain.Api.Features.NameGreetings.Admin.Endpoint.Map(app);
 Explain.Api.Features.PlatformSettings.Endpoint.Map(app);
 Explain.Api.Features.InDemandSubjects.Endpoint.Map(app);
 Explain.Api.Features.PlatformStats.Endpoint.Map(app);
+Explain.Api.Features.Spatius.Endpoint.Map(app);
 Explain.Api.Features.CareerNews.Endpoint.Map(app);
 Explain.Api.Features.CareerCoach.Endpoint.Map(app);
 Explain.Api.Features.CvAnalysis.Endpoint.Map(app);

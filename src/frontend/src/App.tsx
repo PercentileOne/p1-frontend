@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { RequirePermission, UnauthorizedPage } from "./auth/RequirePermission";
 import { logEvent } from "./api/flowLogger";
@@ -32,6 +32,7 @@ import LearningEmployer from "./pages/LearningEmployer";
 import ProfilePage from "./pages/ProfilePage";
 import ProfileVideoPage from "./pages/ProfileVideoPage";
 import DevAvatarRepro from "./pages/DevAvatarRepro";
+const DevSpatiusTest = lazy(() => import("./pages/DevSpatiusTest")); // lazy: pulls in the Spatius WASM renderer only when opened
 import CandidateDashboard from "./pages/CandidateDashboard";
 import SettingsPage from "./pages/SettingsPage";
 import GoalsPage from "./pages/GoalsPage";
@@ -223,6 +224,7 @@ export default function App() {
       {/* Profile & Identity */}
       <Route path="/dashboard" element={<RequirePermission permission="CAN_START_INTERVIEW"><CandidateDashboard /></RequirePermission>} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/dev/spatius-test" element={<RequirePermission permission="CAN_VIEW_SYSTEM_SETTINGS"><Suspense fallback={null}><DevSpatiusTest /></Suspense></RequirePermission>} />
       <Route path="/dev/avatar-repro" element={<RequirePermission permission="CAN_START_INTERVIEW"><DevAvatarRepro /></RequirePermission>} />
       <Route path="/profile/video" element={<RequirePermission permission="CAN_START_INTERVIEW"><ProfileVideoPage /></RequirePermission>} />
       <Route path="/profile/:userId" element={<ProfilePage />} />
