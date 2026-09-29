@@ -70,6 +70,23 @@ public static class Endpoint
             // Wayne runs every try-it-live interview (Francis, 2026-09-21) — whatever the role. "technical" is the seat id of his avatar.
             const string interviewer = "technical";
             var ticket = avatarAvailable ? InterviewTicket.Create(config["Jwt:Secret"] ?? string.Empty, $"tryout:{ip}", DateTimeOffset.UtcNow) : null;
+
+            // Which service draws the avatar for THIS visitor (admin setting — Features/PlatformSettings, "Avatar provider"). Spatius only when the admin
+            // has switched it on, it's configured, an avatar id is set for the seat, and this visitor falls inside the rollout percentage; otherwise HeyGen,
+            // exactly as before. The client falls back to HeyGen itself if Spatius can't start and fallbackToHeygen is on.
+            var providerSetting = await Explain.Api.Features.PlatformSettings.Endpoint.GetAvatarProviderOrDefaultAsync(cosmos);
+            var avatarProvider = "heygen";
+            string? spatiusAvatarId = null;
+            if (avatarAvailable && providerSetting.provider == "spatius" && Explain.Api.Features.Spatius.SpatiusClient.IsConfigured(config))
+            {
+                var id = interviewer == "technical" ? providerSetting.spatiusAvatarTechnical : providerSetting.spatiusAvatarHr;
+                if (!string.IsNullOrWhiteSpace(id) && Random.Shared.Next(100) < providerSetting.spatiusPercent)
+                {
+                    avatarProvider = "spatius";
+                    spatiusAvatarId = id;
+                }
+            }
+
             return Results.Ok(new
             {
                 subject = string.IsNullOrWhiteSpace(model.Subject) ? topic : model.Subject.Trim(),
@@ -77,9 +94,36 @@ public static class Endpoint
                 interviewerName = "Wayne",
                 questions = model.Questions.Take(3).Select(q => q.Trim()).Where(q => q.Length > 0).ToList(),
                 avatarAvailable,
+                avatarProvider,
+                spatiusAvatarId,
+                fallbackToHeygen = providerSetting.fallbackToHeygen,
                 ticket,
                 unlimited,
             });
+        }).AllowAnonymous();
+
+        // Short-lived Spatius session token for a /try visitor's avatar. Anonymous (visitors aren't signed in), so it is guarded three ways:
+        // (1) a valid, unexpired demo ticket — only handed out by /api/tryout/start when an avatar seat was actually granted;
+        // (2) the admin must have Spatius switched on; (3) a per-visitor daily cap so one address can't mint sessions in a loop.
+        // The API key never leaves the server (Features/Spatius/SpatiusClient.cs).
+        app.MapPost("/api/tryout/spatius-token", async (HttpContext ctx, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILoggerFactory logs, CancellationToken ct) =>
+        {
+            var ticket = ctx.Request.Headers["X-Interview-Ticket"].ToString();
+            if (!ticket.StartsWith("tryout:", StringComparison.Ordinal) || !InterviewTicket.IsValid(config["Jwt:Secret"], ticket, DateTimeOffset.UtcNow))
+                return Results.Json(new { error = "Start the demo first." }, statusCode: 403);
+
+            var setting = await Explain.Api.Features.PlatformSettings.Endpoint.GetAvatarProviderOrDefaultAsync(cosmos);
+            if (setting.provider != "spatius")
+                return Results.Json(new { error = "Not available." }, statusCode: 403);
+
+            var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            if (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"tryout:spatiustoken:ip:{ip}", config.GetValue("TryOut:SpatiusTokensPerVisitorPerDay", 20), cosmos)).allowed)
+                return Results.Json(new { error = "Too many sessions today." }, statusCode: (int)HttpStatusCode.TooManyRequests);
+
+            var r = await Explain.Api.Features.Spatius.SpatiusClient.MintTokenAsync(factory, config, logs.CreateLogger("Spatius"), TimeSpan.FromMinutes(20), ct);
+            return r.Ok
+                ? Results.Ok(new { sessionToken = r.SessionToken, appId = r.AppId })
+                : Results.Json(new { error = r.Error }, statusCode: r.FailureStatus);
         }).AllowAnonymous();
 
         app.MapPost("/api/tryout/feedback", async (FeedbackRequest req, HttpContext ctx, AppDbContext db, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>

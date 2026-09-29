@@ -10,6 +10,11 @@ export interface TryOutStart {
   interviewerName: string;
   questions: string[];
   avatarAvailable: boolean;
+  // Which service draws the avatar for this visitor (admin setting). Absent on older servers = HeyGen.
+  avatarProvider?: 'heygen' | 'spatius';
+  spatiusAvatarId?: string | null;
+  // If Spatius can't start, quietly use HeyGen instead of voice-only.
+  fallbackToHeygen?: boolean;
   ticket: string | null;
   unlimited?: boolean;   // true when the signed-in user is staff (or on an allow-listed address): no limits apply
 }

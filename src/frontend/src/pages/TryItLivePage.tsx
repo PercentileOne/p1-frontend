@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
+import { useSpatiusAvatarSession } from '../hooks/useSpatiusAvatarSession';
 import { speak as speakTts, unlockTTSAudio } from '../api/ttsApi';
 import { setInterviewTicket } from '../api/entitlementsApi';
 import { VoiceInput } from '../components/VoiceInput';
@@ -83,6 +84,12 @@ export default function TryItLivePage() {
   const cancelSpeechRef = useRef<(() => void) | null>(null);
   const busyRef = useRef(false);
 
+  // Which service is drawing THIS visitor's avatar (decided by the server from the admin "Avatar provider" setting; see begin()). A ref
+  // mirrors the state so speakLine (a memoised callback) always sees the current value.
+  const [provider, setProvider] = useState<'heygen' | 'spatius'>('heygen');
+  const providerRef = useRef<'heygen' | 'spatius'>('heygen');
+  const spatiusStageRef = useRef<HTMLDivElement>(null);
+  const spatius = useSpatiusAvatarSession(spatiusStageRef);
   const hr = useLiveAvatarSession('hr');
   const technical = useLiveAvatarSession('technical');
   const avatar = start?.interviewer === 'technical' ? technical : hr;
@@ -132,7 +139,7 @@ export default function TryItLivePage() {
   useEffect(() => { if (isMobile) logEvent('try_mobile_visit', { metadata: { w: window.innerWidth } }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (phase === 'starting') logEvent('try_started', { metadata: { topic: topic.trim().slice(0, 60), mobile: isMobile } });
-    else if (phase === 'asking' && index === 0) logEvent('try_first_question', { metadata: { avatar: useAvatar, mobile: isMobile } });
+    else if (phase === 'asking' && index === 0) logEvent('try_first_question', { metadata: { avatar: useAvatar, provider: useAvatar ? providerRef.current : 'none', mobile: isMobile } });
     else if (phase === 'results') logEvent('try_completed', { metadata: { score: feedback?.overall ?? null, mobile: isMobile } });
     else if (phase === 'blocked') logEvent('try_blocked', { metadata: { reason: blockReason, mobile: isMobile } });
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -159,7 +166,7 @@ export default function TryItLivePage() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Never leave a billable avatar connection or a voice running when the page is left.
-  useEffect(() => () => { cancelSpeechRef.current?.(); void hr.disconnect(); void technical.disconnect(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => { cancelSpeechRef.current?.(); void hr.disconnect(); void technical.disconnect(); void spatius.disconnect(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // "Preparing your interview…" can genuinely take a while (some topics route to a slower model) — a plain static line looked stuck
   // (Francis, 2026-09-22). The progress bar below is always animated; this just adds an honest reassurance line once it's taken a
@@ -179,11 +186,11 @@ export default function TryItLivePage() {
   const speakLine = useCallback(async (text: string, s: TryOutStart, viaAvatar: boolean) => {
     const seat = s.interviewer === 'technical' ? technical : hr;
     if (viaAvatar) {
-      try { await withCeiling(seat.speak(text, s.interviewer), text); return; }
+      try { await withCeiling(providerRef.current === 'spatius' ? spatius.speak(text, s.interviewer) : seat.speak(text, s.interviewer), text); return; }
       catch { setUseAvatar(false); setAvatarState('off'); /* fall through to the voice-only path */ }
     }
     await withCeiling(new Promise<void>(resolve => { cancelSpeechRef.current = speakTts(text, s.interviewer, resolve); }), text);
-  }, [hr, technical]);
+  }, [hr, technical, spatius]);
 
   // The Guardian Angel coach: always the plain narrator voice ('hr'), never the avatar — same as the full interview.
   const speakAsCoach = useCallback((text: string) => withCeiling(new Promise<void>(resolve => { cancelSpeechRef.current = speakTts(text, 'hr', resolve); }), text), []);
@@ -228,8 +235,17 @@ export default function TryItLivePage() {
       setInterviewTicket(s.ticket);
       setAvatarState('connecting');
       const connectStarted = performance.now();
-      try { await (s.interviewer === 'technical' ? technical : hr).connect(); live = true; setAvatarState('live'); }
-      catch { setAvatarState('off'); }
+      providerRef.current = 'heygen'; setProvider('heygen');
+      // Spatius first when the server chose it for this visitor. If it can't start (token refused, browser can't render, limit hit) and the
+      // admin has fallback on, quietly carry on with HeyGen — the visitor never sees an error. Logged so the Activity Log shows how often.
+      if (s.avatarProvider === 'spatius' && s.spatiusAvatarId && s.ticket) {
+        try { await spatius.connect(s.spatiusAvatarId, s.ticket); live = true; providerRef.current = 'spatius'; setProvider('spatius'); setAvatarState('live'); }
+        catch (e) { logEvent('try_avatar_fallback', { metadata: { from: 'spatius', reason: String(e instanceof Error ? e.message : e).slice(0, 80), willFallBack: s.fallbackToHeygen !== false, mobile: isMobile } }); }
+      }
+      if (!live && (s.avatarProvider !== 'spatius' || s.fallbackToHeygen !== false)) {
+        try { await (s.interviewer === 'technical' ? technical : hr).connect(); live = true; setAvatarState('live'); }
+        catch { setAvatarState('off'); }
+      } else if (!live) setAvatarState('off');
       connectMs = performance.now() - connectStarted;
     }
     setUseAvatar(live);
@@ -284,7 +300,7 @@ export default function TryItLivePage() {
     if (!isLast) { setIndex(index + 1); busyRef.current = false; void ask(index + 1, start, useAvatar); return; }
 
     // Done: stop the (billed) avatar connection straight away.
-    void avatar.disconnect(); setAvatarState('off');
+    void avatar.disconnect(); void spatius.disconnect(); setAvatarState('off');
     setPhase('scoring');
     if (!scoring) { setMessage("You didn't answer any of the questions, so there's nothing for us to score. Have another go whenever you're ready — even a short answer is enough."); setBlockReason('noAnswers'); setPhase('blocked'); busyRef.current = false; return; }
     const r = await scoring;
@@ -295,7 +311,7 @@ export default function TryItLivePage() {
 
   function restart() {
     cancelSpeechRef.current?.(); busyRef.current = false;
-    void hr.disconnect(); void technical.disconnect();
+    void hr.disconnect(); void technical.disconnect(); void spatius.disconnect();
     setStart(null); setAnswers([]); setSkipped(0); setFeedback(null); setDraft(''); setCoaching(null); setSkipTransition(false); setIndex(0); setAvatarState('off'); setUseAvatar(false); setShareOpen(false); setPhase('topic');
   }
 
@@ -354,8 +370,12 @@ export default function TryItLivePage() {
             ? { position: 'relative', borderRadius: 18, overflow: 'hidden', background: '#05080f', border: '1px solid var(--border, rgba(255,255,255,0.1))', aspectRatio: '16 / 9', marginBottom: 14 }
             : { position: 'absolute', inset: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }
         }>
-          <video ref={hr.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: useAvatar && avatar === hr ? 1 : 0 }} />
-          <video ref={technical.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: useAvatar && avatar === technical ? 1 : 0 }} />
+          <video ref={hr.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: useAvatar && provider === 'heygen' && avatar === hr ? 1 : 0 }} />
+          <video ref={technical.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: useAvatar && provider === 'heygen' && avatar === technical ? 1 : 0 }} />
+          {/* Spatius draws into this box (transparent canvas, so the soft backdrop shows through). Always mounted, like the videos above. */}
+          <div style={{ position: 'absolute', inset: 0, opacity: useAvatar && provider === 'spatius' ? 1 : 0, background: 'radial-gradient(ellipse at 15% 25%, rgba(255,255,255,0.75) 0, transparent 38%), radial-gradient(ellipse at 85% 30%, rgba(255,255,255,0.45) 0, transparent 30%), linear-gradient(180deg, #dfe4ec 0%, #c3cad6 60%, #98a2b3 100%)' }}>
+            <div ref={spatiusStageRef} style={{ position: 'absolute', inset: 0 }} />
+          </div>
           {!useAvatar && start && (
             <>
               {/* Voice-only interview (all phones, and desktop when no live avatar is available): the interviewer's photo, with a soft green

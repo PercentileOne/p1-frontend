@@ -62,6 +62,41 @@ public static class Endpoint
             return Results.Ok(setting);
         }).RequireAuthorization(Permissions.ViewSystemSettings);
 
+        // Avatar provider (Francis, 2026-09-29): which service draws the interviewer avatars. HeyGen LiveAvatar is the proven default (and the
+        // automatic backup); Spatius is ~1/10 the cost. "spatiusPercent" lets a share of public /try visitors get Spatius while the rest stay on
+        // HeyGen (an honest A/B — the funnel already measures completion). Missing doc = HeyGen, so nothing changes until this is switched on.
+        app.MapGet("/api/admin/settings/avatar-provider", async (CosmosService cosmos, IConfiguration config) =>
+        {
+            var setting = await GetAvatarProviderOrDefaultAsync(cosmos);
+            return Results.Ok(new { setting, spatiusConfigured = Explain.Api.Features.Spatius.SpatiusClient.IsConfigured(config) });
+        }).RequireAuthorization(Permissions.ViewSystemSettings);
+
+        app.MapPost("/api/admin/settings/avatar-provider", async (UpdateAvatarProviderRequest req, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var provider = (req.Provider ?? "").Trim().ToLowerInvariant();
+            if (provider is not ("heygen" or "spatius")) return Results.BadRequest(new { error = "provider must be 'heygen' or 'spatius'." });
+            static string? CleanId(string? v)
+            {
+                var t = v?.Trim();
+                return string.IsNullOrEmpty(t) ? null : t;
+            }
+            var ids = new[] { CleanId(req.SpatiusAvatarHr), CleanId(req.SpatiusAvatarTechnical), CleanId(req.SpatiusAvatarMichelle) };
+            // Avatar IDs are opaque identifiers (UUIDs today) — accept only a safe character set so nothing odd is ever stored or echoed back.
+            if (ids.Any(i => i is not null && (i.Length > 64 || !i.All(c => char.IsLetterOrDigit(c) || c == '-'))))
+                return Results.BadRequest(new { error = "Avatar IDs may only contain letters, numbers and hyphens." });
+
+            var setting = new AvatarProviderSetting(
+                id: "avatarProvider", pk: "avatarProvider",
+                provider: provider,
+                spatiusPercent: Math.Clamp(req.SpatiusPercent, 0, 100),
+                fallbackToHeygen: req.FallbackToHeygen,
+                spatiusAvatarHr: ids[0], spatiusAvatarTechnical: ids[1], spatiusAvatarMichelle: ids[2],
+                updatedAt: DateTimeOffset.UtcNow,
+                updatedBy: ctx.User.FindFirst("sub")?.Value ?? "unknown");
+            await cosmos.GetContainer("platformSettings").UpsertItemAsync(setting, new PartitionKey("avatarProvider"));
+            return Results.Ok(setting);
+        }).RequireAuthorization(Permissions.ViewSystemSettings);
+
         // Question Packs daily-caps switch (Francis, 2026-09-22: "please leave it uncapped for now, or add a switch
         // in the admin portal for me to switch it on and off") — unlike LiveAvatar's default-ON, a missing document
         // here means UNCAPPED, deliberately: the whole point of asking for this was to stop being capped starting
@@ -223,7 +258,37 @@ public static class Endpoint
             return new LiveAvatarSetting("liveAvatar", "liveAvatar", true, DateTimeOffset.MinValue, "");
         }
     }
+
+    /// <summary>Missing doc = HeyGen (the proven default), 100% share, fallback on — so an unset switch changes nothing.</summary>
+    public static async Task<AvatarProviderSetting> GetAvatarProviderOrDefaultAsync(CosmosService cosmos)
+    {
+        try
+        {
+            var response = await cosmos.GetContainer("platformSettings").ReadItemAsync<AvatarProviderSetting>("avatarProvider", new PartitionKey("avatarProvider"));
+            return response.Resource;
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            return new AvatarProviderSetting("avatarProvider", "avatarProvider", "heygen", 100, true, null, null, null, DateTimeOffset.MinValue, "");
+        }
+    }
 }
+
+public record UpdateAvatarProviderRequest(
+    string? Provider, int SpatiusPercent, bool FallbackToHeygen,
+    string? SpatiusAvatarHr, string? SpatiusAvatarTechnical, string? SpatiusAvatarMichelle);
+
+public record AvatarProviderSetting(
+    string id,
+    string pk,
+    string provider,            // "heygen" | "spatius"
+    int spatiusPercent,         // share of public /try visitors given Spatius when provider = "spatius"
+    bool fallbackToHeygen,      // if Spatius can't start for a visitor, quietly use HeyGen instead of voice-only
+    string? spatiusAvatarHr,
+    string? spatiusAvatarTechnical,
+    string? spatiusAvatarMichelle,
+    DateTimeOffset updatedAt,
+    string updatedBy);
 
 public record UpdateRequest(bool AutoGenerateEnabled);
 

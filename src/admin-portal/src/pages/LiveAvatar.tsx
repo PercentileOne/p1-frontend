@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Loader2, Radio, RefreshCw } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { liveAvatarSettingsApi, type LiveAvatarSetting, type ApiError } from '../api/liveAvatarSettingsApi'
+import { AvatarProviderCard } from '../components/AvatarProviderCard'
 
 export default function LiveAvatar() {
   const { token } = useAuth()
@@ -96,6 +97,8 @@ export default function LiveAvatar() {
           )}
         </div>
       ) : null}
+
+      <AvatarProviderCard />
     </div>
   )
 }
