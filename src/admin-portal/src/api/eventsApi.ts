@@ -88,7 +88,7 @@ export interface FunnelResponse {
   steps: { key: string; label: string; sessions: number }[];
   devices: { device: string; visits: number; real: number; tried: number }[];
   sources: { source: string; visits: number; real: number }[];
-  countries: { country: string; visits: number; real: number; tried: number }[];
+  countries: { country: string; visits: number; looked: number; real: number; tried: number }[];
   topClicks: { type: string; label: string; area: string; href: string; visitors: number }[];
   sections: { section: string; visitors: number }[];
   medianSecondsOnPage: number | null;

@@ -232,7 +232,9 @@
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'hidden') {
       if (shownAt) { visibleMs += Date.now() - shownAt; shownAt = 0; }
-      if (human) send('page_leave', decorate({ sec: Math.round(visibleMs / 1000), max: maxPct }), true);
+      // Also reported for visitors who never clicked/scrolled but stayed 5s+ (2026-09-29): people who read the top of the page out
+      // of curiosity and leave are real, and the admin funnel shows them as "looked around" instead of lumping them in with crawlers.
+      if (human || visibleMs >= 5000) send('page_leave', decorate({ sec: Math.round(visibleMs / 1000), max: maxPct }), true);
     } else {
       shownAt = Date.now();
     }

@@ -134,13 +134,13 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
             <div>
               <div style={h3}>Where visitors are (country)</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead><tr><th style={th}>Country</th><th style={th}>Visits</th><th style={th}>Real</th><th style={th}>Tried it</th></tr></thead>
-                <tbody>{(data.countries ?? []).length === 0 && <tr><td style={td} colSpan={4}>No data yet</td></tr>}
+                <thead><tr><th style={th}>Country</th><th style={th}>Visits</th><th style={th}>Looked around</th><th style={th}>Real</th><th style={th}>Tried it</th></tr></thead>
+                <tbody>{(data.countries ?? []).length === 0 && <tr><td style={td} colSpan={5}>No data yet</td></tr>}
                   {(data.countries ?? []).map(c => (
-                    <tr key={c.country}><td style={{ ...td, color: 'var(--text)' }}>{c.country}</td><td style={td}>{c.visits}</td><td style={td}>{c.real}</td><td style={td}>{c.tried}</td></tr>
+                    <tr key={c.country}><td style={{ ...td, color: 'var(--text)' }}>{c.country}</td><td style={td}>{c.visits}</td><td style={td}>{c.looked}</td><td style={td}>{c.real}</td><td style={td}>{c.tried}</td></tr>
                   ))}</tbody>
               </table>
-              <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}>Many visits but few real ones usually means crawlers. Add your own address under "ignored addresses" so your visits don't count.</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}>"Looked around" = stayed 5+ seconds without clicking (curious browsers; tracked from 2026-09-29, earlier days show 0). Many visits but neither looked-around nor real ones usually means crawlers. Add your own address under "ignored addresses" so your visits don't count.</div>
             </div>
 
             <div>

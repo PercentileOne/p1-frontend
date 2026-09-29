@@ -271,6 +271,8 @@ public static class Endpoint
                 return new
                 {
                     Human = evs.Any(e => e.eventType == "interaction"),
+                    // Stayed on the page 5s+ (page_leave carries visible seconds) — see track.js; counted separately from Human.
+                    Dwelled = evs.Any(e => e.eventType == "page_leave" && double.TryParse(Meta(e, "sec"), out var sec) && sec >= 5),
                     Device = evs.Select(e => Meta(e, "dev")).FirstOrDefault(d => !string.IsNullOrEmpty(d)) ?? "unknown",
                     Src = evs.Select(e => Meta(e, "src")).FirstOrDefault(s => !string.IsNullOrEmpty(s)) ?? "direct",
                     Country = evs.Select(e => e.country).FirstOrDefault(c => !string.IsNullOrEmpty(c)) ?? "Unknown",
@@ -289,6 +291,7 @@ public static class Endpoint
         var steps = new[]
         {
             Step("visits", "Visits (everything that loaded a page)", sessions.Count),
+            Step("looked", "Looked around (stayed 5+ seconds but didn't click, scroll or move a mouse)", sessions.Count(s => s.Dwelled && !s.Human)),
             Step("human", "Real visitors (clicked, tapped, scrolled or moved a mouse)", human.Count),
             Step("pricing", "Reached the pricing section", human.Count(s => s.SawPricing)),
             Step("tried", "Tried it live (typed a role or clicked Try it live)", human.Count(s => s.Tried)),
@@ -310,8 +313,8 @@ public static class Endpoint
         // Where visitors are (2026-09-29): GA showed lots of US "users" that were really crawlers — here "real" is the same
         // interaction test as the rest of the funnel, so bot-heavy countries show up as many visits, few real.
         var countries = sessions.GroupBy(s => s.Country)
-            .Select(g => new { country = g.Key, visits = g.Count(), real = g.Count(s => s.Human), tried = g.Count(s => s.Human && s.Tried) })
-            .OrderByDescending(x => x.real).ThenByDescending(x => x.visits).Take(12);
+            .Select(g => new { country = g.Key, visits = g.Count(), looked = g.Count(s => s.Dwelled && !s.Human), real = g.Count(s => s.Human), tried = g.Count(s => s.Human && s.Tried) })
+            .OrderByDescending(x => x.real + x.looked).ThenByDescending(x => x.visits).Take(12);
 
         // Clicks: how many DIFFERENT real visitors clicked each thing (not raw click counts, so one person hammering a button counts once).
         var topClicks = human
