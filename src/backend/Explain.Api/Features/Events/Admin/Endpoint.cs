@@ -65,7 +65,7 @@ public static class Endpoint
         // people vs crawlers, how far they got, what they clicked, where they came from, phone vs desktop. "Real" = the visit
         // fired an `interaction` event (track.js only sends that after a trusted click/tap/key/scroll/mouse movement; crawlers
         // that just load the page never do). The candidate app's /try events are folded in so the phone "desktop only" wall shows up.
-        app.MapGet("/api/admin/events/funnel", async (CosmosService cosmos, Explain.Api.Infrastructure.Geo.IpOwnerService owners, CancellationToken ct, int days = 7) =>
+        app.MapGet("/api/admin/events/funnel", async (CosmosService cosmos, Explain.Api.Infrastructure.Geo.IpOwnerService owners, [Microsoft.AspNetCore.Mvc.FromServices] AnalyticsIgnoreList ignoreList, CancellationToken ct, int days = 7) =>
         {
             days = Math.Clamp(days, 1, 10);
             var container = cosmos.GetContainer("systemEvents");
@@ -88,7 +88,7 @@ public static class Endpoint
 
             // The owner's own addresses (Francis, 2026-09-26: "exclude all previous visits by me") — any visit that came from one of them is
             // left out, old and new alike, because this is applied when the numbers are calculated, not when events are stored.
-            var ignored = await ReadIgnoredIpsAsync(cosmos);
+            var ignored = await ignoreList.GetAsync();
             var excludedVisits = 0;
             if (ignored.Count > 0)
             {
@@ -106,15 +106,15 @@ public static class Endpoint
         .RequireAuthorization(Permissions.ViewAdminPortal);
 
         // Addresses whose visits the funnel leaves out. GET also returns the caller's own address so the screen can offer "add my current address".
-        app.MapGet("/api/admin/events/ignored-ips", async (HttpContext ctx, CosmosService cosmos) =>
+        app.MapGet("/api/admin/events/ignored-ips", async (HttpContext ctx, [Microsoft.AspNetCore.Mvc.FromServices] AnalyticsIgnoreList ignoreList) =>
         {
-            var ips = await ReadIgnoredIpsAsync(cosmos);
+            var ips = await ignoreList.GetAsync();
             return Results.Ok(new { ips = ips.OrderBy(i => i).ToList(), yourIp = ctx.Connection.RemoteIpAddress?.ToString() });
         })
         .WithName("GetIgnoredIps").WithTags("Events")
         .RequireAuthorization(Permissions.ViewAdminPortal);
 
-        app.MapPost("/api/admin/events/ignored-ips", async (IgnoredIpsRequest req, HttpContext ctx, CosmosService cosmos) =>
+        app.MapPost("/api/admin/events/ignored-ips", async (IgnoredIpsRequest req, HttpContext ctx, CosmosService cosmos, [Microsoft.AspNetCore.Mvc.FromServices] AnalyticsIgnoreList ignoreList) =>
         {
             var clean = new List<string>();
             foreach (var raw in req.Ips ?? [])
@@ -127,8 +127,9 @@ public static class Endpoint
             }
             if (clean.Count > 20) return Results.BadRequest(new { error = "At most 20 addresses." });
 
-            var setting = new AnalyticsIgnoreSetting("analyticsIgnore", "analyticsIgnore", clean, DateTimeOffset.UtcNow, ctx.User.FindFirst("sub")?.Value ?? "unknown");
+            var setting = new AnalyticsIgnoreList.AnalyticsIgnoreSetting("analyticsIgnore", "analyticsIgnore", clean, DateTimeOffset.UtcNow, ctx.User.FindFirst("sub")?.Value ?? "unknown");
             await cosmos.GetContainer("platformSettings").UpsertItemAsync(setting, new PartitionKey("analyticsIgnore"));
+            ignoreList.Invalidate();   // the event intake sees the new list straight away, not after the cache expires
             return Results.Ok(new { ips = clean.OrderBy(i => i).ToList(), yourIp = ctx.Connection.RemoteIpAddress?.ToString() });
         })
         .WithName("SetIgnoredIps").WithTags("Events")
@@ -225,18 +226,6 @@ public static class Endpoint
     public record DeleteEventsRequest(List<EventRef>? Items, EventFilter? Filter, int? ExpectedCount);
 
     public record IgnoredIpsRequest(List<string>? Ips);
-    public record AnalyticsIgnoreSetting(string id, string pk, List<string> ips, DateTimeOffset updatedAt, string updatedBy);
-
-    private static async Task<HashSet<string>> ReadIgnoredIpsAsync(CosmosService cosmos)
-    {
-        try
-        {
-            var resp = await cosmos.GetContainer("platformSettings").ReadItemAsync<AnalyticsIgnoreSetting>("analyticsIgnore", new PartitionKey("analyticsIgnore"));
-            return new HashSet<string>(resp.Resource.ips ?? []);
-        }
-        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { return []; }
-    }
-
     // Drops every visit (session) that has even one event from an ignored address.
     public static List<FunnelEvent> DropSessionsFrom(List<FunnelEvent> events, HashSet<string> ips)
     {

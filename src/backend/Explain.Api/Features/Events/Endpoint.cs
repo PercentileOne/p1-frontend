@@ -31,7 +31,7 @@ public static class Endpoint
 {
     public static void Map(WebApplication app)
     {
-        app.MapPost("/api/events", async (EventRequest req, HttpContext ctx, CosmosService cosmos, IpGeoLookupService geo, ILogger<Program> logger) =>
+        app.MapPost("/api/events", async (EventRequest req, HttpContext ctx, CosmosService cosmos, IpGeoLookupService geo, [Microsoft.AspNetCore.Mvc.FromServices] AnalyticsIgnoreList ignoreList, ILogger<Program> logger) =>
         {
             if (string.IsNullOrWhiteSpace(req.SessionId) || string.IsNullOrWhiteSpace(req.EventType))
                 return Results.BadRequest(new { error = "sessionId and eventType are required." });
@@ -54,6 +54,8 @@ public static class Endpoint
                 // This endpoint is anonymous and public, and the marketing site now sends several events per visit — cap what
                 // one address can write, and how big one event can be, so it can never be used to flood the log (and the bill).
                 if (!AllowedFromIp(ip)) return Results.Ok(new { logged = false });
+                // The owner's own addresses (admin funnel page → Ignored addresses) are never written to the log at all — checked before the geo lookup so they cost nothing.
+                if (await ignoreList.IsIgnoredAsync(ip)) return Results.Ok(new { logged = false });
                 var geoResult = await geo.ResolveAsync(ip, ctx.RequestAborted);
 
                 var doc = new SystemEventDoc(

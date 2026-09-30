@@ -53,6 +53,7 @@ builder.Services.AddScoped<Explain.Api.Features.Entitlements.EntitlementService>
 builder.Services.AddScoped<Explain.Api.Features.Subscriptions.CandidateSubscriptionService>();
 builder.Services.AddScoped<Explain.Api.Features.Users.DeleteAccount.AccountDeletionService>();
 builder.Services.AddSingleton<Explain.Api.Features.Events.SecurityEventLogger>();
+builder.Services.AddSingleton<Explain.Api.Features.Events.AnalyticsIgnoreList>();   // owner's own IPs: skipped at event intake + excluded from the funnel
 // Stripe.net's service classes (SessionService, EventUtility, etc.) read this static property
 // by default rather than needing a DI-injected client — set once at startup, same secret-never-
 // hardcoded pattern as every other third-party key in this file (see LiveAvatar:ApiKey). Only
