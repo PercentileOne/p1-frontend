@@ -118,6 +118,11 @@ function wantsAutoStart(): boolean {
 // The demo's default level: well-rounded and welcoming for a first-time visitor (the full interview's own default is Pro).
 const DEFAULT_DIFFICULTY = 'Standard';
 
+// How many questions the quick (?quick=1) demo asks, and how to say a count in words — all the on-screen and spoken wording is derived from the
+// real number, so changing QUICK_QUESTION_COUNT can never leave a stale "one question" or "three questions" behind.
+const QUICK_QUESTION_COUNT = 2;
+const countWord = (n: number): string => (n === 1 ? 'one' : n === 2 ? 'two' : n === 3 ? 'three' : String(n));
+
 export default function TryItLivePage() {
   const [phase, setPhase] = useState<Phase>(() => (wantsAutoStart() ? 'starting' : 'topic'));
   // The marketing site's hero passes ?topic= so the visitor's role is already filled in.
@@ -155,8 +160,9 @@ export default function TryItLivePage() {
   // Why the flow is showing the 'blocked' card — drives both the headline and which button we offer (Francis, 2026-09-22:
   // skipping every question isn't an error, so it needs its own honest headline, not "Something went wrong").
   const [blockReason, setBlockReason] = useState<'capped' | 'noAnswers' | 'error'>('error');
-  // "30-second taste" (Francis, 2026-09-30): ?quick=1 runs ONE question instead of three — for LinkedIn visitors who are only curious about the
-  // founder and won't give a few minutes to an unknown product. Same flow, same score screen, just shorter.
+  // The "quick taste" (Francis, 2026-09-30): ?quick=1 runs QUICK_QUESTION_COUNT questions instead of three — for LinkedIn visitors who are only curious
+  // about the founder and won't give a few minutes to an unknown product. Same flow, same score screen, just shorter. (Started as one question; Francis
+  // found one answer — with the greeting — too thin, so it is two.)
   const [quick] = useState(() => { try { return new URLSearchParams(window.location.search).get('quick') === '1'; } catch { return false; } });
   const [useAvatar, setUseAvatar] = useState(false);
   const [avatarState, setAvatarState] = useState<'off' | 'connecting' | 'live'>('off');
@@ -343,7 +349,7 @@ export default function TryItLivePage() {
     setPhase('starting'); setMessage('');
     const r = await startTryOut(subject, { language, difficulty, country });
     if (!r.ok) { setMessage(r.message); setBlockReason(r.capped ? 'capped' : 'error'); setPhase('blocked'); return; }
-    const s = quick ? { ...r.data, questions: r.data.questions.slice(0, 1) } : r.data;
+    const s = quick ? { ...r.data, questions: r.data.questions.slice(0, QUICK_QUESTION_COUNT) } : r.data;
     setFirstSpeechStarted(false);
     setStart(s); setIndex(0); setAnswers([]); setSkipped(0); setFeedback(null); setShareOpen(false);
     // Must begin from this click so the browser lets audio play. Connecting can fail or be slow — the interview goes ahead either way.
@@ -453,8 +459,8 @@ export default function TryItLivePage() {
     }
     // The Guardian Angel carries the conversation forward, not the interviewer — Wayne/Amina stay silent until the next question.
     const transition = skip
-      ? (isLast ? `No problem. That's ${start.questions.length === 1 ? 'your question' : 'your three questions'} — let me put your result together.` : "No problem — let's continue.")
-      : (isLast ? `Thank you. That's ${start.questions.length === 1 ? 'your question' : 'your three questions'} — let me put your result together.` : "Let's continue.");
+      ? (isLast ? `No problem. That's ${start.questions.length === 1 ? 'your question' : `your ${countWord(start.questions.length)} questions`} — let me put your result together.` : "No problem — let's continue.")
+      : (isLast ? `Thank you. That's ${start.questions.length === 1 ? 'your question' : `your ${countWord(start.questions.length)} questions`} — let me put your result together.` : "Let's continue.");
     await speakAsCoach(transition);
 
     if (!isLast) { setIndex(index + 1); busyRef.current = false; void ask(index + 1, start, useAvatar); return; }
@@ -574,12 +580,12 @@ export default function TryItLivePage() {
         {phase === 'topic' && (
           <div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: GREEN, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 20, padding: '5px 12px' }}>Free · no account · about {quick ? '30 seconds' : '3 minutes'}</div>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: GREEN, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 20, padding: '5px 12px' }}>Free · no account · about {quick ? 'a minute' : '3 minutes'}</div>
               <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#7DB3FF', background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.32)', borderRadius: 20, padding: '5px 12px' }}>🌍 Interview in {LANGUAGES.length} languages</div>
             </div>
             <h1 style={{ fontSize: 'clamp(28px,6vw,42px)', lineHeight: 1.1, fontWeight: 900, letterSpacing: '-0.03em', margin: '0 0 12px' }}>Try it live.<br /><span style={{ color: GREEN }}>Be interviewed for real.</span></h1>
             <p style={{ fontSize: 16, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', margin: '0 0 22px' }}>
-              Tell us the job you're going for. {quick ? 'A live AI interviewer asks you one question — about 30 seconds — and you get a scored result.' : 'A live AI interviewer asks you three questions, your Guardian Angel coach helps after each answer, and you get a scored result.'}
+              Tell us the job you're going for. {quick ? `A live AI interviewer asks you ${countWord(QUICK_QUESTION_COUNT)} questions — about a minute — and you get a scored result.` : 'A live AI interviewer asks you three questions, your Guardian Angel coach helps after each answer, and you get a scored result.'}
             </p>
             <div style={card}>
               <label style={labelStyle} htmlFor="tryRole">Which job role should we interview you on?</label>
@@ -660,7 +666,7 @@ export default function TryItLivePage() {
               style={{ display: 'block', width: '100%', maxWidth: 300, height: 'auto', margin: '0 auto 18px', borderRadius: 16, animation: 'tryChairGlow 2.6s ease-in-out infinite' }}
             />
             <div style={{ fontSize: 17, fontWeight: 700 }}>Preparing your interview…</div>
-            <div style={{ fontSize: 13.5, color: 'var(--text-3, #94a3b8)', marginTop: 8 }}>{avatarState === 'connecting' ? 'Your interviewer is taking their seat' : (quick ? 'Writing your question' : 'Writing three questions for your role')}</div>
+            <div style={{ fontSize: 13.5, color: 'var(--text-3, #94a3b8)', marginTop: 8 }}>{avatarState === 'connecting' ? 'Your interviewer is taking their seat' : (quick ? `Writing your ${countWord(QUICK_QUESTION_COUNT)} questions` : 'Writing three questions for your role')}</div>
             <div style={{ width: '100%', maxWidth: 220, height: 6, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', margin: '16px auto 0', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 0, bottom: 0, width: '40%', borderRadius: 99, background: `linear-gradient(90deg,${GREEN},#047857)`, animation: 'tryBarSlide 1.3s ease-in-out infinite' }} />
             </div>
@@ -757,9 +763,9 @@ export default function TryItLivePage() {
               </div>
               {/* Context for the number (Francis, 2026-09-30): a single short answer scores low on depth by nature, and a visitor could read that as
                   "the product says I'm bad". Say plainly what the score is, and what a low depth means. */}
-              {start.questions.length === 1 && (
+              {start.questions.length < 3 && (
                 <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', textAlign: 'center', marginTop: 16, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)' }}>
-                  <strong style={{ color: GREEN }}>A quick read.</strong> This score comes from a single answer. The full interview is 5–20 questions and scores the same five areas across many answers — a much fuller and fairer picture.
+                  <strong style={{ color: GREEN }}>A quick read.</strong> This score comes from {start.questions.length === 1 ? 'a single answer' : `just ${countWord(start.questions.length)} answers`}. The full interview is 5–20 questions and scores the same five areas across many answers — a much fuller and fairer picture.
                 </div>
               )}
               {feedback.dimensions.depth <= 2 && (
@@ -829,7 +835,7 @@ export default function TryItLivePage() {
             </div>
 
             <div style={{ ...card, marginTop: 14, textAlign: 'center', border: '1px solid rgba(52,211,153,0.35)', background: 'linear-gradient(135deg,rgba(52,211,153,0.10),rgba(4,120,87,0.06))' }}>
-              <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 6 }}>That was {start.questions.length === 1 ? 'one question' : '3 questions'}. The full interview is 5–20 questions.</div>
+              <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 6 }}>That was {countWord(start.questions.length)} question{start.questions.length === 1 ? '' : 's'}. The full interview is 5–20 questions.</div>
               <div style={{ fontSize: 14.5, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', marginBottom: 16 }}>
                 Create a free account and your first full interview is on us — with both interviewers, your CV and target role, a full scored report, and a shareable profile recruiters can watch.
               </div>
