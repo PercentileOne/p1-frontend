@@ -97,6 +97,7 @@ export default function TryItLivePage() {
   const [scoreEmail, setScoreEmail] = useState('');
   const [tipsOptIn, setTipsOptIn] = useState(false);
   const [emailState, setEmailState] = useState<'idle' | 'sending' | 'sent'>('idle');
+  const [emailOpen, setEmailOpen] = useState(false);
   const [emailError, setEmailError] = useState('');
   async function sendScoreEmail() {
     if (!feedback || !start || emailState === 'sending') return;
@@ -374,7 +375,7 @@ export default function TryItLivePage() {
   function restart() {
     cancelSpeechRef.current?.(); busyRef.current = false;
     void hr.disconnect(); void technical.disconnect(); void spatius.disconnect();
-    setStart(null); setAnswers([]); setSkipped(0); setFeedback(null); setDraft(''); setCoaching(null); setSkipTransition(false); setIndex(0); setAvatarState('off'); setUseAvatar(false); setShareOpen(false); setPhase('topic');
+    setStart(null); setAnswers([]); setSkipped(0); setFeedback(null); setDraft(''); setCoaching(null); setSkipTransition(false); setIndex(0); setAvatarState('off'); setUseAvatar(false); setShareOpen(false); setEmailOpen(false); setEmailState('idle'); setPhase('topic');
   }
 
   // ── Sharing ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -617,6 +618,30 @@ export default function TryItLivePage() {
               </div>
             </div>
 
+            {/* "Email me this score" — straight under the score, where people are looking (Francis, 2026-09-30: the box was further down and got missed).
+                A clear button first; the address field opens on click. Sends ONE email with their own score. The tips opt-in is separate and unticked. */}
+            <div style={{ ...card, marginTop: 12, textAlign: 'center' }}>
+              {emailState === 'sent' ? (
+                <div style={{ fontWeight: 700, color: GREEN }}>✓ Sent — check your inbox (and junk folder) for your score.</div>
+              ) : !emailOpen ? (
+                <button onClick={() => { setEmailOpen(true); logEvent('try_email_open', { metadata: { mobile: isMobile } }); }} style={{ ...primary, width: '100%' }}>📧 Email me this score</button>
+              ) : (
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 4 }}>Where should we send it?</div>
+                  <div style={{ fontSize: 12.5, color: 'var(--text-3, #94a3b8)', marginBottom: 10 }}>Your score and what to work on next — once. No account, no mailing list.</div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <input type="email" autoFocus value={scoreEmail} onChange={e => setScoreEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && void sendScoreEmail()}
+                      placeholder="you@example.com" autoComplete="email" aria-label="Your email address" style={{ ...inputStyle, flex: '1 1 220px', margin: 0 }} />
+                    <button onClick={() => void sendScoreEmail()} disabled={!scoreEmail.includes('@') || emailState === 'sending'} style={{ ...primary, opacity: !scoreEmail.includes('@') ? 0.5 : 1 }}>{emailState === 'sending' ? 'Sending…' : 'Send it'}</button>
+                  </div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--text-3, #94a3b8)', marginTop: 10, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={tipsOptIn} onChange={e => setTipsOptIn(e.target.checked)} /> Also send me occasional interview tips (optional)
+                  </label>
+                  {emailError && <div style={{ fontSize: 12.5, color: '#f87171', marginTop: 8 }}>{emailError}</div>}
+                </div>
+              )}
+            </div>
+
             {answers.map((a, i) => {
               const sc = feedback.questions[i]?.score ?? 0;
               return (
@@ -649,28 +674,6 @@ export default function TryItLivePage() {
                   <a style={ghost} href={`mailto:?subject=${enc('Try this AI mock interview')}&body=${enc(`${shareText}\n${SHARE_URL}`)}`}>Email</a>
                   <button style={ghost} onClick={() => void copyShare()}>{copied ? 'Copied ✓' : 'Copy text + link'}</button>
                 </div>
-              )}
-            </div>
-
-            {/* Not ready for an account? Leave an address and we email the score once. Deliberately low-key and above the big register card, so it
-                catches people who would otherwise leave with nothing. The tips opt-in is unticked: nothing marketing-like is sent without it. */}
-            <div style={{ ...card, marginTop: 14 }}>
-              {emailState === 'sent' ? (
-                <div style={{ textAlign: 'center', fontWeight: 700, color: GREEN }}>✓ Sent — check your inbox (and junk folder) for your score.</div>
-              ) : (
-                <>
-                  <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 4 }}>📧 Not ready for an account? Email me my score</div>
-                  <div style={{ fontSize: 13, color: 'var(--text-3, #94a3b8)', marginBottom: 10 }}>We'll send your score and what to work on next — once. No account, no list.</div>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    <input type="email" value={scoreEmail} onChange={e => setScoreEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && void sendScoreEmail()}
-                      placeholder="you@example.com" autoComplete="email" aria-label="Your email address" style={{ ...inputStyle, flex: '1 1 220px', margin: 0 }} />
-                    <button onClick={() => void sendScoreEmail()} disabled={!scoreEmail.includes('@') || emailState === 'sending'} style={{ ...primary, opacity: !scoreEmail.includes('@') ? 0.5 : 1 }}>{emailState === 'sending' ? 'Sending…' : 'Email me'}</button>
-                  </div>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--text-3, #94a3b8)', marginTop: 10, cursor: 'pointer' }}>
-                    <input type="checkbox" checked={tipsOptIn} onChange={e => setTipsOptIn(e.target.checked)} /> Also send me occasional interview tips (optional)
-                  </label>
-                  {emailError && <div style={{ fontSize: 12.5, color: '#f87171', marginTop: 8 }}>{emailError}</div>}
-                </>
               )}
             </div>
 
