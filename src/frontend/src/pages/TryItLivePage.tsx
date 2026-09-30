@@ -358,6 +358,19 @@ export default function TryItLivePage() {
     void ask(0, s, live);
   }
 
+  // Straight into the interview room from the marketing homepage (Francis, 2026-09-30): the hero form already collected the role and first name and
+  // sends ?go=1 with them, so there is nothing left to fill in. Desktop only — phones need their own tap to let the interviewer's sound play — and
+  // only when BOTH values are present, so a shared /try?topic= link still shows the form. Once per page load (the ref also covers React strict mode).
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (autoStartedRef.current) return;
+    autoStartedRef.current = true;
+    let go = false;
+    try { go = new URLSearchParams(window.location.search).get('go') === '1'; } catch { /* ignore */ }
+    if (go && !isMobile && topic.trim().length >= 2 && name.trim()) void begin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Answer (or skip) the current question: clicking Submit answer means "I'm done" — the Guardian Angel coach takes over straight
   // away in a full-screen popup (Francis, 2026-09-22: the old flow went quiet here, waiting on a "Next question" click, which felt
   // like it was stuck), speaks its reaction, then speaks the transition itself — never Wayne/Amina — and the popup closes into the

@@ -314,11 +314,11 @@
       <h1>Practice interviewing with&nbsp;AI.<br><span class="g">Get interview coaching. <span class="nw">Get that job.</span></span></h1>
       <p class="lede">Practice with real-looking interviewers on any job, company or subject. Get an instant scored report — then share your best interview with the recruiters and employers who are hiring.</p>
 
-      <form class="try-box" id="tryForm" autocomplete="off">
+      <form class="try-box" id="tryForm" autocomplete="off" novalidate>
         <label for="topic">Which job role should we interview you on?</label>
         <div class="try-row">
-          <input id="topic" name="topic" maxlength="90" placeholder="e.g. Product Manager or Software Engineer" aria-label="Job role for your mini interview">
-          <input id="tname" name="name" maxlength="40" placeholder="Your first name" aria-label="Your first name" autocomplete="given-name" style="flex:.6">
+          <input id="topic" name="topic" maxlength="90" placeholder="e.g. Product Manager or Software Engineer" aria-label="Job role for your mini interview" required>
+          <input id="tname" name="name" maxlength="40" placeholder="Your first name" aria-label="Your first name" autocomplete="given-name" style="flex:.6" required>
           <button class="btn btn-green" type="submit">▶ Try it live</button>
         </div>
         <div class="chips" aria-label="Example job roles">
@@ -331,6 +331,7 @@
           <button type="button" class="chip">Accountant</button>
           <button type="button" class="chip">Project Manager</button>
         </div>
+        <p id="tryErr" role="alert" style="color:#fca5a5;font-size:13px;font-weight:600;margin:10px 0 0;min-height:0"></p>
         <p class="try-note">3 questions · about 3 minutes · free · no account needed</p>
       </form>
 
@@ -684,13 +685,17 @@
   document.getElementById('tryForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var v = input.value.trim();
-    var n = document.getElementById('tname').value.trim();
-    // The first name is collected here so the demo page arrives with both fields filled in (nothing left to type).
-    var qs = [];
-    if (v.length >= 2) qs.push('topic=' + encodeURIComponent(v));
-    if (n) qs.push('name=' + encodeURIComponent(n.slice(0, 40)));
-    window.location.href = TRY_URL + (qs.length ? '?' + qs.join('&') : '');
+    var nameEl = document.getElementById('tname');
+    var n = nameEl.value.trim();
+    var err = document.getElementById('tryErr');
+    // Both fields are required — the demo can't start without a role and a first name.
+    if (v.length < 2) { err.textContent = 'Please enter the job role you want to be interviewed for.'; input.focus(); return; }
+    if (n.length < 1) { err.textContent = 'Please tell us your first name so your interviewer can greet you.'; nameEl.focus(); return; }
+    err.textContent = '';
+    // go=1 takes them straight into the interview room (no second form) with these values.
+    window.location.href = TRY_URL + '?topic=' + encodeURIComponent(v) + '&name=' + encodeURIComponent(n.slice(0, 40)) + '&go=1';
   });
+  ['topic','tname'].forEach(function (id) { document.getElementById(id).addEventListener('input', function () { document.getElementById('tryErr').textContent = ''; }); });
   document.querySelectorAll('.chip').forEach(function (c) {
     c.addEventListener('click', function () { input.value = c.textContent; input.focus(); });
   });
