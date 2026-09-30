@@ -4,7 +4,7 @@ import { useSpatiusAvatarSession } from '../hooks/useSpatiusAvatarSession';
 import { speak as speakTts, unlockTTSAudio } from '../api/ttsApi';
 import { setInterviewTicket } from '../api/entitlementsApi';
 import { VoiceInput } from '../components/VoiceInput';
-import { startTryOut, scoreTryOut, coachTryOut, type TryOutStart, type TryOutFeedback, type TryOutResult } from '../api/tryOutApi';
+import { startTryOut, scoreTryOut, coachTryOut, emailTryOutScore, type TryOutStart, type TryOutFeedback, type TryOutResult } from '../api/tryOutApi';
 import { logEvent } from '../api/flowLogger';
 
 // "Try it live" (Francis, 2026-09-21) — the public, no-account taste of the product for visitors from the marketing site and LinkedIn:
@@ -87,9 +87,25 @@ export default function TryItLivePage() {
   // Why the flow is showing the 'blocked' card — drives both the headline and which button we offer (Francis, 2026-09-22:
   // skipping every question isn't an error, so it needs its own honest headline, not "Something went wrong").
   const [blockReason, setBlockReason] = useState<'capped' | 'noAnswers' | 'error'>('error');
+  // "30-second taste" (Francis, 2026-09-30): ?quick=1 runs ONE question instead of three — for LinkedIn visitors who are only curious about the
+  // founder and won't give a few minutes to an unknown product. Same flow, same score screen, just shorter.
+  const [quick] = useState(() => { try { return new URLSearchParams(window.location.search).get('quick') === '1'; } catch { return false; } });
   const [useAvatar, setUseAvatar] = useState(false);
   const [avatarState, setAvatarState] = useState<'off' | 'connecting' | 'live'>('off');
   const [shareOpen, setShareOpen] = useState(false);
+  // "Email me my score" box on the score screen — for visitors who aren't ready to make an account yet.
+  const [scoreEmail, setScoreEmail] = useState('');
+  const [tipsOptIn, setTipsOptIn] = useState(false);
+  const [emailState, setEmailState] = useState<'idle' | 'sending' | 'sent'>('idle');
+  const [emailError, setEmailError] = useState('');
+  async function sendScoreEmail() {
+    if (!feedback || !start || emailState === 'sending') return;
+    setEmailError(''); setEmailState('sending');
+    const dims = Object.entries(feedback.dimensions).sort((a, b) => b[1] - a[1]);
+    const r = await emailTryOutScore({ email: scoreEmail.trim(), name, subject: start.subject, score: feedback.overall, strongest: dims[0]?.[0] ?? null, weakest: dims[dims.length - 1]?.[0] ?? null, tipsOptIn });
+    if (r.ok) { setEmailState('sent'); logEvent('try_email_score', { metadata: { tipsOptIn, score: feedback.overall, mobile: isMobile } }); }
+    else { setEmailState('idle'); setEmailError(r.message); }
+  }
   const [copied, setCopied] = useState(false);
   const [slowHint, setSlowHint] = useState(false);
   const cancelSpeechRef = useRef<(() => void) | null>(null);
@@ -149,7 +165,7 @@ export default function TryItLivePage() {
   // later steps carry mobile:true so the funnel can show how phones get on compared with computers.
   useEffect(() => { if (isMobile) logEvent('try_mobile_visit', { metadata: { w: window.innerWidth } }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (phase === 'starting') logEvent('try_started', { metadata: { topic: topic.trim().slice(0, 60), mobile: isMobile } });
+    if (phase === 'starting') logEvent('try_started', { metadata: { topic: topic.trim().slice(0, 60), mobile: isMobile, quick } });
     else if (phase === 'asking' && index === 0) logEvent('try_first_question', { metadata: { avatar: useAvatar, provider: useAvatar ? providerRef.current : 'none', mobile: isMobile } });
     else if (phase === 'results') logEvent('try_completed', { metadata: { score: feedback?.overall ?? null, mobile: isMobile } });
     else if (phase === 'blocked') logEvent('try_blocked', { metadata: { reason: blockReason, mobile: isMobile } });
@@ -241,7 +257,7 @@ export default function TryItLivePage() {
     setPhase('starting'); setMessage('');
     const r = await startTryOut(subject);
     if (!r.ok) { setMessage(r.message); setBlockReason(r.capped ? 'capped' : 'error'); setPhase('blocked'); return; }
-    const s = r.data;
+    const s = quick ? { ...r.data, questions: r.data.questions.slice(0, 1) } : r.data;
     setStart(s); setIndex(0); setAnswers([]); setSkipped(0); setFeedback(null); setShareOpen(false);
     // Must begin from this click so the browser lets audio play. Connecting can fail or be slow — the interview goes ahead either way.
     let live = false;
@@ -339,8 +355,8 @@ export default function TryItLivePage() {
     }
     // The Guardian Angel carries the conversation forward, not the interviewer — Wayne/Amina stay silent until the next question.
     const transition = skip
-      ? (isLast ? "No problem. That's your three questions — let me put your result together." : "No problem — let's continue.")
-      : (isLast ? "Thank you. That's your three questions — let me put your result together." : "Let's continue.");
+      ? (isLast ? `No problem. That's ${start.questions.length === 1 ? 'your question' : 'your three questions'} — let me put your result together.` : "No problem — let's continue.")
+      : (isLast ? `Thank you. That's ${start.questions.length === 1 ? 'your question' : 'your three questions'} — let me put your result together.` : "Let's continue.");
     await speakAsCoach(transition);
 
     if (!isLast) { setIndex(index + 1); busyRef.current = false; void ask(index + 1, start, useAvatar); return; }
@@ -449,7 +465,7 @@ export default function TryItLivePage() {
             <div style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: GREEN, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 20, padding: '5px 12px', marginBottom: 14 }}>Free · no account · about 3 minutes</div>
             <h1 style={{ fontSize: 'clamp(28px,6vw,42px)', lineHeight: 1.1, fontWeight: 900, letterSpacing: '-0.03em', margin: '0 0 12px' }}>Try it live.<br /><span style={{ color: GREEN }}>Be interviewed for real.</span></h1>
             <p style={{ fontSize: 16, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', margin: '0 0 22px' }}>
-              Tell us the job you're going for. A live AI interviewer asks you three questions, your Guardian Angel coach helps after each answer, and you get a scored result.
+              Tell us the job you're going for. {quick ? 'A live AI interviewer asks you one question — about 30 seconds — and you get a scored result.' : 'A live AI interviewer asks you three questions, your Guardian Angel coach helps after each answer, and you get a scored result.'}
             </p>
             <div style={card}>
               <label style={labelStyle} htmlFor="tryRole">Which job role should we interview you on?</label>
@@ -504,7 +520,7 @@ export default function TryItLivePage() {
               style={{ display: 'block', width: '100%', maxWidth: 300, height: 'auto', margin: '0 auto 18px', borderRadius: 16, animation: 'tryChairGlow 2.6s ease-in-out infinite' }}
             />
             <div style={{ fontSize: 17, fontWeight: 700 }}>Preparing your interview…</div>
-            <div style={{ fontSize: 13.5, color: 'var(--text-3, #94a3b8)', marginTop: 8 }}>{avatarState === 'connecting' ? 'Your interviewer is taking their seat' : 'Writing three questions for your role'}</div>
+            <div style={{ fontSize: 13.5, color: 'var(--text-3, #94a3b8)', marginTop: 8 }}>{avatarState === 'connecting' ? 'Your interviewer is taking their seat' : (quick ? 'Writing your question' : 'Writing three questions for your role')}</div>
             <div style={{ width: '100%', maxWidth: 220, height: 6, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', margin: '16px auto 0', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 0, bottom: 0, width: '40%', borderRadius: 99, background: `linear-gradient(90deg,${GREEN},#047857)`, animation: 'tryBarSlide 1.3s ease-in-out infinite' }} />
             </div>
@@ -636,8 +652,30 @@ export default function TryItLivePage() {
               )}
             </div>
 
+            {/* Not ready for an account? Leave an address and we email the score once. Deliberately low-key and above the big register card, so it
+                catches people who would otherwise leave with nothing. The tips opt-in is unticked: nothing marketing-like is sent without it. */}
+            <div style={{ ...card, marginTop: 14 }}>
+              {emailState === 'sent' ? (
+                <div style={{ textAlign: 'center', fontWeight: 700, color: GREEN }}>✓ Sent — check your inbox (and junk folder) for your score.</div>
+              ) : (
+                <>
+                  <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 4 }}>📧 Not ready for an account? Email me my score</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-3, #94a3b8)', marginBottom: 10 }}>We'll send your score and what to work on next — once. No account, no list.</div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <input type="email" value={scoreEmail} onChange={e => setScoreEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && void sendScoreEmail()}
+                      placeholder="you@example.com" autoComplete="email" aria-label="Your email address" style={{ ...inputStyle, flex: '1 1 220px', margin: 0 }} />
+                    <button onClick={() => void sendScoreEmail()} disabled={!scoreEmail.includes('@') || emailState === 'sending'} style={{ ...primary, opacity: !scoreEmail.includes('@') ? 0.5 : 1 }}>{emailState === 'sending' ? 'Sending…' : 'Email me'}</button>
+                  </div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--text-3, #94a3b8)', marginTop: 10, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={tipsOptIn} onChange={e => setTipsOptIn(e.target.checked)} /> Also send me occasional interview tips (optional)
+                  </label>
+                  {emailError && <div style={{ fontSize: 12.5, color: '#f87171', marginTop: 8 }}>{emailError}</div>}
+                </>
+              )}
+            </div>
+
             <div style={{ ...card, marginTop: 14, textAlign: 'center', border: '1px solid rgba(52,211,153,0.35)', background: 'linear-gradient(135deg,rgba(52,211,153,0.10),rgba(4,120,87,0.06))' }}>
-              <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 6 }}>That was 3 questions. The full interview is 5–20 questions.</div>
+              <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 6 }}>That was {start.questions.length === 1 ? 'one question' : '3 questions'}. The full interview is 5–20 questions.</div>
               <div style={{ fontSize: 14.5, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', marginBottom: 16 }}>
                 Create a free account and your first full interview is on us — with both interviewers, your CV and target role, a full scored report, and a shareable profile recruiters can watch.
               </div>

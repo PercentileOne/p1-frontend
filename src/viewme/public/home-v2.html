@@ -298,6 +298,16 @@
 
 <!-- 1 · HERO ─────────────────────────────────────────────── -->
 <header class="hero" id="try">
+  <!-- LinkedIn welcome (Francis, 2026-09-30): people arrive from his profile and posts out of curiosity about him and won't give a stranger's product
+       a few minutes. Shown ONLY to visitors who came from LinkedIn (?utm_source=linkedin, or a LinkedIn referrer); everyone else sees the normal page.
+       One question, ~30 seconds, no sign-up: /try?quick=1 (see TryItLivePage). -->
+  <div class="wrap" id="li-welcome" hidden>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:rgba(52,211,153,0.09);border:1px solid rgba(52,211,153,0.3);border-radius:14px;padding:12px 16px;margin-bottom:22px;">
+      <span style="font-size:22px;line-height:1">&#128075;</span>
+      <span style="flex:1 1 260px;font-size:14.5px;line-height:1.55;color:var(--text)"><strong>Hi, I&rsquo;m Francis &mdash; thanks for stopping by from LinkedIn.</strong> Curious? Try a free <strong>30-second interview</strong>: one question, no sign-up.</span>
+      <a href="/try?quick=1" onclick="if(window.ticTrack)window.ticTrack('linkedin_welcome_click',{})" style="background:var(--green);color:#04120c;font-weight:800;font-size:14px;text-decoration:none;padding:10px 18px;border-radius:10px;white-space:nowrap">Try it now &rarr;</a>
+    </div>
+  </div>
   <div class="wrap hero-grid">
     <div>
       <span class="eyebrow">The world's first interview broadcast platform</span>
@@ -714,6 +724,16 @@ function closeScoreModal() {
 document.getElementById('sm-close').addEventListener('click', closeScoreModal);
 document.getElementById('sm-overlay').addEventListener('click', function (e) { if (e.target === this) closeScoreModal(); });
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.getElementById('sm-overlay').classList.contains('open')) closeScoreModal(); });
+
+  // LinkedIn welcome banner: visible only for visitors who arrived from LinkedIn (tagged link, or a LinkedIn referrer).
+  (function () {
+    try {
+      var q = new URLSearchParams(location.search), ref = document.referrer || '';
+      var fromLinkedIn = /^linkedin$/i.test(q.get('utm_source') || '') || /(\/\/|\.)linkedin\.com|lnkd\.in|com\.linkedin\.android/i.test(ref);
+      var el = document.getElementById('li-welcome');
+      if (fromLinkedIn && el) { el.hidden = false; if (window.ticTrack) window.ticTrack('linkedin_welcome_shown', {}); }
+    } catch (e) {}
+  })();
 </script>
 </body>
 </html>

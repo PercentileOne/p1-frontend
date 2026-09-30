@@ -80,7 +80,7 @@ public static class Endpoint
             var tryEvents = new List<FunnelEvent>();
             var q2 = new QueryDefinition(
                 "SELECT TOP 20000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress, c.country FROM c WHERE c.portal = 'candidate' AND c.createdAt >= @from " +
-                "AND (c.eventType IN ('try_mobile_visit','try_blocked_mobile','try_started','try_first_question','try_completed','try_blocked','try_answering','try_answer_submitted','try_left','try_register_click') " +
+                "AND (c.eventType IN ('try_mobile_visit','try_blocked_mobile','try_started','try_first_question','try_completed','try_blocked','try_answering','try_answer_submitted','try_left','try_register_click','try_email_score') " +
                 "OR (c.eventType = 'page_view' AND c.page = '/try'))")
                 .WithParameter("@from", from);
             using (var feed = container.GetItemQueryIterator<FunnelEvent>(q2))
@@ -373,6 +373,7 @@ public static class Endpoint
             firstQuestion = TrySessions("try_first_question"),
             completed = TrySessions("try_completed"),
             registerClicks = TrySessions("try_register_click"),
+            emailCaptures = TrySessions("try_email_score"),
             completedOnPhone = OnPhone("try_completed"),
             blocked = TrySessions("try_blocked"),
         };

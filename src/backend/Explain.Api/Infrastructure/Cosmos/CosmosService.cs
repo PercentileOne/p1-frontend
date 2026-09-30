@@ -300,6 +300,11 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("tryoutSessions", "/pk"));
 
+        // People who asked the /try demo to email them their score (Francis, 2026-09-30) — one document per email address (id = SHA-256 of the
+        // lower-cased address), single logical partition like tryoutSessions. Holds only what they gave us plus the score and their tips opt-in.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("tryoutLeads", "/pk"));
+
         await SeedPlatformStatsAsync();
         await SeedNewsFeedSourcesAsync();
     }

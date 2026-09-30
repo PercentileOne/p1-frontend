@@ -47,3 +47,6 @@ async function post<T>(path: string, body: unknown): Promise<TryOutResult<T>> {
 export const startTryOut = (topic: string) => post<TryOutStart>('/api/tryout/start', { topic });
 export const scoreTryOut = (topic: string, answers: { question: string; answer: string }[], name: string) => post<TryOutFeedback>('/api/tryout/feedback', { topic, answers, name });
 export const coachTryOut = (topic: string, question: string, answer: string, name: string) => post<TryOutCoaching>('/api/tryout/coach', { topic, question, answer, name });
+// "Email me my score" (2026-09-30) — one transactional email with the visitor's own score; the tips opt-in is a separate, unticked choice.
+export const emailTryOutScore = (body: { email: string; name: string; subject: string; score: number; strongest: string | null; weakest: string | null; tipsOptIn: boolean }) =>
+  post<{ sent: boolean }>('/api/tryout/email-score', body);

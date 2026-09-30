@@ -93,7 +93,7 @@ export interface FunnelResponse {
   topClicks: { type: string; label: string; area: string; href: string; visitors: number }[];
   sections: { section: string; visitors: number }[];
   medianSecondsOnPage: number | null;
-  tryPage: { visits: number; phoneVisits: number; started: number; startedOnPhone: number; firstQuestion: number; completed: number; completedOnPhone: number; blocked: number; registerClicks?: number;
+  tryPage: { visits: number; phoneVisits: number; started: number; startedOnPhone: number; firstQuestion: number; completed: number; completedOnPhone: number; blocked: number; registerClicks?: number; emailCaptures?: number;
     // Per-question drop-off (events exist from 2026-09-29; older days simply show zeros).
     byQuestion: { q: number; answering: number; submitted: number; left: number }[];
     leftAt: { phase: string; q: string; visitors: number }[] };

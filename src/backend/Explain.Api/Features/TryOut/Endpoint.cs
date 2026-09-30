@@ -126,6 +126,79 @@ public static class Endpoint
                 : Results.Json(new { error = r.Error }, statusCode: r.FailureStatus);
         }).AllowAnonymous();
 
+        // "Email me my score" on the /try score screen (Francis, 2026-09-30) — visitors who aren't ready to make an account can still leave an
+        // address. It sends ONE transactional email (their own score) and stores the lead; a tips opt-in is a separate, unticked box, so nothing
+        // marketing-like is sent without it. Abuse guards, because this lets anonymous callers make us email arbitrary addresses: a strict per-visitor
+        // and global daily cap, a plain-text email that contains only the caller's own score, and no confirmation of whether an address is known.
+        app.MapPost("/api/tryout/email-score", async (EmailScoreRequest req, HttpContext ctx, CosmosService cosmos, Explain.Api.Infrastructure.Email.IEmailSender emailSender, IConfiguration config, ILogger<Program> logger) =>
+        {
+            var email = (req.Email ?? "").Trim();
+            if (email.Length is < 5 or > 120 || !System.Net.Mail.MailAddress.TryCreate(email, out var parsed) || !string.Equals(parsed.Address, email, StringComparison.OrdinalIgnoreCase))
+                return Results.BadRequest(new { error = "Please enter a valid email address." });
+
+            var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            if (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"tryout:emailscore:ip:{ip}", config.GetValue("TryOut:EmailScorePerVisitorPerDay", 3), cosmos)).allowed
+                || !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("tryout:emailscore:global", config.GetValue("TryOut:EmailScoreGlobalPerDay", 300), cosmos)).allowed)
+                return Results.Json(new { error = "That's enough emails for today — please try again tomorrow." }, statusCode: (int)HttpStatusCode.TooManyRequests);
+
+            var subject = CleanTopic(req.Subject) ?? "your interview";
+            var score = Math.Clamp(req.Score, 0, 100);
+            var name = CleanName(req.Name);
+            string? Dimension(string? d) => d is "clarity" or "relevance" or "accuracy" or "depth" or "confidence" ? d : null;
+            var strongest = Dimension(req.Strongest);
+            var weakest = Dimension(req.Weakest);
+
+            var id = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(email.ToLowerInvariant())));
+            await cosmos.GetContainer("tryoutLeads").UpsertItemAsync(
+                new TryOutLead(id, "lead", email, name, subject, score, req.TipsOptIn, DateTimeOffset.UtcNow),
+                new PartitionKey("lead"));
+
+            var site = config["MarketingSiteUrl"] ?? "https://www.theinterviewchair.com";
+            var registerUrl = $"{site}/register?email={Uri.EscapeDataString(email)}&utm_source=score-email";
+            var greeting = name is not null ? $"Hi {WebUtility.HtmlEncode(name)}, here" : "Here";
+            var focus = strongest is not null && weakest is not null && strongest != weakest
+                ? $"<p style=\"text-align:center;font-size:14px;color:rgba(255,255,255,0.7);line-height:1.7;margin:0 0 22px;\">Your strongest area was <strong style=\"color:#34D399\">{strongest}</strong>. The one to work on next is <strong style=\"color:#fff\">{weakest}</strong>.</p>"
+                : "";
+            var optInLine = req.TipsOptIn
+                ? "You also chose to get occasional interview tips from us — reply STOP to any of them and we'll stop."
+                : "This is a one-off email you asked for. We haven't added you to any mailing list.";
+            var body = $"""
+                <!DOCTYPE html>
+                <html>
+                <body style="margin:0;padding:0;background:#07080f;font-family:-apple-system,'Segoe UI',sans-serif;">
+                  <div style="max-width:560px;margin:40px auto;padding:0 20px;">
+                    <div style="text-align:center;margin-bottom:28px;">
+                      <p style="font-size:18px;font-weight:700;color:#fff;margin:0;"><strong style="color:#34D399">The</strong>Interview<strong style="color:#34D399">Chair</strong><span style="color:rgba(255,255,255,0.55);font-weight:400">.com</span></p>
+                    </div>
+                    <div style="background:linear-gradient(160deg,#0d1117 0%,#0f1b16 100%);border:1px solid rgba(52,211,153,0.25);border-radius:20px;padding:40px 34px 34px;">
+                      <p style="text-align:center;font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:#34D399;margin:0 0 10px;">Your interview score</p>
+                      <p style="text-align:center;font-size:64px;font-weight:900;color:#fff;margin:0;line-height:1;">{score}<span style="font-size:24px;color:rgba(255,255,255,0.5)">/100</span></p>
+                      <p style="text-align:center;font-size:14px;color:rgba(255,255,255,0.6);margin:10px 0 22px;">{greeting} is how you did on your {WebUtility.HtmlEncode(subject)} practice interview.</p>
+                      {focus}
+                      <p style="text-align:center;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.7;margin:0 0 24px;">That was a short taste. The full interview is 5–20 questions with two interviewers, a full scored report and a shareable profile — and your first one is on us.</p>
+                      <div style="text-align:center;margin-bottom:8px;">
+                        <a href="{registerUrl}" style="display:inline-block;background:linear-gradient(135deg,#34D399,#059669);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:15px 38px;border-radius:12px;">Start my free interview →</a>
+                      </div>
+                    </div>
+                    <p style="text-align:center;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;margin:18px 0 0;">{optInLine}</p>
+                  </div>
+                </body>
+                </html>
+                """;
+
+            try
+            {
+                await emailSender.SendAsync(email, $"Your score: {score}/100 for {subject}", body);
+                logger.LogInformation("TryOut: score email sent");
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "TryOut: score email failed to send");
+                return Results.Json(new { error = "We couldn't send that just now — please try again in a moment." }, statusCode: 502);
+            }
+            return Results.Ok(new { sent = true });
+        }).AllowAnonymous();
+
         app.MapPost("/api/tryout/feedback", async (FeedbackRequest req, HttpContext ctx, AppDbContext db, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
         {
             var topic = CleanTopic(req.Topic);
@@ -365,3 +438,7 @@ public static class Endpoint
         List<string> questions, List<string> answers,
         int overallScore, string? headline, string ip, string createdAt);
 }
+
+public record EmailScoreRequest(string? Email, string? Name, string? Subject, int Score, string? Strongest, string? Weakest, bool TipsOptIn);
+
+public record TryOutLead(string id, string pk, string email, string? name, string subject, int score, bool tipsOptIn, DateTimeOffset createdAt);
