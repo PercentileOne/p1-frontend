@@ -20,6 +20,7 @@ public class IpOwnerServiceLiveTests
     [InlineData("69.63.189.112", true)]    // Facebook link-preview crawler
     [InlineData("202.8.42.156", true)]     // Ahrefs
     [InlineData("54.221.9.38", true)]      // Amazon
+    [InlineData("66.146.233.39", true)]    // Sprious LLC (hosting), San Francisco
     [InlineData("31.94.56.166", false)]    // BT / EE, London
     [InlineData("49.37.43.48", false)]     // Reliance Jio, India
     [InlineData("182.180.189.17", false)]  // PTCL, Karachi

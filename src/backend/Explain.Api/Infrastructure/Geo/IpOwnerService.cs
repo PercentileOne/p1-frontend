@@ -31,7 +31,9 @@ public class IpOwnerService
         @"hosting|cloud|data ?cent(er|re)|server|\bvps\b|colocation|colocrossing|\bcdn\b|amazon|google|microsoft|facebook|meta platforms|" +
         @"digitalocean|hetzner|\bovh|linode|vultr|choopa|leaseweb|ahrefs|semrush|packethub|contabo|scaleway|\bm247\b|datacamp|tencent|" +
         @"alibaba|oracle|akamai|fastly|zscaler|netskope|\bibm\b|softlayer|rackspace|godaddy|namecheap|psychz|quadranet|equinix|sharktech|" +
-        @"frantech|buyvm|zenlayer|ucloud|baidu|egihosting|logicweb|internap",
+        @"frantech|buyvm|zenlayer|ucloud|baidu|egihosting|logicweb|internap|" +
+        // Smaller hosting/VPS brands seen visiting as bots (e.g. Sprious LLC, San Francisco, 2026-09-30: full-page scroll in one second).
+        @"sprious|webnx|hivelocity|servermania|interserver|gigenet|reliablesite|hostwinds|kamatera|cdn77|datapacket|dedicated",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private sealed class Table
