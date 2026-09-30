@@ -55,7 +55,7 @@ const CVS = [
     summary: 'Junior data analyst with experience in retail analytics and dashboard reporting. Looking for first permanent role.',
   },
   {
-    id: 7, initials: 'FC', candidate: 'Francis Cobbinah', email: 'francis@percentile.one', mobile: '07432 367 704',
+    id: 7, initials: 'FC', candidate: 'Francis Cobbinah', email: 'francis@percentile.one', mobile: '+44-(0)7515-112345',
     role: 'Senior .NET Developer & Software Architect', source: 'Upload', received: '19 Jul', status: 'Shortlisted',
     trustScore: 96, practiceScore: null, hasPracticed: false, packGenerated: false,
     location: 'London, UK', experience: '24 years', currentEmployer: 'Percentile One (Self-Employed)',

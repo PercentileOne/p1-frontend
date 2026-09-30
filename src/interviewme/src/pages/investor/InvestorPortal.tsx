@@ -2853,8 +2853,8 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         <a href="mailto:francis@explain.global" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: `linear-gradient(135deg, ${A}, ${A2})`, color: '#fff', textDecoration: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 14, fontWeight: 700, boxShadow: `0 8px 32px ${A}40` }}>
           francis@explain.global →
         </a>
-        <a href="tel:+447346814898" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', color: '#c0c0e0', textDecoration: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 14, fontWeight: 700, border: '1px solid rgba(255,255,255,0.12)' }}>
-          +44 7346 814898
+        <a href="tel:+447515112345" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', color: '#c0c0e0', textDecoration: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 14, fontWeight: 700, border: '1px solid rgba(255,255,255,0.12)' }}>
+          +44-(0)7515-112345
         </a>
       </div>
     </div>
@@ -3086,8 +3086,8 @@ const SECTIONS: Record<string, (nav: Nav) => React.ReactNode> = {
         <a href="mailto:francis@explain.global" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: `linear-gradient(135deg, ${A}, ${A2})`, color: '#fff', textDecoration: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 14, fontWeight: 700, boxShadow: `0 8px 32px ${A}40` }}>
           francis@explain.global →
         </a>
-        <a href="tel:+447346814898" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', color: '#c0c0e0', textDecoration: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 14, fontWeight: 700, border: '1px solid rgba(255,255,255,0.12)' }}>
-          +44 7346 814898
+        <a href="tel:+447515112345" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', color: '#c0c0e0', textDecoration: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 14, fontWeight: 700, border: '1px solid rgba(255,255,255,0.12)' }}>
+          +44-(0)7515-112345
         </a>
       </div>
     </Card>
