@@ -1,3 +1,4 @@
+using Explain.Api.Infrastructure.RateLimiting;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
@@ -168,6 +169,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 
+// Short-burst per-address limits on the public demo and event-tracking endpoints (see Infrastructure/RateLimiting/PublicRateLimiting.cs).
+builder.Services.AddPublicRateLimiting();
+
 // ── App ───────────────────────────────────────────────────────────────────────
 
 var app = builder.Build();
@@ -266,6 +270,7 @@ if (!await TryMigrateAsync())
 
 app.UseForwardedHeaders();
 app.UseCors("frontend");
+app.UseRateLimiter();   // after UseCors on purpose: a 429 without CORS headers would reach the browser as an unreadable "Failed to fetch"
 app.UseAuthentication();
 app.UseAuthorization();
 
