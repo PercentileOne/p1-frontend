@@ -104,7 +104,8 @@ function Panel({ name, role, storageKey, handleRef, background, blur }: { name: 
       </div>
       {/* The avatar canvas is transparent (premultiplied alpha), so whatever is behind it shows through. The background is its own layer so it
           can be blurred (soft, out-of-focus, like a video call) without blurring the avatar, which mounts in the box above it. */}
-      <div style={{ width: '100%', height: 420, borderRadius: 12, overflow: 'hidden', position: 'relative', background: '#0b1020' }}>
+      {/* 16:9 on purpose — the same shape as the /try interview stage, so framing values tuned here carry over unchanged. */}
+      <div style={{ width: '100%', aspectRatio: '16 / 9', borderRadius: 12, overflow: 'hidden', position: 'relative', background: '#0b1020' }}>
         <div style={{ position: 'absolute', inset: -20, background, backgroundSize: 'cover', backgroundPosition: 'center', filter: blur ? `blur(${blur}px)` : 'none' }} />
         <div ref={boxRef} style={{ position: 'absolute', inset: 0 }} />
       </div>
