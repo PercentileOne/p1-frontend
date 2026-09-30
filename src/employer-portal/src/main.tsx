@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import './autofill.css'
 import App from './App.tsx'
 
 // StrictMode removed — it double-invokes effects in dev which causes

@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { PermissionProvider } from "./auth/usePermissions";
 import "./index.css";
+import "./autofill.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

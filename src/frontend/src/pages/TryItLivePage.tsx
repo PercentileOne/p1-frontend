@@ -462,7 +462,7 @@ export default function TryItLivePage() {
 
         {phase === 'topic' && (
           <div>
-            <div style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: GREEN, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 20, padding: '5px 12px', marginBottom: 14 }}>Free · no account · about 3 minutes</div>
+            <div style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: GREEN, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 20, padding: '5px 12px', marginBottom: 14 }}>Free · no account · about {quick ? '30 seconds' : '3 minutes'}</div>
             <h1 style={{ fontSize: 'clamp(28px,6vw,42px)', lineHeight: 1.1, fontWeight: 900, letterSpacing: '-0.03em', margin: '0 0 12px' }}>Try it live.<br /><span style={{ color: GREEN }}>Be interviewed for real.</span></h1>
             <p style={{ fontSize: 16, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', margin: '0 0 22px' }}>
               Tell us the job you're going for. {quick ? 'A live AI interviewer asks you one question — about 30 seconds — and you get a scored result.' : 'A live AI interviewer asks you three questions, your Guardian Angel coach helps after each answer, and you get a scored result.'}
