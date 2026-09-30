@@ -322,11 +322,15 @@ export default function TryItLivePage() {
     const q = s.questions[i];
     const hello = firstName ? `Hi ${firstName}, I'm ${s.interviewerName}.` : `Hi, I'm ${s.interviewerName}.`;
     // The first question also tells them exactly what to do — the most common confusion in early tests was not knowing how to answer or move on.
+    // In another language the greeting comes from the server (written in that language, with {name}/{interviewer} placeholders) so the whole spoken
+    // line is in one language; it is only used if the placeholders fill in cleanly, otherwise the English greeting stands.
+    const localIntro = s.intro ? s.intro.replace('{name}', firstName).replace('{interviewer}', s.interviewerName) : null;
+    const opening = localIntro && !/[{}]/.test(localIntro) ? localIntro : `${hello} Let's start your ${s.subject} interview.`;
     const line = i === 0
       // Kept short on purpose (2026-09-29): visitors arriving from a LinkedIn profile give it ~10 seconds, and five of five who got the
       // live avatar heard question one and then left. The how-to-answer instructions now live on screen in the "Your turn" panel instead
       // of being read aloud.
-      ? `${hello} Let's start your ${s.subject} interview. ${q}`
+      ? `${opening} ${q}`
       : q;
     await speakLine(line, s, viaAvatar);
     setPhase('answering');

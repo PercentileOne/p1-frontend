@@ -98,6 +98,24 @@ public class TryOutTests
     public void Unknown_country_codes_are_ignored(string? code) => Assert.Null(Explain.Api.Features.TryOut.TryOutCountries.NameFor(code));
 
     [Fact]
+    public void A_good_localised_intro_is_kept()
+    {
+        const string intro = "Hej {name}, jag är {interviewer}. Nu börjar din intervju för sjuksköterska.";
+        Assert.Equal(intro, TryOut.CleanIntro("  " + intro + " ", "sv"));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("Hej, jag är din intervjuare.")]                       // placeholders missing
+    [InlineData("Hej {name}, jag är {interviewer} och {other}.")]      // stray braces
+    public void Bad_intros_are_dropped(string? raw) => Assert.Null(TryOut.CleanIntro(raw, "sv"));
+
+    [Fact] public void English_never_uses_a_model_intro() => Assert.Null(TryOut.CleanIntro("Hi {name}, I'm {interviewer}.", "en"));
+
+    [Fact] public void Overlong_intros_are_dropped() => Assert.Null(TryOut.CleanIntro("{name} {interviewer} " + new string('x', 400), "fr"));
+
+    [Fact]
     public void Every_supported_language_has_a_name_and_round_trips()
     {
         foreach (var code in new[] { "en","ar","bg","hr","cs","da","nl","fil","fi","fr","de","el","hi","hu","id","it","ja","ko","ms","no","pl","pt","ro","ru","sk","es","sv","ta","tr","uk","vi","zh" })
