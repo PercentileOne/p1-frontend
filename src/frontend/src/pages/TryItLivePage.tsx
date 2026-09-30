@@ -80,12 +80,37 @@ function spatiusTransformFromUrl(interviewer: 'hr' | 'technical'): { x: number; 
   } catch { return SPATIUS_DEFAULT_TRANSFORM; }
 }
 
+// What the marketing homepage passes in the URL (?topic=&name=&go=1). Read in ONE place so the first render and the auto-start agree exactly.
+function detectMobile(): boolean {
+  try {
+    const touchOnly = typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(pointer: coarse) and (hover: none)').matches;
+    const uaMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+    return touchOnly || uaMobile;
+  } catch { return false; }
+}
+function urlPrefill(): { topic: string; name: string; go: boolean } {
+  try {
+    const q = new URLSearchParams(window.location.search);
+    return {
+      topic: (q.get('topic') ?? '').slice(0, 90),
+      name: (q.get('name') ?? '').replace(/[^\p{L}\p{M}' .-]/gu, '').slice(0, 40),
+      go: q.get('go') === '1',
+    };
+  } catch { return { topic: '', name: '', go: false }; }
+}
+// Straight into the interview room from the homepage (Francis, 2026-09-30): only when both values are present, and never on phones (they need their own
+// tap before the interviewer's sound can play). When true the page's FIRST render is already the "Preparing your interview" screen — no form flash.
+function wantsAutoStart(): boolean {
+  const u = urlPrefill();
+  return u.go && !detectMobile() && u.topic.trim().length >= 2 && !!u.name.trim();
+}
+
 export default function TryItLivePage() {
-  const [phase, setPhase] = useState<Phase>('topic');
+  const [phase, setPhase] = useState<Phase>(() => (wantsAutoStart() ? 'starting' : 'topic'));
   // The marketing site's hero passes ?topic= so the visitor's role is already filled in.
-  const [topic, setTopic] = useState(() => { try { return (new URLSearchParams(window.location.search).get('topic') ?? '').slice(0, 90); } catch { return ''; } });
+  const [topic, setTopic] = useState(() => urlPrefill().topic);
   // The marketing site's hero also passes ?name= (it asks for the first name there), so both fields arrive filled in.
-  const [name, setName] = useState(() => { try { return (new URLSearchParams(window.location.search).get('name') ?? '').replace(/[^\p{L}\p{M}' .-]/gu, '').slice(0, 40); } catch { return ''; } });
+  const [name, setName] = useState(() => urlPrefill().name);
   const [start, setStart] = useState<TryOutStart | null>(null);
   const [index, setIndex] = useState(0);
   const [draft, setDraft] = useState('');
@@ -150,13 +175,7 @@ export default function TryItLivePage() {
   // Requiring `(hover: none)` too correctly excludes those: a touchscreen laptop still reports hover:hover because of its
   // mouse/trackpad, while an actual phone/tablet has no hover-capable input at all. The UA regex is a backstop for older browsers
   // without matchMedia. Computed once — a device doesn't change mid-visit.
-  const [isMobile] = useState(() => {
-    try {
-      const touchOnly = typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(pointer: coarse) and (hover: none)').matches;
-      const uaMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
-      return touchOnly || uaMobile;
-    } catch { return false; }
-  });
+  const [isMobile] = useState(detectMobile);
 
   // Wi-Fi vs mobile data (Francis, 2026-09-27: live video "worked very, very well" on Wi-Fi, same as desktop — the earlier phone
   // problems were the browser blocking sound and a weak SIGNAL, not phones as such). The Network Information API only exists on
@@ -365,9 +384,7 @@ export default function TryItLivePage() {
   useEffect(() => {
     if (autoStartedRef.current) return;
     autoStartedRef.current = true;
-    let go = false;
-    try { go = new URLSearchParams(window.location.search).get('go') === '1'; } catch { /* ignore */ }
-    if (go && !isMobile && topic.trim().length >= 2 && name.trim()) void begin();
+    if (wantsAutoStart()) void begin();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

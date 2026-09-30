@@ -106,7 +106,7 @@ public static class Endpoint
         // (1) a valid, unexpired demo ticket — only handed out by /api/tryout/start when an avatar seat was actually granted;
         // (2) the admin must have Spatius switched on; (3) a per-visitor daily cap so one address can't mint sessions in a loop.
         // The API key never leaves the server (Features/Spatius/SpatiusClient.cs).
-        app.MapPost("/api/tryout/spatius-token", async (HttpContext ctx, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILoggerFactory logs, CancellationToken ct) =>
+        app.MapPost("/api/tryout/spatius-token", async (HttpContext ctx, AppDbContext db, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILoggerFactory logs, CancellationToken ct) =>
         {
             var ticket = ctx.Request.Headers["X-Interview-Ticket"].ToString();
             if (!ticket.StartsWith("tryout:", StringComparison.Ordinal) || !InterviewTicket.IsValid(config["Jwt:Secret"], ticket, DateTimeOffset.UtcNow))
@@ -117,7 +117,9 @@ public static class Endpoint
                 return Results.Json(new { error = "Not available." }, statusCode: 403);
 
             var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            if (!(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"tryout:spatiustoken:ip:{ip}", config.GetValue("TryOut:SpatiusTokensPerVisitorPerDay", 20), cosmos)).allowed)
+            // Admin / ignored addresses (the same "demo mode — no limits" visitors as /start) aren't capped, so testing all day doesn't lock them out.
+            var unlimited = await IsUnlimitedAsync(ctx.User, ip, db, config);
+            if (!unlimited && !(await CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"tryout:spatiustoken:ip:{ip}", config.GetValue("TryOut:SpatiusTokensPerVisitorPerDay", 20), cosmos)).allowed)
                 return Results.Json(new { error = "Too many sessions today." }, statusCode: (int)HttpStatusCode.TooManyRequests);
 
             var r = await Explain.Api.Features.Spatius.SpatiusClient.MintTokenAsync(factory, config, logs.CreateLogger("Spatius"), TimeSpan.FromMinutes(20), ct);
