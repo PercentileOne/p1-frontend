@@ -94,13 +94,17 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
         if (cancelled()) throw new Error('cancelled');
         await ctrl.start();
         if (cancelled()) throw new Error('cancelled');
-        // The test page sets the framing AFTER the avatar is fully started and it works; set early (above) it is ignored on /try. So apply it again
-        // now, and once more shortly after in case the first render pass resets it.
+        // The test page sets the framing AFTER the avatar is fully started and it works; set early it is ignored, and the SDK can also drop it
+        // again once the first frames play (some runs framed correctly, others didn't, on identical layouts). So keep checking for the whole
+        // session and re-apply whenever the SDK's value no longer matches — cheap, and it makes the framing deterministic.
         if (transform) {
-          const apply = () => { if (viewRef.current === view) { try { view.avatarTransform = transform; } catch { /* ignore */ } } };
+          const same = (a: { x: number; y: number; scale: number } | undefined) => !!a && Math.abs(a.x - transform.x) < 0.005 && Math.abs(a.y - transform.y) < 0.005 && Math.abs(a.scale - transform.scale) < 0.005;
+          const apply = () => {
+            if (viewRef.current !== view) { window.clearInterval(timer); return; }
+            try { if (!same(view.avatarTransform as { x: number; y: number; scale: number } | undefined)) view.avatarTransform = transform; } catch { /* ignore */ }
+          };
+          const timer = window.setInterval(apply, 300);
           apply();
-          window.setTimeout(apply, 250);
-          window.setTimeout(apply, 1000);
         }
         setStatus('connected');
       } catch (e) {
