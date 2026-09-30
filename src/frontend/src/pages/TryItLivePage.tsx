@@ -463,7 +463,7 @@ export default function TryItLivePage() {
         <div style={
           (phase === 'asking' || phase === 'answering' || phase === 'coaching' || phase === 'scoring')
             ? { position: 'relative', borderRadius: 18, overflow: 'hidden', background: '#05080f', border: '1px solid var(--border, rgba(255,255,255,0.1))', aspectRatio: '16 / 9', marginBottom: 14 }
-            : { position: 'absolute', inset: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }
+            : { position: 'absolute', top: 0, left: 0, width: '100%', aspectRatio: '16 / 9', opacity: 0, pointerEvents: 'none', zIndex: -1 } // same 16:9 shape as when shown, so the avatar view is sized right when it connects
         }>
           <video ref={hr.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: useAvatar && provider === 'heygen' && avatar === hr ? 1 : 0 }} />
           <video ref={technical.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: useAvatar && provider === 'heygen' && avatar === technical ? 1 : 0 }} />
