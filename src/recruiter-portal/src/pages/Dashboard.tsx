@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { LayoutDashboard, BarChart2, Settings, Send, Bell, Search, Wallet, Users, Gift } from 'lucide-react'
+import { LayoutDashboard, BarChart2, Settings, Send, Bell, Search, Wallet, Users, Gift, LifeBuoy } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import CvAnalysisHistory from './CvAnalysisHistory'
 import InterviewPacks from './InterviewPacks'
@@ -17,6 +17,11 @@ import ScreenCandidates from './ScreenCandidates'
 import InterviewHistory from './InterviewHistory'
 import Alerts from './Alerts'
 import TeamPage from './TeamPage'
+import HelpCentre from './HelpCentre'
+import { GettingStartedCard } from '../components/GettingStartedCard'
+import { HelpHint } from '../components/HelpHint'
+import { RECRUITER_ARTICLES } from '../help/articles'
+import { logEvent } from '../api/flowLogger'
 import IndustryStatsCard from '../components/IndustryStatsCard'
 
 // Streamlined 2026-08-31: Francis wants the recruiter portal to work alongside recruiters'
@@ -36,6 +41,7 @@ const NAV_ITEMS = [
   { Icon: Search,          label: 'Candidate Marketplace' },
   { Icon: BarChart2,       label: 'Analytics' },
   { Icon: Settings,        label: 'Settings' },
+  { Icon: LifeBuoy,        label: 'Help' },
 ]
 
 const LIVE_STATS = [
@@ -146,9 +152,16 @@ const PASS_RATES = [
 ]
 
 export default function Dashboard() {
-  const { signOut } = useAuth()
+  const { signOut, token } = useAuth()
   const [todos, setTodos] = useState(TODOS)
   const [activeNav, setActiveNav] = useState('Dashboard')
+  // Help Centre: which article to open on arrival (set by the "How does this work?" hints); cleared whenever the menu is used.
+  const [helpArticle, setHelpArticle] = useState<string | null>(null)
+  function openHelp(articleId: string) {
+    logEvent('help_hint_click', { metadata: { article: articleId, from: activeNav, portal: 'recruiter' } })
+    setHelpArticle(articleId)
+    setActiveNav('Help')
+  }
   const [packBuilderSpec, setPackBuilderSpec] = useState<string | null>(null)
 
   function toggleTodo(i: number) {
@@ -194,7 +207,7 @@ export default function Dashboard() {
           {NAV_ITEMS.map(({ Icon, label }) => (
             <button
               key={label}
-              onClick={() => { setActiveNav(label); setPackBuilderSpec(null) }}
+              onClick={() => { setHelpArticle(null); setActiveNav(label); setPackBuilderSpec(null) }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '9px 12px', borderRadius: 8, border: 'none',
@@ -260,7 +273,14 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* ── HELP: one-line "How does this work?" hint on pages that have an article ── */}
+        {activeNav !== 'Help' && activeNav !== 'Dashboard' && (() => {
+          const a = RECRUITER_ARTICLES.find(x => x.navLabel === activeNav)
+          return a ? <HelpHint key={a.id} pageLabel={activeNav} articleId={a.id} onOpen={openHelp} /> : null
+        })()}
+
         {/* ── SUB-PAGES ── */}
+        {activeNav === 'Help' && <HelpCentre key={helpArticle ?? 'index'} initialArticleId={helpArticle} onNavigate={label => { setHelpArticle(null); setActiveNav(label) }} />}
         {activeNav === 'Interview Preps' && <InterviewPreps />}
         {activeNav === 'Client Gifts' && <ClientGifts />}
         {activeNav === 'Interview Packs' && <InterviewPacks />}
@@ -277,7 +297,7 @@ export default function Dashboard() {
         {activeNav === 'My Interviews' && <InterviewHistory />}
         {activeNav === 'Alerts' && <Alerts />}
         {activeNav === 'Team' && <TeamPage />}
-        {activeNav !== 'Dashboard' && activeNav !== 'Interview Preps' && activeNav !== 'Client Gifts' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'CV Insights' && activeNav !== 'Candidate Marketplace' && activeNav !== 'Screen' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Interviews' && activeNav !== 'CVs' && activeNav !== 'Pack History' && activeNav !== 'My Interviews' && activeNav !== 'Alerts' && activeNav !== 'Team' && (
+        {activeNav !== 'Dashboard' && activeNav !== 'Interview Preps' && activeNav !== 'Client Gifts' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'CV Insights' && activeNav !== 'Candidate Marketplace' && activeNav !== 'Screen' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Help' && activeNav !== 'Interviews' && activeNav !== 'CVs' && activeNav !== 'Pack History' && activeNav !== 'My Interviews' && activeNav !== 'Alerts' && activeNav !== 'Team' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--text-3)', fontSize: 14 }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🚧</div>
             <div style={{ fontWeight: 700, color: 'var(--text-2)' }}>{activeNav}</div>
@@ -285,6 +305,8 @@ export default function Dashboard() {
           </div>
         )}
         {activeNav === 'Dashboard' && <>
+
+        <GettingStartedCard token={token} onNavigate={label => { setHelpArticle(null); setActiveNav(label) }} />
 
         <IndustryStatsCard />
 
