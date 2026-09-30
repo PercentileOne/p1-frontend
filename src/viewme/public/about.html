@@ -116,6 +116,19 @@ footer a:hover{color:var(--ink)}
   .hero{padding:100px 24px 64px}
 }
 </style>
+<style>
+/* When this page is shown inside the homepage's "Our story" popup (an iframe), drop its own header/footer — the popup has its own close button. */
+html.embedded .nav, html.embedded footer{display:none}
+html.embedded body{padding-top:0}
+</style>
+<script>
+(function () {
+  if (window.self === window.top) return;
+  document.documentElement.classList.add('embedded');
+  var b = document.createElement('base'); b.target = '_top'; document.head.appendChild(b); // links leave the popup normally
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') parent.postMessage('close-about', location.origin); });
+})();
+</script>
 </head>
 <body>
 
