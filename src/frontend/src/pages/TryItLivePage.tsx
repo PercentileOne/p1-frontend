@@ -453,7 +453,8 @@ export default function TryItLivePage() {
           Francis 2026-09-27), where `%` units do not, because they resolve against the actual
           layout viewport on every render instead of a cached viewport snapshot. width:100% +
           overflow-x:hidden already stop the sideways-overflow bug this was originally added for. */}
-      <div style={{ maxWidth: 720, width: '100%', minWidth: 0, margin: '0 auto' }}>
+      {/* position: relative so the hidden avatar stage below is sized by THIS 720px column, not the whole window — the SDK sizes its picture to the stage at connect time, and a window-wide hidden stage made Wayne far too close on big screens (found 2026-09-30). */}
+      <div style={{ position: 'relative', maxWidth: 720, width: '100%', minWidth: 0, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 26 }}>
           <a href="https://www.theinterviewchair.com" style={{ textDecoration: 'none', fontWeight: 900, fontSize: 16, letterSpacing: '-0.02em', color: '#fff' }}>
             <span style={{ color: GREEN }}>The</span>Interview<span style={{ color: GREEN }}>Chair</span><span style={{ color: 'rgba(255,255,255,0.55)', fontWeight: 400 }}>.com</span>
