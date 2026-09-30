@@ -52,6 +52,18 @@
   .banner{display:none;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.35);border-radius:14px;padding:16px 20px;margin-bottom:22px}
   .banner.warn{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.35)}
   @media(max-width:860px){.grid{grid-template-columns:1fr;gap:34px}}
+
+  /* Browser autofill keeps the dark theme (Francis, 2026-09-30: picking a saved value turned the field white). Chrome/Edge paint autofilled fields with
+     their own light background; painting over it with the field's own fill is the only reliable override. */
+  .f input:-webkit-autofill, .f textarea:-webkit-autofill,
+  .f input:-webkit-autofill:hover, .f textarea:-webkit-autofill:hover,
+  .f input:-webkit-autofill:focus, .f textarea:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #0a1224 inset !important;
+    box-shadow: 0 0 0 1000px #0a1224 inset !important;
+    -webkit-text-fill-color: var(--text) !important;
+    caret-color: var(--text);
+    transition: background-color 9999s ease-out 0s;
+  }
 </style>
 </head>
 <body>

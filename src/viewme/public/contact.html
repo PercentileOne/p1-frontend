@@ -172,6 +172,18 @@
     .hero-inner { grid-template-columns: 1fr; gap: 40px; }
     h1 { font-size: 2rem; }
   }
+
+  /* Browser autofill keeps the dark theme (Francis, 2026-09-30: picking a saved value turned the field white). Chrome/Edge paint autofilled fields with
+     their own light background; painting over it with the field's own fill is the only reliable override. */
+  .field input:-webkit-autofill, .field textarea:-webkit-autofill, .field select:-webkit-autofill,
+  .field input:-webkit-autofill:hover, .field textarea:-webkit-autofill:hover, .field select:-webkit-autofill:hover,
+  .field input:-webkit-autofill:focus, .field textarea:-webkit-autofill:focus, .field select:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #0f1829 inset !important;
+    box-shadow: 0 0 0 1000px #0f1829 inset !important;
+    -webkit-text-fill-color: var(--pearl) !important;
+    caret-color: var(--pearl);
+    transition: background-color 9999s ease-out 0s;
+  }
 </style>
 </head>
 <body>
