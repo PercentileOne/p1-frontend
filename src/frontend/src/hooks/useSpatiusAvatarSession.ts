@@ -94,16 +94,22 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
         if (cancelled()) throw new Error('cancelled');
         await ctrl.start();
         if (cancelled()) throw new Error('cancelled');
-        // The test page sets the framing AFTER the avatar is fully started and it works; set early it is ignored, and the SDK can also drop it
-        // again once the first frames play (some runs framed correctly, others didn't, on identical layouts). So keep checking for the whole
-        // session and re-apply whenever the SDK's value no longer matches — cheap, and it makes the framing deterministic.
+        // The test page sets the framing AFTER the avatar is fully started and it works; set early it is ignored, and the SDK can also drop it (or reset
+        // it on a window resize) while still REPORTING the value we set — so comparing against its getter is not a safe check (that was tried and
+        // failed on a large window, 2026-09-30). Instead apply it unconditionally: first a tiny nudge away from the target so the SDK sees a real
+        // change (a same-value set can be skipped), then the target. Repeat regularly, and immediately on any window resize.
         if (transform) {
-          const same = (a: { x: number; y: number; scale: number } | undefined) => !!a && Math.abs(a.x - transform.x) < 0.005 && Math.abs(a.y - transform.y) < 0.005 && Math.abs(a.scale - transform.scale) < 0.005;
           const apply = () => {
-            if (viewRef.current !== view) { window.clearInterval(timer); return; }
-            try { if (!same(view.avatarTransform as { x: number; y: number; scale: number } | undefined)) view.avatarTransform = transform; } catch { /* ignore */ }
+            if (viewRef.current !== view) { cleanup(); return; }
+            try {
+              view.avatarTransform = { x: transform.x, y: transform.y, scale: transform.scale + 0.01 };
+              view.avatarTransform = transform;
+            } catch { /* ignore */ }
           };
-          const timer = window.setInterval(apply, 300);
+          const timer = window.setInterval(apply, 700);
+          const onResize = () => apply();
+          window.addEventListener('resize', onResize);
+          const cleanup = () => { window.clearInterval(timer); window.removeEventListener('resize', onResize); };
           apply();
         }
         setStatus('connected');
