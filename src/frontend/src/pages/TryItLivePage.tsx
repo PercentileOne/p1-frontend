@@ -641,7 +641,7 @@ export default function TryItLivePage() {
               <div style={{ fontSize: 14.5, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', marginBottom: 16 }}>
                 Create a free account and your first full interview is on us — with both interviewers, your CV and target role, a full scored report, and a shareable profile recruiters can watch.
               </div>
-              <a href={REGISTER_URL} style={{ ...primary, display: 'block' }}>Start my free interview →</a>
+              <a href={REGISTER_URL} onClick={() => logEvent('try_register_click', { metadata: { where: 'score', score: feedback?.overall ?? null, mobile: isMobile } })} style={{ ...primary, display: 'block' }}>Start my free interview →</a>
               <button onClick={restart} style={{ background: 'none', border: 'none', color: 'var(--text-3, #94a3b8)', fontSize: 13, textDecoration: 'underline', cursor: 'pointer', marginTop: 12 }}>Try a different role</button>
             </div>
           </div>
@@ -654,7 +654,7 @@ export default function TryItLivePage() {
             </div>
             <div style={{ fontSize: 14.5, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', marginBottom: 20 }}>{message}</div>
             {blockReason === 'capped'
-              ? <a href={REGISTER_URL} style={primary}>Create a free account →</a>
+              ? <a href={REGISTER_URL} onClick={() => logEvent('try_register_click', { metadata: { where: 'limit', mobile: isMobile } })} style={primary}>Create a free account →</a>
               : <button onClick={restart} style={primary}>Try again</button>}
           </div>
         )}

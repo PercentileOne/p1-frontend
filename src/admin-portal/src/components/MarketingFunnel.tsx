@@ -166,6 +166,7 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
                   <tr><td style={td}>Started (typed a role)</td><td style={td}>{data.tryPage.started} <span style={{ color: 'var(--text-3)' }}>({data.tryPage.startedOnPhone} on a phone)</span></td></tr>
                   <tr><td style={td}>Heard the first question</td><td style={td}>{data.tryPage.firstQuestion}</td></tr>
                   <tr><td style={td}>Finished and got a score</td><td style={td}>{data.tryPage.completed} <span style={{ color: 'var(--text-3)' }}>({data.tryPage.completedOnPhone} on a phone)</span></td></tr>
+                  <tr><td style={td}>Clicked "Create account" on the score screen</td><td style={td}>{data.tryPage.registerClicks ?? 0}</td></tr>
                   <tr><td style={td}>Hit an error / limit</td><td style={td}>{data.tryPage.blocked}</td></tr>
                 </tbody>
               </table>
