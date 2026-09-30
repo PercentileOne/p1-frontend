@@ -278,7 +278,9 @@ export default function TryItLivePage() {
   const speakLine = useCallback(async (text: string, s: TryOutStart, viaAvatar: boolean) => {
     const seat = s.interviewer === 'technical' ? technical : hr;
     if (viaAvatar) {
-      try { await withCeiling(providerRef.current === 'spatius' ? spatius.speak(text, s.interviewer) : seat.speak(text, s.interviewer), text); return; }
+      // HeyGen tells us the moment its avatar really starts talking (AVATAR_SPEAK_STARTED) — that ends the "getting ready" overlay, like Spatius's own
+      // speaking state does. Waiting for HeyGen's separate pose-state update instead left the spinner up well after Wayne had started talking (Francis, 2026-09-30).
+      try { await withCeiling(providerRef.current === 'spatius' ? spatius.speak(text, s.interviewer) : seat.speak(text, s.interviewer, () => setFirstSpeechStarted(true)), text); return; }
       catch { setUseAvatar(false); setAvatarState('off'); /* fall through to the voice-only path */ }
     }
     await withCeiling(new Promise<void>(resolve => { cancelSpeechRef.current = speakTts(text, s.interviewer, resolve); }), text);
