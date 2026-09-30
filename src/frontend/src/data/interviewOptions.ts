@@ -85,5 +85,51 @@ const SPEECH_LOCALES: Record<string, string> = {
   el: 'el-GR', hi: 'hi-IN', hu: 'hu-HU', id: 'id-ID', it: 'it-IT', ja: 'ja-JP', ko: 'ko-KR', ms: 'ms-MY', no: 'nb-NO', pl: 'pl-PL', pt: 'pt-PT',
   ro: 'ro-RO', ru: 'ru-RU', sk: 'sk-SK', es: 'es-ES', sv: 'sv-SE', ta: 'ta-IN', tr: 'tr-TR', uk: 'uk-UA', vi: 'vi-VN', zh: 'zh-CN',
 };
-/** The BCP-47 locale for the browser's speech recognition in an interview language (English stays en-GB, as before). */
-export const speechLocale = (code: string): string => SPEECH_LOCALES[code] ?? 'en-GB';
+/** The BCP-47 locale for the browser's speech recognition in an interview language — for English, the chosen region (en-US, en-AU …); default en-GB as before. */
+export const speechLocale = (code: string, country?: string | null): string =>
+  code === 'en' && country && ENGLISH_REGIONS.some(r => r.country === country.toUpperCase()) ? `en-${country.toUpperCase()}` : (SPEECH_LOCALES[code] ?? 'en-GB');
+
+// ── The demo's language box (2026-09-30) ──────────────────────────────────────────────────────────────────────────────────────────────────
+// One box, no separate country (Francis: "it will look neater without it"). English is offered as regional versions so the wording, spelling and local
+// context follow the region ("CV" vs "résumé", UK vs US employers); every other language is just its name. The interviewer's VOICE is the same English
+// voice for all of them — the region changes the words and what the browser listens for, not the accent. The region travels as `country` (ISO code).
+export const ENGLISH_REGIONS = [
+  { country: 'GB', label: 'English (UK)' },
+  { country: 'US', label: 'English (US)' },
+  { country: 'AU', label: 'English (Australia)' },
+  { country: 'CA', label: 'English (Canada)' },
+  { country: 'IN', label: 'English (India)' },
+  { country: 'IE', label: 'English (Ireland)' },
+] as const;
+
+export interface LanguageChoice {
+  /** What the dropdown/URL carries: "en-GB", "en-US" … or a plain code like "fr". */
+  value: string;
+  /** The interview language code sent to the voice, prompts and transcription ("en", "fr" …). */
+  code: string;
+  name: string;
+  /** Only for the English regions. */
+  country?: string;
+}
+
+export const LANGUAGE_CHOICES: readonly LanguageChoice[] = LANGUAGES.flatMap((l): LanguageChoice[] =>
+  l.code === 'en'
+    ? ENGLISH_REGIONS.map(r => ({ value: `en-${r.country}`, code: 'en', name: r.label, country: r.country }))
+    : [{ value: l.code, code: l.code, name: l.name }]);
+
+export const DEFAULT_LANGUAGE_VALUE = 'en-GB';
+
+/**
+ * Resolves whatever a link or the page holds into one valid choice. Accepts "en-US", or the older pair lang=en + country=US, or a plain code;
+ * anything unrecognised is the default (English UK).
+ */
+export function findLanguageChoice(value: string | null | undefined, country?: string | null): LanguageChoice {
+  const v = (value ?? '').trim();
+  const exact = LANGUAGE_CHOICES.find(c => c.value.toLowerCase() === v.toLowerCase());
+  if (exact) return exact;
+  if (v.toLowerCase() === 'en' && country) {
+    const byCountry = LANGUAGE_CHOICES.find(c => c.value.toLowerCase() === `en-${country.trim()}`.toLowerCase());
+    if (byCountry) return byCountry;
+  }
+  return LANGUAGE_CHOICES.find(c => c.value === DEFAULT_LANGUAGE_VALUE)!;
+}

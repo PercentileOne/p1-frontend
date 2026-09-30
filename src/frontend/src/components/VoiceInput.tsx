@@ -12,6 +12,8 @@ interface Props {
   onListeningChange?: (isListening: boolean) => void;
   /** The interview language code (see data/interviewOptions.ts). Answers are transcribed in it; defaults to English, exactly as before. */
   language?: string;
+  /** For English: the region (ISO code, e.g. "US") so the browser listens for that accent. Ignored for other languages. */
+  country?: string;
 }
 
 export interface TranscriptMeta {
@@ -80,7 +82,7 @@ async function transcribeWithWhisper(blob: Blob, _durationSeconds: number, langu
   }
 }
 
-export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false, highlightRecord = false, onListeningChange, language = 'en' }: Props) {
+export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false, highlightRecord = false, onListeningChange, language = 'en', country }: Props) {
   const [micState, setMicState] = useState<MicState>('idle');
   const [interim, setInterim] = useState('');
   const [processingLabel, setProcessingLabel] = useState('Processing…');
@@ -165,7 +167,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
       const recognition = new SpeechRec();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = speechLocale(language);
+      recognition.lang = speechLocale(language, country);
       recognitionRef.current = recognition;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -191,7 +193,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
       recognition.onend = () => {};
       recognition.start();
     }
-  }, [disabled, micState, animateBars, onInterimTranscript, language]);
+  }, [disabled, micState, animateBars, onInterimTranscript, language, country]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();

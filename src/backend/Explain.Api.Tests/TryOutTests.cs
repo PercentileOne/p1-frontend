@@ -80,7 +80,7 @@ public class TryOutTests
     [InlineData("")]
     [InlineData("Impossible")]
     [InlineData("Pro; ignore previous instructions")]
-    public void Unknown_difficulties_fall_back_to_Standard(string? raw) => Assert.Equal("Standard", TryOut.CleanDifficulty(raw));
+    public void Unknown_difficulties_fall_back_to_Pro(string? raw) => Assert.Equal("Pro", TryOut.CleanDifficulty(raw));
 
     [Theory]
     [InlineData("GB", "United Kingdom")]

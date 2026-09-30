@@ -331,9 +331,9 @@ public static class Endpoint
 
     private static readonly string[] Difficulties = ["Beginner", "Standard", "Pro", "Expert"];
 
-    /// <summary>One of Beginner / Standard / Pro / Expert (same names as the full interview intake); anything else is the demo's default, Standard.</summary>
+    /// <summary>One of Beginner / Standard / Pro / Expert (same names as the full interview intake); anything else is the demo's default, Pro (same as the full intake).</summary>
     public static string CleanDifficulty(string? raw) =>
-        Difficulties.FirstOrDefault(d => string.Equals(d, raw?.Trim(), StringComparison.OrdinalIgnoreCase)) ?? "Standard";
+        Difficulties.FirstOrDefault(d => string.Equals(d, raw?.Trim(), StringComparison.OrdinalIgnoreCase)) ?? "Pro";
 
     public static List<(string Question, string Answer)> CleanAnswers(List<AnswerIn>? raw) =>
         (raw ?? []).Take(3)

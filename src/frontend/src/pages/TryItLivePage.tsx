@@ -5,8 +5,7 @@ import { speak as speakTts, unlockTTSAudio, setTTSLanguage } from '../api/ttsApi
 import { setInterviewTicket } from '../api/entitlementsApi';
 import { VoiceInput } from '../components/VoiceInput';
 import { startTryOut, scoreTryOut, coachTryOut, emailTryOutScore, getVisitorCountry, type TryOutStart, type TryOutFeedback, type TryOutResult } from '../api/tryOutApi';
-import { LANGUAGES, DIFFICULTIES } from '../data/interviewOptions';
-import { COUNTRIES } from '../data/countries';
+import { LANGUAGES, LANGUAGE_CHOICES, DIFFICULTIES, DEFAULT_LANGUAGE_VALUE, findLanguageChoice } from '../data/interviewOptions';
 import { logEvent } from '../api/flowLogger';
 
 // "Try it live" (Francis, 2026-09-21) — the public, no-account taste of the product for visitors from the marketing site and LinkedIn:
@@ -82,7 +81,7 @@ function spatiusTransformFromUrl(interviewer: 'hr' | 'technical'): { x: number; 
   } catch { return SPATIUS_DEFAULT_TRANSFORM; }
 }
 
-// What the marketing homepage passes in the URL (?topic=&name=&lang=&level=&country=&go=1). Read in ONE place so the first render and the auto-start
+// What the marketing homepage passes in the URL (?topic=&name=&lang=&level=&go=1; English regions arrive as lang=en&country=GB/US…). Read in ONE place so the first render and the auto-start
 // agree exactly. Every value is checked against its list here, so a hand-edited link can't put junk in the form (the server validates again).
 function detectMobile(): boolean {
   try {
@@ -91,22 +90,20 @@ function detectMobile(): boolean {
     return touchOnly || uaMobile;
   } catch { return false; }
 }
-interface UrlPrefill { topic: string; name: string; language: string; difficulty: string; country: string; go: boolean }
+interface UrlPrefill { topic: string; name: string; languageValue: string; difficulty: string; go: boolean; hasLanguage: boolean }
 function urlPrefill(): UrlPrefill {
   try {
     const q = new URLSearchParams(window.location.search);
-    const lang = (q.get('lang') ?? '').toLowerCase();
     const level = DIFFICULTIES.find(d => d.value.toLowerCase() === (q.get('level') ?? '').toLowerCase())?.value;
-    const country = (q.get('country') ?? '').toUpperCase();
     return {
       topic: (q.get('topic') ?? '').slice(0, 90),
       name: (q.get('name') ?? '').replace(/[^\p{L}\p{M}' .-]/gu, '').slice(0, 40),
-      language: LANGUAGES.some(l => l.code === lang) ? lang : 'en',
+      languageValue: findLanguageChoice(q.get('lang'), q.get('country')).value,   // accepts lang=en-US, or lang=en&country=US, or a plain code
       difficulty: level ?? DEFAULT_DIFFICULTY,
-      country: COUNTRIES.some(c => c.code === country) ? country : '',
       go: q.get('go') === '1',
+      hasLanguage: q.has('lang'),
     };
-  } catch { return { topic: '', name: '', language: 'en', difficulty: DEFAULT_DIFFICULTY, country: '', go: false }; }
+  } catch { return { topic: '', name: '', languageValue: DEFAULT_LANGUAGE_VALUE, difficulty: DEFAULT_DIFFICULTY, go: false, hasLanguage: false }; }
 }
 // Straight into the interview room from the homepage (Francis, 2026-09-30): only when both values are present, and never on phones (they need their own
 // tap before the interviewer's sound can play). When true the page's FIRST render is already the "Preparing your interview" screen — no form flash.
@@ -115,8 +112,8 @@ function wantsAutoStart(): boolean {
   return u.go && !detectMobile() && u.topic.trim().length >= 2 && !!u.name.trim();
 }
 
-// The demo's default level: well-rounded and welcoming for a first-time visitor (the full interview's own default is Pro).
-const DEFAULT_DIFFICULTY = 'Standard';
+// The demo's default level: Pro — the same default as the full interview intake (Francis, 2026-09-30).
+const DEFAULT_DIFFICULTY = 'Pro';
 
 // How many questions the quick (?quick=1) demo asks, and how to say a count in words — all the on-screen and spoken wording is derived from the
 // real number, so changing QUICK_QUESTION_COUNT can never leave a stale "one question" or "three questions" behind.
@@ -129,17 +126,19 @@ export default function TryItLivePage() {
   const [topic, setTopic] = useState(() => urlPrefill().topic);
   // The marketing site's hero also passes ?name= (it asks for the first name there), so both fields arrive filled in.
   const [name, setName] = useState(() => urlPrefill().name);
-  // Interview language, question difficulty and country (2026-09-30). Country starts from the link if it carries one, otherwise from the visitor's own
-  // country (looked up once, below) — and never overwrites a choice they've already made.
-  const [language, setLanguage] = useState(() => urlPrefill().language);
+  // Interview language (English comes as regional versions: UK, US …) and question difficulty (2026-09-30). When nothing was chosen in the link, an American
+  // visitor is offered English (US) and everyone else English (UK) — looked up once, and never overriding a choice they have already made.
+  const [languageValue, setLanguageValue] = useState(() => urlPrefill().languageValue);
   const [difficulty, setDifficulty] = useState(() => urlPrefill().difficulty);
-  const [country, setCountry] = useState(() => urlPrefill().country);
+  const languageTouchedRef = useRef(false);
+  const languageChoice = findLanguageChoice(languageValue);
+  const language = languageChoice.code;            // "en", "fr" … → voice, prompts, transcription
+  const country = languageChoice.country ?? '';     // English regions only → wording/local context, and which English the browser listens for
   useEffect(() => {
-    if (country || wantsAutoStart()) return;
+    if (urlPrefill().hasLanguage || wantsAutoStart()) return;
     let cancelled = false;
-    void getVisitorCountry().then(code => { if (!cancelled && code) setCountry(c => c || code); });
+    void getVisitorCountry().then(code => { if (!cancelled && code === 'US' && !languageTouchedRef.current) setLanguageValue('en-US'); });
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   // Tell the voice service (neural voice, avatar audio) the interview language for the length of the visit, so it never guesses it from the text.
   useEffect(() => { setTTSLanguage(language); return () => setTTSLanguage('en'); }, [language]);
@@ -599,31 +598,24 @@ export default function TryItLivePage() {
               <label style={labelStyle} htmlFor="tryName">What should we call you?</label>
               <input id="tryName" value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && void begin()} maxLength={30}
                 placeholder="e.g. Sam" style={{ ...inputStyle, marginBottom: 18 }} autoComplete="given-name" />
-              {/* Country / language / difficulty — the same 32 languages and four levels as the full interview intake. */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 12, marginBottom: 18 }}>
-                <div>
-                  <label style={labelStyle} htmlFor="tryCountry">Your country</label>
-                  <select id="tryCountry" value={country} onChange={e => setCountry(e.target.value)} style={selectStyle}>
-                    <option value="">Select your country…</option>
-                    {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
-                  </select>
-                </div>
+              {/* Interview language (32 languages; English as regional versions) and question difficulty — the same four levels as the full interview intake. */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12, marginBottom: 18 }}>
                 <div>
                   <label style={labelStyle} htmlFor="tryLanguage">Interview language</label>
-                  <select id="tryLanguage" value={language} onChange={e => setLanguage(e.target.value)} style={selectStyle}>
-                    {LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
+                  <select id="tryLanguage" value={languageValue} onChange={e => { languageTouchedRef.current = true; setLanguageValue(e.target.value); }} style={selectStyle}>
+                    {LANGUAGE_CHOICES.map(l => <option key={l.value} value={l.value}>{l.name}</option>)}
                   </select>
                 </div>
                 <div>
                   <label style={labelStyle} htmlFor="tryDifficulty">Question difficulty</label>
-                  <select id="tryDifficulty" value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ ...selectStyle, color: (DIFFICULTIES.find(d => d.value === difficulty) ?? DIFFICULTIES[1]).color, fontWeight: 700 }}>
+                  <select id="tryDifficulty" value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ ...selectStyle, color: (DIFFICULTIES.find(d => d.value === difficulty) ?? DIFFICULTIES[2]).color, fontWeight: 700 }}>
                     {DIFFICULTIES.map(d => <option key={d.value} value={d.value} style={{ color: d.color, background: '#0c1220' }}>{d.value}</option>)}
                   </select>
                 </div>
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-3, #94a3b8)', margin: '-8px 0 18px', lineHeight: 1.5 }}>
-                {language === 'en' ? 'Your interviewer speaks English.' : `Your interviewer will speak, ask and respond in ${LANGUAGES.find(l => l.code === language)?.name ?? 'English'}.`}{' '}
-                {(DIFFICULTIES.find(d => d.value === difficulty) ?? DIFFICULTIES[1]).desc}
+                {language === 'en' ? `Your interviewer speaks ${languageChoice.name}.` : `Your interviewer will speak, ask and respond in ${languageChoice.name}.`}{' '}
+                {(DIFFICULTIES.find(d => d.value === difficulty) ?? DIFFICULTIES[2]).desc}
               </div>
               {isMobile && (
                 <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border, rgba(255,255,255,0.12))', borderRadius: 12, padding: '12px 14px', marginBottom: 18, cursor: 'pointer' }}>
@@ -703,7 +695,7 @@ export default function TryItLivePage() {
                         onTranscript rather than requiring a separate manual click. The typed-answer path below keeps its
                         own manual Submit button, same as the full interview does for typed answers. */}
                     <div style={{ marginTop: 12 }}>
-                      <VoiceInput language={language} onTranscript={text => {
+                      <VoiceInput language={language} country={country || undefined} onTranscript={text => {
                         const combined = (draftRef.current ? draftRef.current + ' ' : '') + text;
                         setDraft(combined);
                         void submit(false, combined);
