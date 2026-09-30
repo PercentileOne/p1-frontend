@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
 import { useSpatiusAvatarSession } from '../hooks/useSpatiusAvatarSession';
-import { speak as speakTts, unlockTTSAudio } from '../api/ttsApi';
+import { speak as speakTts, unlockTTSAudio, setTTSLanguage } from '../api/ttsApi';
 import { setInterviewTicket } from '../api/entitlementsApi';
 import { VoiceInput } from '../components/VoiceInput';
-import { startTryOut, scoreTryOut, coachTryOut, emailTryOutScore, type TryOutStart, type TryOutFeedback, type TryOutResult } from '../api/tryOutApi';
+import { startTryOut, scoreTryOut, coachTryOut, emailTryOutScore, getVisitorCountry, type TryOutStart, type TryOutFeedback, type TryOutResult } from '../api/tryOutApi';
+import { LANGUAGES, DIFFICULTIES } from '../data/interviewOptions';
+import { COUNTRIES } from '../data/countries';
 import { logEvent } from '../api/flowLogger';
 
 // "Try it live" (Francis, 2026-09-21) — the public, no-account taste of the product for visitors from the marketing site and LinkedIn:
@@ -80,7 +82,8 @@ function spatiusTransformFromUrl(interviewer: 'hr' | 'technical'): { x: number; 
   } catch { return SPATIUS_DEFAULT_TRANSFORM; }
 }
 
-// What the marketing homepage passes in the URL (?topic=&name=&go=1). Read in ONE place so the first render and the auto-start agree exactly.
+// What the marketing homepage passes in the URL (?topic=&name=&lang=&level=&country=&go=1). Read in ONE place so the first render and the auto-start
+// agree exactly. Every value is checked against its list here, so a hand-edited link can't put junk in the form (the server validates again).
 function detectMobile(): boolean {
   try {
     const touchOnly = typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(pointer: coarse) and (hover: none)').matches;
@@ -88,15 +91,22 @@ function detectMobile(): boolean {
     return touchOnly || uaMobile;
   } catch { return false; }
 }
-function urlPrefill(): { topic: string; name: string; go: boolean } {
+interface UrlPrefill { topic: string; name: string; language: string; difficulty: string; country: string; go: boolean }
+function urlPrefill(): UrlPrefill {
   try {
     const q = new URLSearchParams(window.location.search);
+    const lang = (q.get('lang') ?? '').toLowerCase();
+    const level = DIFFICULTIES.find(d => d.value.toLowerCase() === (q.get('level') ?? '').toLowerCase())?.value;
+    const country = (q.get('country') ?? '').toUpperCase();
     return {
       topic: (q.get('topic') ?? '').slice(0, 90),
       name: (q.get('name') ?? '').replace(/[^\p{L}\p{M}' .-]/gu, '').slice(0, 40),
+      language: LANGUAGES.some(l => l.code === lang) ? lang : 'en',
+      difficulty: level ?? DEFAULT_DIFFICULTY,
+      country: COUNTRIES.some(c => c.code === country) ? country : '',
       go: q.get('go') === '1',
     };
-  } catch { return { topic: '', name: '', go: false }; }
+  } catch { return { topic: '', name: '', language: 'en', difficulty: DEFAULT_DIFFICULTY, country: '', go: false }; }
 }
 // Straight into the interview room from the homepage (Francis, 2026-09-30): only when both values are present, and never on phones (they need their own
 // tap before the interviewer's sound can play). When true the page's FIRST render is already the "Preparing your interview" screen — no form flash.
@@ -105,12 +115,29 @@ function wantsAutoStart(): boolean {
   return u.go && !detectMobile() && u.topic.trim().length >= 2 && !!u.name.trim();
 }
 
+// The demo's default level: well-rounded and welcoming for a first-time visitor (the full interview's own default is Pro).
+const DEFAULT_DIFFICULTY = 'Standard';
+
 export default function TryItLivePage() {
   const [phase, setPhase] = useState<Phase>(() => (wantsAutoStart() ? 'starting' : 'topic'));
   // The marketing site's hero passes ?topic= so the visitor's role is already filled in.
   const [topic, setTopic] = useState(() => urlPrefill().topic);
   // The marketing site's hero also passes ?name= (it asks for the first name there), so both fields arrive filled in.
   const [name, setName] = useState(() => urlPrefill().name);
+  // Interview language, question difficulty and country (2026-09-30). Country starts from the link if it carries one, otherwise from the visitor's own
+  // country (looked up once, below) — and never overwrites a choice they've already made.
+  const [language, setLanguage] = useState(() => urlPrefill().language);
+  const [difficulty, setDifficulty] = useState(() => urlPrefill().difficulty);
+  const [country, setCountry] = useState(() => urlPrefill().country);
+  useEffect(() => {
+    if (country || wantsAutoStart()) return;
+    let cancelled = false;
+    void getVisitorCountry().then(code => { if (!cancelled && code) setCountry(c => c || code); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // Tell the voice service (neural voice, avatar audio) the interview language for the length of the visit, so it never guesses it from the text.
+  useEffect(() => { setTTSLanguage(language); return () => setTTSLanguage('en'); }, [language]);
   const [start, setStart] = useState<TryOutStart | null>(null);
   const [index, setIndex] = useState(0);
   const [draft, setDraft] = useState('');
@@ -204,7 +231,7 @@ export default function TryItLivePage() {
   // later steps carry mobile:true so the funnel can show how phones get on compared with computers.
   useEffect(() => { if (isMobile) logEvent('try_mobile_visit', { metadata: { w: window.innerWidth } }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (phase === 'starting') logEvent('try_started', { metadata: { topic: topic.trim().slice(0, 60), mobile: isMobile, quick } });
+    if (phase === 'starting') logEvent('try_started', { metadata: { topic: topic.trim().slice(0, 60), mobile: isMobile, quick, language, difficulty, country: country || null } });
     else if (phase === 'asking' && index === 0) logEvent('try_first_question', { metadata: { avatar: useAvatar, provider: useAvatar ? providerRef.current : 'none', mobile: isMobile } });
     else if (phase === 'results') logEvent('try_completed', { metadata: { score: feedback?.overall ?? null, mobile: isMobile } });
     else if (phase === 'blocked') logEvent('try_blocked', { metadata: { reason: blockReason, mobile: isMobile } });
@@ -310,7 +337,7 @@ export default function TryItLivePage() {
     if (subject.length < 2 || !name.trim()) return;
     unlockTTSAudio(); // must be first — see its own note: phones only allow sound that starts inside the tap
     setPhase('starting'); setMessage('');
-    const r = await startTryOut(subject);
+    const r = await startTryOut(subject, { language, difficulty, country });
     if (!r.ok) { setMessage(r.message); setBlockReason(r.capped ? 'capped' : 'error'); setPhase('blocked'); return; }
     const s = quick ? { ...r.data, questions: r.data.questions.slice(0, 1) } : r.data;
     setFirstSpeechStarted(false);
@@ -412,10 +439,10 @@ export default function TryItLivePage() {
 
     // On the last question, start scoring now so the result is ready by the time the closing words finish.
     let scoring: Promise<TryOutResult<TryOutFeedback>> | null = null;
-    if (isLast && nextAnswers.length > 0) scoring = scoreTryOut(start.subject, nextAnswers, firstName);
+    if (isLast && nextAnswers.length > 0) scoring = scoreTryOut(start.subject, nextAnswers, firstName, language);
 
     if (!skip) {
-      const c = await coachTryOut(start.subject, q, text, firstName);
+      const c = await coachTryOut(start.subject, q, text, firstName, language);
       const coach = c.ok ? { text: c.data.coaching, score: c.data.score } : { text: 'Thank you — that gives us something to work with.', score: 5 };
       setCoaching(coach);
       await speakAsCoach(coach.text);
@@ -464,6 +491,7 @@ export default function TryItLivePage() {
   const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', background: 'var(--bg3, #14213a)', border: '1px solid var(--border, rgba(255,255,255,0.12))', borderRadius: 12, padding: '13px 14px', color: 'var(--text, #f1f5f9)', fontSize: 15, outline: 'none', fontFamily: 'inherit' };
   const primary: React.CSSProperties = { background: `linear-gradient(135deg,${GREEN},#047857)`, color: '#fff', border: 'none', borderRadius: 12, padding: '14px 22px', fontSize: 15, fontWeight: 800, cursor: 'pointer', textDecoration: 'none', display: 'inline-block', textAlign: 'center' };
   const ghost: React.CSSProperties = { background: 'rgba(255,255,255,0.06)', color: 'var(--text, #f1f5f9)', border: '1px solid var(--border, rgba(255,255,255,0.14))', borderRadius: 12, padding: '14px 18px', fontSize: 14, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', display: 'inline-block', textAlign: 'center' };
+  const selectStyle: React.CSSProperties = { ...inputStyle, padding: '12px 12px', fontSize: 14, cursor: 'pointer', colorScheme: 'dark' };
   const labelStyle: React.CSSProperties = { display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-3, #94a3b8)', marginBottom: 8 };
 
   return (
@@ -541,7 +569,10 @@ export default function TryItLivePage() {
 
         {phase === 'topic' && (
           <div>
-            <div style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: GREEN, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 20, padding: '5px 12px', marginBottom: 14 }}>Free · no account · about {quick ? '30 seconds' : '3 minutes'}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: GREEN, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 20, padding: '5px 12px' }}>Free · no account · about {quick ? '30 seconds' : '3 minutes'}</div>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#7DB3FF', background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.32)', borderRadius: 20, padding: '5px 12px' }}>🌍 Interview in {LANGUAGES.length} languages</div>
+            </div>
             <h1 style={{ fontSize: 'clamp(28px,6vw,42px)', lineHeight: 1.1, fontWeight: 900, letterSpacing: '-0.03em', margin: '0 0 12px' }}>Try it live.<br /><span style={{ color: GREEN }}>Be interviewed for real.</span></h1>
             <p style={{ fontSize: 16, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', margin: '0 0 22px' }}>
               Tell us the job you're going for. {quick ? 'A live AI interviewer asks you one question — about 30 seconds — and you get a scored result.' : 'A live AI interviewer asks you three questions, your Guardian Angel coach helps after each answer, and you get a scored result.'}
@@ -558,6 +589,32 @@ export default function TryItLivePage() {
               <label style={labelStyle} htmlFor="tryName">What should we call you?</label>
               <input id="tryName" value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && void begin()} maxLength={30}
                 placeholder="e.g. Sam" style={{ ...inputStyle, marginBottom: 18 }} autoComplete="given-name" />
+              {/* Country / language / difficulty — the same 32 languages and four levels as the full interview intake. */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 12, marginBottom: 18 }}>
+                <div>
+                  <label style={labelStyle} htmlFor="tryCountry">Your country</label>
+                  <select id="tryCountry" value={country} onChange={e => setCountry(e.target.value)} style={selectStyle}>
+                    <option value="">Select your country…</option>
+                    {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={labelStyle} htmlFor="tryLanguage">Interview language</label>
+                  <select id="tryLanguage" value={language} onChange={e => setLanguage(e.target.value)} style={selectStyle}>
+                    {LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={labelStyle} htmlFor="tryDifficulty">Question difficulty</label>
+                  <select id="tryDifficulty" value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ ...selectStyle, color: (DIFFICULTIES.find(d => d.value === difficulty) ?? DIFFICULTIES[1]).color, fontWeight: 700 }}>
+                    {DIFFICULTIES.map(d => <option key={d.value} value={d.value} style={{ color: d.color, background: '#0c1220' }}>{d.value}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-3, #94a3b8)', margin: '-8px 0 18px', lineHeight: 1.5 }}>
+                {language === 'en' ? 'Your interviewer speaks English.' : `Your interviewer will speak, ask and respond in ${LANGUAGES.find(l => l.code === language)?.name ?? 'English'}.`}{' '}
+                {(DIFFICULTIES.find(d => d.value === difficulty) ?? DIFFICULTIES[1]).desc}
+              </div>
               {isMobile && (
                 <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border, rgba(255,255,255,0.12))', borderRadius: 12, padding: '12px 14px', marginBottom: 18, cursor: 'pointer' }}>
                   <input type="checkbox" checked={wantsMobileVideo} onChange={e => setWantsMobileVideo(e.target.checked)} style={{ marginTop: 2, flexShrink: 0 }} />
@@ -636,7 +693,7 @@ export default function TryItLivePage() {
                         onTranscript rather than requiring a separate manual click. The typed-answer path below keeps its
                         own manual Submit button, same as the full interview does for typed answers. */}
                     <div style={{ marginTop: 12 }}>
-                      <VoiceInput onTranscript={text => {
+                      <VoiceInput language={language} onTranscript={text => {
                         const combined = (draftRef.current ? draftRef.current + ' ' : '') + text;
                         setDraft(combined);
                         void submit(false, combined);

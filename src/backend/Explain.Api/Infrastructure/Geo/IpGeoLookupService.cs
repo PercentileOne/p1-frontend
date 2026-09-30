@@ -9,7 +9,8 @@ using MaxMind.GeoIP2.Exceptions;
 namespace Explain.Api.Infrastructure.Geo;
 
 // AccuracyKm is the provider's own estimate of how far off the point could be (MaxMind gives one; IPinfo/Geoapify don't).
-public record IpGeoResult(string? Country, string? City, string? Region = null, int? AccuracyKm = null);
+// CountryCode is the ISO 3166-1 alpha-2 code ("GB") — lets callers that need a stable key (e.g. the /try country default) avoid matching on English names.
+public record IpGeoResult(string? Country, string? City, string? Region = null, int? AccuracyKm = null, string? CountryCode = null);
 
 /// <summary>
 /// Resolves a visitor's IP to a country/city for the system event log (see Features/Events).
@@ -115,7 +116,7 @@ public class IpGeoLookupService
         try
         {
             var city = reader.City(ipAddress);
-            return new IpGeoResult(city.Country?.Name, city.City?.Name, city.MostSpecificSubdivision?.Name, city.Location?.AccuracyRadius);
+            return new IpGeoResult(city.Country?.Name, city.City?.Name, city.MostSpecificSubdivision?.Name, city.Location?.AccuracyRadius, city.Country?.IsoCode);
         }
         catch (AddressNotFoundException)
         {
@@ -166,7 +167,7 @@ public class IpGeoLookupService
         using var doc = JsonDocument.Parse(json);
         var r = doc.RootElement;
         if (r.ValueKind != JsonValueKind.Object || r.TryGetProperty("bogon", out _)) return null;
-        return new IpGeoResult(CountryName(Str(r, "country")), Str(r, "city"), Str(r, "region"));
+        return new IpGeoResult(CountryName(Str(r, "country")), Str(r, "city"), Str(r, "region"), null, Str(r, "country"));
     }
 
     // Geoapify: {"city":{"name":"…"},"state":{"name":"…"},"country":{"name":"…","iso_code":"GB"},"location":{…}, …}
@@ -175,7 +176,7 @@ public class IpGeoLookupService
         using var doc = JsonDocument.Parse(json);
         var r = doc.RootElement;
         if (r.ValueKind != JsonValueKind.Object) return null;
-        return new IpGeoResult(Nested(r, "country", "name"), Nested(r, "city", "name"), Nested(r, "state", "name"));
+        return new IpGeoResult(Nested(r, "country", "name"), Nested(r, "city", "name"), Nested(r, "state", "name"), null, Nested(r, "country", "iso_code"));
     }
 
     // NB: Geoapify sometimes appends a neighbourhood — "San Jose (Tasman and Zanker)". Kept as-is on purpose (Francis wants to see it).

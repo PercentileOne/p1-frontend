@@ -46,6 +46,7 @@ public class EndpointMappingSmokeTests
         Assert.Contains("/api/tryout/start", patterns);
         Assert.Contains("/api/tryout/feedback", patterns);
         Assert.Contains("/api/tryout/coach", patterns);
+        Assert.Contains("/api/tryout/country", patterns);
     }
 
     [Fact]

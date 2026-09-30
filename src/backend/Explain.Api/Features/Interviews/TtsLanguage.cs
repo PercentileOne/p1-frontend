@@ -9,11 +9,19 @@ namespace Explain.Api.Features.Interviews;
 /// </summary>
 public static class TtsLanguage
 {
-    private static readonly HashSet<string> Supported = new(StringComparer.OrdinalIgnoreCase)
+    // code -> English name. Same 32 languages as the intake dropdown (src/frontend/src/data/interviewOptions.ts).
+    private static readonly Dictionary<string, string> Names = new(StringComparer.OrdinalIgnoreCase)
     {
-        "en","ar","bg","hr","cs","da","nl","fil","fi","fr","de","el","hi","hu","id","it","ja","ko","ms","no","pl","pt","ro","ru","sk","es","sv","ta","tr","uk","vi","zh",
+        ["en"] = "English", ["ar"] = "Arabic", ["bg"] = "Bulgarian", ["hr"] = "Croatian", ["cs"] = "Czech", ["da"] = "Danish", ["nl"] = "Dutch", ["fil"] = "Filipino",
+        ["fi"] = "Finnish", ["fr"] = "French", ["de"] = "German", ["el"] = "Greek", ["hi"] = "Hindi", ["hu"] = "Hungarian", ["id"] = "Indonesian", ["it"] = "Italian",
+        ["ja"] = "Japanese", ["ko"] = "Korean", ["ms"] = "Malay", ["no"] = "Norwegian", ["pl"] = "Polish", ["pt"] = "Portuguese", ["ro"] = "Romanian", ["ru"] = "Russian",
+        ["sk"] = "Slovak", ["es"] = "Spanish", ["sv"] = "Swedish", ["ta"] = "Tamil", ["tr"] = "Turkish", ["uk"] = "Ukrainian", ["vi"] = "Vietnamese", ["zh"] = "Chinese (Mandarin)",
     };
 
+    /// <summary>The English name of a supported language code ("fr" → "French"), or null if it isn't one of the 32.</summary>
+    public static string? NameFor(string? code) =>
+        !string.IsNullOrWhiteSpace(code) && Names.TryGetValue(code.Trim(), out var n) ? n : null;
+
     public static string? Normalise(string? code) =>
-        !string.IsNullOrWhiteSpace(code) && Supported.Contains(code.Trim()) ? code.Trim().ToLowerInvariant() : null;
+        !string.IsNullOrWhiteSpace(code) && Names.ContainsKey(code.Trim()) ? code.Trim().ToLowerInvariant() : null;
 }

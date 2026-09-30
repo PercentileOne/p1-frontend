@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { whisperLanguage, speechLocale } from '../data/interviewOptions';
 
 interface Props {
   onTranscript: (text: string, meta: TranscriptMeta) => void;
@@ -9,6 +10,8 @@ interface Props {
   /** Fires whenever the mic actually starts/stops listening — lets the parent disable
    * Repeat/Pause/Pass while a voice answer is being captured (see InterviewRoomPage.tsx). */
   onListeningChange?: (isListening: boolean) => void;
+  /** The interview language code (see data/interviewOptions.ts). Answers are transcribed in it; defaults to English, exactly as before. */
+  language?: string;
 }
 
 export interface TranscriptMeta {
@@ -34,18 +37,19 @@ function estimateWPM(text: string, durationSeconds: number): number {
   return Math.round((text.trim().split(/\s+/).filter(Boolean).length / durationSeconds) * 60);
 }
 
-async function transcribeWithWhisper(blob: Blob, _durationSeconds: number): Promise<{ text: string; confidence: number }> {
+async function transcribeWithWhisper(blob: Blob, _durationSeconds: number, language: string): Promise<{ text: string; confidence: number }> {
+  const whisperLang = whisperLanguage(language);
   const ext = blob.type.includes('ogg') ? 'ogg' : blob.type.includes('mp4') ? 'mp4' : 'webm';
   const form = new FormData();
   form.append('file', blob, `recording.${ext}`);
   form.append('model', 'whisper-1');
-  form.append('language', 'en');
+  form.append('language', whisperLang);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 20_000);
 
   try {
-    const res = await fetch(`${API_BASE}/api/ai/transcribe?language=en`, {
+    const res = await fetch(`${API_BASE}/api/ai/transcribe?language=${encodeURIComponent(whisperLang)}`, {
       method: 'POST',
       headers: { 'Content-Type': blob.type || 'audio/webm' },
       body: blob,
@@ -59,7 +63,7 @@ async function transcribeWithWhisper(blob: Blob, _durationSeconds: number): Prom
   }
 }
 
-export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false, highlightRecord = false, onListeningChange }: Props) {
+export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false, highlightRecord = false, onListeningChange, language = 'en' }: Props) {
   const [micState, setMicState] = useState<MicState>('idle');
   const [interim, setInterim] = useState('');
   const [processingLabel, setProcessingLabel] = useState('Processing…');
@@ -144,7 +148,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
       const recognition = new SpeechRec();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = 'en-GB';
+      recognition.lang = speechLocale(language);
       recognitionRef.current = recognition;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -170,7 +174,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
       recognition.onend = () => {};
       recognition.start();
     }
-  }, [disabled, micState, animateBars, onInterimTranscript]);
+  }, [disabled, micState, animateBars, onInterimTranscript, language]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
@@ -212,7 +216,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
             const mimeType = chunksRef.current[0]?.type ?? 'audio/webm';
             const blob = new Blob(chunksRef.current, { type: mimeType });
             console.log(`[VoiceInput] Sending ${blob.size} bytes (${mimeType}) to Whisper, duration ${duration.toFixed(1)}s`);
-            const result = await transcribeWithWhisper(blob, duration);
+            const result = await transcribeWithWhisper(blob, duration, language);
             text = result.text;
             confidence = result.confidence;
             console.log(`[VoiceInput] Whisper returned: ${JSON.stringify(text)}`);
@@ -251,7 +255,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
     };
 
     finish();
-  }, [onTranscript, stopMic, hasEverRecorded]);
+  }, [onTranscript, stopMic, hasEverRecorded, language]);
 
   useEffect(() => {
     return () => {

@@ -44,9 +44,26 @@ async function post<T>(path: string, body: unknown): Promise<TryOutResult<T>> {
   }
 }
 
-export const startTryOut = (topic: string) => post<TryOutStart>('/api/tryout/start', { topic });
-export const scoreTryOut = (topic: string, answers: { question: string; answer: string }[], name: string) => post<TryOutFeedback>('/api/tryout/feedback', { topic, answers, name });
-export const coachTryOut = (topic: string, question: string, answer: string, name: string) => post<TryOutCoaching>('/api/tryout/coach', { topic, question, answer, name });
+// What the visitor chose on the form (2026-09-30): the interview language (one of the 32), the question difficulty, and their country (ISO code).
+// The server validates all three and quietly falls back to English / Standard / no country, so an old link or a tampered value can't break anything.
+export interface TryOutOptions { language: string; difficulty: string; country: string }
+
+export const startTryOut = (topic: string, options: TryOutOptions) =>
+  post<TryOutStart>('/api/tryout/start', { topic, language: options.language, difficulty: options.difficulty, country: options.country || null });
+export const scoreTryOut = (topic: string, answers: { question: string; answer: string }[], name: string, language: string) =>
+  post<TryOutFeedback>('/api/tryout/feedback', { topic, answers, name, language });
+export const coachTryOut = (topic: string, question: string, answer: string, name: string, language: string) =>
+  post<TryOutCoaching>('/api/tryout/coach', { topic, question, answer, name, language });
+
+/** The visitor's country (ISO code) for pre-selecting the dropdown; null if it can't be worked out or the call fails — never throws. */
+export async function getVisitorCountry(): Promise<string | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/tryout/country`);
+    if (!res.ok) return null;
+    const json = await res.json() as { country?: string | null };
+    return json.country ?? null;
+  } catch { return null; }
+}
 // "Email me my score" (2026-09-30) — one transactional email with the visitor's own score; the tips opt-in is a separate, unticked choice.
 export const emailTryOutScore = (body: { email: string; name: string; subject: string; score: number; strongest: string | null; weakest: string | null; tipsOptIn: boolean }) =>
   post<{ sent: boolean }>('/api/tryout/email-score', body);

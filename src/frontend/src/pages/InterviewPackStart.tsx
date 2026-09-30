@@ -15,47 +15,7 @@ import { logRoleActivity } from '../api/roleActivityApi';
 import { submitConfidenceSurvey, submitSurveyResponse } from '../api/confidenceSurveyApi';
 import { pickSurveyQuestion, markSurveyAnswered } from '../lib/surveyQuestions';
 import { useAuthStore } from '../auth/authStore';
-
-// The exact 32 languages ElevenLabs' eleven_flash_v2_5 model (Amina/Wayne/Michelle's voice
-// model, see SpeakVoiceHandler.cs/AvatarAudioHandler.cs) genuinely supports — confirmed against
-// ElevenLabs' own docs, 2026-09-18. Previously a smaller, hand-picked 15-language list that
-// included Swahili, which ElevenLabs doesn't support at all (would have generated correct
-// Swahili text that then got spoken in an English-accented voice, the exact bug this whole
-// multilingual pass fixed for the other 12) — dropped for that reason, not an oversight.
-const LANGUAGES = [
-  { code: 'en', name: 'English' },
-  { code: 'ar', name: 'Arabic' },
-  { code: 'bg', name: 'Bulgarian' },
-  { code: 'hr', name: 'Croatian' },
-  { code: 'cs', name: 'Czech' },
-  { code: 'da', name: 'Danish' },
-  { code: 'nl', name: 'Dutch' },
-  { code: 'fil', name: 'Filipino' },
-  { code: 'fi', name: 'Finnish' },
-  { code: 'fr', name: 'French' },
-  { code: 'de', name: 'German' },
-  { code: 'el', name: 'Greek' },
-  { code: 'hi', name: 'Hindi' },
-  { code: 'hu', name: 'Hungarian' },
-  { code: 'id', name: 'Indonesian' },
-  { code: 'it', name: 'Italian' },
-  { code: 'ja', name: 'Japanese' },
-  { code: 'ko', name: 'Korean' },
-  { code: 'ms', name: 'Malay' },
-  { code: 'no', name: 'Norwegian' },
-  { code: 'pl', name: 'Polish' },
-  { code: 'pt', name: 'Portuguese' },
-  { code: 'ro', name: 'Romanian' },
-  { code: 'ru', name: 'Russian' },
-  { code: 'sk', name: 'Slovak' },
-  { code: 'es', name: 'Spanish' },
-  { code: 'sv', name: 'Swedish' },
-  { code: 'ta', name: 'Tamil' },
-  { code: 'tr', name: 'Turkish' },
-  { code: 'uk', name: 'Ukrainian' },
-  { code: 'vi', name: 'Vietnamese' },
-  { code: 'zh', name: 'Chinese (Mandarin)' },
-];
+import { LANGUAGES, DIFFICULTIES } from '../data/interviewOptions';
 
 // Which stage of the candidate's REAL interview process this practice session represents —
 // most candidates now face 2+ rounds (Francis: knows someone who had 5-6 for a Barclays VP
@@ -115,33 +75,6 @@ function minDifficultyIndexForSalary(salaryValue: string): number {
   if (boost === 4) return 3;          // Expert only
   return 2;                           // boost 2 or 3 -> Pro floor
 }
-
-const DIFFICULTIES = [
-  {
-    value: 'Beginner',
-    color: '#4F8EF7',
-    borderColor: 'rgba(79,142,247,0.3)',
-    desc: 'Foundational questions with no pressure — a genuine first practice run, great if you’re new to this.',
-  },
-  {
-    value: 'Standard',
-    color: '#34D399',
-    borderColor: 'rgba(52,211,153,0.3)',
-    desc: 'Well-rounded questions to build genuine confidence and solid preparation.',
-  },
-  {
-    value: 'Pro',
-    color: '#F59E0B',
-    borderColor: 'rgba(245,158,11,0.3)',
-    desc: 'Challenging questions that probe deeper — sharpen your edge beyond the basics.',
-  },
-  {
-    value: 'Expert',
-    color: '#EF4444',
-    borderColor: 'rgba(239,68,68,0.3)',
-    desc: "We'll treat you like the leading authority in your field. Intense. Technical. Unforgiving.",
-  },
-];
 
 interface IncomingState {
   jobSpec?: string;
