@@ -37,6 +37,8 @@ async function prepareSdk(ticket: string): Promise<Sdk> {
 // stageRef: created by the page and attached to the (always-mounted) element the avatar should be drawn into.
 export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement | null>) {
   const [status, setStatus] = useState<SpatiusStatus>('idle');
+  // True while the avatar is actually playing speech (drives the page's "getting ready" overlay).
+  const [speaking, setSpeaking] = useState(false);
   const viewRef = useRef<AvatarView | null>(null);
   const ctrlRef = useRef<AvatarController | null>(null);
   // While speak() is waiting for the clip to finish playing: the resolver, and whether playback has actually started yet
@@ -73,8 +75,8 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
         const ctrl = view.controller;
         ctrl.onError = e => console.warn('[Spatius]', e.code, e.message);
         ctrl.onConversationState = s => {
-          if (s === sdk.ConversationState.playing) sawPlayingRef.current = true;
-          else if (s === sdk.ConversationState.idle && sawPlayingRef.current) { const w = waiterRef.current; waiterRef.current = null; w?.(); }
+          if (s === sdk.ConversationState.playing) { sawPlayingRef.current = true; setSpeaking(true); }
+          else if (s === sdk.ConversationState.idle) { setSpeaking(false); if (sawPlayingRef.current) { const w = waiterRef.current; waiterRef.current = null; w?.(); } }
         };
         viewRef.current = view; ctrlRef.current = ctrl;
         // On iPhones the browser can leave the sound system's start-up pending forever unless it happens inside a tap — a promise that
@@ -124,5 +126,5 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   // Always release the (billed) session if the page goes away.
   useEffect(() => release, [release]);
 
-  return { status, connect, speak, interrupt, disconnect };
+  return { status, speaking, connect, speak, interrupt, disconnect };
 }

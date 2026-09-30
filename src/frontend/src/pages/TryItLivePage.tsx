@@ -94,6 +94,9 @@ export default function TryItLivePage() {
   const [avatarState, setAvatarState] = useState<'off' | 'connecting' | 'live'>('off');
   const [shareOpen, setShareOpen] = useState(false);
   // "Email me my score" box on the score screen — for visitors who aren't ready to make an account yet.
+  // "Getting ready" overlay (Francis, 2026-09-30): between the interviewer appearing and their first word there are a few seconds of a still frame, which
+  // looked like a freeze. Show a spinner + message until they actually start speaking (or a hard 7s cap, so it can never get stuck).
+  const [firstSpeechStarted, setFirstSpeechStarted] = useState(false);
   const [scoreEmail, setScoreEmail] = useState('');
   const [tipsOptIn, setTipsOptIn] = useState(false);
   const [emailState, setEmailState] = useState<'idle' | 'sending' | 'sent'>('idle');
@@ -176,6 +179,19 @@ export default function TryItLivePage() {
   // people were leaving silently mid-demo with nothing logged between Q1 and the score. try_answering = the question has been
   // read out and it's the visitor's turn; try_answer_submitted = they answered or skipped; try_left = they closed/navigated
   // away while still mid-demo (carries the phase + question number, i.e. exactly where they gave up).
+  const getReadyActive = phase === 'asking' && index === 0 && !firstSpeechStarted;
+  useEffect(() => {
+    if (!getReadyActive) return;
+    const cap = window.setTimeout(() => setFirstSpeechStarted(true), 7000);
+    return () => window.clearTimeout(cap);
+  }, [getReadyActive]);
+  // Reads the avatars' reported state (plain values, not refs); the linter can't tell that from the hooks' return objects, which also carry ref callbacks.
+  /* eslint-disable react-hooks/refs */
+  const anyAvatarSpeaking = spatius.speaking || hr.avatarPoseState === 'speaking' || technical.avatarPoseState === 'speaking';
+  /* eslint-enable react-hooks/refs */
+  useEffect(() => {
+    if (getReadyActive && anyAvatarSpeaking) setFirstSpeechStarted(true);
+  }, [getReadyActive, anyAvatarSpeaking]);
   const enteredAtRef = useRef(0);
   useEffect(() => { enteredAtRef.current = Date.now(); }, []);
   const midDemoRef = useRef({ phase, index });
@@ -259,6 +275,7 @@ export default function TryItLivePage() {
     const r = await startTryOut(subject);
     if (!r.ok) { setMessage(r.message); setBlockReason(r.capped ? 'capped' : 'error'); setPhase('blocked'); return; }
     const s = quick ? { ...r.data, questions: r.data.questions.slice(0, 1) } : r.data;
+    setFirstSpeechStarted(false);
     setStart(s); setIndex(0); setAnswers([]); setSkipped(0); setFeedback(null); setShareOpen(false);
     // Must begin from this click so the browser lets audio play. Connecting can fail or be slow — the interview goes ahead either way.
     let live = false;
@@ -375,7 +392,7 @@ export default function TryItLivePage() {
   function restart() {
     cancelSpeechRef.current?.(); busyRef.current = false;
     void hr.disconnect(); void technical.disconnect(); void spatius.disconnect();
-    setStart(null); setAnswers([]); setSkipped(0); setFeedback(null); setDraft(''); setCoaching(null); setSkipTransition(false); setIndex(0); setAvatarState('off'); setUseAvatar(false); setShareOpen(false); setEmailOpen(false); setEmailState('idle'); setPhase('topic');
+    setStart(null); setAnswers([]); setSkipped(0); setFeedback(null); setDraft(''); setCoaching(null); setSkipTransition(false); setIndex(0); setAvatarState('off'); setUseAvatar(false); setShareOpen(false); setEmailOpen(false); setEmailState('idle'); setFirstSpeechStarted(false); setPhase('topic');
   }
 
   // ── Sharing ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -454,9 +471,20 @@ export default function TryItLivePage() {
               <div style={{ position: 'absolute', inset: 0, borderRadius: 18, boxShadow: phase === 'asking' ? `inset 0 0 0 3px ${GREEN}88` : 'inset 0 0 0 0 transparent', transition: 'box-shadow 0.3s', pointerEvents: 'none' }} />
             </>
           )}
+          {start && getReadyActive && (
+            <div role="status" aria-live="polite" style={{ position: 'absolute', inset: 0, zIndex: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, background: 'rgba(5,8,15,0.55)', backdropFilter: 'blur(2px)' }}>
+              <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
+                <circle cx="23" cy="23" r="18" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="4" />
+                <path d="M23 5 a18 18 0 0 1 18 18" fill="none" stroke={GREEN} strokeWidth="4" strokeLinecap="round">
+                  <animateTransform attributeName="transform" type="rotate" from="0 23 23" to="360 23 23" dur="0.9s" repeatCount="indefinite" />
+                </path>
+              </svg>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', letterSpacing: '0.01em' }}>{start.interviewerName} is getting ready…</div>
+            </div>
+          )}
           {start && (
             <div style={{ position: 'absolute', left: 12, bottom: 12, background: 'rgba(0,0,0,0.6)', borderRadius: 8, padding: '5px 10px', fontSize: 12, fontWeight: 700 }}>
-              {start.interviewerName} · Interviewer{phase === 'asking' ? ' · speaking…' : ''}
+              {start.interviewerName} · Interviewer{phase === 'asking' ? (getReadyActive ? ' · getting ready…' : ' · speaking…') : ''}
             </div>
           )}
         </div>
