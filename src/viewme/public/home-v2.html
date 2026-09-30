@@ -60,7 +60,8 @@
   .drawer.open{display:block}
   .drawer a{display:block;padding:13px 4px;text-decoration:none;font-weight:700;border-bottom:1px solid var(--line)}
   .drawer .pill{display:block;text-align:center;margin-top:14px;padding:13px}
-  @media(max-width:1260px){.links{display:none}.burger{display:flex}}
+  /* 1300 (was 1260): with 'Our story' back in the bar, the full bar needs ~1295px — below that it collapses to the burger menu */
+  @media(max-width:1300px){.links{display:none}.burger{display:flex}}
   @media(max-width:760px){.nav-right .pill{display:none}}
   @media(max-width:480px){.login{display:none}}
 
@@ -263,6 +264,7 @@
       <a class="try" href="#try">Try it live</a>
       <a href="#interviewers">Interviewers</a>
       <a href="/how-we-score.html" onclick="openScoreModal(event)">How we score</a>
+      <a href="/about.html">Our story</a>
       <a href="#pricing">Pricing</a>
       <a href="#recruiters">Recruiters</a>
       <a href="/cv-salary.html">CV Analyzer</a>
@@ -281,6 +283,7 @@
     <a href="#features">What you get</a>
     <a href="#interviewers">Your interviewers</a>
     <a href="/how-we-score.html" onclick="openScoreModal(event)">How we score</a>
+    <a href="/about.html">Our story</a>
     <!-- kept in the mobile drawer (plenty of room there) even though trimmed from the desktop bar for width -->
     <a href="#pricing">Pricing</a>
     <a href="#recruiters">Recruiters</a>
