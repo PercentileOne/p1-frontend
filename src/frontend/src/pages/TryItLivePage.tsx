@@ -616,6 +616,18 @@ export default function TryItLivePage() {
               <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap', marginTop: 14, fontSize: 11.5, color: 'var(--text-3, #94a3b8)' }}>
                 <span><span style={{ color: RED }}>●</span> needs work (under 3)</span><span><span style={{ color: AMBER }}>●</span> getting there (3–6)</span><span><span style={{ color: GREEN }}>●</span> strong (7+)</span>
               </div>
+              {/* Context for the number (Francis, 2026-09-30): a single short answer scores low on depth by nature, and a visitor could read that as
+                  "the product says I'm bad". Say plainly what the score is, and what a low depth means. */}
+              {start.questions.length === 1 && (
+                <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', textAlign: 'center', marginTop: 16, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)' }}>
+                  <strong style={{ color: GREEN }}>A quick read.</strong> This score comes from a single answer. The full interview is 5–20 questions and scores the same five areas across many answers — a much fuller and fairer picture.
+                </div>
+              )}
+              {feedback.dimensions.depth <= 2 && (
+                <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', textAlign: 'center', marginTop: 10 }}>
+                  💡 <strong>Low depth usually means a short or general answer.</strong> Try adding a real example: what you did, how you did it, and the result.
+                </div>
+              )}
             </div>
 
             {/* "Email me this score" — straight under the score, where people are looking (Francis, 2026-09-30: the box was further down and got missed).
