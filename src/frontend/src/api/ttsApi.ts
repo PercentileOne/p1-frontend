@@ -185,6 +185,7 @@ async function speakElevenLabs(
   volume = 1.0,
   onAnalyser?: (a: AnalyserNode) => void,
   isCancelled?: () => boolean,
+  onStart?: () => void,
 ): Promise<() => void> {
   // Resume the AudioContext FIRST — as the very first await, before any network
   // call — so the browser still considers it part of the click that got us here.
@@ -256,6 +257,7 @@ async function speakElevenLabs(
   source.onended = () => { clearTimeout(safetyTimer); done(); };
 
   source.start();
+  onStart?.();
 
   return () => { ended = true; try { source.stop(); } catch { /* already ended */ } };
 }
@@ -265,6 +267,7 @@ function speakWebSpeech(
   role: 'hr' | 'technical' | 'michelle',
   onEnd: () => void,
   onWordBoundary?: (charIndex: number) => void,
+  onStart?: () => void,
 ): () => void {
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(sanitiseForTTS(text));
@@ -300,6 +303,7 @@ function speakWebSpeech(
     if (safetyTimer) clearTimeout(safetyTimer);
     onEnd();
   };
+  if (onStart) utterance.onstart = () => onStart();
   utterance.onend   = done;
   utterance.onerror = done;
   safetyTimer = setTimeout(done, utterance.text.split(/\s+/).length * 480 + 6000);
@@ -315,12 +319,14 @@ function speakWebSpeech(
  * Returns a cancel function.
  * onAnalyser: called with a live AnalyserNode (ElevenLabs) or null (Web Speech).
  * onWordBoundary: called on each spoken word boundary (Web Speech only).
+ * onStart: called the moment audio actually begins playing (neural voice or the Web Speech fallback) — lets a page end a "getting ready" state on the real event.
  */
 export function speak(
   text: string,
   role: 'hr' | 'technical' | 'michelle',
   onEnd: () => void,
   onAnalyser?: (a: AnalyserNode | null) => void,
+  onStart?: () => void,
 ): () => void {
   let cancelled = false;
   let cancelAudio: (() => void) | null = null;
@@ -334,7 +340,7 @@ export function speak(
   // over unchanged from the old Mike debrief) is untouched.
   speakElevenLabs(text, role, () => {
     if (!cancelled) onEnd();
-  }, role === 'michelle' ? 0.65 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined, () => cancelled)
+  }, role === 'michelle' ? 0.65 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined, () => cancelled, onStart)
     .then(cancel => { cancelAudio = cancel; })
     .catch((err) => {
       // Backend proxy or ElevenLabs itself failed — fall back to Web Speech. Logged (not
@@ -346,7 +352,7 @@ export function speak(
         onAnalyser?.(null);
         // Keep this cancel too — it used to be dropped, so cancelling during the robotic
         // fallback voice never actually stopped it.
-        cancelAudio = speakWebSpeech(text, role, onEnd);
+        cancelAudio = speakWebSpeech(text, role, onEnd, undefined, onStart);
       }
     });
 

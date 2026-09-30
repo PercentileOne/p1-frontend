@@ -283,7 +283,8 @@ export default function TryItLivePage() {
       try { await withCeiling(providerRef.current === 'spatius' ? spatius.speak(text, s.interviewer) : seat.speak(text, s.interviewer, () => setFirstSpeechStarted(true)), text); return; }
       catch { setUseAvatar(false); setAvatarState('off'); /* fall through to the voice-only path */ }
     }
-    await withCeiling(new Promise<void>(resolve => { cancelSpeechRef.current = speakTts(text, s.interviewer, resolve); }), text);
+    // Voice-only path: same idea — the overlay ends when the voice really starts playing, not on a guess.
+    await withCeiling(new Promise<void>(resolve => { cancelSpeechRef.current = speakTts(text, s.interviewer, resolve, undefined, () => setFirstSpeechStarted(true)); }), text);
   }, [hr, technical, spatius]);
 
   // The Guardian Angel coach: always the plain narrator voice ('hr'), never the avatar — same as the full interview.
