@@ -57,7 +57,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
     const w = waiterRef.current; waiterRef.current = null; w?.();
   }, []);
 
-  const connect = useCallback((avatarId: string, ticket: string): Promise<void> => {
+  const connect = useCallback((avatarId: string, ticket: string, transform?: { x: number; y: number; scale: number }): Promise<void> => {
     if (ctrlRef.current) return Promise.resolve();
     if (connectingRef.current) return connectingRef.current;
     const attempt = (async () => {
@@ -72,6 +72,12 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
         const avatar = await sdk.AvatarManager.shared.load(avatarId);
         if (cancelled()) throw new Error('cancelled');
         const view = new sdk.AvatarView(avatar, stage);
+        // Framing: the SDK's own zoom/position control (scale 1 = its default, smaller = further back). Applied now and again on the first rendered frame,
+        // because the view finishes initialising asynchronously and an early value can be ignored.
+        if (transform) {
+          try { view.avatarTransform = transform; } catch { /* not ready yet — onFirstRendering below applies it */ }
+          view.onFirstRendering = () => { try { view.avatarTransform = transform; } catch { /* ignore */ } };
+        }
         const ctrl = view.controller;
         ctrl.onError = e => console.warn('[Spatius]', e.code, e.message);
         ctrl.onConversationState = s => {

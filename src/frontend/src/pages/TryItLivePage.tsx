@@ -60,10 +60,20 @@ const withTimeout = <T,>(p: Promise<T>, ms: number, label: string): Promise<T> =
   Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`${label} timed out after ${Math.round(ms / 1000)}s`)), ms))]);
 const SPATIUS_CONNECT_LIMIT_MS = 15000;
 const HEYGEN_CONNECT_LIMIT_MS = 25000;
-// How wide the box Spatius draws Wayne into is, as a % of the (16:9) video stage. The avatar's own camera zooms with the box's shape, so a
-// NARROWER box pulls him back (more headroom, more of his shoulders and chest) and a wider one zooms him in. 60% ≈ a 1.07 : 1 box.
-// Tuned by eye with Francis on 2026-09-29 (full width was far too close) — change this one number to adjust.
-const SPATIUS_STAGE_WIDTH_PCT = 60;
+// Spatius framing (Francis, 2026-09-30). The box the avatar is drawn into is the FULL stage width — narrowing it just cropped his shoulders with hard
+// vertical edges. Zoom and position come from the SDK's own avatarTransform instead (scale 1 = default; smaller = further back). Defaults are set below once
+// tuned by eye on /dev/spatius-test; while tuning, ?scale=0.75&ay=-0.2 (and ax) on the demo URL overrides them for that visit.
+const SPATIUS_STAGE_WIDTH_PCT = 100;
+const SPATIUS_DEFAULT_TRANSFORM: { x: number; y: number; scale: number } | undefined = undefined;
+function spatiusTransformFromUrl(): { x: number; y: number; scale: number } | undefined {
+  try {
+    const q = new URLSearchParams(window.location.search);
+    const scale = parseFloat(q.get('scale') ?? '');
+    if (!Number.isFinite(scale) || scale < 0.2 || scale > 3) return SPATIUS_DEFAULT_TRANSFORM;
+    const n = (k: string) => { const v = parseFloat(q.get(k) ?? ''); return Number.isFinite(v) ? Math.max(-2, Math.min(2, v)) : 0; };
+    return { x: n('ax'), y: n('ay'), scale };
+  } catch { return SPATIUS_DEFAULT_TRANSFORM; }
+}
 
 export default function TryItLivePage() {
   const [phase, setPhase] = useState<Phase>('topic');
@@ -304,7 +314,7 @@ export default function TryItLivePage() {
       if (s.avatarProvider === 'spatius' && s.spatiusAvatarId && s.ticket && !isIos) {
         logEvent('try_avatar_connecting', { metadata: { provider: 'spatius', mobile: isMobile } });
         try {
-          await withTimeout(spatius.connect(s.spatiusAvatarId, s.ticket), SPATIUS_CONNECT_LIMIT_MS, 'spatius');
+          await withTimeout(spatius.connect(s.spatiusAvatarId, s.ticket, spatiusTransformFromUrl()), SPATIUS_CONNECT_LIMIT_MS, 'spatius');
           live = true; providerRef.current = 'spatius'; setProvider('spatius'); setAvatarState('live');
           logEvent('try_avatar_connected', { metadata: { provider: 'spatius', ms: Math.round(performance.now() - connectStarted), mobile: isMobile } });
         } catch (e) {

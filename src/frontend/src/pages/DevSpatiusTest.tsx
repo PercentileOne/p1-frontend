@@ -42,6 +42,9 @@ function Panel({ name, role, storageKey, handleRef, background, blur }: { name: 
   const [busy, setBusy] = useState(false);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState('');
+  // Framing sliders (SDK avatarTransform): find the zoom/position that looks right, then copy the values into the /try URL (?scale=..&ax=..&ay=..).
+  const [tf, setTf] = useState({ scale: 1, x: 0, y: 0 });
+  useEffect(() => { const v = viewRef.current; if (v) { try { v.avatarTransform = tf; } catch { /* not ready */ } } }, [tf, connected]);
 
   function disconnect() {
     window.clearTimeout(idleRef.current);
@@ -106,6 +109,19 @@ function Panel({ name, role, storageKey, handleRef, background, blur }: { name: 
         <div ref={boxRef} style={{ position: 'absolute', inset: 0 }} />
       </div>
       <div style={{ fontSize: 12, color: 'var(--text-3)', margin: '8px 0' }}>{status}</div>
+      <div style={{ border: '1px solid var(--border)', borderRadius: 10, padding: '8px 10px', marginBottom: 8, fontSize: 12, color: 'var(--text-2)' }}>
+        {([['scale', 'Zoom (smaller = further back)', 0.3, 1.5], ['x', 'Left / right', -1, 1], ['y', 'Up / down', -1, 1]] as const).map(([k, label, min, max]) => (
+          <label key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+            <span style={{ width: 170 }}>{label}</span>
+            <input type="range" min={min} max={max} step={0.01} value={tf[k]} onChange={e => setTf(t => ({ ...t, [k]: Number(e.target.value) }))} style={{ flex: 1 }} />
+            <span style={{ width: 40, textAlign: 'right' }}>{tf[k].toFixed(2)}</span>
+          </label>
+        ))}
+        <div style={{ marginTop: 4, color: 'var(--text-3)' }}>
+          For /try add: <code>?scale={tf.scale.toFixed(2)}&amp;ax={tf.x.toFixed(2)}&amp;ay={tf.y.toFixed(2)}</code>
+          <button onClick={() => setTf({ scale: 1, x: 0, y: 0 })} style={{ marginLeft: 8, background: 'none', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-2)', cursor: 'pointer', fontSize: 11, padding: '1px 8px' }}>Reset</button>
+        </div>
+      </div>
       <input value={avatarId} onChange={e => setAvatarId(e.target.value)} placeholder="Spatius avatar ID (Avatar Library or your custom avatar)" style={field} />
       <textarea value={text} onChange={e => setText(e.target.value)} rows={3} style={field} />
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
