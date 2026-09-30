@@ -64,8 +64,13 @@ const HEYGEN_CONNECT_LIMIT_MS = 25000;
 // vertical edges. Zoom and position come from the SDK's own avatarTransform instead (scale 1 = default; smaller = further back). Defaults are set below once
 // tuned by eye on /dev/spatius-test; while tuning, ?scale=0.75&ay=-0.2 (and ax) on the demo URL overrides them for that visit.
 const SPATIUS_STAGE_WIDTH_PCT = 100;
-const SPATIUS_DEFAULT_TRANSFORM: { x: number; y: number; scale: number } | undefined = undefined;
-function spatiusTransformFromUrl(): { x: number; y: number; scale: number } | undefined {
+// Tuned by eye on /dev/spatius-test in a 16:9 box (the same shape as this stage) — Francis, 2026-09-30. Per interviewer, because each avatar's portrait is framed differently.
+const SPATIUS_DEFAULT_TRANSFORMS: Record<'hr' | 'technical', { x: number; y: number; scale: number }> = {
+  hr: { x: 0.01, y: -0.1, scale: 1.32 },
+  technical: { x: 0.02, y: -0.32, scale: 1.45 },
+};
+function spatiusTransformFromUrl(interviewer: 'hr' | 'technical'): { x: number; y: number; scale: number } | undefined {
+  const SPATIUS_DEFAULT_TRANSFORM = SPATIUS_DEFAULT_TRANSFORMS[interviewer];
   try {
     const q = new URLSearchParams(window.location.search);
     const scale = parseFloat(q.get('scale') ?? '');
@@ -314,7 +319,7 @@ export default function TryItLivePage() {
       if (s.avatarProvider === 'spatius' && s.spatiusAvatarId && s.ticket && !isIos) {
         logEvent('try_avatar_connecting', { metadata: { provider: 'spatius', mobile: isMobile } });
         try {
-          await withTimeout(spatius.connect(s.spatiusAvatarId, s.ticket, spatiusTransformFromUrl()), SPATIUS_CONNECT_LIMIT_MS, 'spatius');
+          await withTimeout(spatius.connect(s.spatiusAvatarId, s.ticket, spatiusTransformFromUrl(s.interviewer === 'technical' ? 'technical' : 'hr')), SPATIUS_CONNECT_LIMIT_MS, 'spatius');
           live = true; providerRef.current = 'spatius'; setProvider('spatius'); setAvatarState('live');
           logEvent('try_avatar_connected', { metadata: { provider: 'spatius', ms: Math.round(performance.now() - connectStarted), mobile: isMobile } });
         } catch (e) {
