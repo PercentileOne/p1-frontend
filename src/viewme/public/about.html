@@ -120,6 +120,9 @@ footer a:hover{color:var(--ink)}
 /* When this page is shown inside the homepage's "Our story" popup (an iframe), drop its own header/footer — the popup has its own close button. */
 html.embedded .nav, html.embedded footer{display:none}
 html.embedded body{padding-top:0}
+/* No visible scrollbar in the popup — it still scrolls (wheel, touch, keys). */
+html.embedded{scrollbar-width:none;-ms-overflow-style:none}
+html.embedded::-webkit-scrollbar, html.embedded body::-webkit-scrollbar{display:none;width:0;height:0}
 </style>
 <script>
 (function () {
