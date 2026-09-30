@@ -94,6 +94,14 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
         if (cancelled()) throw new Error('cancelled');
         await ctrl.start();
         if (cancelled()) throw new Error('cancelled');
+        // The test page sets the framing AFTER the avatar is fully started and it works; set early (above) it is ignored on /try. So apply it again
+        // now, and once more shortly after in case the first render pass resets it.
+        if (transform) {
+          const apply = () => { if (viewRef.current === view) { try { view.avatarTransform = transform; } catch { /* ignore */ } } };
+          apply();
+          window.setTimeout(apply, 250);
+          window.setTimeout(apply, 1000);
+        }
         setStatus('connected');
       } catch (e) {
         // Only tear down what this attempt created — a newer attempt may own the refs by now.
