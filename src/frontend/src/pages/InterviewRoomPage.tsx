@@ -1831,6 +1831,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   <div style={{ flex: 3, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {useVoice && (
                       <VoiceInput
+                        language={sessionLanguage}
                         onTranscript={(text, meta) => submitAnswer(text, meta, true)}
                         onInterimTranscript={() => {}}
                         highlightRecord={highlightRecord}

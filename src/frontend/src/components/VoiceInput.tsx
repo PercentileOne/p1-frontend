@@ -27,14 +27,31 @@ const FILLER_WORDS = ['um', 'uh', 'like', 'basically', 'literally', 'you know', 
 const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
 export const whisperConfigured = true;
 
-function detectFillers(text: string): string[] {
+// Only English filler words are known, so they are only flagged in English — in any other language "no fillers found" would be a claim we can't back up,
+// and this list would match ordinary words (e.g. "like" inside other languages' text).
+function detectFillers(text: string, language: string): string[] {
+  if (language !== 'en') return [];
   const lower = text.toLowerCase();
   return FILLER_WORDS.filter(f => lower.includes(f));
 }
 
-function estimateWPM(text: string, durationSeconds: number): number {
+// Word count for the pace figure. Splitting on spaces is right for most of the 32 interview languages but wrong for Japanese and Chinese (no spaces, so a
+// whole answer would count as one "word" and read as an absurdly slow pace) — so use the browser's own word segmenter where it exists.
+function countWords(text: string, language: string): number {
+  try {
+    if (typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
+      const seg = new Intl.Segmenter(speechLocale(language), { granularity: 'word' });
+      let n = 0;
+      for (const part of seg.segment(text)) if (part.isWordLike) n++;
+      return n;
+    }
+  } catch { /* fall through to the space-splitting count */ }
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function estimateWPM(text: string, durationSeconds: number, language: string): number {
   if (durationSeconds < 1) return 0;
-  return Math.round((text.trim().split(/\s+/).filter(Boolean).length / durationSeconds) * 60);
+  return Math.round((countWords(text, language) / durationSeconds) * 60);
 }
 
 async function transcribeWithWhisper(blob: Blob, _durationSeconds: number, language: string): Promise<{ text: string; confidence: number }> {
@@ -246,8 +263,8 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
       if (finalText) {
         const meta: TranscriptMeta = {
           confidence: text ? confidence : 0.65,
-          fillerWords: detectFillers(finalText),
-          paceWPM: estimateWPM(finalText, duration),
+          fillerWords: detectFillers(finalText, language),
+          paceWPM: estimateWPM(finalText, duration, language),
           durationSeconds: Math.round(duration),
         };
         onTranscript(finalText, meta);
