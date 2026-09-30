@@ -318,6 +318,7 @@
         <label for="topic">Which job role should we interview you on?</label>
         <div class="try-row">
           <input id="topic" name="topic" maxlength="90" placeholder="e.g. Product Manager or Software Engineer" aria-label="Job role for your mini interview">
+          <input id="tname" name="name" maxlength="40" placeholder="Your first name" aria-label="Your first name" autocomplete="given-name" style="flex:.6">
           <button class="btn btn-green" type="submit">▶ Try it live</button>
         </div>
         <div class="chips" aria-label="Example job roles">
@@ -326,6 +327,9 @@
           <button type="button" class="chip">Nurse</button>
           <button type="button" class="chip">Marketing Manager</button>
           <button type="button" class="chip">Data Analyst</button>
+          <button type="button" class="chip">Teacher</button>
+          <button type="button" class="chip">Accountant</button>
+          <button type="button" class="chip">Project Manager</button>
         </div>
         <p class="try-note">3 questions · about 3 minutes · free · no account needed</p>
       </form>
@@ -680,7 +684,12 @@
   document.getElementById('tryForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var v = input.value.trim();
-    window.location.href = TRY_URL + (v.length >= 2 ? '?topic=' + encodeURIComponent(v) : '');
+    var n = document.getElementById('tname').value.trim();
+    // The first name is collected here so the demo page arrives with both fields filled in (nothing left to type).
+    var qs = [];
+    if (v.length >= 2) qs.push('topic=' + encodeURIComponent(v));
+    if (n) qs.push('name=' + encodeURIComponent(n.slice(0, 40)));
+    window.location.href = TRY_URL + (qs.length ? '?' + qs.join('&') : '');
   });
   document.querySelectorAll('.chip').forEach(function (c) {
     c.addEventListener('click', function () { input.value = c.textContent; input.focus(); });

@@ -16,7 +16,7 @@ import { logEvent } from '../api/flowLogger';
 const GREEN = '#34D399';
 const AMBER = '#FBBF24';
 const RED = '#F87171';
-const ROLE_CHIPS = ['Product Manager', 'Software Engineer', 'Nurse', 'Marketing Manager', 'Data Analyst', 'Teacher'];
+const ROLE_CHIPS = ['Product Manager', 'Software Engineer', 'Nurse', 'Marketing Manager', 'Data Analyst', 'Teacher', 'Accountant', 'Project Manager'];
 const REGISTER_URL = 'https://login.theinterviewchair.com/register';
 const SHARE_URL = 'https://candidate.theinterviewchair.com/try?ref=share';
 const DIMENSIONS: { key: keyof TryOutFeedback['dimensions']; label: string }[] = [
@@ -84,7 +84,8 @@ export default function TryItLivePage() {
   const [phase, setPhase] = useState<Phase>('topic');
   // The marketing site's hero passes ?topic= so the visitor's role is already filled in.
   const [topic, setTopic] = useState(() => { try { return (new URLSearchParams(window.location.search).get('topic') ?? '').slice(0, 90); } catch { return ''; } });
-  const [name, setName] = useState('');
+  // The marketing site's hero also passes ?name= (it asks for the first name there), so both fields arrive filled in.
+  const [name, setName] = useState(() => { try { return (new URLSearchParams(window.location.search).get('name') ?? '').replace(/[^\p{L}\p{M}' .-]/gu, '').slice(0, 40); } catch { return ''; } });
   const [start, setStart] = useState<TryOutStart | null>(null);
   const [index, setIndex] = useState(0);
   const [draft, setDraft] = useState('');
