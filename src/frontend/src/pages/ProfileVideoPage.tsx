@@ -15,7 +15,7 @@ import {
 const QUESTIONS = [
   {
     id: 'q1',
-    sarahText: "Hi there! I'm Sarah Mitchell — I'll be guiding you through your profile introduction today. This is completely relaxed, and you can re-record any answer as many times as you like. Let's start: tell me a little about yourself — who are you, and what do you do?",
+    sarahText: "Hi there! I'm Amina — I'll be guiding you through your profile introduction today. This is completely relaxed, and you can re-record any answer as many times as you like. Let's start: tell me a little about yourself — who are you, and what do you do?",
     prompt: "Tell me about yourself — who are you and what do you do?",
   },
   {
@@ -353,10 +353,10 @@ export default function ProfileVideoPage() {
             <div style={{ width: 90, height: 90, borderRadius: '50%', background: 'linear-gradient(135deg,#1a0b2e,#2d1458)', border: '2px solid rgba(167,139,250,0.4)', margin: '0 auto 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 38, boxShadow: '0 0 40px rgba(167,139,250,0.2)' }}>
               👩‍💼
             </div>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(167,139,250,0.7)', marginBottom: 12 }}>Sarah Mitchell · HR Director</div>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(167,139,250,0.7)', marginBottom: 12 }}>Amina · HR</div>
             <h1 style={{ fontSize: 'clamp(1.6rem,5vw,2.2rem)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 16, lineHeight: 1.2 }}>Record your<br />Profile Introduction</h1>
             <p style={{ fontSize: 15, color: 'rgba(241,245,249,0.55)', lineHeight: 1.7, maxWidth: 440, margin: '0 auto 20px' }}>
-              Sarah will ask you 5 short, relaxed questions. After each answer you'll get personalised coaching — and you can re-record as many times as you like.
+              Amina will ask you 5 short, relaxed questions. After each answer you'll get personalised coaching — and you can re-record as many times as you like.
             </p>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 28 }}>
               {FILTER_PRESETS.map(p => (
@@ -448,7 +448,7 @@ export default function ProfileVideoPage() {
                   style={{ width: 3, borderRadius: 2, background: '#a78bfa' }} />
               ))}
             </div>
-            <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>Sarah is speaking…</div>
+            <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>Amina is speaking…</div>
           </motion.div>
         )}
 

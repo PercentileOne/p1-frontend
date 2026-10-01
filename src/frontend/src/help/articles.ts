@@ -207,6 +207,7 @@ export const CANDIDATE_ARTICLES: HelpArticle[] = [
     title: 'A recruiter sent me an Interview Prep',
     summary: 'Practice for the exact role you are going for, set up by your recruiter.',
     navLabel: 'Interview Preps',
+    hint: true,
     steps: [
       'Sign in with the same email address your recruiter used. Preps are matched to your email — there is nothing to claim or link.',
       'Open Interview Preps in the menu. You will see each prep with its interview date, role, who it is from, difficulty and CV.',
@@ -223,6 +224,7 @@ export const CANDIDATE_ARTICLES: HelpArticle[] = [
     title: 'Someone gave me an Interview Gift',
     summary: 'Free practice interviews from someone who wants you to do well.',
     navLabel: 'Interview Gifts',
+    hint: true,
     steps: [
       'Sign in with the same email address the gift was sent to — gifts are matched to your email, with nothing to claim.',
       'Open Interview Gifts in the menu. You will see who each gift is from, how many sessions are left and when it expires.',
@@ -265,6 +267,7 @@ export const CANDIDATE_ARTICLES: HelpArticle[] = [
     title: 'Set up Learn Alerts',
     summary: 'Spaced practice, one multiple-choice question at a time, straight to your inbox.',
     navLabel: 'Learn Alerts',
+    hint: true,
     steps: [
       'Open Learn Alerts and click New Alert.',
       'Enter the Job Title you want to practice for, for example "Head of Prime Brokerage Technology".',
@@ -342,6 +345,48 @@ export const CANDIDATE_ARTICLES: HelpArticle[] = [
     ],
     related: ['careers-explorer', 'learn-course', 'cv-analysis-error'],
     keywords: ['cv', 'resume', 'résumé', 'worth', 'salary', 'analyse', 'analyze', 'roles', 'strengths', 'weaknesses', 'skills', 'upload'],
+  },
+
+  {
+    id: 'career-coach',
+    category: 'Careers & CV',
+    title: 'Talk to your Career Coach',
+    summary: 'Ask whatever is on your mind about your career, any time.',
+    navLabel: 'My Career Coach',
+    hint: true,
+    steps: [
+      'Open My Career Coach. Click one of the suggested questions to get started, or type your own and send it.',
+      'Ask about career decisions, your job search, confidence or upskilling — for example, how to explain a career gap, or what to focus on this month.',
+      'Click + New Conversation to start a fresh topic. Your earlier conversations are listed on the left, and you can reopen any of them.',
+      'To remove one, use the delete icon beside it in the list.',
+    ],
+    body: ['Your Career Coach is an AI coach. Every conversation stays in your list, ready whenever you come back to it. If you reach the daily limit, a message on the page says so.'],
+    related: ['careers-explorer', 'cv-analyzer', 'practice-interview'],
+    keywords: ['coach', 'career coach', 'advice', 'chat', 'career change', 'career gap', 'job search', 'confidence', 'conversation'],
+  },
+  {
+    id: 'my-talks',
+    category: 'Practice interviews',
+    title: 'Rehearse a talk or presentation',
+    summary: 'Practice presenting out loud and get tips, a score and feedback.',
+    navLabel: 'My Talks',
+    hint: true,
+    steps: [
+      'Open My Talks. For tips first, click 🎙️ Talk Coaching to hear what makes a great talk.',
+      'Click 🎤 New Talk, and type the Subject of your talk.',
+      'Choose what kind of talk it is: Factual / informational (you get subject tips) or Personal / experiential (you get storytelling tips).',
+      'Choose the length (3 or 5 minutes) and the Talk Language, and optionally type the name you would like used.',
+      'Optionally add supporting notes or diagrams. Only you see them during the talk.',
+      'Click Start Talk →, then give your talk. Amina and Wayne listen throughout.',
+      'Afterwards you get a score and feedback, your transcript, and a spoken debrief from Wayne. Then choose whether to save it.',
+    ],
+    body: [
+      'Saved talks appear on My Talks with their Date, Subject and Score. Switch any talk between Public and Private with the Visibility switch, or use the menu at the top to change them all. Private takes it out of public view; nothing is deleted.',
+      'The 🌍 Public Talks tab shows talks other people have chosen to make public. You can pin any you like to your own library.',
+    ],
+    tips: ['A factual talk is judged on accuracy and a personal story on authenticity, so choose the type that really fits.'],
+    related: ['share-interview', 'microphone-audio'],
+    keywords: ['talk', 'talks', 'presentation', 'speech', 'speaking', 'rehearse', 'public speaking', 'present', 'pitch'],
   },
 
   // ───────────── Profile & sharing ─────────────
@@ -498,6 +543,24 @@ export const CANDIDATE_ARTICLES: HelpArticle[] = [
     ],
     related: ['cv-analyzer', 'get-in-touch'],
     keywords: ['cv', 'upload', 'error', 'pdf', 'docx', 'file', 'resume', 'won\'t read', 'failed', 'limit'],
+  },
+  {
+    id: 'forgot-password',
+    category: 'Troubleshooting',
+    title: 'I forgot my password',
+    summary: 'Reset it by email in a minute.',
+    steps: [
+      'On the sign-in page, click "Forgot your password?".',
+      'Enter the email address you registered with and send the request.',
+      'Open the email we send you and click the link in it.',
+      'Choose a new password, confirm it, and sign in.',
+    ],
+    tips: [
+      'No email? Check your spam or junk folder, and make sure you used the same address you registered with.',
+      'If the link says it is invalid or missing, request a new reset link and use the newest email.',
+    ],
+    related: ['get-in-touch'],
+    keywords: ['password', 'forgot', 'reset', 'sign in', 'login', 'log in', 'cannot log in', 'locked out', 'access'],
   },
   {
     id: 'get-in-touch',

@@ -728,7 +728,7 @@ export default function CandidateDashboard() {
     setSearchParams({ tab: "help", article: articleId });
   }
   // Wording for "New to …?" where the menu label doesn't read naturally in a sentence.
-  const HINT_LABELS: Record<string, string> = { "Job Interviews": "practice interviews", "What Am I Worth?": "the CV Analyzer", "My Profile": "your profile" };
+  const HINT_LABELS: Record<string, string> = { "Job Interviews": "practice interviews", "What Am I Worth?": "the CV Analyzer", "My Profile": "your profile", "My Career Coach": "your Career Coach" };
 
   return (
     <div style={{ display: "flex", width: "100%", minHeight: "100vh", background: "var(--bg)", fontFamily: '-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif' }}>

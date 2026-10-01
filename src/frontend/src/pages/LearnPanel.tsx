@@ -977,7 +977,7 @@ function LectureView({ lecture, courseTitle, onPractice, onMiniPractice }: {
 
           <div style={{ marginTop: 12, padding: '14px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: `1px solid ${BORDER}` }}>
             <div style={{ fontSize: 12, color: TEXT3, marginBottom: 8 }}>
-              Ready to be interviewed on <strong style={{ color: TEXT2 }}>{courseTitle}</strong>? Practice with James or Sarah — they'll use questions from this course.
+              Ready to be interviewed on <strong style={{ color: TEXT2 }}>{courseTitle}</strong>? Practice with Amina or Wayne — they'll use questions from this course.
             </div>
             <button
               onClick={() => onPractice('')}
@@ -1099,10 +1099,10 @@ function CourseView({ course, onBack, onUpdateCourse }: { course: Course; onBack
     const questions = question && lecture
       ? buildQuestionsFromCourse(course, lecture)
       : buildQuestionsFromCourse(course);
-    const sarahIntro = `Hi — I'm Sarah. Today we're going to run through some interview questions based on your ${course.title} course. James will be leading the technical questions. When each question appears, click Record to answer. Good luck!`;
+    const sarahIntro = `Hi — I'm Amina. Today we're going to run through some interview questions based on your ${course.title} course. Wayne will be leading the technical questions. When each question appears, click Record to answer. Good luck!`;
     const jamesIntro = question
-      ? `Thanks Sarah. I've been reviewing your ${course.title} course work, and I'd like to start with a question on ${lecture?.title ?? 'one of the topics'}. Here we go.`
-      : `Thanks Sarah. I've prepared questions covering the key modules from your ${course.title} course. Let's see what you've learned.`;
+      ? `Thanks Amina. I've been reviewing your ${course.title} course work, and I'd like to start with a question on ${lecture?.title ?? 'one of the topics'}. Here we go.`
+      : `Thanks Amina. I've prepared questions covering the key modules from your ${course.title} course. Let's see what you've learned.`;
     const state: RoomState = {
       questions,
       jobTitle: course.title,
