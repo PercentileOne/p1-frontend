@@ -428,16 +428,27 @@ export default function InterviewPackStart() {
         transition={{ duration: 0.4 }}
         style={{ width: '100%', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '0' }}
       >
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start',
-            background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 13,
-            cursor: 'pointer', fontFamily: 'inherit', marginBottom: 20, padding: 0,
-          }}
-        >
-          <ArrowLeft size={14} /> Back
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 20 }}>
+          <button
+            onClick={() => navigate(-1)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 13,
+              cursor: 'pointer', fontFamily: 'inherit', padding: 0,
+            }}
+          >
+            <ArrowLeft size={14} /> Back
+          </button>
+          {/* Opens the Help Centre article in a new tab, so nobody loses a half-filled set-up form. */}
+          <a
+            href="/dashboard?tab=help&article=practice-interview"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: 13, fontWeight: 700, color: 'var(--blue)', textDecoration: 'none' }}
+          >
+            How does this work? ↗
+          </a>
+        </div>
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>

@@ -10,7 +10,7 @@ import { getTopLearnTopics, type LearnTopicStat } from "../api/learnTopicsApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
   MessageSquare, Settings, LogOut, ChevronRight, ChevronDown, CheckCircle2, Circle, Compass, Gift, Zap,
-  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked, GraduationCap, Wallet,
+  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked, GraduationCap, Wallet, LifeBuoy,
 } from "lucide-react";
 import { getMyEntitlements } from "../api/entitlementsApi";
 import { CvAnalysisModal } from "../components/CvAnalysisModal";
@@ -29,6 +29,11 @@ import SettingsPage from "./SettingsPage";
 import DemoPanel from "./DemoPanel";
 import CareerCoachPanel from "./CareerCoachPanel";
 import CertExamsPanel from "./CertExamsPanel";
+import HelpCentre from "./HelpCentre";
+import { GettingStartedCard } from "../components/GettingStartedCard";
+import { HelpHint } from "../components/HelpHint";
+import { CANDIDATE_ARTICLES } from "../help/articles";
+import { logEvent } from "../api/flowLogger";
 
 /* ══════════════════════════════════════════════════════════════
    CANDIDATE DASHBOARD — cockpit-grade portal for TheInterviewChair.com
@@ -62,6 +67,7 @@ const NAV_ITEMS = [
   { Icon: Compass,         label: "Careers",          slug: "careers" },
   { Icon: MessageSquare,   label: "Messages",         slug: "messages" },
   { Icon: Zap,             label: "Demo",             slug: "demo" },
+  { Icon: LifeBuoy,        label: "Help",             slug: "help" },
   { Icon: Settings,        label: "Settings",         slug: "settings" },
 ] as const;
 
@@ -714,6 +720,16 @@ export default function CandidateDashboard() {
     setSearchParams(item?.slug ? { tab: item.slug } : {});
   }
 
+  // Help Centre: the "How does this work?" hints open straight onto an article via ?tab=help&article=<id> (also what the interview
+  // set-up screen's link uses). Any use of the menu clears it, because navTo only sets the tab.
+  const helpArticleId = searchParams.get("article");
+  function openHelp(articleId: string) {
+    logEvent("help_hint_click", { metadata: { article: articleId, from: activeNav, portal: "candidate" } });
+    setSearchParams({ tab: "help", article: articleId });
+  }
+  // Wording for "New to …?" where the menu label doesn't read naturally in a sentence.
+  const HINT_LABELS: Record<string, string> = { "Job Interviews": "practice interviews", "What Am I Worth?": "the CV Analyzer", "My Profile": "your profile" };
+
   return (
     <div style={{ display: "flex", width: "100%", minHeight: "100vh", background: "var(--bg)", fontFamily: '-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif' }}>
 
@@ -846,7 +862,14 @@ export default function CandidateDashboard() {
           )}
         </div>
 
+        {/* ── HELP: one-line "How does this work?" hint on pages that have an article ── */}
+        {activeNav !== "Help" && activeNav !== "Dashboard" && (() => {
+          const a = CANDIDATE_ARTICLES.find(x => x.navLabel === activeNav && x.hint);
+          return a ? <HelpHint key={a.id} pageLabel={HINT_LABELS[activeNav] ?? activeNav} articleId={a.id} onOpen={openHelp} /> : null;
+        })()}
+
         {/* ── PANEL OVERRIDES ── */}
+        {activeNav === "Help"           && <HelpCentre key={helpArticleId ?? "index"} initialArticleId={helpArticleId} onNavigate={navTo} />}
         {activeNav === "My Career Coach" && <CareerCoachPanel />}
         {activeNav === "Learn"          && <LearnPanel initialTopic={studyTopic} />}
         {activeNav === "Careers"        && <CareersPanel />}
@@ -864,7 +887,9 @@ export default function CandidateDashboard() {
         {activeNav === "Demo"           && <DemoPanel />}
         {activeNav === "Settings"       && <SettingsPage />}
 
-        {!["My Career Coach", "Learn", "Careers", "Job Interviews", "Certifications & Exams", "What Am I Worth?", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Settings"].includes(activeNav) && <>
+        {!["My Career Coach", "Learn", "Careers", "Job Interviews", "Certifications & Exams", "What Am I Worth?", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Help", "Settings"].includes(activeNav) && <>
+
+        <GettingStartedCard token={authToken} onNavigate={navTo} />
 
         {/* ── STATS ROW ── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>
