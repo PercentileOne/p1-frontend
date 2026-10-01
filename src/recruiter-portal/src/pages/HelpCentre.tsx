@@ -72,7 +72,7 @@ export default function HelpCentre({ initialArticleId, onNavigate }: Props) {
         {open.body && open.body.map((p, i) => <p key={i} style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-2)', margin: '0 0 12px' }}>{p}</p>)}
 
         {open.steps && (
-          <ol style={{ ...card, margin: '8px 0 16px', paddingLeft: 40, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <ol style={{ ...card, margin: '8px 0 16px', paddingLeft: 40, display: 'flex', flexDirection: 'column', gap: 10, listStyle: 'decimal outside' }}>
             {open.steps.map((s, i) => <li key={i} style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text)' }}>{s}</li>)}
           </ol>
         )}
