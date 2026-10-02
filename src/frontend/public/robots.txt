@@ -1,0 +1,48 @@
+# robots.txt for candidate.theinterviewchair.com (the candidate portal)
+# Mirrors the marketing site's file (src/viewme/public/robots.txt). Search engines and the preview bots LinkedIn, Facebook, WhatsApp and Slack use
+# to build link cards are welcome on the public pages (/try, /learn-anything, /questions, shared interview links).
+User-agent: *
+Allow: /
+# Account, sign-in and in-session pages have nothing useful for a search result to show.
+Disallow: /subscription
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /login
+Disallow: /register
+Disallow: /auth/
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /interview/
+Disallow: /interview-pack/
+Disallow: /interview-summary/
+Disallow: /talk/
+Disallow: /talk-pack/
+Disallow: /talk-summary/
+Disallow: /cert-exam/
+Disallow: /cert-exam-summary/
+Disallow: /profile/video
+
+# SEO-tool and bulk-scraper crawlers: they send us traffic but never customers, and they distort the visitor numbers.
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: DataForSeoBot
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Reflectionbot
+Disallow: /
