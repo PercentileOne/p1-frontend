@@ -15,6 +15,7 @@ import Moderation from './pages/Moderation'
 import LiveAvatar from './pages/LiveAvatar'
 import QuestionPackCaps from './pages/QuestionPackCaps'
 import ActivityLog from './pages/ActivityLog'
+import CvAnalyzer from './pages/CvAnalyzer'
 import Access from './pages/Access'
 import LocationCheck from './pages/LocationCheck'
 import AccessRequests from './pages/AccessRequests'
@@ -57,6 +58,7 @@ function AppRoutes() {
       <Route path="/moderation" element={<RequireAuth><Moderation /></RequireAuth>} />
       <Route path="/live-avatar" element={<RequireAuth><LiveAvatar /></RequireAuth>} />
       <Route path="/question-packs" element={<RequireAuth><QuestionPackCaps /></RequireAuth>} />
+      <Route path="/cv-analyzer" element={<RequireAuth><CvAnalyzer /></RequireAuth>} />
       <Route path="/activity-log" element={<RequireAuth><ActivityLog /></RequireAuth>} />
       <Route path="/access" element={<RequireAuth><Access /></RequireAuth>} />
       <Route path="/location-check" element={<RequireAuth><LocationCheck /></RequireAuth>} />
