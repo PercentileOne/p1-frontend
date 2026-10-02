@@ -194,6 +194,20 @@
     padding: 11px 16px; font-size: 12.5px; font-weight: 700; color: #A78BFA; cursor: pointer; font-family: var(--font);
   }
   .share-btn:disabled { opacity: 0.6; cursor: default; }
+
+  .optin { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px; }
+  .optin-title { font-size: 14px; font-weight: 800; color: var(--pearl); margin-bottom: 10px; }
+  .optin-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .optin-row input { flex: 1 1 160px; min-width: 0; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+    padding: 10px 12px; font-size: 13px; color: var(--pearl); font-family: var(--font); outline: none; }
+  .optin-row input:focus { border-color: var(--green); }
+  .optin-check { display: flex; gap: 10px; align-items: flex-start; font-size: 12px; line-height: 1.55; color: #94a3b8; cursor: pointer; margin-bottom: 12px; }
+  .optin-check input { margin-top: 3px; flex-shrink: 0; }
+  .optin-check a { color: var(--green); }
+  .optin-btn { width: 100%; background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.35); border-radius: 10px; padding: 11px 16px;
+    font-size: 12.5px; font-weight: 800; color: var(--green); cursor: pointer; font-family: var(--font); }
+  .optin-btn:disabled { opacity: 0.45; cursor: default; }
+  .optin-note { font-size: 11px; color: var(--muted); margin-top: 8px; }
   .share-link-box {
     display: flex; gap: 6px; align-items: center; background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 8px 8px 14px; margin-top: 10px;
@@ -318,6 +332,26 @@
             <button id="share-copy-btn">Copy</button>
           </div>
           <div id="share-error" style="display:none;font-size:11px;color:var(--red);margin-top:8px"></div>
+        </div>
+
+        <!-- Optional, opt-in only (Francis, 2026-10-02): nothing about the person is saved unless they tick the box and press the button. The name is
+             pre-filled from their CV for convenience, visible and editable — they choose what to send. -->
+        <div class="section optin" id="optin-box">
+          <div id="optin-form">
+            <div class="optin-title">Want interview tips and news from us?</div>
+            <div class="optin-row">
+              <input type="text" id="optin-name" maxlength="60" placeholder="First name" autocomplete="given-name" aria-label="Your first name (optional)">
+              <input type="email" id="optin-email" maxlength="254" placeholder="Email address" autocomplete="email" aria-label="Your email address">
+            </div>
+            <label class="optin-check">
+              <input type="checkbox" id="optin-consent">
+              <span id="optin-consent-text">Yes, email me interview tips and occasional news from TheInterviewChair.com. You can ask us to remove you at any time via the <a href="/contact" target="_blank" rel="noopener">contact page</a>. See our <a href="/privacy.html" target="_blank" rel="noopener">privacy policy</a>.</span>
+            </label>
+            <button class="optin-btn" id="optin-btn" disabled>Sign me up</button>
+            <div id="optin-error" style="display:none;font-size:11px;color:var(--red);margin-top:8px"></div>
+            <div class="optin-note">Entirely optional. We don&rsquo;t keep your email or name unless you tick the box and press the button.</div>
+          </div>
+          <div id="optin-done" style="display:none;font-size:13px;color:var(--green);font-weight:700">Thank you &mdash; you&rsquo;re on the list. ✓</div>
         </div>
 
         <button class="analyze-again" id="analyze-again-btn">Analyse another CV</button>
@@ -477,6 +511,57 @@
     }
   });
 
+  // ── OPT-IN (optional mailing list) ──
+  // Nothing is sent or stored unless the box is ticked and the button pressed. The name field is pre-filled from the CV for convenience,
+  // but it is visible and editable, and only what is in the box at that moment is sent.
+  function resetOptIn(result) {
+    var first = result && result.candidateName ? String(result.candidateName).trim().split(/\s+/)[0] : '';
+    document.getElementById('optin-name').value = first;
+    document.getElementById('optin-email').value = '';
+    document.getElementById('optin-consent').checked = false;
+    document.getElementById('optin-btn').disabled = true;
+    document.getElementById('optin-btn').textContent = 'Sign me up';
+    document.getElementById('optin-error').style.display = 'none';
+    document.getElementById('optin-form').style.display = 'block';
+    document.getElementById('optin-done').style.display = 'none';
+  }
+  function updateOptInButton() {
+    var ok = document.getElementById('optin-consent').checked && /^\S+@\S+\.\S+$/.test(document.getElementById('optin-email').value.trim());
+    document.getElementById('optin-btn').disabled = !ok;
+  }
+  document.getElementById('optin-consent').addEventListener('change', updateOptInButton);
+  document.getElementById('optin-email').addEventListener('input', updateOptInButton);
+  document.getElementById('optin-btn').addEventListener('click', async function() {
+    var btn = document.getElementById('optin-btn');
+    var errorEl = document.getElementById('optin-error');
+    if (!document.getElementById('optin-consent').checked) return;   // never send without the tick
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    errorEl.style.display = 'none';
+    try {
+      var res = await fetch(API_BASE + '/api/marketing/opt-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('optin-email').value.trim(),
+          name: document.getElementById('optin-name').value.trim(),
+          consent: true,
+          consentText: document.getElementById('optin-consent-text').textContent.trim()
+        })
+      });
+      var data = await res.json().catch(function() { return null; });
+      if (!res.ok) throw new Error((data && data.error) || 'Something went wrong — please try again.');
+      document.getElementById('optin-form').style.display = 'none';
+      document.getElementById('optin-done').style.display = 'block';
+      if (window.ticTrack) window.ticTrack('cv_optin', {});
+    } catch (e) {
+      errorEl.textContent = e.message || 'Something went wrong — please try again.';
+      errorEl.style.display = 'block';
+      btn.textContent = 'Sign me up';
+      updateOptInButton();
+    }
+  });
+
   async function handleFile(file) {
     showStep('loading');
     loadingLabel.textContent = 'Extracting text from ' + file.name + '…';
@@ -536,6 +621,7 @@
 
   function renderResults(result) {
     lastResult = result;
+    resetOptIn(result);
 
     // "CV Analysis for [Name]" — same convention the candidate/recruiter portals and the
     // shared-view page already use. Francis's own ask, live: "Doesn't mention the name of the
