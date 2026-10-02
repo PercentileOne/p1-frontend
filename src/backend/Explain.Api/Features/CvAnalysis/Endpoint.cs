@@ -29,7 +29,7 @@ public static class Endpoint
     // as CareerCoach's own DailyMessageCap. A real signed-in account is a meaningfully higher
     // bar against abuse than a bare IP address, hence the split.
     private const int DailyCapAuthenticated = 20;
-    private const int DailyCapAnonymous = 5;
+    private const int DailyCapAnonymous = 10;
     // Share links need to point at the portal the record was actually saved from — a candidate
     // sharing their own "What Am I Worth?" analysis needs a candidate.theinterviewchair.com
     // link, not a recruiter one. Domain per Alerts/Endpoint.cs's own recruiter-link convention
