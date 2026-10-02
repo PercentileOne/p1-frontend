@@ -277,6 +277,16 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("cvAnalysisHistory", "/ownerId"));
 
+        // CV Analyzer usage log (2026-10-02) — one anonymous row per analysis that ran (country/town + a one-way visitor hash, never any CV
+        // content), kept permanently so the admin page can show usage over time. Partitioned by month. See Features/CvAnalysis/CvAnalyzerStats.cs.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("cvAnalyzerUses", "/month"));
+
+        // People who explicitly TICKED A BOX to hear from us (2026-10-02): email + first name + the exact wording they agreed to + when. Nothing
+        // is ever written here without that explicit yes. Partitioned by where they opted in (e.g. "cv-analyzer").
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("marketingOptIns", "/source"));
+
         // Exam question bank (2026-09-19) — reusable AI-generated MCQs per exam, partitioned by exam so a
         // whole attempt samples one partition. See Features/ExamQuestions/Endpoint.cs.
         await _database.CreateContainerIfNotExistsAsync(

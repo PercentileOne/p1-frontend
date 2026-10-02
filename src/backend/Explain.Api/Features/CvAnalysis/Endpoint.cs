@@ -4,6 +4,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Azure.Cosmos;
 using Explain.Api.Infrastructure.Cosmos;
+using Explain.Api.Infrastructure.Geo;
+using Explain.Api.Features.Events;
 
 namespace Explain.Api.Features.CvAnalysis;
 
@@ -44,7 +46,8 @@ public static class Endpoint
         // forcing it, so FindFirst("sub") below reads a real identity whenever there is one.
         app.MapPost("/api/cv-analysis", async (
             Request req, HttpContext ctx, CosmosService cosmos,
-            IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
+            IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger,
+            IpGeoLookupService geo, [Microsoft.AspNetCore.Mvc.FromServices] AnalyticsIgnoreList ignoreList) =>
         {
             if (string.IsNullOrWhiteSpace(req.CvText) || req.CvText.Trim().Length < 100)
                 return Results.BadRequest(new { error = "That doesn't look like a full CV — please upload a real CV file." });
@@ -58,12 +61,12 @@ public static class Endpoint
             var rateLimitKey = isAuthenticated ? candidateId! : $"ip:{ip}";
             var cap = isAuthenticated ? DailyCapAuthenticated : DailyCapAnonymous;
 
-            // TEMP (Francis, 2026-09-18): cap enforcement disabled while he does heavy manual
-            // testing — still incrementing the usage counter below so the history isn't lost,
-            // just not blocking on it. Restore by uncommenting the line below.
+            // Daily cap restored 2026-10-02 (it had been switched off since 2026-09-18 for Francis's own heavy testing, which left a paid
+            // AI call open to anyone, unlimited). The owner's own addresses (admin funnel page -> Ignored addresses) are exempt, so he can still
+            // test as much as he likes without turning the cap off for everybody.
+            var ownerAddress = await ignoreList.IsIgnoredAsync(ip);
             var (allowed, _) = await CheckAndIncrementDailyUsageAsync(rateLimitKey, cap, cosmos);
-            _ = allowed;
-            // if (!allowed) return CappedResponse(cap);
+            if (!allowed && !ownerAddress) return CappedResponse(cap);
 
             AnalysisResult result;
             try { result = await CallAnalysisModelAsync(req.CvText.Trim(), req.Audience ?? "self", factory, config); }
@@ -74,6 +77,10 @@ public static class Endpoint
                 // frontend (cvAnalysisApi.ts) only reads .error, matching the BadRequest above.
                 return Results.Json(new { error = "CV analysis is temporarily unavailable — please try again in a moment." }, statusCode: 502);
             }
+
+            // Count it (country/town only - never the CV). Must never break the analysis the visitor just paid an AI call for.
+            if (!ownerAddress)
+                await RecordUseAsync(ctx, cosmos, geo, config, logger, rateLimitKey, isAuthenticated);
 
             return Results.Ok(result);
         });
@@ -250,6 +257,96 @@ public static class Endpoint
             var shareUrl = $"{MarketingSiteUrl}/shared-cv-analysis.html?token={shareToken}";
             return Results.Ok(new { shareToken, shareUrl });
         }).AllowAnonymous();
+
+        // POST /api/marketing/opt-in - the tick-box on the CV Analyzer results ("email me tips and news"). Nothing is stored unless the
+        // person explicitly consented: consent must be true, and the exact wording they agreed to is saved with their details and the time.
+        app.MapPost("/api/marketing/opt-in", async (OptInRequest req, HttpContext ctx, CosmosService cosmos, ILogger<Program> logger) =>
+        {
+            if (req.Consent != true) return Results.BadRequest(new { error = "Please tick the box to agree before we save your email." });
+            var email = CvAnalyzerStats.CleanEmail(req.Email);
+            if (email is null) return Results.BadRequest(new { error = "That doesn't look like a valid email address." });
+            var source = "cv-analyzer";
+            if (!OptInAllowedFromIp(ctx.Connection.RemoteIpAddress?.ToString())) return Results.Json(new { error = "Too many requests - please try again later." }, statusCode: 429);
+            var wording = (req.ConsentText ?? "").Trim();
+            if (wording.Length is 0 or > 600) return Results.BadRequest(new { error = "Missing consent wording." });
+            try
+            {
+                var doc = new MarketingOptInDoc(CvAnalyzerStats.OptInId(email), source, email, CvAnalyzerStats.CleanName(req.Name), wording, DateTimeOffset.UtcNow.ToString("o"));
+                await cosmos.GetContainer("marketingOptIns").UpsertItemAsync(doc, new PartitionKey(source));
+                return Results.Ok(new { saved = true });
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Could not save a marketing opt-in");
+                return Results.Json(new { error = "Sorry, we couldn't save that just now - please try again." }, statusCode: 502);
+            }
+        }).AllowAnonymous();
+
+        // GET /api/admin/cv-analyzer?days=30 - how many analyses, how many different people, from where, and the opted-in addresses.
+        app.MapGet("/api/admin/cv-analyzer", async (CosmosService cosmos, int days = 30) =>
+        {
+            days = Math.Clamp(days, 1, 366);
+            var since = DateTime.UtcNow.Date.AddDays(-(days - 1));
+            var rows = new List<CvUseDoc>();
+            var months = Enumerable.Range(0, (int)Math.Ceiling(days / 28.0) + 1).Select(i => DateTime.UtcNow.AddMonths(-i).ToString("yyyy-MM")).Distinct();
+            var container = cosmos.GetContainer("cvAnalyzerUses");
+            foreach (var m in months)
+            {
+                var q = new QueryDefinition("SELECT * FROM c WHERE c.month = @m AND c.day >= @d").WithParameter("@m", m).WithParameter("@d", since.ToString("yyyy-MM-dd"));
+                using var feed = container.GetItemQueryIterator<CvUseDoc>(q, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(m) });
+                while (feed.HasMoreResults) rows.AddRange(await feed.ReadNextAsync());
+            }
+            var summary = CvAnalyzerStats.Summarise(rows, days, DateTime.UtcNow);
+
+            var optIns = new List<MarketingOptInDoc>();
+            using (var feed = cosmos.GetContainer("marketingOptIns").GetItemQueryIterator<MarketingOptInDoc>(
+                new QueryDefinition("SELECT * FROM c WHERE c.source = 'cv-analyzer' ORDER BY c.consentedAt DESC"),
+                requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey("cv-analyzer") }))
+                while (feed.HasMoreResults) optIns.AddRange(await feed.ReadNextAsync());
+
+            return Results.Ok(new { summary, optIns = optIns.Select(o => new { o.id, o.email, o.name, o.consentedAt, o.consentText }) });
+        }).RequireAuthorization(Explain.Api.Common.Permissions.ViewAdminPortal);
+
+        // DELETE /api/admin/marketing-opt-ins/{id} - remove someone who asks to be taken off the list.
+        app.MapDelete("/api/admin/marketing-opt-ins/{id}", async (string id, CosmosService cosmos) =>
+        {
+            try { await cosmos.GetContainer("marketingOptIns").DeleteItemAsync<MarketingOptInDoc>(id, new PartitionKey("cv-analyzer")); }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { /* already gone */ }
+            return Results.NoContent();
+        }).RequireAuthorization(Explain.Api.Common.Permissions.ViewAdminPortal);
+    }
+
+    private record OptInRequest(string? Email, string? Name, bool? Consent, string? ConsentText);
+
+    // Per-address allowance for the opt-in form: 10 per hour. In-memory on purpose - a restart just resets it.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (DateTime Start, int Count)> OptInHits = new();
+    private static bool OptInAllowedFromIp(string? ip)
+    {
+        if (string.IsNullOrEmpty(ip)) return true;
+        var now = DateTime.UtcNow;
+        var entry = OptInHits.AddOrUpdate(ip, _ => (now, 1), (_, cur) => now - cur.Start > TimeSpan.FromHours(1) ? (now, 1) : (cur.Start, cur.Count + 1));
+        if (OptInHits.Count > 5000)
+            foreach (var stale in OptInHits.Where(kv => now - kv.Value.Start > TimeSpan.FromHours(1)).Select(kv => kv.Key).ToList()) OptInHits.TryRemove(stale, out _);
+        return entry.Count <= 10;
+    }
+
+    // Writes one anonymous usage row (see CvUseDoc). Failures are logged and swallowed - counting must never break an analysis.
+    private static async Task RecordUseAsync(HttpContext ctx, CosmosService cosmos, IpGeoLookupService geo, IConfiguration config,
+        ILogger logger, string visitorKey, bool signedIn)
+    {
+        try
+        {
+            var g = await geo.ResolveAsync(ctx.Connection.RemoteIpAddress?.ToString(), ctx.RequestAborted);
+            var origin = ctx.Request.Headers.Origin.ToString();
+            if (string.IsNullOrEmpty(origin)) origin = ctx.Request.Headers.Referer.ToString();
+            var now = DateTimeOffset.UtcNow;
+            var doc = new CvUseDoc(
+                Guid.NewGuid().ToString(), now.ToString("yyyy-MM"), now.ToString("yyyy-MM-dd"), now.ToString("o"),
+                CvAnalyzerStats.VisitorHash(visitorKey, config["Cosmos:Key"] ?? "dev"), signedIn,
+                CvAnalyzerStats.SourceFromOrigin(origin), g.Country, g.City, g.Region);
+            await cosmos.GetContainer("cvAnalyzerUses").CreateItemAsync(doc, new PartitionKey(doc.month));
+        }
+        catch (Exception ex) { logger.LogWarning(ex, "Could not record a CV analysis use"); }
     }
 
     // Mirrors Interviews/Endpoint.cs's own GenerateShareToken exactly.
