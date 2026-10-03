@@ -52,6 +52,21 @@ public class TryOutTests
         Assert.Null(n.Questions[2].Feedback);         // padded
     }
 
+    [Fact]
+    public void Skipped_questions_count_as_zero_in_the_overall_score_and_dimensions()
+    {
+        var r = new TryOut.FeedbackModelResult(84, "Good", new TryOut.DimensionScores(9, 9, 8, 7, 8), [new(8, "ok", "better")], "next");
+        var one = TryOut.ApplyCoverage(r, 1, 3);
+        Assert.Equal(28, one.Overall);
+        Assert.Equal(3, one.Dimensions!.Clarity);
+        Assert.Equal(2, one.Dimensions.Depth);
+        Assert.Equal(8, one.Questions![0].Score);                 // the answered question keeps its own mark
+        var two = TryOut.ApplyCoverage(r, 2, 3);
+        Assert.Equal(56, two.Overall);
+        Assert.Same(r, TryOut.ApplyCoverage(r, 3, 3));            // nothing skipped: untouched
+        Assert.Same(r, TryOut.ApplyCoverage(r, 2, 2));
+    }
+
     // ── Demo options: interview language, question difficulty, country ────────────────────────────────────────────────
     [Theory]
     [InlineData("fr", "fr")]

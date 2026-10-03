@@ -33,7 +33,7 @@ public static class Endpoint
 
     public record StartRequest(string? Topic, string? Language = null, string? Difficulty = null, string? Country = null);
     public record AnswerIn(string? Question, string? Answer);
-    public record FeedbackRequest(string? Topic, List<AnswerIn>? Answers, string? Name, string? Language = null);
+    public record FeedbackRequest(string? Topic, List<AnswerIn>? Answers, string? Name, string? Language = null, int? Asked = null);
     public record CoachRequest(string? Topic, string? Question, string? Answer, string? Name, string? Language = null);
 
     public static void Map(WebApplication app)
@@ -221,7 +221,8 @@ public static class Endpoint
             try
             {
                 var result = await CallFeedbackModelAsync(topic, answers, CleanLanguage(req.Language), factory, config);
-                var normalised = Normalise(result, answers.Count);
+                // Skipped questions count as zero (Francis, 2026-10-03): one answer out of three must not score like a full set.
+                var normalised = ApplyCoverage(Normalise(result, answers.Count), answers.Count, Math.Clamp(req.Asked ?? answers.Count, answers.Count, 3));
 
                 // Best-effort — a visitor's scored result must never fail to return just because saving it for admin
                 // visibility (Features/Interviews/Admin) had a hiccup. See SaveSessionAsync's own note on why this
@@ -464,6 +465,21 @@ public static class Endpoint
         while (qs.Count < answerCount) qs.Add(new QuestionFeedback(5, null, null));
         return new FeedbackModelResult(C(r.Overall, 0, 100), r.Headline?.Trim(),
             new DimensionScores(C(d.Clarity, 0, 10), C(d.Relevance, 0, 10), C(d.Accuracy, 0, 10), C(d.Depth, 0, 10), C(d.Confidence, 0, 10)), qs, r.NextStep?.Trim());
+    }
+
+    /// <summary>The model scores only what was said. When some questions were skipped, they count as zero: the overall score and the five dimensions are scaled by
+    /// answered ÷ asked, so answering 1 of 3 can never look like answering all 3. Unchanged when nothing was skipped.</summary>
+    public static FeedbackModelResult ApplyCoverage(FeedbackModelResult r, int answered, int asked)
+    {
+        if (answered <= 0 || asked <= answered || r.Dimensions is null) return r;
+        var f = (double)answered / asked;
+        int S(int v, int max) => Math.Clamp((int)Math.Round(v * f), 0, max);
+        var d = r.Dimensions;
+        return r with
+        {
+            Overall = S(r.Overall, 100),
+            Dimensions = new DimensionScores(S(d.Clarity, 10), S(d.Relevance, 10), S(d.Accuracy, 10), S(d.Depth, 10), S(d.Confidence, 10)),
+        };
     }
 
     // One automatic retry on any failure (timeout, 5xx, malformed response) — this is often a stranger's very first touch with the

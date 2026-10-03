@@ -160,6 +160,7 @@ export default function TryItLivePage() {
   useEffect(() => { draftRef.current = draft; }, [draft]);
   const [answers, setAnswers] = useState<{ question: string; answer: string }[]>([]);
   const [skipped, setSkipped] = useState(0);
+  const [skippedIdx, setSkippedIdx] = useState<number[]>([]);   // which questions (0-based) were skipped, so the score sheet can list them
   const [coaching, setCoaching] = useState<{ text: string; score: number } | null>(null);
   const [skipTransition, setSkipTransition] = useState(false);
   const [feedback, setFeedback] = useState<TryOutFeedback | null>(null);
@@ -358,7 +359,7 @@ export default function TryItLivePage() {
     if (!r.ok) { setMessage(r.message); setBlockReason(r.capped ? 'capped' : 'error'); setPhase('blocked'); return; }
     const s = quick ? { ...r.data, questions: r.data.questions.slice(0, QUICK_QUESTION_COUNT) } : r.data;
     setFirstSpeechStarted(false);
-    setStart(s); setIndex(0); setAnswers([]); setSkipped(0); setFeedback(null); setShareOpen(false);
+    setStart(s); setIndex(0); setAnswers([]); setSkipped(0); setSkippedIdx([]); setFeedback(null); setShareOpen(false);
     // Must begin from this click so the browser lets audio play. Connecting can fail or be slow — the interview goes ahead either way.
     let live = false;
     let connectMs = 0;
@@ -450,13 +451,13 @@ export default function TryItLivePage() {
     const q = start.questions[index];
     const isLast = index + 1 >= start.questions.length;
     const nextAnswers = skip ? answers : [...answers, { question: q, answer: text }];
-    if (skip) setSkipped(n => n + 1); else setAnswers(nextAnswers);
+    if (skip) { setSkipped(n => n + 1); setSkippedIdx(a => [...a, index]); } else setAnswers(nextAnswers);
     setSkipTransition(skip);
     setPhase('coaching'); setCoaching(null);
 
     // On the last question, start scoring now so the result is ready by the time the closing words finish.
     let scoring: Promise<TryOutResult<TryOutFeedback>> | null = null;
-    if (isLast && nextAnswers.length > 0) scoring = scoreTryOut(start.subject, nextAnswers, firstName, language);
+    if (isLast && nextAnswers.length > 0) scoring = scoreTryOut(start.subject, nextAnswers, firstName, language, start.questions.length);
 
     if (!skip) {
       const c = await coachTryOut(start.subject, q, text, firstName, language);
@@ -487,7 +488,7 @@ export default function TryItLivePage() {
   function restart() {
     cancelSpeechRef.current?.(); busyRef.current = false;
     void hr.disconnect(); void technical.disconnect(); void spatius.disconnect();
-    setStart(null); setAnswers([]); setSkipped(0); setFeedback(null); setDraft(''); setCoaching(null); setSkipTransition(false); setIndex(0); setAvatarState('off'); setUseAvatar(false); setShareOpen(false); setEmailOpen(false); setEmailState('idle'); setFirstSpeechStarted(false); setPhase('topic');
+    setStart(null); setAnswers([]); setSkipped(0); setSkippedIdx([]); setFeedback(null); setDraft(''); setCoaching(null); setSkipTransition(false); setIndex(0); setAvatarState('off'); setUseAvatar(false); setShareOpen(false); setEmailOpen(false); setEmailState('idle'); setFirstSpeechStarted(false); setPhase('topic');
   }
 
   // ── Sharing ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -770,7 +771,7 @@ export default function TryItLivePage() {
                   <strong style={{ color: GREEN }}>A quick read.</strong> This score comes from {start.questions.length === 1 ? 'a single answer' : `just ${countWord(start.questions.length)} answers`}. The full interview is 5–20 questions and scores the same five areas across many answers — a much fuller and fairer picture.
                 </div>
               )}
-              {feedback.dimensions.depth <= 2 && (
+              {feedback.dimensions.depth <= 2 && skipped === 0 && (
                 <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', textAlign: 'center', marginTop: 10 }}>
                   💡 <strong>Low depth usually means a short or general answer.</strong> Try adding a real example: what you did, how you did it, and the result.
                 </div>
@@ -809,23 +810,39 @@ export default function TryItLivePage() {
               )}
             </div>
 
-            {answers.map((a, i) => {
-              const sc = feedback.questions[i]?.score ?? 0;
-              return (
-                <div key={i} style={{ ...card, marginTop: 12 }}>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-3, #94a3b8)', marginBottom: 6 }}>ANSWER {i + 1} · <span style={{ color: scoreColour(sc) }}>{sc}/10</span></div>
-                  <div style={{ fontSize: 14.5, fontWeight: 700, lineHeight: 1.5, marginBottom: 8 }}>{a.question}</div>
-                  {feedback.questions[i]?.feedback && <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)' }}>{feedback.questions[i].feedback}</div>}
-                  {feedback.questions[i]?.strongerAnswer && (
-                    <details style={{ marginTop: 10 }}>
-                      <summary style={{ cursor: 'pointer', fontSize: 13, fontWeight: 700, color: GREEN }}>What a stronger answer sounds like</summary>
-                      <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', marginTop: 8 }}>{feedback.questions[i].strongerAnswer}</div>
-                    </details>
-                  )}
-                </div>
-              );
-            })}
-            {skipped > 0 && <div style={{ fontSize: 12.5, color: 'var(--text-3, #94a3b8)', textAlign: 'center', marginTop: 10 }}>You skipped {skipped} question{skipped === 1 ? '' : 's'}, so only your answers are scored.</div>}
+            {(() => {
+              // One card per question the visitor was asked, in order: answered ones carry their feedback, skipped ones are listed as Skipped (0).
+              let k = -1;
+              return start.questions.map((q, qi) => {
+                if (skippedIdx.includes(qi)) {
+                  return (
+                    <div key={qi} style={{ ...card, marginTop: 12, opacity: 0.85 }}>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-3, #94a3b8)', marginBottom: 6 }}>QUESTION {qi + 1} · <span style={{ color: RED }}>Skipped · 0/10</span></div>
+                      <div style={{ fontSize: 14.5, fontWeight: 700, lineHeight: 1.5, marginBottom: 6 }}>{q}</div>
+                      <div style={{ fontSize: 13.5, lineHeight: 1.6, color: 'var(--text-3, #94a3b8)' }}>You skipped this one, so it counts as zero.</div>
+                    </div>
+                  );
+                }
+                k += 1;
+                const a = answers[k];
+                if (!a) return null;
+                const sc = feedback.questions[k]?.score ?? 0;
+                return (
+                  <div key={qi} style={{ ...card, marginTop: 12 }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-3, #94a3b8)', marginBottom: 6 }}>ANSWER {qi + 1} · <span style={{ color: scoreColour(sc) }}>{sc}/10</span></div>
+                    <div style={{ fontSize: 14.5, fontWeight: 700, lineHeight: 1.5, marginBottom: 8 }}>{a.question}</div>
+                    {feedback.questions[k]?.feedback && <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)' }}>{feedback.questions[k].feedback}</div>}
+                    {feedback.questions[k]?.strongerAnswer && (
+                      <details style={{ marginTop: 10 }}>
+                        <summary style={{ cursor: 'pointer', fontSize: 13, fontWeight: 700, color: GREEN }}>What a stronger answer sounds like</summary>
+                        <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', marginTop: 8 }}>{feedback.questions[k].strongerAnswer}</div>
+                      </details>
+                    )}
+                  </div>
+                );
+              });
+            })()}
+            {skipped > 0 && <div style={{ fontSize: 12.5, color: 'var(--text-3, #94a3b8)', textAlign: 'center', marginTop: 10 }}>You skipped {skipped} of {start.questions.length} question{start.questions.length === 1 ? '' : 's'}. Skipped questions count as zero, so your score is out of all {start.questions.length}.</div>}
 
             {feedback.nextStep && <div style={{ ...card, marginTop: 12, fontSize: 14.5, lineHeight: 1.6 }}><strong style={{ color: GREEN }}>Next step: </strong>{feedback.nextStep}</div>}
 

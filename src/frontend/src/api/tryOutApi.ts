@@ -54,8 +54,8 @@ export interface TryOutOptions { language: string; difficulty: string; country: 
 
 export const startTryOut = (topic: string, options: TryOutOptions) =>
   post<TryOutStart>('/api/tryout/start', { topic, language: options.language, difficulty: options.difficulty, country: options.country || null });
-export const scoreTryOut = (topic: string, answers: { question: string; answer: string }[], name: string, language: string) =>
-  post<TryOutFeedback>('/api/tryout/feedback', { topic, answers, name, language });
+export const scoreTryOut = (topic: string, answers: { question: string; answer: string }[], name: string, language: string, asked: number) =>
+  post<TryOutFeedback>('/api/tryout/feedback', { topic, answers, name, language, asked });
 export const coachTryOut = (topic: string, question: string, answer: string, name: string, language: string) =>
   post<TryOutCoaching>('/api/tryout/coach', { topic, question, answer, name, language });
 
