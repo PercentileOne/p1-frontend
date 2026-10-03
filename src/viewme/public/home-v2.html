@@ -96,6 +96,8 @@
   .qpack-txt b{font-size:15px;font-weight:800}
   .qpack-txt small{font-size:12.5px;color:var(--muted);line-height:1.45}
   .qpack-go{font-size:20px;font-weight:800;color:var(--green);flex-shrink:0}
+  .ph-badge{margin-top:16px;line-height:0}
+  .ph-badge img{max-width:100%;height:auto}
   .glance{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:16px}
   .gl{display:flex;gap:11px;align-items:flex-start}
   .gl-ico{font-size:20px;line-height:1.2;flex-shrink:0}
@@ -347,6 +349,12 @@
       </div>
       <h1>Practice interviewing with&nbsp;AI.<br><span class="g">Get interview coaching. <span class="nw">Get that job.</span></span></h1>
       <p class="lede">Practice with real-looking interviewers on any job, company or subject. Get an instant scored report and see exactly what to improve. You choose whether anything is ever shared with recruiters.</p>
+      <!-- PRODUCT HUNT LAUNCH BADGE — switched OFF until the launch is live (Francis, 2026-10-03; launch scheduled for Tuesday 2026-10-06).
+           It is kept as a comment on purpose: a hidden <img> would still make the browser fetch the picture from Product Hunt's server on every visit.
+           TO TURN ON when the launch is live: replace this whole comment (from the opening to the closing marker) with the line inside it.
+           TO REMOVE after launch week: delete it. (Dark theme, because this site is dark.)
+           <div class="ph-badge"><a href="https://www.producthunt.com/products/theinterviewchair-com?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-theinterviewchair-com" target="_blank" rel="noopener noreferrer"><img alt="TheInterviewChair.com - Practice interviews with AI interviewers who talk back | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1268477&amp;theme=dark&amp;t=1791050242730"></a></div>
+      -->
 
       <form class="try-box" id="tryForm" autocomplete="off" novalidate>
         <label for="topic">Which job role should we interview you on?</label>
