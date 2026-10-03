@@ -494,7 +494,7 @@ public static class Endpoint
         var r = JsonSerializer.Deserialize<CoachModelResult>(content, JsonOpts) ?? throw new InvalidOperationException("Empty coaching");
         var text = (r.Coaching ?? "").Trim();
         if (text.Length == 0) throw new InvalidOperationException("Empty coaching text");
-        return (text[..Math.Min(text.Length, 420)], Math.Clamp(r.Score, 0, 10));
+        return (Explain.Api.Infrastructure.TextTrim.ToSentence(text, 420), Math.Clamp(r.Score, 0, 10));
     }
 
     public record CoachModelResult(string? Coaching, int Score);
@@ -512,7 +512,7 @@ public static class Endpoint
         var r = JsonSerializer.Deserialize<ModelAnswerResult>(content, JsonOpts) ?? throw new InvalidOperationException("Empty model answer");
         var text = (r.Answer ?? "").Trim();
         if (text.Length == 0) throw new InvalidOperationException("Empty model answer text");
-        return text[..Math.Min(text.Length, 900)];
+        return Explain.Api.Infrastructure.TextTrim.ToSentence(text, 900);
     }
 
     public record DimensionScores(int Clarity, int Relevance, int Accuracy, int Depth, int Confidence);

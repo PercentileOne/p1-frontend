@@ -82,6 +82,16 @@ public class TryOutTests
         Assert.Empty(TryOut.CleanAvoid(null));
     }
 
+    [Fact]
+    public void Trimming_never_cuts_a_word_in_half()
+    {
+        Assert.Equal("Short.", Explain.Api.Infrastructure.TextTrim.ToSentence("Short.", 50));
+        var twoSentences = "First sentence is here. Second sentence carries on for quite a while longer than the limit allows.";
+        Assert.Equal("First sentence is here.", Explain.Api.Infrastructure.TextTrim.ToSentence(twoSentences, 40));
+        var noStops = Explain.Api.Infrastructure.TextTrim.ToSentence("one two three four five six seven eight nine ten", 22);
+        Assert.Equal("one two three four…", noStops);   // 22 characters would end mid-word ("fiv"), so it backs up to the last whole word
+    }
+
     // ── Demo options: interview language, question difficulty, country ────────────────────────────────────────────────
     [Theory]
     [InlineData("fr", "fr")]
