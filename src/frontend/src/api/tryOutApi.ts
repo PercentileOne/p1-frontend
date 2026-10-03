@@ -11,6 +11,8 @@ export interface TryOutStart {
   questions: string[];
   // A greeting written in the visitor's language with {name} / {interviewer} placeholders; null for English (the page then uses its own greeting).
   intro?: string | null;
+  /** The Guardian Angel's short spoken links between questions, in the interview language (absent for English — the page's own wording is used). */
+  transitions?: { next?: string | null; skipped?: string | null; finish?: string | null } | null;
   avatarAvailable: boolean;
   // Which service draws the avatar for this visitor (admin setting). Absent on older servers = HeyGen.
   avatarProvider?: 'heygen' | 'spatius';

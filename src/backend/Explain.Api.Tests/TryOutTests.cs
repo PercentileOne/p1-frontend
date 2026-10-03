@@ -111,6 +111,31 @@ public class TryOutTests
     [InlineData("Hej {name}, jag är {interviewer} och {other}.")]      // stray braces
     public void Bad_intros_are_dropped(string? raw) => Assert.Null(TryOut.CleanIntro(raw, "sv"));
 
+    [Fact] public void Good_transition_lines_are_kept_and_trimmed() => Assert.Equal("Låt oss fortsätta.", TryOut.CleanTransition("  Låt oss fortsätta.  "));
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("Let me put {your} result together")]
+    [InlineData("Voici <b>votre</b> résultat")]
+    [InlineData("Voici vos 3 questions")]
+    public void Bad_transition_lines_are_dropped(string? raw) => Assert.Null(TryOut.CleanTransition(raw));
+
+    [Fact] public void Overlong_transition_lines_are_dropped() => Assert.Null(TryOut.CleanTransition(new string('x', 130)));
+
+    [Fact] public void English_never_uses_model_transitions() => Assert.Null(TryOut.CleanTransitions(new TryOut.TransitionLines("Continue", "Skip", "Done"), "en"));
+
+    [Fact] public void A_dropped_line_is_null_but_the_good_ones_survive()
+    {
+        var t = TryOut.CleanTransitions(new TryOut.TransitionLines("On continue.", "Pas de souci {x}", null), "fr");
+        Assert.NotNull(t);
+        Assert.Equal("On continue.", t!.GetType().GetProperty("next")!.GetValue(t));
+        Assert.Null(t.GetType().GetProperty("skipped")!.GetValue(t));
+    }
+
+    [Fact] public void All_lines_bad_means_no_transitions_at_all() => Assert.Null(TryOut.CleanTransitions(new TryOut.TransitionLines("{x}", "", null), "de"));
+
     [Fact] public void English_never_uses_a_model_intro() => Assert.Null(TryOut.CleanIntro("Hi {name}, I'm {interviewer}.", "en"));
 
     [Fact] public void Overlong_intros_are_dropped() => Assert.Null(TryOut.CleanIntro("{name} {interviewer} " + new string('x', 400), "fr"));

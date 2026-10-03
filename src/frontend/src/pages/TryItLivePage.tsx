@@ -457,9 +457,11 @@ export default function TryItLivePage() {
       await speakAsCoach(coach.text);
     }
     // The Guardian Angel carries the conversation forward, not the interviewer — Wayne/Amina stay silent until the next question.
+    // In another language these lines come from the server, written in that language (start.transitions); English, or a line the server dropped, keeps the page's own wording.
+    const tr = start.transitions;
     const transition = skip
-      ? (isLast ? `No problem. That's ${start.questions.length === 1 ? 'your question' : `your ${countWord(start.questions.length)} questions`} — let me put your result together.` : "No problem — let's continue.")
-      : (isLast ? `Thank you. That's ${start.questions.length === 1 ? 'your question' : `your ${countWord(start.questions.length)} questions`} — let me put your result together.` : "Let's continue.");
+      ? (isLast ? (tr?.finish ?? `No problem. That's ${start.questions.length === 1 ? 'your question' : `your ${countWord(start.questions.length)} questions`} — let me put your result together.`) : (tr?.skipped ?? "No problem — let's continue."))
+      : (isLast ? (tr?.finish ?? `Thank you. That's ${start.questions.length === 1 ? 'your question' : `your ${countWord(start.questions.length)} questions`} — let me put your result together.`) : (tr?.next ?? "Let's continue."));
     await speakAsCoach(transition);
 
     if (!isLast) { setIndex(index + 1); busyRef.current = false; void ask(index + 1, start, useAvatar); return; }
@@ -717,7 +719,7 @@ export default function TryItLivePage() {
                 itself, then closes straight into the next question with no click needed (Francis, 2026-09-22). */}
             {phase === 'coaching' && (
               skipTransition
-                ? <div style={{ ...card, marginTop: 14, textAlign: 'center', fontSize: 13.5, color: 'var(--text-3, #94a3b8)' }}>👼 No problem — let's continue…</div>
+                ? <div style={{ ...card, marginTop: 14, textAlign: 'center', fontSize: 13.5, color: 'var(--text-3, #94a3b8)' }}>👼 {start?.transitions?.skipped ?? "No problem — let's continue."}…</div>
                 : <TryCoachPopup coaching={coaching} />
             )}
             {phase === 'scoring' && <div style={{ ...card, marginTop: 14, textAlign: 'center', fontWeight: 700 }}>Scoring your answers…</div>}
