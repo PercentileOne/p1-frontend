@@ -1481,7 +1481,8 @@
 
       submitEl.textContent = 'Redirecting…';
       var dest = PORTAL_ORIGINS[signupRole] || PORTAL_ORIGINS.Candidate;
-      window.location.href = `${dest}/auth/callback?token=${encodeURIComponent(token)}` + (NEXT ? '&next=' + encodeURIComponent(NEXT) : '');
+      window.location.href = `${dest}/auth/callback?token=${encodeURIComponent(token)}` + (NEXT ? '&next=' + encodeURIComponent(NEXT) : '')
+        + (FROM_TRY && FROM_TRY.role && signupRole === 'Candidate' ? '#role=' + encodeURIComponent(FROM_TRY.role) : '');
     } catch (err) {
       errorEl.textContent = err.message || 'Something went wrong. Please try again.';
       errorEl.style.display = 'block';
@@ -1489,6 +1490,29 @@
       submitEl.textContent = 'Create Account';
     }
     return false;
+  }
+
+  // Arriving from the "Try it live" result page (Francis, 2026-10-03): it already knows they are a candidate, their first name and the role they just practised,
+  // so skip the "who are you joining as?" step, fill the name in, and pass the role on so the full interview's setup opens with it typed in. The values arrive in
+  // the URL's #fragment (never sent to a server or logged), are cleaned here, and the address bar is tidied straight after.
+  var FROM_TRY = (function () {
+    try {
+      var h = new URLSearchParams(location.hash.replace(/^#/, ''));
+      if (h.get('from') !== 'try') return null;
+      return {
+        role: (h.get('role') || '').replace(/[\p{Cc}<>]/gu, '').trim().slice(0, 90),
+        name: (h.get('name') || '').replace(/[^\p{L}\p{M}' .-]/gu, '').trim().slice(0, 40)
+      };
+    } catch (e) { return null; }
+  })();
+  if (FROM_TRY) {
+    switchTab('signup');
+    selectSignupRole('Candidate');
+    if (FROM_TRY.name) document.getElementById('signup-firstname').value = FROM_TRY.name;
+    document.getElementById('signup-intro').textContent = FROM_TRY.role
+      ? 'Create your free account \u2014 your \u201c' + FROM_TRY.role + '\u201d interview is ready to set up.'
+      : 'Create your free account \u2014 your first full interview is on us.';
+    try { history.replaceState(null, '', '/register'); } catch (e) { /* keep the address as it is */ }
   }
 </script>
 </body>

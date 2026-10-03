@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authApi, type ApiError } from '../api/authApi';
 import { useAuthStore } from '../auth/authStore';
-import { consumePostLoginPath, rememberNextFromSearch } from '../auth/postLoginRedirect';
+import { consumePostLoginPath, consumeTryRole, rememberNextFromSearch, rememberTryRoleFromHash } from '../auth/postLoginRedirect';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ export default function AuthCallback() {
 
   useEffect(() => {
     rememberNextFromSearch(window.location.search);
+    rememberTryRoleFromHash(window.location.hash);
     const token = searchParams.get('token');
     if (!token) { setError('Missing sign-in token.'); return; }
 
@@ -26,7 +27,10 @@ export default function AuthCallback() {
           id: session.userId, email: session.email, name: session.name,
           firstName: session.firstName, role: session.role,
         }, session.permissions);
-        navigate(consumePostLoginPath('/dashboard'), { replace: true });
+        // Straight from the public "Try it live" page: open the full interview's setup with the role they just practised already filled in.
+        const tryRole = consumeTryRole();
+        const dest = consumePostLoginPath(tryRole ? '/interview-pack/start' : '/dashboard');
+        navigate(dest, { replace: true, state: tryRole && dest === '/interview-pack/start' ? { jobTitle: tryRole } : undefined });
       })
       .catch((err: ApiError) => setError(err?.error ?? 'Sign-in failed.'));
     // eslint-disable-next-line react-hooks/exhaustive-deps

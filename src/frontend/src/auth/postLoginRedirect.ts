@@ -29,3 +29,24 @@ export function consumePostLoginPath(fallback: string): string {
     return path;
   } catch { return fallback; }
 }
+
+// The role someone practised on the public "Try it live" page, carried through account creation (Francis, 2026-10-03) so the full interview's setup opens
+// with it already filled in. It arrives in the callback URL's #fragment (never sent to a server), is kept briefly, and is used once.
+const TRY_ROLE_KEY = 'tryRole';
+
+export function rememberTryRoleFromHash(hash: string): void {
+  try {
+    const role = (new URLSearchParams(hash.replace(/^#/, '')).get('role') ?? '').replace(/[\p{Cc}<>]/gu, '').trim().slice(0, 90);
+    if (role) localStorage.setItem(TRY_ROLE_KEY, JSON.stringify({ role, at: Date.now() }));
+  } catch { /* private mode — they simply type the role in */ }
+}
+
+export function consumeTryRole(): string {
+  try {
+    const raw = localStorage.getItem(TRY_ROLE_KEY);
+    localStorage.removeItem(TRY_ROLE_KEY);
+    if (!raw) return '';
+    const { role, at } = JSON.parse(raw) as { role: string; at: number };
+    return Date.now() - at > TTL_MS || typeof role !== 'string' ? '' : role;
+  } catch { return ''; }
+}

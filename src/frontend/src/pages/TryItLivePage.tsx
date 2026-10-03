@@ -19,6 +19,14 @@ const AMBER = '#FBBF24';
 const RED = '#F87171';
 const ROLE_CHIPS = ['Product Manager', 'Software Engineer', 'Nurse', 'Marketing Manager', 'Data Analyst', 'Teacher', 'Accountant', 'Project Manager'];
 const REGISTER_URL = 'https://login.theinterviewchair.com/register';
+// What the sign-up page is told about this visitor (Francis, 2026-10-03: save them a step). Sent in the URL's #fragment, which is never sent to any server or
+// written to any log — the sign-up page reads it, fills the form, and passes the role on so the full interview's setup opens with it already typed in.
+function registerUrl(role: string, firstName: string): string {
+  const p = new URLSearchParams({ from: 'try' });
+  if (role.trim()) p.set('role', role.trim().slice(0, 90));
+  if (firstName.trim()) p.set('name', firstName.trim().slice(0, 40));
+  return `${REGISTER_URL}#${p.toString()}`;
+}
 const SHARE_URL = 'https://candidate.theinterviewchair.com/try?ref=share';
 const DIMENSIONS: { key: keyof TryOutFeedback['dimensions']; label: string }[] = [
   { key: 'clarity', label: 'Clarity' }, { key: 'relevance', label: 'Relevance' }, { key: 'accuracy', label: 'Accuracy' },
@@ -769,6 +777,14 @@ export default function TryItLivePage() {
               )}
             </div>
 
+            {/* A short sign-up card right under the score, where the visitor is looking. The full one stays at the bottom (its own tracking tag: where='score_top' vs 'score'). */}
+            <div style={{ ...card, marginTop: 12, textAlign: 'center', border: '1px solid rgba(52,211,153,0.35)', background: 'linear-gradient(135deg,rgba(52,211,153,0.10),rgba(4,120,87,0.06))' }}>
+              <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>Want the full interview{topic.trim() ? ` for ${topic.trim()}` : ''}?</div>
+              <div style={{ fontSize: 13.5, lineHeight: 1.55, color: 'var(--text-2, #cbd5e1)', marginBottom: 12 }}>5–20 questions with Amina and Wayne, and a full scored report. Your first one is free.</div>
+              <a href={registerUrl(topic, name)} onClick={() => logEvent('try_register_click', { metadata: { where: 'score_top', score: feedback?.overall ?? null, mobile: isMobile } })} style={{ ...primary, display: 'block' }}>Start my free interview →</a>
+              <div style={{ fontSize: 12, color: 'var(--text-3, #94a3b8)', marginTop: 8 }}>Free · no card needed · takes about a minute</div>
+            </div>
+
             {/* "Email me this score" — straight under the score, where people are looking (Francis, 2026-09-30: the box was further down and got missed).
                 A clear button first; the address field opens on click. Sends ONE email with their own score. The tips opt-in is separate and unticked. */}
             <div style={{ ...card, marginTop: 12, textAlign: 'center' }}>
@@ -813,6 +829,16 @@ export default function TryItLivePage() {
 
             {feedback.nextStep && <div style={{ ...card, marginTop: 12, fontSize: 14.5, lineHeight: 1.6 }}><strong style={{ color: GREEN }}>Next step: </strong>{feedback.nextStep}</div>}
 
+            <div style={{ ...card, marginTop: 14, textAlign: 'center', border: '1px solid rgba(52,211,153,0.35)', background: 'linear-gradient(135deg,rgba(52,211,153,0.10),rgba(4,120,87,0.06))' }}>
+              <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 6 }}>That was {countWord(start.questions.length)} question{start.questions.length === 1 ? '' : 's'}. The full interview is 5–20 questions.</div>
+              <div style={{ fontSize: 14.5, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', marginBottom: 16 }}>
+                Create a free account and your first full interview is on us — with both interviewers, your CV and target role, a full scored report, and a shareable profile recruiters can watch.
+              </div>
+              <a href={registerUrl(topic, name)} onClick={() => logEvent('try_register_click', { metadata: { where: 'score', score: feedback?.overall ?? null, mobile: isMobile } })} style={{ ...primary, display: 'block' }}>Start my free interview →</a>
+              <div style={{ fontSize: 12.5, color: 'var(--text-3, #94a3b8)', marginTop: 10 }}>Free · no card needed · takes about a minute</div>
+              <button onClick={restart} style={{ background: 'none', border: 'none', color: 'var(--text-3, #94a3b8)', fontSize: 13, textDecoration: 'underline', cursor: 'pointer', marginTop: 12 }}>Try a different role</button>
+            </div>
+
             <div style={{ ...card, marginTop: 12, textAlign: 'center' }}>
               <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>Proud of that? Show someone.</div>
               <div style={{ fontSize: 13.5, color: 'var(--text-3, #94a3b8)', marginBottom: 14 }}>Share your result — and let a friend try it free.</div>
@@ -828,14 +854,6 @@ export default function TryItLivePage() {
               )}
             </div>
 
-            <div style={{ ...card, marginTop: 14, textAlign: 'center', border: '1px solid rgba(52,211,153,0.35)', background: 'linear-gradient(135deg,rgba(52,211,153,0.10),rgba(4,120,87,0.06))' }}>
-              <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 6 }}>That was {countWord(start.questions.length)} question{start.questions.length === 1 ? '' : 's'}. The full interview is 5–20 questions.</div>
-              <div style={{ fontSize: 14.5, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', marginBottom: 16 }}>
-                Create a free account and your first full interview is on us — with both interviewers, your CV and target role, a full scored report, and a shareable profile recruiters can watch.
-              </div>
-              <a href={REGISTER_URL} onClick={() => logEvent('try_register_click', { metadata: { where: 'score', score: feedback?.overall ?? null, mobile: isMobile } })} style={{ ...primary, display: 'block' }}>Start my free interview →</a>
-              <button onClick={restart} style={{ background: 'none', border: 'none', color: 'var(--text-3, #94a3b8)', fontSize: 13, textDecoration: 'underline', cursor: 'pointer', marginTop: 12 }}>Try a different role</button>
-            </div>
           </div>
         )}
 
@@ -846,7 +864,7 @@ export default function TryItLivePage() {
             </div>
             <div style={{ fontSize: 14.5, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', marginBottom: 20 }}>{message}</div>
             {blockReason === 'capped'
-              ? <a href={REGISTER_URL} onClick={() => logEvent('try_register_click', { metadata: { where: 'limit', mobile: isMobile } })} style={primary}>Create a free account →</a>
+              ? <a href={registerUrl(topic, name)} onClick={() => logEvent('try_register_click', { metadata: { where: 'limit', mobile: isMobile } })} style={primary}>Create a free account →</a>
               : <button onClick={restart} style={primary}>Try again</button>}
           </div>
         )}
