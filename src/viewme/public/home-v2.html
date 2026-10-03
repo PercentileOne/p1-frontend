@@ -96,8 +96,12 @@
   .qpack-txt b{font-size:15px;font-weight:800}
   .qpack-txt small{font-size:12.5px;color:var(--muted);line-height:1.45}
   .qpack-go{font-size:20px;font-weight:800;color:var(--green);flex-shrink:0}
-  .hero-sub{display:flex;flex-wrap:wrap;gap:18px 22px;margin-top:22px;font-size:13.5px;color:var(--muted)}
-  .hero-sub b{color:var(--text)}
+  .glance{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:16px}
+  .gl{display:flex;gap:11px;align-items:flex-start}
+  .gl-ico{font-size:20px;line-height:1.2;flex-shrink:0}
+  .gl b{display:block;font-size:14px;font-weight:800;color:var(--text);margin-bottom:2px}
+  .gl span:not(.gl-ico){display:block;font-size:12.5px;line-height:1.45;color:var(--muted)}
+  @media(max-width:640px){.glance{grid-template-columns:1fr;gap:14px}}
   .stage{position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 60px rgba(61,126,246,.12);background:#04060c;aspect-ratio:1200/962}
   .stage img,.stage video{width:100%;height:100%;object-fit:cover}
   .stage video{position:absolute;inset:0}
@@ -378,10 +382,13 @@
         <span class="qpack-go">&rarr;</span>
       </a>
 
-      <div class="hero-sub">
-        <span><b>Live avatars</b> Amina &amp; Wayne</span>
-        <span><b>5 dimensions</b> scored instantly</span>
-        <span><b>32 languages</b></span>
+      <!-- "At a glance" (Francis, 2026-10-03): what it is, who it is for, what it costs to try and who is in control, in four short facts —
+           the shape of a page that tells a visitor everything in ten seconds. Replaces the three tiny hero-sub facts. -->
+      <div class="glance" aria-label="TheInterviewChair.com at a glance">
+        <div class="gl"><span class="gl-ico">🎯</span><div><b>Who it&rsquo;s for</b><span>Anyone with an interview, exam or presentation coming up &mdash; any job, company or subject</span></div></div>
+        <div class="gl"><span class="gl-ico">🎙️</span><div><b>What you get</b><span>Live AI interviewers who talk back, honest scoring on five dimensions, then courses and mock exams</span></div></div>
+        <div class="gl"><span class="gl-ico">🌍</span><div><b>32 languages</b><span>Be interviewed in the language you will really use on the day</span></div></div>
+        <div class="gl"><span class="gl-ico">🔒</span><div><b>Free to try, you&rsquo;re in control</b><span>No account needed. You decide what, if anything, is ever shared with recruiters</span></div></div>
       </div>
     </div>
 
