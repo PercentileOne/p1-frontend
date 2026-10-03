@@ -797,23 +797,48 @@
   }
   selLang.addEventListener('change', refreshOpts); selLevel.addEventListener('change', refreshOpts);
   refreshOpts();
-  // Default the language box: English (US) for a visitor in the United States (their IP's country from our API — nothing is stored — or else the region in
-  // their browser's language), English (UK) for everyone else. Never overrides a choice they have already made.
+  // Default the language box (Francis, 2026-10-03: we are international). In order: a ?lang= in the link (e.g. /?lang=es or ?lang=en-AU, for campaigns), then the
+  // visitor's own browser language — French browser -> French, and so on for any of the 32 — and for English the regional version from their country (their IP's
+  // country from our API, nothing stored, else the region in their browser's language), English (UK) when nothing matches. Never overrides a choice already made.
+  var ENGLISH_REGIONS = { GB: 'en-GB', US: 'en-US', AU: 'en-AU', CA: 'en-CA', IN: 'en-IN', IE: 'en-IE' };
+  var ALIASES = { nb: 'no', nn: 'no', tl: 'fil' };
+  var VALID = {}; LANGUAGES.forEach(function (l) { VALID[l[0].toLowerCase()] = l[0]; });
+  function splitTag(tag) { var p = String(tag || '').split(/[-_]/); return { lang: (p[0] || '').toLowerCase(), region: (p[1] || '').toUpperCase() }; }
+  // Which value of the language box to start on. prefs = the browser's language list, country = a 2-letter country code (or ''), forced = the ?lang= value (or '').
+  function pickLanguage(prefs, country, forced) {
+    if (forced) {
+      var f = splitTag(forced), key = f.region ? (f.lang + '-' + f.region).toLowerCase() : f.lang;
+      if (VALID[key]) return VALID[key];
+      var fl = ALIASES[f.lang] || f.lang;
+      if (fl !== 'en' && VALID[fl]) return VALID[fl];
+      if (fl === 'en') return ENGLISH_REGIONS[f.region || country] || 'en-GB';
+    }
+    var first = splitTag(prefs && prefs[0]), lang = ALIASES[first.lang] || first.lang;
+    if (lang && lang !== 'en' && VALID[lang]) return VALID[lang];
+    return ENGLISH_REGIONS[first.lang === 'en' ? first.region : ''] || ENGLISH_REGIONS[country] || ENGLISH_REGIONS[first.region] || 'en-GB';
+  }
+  window.ticPickLanguage = pickLanguage;   // exposed so the choice can be checked from the console; changes nothing on the page
+
   selLang.value = 'en-GB';
   var langTouched = false;
   selLang.addEventListener('change', function () { langTouched = true; });
-  function preferUs(code) { if (!langTouched && code === 'US') { selLang.value = 'en-US'; refreshOpts(); } }
-  (function () {
-    var loc = (navigator.languages && navigator.languages[0]) || navigator.language || '';
-    var m = /[-_]([A-Za-z]{2})$/.exec(loc); var fromLocale = m ? m[1].toUpperCase() : '';
+  var forcedLang = ''; try { forcedLang = new URLSearchParams(location.search).get('lang') || ''; } catch (e) { forcedLang = ''; }
+  var prefs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+  function applyLanguage(country) {
+    if (langTouched) return;
+    var v = pickLanguage(prefs, country, forcedLang);
+    if (selLang.value !== v) { selLang.value = v; refreshOpts(); }
+  }
+  applyLanguage('');
+  // Only an English default can still improve once the country is known (a non-English browser language or a ?lang= never changes).
+  if (selLang.value.indexOf('en') === 0 && !forcedLang) {
     var done = false;
     try {
       fetch('https://api.explain.global/api/tryout/country').then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
-        done = true; preferUs((j && j.country) || fromLocale);
-      }).catch(function () { preferUs(fromLocale); });
-    } catch (e) { preferUs(fromLocale); }
-    setTimeout(function () { if (!done) preferUs(fromLocale); }, 2500);
-  })();
+        done = true; applyLanguage((j && j.country) || '');
+      }).catch(function () { /* keep the browser-based default */ });
+    } catch (e) { /* keep the browser-based default */ }
+  }
 
   document.getElementById('tryForm').addEventListener('submit', function (e) {
     e.preventDefault();
