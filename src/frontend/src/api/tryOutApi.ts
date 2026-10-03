@@ -32,6 +32,7 @@ export interface TryOutFeedback {
 }
 
 export interface TryOutCoaching { coaching: string; score: number }
+export interface TryOutModelAnswer { answer: string }
 
 export type TryOutResult<T> = { ok: true; data: T } | { ok: false; capped: boolean; message: string };
 
@@ -52,10 +53,12 @@ async function post<T>(path: string, body: unknown): Promise<TryOutResult<T>> {
 // The server validates all three and quietly falls back to English / Standard / no country, so an old link or a tampered value can't break anything.
 export interface TryOutOptions { language: string; difficulty: string; country: string }
 
-export const startTryOut = (topic: string, options: TryOutOptions) =>
-  post<TryOutStart>('/api/tryout/start', { topic, language: options.language, difficulty: options.difficulty, country: options.country || null });
+export const startTryOut = (topic: string, options: TryOutOptions, avoid: string[] = []) =>
+  post<TryOutStart>('/api/tryout/start', { topic, language: options.language, difficulty: options.difficulty, country: options.country || null, avoid });
 export const scoreTryOut = (topic: string, answers: { question: string; answer: string }[], name: string, language: string, asked: number) =>
   post<TryOutFeedback>('/api/tryout/feedback', { topic, answers, name, language, asked });
+export const modelAnswerTryOut = (topic: string, question: string, language: string) =>
+  post<TryOutModelAnswer>('/api/tryout/answer', { topic, question, language });
 export const coachTryOut = (topic: string, question: string, answer: string, name: string, language: string) =>
   post<TryOutCoaching>('/api/tryout/coach', { topic, question, answer, name, language });
 
@@ -71,3 +74,21 @@ export async function getVisitorCountry(): Promise<string | null> {
 // "Email me my score" (2026-09-30) — one transactional email with the visitor's own score; the tips opt-in is a separate, unticked choice.
 export const emailTryOutScore = (body: { email: string; name: string; subject: string; score: number; strongest: string | null; weakest: string | null; tipsOptIn: boolean }) =>
   post<{ sent: boolean }>('/api/tryout/email-score', body);
+
+// The questions this browser has already been asked, per subject (2026-10-03) — sent with the next start so the same questions are not asked twice.
+// Kept on this device only (localStorage), at most the last nine per subject and twelve subjects; anything unreadable simply means "none seen".
+const SEEN_KEY = 'tryQuestionsSeen';
+const seenKey = (topic: string) => topic.trim().toLowerCase().slice(0, 90);
+export function questionsSeen(topic: string): string[] {
+  try { const all = JSON.parse(localStorage.getItem(SEEN_KEY) ?? '{}') as Record<string, string[]>; return Array.isArray(all[seenKey(topic)]) ? all[seenKey(topic)] : []; } catch { return []; }
+}
+export function rememberQuestionsSeen(topic: string, questions: string[]): void {
+  try {
+    const all = JSON.parse(localStorage.getItem(SEEN_KEY) ?? '{}') as Record<string, string[]>;
+    const k = seenKey(topic);
+    const next = { ...all, [k]: [...questions, ...(all[k] ?? [])].slice(0, 9) };
+    const keys = Object.keys(next);
+    if (keys.length > 12) delete next[keys[0]];
+    localStorage.setItem(SEEN_KEY, JSON.stringify(next));
+  } catch { /* private mode — the server's random angles still keep it varied */ }
+}

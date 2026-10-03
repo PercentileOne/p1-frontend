@@ -4,7 +4,7 @@ import { useSpatiusAvatarSession } from '../hooks/useSpatiusAvatarSession';
 import { speak as speakTts, unlockTTSAudio, setTTSLanguage } from '../api/ttsApi';
 import { setInterviewTicket } from '../api/entitlementsApi';
 import { VoiceInput } from '../components/VoiceInput';
-import { startTryOut, scoreTryOut, coachTryOut, emailTryOutScore, getVisitorCountry, type TryOutStart, type TryOutFeedback, type TryOutResult } from '../api/tryOutApi';
+import { startTryOut, scoreTryOut, coachTryOut, modelAnswerTryOut, questionsSeen, rememberQuestionsSeen, emailTryOutScore, getVisitorCountry, type TryOutStart, type TryOutFeedback, type TryOutResult } from '../api/tryOutApi';
 import { LANGUAGES, LANGUAGE_CHOICES, DIFFICULTIES, DEFAULT_LANGUAGE_VALUE, findLanguageChoice } from '../data/interviewOptions';
 import { logEvent } from '../api/flowLogger';
 
@@ -160,6 +160,12 @@ export default function TryItLivePage() {
   useEffect(() => { draftRef.current = draft; }, [draft]);
   const [answers, setAnswers] = useState<{ question: string; answer: string }[]>([]);
   const [skipped, setSkipped] = useState(0);
+  // "Show me the answer" (Francis, 2026-10-03): the model answer for the question on screen. The question then counts as zero, exactly like a skip.
+  const [revealed, setRevealed] = useState<{ loading: boolean; text: string | null; failed?: string } | null>(null);
+  const [revealedText, setRevealedText] = useState<Record<number, string>>({});
+  // The same four controls as the full interview (Repeat / Pause / Tell Me The Answer / Pass) — Francis, 2026-10-03.
+  const [paused, setPaused] = useState(false);
+  const [capturing, setCapturing] = useState(false);   // the mic is recording an answer right now — the four buttons wait, like in the full interview
   const [skippedIdx, setSkippedIdx] = useState<number[]>([]);   // which questions (0-based) were skipped, so the score sheet can list them
   const [coaching, setCoaching] = useState<{ text: string; score: number } | null>(null);
   const [skipTransition, setSkipTransition] = useState(false);
@@ -355,11 +361,12 @@ export default function TryItLivePage() {
     if (subject.length < 2 || !name.trim()) return;
     unlockTTSAudio(); // must be first — see its own note: phones only allow sound that starts inside the tap
     setPhase('starting'); setMessage('');
-    const r = await startTryOut(subject, { language, difficulty, country });
+    const r = await startTryOut(subject, { language, difficulty, country }, questionsSeen(subject));
     if (!r.ok) { setMessage(r.message); setBlockReason(r.capped ? 'capped' : 'error'); setPhase('blocked'); return; }
+    rememberQuestionsSeen(subject, r.data.questions);
     const s = quick ? { ...r.data, questions: r.data.questions.slice(0, QUICK_QUESTION_COUNT) } : r.data;
     setFirstSpeechStarted(false);
-    setStart(s); setIndex(0); setAnswers([]); setSkipped(0); setSkippedIdx([]); setFeedback(null); setShareOpen(false);
+    setStart(s); setIndex(0); setAnswers([]); setSkipped(0); setSkippedIdx([]); setRevealed(null); setRevealedText({}); setPaused(false); setFeedback(null); setShareOpen(false);
     // Must begin from this click so the browser lets audio play. Connecting can fail or be slow — the interview goes ahead either way.
     let live = false;
     let connectMs = 0;
@@ -440,6 +447,39 @@ export default function TryItLivePage() {
   // away in a full-screen popup (Francis, 2026-09-22: the old flow went quiet here, waiting on a "Next question" click, which felt
   // like it was stuck), speaks its reaction, then speaks the transition itself — never Wayne/Amina — and the popup closes into the
   // next question automatically. No second click, at any point.
+  // Read the question out again (just the question — no greeting), then hand the turn back.
+  async function repeatQuestion() {
+    if (!start || busyRef.current || capturing) return;
+    cancelSpeechRef.current?.();
+    setPhase('asking');
+    await speakLine(start.questions[index], start, useAvatar);
+    setPhase('answering');
+  }
+  function pauseInterview() {
+    if (capturing) return;
+    cancelSpeechRef.current?.();
+    setPaused(true);
+    logEvent('try_paused', { metadata: { q: index + 1, mobile: isMobile } });
+  }
+
+  async function showAnswer() {
+    if (!start || busyRef.current) return;
+    cancelSpeechRef.current?.();
+    logEvent('try_answer_revealed', { metadata: { q: index + 1, mobile: isMobile } });
+    setRevealed({ loading: true, text: null });
+    const r = await modelAnswerTryOut(start.subject, start.questions[index], language);
+    if (!r.ok) { setRevealed({ loading: false, text: null, failed: r.message }); return; }
+    setRevealed({ loading: false, text: r.data.answer });
+    void speakAsCoach(r.data.answer);
+  }
+  function continueAfterReveal() {
+    if (!revealed?.text) return;
+    const text = revealed.text;
+    setRevealedText(m => ({ ...m, [index]: text }));
+    setRevealed(null);
+    void submit(true);
+  }
+
   async function submit(skip: boolean, overrideText?: string) {
     if (!start || busyRef.current) return;
     const text = skip ? '' : (overrideText ?? draft).trim();
@@ -488,7 +528,7 @@ export default function TryItLivePage() {
   function restart() {
     cancelSpeechRef.current?.(); busyRef.current = false;
     void hr.disconnect(); void technical.disconnect(); void spatius.disconnect();
-    setStart(null); setAnswers([]); setSkipped(0); setSkippedIdx([]); setFeedback(null); setDraft(''); setCoaching(null); setSkipTransition(false); setIndex(0); setAvatarState('off'); setUseAvatar(false); setShareOpen(false); setEmailOpen(false); setEmailState('idle'); setFirstSpeechStarted(false); setPhase('topic');
+    setStart(null); setAnswers([]); setSkipped(0); setSkippedIdx([]); setRevealed(null); setRevealedText({}); setPaused(false); setFeedback(null); setDraft(''); setCoaching(null); setSkipTransition(false); setIndex(0); setAvatarState('off'); setUseAvatar(false); setShareOpen(false); setEmailOpen(false); setEmailState('idle'); setFirstSpeechStarted(false); setPhase('topic');
   }
 
   // ── Sharing ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -689,8 +729,43 @@ export default function TryItLivePage() {
 
             {(phase === 'asking' || phase === 'answering') && (
               <div style={{ ...card, marginTop: 14 }}>
+                {phase === 'answering' && !revealed && !paused && (
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end', marginBottom: 10 }}>
+                    <button onClick={() => void repeatQuestion()} disabled={capturing} title={capturing ? 'Stop recording first' : 'Hear the question again'} style={{ background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.35)', color: '#6b9bf7', borderRadius: 8, padding: '7px 13px', fontSize: 12.5, fontWeight: 700, cursor: capturing ? 'not-allowed' : 'pointer', opacity: capturing ? 0.4 : 1 }}>↩ Repeat</button>
+                    <button onClick={pauseInterview} disabled={capturing} title={capturing ? 'Stop recording first' : undefined} style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.30)', color: GREEN, borderRadius: 8, padding: '7px 13px', fontSize: 12.5, fontWeight: 700, cursor: capturing ? 'not-allowed' : 'pointer', opacity: capturing ? 0.4 : 1 }}>⏸ Pause</button>
+                    <button onClick={() => void showAnswer()} disabled={capturing} title={capturing ? 'Stop recording first' : 'See a model answer instead of guessing'} style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.35)', color: GREEN, borderRadius: 8, padding: '7px 13px', fontSize: 12.5, fontWeight: 700, cursor: capturing ? 'not-allowed' : 'pointer', opacity: capturing ? 0.4 : 1 }}>💡 Tell Me The Answer</button>
+                    <button onClick={() => void submit(true)} disabled={capturing} title={capturing ? 'Stop recording first' : undefined} style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.35)', color: '#EF4444', borderRadius: 8, padding: '7px 13px', fontSize: 12.5, fontWeight: 700, cursor: capturing ? 'not-allowed' : 'pointer', opacity: capturing ? 0.4 : 1 }}>Pass →</button>
+                  </div>
+                )}
                 <div style={{ fontSize: 17, lineHeight: 1.5, fontWeight: 700, marginBottom: 14 }}>{start.questions[index]}</div>
-                {phase === 'answering' ? (
+                {paused ? (
+                  <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 6 }}>⏸ Paused</div>
+                    <div style={{ fontSize: 13.5, color: 'var(--text-3, #94a3b8)', marginBottom: 14 }}>Take your time. Nothing is running while you are paused.</div>
+                    <button onClick={() => setPaused(false)} style={primary}>▶ Resume</button>
+                  </div>
+                ) : revealed ? (
+                  <>
+                    <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: GREEN, marginBottom: 8 }}>💡 Model answer</div>
+                    {revealed.loading ? (
+                      <div style={{ fontSize: 14, color: 'var(--text-3, #94a3b8)' }}>Writing a model answer…</div>
+                    ) : revealed.failed ? (
+                      <>
+                        <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', marginBottom: 12 }}>{revealed.failed}</div>
+                        <button onClick={() => setRevealed(null)} style={ghost}>← Back to my answer</button>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--text, #f1f5f9)' }}>{revealed.text}</div>
+                        <div style={{ fontSize: 12.5, color: 'var(--text-3, #94a3b8)', marginTop: 12 }}>It is here to teach you, so this question counts as zero. Your other answers are scored as normal.</div>
+                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end', marginTop: 12 }}>
+                          <button onClick={() => void speakAsCoach(revealed.text ?? '')} style={ghost}>🔊 Hear it again</button>
+                          <button onClick={continueAfterReveal} style={primary}>{index + 1 < start.questions.length ? 'Continue →' : 'Finish & get my score →'}</button>
+                        </div>
+                      </>
+                    )}
+                  </>
+                ) : phase === 'answering' ? (
                   <>
                     {/* "Your turn" (2026-09-29): the moment the question has been read out has to be unmistakable, and the easiest way to
                         answer (tap the mic and talk) comes first — typing is the fallback below it. */}
@@ -706,7 +781,7 @@ export default function TryItLivePage() {
                         onTranscript rather than requiring a separate manual click. The typed-answer path below keeps its
                         own manual Submit button, same as the full interview does for typed answers. */}
                     <div style={{ marginTop: 12 }}>
-                      <VoiceInput language={language} country={country || undefined} onTranscript={text => {
+                      <VoiceInput language={language} country={country || undefined} onListeningChange={setCapturing} onTranscript={text => {
                         const combined = (draftRef.current ? draftRef.current + ' ' : '') + text;
                         setDraft(combined);
                         void submit(false, combined);
@@ -714,7 +789,6 @@ export default function TryItLivePage() {
                     </div>
                     <textarea value={draft} onChange={e => setDraft(e.target.value)} rows={3} placeholder="…or type your answer here" style={{ ...inputStyle, resize: 'vertical', marginTop: 12 }} />
                     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end', marginTop: 12 }}>
-                        <button onClick={() => void submit(true)} style={ghost}>Skip</button>
                         <button onClick={() => void submit(false)} disabled={!draft.trim()} style={{ ...primary, opacity: draft.trim() ? 1 : 0.5 }}>
                           {index + 1 < start.questions.length ? 'Submit answer →' : 'Finish & get my score →'}
                         </button>
@@ -817,9 +891,10 @@ export default function TryItLivePage() {
                 if (skippedIdx.includes(qi)) {
                   return (
                     <div key={qi} style={{ ...card, marginTop: 12, opacity: 0.85 }}>
-                      <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-3, #94a3b8)', marginBottom: 6 }}>QUESTION {qi + 1} · <span style={{ color: RED }}>Skipped · 0/10</span></div>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-3, #94a3b8)', marginBottom: 6 }}>QUESTION {qi + 1} · <span style={{ color: RED }}>{revealedText[qi] ? 'Answer revealed' : 'Skipped'} · 0/10</span></div>
                       <div style={{ fontSize: 14.5, fontWeight: 700, lineHeight: 1.5, marginBottom: 6 }}>{q}</div>
-                      <div style={{ fontSize: 13.5, lineHeight: 1.6, color: 'var(--text-3, #94a3b8)' }}>You skipped this one, so it counts as zero.</div>
+                      {revealedText[qi] && <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', marginBottom: 8 }}><strong style={{ color: GREEN }}>Model answer: </strong>{revealedText[qi]}</div>}
+                      <div style={{ fontSize: 13.5, lineHeight: 1.6, color: 'var(--text-3, #94a3b8)' }}>{revealedText[qi] ? 'You asked to see the answer, so this one counts as zero.' : 'You skipped this one, so it counts as zero.'}</div>
                     </div>
                   );
                 }
@@ -842,7 +917,7 @@ export default function TryItLivePage() {
                 );
               });
             })()}
-            {skipped > 0 && <div style={{ fontSize: 12.5, color: 'var(--text-3, #94a3b8)', textAlign: 'center', marginTop: 10 }}>You skipped {skipped} of {start.questions.length} question{start.questions.length === 1 ? '' : 's'}. Skipped questions count as zero, so your score is out of all {start.questions.length}.</div>}
+            {skipped > 0 && <div style={{ fontSize: 12.5, color: 'var(--text-3, #94a3b8)', textAlign: 'center', marginTop: 10 }}>You {Object.keys(revealedText).length > 0 ? 'skipped or looked at the answer for' : 'skipped'} {skipped} of {start.questions.length} question{start.questions.length === 1 ? '' : 's'}. Those count as zero, so your score is out of all {start.questions.length}.</div>}
 
             {feedback.nextStep && <div style={{ ...card, marginTop: 12, fontSize: 14.5, lineHeight: 1.6 }}><strong style={{ color: GREEN }}>Next step: </strong>{feedback.nextStep}</div>}
 

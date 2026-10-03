@@ -67,6 +67,21 @@ public class TryOutTests
         Assert.Same(r, TryOut.ApplyCoverage(r, 2, 2));
     }
 
+    [Fact]
+    public void Each_start_picks_varied_angles_and_the_avoid_list_is_cleaned()
+    {
+        var seen = new HashSet<string>();
+        var rng = new Random(7);
+        for (var i = 0; i < 40; i++) { var a = TryOut.PickAngles(rng); seen.Add($"{a.WarmUp}|{a.Depth}|{a.Scenario}"); }
+        Assert.True(seen.Count > 20);                       // forty starts do not collapse to a handful of identical sets
+
+        var cleaned = TryOut.CleanAvoid(["  Tell me about <b>yourself</b>  ", "", "  ", .. Enumerable.Range(0, 12).Select(i => "Q" + i)]);
+        Assert.Equal(9, cleaned.Count);
+        Assert.DoesNotContain(cleaned, q => q.Contains('<') || q.Contains('>'));
+        Assert.Equal("Tell me about  b yourself /b", cleaned[0]);
+        Assert.Empty(TryOut.CleanAvoid(null));
+    }
+
     // ── Demo options: interview language, question difficulty, country ────────────────────────────────────────────────
     [Theory]
     [InlineData("fr", "fr")]
