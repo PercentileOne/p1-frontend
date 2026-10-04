@@ -317,7 +317,40 @@ public class CosmosService
 
         await SeedPlatformStatsAsync();
         await SeedNewsFeedSourcesAsync();
+        await ScrubLegacyTryOutSessionsAsync();
     }
+
+    // Privacy (Francis, 2026-10-04, agreed in chat): demo sessions saved before this date held the visitor's first name, questions, answers, headline and IP address,
+    // and nothing ever displayed them. Blank those fields once; the subject, score, answer count and date stay. Runs at startup, matches only rows that still hold
+    // such data (so it does nothing once they are clean), and can never stop the app starting.
+    private async Task ScrubLegacyTryOutSessionsAsync()
+    {
+        try
+        {
+            var container = _database.GetContainer("tryoutSessions");
+            var pk = new PartitionKey("tryout");
+            var query = new QueryDefinition("SELECT c.id, ARRAY_LENGTH(c.answers) AS n FROM c WHERE ARRAY_LENGTH(c.answers) > 0 OR (IS_STRING(c.ip) AND c.ip != '') OR IS_STRING(c.name) OR IS_STRING(c.headline)");
+            using var feed = container.GetItemQueryIterator<LegacyTryOutRow>(query, requestOptions: new QueryRequestOptions { PartitionKey = pk });
+            while (feed.HasMoreResults)
+            {
+                foreach (var row in await feed.ReadNextAsync())
+                {
+                    await container.PatchItemAsync<object>(row.id, pk, new[]
+                    {
+                        PatchOperation.Set<string?>("/name", null),
+                        PatchOperation.Set<string?>("/headline", null),
+                        PatchOperation.Set("/ip", ""),
+                        PatchOperation.Set("/questions", Array.Empty<string>()),
+                        PatchOperation.Set("/answers", Array.Empty<string>()),
+                        PatchOperation.Set("/answerCount", row.n ?? 0),
+                    });
+                }
+            }
+        }
+        catch (Exception) { /* best-effort: the clean-up is retried on the next start */ }
+    }
+
+    private record LegacyTryOutRow(string id, int? n);
 
     // Only ever fires if the container is genuinely empty (a fresh environment, or the first
     // deploy after this shipped) — never overwrites an admin's own edits. Three deliberately
