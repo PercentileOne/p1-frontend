@@ -76,6 +76,7 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <select value={days} onChange={e => setDays(Number(e.target.value))} style={selectStyle}>
             {[1, 3, 7, 10].map(d => <option key={d} value={d}>Last {d} day{d === 1 ? '' : 's'}</option>)}
+            <option value={0}>All time</option>
           </select>
           <button onClick={() => void load()} disabled={loading} style={{ ...selectStyle, display: 'flex', alignItems: 'center', gap: 6 }}>
             {loading ? <Loader2 size={13} className="admin-spin" /> : <RefreshCw size={13} />} Refresh

@@ -108,7 +108,7 @@ export const eventsApi = {
   deleteMatching(token: string, filter: DeleteEventsFilter, expectedCount: number): Promise<{ deleted: number }> {
     return post('/api/admin/events/delete', token, { filter, expectedCount });
   },
-  // What do visitors actually do? Marketing-site funnel over the last N days (max 10 — the hot window).
+  // What do visitors actually do? Marketing-site funnel over the last N days (1-10), or days = 0 for everything ever recorded (the permanent archive).
   funnel(token: string, days: number): Promise<FunnelReply> {
     return call(`/api/admin/events/funnel?days=${days}`, token);
   },

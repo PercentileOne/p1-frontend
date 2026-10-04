@@ -1,4 +1,6 @@
 using System.Net;
+using System.Text.Json;
+using Azure.Storage.Blobs;
 using Microsoft.Azure.Cosmos;
 using Explain.Api.Common;
 using Explain.Api.Infrastructure.Cosmos;
@@ -65,21 +67,24 @@ public static class Endpoint
         // people vs crawlers, how far they got, what they clicked, where they came from, phone vs desktop. "Real" = the visit
         // fired an `interaction` event (track.js only sends that after a trusted click/tap/key/scroll/mouse movement; crawlers
         // that just load the page never do). The candidate app's /try events are folded in so the phone "desktop only" wall shows up.
-        app.MapGet("/api/admin/events/funnel", async (CosmosService cosmos, Explain.Api.Infrastructure.Geo.IpOwnerService owners, [Microsoft.AspNetCore.Mvc.FromServices] AnalyticsIgnoreList ignoreList, CancellationToken ct, int days = 7) =>
+        app.MapGet("/api/admin/events/funnel", async (CosmosService cosmos, Explain.Api.Infrastructure.Geo.IpOwnerService owners, [Microsoft.AspNetCore.Mvc.FromServices] AnalyticsIgnoreList ignoreList, CancellationToken ct, IConfiguration config, int days = 7) =>
         {
-            days = Math.Clamp(days, 1, 10);
+            // days = 0 means "All" (Francis, 2026-10-04): everything ever recorded — the permanent blob archive plus whatever is newer than the last archive run.
+            var all = days <= 0;
+            days = all ? 0 : Math.Clamp(days, 1, 10);
             var container = cosmos.GetContainer("systemEvents");
-            var from = DateTimeOffset.UtcNow.AddDays(-days).ToString("o");
+            var from = all ? await ReadLastArchivedAtAsync(cosmos, ct) : DateTimeOffset.UtcNow.AddDays(-days).ToString("o");
 
             var marketing = new List<FunnelEvent>();
-            var q1 = new QueryDefinition("SELECT TOP 50000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress, c.country FROM c WHERE c.portal = 'marketing' AND c.createdAt >= @from")
+            var tryEvents = new List<FunnelEvent>();
+            if (all) await LoadArchivedFunnelEventsAsync(config, marketing, tryEvents, ct);
+            var q1 = new QueryDefinition("SELECT TOP 50000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress, c.country FROM c WHERE c.portal = 'marketing' AND c.createdAt > @from")
                 .WithParameter("@from", from);
             using (var feed = container.GetItemQueryIterator<FunnelEvent>(q1))
                 while (feed.HasMoreResults) marketing.AddRange(await feed.ReadNextAsync());
 
-            var tryEvents = new List<FunnelEvent>();
             var q2 = new QueryDefinition(
-                "SELECT TOP 20000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress, c.country FROM c WHERE c.portal = 'candidate' AND c.createdAt >= @from " +
+                "SELECT TOP 20000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress, c.country FROM c WHERE c.portal = 'candidate' AND c.createdAt > @from " +
                 "AND (c.eventType IN ('try_mobile_visit','try_blocked_mobile','try_started','try_first_question','try_completed','try_blocked','try_answering','try_answer_submitted','try_left','try_register_click','try_email_score') " +
                 "OR (c.eventType = 'page_view' AND c.page = '/try'))")
                 .WithParameter("@from", from);
@@ -234,6 +239,56 @@ public static class Endpoint
     }
 
     // Only the fields the funnel needs — keeps the read cheap (no IPs / user agents pulled back).
+    // ── "All" (2026-10-04): the funnel over everything ever recorded ──────────────────────────────────────────────────────────────────────
+    // Cosmos keeps only the last 10 days; EventsArchiveService copies every event to a permanent blob archive (one .jsonl file per run, one event per line)
+    // every five minutes. "All" reads that archive plus the Cosmos events newer than the last archive run, so nothing is counted twice.
+    private const int ArchiveEventCap = 600_000;   // a safety ceiling, far above today's volume
+
+    private record ArchivedEvent(string? sessionId, string? eventType, string? page, string? portal, Dictionary<string, object>? metadata, string? ipAddress, string? country);
+    private record ArchiveStateRow(string id, string pk, string lastArchivedAt);
+
+    private static async Task<string> ReadLastArchivedAtAsync(CosmosService cosmos, CancellationToken ct)
+    {
+        try
+        {
+            var resp = await cosmos.GetContainer("platformSettings").ReadItemAsync<ArchiveStateRow>("eventArchiveState", new PartitionKey("pk"), cancellationToken: ct);
+            return resp.Resource.lastArchivedAt;
+        }
+        catch (Exception) { return DateTimeOffset.UtcNow.AddDays(-10).ToString("o"); }   // no archive yet: fall back to the hot window
+    }
+
+    private static readonly HashSet<string> TryFunnelEventTypes = ["try_mobile_visit", "try_blocked_mobile", "try_started", "try_first_question", "try_completed", "try_blocked", "try_answering", "try_answer_submitted", "try_left", "try_register_click", "try_email_score"];
+
+    private static async Task LoadArchivedFunnelEventsAsync(IConfiguration config, List<FunnelEvent> marketing, List<FunnelEvent> tryEvents, CancellationToken ct)
+    {
+        var connectionString = config.GetConnectionString("BlobStorage");
+        if (string.IsNullOrWhiteSpace(connectionString)) return;
+        try
+        {
+            var container = new BlobContainerClient(connectionString, "system-events-archive");
+            var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var total = 0;
+            await foreach (var blob in container.GetBlobsAsync(cancellationToken: ct))
+            {
+                using var stream = await container.GetBlobClient(blob.Name).OpenReadAsync(cancellationToken: ct);
+                using var reader = new StreamReader(stream);
+                string? line;
+                while ((line = await reader.ReadLineAsync(ct)) is not null)
+                {
+                    if (line.Length == 0) continue;
+                    ArchivedEvent? e;
+                    try { e = JsonSerializer.Deserialize<ArchivedEvent>(line, opts); } catch (JsonException) { continue; }
+                    if (e?.sessionId is null || e.eventType is null) continue;
+                    var fe = new FunnelEvent(e.sessionId, e.eventType, e.page, e.metadata, e.ipAddress, e.country);
+                    if (e.portal == "marketing") marketing.Add(fe);
+                    else if (e.portal == "candidate" && (TryFunnelEventTypes.Contains(e.eventType) || (e.eventType == "page_view" && e.page == "/try"))) tryEvents.Add(fe);
+                    if (++total >= ArchiveEventCap) return;
+                }
+            }
+        }
+        catch (Exception) { /* best-effort: whatever was read, plus the live events, still gives a useful funnel */ }
+    }
+
     public record FunnelEvent(string sessionId, string eventType, string? page, Dictionary<string, object>? metadata, string? ipAddress = null, string? country = null);
 
     private static string? Meta(FunnelEvent e, string key) =>
