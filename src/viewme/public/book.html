@@ -1,14 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Our own anonymous page-view log — as early in <head> as possible, same reasoning as
-     home.html's own comment on this block (was at the bottom of the file, missed by fast
-     navigation). -->
-<script src="/track.js?v=2"></script>
-<title>Zero to 1M — A Founder's Field Guide</title>
-<meta name="description" content="Francis Cobbinah's field guide to building a world-class digital platform alone — from first commit to a million subscribers.">
+<!doctype html><html lang="en"><head><meta charset=utf8>
+<script src="/track.js?v=2"></script><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style><title>Zero to 1M — A Founder's Field Guide</title>
+<meta name="description" content="Francis Cobbinah's field guide to building a world-class digital platform alone, from first commit to a million subscribers.">
+</head><body>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
@@ -76,7 +69,6 @@
   }
 
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', system-ui, sans-serif; }
   ::selection { background: var(--accent-soft); }
 
@@ -126,12 +118,10 @@
   .sb-check svg { display: none; width: 11px; height: 11px; stroke: #fff; stroke-width: 3; }
   .sb-check.checked svg { display: block; }
 
-  .sb-foot { padding: 16px 26px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
+  .sb-foot { padding: 16px 26px; border-top: 1px solid var(--border); }
   .theme-toggle { display: flex; gap: 6px; background: var(--surface-2); border-radius: 9px; padding: 3px; }
   .theme-btn { flex: 1; padding: 7px 0; border-radius: 7px; border: none; background: none; color: var(--text-3); font-size: 11.5px; font-weight: 600; cursor: pointer; font-family: inherit; }
   .theme-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-  .sb-back { font-size: 12px; color: var(--text-3); text-decoration: none; display: flex; align-items: center; gap: 6px; }
-  .sb-back:hover { color: var(--accent-2); }
 
   /* ── Main ── */
   .main { flex: 1; min-width: 0; }
@@ -152,7 +142,7 @@
   .ch-block-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-2); margin-bottom: 14px; display: flex; align-items: center; gap: 9px; }
   .ch-block-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  .topic-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; }
+  .topic-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
   .topic-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 14.5px; line-height: 1.6; color: var(--text-2); }
   .topic-list li::before { content: '→'; color: var(--accent); flex-shrink: 0; font-weight: 600; margin-top: 1px; }
   .topic-list li strong { color: var(--text); font-weight: 600; }
@@ -162,8 +152,40 @@
     border-radius: 4px 12px 12px 4px; padding: 20px 24px; box-shadow: var(--shadow);
   }
   .field-note-label { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
-  .field-note p { font-size: 14.5px; line-height: 1.7; color: var(--text-2); font-style: italic; margin: 0; }
+  .field-note p { font-size: 14.5px; line-height: 1.7; color: var(--text-2); font-style: italic; }
   .field-note p strong { color: var(--text); font-style: normal; font-weight: 600; }
+
+  .ch-status-written { background: var(--accent-2-soft); color: var(--accent-2); }
+
+  /* A chapter that is fully written reads here in full */
+  .prose { margin-top: 4px; }
+  .prose p { font-size: 16px; line-height: 1.85; color: var(--text-2); margin-bottom: 18px; max-width: 62ch; }
+  .prose p strong { color: var(--text); font-weight: 600; }
+  .prose .byline { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 22px; }
+  .prose .lead { font-family: 'Fraunces', serif; font-size: 21px; line-height: 1.55; color: var(--text); }
+  .prose .beat { font-family: 'Fraunces', serif; font-size: 19px; line-height: 1.5; color: var(--text); margin-bottom: 6px; }
+  .prose .beats { margin-bottom: 22px; }
+  .prose .topic-list { margin: 4px 0 22px; }
+  .stage-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 8px 0 30px; }
+  .stage-mini { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 12px 13px; min-width: 0; }
+  .stage-mini .moon { font-size: 18px; line-height: 1; margin-bottom: 8px; }
+  .stage-mini .rng { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--accent); margin-bottom: 4px; }
+  .stage-mini .nm { font-size: 12.5px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .stage { margin: 44px 0 6px; padding-top: 26px; border-top: 1px solid var(--border); }
+  .stage-tag { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .stage-tag .moon { font-size: 26px; line-height: 1; }
+  .stage-tag .rng { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+  .stage h3 { font-family: 'Fraunces', serif; font-size: 30px; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; margin-bottom: 18px; text-wrap: balance; }
+  .diagram-wrap { margin: 8px 0 24px; }
+  .diagram-label { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+  .diagram { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; overflow-x: auto; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 1.45; color: var(--text-2); white-space: pre; margin: 0; }
+  .interp { font-size: 14.5px; line-height: 1.7; color: var(--text-2); margin-top: 10px; }
+  .final-msg { margin: 44px 0 8px; padding: 28px 30px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 4px 14px 14px 4px; }
+  .final-msg .fm-label { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+  .final-msg p { font-family: 'Fraunces', serif; font-size: 18px; line-height: 1.65; color: var(--text); margin-bottom: 14px; max-width: none; }
+  .final-msg p:last-child { margin-bottom: 0; }
+  .final-msg .climb { display: flex; flex-direction: column; gap: 4px; margin: 4px 0 18px; font-family: 'Fraunces', serif; font-size: 18px; color: var(--text); }
+  @media (max-width: 860px) { .stage-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stage h3 { font-size: 24px; } .final-msg { padding: 22px 20px; } }
 
   .ch-footer {
     display: flex; align-items: center; justify-content: space-between; gap: 16px;
@@ -225,8 +247,6 @@
   .mobile-bar .mb-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 15px; }
   .backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 28; }
 </style>
-</head>
-<body>
 
 <div class="mobile-bar" id="mobileBar">
   <button id="menuBtn" aria-label="Open chapters">☰</button>
@@ -246,7 +266,7 @@
     <div class="sb-progress-wrap">
       <div class="sb-progress-row">
         <span class="sb-progress-label">Studied</span>
-        <span class="sb-progress-count" id="progressCount">0 / 13</span>
+        <span class="sb-progress-count" id="progressCount">0 / 14</span>
       </div>
       <div class="sb-progress-track"><div class="sb-progress-fill" id="progressFill" style="width:0%"></div></div>
     </div>
@@ -258,7 +278,6 @@
     <nav class="sb-list" id="chapterList"></nav>
 
     <div class="sb-foot">
-      <a class="sb-back" href="/">← Back to InterviewMe</a>
       <div class="theme-toggle">
         <button class="theme-btn" data-theme-choice="light">Light</button>
         <button class="theme-btn active" data-theme-choice="system">Auto</button>
@@ -410,10 +429,224 @@ const CHAPTERS = [
     ],
   },
   {
-    id: 'ch11', part: 'Part III · The Founder', num: '11', title: 'Working Solo (Solopreneur)',
+    id: 'growth', part: 'Part III · The Founder', num: '11', title: 'The Hidden Physics of Platform Growth',
+    teaser: 'Why 0 to 1,000,000 users happens in stages, not straight lines.',
+    status: 'written',
+    synopsis: 'Growth isn\'t magic and it isn\'t linear. It moves through <strong>five stages</strong> (Reality, Proof, Distribution, Identity, Ecosystem), and most platforms never get past the first. Told from the inside: the week hundreds of LinkedIn visitors arrived at TheInterviewChair.com and not one person clicked Register, and what that silence actually meant.',
+    topics: [
+      'The five stages from 0 to 1,000,000 users, and what each one is really testing',
+      'Why Stage 1 is about survival and truth, not growth',
+      'Retention as the engine of Stage 2: 60 of 100 returning, versus 5 of 100',
+      'Why the landing page matters more than the product in Stage 3',
+      'Brand, institutions and the ecosystem: when your users start acquiring users',
+    ],
+    note: 'When I launched TheInterviewChair.com, I had hundreds of visitors from LinkedIn… and not a single person clicked "Register". Not one. This is normal. This is physics.',
+    editorNote: 'Saved 4 October 2026, written with Copilot months earlier and kept word for word below. Since it was drafted, real Stage 1 events have happened that can sharpen it: more than 1,000 visitors from LinkedIn with no advertising and no launch, friends testing and leaving reviews, a few early registrations, the Product Hunt launch on 6 October 2026, the discovery that people fear embarrassment more than data collection, and the Day One Ready and Interview Method ideas. Update the Stage 1 numbers with the true figures when the chapter is revisited.',
+    body: `
+<p class="byline">By Francis Cobbinah</p>
+<p class="lead">If you’ve ever launched a digital product and wondered why the world didn’t immediately rush in… you’re not alone.</p>
+<div class="beats">
+  <p class="beat">Growth isn’t magic.</p>
+  <p class="beat">Growth isn’t linear.</p>
+  <p class="beat">Growth is physics.</p>
+</div>
+<p>In this chapter, I want to show you the real mechanics behind growing a platform from zero users to one million. Not the fantasy version. Not the “overnight success” myth. The truth.</p>
+<p>I learned these lessons the hard way while building TheInterviewChair.com, a cinematic AI interview‑prep platform that I believed, with all my heart, would resonate instantly.</p>
+<p><strong>It didn’t.</strong> And that’s exactly why this chapter exists.</p>
+<p>Let me walk you through the five growth stages every platform must pass through, the same stages I’m walking through right now.</p>
+
+<div class="stage-grid" aria-label="The five stages at a glance">
+  <div class="stage-mini"><div class="moon">🌑</div><div class="rng">0 → 100</div><div class="nm">The Reality Stage</div></div>
+  <div class="stage-mini"><div class="moon">🌒</div><div class="rng">100 → 1,000</div><div class="nm">The Proof Stage</div></div>
+  <div class="stage-mini"><div class="moon">🌓</div><div class="rng">1,000 → 10,000</div><div class="nm">The Distribution Stage</div></div>
+  <div class="stage-mini"><div class="moon">🌔</div><div class="rng">10,000 → 100,000</div><div class="nm">The Identity Stage</div></div>
+  <div class="stage-mini"><div class="moon">🌕</div><div class="rng">100,000 → 1,000,000</div><div class="nm">The Ecosystem Stage</div></div>
+</div>
+
+<div class="stage">
+  <div class="stage-tag"><span class="moon">🌑</span><span class="rng">Stage 1 · 0 → 100 users</span></div>
+  <h3>The Reality Stage</h3>
+  <p>This is the stage where founders meet the truth. You discover:</p>
+  <ul class="topic-list">
+    <li>Does anyone care?</li>
+    <li>Does the product actually work?</li>
+    <li>Does the value proposition make sense?</li>
+    <li>Does the experience feel magical?</li>
+    <li>Does the platform survive real usage?</li>
+  </ul>
+  <p>When I launched TheInterviewChair.com, I had hundreds of visitors from LinkedIn… and not a single person clicked “Register”. Not one. Not even “Contact Us”.</p>
+  <p>I had built something I believed was brilliant, with cinematic avatars, real interview coaching and scored reports, but the world was silent. This is normal. This is physics.</p>
+  <p>At 0 → 100, you are fighting:</p>
+  <ul class="topic-list">
+    <li>Zero trust</li>
+    <li>Zero reputation</li>
+    <li>Zero social proof</li>
+    <li>Zero familiarity</li>
+    <li>Zero momentum</li>
+  </ul>
+  <p>And on top of that, I faced:</p>
+  <ul class="topic-list">
+    <li>HeyGen’s pricing shock</li>
+    <li>Glitches</li>
+    <li>Reliability issues</li>
+    <li>A discouraging feedback loop</li>
+    <li>“Nothing is patentable”</li>
+    <li>“Competitors exist”</li>
+    <li>“This is too expensive”</li>
+  </ul>
+  <p>But this stage is not about growth. It’s about <strong>survival</strong>. It’s about finding the truth and adapting. For me, that meant discovering Spatius.ai, rebuilding the avatar pipeline, stabilising the cinematic flow, and refusing to quit.</p>
+  <div class="diagram-wrap">
+    <div class="diagram-label">Diagram 1 · The Early Reality Curve</div>
+<pre class="diagram">Users
+100 |                     *
+    |                 *
+    |             *
+    |         *
+    |     *
+    | *
+0   +---------------------------------
+      Time (Weeks/Months)</pre>
+    <p class="interp">Early growth is flat. Painfully flat. This is normal. This is physics.</p>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="stage-tag"><span class="moon">🌒</span><span class="rng">Stage 2 · 100 → 1,000 users</span></div>
+  <h3>The Proof Stage</h3>
+  <p>This stage is not about marketing. It’s about <strong>retention</strong>.</p>
+  <p>If 100 people use your platform and 60 return, you will reach 1,000. If 100 people use it and 5 return, you will die before 200.</p>
+  <p>This stage answers one question: <strong>does the product change people?</strong> Not impress them. Not entertain them. Not surprise them. Change them.</p>
+  <p>For TheInterviewChair.com, this is where the cinematic interview experience becomes the engine:</p>
+  <ul class="topic-list">
+    <li>It builds confidence</li>
+    <li>It reduces fear</li>
+    <li>It gives clarity</li>
+    <li>It creates transformation</li>
+  </ul>
+  <p>If the experience is unforgettable, retention becomes automatic.</p>
+  <div class="diagram-wrap">
+    <div class="diagram-label">Diagram 2 · The Retention Flywheel</div>
+<pre class="diagram">     ┌───────────────┐
+     │  Great Product │
+     └───────┬───────┘
+             │
+             ▼
+     ┌───────────────┐
+     │  Users Return  │
+     └───────┬───────┘
+             │
+             ▼
+     ┌───────────────┐
+     │  Users Invite  │
+     └───────┬───────┘
+             │
+             ▼
+     ┌───────────────┐
+     │   Growth       │
+     └───────────────┘</pre>
+    <p class="interp">Retention is the engine. Everything else is noise.</p>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="stage-tag"><span class="moon">🌓</span><span class="rng">Stage 3 · 1,000 → 10,000 users</span></div>
+  <h3>The Distribution Stage</h3>
+  <p>This is where growth becomes mechanical. You need:</p>
+  <ul class="topic-list">
+    <li>A repeatable acquisition channel</li>
+    <li>A repeatable conversion funnel</li>
+    <li>A repeatable onboarding experience</li>
+    <li>A repeatable retention loop</li>
+  </ul>
+  <p>This is where your landing page matters more than your product. My own landing page was beautiful, but emotionally silent. It described the product, but not the transformation. Once you fix that, Stage 3 begins.</p>
+  <div class="diagram-wrap">
+    <div class="diagram-label">Diagram 3 · The Distribution Engine</div>
+<pre class="diagram">Traffic → Landing Page → Conversion → Onboarding → Retention → Referral → More Traffic</pre>
+    <p class="interp">A loop. Not a line.</p>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="stage-tag"><span class="moon">🌔</span><span class="rng">Stage 4 · 10,000 → 100,000 users</span></div>
+  <h3>The Identity Stage</h3>
+  <p>At this scale, people join because:</p>
+  <ul class="topic-list">
+    <li>They’ve heard of you</li>
+    <li>They’ve seen others use you</li>
+    <li>You appear in conversations</li>
+    <li>You appear in recommendations</li>
+    <li>You appear in institutions</li>
+  </ul>
+  <p>This is where schools, councils, recruiters and employers adopt you. This is where your platform becomes a <strong>brand</strong>, not a tool. For TheInterviewChair.com, this is where the cinematic identity becomes a superpower.</p>
+  <div class="diagram-wrap">
+    <div class="diagram-label">Diagram 4 · The Brand Lift Curve</div>
+<pre class="diagram">Users
+100k |                          *
+     |                     *
+     |                *
+     |           *
+     |      *
+     | *
+10k  +---------------------------------
+       Time (Months/Years)</pre>
+    <p class="interp">Brand accelerates growth.</p>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="stage-tag"><span class="moon">🌕</span><span class="rng">Stage 5 · 100,000 → 1,000,000 users</span></div>
+  <h3>The Ecosystem Stage</h3>
+  <p>This is where growth becomes self‑sustaining.</p>
+  <p>You no longer acquire users. <strong>Your users acquire users.</strong> You no longer market the product. Your product markets itself. You no longer chase institutions. Institutions chase you.</p>
+  <p>This is where you launch:</p>
+  <ul class="topic-list">
+    <li>The marketplace</li>
+    <li>The recruiter tools</li>
+    <li>The candidate profiles</li>
+    <li>The story ecosystem</li>
+    <li>The goals ecosystem</li>
+    <li>The AI‑powered interview OS</li>
+  </ul>
+  <p>This is where Percentile.One becomes a global interview preparation ecosystem.</p>
+  <div class="diagram-wrap">
+    <div class="diagram-label">Diagram 5 · The Ecosystem Growth Model</div>
+<pre class="diagram">                 ┌──────────────┐
+                 │  Candidates   │
+                 └──────┬───────┘
+                        │
+                        ▼
+┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+│ Recruiters    │ ← │  Platform     │ → │ Institutions │
+└──────────────┘   └──────────────┘   └──────────────┘
+                        ▲
+                        │
+                 ┌──────────────┐
+                 │   Stories     │
+                 └──────────────┘</pre>
+    <p class="interp">The platform becomes a living organism.</p>
+  </div>
+</div>
+
+<div class="final-msg">
+  <div class="fm-label">Final message to my readers</div>
+  <p>If you’re building something, anything, remember this:</p>
+  <div class="climb">
+    <span>Growth is not linear.</span>
+    <span>Growth is staged.</span>
+    <span>Growth is physics.</span>
+    <span>Growth is survival.</span>
+    <span>Growth is transformation.</span>
+  </div>
+  <p>Most people quit in Stage 1. Some survive Stage 2. Few reach Stage 3. Almost none reach Stage 4. And Stage 5 is where legends are made.</p>
+  <p>I’m still early in my journey. But I’ve lived enough of these stages to know one thing: if you keep going, the physics eventually bend in your favour. And when they do, everything changes.</p>
+</div>
+`,
+  },
+  {
+    id: 'ch11', part: 'Part III · The Founder', num: '12', title: 'Working Solo (Solopreneur)',
     teaser: 'The lonely journey — and what actually got me through it.',
     status: 'draft',
-    synopsis: 'The chapter that matters most: what it\'s genuinely like to carry seven products, alone, through the parts nobody sees — the 2am bug that\'s definitely your fault, the week a GitHub Actions outage looked exactly like your own broken pipeline, the health journey running underneath all of it. Not motivational-poster resilience. A specific, honest account of the discipline that keeps a solo build moving without a team to absorb the bad days.',
+    synopsis: 'The chapter Francis said matters most: what it\'s genuinely like to carry seven products, alone, through the parts nobody sees — the 2am bug that\'s definitely your fault, the week a GitHub Actions outage looked exactly like your own broken pipeline, the health journey running underneath all of it. Not motivational-poster resilience. A specific, honest account of the discipline that keeps a solo build moving without a team to absorb the bad days.',
     topics: [
       'The difference between "alone" and "unsupported" — and why that distinction matters',
       'Recognising when the platform is down vs. when you are',
@@ -422,7 +655,7 @@ const CHAPTERS = [
     ],
   },
   {
-    id: 'ch12', part: 'Part III · The Founder', num: '12', title: 'Raising Venture Capital',
+    id: 'ch12', part: 'Part III · The Founder', num: '13', title: 'Raising Venture Capital',
     teaser: 'Not done yet — the forward-looking chapter, written honestly as "not yet."',
     status: 'empty',
     synopsis: 'Written last, and updated as it actually happens rather than retrofitted after the fact: preparing the metrics, the story, and the deck for outside capital — bootstrapped-to-VC as a deliberate sequencing choice, not a default. What a technical solo founder needs to translate architecture decisions into a story an investor can underwrite.',
@@ -456,8 +689,8 @@ const progressCountEl = document.getElementById('progressCount');
 const progressFillEl = document.getElementById('progressFill');
 const searchBoxEl = document.getElementById('searchBox');
 
-function statusLabel(s) { return s === 'done' ? 'Studied' : s === 'draft' ? 'Notes Started' : 'Not Started'; }
-function statusClass(s) { return s === 'done' ? 'ch-status-done' : s === 'draft' ? 'ch-status-draft' : 'ch-status-empty'; }
+function statusLabel(s) { return s === 'done' ? 'Studied' : s === 'written' ? 'Draft Written' : s === 'draft' ? 'Notes Started' : 'Not Started'; }
+function statusClass(s) { return s === 'done' ? 'ch-status-done' : s === 'written' ? 'ch-status-written' : s === 'draft' ? 'ch-status-draft' : 'ch-status-empty'; }
 
 function renderProgress() {
   const count = studied.size;
@@ -514,7 +747,7 @@ function renderSidebar() {
 function renderCover() {
   mainInnerEl.innerHTML =
     '<div class="cover">'
-    + '<div class="cover-kicker">A Founder\'s Field Guide · 13 Chapters</div>'
+    + '<div class="cover-kicker">A Founder\'s Field Guide · 14 Chapters</div>'
     + '<div class="cover-title">Zero to 1M</div>'
     + '<div class="cover-sub">Building a world-class digital platform — alone.</div>'
     + '<p class="cover-body">This is the book I\'m writing as the platform gets built, not after — a working record of what it actually takes to go from an empty repo to a real product, with no co-founder and no team, across seven interconnected products. Every chapter is grounded in something that really happened: a bug, a bill, a 2am decision.</p>'
@@ -543,6 +776,20 @@ function renderChapter(c) {
     + '<div class="ch-block-label">What This Chapter Covers</div>'
     + '<ul class="topic-list">' + c.topics.map(t => '<li>' + t + '</li>').join('') + '</ul>'
     + '</div>';
+
+  if (c.body) {
+    html += '<div class="ch-block">'
+      + '<div class="ch-block-label">The Chapter</div>'
+      + '<div class="prose">' + c.body + '</div>'
+      + '</div>';
+  }
+
+  if (c.editorNote) {
+    html += '<div class="ch-block">'
+      + '<div class="ch-block-label">Editor\'s Note</div>'
+      + '<div class="field-note"><div class="field-note-label">For the revisit</div><p>' + c.editorNote + '</p></div>'
+      + '</div>';
+  }
 
   if (c.note) {
     html += '<div class="ch-block">'
@@ -621,5 +868,5 @@ renderProgress();
 renderSidebar();
 renderMain();
 </script>
-</body>
-</html>
+
+</body></html>
