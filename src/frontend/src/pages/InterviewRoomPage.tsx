@@ -58,6 +58,8 @@ export interface RoomState {
   consentToRecord?: boolean;
   goDeeperEnabled?: boolean;
   specialFocus?: string[];
+  // Day One Ready practice interview (2026-10-04) — scenario questions on the five first-90-days themes. See aiScoring.ts.
+  dayOneReady?: boolean;
 }
 
 // Same 32 languages InterviewPackStart.tsx's intake dropdown offers (LANGUAGES there — see its
@@ -668,7 +670,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       // didn't say my name" was too.
       phase2Timeout = setTimeout(() => resolvePhase2('90s-timeout-fallback'), 90000);
       console.log(`[Phase2 TIMING] sessionPrepareClient() call starting @ ${Math.round(performance.now())}ms`);
-      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount, ctx.company || undefined, ctx.specialFocus, ctx.interviewRound, ctx.salaryExpectation, ctx.companyContext);
+      return sessionPrepareClient(jobSpec, ctx.cvText, ctx.selectedLanguage, ctx.jobTitle, ctx.selectedDifficulty, resolvedPreferredName, ctx.questionCount, ctx.company || undefined, ctx.specialFocus, ctx.interviewRound, ctx.salaryExpectation, ctx.companyContext, ctx.dayOneReady);
 
     }).then(result => {
       bgLoadedRef.current = true;

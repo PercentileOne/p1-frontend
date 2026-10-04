@@ -868,6 +868,10 @@ function salaryBoostFraming(boost: number): string {
   }
 }
 
+// "Day One Ready" (Francis, 2026-10-04) — a practice interview made of realistic first-90-days workplace SCENARIOS instead of role knowledge questions, spread
+// across five themes that managers most often name when a new hire does not work out. Original questions only; never mentions a generation or an age.
+const DAY_ONE_READY_DIRECTIVE = ' DAY ONE READY MODE — this OVERRIDES the guidance above about difficulty mix, Special Focus topics and "hard, specific" technical questions: every question is a realistic WORKPLACE SCENARIO from the candidate\'s first 90 days in THIS role, asking what they would actually do or say — it is not a knowledge test. Spread the questions evenly across exactly these five themes and set "competencyTags" to exactly ONE of them per question: "Initiative" (acting without being told, taking ownership), "Handling feedback" (criticism, correction, learning fast), "Communication" (clear updates, raising problems early, difficult conversations, a professional tone), "Problem-solving & organisation" (no step-by-step guide, competing deadlines, prioritising), "Professionalism & expectations" (reliability, boundaries, asking for flexibility or support professionally, realistic expectations of the first months). Make each scenario specific to the role and workplace, mix Easy and Medium, keep each question to one to three spoken sentences, and use questionType "Competency". Each "modelAnswer" must describe concretely what a strong, day-one-ready response does and says.';
+
 export async function sessionPrepareClient(
   jobSpecText: string,
   cvText?: string,
@@ -883,6 +887,8 @@ export async function sessionPrepareClient(
   // Company Specific interview (2026-09-19) — a curated profile of how a well-known employer publicly
   // hires; when present the whole session is modelled on it. See companiesApi.ts.
   companyContext?: CompanyContext,
+  // Day One Ready practice interview — see DAY_ONE_READY_DIRECTIVE above.
+  dayOneReady?: boolean,
 ): Promise<ClientSessionResult> {
   // All `totalQuestions` are role/technical questions now — HR/character questions are
   // generated separately below and always ADDED on top (Francis, 2026-09-10). Previously a
@@ -1027,7 +1033,7 @@ Return this exact JSON:
   ]
 }
 
-Generate exactly ${roleQuestionTarget} questions in the "questions" array — ALL of them role/competency questions (source: "Role"), based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover DIFFERENT competencies each time — do NOT reuse the same question themes across sessions. Use the session seed to pick a fresh angle on the role. Avoid generic questions like "tell me about yourself" or "describe a challenge" — make them specific to this exact role and company.${specialFocus && specialFocus.length > 0 ? ` Weight these role questions toward the Special Focus Topics named in the Session Context (${specialFocus.join(', ')}) — give each named topic its own dedicated, hard, specific question if there are enough role-question slots to do so; if there are more topics than slots, cover as many DIFFERENT topics as possible rather than spending two questions on the same one. Any slots left over after covering the topics go to other important aspects of the role.` : ''}${isLaterRound ? ` This is a LATER interview round (${interviewRoundLabel}) for the same real process — lean the mix slightly toward Medium/Hard over Easy compared to a first round, and favour questions that probe depth/judgement/trade-offs rather than pure surface-level basics, since the candidate already cleared an earlier round.` : ''}${hasGauntletQuestion ? `
+Generate exactly ${roleQuestionTarget} questions in the "questions" array — ALL of them role/competency questions (source: "Role"), based on what this job actually requires day-to-day; vary the difficulty (mix of Easy, Medium, Hard); cover DIFFERENT competencies each time — do NOT reuse the same question themes across sessions. Use the session seed to pick a fresh angle on the role. Avoid generic questions like "tell me about yourself" or "describe a challenge" — make them specific to this exact role and company.${specialFocus && specialFocus.length > 0 ? ` Weight these role questions toward the Special Focus Topics named in the Session Context (${specialFocus.join(', ')}) — give each named topic its own dedicated, hard, specific question if there are enough role-question slots to do so; if there are more topics than slots, cover as many DIFFERENT topics as possible rather than spending two questions on the same one. Any slots left over after covering the topics go to other important aspects of the role.` : ''}${dayOneReady ? DAY_ONE_READY_DIRECTIVE : ''}${isLaterRound ? ` This is a LATER interview round (${interviewRoundLabel}) for the same real process — lean the mix slightly toward Medium/Hard over Easy compared to a first round, and favour questions that probe depth/judgement/trade-offs rather than pure surface-level basics, since the candidate already cleared an earlier round.` : ''}${hasGauntletQuestion ? `
 
 Additionally, generate ONE extra question beyond the ${totalQuestions} above — a genuine gauntlet, the single hardest question in the whole session, calibrated to a ${salaryExpectation} role. Multi-layered, ambiguous, judgement-heavy — the kind of question that would visibly separate a true expert from someone merely experienced. Set this question's "questionType" to "Gauntlet" (every other field the same shape as normal) and place it LAST in the "questions" array.` : ''}
 

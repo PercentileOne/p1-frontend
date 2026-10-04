@@ -891,6 +891,23 @@ export default function CandidateDashboard() {
 
         <GettingStartedCard token={authToken} onNavigate={navTo} />
 
+        {/* Day One Ready (Francis, 2026-10-04): scenario practice for the first 90 days in a job — what managers most often say new hires get wrong. */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", marginBottom: 28, padding: "18px 22px", borderRadius: 16, border: "1px solid rgba(52,211,153,0.35)", background: "linear-gradient(135deg,rgba(52,211,153,0.10),rgba(4,120,87,0.06))" }}>
+          <div style={{ fontSize: 30 }}>🛡️</div>
+          <div style={{ flex: "1 1 260px", minWidth: 0 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 3 }}>Day One Ready</div>
+            <div style={{ fontSize: 13.5, lineHeight: 1.55, color: "var(--text-2)" }}>
+              Practice the first 90 days of a new job: initiative, feedback, communication, problem-solving and professionalism. Realistic scenarios, scored honestly.
+            </div>
+          </div>
+          <button
+            onClick={() => { logEvent("DAY_ONE_READY_CLICKED", { metadata: {} }); navigate("/interview-pack/start", { state: { preferredName: firstName, dayOneReady: true } }); }}
+            style={{ padding: "10px 20px", background: "linear-gradient(135deg,#34d399,#047857)", color: "#fff", border: "none", borderRadius: 10, fontSize: 13.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
+          >
+            Start Day One Ready →
+          </button>
+        </div>
+
         {/* ── STATS ROW ── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>
           {liveStats.map((s, i) => <LiveStatCard key={i} card={s} onClick={() => setOpenCard(i)} />)}

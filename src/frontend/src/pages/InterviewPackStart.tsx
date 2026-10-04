@@ -100,6 +100,8 @@ interface IncomingState {
   // (src/recruiter-portal/src/pages/InterviewPreps.tsx) — same field a candidate can also set
   // for themselves below, just pre-populated when it arrives via a received prep.
   specialFocus?: string[];
+  // Opened from the dashboard's Day One Ready card (2026-10-04).
+  dayOneReady?: boolean;
 }
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
@@ -379,6 +381,7 @@ export default function InterviewPackStart() {
         autoStart: true,
         consentToRecord,
         specialFocus: !companyMode && specialFocusChips.length > 0 ? specialFocusChips : undefined,
+        dayOneReady: incoming.dayOneReady && !companyMode ? true : undefined,
       },
     });
   };
@@ -477,6 +480,15 @@ export default function InterviewPackStart() {
             Tell us about the role — we'll tailor every question to match
           </p>
         </div>
+
+        {incoming.dayOneReady && !companyMode && (
+          <div style={{ background: 'linear-gradient(135deg,rgba(52,211,153,0.10),rgba(4,120,87,0.06))', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '16px', padding: '18px 24px', marginBottom: '16px' }}>
+            <div style={{ fontSize: '13px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#34D399', marginBottom: '6px' }}>🛡️ Day One Ready</div>
+            <div style={{ fontSize: '14px', lineHeight: 1.6, color: 'var(--text-2)' }}>
+              Realistic first-90-days scenarios for your role: taking initiative, handling feedback, communicating clearly, solving problems and being professional. Enter the role you are starting (or want to start) below.
+            </div>
+          </div>
+        )}
 
         {/* Interview Style — Standard (the interview we've always had) or a company-specific mock (Francis,
             2026-09-19). Deliberately styled like the Interview Round card below. A searchable picker, not a
