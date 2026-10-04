@@ -396,10 +396,11 @@ export default function InterviewPackStart() {
         cvText: cvText.trim() || undefined,
         preferredName: preferredName.trim() || undefined,
         selectedLanguage,
-        selectedDifficulty,
+        // Day One Ready sets these itself: ten scenarios (two for each of the five themes), at a gentle-to-moderate level by design.
+        selectedDifficulty: dayOne ? 'Standard' : selectedDifficulty,
         interviewRound: selectedInterviewRound,
         salaryExpectation: companyMode ? 'N/A' : selectedSalary,
-        questionCount: selectedQuestionCount,
+        questionCount: dayOne ? 10 : selectedQuestionCount,
         autoStart: true,
         consentToRecord,
         specialFocus: !companyMode && specialFocusChips.length > 0 ? specialFocusChips : undefined,
@@ -908,7 +909,7 @@ export default function InterviewPackStart() {
           </div>
 
           {/* Difficulty */}
-          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+          <div style={{ display: dayOne ? 'none' : undefined, flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
             <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
               Question Difficulty
             </div>
@@ -940,7 +941,7 @@ export default function InterviewPackStart() {
           {/* Question Count — defaults to 10 (matches the original fixed count); lets
               someone doing a quick test run pick 5 instead of sitting through/passing 10,
               and cuts AI generation cost proportionally for shorter sessions. */}
-          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+          <div style={{ display: dayOne ? 'none' : undefined, flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
             <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
               Number of Questions
             </div>
