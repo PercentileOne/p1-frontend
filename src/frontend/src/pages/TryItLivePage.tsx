@@ -464,6 +464,7 @@ export default function TryItLivePage() {
 
   async function showAnswer() {
     if (!start || busyRef.current) return;
+    unlockTTSAudio();   // inside the click: the model answer is fetched first and spoken seconds later, which a browser may no longer count as part of the tap
     cancelSpeechRef.current?.();
     logEvent('try_answer_revealed', { metadata: { q: index + 1, mobile: isMobile } });
     setRevealed({ loading: true, text: null });

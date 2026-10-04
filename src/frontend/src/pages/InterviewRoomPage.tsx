@@ -6,7 +6,7 @@ import { MouthOverlay, MOUTH_POSITIONS, MOUTH_OVERLAY_ENABLED } from '../compone
 import { YouCamera } from '../components/YouCamera';
 import { VoiceInput, type TranscriptMeta } from '../components/VoiceInput';
 import type { InterviewQuestion } from '../api/explainApi';
-import { speak, elevenLabsConfigured, getStoredInterviewerVolume, setInterviewerVolume, setTTSLanguage } from '../api/ttsApi';
+import { speak, unlockTTSAudio, elevenLabsConfigured, getStoredInterviewerVolume, setInterviewerVolume, setTTSLanguage } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
 import { CoachingOverlay } from '../components/CoachingOverlay';
 import { sessionPrepareClient, generateMikeScriptOnly, generateModelAnswer, generateCandidateQuestion } from '../api/aiScoring';
@@ -1003,6 +1003,9 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
   const handleTellMeTheAnswer = useCallback(() => {
     if (!q) return;
+    // The model answer is written first and spoken a few seconds later; wake the audio inside this click so the browser still counts it as part of the tap
+    // (otherwise the neural voice can be refused and the robotic browser voice takes over — Francis, 2026-10-04).
+    unlockTTSAudio();
     setRevealState({ loading: true, answerText: null });
     generateModelAnswer(q, cvCtx, jobCtx, sessionLanguage)
       .then(answer => {
