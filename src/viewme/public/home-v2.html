@@ -90,6 +90,16 @@
   .eyebrow.blue{color:#7DB3FF;background:rgba(79,142,247,.12);border-color:rgba(79,142,247,.32)}
   .try-note{font-size:12.5px;color:var(--dim);margin-top:12px}
   .try-safe{font-size:12.5px;color:var(--text);opacity:.85;margin-top:8px;line-height:1.7}
+  .ba{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:28px}
+  .ba .side{padding:22px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
+  .ba .side.after{border-color:rgba(52,211,153,.4);background:linear-gradient(135deg,rgba(52,211,153,.10),rgba(4,120,87,.05))}
+  .ba h3{font-size:17px;margin-bottom:10px}
+  .ba ul{list-style:none;padding:0;margin:0;display:grid;gap:8px;font-size:14.5px;line-height:1.55;color:var(--muted)}
+  .flow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;margin-top:20px;font-weight:800;font-size:14.5px}
+  .flow span{padding:9px 16px;border-radius:999px;background:rgba(52,211,153,.10);border:1px solid rgba(52,211,153,.35);color:var(--green)}
+  .flow i{font-style:normal;color:var(--dim)}
+  #safe .btns{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:28px}
+  @media(max-width:700px){.ba{grid-template-columns:1fr}}
   .qpack-cta{display:flex;align-items:center;gap:14px;margin-top:14px;padding:13px 16px;border-radius:14px;text-decoration:none;color:var(--text);background:rgba(61,126,246,.08);border:1px solid rgba(61,126,246,.32);transition:border-color .15s,background .15s}
   .qpack-cta:hover{border-color:var(--green);background:rgba(52,211,153,.08)}
   .qpack-ico{font-size:24px;line-height:1;flex-shrink:0}
@@ -429,6 +439,43 @@
       <div class="feat sm reveal"><div class="ico">😶</div><h3>Blank on a question?</h3><p>Repeat it, pause, or ask for the model answer and learn from it. Save it to your Question Bank to revisit before the real interview.</p></div>
       <div class="feat sm reveal"><div class="ico">🔍</div><h3>Fumbled an answer?</h3><p>Every answer is scored on five dimensions, with feedback on each one, so you see exactly what to fix rather than just that it went badly.</p></div>
       <div class="feat sm reveal"><div class="ico">🔁</div><h3>Want another go?</h3><p>Every interview is written fresh, so trying again is never a repeat. And if a session didn&rsquo;t go well, you can simply discard it &mdash; sharing is always your choice.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 1c · NOBODY'S WATCHING + BEFORE/AFTER (Francis, 2026-10-04) — people are not afraid of their data, they are afraid of being watched or embarrassed.
+     Every statement here was checked against how the product really works: interviews are private (not shared) by default, recording is a switch on the
+     setup screen, the free demo has no camera and keeps no answers, and interviews and accounts can be deleted. ──────── -->
+<section id="safe" class="alt">
+  <div class="wrap">
+    <span class="eyebrow">Nobody&rsquo;s watching</span>
+    <h2 class="reveal">A private place to practice, with no audience.</h2>
+    <p class="lede reveal">The fear is rarely the questions. It is being watched, judged or embarrassed. So here it is just you and an interviewer who is there to help.</p>
+    <div class="feat-grid">
+      <div class="feat sm reveal"><div class="ico">🙈</div><h3>Private by default</h3><p>Nothing is public, and nothing goes to recruiters, unless you choose to share it. You can switch it back to private whenever you like.</p></div>
+      <div class="feat sm reveal"><div class="ico">🎙️</div><h3>No camera needed</h3><p>Answer out loud or just type. The free demo uses no camera at all.</p></div>
+      <div class="feat sm reveal"><div class="ico">📹</div><h3>Recording is your choice</h3><p>In a full interview you can record yourself to watch back. It is saved privately to your account, and you can turn recording off before you start.</p></div>
+      <div class="feat sm reveal"><div class="ico">🧹</div><h3>Delete whenever you like</h3><p>Delete any interview, or your whole account, whenever you want.</p></div>
+      <div class="feat sm reveal"><div class="ico">🤝</div><h3>No judgement</h3><p>No audience, no colleagues, no one to impress. Pause, repeat or skip a question, and go again.</p></div>
+      <div class="feat sm reveal"><div class="ico">🧾</div><h3>The free demo keeps nothing</h3><p>In &ldquo;Try it live&rdquo; we do not keep your answers, and you do not need an account. <a href="/privacy.html" style="color:var(--green)">See exactly what we keep</a>.</p></div>
+    </div>
+
+    <div class="ba reveal">
+      <div class="side"><h3>😰 Before</h3><ul>
+        <li>Not sure what they will ask</li>
+        <li>Rambling, or blanking on the hard ones</li>
+        <li>No idea how you really come across</li>
+      </ul></div>
+      <div class="side after"><h3>😌 After</h3><ul>
+        <li>You have said your answers out loud and heard where they were weak</li>
+        <li>You have a score on five dimensions and a stronger answer to compare with</li>
+        <li>You walk in having been through it, so the real thing feels familiar</li>
+      </ul></div>
+    </div>
+    <div class="flow reveal"><span>Interview</span><i>&rarr;</i><span>Get scored</span><i>&rarr;</i><span>See what to fix</span><i>&rarr;</i><span>Go again</span></div>
+
+    <div class="btns">
+      <a class="btn btn-green" href="#try" onclick="setTimeout(function(){document.getElementById('topic').focus()},500)">▶ Try it live — free</a>
     </div>
   </div>
 </section>

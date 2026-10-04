@@ -998,8 +998,8 @@ export default function InterviewPackStart() {
           style={{
             display: 'flex', alignItems: 'center', gap: '14px',
             width: '100%', marginTop: '4px', marginBottom: '16px',
-            background: consentToRecord ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.04)',
-            border: `1px solid ${consentToRecord ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)'}`,
+            background: consentToRecord ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.04)',
+            border: `1px solid ${consentToRecord ? 'rgba(52,211,153,0.35)' : 'rgba(255,255,255,0.1)'}`,
             borderRadius: '12px', padding: '14px 18px',
             cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
             transition: 'all 0.25s ease',
@@ -1009,20 +1009,20 @@ export default function InterviewPackStart() {
           <span style={{ position: 'relative', flexShrink: 0, width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{
               display: 'block', width: '14px', height: '14px', borderRadius: '50%',
-              background: consentToRecord ? '#ef4444' : 'rgba(255,255,255,0.2)',
+              background: consentToRecord ? '#34D399' : 'rgba(255,255,255,0.2)',
               transition: 'background 0.25s ease',
-              boxShadow: consentToRecord ? '0 0 0 0 rgba(239,68,68,0.6)' : 'none',
+              boxShadow: consentToRecord ? '0 0 0 0 rgba(52,211,153,0.6)' : 'none',
               animation: consentToRecord ? 'recPulse 1.6s ease-out infinite' : 'none',
             }} />
           </span>
           {/* Label */}
           <span style={{ flex: 1 }}>
-            <span style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: consentToRecord ? '#f87171' : 'var(--text-3)', transition: 'color 0.25s', letterSpacing: '0.01em' }}>
-              {consentToRecord ? 'Recording on' : 'Recording off'}
+            <span style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: consentToRecord ? '#34D399' : 'var(--text-3)', transition: 'color 0.25s', letterSpacing: '0.01em' }}>
+              {consentToRecord ? 'Recording on — just for you' : 'Recording off'}
             </span>
             <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-3)', marginTop: '2px', lineHeight: 1.4 }}>
               {consentToRecord
-                ? 'Recruiters can watch your interview back. Tap to turn off.'
+                ? 'Saved privately to your account so you can watch it back. Nobody else sees it unless you choose to share it. Tap to turn off.'
                 : 'Interview will not be recorded. Tap to enable.'}
             </span>
           </span>
@@ -1030,8 +1030,8 @@ export default function InterviewPackStart() {
           <span style={{
             flexShrink: 0, fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em',
             padding: '4px 10px', borderRadius: '20px',
-            background: consentToRecord ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.07)',
-            color: consentToRecord ? '#f87171' : 'var(--text-3)',
+            background: consentToRecord ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.07)',
+            color: consentToRecord ? '#34D399' : 'var(--text-3)',
             transition: 'all 0.25s',
           }}>
             {consentToRecord ? 'ON' : 'OFF'}
@@ -1039,9 +1039,9 @@ export default function InterviewPackStart() {
         </button>
         <style>{`
           @keyframes recPulse {
-            0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.55); }
-            70%  { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
-            100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+            0%   { box-shadow: 0 0 0 0 rgba(52,211,153,0.55); }
+            70%  { box-shadow: 0 0 0 8px rgba(52,211,153,0); }
+            100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
           }
           @keyframes jobTitleSpin {
             to { transform: rotate(360deg); }
