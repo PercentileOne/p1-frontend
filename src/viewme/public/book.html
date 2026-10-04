@@ -155,6 +155,27 @@
   .field-note p { font-size: 14.5px; line-height: 1.7; color: var(--text-2); font-style: italic; }
   .field-note p strong { color: var(--text); font-style: normal; font-weight: 600; }
 
+  /* Collapsible parts in the sidebar */
+  button.sb-part-label { display: flex; align-items: center; gap: 8px; width: 100%; background: none; border: none; cursor: pointer; text-align: left; border-radius: 8px; padding: 14px 12px 6px; color: var(--text-3); }
+  button.sb-part-label:hover { color: var(--text-2); }
+  button.sb-part-label > span:first-child { flex: 1; }
+  button.sb-part-label .cnt { font-size: 10px; font-weight: 600; letter-spacing: 0.04em; color: var(--text-3); background: var(--surface-2); border-radius: 10px; padding: 1px 7px; }
+  button.sb-part-label .chev { font-size: 11px; transition: transform 0.15s; }
+  button.sb-part-label.closed .chev { transform: rotate(-90deg); }
+  .sb-tools { display: flex; gap: 14px; margin-top: 10px; }
+  .sb-tools button { background: none; border: none; padding: 0; cursor: pointer; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
+  .sb-tools button:hover { color: var(--accent-2); }
+
+  /* Collapsible blocks inside a chapter */
+  .ch-block-label { cursor: pointer; user-select: none; }
+  .ch-block-label::before { content: '\25BE'; display: inline-block; font-size: 11px; margin-right: 2px; transition: transform 0.15s; }
+  .ch-block-label.closed::before { transform: rotate(-90deg); }
+  .ch-block-label:focus-visible, button.sb-part-label:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+
+  /* Scrolling works everywhere, with the scrollbars out of sight */
+  html, .sb-list, .main { scrollbar-width: none; -ms-overflow-style: none; }
+  html::-webkit-scrollbar, .sb-list::-webkit-scrollbar, .main::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
   .ch-status-written { background: var(--accent-2-soft); color: var(--accent-2); }
 
   /* A chapter that is fully written reads here in full */
@@ -273,6 +294,7 @@
 
     <div class="sb-search-wrap">
       <input class="sb-search" id="searchBox" placeholder="Search chapters…" />
+      <div class="sb-tools"><button type="button" id="collapseAll">Collapse all</button><button type="button" id="expandAll">Expand all</button></div>
     </div>
 
     <nav class="sb-list" id="chapterList"></nav>
@@ -670,6 +692,15 @@ const CHAPTERS = [
 
 const STORAGE_KEY = 'zeroTo1M.studied';
 const THEME_KEY = 'zeroTo1M.theme';
+const COLLAPSED_KEY = 'zeroTo1M.collapsedParts';
+function loadCollapsed() {
+  try { return new Set(JSON.parse(localStorage.getItem(COLLAPSED_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+function saveCollapsed() {
+  try { localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...collapsed])); } catch {}
+}
+let collapsed = loadCollapsed();
 
 function loadStudied() {
   try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')); }
@@ -705,11 +736,16 @@ function renderSidebar() {
   );
   let html = '';
   let lastPart = null;
+  const searching = term.length > 0;
   filtered.forEach(c => {
+    const closed = !searching && collapsed.has(c.part);
     if (c.part !== lastPart) {
-      html += '<div class="sb-part-label">' + c.part + '</div>';
+      const total = filtered.filter(x => x.part === c.part).length;
+      html += '<button type="button" class="sb-part-label' + (closed ? ' closed' : '') + '" data-part="' + c.part + '" aria-expanded="' + (!closed) + '">'
+        + '<span>' + c.part + '</span><span class="cnt">' + total + '</span><span class="chev">\u25BE</span></button>';
       lastPart = c.part;
     }
+    if (closed) return;
     const isActive = c.id === activeId;
     const isChecked = studied.has(c.id);
     html += '<button class="sb-item' + (isActive ? ' active' : '') + '" data-id="' + c.id + '">'
@@ -725,6 +761,14 @@ function renderSidebar() {
   });
   chapterListEl.innerHTML = html || '<div style="padding:20px 12px;color:var(--text-3);font-size:13px;">No chapters match "' + searchTerm + '".</div>';
 
+  chapterListEl.querySelectorAll('.sb-part-label').forEach(el => {
+    el.addEventListener('click', () => {
+      const p = el.getAttribute('data-part');
+      if (collapsed.has(p)) collapsed.delete(p); else collapsed.add(p);
+      saveCollapsed();
+      renderSidebar();
+    });
+  });
   chapterListEl.querySelectorAll('.sb-item').forEach(el => {
     el.addEventListener('click', (e) => {
       if (e.target.closest('[data-check]')) return;
@@ -812,6 +856,27 @@ function renderChapter(c) {
   mainInnerEl.innerHTML = html;
   window.scrollTo({ top: 0, behavior: 'instant' });
 
+  // Every labelled block (What This Chapter Covers, The Chapter, Field Note…) can be folded away.
+  mainInnerEl.querySelectorAll('.ch-block').forEach(block => {
+    const label = block.querySelector('.ch-block-label');
+    if (!label) return;
+    const body = document.createElement('div');
+    body.className = 'ch-block-body';
+    while (label.nextSibling) body.appendChild(label.nextSibling);
+    block.appendChild(body);
+    label.setAttribute('role', 'button');
+    label.setAttribute('tabindex', '0');
+    label.setAttribute('aria-expanded', 'true');
+    const toggle = () => {
+      const open = body.hidden;
+      body.hidden = !open;
+      label.setAttribute('aria-expanded', String(open));
+      label.classList.toggle('closed', !open);
+    };
+    label.addEventListener('click', toggle);
+    label.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+  });
+
   document.getElementById('studiedToggle').addEventListener('click', () => {
     if (studied.has(c.id)) studied.delete(c.id); else studied.add(c.id);
     saveStudied(studied);
@@ -832,12 +897,16 @@ function renderMain() {
 
 function selectChapter(id) {
   activeId = id;
+  const target = CHAPTERS.find(x => x.id === id);
+  if (target && collapsed.has(target.part)) { collapsed.delete(target.part); saveCollapsed(); }
   renderSidebar();
   renderMain();
   closeMobileSidebar();
 }
 
 searchBoxEl.addEventListener('input', (e) => { searchTerm = e.target.value; renderSidebar(); });
+document.getElementById('collapseAll').addEventListener('click', () => { collapsed = new Set(CHAPTERS.map(c => c.part)); saveCollapsed(); renderSidebar(); });
+document.getElementById('expandAll').addEventListener('click', () => { collapsed = new Set(); saveCollapsed(); renderSidebar(); });
 
 // Theme
 function applyTheme(choice) {

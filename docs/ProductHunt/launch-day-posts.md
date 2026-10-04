@@ -1,0 +1,80 @@
+# Launch day — Tuesday 6 October 2026
+
+Drafts for Francis to review and edit. Spelling is "practice" throughout. Links carry tracking tags so the admin funnel shows where visitors came from.
+
+---
+
+## 1. LinkedIn post (launch day)
+
+I built this from a dialysis chair.
+
+Three times a week, four hours at a time, with a laptop on my knee. Today it's live on Product Hunt.
+
+TheInterviewChair.com lets you practice a job interview with live AI interviewers who talk back. Amina (HR) and Wayne (technical) ask real questions, you answer out loud or type, and you get an honest score on five dimensions with a stronger answer to learn from.
+
+Why I made it: I know what it feels like to walk into an interview underprepared, when the job is the difference between everything and nothing. I wanted a private place where your practice is your practice. Make your mistakes here, not in the real interview.
+
+• Free to try, no account, 3 questions
+• 32 languages
+• Private. Nobody sees your interview unless you choose to share it
+
+If you've got an interview coming up, or you know someone who has, try it and tell me what you think.
+
+Product Hunt (an upvote or a comment means a lot): [paste the live Product Hunt link]
+
+---
+
+## 2. First comment under the LinkedIn post (put the website link here, not in the post)
+
+Try it free, 3 questions, no sign-up: https://www.theinterviewchair.com/?utm_source=linkedin&utm_medium=launch-post&utm_campaign=ph-launch
+
+What would you most like to practice for?
+
+---
+
+## 3. Shorter version (if you want something quicker)
+
+Today TheInterviewChair.com is live on Product Hunt.
+
+Practice a real interview with AI interviewers who talk back. Get scored honestly. Fix what's weak. Go again. Private, free to try, no account, 32 languages. Make your mistakes here, not in the real interview.
+
+I built it between dialysis sessions, so every upvote and comment genuinely helps. Thank you.
+
+[paste the live Product Hunt link]
+
+---
+
+## 4. Message to Hang (Spatius) — a gentle follow-up, send once the launch is live
+
+He has not replied to the earlier message offering a Product Hunt mention, so this is a light heads-up. Do not name Spatius on Product Hunt, LinkedIn or the site until he says yes.
+
+Hi Hang,
+
+A quick heads-up: TheInterviewChair.com went live on Product Hunt today. No need to reply to this or to my earlier message.
+
+I'll leave Spatius unnamed on Product Hunt unless you tell me you're happy for me to mention it, and I'm glad to credit you properly whenever suits you. If you'd like to see how it looks, the free demo is here: https://www.theinterviewchair.com/?utm_source=spatius&utm_medium=message&utm_campaign=ph-launch
+
+Thanks again for your help.
+
+Francis
+
+(One message only. If he does not reply, leave it there.)
+
+---
+
+## 5. Launch-day checklist
+
+Morning
+- [ ] Switch on the Product Hunt badge in `src/viewme/public/home-v2.html` (uncomment the block under the hero lede) once the page is live, then push. Ask Claude to do it.
+- [ ] Post the LinkedIn post, then add the first comment with the website link straight after.
+- [ ] Open the Product Hunt page and reply to every comment, with something specific where you can.
+- [ ] Send the message to Hang.
+
+During the day
+- [ ] Check the admin funnel ("Last 1 day") for visitors from LinkedIn and Product Hunt.
+- [ ] Reply to every LinkedIn comment and message. Replying to all of them is the habit you want to keep.
+- [ ] Keep the first Native Marketing posts for after launch week, so they don't compete with today.
+
+Evening
+- [ ] Write three lines for the book's launch-week chapter: how it felt, what surprised you, what you'd tell yourself next time.
+- [ ] Rest.
