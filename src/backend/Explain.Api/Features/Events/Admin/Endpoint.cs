@@ -259,6 +259,10 @@ public static class Endpoint
 
     private static readonly HashSet<string> TryFunnelEventTypes = ["try_mobile_visit", "try_blocked_mobile", "try_started", "try_first_question", "try_completed", "try_blocked", "try_answering", "try_answer_submitted", "try_left", "try_register_click", "try_email_score"];
 
+    // Archive files never change once written, so each one is read and parsed ONCE and remembered in memory (about 800 small files / 2.5 MB today); later calls only fetch
+    // files that are new. Files are fetched 16 at a time — reading them one by one was minutes of round-trips and made "All time" fail.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (List<FunnelEvent> Marketing, List<FunnelEvent> Try)> ArchiveCache = new();
+
     private static async Task LoadArchivedFunnelEventsAsync(IConfiguration config, List<FunnelEvent> marketing, List<FunnelEvent> tryEvents, CancellationToken ct)
     {
         var connectionString = config.GetConnectionString("BlobStorage");
@@ -266,27 +270,50 @@ public static class Endpoint
         try
         {
             var container = new BlobContainerClient(connectionString, "system-events-archive");
-            var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var total = 0;
-            await foreach (var blob in container.GetBlobsAsync(cancellationToken: ct))
+            var names = new List<string>();
+            await foreach (var blob in container.GetBlobsAsync(cancellationToken: ct)) names.Add(blob.Name);
+
+            var gate = new SemaphoreSlim(16);
+            await Task.WhenAll(names.Where(n => !ArchiveCache.ContainsKey(n)).Select(async name =>
             {
-                using var stream = await container.GetBlobClient(blob.Name).OpenReadAsync(cancellationToken: ct);
-                using var reader = new StreamReader(stream);
-                string? line;
-                while ((line = await reader.ReadLineAsync(ct)) is not null)
-                {
-                    if (line.Length == 0) continue;
-                    ArchivedEvent? e;
-                    try { e = JsonSerializer.Deserialize<ArchivedEvent>(line, opts); } catch (JsonException) { continue; }
-                    if (e?.sessionId is null || e.eventType is null) continue;
-                    var fe = new FunnelEvent(e.sessionId, e.eventType, e.page, e.metadata, e.ipAddress, e.country);
-                    if (e.portal == "marketing") marketing.Add(fe);
-                    else if (e.portal == "candidate" && (TryFunnelEventTypes.Contains(e.eventType) || (e.eventType == "page_view" && e.page == "/try"))) tryEvents.Add(fe);
-                    if (++total >= ArchiveEventCap) return;
-                }
+                await gate.WaitAsync(ct);
+                try { ArchiveCache[name] = await ReadArchiveBlobAsync(container, name, ct); }
+                catch (Exception) { /* skipped this time; retried on the next call */ }
+                finally { gate.Release(); }
+            }));
+
+            var total = 0;
+            foreach (var name in names.OrderBy(n => n, StringComparer.Ordinal))
+            {
+                if (!ArchiveCache.TryGetValue(name, out var parsed)) continue;
+                marketing.AddRange(parsed.Marketing);
+                tryEvents.AddRange(parsed.Try);
+                total += parsed.Marketing.Count + parsed.Try.Count;
+                if (total >= ArchiveEventCap) break;
             }
         }
         catch (Exception) { /* best-effort: whatever was read, plus the live events, still gives a useful funnel */ }
+    }
+
+    private static async Task<(List<FunnelEvent> Marketing, List<FunnelEvent> Try)> ReadArchiveBlobAsync(BlobContainerClient container, string name, CancellationToken ct)
+    {
+        var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var marketing = new List<FunnelEvent>();
+        var tryEvents = new List<FunnelEvent>();
+        using var stream = await container.GetBlobClient(name).OpenReadAsync(cancellationToken: ct);
+        using var reader = new StreamReader(stream);
+        string? line;
+        while ((line = await reader.ReadLineAsync(ct)) is not null)
+        {
+            if (line.Length == 0) continue;
+            ArchivedEvent? e;
+            try { e = JsonSerializer.Deserialize<ArchivedEvent>(line, opts); } catch (JsonException) { continue; }
+            if (e?.sessionId is null || e.eventType is null) continue;
+            var fe = new FunnelEvent(e.sessionId, e.eventType, e.page, e.metadata, e.ipAddress, e.country);
+            if (e.portal == "marketing") marketing.Add(fe);
+            else if (e.portal == "candidate" && (TryFunnelEventTypes.Contains(e.eventType) || (e.eventType == "page_view" && e.page == "/try"))) tryEvents.Add(fe);
+        }
+        return (marketing, tryEvents);
     }
 
     public record FunnelEvent(string sessionId, string eventType, string? page, Dictionary<string, object>? metadata, string? ipAddress = null, string? country = null);
