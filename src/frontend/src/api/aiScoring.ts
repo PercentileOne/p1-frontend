@@ -1253,12 +1253,16 @@ Return this exact JSON:
     competencyTags: ['company knowledge', 'motivation'],
   };
 
-  const finalQuestions: InterviewQuestion[] = [
-    ...(result.questions ?? []),
-    ...characterQuestions,
-    ...(teamFitQuestion ? [teamFitQuestion] : []),
-    companyQuestion,
-  ];
+  // Day One Ready (2026-10-04): the session is the scenario questions and nothing else — the standard character, team-fit and company-knowledge
+  // questions would pull it back to a normal interview.
+  const finalQuestions: InterviewQuestion[] = dayOneReady
+    ? (result.questions ?? [])
+    : [
+        ...(result.questions ?? []),
+        ...characterQuestions,
+        ...(teamFitQuestion ? [teamFitQuestion] : []),
+        companyQuestion,
+      ];
 
   return {
     questions: finalQuestions,

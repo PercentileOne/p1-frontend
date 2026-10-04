@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { FileUpload } from '../components/FileUpload';
 import { logFlowEvent } from '../api/flowLogger';
+import { getSavedCv, saveCv, removeSavedCv, type SavedCv } from '../api/savedCvApi';
 import { type Career, searchCareers, reportMissingCareerTitle } from '../api/careersApi';
 import { generateHotTopics } from '../api/aiScoring';
 import { logInDemandSubjects } from '../api/inDemandSubjectsApi';
@@ -122,6 +123,11 @@ export default function InterviewPackStart() {
   const [jobTitle, setJobTitle] = useState(incoming.jobTitle ?? '');
   const [cvText, setCvText] = useState(incoming.cvText ?? '');
   const [cvFileName, setCvFileName] = useState('');
+  // The CV used last time, kept on the account (2026-10-04): filled in automatically so it never has to be uploaded again.
+  const [savedCv, setSavedCv] = useState<SavedCv | null>(null);
+  const [usingSavedCv, setUsingSavedCv] = useState(false);
+  const cvTextRef = useRef('');
+  cvTextRef.current = cvText;
   // The recruiter's actual uploaded file, shown as a real attachment — replacing it further
   // down (upload/text tabs) only changes THIS practice session, not what's on the prep record.
   const [attachedCv, setAttachedCv] = useState<{ url: string; name: string } | null>(
@@ -167,6 +173,8 @@ export default function InterviewPackStart() {
   const [companyLoading, setCompanyLoading] = useState(false);
   const companyPickRef = useRef(0);
   const companyMode = selectedCompanyId !== 'standard';
+  // Day One Ready opens a simpler setup: just the role, CV (optional), language and length. Everything else keeps its default and is hidden.
+  const dayOne = Boolean(incoming.dayOneReady);
   const stillExtracting = jobSpecExtracting || cvExtracting || companyLoading;
   // Who may start an interview (Francis, 2026-09-21) — asks the server; while its enforcement switch is off it always says yes.
   const gate = useInterviewGate();
@@ -329,6 +337,18 @@ export default function InterviewPackStart() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authToken]);
 
+  useEffect(() => {
+    if (!authToken || incoming.cvText) return;
+    void getSavedCv(authToken).then(cv => {
+      if (!cv) return;
+      setSavedCv(cv);
+      // Never overwrite something already typed or uploaded while this was loading.
+      if (cvTextRef.current.trim()) return;
+      setCvText(cv.text); setCvFileName(cv.fileName); setUsingSavedCv(true);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authToken]);
+
   const handleStart = async () => {
     if (stillExtracting || gate.checking) return;
     if (!hasEnough) {
@@ -340,6 +360,8 @@ export default function InterviewPackStart() {
     // BEFORE anything is logged or navigated. Being blocked shows the paywall and stops here.
     const { allowed } = await gate.begin();
     if (!allowed) return;
+    // Keep this CV for next time (a new one, or one that changed); the saved one is left alone when it was used as it was.
+    if (authToken && cvText.trim().length > 20 && !(usingSavedCv && savedCv && savedCv.text === cvText)) void saveCv(authToken, cvFileName || 'My CV', cvText);
     logFlowEvent('START_INTERVIEW_CLICKED', {
       hasJobSpec: Boolean(jobSpec.trim()),
       hasCv: Boolean(cvText.trim()),
@@ -474,10 +496,10 @@ export default function InterviewPackStart() {
           )}
 
           <h1 style={{ fontSize: '28px', fontWeight: 900, color: 'var(--text)', marginBottom: '10px', lineHeight: 1.2 }}>
-            Set up your interview
+            {dayOne ? 'Day One Ready' : 'Set up your interview'}
           </h1>
           <p style={{ fontSize: '15px', color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>
-            Tell us about the role — we'll tailor every question to match
+            {dayOne ? 'Which role are you starting? We will build realistic first-90-days scenarios for it.' : "Tell us about the role — we'll tailor every question to match"}
           </p>
         </div>
 
@@ -490,6 +512,7 @@ export default function InterviewPackStart() {
           </div>
         )}
 
+        <div style={dayOne ? { display: 'none' } : undefined}>
         {/* Interview Style — Standard (the interview we've always had) or a company-specific mock (Francis,
             2026-09-19). Deliberately styled like the Interview Round card below. A searchable picker, not a
             <select>, because the list passed ~190 names — see CompanyPicker (search by name or brand). */}
@@ -526,6 +549,8 @@ export default function InterviewPackStart() {
           )}
         </div>
 
+        </div>
+
         {/* Role input — one card, three tabs, all visible in the same strip (Francis, 2026-09-13:
             the old layout split Job Title (always-visible, top) from Job Spec/CV (collapsed,
             bottom), which read as if a Job Spec was some secondary afterthought rather than a
@@ -552,6 +577,16 @@ export default function InterviewPackStart() {
           </div>
 
           <div style={{ padding: '24px 28px' }}>
+            {usingSavedCv && savedCv && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: '18px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: '10px', padding: '10px 14px' }}>
+                <span style={{ fontSize: 16 }}>📄</span>
+                <div style={{ flex: 1, minWidth: 0, fontSize: '12.5px', color: 'var(--text-2)' }}>
+                  <strong style={{ color: 'var(--text)' }}>Using your saved CV</strong> ({savedCv.fileName}). You don't need to upload it again.
+                </div>
+                <button type="button" onClick={() => { setCvText(''); setCvFileName(''); setUsingSavedCv(false); setActiveTab('cv'); }} style={{ background: 'none', border: 'none', color: 'var(--blue)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Use a different CV</button>
+                <button type="button" onClick={() => { if (authToken) void removeSavedCv(authToken); setSavedCv(null); setUsingSavedCv(false); setCvText(''); setCvFileName(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Remove it</button>
+              </div>
+            )}
             {activeTab === 'jobTitle' && (
               <div style={{ position: 'relative' }}>
                 <input
@@ -676,6 +711,7 @@ export default function InterviewPackStart() {
                       onExtracted={(text, name) => {
                         setCvText(text);
                         setCvFileName(name);
+                        setUsingSavedCv(false);
                         setAttachedCv(null); // replacing the recruiter's attached CV for this session
                         logFlowEvent('CV_UPLOADED', { fileName: name, charCount: text.length });
                       }}
@@ -689,7 +725,7 @@ export default function InterviewPackStart() {
                 {cvInputTab === 'text' && (
                   <textarea
                     value={cvText}
-                    onChange={e => { setCvText(e.target.value); setCvFileName(''); setAttachedCv(null); }}
+                    onChange={e => { setCvText(e.target.value); setCvFileName(''); setUsingSavedCv(false); setAttachedCv(null); }}
                     placeholder="Paste your CV / résumé text here — skills, experience, achievements…"
                     rows={8}
                     style={{
@@ -704,6 +740,7 @@ export default function InterviewPackStart() {
           </div>
         </div>
 
+        <div style={dayOne ? { display: 'none' } : undefined}>
         {/* Interview Round — see INTERVIEW_ROUNDS's own comment above. Sits right under the
             role-input card (Francis's explicit placement request, 2026-09-16), always visible
             regardless of which of the three role-input tabs is active, since it applies no
@@ -732,7 +769,9 @@ export default function InterviewPackStart() {
           </div>
         </div>
 
-        {!companyMode && (
+        </div>
+
+        {!companyMode && !dayOne && (
         <>
         {/* Salary Expectation — see SALARY_BANDS's own comment above. Optional, deliberately
             lets a candidate practice at a level above their comfort zone. */}
@@ -1064,7 +1103,7 @@ export default function InterviewPackStart() {
             fontFamily: 'inherit', letterSpacing: '-0.01em', transition: 'opacity 0.2s',
           }}
         >
-          {gate.checking ? 'Checking…' : companyLoading ? 'Researching the company…' : stillExtracting ? 'Extracting file text…' : 'Start Interview →'}
+          {gate.checking ? 'Checking…' : companyLoading ? 'Researching the company…' : stillExtracting ? 'Extracting file text…' : dayOne ? 'Start Day One Ready →' : 'Start Interview →'}
         </button>
 
         {attemptedStart && !hasEnough && (
@@ -1074,7 +1113,7 @@ export default function InterviewPackStart() {
         )}
 
         <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-3)', marginTop: '14px', lineHeight: 1.6 }}>
-          Your CV is never stored. This session is private and confidential.
+          Your CV is saved to your account so you do not have to upload it again, and you can remove it at any time. Your interviews are private unless you choose to share them.
         </p>
       </motion.div>
       {gate.blocked && <PaywallDialog result={gate.blocked} onClose={gate.dismiss} />}

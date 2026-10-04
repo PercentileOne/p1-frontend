@@ -37,6 +37,7 @@ public class AccountDeletionService(AppDbContext db, CosmosService cosmos, IConf
         "talks",                 // /candidateId
         "qaLog",                 // /candidateId
         "questionBank",          // /candidateId
+        "savedCvs",              // /candidateId — the CV kept for next time
         "careerCoachThreads",    // /candidateId
         "careerCoachUsage",      // /candidateId
         "profileViewCounters",   // /candidateId

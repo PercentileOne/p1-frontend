@@ -143,6 +143,11 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("questionBank", "/candidateId"));
 
+        // The CV a candidate used last time, so it never has to be uploaded again (Francis, 2026-10-04). One document per candidate (id = candidate id).
+        // See Features/SavedCv/Endpoint.cs.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("savedCvs", "/candidateId"));
+
         // "In Demand Subjects" — one document per (job title, subject) pair, counters
         // incremented every time a candidate keeps that subject in the intake screen's
         // Special Focus field when actually starting an interview (never for a suggestion
