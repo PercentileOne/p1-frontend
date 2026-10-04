@@ -14,7 +14,9 @@ const PHONETIC: [RegExp, string][] = [
   // and all-caps "NET" reads as emphasis/shouting to the model. Phonetic letter names (hyphenated,
   // which most TTS engines treat as an explicit spell-out marker) plus mixed-case "Net" sidesteps
   // both at once.
-  [/\bASP\.NET\b/gi, 'Ay-Ess-Pee dot Net'],
+  // "Hay", not "Ay": the voice reads "Ay" as the word "aye" (rhymes with "eye"), so "Ay-Pee-Eye" came out as "I P I" and "Ay-Ess-Pee" as "I S P" (heard in the
+  // model answer 2026-10-04; confirmed by transcribing the voice's own audio: "Hay-" is heard correctly as A P I / A S P).
+  [/\bASP\.NET\b/gi, 'Hay-Ess-Pee dot Net'],
   [/\b\.NET\b/g, 'dot Net'],
   [/\bNode\.js\b/gi, 'Node JS'],
   [/\bVue\.js\b/gi, 'Vue JS'],
@@ -34,8 +36,8 @@ const PHONETIC: [RegExp, string][] = [
   // exactly the same class of bug as ASP.NET's "A S P" above: it collides with the real word
   // "I" and gets mispronounced inconsistently depending on surrounding context (reported live
   // 2026-09-11: "A-P-ONE" / "A-P-WHY" depending on the word before it). Same fix as ASP.NET.
-  [/\bAPI\b/g, 'Ay-Pee-Eye'],
-  [/\bAPIs\b/g, 'Ay-Pee-Eyes'],
+  [/\bAPI\b/g, 'Hay-Pee-Eye'],
+  [/\bAPIs\b/g, 'Hay-Pee-Eyes'],
   [/\bUI\b/g, 'You-Eye'],
   [/\bUX\b/g, 'U X'],
   [/\bCI\/CD\b/gi, 'See-Eye See-Dee'],

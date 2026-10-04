@@ -31,8 +31,8 @@ public static class PhoneticSanitiser
         // context (reported live 2026-09-11: "A-P-ONE" / "A-P-WHY" depending on the word
         // before it). Same fix as ASP.NET: hyphens are a spell-out marker most TTS engines
         // respect reliably, sidestepping the word collision entirely.
-        (@"\bAPI\b", "Ay-Pee-Eye"),
-        (@"\bAPIs\b", "Ay-Pee-Eyes"),
+        (@"\bAPI\b", "Hay-Pee-Eye"),   // "Hay", not "Ay": the voice reads "Ay" as "aye" (= "eye") and says "I P I"
+        (@"\bAPIs\b", "Hay-Pee-Eyes"),
         (@"\bUI\b", "You-Eye"),
         (@"\bUX\b", "U X"),
         (@"\bCI/CD\b", "See-Eye See-Dee"),
