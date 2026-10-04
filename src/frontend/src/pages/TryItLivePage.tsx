@@ -681,7 +681,14 @@ export default function TryItLivePage() {
                 </label>
               )}
               <button onClick={() => void begin()} disabled={topic.trim().length < 2 || !name.trim()} style={{ ...primary, width: '100%', opacity: (topic.trim().length < 2 || !name.trim()) ? 0.5 : 1 }}>Start my mini interview →</button>
-              <div style={{ fontSize: 12, color: 'var(--text-3, #94a3b8)', marginTop: 12, textAlign: 'center' }}>You can speak your answers or type them. Nothing is saved unless you create an account.</div>
+              {/* Reassurance (Francis, 2026-10-04): what puts people off is being seen or embarrassed, not data. Every line here is literally true — a demo is
+                  private to the visitor, has no camera, and is never shown to anyone. See privacy.html ("Try it live"). */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', justifyContent: 'center', marginTop: 14, fontSize: 12.5, color: 'var(--text-2, #cbd5e1)' }}>
+                <span>🔒 Private. Only you see your interview</span>
+                <span>🎙️ Voice or typing. No camera</span>
+                <span>🤝 No judgement. Mistakes are the point</span>
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-3, #94a3b8)', marginTop: 8, textAlign: 'center' }}>Nothing is public or shown to recruiters. We don't keep your answers.</div>
             </div>
             <div style={{ textAlign: 'center', marginTop: 16 }}>
               <button onClick={() => void share()} style={{ background: 'none', border: 'none', color: 'var(--text-3, #94a3b8)', fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}>Know someone with an interview coming up? Share this</button>

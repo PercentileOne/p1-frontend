@@ -230,7 +230,7 @@ public static class Endpoint
                 // Best-effort — a visitor's scored result must never fail to return just because saving it for admin
                 // visibility (Features/Interviews/Admin) had a hiccup. See SaveSessionAsync's own note on why this
                 // exists: previously nothing about a /try session was ever persisted, only rate-limit counters.
-                try { await SaveSessionAsync(topic, CleanName(req.Name), answers, normalised, ip, cosmos); }
+                try { await SaveSessionAsync(topic, answers.Count, normalised, cosmos); }
                 catch (Exception ex) { logger.LogWarning(ex, "TryOut: failed to save session for admin visibility"); }
 
                 return Results.Ok(normalised);
@@ -612,23 +612,25 @@ public static class Endpoint
     // scoring succeeds (not at /start), same "completed" framing as that page already uses for real interviews;
     // a visitor who starts but never reaches a score simply doesn't show up, same as an abandoned real interview
     // wouldn't either. See Features/Interviews/Admin/Endpoint.cs for how this is merged into that list.
-    private static async Task SaveSessionAsync(string topic, string? name, List<(string Question, string Answer)> answers, FeedbackModelResult result, string ip, CosmosService cosmos)
+    // Privacy (Francis, 2026-10-04): a demo visitor's words are never kept. The record holds only the subject they typed, how many questions they answered, the
+    // score and the date — no name, no questions, no answers, no headline and no network address. (Earlier versions of this method saved those, and nothing ever
+    // displayed the answers; the fields stay on the record type, empty, so older rows still read.)
+    private static async Task SaveSessionAsync(string topic, int answerCount, FeedbackModelResult result, CosmosService cosmos)
     {
         var container = cosmos.GetContainer("tryoutSessions");
         var doc = new TryOutSessionDoc(
             id: Guid.NewGuid().ToString(), pk: "tryout",
-            name: name, subject: topic,
-            questions: answers.Select(a => a.Question).ToList(),
-            answers: answers.Select(a => a.Answer).ToList(),
-            overallScore: result.Overall, headline: result.Headline,
-            ip: ip, createdAt: DateTimeOffset.UtcNow.ToString("O"));
+            name: null, subject: topic,
+            questions: [], answers: [],
+            overallScore: result.Overall, headline: null,
+            ip: "", createdAt: DateTimeOffset.UtcNow.ToString("O"), answerCount: answerCount);
         await container.CreateItemAsync(doc, new PartitionKey(doc.pk));
     }
 
     public record TryOutSessionDoc(
         string id, string pk, string? name, string subject,
         List<string> questions, List<string> answers,
-        int overallScore, string? headline, string ip, string createdAt);
+        int overallScore, string? headline, string ip, string createdAt, int answerCount = 0);
 }
 
 public record EmailScoreRequest(string? Email, string? Name, string? Subject, int Score, string? Strongest, string? Weakest, bool TipsOptIn);

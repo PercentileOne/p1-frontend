@@ -110,7 +110,7 @@ public static class Endpoint
             }
             return docs.Select(d => new AdminInterviewRow(
                 d.id, $"tryout:{d.id}", string.IsNullOrWhiteSpace(d.name) ? "Anonymous (Try it live)" : $"{d.name} (Try it live)",
-                d.createdAt, d.subject, null, d.overallScore, d.answers.Count,
+                d.createdAt, d.subject, null, d.overallScore, Math.Max(d.answers.Count, d.answerCount),
                 false, false, null, "tryout")).ToList();
         }
         catch (Exception) { return []; } // never let a hiccup in the secondary source break admin oversight of real interviews
