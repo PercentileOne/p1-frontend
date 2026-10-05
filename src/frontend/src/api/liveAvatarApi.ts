@@ -46,16 +46,25 @@ export async function fetchAvatarConfig(): Promise<{ enabled: boolean }> {
 // involvement in the audible path at all. Same numeric boost the old destination-side gain node
 // used to apply.
 const VOLUME_BOOST = 1.6;
+// Michelle (the debrief and the opening introduction) was a little quiet beside Amina and Wayne (Francis, 2026-10-05). Her clips get a bigger boost, limited to the
+// loudest peak in the clip so the extra volume can never clip into distortion. Amina and Wayne are untouched.
+const MICHELLE_BOOST = 2.2;
 
 // PCM16 is the confirmed format end to end (ElevenLabs output_format=pcm_24000, see
 // Features/Interviews/AvatarAudio/AvatarAudioHandler.cs's own comment) — safe to reinterpret the
 // raw bytes as signed 16-bit samples directly. Clamped to avoid wraparound distortion on already-
 // loud passages.
-function boostPcm16(bytes: Uint8Array, gain: number): Uint8Array {
+function boostPcm16(bytes: Uint8Array, gain: number, limitToPeak = false): Uint8Array {
   const samples = new Int16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
   const boosted = new Int16Array(samples.length);
+  let g = gain;
+  if (limitToPeak) {
+    let peak = 0;
+    for (let i = 0; i < samples.length; i++) peak = Math.max(peak, Math.abs(samples[i]));
+    if (peak > 0) g = Math.min(gain, 32000 / peak);
+  }
   for (let i = 0; i < samples.length; i++) {
-    boosted[i] = Math.max(-32768, Math.min(32767, Math.round(samples[i] * gain)));
+    boosted[i] = Math.max(-32768, Math.min(32767, Math.round(samples[i] * g)));
   }
   return new Uint8Array(boosted.buffer);
 }
@@ -75,7 +84,9 @@ export async function fetchAvatarAudioBase64(text: string, role: 'hr' | 'technic
 
   const audioRes = await fetch(audioUrl);
   if (!audioRes.ok) throw new Error(`avatar-audio clip fetch error: ${audioRes.status}`);
-  const bytes = boostPcm16(new Uint8Array(await audioRes.arrayBuffer()), VOLUME_BOOST);
+  const bytes = role === 'michelle'
+    ? boostPcm16(new Uint8Array(await audioRes.arrayBuffer()), MICHELLE_BOOST, true)
+    : boostPcm16(new Uint8Array(await audioRes.arrayBuffer()), VOLUME_BOOST);
 
   const CHUNK = 8192;
   let binary = '';

@@ -14,9 +14,9 @@ const PHONETIC: [RegExp, string][] = [
   // and all-caps "NET" reads as emphasis/shouting to the model. Phonetic letter names (hyphenated,
   // which most TTS engines treat as an explicit spell-out marker) plus mixed-case "Net" sidesteps
   // both at once.
-  // "Hay", not "Ay": the voice reads "Ay" as the word "aye" (rhymes with "eye"), so "Ay-Pee-Eye" came out as "I P I" and "Ay-Ess-Pee" as "I S P" (heard in the
-  // model answer 2026-10-04; confirmed by transcribing the voice's own audio: "Hay-" is heard correctly as A P I / A S P).
-  [/\bASP\.NET\b/gi, 'Hay-Ess-Pee dot Net'],
+  // Plain spaced letters (Francis, 2026-10-05: "Hay-Pee-Eye" still sounded wrong). "Ay-Pee-Eye" was read as "I P I" (the voice says "Ay" like "aye"), "Hay-" sounded like "Hey";
+  // the voice now reads the spaced letters correctly (checked by transcribing its audio in five different sentences, singular and plural).
+  [/\bASP\.NET\b/gi, 'A S P dot Net'],
   [/\b\.NET\b/g, 'dot Net'],
   [/\bNode\.js\b/gi, 'Node JS'],
   [/\bVue\.js\b/gi, 'Vue JS'],
@@ -32,12 +32,10 @@ const PHONETIC: [RegExp, string][] = [
   [/\bCSS\b/g, 'C S S'],
   [/\bHTML\b/g, 'H T M L'],
   [/\bHTTPS?\b/g, 'H T T P S'],
-  // Hyphenated phonetic spelling, not bare spaced capitals ("A P I") — a lone capital "I" is
-  // exactly the same class of bug as ASP.NET's "A S P" above: it collides with the real word
-  // "I" and gets mispronounced inconsistently depending on surrounding context (reported live
-  // 2026-09-11: "A-P-ONE" / "A-P-WHY" depending on the word before it). Same fix as ASP.NET.
-  [/\bAPI\b/g, 'Hay-Pee-Eye'],
-  [/\bAPIs\b/g, 'Hay-Pee-Eyes'],
+  // History: in 2026-09-11 bare "A P I" was read as "A-P-ONE" / "A-P-WHY"; hyphenated "Ay-Pee-Eye" was then read as "I P I" and "Hay-Pee-Eye" sounded like "Hey".
+  // With the language now pinned on the voice, plain spaced letters read correctly again (checked 2026-10-05 across five sentences, singular and plural).
+  [/\bAPI\b/g, 'A P I'],
+  [/\bAPIs\b/g, 'A P I s'],
   [/\bUI\b/g, 'You-Eye'],
   [/\bUX\b/g, 'U X'],
   [/\bCI\/CD\b/gi, 'See-Eye See-Dee'],
@@ -342,7 +340,7 @@ export function speak(
   // over unchanged from the old Mike debrief) is untouched.
   speakElevenLabs(text, role, () => {
     if (!cancelled) onEnd();
-  }, role === 'michelle' ? 0.65 : 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined, () => cancelled, onStart)
+  }, 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined, () => cancelled, onStart)
     .then(cancel => { cancelAudio = cancel; })
     .catch((err) => {
       // Backend proxy or ElevenLabs itself failed — fall back to Web Speech. Logged (not
