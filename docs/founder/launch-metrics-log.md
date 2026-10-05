@@ -13,3 +13,12 @@ Where to find each number
 | Mon 5 Oct 2026 | 4,741 | 208 / 1 (dialysis-chair post, first hours) | | | | | Day before launch. New headline and 4-slide banner carousel are live. About 50 more connections than before the weekend (Friday's figure was not recorded). |
 | Tue 6 Oct 2026 | | | | | | | **Product Hunt launch day** |
 | Wed 7 Oct 2026 | | | | | | | |
+
+## Post experiments
+
+One row per post. Give every link its own `utm_campaign` so the admin funnel (Sources / Activity Log) shows which post brought the visitors. Change one thing per test (hook, picture or length), and judge after 48 to 72 hours.
+
+| Date and time posted | Short name (= utm_campaign) | The one thing tested | Impressions (after 72h) | Real website visits from this tag | Tried the demo | Sign-ups | What I learned |
+|---|---|---|---|---|---|---|---|
+| Mon 5 Oct 2026, afternoon | `mistakes` | Hook: "Make your mistakes here, not in the real interview" with the "practice answers are supposed to have mistakes" graphic | | | | | |
+
