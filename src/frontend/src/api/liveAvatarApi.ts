@@ -4,6 +4,7 @@
 
 import { sanitiseForTTS, getTTSLanguage } from './ttsApi';
 import { getInterviewTicket } from './entitlementsApi';
+import { useAuthStore } from '../auth/authStore';
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 
@@ -28,13 +29,34 @@ export async function fetchAvatarSessionToken(role: 'hr' | 'technical' | 'michel
 // connect. A failed fetch (network hiccup, backend blip) fails OPEN (enabled: true) rather
 // than silently killing a working feature over a transient error; the actual off-switch is
 // the Cosmos-backed admin setting, not this call's success/failure.
-export async function fetchAvatarConfig(): Promise<{ enabled: boolean }> {
+//
+// It also says which service draws the three seats for THIS interview (the server rolls the dice once, so a whole interview stays on one
+// provider). Any failure means HeyGen, the proven default. A signed-in admin can add ?force=spatius or ?force=heygen to the room's address to test either side.
+export interface AvatarConfig {
+  enabled: boolean;
+  provider: 'heygen' | 'spatius';
+  fallbackToHeygen: boolean;
+  spatius: { hr: string; technical: string; michelle: string } | null;
+}
+export async function fetchAvatarConfig(): Promise<AvatarConfig> {
+  const heygen: AvatarConfig = { enabled: true, provider: 'heygen', fallbackToHeygen: true, spatius: null };
   try {
-    const res = await fetch(`${API_BASE}/interviews/avatar-config`);
-    if (!res.ok) return { enabled: true };
-    return await res.json() as { enabled: boolean };
+    const force = new URLSearchParams(window.location.search).get('force');
+    const token = useAuthStore.getState().token;
+    const res = await fetch(`${API_BASE}/interviews/avatar-config${force === 'spatius' || force === 'heygen' ? `?force=${force}` : ''}`,
+      token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
+    if (!res.ok) return heygen;
+    const cfg = await res.json() as Partial<AvatarConfig>;
+    const sp = cfg.spatius;
+    const spatiusOk = cfg.provider === 'spatius' && !!sp?.hr && !!sp?.technical && !!sp?.michelle;
+    return {
+      enabled: cfg.enabled !== false,
+      provider: spatiusOk ? 'spatius' : 'heygen',
+      fallbackToHeygen: cfg.fallbackToHeygen !== false,
+      spatius: spatiusOk ? sp! : null,
+    };
   } catch {
-    return { enabled: true };
+    return heygen;
   }
 }
 

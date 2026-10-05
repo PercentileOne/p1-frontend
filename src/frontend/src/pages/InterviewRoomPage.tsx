@@ -27,7 +27,8 @@ import { useInterviewerAudio, MIKE_VIDEO_ENABLED } from '../hooks/useInterviewer
 import { useMcqBonusRound, type McqGenParams } from '../hooks/useMcqBonusRound';
 import { useGoDeeperFollowUps, GO_DEEPER_LIMITS } from '../hooks/useGoDeeperFollowUps';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
-import { fetchAvatarConfig } from '../api/liveAvatarApi';
+import { useSpatiusSeat, deviceCanUseSpatiusInRoom, type SeatRole } from '../hooks/useSpatiusSeat';
+import { fetchAvatarConfig, type AvatarConfig } from '../api/liveAvatarApi';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -138,6 +139,9 @@ function useTypewriter(text: string, active: boolean, wordsPerMin = 215) {
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
+
+// Backdrop behind a Spatius face (its canvas is transparent). Dark blue-grey so the white name/status labels over the tile read clearly.
+const SPATIUS_STAGE_BG = 'radial-gradient(ellipse at 20% 20%, rgba(120,140,175,0.45) 0, transparent 45%), linear-gradient(180deg, #3b475c 0%, #232b3b 70%, #161c29 100%)';
 
 export default function InterviewRoomPage() {
   useParams<{ packId: string }>();
@@ -344,7 +348,19 @@ export default function InterviewRoomPage() {
   // fails — an admin's explicit "off" is a real Cosmos doc, not something a network hiccup
   // should be able to fake. See PlatformSettings' liveAvatar setting for the actual toggle.
   const [avatarEnabled, setAvatarEnabled] = useState(true);
-  useEffect(() => { fetchAvatarConfig().then(cfg => setAvatarEnabled(cfg.enabled)); }, []);
+  // Which service draws the three seats for this interview (HeyGen or Spatius — decided server-side, once per room). Spatius seats are also read from the ref so a
+  // very early connect() sees the settings the moment they arrive. If a Spatius seat fails to start, that seat alone drops back to HeyGen (when the admin allows it).
+  const [avatarCfg, setAvatarCfg] = useState<AvatarConfig | null>(null);
+  const avatarCfgRef = useRef<AvatarConfig | null>(null);
+  const [spatiusFailed, setSpatiusFailed] = useState<Record<SeatRole, boolean>>({ hr: false, technical: false, michelle: false });
+  const [deviceOkForSpatius] = useState(deviceCanUseSpatiusInRoom);
+  useEffect(() => { fetchAvatarConfig().then(cfg => { avatarCfgRef.current = cfg; setAvatarCfg(cfg); setAvatarEnabled(cfg.enabled); }); }, []);
+  const markSpatiusFailed = useCallback((role: SeatRole) => setSpatiusFailed(f => (f[role] ? f : { ...f, [role]: true })), []);
+  const seatOnSpatius = (role: SeatRole) =>
+    avatarCfg?.provider === 'spatius' && deviceOkForSpatius && !(spatiusFailed[role] && avatarCfg.fallbackToHeygen);
+  const hrStageRef = useRef<HTMLDivElement>(null);
+  const technicalStageRef = useRef<HTMLDivElement>(null);
+  const michelleStageRef = useRef<HTMLDivElement>(null);
 
   // LiveAvatar — real-time video avatars, one concurrent session per seat (Amina on hr, Wayne
   // on technical; see useInterviewerAudio's liveAvatarSpeak/liveAvatarSpeakTechnical param
@@ -360,13 +376,21 @@ export default function InterviewRoomPage() {
   const [liveHrAnalyser, setLiveHrAnalyser] = useState<AnalyserNode | null>(null);
   const [liveTechAnalyser, setLiveTechAnalyser] = useState<AnalyserNode | null>(null);
   const [liveMichelleAnalyser, setLiveMichelleAnalyser] = useState<AnalyserNode | null>(null);
-  const liveAvatarHr = useLiveAvatarSession('hr', setLiveHrAnalyser);
-  const liveAvatarTechnical = useLiveAvatarSession('technical', setLiveTechAnalyser);
+  const heygenHr = useLiveAvatarSession('hr', setLiveHrAnalyser);
+  const heygenTechnical = useLiveAvatarSession('technical', setLiveTechAnalyser);
+  const spatiusHr = useSpatiusSeat('hr', hrStageRef, avatarCfgRef, markSpatiusFailed);
+  const spatiusTechnical = useSpatiusSeat('technical', technicalStageRef, avatarCfgRef, markSpatiusFailed);
+  const spatiusMichelle = useSpatiusSeat('michelle', michelleStageRef, avatarCfgRef, markSpatiusFailed);
+  // From here on the room only talks to liveAvatarHr/Technical/Michelle; each is whichever provider's seat is active (both have the same shape; the
+  // one not in use never connects, so it costs nothing).
+  const liveAvatarHr = seatOnSpatius('hr') ? spatiusHr : heygenHr;
+  const liveAvatarTechnical = seatOnSpatius('technical') ? spatiusTechnical : heygenTechnical;
   // Michelle (2026-09-17, replacing the old static-photo "Mike") — a real HeyGen LiveAvatar
   // seat exactly like Amina/Wayne, connected only for the pre-interview briefing and
   // disconnected the moment it's over (see handleMikeIntroDone below), not a third seat that
   // runs the whole interview.
-  const liveAvatarMichelle = useLiveAvatarSession('michelle', setLiveMichelleAnalyser);
+  const heygenMichelle = useLiveAvatarSession('michelle', setLiveMichelleAnalyser);
+  const liveAvatarMichelle = seatOnSpatius('michelle') ? spatiusMichelle : heygenMichelle;
 
   const liveAvatarSpeakHr = useCallback((text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => {
     let cancelled = false;
@@ -1386,11 +1410,15 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     element renders no visible pixels until then, so the static photo above
                     shows through undisturbed in the meantime. */}
                 <video
-                  ref={liveAvatarHr.setVideoEl}
+                  ref={heygenHr.setVideoEl}
                   autoPlay
                   playsInline
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
                 />
+                {/* Spatius draws Amina into this box when this seat is on Spatius (opaque backdrop, because its canvas is transparent). Always mounted so the avatar can attach the moment it connects; invisible until then. */}
+                <div style={{ position: 'absolute', inset: 0, borderRadius: '16px', overflow: 'hidden', background: SPATIUS_STAGE_BG, pointerEvents: 'none', opacity: seatOnSpatius('hr') && liveAvatarHr.status === 'connected' ? 1 : 0 }}>
+                  <div ref={hrStageRef} style={{ position: 'absolute', inset: 0 }} />
+                </div>
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
                     needed here too since this <video> sits on top of (and hides) that
                     component's own copy of it. */}
@@ -1428,11 +1456,15 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 />
                 {/* LiveAvatar overlay — Wayne's slot, same treatment as Amina's above. */}
                 <video
-                  ref={liveAvatarTechnical.setVideoEl}
+                  ref={heygenTechnical.setVideoEl}
                   autoPlay
                   playsInline
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
                 />
+                {/* Spatius draws Wayne into this box when this seat is on Spatius (opaque backdrop, because its canvas is transparent). Always mounted so the avatar can attach the moment it connects; invisible until then. */}
+                <div style={{ position: 'absolute', inset: 0, borderRadius: '16px', overflow: 'hidden', background: SPATIUS_STAGE_BG, pointerEvents: 'none', opacity: seatOnSpatius('technical') && liveAvatarTechnical.status === 'connected' ? 1 : 0 }}>
+                  <div ref={technicalStageRef} style={{ position: 'absolute', inset: 0 }} />
+                </div>
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
                     needed here too since this <video> sits on top of (and hides) that
                     component's own copy of it. */}
@@ -1614,11 +1646,15 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         Wayne's tiles: renders no visible pixels until attach() fires, so the
                         static photo above shows through undisturbed until then. */}
                     <video
-                      ref={liveAvatarMichelle.setVideoEl}
+                      ref={heygenMichelle.setVideoEl}
                       autoPlay
                       playsInline
                       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                     />
+                {/* Spatius draws Michelle into this box when this seat is on Spatius (opaque backdrop, because its canvas is transparent). Always mounted so the avatar can attach the moment it connects; invisible until then. */}
+                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: SPATIUS_STAGE_BG, pointerEvents: 'none', opacity: seatOnSpatius('michelle') && liveAvatarMichelle.status === 'connected' ? 1 : 0 }}>
+                  <div ref={michelleStageRef} style={{ position: 'absolute', inset: 0 }} />
+                </div>
                     {/* Pulse ring while speaking */}
                     <motion.div
                       animate={{ scale: [1, 1.03, 1], opacity: [0.6, 0.15, 0.6] }}

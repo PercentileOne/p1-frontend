@@ -7,6 +7,8 @@ const EXPLAIN_API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undef
 export interface AvatarProviderSetting {
   provider: 'heygen' | 'spatius';
   spatiusPercent: number;
+  // Share of FULL interviews (and My Talks) whose three seats are drawn by Spatius; independent of spatiusPercent (the /try demo).
+  spatiusFullPercent: number;
   fallbackToHeygen: boolean;
   spatiusAvatarHr: string | null;
   spatiusAvatarTechnical: string | null;
@@ -24,6 +26,7 @@ export interface AvatarProviderResponse {
 export interface AvatarProviderUpdate {
   provider: 'heygen' | 'spatius';
   spatiusPercent: number;
+  spatiusFullPercent: number;
   fallbackToHeygen: boolean;
   spatiusAvatarHr: string;
   spatiusAvatarTechnical: string;

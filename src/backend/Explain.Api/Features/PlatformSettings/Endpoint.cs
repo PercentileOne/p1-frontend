@@ -71,7 +71,8 @@ public static class Endpoint
                 fallbackToHeygen: req.FallbackToHeygen,
                 spatiusAvatarHr: ids[0], spatiusAvatarTechnical: ids[1], spatiusAvatarMichelle: ids[2],
                 updatedAt: DateTimeOffset.UtcNow,
-                updatedBy: ctx.User.FindFirst("sub")?.Value ?? "unknown");
+                updatedBy: ctx.User.FindFirst("sub")?.Value ?? "unknown",
+                spatiusFullPercent: Math.Clamp(req.SpatiusFullPercent, 0, 100));
             await cosmos.GetContainer("platformSettings").UpsertItemAsync(setting, new PartitionKey("avatarProvider"));
             return Results.Ok(setting);
         }).RequireAuthorization(Permissions.ViewSystemSettings);
@@ -230,14 +231,15 @@ public static class Endpoint
         }
         catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
         {
-            return new AvatarProviderSetting("avatarProvider", "avatarProvider", "heygen", 100, true, null, null, null, DateTimeOffset.MinValue, "");
+            return new AvatarProviderSetting("avatarProvider", "avatarProvider", "heygen", 100, true, null, null, null, DateTimeOffset.MinValue, "", 0);
         }
     }
 }
 
 public record UpdateAvatarProviderRequest(
     string? Provider, int SpatiusPercent, bool FallbackToHeygen,
-    string? SpatiusAvatarHr, string? SpatiusAvatarTechnical, string? SpatiusAvatarMichelle);
+    string? SpatiusAvatarHr, string? SpatiusAvatarTechnical, string? SpatiusAvatarMichelle,
+    int SpatiusFullPercent = 0);
 
 public record AvatarProviderSetting(
     string id,
@@ -249,7 +251,8 @@ public record AvatarProviderSetting(
     string? spatiusAvatarTechnical,
     string? spatiusAvatarMichelle,
     DateTimeOffset updatedAt,
-    string updatedBy);
+    string updatedBy,
+    int spatiusFullPercent = 0); // share of FULL interviews (and My Talks) given Spatius seats; independent of the /try share above. 0 = all HeyGen.
 
 public record UpdateLiveAvatarRequest(bool Enabled);
 

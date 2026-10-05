@@ -3,8 +3,8 @@ import { Loader2, Save } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { avatarProviderSettingsApi, type AvatarProviderResponse } from '../api/avatarProviderSettingsApi'
 
-// Which service draws the interviewer avatars. Today only the public "Try it live" demo honours this (real interviews stay on HeyGen until
-// the recording side is done) — that page is the highest-traffic, most cost-sensitive one, so it is where a switch pays off first.
+// Which service draws the interviewer avatars. Two independent shares: the public "Try it live" demo (needs provider = Spatius), and FULL interviews
+// (the "full interviews" slider below, which works whatever the provider is, so the demo can stay on HeyGen while interviews move, or the reverse).
 
 const field: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box', padding: '8px 10px', borderRadius: 8, fontSize: 12.5, fontFamily: 'inherit',
@@ -17,6 +17,7 @@ export function AvatarProviderCard() {
   const [data, setData] = useState<AvatarProviderResponse | null>(null)
   const [provider, setProvider] = useState<'heygen' | 'spatius'>('heygen')
   const [percent, setPercent] = useState(100)
+  const [fullPercent, setFullPercent] = useState(0)
   const [fallback, setFallback] = useState(true)
   const [hr, setHr] = useState('')
   const [tech, setTech] = useState('')
@@ -29,7 +30,7 @@ export function AvatarProviderCard() {
     try {
       const r = await avatarProviderSettingsApi.get(token)
       setData(r)
-      setProvider(r.setting.provider); setPercent(r.setting.spatiusPercent); setFallback(r.setting.fallbackToHeygen)
+      setProvider(r.setting.provider); setPercent(r.setting.spatiusPercent); setFullPercent(r.setting.spatiusFullPercent ?? 0); setFallback(r.setting.fallbackToHeygen)
       setHr(r.setting.spatiusAvatarHr ?? ''); setTech(r.setting.spatiusAvatarTechnical ?? ''); setMichelle(r.setting.spatiusAvatarMichelle ?? '')
     } catch { setMsg({ ok: false, text: 'Could not load the avatar provider setting.' }) }
   }, [token])
@@ -40,10 +41,10 @@ export function AvatarProviderCard() {
     setSaving(true); setMsg(null)
     try {
       await avatarProviderSettingsApi.update(token, {
-        provider, spatiusPercent: percent, fallbackToHeygen: fallback,
+        provider, spatiusPercent: percent, spatiusFullPercent: fullPercent, fallbackToHeygen: fallback,
         spatiusAvatarHr: hr.trim(), spatiusAvatarTechnical: tech.trim(), spatiusAvatarMichelle: michelle.trim(),
       })
-      setMsg({ ok: true, text: 'Saved — takes effect on the next demo visitor.' })
+      setMsg({ ok: true, text: 'Saved — takes effect on the next demo visitor and the next interview started.' })
       await load()
     } catch (e) { setMsg({ ok: false, text: (e as { error?: string }).error ?? 'Save failed.' }) }
     finally { setSaving(false) }
@@ -65,8 +66,8 @@ export function AvatarProviderCard() {
     <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px 24px', marginTop: 20 }}>
       <p style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>Avatar provider</p>
       <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4, marginBottom: 14, maxWidth: 680 }}>
-        Which service draws the interviewer. Right now this applies to the public <b>Try it live</b> demo; real interviews stay on HeyGen. HeyGen is also the
-        automatic backup, so a visitor never sees an error if Spatius can't start.
+        Which service draws the interviewer. The demo and full interviews have their own sliders. HeyGen is also the automatic backup, so a person
+        never sees an error if Spatius can't start. To try a Spatius interview yourself whatever the percentage, add <code>?force=spatius</code> to the interview-room address while signed in as admin (<code>?force=heygen</code> for the other side).
       </p>
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
@@ -74,7 +75,13 @@ export function AvatarProviderCard() {
         {radio('spatius', 'Spatius', 'Renders on the visitor\'s device — about 1c a minute.')}
       </div>
 
-      <div style={{ opacity: spatiusOn ? 1 : 0.5 }}>
+      <div style={{ marginBottom: 14 }}>
+        <label style={label}>Share of FULL interviews (and My Talks) that get Spatius: <b>{fullPercent}%</b> <span style={{ fontWeight: 400, color: 'var(--text-3)' }}>(0% = all HeyGen; needs all three avatar IDs below; the number is rolled once per interview)</span></label>
+        <input type="range" min={0} max={100} value={fullPercent} onChange={e => setFullPercent(Number(e.target.value))} style={{ width: '100%' }} />
+        {fullPercent > 0 && !(hr.trim() && tech.trim() && michelle.trim()) && <span style={{ fontSize: 11.5, color: '#f59e0b' }}>All three avatar IDs are needed below, or interviews stay on HeyGen.</span>}
+      </div>
+
+      <div style={{ opacity: spatiusOn || fullPercent > 0 ? 1 : 0.5 }}>
         <label style={label}>Share of demo visitors who get Spatius: <b>{percent}%</b> <span style={{ fontWeight: 400, color: 'var(--text-3)' }}>(the rest get HeyGen — a fair side-by-side test)</span></label>
         <input type="range" min={0} max={100} value={percent} disabled={!spatiusOn} onChange={e => setPercent(Number(e.target.value))} style={{ width: '100%', marginBottom: 14 }} />
 
@@ -84,9 +91,9 @@ export function AvatarProviderCard() {
         </label>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, marginBottom: 6 }}>
-          <div><label style={label}>Wayne (technical) — Spatius avatar ID <span style={{ color: '#f59e0b' }}>used by the demo</span></label><input value={tech} onChange={e => setTech(e.target.value)} disabled={!spatiusOn} style={field} placeholder="paste from your Spatius dashboard" /></div>
-          <div><label style={label}>Amina (HR) — Spatius avatar ID</label><input value={hr} onChange={e => setHr(e.target.value)} disabled={!spatiusOn} style={field} placeholder="for later — full interviews" /></div>
-          <div><label style={label}>Michelle (welcome) — Spatius avatar ID</label><input value={michelle} onChange={e => setMichelle(e.target.value)} disabled={!spatiusOn} style={field} placeholder="for later — full interviews" /></div>
+          <div><label style={label}>Wayne (technical) — Spatius avatar ID <span style={{ color: '#f59e0b' }}>used by the demo</span></label><input value={tech} onChange={e => setTech(e.target.value)} disabled={!spatiusOn && fullPercent === 0} style={field} placeholder="paste from your Spatius dashboard" /></div>
+          <div><label style={label}>Amina (HR) — Spatius avatar ID</label><input value={hr} onChange={e => setHr(e.target.value)} disabled={!spatiusOn && fullPercent === 0} style={field} placeholder="for full interviews" /></div>
+          <div><label style={label}>Michelle (welcome) — Spatius avatar ID</label><input value={michelle} onChange={e => setMichelle(e.target.value)} disabled={!spatiusOn && fullPercent === 0} style={field} placeholder="for full interviews" /></div>
         </div>
       </div>
 
