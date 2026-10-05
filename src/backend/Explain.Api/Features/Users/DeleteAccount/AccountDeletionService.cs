@@ -103,30 +103,37 @@ public class AccountDeletionService(AppDbContext db, CosmosService cosmos, IConf
         var id = user.Id;
         var email = user.Email.Trim().ToLowerInvariant();
         var emailKey = Explain.Api.Features.Entitlements.EmailNormaliser.Key(user.Email);
-        var total = 0;
 
-        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        // Azure SQL runs with a retrying execution strategy, which refuses a hand-started transaction unless the whole unit is run through it
+        // ("does not support user-initiated transactions"). That made every real deletion fail at this step (found 2026-10-05; the SQLite tests
+        // use a non-retrying strategy, so they never saw it). The unit below is safe to re-run: it starts fresh and every delete is idempotent.
+        var strategy = db.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
+        {
+            var total = 0;
+            await using var tx = await db.Database.BeginTransactionAsync(ct);
 
-        total += await db.Follows.Where(f => f.FollowerId == id || f.FolloweeId == id).ExecuteDeleteAsync(ct);
-        total += await db.PasswordResetTokens.Where(t => t.UserId == id).ExecuteDeleteAsync(ct);
-        total += await db.LoginHistories.Where(h => h.UserId == id).ExecuteDeleteAsync(ct);
-        total += await db.InterviewUsages.Where(u => u.UserId == id || u.EmailKey == emailKey).ExecuteDeleteAsync(ct);   // incl. the free-interview record
-        total += await db.AccessGrants.Where(g => g.UserId == id || g.Email == email).ExecuteDeleteAsync(ct);
-        total += await db.OrganisationMembers.Where(m => m.UserId == id).ExecuteDeleteAsync(ct);
-        total += await db.PortalFeedbacks.Where(f => f.Email != null && f.Email.ToLower() == email).ExecuteDeleteAsync(ct);
+            total += await db.Follows.Where(f => f.FollowerId == id || f.FolloweeId == id).ExecuteDeleteAsync(ct);
+            total += await db.PasswordResetTokens.Where(t => t.UserId == id).ExecuteDeleteAsync(ct);
+            total += await db.LoginHistories.Where(h => h.UserId == id).ExecuteDeleteAsync(ct);
+            total += await db.InterviewUsages.Where(u => u.UserId == id || u.EmailKey == emailKey).ExecuteDeleteAsync(ct);   // incl. the free-interview record
+            total += await db.AccessGrants.Where(g => g.UserId == id || g.Email == email).ExecuteDeleteAsync(ct);
+            total += await db.OrganisationMembers.Where(m => m.UserId == id).ExecuteDeleteAsync(ct);
+            total += await db.PortalFeedbacks.Where(f => f.Email != null && f.Email.ToLower() == email).ExecuteDeleteAsync(ct);
 
-        // Passes are kept for accounting but stop naming a person.
-        total += await db.InterviewPasses.Where(p => p.RecipientEmail == email)
-            .ExecuteUpdateAsync(s => s.SetProperty(p => p.RecipientEmail, "deleted-account").SetProperty(p => p.RecipientName, "Deleted account")
-                                      .SetProperty(p => p.RedeemedByUserId, (string?)null), ct);
-        total += await db.InterviewPasses.Where(p => p.SenderEmail == email)
-            .ExecuteUpdateAsync(s => s.SetProperty(p => p.SenderEmail, (string?)null).SetProperty(p => p.SenderName, (string?)null), ct);
+            // Passes are kept for accounting but stop naming a person.
+            total += await db.InterviewPasses.Where(p => p.RecipientEmail == email)
+                .ExecuteUpdateAsync(s => s.SetProperty(p => p.RecipientEmail, "deleted-account").SetProperty(p => p.RecipientName, "Deleted account")
+                                          .SetProperty(p => p.RedeemedByUserId, (string?)null), ct);
+            total += await db.InterviewPasses.Where(p => p.SenderEmail == email)
+                .ExecuteUpdateAsync(s => s.SetProperty(p => p.SenderEmail, (string?)null).SetProperty(p => p.SenderName, (string?)null), ct);
 
-        // UserRoles cascade with the user row.
-        total += await db.Users.Where(u => u.Id == id).ExecuteDeleteAsync(ct);
+            // UserRoles cascade with the user row.
+            total += await db.Users.Where(u => u.Id == id).ExecuteDeleteAsync(ct);
 
-        await tx.CommitAsync(ct);
-        return total;
+            await tx.CommitAsync(ct);
+            return total;
+        });
     }
 
     // ── Stripe ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
