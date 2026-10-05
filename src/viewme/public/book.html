@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset=utf8>
 <script src="/track.js?v=2"></script><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style><title>Zero to 1M — A Founder's Field Guide</title>
-<meta name="description" content="Francis Cobbinah's field guide to building a world-class digital platform alone, from first commit to a million subscribers.">
+<meta name="description" content="Francis Cobbinah's field guide to building a world-class digital platform alone, from first commit to a million subscribers. Written live.">
 </head><body>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
@@ -791,13 +791,14 @@ function renderSidebar() {
 function renderCover() {
   mainInnerEl.innerHTML =
     '<div class="cover">'
-    + '<div class="cover-kicker">A Founder\'s Field Guide · 14 Chapters</div>'
+    + '<div class="cover-kicker">A Founder\'s Field Guide · Written live · 14 Chapters</div>'
     + '<div class="cover-title">Zero to 1M</div>'
     + '<div class="cover-sub">Building a world-class digital platform — alone.</div>'
     + '<p class="cover-body">This is the book I\'m writing as the platform gets built, not after — a working record of what it actually takes to go from an empty repo to a real product, with no co-founder and no team, across seven interconnected products. Every chapter is grounded in something that really happened: a bug, a bill, a 2am decision.</p>'
     + '<p class="cover-body">Right now this is a scaffold — the shape of the book and an honest first pass at what each chapter will cover. Some are already drafted from real incidents; some are marked "Not Started" on purpose, because pretending otherwise would defeat the point of the book.</p>'
     + '<div class="cover-quote">"Life is about selling yourself. Whether you\'re a teenager starting out, a dog walker, or an electrician — you have to find a way to show who you are. Until now, the only tool anyone had was paper."</div>'
     + '<button class="cover-cta" id="startReading">Start with the Preface →</button>'
+    + '<p class="cover-body" style="margin-top:28px;font-size:14px">New chapters and notes are added as the platform is built, so this page changes as I go. <a href="https://www.theinterviewchair.com/?utm_source=book&utm_medium=cover" style="color:var(--accent-2);font-weight:600">See the platform this book is about →</a></p>'
     + '</div>';
   document.getElementById('startReading').addEventListener('click', () => selectChapter('preface'));
 }
