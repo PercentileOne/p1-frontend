@@ -687,7 +687,7 @@ export default function TryItLivePage() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', justifyContent: 'center', marginTop: 14, fontSize: 12.5, color: 'var(--text-2, #cbd5e1)' }}>
                 <span>🔒 Private. Only you see your interview</span>
                 <span>🎙️ Voice or typing. No camera</span>
-                <span>🤝 No judgement. Mistakes are the point</span>
+                <span>🤝 Make your mistakes here, not in the real interview</span>
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-3, #94a3b8)', marginTop: 8, textAlign: 'center' }}>Nothing is public or shown to recruiters. We don't keep your answers.</div>
             </div>
