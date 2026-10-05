@@ -44,21 +44,28 @@ I built it between dialysis sessions, so every upvote and comment genuinely help
 
 ---
 
-## 4. Message to Hang (Spatius) — a gentle follow-up, send once the launch is live
+## 4. Spatius — Hang said yes (Mon 5 Oct); contact Fadi Abbas for the details
 
-He has not replied to the earlier message offering a Product Hunt mention, so this is a light heads-up. Do not name Spatius on Product Hunt, LinkedIn or the site until he says yes.
+Hang replied "Yes, sure, please contact" and shared Fadi Abbas's LinkedIn profile, so Spatius can be credited. Agree the exact name, handle and link with Fadi before tagging.
 
-Hi Hang,
+Reply to Hang:
 
-A quick heads-up: TheInterviewChair.com went live on Product Hunt today. No need to reply to this or to my earlier message.
+Thanks Hang, that's really kind. I'll get in touch with Fadi now. Much appreciated.
 
-I'll leave Spatius unnamed on Product Hunt unless you tell me you're happy for me to mention it, and I'm glad to credit you properly whenever suits you. If you'd like to see how it looks, the free demo is here: https://www.theinterviewchair.com/?utm_source=spatius&utm_medium=message&utm_campaign=ph-launch
+Message to Fadi:
 
-Thanks again for your help.
+Hi Fadi,
 
+Hang suggested I contact you. I'm Francis, founder of TheInterviewChair.com, where people practice interviews with live AI interviewers. We launch on Product Hunt tomorrow, Tuesday 6 October, and Spatius is part of how our interviewers come to life. Hang kindly said I could credit Spatius.
+
+Could you tell me how you'd like Spatius to be named and linked (a Product Hunt or LinkedIn page, a handle, a website), so I get it right? I'm glad to mention it in my launch comment and on our site.
+
+You can see how it looks in the free demo here: https://www.theinterviewchair.com/?utm_source=spatius&utm_medium=message&utm_campaign=ph-launch
+
+Thank you,
 Francis
 
-(One message only. If he does not reply, leave it there.)
+If Fadi has not replied by launch time, say "powered in part by Spatius" in the Product Hunt first comment (Hang agreed) and add a link once Fadi says what to point to.
 
 ---
 
@@ -68,7 +75,7 @@ Morning
 - [ ] Switch on the Product Hunt badge in `src/viewme/public/home-v2.html` (uncomment the block under the hero lede) once the page is live, then push. Ask Claude to do it.
 - [ ] Post the LinkedIn post, then add the first comment with the website link straight after.
 - [ ] Open the Product Hunt page and reply to every comment, with something specific where you can.
-- [ ] Send the message to Hang.
+- [ ] Message Fadi (Spatius) if not already done.
 
 During the day
 - [ ] Check the admin funnel ("Last 1 day") for visitors from LinkedIn and Product Hunt.
