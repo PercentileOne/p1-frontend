@@ -242,14 +242,16 @@ Type their email address to confirm:`)
               </tr>
             </thead>
             <tbody>
-              {pageRows.map(u => {
+              {pageRows.map((u, rowIndex) => {
                 const otherRoles = u.roles.filter(r => r !== role)
+                // Alternating row shading (Francis, 2026-10-05) so a long list is easy to follow across the row.
+                const stripe = rowIndex % 2 === 1 ? 'rgba(255,255,255,0.035)' : 'transparent'
                 return (
                   <tr
                     key={u.id}
-                    style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.1s' }}
+                    style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.1s', background: stripe }}
                     onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,142,247,0.08)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    onMouseLeave={e => (e.currentTarget.style.background = stripe)}
                   >
                     <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)' }}>{`${u.firstName} ${u.lastName}`.trim() || '—'}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{u.email}</td>
