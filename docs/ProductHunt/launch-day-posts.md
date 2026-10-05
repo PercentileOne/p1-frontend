@@ -44,28 +44,22 @@ I built it between dialysis sessions, so every upvote and comment genuinely help
 
 ---
 
-## 4. Spatius — Hang said yes (Mon 5 Oct); contact Fadi Abbas for the details
+## 4. Spatius — Fadi Abbas (Head of Business & Partnerships) replied, Mon 5 Oct, 18:24
 
-Hang replied "Yes, sure, please contact" and shared Fadi Abbas's LinkedIn profile, so Spatius can be credited. Agree the exact name, handle and link with Fadi before tagging.
+How Spatius asked to be credited:
+- Name it **"Spatius"** and link **https://www.spatius.ai**
+- Product Hunt page to tag: **https://www.producthunt.com/products/spatius**
+- LinkedIn company page: **linkedin.com/company/spatius-ai/**
+- A short showcase would be welcome, and they would be glad to share it once it is ready.
 
-Reply to Hang:
+Done: the homepage footer now says "Live interviewers powered in part by Spatius" with the link.
 
-Thanks Hang, that's really kind. I'll get in touch with Fadi now. Much appreciated.
+For the Product Hunt first comment (tag the Product Hunt page where it lets you):
+"Live interviewers are powered in part by Spatius (https://www.spatius.ai)."
 
-Message to Fadi:
+Suggested reply to Fadi (Francis sends):
 
-Hi Fadi,
-
-Hang suggested I contact you. I'm Francis, founder of TheInterviewChair.com, where people practice interviews with live AI interviewers. We launch on Product Hunt tomorrow, Tuesday 6 October, and Spatius is part of how our interviewers come to life. Hang kindly said I could credit Spatius.
-
-Could you tell me how you'd like Spatius to be named and linked (a Product Hunt or LinkedIn page, a handle, a website), so I get it right? I'm glad to mention it in my launch comment and on our site.
-
-You can see how it looks in the free demo here: https://www.theinterviewchair.com/?utm_source=spatius&utm_medium=message&utm_campaign=ph-launch
-
-Thank you,
-Francis
-
-If Fadi has not replied by launch time, say "powered in part by Spatius" in the Product Hunt first comment (Hang agreed) and add a link once Fadi says what to point to.
+Thank you Fadi, that's perfect. I've added the credit to the site, and I'll tag Spatius on Product Hunt tomorrow. I'll put a short showcase together and send it over when it's ready. Much appreciated.
 
 ---
 
