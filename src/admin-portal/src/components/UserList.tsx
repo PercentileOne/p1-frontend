@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
-import { Search, Loader2, ChevronUp, ChevronDown, Plus, Lock, Unlock, MailWarning } from 'lucide-react'
+import { Search, Loader2, ChevronUp, ChevronDown, Plus, Lock, Unlock, MailWarning, Trash2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { usersApi, type UserSummary, type ApiError } from '../api/usersApi'
 import { FormField, inputStyle, buttonStyle } from '../pages/Organisations'
@@ -60,6 +60,27 @@ export function UserList({ role, title, entityLabel, searchPlaceholder }: {
       setRows(rs => rs.map(r => r.id === u.id ? { ...r, isLocked: true, lockedReason: reason || null } : r))
     } catch (err) {
       setActionError((err as ApiError).error ?? 'Failed to lock account.')
+    } finally {
+      setActingOn(null)
+    }
+  }
+
+  // "Delete completely" — for testers who need to register again from scratch. Typing the email is the confirmation.
+  async function handleDelete(u: UserSummary) {
+    if (!token) return
+    const typed = window.prompt(
+      `Permanently delete ${u.email} and everything they created (profile, interviews, saved CV, recordings, free-interview record, any subscription)? This can't be undone.
+
+Type their email address to confirm:`)
+    if (typed === null) return // cancelled
+    if (typed.trim().toLowerCase() !== u.email.trim().toLowerCase()) { setActionError('That email did not match, so nothing was deleted.'); return }
+    setActingOn(u.id)
+    setActionError('')
+    try {
+      await usersApi.deleteCompletely(token, u.id, typed.trim())
+      setRows(rs => rs.filter(r => r.id !== u.id))
+    } catch (err) {
+      setActionError((err as ApiError).error ?? 'Failed to delete the account.')
     } finally {
       setActingOn(null)
     }
@@ -271,6 +292,19 @@ export function UserList({ role, title, entityLabel, searchPlaceholder }: {
                         }}
                       >
                         {actingOn === u.id ? <Loader2 size={13} className="admin-spin" /> : u.isLocked ? <Unlock size={13} /> : <Lock size={13} />}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(u)}
+                        disabled={actingOn === u.id}
+                        title="Delete completely (so they can register again from scratch)"
+                        style={{
+                          background: 'none', border: '1px solid rgba(239,68,68,0.35)', borderRadius: 7, marginLeft: 6,
+                          color: '#EF4444', cursor: actingOn === u.id ? 'default' : 'pointer',
+                          padding: '5px 7px', display: 'inline-flex', alignItems: 'center',
+                          opacity: actingOn === u.id ? 0.5 : 1,
+                        }}
+                      >
+                        <Trash2 size={13} />
                       </button>
                     </td>
                   </tr>

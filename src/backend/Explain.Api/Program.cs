@@ -349,6 +349,7 @@ Explain.Api.Features.Users.List.Endpoint.Map(app);
 Explain.Api.Features.Users.Create.Endpoint.Map(app);
 Explain.Api.Features.Users.Lock.Endpoint.Map(app);
 Explain.Api.Features.Users.DeleteAccount.Endpoint.Map(app);
+Explain.Api.Features.Users.AdminDelete.Endpoint.Map(app);
 Explain.Api.Features.QuestionBank.Endpoint.Map(app);
 Explain.Api.Features.SavedCv.Endpoint.Map(app);
 Explain.Api.Features.Talks.PinnedPublicTalks.Endpoint.Map(app);

@@ -92,6 +92,21 @@ export const usersApi = {
     }
   },
 
+  // Deletes the person completely (everything they created, their free-interview record, any live subscription) so the same email can register again
+  // from scratch. The caller must pass the account's own email to confirm. Admin and staff accounts are refused by the server.
+  async deleteCompletely(token: string, userId: string, confirmEmail: string): Promise<void> {
+    const res = await fetch(`${BASE}/api/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ confirmEmail }),
+    });
+    if (!res.ok) {
+      let message = res.statusText;
+      try { const j = await res.json() as { error?: string }; message = j.error ?? message; } catch { /* keep the status text */ }
+      throw { error: message, status: res.status } satisfies ApiError;
+    }
+  },
+
   async unlock(token: string, userId: string): Promise<void> {
     const res = await fetch(`${BASE}/api/admin/users/${userId}/unlock`, {
       method: 'POST',
