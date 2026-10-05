@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset=utf8>
 <script src="/track.js?v=2"></script><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style><title>Zero to 1M — A Founder's Field Guide</title>
-<meta name="description" content="Francis Cobbinah's field guide to building a world-class digital platform alone, from first commit to a million subscribers. Written live.">
+<meta name="description" content="Francis Cobbinah's field guide to building a world-class digital platform alone, from a dialysis chair. Written live.">
 </head><body>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
@@ -176,6 +176,16 @@
   html, .sb-list, .main { scrollbar-width: none; -ms-overflow-style: none; }
   html::-webkit-scrollbar, .sb-list::-webkit-scrollbar, .main::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
+  .ch-status-live { background: var(--status-done-bg); color: var(--status-done-fg); }
+  .diary-week { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin: 0 0 14px; }
+  .diary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 22px; }
+  .diary-col { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; min-width: 0; }
+  .diary-col.next { border-color: var(--accent); background: var(--accent-soft); }
+  .diary-col h3 { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; margin-bottom: 12px; }
+  .diary-col .topic-list { gap: 9px; }
+  .diary-entry + .diary-entry { margin-top: 44px; padding-top: 30px; border-top: 1px solid var(--border); }
+  @media (max-width: 760px) { .diary-grid { grid-template-columns: minmax(0, 1fr); } }
+
   .ch-status-written { background: var(--accent-2-soft); color: var(--accent-2); }
 
   /* A chapter that is fully written reads here in full */
@@ -245,6 +255,11 @@
     background: var(--accent-2-soft); border-radius: 4px 12px 12px 4px;
     font-family: 'Fraunces', serif; font-size: 17px; font-style: italic; line-height: 1.65; color: var(--text);
   }
+  .cover-story { margin: 34px 0; padding: 24px 28px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 4px 14px 14px 4px; max-width: 62ch; }
+  .cover-story-label { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+  .cover-story p { font-size: 16px; line-height: 1.8; color: var(--text-2); margin-bottom: 14px; }
+  .cover-story p:last-child { margin-bottom: 0; }
+  .cover-story strong { color: var(--text); font-weight: 600; }
   .cover-cta {
     margin-top: 36px; display: inline-flex; align-items: center; gap: 10px; padding: 13px 26px;
     background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #12141b; border: none;
@@ -287,7 +302,7 @@
     <div class="sb-progress-wrap">
       <div class="sb-progress-row">
         <span class="sb-progress-label">Studied</span>
-        <span class="sb-progress-count" id="progressCount">0 / 14</span>
+        <span class="sb-progress-count" id="progressCount">0 / 15</span>
       </div>
       <div class="sb-progress-track"><div class="sb-progress-fill" id="progressFill" style="width:0%"></div></div>
     </div>
@@ -314,7 +329,51 @@
 </div>
 
 <script>
+// The founder's diary. Newest entry first. Each entry: a week, what happened last week, what is planned this week, and an optional note "from the chair"
+// (written during or after dialysis, in Francis's own words). Add a new object at the TOP of this list each week.
+const DIARY = [
+  {
+    week: 'Week of Monday 5 October 2026',
+    lastWeek: [
+      'Put the free “Try it live” demo into 32 languages, so people can be interviewed in the language they will really use.',
+      'Built the candidate Help Centre, and put every feature on the homepage as a card.',
+      'Learned that people are not afraid of their data. They are afraid of being watched and embarrassed. So I added a “Nobody’s watching” section and made the demo keep no answers.',
+      'Designed Day One Ready, practice for the first 90 days of a new job, after reading why managers let new starters go.',
+      'Rebuilt my LinkedIn banner and started this book page.',
+    ],
+    thisWeek: [
+      'Launch on Product Hunt, Tuesday 6 October.',
+      'Test Day One Ready properly and keep refining it.',
+      'Learn as much about marketing as I can, starting with the AIDA funnel in “Click Here”.',
+      'Review the first posts from Native Marketing before they go out.',
+    ],
+    chair: 'I am not feeling as confident or as excited about launch as I thought I would. I know that one day I will look back and smile.',
+  },
+];
+
+function diaryHtml() {
+  const li = items => '<ul class="topic-list">' + items.map(t => '<li>' + t + '</li>').join('') + '</ul>';
+  return DIARY.map(e =>
+    '<div class="diary-entry">'
+    + '<div class="diary-week">' + e.week + '</div>'
+    + '<div class="diary-grid">'
+    + '<div class="diary-col"><h3>Last week</h3>' + li(e.lastWeek) + '</div>'
+    + '<div class="diary-col next"><h3>This week</h3>' + li(e.thisWeek) + '</div>'
+    + '</div>'
+    + (e.chair ? '<div class="field-note"><div class="field-note-label">From the chair</div><p>' + e.chair + '</p></div>' : '')
+    + '</div>'
+  ).join('');
+}
+
 const CHAPTERS = [
+  {
+    id: 'diary', part: 'The Diary', num: '—', title: 'Last Week / This Week',
+    teaser: 'What just happened, what is next, and how it feels. Updated weekly.',
+    status: 'live',
+    synopsis: 'The book is written while the platform is built, so this page is the running diary: <strong>what happened last week, what is planned this week</strong>, and, when there is something to say, a note from the chair. Ordinary weeks count as much as big ones.',
+    topics: [],
+    body: diaryHtml(),
+  },
   {
     id: 'preface', part: 'Preface', num: '—', title: 'Why I\'m Writing This Down',
     teaser: 'The lonely part of building alone, and why this book exists.',
@@ -720,8 +779,8 @@ const progressCountEl = document.getElementById('progressCount');
 const progressFillEl = document.getElementById('progressFill');
 const searchBoxEl = document.getElementById('searchBox');
 
-function statusLabel(s) { return s === 'done' ? 'Studied' : s === 'written' ? 'Draft Written' : s === 'draft' ? 'Notes Started' : 'Not Started'; }
-function statusClass(s) { return s === 'done' ? 'ch-status-done' : s === 'written' ? 'ch-status-written' : s === 'draft' ? 'ch-status-draft' : 'ch-status-empty'; }
+function statusLabel(s) { return s === 'done' ? 'Studied' : s === 'live' ? 'Updated Weekly' : s === 'written' ? 'Draft Written' : s === 'draft' ? 'Notes Started' : 'Not Started'; }
+function statusClass(s) { return s === 'done' ? 'ch-status-done' : s === 'live' ? 'ch-status-live' : s === 'written' ? 'ch-status-written' : s === 'draft' ? 'ch-status-draft' : 'ch-status-empty'; }
 
 function renderProgress() {
   const count = studied.size;
@@ -791,16 +850,25 @@ function renderSidebar() {
 function renderCover() {
   mainInnerEl.innerHTML =
     '<div class="cover">'
-    + '<div class="cover-kicker">A Founder\'s Field Guide · Written live · 14 Chapters</div>'
+    + '<div class="cover-kicker">A Founder\'s Field Guide · Written live · 15 Chapters</div>'
     + '<div class="cover-title">Zero to 1M</div>'
     + '<div class="cover-sub">Building a world-class digital platform — alone.</div>'
     + '<p class="cover-body">This is the book I\'m writing as the platform gets built, not after — a working record of what it actually takes to go from an empty repo to a real product, with no co-founder and no team, across seven interconnected products. Every chapter is grounded in something that really happened: a bug, a bill, a 2am decision.</p>'
+    + '<div class="cover-story">'
+    + '<div class="cover-story-label">The part most books leave out</div>'
+    + '<p><strong>I am building this from a dialysis chair.</strong> For more than 20 years I worked as a contractor on the traditional Microsoft stack, and it went well. Then in 2023 I was struck down by COVID, pneumonia, diabetes and kidney failure, all at the same time. I spent three months in intensive care, and more than two years stepping back to recover.</p>'
+    + '<p>Now I attend dialysis three times a week while I wait for a life-changing operation. Six months ago I decided to use that time to build something that would last, and it turned into TheInterviewChair.com.</p>'
+    + '<p>I built it for the people who find this moment hardest: anyone going back to work after a long illness, college and university leavers stepping into a very difficult time, people who lack confidence, and everyone who gets anxious before an interview. I want to make that first step easier.</p>'
+    + '<p>So this book asks a simple question: can a world-class platform, with a million users, be built alone, under circumstances like these? I do not know yet. I am writing it down as I find out. If it can be done, a lot more is possible than most of us think.</p>'
+    + '</div>'
     + '<p class="cover-body">Right now this is a scaffold — the shape of the book and an honest first pass at what each chapter will cover. Some are already drafted from real incidents; some are marked "Not Started" on purpose, because pretending otherwise would defeat the point of the book.</p>'
     + '<div class="cover-quote">"Life is about selling yourself. Whether you\'re a teenager starting out, a dog walker, or an electrician — you have to find a way to show who you are. Until now, the only tool anyone had was paper."</div>'
     + '<button class="cover-cta" id="startReading">Start with the Preface →</button>'
+    + '<p class="cover-body" style="margin-top:22px;font-size:14px"><a href="#" id="openDiary" style="color:var(--accent);font-weight:600">Read last week and this week →</a></p>'
     + '<p class="cover-body" style="margin-top:28px;font-size:14px">New chapters and notes are added as the platform is built, so this page changes as I go. <a href="https://www.theinterviewchair.com/?utm_source=book&utm_medium=cover" style="color:var(--accent-2);font-weight:600">See the platform this book is about →</a></p>'
     + '</div>';
   document.getElementById('startReading').addEventListener('click', () => selectChapter('preface'));
+  document.getElementById('openDiary').addEventListener('click', (e) => { e.preventDefault(); selectChapter('diary'); });
 }
 
 function renderChapter(c) {
@@ -813,18 +881,20 @@ function renderChapter(c) {
   html += '<div class="ch-eyebrow-row">'
     + '<span class="ch-tag ' + statusClass(c.status) + '">' + statusLabel(c.status) + '</span>'
     + '</div>';
-  html += '<div class="ch-num">' + c.part + ' · Chapter ' + c.num + '</div>';
+  html += '<div class="ch-num">' + (c.id === 'diary' ? c.part : c.part + ' · Chapter ' + c.num) + '</div>';
   html += '<h1 class="ch-title">' + c.title + '</h1>';
   html += '<p class="ch-synopsis">' + c.synopsis + '</p>';
 
-  html += '<div class="ch-block">'
-    + '<div class="ch-block-label">What This Chapter Covers</div>'
-    + '<ul class="topic-list">' + c.topics.map(t => '<li>' + t + '</li>').join('') + '</ul>'
-    + '</div>';
+  if (c.topics && c.topics.length) {
+    html += '<div class="ch-block">'
+      + '<div class="ch-block-label">What This Chapter Covers</div>'
+      + '<ul class="topic-list">' + c.topics.map(t => '<li>' + t + '</li>').join('') + '</ul>'
+      + '</div>';
+  }
 
   if (c.body) {
     html += '<div class="ch-block">'
-      + '<div class="ch-block-label">The Chapter</div>'
+      + '<div class="ch-block-label">' + (c.id === 'diary' ? 'The Diary' : 'The Chapter') + '</div>'
       + '<div class="prose">' + c.body + '</div>'
       + '</div>';
   }
