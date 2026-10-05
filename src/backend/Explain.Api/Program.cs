@@ -156,6 +156,7 @@ builder.Services.AddSingleton<Explain.Api.Infrastructure.Geo.IpGeoLookupService>
 builder.Services.AddSingleton<Explain.Api.Infrastructure.Geo.IpOwnerService>();  // IP -> network owner, for the visitor funnel (local data, no visitor IPs leave the server)
 builder.Services.AddHostedService<Explain.Api.Features.Events.EventsArchiveService>();
 builder.Services.AddHostedService<Explain.Api.Features.Auth.LoginHistoryRetentionService>();
+builder.Services.AddHostedService<Explain.Api.Features.Auth.UnverifiedAccountCleanupService>();
 builder.Services.AddOpenApi();
 
 // Azure App Service always sits behind a front-end proxy, so HttpContext.Connection.RemoteIpAddress
