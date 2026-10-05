@@ -43,3 +43,7 @@ Acceptance: a full interview on desktop, start to finish, with Spatius for all t
 2. Roll out to all full interviews, or to paying subscribers first?
 3. How long to keep HeyGen as the fallback, and when to reduce or end that subscription?
 4. Is the 80 to 90% realism acceptable at the demo, given the cost saving?
+
+## Status (5 October 2026, evening)
+**Phase 1 built and pushed (commit 93bc2a6e), switched OFF (0%).** Decisions from Francis: library faces (Amina 82d7dce9…, Wayne dbb01388…, Michelle 8b86dda1…), all full interviews, clean sweep. Built: admin slider "Share of FULL interviews that get Spatius" (Admin > Live Avatar); server rolls once per interview in `/interviews/avatar-config`; `POST /interviews/spatius-token` (interview ticket or signed-in user, per-address daily cap); `useSpatiusSeat` adapter with the same shape as the HeyGen seat hook; Spatius stage boxes in the three interviewer tiles; a seat that fails to start drops back to HeyGen on its own (voice-only if that also fails). Phones stay on HeyGen until recording and iOS are tested (admin can force with `?force=spatius`). Not yet tested against live Spatius audio/video (cannot be done from the build machine). To test: sign in as admin, open an interview room with `?force=spatius` on the address. Framing of Michelle is untuned (starts on Amina's values); `?scale=&ax=&ay=` override for tuning.
+Still to do: phone recording (feed PCM to the recording bus), real-device tests, staged rollout, My Talks, hero/gallery refresh, decide HeyGen fallback duration.
