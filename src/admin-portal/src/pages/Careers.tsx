@@ -241,7 +241,7 @@ function BrowsePanel() {
                   onClick={() => setSelected(c)}
                   style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,142,247,0.08)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  onMouseLeave={e => (e.currentTarget.style.background = '')}
                 >
                   <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)' }}>{c.title}</td>
                   <td style={{ padding: '12px 16px', color: 'var(--text-2)' }}>{c.category}</td>

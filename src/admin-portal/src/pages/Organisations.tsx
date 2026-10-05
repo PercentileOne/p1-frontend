@@ -167,7 +167,7 @@ export default function Organisations() {
                     onClick={() => navigate(`/organisations/${o.id}`)}
                     style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer', transition: 'background 0.1s' }}
                     onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,142,247,0.08)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    onMouseLeave={e => (e.currentTarget.style.background = '')}
                   >
                     <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text)', overflowWrap: 'anywhere' }}>{o.name}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-2)', textTransform: 'capitalize' }}>{o.type}</td>

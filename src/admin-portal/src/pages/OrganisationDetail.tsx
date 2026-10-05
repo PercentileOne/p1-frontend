@@ -318,7 +318,7 @@ function MembersCard({ org, token, onSaved }: { org: OrgDetail; token: string; o
               key={m.id}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', margin: '0 -12px', borderRadius: 8, borderBottom: '1px solid var(--border)', transition: 'background 0.1s' }}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,142,247,0.06)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              onMouseLeave={e => (e.currentTarget.style.background = '')}
             >
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', overflowWrap: 'anywhere' }}>{m.name || m.email}</div>
