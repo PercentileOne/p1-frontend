@@ -89,7 +89,7 @@ export interface FunnelResponse {
   devices: { device: string; visits: number; people: number; real: number; tried: number }[];
   sources: { source: string; visits: number; people: number; real: number }[];
   countries: { country: string; visits: number; people: number; looked: number; real: number; tried: number }[];
-  machines: { owner: string; visits: number }[];
+  machines: { owner: string; visits: number; likelyPeople?: number }[];
   topClicks: { type: string; label: string; area: string; href: string; visitors: number }[];
   sections: { section: string; visitors: number }[];
   medianSecondsOnPage: number | null;

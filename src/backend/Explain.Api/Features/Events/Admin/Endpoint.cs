@@ -351,6 +351,13 @@ public static class Endpoint
                     Human = !machine && evs.Any(e => e.eventType == "interaction"),
                     // Stayed on the page 5s+ (page_leave carries visible seconds) — see track.js; counted separately from Human.
                     Dwelled = !machine && evs.Any(e => e.eventType == "page_leave" && double.TryParse(Meta(e, "sec"), out var sec) && sec >= 5),
+                    // Company, university and VPN networks are routed through the same cloud servers crawlers use, so a real recruiter at work can look like a machine
+                    // (Francis, 2026-10-05: hundreds of anonymous recruiters view his profile). Such a visit that clicked or scrolled, read a section and stayed 8+ seconds
+                    // is reported as "probably a person" in the machines table. It is NOT added to the "real" count, which stays conservative.
+                    LikelyPerson = machine
+                        && evs.Any(e => e.eventType == "interaction")
+                        && evs.Any(e => e.eventType == "page_leave" && double.TryParse(Meta(e, "sec"), out var s8) && s8 >= 8)
+                        && evs.Any(e => e.eventType is "section_view" or "scroll_depth"),
                     Device = evs.Select(e => Meta(e, "dev")).FirstOrDefault(d => !string.IsNullOrEmpty(d)) ?? "unknown",
                     Src = evs.Select(e => Meta(e, "src")).FirstOrDefault(s => !string.IsNullOrEmpty(s)) ?? "direct",
                     Country = evs.Select(e => e.country).FirstOrDefault(c => !string.IsNullOrEmpty(c)) ?? "Unknown",
@@ -398,7 +405,7 @@ public static class Endpoint
 
         // Who the machines are (Googlebot, Microsoft/LinkedIn previews, Amazon, Facebook…), by network owner.
         var machines = sessions.Where(s => s.Machine).GroupBy(s => s.OwnerName ?? "Unknown")
-            .Select(g => new { owner = g.Key, visits = g.Count() })
+            .Select(g => new { owner = g.Key, visits = g.Count(), likelyPeople = g.Count(s => s.LikelyPerson) })
             .OrderByDescending(x => x.visits).Take(10);
 
         // Clicks: how many DIFFERENT real visitors clicked each thing (not raw click counts, so one person hammering a button counts once).

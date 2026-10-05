@@ -149,11 +149,14 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
               </table>
               <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}><b>People</b> = visits from a home or mobile connection (not a crawler or cloud server — worked out from who owns the network). <b>Looked around</b> = a person who stayed 5+ seconds without clicking (tracked from 2026-09-29). <b>Interacted</b> = a person who also clicked, tapped, scrolled or moved a mouse (a subset of People). Add your own address under "ignored addresses" so your visits don't count.</div>
               <div style={{ ...h3, marginTop: 16 }}>Who the machines are</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 6 }}>
+                Company, university and VPN networks use the same cloud servers as crawlers, so a recruiter at work can appear here. "Probably people" are visits that clicked or scrolled, read a section and stayed 8+ seconds. They are not added to the "interacted" count.
+              </div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead><tr><th style={th}>Network owner</th><th style={th}>Visits</th></tr></thead>
-                <tbody>{(data.machines ?? []).length === 0 && <tr><td style={td} colSpan={2}>None identified yet</td></tr>}
+                <thead><tr><th style={th}>Network owner</th><th style={th}>Visits</th><th style={th}>Probably people</th></tr></thead>
+                <tbody>{(data.machines ?? []).length === 0 && <tr><td style={td} colSpan={3}>None identified yet</td></tr>}
                   {(data.machines ?? []).map(m => (
-                    <tr key={m.owner}><td style={{ ...td, color: 'var(--text)', overflowWrap: 'anywhere' }}>{m.owner}</td><td style={td}>{m.visits}</td></tr>
+                    <tr key={m.owner}><td style={{ ...td, color: 'var(--text)', overflowWrap: 'anywhere' }}>{m.owner}</td><td style={td}>{m.visits}</td><td style={td}>{m.likelyPeople ?? 0}</td></tr>
                   ))}</tbody>
               </table>
             </div>
