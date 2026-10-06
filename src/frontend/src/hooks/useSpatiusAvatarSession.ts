@@ -83,6 +83,7 @@ function computeFit(view: AvatarView, stage: HTMLElement): Transform | null {
   const x = -(b * scale) / kx;
   const y = -((hr * targetW / 2 - H / 2 - a * scale) / (ky * H)); // puts the top of the head at the top of the tile
   const fit = { x, y, scale };
+  try { console.info('[Spatius] fit ' + JSON.stringify({ stage: { W, H }, r1, r2, r3, hr, ky, kx, a, b, targetW, fit })); } catch { /* diagnostics only */ }
   return Number.isFinite(x + y + scale) && scale > 0.05 && scale < 4 ? fit : null;
 }
 
