@@ -1420,7 +1420,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
                 />
                 {/* Spatius draws Amina (16:9 stage with her background; the tile crops a window from it). Always mounted so the avatar can attach the moment it connects. */}
-                <SpatiusSeatStage seat="hr" stageRef={hrStageRef} visible={seatOnSpatius('hr') && liveAvatarHr.status !== 'failed'} live={liveAvatarHr.status === 'connected'} capturedStill={spatiusHr.poster} />
+                <SpatiusSeatStage seat="hr" stageRef={hrStageRef} visible={seatOnSpatius('hr') && liveAvatarHr.status !== 'failed'} live={liveAvatarHr.status === 'connected'} rendered={spatiusHr.rendered} capturedStill={spatiusHr.poster} />
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
                     needed here too since this <video> sits on top of (and hides) that
                     component's own copy of it. */}
@@ -1466,7 +1466,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
                 />
                 {/* Spatius draws Wayne (16:9 stage with his background; the tile crops a window from it). Always mounted so the avatar can attach the moment it connects. */}
-                <SpatiusSeatStage seat="technical" stageRef={technicalStageRef} visible={seatOnSpatius('technical') && liveAvatarTechnical.status !== 'failed'} live={liveAvatarTechnical.status === 'connected'} capturedStill={spatiusTechnical.poster} />
+                <SpatiusSeatStage seat="technical" stageRef={technicalStageRef} visible={seatOnSpatius('technical') && liveAvatarTechnical.status !== 'failed'} live={liveAvatarTechnical.status === 'connected'} rendered={spatiusTechnical.rendered} capturedStill={spatiusTechnical.poster} />
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
                     needed here too since this <video> sits on top of (and hides) that
                     component's own copy of it. */}
@@ -1654,7 +1654,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                 {/* Spatius draws Michelle (16:9 stage with her background; the tile crops a window from it). Always mounted so the avatar can attach the moment it connects. */}
-                <SpatiusSeatStage seat="michelle" stageRef={michelleStageRef} visible={seatOnSpatius('michelle') && liveAvatarMichelle.status !== 'failed'} live={liveAvatarMichelle.status === 'connected'} capturedStill={spatiusMichelle.poster} rounded={false} />
+                <SpatiusSeatStage seat="michelle" stageRef={michelleStageRef} visible={seatOnSpatius('michelle') && liveAvatarMichelle.status !== 'failed'} live={liveAvatarMichelle.status === 'connected'} rendered={spatiusMichelle.rendered} capturedStill={spatiusMichelle.poster} rounded={false} />
                     {/* Pulse ring while speaking */}
                     <motion.div
                       animate={{ scale: [1, 1.03, 1], opacity: [0.6, 0.15, 0.6] }}

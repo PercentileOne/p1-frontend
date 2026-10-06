@@ -98,6 +98,8 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   // True while the avatar is actually playing speech (drives the page's "getting ready" overlay).
   const [speaking, setSpeaking] = useState(false);
   const [poster, setPoster] = useState<string | null>(null);
+  // True once the face has drawn its first frame (not merely connected); the room uses it to bring the background in together with the face.
+  const [rendered, setRendered] = useState(false);
   const viewRef = useRef<AvatarView | null>(null);
   const ctrlRef = useRef<AvatarController | null>(null);
   // While speak() is waiting for the clip to finish playing: the resolver, and whether playback has actually started yet
@@ -115,6 +117,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
     try { ctrlRef.current?.close(); } catch { /* already closed */ }
     try { viewRef.current?.dispose(); } catch { /* already disposed */ }
     ctrlRef.current = null; viewRef.current = null;
+    setRendered(false);
     const w = waiterRef.current; waiterRef.current = null; w?.();
   }, []);
 
@@ -160,6 +163,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
         const firstRender = view.onFirstRendering;
         view.onFirstRendering = () => {
           try { firstRender?.(); } catch { /* ignore */ }
+          setRendered(true);
           diag('first frame'); window.setTimeout(() => diag('+2s'), 2000);
           scheduleStill();
         };
@@ -256,5 +260,5 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   // Always release the (billed) session if the page goes away.
   useEffect(() => release, [release]);
 
-  return { status, speaking, poster, connect, speak, interrupt, disconnect };
+  return { status, speaking, poster, rendered, connect, speak, interrupt, disconnect };
 }

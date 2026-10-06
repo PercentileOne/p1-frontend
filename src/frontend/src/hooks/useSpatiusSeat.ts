@@ -95,8 +95,9 @@ export function useSpatiusSeat(
     status: inner.status as SpatiusStatus,
     avatarPoseState: null as string | null,
     poster: inner.poster,
+    rendered: inner.rendered,
     connect, disconnect, speak,
     startListening: noop, stopListening: noop,
     interrupt, setVideoEl,
-  }), [inner.status, inner.poster, connect, disconnect, speak, noop, interrupt, setVideoEl]);
+  }), [inner.status, inner.poster, inner.rendered, connect, disconnect, speak, noop, interrupt, setVideoEl]);
 }
