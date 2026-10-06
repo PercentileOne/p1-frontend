@@ -99,4 +99,34 @@ public class VisitorFunnelTests
         Assert.Equal(2, t.GetProperty("completed").GetInt32());
         Assert.Equal(1, t.GetProperty("completedOnPhone").GetInt32());
     }
+
+    [Fact]
+    public void A_visit_that_says_bot_in_its_user_agent_is_a_robot_even_if_it_interacted()
+    {
+        var f = Run([
+            new Admin.FunnelEvent("g", "page_view", "/", M(("src", "direct"), ("dev", "desktop")), null, null, "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"),
+            new Admin.FunnelEvent("g", "interaction", "/", M(("src", "direct"), ("dev", "desktop")), null, null, "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"),
+            new Admin.FunnelEvent("p", "page_view", "/", M(("src", "direct"), ("dev", "mobile")), null, null, "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0) AppleWebKit/605.1.15 Mobile Safari"),
+            new Admin.FunnelEvent("p", "interaction", "/", M(("src", "direct"), ("dev", "mobile")), null, null, "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0) AppleWebKit/605.1.15 Mobile Safari"),
+        ]);
+        Assert.Equal(2, Step(f, "visits"));
+        Assert.Equal(1, Step(f, "people"));
+        Assert.Equal(1, Step(f, "human"));
+    }
+
+    [Fact]
+    public void A_person_on_a_company_or_cloud_network_who_interacted_counts_as_a_person()
+    {
+        var events = new List<Admin.FunnelEvent>
+        {
+            new("r", "page_view", "/", M(("src", "linkedin"), ("dev", "desktop")), "20.1.2.3", null, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36"),
+            new("r", "interaction", "/", M(("src", "linkedin"), ("dev", "desktop")), "20.1.2.3", null, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36"),
+            new("r2", "page_view", "/", M(("src", "linkedin"), ("dev", "desktop")), "20.1.2.3", null, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36"),
+        };
+        // Every address belongs to a cloud network, which the old rule treated as a machine.
+        var f = JsonSerializer.SerializeToElement(Admin.BuildFunnel(7, events, [], _ => new Explain.Api.Infrastructure.Geo.IpOwner(8075, "Microsoft", true)));
+        Assert.Equal(2, Step(f, "visits"));
+        Assert.Equal(2, Step(f, "people"));   // neither says bot: not thrown away
+        Assert.Equal(1, Step(f, "human"));
+    }
 }

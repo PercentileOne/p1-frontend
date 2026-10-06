@@ -78,13 +78,13 @@ public static class Endpoint
             var marketing = new List<FunnelEvent>();
             var tryEvents = new List<FunnelEvent>();
             if (all) await LoadArchivedFunnelEventsAsync(config, marketing, tryEvents, ct);
-            var q1 = new QueryDefinition("SELECT TOP 50000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress, c.country FROM c WHERE c.portal = 'marketing' AND c.createdAt > @from")
+            var q1 = new QueryDefinition("SELECT TOP 50000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress, c.country, c.userAgent FROM c WHERE c.portal = 'marketing' AND c.createdAt > @from")
                 .WithParameter("@from", from);
             using (var feed = container.GetItemQueryIterator<FunnelEvent>(q1))
                 while (feed.HasMoreResults) marketing.AddRange(await feed.ReadNextAsync());
 
             var q2 = new QueryDefinition(
-                "SELECT TOP 20000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress, c.country FROM c WHERE c.portal = 'candidate' AND c.createdAt > @from " +
+                "SELECT TOP 20000 c.sessionId, c.eventType, c.page, c.metadata, c.ipAddress, c.country, c.userAgent FROM c WHERE c.portal = 'candidate' AND c.createdAt > @from " +
                 "AND (c.eventType IN ('try_mobile_visit','try_blocked_mobile','try_started','try_first_question','try_completed','try_blocked','try_answering','try_answer_submitted','try_left','try_register_click','try_email_score') " +
                 "OR (c.eventType = 'page_view' AND c.page = '/try'))")
                 .WithParameter("@from", from);
@@ -244,7 +244,7 @@ public static class Endpoint
     // every five minutes. "All" reads that archive plus the Cosmos events newer than the last archive run, so nothing is counted twice.
     private const int ArchiveEventCap = 600_000;   // a safety ceiling, far above today's volume
 
-    private record ArchivedEvent(string? sessionId, string? eventType, string? page, string? portal, Dictionary<string, object>? metadata, string? ipAddress, string? country);
+    private record ArchivedEvent(string? sessionId, string? eventType, string? page, string? portal, Dictionary<string, object>? metadata, string? ipAddress, string? country, string? userAgent = null);
     private record ArchiveStateRow(string id, string pk, string lastArchivedAt);
 
     private static async Task<string> ReadLastArchivedAtAsync(CosmosService cosmos, CancellationToken ct)
@@ -309,17 +309,30 @@ public static class Endpoint
             ArchivedEvent? e;
             try { e = JsonSerializer.Deserialize<ArchivedEvent>(line, opts); } catch (JsonException) { continue; }
             if (e?.sessionId is null || e.eventType is null) continue;
-            var fe = new FunnelEvent(e.sessionId, e.eventType, e.page, e.metadata, e.ipAddress, e.country);
+            var fe = new FunnelEvent(e.sessionId, e.eventType, e.page, e.metadata, e.ipAddress, e.country, e.userAgent);
             if (e.portal == "marketing") marketing.Add(fe);
             else if (e.portal == "candidate" && (TryFunnelEventTypes.Contains(e.eventType) || (e.eventType == "page_view" && e.page == "/try"))) tryEvents.Add(fe);
         }
         return (marketing, tryEvents);
     }
 
-    public record FunnelEvent(string sessionId, string eventType, string? page, Dictionary<string, object>? metadata, string? ipAddress = null, string? country = null);
+    public record FunnelEvent(string sessionId, string eventType, string? page, Dictionary<string, object>? metadata, string? ipAddress = null, string? country = null, string? userAgent = null);
 
     private static string? Meta(FunnelEvent e, string key) =>
         e.metadata is not null && e.metadata.TryGetValue(key, out var v) ? v?.ToString() : null;
+
+    /// <summary>
+    /// Robots that name themselves (Francis, 2026-10-06: "the majority of them will say Bot"): Googlebot, bingbot, LinkedInBot, link-preview fetchers, headless browsers,
+    /// scripts and uptime monitors. A visit whose user agent says so is a robot for certain, whatever else it did.
+    /// </summary>
+    internal static bool IsBotAgent(string? userAgent) =>
+        !string.IsNullOrEmpty(userAgent) && BotAgentPattern.IsMatch(userAgent);
+
+    private static readonly System.Text.RegularExpressions.Regex BotAgentPattern = new(
+        @"bot|bot/|crawl|spider|slurp|scrap|headless|facebookexternalhit|facebot|embedly|bingpreview|google-read-aloud|lighthouse|gtmetrix|pingdom|uptime|monitor|"
+        + @"python-requests|python-urllib|aiohttp|curl/|wget|go-http-client|libwww|httpclient|node-fetch|axios/|java/|apache-httpclient|phantomjs|puppeteer|playwright|selenium|"
+        + @"preview|validator|ahrefs|semrush|mj12|dotbot|petalbot|bytespider|gptbot|claudebot|ccbot|yandex|baiduspider|duckduckbot|applebot|whatsapp|telegram|discord|skypeuripreview",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled);
 
     private static bool IsClick(FunnelEvent e) => e.eventType is "menu_click" or "cta_click" or "link_click";
 
@@ -343,21 +356,25 @@ public static class Endpoint
                 var evs = g.ToList();
                 var owner = ownerOf?.Invoke(evs.Select(e => e.ipAddress).FirstOrDefault(i => !string.IsNullOrEmpty(i)));
                 var machine = owner?.IsMachine == true;
+                var interacted = evs.Any(e => e.eventType == "interaction");
+                // A robot we are SURE about (Francis, 2026-10-06: only discount people we are sure are robots, and "the majority of them will say Bot"): its user agent
+                // says "bot" (or another robot or preview-fetcher name). Older stored events carry no user agent, so for those only, a cloud-network visit that never interacted is still
+                // treated as a robot (the earlier rule). A visit from a company, university or VPN network that looks like a cloud server is otherwise NOT assumed to be a robot: it
+                // counts as a person unless it says otherwise, so a recruiter at work is not thrown away.
+                var agents = evs.Select(e => e.userAgent).ToList();
+                var sureRobot = agents.Any(IsBotAgent) || (agents.Count > 0 && agents.All(string.IsNullOrWhiteSpace) && machine && !interacted);
                 return new
                 {
                     Machine = machine,
+                    SureRobot = sureRobot,
                     OwnerName = owner?.Name,
-                    // A bot driving a real browser can fire genuine click/pointer events, so an interaction only counts when the network isn't a machine's.
-                    Human = !machine && evs.Any(e => e.eventType == "interaction"),
+                    Human = !sureRobot && interacted,
                     // Stayed on the page 5s+ (page_leave carries visible seconds) — see track.js; counted separately from Human.
-                    Dwelled = !machine && evs.Any(e => e.eventType == "page_leave" && double.TryParse(Meta(e, "sec"), out var sec) && sec >= 5),
+                    Dwelled = !sureRobot && evs.Any(e => e.eventType == "page_leave" && double.TryParse(Meta(e, "sec"), out var sec) && sec >= 5),
                     // Company, university and VPN networks are routed through the same cloud servers crawlers use, so a real recruiter at work can look like a machine
-                    // (Francis, 2026-10-05: hundreds of anonymous recruiters view his profile). Such a visit that clicked or scrolled, read a section and stayed 8+ seconds
-                    // is reported as "probably a person" in the machines table. It is NOT added to the "real" count, which stays conservative.
-                    LikelyPerson = machine
-                        && evs.Any(e => e.eventType == "interaction")
-                        && evs.Any(e => e.eventType == "page_leave" && double.TryParse(Meta(e, "sec"), out var s8) && s8 >= 8)
-                        && evs.Any(e => e.eventType is "section_view" or "scroll_depth"),
+                    // (Francis, 2026-10-05: hundreds of anonymous recruiters view his profile). Since 2026-10-06 such a visit counts as a person in the funnel as soon as it
+                    // interacted (it is not a sure robot); this flag marks those visits in the machines table.
+                    LikelyPerson = machine && !sureRobot,
                     Device = evs.Select(e => Meta(e, "dev")).FirstOrDefault(d => !string.IsNullOrEmpty(d)) ?? "unknown",
                     Src = evs.Select(e => Meta(e, "src")).FirstOrDefault(s => !string.IsNullOrEmpty(s)) ?? "direct",
                     Country = evs.Select(e => e.country).FirstOrDefault(c => !string.IsNullOrEmpty(c)) ?? "Unknown",
@@ -376,7 +393,7 @@ public static class Endpoint
         var steps = new[]
         {
             Step("visits", "Visits (everything that loaded a page)", sessions.Count),
-            Step("people", "Visits from people's own connections (home or mobile), not crawlers or cloud servers", sessions.Count(s => !s.Machine)),
+            Step("people", "Visits from people (everything except robots we're sure of: crawlers, scanners, link previews)", sessions.Count(s => !s.SureRobot)),
             Step("looked", "Looked around (stayed 5+ seconds but didn't click, scroll or move a mouse)", sessions.Count(s => s.Dwelled && !s.Human)),
             Step("human", "Interacted (a person who clicked, tapped, scrolled or moved a mouse)", human.Count),
             Step("pricing", "Reached the pricing section", human.Count(s => s.SawPricing)),
@@ -388,19 +405,19 @@ public static class Endpoint
         {
             device = d,
             visits = sessions.Count(s => s.Device == d),
-            people = sessions.Count(s => s.Device == d && !s.Machine),
+            people = sessions.Count(s => s.Device == d && !s.SureRobot),
             real = human.Count(s => s.Device == d),
             tried = human.Count(s => s.Device == d && s.Tried),
         });
 
         var sources = sessions.GroupBy(s => s.Src)
-            .Select(g => new { source = g.Key, visits = g.Count(), people = g.Count(s => !s.Machine), real = g.Count(s => s.Human) })
+            .Select(g => new { source = g.Key, visits = g.Count(), people = g.Count(s => !s.SureRobot), real = g.Count(s => s.Human) })
             .OrderByDescending(x => x.people).ThenByDescending(x => x.visits).Take(10);
 
         // Where visitors are (2026-09-29): GA showed lots of US "users" that were really crawlers — here "real" is the same
         // interaction test as the rest of the funnel, so bot-heavy countries show up as many visits, few real.
         var countries = sessions.GroupBy(s => s.Country)
-            .Select(g => new { country = g.Key, visits = g.Count(), people = g.Count(s => !s.Machine), looked = g.Count(s => s.Dwelled && !s.Human), real = g.Count(s => s.Human), tried = g.Count(s => s.Human && s.Tried) })
+            .Select(g => new { country = g.Key, visits = g.Count(), people = g.Count(s => !s.SureRobot), looked = g.Count(s => s.Dwelled && !s.Human), real = g.Count(s => s.Human), tried = g.Count(s => s.Human && s.Tried) })
             .OrderByDescending(x => x.people).ThenByDescending(x => x.visits); // every country — worldwide, not just a top few
 
         // Who the machines are (Googlebot, Microsoft/LinkedIn previews, Amazon, Facebook…), by network owner.
