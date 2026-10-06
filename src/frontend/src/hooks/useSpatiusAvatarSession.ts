@@ -51,11 +51,45 @@ async function prepareSdk(ticket: string, tokenPath: string): Promise<Sdk> {
   return sdk;
 }
 
+type Transform = { x: number; y: number; scale: number };
+
+// A still of each avatar's face (the SDK can export what it has drawn), captured once shortly after a seat first renders and kept for the rest of the visit. The
+// interview room shows it while a seat is disconnected between questions, so a seat never falls back to the old HeyGen-era photo underneath.
+const posterCache = new Map<string, string>();
+
+// Auto-fit (2026-10-06): one hand-tuned zoom can't suit every tile shape, because the SDK fits the avatar to the tile's WIDTH in a narrow tile and to its HEIGHT in a
+// wide one (measured from the live room's logs). So instead of guessing, ask the avatar where it is drawn (getBoundingRect) at a small scale, work out how its size and
+// position respond to scale / x / y (all linear), and solve for: head and shoulders filling the tile from the top, bust always reaching the bottom edge (no visible
+// cut-off), a head about 45% of the tile's height, centred. Returns null until the avatar has rendered a frame.
+function computeFit(view: AvatarView, stage: HTMLElement): Transform | null {
+  const W = stage.clientWidth, H = stage.clientHeight;
+  if (!W || !H) return null;
+  const s0 = 0.3;
+  const measure = (x: number, y: number) => { view.avatarTransform = { x, y, scale: s0 }; return view.getBoundingRect(); };
+  const r1 = measure(0, 0), r2 = measure(0, -0.2), r3 = measure(0.2, 0);
+  if (!r1 || !r2 || !r3 || r1.width <= 0 || r1.height <= 0) return null;
+  const hr = r1.height / r1.width; // bust height : width
+  const cy1 = r1.y + r1.height / 2, cy2 = r2.y + r2.height / 2;
+  const cx1 = r1.x + r1.width / 2, cx3 = r3.x + r3.width / 2;
+  const ky = (cy2 - cy1) / (0.2 * H);   // vertical pixels moved per unit of -y, as a fraction of H
+  const kx = (cx3 - cx1) / 0.2;         // horizontal pixels moved per unit of x
+  const a = (cy1 - H / 2) / s0;         // the avatar's own vertical offset from centre, per unit scale
+  const b = (cx1 - W / 2) / s0;         // and horizontal
+  if (!Number.isFinite(ky) || !Number.isFinite(kx) || Math.abs(ky) < 0.05 || Math.abs(kx) < 1) return null;
+  const targetW = Math.max(H / hr, Math.min(0.72 * W, 0.95 * H));
+  const scale = s0 * targetW / r1.width;
+  const x = -(b * scale) / kx;
+  const y = -((hr * targetW / 2 - H / 2 - a * scale) / (ky * H)); // puts the top of the head at the top of the tile
+  const fit = { x, y, scale };
+  return Number.isFinite(x + y + scale) && scale > 0.05 && scale < 4 ? fit : null;
+}
+
 // stageRef: created by the page and attached to the (always-mounted) element the avatar should be drawn into.
 export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement | null>) {
   const [status, setStatus] = useState<SpatiusStatus>('idle');
   // True while the avatar is actually playing speech (drives the page's "getting ready" overlay).
   const [speaking, setSpeaking] = useState(false);
+  const [poster, setPoster] = useState<string | null>(null);
   const viewRef = useRef<AvatarView | null>(null);
   const ctrlRef = useRef<AvatarController | null>(null);
   // While speak() is waiting for the clip to finish playing: the resolver, and whether playback has actually started yet
@@ -76,7 +110,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
     const w = waiterRef.current; waiterRef.current = null; w?.();
   }, []);
 
-  const connect = useCallback((avatarId: string, ticket: string, transform?: { x: number; y: number; scale: number }, tokenPath: string = DEMO_TOKEN_PATH): Promise<void> => {
+  const connect = useCallback((avatarId: string, ticket: string, transform?: { x: number; y: number; scale: number }, tokenPath: string = DEMO_TOKEN_PATH, autoFit = false): Promise<void> => {
     if (ctrlRef.current) return Promise.resolve();
     if (connectingRef.current) return connectingRef.current;
     const attempt = (async () => {
@@ -97,11 +131,21 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
           try { view.avatarTransform = transform; } catch { /* not ready yet — onFirstRendering below applies it */ }
           view.onFirstRendering = () => { try { view.avatarTransform = transform; } catch { /* ignore */ } };
         }
+        const known = posterCache.get(avatarId);
+        if (known) setPoster(known);
         // Framing diagnostics (Francis, 2026-10-06: faces vanished in the interview room after a framing change). Logged to the browser console only.
         const t0 = performance.now();
         const diag = (when: string) => { try { console.info(`[Spatius] framing ${when} ${avatarId.slice(0, 8)} ` + JSON.stringify({ stage: { w: stage.clientWidth, h: stage.clientHeight }, transform: view.avatarTransform, rect: view.getBoundingRect(), ms: Math.round(performance.now() - t0) })); } catch (e) { console.info('[Spatius] framing', when, 'unavailable', e); } };
         const firstRender = view.onFirstRendering;
-        view.onFirstRendering = () => { try { firstRender?.(); } catch { /* ignore */ } diag('first frame'); window.setTimeout(() => diag('+2s'), 2000); };
+        view.onFirstRendering = () => {
+          try { firstRender?.(); } catch { /* ignore */ }
+          diag('first frame'); window.setTimeout(() => diag('+2s'), 2000);
+          // Wait for the framing fit to have been applied, then keep one still of the face (idle pose).
+          if (!posterCache.has(avatarId)) window.setTimeout(async () => {
+            if (viewRef.current !== view || posterCache.has(avatarId)) return;
+            try { const blob = await view.exportBitmap(); if (blob) { const url = URL.createObjectURL(blob); posterCache.set(avatarId, url); setPoster(url); } } catch { /* no still — the room shows the plain backdrop */ }
+          }, 1800);
+        };
         const ctrl = view.controller;
         ctrl.onError = e => console.warn('[Spatius]', e.code, e.message);
         ctrl.onConversationState = s => {
@@ -122,18 +166,29 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
         // it on a window resize) while still REPORTING the value we set — so comparing against its getter is not a safe check (that was tried and
         // failed on a large window, 2026-09-30). Instead apply it unconditionally: first a tiny nudge away from the target so the SDK sees a real
         // change (a same-value set can be skipped), then the target. Repeat regularly, and immediately on any window resize.
-        if (transform) {
+        if (transform || autoFit) {
+          // In auto-fit mode the framing is measured (computeFit) once the avatar has drawn a frame, and again after a window resize; until then the supplied
+          // transform (if any) is used. The regular re-apply below always uses the latest measured value.
+          let fitted: Transform | null = null;
+          const refit = () => {
+            if (!autoFit || viewRef.current !== view) return;
+            try { fitted = computeFit(view, stage) ?? fitted; } catch { /* not ready — try again on the next tick */ }
+          };
           const apply = () => {
             if (viewRef.current !== view) { cleanup(); return; }
+            if (autoFit && !fitted) refit();
+            const target = fitted ?? transform;
+            if (!target) return;
             try {
-              view.avatarTransform = { x: transform.x, y: transform.y, scale: transform.scale + 0.01 };
-              view.avatarTransform = transform;
+              view.avatarTransform = { x: target.x, y: target.y, scale: target.scale + 0.01 };
+              view.avatarTransform = target;
             } catch { /* ignore */ }
           };
           const timer = window.setInterval(apply, 700);
-          const onResize = () => apply();
+          let resizeTimer = 0;
+          const onResize = () => { window.clearTimeout(resizeTimer); resizeTimer = window.setTimeout(() => { fitted = null; apply(); }, 150); };
           window.addEventListener('resize', onResize);
-          const cleanup = () => { window.clearInterval(timer); window.removeEventListener('resize', onResize); };
+          const cleanup = () => { window.clearInterval(timer); window.clearTimeout(resizeTimer); window.removeEventListener('resize', onResize); };
           apply();
         }
         setStatus('connected');
@@ -175,5 +230,5 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   // Always release the (billed) session if the page goes away.
   useEffect(() => release, [release]);
 
-  return { status, speaking, connect, speak, interrupt, disconnect };
+  return { status, speaking, poster, connect, speak, interrupt, disconnect };
 }

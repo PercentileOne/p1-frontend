@@ -1416,13 +1416,15 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
                 />
                 {/* Spatius draws Amina into this box when this seat is on Spatius (opaque backdrop, because its canvas is transparent). Always mounted so the avatar can attach the moment it connects; invisible until then. */}
-                <div style={{ position: 'absolute', inset: 0, borderRadius: '16px', overflow: 'hidden', background: SPATIUS_STAGE_BG, pointerEvents: 'none', opacity: seatOnSpatius('hr') && liveAvatarHr.status === 'connected' ? 1 : 0 }}>
+                <div style={{ position: 'absolute', inset: 0, borderRadius: '16px', overflow: 'hidden', background: SPATIUS_STAGE_BG, pointerEvents: 'none', opacity: seatOnSpatius('hr') && liveAvatarHr.status !== 'failed' ? 1 : 0 }}>
+                  {/* This seat's own still while it is between questions, so the old HeyGen-era photo underneath never shows. */}
+                  {spatiusHr.poster && liveAvatarHr.status !== 'connected' && <img src={spatiusHr.poster} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }} />}
                   <div ref={hrStageRef} style={{ position: 'absolute', inset: 0 }} />
                 </div>
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
                     needed here too since this <video> sits on top of (and hides) that
                     component's own copy of it. */}
-                {liveAvatarHr.status === 'connected' && (
+                {(liveAvatarHr.status === 'connected' || seatOnSpatius('hr')) && (
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 18px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', userSelect: 'none', pointerEvents: 'none' }}>
                       <div>
                         <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>{PROFILES.hr.name}</div>
@@ -1462,13 +1464,15 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
                 />
                 {/* Spatius draws Wayne into this box when this seat is on Spatius (opaque backdrop, because its canvas is transparent). Always mounted so the avatar can attach the moment it connects; invisible until then. */}
-                <div style={{ position: 'absolute', inset: 0, borderRadius: '16px', overflow: 'hidden', background: SPATIUS_STAGE_BG, pointerEvents: 'none', opacity: seatOnSpatius('technical') && liveAvatarTechnical.status === 'connected' ? 1 : 0 }}>
+                <div style={{ position: 'absolute', inset: 0, borderRadius: '16px', overflow: 'hidden', background: SPATIUS_STAGE_BG, pointerEvents: 'none', opacity: seatOnSpatius('technical') && liveAvatarTechnical.status !== 'failed' ? 1 : 0 }}>
+                  {/* This seat's own still while it is between questions, so the old HeyGen-era photo underneath never shows. */}
+                  {spatiusTechnical.poster && liveAvatarTechnical.status !== 'connected' && <img src={spatiusTechnical.poster} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }} />}
                   <div ref={technicalStageRef} style={{ position: 'absolute', inset: 0 }} />
                 </div>
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
                     needed here too since this <video> sits on top of (and hides) that
                     component's own copy of it. */}
-                {liveAvatarTechnical.status === 'connected' && (
+                {(liveAvatarTechnical.status === 'connected' || seatOnSpatius('technical')) && (
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 18px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', userSelect: 'none', pointerEvents: 'none' }}>
                       <div>
                         <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>{PROFILES.technical.name}</div>

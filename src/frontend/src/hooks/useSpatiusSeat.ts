@@ -37,6 +37,9 @@ function transformFor(role: SeatRole, stage: HTMLElement | null): Transform {
   } catch { return DEFAULT_TRANSFORMS[role]; }
 }
 
+// Framing is measured and fitted to each tile automatically; ?scale= (with &ax= &ay=) on the room's address switches that off and uses the numbers given.
+const hasManualFraming = () => { try { return Number.isFinite(parseFloat(new URLSearchParams(window.location.search).get('scale') ?? '')); } catch { return false; } };
+
 // A connection that neither succeeds nor fails must not hold the interview hostage (same limit as the demo).
 const CONNECT_LIMIT_MS = 15000;
 
@@ -68,7 +71,7 @@ export function useSpatiusSeat(
     if (!id) throw new Error(`no Spatius avatar for ${role}`);
     try {
       await Promise.race([
-        innerConnect(id, getInterviewTicket() ?? '', transformFor(role, stageRef.current), INTERVIEW_TOKEN_PATH),
+        innerConnect(id, getInterviewTicket() ?? '', transformFor(role, stageRef.current), INTERVIEW_TOKEN_PATH, !hasManualFraming()),
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('spatius connect timed out')), CONNECT_LIMIT_MS)),
       ]);
     } catch (e) {
@@ -85,8 +88,9 @@ export function useSpatiusSeat(
   return useMemo(() => ({
     status: inner.status as SpatiusStatus,
     avatarPoseState: null as string | null,
+    poster: inner.poster,
     connect, disconnect, speak,
     startListening: noop, stopListening: noop,
     interrupt, setVideoEl,
-  }), [inner.status, connect, disconnect, speak, noop, interrupt, setVideoEl]);
+  }), [inner.status, inner.poster, connect, disconnect, speak, noop, interrupt, setVideoEl]);
 }
