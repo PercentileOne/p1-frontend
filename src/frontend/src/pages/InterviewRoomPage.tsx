@@ -512,8 +512,8 @@ export default function InterviewRoomPage() {
       if (liveAvatarHr.status === 'connected') void liveAvatarHr.disconnect();
       if (liveAvatarTechnical.status === 'connected') void liveAvatarTechnical.disconnect();
     } else if (phase === 'scoring') {
-      void liveAvatarHr.connect();
-      void liveAvatarTechnical.connect();
+      void Promise.resolve(liveAvatarHr.connect()).catch(() => { /* a failed seat is handled where it speaks (voice fallback) */ });
+      void Promise.resolve(liveAvatarTechnical.connect()).catch(() => { /* a failed seat is handled where it speaks (voice fallback) */ });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- connect/disconnect/status change
     // identity on every render (useLiveAvatarSession isn't memoised for that); depending only on
@@ -588,15 +588,15 @@ export default function InterviewRoomPage() {
     // Q2+ reconnect — liveAvatarHr/Technical.connect() are themselves idempotent no-ops if
     // already connected or connecting.
     if (avatarEnabled) {
-      void liveAvatarHr.connect();
-      void liveAvatarTechnical.connect();
+      void Promise.resolve(liveAvatarHr.connect()).catch(() => { /* a failed seat is handled where it speaks (voice fallback) */ });
+      void Promise.resolve(liveAvatarTechnical.connect()).catch(() => { /* a failed seat is handled where it speaks (voice fallback) */ });
       // Michelle (2026-09-17) is a live avatar seat too now, but startMike() only ever
       // triggered her connect() lazily on first speak — the exact zero-head-start gap the
       // comment above already diagnosed for Amina/Wayne, just never carried over to her when
       // she replaced the old static-photo Mike. Live-reported same day: she sat staring
       // silently for a few seconds before her briefing started. Same fix — fire her connect()
       // here too, so the recording-consent dialog becomes free warm-up time for her as well.
-      void liveAvatarMichelle.connect();
+      void Promise.resolve(liveAvatarMichelle.connect()).catch(() => { /* a failed seat is handled where it speaks (voice fallback) */ });
     }
     if (consentToRecord) {
       await startRecording(); // wait for browser share dialog before Mike speaks
@@ -1420,6 +1420,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   {/* This seat's own still while it is between questions, so the old HeyGen-era photo underneath never shows. */}
                   {spatiusHr.poster && liveAvatarHr.status !== 'connected' && <img src={spatiusHr.poster} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }} />}
                   <div ref={hrStageRef} style={{ position: 'absolute', inset: 0 }} />
+                  <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '24%', background: 'linear-gradient(to bottom, transparent, rgba(22,28,41,0.96))' }} />
                 </div>
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
                     needed here too since this <video> sits on top of (and hides) that
@@ -1468,6 +1469,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   {/* This seat's own still while it is between questions, so the old HeyGen-era photo underneath never shows. */}
                   {spatiusTechnical.poster && liveAvatarTechnical.status !== 'connected' && <img src={spatiusTechnical.poster} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }} />}
                   <div ref={technicalStageRef} style={{ position: 'absolute', inset: 0 }} />
+                  <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '24%', background: 'linear-gradient(to bottom, transparent, rgba(22,28,41,0.96))' }} />
                 </div>
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
                     needed here too since this <video> sits on top of (and hides) that
@@ -1658,6 +1660,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 {/* Spatius draws Michelle into this box when this seat is on Spatius (opaque backdrop, because its canvas is transparent). Always mounted so the avatar can attach the moment it connects; invisible until then. */}
                 <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: SPATIUS_STAGE_BG, pointerEvents: 'none', opacity: seatOnSpatius('michelle') && liveAvatarMichelle.status !== 'failed' ? 1 : 0 }}>
                   <div ref={michelleStageRef} style={{ position: 'absolute', inset: 0 }} />
+                  <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '24%', background: 'linear-gradient(to bottom, transparent, rgba(22,28,41,0.96))' }} />
                 </div>
                     {/* Pulse ring while speaking */}
                     <motion.div

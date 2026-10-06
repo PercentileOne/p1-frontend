@@ -76,7 +76,9 @@ function computeFit(view: AvatarView, stage: HTMLElement): Transform | null {
   const a = (cy1 - H / 2) / s0;         // the avatar's own vertical offset from centre, per unit scale
   const b = (cx1 - W / 2) / s0;         // and horizontal
   if (!Number.isFinite(ky) || !Number.isFinite(kx) || Math.abs(ky) < 0.05 || Math.abs(kx) < 1) return null;
-  const targetW = Math.max(H / hr, Math.min(0.72 * W, 0.95 * H));
+  // 0.8 = zoomed out a further 20% (Francis, 2026-10-06: "needs to zoom out another 20% at least"). The bottom of the bust may then show, so the room fades the
+  // tile's lower edge into the backdrop.
+  const targetW = 0.8 * Math.max(H / hr, Math.min(0.72 * W, 0.95 * H));
   const scale = s0 * targetW / r1.width;
   const x = -(b * scale) / kx;
   const y = -((hr * targetW / 2 - H / 2 - a * scale) / (ky * H)); // puts the top of the head at the top of the tile
@@ -120,6 +122,9 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
       try {
         const sdk = await prepareSdk(ticket, tokenPath);
         if (cancelled()) throw new Error('cancelled');
+        // The interview room mounts a seat's tile a moment after the seat is asked to connect (Michelle's only exists during the briefing), so wait briefly for it.
+        for (let i = 0; i < 40 && !stageRef.current && !cancelled(); i++) await new Promise(r => setTimeout(r, 100));
+        if (cancelled()) throw new Error('cancelled');
         const stage = stageRef.current;
         if (!stage) throw new Error('avatar stage not mounted');
         const avatar = await sdk.AvatarManager.shared.load(avatarId);
@@ -133,6 +138,16 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
         }
         const known = posterCache.get(avatarId);
         if (known) setPoster(known);
+        // A still of the face for the room to show between questions. Re-taken after the framing settles, and again whenever the stage changes shape, so it
+        // always matches what the live face looked like (newest still wins).
+        let stillTimer = 0;
+        const scheduleStill = () => {
+          window.clearTimeout(stillTimer);
+          stillTimer = window.setTimeout(async () => {
+            if (viewRef.current !== view) return;
+            try { const blob = await view.exportBitmap(); if (blob && viewRef.current === view) { const url = URL.createObjectURL(blob); posterCache.set(avatarId, url); setPoster(url); } } catch { /* no still — the room shows the plain backdrop */ }
+          }, 1800);
+        };
         // Framing diagnostics (Francis, 2026-10-06: faces vanished in the interview room after a framing change). Logged to the browser console only.
         const t0 = performance.now();
         const diag = (when: string) => { try { console.info(`[Spatius] framing ${when} ${avatarId.slice(0, 8)} ` + JSON.stringify({ stage: { w: stage.clientWidth, h: stage.clientHeight }, transform: view.avatarTransform, rect: view.getBoundingRect(), ms: Math.round(performance.now() - t0) })); } catch (e) { console.info('[Spatius] framing', when, 'unavailable', e); } };
@@ -140,11 +155,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
         view.onFirstRendering = () => {
           try { firstRender?.(); } catch { /* ignore */ }
           diag('first frame'); window.setTimeout(() => diag('+2s'), 2000);
-          // Wait for the framing fit to have been applied, then keep one still of the face (idle pose).
-          if (!posterCache.has(avatarId)) window.setTimeout(async () => {
-            if (viewRef.current !== view || posterCache.has(avatarId)) return;
-            try { const blob = await view.exportBitmap(); if (blob) { const url = URL.createObjectURL(blob); posterCache.set(avatarId, url); setPoster(url); } } catch { /* no still — the room shows the plain backdrop */ }
-          }, 1800);
+          scheduleStill();
         };
         const ctrl = view.controller;
         ctrl.onError = e => console.warn('[Spatius]', e.code, e.message);
@@ -188,7 +199,16 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
           let resizeTimer = 0;
           const onResize = () => { window.clearTimeout(resizeTimer); resizeTimer = window.setTimeout(() => { fitted = null; apply(); }, 150); };
           window.addEventListener('resize', onResize);
-          const cleanup = () => { window.clearInterval(timer); window.clearTimeout(resizeTimer); window.removeEventListener('resize', onResize); };
+          // The seat connects while its tile is still hidden or a different shape (during the briefing), then the tile takes its real size: re-measure whenever
+          // the stage's own size changes, not only when the window does, and take a fresh still once the new framing is in.
+          let lastW = stage.clientWidth, lastH = stage.clientHeight;
+          const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => {
+            if (stage.clientWidth === lastW && stage.clientHeight === lastH) return;
+            lastW = stage.clientWidth; lastH = stage.clientHeight;
+            if (lastW > 0 && lastH > 0) { onResize(); scheduleStill(); }
+          }) : null;
+          ro?.observe(stage);
+          const cleanup = () => { window.clearInterval(timer); window.clearTimeout(resizeTimer); window.removeEventListener('resize', onResize); ro?.disconnect(); };
           apply();
         }
         setStatus('connected');
