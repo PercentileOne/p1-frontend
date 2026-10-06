@@ -28,6 +28,7 @@ import { useMcqBonusRound, type McqGenParams } from '../hooks/useMcqBonusRound';
 import { useGoDeeperFollowUps, GO_DEEPER_LIMITS } from '../hooks/useGoDeeperFollowUps';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
 import { useSpatiusSeat, deviceCanUseSpatiusInRoom, type SeatRole } from '../hooks/useSpatiusSeat';
+import { SpatiusSeatStage } from '../components/SpatiusSeatStage';
 import { fetchAvatarConfig, type AvatarConfig } from '../api/liveAvatarApi';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -139,9 +140,6 @@ function useTypewriter(text: string, active: boolean, wordsPerMin = 215) {
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
-
-// Backdrop behind a Spatius face (its canvas is transparent). Dark blue-grey so the white name/status labels over the tile read clearly.
-const SPATIUS_STAGE_BG = 'radial-gradient(ellipse at 20% 20%, rgba(120,140,175,0.45) 0, transparent 45%), linear-gradient(180deg, #3b475c 0%, #232b3b 70%, #161c29 100%)';
 
 export default function InterviewRoomPage() {
   useParams<{ packId: string }>();
@@ -1415,13 +1413,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   playsInline
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
                 />
-                {/* Spatius draws Amina into this box when this seat is on Spatius (opaque backdrop, because its canvas is transparent). Always mounted so the avatar can attach the moment it connects; invisible until then. */}
-                <div style={{ position: 'absolute', inset: 0, borderRadius: '16px', overflow: 'hidden', background: SPATIUS_STAGE_BG, pointerEvents: 'none', opacity: seatOnSpatius('hr') && liveAvatarHr.status !== 'failed' ? 1 : 0 }}>
-                  {/* This seat's own still while it is between questions, so the old HeyGen-era photo underneath never shows. */}
-                  {spatiusHr.poster && liveAvatarHr.status !== 'connected' && <img src={spatiusHr.poster} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }} />}
-                  <div ref={hrStageRef} style={{ position: 'absolute', inset: 0 }} />
-                  <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '24%', background: 'linear-gradient(to bottom, transparent, rgba(22,28,41,0.96))' }} />
-                </div>
+                {/* Spatius draws Amina (16:9 stage with her background; the tile crops a window from it). Always mounted so the avatar can attach the moment it connects. */}
+                <SpatiusSeatStage seat="hr" stageRef={hrStageRef} visible={seatOnSpatius('hr') && liveAvatarHr.status !== 'failed'} live={liveAvatarHr.status === 'connected'} capturedStill={spatiusHr.poster} />
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
                     needed here too since this <video> sits on top of (and hides) that
                     component's own copy of it. */}
@@ -1464,13 +1457,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   playsInline
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
                 />
-                {/* Spatius draws Wayne into this box when this seat is on Spatius (opaque backdrop, because its canvas is transparent). Always mounted so the avatar can attach the moment it connects; invisible until then. */}
-                <div style={{ position: 'absolute', inset: 0, borderRadius: '16px', overflow: 'hidden', background: SPATIUS_STAGE_BG, pointerEvents: 'none', opacity: seatOnSpatius('technical') && liveAvatarTechnical.status !== 'failed' ? 1 : 0 }}>
-                  {/* This seat's own still while it is between questions, so the old HeyGen-era photo underneath never shows. */}
-                  {spatiusTechnical.poster && liveAvatarTechnical.status !== 'connected' && <img src={spatiusTechnical.poster} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }} />}
-                  <div ref={technicalStageRef} style={{ position: 'absolute', inset: 0 }} />
-                  <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '24%', background: 'linear-gradient(to bottom, transparent, rgba(22,28,41,0.96))' }} />
-                </div>
+                {/* Spatius draws Wayne (16:9 stage with his background; the tile crops a window from it). Always mounted so the avatar can attach the moment it connects. */}
+                <SpatiusSeatStage seat="technical" stageRef={technicalStageRef} visible={seatOnSpatius('technical') && liveAvatarTechnical.status !== 'failed'} live={liveAvatarTechnical.status === 'connected'} capturedStill={spatiusTechnical.poster} />
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
                     needed here too since this <video> sits on top of (and hides) that
                     component's own copy of it. */}
@@ -1657,11 +1645,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       playsInline
                       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                     />
-                {/* Spatius draws Michelle into this box when this seat is on Spatius (opaque backdrop, because its canvas is transparent). Always mounted so the avatar can attach the moment it connects; invisible until then. */}
-                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: SPATIUS_STAGE_BG, pointerEvents: 'none', opacity: seatOnSpatius('michelle') && liveAvatarMichelle.status !== 'failed' ? 1 : 0 }}>
-                  <div ref={michelleStageRef} style={{ position: 'absolute', inset: 0 }} />
-                  <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '24%', background: 'linear-gradient(to bottom, transparent, rgba(22,28,41,0.96))' }} />
-                </div>
+                {/* Spatius draws Michelle (16:9 stage with her background; the tile crops a window from it). Always mounted so the avatar can attach the moment it connects. */}
+                <SpatiusSeatStage seat="michelle" stageRef={michelleStageRef} visible={seatOnSpatius('michelle') && liveAvatarMichelle.status !== 'failed'} live={liveAvatarMichelle.status === 'connected'} capturedStill={spatiusMichelle.poster} rounded={false} />
                     {/* Pulse ring while speaking */}
                     <motion.div
                       animate={{ scale: [1, 1.03, 1], opacity: [0.6, 0.15, 0.6] }}
