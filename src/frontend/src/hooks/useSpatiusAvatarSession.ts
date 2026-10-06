@@ -189,7 +189,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
           let fitted: Transform | null = null;
           const refit = () => {
             if (!autoFit || viewRef.current !== view) return;
-            try { fitted = computeFit(view, stage, autoFit === false ? 1 : autoFit) ?? fitted; } catch { /* not ready — try again on the next tick */ }
+            try { fitted = computeFit(view, stage, autoFit || 1) ?? fitted; } catch { /* not ready — try again on the next tick */ }
           };
           const apply = () => {
             if (viewRef.current !== view) { cleanup(); return; }
