@@ -384,6 +384,12 @@
     caret-color: var(--pearl);
   }
   .field select option { background: #0a0f1e; }
+  /* Password field with a show/hide eye (Francis, 2026-10-06). */
+  .pw { position: relative; display: flex; }
+  .pw input { width: 100%; padding-right: 46px; }
+  .pw-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: 8px; color: var(--muted); cursor: pointer; padding: 0; }
+  .pw-eye:hover, .pw-eye:focus-visible { color: var(--pearl); background: rgba(255,255,255,0.06); outline: none; }
+  .pw-eye svg { width: 18px; height: 18px; }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
   /* Custom role picker for the login form — a native <select>'s open dropdown is rendered by
@@ -1146,7 +1152,7 @@
           </select>
         </div>
         <div class="field"><label>Email address</label><input type="email" id="login-email" placeholder="you@company.com" autocomplete="email"></div>
-        <div class="field"><label>Password</label><input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"></div>
+        <div class="field"><label>Password</label><div class="pw"><input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"><button type="button" class="pw-eye" aria-label="Show password" title="Show password" onclick="togglePw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
         <div id="login-error" style="display:none;font-size:12px;color:#F87171;line-height:1.5;"></div>
         <a href="https://candidate.theinterviewchair.com/forgot-password" class="forgot">Forgot your password?</a>
         <button class="btn-primary" type="submit" id="login-submit">Sign In</button>
@@ -1186,7 +1192,7 @@
             <div class="field"><label>Last name</label><input type="text" id="signup-lastname" placeholder="e.g. Cobbinah" autocomplete="family-name"></div>
           </div>
           <div class="field"><label>Email address</label><input type="email" id="signup-email" placeholder="you@company.com" autocomplete="email"></div>
-          <div class="field"><label>Password</label><input type="password" id="signup-password" placeholder="At least 8 characters" autocomplete="new-password"></div>
+          <div class="field"><label>Password</label><div class="pw"><input type="password" id="signup-password" placeholder="At least 8 characters" autocomplete="new-password"><button type="button" class="pw-eye" aria-label="Show password" title="Show password" onclick="togglePw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
           <div id="signup-error" style="display:none;font-size:12px;color:#F87171;line-height:1.5;"></div>
           <button class="btn-primary" type="submit" id="signup-submit">Create Account</button>
         </form>
@@ -1369,6 +1375,25 @@
     Employer:  'CAN_VIEW_CLIENT_PORTAL',
     Recruiter: 'CAN_VIEW_RECRUITER_PORTAL',
   };
+
+  // Eye button: show or hide what is typed in the password box next to it.
+  var EYE_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  var EYE_SHUT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.9 17.9A10.5 10.5 0 0 1 12 19C5.6 19 2 12 2 12a18 18 0 0 1 4.1-5.1M9.9 5.2A9.7 9.7 0 0 1 12 5c6.4 0 10 7 10 7a18 18 0 0 1-2.2 3.2M1 1l22 22"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+  function togglePw(btn) {
+    var input = btn.parentNode.querySelector('input');
+    var show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.innerHTML = show ? EYE_SHUT : EYE_OPEN;
+    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    btn.title = show ? 'Hide password' : 'Show password';
+    input.focus();
+  }
+  // Enter in a password box signs in / creates the account (the form already does this natively; explicit so it can't be lost to the eye button or a custom picker).
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' || !e.target || e.target.type !== 'password' && e.target.id !== 'login-password' && e.target.id !== 'signup-password') return;
+    var form = e.target.form;
+    if (form && form.requestSubmit) { e.preventDefault(); form.requestSubmit(); }
+  });
 
   async function handleLogin(evt) {
     evt.preventDefault();
