@@ -297,7 +297,7 @@ export default function TryItLivePage() {
   useEffect(() => {
     if (phase !== 'answering' || !useAvatar) return;
     const t = setTimeout(() => {
-      void spatius.disconnect(); void hr.disconnect(); void technical.disconnect();
+      void spatius.disconnect(true); void hr.disconnect(); void technical.disconnect();
       setUseAvatar(false); setAvatarState('off');
       logEvent('try_avatar_idle_disconnect', { metadata: { provider: providerRef.current, q: index + 1, mobile: isMobile } });
     }, 150_000);
@@ -305,7 +305,7 @@ export default function TryItLivePage() {
   }, [phase, index, useAvatar]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Never leave a billable avatar connection or a voice running when the page is left.
-  useEffect(() => () => { cancelSpeechRef.current?.(); void hr.disconnect(); void technical.disconnect(); void spatius.disconnect(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => { cancelSpeechRef.current?.(); void hr.disconnect(); void technical.disconnect(); void spatius.disconnect(true); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // "Preparing your interview…" can genuinely take a while (some topics route to a slower model) — a plain static line looked stuck
   // (Francis, 2026-09-22). The progress bar below is always animated; this just adds an honest reassurance line once it's taken a
@@ -398,7 +398,7 @@ export default function TryItLivePage() {
           live = true; providerRef.current = 'spatius'; setProvider('spatius'); setAvatarState('live');
           logEvent('try_avatar_connected', { metadata: { provider: 'spatius', ms: Math.round(performance.now() - connectStarted), mobile: isMobile } });
         } catch (e) {
-          void spatius.disconnect(); // also cancels a connect() still in flight, so it can't finish later as a ghost session
+          void spatius.disconnect(true); // also cancels a connect() still in flight, so it can't finish later as a ghost session
           logEvent('try_avatar_fallback', { metadata: { from: 'spatius', reason: String(e instanceof Error ? e.message : e).slice(0, 80), willFallBack: s.fallbackToHeygen !== false, mobile: isMobile } });
         }
       }
@@ -517,7 +517,7 @@ export default function TryItLivePage() {
     if (!isLast) { setIndex(index + 1); busyRef.current = false; void ask(index + 1, start, useAvatar); return; }
 
     // Done: stop the (billed) avatar connection straight away.
-    void avatar.disconnect(); void spatius.disconnect(); setAvatarState('off');
+    void avatar.disconnect(); void spatius.disconnect(true); setAvatarState('off');
     setPhase('scoring');
     if (!scoring) { setMessage("You didn't answer any of the questions, so there's nothing for us to score. Have another go whenever you're ready — even a short answer is enough."); setBlockReason('noAnswers'); setPhase('blocked'); busyRef.current = false; return; }
     const r = await scoring;
@@ -528,7 +528,7 @@ export default function TryItLivePage() {
 
   function restart() {
     cancelSpeechRef.current?.(); busyRef.current = false;
-    void hr.disconnect(); void technical.disconnect(); void spatius.disconnect();
+    void hr.disconnect(); void technical.disconnect(); void spatius.disconnect(true);
     setStart(null); setAnswers([]); setSkipped(0); setSkippedIdx([]); setRevealed(null); setRevealedText({}); setPaused(false); setFeedback(null); setDraft(''); setCoaching(null); setSkipTransition(false); setIndex(0); setAvatarState('off'); setUseAvatar(false); setShareOpen(false); setEmailOpen(false); setEmailState('idle'); setFirstSpeechStarted(false); setPhase('topic');
   }
 

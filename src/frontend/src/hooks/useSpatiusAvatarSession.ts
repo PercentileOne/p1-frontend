@@ -109,6 +109,10 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   const startedRef = useRef<(() => void) | null>(null);
   const sawPlayingRef = useRef(false);
   const connectingRef = useRef<Promise<void> | null>(null);
+  // Whether the billed service connection is open. Between questions the room closes only that connection (disconnect()) and leaves the face drawn on screen
+  // (idling and blinking on this device, no cost); connect() then just restarts the connection. release() is the full teardown.
+  const serviceOpenRef = useRef(false);
+  const viewAvatarRef = useRef<string | null>(null); // which avatar the on-screen face belongs to, so a restart never reuses another avatar's face
   // Bumped by disconnect(): a connect() that's still in flight when the page gives up on it (timeout) notices and tears itself down
   // instead of finishing later as a ghost, billed session.
   const attemptRef = useRef(0);
@@ -117,17 +121,33 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
     try { ctrlRef.current?.close(); } catch { /* already closed */ }
     try { viewRef.current?.dispose(); } catch { /* already disposed */ }
     ctrlRef.current = null; viewRef.current = null;
+    serviceOpenRef.current = false;
     setRendered(false);
     const w = waiterRef.current; waiterRef.current = null; w?.();
   }, []);
 
   const connect = useCallback((avatarId: string, ticket: string, transform?: { x: number; y: number; scale: number }, tokenPath: string = DEMO_TOKEN_PATH, autoFit: number | false = false): Promise<void> => {
-    if (ctrlRef.current) return Promise.resolve();
+    if (ctrlRef.current && serviceOpenRef.current) return Promise.resolve();
     if (connectingRef.current) return connectingRef.current;
     const attempt = (async () => {
       const mine = ++attemptRef.current;
       const cancelled = () => attemptRef.current !== mine;
       setStatus('connecting');
+      // The face is still on screen from an earlier question with only its connection closed: just reopen the connection (fast, no new token or model).
+      if (ctrlRef.current && viewRef.current && !serviceOpenRef.current && viewAvatarRef.current !== avatarId) release();
+      if (ctrlRef.current && viewRef.current && !serviceOpenRef.current) {
+        try {
+          await ctrlRef.current.start();
+          if (cancelled()) throw new Error('cancelled');
+          serviceOpenRef.current = true;
+          setStatus('connected');
+          connectingRef.current = null;
+          return;
+        } catch (e) {
+          if (cancelled()) { connectingRef.current = null; throw e; }
+          release(); // could not restart: rebuild the face from scratch below
+        }
+      }
       try {
         const sdk = await prepareSdk(ticket, tokenPath);
         if (cancelled()) throw new Error('cancelled');
@@ -165,7 +185,6 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
           try { firstRender?.(); } catch { /* ignore */ }
           setRendered(true);
           diag('first frame'); window.setTimeout(() => diag('+2s'), 2000);
-          scheduleStill();
         };
         const ctrl = view.controller;
         ctrl.onError = e => console.warn('[Spatius]', e.code, e.message);
@@ -173,7 +192,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
           if (s === sdk.ConversationState.playing) { sawPlayingRef.current = true; setSpeaking(true); const st = startedRef.current; startedRef.current = null; st?.(); }
           else if (s === sdk.ConversationState.idle) { setSpeaking(false); if (sawPlayingRef.current) { const w = waiterRef.current; waiterRef.current = null; w?.(); } }
         };
-        viewRef.current = view; ctrlRef.current = ctrl;
+        viewRef.current = view; ctrlRef.current = ctrl; viewAvatarRef.current = avatarId;
         // On iPhones the browser can leave the sound system's start-up pending forever unless it happens inside a tap — a promise that
         // never settles. Give it a few seconds, then fail so the page can fall back (to HeyGen, then voice) instead of hanging.
         await Promise.race([
@@ -182,6 +201,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
         ]);
         if (cancelled()) throw new Error('cancelled');
         await ctrl.start();
+        serviceOpenRef.current = true;
         if (cancelled()) throw new Error('cancelled');
         // The test page sets the framing AFTER the avatar is fully started and it works; set early it is ignored, and the SDK can also drop it (or reset
         // it on a window resize) while still REPORTING the value we set — so comparing against its getter is not a safe check (that was tried and
@@ -237,7 +257,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   // Resolves when the avatar has finished saying the line (or a ceiling based on the clip's length, so a page can never hang).
   const speak = useCallback(async (text: string, role: 'hr' | 'technical' | 'michelle', onStarted?: () => void): Promise<void> => {
     const ctrl = ctrlRef.current;
-    if (!ctrl) throw new Error('spatius avatar not connected');
+    if (!ctrl || !serviceOpenRef.current) throw new Error('spatius avatar not connected');
     const pcm = await fetchAvatarAudioPcm(text, role);
     const seconds = pcm.byteLength / (24000 * 2);
     sawPlayingRef.current = false;
@@ -251,9 +271,16 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
 
   const interrupt = useCallback(() => { try { ctrlRef.current?.interrupt(); } catch { /* nothing playing */ } }, []);
 
-  const disconnect = useCallback(async () => {
+  // Default: close only the billed connection and leave the face on screen. disconnect(true) tears the whole face down.
+  const disconnect = useCallback(async (full = false) => {
     attemptRef.current++; // cancels any connect() still in flight
-    release();
+    if (full || !ctrlRef.current) release();
+    else {
+      try { ctrlRef.current.close(); } catch { /* already closed */ }
+      serviceOpenRef.current = false;
+      setSpeaking(false);
+      const w = waiterRef.current; waiterRef.current = null; w?.();
+    }
     setStatus(s => (s === 'idle' ? 'idle' : 'closed'));
   }, [release]);
 

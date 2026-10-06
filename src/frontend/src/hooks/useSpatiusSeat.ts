@@ -77,7 +77,7 @@ export function useSpatiusSeat(
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('spatius connect timed out')), CONNECT_LIMIT_MS)),
       ]);
     } catch (e) {
-      void disconnect(); // a timed-out attempt must not finish later as a ghost, billed session
+      void disconnect(true); // a timed-out attempt must not finish later as a ghost, billed session
       onFailed(role);
       throw e;
     }
