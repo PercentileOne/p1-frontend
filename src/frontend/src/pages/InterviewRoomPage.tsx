@@ -1652,7 +1652,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                 {/* Spatius draws Michelle into this box when this seat is on Spatius (opaque backdrop, because its canvas is transparent). Always mounted so the avatar can attach the moment it connects; invisible until then. */}
-                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: SPATIUS_STAGE_BG, pointerEvents: 'none', opacity: seatOnSpatius('michelle') && liveAvatarMichelle.status === 'connected' ? 1 : 0 }}>
+                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: SPATIUS_STAGE_BG, pointerEvents: 'none', opacity: seatOnSpatius('michelle') && liveAvatarMichelle.status !== 'failed' ? 1 : 0 }}>
                   <div ref={michelleStageRef} style={{ position: 'absolute', inset: 0 }} />
                 </div>
                     {/* Pulse ring while speaking */}
