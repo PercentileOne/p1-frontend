@@ -76,7 +76,7 @@ export function AvatarProviderCard() {
       </div>
 
       <div style={{ marginBottom: 14 }}>
-        <label style={label}>Share of FULL interviews (and My Talks) that get Spatius: <b>{fullPercent}%</b> <span style={{ fontWeight: 400, color: 'var(--text-3)' }}>(0% = all HeyGen; needs all three avatar IDs below; the number is rolled once per interview)</span></label>
+        <label style={label}>Share of FULL interviews that get Spatius: <b>{fullPercent}%</b> <span style={{ fontWeight: 400, color: 'var(--text-3)' }}>(0% = all HeyGen; needs all three avatar IDs below; rolled once per interview; desktop only. My Talks still uses HeyGen)</span></label>
         <input type="range" min={0} max={100} value={fullPercent} onChange={e => setFullPercent(Number(e.target.value))} style={{ width: '100%' }} />
         {fullPercent > 0 && !(hr.trim() && tech.trim() && michelle.trim()) && <span style={{ fontSize: 11.5, color: '#f59e0b' }}>All three avatar IDs are needed below, or interviews stay on HeyGen.</span>}
       </div>
