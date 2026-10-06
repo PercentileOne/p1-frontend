@@ -5,13 +5,14 @@ import { useEffect, useRef, useState } from 'react';
 // (aspect-fill, centred). So there is no per-tile zooming at all: the avatar sits at its default position and scale, exactly as in Spatius Studio's preview.
 //
 // Files (downloaded from Spatius Studio: open the avatar, the Background card under the preview, and its cover image):
-//   /images/spatius/<seat>-background.jpg   16:9 "stage without the avatar"
-//   /images/spatius/<seat>-cover.jpg         still of the avatar on that background (shown while the seat isn't live)
+//   /images/spatius/<seat>-background.<jpg|png|webp>   16:9 "stage without the avatar"
+//   /images/spatius/<seat>-cover.<jpg|png|webp>         still of the avatar on that background (shown while the seat isn't live)
 // A missing file is fine: the background falls back to a plain dark gradient, and the cover to a still captured from the avatar itself.
 
 export type SpatiusSeat = 'hr' | 'technical' | 'michelle';
 
 const SEAT_FILES: Record<SpatiusSeat, string> = { hr: 'amina', technical: 'wayne', michelle: 'michelle' };
+const EXTS = ['jpg', 'png', 'webp'];
 const FALLBACK_BG = 'radial-gradient(ellipse at 20% 20%, rgba(120,140,175,0.45) 0, transparent 45%), linear-gradient(180deg, #3b475c 0%, #232b3b 70%, #161c29 100%)';
 
 export function SpatiusSeatStage({ seat, stageRef, visible, live, capturedStill, rounded = true }: {
@@ -24,8 +25,11 @@ export function SpatiusSeatStage({ seat, stageRef, visible, live, capturedStill,
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
-  const [noBg, setNoBg] = useState(false);
-  const [noCover, setNoCover] = useState(false);
+  // Index into EXTS of the file format being tried; running off the end means "no such file", and the fallbacks apply.
+  const [bgTry, setBgTry] = useState(0);
+  const [coverTry, setCoverTry] = useState(0);
+  const noBg = bgTry >= EXTS.length;
+  const noCover = coverTry >= EXTS.length;
 
   // The stage is always 16:9 and at least as big as the tile in both directions (aspect-fill), centred in it.
   useEffect(() => {
@@ -46,9 +50,9 @@ export function SpatiusSeatStage({ seat, stageRef, visible, live, capturedStill,
   return (
     <div ref={boxRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: rounded ? '16px' : undefined, background: FALLBACK_BG, pointerEvents: 'none', opacity: visible ? 1 : 0 }}>
       <div style={{ position: 'absolute', width: stageW, height: stageH, left: (size.w - stageW) / 2, top: (size.h - stageH) / 2 }}>
-        {!noBg && <img src={`${base}-background.jpg`} alt="" onError={() => setNoBg(true)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+        {!noBg && <img key={bgTry} src={`${base}-background.${EXTS[bgTry]}`} alt="" onError={() => setBgTry(n => n + 1)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
         {/* While the seat isn't live (between questions, or before it connects) show its own cover, never the old HeyGen-era photo underneath. */}
-        {!live && !noCover && <img src={`${base}-cover.jpg`} alt="" onError={() => setNoCover(true)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+        {!live && !noCover && <img key={coverTry} src={`${base}-cover.${EXTS[coverTry]}`} alt="" onError={() => setCoverTry(n => n + 1)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
         {!live && noCover && capturedStill && <img src={capturedStill} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }} />}
         <div ref={stageRef} style={{ position: 'absolute', inset: 0 }} />
       </div>
