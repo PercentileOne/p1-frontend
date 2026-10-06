@@ -14,6 +14,10 @@ type Transform = { x: number; y: number; scale: number };
 
 // Framing: none by default. The seat's picture area is a fixed 16:9 stage (see SpatiusSeatStage) and the avatar sits at the SDK's own default position and
 // scale in it, exactly as in Spatius Studio's preview. ?scale= (with &ax= &ay=) on the room's address overrides that for tuning.
+// Per-seat nudges from the default framing, set by eye (Francis, 2026-10-06): Wayne sits a little too far back in his room, so he is brought in about 20%
+// to show the middle of the chest upwards, like Amina.
+const SEAT_TRANSFORM: Partial<Record<SeatRole, Transform>> = { technical: { x: 0, y: 0, scale: 1.2 } };
+
 function manualTransform(): Transform | undefined {
   try {
     const q = new URLSearchParams(window.location.search);
@@ -69,7 +73,7 @@ export function useSpatiusSeat(
     }
     try {
       await Promise.race([
-        innerConnect(id, getInterviewTicket() ?? '', manualTransform(), INTERVIEW_TOKEN_PATH),
+        innerConnect(id, getInterviewTicket() ?? '', manualTransform() ?? SEAT_TRANSFORM[role], INTERVIEW_TOKEN_PATH),
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('spatius connect timed out')), CONNECT_LIMIT_MS)),
       ]);
     } catch (e) {
