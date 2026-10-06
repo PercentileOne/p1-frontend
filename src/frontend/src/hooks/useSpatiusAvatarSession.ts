@@ -61,7 +61,7 @@ const posterCache = new Map<string, string>();
 // wide one (measured from the live room's logs). So instead of guessing, ask the avatar where it is drawn (getBoundingRect) at a small scale, work out how its size and
 // position respond to scale / x / y (all linear), and solve for: head and shoulders filling the tile from the top, bust always reaching the bottom edge (no visible
 // cut-off), a head about 45% of the tile's height, centred. Returns null until the avatar has rendered a frame.
-function computeFit(view: AvatarView, stage: HTMLElement): Transform | null {
+function computeFit(view: AvatarView, stage: HTMLElement, factor = 1): Transform | null {
   const W = stage.clientWidth, H = stage.clientHeight;
   if (!W || !H) return null;
   const s0 = 0.3;
@@ -78,7 +78,8 @@ function computeFit(view: AvatarView, stage: HTMLElement): Transform | null {
   if (!Number.isFinite(ky) || !Number.isFinite(kx) || Math.abs(ky) < 0.05 || Math.abs(kx) < 1) return null;
   // 0.8 = zoomed out a further 20% (Francis, 2026-10-06: "needs to zoom out another 20% at least"). The bottom of the bust may then show, so the room fades the
   // tile's lower edge into the backdrop.
-  const targetW = 0.8 * Math.max(H / hr, Math.min(0.72 * W, 0.95 * H));
+  // `factor` is the per-interviewer zoom (1 = as measured; smaller = further back), set by the room from what looks right for each face.
+  const targetW = factor * 0.8 * Math.max(H / hr, Math.min(0.72 * W, 0.95 * H));
   const scale = s0 * targetW / r1.width;
   const x = -(b * scale) / kx;
   // Where the bust sits: its bottom edge on the tile's bottom edge (so no gap shows under the shoulders), which leaves headroom above when the bust is shorter than the
@@ -117,7 +118,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
     const w = waiterRef.current; waiterRef.current = null; w?.();
   }, []);
 
-  const connect = useCallback((avatarId: string, ticket: string, transform?: { x: number; y: number; scale: number }, tokenPath: string = DEMO_TOKEN_PATH, autoFit = false): Promise<void> => {
+  const connect = useCallback((avatarId: string, ticket: string, transform?: { x: number; y: number; scale: number }, tokenPath: string = DEMO_TOKEN_PATH, autoFit: number | false = false): Promise<void> => {
     if (ctrlRef.current) return Promise.resolve();
     if (connectingRef.current) return connectingRef.current;
     const attempt = (async () => {
@@ -188,7 +189,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
           let fitted: Transform | null = null;
           const refit = () => {
             if (!autoFit || viewRef.current !== view) return;
-            try { fitted = computeFit(view, stage) ?? fitted; } catch { /* not ready — try again on the next tick */ }
+            try { fitted = computeFit(view, stage, autoFit === false ? 1 : autoFit) ?? fitted; } catch { /* not ready — try again on the next tick */ }
           };
           const apply = () => {
             if (viewRef.current !== view) { cleanup(); return; }

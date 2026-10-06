@@ -37,6 +37,10 @@ function transformFor(role: SeatRole, stage: HTMLElement | null): Transform {
   } catch { return DEFAULT_TRANSFORMS[role]; }
 }
 
+// How far back each face sits once measured (1 = the fit's own choice; smaller = further back). Set by eye from the live room (Francis, 2026-10-06): Wayne a little
+// further back than the fit chose, Amina a lot (her hair makes her measure bigger, so she came out tight), Michelle right.
+const FIT_FACTOR: Record<SeatRole, number> = { hr: 0.72, technical: 0.88, michelle: 1 };
+
 // Framing is measured and fitted to each tile automatically; ?scale= (with &ax= &ay=) on the room's address switches that off and uses the numbers given.
 const hasManualFraming = () => { try { return Number.isFinite(parseFloat(new URLSearchParams(window.location.search).get('scale') ?? '')); } catch { return false; } };
 
@@ -71,7 +75,7 @@ export function useSpatiusSeat(
     if (!id) throw new Error(`no Spatius avatar for ${role}`);
     try {
       await Promise.race([
-        innerConnect(id, getInterviewTicket() ?? '', transformFor(role, stageRef.current), INTERVIEW_TOKEN_PATH, !hasManualFraming()),
+        innerConnect(id, getInterviewTicket() ?? '', transformFor(role, stageRef.current), INTERVIEW_TOKEN_PATH, hasManualFraming() ? false : FIT_FACTOR[role]),
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('spatius connect timed out')), CONNECT_LIMIT_MS)),
       ]);
     } catch (e) {
