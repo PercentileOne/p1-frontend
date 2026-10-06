@@ -81,7 +81,11 @@ function computeFit(view: AvatarView, stage: HTMLElement): Transform | null {
   const targetW = 0.8 * Math.max(H / hr, Math.min(0.72 * W, 0.95 * H));
   const scale = s0 * targetW / r1.width;
   const x = -(b * scale) / kx;
-  const y = -((hr * targetW / 2 - H / 2 - a * scale) / (ky * H)); // puts the top of the head at the top of the tile
+  // Where the bust sits: its bottom edge on the tile's bottom edge (so no gap shows under the shoulders), which leaves headroom above when the bust is shorter than the
+  // tile; if it is taller than the tile, the top of the head is at the top instead.
+  const bustH = hr * targetW;
+  const top = Math.max(0, H - bustH);
+  const y = -(((top + bustH / 2) - H / 2 - a * scale) / (ky * H));
   const fit = { x, y, scale };
   try { console.info('[Spatius] fit ' + JSON.stringify({ stage: { W, H }, r1, r2, r3, hr, ky, kx, a, b, targetW, fit })); } catch { /* diagnostics only */ }
   return Number.isFinite(x + y + scale) && scale > 0.05 && scale < 4 ? fit : null;
