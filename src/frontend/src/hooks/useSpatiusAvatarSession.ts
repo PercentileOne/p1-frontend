@@ -99,7 +99,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
         }
         // Framing diagnostics (Francis, 2026-10-06: faces vanished in the interview room after a framing change). Logged to the browser console only.
         const t0 = performance.now();
-        const diag = (when: string) => { try { console.info('[Spatius] framing', when, { stage: { w: stage.clientWidth, h: stage.clientHeight }, transform: view.avatarTransform, rect: view.getBoundingRect(), ms: Math.round(performance.now() - t0) }); } catch (e) { console.info('[Spatius] framing', when, 'unavailable', e); } };
+        const diag = (when: string) => { try { console.info(`[Spatius] framing ${when} ${avatarId.slice(0, 8)} ` + JSON.stringify({ stage: { w: stage.clientWidth, h: stage.clientHeight }, transform: view.avatarTransform, rect: view.getBoundingRect(), ms: Math.round(performance.now() - t0) })); } catch (e) { console.info('[Spatius] framing', when, 'unavailable', e); } };
         const firstRender = view.onFirstRendering;
         view.onFirstRendering = () => { try { firstRender?.(); } catch { /* ignore */ } diag('first frame'); window.setTimeout(() => diag('+2s'), 2000); };
         const ctrl = view.controller;
