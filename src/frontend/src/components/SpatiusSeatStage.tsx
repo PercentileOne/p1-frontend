@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 // Files (downloaded from Spatius Studio: open the avatar, the Background card under the preview, and its cover image):
 //   /images/spatius/<seat>-background.<jpg|png|webp>   16:9 "stage without the avatar"
 //   /images/spatius/<seat>-cover.<jpg|png|webp>         still of the avatar on that background (shown while the seat isn't live)
-// A missing file is fine: the background falls back to a plain dark gradient, and the cover to a still captured from the avatar itself.
+// A missing file is fine: the background falls back to a plain dark gradient, and with no cover the room shows just the background between questions.
 
 export type SpatiusSeat = 'hr' | 'technical' | 'michelle';
 
@@ -15,13 +15,12 @@ const SEAT_FILES: Record<SpatiusSeat, string> = { hr: 'amina', technical: 'wayne
 const EXTS = ['jpg', 'png', 'webp'];
 const FALLBACK_BG = 'radial-gradient(ellipse at 20% 20%, rgba(120,140,175,0.45) 0, transparent 45%), linear-gradient(180deg, #3b475c 0%, #232b3b 70%, #161c29 100%)';
 
-export function SpatiusSeatStage({ seat, stageRef, visible, live, rendered, capturedStill, rounded = true }: {
+export function SpatiusSeatStage({ seat, stageRef, visible, live, rendered, rounded = true }: {
   seat: SpatiusSeat;
   stageRef: React.RefObject<HTMLDivElement | null>;
   visible: boolean;            // this seat is on Spatius and hasn't failed
   live: boolean;               // the avatar is connected (hide the cover so the live face shows)
   rendered: boolean;           // the face has drawn its first frame: the first time this is true, the background comes in together with the face
-  capturedStill: string | null; // fallback still taken from the avatar itself when there is no cover image
   rounded?: boolean;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
@@ -58,7 +57,7 @@ export function SpatiusSeatStage({ seat, stageRef, visible, live, rendered, capt
         {!noBg && <img key={bgTry} src={`${base}-background.${EXTS[bgTry]}`} alt="" onError={() => setBgTry(n => n + 1)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: everRendered ? 1 : 0, transition: 'opacity 0.25s ease' }} />}
         {/* While the seat isn't live (between questions, or before it connects) show its own cover, never the old HeyGen-era photo underneath. */}
         {!live && !noCover && everRendered && <img key={coverTry} src={`${base}-cover.${EXTS[coverTry]}`} alt="" onError={() => setCoverTry(n => n + 1)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
-        {!live && noCover && everRendered && capturedStill && <img src={capturedStill} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }} />}
+        {/* A still captured from the live face (capturedStill) is deliberately NOT shown: exported frames came out stretched and at a different zoom (2026-10-06). Until the seat's cover image is added, the room shows just the background between questions. */}
         <div ref={stageRef} style={{ position: 'absolute', inset: 0 }} />
       </div>
     </div>
