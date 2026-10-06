@@ -356,6 +356,8 @@ export default function InterviewRoomPage() {
   const markSpatiusFailed = useCallback((role: SeatRole) => setSpatiusFailed(f => (f[role] ? f : { ...f, [role]: true })), []);
   const seatOnSpatius = (role: SeatRole) =>
     avatarCfg?.provider === 'spatius' && deviceOkForSpatius && !(spatiusFailed[role] && avatarCfg.fallbackToHeygen);
+  // True once the interviewers' tiles are on screen (set below, where showInterviewers is known). Amina's and Wayne's Spatius seats wait for it before connecting.
+  const tilesVisibleRef = useRef(false);
   const hrStageRef = useRef<HTMLDivElement>(null);
   const technicalStageRef = useRef<HTMLDivElement>(null);
   const michelleStageRef = useRef<HTMLDivElement>(null);
@@ -376,8 +378,8 @@ export default function InterviewRoomPage() {
   const [liveMichelleAnalyser, setLiveMichelleAnalyser] = useState<AnalyserNode | null>(null);
   const heygenHr = useLiveAvatarSession('hr', setLiveHrAnalyser);
   const heygenTechnical = useLiveAvatarSession('technical', setLiveTechAnalyser);
-  const spatiusHr = useSpatiusSeat('hr', hrStageRef, avatarCfgRef, markSpatiusFailed);
-  const spatiusTechnical = useSpatiusSeat('technical', technicalStageRef, avatarCfgRef, markSpatiusFailed);
+  const spatiusHr = useSpatiusSeat('hr', hrStageRef, avatarCfgRef, markSpatiusFailed, tilesVisibleRef);
+  const spatiusTechnical = useSpatiusSeat('technical', technicalStageRef, avatarCfgRef, markSpatiusFailed, tilesVisibleRef);
   const spatiusMichelle = useSpatiusSeat('michelle', michelleStageRef, avatarCfgRef, markSpatiusFailed);
   // From here on the room only talks to liveAvatarHr/Technical/Michelle; each is whichever provider's seat is active (both have the same shape; the
   // one not in use never connects, so it costs nothing).
@@ -1121,6 +1123,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
   // Show Sarah + James only after Mike has finished
   const showInterviewers = phase !== 'intro' && phase !== 'mike';
+  tilesVisibleRef.current = showInterviewers;
 
   const roomRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -1395,13 +1398,16 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
             ? { display: 'flex', gap: '16px' }
             : { display: 'flex', gap: '16px', position: 'absolute', inset: 0, zIndex: -1, pointerEvents: 'none' }}
         >
-              <div style={{ position: 'relative', flex: 1, display: 'flex' }}>
+              {/* On Spatius the tile is a true 16:9 window (the shape of Spatius's stage); the old photo component then no longer sizes it. */}
+              <div style={seatOnSpatius('hr') ? { position: 'relative', flex: 1, display: 'flex', aspectRatio: '16 / 9', alignSelf: 'flex-start' } : { position: 'relative', flex: 1, display: 'flex' }}>
+                <div style={seatOnSpatius('hr') ? { position: 'absolute', inset: 0, display: 'flex' } : { display: 'contents' }}>
                 <InterviewerAvatar
                   role="hr" state={hrState} active={hrState === 'speaking'} analyserNode={hrAnalyser}
                   videoUrl={null}
                   onVideoEnded={() => onDoneRef.current?.()}
                   onVideoAnalyser={handleSarahVideoAnalyser}
                 />
+                </div>
                 {/* LiveAvatar overlay — real-time video, takes over Amina's slot the moment her
                     session's stream is ready (attach() fires as soon as SESSION_STREAM_READY
                     does, independent of visual reveal — see the block comment above). The
@@ -1443,13 +1449,15 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     </div>
                 )}
               </div>
-              <div style={{ position: 'relative', flex: 1, display: 'flex' }}>
+              <div style={seatOnSpatius('technical') ? { position: 'relative', flex: 1, display: 'flex', aspectRatio: '16 / 9', alignSelf: 'flex-start' } : { position: 'relative', flex: 1, display: 'flex' }}>
+                <div style={seatOnSpatius('technical') ? { position: 'absolute', inset: 0, display: 'flex' } : { display: 'contents' }}>
                 <InterviewerAvatar
                   role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} analyserNode={techAnalyser}
                   videoUrl={null}
                   onVideoEnded={() => onDoneRef.current?.()}
                   onVideoAnalyser={handleJamesVideoAnalyser}
                 />
+                </div>
                 {/* LiveAvatar overlay — Wayne's slot, same treatment as Amina's above. */}
                 <video
                   ref={heygenTechnical.setVideoEl}

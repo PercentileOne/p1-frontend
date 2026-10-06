@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useSpatiusAvatarSession, INTERVIEW_TOKEN_PATH, type SpatiusStatus } from './useSpatiusAvatarSession';
 import { getInterviewTicket } from '../api/entitlementsApi';
 import type { AvatarConfig } from '../api/liveAvatarApi';
@@ -44,8 +44,12 @@ export function useSpatiusSeat(
   stageRef: React.RefObject<HTMLDivElement | null>,
   cfgRef: React.RefObject<AvatarConfig | null>,
   onFailed: (role: SeatRole) => void,
+  // While this is false the seat's tile is hidden or not yet its final shape, and connect() waits (see below). Omit for a seat that is on screen from the start.
+  tileVisibleRef?: React.RefObject<boolean>,
 ) {
   const inner = useSpatiusAvatarSession(stageRef);
+  const aliveRef = useRef(true);
+  useEffect(() => { aliveRef.current = true; return () => { aliveRef.current = false; }; }, []);
   const { connect: innerConnect, speak: innerSpeak, interrupt, disconnect } = inner;
 
   const connect = useCallback(async (): Promise<void> => {
@@ -53,6 +57,16 @@ export function useSpatiusSeat(
     for (let i = 0; i < 30 && !cfgRef.current; i++) await new Promise(r => setTimeout(r, 100));
     const id = cfgRef.current?.spatius?.[role];
     if (!id) throw new Error(`no Spatius avatar for ${role}`);
+    // Spatius sizes its drawing surface when the face first connects and keeps that size. The interview room asks for the seats while the interviewers' tiles are
+    // still hidden (a different, much taller shape), which made the faces enormous once the tiles appeared. So wait here until the tile is on screen, then a moment for
+    // its layout to settle. A hidden-tile wait is not a failure and never marks the seat as failed.
+    if (tileVisibleRef) {
+      while (!tileVisibleRef.current) {
+        if (!aliveRef.current) throw new Error('cancelled');
+        await new Promise(r => setTimeout(r, 120));
+      }
+      await new Promise(r => setTimeout(r, 300));
+    }
     try {
       await Promise.race([
         innerConnect(id, getInterviewTicket() ?? '', manualTransform(), INTERVIEW_TOKEN_PATH),
@@ -63,9 +77,17 @@ export function useSpatiusSeat(
       onFailed(role);
       throw e;
     }
-  }, [cfgRef, role, innerConnect, disconnect, onFailed]);
+  }, [cfgRef, role, tileVisibleRef, innerConnect, disconnect, onFailed]);
 
-  const speak = useCallback((text: string, speakRole: SeatRole, onSpeakStarted?: () => void) => innerSpeak(text, speakRole, onSpeakStarted), [innerSpeak]);
+  // Safety net: if the face has not actually started speaking within 12 seconds (audio not arriving, the renderer stalled), give up so the room speaks the line in
+  // the ordinary voice instead of the interview sitting silent (the room treats a failure before speech starts as "use plain voice").
+  const speak = useCallback((text: string, speakRole: SeatRole, onSpeakStarted?: () => void) => new Promise<void>((resolve, reject) => {
+    let started = false;
+    const watchdog = window.setTimeout(() => { if (!started) { interrupt(); reject(new Error('spatius speech did not start')); } }, 12000);
+    innerSpeak(text, speakRole, () => { started = true; window.clearTimeout(watchdog); onSpeakStarted?.(); })
+      .then(() => { window.clearTimeout(watchdog); resolve(); })
+      .catch(e => { window.clearTimeout(watchdog); reject(e); });
+  }), [innerSpeak, interrupt]);
   const noop = useCallback(() => { /* Spatius has no listening pose */ }, []);
   const setVideoEl = useCallback((_el: HTMLVideoElement | null) => { /* no <video>: the face is drawn into the seat's stage <div> */ }, []);
 
