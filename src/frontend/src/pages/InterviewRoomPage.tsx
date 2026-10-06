@@ -1399,8 +1399,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
             : { display: 'flex', gap: '16px', position: 'absolute', inset: 0, zIndex: -1, pointerEvents: 'none' }}
         >
               {/* On Spatius the tile is a true 16:9 window (the shape of Spatius's stage); the old photo component then no longer sizes it. */}
-              <div style={seatOnSpatius('hr') ? { position: 'relative', flex: 1, display: 'flex', aspectRatio: '16 / 9', alignSelf: 'flex-start' } : { position: 'relative', flex: 1, display: 'flex' }}>
-                <div style={seatOnSpatius('hr') ? { position: 'absolute', inset: 0, display: 'flex' } : { display: 'contents' }}>
+              <div style={seatOnSpatius('hr') ? { position: 'relative', flex: 1, display: 'flex', aspectRatio: '16 / 9', alignSelf: 'flex-start', borderRadius: '16px', boxShadow: hrState === 'speaking' ? '0 0 0 2px rgba(167,139,250,0.5)' : '0 0 0 1px rgba(255,255,255,0.06)' } : { position: 'relative', flex: 1, display: 'flex' }}>
+                <div style={seatOnSpatius('hr') ? { position: 'absolute', inset: 0, display: 'flex', overflow: 'hidden', borderRadius: '16px' } : { display: 'contents' }}>
                 <InterviewerAvatar
                   role="hr" state={hrState} active={hrState === 'speaking'} analyserNode={hrAnalyser}
                   videoUrl={null}
@@ -1449,8 +1449,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     </div>
                 )}
               </div>
-              <div style={seatOnSpatius('technical') ? { position: 'relative', flex: 1, display: 'flex', aspectRatio: '16 / 9', alignSelf: 'flex-start' } : { position: 'relative', flex: 1, display: 'flex' }}>
-                <div style={seatOnSpatius('technical') ? { position: 'absolute', inset: 0, display: 'flex' } : { display: 'contents' }}>
+              <div style={seatOnSpatius('technical') ? { position: 'relative', flex: 1, display: 'flex', aspectRatio: '16 / 9', alignSelf: 'flex-start', borderRadius: '16px', boxShadow: techState === 'speaking' ? '0 0 0 2px rgba(79,142,247,0.5)' : '0 0 0 1px rgba(255,255,255,0.06)' } : { position: 'relative', flex: 1, display: 'flex' }}>
+                <div style={seatOnSpatius('technical') ? { position: 'absolute', inset: 0, display: 'flex', overflow: 'hidden', borderRadius: '16px' } : { display: 'contents' }}>
                 <InterviewerAvatar
                   role="technical" state={techState} active={techState === 'speaking'} specialistTitle={specialistTitle} analyserNode={techAnalyser}
                   videoUrl={null}
