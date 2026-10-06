@@ -11,7 +11,7 @@ Where to find each number
 | Date | LinkedIn followers | Latest post: impressions / profile viewers | Site visits (funnel) | Tried the demo | Register clicks | New real sign-ups | Notes |
 |---|---|---|---|---|---|---|---|
 | Mon 5 Oct 2026 | 4,741 | 208 / 1 (dialysis-chair post, first hours) | | | | | Day before launch. New headline and 4-slide banner carousel are live. About 50 more connections than before the weekend (Friday's figure was not recorded). |
-| Tue 6 Oct 2026 | | | | | | | **Product Hunt launch day** |
+| Tue 6 Oct 2026 | 4,788 (+47 on Mon) | Top post (dialysis chair) 208 impressions / 5 engagements; 7-day totals: 487 profile views, 165 post impressions, 81 search appearances | | | | | **Product Hunt launch day.** Other recent posts: 25-questions 72 / 1, "where you stand" 53 / 2. Funnel numbers still to add. |
 | Wed 7 Oct 2026 | | | | | | | |
 
 ## Post experiments
