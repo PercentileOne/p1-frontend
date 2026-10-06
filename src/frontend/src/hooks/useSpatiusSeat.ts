@@ -19,11 +19,19 @@ const DEFAULT_TRANSFORMS: Record<SeatRole, Transform> = {
   technical: { x: 0.02, y: -0.32, scale: 1.45 },
   michelle: { x: 0.01, y: -0.1, scale: 1.32 },
 };
-function transformFor(role: SeatRole): Transform {
+// The defaults were tuned in a wide 16:9 box. The SDK fits the avatar to the box's HEIGHT, so in a squarer tile (the interview room's Amina and Wayne tiles are about
+// 1.2 : 1) the same scale shows a far bigger face — seen live 2026-10-06, only foreheads in frame. So the default scale is shrunk by how much squarer the tile is than 16:9.
+// An explicit ?scale= override is used exactly as given.
+function transformFor(role: SeatRole, stage: HTMLElement | null): Transform {
   try {
     const q = new URLSearchParams(window.location.search);
     const scale = parseFloat(q.get('scale') ?? '');
-    if (!Number.isFinite(scale) || scale < 0.2 || scale > 3) return DEFAULT_TRANSFORMS[role];
+    if (!Number.isFinite(scale) || scale < 0.2 || scale > 3) {
+      const d = DEFAULT_TRANSFORMS[role];
+      const w = stage?.clientWidth ?? 0, h = stage?.clientHeight ?? 0;
+      const factor = w > 0 && h > 0 ? Math.min(1, (w / h) / (16 / 9)) : 1;
+      return { ...d, scale: d.scale * factor };
+    }
     const n = (k: string) => { const v = parseFloat(q.get(k) ?? ''); return Number.isFinite(v) ? Math.max(-2, Math.min(2, v)) : 0; };
     return { x: n('ax'), y: n('ay'), scale };
   } catch { return DEFAULT_TRANSFORMS[role]; }
@@ -60,7 +68,7 @@ export function useSpatiusSeat(
     if (!id) throw new Error(`no Spatius avatar for ${role}`);
     try {
       await Promise.race([
-        innerConnect(id, getInterviewTicket() ?? '', transformFor(role), INTERVIEW_TOKEN_PATH),
+        innerConnect(id, getInterviewTicket() ?? '', transformFor(role, stageRef.current), INTERVIEW_TOKEN_PATH),
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('spatius connect timed out')), CONNECT_LIMIT_MS)),
       ]);
     } catch (e) {
@@ -68,7 +76,7 @@ export function useSpatiusSeat(
       onFailed(role);
       throw e;
     }
-  }, [cfgRef, role, innerConnect, disconnect, onFailed]);
+  }, [cfgRef, role, stageRef, innerConnect, disconnect, onFailed]);
 
   const speak = useCallback((text: string, speakRole: SeatRole, onSpeakStarted?: () => void) => innerSpeak(text, speakRole, onSpeakStarted), [innerSpeak]);
   const noop = useCallback(() => { /* Spatius has no listening pose */ }, []);
