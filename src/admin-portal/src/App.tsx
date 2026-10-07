@@ -13,6 +13,7 @@ import Interviews from './pages/Interviews'
 import Careers from './pages/Careers'
 import Moderation from './pages/Moderation'
 import LiveAvatar from './pages/LiveAvatar'
+import Interviewers from './pages/Interviewers'
 import QuestionPackCaps from './pages/QuestionPackCaps'
 import ActivityLog from './pages/ActivityLog'
 import CvAnalyzer from './pages/CvAnalyzer'
@@ -57,6 +58,7 @@ function AppRoutes() {
       <Route path="/careers" element={<RequireAuth><Careers /></RequireAuth>} />
       <Route path="/moderation" element={<RequireAuth><Moderation /></RequireAuth>} />
       <Route path="/live-avatar" element={<RequireAuth><LiveAvatar /></RequireAuth>} />
+      <Route path="/interviewers" element={<RequireAuth><Interviewers /></RequireAuth>} />
       <Route path="/question-packs" element={<RequireAuth><QuestionPackCaps /></RequireAuth>} />
       <Route path="/cv-analyzer" element={<RequireAuth><CvAnalyzer /></RequireAuth>} />
       <Route path="/activity-log" element={<RequireAuth><ActivityLog /></RequireAuth>} />

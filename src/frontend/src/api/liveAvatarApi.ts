@@ -37,9 +37,11 @@ export interface AvatarConfig {
   provider: 'heygen' | 'spatius';
   fallbackToHeygen: boolean;
   spatius: { hr: string; technical: string; michelle: string } | null;
+  // Uploaded background pictures for the three seats (from Admin > Interviewers), as full URLs; null/absent = use the picture files shipped with the page.
+  backgrounds: { hr: string | null; technical: string | null; michelle: string | null } | null;
 }
 export async function fetchAvatarConfig(): Promise<AvatarConfig> {
-  const heygen: AvatarConfig = { enabled: true, provider: 'heygen', fallbackToHeygen: true, spatius: null };
+  const heygen: AvatarConfig = { enabled: true, provider: 'heygen', fallbackToHeygen: true, spatius: null, backgrounds: null };
   try {
     const force = new URLSearchParams(window.location.search).get('force');
     const token = useAuthStore.getState().token;
@@ -48,12 +50,14 @@ export async function fetchAvatarConfig(): Promise<AvatarConfig> {
     if (!res.ok) return heygen;
     const cfg = await res.json() as Partial<AvatarConfig>;
     const sp = cfg.spatius;
+    const full = (u: string | null | undefined) => (u && u.startsWith('/') ? `${API_BASE}${u}` : null);
     const spatiusOk = cfg.provider === 'spatius' && !!sp?.hr && !!sp?.technical && !!sp?.michelle;
     return {
       enabled: cfg.enabled !== false,
       provider: spatiusOk ? 'spatius' : 'heygen',
       fallbackToHeygen: cfg.fallbackToHeygen !== false,
       spatius: spatiusOk ? sp! : null,
+      backgrounds: spatiusOk && cfg.backgrounds ? { hr: full(cfg.backgrounds.hr), technical: full(cfg.backgrounds.technical), michelle: full(cfg.backgrounds.michelle) } : null,
     };
   } catch {
     return heygen;

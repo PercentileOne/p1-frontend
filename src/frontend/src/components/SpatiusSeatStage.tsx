@@ -21,8 +21,9 @@ const AVATAR_FILE_NAMES: Record<string, string> = {
 const EXTS = ['jpg', 'png', 'webp'];
 const FALLBACK_BG = 'radial-gradient(ellipse at 20% 20%, rgba(120,140,175,0.45) 0, transparent 45%), linear-gradient(180deg, #3b475c 0%, #232b3b 70%, #161c29 100%)';
 
-export function SpatiusSeatStage({ seat, avatarId, stageRef, visible, live, rendered, rounded = true }: {
+export function SpatiusSeatStage({ seat, avatarId, backgroundUrl, stageRef, visible, live, rendered, rounded = true }: {
   seat: SpatiusSeat;
+  backgroundUrl?: string | null; // the picture uploaded in Admin > Interviewers (tried first); the files shipped with the page are the fallback
   avatarId?: string | null;    // the Spatius avatar currently in this seat; its own background file is looked up first
   stageRef: React.RefObject<HTMLDivElement | null>;
   visible: boolean;            // this seat is on Spatius and hasn't failed
@@ -40,11 +41,11 @@ export function SpatiusSeatStage({ seat, avatarId, stageRef, visible, live, rend
     ...(avatarId && /^[0-9a-f-]{8,64}$/i.test(avatarId) ? [`/images/spatius/${avatarId}`] : []),
     `/images/spatius/${SEAT_FILES[seat]}`,
   ];
-  const bgFiles = bases.flatMap(b => EXTS.map(e => `${b}-background.${e}`));
+  const bgFiles = [...(backgroundUrl ? [backgroundUrl] : []), ...bases.flatMap(b => EXTS.map(e => `${b}-background.${e}`))];
   const coverFiles = bases.flatMap(b => EXTS.map(e => `${b}-cover.${e}`));
   const [bgTry, setBgTry] = useState(0);
   const [coverTry, setCoverTry] = useState(0);
-  useEffect(() => { setBgTry(0); setCoverTry(0); }, [avatarId]);
+  useEffect(() => { setBgTry(0); setCoverTry(0); }, [avatarId, backgroundUrl]);
   const noBg = bgTry >= bgFiles.length;
   const noCover = coverTry >= coverFiles.length;
   // Until the face has drawn for the first time the room stays plain, so an empty background never appears a moment before the person (Spatius's guide: switch the
