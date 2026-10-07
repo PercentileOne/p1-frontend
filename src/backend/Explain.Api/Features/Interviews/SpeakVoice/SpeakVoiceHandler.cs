@@ -15,6 +15,7 @@ public class SpeakVoiceHandler(
     TtsCacheService cache,
     IHttpClientFactory httpFactory,
     IConfiguration config,
+    Explain.Api.Infrastructure.Cosmos.CosmosService cosmos,
     ILogger<SpeakVoiceHandler> logger)
     : IRequestHandler<SpeakVoiceCommand, Result<SpeakVoiceDto>>
 {
@@ -49,7 +50,9 @@ public class SpeakVoiceHandler(
         // existing male voice would be a worse placeholder than reusing the other female one
         // already configured. Set ElevenLabs:VoiceMichelle in Azure once a dedicated voice is
         // picked for her.
-        var voiceId = cmd.Role switch
+        // A voice chosen on the Interviewers page for whoever sits in this seat wins; the server settings below are the fallback.
+        var registryVoice = await Explain.Api.Features.Interviewers.Endpoint.VoiceForSeatAsync(cosmos, cmd.Role, ct);
+        var voiceId = registryVoice ?? cmd.Role switch
         {
             "hr"        => config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],
             "michelle"  => config["ElevenLabs:VoiceMichelle"] ?? config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],

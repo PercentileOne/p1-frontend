@@ -19,6 +19,7 @@ public class AvatarAudioHandler(
     TtsCacheService cache,
     IHttpClientFactory httpFactory,
     IConfiguration config,
+    Explain.Api.Infrastructure.Cosmos.CosmosService cosmos,
     ILogger<AvatarAudioHandler> logger)
     : IRequestHandler<AvatarAudioCommand, Result<AvatarAudioDto>>
 {
@@ -38,7 +39,9 @@ public class AvatarAudioHandler(
 
         // Identical voice-selection logic to SpeakVoiceHandler — same personas, same voices,
         // kept in sync deliberately (copy, not shared helper, per this app's existing precedent).
-        var voiceId = cmd.Role switch
+        // A voice chosen on the Interviewers page for whoever sits in this seat wins; the server settings below are the fallback.
+        var registryVoice = await Explain.Api.Features.Interviewers.Endpoint.VoiceForSeatAsync(cosmos, cmd.Role, ct);
+        var voiceId = registryVoice ?? cmd.Role switch
         {
             "hr"        => config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],
             "michelle"  => config["ElevenLabs:VoiceMichelle"] ?? config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],

@@ -178,6 +178,22 @@ public static partial class Endpoint
             hr?.backgroundUrl, tech?.backgroundUrl, michelle?.backgroundUrl);
     }
 
+    /// <summary>
+    /// The ElevenLabs voice of whoever is the default interviewer for a room seat ("hr", "technical" or "michelle"), when one is set in the registry; otherwise null and the caller
+    /// uses the voice from the server settings as before. This is how a voice chosen on the Interviewers page is heard in the room.
+    /// </summary>
+    public static async Task<string?> VoiceForSeatAsync(CosmosService cosmos, string? seat, CancellationToken ct = default)
+    {
+        var key = seat?.ToLowerInvariant() switch { "hr" => "hr", "technical" => "technical", "michelle" or "briefing" => "briefing", _ => null };
+        if (key is null) return null;
+        try
+        {
+            var voice = (await DefaultForAsync(cosmos, key, ct))?.voiceId;
+            return !string.IsNullOrWhiteSpace(voice) && SafeTokenPattern().IsMatch(voice) ? voice : null;
+        }
+        catch (Exception) { return null; } // never let the registry stop an interview from speaking
+    }
+
     /// <summary>The interviewer set as the default for a seat ("hr", "technical" or "briefing"), or null when none is (the room then uses the older avatar settings).</summary>
     public static async Task<Interviewer?> DefaultForAsync(CosmosService cosmos, string seat, CancellationToken ct = default) =>
         (await ListAsync(cosmos, activeOnly: true, ct)).FirstOrDefault(i => string.Equals(i.defaultFor, seat, StringComparison.OrdinalIgnoreCase));
