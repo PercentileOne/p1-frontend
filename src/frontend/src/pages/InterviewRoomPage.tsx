@@ -33,6 +33,8 @@ import { fetchAvatarConfig, type AvatarConfig } from '../api/liveAvatarApi';
 import { fetchInterviewers, type PublicInterviewer } from '../api/interviewersApi';
 import { applyResolvedSeats, readInterviewerChoice, resolveSeatInterviewers } from '../lib/interviewerChoice';
 import { seatName } from '../lib/seatInterviewers';
+import { createPortal } from 'react-dom';
+import { InterviewerPicker } from '../components/InterviewerPicker';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -373,6 +375,11 @@ export default function InterviewRoomPage() {
     });
   }, [cfgReady, chosen]);
   const seatsIv = resolveSeatInterviewers(roster, chosen);
+  // "Change" on the chair screen (2026-10-07): the room has already prepared the interview around the chosen interviewers, so changing them re-opens the room. The room's
+  // settings travel in the page's history state and the interview ticket in sessionStorage, both of which survive a reload, so nothing the candidate typed is lost.
+  const [changeOpen, setChangeOpen] = useState(false);
+  const idsAtOpenRef = useRef('');
+  const seatIdsKey = () => `${seatsIv.hr?.id ?? ''}|${seatsIv.technical?.id ?? ''}`;
   // The avatar each seat's Spatius face uses (read by the seat hooks when they connect).
   const seatIdsRef = useRef<{ hr?: string; technical?: string; michelle?: string }>({});
   seatIdsRef.current = { hr: seatsIv.hr?.avatarId, technical: seatsIv.technical?.avatarId, michelle: seatsIv.michelle?.avatarId };
@@ -1540,12 +1547,56 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
         <AnimatePresence mode="sync">
 
+          {/* Change interviewers: the same picker as at setup (voice previews included). Closing keeps things as they are; choosing different interviewers re-opens the room with them. */}
+          {changeOpen && createPortal(
+            <div role="dialog" aria-modal="true" onClick={() => setChangeOpen(false)}
+              style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(5,8,16,0.8)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflowY: 'auto', padding: '32px 16px' }}>
+              <div onClick={e => e.stopPropagation()}
+                style={{ width: '100%', maxWidth: '940px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px 22px' }}>
+                <InterviewerPicker />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+                  <button type="button" onClick={() => setChangeOpen(false)}
+                    style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '10px', padding: '9px 18px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', color: 'var(--text-2)', fontFamily: 'inherit' }}>
+                    Cancel
+                  </button>
+                  <button type="button"
+                    onClick={() => {
+                      const next = resolveSeatInterviewers(roster, readInterviewerChoice());
+                      if (`${next.hr?.id ?? ''}|${next.technical?.id ?? ''}` === idsAtOpenRef.current) setChangeOpen(false);
+                      else window.location.reload();
+                    }}
+                    style={{ background: '#34D399', border: 'none', borderRadius: '10px', padding: '9px 20px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', color: '#04120c', fontFamily: 'inherit' }}>
+                    Use these interviewers
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )}
+
           {/* ── INTRO — only shown when NOT autoStart ─────────────────────── */}
           {phase === 'intro' && (
             <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.8 }}
               style={{ borderRadius: '20px', overflow: 'hidden', minHeight: '480px', display: 'flex', flexWrap: 'wrap', background: 'var(--bg2)', border: '1px solid var(--border)' }}>
 
-              {/* Chair — image lives in its own column now, not behind the text */}
+              {/* The two interviewers who will be in the room (2026-10-07: replaces the chair photo once the interviewers are known); the chair is the fallback. */}
+              {seatsIv.hr && seatsIv.technical ? (
+                <div style={{ position: 'relative', flex: '1 1 320px', minHeight: '320px', background: 'linear-gradient(160deg, #0d1424, #080b14)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '14px', padding: '28px 24px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Your interviewers</div>
+                  {([['HR', seatsIv.hr], ['Technical', seatsIv.technical]] as const).map(([label, iv]) => (
+                    <motion.div key={iv.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.6 }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <img src={`/images/interviewers/${iv.id}.jpg`} alt="" onError={e => { const el = e.currentTarget; if (iv.backgroundUrl && el.src !== iv.backgroundUrl) el.src = iv.backgroundUrl; }}
+                        style={{ width: '148px', aspectRatio: '4 / 3', objectFit: 'cover', objectPosition: 'center 25%', borderRadius: '12px', flexShrink: 0, background: '#232b3b' }} />
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)' }}>{iv.displayName}</div>
+                        <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: label === 'HR' ? '#a78bfa' : 'var(--blue)', marginBottom: '4px' }}>{label} interviewer</div>
+                        <div style={{ fontSize: '12px', lineHeight: 1.45, color: 'var(--text-2)' }}>{iv.description}</div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
               <div style={{ position: 'relative', flex: '1 1 320px', minHeight: '320px', overflow: 'hidden', background: '#000' }}>
                 <motion.img
                   src="/images/mastermind-chair.png"
@@ -1559,6 +1610,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     needs to fight the photo for text legibility */}
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, rgba(0,0,0,0.25) 100%)' }} />
               </div>
+              )}
 
               {/* Content — solid panel, left-aligned, no longer competing with the photo */}
               <div style={{ flex: '1 1 340px', padding: '40px 36px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: '20px' }}>
@@ -1583,7 +1635,15 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '11px 16px', borderBottom: '1px solid var(--border)' }}>
                     <span style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', userSelect: 'none' }}>Questions</span>
-                    <span style={{ fontSize: '13px', color: 'var(--text)', userSelect: 'none' }}>{questions.length} · {seatsIv.hr?.displayName ?? 'Amina'} &amp; {seatsIv.technical?.displayName ?? 'Wayne'}</span>
+                    <span style={{ fontSize: '13px', color: 'var(--text)', userSelect: 'none', display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                      {questions.length} · {seatsIv.hr?.displayName ?? 'Amina'} &amp; {seatsIv.technical?.displayName ?? 'Wayne'}
+                      {roster.length > 0 && !ctx.companyContext && (
+                        <button type="button" onClick={() => { idsAtOpenRef.current = seatIdsKey(); setChangeOpen(true); }}
+                          style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', padding: '3px 10px', fontSize: '11.5px', fontWeight: 600, cursor: 'pointer', color: 'var(--text-2)', fontFamily: 'inherit' }}>
+                          Change
+                        </button>
+                      )}
+                    </span>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '11px 16px', borderBottom: '1px solid var(--border)' }}>
