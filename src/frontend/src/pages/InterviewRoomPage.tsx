@@ -468,27 +468,33 @@ export default function InterviewRoomPage() {
     return () => { cancelled = true; fallbackCancel?.(); liveAvatarTechnical.interrupt(); };
   }, [liveAvatarTechnical]);
 
+  // True from the moment Michelle's voice actually starts until her line ends. Her briefing is long, so her voice takes a few seconds to be made; until it starts the tile
+  // shows "Getting ready…" with a spinner instead of claiming she is already speaking.
+  const [michelleVoiceLive, setMichelleVoiceLive] = useState(false);
+
   const liveAvatarSpeakMichelle = useCallback((text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => {
     let cancelled = false;
     let fallbackCancel: (() => void) | null = null;
     // See liveAvatarSpeakHr's own comment for the full reasoning on speechStarted.
     let speechStarted = false;
+    setMichelleVoiceLive(false);
+    const ended = () => { setMichelleVoiceLive(false); onEnd(); };
     (async () => {
       try {
         if (liveAvatarMichelle.status !== 'connected') await liveAvatarMichelle.connect();
-        await liveAvatarMichelle.speak(text, 'michelle', () => { speechStarted = true; onAnalyser?.(null); });
-        if (!cancelled) onEnd();
+        await liveAvatarMichelle.speak(text, 'michelle', () => { speechStarted = true; setMichelleVoiceLive(true); onAnalyser?.(null); });
+        if (!cancelled) ended();
       } catch (err) {
         if (speechStarted) {
           console.warn('[InterviewRoom] LiveAvatar (michelle) speak timed out after already starting — treating as complete, not re-speaking:', err);
-          if (!cancelled) onEnd();
+          if (!cancelled) ended();
           return;
         }
         console.error('[InterviewRoom] LiveAvatar (michelle) speak failed, falling back to TTS:', err);
-        if (!cancelled) fallbackCancel = speak(text, 'michelle', onEnd, onAnalyser);
+        if (!cancelled) fallbackCancel = speak(text, 'michelle', ended, a => { setMichelleVoiceLive(true); onAnalyser?.(a); });
       }
     })();
-    return () => { cancelled = true; fallbackCancel?.(); liveAvatarMichelle.interrupt(); };
+    return () => { cancelled = true; fallbackCancel?.(); setMichelleVoiceLive(false); liveAvatarMichelle.interrupt(); };
   }, [liveAvatarMichelle]);
 
   // Cost control (Francis, 2026-09-11): HeyGen bills LiveAvatar per minute of a CONNECTED
@@ -1703,7 +1709,13 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       pulsing dot before her session's stream is ready or if she degrades to
                       plain TTS. */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'default', userSelect: 'none' }}>
-                    {liveAvatarMichelle.status === 'connected' && liveMichelleAnalyser ? (
+                    {!michelleVoiceLive ? (
+                      <>
+                        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                          style={{ width: '16px', height: '16px', borderRadius: '50%', border: '2px solid rgba(52,211,153,0.25)', borderTopColor: '#34D399', flexShrink: 0 }} />
+                        <span style={{ fontSize: '13px', color: 'var(--text-3)', userSelect: 'none' }}>Michelle is getting ready…</span>
+                      </>
+                    ) : liveAvatarMichelle.status === 'connected' && liveMichelleAnalyser ? (
                       <WaveformBars active color="#34D399" analyserNode={liveMichelleAnalyser} />
                     ) : (
                       <>
