@@ -115,6 +115,30 @@
   .gl b{display:block;font-size:14px;font-weight:800;color:var(--text);margin-bottom:2px}
   .gl span:not(.gl-ico){display:block;font-size:12.5px;line-height:1.45;color:var(--muted)}
   @media(max-width:640px){.glance{grid-template-columns:1fr;gap:14px}}
+  /* Interviewer picker (Francis, 2026-10-07): replaces the static picture of Wayne. First-time visitors choose who interviews them; the choice goes to /try as ?interviewer=<id>. */
+  .pick{border-radius:20px;border:1px solid var(--line);background:var(--card);padding:16px;box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 60px rgba(61,126,246,.12)}
+  .pick-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;margin-bottom:12px}
+  .pick-sub{font-size:12.5px;color:var(--muted)}
+  .pick-main{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:4/3;background:#04060c}
+  .pick-main img{width:100%;height:100%;object-fit:cover;object-position:center 20%}
+  .pick-cap{position:absolute;left:0;right:0;bottom:0;padding:38px 16px 12px;background:linear-gradient(to top,rgba(4,6,12,.88),transparent);display:flex;flex-direction:column;gap:1px}
+  .pick-cap b{font-size:21px;font-weight:900;letter-spacing:-.01em}
+  .pick-cap small{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--green)}
+  .pick-desc{margin:12px 2px 8px;color:var(--muted);font-size:14px;line-height:1.5;min-height:42px}
+  .pick-bars{display:grid;grid-template-columns:1fr 1fr;gap:5px 20px;margin:0 2px 14px;min-height:18px}
+  .pick-bar{display:grid;grid-template-columns:62px 1fr;gap:8px;align-items:center;font-size:11px;color:var(--dim)}
+  .pick-bar span.t{display:flex;gap:3px}
+  .pick-bar i{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.12)}
+  .pick-bar i.on{background:var(--green)}
+  .pick-tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+  .pick-tile{appearance:none;font:inherit;color:var(--text);cursor:pointer;display:flex;flex-direction:column;gap:6px;align-items:stretch;text-align:center;padding:5px 5px 7px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+  .pick-tile:hover{border-color:rgba(52,211,153,.5)}
+  .pick-tile[aria-checked="true"]{border-color:var(--green);background:rgba(52,211,153,.1)}
+  .pick-tile img{width:100%;aspect-ratio:1/1;object-fit:cover;object-position:center 20%;border-radius:8px}
+  .pick-tile span{font-size:12px;font-weight:800}
+  .pick-note{margin-top:12px;font-size:12.5px;color:var(--muted);line-height:1.5}
+  .pick-note b{color:var(--green)}
+  @media(max-width:520px){.pick-bars{grid-template-columns:1fr}.pick-tile span{font-size:11px}}
   .stage{position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 60px rgba(61,126,246,.12);background:#04060c;aspect-ratio:1200/962}
   .stage img,.stage video{width:100%;height:100%;object-fit:cover}
   .stage video{position:absolute;inset:0}
@@ -409,13 +433,19 @@
     </div>
 
     <div class="hero-visual">
-    <div class="stage" aria-label="A live interview: Wayne asking a candidate a question">
-      <div class="live"><i></i> Live interview room</div>
-      <img src="/img/hero-room.webp" width="1200" height="962" alt="Wayne, a live AI interviewer, asking a candidate a question in the interview room" fetchpriority="high">
-      <video id="heroVideo" muted loop playsinline preload="none" poster="/img/hero-room.webp" aria-hidden="true">
-        <source src="/hero-preview.webm?v=2" type="video/webm">
-        <source src="/hero-preview.mp4?v=2" type="video/mp4">
-      </video>
+    <div class="pick" id="pick" aria-label="Choose your interviewer">
+      <div class="pick-head">
+        <span class="eyebrow blue">Choose your interviewer</span>
+        <span class="pick-sub">Each has their own voice and style</span>
+      </div>
+      <div class="pick-main">
+        <img id="pickImg" src="/img/iv-haruto.webp" width="640" height="640" alt="Haruto, a live AI interviewer" fetchpriority="high">
+        <div class="pick-cap"><b id="pickName">Haruto</b><small id="pickRole">Technical interviewer</small></div>
+      </div>
+      <p class="pick-desc" id="pickDesc">A calm, methodical technical interviewer with a dry sense of humour.</p>
+      <div class="pick-bars" id="pickBars"></div>
+      <div class="pick-tiles" id="pickTiles" role="radiogroup" aria-label="Interviewers"></div>
+      <p class="pick-note">Pick someone, enter your role and name on the left, then press <b>Try it live</b>. They will greet you and ask your three questions out loud.</p>
     </div>
     <div class="then" aria-hidden="true">&darr; Then you get scored</div>
     <div class="stage score">
@@ -829,6 +859,64 @@
   var TRY_URL = 'https://candidate.theinterviewchair.com/try';
   var input = document.getElementById('topic');
 
+  // ── Interviewer picker. The list below is what shows instantly (and if the server can't be reached); the live list from the interviewers service then
+  //    replaces it, so a name an admin adds, edits or hides appears here without touching this page. The chosen id goes to /try as ?interviewer=<id>.
+  var IV_FALLBACK = [
+    { id: 'amina', displayName: 'Amina', role: 'hr', description: 'Your HR interviewer: professional, fair and encouraging.' },
+    { id: 'catherine', displayName: 'Catherine', role: 'hr', description: 'Head of Talent: warm and encouraging. She puts nervous candidates at ease and draws out their best answers.' },
+    { id: 'wayne', displayName: 'Wayne', role: 'technical', description: 'Your technical interviewer: direct, thorough, goes deep on detail.' },
+    { id: 'haruto', displayName: 'Haruto', role: 'technical', description: 'A calm, methodical technical interviewer with a dry sense of humour.' },
+    { id: 'malcom', displayName: 'Malcolm', role: 'technical', description: "Direct, composed and thorough. He won't rush you, and he won't let a vague answer slide." }
+  ];
+  var IV_IDS = { amina: 1, catherine: 1, wayne: 1, haruto: 1, malcom: 1 };   // the ones with a portrait file on this site (/img/iv-<id>.webp)
+  var IV_TRAITS = [['depth', 'Depth'], ['strictness', 'Strictness'], ['warmth', 'Warmth'], ['humour', 'Humour'], ['pace', 'Pace']];
+  var pickList = IV_FALLBACK, pickSel = 'haruto';
+  function ivPhoto(id) { return '/img/iv-' + id + '.webp'; }
+  function renderPick() {
+    var cur = pickList.filter(function (i) { return i.id === pickSel; })[0] || pickList[0];
+    if (!cur) return;
+    pickSel = cur.id;
+    var img = document.getElementById('pickImg');
+    img.src = ivPhoto(cur.id); img.alt = cur.displayName + ', a live AI interviewer';
+    document.getElementById('pickName').textContent = cur.displayName;
+    document.getElementById('pickRole').textContent = cur.role === 'hr' ? 'HR interviewer' : 'Technical interviewer';
+    document.getElementById('pickDesc').textContent = cur.description || '';
+    var bars = document.getElementById('pickBars'); bars.textContent = '';
+    if (cur.traits) IV_TRAITS.forEach(function (t) {
+      var row = document.createElement('div'); row.className = 'pick-bar';
+      var lab = document.createElement('span'); lab.textContent = t[1]; row.appendChild(lab);
+      var box = document.createElement('span'); box.className = 't';
+      for (var n = 1; n <= 5; n++) { var dot = document.createElement('i'); if (n <= cur.traits[t[0]]) dot.className = 'on'; box.appendChild(dot); }
+      row.appendChild(box); bars.appendChild(row);
+    });
+    var tiles = document.getElementById('pickTiles'); tiles.textContent = '';
+    tiles.style.gridTemplateColumns = 'repeat(' + Math.max(1, pickList.length) + ',minmax(0,1fr))';
+    pickList.forEach(function (i) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'pick-tile';
+      b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', i.id === pickSel ? 'true' : 'false'); b.setAttribute('aria-label', 'Choose ' + i.displayName);
+      var im = document.createElement('img'); im.src = ivPhoto(i.id); im.alt = ''; im.width = 96; im.height = 96; im.loading = 'lazy';
+      var nm = document.createElement('span'); nm.textContent = i.displayName;
+      b.appendChild(im); b.appendChild(nm);
+      b.addEventListener('click', function () {
+        pickSel = i.id; renderPick();
+        if (window.ticTrack) window.ticTrack('interviewer_picked', { id: i.id });
+      });
+      tiles.appendChild(b);
+    });
+  }
+  renderPick();
+  try {
+    fetch('https://api.explain.global/interviews/interviewers').then(function (r) { return r.ok ? r.json() : null; }).then(function (list) {
+      if (!Array.isArray(list)) return;
+      var ok = list.filter(function (i) { return (i.role === 'hr' || i.role === 'technical') && IV_IDS[i.id]; })
+                   .sort(function (a, b) { return (a.role === b.role ? 0 : a.role === 'hr' ? -1 : 1) || (a.sortOrder - b.sortOrder); });
+      if (ok.length < 2) return;
+      pickList = ok;
+      if (!ok.some(function (i) { return i.id === pickSel; })) { var d = ok.filter(function (i) { return i.defaultFor === 'technical'; })[0]; pickSel = (d || ok[0]).id; }
+      renderPick();
+    }).catch(function () {});
+  } catch (e) {}
+
   // ── Country / language / difficulty (same 32 languages and four levels as the full interview intake — mirror of
   //    src/frontend/src/data/interviewOptions.ts; the countries block is generated by scripts/generate-country-data.mjs, do not edit by hand) ──
   // Language box: English as regional versions (wording/spelling/local context follow the region; the voice is the same), every other language by name.
@@ -909,7 +997,7 @@
     err.textContent = '';
     // go=1 takes them straight into the interview room (no second form) with these values.
     var parts = selLang.value.split('-');   // "en-US" -> lang=en&country=US ; "fr" -> lang=fr
-    var extra = '&lang=' + encodeURIComponent(parts[0]) + (parts[1] ? '&country=' + encodeURIComponent(parts[1]) : '') + '&level=' + encodeURIComponent(selLevel.value);
+    var extra = '&lang=' + encodeURIComponent(parts[0]) + (parts[1] ? '&country=' + encodeURIComponent(parts[1]) : '') + '&level=' + encodeURIComponent(selLevel.value) + (pickSel ? '&interviewer=' + encodeURIComponent(pickSel) : '');
     window.location.href = TRY_URL + '?topic=' + encodeURIComponent(v) + '&name=' + encodeURIComponent(n.slice(0, 40)) + extra + '&go=1';
   });
   ['topic','tname'].forEach(function (id) { document.getElementById(id).addEventListener('input', function () { document.getElementById('tryErr').textContent = ''; }); });

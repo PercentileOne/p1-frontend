@@ -98,7 +98,7 @@ function wantedInterviewerFromUrl(): string | undefined {
   try { const v = new URLSearchParams(window.location.search).get('interviewer') ?? ''; return /^[a-z0-9][a-z0-9-]{1,31}$/.test(v) ? v : undefined; } catch { return undefined; }
 }
 // Amina's and Wayne's faces were tuned by hand for this page; anyone else is framed automatically by the avatar session.
-const isOriginalInterviewer = (id: string | undefined) => !id || id === 'amina' || id === 'wayne';
+const isOriginalInterviewer = (id: string | undefined) => !id || id === 'amina' || id === 'wayne' || id === 'haruto';
 
 // What the marketing homepage passes in the URL (?topic=&name=&lang=&level=&go=1; English regions arrive as lang=en&country=GB/US…). Read in ONE place so the first render and the auto-start
 // agree exactly. Every value is checked against its list here, so a hand-edited link can't put junk in the form (the server validates again).
