@@ -136,15 +136,8 @@ Requirements:
   const via_proxy = await tryFetch('/api/ai-proxy', {}).catch(e => { console.error('[LearnEngine] Proxy fetch threw', e); return null; });
   if (via_proxy) return via_proxy;
 
-  // 2. Direct OpenAI (dev fallback)
-  const apiKey = (import.meta as unknown as { env: Record<string, string> }).env?.VITE_OPENAI_API_KEY;
-  if (apiKey) {
-    const via_direct = await tryFetch('https://api.openai.com/v1/chat/completions', {
-      Authorization: `Bearer ${apiKey}`,
-    }).catch(e => { console.error('[LearnEngine] Direct fetch threw', e); return null; });
-    if (via_direct) return via_direct;
-  }
-
+  // No direct-to-OpenAI fallback, on purpose (CLAUDE.md section 0): a key set for a browser build would be visible to anyone in the public bundle.
+  // Every AI call goes through the server-side proxy above.
   throw new Error('Course generation failed');
 }
 

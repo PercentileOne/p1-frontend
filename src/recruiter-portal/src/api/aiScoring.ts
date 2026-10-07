@@ -1,5 +1,5 @@
 // Real AI scoring and coaching via GPT-4o.
-// Uses the same VITE_OPENAI_API_KEY already configured for Whisper STT.
+// AI calls go through the server-side proxy; no API key lives in the browser (CLAUDE.md section 0).
 
 import type { ScoreResponse, InterviewQuestion } from './explainApi';
 import { buildCVContext, type CVContext, type CVExperience, type JobSpecContext } from '../utils/contextBuilder';
