@@ -8,7 +8,7 @@ public class InterviewersTests
 {
     private static SaveInterviewerRequest Valid(Func<SaveInterviewerRequest, SaveInterviewerRequest>? change = null)
     {
-        var r = new SaveInterviewerRequest("Haruto", "technical", "17dcea17-a918-4963-ad1b-742bc0e82d10", "voice123", "A calm, methodical technical interviewer.", 4, 3, 3, 3, 3, true, 40, null);
+        var r = new SaveInterviewerRequest("Haruto", "technical", "17dcea17-a918-4963-ad1b-742bc0e82d10", "6fZce9LFNG3iEITDfqZZ", "A calm, methodical technical interviewer.", 4, 3, 3, 3, 3, true, 40, null);
         return change is null ? r : change(r);
     }
 
@@ -37,6 +37,16 @@ public class InterviewersTests
     [InlineData("<script>")]
     [InlineData("Name {with} braces")]
     public void Bad_names_are_refused(string name) => Assert.NotNull(Interviewers.Validate(Valid(r => r with { DisplayName = name })).Error);
+
+    [Theory]
+    [InlineData("michelle")]
+    [InlineData("tooshort")]
+    [InlineData("ptBd2v6mebIps3ZQEXD7ptBd2v6mebIps3ZQEXD7")] // pasted twice
+    [InlineData("has space in it 12345")]
+    public void A_voice_id_that_is_not_20_letters_and_numbers_is_refused(string voice) =>
+        Assert.NotNull(Interviewers.Validate(Valid(r => r with { VoiceId = voice })).Error);
+
+    [Fact] public void An_empty_voice_id_is_allowed() => Assert.Null(Interviewers.Validate(Valid(r => r with { VoiceId = "" })).Error);
 
     [Fact] public void An_unknown_role_is_refused() => Assert.NotNull(Interviewers.Validate(Valid(r => r with { Role = "ceo" })).Error);
 

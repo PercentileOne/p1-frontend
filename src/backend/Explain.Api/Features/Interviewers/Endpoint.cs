@@ -189,7 +189,7 @@ public static partial class Endpoint
         try
         {
             var voice = (await DefaultForAsync(cosmos, key, ct))?.voiceId;
-            return !string.IsNullOrWhiteSpace(voice) && SafeTokenPattern().IsMatch(voice) ? voice : null;
+            return !string.IsNullOrWhiteSpace(voice) && VoiceIdPattern().IsMatch(voice) ? voice : null; // an invalid stored value is ignored (the server settings are used instead)
         }
         catch (Exception) { return null; } // never let the registry stop an interview from speaking
     }
@@ -234,6 +234,8 @@ public static partial class Endpoint
 
     [GeneratedRegex("^[a-z0-9][a-z0-9-]{1,31}$")] private static partial Regex IdPattern();
     [GeneratedRegex("^[A-Za-z0-9-]{1,64}$")] private static partial Regex SafeTokenPattern();
+    // An ElevenLabs voice ID is always exactly 20 letters and digits (a typo such as a name in this box would silence the interviewer).
+    [GeneratedRegex("^[A-Za-z0-9]{20}$")] private static partial Regex VoiceIdPattern();
 
     public static bool IsValidId(string? id) => !string.IsNullOrEmpty(id) && IdPattern().IsMatch(id);
 
@@ -248,7 +250,7 @@ public static partial class Endpoint
         var avatar = (req.SpatiusAvatarId ?? "").Trim();
         if (!SafeTokenPattern().IsMatch(avatar)) return (null, "The Spatius avatar ID may only contain letters, numbers and hyphens.");
         var voice = string.IsNullOrWhiteSpace(req.VoiceId) ? null : req.VoiceId.Trim();
-        if (voice is not null && !SafeTokenPattern().IsMatch(voice)) return (null, "The voice ID may only contain letters, numbers and hyphens.");
+        if (voice is not null && !VoiceIdPattern().IsMatch(voice)) return (null, "An ElevenLabs voice ID is exactly 20 letters and numbers (for example 6fZce9LFNG3iEITDfqZZ). Copy it from ElevenLabs, or leave it empty.");
         var description = (req.Description ?? "").Trim();
         if (description.Length > 160 || description.Any(char.IsControl) || description.IndexOfAny(['<', '>']) >= 0) return (null, "Keep the description under 160 characters, without angle brackets.");
         static int Level(int? v) => Math.Clamp(v ?? 3, 1, 5);
