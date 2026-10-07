@@ -79,7 +79,7 @@ const SPATIUS_STAGE_WIDTH_PCT = 100;
 // Tuned by eye on /dev/spatius-test in a 16:9 box (the same shape as this stage) — Francis, 2026-09-30. Per interviewer, because each avatar's portrait is framed differently.
 const SPATIUS_DEFAULT_TRANSFORMS: Record<'hr' | 'technical', { x: number; y: number; scale: number }> = {
   hr: { x: 0.01, y: -0.1, scale: 1.32 },
-  technical: { x: 0.02, y: -0.32, scale: 1.45 },
+  technical: { x: 0.02, y: -0.26, scale: 1.13 }, // sat back about 22% (Francis, 2026-10-07: a little too close to the camera)
 };
 function spatiusTransformFromUrl(interviewer: 'hr' | 'technical'): { x: number; y: number; scale: number } | undefined {
   const SPATIUS_DEFAULT_TRANSFORM = SPATIUS_DEFAULT_TRANSFORMS[interviewer];

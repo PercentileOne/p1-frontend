@@ -104,7 +104,8 @@ public static class Endpoint
             {
                 subject = string.IsNullOrWhiteSpace(model.Subject) ? topic : model.Subject.Trim(),
                 interviewer,
-                interviewerName = chosen?.displayName ?? "Wayne",
+                // Whoever is in the seat (the visitor's choice, else the registry's default for it) — the demo's face and voice already follow the registry, so the name must too.
+                interviewerName = (chosen ?? await Explain.Api.Features.Interviewers.Endpoint.DefaultForAsync(cosmos, interviewer))?.displayName ?? "Wayne",
                 // The chosen interviewer in full (null for the default Wayne): the page uses their voice, room and photo.
                 chosenInterviewer = chosen is null ? null : Explain.Api.Features.Interviewers.Endpoint.ToPublicDto(chosen),
                 questions = model.Questions.Take(3).Select(q => q.Trim()).Where(q => q.Length > 0).ToList(),
