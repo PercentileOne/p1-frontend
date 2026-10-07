@@ -6,6 +6,8 @@
 // Features/Interviews/SpeakVoice/SpeakVoiceHandler.cs — so this file no longer needs to know
 // any ElevenLabs credentials or voice IDs at all, only which role is speaking.
 
+import { seatInterviewerId, applyNames } from '../lib/seatInterviewers';
+
 // Phonetic substitutions so TTS pronounces tech terms correctly
 const PHONETIC: [RegExp, string][] = [
   // Must run before generic rules that overlap
@@ -76,7 +78,8 @@ const PHONETIC: [RegExp, string][] = [
 ];
 
 export function sanitiseForTTS(text: string): string {
-  let out = text;
+  // The interviewers' original names are swapped for whoever the candidate chose (a no-op when the originals are in the seats), so every spoken line says the right name.
+  let out = applyNames(text);
   for (const [pattern, replacement] of PHONETIC) {
     out = out.replace(pattern, replacement);
   }
@@ -202,7 +205,7 @@ async function speakElevenLabs(
   const genRes = await fetch(`${API_BASE}/interviews/speak`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: sanitiseForTTS(text), role, language: ttsLanguage }),
+    body: JSON.stringify({ text: sanitiseForTTS(text), role, language: ttsLanguage, interviewerId: seatInterviewerId(role) }),
   });
   if (!genRes.ok) throw new Error(`Interview speak proxy error: ${genRes.status}`);
   const { audioUrl } = await genRes.json() as { audioUrl: string };

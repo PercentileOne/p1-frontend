@@ -30,6 +30,8 @@ import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
 import { useSpatiusSeat, deviceCanUseSpatiusInRoom, type SeatRole } from '../hooks/useSpatiusSeat';
 import { SpatiusSeatStage } from '../components/SpatiusSeatStage';
 import { fetchAvatarConfig, type AvatarConfig } from '../api/liveAvatarApi';
+import { fetchInterviewers, type PublicInterviewer } from '../api/interviewersApi';
+import { applyResolvedSeats, readInterviewerChoice, resolveSeatInterviewers } from '../lib/interviewerChoice';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -357,7 +359,22 @@ export default function InterviewRoomPage() {
   // began connecting, then the answer said Spatius, and the room ended up on the old faces).
   const [cfgReady] = useState(() => { let resolve!: () => void; const promise = new Promise<void>(r => { resolve = r; }); return { promise, resolve }; });
   const avatarEnabledRef = useRef(true);
-  useEffect(() => { fetchAvatarConfig().then(cfg => { avatarCfgRef.current = cfg; avatarEnabledRef.current = cfg.enabled; setAvatarCfg(cfg); setAvatarEnabled(cfg.enabled); cfgReady.resolve(); }); }, [cfgReady]);
+  // The interviewers the candidate chose at setup (or the defaults): their faces, rooms, voices and names. Known before anything is prepared, because the effect that prepares the
+  // interview waits for cfgReady, and the module that supplies names to the prompts and the spoken lines is filled in right here, before cfgReady resolves.
+  const [roster, setRoster] = useState<PublicInterviewer[]>([]);
+  const [chosen] = useState(() => readInterviewerChoice());
+  useEffect(() => {
+    Promise.all([fetchAvatarConfig(), fetchInterviewers()]).then(([cfg, list]) => {
+      applyResolvedSeats(list, chosen);
+      setRoster(list);
+      avatarCfgRef.current = cfg; avatarEnabledRef.current = cfg.enabled; setAvatarCfg(cfg); setAvatarEnabled(cfg.enabled);
+      cfgReady.resolve();
+    });
+  }, [cfgReady, chosen]);
+  const seatsIv = resolveSeatInterviewers(roster, chosen);
+  // The avatar each seat's Spatius face uses (read by the seat hooks when they connect).
+  const seatIdsRef = useRef<{ hr?: string; technical?: string; michelle?: string }>({});
+  seatIdsRef.current = { hr: seatsIv.hr?.avatarId, technical: seatsIv.technical?.avatarId, michelle: seatsIv.michelle?.avatarId };
   const markSpatiusFailed = useCallback((role: SeatRole) => setSpatiusFailed(f => (f[role] ? f : { ...f, [role]: true })), []);
   const seatOnSpatius = (role: SeatRole) =>
     avatarCfg?.provider === 'spatius' && deviceOkForSpatius && !(spatiusFailed[role] && avatarCfg.fallbackToHeygen);
@@ -383,9 +400,9 @@ export default function InterviewRoomPage() {
   const [liveMichelleAnalyser, setLiveMichelleAnalyser] = useState<AnalyserNode | null>(null);
   const heygenHr = useLiveAvatarSession('hr', setLiveHrAnalyser);
   const heygenTechnical = useLiveAvatarSession('technical', setLiveTechAnalyser);
-  const spatiusHr = useSpatiusSeat('hr', hrStageRef, avatarCfgRef, markSpatiusFailed, tilesVisibleRef);
-  const spatiusTechnical = useSpatiusSeat('technical', technicalStageRef, avatarCfgRef, markSpatiusFailed, tilesVisibleRef);
-  const spatiusMichelle = useSpatiusSeat('michelle', michelleStageRef, avatarCfgRef, markSpatiusFailed);
+  const spatiusHr = useSpatiusSeat('hr', hrStageRef, avatarCfgRef, markSpatiusFailed, tilesVisibleRef, seatIdsRef);
+  const spatiusTechnical = useSpatiusSeat('technical', technicalStageRef, avatarCfgRef, markSpatiusFailed, tilesVisibleRef, seatIdsRef);
+  const spatiusMichelle = useSpatiusSeat('michelle', michelleStageRef, avatarCfgRef, markSpatiusFailed, undefined, seatIdsRef);
   // From here on the room only talks to liveAvatarHr/Technical/Michelle; each is whichever provider's seat is active (both have the same shape; the
   // one not in use never connects, so it costs nothing).
   const liveAvatarHr = seatOnSpatius('hr') ? spatiusHr : heygenHr;
@@ -678,8 +695,9 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       }, 0);
     };
 
-    // Phase 1: Mike's script only — fast
-    generateMikeScriptOnly({
+    // Phase 1: Mike's script only — fast. It starts once the avatar settings and the chosen interviewers are known (at most 4 seconds' wait), so the briefing and everything
+    // after it name the right interviewers.
+    Promise.race([cfgReady.promise, new Promise<void>(r => setTimeout(r, 4000))]).then(() => generateMikeScriptOnly({
       jobTitle: ctx.jobTitle,
       companyName: ctx.company || undefined,
       jobSpecText: ctx.jobSpecText,
@@ -689,7 +707,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       preferredName: resolvedPreferredName,
       interviewRound: ctx.interviewRound,
       companyMock: Boolean(ctx.companyContext),
-    }).then(script => {
+    })).then(script => {
       clearTimeout(mikeTimeout);
       if (script) bgMikeScriptRef.current = script;
       logFlowEvent('MIKE_SCRIPT_READY', { chars: script?.length ?? 0 });
@@ -1441,14 +1459,14 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
                 />
                 {/* Spatius draws Amina (16:9 stage with her background; the tile crops a window from it). Always mounted so the avatar can attach the moment it connects. */}
-                <SpatiusSeatStage seat="hr" avatarId={avatarCfg?.spatius?.hr} backgroundUrl={avatarCfg?.backgrounds?.hr} stageRef={hrStageRef} visible={seatOnSpatius('hr') && liveAvatarHr.status !== 'failed'} live={liveAvatarHr.status === 'connected'} rendered={spatiusHr.rendered} />
+                <SpatiusSeatStage seat="hr" avatarId={seatsIv.hr?.avatarId ?? avatarCfg?.spatius?.hr} backgroundUrl={seatsIv.hr?.backgroundUrl ?? avatarCfg?.backgrounds?.hr} stageRef={hrStageRef} visible={seatOnSpatius('hr') && liveAvatarHr.status !== 'failed'} live={liveAvatarHr.status === 'connected'} rendered={spatiusHr.rendered} />
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
                     needed here too since this <video> sits on top of (and hides) that
                     component's own copy of it. */}
                 {(liveAvatarHr.status === 'connected' || seatOnSpatius('hr')) && (
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 18px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', userSelect: 'none', pointerEvents: 'none' }}>
                       <div>
-                        <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>{PROFILES.hr.name}</div>
+                        <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>{seatOnSpatius('hr') ? (seatsIv.hr?.displayName ?? PROFILES.hr.name) : PROFILES.hr.name}</div>
                         <div style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>{PROFILES.hr.title}</div>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
@@ -1487,14 +1505,14 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
                 />
                 {/* Spatius draws Wayne (16:9 stage with his background; the tile crops a window from it). Always mounted so the avatar can attach the moment it connects. */}
-                <SpatiusSeatStage seat="technical" avatarId={avatarCfg?.spatius?.technical} backgroundUrl={avatarCfg?.backgrounds?.technical} stageRef={technicalStageRef} visible={seatOnSpatius('technical') && liveAvatarTechnical.status !== 'failed'} live={liveAvatarTechnical.status === 'connected'} rendered={spatiusTechnical.rendered} />
+                <SpatiusSeatStage seat="technical" avatarId={seatsIv.technical?.avatarId ?? avatarCfg?.spatius?.technical} backgroundUrl={seatsIv.technical?.backgroundUrl ?? avatarCfg?.backgrounds?.technical} stageRef={technicalStageRef} visible={seatOnSpatius('technical') && liveAvatarTechnical.status !== 'failed'} live={liveAvatarTechnical.status === 'connected'} rendered={spatiusTechnical.rendered} />
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
                     needed here too since this <video> sits on top of (and hides) that
                     component's own copy of it. */}
                 {(liveAvatarTechnical.status === 'connected' || seatOnSpatius('technical')) && (
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 18px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', userSelect: 'none', pointerEvents: 'none' }}>
                       <div>
-                        <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>{PROFILES.technical.name}</div>
+                        <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>{seatOnSpatius('technical') ? (seatsIv.technical?.displayName ?? PROFILES.technical.name) : PROFILES.technical.name}</div>
                         <div style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>{specialistTitle ?? PROFILES.technical.title}</div>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
@@ -1564,7 +1582,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '11px 16px', borderBottom: '1px solid var(--border)' }}>
                     <span style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', userSelect: 'none' }}>Questions</span>
-                    <span style={{ fontSize: '13px', color: 'var(--text)', userSelect: 'none' }}>{questions.length} · Amina &amp; Wayne</span>
+                    <span style={{ fontSize: '13px', color: 'var(--text)', userSelect: 'none' }}>{questions.length} · {seatsIv.hr?.displayName ?? 'Amina'} &amp; {seatsIv.technical?.displayName ?? 'Wayne'}</span>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '11px 16px', borderBottom: '1px solid var(--border)' }}>
@@ -1675,7 +1693,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                 {/* Spatius draws Michelle (16:9 stage with her background; the tile crops a window from it). Always mounted so the avatar can attach the moment it connects. */}
-                <SpatiusSeatStage seat="michelle" avatarId={avatarCfg?.spatius?.michelle} backgroundUrl={avatarCfg?.backgrounds?.michelle} stageRef={michelleStageRef} visible={seatOnSpatius('michelle') && liveAvatarMichelle.status !== 'failed'} live={liveAvatarMichelle.status === 'connected'} rendered={spatiusMichelle.rendered} rounded={false} />
+                <SpatiusSeatStage seat="michelle" avatarId={seatsIv.michelle?.avatarId ?? avatarCfg?.spatius?.michelle} backgroundUrl={seatsIv.michelle?.backgroundUrl ?? avatarCfg?.backgrounds?.michelle} stageRef={michelleStageRef} visible={seatOnSpatius('michelle') && liveAvatarMichelle.status !== 'failed'} live={liveAvatarMichelle.status === 'connected'} rendered={spatiusMichelle.rendered} rounded={false} />
                     {/* Pulse ring while speaking */}
                     <motion.div
                       animate={{ scale: [1, 1.03, 1], opacity: [0.6, 0.15, 0.6] }}
@@ -1697,7 +1715,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                             transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
                             style={{ width: 28, height: 28, borderRadius: '50%', border: '2.5px solid rgba(79,142,247,0.25)', borderTopColor: 'var(--blue)' }}
                           />
-                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Bringing in Amina &amp; Wayne…</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Bringing in {seatsIv.hr?.displayName ?? 'Amina'} &amp; {seatsIv.technical?.displayName ?? 'Wayne'}…</div>
                         </motion.div>
                       )}
                     </AnimatePresence>

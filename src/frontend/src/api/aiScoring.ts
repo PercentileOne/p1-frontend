@@ -6,6 +6,7 @@ import type { CompanyContext } from './companiesApi';
 import { buildCVContext, type CVContext, type CVExperience, type JobSpecContext } from '../utils/contextBuilder';
 import type { CoachingMessage } from '../utils/coachingEngine';
 import { logFlowEvent } from './flowLogger';
+import { applyNames } from '../lib/seatInterviewers';
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 const MODEL = 'gpt-4o-mini';
@@ -487,7 +488,7 @@ Return JSON:
   console.log('Full user prompt:\n', userPrompt);
   console.groupEnd();
 
-  const result = await chatJSON<{ sarahIntro: string; jamesIntro: string }>(systemPrompt, userPrompt, 0.9);
+  const result = await chatJSON<{ sarahIntro: string; jamesIntro: string }>(applyNames(systemPrompt), applyNames(userPrompt), 0.9);
 
   console.group('[Explain AI] INTROS GENERATED');
   console.log('Sarah:', result.sarahIntro);
@@ -812,7 +813,8 @@ Return JSON: { "mikeScript": "..." }`;
   console.groupEnd();
 
   try {
-    const result = await chatJSON<{ mikeScript: string }>(systemPrompt, userPrompt, 0.8);
+    // The prompt names the interviewers by their original names; the candidate's chosen interviewers are swapped in, so the briefing names the right people.
+    const result = await chatJSON<{ mikeScript: string }>(applyNames(systemPrompt), applyNames(userPrompt), 0.8);
     console.group('[Explain AI] MIKE SCRIPT — OUTPUT');
     console.log(result.mikeScript);
     console.groupEnd();
@@ -1085,7 +1087,7 @@ Return ONLY this exact JSON — no markdown, no explanation, no code fences:
   };
   const hrQuestionsPromise: Promise<HrRawResult> = chatJSON<HrRawResult>(
     `You write short, open-ended HR interview questions for a global hiring platform. Return ONLY valid JSON — no markdown, no explanation, no code fences.${languageOverride}`,
-    hrUserPrompt,
+    applyNames(hrUserPrompt),
     0.9,
   ).catch(err => {
     console.warn('[Explain AI] HR questions call failed — falling back to the static character-question pair:', err);
@@ -1143,7 +1145,8 @@ Return ONLY this exact JSON — no markdown, no explanation, no code fences:
   // base totalQuestions) here specifically matters for the Gauntlet case — it's placed LAST in
   // the array by the prompt above, so capping/topping-up against the wrong (smaller) count would
   // silently chop it back off.
-  const result = await chatJSON<RawResult>(systemPrompt, userPrompt, 0.9);
+  // The chosen interviewers' names are swapped in for the original ones the prompt uses (see seatInterviewers.ts), so the scripts the model writes name the right people.
+  const result = await chatJSON<RawResult>(applyNames(systemPrompt), applyNames(userPrompt), 0.9);
   if (result.questions?.length > roleQuestionTarget) result.questions = result.questions.slice(0, roleQuestionTarget);
 
   // Logged unconditionally (not just on shortfall) so this doubles as the denominator —

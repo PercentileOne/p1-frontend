@@ -5,6 +5,7 @@
 import { sanitiseForTTS, getTTSLanguage } from './ttsApi';
 import { getInterviewTicket } from './entitlementsApi';
 import { useAuthStore } from '../auth/authStore';
+import { seatInterviewerId } from '../lib/seatInterviewers';
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 
@@ -103,7 +104,7 @@ export async function fetchAvatarAudioBase64(text: string, role: 'hr' | 'technic
   const genRes = await fetch(`${API_BASE}/interviews/avatar-audio`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: sanitiseForTTS(text), role, language: getTTSLanguage() }),
+    body: JSON.stringify({ text: sanitiseForTTS(text), role, language: getTTSLanguage(), interviewerId: seatInterviewerId(role) }),
   });
   if (!genRes.ok) throw new Error(`avatar-audio proxy error: ${genRes.status}`);
   const { audioUrl } = await genRes.json() as { audioUrl: string };
@@ -129,7 +130,7 @@ export async function fetchAvatarAudioPcm(text: string, role: 'hr' | 'technical'
   const genRes = await fetch(`${API_BASE}/interviews/avatar-audio`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: sanitiseForTTS(text), role, language: getTTSLanguage() }),
+    body: JSON.stringify({ text: sanitiseForTTS(text), role, language: getTTSLanguage(), interviewerId: seatInterviewerId(role) }),
   });
   if (!genRes.ok) throw new Error(`avatar-audio proxy error: ${genRes.status}`);
   const { audioUrl } = await genRes.json() as { audioUrl: string };

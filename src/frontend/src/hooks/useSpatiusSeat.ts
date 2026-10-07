@@ -50,6 +50,8 @@ export function useSpatiusSeat(
   onFailed: (role: SeatRole) => void,
   // While this is false the seat's tile is hidden or not yet its final shape, and connect() waits (see below). Omit for a seat that is on screen from the start.
   tileVisibleRef?: React.RefObject<boolean>,
+  // The avatar the candidate's chosen interviewer uses for this seat; when absent, the server's default for the seat (from the avatar settings).
+  seatIdsRef?: React.RefObject<Partial<Record<SeatRole, string>>>,
 ) {
   const inner = useSpatiusAvatarSession(stageRef);
   const aliveRef = useRef(true);
@@ -59,7 +61,7 @@ export function useSpatiusSeat(
   const connect = useCallback(async (): Promise<void> => {
     // The room fetches its avatar settings on mount; a very early connect waits briefly for them rather than failing.
     for (let i = 0; i < 30 && !cfgRef.current; i++) await new Promise(r => setTimeout(r, 100));
-    const id = cfgRef.current?.spatius?.[role];
+    const id = seatIdsRef?.current?.[role] ?? cfgRef.current?.spatius?.[role];
     if (!id) throw new Error(`no Spatius avatar for ${role}`);
     // Spatius sizes its drawing surface when the face first connects and keeps that size. The interview room asks for the seats while the interviewers' tiles are
     // still hidden (a different, much taller shape), which made the faces enormous once the tiles appeared. So wait here until the tile is on screen, then a moment for
@@ -81,7 +83,7 @@ export function useSpatiusSeat(
       onFailed(role);
       throw e;
     }
-  }, [cfgRef, role, tileVisibleRef, innerConnect, disconnect, onFailed]);
+  }, [cfgRef, role, tileVisibleRef, seatIdsRef, innerConnect, disconnect, onFailed]);
 
   // Safety net: if the face has not actually started speaking within 12 seconds (audio not arriving, the renderer stalled), give up so the room speaks the line in
   // the ordinary voice instead of the interview sitting silent (the room treats a failure before speech starts as "use plain voice").

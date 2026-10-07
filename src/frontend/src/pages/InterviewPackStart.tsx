@@ -17,6 +17,7 @@ import { submitConfidenceSurvey, submitSurveyResponse } from '../api/confidenceS
 import { pickSurveyQuestion, markSurveyAnswered } from '../lib/surveyQuestions';
 import { useAuthStore } from '../auth/authStore';
 import { LANGUAGES, DIFFICULTIES } from '../data/interviewOptions';
+import { InterviewerPicker } from '../components/InterviewerPicker';
 
 // Which stage of the candidate's REAL interview process this practice session represents —
 // most candidates now face 2+ rounds (Francis: knows someone who had 5-6 for a Barclays VP
@@ -1031,6 +1032,9 @@ export default function InterviewPackStart() {
             </>
           )}
         </div>
+
+        {/* Who interviews you (Francis, 2026-10-07): chosen here, before the room opens, because the room prepares the whole interview as soon as it opens. */}
+        {!companyMode && <InterviewerPicker />}
 
         {/* Recording consent — record widget toggle */}
         <button
