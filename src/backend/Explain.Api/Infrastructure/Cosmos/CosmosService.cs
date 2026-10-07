@@ -38,6 +38,10 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("platformSettings", "/pk"));
 
+        // The interviewers registry (2026-10-07): a handful of documents (every interviewer a candidate can meet), one partition like platformSettings.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("interviewers", "/pk"));
+
         // Per-user talk history — every scored session; partition key = /userId for efficient user queries.
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("lessonHistory", "/userId"));

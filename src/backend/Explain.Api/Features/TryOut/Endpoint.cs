@@ -82,7 +82,9 @@ public static class Endpoint
             string? spatiusAvatarId = null;
             if (avatarAvailable && providerSetting.provider == "spatius" && Explain.Api.Features.Spatius.SpatiusClient.IsConfigured(config))
             {
-                var id = interviewer == "technical" ? providerSetting.spatiusAvatarTechnical : providerSetting.spatiusAvatarHr;
+                // Who is in the seat: the interviewers registry (Admin > Interviewers) first, the Admin > Live Avatar ID as the fallback.
+                var seats = await Explain.Api.Features.Interviewers.Endpoint.ResolveSeatsAsync(cosmos, providerSetting);
+                var id = interviewer == "technical" ? seats.Technical : seats.Hr;
                 if (!string.IsNullOrWhiteSpace(id) && Random.Shared.Next(100) < providerSetting.spatiusPercent)
                 {
                     avatarProvider = "spatius";

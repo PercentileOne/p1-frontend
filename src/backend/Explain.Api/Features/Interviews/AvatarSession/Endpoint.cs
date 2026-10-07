@@ -38,10 +38,12 @@ public static class Endpoint
             var setting = await Explain.Api.Features.PlatformSettings.Endpoint.GetLiveAvatarOrDefaultAsync(cosmos);
             var provider = await Explain.Api.Features.PlatformSettings.Endpoint.GetAvatarProviderOrDefaultAsync(cosmos);
 
+            // Who is in each seat: the interviewers registry (Admin > Interviewers) first, the three IDs in Admin > Live Avatar as the fallback.
+            var seats = await Explain.Api.Features.Interviewers.Endpoint.ResolveSeatsAsync(cosmos, provider);
             var ready = SpatiusClient.IsConfigured(config)
-                && !string.IsNullOrWhiteSpace(provider.spatiusAvatarHr)
-                && !string.IsNullOrWhiteSpace(provider.spatiusAvatarTechnical)
-                && !string.IsNullOrWhiteSpace(provider.spatiusAvatarMichelle);
+                && !string.IsNullOrWhiteSpace(seats.Hr)
+                && !string.IsNullOrWhiteSpace(seats.Technical)
+                && !string.IsNullOrWhiteSpace(seats.Michelle);
 
             var useSpatius = ready && Random.Shared.Next(100) < Math.Clamp(provider.spatiusFullPercent, 0, 100);
             var force = ctx.Request.Query["force"].ToString().ToLowerInvariant();
@@ -58,7 +60,11 @@ public static class Endpoint
                 provider = useSpatius ? "spatius" : "heygen",
                 fallbackToHeygen = provider.fallbackToHeygen,
                 spatius = useSpatius
-                    ? new { hr = provider.spatiusAvatarHr, technical = provider.spatiusAvatarTechnical, michelle = provider.spatiusAvatarMichelle }
+                    ? new { hr = seats.Hr, technical = seats.Technical, michelle = seats.Michelle }
+                    : null,
+                // Uploaded background pictures for the three seats (relative API paths; null = use the files shipped with the page).
+                backgrounds = useSpatius
+                    ? new { hr = seats.HrBackground, technical = seats.TechnicalBackground, michelle = seats.MichelleBackground }
                     : null,
             });
         }).WithName("InterviewAvatarConfig").WithTags("Interviews").AllowAnonymous();
@@ -73,7 +79,8 @@ public static class Endpoint
                 return Results.Json(new { error = "An interview needs to be started first." }, statusCode: 403);
 
             var provider = await Explain.Api.Features.PlatformSettings.Endpoint.GetAvatarProviderOrDefaultAsync(cosmos);
-            if (string.IsNullOrWhiteSpace(provider.spatiusAvatarHr)) return Results.Json(new { error = "Not available." }, statusCode: 403);
+            var seats = await Explain.Api.Features.Interviewers.Endpoint.ResolveSeatsAsync(cosmos, provider);
+            if (string.IsNullOrWhiteSpace(seats.Hr)) return Results.Json(new { error = "Not available." }, statusCode: 403);
 
             var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             var unlimited = await Explain.Api.Features.TryOut.Endpoint.IsUnlimitedAsync(ctx.User, ip, db, config);
