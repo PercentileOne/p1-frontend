@@ -40,3 +40,33 @@ export function applyNames(text: string): string {
   if (hr) out = out.replace(/\bAmina\b/g, hr);
   return out;
 }
+
+// ── Personality → writing guidance ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+type Traits = SeatInterviewer['traits'];
+
+function levelWords(level: number, low: string, mid: string, high: string): string { return level <= 2 ? low : level >= 4 ? high : mid; }
+
+/** One interviewer's five personality levels (1 to 5) as plain instructions the model can follow when writing their spoken lines. */
+export function describePersona(name: string, t: Traits): string {
+  const parts = [
+    levelWords(t.depth, 'keeps the questions broad and approachable', 'asks questions of balanced depth', 'goes deep: specific, detailed questions and sharp follow-up angles'),
+    levelWords(t.strictness, 'is relaxed and flexible, reacting gently', 'is fair and even-handed', 'is exacting and direct, and does not let a vague answer pass'),
+    levelWords(t.warmth, 'is reserved and businesslike, not chatty', 'is polite and professional', 'is warm, encouraging and reassuring'),
+    levelWords(t.humour, 'is serious, with no jokes', 'is occasionally light', 'uses light touches of humour'),
+    levelWords(t.pace, 'is patient and unhurried, with gentle phrasing', 'keeps a steady pace', 'is brisk and concise, getting straight to the point'),
+  ];
+  return `${name} ${parts.join('; ')}.`;
+}
+
+/**
+ * A block for the prompts that write the interviewers' spoken lines and questions: how each of the two interviewers in the seats speaks. It changes the manner only: never the
+ * fairness, accuracy or difficulty of the interview. Empty when no interviewers have been set (the prompts then behave exactly as before).
+ */
+export function personaGuidance(): string {
+  const lines: string[] = [];
+  if (current.hr) lines.push(`- HR interviewer. ${describePersona(current.hr.name, current.hr.traits)}`);
+  if (current.technical) lines.push(`- Technical interviewer. ${describePersona(current.technical.name, current.technical.traits)}`);
+  if (lines.length === 0) return '';
+  return `\n\nINTERVIEWER PERSONALITIES (let these shape how each interviewer's spoken lines and questions are worded; they change the manner only, never the fairness, accuracy or difficulty of the interview, and never mention these settings):\n${lines.join('\n')}`;
+}

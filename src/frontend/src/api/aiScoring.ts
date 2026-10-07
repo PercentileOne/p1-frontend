@@ -6,7 +6,7 @@ import type { CompanyContext } from './companiesApi';
 import { buildCVContext, type CVContext, type CVExperience, type JobSpecContext } from '../utils/contextBuilder';
 import type { CoachingMessage } from '../utils/coachingEngine';
 import { logFlowEvent } from './flowLogger';
-import { applyNames } from '../lib/seatInterviewers';
+import { applyNames, personaGuidance } from '../lib/seatInterviewers';
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 const MODEL = 'gpt-4o-mini';
@@ -488,7 +488,7 @@ Return JSON:
   console.log('Full user prompt:\n', userPrompt);
   console.groupEnd();
 
-  const result = await chatJSON<{ sarahIntro: string; jamesIntro: string }>(applyNames(systemPrompt), applyNames(userPrompt), 0.9);
+  const result = await chatJSON<{ sarahIntro: string; jamesIntro: string }>(applyNames(systemPrompt) + personaGuidance(), applyNames(userPrompt), 0.9);
 
   console.group('[Explain AI] INTROS GENERATED');
   console.log('Sarah:', result.sarahIntro);
@@ -1086,7 +1086,7 @@ Return ONLY this exact JSON — no markdown, no explanation, no code fences:
     companyQuestion?: { questionText: string; modelAnswer?: string };
   };
   const hrQuestionsPromise: Promise<HrRawResult> = chatJSON<HrRawResult>(
-    `You write short, open-ended HR interview questions for a global hiring platform. Return ONLY valid JSON — no markdown, no explanation, no code fences.${languageOverride}`,
+    `You write short, open-ended HR interview questions for a global hiring platform. Return ONLY valid JSON — no markdown, no explanation, no code fences.${languageOverride}${personaGuidance()}`,
     applyNames(hrUserPrompt),
     0.9,
   ).catch(err => {
@@ -1146,7 +1146,7 @@ Return ONLY this exact JSON — no markdown, no explanation, no code fences:
   // the array by the prompt above, so capping/topping-up against the wrong (smaller) count would
   // silently chop it back off.
   // The chosen interviewers' names are swapped in for the original ones the prompt uses (see seatInterviewers.ts), so the scripts the model writes name the right people.
-  const result = await chatJSON<RawResult>(applyNames(systemPrompt), applyNames(userPrompt), 0.9);
+  const result = await chatJSON<RawResult>(applyNames(systemPrompt) + personaGuidance(), applyNames(userPrompt), 0.9);
   if (result.questions?.length > roleQuestionTarget) result.questions = result.questions.slice(0, roleQuestionTarget);
 
   // Logged unconditionally (not just on shortfall) so this doubles as the denominator —
