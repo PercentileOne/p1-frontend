@@ -255,10 +255,10 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   }, [release, stageRef]);
 
   // Resolves when the avatar has finished saying the line (or a ceiling based on the clip's length, so a page can never hang).
-  const speak = useCallback(async (text: string, role: 'hr' | 'technical' | 'michelle', onStarted?: () => void): Promise<void> => {
+  const speak = useCallback(async (text: string, role: 'hr' | 'technical' | 'michelle', onStarted?: () => void, interviewerId?: string): Promise<void> => {
     const ctrl = ctrlRef.current;
     if (!ctrl || !serviceOpenRef.current) throw new Error('spatius avatar not connected');
-    const pcm = await fetchAvatarAudioPcm(text, role);
+    const pcm = await fetchAvatarAudioPcm(text, role, interviewerId);
     const seconds = pcm.byteLength / (24000 * 2);
     sawPlayingRef.current = false;
     startedRef.current = onStarted ?? null;

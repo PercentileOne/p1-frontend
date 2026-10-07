@@ -77,9 +77,9 @@ const PHONETIC: [RegExp, string][] = [
   [/\bi\.e\./gi, 'that is'],
 ];
 
-export function sanitiseForTTS(text: string): string {
+export function sanitiseForTTS(text: string, swapNames = true): string {
   // The interviewers' original names are swapped for whoever the candidate chose (a no-op when the originals are in the seats), so every spoken line says the right name.
-  let out = applyNames(text);
+  let out = swapNames ? applyNames(text) : text;
   for (const [pattern, replacement] of PHONETIC) {
     out = out.replace(pattern, replacement);
   }

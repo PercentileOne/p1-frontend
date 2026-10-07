@@ -126,11 +126,12 @@ export async function fetchAvatarAudioBase64(text: string, role: 'hr' | 'technic
 // Raw (un-boosted) PCM16 mono 24 kHz clip — same backend route as above, returned as bytes instead of base64.
 // Added 2026-09-29 for the Spatius evaluation page (/dev/spatius-test); deliberately a separate function so the
 // production HeyGen path above stays exactly as proven.
-export async function fetchAvatarAudioPcm(text: string, role: 'hr' | 'technical' | 'michelle'): Promise<Uint8Array> {
+// interviewerId: speak in that interviewer's own voice and pace instead of whoever is in the seat (the picker's "Say hi" preview); the text is then spoken as written.
+export async function fetchAvatarAudioPcm(text: string, role: 'hr' | 'technical' | 'michelle', interviewerId?: string): Promise<Uint8Array> {
   const genRes = await fetch(`${API_BASE}/interviews/avatar-audio`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: sanitiseForTTS(text), role, language: getTTSLanguage(), interviewerId: seatInterviewerId(role) }),
+    body: JSON.stringify({ text: sanitiseForTTS(text, !interviewerId), role, language: getTTSLanguage(), interviewerId: interviewerId ?? seatInterviewerId(role) }),
   });
   if (!genRes.ok) throw new Error(`avatar-audio proxy error: ${genRes.status}`);
   const { audioUrl } = await genRes.json() as { audioUrl: string };
