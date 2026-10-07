@@ -68,6 +68,8 @@ type Phase = 'topic' | 'starting' | 'asking' | 'answering' | 'coaching' | 'scori
 const withTimeout = <T,>(p: Promise<T>, ms: number, label: string): Promise<T> =>
   Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`${label} timed out after ${Math.round(ms / 1000)}s`)), ms))]);
 const SPATIUS_CONNECT_LIMIT_MS = 15000;
+// Said before the first question in an English demo (other languages get the server's translation, in TryOutStart.privacy).
+const PRIVACY_LINE_EN = "Quick note before we start: your practice interview is private. It is never shown to recruiters or employers, and only you can choose to share your results.";
 const HEYGEN_CONNECT_LIMIT_MS = 25000;
 // Spatius framing (Francis, 2026-09-30). The box the avatar is drawn into is the FULL stage width — narrowing it just cropped his shoulders with hard
 // vertical edges. Zoom and position come from the SDK's own avatarTransform instead (scale 1 = default; smaller = further back). Defaults are set below once
@@ -346,11 +348,15 @@ export default function TryItLivePage() {
     // line is in one language; it is only used if the placeholders fill in cleanly, otherwise the English greeting stands.
     const localIntro = s.intro ? s.intro.replace('{name}', firstName).replace('{interviewer}', s.interviewerName) : null;
     const opening = localIntro && !/[{}]/.test(localIntro) ? localIntro : `${hello} Let's start your ${s.subject} interview.`;
+    // Privacy reassurance before the first question (Francis, 2026-10-07: "a chance to gain confidence in the users"). Two short sentences, so the first question still
+    // arrives quickly. English uses the page's own line; another language uses the server's translation of it, and if that is missing, says nothing rather than
+    // switching language.
+    const privacy = s.intro || s.privacy ? (s.privacy ?? '') : PRIVACY_LINE_EN;
     const line = i === 0
       // Kept short on purpose (2026-09-29): visitors arriving from a LinkedIn profile give it ~10 seconds, and five of five who got the
       // live avatar heard question one and then left. The how-to-answer instructions now live on screen in the "Your turn" panel instead
       // of being read aloud.
-      ? `${opening} ${q}`
+      ? `${opening} ${privacy} ${q}`.replace(/\s+/g, ' ')
       : q;
     await speakLine(line, s, viaAvatar);
     setPhase('answering');

@@ -176,6 +176,19 @@ public class TryOutTests
 
     [Fact] public void All_lines_bad_means_no_transitions_at_all() => Assert.Null(TryOut.CleanTransitions(new TryOut.TransitionLines("{x}", "", null), "de"));
 
+    [Fact] public void English_never_uses_a_model_privacy_line() => Assert.Null(TryOut.CleanPrivacy("Din övning är privat och visas aldrig för rekryterare.", "en"));
+
+    [Fact] public void A_plain_translated_privacy_line_is_kept_and_trimmed() =>
+        Assert.Equal("Din övning är privat. Den visas aldrig för rekryterare eller arbetsgivare.", TryOut.CleanPrivacy("  Din övning är privat. Den visas aldrig för rekryterare eller arbetsgivare. ", "sv"));
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("kort")]
+    [InlineData("Din övning är privat {name} och visas aldrig för rekryterare eller arbetsgivare.")]
+    [InlineData("Din övning är privat, se https://example.com för mer information om detta.")]
+    [InlineData("Din övning är <b>privat</b> och visas aldrig för rekryterare eller arbetsgivare.")]
+    public void Bad_privacy_lines_are_dropped(string? raw) => Assert.Null(TryOut.CleanPrivacy(raw, "sv"));
+
     [Fact] public void English_never_uses_a_model_intro() => Assert.Null(TryOut.CleanIntro("Hi {name}, I'm {interviewer}.", "en"));
 
     [Fact] public void Overlong_intros_are_dropped() => Assert.Null(TryOut.CleanIntro("{name} {interviewer} " + new string('x', 400), "fr"));

@@ -774,7 +774,7 @@ Sound natural and personal — like you genuinely know them.
 No bullet points, no lists. Spoken prose only.
 Return ONLY valid JSON.`;
 
-  const userPrompt = `Write Michelle's spoken briefing (70–100 words) for this candidate.${langNote}
+  const userPrompt = `Write Michelle's spoken briefing (95–130 words) for this candidate.${langNote}
 
 ${nameInstruction}
 ${cvSnippet ? `\nCANDIDATE CV (extract first name from here):\n${cvSnippet}\n` : ''}
@@ -796,7 +796,8 @@ composed fresh, entirely in the language specified above):
 5. Difficulty framing (use the exact framing given above, naturally worded).
 6. Tell them they'll be meeting Amina from HR and Wayne, who'll be leading the role-specific questions (keep the names "Michelle", "Amina", and "Wayne" exactly as given — proper nouns, never translated or transliterated).
 7. One specific tip for this role.
-8. A warm closing line wishing them good luck.
+8. A calm, reassuring privacy note (two short sentences, in your own natural words): their practice interview is private and confidential, it is never shown to recruiters or employers, and only they can choose to share their results, with friends, mentors, recruiters or anyone they trust. Say this clearly; do not skip it.
+9. A warm closing line wishing them good luck.
 
 Return JSON: { "mikeScript": "..." }`;
 
