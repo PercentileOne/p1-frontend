@@ -129,4 +129,20 @@ public class VisitorFunnelTests
         Assert.Equal(2, Step(f, "people"));   // neither says bot: not thrown away
         Assert.Equal(1, Step(f, "human"));
     }
+
+    [Fact]
+    public void A_cloud_visit_that_loads_several_pages_without_any_interaction_is_a_robot()
+    {
+        const string chrome = "Mozilla/5.0 (X11; Linux x86_64) Chrome/130.0 Safari/537.36";
+        var events = new List<Admin.FunnelEvent>();
+        foreach (var page in new[] { "/", "/contact", "/about", "/imprint", "/impressum" })
+            events.Add(new("scan", "page_view", page, M(("src", "direct"), ("dev", "desktop")), "3.120.1.2", null, chrome));
+        // A person on the same sort of network who actually clicked is still counted.
+        events.Add(new("person", "page_view", "/", M(("src", "linkedin"), ("dev", "desktop")), "3.120.1.2", null, chrome));
+        events.Add(new("person", "interaction", "/", M(("src", "linkedin"), ("dev", "desktop")), "3.120.1.2", null, chrome));
+        var f = JsonSerializer.SerializeToElement(Admin.BuildFunnel(7, events, [], _ => new Explain.Api.Infrastructure.Geo.IpOwner(16509, "Amazon", true)));
+        Assert.Equal(2, Step(f, "visits"));
+        Assert.Equal(1, Step(f, "people"));
+        Assert.Equal(1, Step(f, "human"));
+    }
 }

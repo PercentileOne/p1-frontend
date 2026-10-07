@@ -362,7 +362,12 @@ public static class Endpoint
                 // treated as a robot (the earlier rule). A visit from a company, university or VPN network that looks like a cloud server is otherwise NOT assumed to be a robot: it
                 // counts as a person unless it says otherwise, so a recruiter at work is not thrown away.
                 var agents = evs.Select(e => e.userAgent).ToList();
-                var sureRobot = agents.Any(IsBotAgent) || (agents.Count > 0 && agents.All(string.IsNullOrWhiteSpace) && machine && !interacted);
+                // Also a sure robot (2026-10-07, seen live: a Frankfurt cloud address fetched /, /contact, /about, /imprint and /impressum in 20 seconds looking for contact
+                // details): a cloud-network visit that loaded three or more different pages and never clicked, scrolled or moved a mouse.
+                var distinctPages = evs.Where(e => e.eventType == "page_view").Select(e => e.page).Where(p => !string.IsNullOrEmpty(p)).Distinct().Count();
+                var sureRobot = agents.Any(IsBotAgent)
+                    || (agents.Count > 0 && agents.All(string.IsNullOrWhiteSpace) && machine && !interacted)
+                    || (machine && !interacted && distinctPages >= 3);
                 return new
                 {
                     Machine = machine,
