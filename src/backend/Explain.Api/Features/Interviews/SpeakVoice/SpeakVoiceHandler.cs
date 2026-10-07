@@ -51,8 +51,8 @@ public class SpeakVoiceHandler(
         // already configured. Set ElevenLabs:VoiceMichelle in Azure once a dedicated voice is
         // picked for her.
         // A voice chosen on the Interviewers page for whoever sits in this seat wins; the server settings below are the fallback.
-        var registryVoice = await Explain.Api.Features.Interviewers.Endpoint.VoiceForSeatAsync(cosmos, cmd.Role, ct);
-        var voiceId = registryVoice ?? cmd.Role switch
+        var seatVoice = await Explain.Api.Features.Interviewers.Endpoint.ResolveSeatVoiceAsync(cosmos, cmd.Role, cmd.InterviewerId, ct);
+        var voiceId = seatVoice.VoiceId ?? cmd.Role switch
         {
             "hr"        => config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],
             "michelle"  => config["ElevenLabs:VoiceMichelle"] ?? config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],
@@ -65,7 +65,9 @@ public class SpeakVoiceHandler(
 
         // Same pace fix and reasoning as AvatarAudioHandler — see its own comment. Scoped to
         // hr/technical only; Mike/MCQ voices weren't reported as slow.
-        var speed = cmd.Role is "hr" or "technical" ? 1.08 : 1.0;
+        var speed = cmd.Role is "hr" or "technical"
+            ? Math.Min(1.2, Math.Round(1.08 * Explain.Api.Features.Interviewers.Endpoint.PaceFactor(seatVoice.Pace), 2)) // pace 3 (or none) = 1.08, as before
+            : 1.0;
 
         // Cache key folds speed in when non-default — see AvatarAudioHandler's identical
         // comment for why (a pre-existing 1.0-pace cached clip would otherwise keep being

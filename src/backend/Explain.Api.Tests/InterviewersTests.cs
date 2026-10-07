@@ -48,6 +48,16 @@ public class InterviewersTests
 
     [Fact] public void An_empty_voice_id_is_allowed() => Assert.Null(Interviewers.Validate(Valid(r => r with { VoiceId = "" })).Error);
 
+    [Theory]
+    [InlineData(null, 1.0)]
+    [InlineData(3, 1.0)]
+    [InlineData(1, 0.92)]
+    [InlineData(5, 1.08)]
+    [InlineData(99, 1.08)]   // clamped to the top
+    [InlineData(-4, 0.92)]   // clamped to the bottom
+    public void Pace_changes_the_speaking_speed_by_four_per_cent_a_step(int? pace, double expected) =>
+        Assert.Equal(expected, Interviewers.PaceFactor(pace), 3);
+
     [Fact] public void An_unknown_role_is_refused() => Assert.NotNull(Interviewers.Validate(Valid(r => r with { Role = "ceo" })).Error);
 
     [Theory]

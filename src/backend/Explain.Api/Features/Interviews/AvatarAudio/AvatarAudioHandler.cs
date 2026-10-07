@@ -40,8 +40,8 @@ public class AvatarAudioHandler(
         // Identical voice-selection logic to SpeakVoiceHandler — same personas, same voices,
         // kept in sync deliberately (copy, not shared helper, per this app's existing precedent).
         // A voice chosen on the Interviewers page for whoever sits in this seat wins; the server settings below are the fallback.
-        var registryVoice = await Explain.Api.Features.Interviewers.Endpoint.VoiceForSeatAsync(cosmos, cmd.Role, ct);
-        var voiceId = registryVoice ?? cmd.Role switch
+        var seatVoice = await Explain.Api.Features.Interviewers.Endpoint.ResolveSeatVoiceAsync(cosmos, cmd.Role, cmd.InterviewerId, ct);
+        var voiceId = seatVoice.VoiceId ?? cmd.Role switch
         {
             "hr"        => config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],
             "michelle"  => config["ElevenLabs:VoiceMichelle"] ?? config["ElevenLabs:VoiceInterviewHr"] ?? config["ElevenLabs:VoiceHr"],
@@ -60,7 +60,9 @@ public class AvatarAudioHandler(
         // slow, so it stays untouched. Michelle joined this list 2026-09-17 when she became a
         // real LiveAvatar seat (replacing the old static-photo "Mike") — same underlying
         // playback quirk applies to her exactly as it does to Amina/Wayne.
-        var speed = cmd.Role is "hr" or "technical" or "michelle" ? 1.08 : 1.0;
+        var speed = cmd.Role is "hr" or "technical" or "michelle"
+            ? Math.Min(1.2, Math.Round(1.08 * Explain.Api.Features.Interviewers.Endpoint.PaceFactor(seatVoice.Pace), 2)) // pace 3 (or none) = 1.08, as before
+            : 1.0;
 
         // Cache key folds speed in when non-default — otherwise a pre-existing cached clip
         // generated at the old 1.0 pace would keep being served forever after this change,

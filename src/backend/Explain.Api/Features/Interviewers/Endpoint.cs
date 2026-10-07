@@ -178,6 +178,31 @@ public static partial class Endpoint
             hr?.backgroundUrl, tech?.backgroundUrl, michelle?.backgroundUrl);
     }
 
+    /// <summary>A resolved voice for a seat: the ElevenLabs voice (null = use the server setting) and the interviewer's pace level (1 to 5, null = no preference).</summary>
+    public record SeatVoice(string? VoiceId, int? Pace);
+
+    /// <summary>The speaking-speed multiplier for a pace level (3 = no change; each step is 4 per cent): patient interviewers speak a little slower, brisk ones a little faster.</summary>
+    public static double PaceFactor(int? pace) => pace is null ? 1.0 : 1.0 + (Math.Clamp(pace.Value, 1, 5) - 3) * 0.04;
+
+    /// <summary>
+    /// The voice and pace for a room seat. When the caller names an interviewer (the candidate's choice at intake) and that interviewer is active and fits the seat's role, their
+    /// voice and pace are used; otherwise the seat's default interviewer's; otherwise (null voice) the caller falls back to the server settings. Never throws.
+    /// </summary>
+    public static async Task<SeatVoice> ResolveSeatVoiceAsync(CosmosService cosmos, string? seat, string? interviewerId, CancellationToken ct = default)
+    {
+        var key = seat?.ToLowerInvariant() switch { "hr" => "hr", "technical" => "technical", "michelle" or "briefing" => "briefing", _ => null };
+        if (key is null) return new SeatVoice(null, null);
+        try
+        {
+            var active = await ListAsync(cosmos, activeOnly: true, ct);
+            Interviewer? chosen = IsValidId(interviewerId) ? active.FirstOrDefault(i => i.id == interviewerId && string.Equals(i.role, key, StringComparison.OrdinalIgnoreCase)) : null;
+            var who = chosen ?? active.FirstOrDefault(i => string.Equals(i.defaultFor, key, StringComparison.OrdinalIgnoreCase));
+            if (who is null) return new SeatVoice(null, null);
+            return new SeatVoice(VoiceIdPattern().IsMatch(who.voiceId ?? "") ? who.voiceId : null, who.pace);
+        }
+        catch (Exception) { return new SeatVoice(null, null); } // never let the registry stop an interview from speaking
+    }
+
     /// <summary>
     /// The ElevenLabs voice of whoever is the default interviewer for a room seat ("hr", "technical" or "michelle"), when one is set in the registry; otherwise null and the caller
     /// uses the voice from the server settings as before. This is how a voice chosen on the Interviewers page is heard in the room.
@@ -289,7 +314,7 @@ public static partial class Endpoint
     {
         i.id, i.displayName, i.role, avatarId = i.spatiusAvatarId, i.description,
         traits = new { depth = i.depth, strictness = i.strictness, warmth = i.warmth, humour = i.humour, pace = i.pace },
-        i.sortOrder, i.backgroundUrl,
+        i.sortOrder, i.backgroundUrl, i.defaultFor,
     };
 }
 
