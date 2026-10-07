@@ -637,7 +637,8 @@ export default function TryItLivePage() {
                 onError={e => { const old = start.interviewer === 'technical' ? '/images/wayne-static-photo.png' : '/images/amina-static-image-1.png'; if (!e.currentTarget.src.endsWith(old)) e.currentTarget.src = old; }}
                 alt={`${start.interviewerName}, your interviewer`}
                 width={520} height={288}
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                // Cropped from the top: the portraits are taller than this 16:9 box, and a centred crop cut off the top of Malcolm's head (Francis, 2026-10-08).
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 2%' }}
               />
               <div style={{ position: 'absolute', inset: 0, borderRadius: 18, boxShadow: phase === 'asking' ? `inset 0 0 0 3px ${GREEN}88` : 'inset 0 0 0 0 transparent', transition: 'box-shadow 0.3s', pointerEvents: 'none' }} />
             </>
