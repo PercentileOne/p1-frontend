@@ -32,6 +32,7 @@ import { SpatiusSeatStage } from '../components/SpatiusSeatStage';
 import { fetchAvatarConfig, type AvatarConfig } from '../api/liveAvatarApi';
 import { fetchInterviewers, type PublicInterviewer } from '../api/interviewersApi';
 import { applyResolvedSeats, readInterviewerChoice, resolveSeatInterviewers } from '../lib/interviewerChoice';
+import { seatName } from '../lib/seatInterviewers';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -823,7 +824,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     if (recordingStartTimeRef.current > 0) {
       chapterMarkersRef.current.push({
         questionIndex: -3,
-        questionText: "Amina & Wayne's Goodbye",
+        questionText: `${seatName('hr')} & ${seatName('technical')}'s Goodbye`,
         competency: '',
         offsetSeconds: Math.round((Date.now() - recordingStartTimeRef.current) / 1000),
       });
@@ -1434,7 +1435,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           animate={{ opacity: showInterviewers ? 1 : 0 }}
           transition={{ duration: 0.6 }}
           style={showInterviewers
-            ? { display: 'flex', gap: '16px' }
+            ? { display: 'flex', gap: '16px', alignSelf: 'center', width: 'min(1200px, calc(100vw - 48px))' }
             : { display: 'flex', gap: '16px', position: 'absolute', inset: 0, zIndex: -1, pointerEvents: 'none' }}
         >
               {/* On Spatius the tile is a true 16:9 window (the shape of Spatius's stage); the old photo component then no longer sizes it. */}
@@ -1864,7 +1865,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         style={{ width: '7px', height: '7px', borderRadius: '50%', background: isHrQuestion ? '#a78bfa' : 'var(--blue)', flexShrink: 0 }} />
                     )}
                     <span style={{ fontSize: '10px', fontWeight: 700, color: isHrQuestion ? '#a78bfa' : 'var(--blue)', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', padding: '3px 8px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                      {isHrQuestion ? 'Amina · HR' : `Wayne · ${specialistTitle}`}
+                      {isHrQuestion ? `${seatsIv.hr?.displayName ?? 'Amina'} · HR` : `${seatsIv.technical?.displayName ?? 'Wayne'} · ${specialistTitle}`}
                     </span>
                     <span style={{ fontSize: '10px', color: 'var(--text-3)', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', padding: '3px 8px' }}>{selectedDifficulty}</span>
                     {/* Gauntlet question (Salary Expectation £500k+ only — see sessionPrepareClient's
@@ -2106,7 +2107,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#a78bfa', flexShrink: 0 }} />
                   )}
                   <div style={{ fontSize: '14px', color: 'var(--text-2)' }}>
-                    {askInterviewerReady ? 'Amina asked if you have any questions for the interviewers.' : 'Amina is asking…'}
+                    {askInterviewerReady ? `${seatsIv.hr?.displayName ?? 'Amina'} asked if you have any questions for the interviewers.` : `${seatsIv.hr?.displayName ?? 'Amina'} is asking…`}
                   </div>
                 </div>
                 {askInterviewerReady && (

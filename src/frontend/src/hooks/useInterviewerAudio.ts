@@ -3,6 +3,7 @@ import type { AvatarState } from '../components/InterviewerAvatar';
 import type { InterviewQuestion } from '../api/explainApi';
 import { speak } from '../api/ttsApi';
 import { ensureNameSpoken } from '../api/aiScoring';
+import { seatName } from '../lib/seatInterviewers';
 import { logFlowEvent } from '../api/flowLogger';
 import type { ChapterMarker, RoomPhase } from '../pages/interview-room/types';
 
@@ -429,7 +430,7 @@ export function useInterviewerAudio(params: UseInterviewerAudioParams): UseInter
     if (recordingStartTimeRef.current > 0) {
       chapterMarkersRef.current.push({
         questionIndex: -1,
-        questionText: "Amina & Wayne's Introduction",
+        questionText: `${seatName('hr')} & ${seatName('technical')}'s Introduction`,
         competency: '',
         offsetSeconds: Math.round((Date.now() - recordingStartTimeRef.current) / 1000),
       });

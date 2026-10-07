@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useSpatiusAvatarSession, INTERVIEW_TOKEN_PATH, type SpatiusStatus } from './useSpatiusAvatarSession';
 import { getInterviewTicket } from '../api/entitlementsApi';
 import type { AvatarConfig } from '../api/liveAvatarApi';
+import { getSeatInterviewer } from '../lib/seatInterviewers';
 
 // One interviewer seat of a FULL interview drawn by Spatius, wearing the same shape as useLiveAvatarSession (HeyGen), so InterviewRoomPage's
 // seat wrappers, cost-control effect and recording code don't care which provider a seat has — the room just picks one of the two objects.
@@ -17,6 +18,8 @@ type Transform = { x: number; y: number; scale: number };
 // Per-seat nudges from the default framing, set by eye (Francis, 2026-10-06): Wayne sits a little too far back in his room, so he is brought in about 20%
 // to show the middle of the chest upwards, like Amina.
 const SEAT_TRANSFORM: Partial<Record<SeatRole, Transform>> = { technical: { x: 0, y: 0, scale: 1.2 } };
+// Per-interviewer framing where the seat's nudge doesn't suit them (Francis, 2026-10-07: Malcolm's hair was just out of frame at 1.2, so he is brought back a touch).
+const INTERVIEWER_TRANSFORM: Record<string, Transform> = { malcolm: { x: 0, y: 0, scale: 1.08 } };
 
 function manualTransform(): Transform | undefined {
   try {
@@ -75,7 +78,7 @@ export function useSpatiusSeat(
     }
     try {
       await Promise.race([
-        innerConnect(id, getInterviewTicket() ?? '', manualTransform() ?? SEAT_TRANSFORM[role], INTERVIEW_TOKEN_PATH),
+        innerConnect(id, getInterviewTicket() ?? '', manualTransform() ?? INTERVIEWER_TRANSFORM[getSeatInterviewer(role)?.id ?? ''] ?? SEAT_TRANSFORM[role], INTERVIEW_TOKEN_PATH),
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('spatius connect timed out')), CONNECT_LIMIT_MS)),
       ]);
     } catch (e) {
