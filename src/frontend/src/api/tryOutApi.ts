@@ -16,7 +16,7 @@ export interface TryOutStart {
   // A short spoken privacy reassurance in the visitor's language, said before question 1; null for English (the page has its own English line).
   privacy?: string | null;
   /** The Guardian Angel's short spoken links between questions, in the interview language (absent for English — the page's own wording is used). */
-  transitions?: { next?: string | null; skipped?: string | null; finish?: string | null } | null;
+  transitions?: { first?: string | null; next?: string | null; skipped?: string | null; finish?: string | null } | null;
   avatarAvailable: boolean;
   // Which service draws the avatar for this visitor (admin setting). Absent on older servers = HeyGen.
   avatarProvider?: 'heygen' | 'spatius';

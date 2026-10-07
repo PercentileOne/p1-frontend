@@ -365,7 +365,9 @@ export default function TryItLivePage() {
       // Kept short on purpose (2026-09-29): visitors arriving from a LinkedIn profile give it ~10 seconds, and five of five who got the
       // live avatar heard question one and then left. The how-to-answer instructions now live on screen in the "Your turn" panel instead
       // of being read aloud.
-      ? `${opening} ${privacy} ${q}`.replace(/\s+/g, ' ')
+      // A clear line between the introduction and the interview itself (Francis, 2026-10-07). English uses the page's own wording; another language uses the server's
+      // translation, and says nothing rather than switching language if that is missing.
+      ? `${opening} ${privacy} ${s.intro ? (s.transitions?.first ?? '') : 'So, your first question is:'} ${q}`.replace(/\s+/g, ' ')
       : q;
     await speakLine(line, s, viaAvatar);
     setPhase('answering');
