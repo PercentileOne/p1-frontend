@@ -13,6 +13,11 @@ import { useEffect, useRef, useState } from 'react';
 export type SpatiusSeat = 'hr' | 'technical' | 'michelle';
 
 const SEAT_FILES: Record<SpatiusSeat, string> = { hr: 'amina', technical: 'wayne', michelle: 'michelle' };
+// Avatars that are not one of the three original seats are named by person: add the avatar's Spatius ID here and save its files as /images/spatius/<name>-background.<ext>.
+// (Temporary: the planned Interviewers admin page will keep each interviewer's background itself, and this list goes away.)
+const AVATAR_FILE_NAMES: Record<string, string> = {
+  '17dcea17-a918-4963-ad1b-742bc0e82d10': 'haruto',
+};
 const EXTS = ['jpg', 'png', 'webp'];
 const FALLBACK_BG = 'radial-gradient(ellipse at 20% 20%, rgba(120,140,175,0.45) 0, transparent 45%), linear-gradient(180deg, #3b475c 0%, #232b3b 70%, #161c29 100%)';
 
@@ -29,7 +34,12 @@ export function SpatiusSeatStage({ seat, avatarId, stageRef, visible, live, rend
   const [size, setSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
   // Candidate file names, in order: by avatar ID first, then by seat. Index into this list of the one being tried; running off the end means "no such file", and the
   // fallbacks apply. (A new avatar ID starts the search again.)
-  const bases = [...(avatarId && /^[0-9a-f-]{8,64}$/i.test(avatarId) ? [`/images/spatius/${avatarId}`] : []), `/images/spatius/${SEAT_FILES[seat]}`];
+  const named = avatarId ? AVATAR_FILE_NAMES[avatarId.toLowerCase()] : undefined;
+  const bases = [
+    ...(named ? [`/images/spatius/${named}`] : []),
+    ...(avatarId && /^[0-9a-f-]{8,64}$/i.test(avatarId) ? [`/images/spatius/${avatarId}`] : []),
+    `/images/spatius/${SEAT_FILES[seat]}`,
+  ];
   const bgFiles = bases.flatMap(b => EXTS.map(e => `${b}-background.${e}`));
   const coverFiles = bases.flatMap(b => EXTS.map(e => `${b}-cover.${e}`));
   const [bgTry, setBgTry] = useState(0);
