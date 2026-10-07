@@ -97,4 +97,16 @@ public class InterviewersTests
         Assert.Null(Interviewers.SniffImage("GIF89a......"u8));
         Assert.Null(Interviewers.SniffImage([]));
     }
+
+    [Fact]
+    public void Persona_guidance_turns_the_five_levels_into_plain_instructions()
+    {
+        var iv = new Interviewer("catherine", "interviewer", "Catherine", "hr", "a", null, "d", 3, 2, 5, 3, 2, true, 1, null, null, DateTimeOffset.UnixEpoch, "t");
+        var text = Interviewers.PersonaGuidance(iv);
+        Assert.StartsWith("Catherine ", text);
+        Assert.Contains("is relaxed and flexible", text);   // strictness 2
+        Assert.Contains("is warm, encouraging", text);      // warmth 5
+        Assert.Contains("patient and unhurried", text);     // pace 2
+        Assert.Contains("balanced depth", text);            // depth 3
+    }
 }

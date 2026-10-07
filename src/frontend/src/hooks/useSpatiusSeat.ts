@@ -21,7 +21,7 @@ type Transform = { x: number; y: number; scale: number };
 const SEAT_TRANSFORM: Partial<Record<SeatRole, Transform>> = { technical: { x: 0, y: 0, scale: 1.2 } };
 // Per-interviewer framing where the seat's nudge doesn't suit them (Francis, 2026-10-07: Malcolm's hair was just out of frame at 1.2, so he is brought back a touch).
 // (his registry id is spelt "malcom")
-const INTERVIEWER_TRANSFORM: Record<string, Transform> = { malcom: { x: 0, y: 0, scale: 1.08 } };
+const INTERVIEWER_TRANSFORM: Record<string, Transform> = { malcom: { x: 0, y: 0, scale: 1.08 }, wayne: { x: 0, y: 0, scale: 1.08 } };
 
 function manualTransform(): Transform | undefined {
   try {

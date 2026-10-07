@@ -8,6 +8,8 @@ export interface TryOutStart {
   subject: string;
   interviewer: 'hr' | 'technical';
   interviewerName: string;
+  /** The interviewer the visitor chose (their voice, photo and personality); absent or null for the default, Wayne. */
+  chosenInterviewer?: { id: string; displayName: string; role: 'hr' | 'technical'; avatarId: string; description: string; traits: { depth: number; strictness: number; warmth: number; humour: number; pace: number } } | null;
   questions: string[];
   // A greeting written in the visitor's language with {name} / {interviewer} placeholders; null for English (the page then uses its own greeting).
   intro?: string | null;
@@ -55,8 +57,8 @@ async function post<T>(path: string, body: unknown): Promise<TryOutResult<T>> {
 // The server validates all three and quietly falls back to English / Standard / no country, so an old link or a tampered value can't break anything.
 export interface TryOutOptions { language: string; difficulty: string; country: string }
 
-export const startTryOut = (topic: string, options: TryOutOptions, avoid: string[] = []) =>
-  post<TryOutStart>('/api/tryout/start', { topic, language: options.language, difficulty: options.difficulty, country: options.country || null, avoid });
+export const startTryOut = (topic: string, options: TryOutOptions, avoid: string[] = [], interviewerId?: string) =>
+  post<TryOutStart>('/api/tryout/start', { topic, language: options.language, difficulty: options.difficulty, country: options.country || null, avoid, interviewerId: interviewerId || null });
 export const scoreTryOut = (topic: string, answers: { question: string; answer: string }[], name: string, language: string, asked: number) =>
   post<TryOutFeedback>('/api/tryout/feedback', { topic, answers, name, language, asked });
 export const modelAnswerTryOut = (topic: string, question: string, language: string) =>

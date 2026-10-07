@@ -303,6 +303,21 @@ public static partial class Endpoint
 
     // ── Shapes ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+    private static string Level(int level, string low, string mid, string high) => level <= 2 ? low : level >= 4 ? high : mid;
+
+    /// <summary>
+    /// One interviewer's five personality levels (1 to 5) as plain instructions for the model that writes their spoken questions. It changes the manner only, never the fairness,
+    /// accuracy or difficulty. (The same wording as the candidate site's own describePersona in lib/seatInterviewers.ts.)
+    /// </summary>
+    public static string PersonaGuidance(Interviewer i) => $"{i.displayName} " + string.Join("; ", new[]
+    {
+        Level(i.depth, "keeps the questions broad and approachable", "asks questions of balanced depth", "goes deep: specific, detailed questions and sharp follow-up angles"),
+        Level(i.strictness, "is relaxed and flexible, reacting gently", "is fair and even-handed", "is exacting and direct, and does not let a vague answer pass"),
+        Level(i.warmth, "is reserved and businesslike, not chatty", "is polite and professional", "is warm, encouraging and reassuring"),
+        Level(i.humour, "is serious, with no jokes", "is occasionally light", "uses light touches of humour"),
+        Level(i.pace, "is patient and unhurried, with gentle phrasing", "keeps a steady pace", "is brisk and concise, getting straight to the point"),
+    }) + ".";
+
     public static object ToAdminDto(Interviewer i) => new
     {
         i.id, i.displayName, i.role, i.spatiusAvatarId, i.voiceId, i.description,

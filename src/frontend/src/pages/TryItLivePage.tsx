@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
 import { useSpatiusAvatarSession } from '../hooks/useSpatiusAvatarSession';
+import { setSeatInterviewers } from '../lib/seatInterviewers';
 import { speak as speakTts, unlockTTSAudio, setTTSLanguage } from '../api/ttsApi';
 import { setInterviewTicket } from '../api/entitlementsApi';
 import { VoiceInput } from '../components/VoiceInput';
@@ -90,6 +91,14 @@ function spatiusTransformFromUrl(interviewer: 'hr' | 'technical'): { x: number; 
     return { x: n('ax'), y: n('ay'), scale };
   } catch { return SPATIUS_DEFAULT_TRANSFORM; }
 }
+
+// The interviewer a visitor picked on the homepage arrives as ?interviewer=<id> (2026-10-07); the server checks it is a real, visible HR or technical interviewer and
+// otherwise uses Wayne, so a hand-edited value is harmless.
+function wantedInterviewerFromUrl(): string | undefined {
+  try { const v = new URLSearchParams(window.location.search).get('interviewer') ?? ''; return /^[a-z0-9][a-z0-9-]{1,31}$/.test(v) ? v : undefined; } catch { return undefined; }
+}
+// Amina's and Wayne's faces were tuned by hand for this page; anyone else is framed automatically by the avatar session.
+const isOriginalInterviewer = (id: string | undefined) => !id || id === 'amina' || id === 'wayne';
 
 // What the marketing homepage passes in the URL (?topic=&name=&lang=&level=&go=1; English regions arrive as lang=en&country=GB/US…). Read in ONE place so the first render and the auto-start
 // agree exactly. Every value is checked against its list here, so a hand-edited link can't put junk in the form (the server validates again).
@@ -367,8 +376,11 @@ export default function TryItLivePage() {
     if (subject.length < 2 || !name.trim()) return;
     unlockTTSAudio(); // must be first — see its own note: phones only allow sound that starts inside the tap
     setPhase('starting'); setMessage('');
-    const r = await startTryOut(subject, { language, difficulty, country }, questionsSeen(subject));
+    const r = await startTryOut(subject, { language, difficulty, country }, questionsSeen(subject), wantedInterviewerFromUrl());
     if (!r.ok) { setMessage(r.message); setBlockReason(r.capped ? 'capped' : 'error'); setPhase('blocked'); return; }
+    // The chosen interviewer's own voice and pace follow from the seat store (every voice request reads it); no choice clears it back to the defaults.
+    const ci = r.data.chosenInterviewer;
+    setSeatInterviewers(ci ? { [ci.role]: { id: ci.id, name: ci.displayName, description: ci.description, traits: ci.traits } } : {});
     rememberQuestionsSeen(subject, r.data.questions);
     const s = quick ? { ...r.data, questions: r.data.questions.slice(0, QUICK_QUESTION_COUNT) } : r.data;
     setFirstSpeechStarted(false);
@@ -400,7 +412,9 @@ export default function TryItLivePage() {
       if (s.avatarProvider === 'spatius' && s.spatiusAvatarId && s.ticket && !isIos) {
         logEvent('try_avatar_connecting', { metadata: { provider: 'spatius', mobile: isMobile } });
         try {
-          await withTimeout(spatius.connect(s.spatiusAvatarId, s.ticket, spatiusTransformFromUrl(s.interviewer === 'technical' ? 'technical' : 'hr')), SPATIUS_CONNECT_LIMIT_MS, 'spatius');
+          await withTimeout(isOriginalInterviewer(s.chosenInterviewer?.id)
+            ? spatius.connect(s.spatiusAvatarId, s.ticket, spatiusTransformFromUrl(s.interviewer === 'technical' ? 'technical' : 'hr'))
+            : spatius.connect(s.spatiusAvatarId, s.ticket, undefined, undefined, 1), SPATIUS_CONNECT_LIMIT_MS, 'spatius');
           live = true; providerRef.current = 'spatius'; setProvider('spatius'); setAvatarState('live');
           logEvent('try_avatar_connected', { metadata: { provider: 'spatius', ms: Math.round(performance.now() - connectStarted), mobile: isMobile } });
         } catch (e) {
@@ -608,7 +622,7 @@ export default function TryItLivePage() {
               {/* Voice-only interview (all phones, and desktop when no live avatar is available): the interviewer's photo, with a soft green
                   ring while they are speaking — so there is always a face, not a letter (Francis, 2026-09-26: "I can't see Wayne"). */}
               <img
-                src={start.interviewer === 'technical' ? '/images/wayne-static-photo.png' : '/images/amina-static-image-1.png'}
+                src={start.chosenInterviewer ? `/images/interviewers/${start.chosenInterviewer.id}.jpg` : start.interviewer === 'technical' ? '/images/wayne-static-photo.png' : '/images/amina-static-image-1.png'}
                 alt={`${start.interviewerName}, your interviewer`}
                 width={520} height={288}
                 style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
