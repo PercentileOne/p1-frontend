@@ -307,7 +307,7 @@ export default function ActivityLog() {
                     onClick={() => setSelectedEvent(e)}
                     style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.1s', cursor: 'pointer' }}
                     onMouseEnter={ev => (ev.currentTarget.style.background = 'rgba(79,142,247,0.08)')}
-                    onMouseLeave={ev => (ev.currentTarget.style.background = 'transparent')}
+                    onMouseLeave={ev => (ev.currentTarget.style.background = '')}
                   >
                     <td style={{ padding: '12px 0 12px 16px', width: 36 }} onClick={ev => ev.stopPropagation()}>
                       <input type="checkbox" checked={ticked.has(e.id)} onChange={() => toggleTick(e.id)} aria-label="Select this event" style={{ cursor: 'pointer' }} />
