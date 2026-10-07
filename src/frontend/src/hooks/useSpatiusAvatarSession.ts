@@ -28,6 +28,9 @@ export const INTERVIEW_TOKEN_PATH = '/interviews/spatius-token';
 const TOKEN_REUSE_MS = 12 * 60 * 1000;
 const tokenCache = new Map<string, { sessionToken: string; appId: string; at: number }>();
 
+// A failed connect may have been caused by a token that is no longer good, so the retry asks for a new one.
+export function clearSpatiusTokenCache(): void { tokenCache.clear(); }
+
 async function prepareSdk(ticket: string, tokenPath: string): Promise<Sdk> {
   const cached = tokenCache.get(tokenPath);
   const fresh = cached && Date.now() - cached.at < TOKEN_REUSE_MS ? cached : null;

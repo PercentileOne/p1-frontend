@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useSpatiusAvatarSession, INTERVIEW_TOKEN_PATH, type SpatiusStatus } from './useSpatiusAvatarSession';
+import { useSpatiusAvatarSession, INTERVIEW_TOKEN_PATH, clearSpatiusTokenCache, type SpatiusStatus } from './useSpatiusAvatarSession';
 import { getInterviewTicket } from '../api/entitlementsApi';
 import type { AvatarConfig } from '../api/liveAvatarApi';
 import { getSeatInterviewer } from '../lib/seatInterviewers';
+import { logFlowEvent } from '../api/flowLogger';
 
 // One interviewer seat of a FULL interview drawn by Spatius, wearing the same shape as useLiveAvatarSession (HeyGen), so InterviewRoomPage's
 // seat wrappers, cost-control effect and recording code don't care which provider a seat has — the room just picks one of the two objects.
@@ -77,13 +78,25 @@ export function useSpatiusSeat(
       }
       await new Promise(r => setTimeout(r, 300));
     }
+    const attempt = () => Promise.race([
+      innerConnect(id, getInterviewTicket() ?? '', manualTransform() ?? INTERVIEWER_TRANSFORM[getSeatInterviewer(role)?.id ?? ''] ?? SEAT_TRANSFORM[role], INTERVIEW_TOKEN_PATH),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('spatius connect timed out')), CONNECT_LIMIT_MS)),
+    ]);
     try {
-      await Promise.race([
-        innerConnect(id, getInterviewTicket() ?? '', manualTransform() ?? INTERVIEWER_TRANSFORM[getSeatInterviewer(role)?.id ?? ''] ?? SEAT_TRANSFORM[role], INTERVIEW_TOKEN_PATH),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('spatius connect timed out')), CONNECT_LIMIT_MS)),
-      ]);
+      try {
+        await attempt();
+      } catch (first) {
+        // One more try with a fresh token before giving the seat up to HeyGen (2026-10-07: Michelle dropped to her old HeyGen face after a "Say hi" preview earlier in the visit).
+        // The reason is recorded either way, so a failure can be read afterwards instead of guessed at.
+        console.warn(`[Spatius] ${role} connect failed, retrying once:`, first);
+        logFlowEvent('SPATIUS_SEAT_CONNECT_RETRY', { role, error: String((first as Error)?.message ?? first).slice(0, 200) });
+        await disconnect(true);
+        clearSpatiusTokenCache();
+        await attempt();
+      }
     } catch (e) {
       void disconnect(true); // a timed-out attempt must not finish later as a ghost, billed session
+      logFlowEvent('SPATIUS_SEAT_FAILED', { role, error: String((e as Error)?.message ?? e).slice(0, 200) });
       onFailed(role);
       throw e;
     }
