@@ -352,7 +352,12 @@ export default function InterviewRoomPage() {
   const avatarCfgRef = useRef<AvatarConfig | null>(null);
   const [spatiusFailed, setSpatiusFailed] = useState<Record<SeatRole, boolean>>({ hr: false, technical: false, michelle: false });
   const [deviceOkForSpatius] = useState(deviceCanUseSpatiusInRoom);
-  useEffect(() => { fetchAvatarConfig().then(cfg => { avatarCfgRef.current = cfg; setAvatarCfg(cfg); setAvatarEnabled(cfg.enabled); }); }, []);
+  // Resolves once the settings have arrived (fetchAvatarConfig never rejects: it falls back to HeyGen). startInterview waits for it, because the server can be slow to
+  // answer (4 seconds seen right after a restart) and a seat must not start on the wrong provider while the answer is still on its way (2026-10-07: HeyGen's Michelle
+  // began connecting, then the answer said Spatius, and the room ended up on the old faces).
+  const [cfgReady] = useState(() => { let resolve!: () => void; const promise = new Promise<void>(r => { resolve = r; }); return { promise, resolve }; });
+  const avatarEnabledRef = useRef(true);
+  useEffect(() => { fetchAvatarConfig().then(cfg => { avatarCfgRef.current = cfg; avatarEnabledRef.current = cfg.enabled; setAvatarCfg(cfg); setAvatarEnabled(cfg.enabled); cfgReady.resolve(); }); }, [cfgReady]);
   const markSpatiusFailed = useCallback((role: SeatRole) => setSpatiusFailed(f => (f[role] ? f : { ...f, [role]: true })), []);
   const seatOnSpatius = (role: SeatRole) =>
     avatarCfg?.provider === 'spatius' && deviceOkForSpatius && !(spatiusFailed[role] && avatarCfg.fallbackToHeygen);
@@ -391,6 +396,9 @@ export default function InterviewRoomPage() {
   // runs the whole interview.
   const heygenMichelle = useLiveAvatarSession('michelle', setLiveMichelleAnalyser);
   const liveAvatarMichelle = seatOnSpatius('michelle') ? spatiusMichelle : heygenMichelle;
+  // The seats as of the latest render, for code that runs after an await (it would otherwise hold the objects from before the settings arrived).
+  const seatsRef = useRef({ hr: liveAvatarHr, technical: liveAvatarTechnical, michelle: liveAvatarMichelle });
+  seatsRef.current = { hr: liveAvatarHr, technical: liveAvatarTechnical, michelle: liveAvatarMichelle };
 
   const liveAvatarSpeakHr = useCallback((text: string, onEnd: () => void, onAnalyser?: (a: AnalyserNode | null) => void) => {
     let cancelled = false;
@@ -575,6 +583,9 @@ export default function InterviewRoomPage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [phase, paused]);
 
+  const startMikeRef = useRef(startMike);
+  startMikeRef.current = startMike;
+
   const startInterview = useCallback(async () => {
     // Fire both avatars' connect() as early as humanly possible — the whole recording-consent
     // dialog plus Mike's entire spoken intro become free warm-up time before either avatar ever
@@ -587,22 +598,26 @@ export default function InterviewRoomPage() {
     // the first utterance of a session has glitched. Fire-and-forget, same pattern as the
     // Q2+ reconnect — liveAvatarHr/Technical.connect() are themselves idempotent no-ops if
     // already connected or connecting.
-    if (avatarEnabled) {
-      void Promise.resolve(liveAvatarHr.connect()).catch(() => { /* a failed seat is handled where it speaks (voice fallback) */ });
-      void Promise.resolve(liveAvatarTechnical.connect()).catch(() => { /* a failed seat is handled where it speaks (voice fallback) */ });
+    // Wait for the avatar settings first (up to 8 seconds), then a moment for the room to re-render with the right provider's seats.
+    await Promise.race([cfgReady.promise, new Promise<void>(r => setTimeout(r, 8000))]);
+    await new Promise<void>(r => setTimeout(r, 80));
+    const seats = seatsRef.current;
+    if (avatarEnabledRef.current) {
+      void Promise.resolve(seats.hr.connect()).catch(() => { /* a failed seat is handled where it speaks (voice fallback) */ });
+      void Promise.resolve(seats.technical.connect()).catch(() => { /* a failed seat is handled where it speaks (voice fallback) */ });
       // Michelle (2026-09-17) is a live avatar seat too now, but startMike() only ever
       // triggered her connect() lazily on first speak — the exact zero-head-start gap the
       // comment above already diagnosed for Amina/Wayne, just never carried over to her when
       // she replaced the old static-photo Mike. Live-reported same day: she sat staring
       // silently for a few seconds before her briefing started. Same fix — fire her connect()
       // here too, so the recording-consent dialog becomes free warm-up time for her as well.
-      void Promise.resolve(liveAvatarMichelle.connect()).catch(() => { /* a failed seat is handled where it speaks (voice fallback) */ });
+      void Promise.resolve(seats.michelle.connect()).catch(() => { /* a failed seat is handled where it speaks (voice fallback) */ });
     }
     if (consentToRecord) {
       await startRecording(); // wait for browser share dialog before Mike speaks
     }
-    startMike();
-  }, [startMike, startRecording, consentToRecord, avatarEnabled, liveAvatarHr, liveAvatarTechnical, liveAvatarMichelle]);
+    startMikeRef.current(); // the latest one: this function may have been created before the avatar settings arrived
+  }, [cfgReady, startRecording, consentToRecord]);
 
   // ── Two-phase AI loading ──────────────────────────────────────────────────────
   // Phase 1 (fast ~2s): Mike's script only — unblocks Mike immediately

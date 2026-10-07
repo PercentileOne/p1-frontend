@@ -52,6 +52,7 @@ public static partial class Endpoint
             // Only one interviewer can be the default for a seat: taking it from another one is part of the same save.
             if (doc.defaultFor is not null) await ClearDefaultFromOthersAsync(cosmos, doc.defaultFor, id, ct);
             await cosmos.GetContainer(ContainerName).UpsertItemAsync(doc, new PartitionKey(Partition), cancellationToken: ct);
+            InvalidateCache();
             return Results.Ok(ToAdminDto(doc));
         }).RequireAuthorization(Permissions.ViewSystemSettings).WithName("AdminSaveInterviewer").WithTags("Interviewers");
 
@@ -64,6 +65,7 @@ public static partial class Endpoint
                 return Results.BadRequest(new { error = $"{existing.displayName} is the default for the {existing.defaultFor} seat. Make another interviewer the default first." });
             try { await cosmos.GetContainer(ContainerName).DeleteItemAsync<Interviewer>(id, new PartitionKey(Partition), cancellationToken: ct); }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { /* already gone */ }
+            InvalidateCache();
             var assets = AssetsClient(config);
             if (assets is not null) { try { await foreach (var b in assets.GetBlobsAsync(BlobTraits.None, BlobStates.None, prefix: id + "/", cancellationToken: ct)) await assets.DeleteBlobIfExistsAsync(b.Name, cancellationToken: ct); } catch { /* best effort */ } }
             return Results.NoContent();
@@ -93,6 +95,7 @@ public static partial class Endpoint
 
             var updated = existing with { backgroundUrl = $"/interviewers/{id}/background?v={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}", updatedAt = DateTimeOffset.UtcNow, updatedBy = ctx.User.FindFirst("sub")?.Value ?? "unknown" };
             await cosmos.GetContainer(ContainerName).UpsertItemAsync(updated, new PartitionKey(Partition), cancellationToken: ct);
+            InvalidateCache();
             return Results.Ok(ToAdminDto(updated));
         }).RequireAuthorization(Permissions.ViewSystemSettings).DisableAntiforgery().WithName("AdminInterviewerBackground").WithTags("Interviewers");
 
@@ -124,7 +127,23 @@ public static partial class Endpoint
 
     // ── Data access ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+    // The active list is read on every interview start, demo start and room load, and changes only when an admin saves, so it is kept in memory for a few seconds (and cleared by
+    // every admin change on this instance; another instance picks a change up within the lifetime below).
+    private static readonly TimeSpan ActiveCacheLifetime = TimeSpan.FromSeconds(20);
+    private static (DateTimeOffset At, List<Interviewer> List)? _activeCache;
+    private static void InvalidateCache() => _activeCache = null;
+
     public static async Task<List<Interviewer>> ListAsync(CosmosService cosmos, bool activeOnly, CancellationToken ct = default)
+    {
+        if (activeOnly && _activeCache is { } hit && DateTimeOffset.UtcNow - hit.At < ActiveCacheLifetime) return hit.List;
+        var all = await ReadAllAsync(cosmos, ct);
+        var ordered = all.OrderBy(i => i.sortOrder).ThenBy(i => i.displayName, StringComparer.OrdinalIgnoreCase).ToList();
+        var active = ordered.Where(i => i.active).ToList();
+        _activeCache = (DateTimeOffset.UtcNow, active);
+        return activeOnly ? active : ordered;
+    }
+
+    private static async Task<List<Interviewer>> ReadAllAsync(CosmosService cosmos, CancellationToken ct)
     {
         var results = new List<Interviewer>();
         var query = new QueryDefinition("SELECT * FROM c WHERE c.pk = @pk").WithParameter("@pk", Partition);
@@ -134,7 +153,7 @@ public static partial class Endpoint
             while (feed.HasMoreResults) results.AddRange(await feed.ReadNextAsync(ct));
         }
         catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { return []; }
-        return results.Where(i => !activeOnly || i.active).OrderBy(i => i.sortOrder).ThenBy(i => i.displayName, StringComparer.OrdinalIgnoreCase).ToList();
+        return results;
     }
 
     public static async Task<Interviewer?> GetAsync(CosmosService cosmos, string id, CancellationToken ct = default)
@@ -191,6 +210,7 @@ public static partial class Endpoint
         // A seat that has no avatar ID yet is left out (an interviewer without a face can't be used).
         seeds = seeds.Where(s => !string.IsNullOrWhiteSpace(s.spatiusAvatarId)).ToList();
         foreach (var s in seeds) await cosmos.GetContainer(ContainerName).UpsertItemAsync(s, new PartitionKey(Partition), cancellationToken: ct);
+        InvalidateCache();
         return seeds;
     }
 
