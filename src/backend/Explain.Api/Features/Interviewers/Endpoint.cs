@@ -178,14 +178,15 @@ public static partial class Endpoint
     {
         var setting = await PlatformSettings.Endpoint.GetAvatarProviderOrDefaultAsync(cosmos);
         var now = DateTimeOffset.UtcNow;
-        Interviewer Make(string id, string name, string role, string? avatarId, string description, int depth, int strict, int warm, int humour, int pace, int order, string? defaultFor) =>
-            new(id, Partition, name, role, avatarId ?? "", null, description, depth, strict, warm, humour, pace, true, order, defaultFor, null, now, "seed");
+        // voiceId = the ElevenLabs voice Francis chose for each (2026-10-07). Stored now; the room reads it once the per-interviewer voices are wired up (Phase 2).
+        Interviewer Make(string id, string name, string role, string? avatarId, string? voiceId, string description, int depth, int strict, int warm, int humour, int pace, int order, string? defaultFor) =>
+            new(id, Partition, name, role, avatarId ?? "", voiceId, description, depth, strict, warm, humour, pace, true, order, defaultFor, null, now, "seed");
         var seeds = new List<Interviewer>
         {
-            Make("amina", "Amina", "hr", setting.spatiusAvatarHr, "Your HR interviewer: professional, fair and encouraging.", 3, 3, 4, 2, 3, 10, "hr"),
-            Make("wayne", "Wayne", "technical", setting.spatiusAvatarTechnical, "Your technical interviewer: direct, thorough, goes deep on detail.", 5, 4, 2, 2, 4, 20, "technical"),
-            Make("michelle", "Michelle", "briefing", setting.spatiusAvatarMichelle, "Your recruitment consultant: briefs you before you meet the panel.", 2, 1, 5, 3, 3, 30, "briefing"),
-            Make("haruto", "Haruto", "technical", "17dcea17-a918-4963-ad1b-742bc0e82d10", "A calm, methodical technical interviewer with a dry sense of humour.", 4, 3, 3, 3, 3, 40, null),
+            Make("amina", "Amina", "hr", setting.spatiusAvatarHr, "oO7sLA3dWfQXsKeSAjpA", "Your HR interviewer: professional, fair and encouraging.", 3, 3, 4, 2, 3, 10, "hr"),
+            Make("wayne", "Wayne", "technical", setting.spatiusAvatarTechnical, "bDTlr4ICxntY9qVWyL0o", "Your technical interviewer: direct, thorough, goes deep on detail.", 5, 4, 2, 2, 4, 20, "technical"),
+            Make("michelle", "Michelle", "briefing", setting.spatiusAvatarMichelle, "6fZce9LFNG3iEITDfqZZ", "Your recruitment consultant: briefs you before you meet the panel.", 2, 1, 5, 3, 3, 30, "briefing"),
+            Make("haruto", "Haruto", "technical", "17dcea17-a918-4963-ad1b-742bc0e82d10", "2Zf5wdKeS7ZKPgAQm5Jy", "A calm, methodical technical interviewer with a dry sense of humour.", 4, 3, 3, 3, 3, 40, null),
         };
         // A seat that has no avatar ID yet is left out (an interviewer without a face can't be used).
         seeds = seeds.Where(s => !string.IsNullOrWhiteSpace(s.spatiusAvatarId)).ToList();
