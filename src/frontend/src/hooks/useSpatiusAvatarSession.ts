@@ -66,7 +66,7 @@ const posterCache = new Map<string, string>();
 // cut-off), a head about 45% of the tile's height, centred. Returns null until the avatar has rendered a frame.
 function computeFit(view: AvatarView, stage: HTMLElement, factor = 1): Transform | null {
   const W = stage.clientWidth, H = stage.clientHeight;
-  if (!W || !H) return null;
+  if (W < 50 || H < 50) return null; // a stage that has not taken its real size yet would give a wild position
   const s0 = 0.3;
   const measure = (x: number, y: number) => { view.avatarTransform = { x, y, scale: s0 }; return view.getBoundingRect(); };
   const r1 = measure(0, 0), r2 = measure(0, -0.2), r3 = measure(0.2, 0);

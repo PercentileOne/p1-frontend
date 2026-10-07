@@ -414,7 +414,16 @@ export default function TryItLivePage() {
         try {
           await withTimeout(isOriginalInterviewer(s.chosenInterviewer?.id)
             ? spatius.connect(s.spatiusAvatarId, s.ticket, spatiusTransformFromUrl(s.interviewer === 'technical' ? 'technical' : 'hr'))
-            : spatius.connect(s.spatiusAvatarId, s.ticket, undefined, undefined, 1), SPATIUS_CONNECT_LIMIT_MS, 'spatius');
+            : (async () => {
+                // The avatar view takes its size from the stage at the moment it connects and keeps it, and straight after "Start" the stage is still settling into its 16:9 shape
+                // (seen 2026-10-07: Malcolm connected while it was 718x600, so he came out low and cropped). Wait, briefly, for the real shape.
+                for (let i = 0; i < 40; i++) {
+                  const el = spatiusStageRef.current;
+                  if (el && el.clientWidth > 200 && Math.abs(el.clientHeight - el.clientWidth * 9 / 16) < 10) break;
+                  await new Promise(r => setTimeout(r, 100));
+                }
+                await spatius.connect(s.spatiusAvatarId!, s.ticket!, undefined, undefined, 1);
+              })(), SPATIUS_CONNECT_LIMIT_MS, 'spatius');
           live = true; providerRef.current = 'spatius'; setProvider('spatius'); setAvatarState('live');
           logEvent('try_avatar_connected', { metadata: { provider: 'spatius', ms: Math.round(performance.now() - connectStarted), mobile: isMobile } });
         } catch (e) {
