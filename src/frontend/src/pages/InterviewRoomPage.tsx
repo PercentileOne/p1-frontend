@@ -1749,7 +1749,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     Sarah and James actually appear. Same filter presets as the Profile Video
                     recorder; picking one here carries through to the interview itself. */}
                 <div style={{ flex: '1 1 200px', maxWidth: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', paddingLeft: '32px', borderLeft: '1px solid var(--border)' }}>
-                  <YouCamera cameraOn={cameraOn} onToggle={() => setCameraOn(v => !v)} videoFilterCss={FILTER_CSS[filterPreset]} width={180} height={180} />
+                  {/* The same height as the "Your Recruitment Consultant" heading above Michelle's picture (about 35px), so the two pictures start level. */}
+                  <div style={{ marginTop: '35px' }}>
+                    <YouCamera cameraOn={cameraOn} onToggle={() => setCameraOn(v => !v)} videoFilterCss={FILTER_CSS[filterPreset]} width={180} height={180} />
+                  </div>
                   <div style={{ width: '100%' }}>
                     <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '8px' }}>How you'll look</div>
                     <div style={{ display: 'flex', gap: '6px' }}>
