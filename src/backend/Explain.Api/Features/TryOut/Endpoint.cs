@@ -100,12 +100,15 @@ public static class Endpoint
                 }
             }
 
+            var shown = chosen ?? await Explain.Api.Features.Interviewers.Endpoint.DefaultForAsync(cosmos, interviewer);
             return Results.Ok(new
             {
                 subject = string.IsNullOrWhiteSpace(model.Subject) ? topic : model.Subject.Trim(),
                 interviewer,
-                // Whoever is in the seat (the visitor's choice, else the registry's default for it) — the demo's face and voice already follow the registry, so the name must too.
-                interviewerName = (chosen ?? await Explain.Api.Features.Interviewers.Endpoint.DefaultForAsync(cosmos, interviewer))?.displayName ?? "Wayne",
+                // Whoever is in the seat (the visitor's choice, else the registry's default for it) — the demo's face and voice already follow the registry, so the name and the
+                // photo shown when the live face is off must too.
+                interviewerName = shown?.displayName ?? "Wayne",
+                interviewerId = shown?.id,
                 // The chosen interviewer in full (null for the default Wayne): the page uses their voice, room and photo.
                 chosenInterviewer = chosen is null ? null : Explain.Api.Features.Interviewers.Endpoint.ToPublicDto(chosen),
                 questions = model.Questions.Take(3).Select(q => q.Trim()).Where(q => q.Length > 0).ToList(),
