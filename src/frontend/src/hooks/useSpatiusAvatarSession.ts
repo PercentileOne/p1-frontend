@@ -135,7 +135,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
     const w = waiterRef.current; waiterRef.current = null; w?.();
   }, []);
 
-  const connect = useCallback((avatarId: string, ticket: string, transform?: { x: number; y: number; scale: number }, tokenPath: string = DEMO_TOKEN_PATH, autoFit: number | false = false): Promise<void> => {
+  const connect = useCallback((avatarId: string, ticket: string, transform?: { x: number; y: number; scale: number }, tokenPath: string = DEMO_TOKEN_PATH, autoFit: number | false = false, deferAudioUnlock = false): Promise<void> => {
     if (ctrlRef.current && serviceOpenRef.current) return Promise.resolve();
     if (connectingRef.current) return connectingRef.current;
     const attempt = (async () => {
@@ -220,10 +220,14 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
         viewRef.current = view; ctrlRef.current = ctrl; viewAvatarRef.current = avatarId;
         // On iPhones the browser can leave the sound system's start-up pending forever unless it happens inside a tap — a promise that
         // never settles. Give it a few seconds, then fail so the page can fall back (to HeyGen, then voice) instead of hanging.
-        await Promise.race([
-          ctrl.initializeAudioContext(),
-          new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('audio start timed out')), 5000)),
-        ]);
+        // deferAudioUnlock (phones): connect and show the face now, and let the page unlock the sound later with unlockAudio(), called from inside a real tap
+        // (a "Tap to meet your interviewer" button). Without a tap, iPhones never start the sound system at all.
+        if (!deferAudioUnlock) {
+          await Promise.race([
+            ctrl.initializeAudioContext(),
+            new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('audio start timed out')), 5000)),
+          ]);
+        }
         if (cancelled()) throw new Error('cancelled');
         await ctrl.start();
         serviceOpenRef.current = true;
@@ -298,6 +302,18 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
     });
   }, []);
 
+  // Starts the sound system. Call it as the FIRST thing in a tap handler (before anything is awaited): the browser only allows it inside the tap itself.
+  const unlockAudio = useCallback((): Promise<void> => {
+    const c = ctrlRef.current;
+    if (!c) return Promise.resolve();
+    try {
+      return Promise.race([
+        c.initializeAudioContext(),
+        new Promise<void>(resolve => window.setTimeout(resolve, 5000)),
+      ]).catch(() => { /* the caller carries on; speaking will then fall back to the plain voice */ });
+    } catch { return Promise.resolve(); }
+  }, []);
+
   const interrupt = useCallback(() => { speakSeqRef.current++; try { ctrlRef.current?.interrupt(); } catch { /* nothing playing */ } }, []);
 
   // Default: close only the billed connection and leave the face on screen. disconnect(true) tears the whole face down.
@@ -317,5 +333,5 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   // Always release the (billed) session if the page goes away.
   useEffect(() => release, [release]);
 
-  return { status, speaking, poster, rendered, connect, speak, interrupt, disconnect };
+  return { status, speaking, poster, rendered, connect, speak, interrupt, disconnect, unlockAudio };
 }

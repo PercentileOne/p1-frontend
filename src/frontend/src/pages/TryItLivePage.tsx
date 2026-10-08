@@ -190,6 +190,11 @@ export default function TryItLivePage() {
   // found one answer — with the greeting — too thin, so it is two.)
   const [quick] = useState(() => { try { return new URLSearchParams(window.location.search).get('quick') === '1'; } catch { return false; } });
   const [useAvatar, setUseAvatar] = useState(false);
+  // "Tap to meet your interviewer" (2026-10-08): on a phone the live face connects first and then waits for one real tap, which also starts the sound system (iPhones refuse
+  // to start sound that is not tied to a tap; this is why they were kept on a photo and voice). tapResolveRef resumes begin() when the visitor taps.
+  const [tapGate, setTapGate] = useState(false);
+  const tapResolveRef = useRef<((tapped: boolean) => void) | null>(null);
+  const tapUnlockRef = useRef<Promise<void>>(Promise.resolve());
   const [avatarState, setAvatarState] = useState<'off' | 'connecting' | 'live'>('off');
   const [shareOpen, setShareOpen] = useState(false);
   // "Email me my score" box on the score screen — for visitors who aren't ready to make an account yet.
@@ -373,6 +378,13 @@ export default function TryItLivePage() {
     setPhase('answering');
   }, [speakLine, firstName]);
 
+  // The visitor's tap on "Tap to meet": the sound unlock must be the very first thing that runs inside it.
+  function onTapMeet() {
+    unlockTTSAudio();
+    tapUnlockRef.current = spatius.unlockAudio();
+    tapResolveRef.current?.(true);
+  }
+
   async function begin() {
     const subject = topic.trim();
     if (subject.length < 2 || !name.trim()) return;
@@ -410,12 +422,12 @@ export default function TryItLivePage() {
       // it never gets going there (seen live 2026-09-29: "audio start timed out" every time). Skip straight to HeyGen rather than make the visitor
       // wait for the timeout. Android and desktop are unaffected. A future "tap to meet your interviewer" step could bring iOS onto Spatius.
       const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      if (s.avatarProvider === 'spatius' && isIos) logEvent('try_avatar_skipped', { metadata: { provider: 'spatius', reason: 'ios sound rules', mobile: isMobile } });
-      if (s.avatarProvider === 'spatius' && s.spatiusAvatarId && s.ticket && !isIos) {
+      if (s.avatarProvider === 'spatius' && isIos) logEvent('try_avatar_ios_tap_step', { metadata: { provider: 'spatius', mobile: isMobile } });
+      if (s.avatarProvider === 'spatius' && s.spatiusAvatarId && s.ticket) {
         logEvent('try_avatar_connecting', { metadata: { provider: 'spatius', mobile: isMobile } });
         try {
           await withTimeout(isOriginalInterviewer(s.chosenInterviewer?.id)
-            ? spatius.connect(s.spatiusAvatarId, s.ticket, spatiusTransformFromUrl(s.interviewer === 'technical' ? 'technical' : 'hr'))
+            ? spatius.connect(s.spatiusAvatarId, s.ticket, spatiusTransformFromUrl(s.interviewer === 'technical' ? 'technical' : 'hr'), undefined, false, isMobile)
             : (async () => {
                 // The avatar view takes its size from the stage at the moment it connects and keeps it, and straight after "Start" the stage is still settling into its 16:9 shape
                 // (seen 2026-10-07: Malcolm connected while it was 718x600, so he came out low and cropped). Wait, briefly, for the real shape.
@@ -424,7 +436,7 @@ export default function TryItLivePage() {
                   if (el && el.clientWidth > 200 && Math.abs(el.clientHeight - el.clientWidth * 9 / 16) < 10) break;
                   await new Promise(r => setTimeout(r, 100));
                 }
-                await spatius.connect(s.spatiusAvatarId!, s.ticket!, undefined, undefined, 1);
+                await spatius.connect(s.spatiusAvatarId!, s.ticket!, undefined, undefined, 1, isMobile);
               })(), SPATIUS_CONNECT_LIMIT_MS, 'spatius');
           live = true; providerRef.current = 'spatius'; setProvider('spatius'); setAvatarState('live');
           logEvent('try_avatar_connected', { metadata: { provider: 'spatius', ms: Math.round(performance.now() - connectStarted), mobile: isMobile } });
@@ -448,6 +460,15 @@ export default function TryItLivePage() {
         }
       } else if (!live) setAvatarState('off');
       connectMs = performance.now() - connectStarted;
+    }
+    // Phones: the face is up and waiting; one real tap starts the sound and begins the interview (no tap within a minute: carry on with photo and voice).
+    if (live && providerRef.current === 'spatius' && isMobile) {
+      setUseAvatar(true); setPhase('asking'); setTapGate(true);
+      logEvent('try_tap_to_meet_shown', { metadata: { mobile: isMobile } });
+      const tapped = await new Promise<boolean>(resolve => { tapResolveRef.current = resolve; window.setTimeout(() => resolve(false), 60000); });
+      setTapGate(false);
+      if (tapped) { await tapUnlockRef.current; logEvent('try_tap_to_meet_tapped', { metadata: { mobile: isMobile } }); }
+      else { void spatius.disconnect(true); live = false; setAvatarState('off'); logEvent('try_tap_to_meet_expired', { metadata: { mobile: isMobile } }); }
     }
     setUseAvatar(live);
     setPhase('asking');
@@ -646,7 +667,7 @@ export default function TryItLivePage() {
               <div style={{ position: 'absolute', inset: 0, borderRadius: 18, boxShadow: phase === 'asking' ? `inset 0 0 0 3px ${GREEN}88` : 'inset 0 0 0 0 transparent', transition: 'box-shadow 0.3s', pointerEvents: 'none' }} />
             </>
           )}
-          {start && getReadyActive && (
+          {start && getReadyActive && !tapGate && (
             <div role="status" aria-live="polite" style={{ position: 'absolute', inset: 0, zIndex: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, background: 'rgba(5,8,15,0.55)', backdropFilter: 'blur(2px)' }}>
               <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
                 <circle cx="23" cy="23" r="18" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="4" />
@@ -657,9 +678,18 @@ export default function TryItLivePage() {
               <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', letterSpacing: '0.01em' }}>{start.interviewerName} is getting ready…</div>
             </div>
           )}
+          {start && tapGate && (
+            <div style={{ position: 'absolute', inset: 0, zIndex: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'rgba(5,8,15,0.45)' }}>
+              <button type="button" onClick={onTapMeet}
+                style={{ background: GREEN, color: '#04120c', border: 'none', borderRadius: 14, padding: '14px 26px', fontSize: 16, fontWeight: 900, cursor: 'pointer', boxShadow: '0 8px 28px rgba(52,211,153,0.4)' }}>
+                ▶ Tap to meet {start.interviewerName}
+              </button>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', textShadow: '0 1px 3px #000' }}>One tap, so your phone lets the sound play</div>
+            </div>
+          )}
           {start && (
             <div style={{ position: 'absolute', left: 12, bottom: 12, background: 'rgba(0,0,0,0.6)', borderRadius: 8, padding: '5px 10px', fontSize: 12, fontWeight: 700 }}>
-              {start.interviewerName} · Interviewer{phase === 'asking' ? (getReadyActive ? ' · getting ready…' : ' · speaking…') : ''}
+              {start.interviewerName} · Interviewer{phase === 'asking' && !tapGate ? (getReadyActive ? ' · getting ready…' : ' · speaking…') : ''}
             </div>
           )}
         </div>
