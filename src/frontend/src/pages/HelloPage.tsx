@@ -7,6 +7,7 @@ import { useSpatiusAvatarSession, HELLO_TOKEN_PATH } from '../hooks/useSpatiusAv
 import { deviceCanUseSpatiusInRoom } from '../hooks/useSpatiusSeat';
 import { SpatiusSeatStage } from '../components/SpatiusSeatStage';
 import { playPcm } from '../lib/playPcm';
+import { logEvent } from '../api/flowLogger';
 
 // "Say hi" for the marketing homepage (2026-10-08). The homepage's interviewer picker frames this page (/hello?i=<interviewer id>) so a visitor on a computer can see and
 // hear the interviewer greet them before choosing. The page is just the portrait with a button; pressing it brings the live Spatius face up, the interviewer says
@@ -30,6 +31,7 @@ export default function HelloPage() {
   async function sayHi() {
     if (!iv) return;
     unlockTTSAudio(); // inside the tap, before anything is awaited, so every browser allows the sound
+    logEvent('hello_say_hi', { page: '/hello', metadata: { interviewer: iv.id } }); // a visitor really pressed the button (shows in Admin > Activity Log)
     const run = ++runRef.current;
     const stale = () => runRef.current !== run;
     const role = iv.role === 'technical' ? 'technical' : 'hr';
@@ -54,6 +56,7 @@ export default function HelloPage() {
               .then(() => { window.clearTimeout(watchdog); resolve(); }, e => { window.clearTimeout(watchdog); reject(e); });
           });
           heard = true;
+          logEvent('hello_say_hi_result', { page: '/hello', metadata: { interviewer: iv.id, mode: 'face' } });
         } catch {
           if (stale()) return;
           await sp.disconnect(true); // no face: the voice on its own
@@ -65,6 +68,7 @@ export default function HelloPage() {
         if (stale()) return;
         setState('playing');
         await playPcm(pcm);
+        logEvent('hello_say_hi_result', { page: '/hello', metadata: { interviewer: iv.id, mode: 'voice only' } });
       }
       if (stale()) return;
       await new Promise(r => setTimeout(r, 900));
@@ -74,6 +78,7 @@ export default function HelloPage() {
     } catch {
       if (stale()) return;
       await sp.disconnect(true);
+      logEvent('hello_say_hi_result', { page: '/hello', metadata: { interviewer: iv.id, mode: 'failed' } });
       setFace(false); setState('error');
     }
   }

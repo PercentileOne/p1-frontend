@@ -121,6 +121,9 @@ import DemoVallumPaid from "./pages/DemoVallumPaid";
 function usePageViewLogging() {
   const location = useLocation();
   useEffect(() => {
+    // /hello is the homepage's framed "Say hi" preview: it loads by itself a moment after the homepage does, so counting it as a page view would add a phantom visit for
+    // every desktop homepage visitor. Its real activity is logged by the page itself (hello_say_hi).
+    if (location.pathname === '/hello') return;
     logEvent('page_view', { page: location.pathname });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
