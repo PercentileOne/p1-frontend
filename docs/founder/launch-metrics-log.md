@@ -13,6 +13,7 @@ Where to find each number
 | Mon 5 Oct 2026 | 4,741 | 208 / 1 (dialysis-chair post, first hours) | | | | | Day before launch. New headline and 4-slide banner carousel are live. About 50 more connections than before the weekend (Friday's figure was not recorded). |
 | Tue 6 Oct 2026 | 4,788 morning, 4,802 evening (+61 on Mon) | Top post (dialysis chair) 208 impressions / 5 engagements; 7-day totals: 487 profile views, 165 post impressions, 81 search appearances | | | | | **Product Hunt launch day.** Other recent posts: 25-questions 72 / 1, "where you stand" 53 / 2. Funnel numbers still to add. |
 | Wed 7 Oct 2026 | 4,813 (+11 overnight) | 7-day: 491 profile views, 156 post impressions, 81 search appearances | | | | | Profile banner/carousel still shows the old Amina and the HeyGen Wayne; v2 slides ready in docs/ProductHunt/linkedin-carousel-v2/. Funnel now counts everyone except robots we are sure of. |
+| Thu 8 Oct 2026 | 4,853 (+40 since Wed morning) | 7-day: 496 profile views, 153 post impressions, 33 search appearances | | | | | Profile banner/carousel now shows the new faces (Amina and Wayne in the carousel). Interviewer picker and Say hi live on the homepage. Funnel numbers still to add. |
 
 ## Post experiments
 
