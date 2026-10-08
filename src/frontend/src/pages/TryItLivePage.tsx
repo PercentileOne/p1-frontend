@@ -633,7 +633,7 @@ export default function TryItLivePage() {
               {/* Voice-only interview (all phones, and desktop when no live avatar is available): the interviewer's photo, with a soft green
                   ring while they are speaking — so there is always a face, not a letter (Francis, 2026-09-26: "I can't see Wayne"). */}
               <img
-                src={start.interviewerId ? `/images/interviewers/${start.interviewerId}.jpg` : start.interviewer === 'technical' ? '/images/wayne-static-photo.png' : '/images/amina-static-image-1.png'}
+                src={start.interviewerPortraitUrl && start.interviewerPortraitUrl.startsWith('/') ? `${(import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global'}${start.interviewerPortraitUrl}` : start.interviewerId ? `/images/interviewers/${start.interviewerId}.jpg` : start.interviewer === 'technical' ? '/images/wayne-static-photo.png' : '/images/amina-static-image-1.png'}
                 onError={e => { const old = start.interviewer === 'technical' ? '/images/wayne-static-photo.png' : '/images/amina-static-image-1.png'; if (!e.currentTarget.src.endsWith(old)) e.currentTarget.src = old; }}
                 alt={`${start.interviewerName}, your interviewer`}
                 width={520} height={288}

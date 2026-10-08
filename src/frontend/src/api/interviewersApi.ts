@@ -11,6 +11,7 @@ export interface PublicInterviewer {
   traits: { depth: number; strictness: number; warmth: number; humour: number; pace: number };
   sortOrder: number;
   backgroundUrl: string | null; // full URL of the uploaded background, or null
+  portraitUrl: string | null;   // full URL of the uploaded portrait (their face), or null: the picture files shipped with the site are then used
   defaultFor: 'hr' | 'technical' | 'briefing' | null;
 }
 
@@ -22,8 +23,9 @@ export async function fetchInterviewers(): Promise<PublicInterviewer[]> {
   try {
     const res = await fetch(`${API_BASE}/interviews/interviewers`);
     if (!res.ok) return [];
-    const raw = await res.json() as (Omit<PublicInterviewer, 'backgroundUrl'> & { backgroundUrl: string | null })[];
-    const list = raw.map(i => ({ ...i, backgroundUrl: i.backgroundUrl && i.backgroundUrl.startsWith('/') ? `${API_BASE}${i.backgroundUrl}` : null }));
+    const raw = await res.json() as (Omit<PublicInterviewer, 'backgroundUrl' | 'portraitUrl'> & { backgroundUrl: string | null; portraitUrl?: string | null })[];
+    const full = (u: string | null | undefined) => (u && u.startsWith('/') ? `${API_BASE}${u}` : null);
+    const list = raw.map(i => ({ ...i, backgroundUrl: full(i.backgroundUrl), portraitUrl: full(i.portraitUrl) }));
     cache = { at: Date.now(), list };
     return list;
   } catch { return []; }

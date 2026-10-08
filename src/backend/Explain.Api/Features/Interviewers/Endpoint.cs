@@ -47,7 +47,8 @@ public static partial class Endpoint
                 depth: clean.Depth, strictness: clean.Strictness, warmth: clean.Warmth, humour: clean.Humour, pace: clean.Pace,
                 active: clean.Active, sortOrder: clean.SortOrder, defaultFor: clean.DefaultFor,
                 backgroundUrl: existing?.backgroundUrl,
-                updatedAt: DateTimeOffset.UtcNow, updatedBy: ctx.User.FindFirst("sub")?.Value ?? "unknown");
+                updatedAt: DateTimeOffset.UtcNow, updatedBy: ctx.User.FindFirst("sub")?.Value ?? "unknown",
+                portraitUrl: existing?.portraitUrl);
 
             // Only one interviewer can be the default for a seat: taking it from another one is part of the same save.
             if (doc.defaultFor is not null) await ClearDefaultFromOthersAsync(cosmos, doc.defaultFor, id, ct);
@@ -99,7 +100,51 @@ public static partial class Endpoint
             return Results.Ok(ToAdminDto(updated));
         }).RequireAuthorization(Permissions.ViewSystemSettings).DisableAntiforgery().WithName("AdminInterviewerBackground").WithTags("Interviewers");
 
+        // The person's portrait (their face, shown in the picker, on the homepage and in the admin list). Same storage and rules as the background; stored as <id>/portrait.<ext>.
+        app.MapPost("/api/admin/interviewers/{id}/portrait", async (string id, IFormFile file, HttpContext ctx, CosmosService cosmos, IConfiguration config, CancellationToken ct) =>
+        {
+            if (!IsValidId(id)) return Results.BadRequest(new { error = "Unknown interviewer." });
+            var existing = await GetAsync(cosmos, id, ct);
+            if (existing is null) return Results.NotFound(new { error = "Save the interviewer first, then add the portrait." });
+            if (file is null || file.Length == 0) return Results.BadRequest(new { error = "Choose an image." });
+            if (file.Length > MaxBackgroundBytes) return Results.BadRequest(new { error = "That image is larger than 6 MB." });
+
+            byte[] bytes;
+            using (var ms = new MemoryStream()) { await file.CopyToAsync(ms, ct); bytes = ms.ToArray(); }
+            var kind = SniffImage(bytes);
+            if (kind is null) return Results.BadRequest(new { error = "Use a JPG, PNG or WebP image." });
+
+            var assets = AssetsClient(config);
+            if (assets is null) return Results.Json(new { error = "Image storage isn't configured." }, statusCode: 503);
+            await assets.CreateIfNotExistsAsync(PublicAccessType.None, cancellationToken: ct);
+            await foreach (var b in assets.GetBlobsAsync(BlobTraits.None, BlobStates.None, prefix: id + "/portrait.", cancellationToken: ct)) await assets.DeleteBlobIfExistsAsync(b.Name, cancellationToken: ct);
+            var blob = assets.GetBlobClient($"{id}/portrait.{kind.Value.Ext}");
+            using (var ms = new MemoryStream(bytes))
+                await blob.UploadAsync(ms, new BlobUploadOptions { HttpHeaders = new BlobHttpHeaders { ContentType = kind.Value.Mime, CacheControl = "public, max-age=86400" } }, ct);
+
+            var updated = existing with { portraitUrl = $"/interviewers/{id}/portrait?v={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}", updatedAt = DateTimeOffset.UtcNow, updatedBy = ctx.User.FindFirst("sub")?.Value ?? "unknown" };
+            await cosmos.GetContainer(ContainerName).UpsertItemAsync(updated, new PartitionKey(Partition), cancellationToken: ct);
+            InvalidateCache();
+            return Results.Ok(ToAdminDto(updated));
+        }).RequireAuthorization(Permissions.ViewSystemSettings).DisableAntiforgery().WithName("AdminInterviewerPortrait").WithTags("Interviewers");
+
         // ── Public (what candidates and the marketing page may see) ────────────────────────────────────────────────────────────────────────────
+        app.MapGet("/interviewers/{id}/portrait", async (string id, IConfiguration config, HttpContext ctx, CancellationToken ct) =>
+        {
+            if (!IsValidId(id)) return Results.NotFound();
+            var assets = AssetsClient(config);
+            if (assets is null) return Results.NotFound();
+            await foreach (var b in assets.GetBlobsAsync(BlobTraits.None, BlobStates.None, prefix: id + "/portrait.", cancellationToken: ct))
+            {
+                var client = assets.GetBlobClient(b.Name);
+                var download = await client.DownloadStreamingAsync(cancellationToken: ct);
+                ctx.Response.Headers.CacheControl = "public, max-age=86400";
+                ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
+                return Results.Stream(download.Value.Content, download.Value.Details.ContentType ?? "image/jpeg");
+            }
+            return Results.NotFound();
+        }).AllowAnonymous().WithName("InterviewerPortrait").WithTags("Interviewers");
+
         // A background picture. Private container, streamed through here with a day's caching, so the browser never needs blob access.
         app.MapGet("/interviewers/{id}/background", async (string id, IConfiguration config, HttpContext ctx, CancellationToken ct) =>
         {
@@ -322,14 +367,14 @@ public static partial class Endpoint
     {
         i.id, i.displayName, i.role, i.spatiusAvatarId, i.voiceId, i.description,
         traits = new { depth = i.depth, strictness = i.strictness, warmth = i.warmth, humour = i.humour, pace = i.pace },
-        i.active, i.sortOrder, i.defaultFor, i.backgroundUrl, i.updatedAt,
+        i.active, i.sortOrder, i.defaultFor, i.backgroundUrl, i.portraitUrl, i.updatedAt,
     };
 
     public static object ToPublicDto(Interviewer i) => new
     {
         i.id, i.displayName, i.role, avatarId = i.spatiusAvatarId, i.description,
         traits = new { depth = i.depth, strictness = i.strictness, warmth = i.warmth, humour = i.humour, pace = i.pace },
-        i.sortOrder, i.backgroundUrl, i.defaultFor,
+        i.sortOrder, i.backgroundUrl, i.portraitUrl, i.defaultFor,
     };
 }
 
@@ -343,4 +388,4 @@ public record Interviewer(
     string id, string pk, string displayName, string role, string spatiusAvatarId, string? voiceId, string description,
     int depth, int strictness, int warmth, int humour, int pace,
     bool active, int sortOrder, string? defaultFor, string? backgroundUrl,
-    DateTimeOffset updatedAt, string updatedBy);
+    DateTimeOffset updatedAt, string updatedBy, string? portraitUrl = null);

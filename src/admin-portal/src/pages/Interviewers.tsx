@@ -37,6 +37,20 @@ function toForm(i: Interviewer): InterviewerInput {
 function slugify(name: string) { return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32) }
 const bgSrc = (url: string | null) => (url ? `${EXPLAIN_API_BASE}${url}` : null)
 
+// A portrait straight from a camera or screenshot can be many megabytes; it is shown small, so it is shrunk to at most 1000 px on its long side (JPEG) before it is sent.
+async function shrinkImage(file: File): Promise<File> {
+  try {
+    const bmp = await createImageBitmap(file)
+    const scale = Math.min(1, 1000 / Math.max(bmp.width, bmp.height))
+    if (scale === 1 && file.size < 600_000) return file
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(bmp.width * scale); canvas.height = Math.round(bmp.height * scale)
+    canvas.getContext('2d')?.drawImage(bmp, 0, 0, canvas.width, canvas.height)
+    const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', 0.88))
+    return blob ? new File([blob], 'portrait.jpg', { type: 'image/jpeg' }) : file
+  } catch { return file }
+}
+
 function TraitBars({ t }: { t: Interviewer['traits'] }) {
   return (
     <div style={{ display: 'grid', gap: 4 }}>
@@ -54,11 +68,12 @@ function TraitBars({ t }: { t: Interviewer['traits'] }) {
 
 // The interviewer's face on their card (2026-10-08): the portrait the candidates see in the picker (a file on the candidate site, named by the interviewer's id), with the
 // uploaded room as a small inset in the corner. A new interviewer with no portrait file yet simply shows their room, as before.
-function CardFace({ id, room }: { id: string; room: string | null }) {
+function CardFace({ id, portrait, room }: { id: string; portrait: string | null; room: string | null }) {
   const [failed, setFailed] = useState(false);
+  const src = portrait ?? `https://candidate.theinterviewchair.com/images/interviewers/${id}.jpg`;
   return (
     <>
-      {!failed && <img src={`https://candidate.theinterviewchair.com/images/interviewers/${id}.jpg`} alt="" onError={() => setFailed(true)}
+      {!failed && <img src={src} alt="" onError={() => setFailed(true)}
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 8%' }} />}
       {!failed && room && <div title="Room (background)" style={{ position: 'absolute', top: 10, right: 10, width: 76, aspectRatio: '16 / 9', borderRadius: 6, border: '2px solid rgba(255,255,255,0.85)', background: `center / cover url(${room})` }} />}
     </>
@@ -74,6 +89,8 @@ export default function Interviewers() {
   const [newId, setNewId] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const [portraitFile, setPortraitFile] = useState<File | null>(null)
+  const [portraitPreview, setPortraitPreview] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
   const [copied, setCopied] = useState<string | null>(null)
@@ -86,11 +103,13 @@ export default function Interviewers() {
   }, [token])
   useEffect(() => { void load() }, [load])
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview) }, [preview])
+  useEffect(() => () => { if (portraitPreview) URL.revokeObjectURL(portraitPreview) }, [portraitPreview])
 
-  function startEdit(i: Interviewer) { setEditingId(i.id); setForm(toForm(i)); setFile(null); setPreview(null); setFormError('') }
-  function startNew() { setEditingId('new'); setForm(emptyForm()); setNewId(''); setFile(null); setPreview(null); setFormError('') }
-  function closeForm() { setEditingId(null); setFile(null); setPreview(null); setFormError('') }
+  function startEdit(i: Interviewer) { setEditingId(i.id); setForm(toForm(i)); setFile(null); setPreview(null); setPortraitFile(null); setPortraitPreview(null); setFormError('') }
+  function startNew() { setEditingId('new'); setForm(emptyForm()); setNewId(''); setFile(null); setPreview(null); setPortraitFile(null); setPortraitPreview(null); setFormError('') }
+  function closeForm() { setEditingId(null); setFile(null); setPreview(null); setPortraitFile(null); setPortraitPreview(null); setFormError('') }
   function pickFile(f: File | null) { setFile(f); setPreview(f ? URL.createObjectURL(f) : null) }
+  function pickPortrait(f: File | null) { setPortraitFile(f); setPortraitPreview(f ? URL.createObjectURL(f) : null) }
 
   async function save() {
     if (!token || editingId === null) return
@@ -100,6 +119,7 @@ export default function Interviewers() {
     try {
       let saved = await interviewersApi.save(token, id, form)
       if (file) saved = await interviewersApi.uploadBackground(token, id, file)
+      if (portraitFile) saved = await interviewersApi.uploadPortrait(token, id, await shrinkImage(portraitFile))
       await load()
       closeForm()
       void saved
@@ -126,6 +146,7 @@ export default function Interviewers() {
 
   const editing = editingId && editingId !== 'new' ? items?.find(i => i.id === editingId) : undefined
   const shownBackground = preview ?? bgSrc(editing?.backgroundUrl ?? null)
+  const shownPortrait = portraitPreview ?? bgSrc(editing?.portraitUrl ?? null) ?? (editing ? `https://candidate.theinterviewchair.com/images/interviewers/${editing.id}.jpg` : null)
 
   return (
     <div>
@@ -151,7 +172,7 @@ export default function Interviewers() {
         {(items ?? []).map(i => (
           <div key={i.id} style={{ ...card, opacity: i.active ? 1 : 0.6 }}>
             <div style={{ aspectRatio: '16 / 9', background: bgSrc(i.backgroundUrl) ? `center / cover url(${bgSrc(i.backgroundUrl)})` : 'linear-gradient(135deg, #232b3b, #3b475c)', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: 10 }}>
-              <CardFace id={i.id} room={bgSrc(i.backgroundUrl)} />
+              <CardFace id={i.id} portrait={bgSrc(i.portraitUrl)} room={bgSrc(i.backgroundUrl)} />
               <span style={{ position: 'relative', fontSize: 11, fontWeight: 800, color: '#fff', background: 'rgba(0,0,0,0.6)', borderRadius: 6, padding: '3px 8px' }}>{i.displayName}</span>
               <span style={{ position: 'relative', display: 'flex', gap: 5 }}>
                 {i.defaultFor && <span style={{ fontSize: 10, fontWeight: 800, color: '#04120c', background: '#34D399', borderRadius: 6, padding: '3px 7px' }}>Default {ROLE_LABEL[i.defaultFor]}</span>}
@@ -212,6 +233,17 @@ export default function Interviewers() {
                     <input type="range" min={1} max={5} step={1} value={form[t.key]} onChange={e => setForm({ ...form, [t.key]: Number(e.target.value) })} style={{ width: '100%' }} />
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div>
+              <div style={{ ...label, marginBottom: 6 }}>Portrait (the person's face: shown in the picker, on the homepage and in this list; JPG, PNG or WebP, any size, it is shrunk for you)</div>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ width: 120, aspectRatio: '4 / 3', borderRadius: 8, border: '1px solid var(--border)', background: shownPortrait ? `center 12% / cover url(${shownPortrait})` : 'var(--bg3)', flexShrink: 0 }} />
+                <label style={{ ...smallBtn, cursor: 'pointer' }}><Upload size={12} /> {portraitFile ? portraitFile.name : 'Choose a portrait'}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => pickPortrait(e.target.files?.[0] ?? null)} style={{ display: 'none' }} />
+                </label>
+                {editingId === 'new' && <span style={{ fontSize: 11, color: 'var(--text-3)' }}>It is uploaded when you save.</span>}
               </div>
             </div>
 

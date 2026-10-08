@@ -1586,7 +1586,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   {([['HR', seatsIv.hr], ['Technical', seatsIv.technical]] as const).map(([label, iv]) => (
                     <motion.div key={iv.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.6 }}
                       style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <img src={`/images/interviewers/${iv.id}.jpg`} alt="" onError={e => { const el = e.currentTarget; if (iv.backgroundUrl && el.src !== iv.backgroundUrl) el.src = iv.backgroundUrl; }}
+                      <img src={iv.portraitUrl ?? `/images/interviewers/${iv.id}.jpg`} alt="" onError={e => { const el = e.currentTarget; const file = `/images/interviewers/${iv.id}.jpg`; if (el.src.endsWith(file)) { if (iv.backgroundUrl && el.src !== iv.backgroundUrl) el.src = iv.backgroundUrl; } else el.src = file; }}
                         style={{ width: '148px', aspectRatio: '4 / 3', objectFit: 'cover', objectPosition: 'center 25%', borderRadius: '12px', flexShrink: 0, background: '#232b3b' }} />
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)' }}>{iv.displayName}</div>

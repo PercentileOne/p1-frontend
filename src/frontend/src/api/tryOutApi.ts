@@ -10,6 +10,8 @@ export interface TryOutStart {
   interviewerName: string;
   /** Registry id of whoever is interviewing (the choice, else the seat's default); its portrait is the photo shown when the live face is off. */
   interviewerId?: string | null;
+  /** Their uploaded portrait (a path on the API), if one has been added in Admin > Interviewers. */
+  interviewerPortraitUrl?: string | null;
   /** The interviewer the visitor chose (their voice, photo and personality); absent or null for the default, Wayne. */
   chosenInterviewer?: { id: string; displayName: string; role: 'hr' | 'technical'; avatarId: string; description: string; traits: { depth: number; strictness: number; warmth: number; humour: number; pace: number } } | null;
   questions: string[];

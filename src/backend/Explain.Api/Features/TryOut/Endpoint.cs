@@ -109,6 +109,7 @@ public static class Endpoint
                 // photo shown when the live face is off must too.
                 interviewerName = shown?.displayName ?? "Wayne",
                 interviewerId = shown?.id,
+                interviewerPortraitUrl = shown?.portraitUrl,
                 // The chosen interviewer in full (null for the default Wayne): the page uses their voice, room and photo.
                 chosenInterviewer = chosen is null ? null : Explain.Api.Features.Interviewers.Endpoint.ToPublicDto(chosen),
                 questions = model.Questions.Take(3).Select(q => q.Trim()).Where(q => q.Length > 0).ToList(),

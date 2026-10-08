@@ -19,6 +19,7 @@ export interface Interviewer {
   sortOrder: number
   defaultFor: InterviewerRole | null
   backgroundUrl: string | null
+  portraitUrl: string | null
   updatedAt: string
 }
 
@@ -64,6 +65,11 @@ export const interviewersApi = {
       }),
     }),
   remove: (token: string, id: string) => call<void>(`/api/admin/interviewers/${encodeURIComponent(id)}`, token, { method: 'DELETE' }),
+  uploadPortrait: (token: string, id: string, file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return call<Interviewer>(`/api/admin/interviewers/${encodeURIComponent(id)}/portrait`, token, { method: 'POST', body: form })
+  },
   uploadBackground: (token: string, id: string, file: File) => {
     const form = new FormData()
     form.append('file', file)

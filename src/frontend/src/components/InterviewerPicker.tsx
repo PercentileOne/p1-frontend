@@ -37,13 +37,14 @@ async function playPcm(pcm: Uint8Array): Promise<void> {
 }
 
 function Portrait({ iv, children }: { iv: PublicInterviewer; children?: React.ReactNode }) {
-  // A portrait picture if one has been saved for this interviewer, else the room behind them, else a plain tile with their initial.
-  const [src, setSrc] = useState<string | null>(`/images/interviewers/${iv.id}.jpg`);
-  const fallback = iv.backgroundUrl;
+  // The uploaded portrait if there is one, else the picture file shipped with the site, else the room behind them, else a plain tile with their initial.
+  const chain = [iv.portraitUrl, `/images/interviewers/${iv.id}.jpg`, iv.backgroundUrl].filter((u): u is string => !!u);
+  const [step, setStep] = useState(0);
+  const src = chain[step] ?? null;
   return (
     <div style={{ aspectRatio: '4 / 3', borderRadius: 10, overflow: 'hidden', background: 'linear-gradient(135deg, #232b3b, #3b475c)', position: 'relative' }}>
       {src ? (
-        <img src={src} alt="" onError={() => setSrc(s => (s && s !== fallback ? fallback : null))} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 25%', display: 'block' }} />
+        <img src={src} alt="" onError={() => setStep(n => n + 1)} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 25%', display: 'block' }} />
       ) : (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34, fontWeight: 800, color: 'rgba(255,255,255,0.6)' }}>{iv.displayName.slice(0, 1)}</div>
       )}

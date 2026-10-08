@@ -871,13 +871,14 @@
   var IV_IDS = { amina: 1, catherine: 1, wayne: 1, haruto: 1, malcom: 1 };   // the ones with a portrait file on this site (/img/iv-<id>.webp)
   var IV_TRAITS = [['depth', 'Depth'], ['strictness', 'Strictness'], ['warmth', 'Warmth'], ['humour', 'Humour'], ['pace', 'Pace']];
   var pickList = IV_FALLBACK, pickSel = 'haruto';
-  function ivPhoto(id) { return '/img/iv-' + id + '.webp'; }
+  // An uploaded portrait (Admin > Interviewers) wins; otherwise the picture file on this site.
+  function ivPhoto(i) { return i.portraitUrl ? 'https://api.explain.global' + i.portraitUrl : '/img/iv-' + i.id + '.webp'; }
   function renderPick() {
     var cur = pickList.filter(function (i) { return i.id === pickSel; })[0] || pickList[0];
     if (!cur) return;
     pickSel = cur.id;
     var img = document.getElementById('pickImg');
-    img.src = ivPhoto(cur.id); img.alt = cur.displayName + ', a live AI interviewer';
+    img.src = ivPhoto(cur); img.alt = cur.displayName + ', a live AI interviewer';
     document.getElementById('pickName').textContent = cur.displayName;
     document.getElementById('pickRole').textContent = cur.role === 'hr' ? 'HR interviewer' : 'Technical interviewer';
     document.getElementById('pickDesc').textContent = cur.description || '';
@@ -894,7 +895,7 @@
     pickList.forEach(function (i) {
       var b = document.createElement('button'); b.type = 'button'; b.className = 'pick-tile';
       b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', i.id === pickSel ? 'true' : 'false'); b.setAttribute('aria-label', 'Choose ' + i.displayName);
-      var im = document.createElement('img'); im.src = ivPhoto(i.id); im.alt = ''; im.width = 96; im.height = 96; im.loading = 'lazy';
+      var im = document.createElement('img'); im.src = ivPhoto(i); im.alt = ''; im.width = 96; im.height = 96; im.loading = 'lazy';
       var nm = document.createElement('span'); nm.textContent = i.displayName;
       b.appendChild(im); b.appendChild(nm);
       b.addEventListener('click', function () {
@@ -908,7 +909,7 @@
   try {
     fetch('https://api.explain.global/interviews/interviewers').then(function (r) { return r.ok ? r.json() : null; }).then(function (list) {
       if (!Array.isArray(list)) return;
-      var ok = list.filter(function (i) { return (i.role === 'hr' || i.role === 'technical') && IV_IDS[i.id]; })
+      var ok = list.filter(function (i) { return (i.role === 'hr' || i.role === 'technical') && (IV_IDS[i.id] || i.portraitUrl); })
                    .sort(function (a, b) { return (a.role === b.role ? 0 : a.role === 'hr' ? -1 : 1) || (a.sortOrder - b.sortOrder); });
       if (ok.length < 2) return;
       pickList = ok;
