@@ -1582,6 +1582,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               {/* The two interviewers who will be in the room (2026-10-07: replaces the chair photo once the interviewers are known); the chair is the fallback. */}
               {seatsIv.hr && seatsIv.technical ? (
                 <div style={{ position: 'relative', flex: '1 1 320px', minHeight: '320px', background: 'linear-gradient(160deg, #0d1424, #080b14)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '14px', padding: '28px 24px' }}>
+                  {/* The chair, kept small above the interviewers (Francis, 2026-10-08). */}
+                  <img src="/images/mastermind-chair.png" alt="" style={{ width: '190px', maxWidth: '60%', height: 'auto', borderRadius: '12px', opacity: 0.95 }} />
                   <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Your interviewers</div>
                   {([['HR', seatsIv.hr], ['Technical', seatsIv.technical]] as const).map(([label, iv]) => (
                     <motion.div key={iv.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.6 }}
@@ -1595,6 +1597,13 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       </div>
                     </motion.div>
                   ))}
+                  {/* A way back to choose again, under the faces (Francis, 2026-10-08). It opens the same picker as "Change"; nothing typed at setup is lost. */}
+                  {roster.length > 0 && !ctx.companyContext && (
+                    <button type="button" onClick={() => { idsAtOpenRef.current = seatIdsKey(); setChangeOpen(true); }}
+                      style={{ alignSelf: 'flex-start', background: 'transparent', border: '1px solid var(--border)', borderRadius: '10px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', color: 'var(--text-2)', fontFamily: 'inherit' }}>
+                      &larr; Change interviewers
+                    </button>
+                  )}
                 </div>
               ) : (
               <div style={{ position: 'relative', flex: '1 1 320px', minHeight: '320px', overflow: 'hidden', background: '#000' }}>
