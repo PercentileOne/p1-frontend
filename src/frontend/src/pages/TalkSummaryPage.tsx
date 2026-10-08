@@ -6,6 +6,8 @@ import { useAuthStore } from '../auth/authStore';
 import { TalkSaveDecisionPanel } from '../components/TalkSaveDecisionPanel';
 import { WaveformBars } from '../components/InterviewerAvatar';
 import { speak } from '../api/ttsApi';
+import { seatName } from '../lib/seatInterviewers';
+import { loadTalkInterviewers } from '../lib/talkInterviewers';
 import type { TalkScoreResult, DimensionScore } from '../api/talksApi';
 
 // Wayne's blue, matching PROFILES.technical in InterviewerAvatar.tsx — he's the one giving
@@ -49,6 +51,9 @@ export default function TalkSummaryPage() {
   const { id: routeId } = useParams<{ id: string }>();
   const authUser = useAuthStore(s => s.user);
   const authToken = useAuthStore(s => s.token);
+  // The debrief is given by the talk's technical interviewer (Malcolm, from Admin > Interviewers): make sure their name and voice are loaded even if this page was opened fresh.
+  const [, bumpNames] = useState(0);
+  useEffect(() => { void loadTalkInterviewers().then(() => bumpNames(n => n + 1)); }, []);
 
   const hasRouteState = !!location.state;
   const [fetched, setFetched] = useState<Record<string, unknown> | null>(null);
@@ -199,7 +204,7 @@ export default function TalkSummaryPage() {
                     <div style={{ position: 'absolute', inset: -4, borderRadius: '50%', border: `2px solid ${WAYNE_COLOR}80`, animation: 'wayne-pulse 1.4s ease-in-out infinite' }} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: WAYNE_COLOR, marginBottom: '2px' }}>Wayne · Feedback</div>
+                    <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: WAYNE_COLOR, marginBottom: '2px' }}>{seatName('technical')} · Feedback</div>
                     <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Delivering your debrief…</div>
                   </div>
                   <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -225,7 +230,7 @@ export default function TalkSummaryPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                   <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, #1B3A6B, #2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 800, color: '#fff', flexShrink: 0 }}>WL</div>
                   <div>
-                    <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: WAYNE_COLOR, marginBottom: '2px' }}>Wayne · Feedback</div>
+                    <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: WAYNE_COLOR, marginBottom: '2px' }}>{seatName('technical')} · Feedback</div>
                     <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>
                       {wayneSpoke ? 'Want to hear that again?' : 'Ready to give you a personalised debrief on your talk.'}
                     </div>

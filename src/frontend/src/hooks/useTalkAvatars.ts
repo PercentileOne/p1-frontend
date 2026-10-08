@@ -1,10 +1,20 @@
 import { useCallback, useRef, useState } from 'react';
 import type { AvatarState } from '../components/InterviewerAvatar';
-import type { useLiveAvatarSession } from './useLiveAvatarSession';
 import { speak } from '../api/ttsApi';
 import { fetchWayneTips } from '../api/talksApi';
 
-type LiveAvatarSession = ReturnType<typeof useLiveAvatarSession>;
+// What the talk needs from an interviewer's face: the live Spatius seat has this shape, and so does a seat with no face (voice and portrait only), which simply refuses to
+// connect so every line falls back to the plain voice.
+export interface TalkSeat {
+  status: string;
+  connect: () => Promise<void>;
+  speak: (text: string, role: 'hr' | 'technical' | 'michelle', onStarted?: () => void) => Promise<void>;
+  interrupt: () => void;
+  startListening: () => void;
+  stopListening: () => void;
+  disconnect: (full?: boolean) => Promise<void>;
+}
+type LiveAvatarSession = TalkSeat;
 
 export interface UseTalkAvatarsParams {
   liveAvatarHr: LiveAvatarSession;
@@ -105,6 +115,10 @@ export function useTalkAvatars(params: UseTalkAvatarsParams) {
     setHrState('listening'); setTechState('listening');
     liveAvatarHr.startListening();
     liveAvatarTechnical.startListening();
+    // Spatius draws each face on this device, so the faces stay on screen (idling and blinking) at no cost once their billed connections are closed. Closing them here means
+    // the whole talk is not billed, and each line reopens its connection quickly (the face is kept, only the connection restarts).
+    void liveAvatarHr.disconnect();
+    void liveAvatarTechnical.disconnect();
   }, [liveAvatarHr, liveAvatarTechnical]);
 
   // No more endTalkPresence/giveOutro (removed 2026-09-15) — TalkRoomPage.tsx's finishTalk now

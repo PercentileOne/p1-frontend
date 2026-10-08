@@ -2,14 +2,27 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
-import { InterviewerAvatar, PROFILES, WaveformBars } from '../components/InterviewerAvatar';
+import { PROFILES, WaveformBars } from '../components/InterviewerAvatar';
 import { YouCamera } from '../components/YouCamera';
-import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
-import { useTalkAvatars } from '../hooks/useTalkAvatars';
+import { useSpatiusSeat, deviceCanUseSpatiusInRoom, type SeatRole } from '../hooks/useSpatiusSeat';
+import { SpatiusSeatStage } from '../components/SpatiusSeatStage';
+import { fetchAvatarConfig, type AvatarConfig } from '../api/liveAvatarApi';
+import { loadTalkInterviewers, talkSeatsFrom } from '../lib/talkInterviewers';
+import { seatName } from '../lib/seatInterviewers';
+import type { PublicInterviewer } from '../api/interviewersApi';
+import { useTalkAvatars, type TalkSeat } from '../hooks/useTalkAvatars';
 import { useTalkTranscript } from '../hooks/useTalkTranscript';
 import { useTalkRecording } from '../hooks/useTalkRecording';
 import { scoreTalk, uploadTalk, type TalkScoreResult } from '../api/talksApi';
 import { useAuthStore } from '../auth/authStore';
+
+// A seat with no live face (a phone, Spatius switched off, or a face that failed to start): the interviewer shows as their portrait and every line is spoken in their plain voice.
+const NO_FACE: TalkSeat = {
+  status: 'idle',
+  connect: () => Promise.reject(new Error('no live face')),
+  speak: () => Promise.reject(new Error('no live face')),
+  interrupt: () => {}, startListening: () => {}, stopListening: () => {}, disconnect: async () => {},
+};
 
 type TalkPhase = 'intro' | 'mike-prep' | 'wayne-tips' | 'talk' | 'scoring' | 'done';
 
@@ -155,8 +168,33 @@ export default function TalkRoomPage() {
 
   const [hrAnalyser, setHrAnalyser] = useState<AnalyserNode | null>(null);
   const [techAnalyser, setTechAnalyser] = useState<AnalyserNode | null>(null);
-  const liveAvatarHr = useLiveAvatarSession('hr', setHrAnalyser);
-  const liveAvatarTechnical = useLiveAvatarSession('technical', setTechAnalyser);
+
+  // The talk's interviewers (Catherine and Malcolm, from Admin > Interviewers) and the face service settings, loaded before Begin is allowed so that names, voices and faces are
+  // all known before anything is spoken. Faces are drawn by Spatius on computers; phones and any failure show the portrait and use the plain voice.
+  const [roster, setRoster] = useState<PublicInterviewer[]>([]);
+  const [avatarCfg, setAvatarCfg] = useState<AvatarConfig | null>(null);
+  const avatarCfgRef = useRef<AvatarConfig | null>(null);
+  const [interviewersReady, setInterviewersReady] = useState(false);
+  useEffect(() => {
+    void Promise.all([fetchAvatarConfig(), loadTalkInterviewers()]).then(([cfg, { list }]) => {
+      avatarCfgRef.current = cfg; setAvatarCfg(cfg); setRoster(list); setInterviewersReady(true);
+    });
+  }, []);
+  const seatsIv = talkSeatsFrom(roster);
+  const seatIdsRef = useRef<Partial<Record<SeatRole, string>>>({});
+  seatIdsRef.current = { hr: seatsIv.hr?.avatarId, technical: seatsIv.technical?.avatarId };
+  const [faceFailed, setFaceFailed] = useState<Record<SeatRole, boolean>>({ hr: false, technical: false, michelle: false });
+  const markFaceFailed = useCallback((role: SeatRole) => setFaceFailed(f => (f[role] ? f : { ...f, [role]: true })), []);
+  const tilesVisibleRef = useRef(false);
+  const hrStageRef = useRef<HTMLDivElement>(null);
+  const technicalStageRef = useRef<HTMLDivElement>(null);
+  const spatiusHr = useSpatiusSeat('hr', hrStageRef, avatarCfgRef, markFaceFailed, tilesVisibleRef, seatIdsRef);
+  const spatiusTechnical = useSpatiusSeat('technical', technicalStageRef, avatarCfgRef, markFaceFailed, tilesVisibleRef, seatIdsRef);
+  const facesAvailable = avatarCfg?.provider === 'spatius' && deviceCanUseSpatiusInRoom();
+  const hrOnFace = facesAvailable && !faceFailed.hr;
+  const techOnFace = facesAvailable && !faceFailed.technical;
+  const liveAvatarHr: TalkSeat = hrOnFace ? spatiusHr : NO_FACE;
+  const liveAvatarTechnical: TalkSeat = techOnFace ? spatiusTechnical : NO_FACE;
 
   const talkAvatars = useTalkAvatars({
     liveAvatarHr, liveAvatarTechnical,
@@ -283,6 +321,7 @@ export default function TalkRoomPage() {
   // an opacity/position reveal of a permanently-mounted block, never the mount/unmount of the
   // <video> elements themselves.
   const revealAvatars = showAvatars && phase !== 'mike-prep';
+  tilesVisibleRef.current = revealAvatars; // the faces connect only once their tiles are on screen at their real size
   const progress = Math.min(1, elapsed / targetDurationSeconds);
   const overTarget = elapsed > targetDurationSeconds;
 
@@ -327,12 +366,12 @@ export default function TalkRoomPage() {
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
             <h1 style={{ fontSize: '26px', fontWeight: 900, color: 'var(--text)', marginBottom: '10px' }}>Ready when you are</h1>
             <p style={{ fontSize: '14px', color: 'var(--text-2)', marginBottom: '32px' }}>
-              Michelle will brief you, then Amina and Wayne will be right there the whole time.
+              Michelle will brief you, then {seatName('hr')} and {seatName('technical')} will be right there the whole time.
             </p>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '28px' }}>
               <YouCamera cameraOn={cameraOn} onToggle={() => setCameraOn(v => !v)} width={320} height={240} />
             </div>
-            <button onClick={beginTalk} style={{ background: 'linear-gradient(135deg, var(--blue), #a78bfa)', color: '#fff', border: 'none', borderRadius: '12px', padding: '16px 40px', fontSize: '15px', fontWeight: 800, cursor: 'pointer' }}>
+            <button onClick={beginTalk} disabled={!interviewersReady} style={{ background: 'linear-gradient(135deg, var(--blue), #a78bfa)', color: '#fff', border: 'none', borderRadius: '12px', padding: '16px 40px', fontSize: '15px', fontWeight: 800, cursor: interviewersReady ? 'pointer' : 'default', opacity: interviewersReady ? 1 : 0.6 }}>
               Begin Talk →
             </button>
           </div>
@@ -340,7 +379,7 @@ export default function TalkRoomPage() {
 
         {phase === 'mike-prep' && (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
-            <img src="/images/michelle-static-avatar.png" alt="Michelle" style={{ width: '140px', height: '140px', borderRadius: '50%', objectFit: 'cover', marginBottom: '20px' }} />
+            <img src="/images/interviewers/michelle.jpg" alt="Michelle" style={{ width: '140px', height: '140px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'center 18%', marginBottom: '20px' }} />
             <div style={{ fontSize: '14px', color: 'var(--text-2)' }}>Michelle is briefing you…</div>
           </div>
         )}
@@ -357,43 +396,30 @@ export default function TalkRoomPage() {
             ? { display: 'flex', gap: '16px' }
             : { display: 'flex', gap: '16px', position: 'absolute', inset: 0, zIndex: -1, pointerEvents: 'none' }}
         >
-              <div style={{ position: 'relative', flex: 1, display: 'flex', aspectRatio: '4/3' }}>
-                <InterviewerAvatar role="hr" state={talkAvatars.hrState} active={talkAvatars.hrState === 'speaking'} analyserNode={hrAnalyser} videoUrl={null} />
-                <video ref={liveAvatarHr.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} />
-                {liveAvatarHr.status === 'connected' && (
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '14px 16px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', pointerEvents: 'none' }}>
+              {(['hr', 'technical'] as const).map(seat => {
+                const iv = seat === 'hr' ? seatsIv.hr : seatsIv.technical;
+                const onFace = seat === 'hr' ? hrOnFace : techOnFace;
+                const sp = seat === 'hr' ? spatiusHr : spatiusTechnical;
+                const state = seat === 'hr' ? talkAvatars.hrState : talkAvatars.techState;
+                const analyser = seat === 'hr' ? hrAnalyser : techAnalyser;
+                const profile = PROFILES[seat];
+                const portrait = iv ? (iv.portraitUrl ?? `/images/interviewers/${iv.id}.jpg`) : null;
+                return (
+                  <div key={seat} style={{ position: 'relative', flex: 1, display: 'flex', aspectRatio: '16 / 9', borderRadius: '16px', overflow: 'hidden', background: '#0b1020', boxShadow: state === 'speaking' ? `0 0 0 2px ${seat === 'hr' ? 'rgba(167,139,250,0.5)' : 'rgba(79,142,247,0.5)'}` : '0 0 0 1px rgba(255,255,255,0.06)' }}>
+                    {portrait && <img src={portrait} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 20%' }} />}
+                    {iv && <SpatiusSeatStage seat={seat} avatarId={iv.avatarId} backgroundUrl={iv.backgroundUrl} stageRef={seat === 'hr' ? hrStageRef : technicalStageRef} visible={onFace && sp.rendered} live={onFace && sp.status === 'connected'} rendered={onFace && sp.rendered} rounded={false} />}
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '14px 16px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', pointerEvents: 'none', background: 'linear-gradient(to top, rgba(4,6,12,0.65), transparent)' }}>
                       <div>
-                        <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{PROFILES.hr.name}</div>
-                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>{PROFILES.hr.title}</div>
+                        <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{iv?.displayName ?? profile.name}</div>
+                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>{profile.title}</div>
                       </div>
-                      {talkAvatars.hrState === 'speaking'
-                        ? <WaveformBars active color={PROFILES.hr.barColor} analyserNode={hrAnalyser} />
-                        : <div style={{ fontSize: '10px', color: '#4F8EF7' }}>
-                            {/* Real HeyGen-confirmed pose (2026-09-16) where available; falls
-                                back to "Listening" (the pre-existing default) while avatarPoseState
-                                is still null, e.g. right after a fresh reconnect. */}
-                            {liveAvatarHr.avatarPoseState === 'listening' || liveAvatarHr.avatarPoseState == null ? 'Listening' : 'Idle'}
-                          </div>}
+                      {state === 'speaking'
+                        ? <WaveformBars active color={profile.barColor} analyserNode={analyser} />
+                        : <div style={{ fontSize: '10px', color: '#4F8EF7' }}>{phase === 'talk' ? 'Listening' : 'Ready'}</div>}
                     </div>
-                )}
-              </div>
-              <div style={{ position: 'relative', flex: 1, display: 'flex', aspectRatio: '4/3' }}>
-                <InterviewerAvatar role="technical" state={talkAvatars.techState} active={talkAvatars.techState === 'speaking'} analyserNode={techAnalyser} videoUrl={null} />
-                <video ref={liveAvatarTechnical.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} />
-                {liveAvatarTechnical.status === 'connected' && (
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '14px 16px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                      <div>
-                        <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{PROFILES.technical.name}</div>
-                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>{PROFILES.technical.title}</div>
-                      </div>
-                      {talkAvatars.techState === 'speaking'
-                        ? <WaveformBars active color={PROFILES.technical.barColor} analyserNode={techAnalyser} />
-                        : <div style={{ fontSize: '10px', color: '#4F8EF7' }}>
-                            {liveAvatarTechnical.avatarPoseState === 'listening' || liveAvatarTechnical.avatarPoseState == null ? 'Listening' : 'Idle'}
-                          </div>}
-                    </div>
-                )}
-              </div>
+                  </div>
+                );
+              })}
         </motion.div>
 
         {/* Much larger self-view than the interview room's small "YOU" tile — per Francis's own

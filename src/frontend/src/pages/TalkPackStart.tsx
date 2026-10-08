@@ -139,7 +139,7 @@ export default function TalkPackStart() {
             Set up your talk
           </h1>
           <p style={{ fontSize: '15px', color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>
-            Amina and Wayne will be right there with you — encouraging and giving tips, the whole way through
+            Your two interviewers will be right there with you — encouraging and giving tips, the whole way through
           </p>
           <button
             onClick={() => setShowCoaching(true)}
@@ -185,8 +185,8 @@ export default function TalkPackStart() {
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
             {([
-              { value: false, label: 'Factual / informational', desc: 'A topic you\'re explaining — Wayne gives real subject tips' },
-              { value: true, label: 'Personal / experiential', desc: 'Something you lived through — Wayne gives storytelling tips' },
+              { value: false, label: 'Factual / informational', desc: 'A topic you\'re explaining — your technical interviewer gives real subject tips' },
+              { value: true, label: 'Personal / experiential', desc: 'Something you lived through — your technical interviewer gives storytelling tips' },
             ] as const).map(opt => (
               <button
                 key={String(opt.value)}
@@ -259,7 +259,7 @@ export default function TalkPackStart() {
               ))}
             </select>
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
-              Amina and Wayne will speak entirely in {LANGUAGES.find(l => l.code === selectedLanguage)?.name ?? 'English'}.
+              Your interviewers will speak entirely in {LANGUAGES.find(l => l.code === selectedLanguage)?.name ?? 'English'}.
             </div>
           </div>
 
