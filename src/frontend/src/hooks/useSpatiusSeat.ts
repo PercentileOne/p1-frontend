@@ -104,12 +104,20 @@ export function useSpatiusSeat(
 
   // Safety net: if the face has not actually started speaking within 12 seconds (audio not arriving, the renderer stalled), give up so the room speaks the line in
   // the ordinary voice instead of the interview sitting silent (the room treats a failure before speech starts as "use plain voice").
+  // The 12 seconds are counted from the moment the audio is handed to the face, not from the request: a long, personal line (Michelle's briefing) can take more than 12 seconds
+  // to produce, and counting that gave up too early and played the plain voice over the real one. Producing the audio has its own, longer limit (45 s).
   const speak = useCallback((text: string, speakRole: SeatRole, onSpeakStarted?: () => void) => new Promise<void>((resolve, reject) => {
     let started = false;
-    const watchdog = window.setTimeout(() => { if (!started) { interrupt(); reject(new Error('spatius speech did not start')); } }, 12000);
-    innerSpeak(text, speakRole, () => { started = true; window.clearTimeout(watchdog); onSpeakStarted?.(); })
-      .then(() => { window.clearTimeout(watchdog); resolve(); })
-      .catch(e => { window.clearTimeout(watchdog); reject(e); });
+    let watchdog = 0;
+    const giveUp = (why: string) => { if (!started) { interrupt(); reject(new Error(why)); } };
+    const producing = window.setTimeout(() => giveUp('spatius speech audio took too long'), 45000);
+    const done = () => { window.clearTimeout(producing); window.clearTimeout(watchdog); };
+    innerSpeak(text, speakRole, () => { started = true; done(); onSpeakStarted?.(); }, undefined, () => {
+      window.clearTimeout(producing);
+      watchdog = window.setTimeout(() => giveUp('spatius speech did not start'), 12000);
+    })
+      .then(() => { done(); resolve(); })
+      .catch(e => { done(); reject(e); });
   }), [innerSpeak, interrupt]);
   const noop = useCallback(() => { /* Spatius has no listening pose */ }, []);
   const setVideoEl = useCallback((_el: HTMLVideoElement | null) => { /* no <video>: the face is drawn into the seat's stage <div> */ }, []);

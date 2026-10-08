@@ -121,6 +121,10 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   // Bumped by disconnect(): a connect() that's still in flight when the page gives up on it (timeout) notices and tears itself down
   // instead of finishing later as a ghost, billed session.
   const attemptRef = useRef(0);
+  // Counts speech requests. interrupt() and disconnect() move it on, so a line whose audio is still being fetched when it is cancelled is DROPPED when it arrives, instead of
+  // being sent to the face late and talking over the plain voice that took its place (Francis, 2026-10-08: Michelle's long briefing took 13 s to produce, the room gave up
+  // after 12 s and spoke it in the plain voice, then the real voice arrived and played too).
+  const speakSeqRef = useRef(0);
 
   const release = useCallback(() => {
     try { ctrlRef.current?.close(); } catch { /* already closed */ }
@@ -270,10 +274,13 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   }, [release, stageRef]);
 
   // Resolves when the avatar has finished saying the line (or a ceiling based on the clip's length, so a page can never hang).
-  const speak = useCallback(async (text: string, role: 'hr' | 'technical' | 'michelle', onStarted?: () => void, interviewerId?: string): Promise<void> => {
+  // onSent fires the moment the audio has been handed to the face (after it was produced), so callers can time "has it started?" from then rather than from the request.
+  const speak = useCallback(async (text: string, role: 'hr' | 'technical' | 'michelle', onStarted?: () => void, interviewerId?: string, onSent?: () => void): Promise<void> => {
     const ctrl = ctrlRef.current;
     if (!ctrl || !serviceOpenRef.current) throw new Error('spatius avatar not connected');
+    const mySeq = ++speakSeqRef.current;
     const pcm = await fetchAvatarAudioPcm(text, role, interviewerId);
+    if (speakSeqRef.current !== mySeq || ctrlRef.current !== ctrl || !serviceOpenRef.current) throw new Error('spatius speech cancelled'); // cancelled while the audio was being made
     const seconds = pcm.byteLength / (24000 * 2);
     sawPlayingRef.current = false;
     startedRef.current = onStarted ?? null;
@@ -281,14 +288,16 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
       const ceiling = window.setTimeout(resolve, seconds * 1000 + 15000); // generous: strict sync may hold the sound for a moment while the lips catch up
       waiterRef.current = () => { window.clearTimeout(ceiling); resolve(); };
       ctrl.send(pcm.slice().buffer, true); // copy so the SDK owns its buffer; true = last chunk of this turn
+      try { onSent?.(); } catch { /* the caller's timer only */ }
     });
   }, []);
 
-  const interrupt = useCallback(() => { try { ctrlRef.current?.interrupt(); } catch { /* nothing playing */ } }, []);
+  const interrupt = useCallback(() => { speakSeqRef.current++; try { ctrlRef.current?.interrupt(); } catch { /* nothing playing */ } }, []);
 
   // Default: close only the billed connection and leave the face on screen. disconnect(true) tears the whole face down.
   const disconnect = useCallback(async (full = false) => {
     attemptRef.current++; // cancels any connect() still in flight
+    speakSeqRef.current++; // and any line whose audio is still being made
     if (full || !ctrlRef.current) release();
     else {
       try { ctrlRef.current.close(); } catch { /* already closed */ }
