@@ -52,6 +52,19 @@ function TraitBars({ t }: { t: Interviewer['traits'] }) {
   )
 }
 
+// The interviewer's face on their card (2026-10-08): the portrait the candidates see in the picker (a file on the candidate site, named by the interviewer's id), with the
+// uploaded room as a small inset in the corner. A new interviewer with no portrait file yet simply shows their room, as before.
+function CardFace({ id, room }: { id: string; room: string | null }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <>
+      {!failed && <img src={`https://candidate.theinterviewchair.com/images/interviewers/${id}.jpg`} alt="" onError={() => setFailed(true)}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 8%' }} />}
+      {!failed && room && <div title="Room (background)" style={{ position: 'absolute', top: 10, right: 10, width: 76, aspectRatio: '16 / 9', borderRadius: 6, border: '2px solid rgba(255,255,255,0.85)', background: `center / cover url(${room})` }} />}
+    </>
+  );
+}
+
 export default function Interviewers() {
   const { token } = useAuth()
   const [items, setItems] = useState<Interviewer[] | null>(null)
@@ -137,13 +150,14 @@ export default function Interviewers() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 16 }}>
         {(items ?? []).map(i => (
           <div key={i.id} style={{ ...card, opacity: i.active ? 1 : 0.6 }}>
-            <div style={{ aspectRatio: '16 / 9', background: bgSrc(i.backgroundUrl) ? `center / cover url(${bgSrc(i.backgroundUrl)})` : 'linear-gradient(135deg, #232b3b, #3b475c)', position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: 10 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: '#fff', background: 'rgba(0,0,0,0.6)', borderRadius: 6, padding: '3px 8px' }}>{i.displayName}</span>
-              <span style={{ display: 'flex', gap: 5 }}>
+            <div style={{ aspectRatio: '16 / 9', background: bgSrc(i.backgroundUrl) ? `center / cover url(${bgSrc(i.backgroundUrl)})` : 'linear-gradient(135deg, #232b3b, #3b475c)', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: 10 }}>
+              <CardFace id={i.id} room={bgSrc(i.backgroundUrl)} />
+              <span style={{ position: 'relative', fontSize: 11, fontWeight: 800, color: '#fff', background: 'rgba(0,0,0,0.6)', borderRadius: 6, padding: '3px 8px' }}>{i.displayName}</span>
+              <span style={{ position: 'relative', display: 'flex', gap: 5 }}>
                 {i.defaultFor && <span style={{ fontSize: 10, fontWeight: 800, color: '#04120c', background: '#34D399', borderRadius: 6, padding: '3px 7px' }}>Default {ROLE_LABEL[i.defaultFor]}</span>}
                 {!i.active && <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: 'rgba(239,68,68,0.85)', borderRadius: 6, padding: '3px 7px' }}>Hidden</span>}
               </span>
-              {!bgSrc(i.backgroundUrl) && <span style={{ position: 'absolute', top: 10, left: 10, fontSize: 10.5, color: 'rgba(255,255,255,0.7)' }}>No background uploaded yet (the room uses its own file)</span>}
+              {!bgSrc(i.backgroundUrl) && <span style={{ position: 'absolute', top: 10, left: 10, zIndex: 1, fontSize: 10.5, color: 'rgba(255,255,255,0.7)' }}>No background uploaded yet (the room uses its own file)</span>}
             </div>
             <div style={{ padding: '12px 14px', display: 'grid', gap: 10, flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
