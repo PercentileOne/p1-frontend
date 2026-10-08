@@ -899,7 +899,7 @@ export default function TryItLivePage() {
             {/* A short sign-up card right under the score, where the visitor is looking. The full one stays at the bottom (its own tracking tag: where='score_top' vs 'score'). */}
             <div style={{ ...card, marginTop: 12, textAlign: 'center', border: '1px solid rgba(52,211,153,0.35)', background: 'linear-gradient(135deg,rgba(52,211,153,0.10),rgba(4,120,87,0.06))' }}>
               <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>Want the full interview{topic.trim() ? ` for ${topic.trim()}` : ''}?</div>
-              <div style={{ fontSize: 13.5, lineHeight: 1.55, color: 'var(--text-2, #cbd5e1)', marginBottom: 12 }}>5–20 questions with Amina and Wayne, and a full scored report. Your first one is free.</div>
+              <div style={{ fontSize: 13.5, lineHeight: 1.55, color: 'var(--text-2, #cbd5e1)', marginBottom: 12 }}>5–20 questions with the interviewers of your choice, and a full scored report. Your first one is free.</div>
               <a href={registerUrl(topic, name)} onClick={() => logEvent('try_register_click', { metadata: { where: 'score_top', score: feedback?.overall ?? null, mobile: isMobile } })} style={{ ...primary, display: 'block' }}>Start my free interview →</a>
               <div style={{ fontSize: 12, color: 'var(--text-3, #94a3b8)', marginTop: 8 }}>Free · no card needed · takes about a minute</div>
             </div>
