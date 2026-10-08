@@ -41,10 +41,23 @@ export interface AvatarConfig {
   // Uploaded background pictures for the three seats (from Admin > Interviewers), as full URLs; null/absent = use the picture files shipped with the page.
   backgrounds: { hr: string | null; technical: string | null; michelle: string | null } | null;
 }
+/**
+ * ?force=spatius or ?force=heygen on any page address (for staff testing) is remembered for the rest of the browser tab's visit, because the app moves between screens that do
+ * not carry the address's query along (setup screen to interview room). Without it a phone could never be switched to the new faces for a test.
+ */
+export function getForceProvider(): 'spatius' | 'heygen' | null {
+  try {
+    const q = new URLSearchParams(window.location.search).get('force');
+    if (q === 'spatius' || q === 'heygen') { sessionStorage.setItem('tic.force', q); return q; }
+    const kept = sessionStorage.getItem('tic.force');
+    return kept === 'spatius' || kept === 'heygen' ? kept : null;
+  } catch { return null; }
+}
+
 export async function fetchAvatarConfig(): Promise<AvatarConfig> {
   const heygen: AvatarConfig = { enabled: true, provider: 'heygen', fallbackToHeygen: true, spatius: null, backgrounds: null };
   try {
-    const force = new URLSearchParams(window.location.search).get('force');
+    const force = getForceProvider();
     const token = useAuthStore.getState().token;
     const res = await fetch(`${API_BASE}/interviews/avatar-config${force === 'spatius' || force === 'heygen' ? `?force=${force}` : ''}`,
       token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);

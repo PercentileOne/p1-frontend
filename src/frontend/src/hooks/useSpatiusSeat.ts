@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useSpatiusAvatarSession, INTERVIEW_TOKEN_PATH, clearSpatiusTokenCache, type SpatiusStatus } from './useSpatiusAvatarSession';
 import { getInterviewTicket } from '../api/entitlementsApi';
-import type { AvatarConfig } from '../api/liveAvatarApi';
+import { getForceProvider, type AvatarConfig } from '../api/liveAvatarApi';
 import { getSeatInterviewer } from '../lib/seatInterviewers';
 import { logFlowEvent } from '../api/flowLogger';
 
@@ -40,11 +40,21 @@ const CONNECT_LIMIT_MS = 15000;
 // A signed-in admin can still test them by adding ?force=spatius to the room's address.
 export function deviceCanUseSpatiusInRoom(): boolean {
   try {
-    if (new URLSearchParams(window.location.search).get('force') === 'spatius') return true;
+    if (getForceProvider() === 'spatius') return true;
     const touchOnly = !!window.matchMedia && window.matchMedia('(pointer: coarse) and (hover: none)').matches;
     const uaMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
     const iPadOs = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
     return !(touchOnly || uaMobile || iPadOs);
+  } catch { return false; }
+}
+
+/** True on phones and tablets: there the sound can only be started from inside a real tap, so the seat connects first and waits for one before its first line. */
+export function isPhoneDevice(): boolean {
+  try {
+    const touchOnly = !!window.matchMedia && window.matchMedia('(pointer: coarse) and (hover: none)').matches;
+    const uaMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+    const iPadOs = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+    return touchOnly || uaMobile || iPadOs;
   } catch { return false; }
 }
 
@@ -57,8 +67,13 @@ export function useSpatiusSeat(
   tileVisibleRef?: React.RefObject<boolean>,
   // The avatar the candidate's chosen interviewer uses for this seat; when absent, the server's default for the seat (from the avatar settings).
   seatIdsRef?: React.RefObject<Partial<Record<SeatRole, string>>>,
+  // Phones: called before the seat's first line while the sound is still locked; the room shows a "Tap to meet" button and resolves this once the tap has unlocked the sound.
+  requestTap?: (role: SeatRole) => Promise<void>,
 ) {
   const inner = useSpatiusAvatarSession(stageRef);
+  const phone = isPhoneDevice();
+  const lockedRef = useRef(false); // phone only: connected, but the sound system has not been started by a tap yet
+  const unlockedRef = useRef(false); // phone only: a tap has already started this seat's sound system, so later controllers start their sound normally
   const aliveRef = useRef(true);
   useEffect(() => { aliveRef.current = true; return () => { aliveRef.current = false; }; }, []);
   const { connect: innerConnect, speak: innerSpeak, interrupt, disconnect } = inner;
@@ -78,8 +93,10 @@ export function useSpatiusSeat(
       }
       await new Promise(r => setTimeout(r, 300));
     }
+    // On a phone the first controller is connected with its sound still locked (a tap unlocks it); once a tap has happened, later ones start their sound normally.
+    const deferred = phone && !unlockedRef.current;
     const attempt = () => Promise.race([
-      innerConnect(id, getInterviewTicket() ?? '', manualTransform() ?? INTERVIEWER_TRANSFORM[getSeatInterviewer(role)?.id ?? ''] ?? SEAT_TRANSFORM[role], INTERVIEW_TOKEN_PATH),
+      innerConnect(id, getInterviewTicket() ?? '', manualTransform() ?? INTERVIEWER_TRANSFORM[getSeatInterviewer(role)?.id ?? ''] ?? SEAT_TRANSFORM[role], INTERVIEW_TOKEN_PATH, false, deferred),
       new Promise<never>((_, reject) => setTimeout(() => reject(new Error('spatius connect timed out')), CONNECT_LIMIT_MS)),
     ]);
     try {
@@ -94,6 +111,7 @@ export function useSpatiusSeat(
         clearSpatiusTokenCache();
         await attempt();
       }
+      if (deferred) lockedRef.current = true;
     } catch (e) {
       void disconnect(true); // a timed-out attempt must not finish later as a ghost, billed session
       logFlowEvent('SPATIUS_SEAT_FAILED', { role, error: String((e as Error)?.message ?? e).slice(0, 200) });
@@ -106,7 +124,7 @@ export function useSpatiusSeat(
   // the ordinary voice instead of the interview sitting silent (the room treats a failure before speech starts as "use plain voice").
   // The 12 seconds are counted from the moment the audio is handed to the face, not from the request: a long, personal line (Michelle's briefing) can take more than 12 seconds
   // to produce, and counting that gave up too early and played the plain voice over the real one. Producing the audio has its own, longer limit (45 s).
-  const speak = useCallback((text: string, speakRole: SeatRole, onSpeakStarted?: () => void) => new Promise<void>((resolve, reject) => {
+  const speakNow = useCallback((text: string, speakRole: SeatRole, onSpeakStarted?: () => void) => new Promise<void>((resolve, reject) => {
     let started = false;
     let watchdog = 0;
     const giveUp = (why: string) => { if (!started) { interrupt(); reject(new Error(why)); } };
@@ -119,6 +137,18 @@ export function useSpatiusSeat(
       .then(() => { done(); resolve(); })
       .catch(e => { done(); reject(e); });
   }), [innerSpeak, interrupt]);
+  const speak = useCallback(async (text: string, speakRole: SeatRole, onSpeakStarted?: () => void): Promise<void> => {
+    if (phone && lockedRef.current && requestTap) {
+      await Promise.race([requestTap(speakRole), new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('no tap to start the sound')), 90000))]);
+    }
+    return speakNow(text, speakRole, onSpeakStarted);
+  }, [phone, requestTap, speakNow]);
+  // Called from inside the tap, first thing: starts this seat's sound system (nothing to do if it is not connected yet, or already unlocked).
+  const unlockAudio = useCallback((): Promise<void> => {
+    if (!lockedRef.current) return Promise.resolve();
+    lockedRef.current = false; unlockedRef.current = true;
+    return inner.unlockAudio();
+  }, [inner]);
   const noop = useCallback(() => { /* Spatius has no listening pose */ }, []);
   const setVideoEl = useCallback((_el: HTMLVideoElement | null) => { /* no <video>: the face is drawn into the seat's stage <div> */ }, []);
 
@@ -129,6 +159,6 @@ export function useSpatiusSeat(
     rendered: inner.rendered,
     connect, disconnect, speak,
     startListening: noop, stopListening: noop,
-    interrupt, setVideoEl,
-  }), [inner.status, inner.poster, inner.rendered, connect, disconnect, speak, noop, interrupt, setVideoEl]);
+    interrupt, setVideoEl, unlockAudio,
+  }), [inner.status, inner.poster, inner.rendered, connect, disconnect, speak, noop, interrupt, setVideoEl, unlockAudio]);
 }

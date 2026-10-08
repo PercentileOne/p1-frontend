@@ -115,6 +115,7 @@ import MyTalksPage from "./pages/MyTalksPage";
 import LearnFlashTalkPage from "./pages/LearnFlashTalkPage";
 import DemoLinkedIn from "./pages/DemoLinkedIn";
 import DemoVallumPaid from "./pages/DemoVallumPaid";
+import { getForceProvider } from "./api/liveAvatarApi";
 
 // One page-view event per route change, wired once here rather than in every individual page —
 // see api/flowLogger.ts's own top comment for why this now actually reaches the backend.
@@ -131,6 +132,7 @@ function usePageViewLogging() {
 
 export default function App() {
   usePageViewLogging();
+  useEffect(() => { getForceProvider(); }, []); // remembers ?force=spatius|heygen (staff testing) for this tab's visit
   return (
     <>
     <AccessBanner />

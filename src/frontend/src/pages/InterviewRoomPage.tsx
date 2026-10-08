@@ -408,9 +408,22 @@ export default function InterviewRoomPage() {
   const [liveMichelleAnalyser, setLiveMichelleAnalyser] = useState<AnalyserNode | null>(null);
   const heygenHr = useLiveAvatarSession('hr', setLiveHrAnalyser);
   const heygenTechnical = useLiveAvatarSession('technical', setLiveTechAnalyser);
-  const spatiusHr = useSpatiusSeat('hr', hrStageRef, avatarCfgRef, markSpatiusFailed, tilesVisibleRef, seatIdsRef);
-  const spatiusTechnical = useSpatiusSeat('technical', technicalStageRef, avatarCfgRef, markSpatiusFailed, tilesVisibleRef, seatIdsRef);
-  const spatiusMichelle = useSpatiusSeat('michelle', michelleStageRef, avatarCfgRef, markSpatiusFailed, undefined, seatIdsRef);
+  // Phones (2026-10-08): a face connects with its sound locked, and its first line waits for a real tap. This is the button for that tap; it also unlocks every seat that is
+  // connected by then, so one tap covers Catherine and Malcolm together. (Only reached on a phone with ?force=spatius for now; phones otherwise keep HeyGen.)
+  const [tapGate, setTapGate] = useState<{ label: string; resolve: () => void } | null>(null);
+  const requestTap = useCallback((role: SeatRole) => new Promise<void>(resolve => {
+    setTapGate(g => g
+      ? { ...g, resolve: () => { g.resolve(); resolve(); } }
+      : { label: role === 'michelle' ? 'Tap to meet Michelle' : 'Tap to meet your interviewers', resolve });
+  }), []);
+  const spatiusHr = useSpatiusSeat('hr', hrStageRef, avatarCfgRef, markSpatiusFailed, tilesVisibleRef, seatIdsRef, requestTap);
+  const spatiusTechnical = useSpatiusSeat('technical', technicalStageRef, avatarCfgRef, markSpatiusFailed, tilesVisibleRef, seatIdsRef, requestTap);
+  const spatiusMichelle = useSpatiusSeat('michelle', michelleStageRef, avatarCfgRef, markSpatiusFailed, undefined, seatIdsRef, requestTap);
+  const onTapGate = () => {
+    unlockTTSAudio(); // inside the tap, before anything else
+    void spatiusMichelle.unlockAudio(); void spatiusHr.unlockAudio(); void spatiusTechnical.unlockAudio();
+    const g = tapGate; setTapGate(null); g?.resolve();
+  };
   // From here on the room only talks to liveAvatarHr/Technical/Michelle; each is whichever provider's seat is active (both have the same shape; the
   // one not in use never connects, so it costs nothing).
   const liveAvatarHr = seatOnSpatius('hr') ? spatiusHr : heygenHr;
@@ -1417,6 +1430,16 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
         <motion.div animate={{ width: `${progress * 100}%` }} transition={{ duration: 0.5 }}
           style={{ height: '100%', background: 'var(--blue)' }} />
       </div>
+
+      {tapGate && (
+        <div role="dialog" aria-modal="true" style={{ position: 'fixed', inset: 0, zIndex: 3000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(5,8,16,0.72)', padding: 24, textAlign: 'center' }}>
+          <button type="button" onClick={onTapGate}
+            style={{ background: '#34D399', color: '#04120c', border: 'none', borderRadius: 16, padding: '18px 30px', fontSize: 18, fontWeight: 900, cursor: 'pointer', boxShadow: '0 10px 32px rgba(52,211,153,0.4)' }}>
+            ▶ {tapGate.label}
+          </button>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)' }}>One tap, so your phone lets the sound play</div>
+        </div>
+      )}
 
       {/* Main content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', maxWidth: '1128px', width: '100%', margin: '0 auto', padding: '24px 24px 32px', gap: '20px' }}> {/* One shared width (1080px of content): the two interviewers and the camera on top, and every panel underneath, share the same left and right edges (Francis, 2026-10-08). */}

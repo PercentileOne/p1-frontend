@@ -170,6 +170,26 @@ export function getMasterGain(ctx: AudioContext): GainNode {
 // the classic sound of digital clipping from multiple full-scale sources summing unchecked.
 let _recordingDestination: MediaStreamAudioDestinationNode | null = null;
 let _recordingCompressor: DynamicsCompressorNode | null = null;
+/**
+ * A phone's recording is built from the camera and the Web Audio mix, not from a tab capture, and a Spatius face plays its voice inside its own player where the mix cannot
+ * hear it. So when a line is handed to a face, the same audio is also played into the recording mix only (never the speakers). On a computer there is no recording
+ * destination (the tab's audio is captured instead), so this does nothing there.
+ */
+export function tapSpokenPcmForRecording(pcm: Uint8Array): void {
+  if (!_recordingDestination || !_audioCtx) return;
+  try {
+    const samples = Math.floor(pcm.byteLength / 2);
+    const buf = _audioCtx.createBuffer(1, samples, 24000);
+    const ch = buf.getChannelData(0);
+    const view = new DataView(pcm.buffer, pcm.byteOffset, samples * 2);
+    for (let i = 0; i < samples; i++) ch[i] = view.getInt16(i * 2, true) / 32768;
+    const src = _audioCtx.createBufferSource();
+    src.buffer = buf;
+    src.connect(_recordingCompressor ?? _recordingDestination);
+    src.start();
+  } catch { /* the recording just misses this line */ }
+}
+
 export function setTTSRecordingDestination(node: MediaStreamAudioDestinationNode | null, compressor?: DynamicsCompressorNode | null) {
   _recordingDestination = node;
   _recordingCompressor = compressor ?? null;

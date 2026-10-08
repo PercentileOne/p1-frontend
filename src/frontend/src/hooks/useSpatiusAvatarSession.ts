@@ -3,6 +3,7 @@ import type { AvatarController, AvatarView } from '@spatius/avatarkit';
 import { fetchAvatarAudioPcm } from '../api/liveAvatarApi';
 import { useAuthStore } from '../auth/authStore';
 import { logFlowEvent } from '../api/flowLogger';
+import { tapSpokenPcmForRecording } from '../api/ttsApi';
 
 // Spatius (on-device, audio-driven avatar) for one interviewer seat — the counterpart of useLiveAvatarSession (HeyGen) with the same shape
 // where it matters (connect / speak / disconnect / interrupt), so a page can pick either at runtime. Added 2026-09-29 for the admin-switchable
@@ -298,6 +299,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
       const ceiling = window.setTimeout(resolve, seconds * 1000 + 15000); // generous: strict sync may hold the sound for a moment while the lips catch up
       waiterRef.current = () => { window.clearTimeout(ceiling); resolve(); };
       ctrl.send(pcm.slice().buffer, true); // copy so the SDK owns its buffer; true = last chunk of this turn
+      tapSpokenPcmForRecording(pcm); // phones only: the recording mix cannot hear the face's own player
       try { onSent?.(); } catch { /* the caller's timer only */ }
     });
   }, []);
