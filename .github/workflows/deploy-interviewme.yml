@@ -7,6 +7,8 @@ on:
       - 'src/viewme/public/gate.html'
       - 'src/viewme/public/gate-staticwebapp.config.json'
       - 'src/viewme/public/track.js'
+      - 'src/viewme/public/interview-room-latest.png'
+      - 'src/viewme/public/the-interview-chair.png'
       - '.github/workflows/deploy-interviewme.yml'
   workflow_dispatch:
 
