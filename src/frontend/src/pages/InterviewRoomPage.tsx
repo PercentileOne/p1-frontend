@@ -1419,7 +1419,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       </div>
 
       {/* Main content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', maxWidth: '960px', width: '100%', margin: '0 auto', padding: '24px 24px 32px', gap: '20px' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', maxWidth: '1128px', width: '100%', margin: '0 auto', padding: '24px 24px 32px', gap: '20px' }}> {/* One shared width (1080px of content): the two interviewers and the camera on top, and every panel underneath, share the same left and right edges (Francis, 2026-10-08). */}
 
         {/* Amina + Wayne — 2026-09-14: this block (and, critically, the two <video> elements
             inside it) is now PERMANENTLY mounted rather than gated by showInterviewers. Root
@@ -1442,7 +1442,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           animate={{ opacity: showInterviewers ? 1 : 0 }}
           transition={{ duration: 0.6 }}
           style={showInterviewers
-            ? { display: 'flex', gap: '16px', alignSelf: 'center', width: 'min(1200px, calc(100vw - 48px))' }
+            ? { display: 'flex', gap: '16px' }
             : { display: 'flex', gap: '16px', position: 'absolute', inset: 0, zIndex: -1, pointerEvents: 'none' }}
         >
               {/* On Spatius the tile is a true 16:9 window (the shape of Spatius's stage); the old photo component then no longer sizes it. */}
@@ -1717,7 +1717,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           {/* ── MIKE PHASE — ONLY Mike, nothing else ──────────────────────── */}
           {phase === 'mike' && (
             <motion.div key="mike" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '40px 32px', textAlign: 'center', width: '100%', maxWidth: '960px', margin: '0 auto' }}>
+              style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '40px 32px', textAlign: 'center', width: '100%', margin: '0 auto' }}>
 
               {/* Mike on the left, appearance controls on the right — side by side rather
                   than stacked, so checking how you'll look doesn't push everything else down.
