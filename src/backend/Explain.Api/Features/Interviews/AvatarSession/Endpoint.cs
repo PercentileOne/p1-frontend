@@ -92,6 +92,26 @@ public static class Endpoint
                 ? Results.Ok(new { sessionToken = r.SessionToken, appId = r.AppId })
                 : Results.Json(new { error = r.Error }, statusCode: r.FailureStatus);
         }).WithName("InterviewSpatiusToken").WithTags("Interviews").AllowAnonymous();
+
+        // The homepage's "Say hi" preview (2026-10-08): a visitor hears and sees an interviewer greet them before choosing. Anonymous, so it is capped per visitor address and for the
+        // whole site per day (a greeting is a few seconds of a billed Spatius connection). Over the cap the preview quietly falls back to voice only.
+        app.MapPost("/api/hello/spatius-token", async (HttpContext ctx, AppDbContext db, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILoggerFactory logs, CancellationToken ct) =>
+        {
+            var provider = await Explain.Api.Features.PlatformSettings.Endpoint.GetAvatarProviderOrDefaultAsync(cosmos);
+            if (provider.provider != "spatius" || !SpatiusClient.IsConfigured(config)) return Results.Json(new { error = "Not available." }, statusCode: 403);
+
+            var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var unlimited = await Explain.Api.Features.TryOut.Endpoint.IsUnlimitedAsync(ctx.User, ip, db, config);
+            if (!unlimited && !(await Explain.Api.Features.CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync($"hello:spatiustoken:ip:{ip}", config.GetValue("Hello:TokensPerVisitorPerDay", 12), cosmos)).allowed)
+                return Results.Json(new { error = "Too many previews today." }, statusCode: (int)HttpStatusCode.TooManyRequests);
+            if (!unlimited && !(await Explain.Api.Features.CvAnalysis.Endpoint.CheckAndIncrementDailyUsageAsync("hello:spatiustoken:global", config.GetValue("Hello:TokensGlobalPerDay", 300), cosmos)).allowed)
+                return Results.Json(new { error = "Too many previews today." }, statusCode: (int)HttpStatusCode.TooManyRequests);
+
+            var r = await SpatiusClient.MintTokenAsync(factory, config, logs.CreateLogger("Spatius"), TimeSpan.FromMinutes(20), ct);
+            return r.Ok
+                ? Results.Ok(new { sessionToken = r.SessionToken, appId = r.AppId })
+                : Results.Json(new { error = r.Error }, statusCode: r.FailureStatus);
+        }).WithName("HelloSpatiusToken").WithTags("Interviews").AllowAnonymous();
     }
 }
 

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Check, Volume2 } from 'lucide-react';
 import { fetchInterviewers, type PublicInterviewer } from '../api/interviewersApi';
 import { fetchAvatarAudioPcm } from '../api/liveAvatarApi';
-import { getTTSAudioContext, unlockTTSAudio } from '../api/ttsApi';
+import { unlockTTSAudio } from '../api/ttsApi';
+import { playPcm } from '../lib/playPcm';
 import { getInterviewTicket } from '../api/entitlementsApi';
 import { useSpatiusAvatarSession, INTERVIEW_TOKEN_PATH } from '../hooks/useSpatiusAvatarSession';
 import { deviceCanUseSpatiusInRoom } from '../hooks/useSpatiusSeat';
@@ -17,24 +18,6 @@ const TRAIT_LABELS: { key: keyof PublicInterviewer['traits']; label: string }[] 
 ];
 
 type Preview = { id: string; state: 'loading' | 'playing' | 'error'; face: boolean };
-
-// Plays a raw PCM16 mono 24 kHz clip (what the interviewers' voice service returns) through the page's shared audio context. Used when the face can't be drawn
-// (a phone, or the face service is unavailable) so the candidate still hears the voice, which is the main point of the preview.
-async function playPcm(pcm: Uint8Array): Promise<void> {
-  const ctx = await getTTSAudioContext();
-  const samples = Math.floor(pcm.byteLength / 2);
-  const buf = ctx.createBuffer(1, samples, 24000);
-  const ch = buf.getChannelData(0);
-  const view = new DataView(pcm.buffer, pcm.byteOffset, samples * 2);
-  for (let i = 0; i < samples; i++) ch[i] = view.getInt16(i * 2, true) / 32768;
-  await new Promise<void>(resolve => {
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    src.connect(ctx.destination);
-    src.onended = () => resolve();
-    src.start();
-  });
-}
 
 function Portrait({ iv, children }: { iv: PublicInterviewer; children?: React.ReactNode }) {
   // The uploaded portrait if there is one, else the picture file shipped with the site, else the room behind them, else a plain tile with their initial.

@@ -7,6 +7,13 @@
     {
       "route": "/shared/{token}",
       "rewrite": "/api/share-meta/{token}"
+    },
+    {
+      "route": "/hello",
+      "headers": {
+        "X-Frame-Options": "",
+        "Content-Security-Policy": "frame-ancestors https://www.theinterviewchair.com https://theinterviewchair.com"
+      }
     }
   ],
   "globalHeaders": {

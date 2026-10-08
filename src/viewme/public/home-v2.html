@@ -121,7 +121,8 @@
   .pick-sub{font-size:12.5px;color:var(--muted)}
   .pick-main{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:4/3;background:#04060c}
   .pick-main img{width:100%;height:100%;object-fit:cover;object-position:center 20%}
-  .pick-cap{position:absolute;left:0;right:0;bottom:0;padding:38px 16px 12px;background:linear-gradient(to top,rgba(4,6,12,.88),transparent);display:flex;flex-direction:column;gap:1px}
+  .pick-main iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1;background:#04060c}
+  .pick-cap{pointer-events:none;z-index:2;position:absolute;left:0;right:0;bottom:0;padding:38px 16px 12px;background:linear-gradient(to top,rgba(4,6,12,.88),transparent);display:flex;flex-direction:column;gap:1px}
   .pick-cap b{font-size:21px;font-weight:900;letter-spacing:-.01em}
   .pick-cap small{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--green)}
   .pick-desc{margin:12px 2px 8px;color:var(--muted);font-size:14px;line-height:1.5;min-height:42px}
@@ -899,13 +900,35 @@
       var nm = document.createElement('span'); nm.textContent = i.displayName;
       b.appendChild(im); b.appendChild(nm);
       b.addEventListener('click', function () {
-        pickSel = i.id; renderPick();
+        pickSel = i.id; renderPick(); syncHello();
         if (window.ticTrack) window.ticTrack('interviewer_picked', { id: i.id });
       });
       tiles.appendChild(b);
     });
   }
   renderPick();
+
+  // "Say hi" on a computer (Francis, 2026-10-08): a small page on the candidate site is framed over the big portrait; its button brings the live face up and the interviewer
+  // greets the visitor in their own voice. Added after the page has finished loading (so it never slows the first view), on a mouse-and-keyboard device only; on a phone the
+  // portrait stays as it is. If the frame can't load, the portrait underneath is simply what the visitor sees.
+  var helloFrame = null;
+  function syncHello() {
+    if (!helloFrame) return;
+    var want = 'https://candidate.theinterviewchair.com/hello?i=' + encodeURIComponent(pickSel);
+    if (helloFrame.getAttribute('src') !== want) helloFrame.setAttribute('src', want);
+  }
+  function startHello() {
+    var box = document.querySelector('.pick-main');
+    if (!box || helloFrame || !window.matchMedia || !window.matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+    helloFrame = document.createElement('iframe');
+    helloFrame.title = 'Say hi to your interviewer';
+    helloFrame.setAttribute('allow', 'autoplay');
+    helloFrame.setAttribute('loading', 'lazy');
+    box.appendChild(helloFrame);
+    syncHello();
+  }
+  if (document.readyState === 'complete') setTimeout(startHello, 1200); else window.addEventListener('load', function () { setTimeout(startHello, 1200); });
+
   try {
     fetch('https://api.explain.global/interviews/interviewers').then(function (r) { return r.ok ? r.json() : null; }).then(function (list) {
       if (!Array.isArray(list)) return;
@@ -914,7 +937,7 @@
       if (ok.length < 2) return;
       pickList = ok;
       if (!ok.some(function (i) { return i.id === pickSel; })) { var d = ok.filter(function (i) { return i.defaultFor === 'technical'; })[0]; pickSel = (d || ok[0]).id; }
-      renderPick();
+      renderPick(); syncHello();
     }).catch(function () {});
   } catch (e) {}
 

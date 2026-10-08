@@ -22,6 +22,7 @@ let sdkInitialised = false;
 
 export const DEMO_TOKEN_PATH = '/api/tryout/spatius-token';
 export const INTERVIEW_TOKEN_PATH = '/interviews/spatius-token';
+export const HELLO_TOKEN_PATH = '/api/hello/spatius-token';
 
 // A full interview connects a seat before every question, so a fresh token per connect would burn the daily per-address allowance for no reason.
 // Tokens last 20 minutes server-side; one is reused for up to 12.
