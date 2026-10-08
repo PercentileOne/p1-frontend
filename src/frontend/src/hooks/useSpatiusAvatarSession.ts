@@ -59,6 +59,19 @@ async function prepareSdk(ticket: string, tokenPath: string): Promise<Sdk> {
 
 type Transform = { x: number; y: number; scale: number };
 
+// A face's 3D model (about 6.5 MB, cached by the browser for a week once complete) is downloaded the first time that face is used on a device, and that first download is what
+// makes a first "Watch me speak" slow, or time out on a poor connection (Francis, 2026-10-08: Amina's worked, Catherine's never did, because each failed try threw the partial
+// download away). preloadSpatiusAvatar fetches it ahead of time, when the visitor shows interest (hovers or focuses the button), so it is already there when they press.
+const preloaded = new Set<string>();
+export async function preloadSpatiusAvatar(avatarId: string, ticket: string, tokenPath: string): Promise<void> {
+  if (!avatarId || preloaded.has(avatarId)) return;
+  preloaded.add(avatarId);
+  try {
+    const sdk = await prepareSdk(ticket, tokenPath);
+    await sdk.AvatarManager.shared.load(avatarId);
+  } catch { preloaded.delete(avatarId); /* a later press just loads it the normal way */ }
+}
+
 // A still of each avatar's face (the SDK can export what it has drawn), captured once shortly after a seat first renders and kept for the rest of the visit. The
 // interview room shows it while a seat is disconnected between questions, so a seat never falls back to the old HeyGen-era photo underneath.
 const posterCache = new Map<string, string>();

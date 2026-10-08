@@ -5,6 +5,8 @@ import { fetchAvatarAudioPcm } from '../api/liveAvatarApi';
 import { unlockTTSAudio } from '../api/ttsApi';
 import { playPcm } from '../lib/playPcm';
 import { deviceCanUseSpatiusInRoom } from '../hooks/useSpatiusSeat';
+import { preloadSpatiusAvatar, INTERVIEW_TOKEN_PATH } from '../hooks/useSpatiusAvatarSession';
+import { getInterviewTicket } from '../api/entitlementsApi';
 import { readInterviewerChoice, writeInterviewerChoice, type InterviewerChoice } from '../lib/interviewerChoice';
 
 // "Your interviewers" (2026-10-07): the candidate picks who interviews them from the interviewers an admin has set up. One row for the HR interviewer and one for the
@@ -32,6 +34,9 @@ function Portrait({ iv, children }: { iv: PublicInterviewer; children?: React.Re
     </div>
   );
 }
+
+// Fetch a face's model ahead of the press (see preloadSpatiusAvatar); computers only, since a phone only plays the voice.
+const warm = (iv: PublicInterviewer) => { if (deviceCanUseSpatiusInRoom()) void preloadSpatiusAvatar(iv.avatarId, getInterviewTicket() ?? '', INTERVIEW_TOKEN_PATH); };
 
 function Card({ iv, selected, onPick, preview, busy, onSayHi }: {
   iv: PublicInterviewer; selected: boolean; onPick: () => void; preview: Preview | null; busy: boolean; onSayHi: () => void;
@@ -62,7 +67,7 @@ function Card({ iv, selected, onPick, preview, busy, onSayHi }: {
           ))}
         </div>
       </button>
-      <button type="button" onClick={onSayHi} disabled={busy}
+      <button type="button" onClick={onSayHi} disabled={busy} onPointerEnter={() => warm(iv)} onFocus={() => warm(iv)}
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '7px 10px', borderRadius: 10, fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
           cursor: busy ? 'default' : 'pointer', opacity: busy && !mine ? 0.5 : 1, color: 'var(--text)', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
@@ -126,7 +131,7 @@ export function InterviewerPicker() {
       if (stale()) return;
       runRef.current++;
       setPreview({ id: iv.id, state: 'error', frame: false, nonce: nonceRef.current });
-    }, 60000);
+    }, 90000);
     if (frame) return; // the framed page does the rest and reports back (the hard stop above covers a page that never does)
     try {
       const pcm = await Promise.race([fetchAvatarAudioPcm(text, role, iv.id), new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('voice timed out')), 20000))]);

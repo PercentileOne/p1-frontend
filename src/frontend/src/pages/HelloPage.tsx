@@ -3,7 +3,7 @@ import { Volume2 } from 'lucide-react';
 import { fetchInterviewers, type PublicInterviewer } from '../api/interviewersApi';
 import { fetchAvatarAudioPcm } from '../api/liveAvatarApi';
 import { unlockTTSAudio } from '../api/ttsApi';
-import { useSpatiusAvatarSession, HELLO_TOKEN_PATH } from '../hooks/useSpatiusAvatarSession';
+import { useSpatiusAvatarSession, preloadSpatiusAvatar, HELLO_TOKEN_PATH } from '../hooks/useSpatiusAvatarSession';
 import { deviceCanUseSpatiusInRoom } from '../hooks/useSpatiusSeat';
 import { SpatiusSeatStage } from '../components/SpatiusSeatStage';
 import { playPcm } from '../lib/playPcm';
@@ -67,14 +67,14 @@ export default function HelloPage() {
       void sp.disconnect(true);
       setFace(false); setState('error'); tell('tic-hello-done', false);
       logEvent('hello_say_hi_result', { page: '/hello', metadata: { interviewer: iv.id, mode: 'stuck, stopped' } });
-    }, 45000);
+    }, 75000);
     try {
       if (needFreshRef.current) { await sp.disconnect(true); needFreshRef.current = false; }
       let heard = false;
       if (canFace) {
         setFace(true);
         try {
-          await withLimit(sp.connect(iv.avatarId, '', undefined, HELLO_TOKEN_PATH), 15000, 'face connect');
+          await withLimit(sp.connect(iv.avatarId, '', undefined, HELLO_TOKEN_PATH), 45000, 'face connect'); // a first-time download of the face's model can take a while
           if (stale()) return;
           await new Promise<void>((resolve, reject) => {
             let started = false;
@@ -126,7 +126,7 @@ export default function HelloPage() {
       {src && <img src={src} alt="" onError={() => setPortraitStep(n => n + 1)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 20%' }} />}
       {iv && face && <SpatiusSeatStage seat={iv.role === 'technical' ? 'technical' : 'hr'} avatarId={iv.avatarId} backgroundUrl={iv.backgroundUrl} stageRef={stageRef} visible={sp.rendered} live={sp.status === 'connected'} rendered={sp.rendered} rounded={false} />}
       {iv && !auto && (
-        <button type="button" onClick={() => void sayHi()} disabled={busy}
+        <button type="button" onClick={() => void sayHi()} disabled={busy} onPointerEnter={() => { if (canFace) void preloadSpatiusAvatar(iv.avatarId, '', HELLO_TOKEN_PATH); }} onFocus={() => { if (canFace) void preloadSpatiusAvatar(iv.avatarId, '', HELLO_TOKEN_PATH); }}
           style={{
             position: 'absolute', top: 12, right: 12, zIndex: 3, display: 'flex', alignItems: 'center', gap: 7, padding: '8px 14px', borderRadius: 999, fontFamily: 'inherit', fontSize: 13, fontWeight: 800,
             cursor: busy ? 'default' : 'pointer', color: '#fff', background: 'rgba(4,6,12,0.72)', border: '1px solid rgba(255,255,255,0.35)', backdropFilter: 'blur(4px)',
