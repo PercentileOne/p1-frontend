@@ -632,13 +632,16 @@ export default function TryItLivePage() {
             <>
               {/* Voice-only interview (all phones, and desktop when no live avatar is available): the interviewer's photo, with a soft green
                   ring while they are speaking — so there is always a face, not a letter (Francis, 2026-09-26: "I can't see Wayne"). */}
+              {/* The whole portrait, at its natural perspective (Francis, 2026-10-08: on a phone Haruto's head filled the frame): shown complete over a blurred copy of itself. */}
+              <img aria-hidden="true" alt="" src={start.interviewerPortraitUrl && start.interviewerPortraitUrl.startsWith('/') ? `${(import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global'}${start.interviewerPortraitUrl}` : start.interviewerId ? `/images/interviewers/${start.interviewerId}.jpg` : start.interviewer === 'technical' ? '/images/wayne-static-photo.png' : '/images/amina-static-image-1.png'}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(18px)', transform: 'scale(1.15)', opacity: 0.55 }} />
               <img
                 src={start.interviewerPortraitUrl && start.interviewerPortraitUrl.startsWith('/') ? `${(import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global'}${start.interviewerPortraitUrl}` : start.interviewerId ? `/images/interviewers/${start.interviewerId}.jpg` : start.interviewer === 'technical' ? '/images/wayne-static-photo.png' : '/images/amina-static-image-1.png'}
                 onError={e => { const old = start.interviewer === 'technical' ? '/images/wayne-static-photo.png' : '/images/amina-static-image-1.png'; if (!e.currentTarget.src.endsWith(old)) e.currentTarget.src = old; }}
                 alt={`${start.interviewerName}, your interviewer`}
                 width={520} height={288}
-                // Cropped from the top: the portraits are taller than this 16:9 box, and a centred crop cut off the top of Malcolm's head (Francis, 2026-10-08).
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 2%' }}
+                // Shown whole (contain) over the blurred copy above: a cropped fill cut off Malcolm's head on the timeout screen and made Haruto's head too big on a phone (Francis, 2026-10-08).
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center top' }}
               />
               <div style={{ position: 'absolute', inset: 0, borderRadius: 18, boxShadow: phase === 'asking' ? `inset 0 0 0 3px ${GREEN}88` : 'inset 0 0 0 0 transparent', transition: 'box-shadow 0.3s', pointerEvents: 'none' }} />
             </>

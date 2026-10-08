@@ -122,8 +122,9 @@ public static class Endpoint
                 avatarAvailable,
                 avatarProvider,
                 spatiusAvatarId,
-                // HeyGen only has Amina's and Wayne's faces, so anyone else falls back to their voice and photo rather than to the wrong face.
-                fallbackToHeygen = providerSetting.fallbackToHeygen && (chosen is null || chosen.id is "amina" or "wayne"),
+                // HeyGen only has the OLD Amina and Wayne (different people from the ones in Admin > Interviewers), so whenever the interviewers come from the registry the fallback
+                // is their own photo and voice, never an old face under the right name (Francis, 2026-10-08: the old Amina turned up on his phone).
+                fallbackToHeygen = providerSetting.fallbackToHeygen && shown is null,
                 ticket,
                 unlimited,
             });
