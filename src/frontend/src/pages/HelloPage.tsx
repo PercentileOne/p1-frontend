@@ -25,7 +25,12 @@ const withLimit = <T,>(p: Promise<T>, ms: number, what: string) =>
   Promise.race([p, new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error(`${what} timed out`)), ms))]);
 
 export default function HelloPage() {
-  const id = new URLSearchParams(window.location.search).get('i') ?? '';
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('i') ?? '';
+  // ?auto=1 (the interviewer picker on the candidate site): start the greeting as soon as the page is ready, without a button, and report progress to the page that framed
+  // this one. Each preview is its own page, so everything the face used (graphics memory included) is freed completely when the picker removes the frame.
+  const auto = params.get('auto') === '1';
+  const tell = (type: string, ok = true) => { if (auto && window.parent !== window) { try { window.parent.postMessage({ type, ok }, window.location.origin); } catch { /* not framed */ } } };
   const [iv, setIv] = useState<PublicInterviewer | null>(null);
   const [state, setState] = useState<State>('idle');
   const [face, setFace] = useState(false);
@@ -34,10 +39,16 @@ export default function HelloPage() {
   const sp = useSpatiusAvatarSession(stageRef);
   const runRef = useRef(0);
   const needFreshRef = useRef(false); // the last greeting went wrong: build the face again from scratch
+  const autoStartedRef = useRef(false);
 
   useEffect(() => { void fetchInterviewers().then(list => setIv(list.find(i => i.id === id) ?? null)); }, [id]);
 
   const canFace = deviceCanUseSpatiusInRoom();
+
+  useEffect(() => {
+    if (auto && iv && !autoStartedRef.current) { autoStartedRef.current = true; void sayHi(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto, iv]);
 
   async function sayHi() {
     if (!iv) return;
@@ -54,7 +65,7 @@ export default function HelloPage() {
       runRef.current++;
       needFreshRef.current = true;
       void sp.disconnect(true);
-      setFace(false); setState('error');
+      setFace(false); setState('error'); tell('tic-hello-done', false);
       logEvent('hello_say_hi_result', { page: '/hello', metadata: { interviewer: iv.id, mode: 'stuck, stopped' } });
     }, 45000);
     try {
@@ -68,7 +79,7 @@ export default function HelloPage() {
           await new Promise<void>((resolve, reject) => {
             let started = false;
             let watchdog = window.setTimeout(() => { if (!started) { sp.interrupt(); reject(new Error('speech audio took too long')); } }, 30000);
-            sp.speak(text, role, () => { started = true; window.clearTimeout(watchdog); if (!stale()) setState('playing'); }, iv.id, () => {
+            sp.speak(text, role, () => { started = true; window.clearTimeout(watchdog); if (!stale()) { setState('playing'); tell('tic-hello-playing'); } }, iv.id, () => {
               window.clearTimeout(watchdog);
               watchdog = window.setTimeout(() => { if (!started) { sp.interrupt(); reject(new Error('speech did not start')); } }, 12000);
             }).then(() => { window.clearTimeout(watchdog); resolve(); }, e => { window.clearTimeout(watchdog); reject(e); });
@@ -85,7 +96,7 @@ export default function HelloPage() {
       if (!heard) {
         const pcm = await withLimit(fetchAvatarAudioPcm(text, role, iv.id), 20000, 'voice');
         if (stale()) return;
-        setState('playing');
+        setState('playing'); tell('tic-hello-playing');
         await playPcm(pcm);
         logEvent('hello_say_hi_result', { page: '/hello', metadata: { interviewer: iv.id, mode: 'voice only' } });
       }
@@ -93,14 +104,14 @@ export default function HelloPage() {
       await new Promise(r => setTimeout(r, 700));
       if (stale()) return;
       await sp.disconnect(); // soft close: the billed connection ends, the face stays drawn and is reused by the next press
-      setState('idle');
+      setState('idle'); tell('tic-hello-done');
     } catch (e) {
       if (stale()) return;
       console.warn('[Hello] greeting failed:', e);
       needFreshRef.current = true;
       await sp.disconnect(true);
       logEvent('hello_say_hi_result', { page: '/hello', metadata: { interviewer: iv.id, mode: 'failed' } });
-      setFace(false); setState('error');
+      setFace(false); setState('error'); tell('tic-hello-done', false);
     } finally {
       window.clearTimeout(hardStop);
     }
@@ -114,7 +125,7 @@ export default function HelloPage() {
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', background: '#04060c', fontFamily: '-apple-system,"Segoe UI",system-ui,sans-serif' }}>
       {src && <img src={src} alt="" onError={() => setPortraitStep(n => n + 1)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 20%' }} />}
       {iv && face && <SpatiusSeatStage seat={iv.role === 'technical' ? 'technical' : 'hr'} avatarId={iv.avatarId} backgroundUrl={iv.backgroundUrl} stageRef={stageRef} visible={sp.rendered} live={sp.status === 'connected'} rendered={sp.rendered} rounded={false} />}
-      {iv && (
+      {iv && !auto && (
         <button type="button" onClick={() => void sayHi()} disabled={busy}
           style={{
             position: 'absolute', top: 12, right: 12, zIndex: 3, display: 'flex', alignItems: 'center', gap: 7, padding: '8px 14px', borderRadius: 999, fontFamily: 'inherit', fontSize: 13, fontWeight: 800,
@@ -124,7 +135,7 @@ export default function HelloPage() {
           {state === 'loading' ? 'Getting ready…' : state === 'playing' ? 'Speaking…' : canFace ? `Watch ${iv.displayName} speak` : `Hear ${iv.displayName} speak`}
         </button>
       )}
-      {state === 'error' && <div style={{ position: 'absolute', top: 52, right: 14, zIndex: 3, fontSize: 11.5, color: 'rgba(255,255,255,0.8)', textShadow: '0 1px 3px #000' }}>Couldn't play that just now. Please try again.</div>}
+      {state === 'error' && !auto && <div style={{ position: 'absolute', top: 52, right: 14, zIndex: 3, fontSize: 11.5, color: 'rgba(255,255,255,0.8)', textShadow: '0 1px 3px #000' }}>Couldn't play that just now. Please try again.</div>}
     </div>
   );
 }

@@ -4,10 +4,7 @@ import { fetchInterviewers, type PublicInterviewer } from '../api/interviewersAp
 import { fetchAvatarAudioPcm } from '../api/liveAvatarApi';
 import { unlockTTSAudio } from '../api/ttsApi';
 import { playPcm } from '../lib/playPcm';
-import { getInterviewTicket } from '../api/entitlementsApi';
-import { useSpatiusAvatarSession, INTERVIEW_TOKEN_PATH } from '../hooks/useSpatiusAvatarSession';
 import { deviceCanUseSpatiusInRoom } from '../hooks/useSpatiusSeat';
-import { SpatiusSeatStage } from './SpatiusSeatStage';
 import { readInterviewerChoice, writeInterviewerChoice, type InterviewerChoice } from '../lib/interviewerChoice';
 
 // "Your interviewers" (2026-10-07): the candidate picks who interviews them from the interviewers an admin has set up. One row for the HR interviewer and one for the
@@ -17,7 +14,7 @@ const TRAIT_LABELS: { key: keyof PublicInterviewer['traits']; label: string }[] 
   { key: 'depth', label: 'Depth' }, { key: 'strictness', label: 'Strictness' }, { key: 'warmth', label: 'Warmth' }, { key: 'humour', label: 'Humour' }, { key: 'pace', label: 'Pace' },
 ];
 
-type Preview = { id: string; state: 'loading' | 'playing' | 'error'; face: boolean };
+type Preview = { id: string; state: 'loading' | 'playing' | 'error'; frame: boolean; nonce: number };
 
 function Portrait({ iv, children }: { iv: PublicInterviewer; children?: React.ReactNode }) {
   // The uploaded portrait if there is one, else the picture file shipped with the site, else the room behind them, else a plain tile with their initial.
@@ -36,12 +33,10 @@ function Portrait({ iv, children }: { iv: PublicInterviewer; children?: React.Re
   );
 }
 
-function Card({ iv, selected, onPick, preview, busy, onSayHi, stageRef, sp }: {
+function Card({ iv, selected, onPick, preview, busy, onSayHi }: {
   iv: PublicInterviewer; selected: boolean; onPick: () => void; preview: Preview | null; busy: boolean; onSayHi: () => void;
-  stageRef: React.RefObject<HTMLDivElement | null>; sp: ReturnType<typeof useSpatiusAvatarSession>;
 }) {
   const mine = preview?.id === iv.id ? preview : null;
-  const seat = iv.role === 'technical' ? 'technical' : 'hr';
   return (
     <div
       style={{
@@ -52,7 +47,7 @@ function Card({ iv, selected, onPick, preview, busy, onSayHi, stageRef, sp }: {
         style={{ all: 'unset', boxSizing: 'border-box', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 8, textAlign: 'left', fontFamily: 'inherit' }}>
         <div style={{ position: 'relative' }}>
           <Portrait iv={iv}>
-            {mine?.face && <SpatiusSeatStage seat={seat} avatarId={iv.avatarId} backgroundUrl={iv.backgroundUrl} stageRef={stageRef} visible={sp.rendered} live={sp.status === 'connected'} rendered={sp.rendered} rounded={false} />}
+            {mine?.frame && <iframe key={mine.nonce} title={`${iv.displayName} speaks`} src={`/hello?i=${encodeURIComponent(iv.id)}&auto=1`} allow="autoplay" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0, background: '#04060c' }} />}
           </Portrait>
           {selected && <span style={{ position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: '50%', background: '#34D399', color: '#04120c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={14} strokeWidth={3} /></span>}
         </div>
@@ -83,14 +78,30 @@ function Card({ iv, selected, onPick, preview, busy, onSayHi, stageRef, sp }: {
 export function InterviewerPicker() {
   const [roster, setRoster] = useState<PublicInterviewer[]>([]);
   const [choice, setChoice] = useState<InterviewerChoice>(() => readInterviewerChoice());
-  // "Say hi": one interviewer at a time greets the candidate, so they can hear the voice and accent before choosing. The face is drawn by Spatius where the device
-  // allows it; otherwise (a phone, or the face service unavailable) only the voice plays. The connection is closed as soon as the greeting ends.
+  // "Watch me speak": one interviewer at a time greets the candidate, so they can hear the voice and accent before choosing. On a computer the preview is a small page of its
+  // own (/hello?auto=1) framed over the portrait: the face is drawn there, and when the preview ends the frame is removed and the browser frees everything the face used (a
+  // face built again and again in this page itself stopped working after three or four). On a phone only the voice plays.
   const [preview, setPreview] = useState<Preview | null>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
-  const sp = useSpatiusAvatarSession(stageRef);
   const runRef = useRef(0);
+  const nonceRef = useRef(0);
 
   useEffect(() => { void fetchInterviewers().then(setRoster); }, []);
+
+  // Progress from the framed preview page.
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      const d = e.data as { type?: string; ok?: boolean } | null;
+      if (!d || typeof d.type !== 'string') return;
+      if (d.type === 'tic-hello-playing') setPreview(p => (p ? { ...p, state: 'playing' } : p));
+      else if (d.type === 'tic-hello-done') {
+        runRef.current++;
+        setPreview(p => (p && d.ok === false ? { ...p, frame: false, state: 'error' } : null));
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
 
   const rows: { seat: 'hr' | 'technical'; title: string; items: PublicInterviewer[] }[] = [
     { seat: 'hr', title: 'Your HR interviewer', items: roster.filter(i => i.role === 'hr') },
@@ -103,59 +114,30 @@ export function InterviewerPicker() {
     items.find(i => i.id === choice[seat])?.id ?? items.find(i => i.defaultFor === seat)?.id ?? items[0]?.id;
 
   async function sayHi(iv: PublicInterviewer) {
-    unlockTTSAudio(); // inside the tap, before anything is awaited, so phones allow the sound
+    unlockTTSAudio(); // inside the tap, before anything is awaited: the framed page shares this tap, and a phone's voice needs it
     const run = ++runRef.current;
     const stale = () => runRef.current !== run;
     const role = iv.role === 'technical' ? 'technical' : 'hr';
     const text = `Hi there, I'm ${iv.displayName}, welcome to TheInterviewChair.com.`;
-    await sp.disconnect(true);
-    if (stale()) return;
-    const face = deviceCanUseSpatiusInRoom();
-    setPreview({ id: iv.id, state: 'loading', face });
-    // Hard stop: whatever goes wrong, the button comes back (Francis, 2026-10-08: it once stayed on "Getting ready" until another face was chosen).
+    const frame = deviceCanUseSpatiusInRoom();
+    setPreview({ id: iv.id, state: 'loading', frame, nonce: ++nonceRef.current });
+    // Hard stop: whatever goes wrong, the button comes back.
     const hardStop = window.setTimeout(() => {
       if (stale()) return;
       runRef.current++;
-      void sp.disconnect(true);
-      setPreview({ id: iv.id, state: 'error', face: false });
-    }, 45000);
+      setPreview({ id: iv.id, state: 'error', frame: false, nonce: nonceRef.current });
+    }, 60000);
+    if (frame) return; // the framed page does the rest and reports back (the hard stop above covers a page that never does)
     try {
-      let heard = false;
-      if (face) {
-        try {
-          await Promise.race([
-            sp.connect(iv.avatarId, getInterviewTicket() ?? '', undefined, INTERVIEW_TOKEN_PATH),
-            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('connect timed out')), 15000)),
-          ]);
-          if (stale()) return;
-          await new Promise<void>((resolve, reject) => {
-            let started = false;
-            const watchdog = window.setTimeout(() => { if (!started) { sp.interrupt(); reject(new Error('speech did not start')); } }, 12000);
-            sp.speak(text, role, () => { started = true; window.clearTimeout(watchdog); if (!stale()) setPreview({ id: iv.id, state: 'playing', face }); }, iv.id)
-              .then(() => { window.clearTimeout(watchdog); resolve(); }, e => { window.clearTimeout(watchdog); reject(e); });
-          });
-          heard = true;
-        } catch {
-          if (stale()) return;
-          await sp.disconnect(true); // no face: fall through to the voice on its own
-          setPreview({ id: iv.id, state: 'loading', face: false });
-        }
-      }
-      if (!heard) {
-        const pcm = await Promise.race([fetchAvatarAudioPcm(text, role, iv.id), new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('voice timed out')), 20000))]);
-        if (stale()) return;
-        setPreview({ id: iv.id, state: 'playing', face: false });
-        await playPcm(pcm);
-      }
+      const pcm = await Promise.race([fetchAvatarAudioPcm(text, role, iv.id), new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('voice timed out')), 20000))]);
       if (stale()) return;
-      await new Promise(r => setTimeout(r, 900)); // let the face settle before it goes back to the photo
+      setPreview({ id: iv.id, state: 'playing', frame: false, nonce: nonceRef.current });
+      await playPcm(pcm);
       if (stale()) return;
-      await sp.disconnect(true);
       setPreview(null);
     } catch {
       if (stale()) return;
-      await sp.disconnect(true);
-      setPreview({ id: iv.id, state: 'error', face: false });
+      setPreview({ id: iv.id, state: 'error', frame: false, nonce: nonceRef.current });
     } finally {
       window.clearTimeout(hardStop);
     }
@@ -176,7 +158,7 @@ export function InterviewerPicker() {
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>{r.title}</div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {r.items.map(iv => <Card key={iv.id} iv={iv} selected={selectedId(r.seat, r.items) === iv.id} onPick={() => pick(r.seat, iv.id)}
-              preview={preview} busy={preview?.state === 'loading' || preview?.state === 'playing'} onSayHi={() => void sayHi(iv)} stageRef={stageRef} sp={sp} />)}
+              preview={preview} busy={preview?.state === 'loading' || preview?.state === 'playing'} onSayHi={() => void sayHi(iv)} />)}
           </div>
         </div>
       ))}
