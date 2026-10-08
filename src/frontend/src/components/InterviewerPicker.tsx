@@ -73,7 +73,7 @@ function Card({ iv, selected, onPick, preview, busy, onSayHi, stageRef, sp }: {
           cursor: busy ? 'default' : 'pointer', opacity: busy && !mine ? 0.5 : 1, color: 'var(--text)', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
         }}>
         <Volume2 size={14} />
-        {mine?.state === 'loading' ? 'Getting ready…' : mine?.state === 'playing' ? 'Speaking…' : `Say hi to ${iv.displayName}`}
+        {mine?.state === 'loading' ? 'Getting ready…' : mine?.state === 'playing' ? 'Speaking…' : deviceCanUseSpatiusInRoom() ? `Watch ${iv.displayName} speak` : `Hear ${iv.displayName} speak`}
       </button>
       {mine?.state === 'error' && <div style={{ fontSize: 10.5, color: 'var(--text-3)', textAlign: 'center' }}>Couldn't play the preview just now.</div>}
     </div>
@@ -112,6 +112,13 @@ export function InterviewerPicker() {
     if (stale()) return;
     const face = deviceCanUseSpatiusInRoom();
     setPreview({ id: iv.id, state: 'loading', face });
+    // Hard stop: whatever goes wrong, the button comes back (Francis, 2026-10-08: it once stayed on "Getting ready" until another face was chosen).
+    const hardStop = window.setTimeout(() => {
+      if (stale()) return;
+      runRef.current++;
+      void sp.disconnect(true);
+      setPreview({ id: iv.id, state: 'error', face: false });
+    }, 45000);
     try {
       let heard = false;
       if (face) {
@@ -135,7 +142,7 @@ export function InterviewerPicker() {
         }
       }
       if (!heard) {
-        const pcm = await fetchAvatarAudioPcm(text, role, iv.id);
+        const pcm = await Promise.race([fetchAvatarAudioPcm(text, role, iv.id), new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('voice timed out')), 20000))]);
         if (stale()) return;
         setPreview({ id: iv.id, state: 'playing', face: false });
         await playPcm(pcm);
@@ -149,6 +156,8 @@ export function InterviewerPicker() {
       if (stale()) return;
       await sp.disconnect(true);
       setPreview({ id: iv.id, state: 'error', face: false });
+    } finally {
+      window.clearTimeout(hardStop);
     }
   }
 

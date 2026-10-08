@@ -9,12 +9,20 @@ import { SpatiusSeatStage } from '../components/SpatiusSeatStage';
 import { playPcm } from '../lib/playPcm';
 import { logEvent } from '../api/flowLogger';
 
-// "Say hi" for the marketing homepage (2026-10-08). The homepage's interviewer picker frames this page (/hello?i=<interviewer id>) so a visitor on a computer can see and
+// "Watch me speak" for the marketing homepage (2026-10-08). The homepage's interviewer picker frames this page (/hello?i=<interviewer id>) so a visitor on a computer can see and
 // hear the interviewer greet them before choosing. The page is just the portrait with a button; pressing it brings the live Spatius face up, the interviewer says
-// "Hi there, I'm <name>, welcome to TheInterviewChair.com." in their own voice, and the face goes back to the portrait (the billed connection closes). If the face can't
-// start, the voice plays on its own. The token route is anonymous and capped (see Features/Interviews/AvatarSession "hello/spatius-token").
+// "Hi there, I'm <name>, welcome to TheInterviewChair.com." in their own voice. If the face can't start, the voice plays on its own. The token route is anonymous and capped
+// (see Features/Interviews/AvatarSession "hello/spatius-token").
+//
+// Reliability (Francis, 2026-10-08: now and then the voice played with a still mouth, and once the button stuck on "Getting ready" for good):
+//  - the face is built once and kept for the visit: after a greeting only its billed connection is closed (a soft close), and the next press just reopens it, the way the
+//    interview room does between questions, instead of building a new graphics surface every time;
+//  - every wait has a limit, and the whole greeting has a hard stop (45 s) that always puts the button back, so it can never stay stuck.
 
 type State = 'idle' | 'loading' | 'playing' | 'error';
+
+const withLimit = <T,>(p: Promise<T>, ms: number, what: string) =>
+  Promise.race([p, new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error(`${what} timed out`)), ms))]);
 
 export default function HelloPage() {
   const id = new URLSearchParams(window.location.search).get('i') ?? '';
@@ -25,8 +33,11 @@ export default function HelloPage() {
   const stageRef = useRef<HTMLDivElement>(null);
   const sp = useSpatiusAvatarSession(stageRef);
   const runRef = useRef(0);
+  const needFreshRef = useRef(false); // the last greeting went wrong: build the face again from scratch
 
   useEffect(() => { void fetchInterviewers().then(list => setIv(list.find(i => i.id === id) ?? null)); }, [id]);
+
+  const canFace = deviceCanUseSpatiusInRoom();
 
   async function sayHi() {
     if (!iv) return;
@@ -36,50 +47,62 @@ export default function HelloPage() {
     const stale = () => runRef.current !== run;
     const role = iv.role === 'technical' ? 'technical' : 'hr';
     const text = `Hi there, I'm ${iv.displayName}, welcome to TheInterviewChair.com.`;
-    await sp.disconnect(true);
-    if (stale()) return;
-    const wantFace = deviceCanUseSpatiusInRoom();
-    setFace(wantFace); setState('loading');
+    setState('loading');
+    // Hard stop: whatever goes wrong, the button comes back.
+    const hardStop = window.setTimeout(() => {
+      if (stale()) return;
+      runRef.current++;
+      needFreshRef.current = true;
+      void sp.disconnect(true);
+      setFace(false); setState('error');
+      logEvent('hello_say_hi_result', { page: '/hello', metadata: { interviewer: iv.id, mode: 'stuck, stopped' } });
+    }, 45000);
     try {
+      if (needFreshRef.current) { await sp.disconnect(true); needFreshRef.current = false; }
       let heard = false;
-      if (wantFace) {
+      if (canFace) {
+        setFace(true);
         try {
-          await Promise.race([
-            sp.connect(iv.avatarId, '', undefined, HELLO_TOKEN_PATH),
-            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('connect timed out')), 15000)),
-          ]);
+          await withLimit(sp.connect(iv.avatarId, '', undefined, HELLO_TOKEN_PATH), 15000, 'face connect');
           if (stale()) return;
           await new Promise<void>((resolve, reject) => {
             let started = false;
-            const watchdog = window.setTimeout(() => { if (!started) { sp.interrupt(); reject(new Error('speech did not start')); } }, 12000);
-            sp.speak(text, role, () => { started = true; window.clearTimeout(watchdog); if (!stale()) setState('playing'); }, iv.id)
-              .then(() => { window.clearTimeout(watchdog); resolve(); }, e => { window.clearTimeout(watchdog); reject(e); });
+            let watchdog = window.setTimeout(() => { if (!started) { sp.interrupt(); reject(new Error('speech audio took too long')); } }, 30000);
+            sp.speak(text, role, () => { started = true; window.clearTimeout(watchdog); if (!stale()) setState('playing'); }, iv.id, () => {
+              window.clearTimeout(watchdog);
+              watchdog = window.setTimeout(() => { if (!started) { sp.interrupt(); reject(new Error('speech did not start')); } }, 12000);
+            }).then(() => { window.clearTimeout(watchdog); resolve(); }, e => { window.clearTimeout(watchdog); reject(e); });
           });
           heard = true;
           logEvent('hello_say_hi_result', { page: '/hello', metadata: { interviewer: iv.id, mode: 'face' } });
-        } catch {
+        } catch (e) {
           if (stale()) return;
+          console.warn('[Hello] the face did not work, using the voice only:', e);
           await sp.disconnect(true); // no face: the voice on its own
-          setFace(false); setState('loading');
+          setFace(false);
         }
       }
       if (!heard) {
-        const pcm = await fetchAvatarAudioPcm(text, role, iv.id);
+        const pcm = await withLimit(fetchAvatarAudioPcm(text, role, iv.id), 20000, 'voice');
         if (stale()) return;
         setState('playing');
         await playPcm(pcm);
         logEvent('hello_say_hi_result', { page: '/hello', metadata: { interviewer: iv.id, mode: 'voice only' } });
       }
       if (stale()) return;
-      await new Promise(r => setTimeout(r, 900));
+      await new Promise(r => setTimeout(r, 700));
       if (stale()) return;
-      await sp.disconnect(true);
-      setFace(false); setState('idle');
-    } catch {
+      await sp.disconnect(); // soft close: the billed connection ends, the face stays drawn and is reused by the next press
+      setState('idle');
+    } catch (e) {
       if (stale()) return;
+      console.warn('[Hello] greeting failed:', e);
+      needFreshRef.current = true;
       await sp.disconnect(true);
       logEvent('hello_say_hi_result', { page: '/hello', metadata: { interviewer: iv.id, mode: 'failed' } });
       setFace(false); setState('error');
+    } finally {
+      window.clearTimeout(hardStop);
     }
   }
 
@@ -98,10 +121,10 @@ export default function HelloPage() {
             cursor: busy ? 'default' : 'pointer', color: '#fff', background: 'rgba(4,6,12,0.72)', border: '1px solid rgba(255,255,255,0.35)', backdropFilter: 'blur(4px)',
           }}>
           <Volume2 size={15} />
-          {state === 'loading' ? 'Getting ready…' : state === 'playing' ? 'Speaking…' : `Say hi to ${iv.displayName}`}
+          {state === 'loading' ? 'Getting ready…' : state === 'playing' ? 'Speaking…' : canFace ? `Watch ${iv.displayName} speak` : `Hear ${iv.displayName} speak`}
         </button>
       )}
-      {state === 'error' && <div style={{ position: 'absolute', top: 52, right: 14, zIndex: 3, fontSize: 11.5, color: 'rgba(255,255,255,0.8)', textShadow: '0 1px 3px #000' }}>Couldn't play the preview just now.</div>}
+      {state === 'error' && <div style={{ position: 'absolute', top: 52, right: 14, zIndex: 3, fontSize: 11.5, color: 'rgba(255,255,255,0.8)', textShadow: '0 1px 3px #000' }}>Couldn't play that just now. Please try again.</div>}
     </div>
   );
 }

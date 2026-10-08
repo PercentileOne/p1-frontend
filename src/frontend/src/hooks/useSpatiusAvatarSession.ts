@@ -206,7 +206,13 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
           console.info('[Spatius] playback', stalled ? 'held for the lips' : 'resumed');
           if (stalled && ++stalls === 1) logFlowEvent('SPATIUS_PLAYBACK_HELD', { avatar: avatarId.slice(0, 8) });
         };
-        ctrl.onError = e => console.warn('[Spatius]', e.code, e.message);
+        let errorsLogged = 0;
+        ctrl.onError = e => {
+          console.warn('[Spatius]', e.code, e.message);
+          if (++errorsLogged <= 2) logFlowEvent('SPATIUS_ERROR', { code: String(e.code), message: String(e.message).slice(0, 120), avatar: avatarId.slice(0, 8) });
+        };
+        try { ctrl.onAnimationState = t => console.info('[Spatius] animation', t); } catch { /* diagnostics only */ }
+        try { ctrl.onConnectionState = c => console.info('[Spatius] connection', c); } catch { /* diagnostics only */ }
         ctrl.onConversationState = s => {
           if (s === sdk.ConversationState.playing) { sawPlayingRef.current = true; setSpeaking(true); const st = startedRef.current; startedRef.current = null; st?.(); }
           else if (s === sdk.ConversationState.idle) { setSpeaking(false); if (sawPlayingRef.current) { const w = waiterRef.current; waiterRef.current = null; w?.(); } }

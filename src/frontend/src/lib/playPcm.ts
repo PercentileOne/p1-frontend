@@ -15,7 +15,8 @@ export async function playPcm(pcm: Uint8Array): Promise<void> {
     const src = ctx.createBufferSource();
     src.buffer = buf;
     src.connect(ctx.destination);
-    src.onended = () => resolve();
+    const ceiling = window.setTimeout(resolve, (samples / 24000) * 1000 + 3000); // a suspended sound system never reports the end
+    src.onended = () => { window.clearTimeout(ceiling); resolve(); };
     src.start();
   });
 }
