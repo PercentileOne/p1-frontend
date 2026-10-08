@@ -12,6 +12,7 @@ export interface PublicInterviewer {
   sortOrder: number;
   backgroundUrl: string | null; // full URL of the uploaded background, or null
   portraitUrl: string | null;   // full URL of the uploaded portrait (their face), or null: the picture files shipped with the site are then used
+  greetingUrl: string | null;   // full URL of their recorded greeting clip (a short video of them saying hello), or null: the preview is then built live
   defaultFor: 'hr' | 'technical' | 'briefing' | null;
 }
 
@@ -23,9 +24,9 @@ export async function fetchInterviewers(): Promise<PublicInterviewer[]> {
   try {
     const res = await fetch(`${API_BASE}/interviews/interviewers`);
     if (!res.ok) return [];
-    const raw = await res.json() as (Omit<PublicInterviewer, 'backgroundUrl' | 'portraitUrl'> & { backgroundUrl: string | null; portraitUrl?: string | null })[];
+    const raw = await res.json() as (Omit<PublicInterviewer, 'backgroundUrl' | 'portraitUrl' | 'greetingUrl'> & { backgroundUrl: string | null; portraitUrl?: string | null; greetingUrl?: string | null })[];
     const full = (u: string | null | undefined) => (u && u.startsWith('/') ? `${API_BASE}${u}` : null);
-    const list = raw.map(i => ({ ...i, backgroundUrl: full(i.backgroundUrl), portraitUrl: full(i.portraitUrl) }));
+    const list = raw.map(i => ({ ...i, backgroundUrl: full(i.backgroundUrl), portraitUrl: full(i.portraitUrl), greetingUrl: full(i.greetingUrl) }));
     cache = { at: Date.now(), list };
     return list;
   } catch { return []; }

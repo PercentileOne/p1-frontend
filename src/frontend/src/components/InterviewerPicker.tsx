@@ -16,7 +16,7 @@ const TRAIT_LABELS: { key: keyof PublicInterviewer['traits']; label: string }[] 
   { key: 'depth', label: 'Depth' }, { key: 'strictness', label: 'Strictness' }, { key: 'warmth', label: 'Warmth' }, { key: 'humour', label: 'Humour' }, { key: 'pace', label: 'Pace' },
 ];
 
-type Preview = { id: string; state: 'loading' | 'playing' | 'error'; frame: boolean; nonce: number };
+type Preview = { id: string; state: 'loading' | 'playing' | 'error'; frame: boolean; nonce: number; clip?: boolean };
 
 function Portrait({ iv, children }: { iv: PublicInterviewer; children?: React.ReactNode }) {
   // The uploaded portrait if there is one, else the picture file shipped with the site, else the room behind them, else a plain tile with their initial.
@@ -36,10 +36,10 @@ function Portrait({ iv, children }: { iv: PublicInterviewer; children?: React.Re
 }
 
 // Fetch a face's model ahead of the press (see preloadSpatiusAvatar); computers only, since a phone only plays the voice.
-const warm = (iv: PublicInterviewer) => { if (deviceCanUseSpatiusInRoom()) void preloadSpatiusAvatar(iv.avatarId, getInterviewTicket() ?? '', INTERVIEW_TOKEN_PATH); };
+const warm = (iv: PublicInterviewer) => { if (!iv.greetingUrl && deviceCanUseSpatiusInRoom()) void preloadSpatiusAvatar(iv.avatarId, getInterviewTicket() ?? '', INTERVIEW_TOKEN_PATH); };
 
-function Card({ iv, selected, onPick, preview, busy, onSayHi }: {
-  iv: PublicInterviewer; selected: boolean; onPick: () => void; preview: Preview | null; busy: boolean; onSayHi: () => void;
+function Card({ iv, selected, onPick, preview, busy, onSayHi, onClipEnded, onClipFailed }: {
+  iv: PublicInterviewer; selected: boolean; onPick: () => void; preview: Preview | null; busy: boolean; onSayHi: () => void; onClipEnded: () => void; onClipFailed: () => void;
 }) {
   const mine = preview?.id === iv.id ? preview : null;
   return (
@@ -52,6 +52,7 @@ function Card({ iv, selected, onPick, preview, busy, onSayHi }: {
         style={{ all: 'unset', boxSizing: 'border-box', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 8, textAlign: 'left', fontFamily: 'inherit' }}>
         <div style={{ position: 'relative' }}>
           <Portrait iv={iv}>
+            {mine?.clip && iv.greetingUrl && <video key={mine.nonce} src={iv.greetingUrl} autoPlay playsInline onEnded={onClipEnded} onError={onClipFailed} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', background: '#04060c' }} />}
             {mine?.frame && <iframe key={mine.nonce} title={`${iv.displayName} speaks`} src={`/hello?i=${encodeURIComponent(iv.id)}&auto=1`} allow="autoplay" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0, background: '#04060c' }} />}
           </Portrait>
           {selected && <span style={{ position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: '50%', background: '#34D399', color: '#04120c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={14} strokeWidth={3} /></span>}
@@ -118,7 +119,14 @@ export function InterviewerPicker() {
   const selectedId = (seat: 'hr' | 'technical', items: PublicInterviewer[]) =>
     items.find(i => i.id === choice[seat])?.id ?? items.find(i => i.defaultFor === seat)?.id ?? items[0]?.id;
 
-  async function sayHi(iv: PublicInterviewer) {
+  // The recorded greeting clip plays at once (no live face to build); only an interviewer without a clip, or a clip that fails to play, uses the live preview below.
+  function sayHi(iv: PublicInterviewer) {
+    if (iv.greetingUrl) { runRef.current++; setPreview({ id: iv.id, state: 'playing', frame: false, clip: true, nonce: ++nonceRef.current }); return; }
+    void sayHiLive(iv);
+  }
+  function clipFailed(iv: PublicInterviewer) { setPreview(null); void sayHiLive(iv); }
+
+  async function sayHiLive(iv: PublicInterviewer) {
     unlockTTSAudio(); // inside the tap, before anything is awaited: the framed page shares this tap, and a phone's voice needs it
     const run = ++runRef.current;
     const stale = () => runRef.current !== run;
@@ -163,7 +171,7 @@ export function InterviewerPicker() {
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>{r.title}</div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {r.items.map(iv => <Card key={iv.id} iv={iv} selected={selectedId(r.seat, r.items) === iv.id} onPick={() => pick(r.seat, iv.id)}
-              preview={preview} busy={preview?.state === 'loading' || preview?.state === 'playing'} onSayHi={() => void sayHi(iv)} />)}
+              preview={preview} busy={preview?.state === 'loading' || preview?.state === 'playing'} onSayHi={() => sayHi(iv)} onClipEnded={() => setPreview(null)} onClipFailed={() => clipFailed(iv)} />)}
           </div>
         </div>
       ))}

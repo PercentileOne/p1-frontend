@@ -20,6 +20,7 @@ export interface Interviewer {
   defaultFor: InterviewerRole | null
   backgroundUrl: string | null
   portraitUrl: string | null
+  greetingUrl: string | null
   updatedAt: string
 }
 

@@ -158,9 +158,14 @@ export default function Interviewers() {
             as <b>default</b> for HR, technical and briefing; the others will be offered as choices. The Spatius avatar ID is not a secret: copy it from Spatius Studio.
           </p>
         </div>
-        <button onClick={startNew} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 800, color: '#04120c', background: '#34D399', border: 'none', borderRadius: 8, padding: '9px 16px', cursor: 'pointer' }}>
-          <Plus size={14} /> Add interviewer
-        </button>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <a href="https://candidate.theinterviewchair.com/staff/greetings" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 800, color: 'var(--text)', background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 16px', textDecoration: 'none' }}>
+            🎬 Record greetings
+          </a>
+          <button onClick={startNew} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 800, color: '#04120c', background: '#34D399', border: 'none', borderRadius: 8, padding: '9px 16px', cursor: 'pointer' }}>
+            <Plus size={14} /> Add interviewer
+          </button>
+        </div>
       </div>
 
       {error && <div style={{ color: '#EF4444', fontSize: 12.5, marginBottom: 12 }}>{error}</div>}
@@ -178,7 +183,8 @@ export default function Interviewers() {
                 {i.defaultFor && <span style={{ fontSize: 10, fontWeight: 800, color: '#04120c', background: '#34D399', borderRadius: 6, padding: '3px 7px' }}>Default {ROLE_LABEL[i.defaultFor]}</span>}
                 {!i.active && <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: 'rgba(239,68,68,0.85)', borderRadius: 6, padding: '3px 7px' }}>Hidden</span>}
               </span>
-              {!bgSrc(i.backgroundUrl) && <span style={{ position: 'absolute', top: 10, left: 10, zIndex: 1, fontSize: 10.5, color: 'rgba(255,255,255,0.7)' }}>No background uploaded yet (the room uses its own file)</span>}
+              <span style={{ position: 'absolute', top: 10, left: 10, zIndex: 1, fontSize: 10.5, fontWeight: 800, color: '#fff', background: i.greetingUrl ? 'rgba(52,211,153,0.85)' : 'rgba(0,0,0,0.6)', borderRadius: 6, padding: '3px 7px' }}>{i.greetingUrl ? '🎬 Greeting recorded' : 'No greeting clip yet'}</span>
+              {false && !bgSrc(i.backgroundUrl) && <span style={{ position: 'absolute', top: 10, left: 10, zIndex: 1, fontSize: 10.5, color: 'rgba(255,255,255,0.7)' }}>No background uploaded yet (the room uses its own file)</span>}
             </div>
             <div style={{ padding: '12px 14px', display: 'grid', gap: 10, flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>

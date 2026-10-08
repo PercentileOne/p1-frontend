@@ -99,6 +99,15 @@ public class InterviewersTests
     }
 
     [Fact]
+    public void Greeting_videos_are_recognised_from_their_own_bytes()
+    {
+        Assert.Equal("webm", Interviewers.SniffVideo([0x1A, 0x45, 0xDF, 0xA3, 0, 0])!.Value.Ext);
+        Assert.Equal("mp4", Interviewers.SniffVideo([0, 0, 0, 0x20, (byte)'f', (byte)'t', (byte)'y', (byte)'p', (byte)'i', (byte)'s', (byte)'o', (byte)'m'])!.Value.Ext);
+        Assert.Null(Interviewers.SniffVideo("<html></html>"u8));
+        Assert.Null(Interviewers.SniffVideo([]));
+    }
+
+    [Fact]
     public void Persona_guidance_turns_the_five_levels_into_plain_instructions()
     {
         var iv = new Interviewer("catherine", "interviewer", "Catherine", "hr", "a", null, "d", 3, 2, 5, 3, 2, true, 1, null, null, DateTimeOffset.UnixEpoch, "t");

@@ -20,6 +20,7 @@ public static partial class Endpoint
     public const string AssetsContainer = "interviewer-assets";
     public const string Partition = "interviewer";
     private const long MaxBackgroundBytes = 6 * 1024 * 1024;
+    private const long MaxGreetingBytes = 15 * 1024 * 1024;
 
     public static readonly string[] Roles = ["hr", "technical", "briefing"];
 
@@ -48,7 +49,7 @@ public static partial class Endpoint
                 active: clean.Active, sortOrder: clean.SortOrder, defaultFor: clean.DefaultFor,
                 backgroundUrl: existing?.backgroundUrl,
                 updatedAt: DateTimeOffset.UtcNow, updatedBy: ctx.User.FindFirst("sub")?.Value ?? "unknown",
-                portraitUrl: existing?.portraitUrl);
+                portraitUrl: existing?.portraitUrl, greetingUrl: existing?.greetingUrl);
 
             // Only one interviewer can be the default for a seat: taking it from another one is part of the same save.
             if (doc.defaultFor is not null) await ClearDefaultFromOthersAsync(cosmos, doc.defaultFor, id, ct);
@@ -128,7 +129,52 @@ public static partial class Endpoint
             return Results.Ok(ToAdminDto(updated));
         }).RequireAuthorization(Permissions.ViewSystemSettings).DisableAntiforgery().WithName("AdminInterviewerPortrait").WithTags("Interviewers");
 
+        // The interviewer's greeting clip (2026-10-08): a short recording of their face saying hello, made once by staff (Record greeting) and played instead of building a live face
+        // for every preview. Stored as <id>/greeting.<ext> (webm or mp4) next to the portrait and the room.
+        app.MapPost("/api/admin/interviewers/{id}/greeting", async (string id, IFormFile file, HttpContext ctx, CosmosService cosmos, IConfiguration config, CancellationToken ct) =>
+        {
+            if (!IsValidId(id)) return Results.BadRequest(new { error = "Unknown interviewer." });
+            var existing = await GetAsync(cosmos, id, ct);
+            if (existing is null) return Results.NotFound(new { error = "Save the interviewer first, then add the greeting." });
+            if (file is null || file.Length == 0) return Results.BadRequest(new { error = "Choose a video." });
+            if (file.Length > MaxGreetingBytes) return Results.BadRequest(new { error = "That video is larger than 15 MB." });
+
+            byte[] bytes;
+            using (var ms = new MemoryStream()) { await file.CopyToAsync(ms, ct); bytes = ms.ToArray(); }
+            var kind = SniffVideo(bytes);
+            if (kind is null) return Results.BadRequest(new { error = "Use a WebM or MP4 video." });
+
+            var assets = AssetsClient(config);
+            if (assets is null) return Results.Json(new { error = "Storage isn't configured." }, statusCode: 503);
+            await assets.CreateIfNotExistsAsync(PublicAccessType.None, cancellationToken: ct);
+            await foreach (var b in assets.GetBlobsAsync(BlobTraits.None, BlobStates.None, prefix: id + "/greeting.", cancellationToken: ct)) await assets.DeleteBlobIfExistsAsync(b.Name, cancellationToken: ct);
+            var blob = assets.GetBlobClient($"{id}/greeting.{kind.Value.Ext}");
+            using (var ms = new MemoryStream(bytes))
+                await blob.UploadAsync(ms, new BlobUploadOptions { HttpHeaders = new BlobHttpHeaders { ContentType = kind.Value.Mime, CacheControl = "public, max-age=86400" } }, ct);
+
+            var updated = existing with { greetingUrl = $"/interviewers/{id}/greeting?v={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}", updatedAt = DateTimeOffset.UtcNow, updatedBy = ctx.User.FindFirst("sub")?.Value ?? "unknown" };
+            await cosmos.GetContainer(ContainerName).UpsertItemAsync(updated, new PartitionKey(Partition), cancellationToken: ct);
+            InvalidateCache();
+            return Results.Ok(ToAdminDto(updated));
+        }).RequireAuthorization(Permissions.ViewSystemSettings).DisableAntiforgery().WithName("AdminInterviewerGreeting").WithTags("Interviewers");
+
         // ── Public (what candidates and the marketing page may see) ────────────────────────────────────────────────────────────────────────────
+        // The greeting clip, with range support (iPhones refuse to play a video that cannot be read in pieces). Small (15 MB at most), so it is read whole.
+        app.MapGet("/interviewers/{id}/greeting", async (string id, IConfiguration config, HttpContext ctx, CancellationToken ct) =>
+        {
+            if (!IsValidId(id)) return Results.NotFound();
+            var assets = AssetsClient(config);
+            if (assets is null) return Results.NotFound();
+            await foreach (var b in assets.GetBlobsAsync(BlobTraits.None, BlobStates.None, prefix: id + "/greeting.", cancellationToken: ct))
+            {
+                var download = await assets.GetBlobClient(b.Name).DownloadContentAsync(ct);
+                ctx.Response.Headers.CacheControl = "public, max-age=86400";
+                ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
+                return Results.File(download.Value.Content.ToArray(), download.Value.Details.ContentType ?? "video/webm", enableRangeProcessing: true);
+            }
+            return Results.NotFound();
+        }).AllowAnonymous().WithName("InterviewerGreeting").WithTags("Interviewers");
+
         app.MapGet("/interviewers/{id}/portrait", async (string id, IConfiguration config, HttpContext ctx, CancellationToken ct) =>
         {
             if (!IsValidId(id)) return Results.NotFound();
@@ -332,6 +378,14 @@ public static partial class Endpoint
     }
 
     /// <summary>The image types accepted for a background, recognised from the file's own first bytes (never from its name or the browser's claim).</summary>
+    /// <summary>WebM (starts 1A 45 DF A3) or MP4 (the word "ftyp" at byte 4), recognised from the file's own bytes; anything else is refused.</summary>
+    public static (string Ext, string Mime)? SniffVideo(ReadOnlySpan<byte> b)
+    {
+        if (b.Length >= 4 && b[0] == 0x1A && b[1] == 0x45 && b[2] == 0xDF && b[3] == 0xA3) return ("webm", "video/webm");
+        if (b.Length >= 12 && b[4] == (byte)'f' && b[5] == (byte)'t' && b[6] == (byte)'y' && b[7] == (byte)'p') return ("mp4", "video/mp4");
+        return null;
+    }
+
     public static (string Ext, string Mime)? SniffImage(ReadOnlySpan<byte> b)
     {
         if (b.Length >= 3 && b[0] == 0xFF && b[1] == 0xD8 && b[2] == 0xFF) return ("jpg", "image/jpeg");
@@ -367,14 +421,14 @@ public static partial class Endpoint
     {
         i.id, i.displayName, i.role, i.spatiusAvatarId, i.voiceId, i.description,
         traits = new { depth = i.depth, strictness = i.strictness, warmth = i.warmth, humour = i.humour, pace = i.pace },
-        i.active, i.sortOrder, i.defaultFor, i.backgroundUrl, i.portraitUrl, i.updatedAt,
+        i.active, i.sortOrder, i.defaultFor, i.backgroundUrl, i.portraitUrl, i.greetingUrl, i.updatedAt,
     };
 
     public static object ToPublicDto(Interviewer i) => new
     {
         i.id, i.displayName, i.role, avatarId = i.spatiusAvatarId, i.description,
         traits = new { depth = i.depth, strictness = i.strictness, warmth = i.warmth, humour = i.humour, pace = i.pace },
-        i.sortOrder, i.backgroundUrl, i.portraitUrl, i.defaultFor,
+        i.sortOrder, i.backgroundUrl, i.portraitUrl, i.greetingUrl, i.defaultFor,
     };
 }
 
@@ -388,4 +442,4 @@ public record Interviewer(
     string id, string pk, string displayName, string role, string spatiusAvatarId, string? voiceId, string description,
     int depth, int strictness, int warmth, int humour, int pace,
     bool active, int sortOrder, string? defaultFor, string? backgroundUrl,
-    DateTimeOffset updatedAt, string updatedBy, string? portraitUrl = null);
+    DateTimeOffset updatedAt, string updatedBy, string? portraitUrl = null, string? greetingUrl = null);

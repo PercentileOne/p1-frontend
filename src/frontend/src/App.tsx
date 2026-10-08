@@ -16,6 +16,7 @@ import AuthCallback from "./pages/AuthCallback";
 import RegisterPage from "./pages/RegisterPage";
 import TryItLivePage from "./pages/TryItLivePage";
 import HelloPage from "./pages/HelloPage";
+import StaffGreetingsPage from "./pages/StaffGreetingsPage";
 import QuestionPackPage from "./pages/QuestionPackPage";
 import QuestionPackSuccessPage from "./pages/QuestionPackSuccessPage";
 import QuestionGiftPage from "./pages/QuestionGiftPage";
@@ -151,6 +152,7 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/staff/greetings" element={<StaffGreetingsPage />} />   {/* staff tool: record each interviewer's greeting clip */}
       <Route path="/hello" element={<HelloPage />} />   {/* the marketing homepage's "Say hi" preview, framed there (see pages/HelloPage.tsx) */}
       <Route path="/try" element={<TryItLivePage />} />   {/* public "Try it live" — no sign-in (see Features/TryOut) */}
       <Route path="/questions" element={<QuestionPackPage />} />   {/* public "Printable Interview Questions" — no sign-in (see Features/QuestionPacks) */}

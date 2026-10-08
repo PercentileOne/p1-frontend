@@ -121,7 +121,11 @@
   .pick-sub{font-size:12.5px;color:var(--muted)}
   .pick-main{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:4/3;background:#04060c}
   .pick-main img{width:100%;height:100%;object-fit:cover;object-position:center 20%}
-  .pick-main iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1;background:#04060c}
+  .pick-main iframe,.pick-main video{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1;background:#04060c;object-fit:cover}
+  .pick-main video[hidden]{display:none}
+  .pick-play{position:absolute;top:12px;right:12px;z-index:3;display:flex;align-items:center;gap:7px;padding:9px 15px;border-radius:999px;font:inherit;font-size:13px;font-weight:800;color:#fff;background:rgba(4,6,12,.72);border:1px solid rgba(255,255,255,.35);cursor:pointer;backdrop-filter:blur(4px)}
+  .pick-play:hover{border-color:var(--green)}
+  .pick-play[hidden]{display:none}
   .pick-cap{pointer-events:none;z-index:2;position:absolute;left:0;right:0;bottom:0;padding:38px 16px 12px;background:linear-gradient(to top,rgba(4,6,12,.88),transparent);display:flex;flex-direction:column;gap:1px}
   .pick-cap b{font-size:21px;font-weight:900;letter-spacing:-.01em}
   .pick-cap small{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--green)}
@@ -442,6 +446,8 @@
       </div>
       <div class="pick-main">
         <img id="pickImg" src="/img/iv-haruto.webp" width="640" height="640" alt="Haruto, a live AI interviewer" fetchpriority="high">
+        <video id="pickVideo" playsinline preload="none" hidden></video>
+        <button type="button" class="pick-play" id="pickPlay" hidden>&#9654; <span id="pickPlayText">Watch speak</span></button>
         <div class="pick-cap"><b id="pickName">Haruto</b><small id="pickRole">Technical interviewer</small></div>
       </div>
       <p class="pick-desc" id="pickDesc">A calm, methodical technical interviewer with a dry sense of humour.</p>
@@ -877,6 +883,14 @@
   var pickList = IV_FALLBACK, pickSel = 'haruto';
   // An uploaded portrait (Admin > Interviewers) wins; otherwise the picture file on this site.
   function ivPhoto(i) { return i.portraitUrl ? 'https://api.explain.global' + i.portraitUrl : '/img/iv-' + i.id + '.webp'; }
+  // A recorded greeting clip (made once by staff in Admin > Interviewers > Record greetings) plays straight away on any device, with no live face to build.
+  function resetClip(cur) {
+    var v = document.getElementById('pickVideo'), btn = document.getElementById('pickPlay');
+    if (!v || !btn) return;
+    v.hidden = true; v.removeAttribute('src'); try { v.load(); } catch (e) {}
+    btn.hidden = !(cur && cur.greetingUrl);
+    if (cur) document.getElementById('pickPlayText').textContent = 'Watch ' + cur.displayName + ' speak';
+  }
   function renderPick() {
     var cur = pickList.filter(function (i) { return i.id === pickSel; })[0] || pickList[0];
     if (!cur) return;
@@ -886,6 +900,7 @@
     document.getElementById('pickName').textContent = cur.displayName;
     document.getElementById('pickRole').textContent = cur.role === 'hr' ? 'HR interviewer' : 'Technical interviewer';
     document.getElementById('pickDesc').textContent = cur.description || '';
+    resetClip(cur);
     var bars = document.getElementById('pickBars'); bars.textContent = '';
     if (cur.traits) IV_TRAITS.forEach(function (t) {
       var row = document.createElement('div'); row.className = 'pick-bar';
@@ -910,6 +925,18 @@
     });
   }
   renderPick();
+  (function () {
+    var v = document.getElementById('pickVideo'), btn = document.getElementById('pickPlay');
+    function current() { return pickList.filter(function (i) { return i.id === pickSel; })[0]; }
+    btn.addEventListener('click', function () {
+      var cur = current(); if (!cur || !cur.greetingUrl) return;
+      v.src = cur.greetingUrl; v.hidden = false; btn.hidden = true;
+      var p = v.play(); if (p && p.catch) p.catch(function () { resetClip(cur); });
+      if (window.ticTrack) window.ticTrack('interviewer_clip_played', { id: cur.id });
+    });
+    v.addEventListener('ended', function () { resetClip(current()); });
+    v.addEventListener('error', function () { resetClip(current()); });
+  })();
 
   // "Say hi" on a computer (Francis, 2026-10-08): a small page on the candidate site is framed over the big portrait; its button brings the live face up and the interviewer
   // greets the visitor in their own voice. Added after the page has finished loading (so it never slows the first view), on a mouse-and-keyboard device only; on a phone the
@@ -917,6 +944,9 @@
   var helloFrame = null;
   function syncHello() {
     if (!helloFrame) return;
+    var cur = pickList.filter(function (i) { return i.id === pickSel; })[0];
+    helloFrame.hidden = !!(cur && cur.greetingUrl); // a recorded clip replaces the live frame
+    if (helloFrame.hidden) return;
     var want = 'https://candidate.theinterviewchair.com/hello?i=' + encodeURIComponent(pickSel);
     if (helloFrame.getAttribute('src') !== want) helloFrame.setAttribute('src', want);
   }
@@ -938,6 +968,7 @@
       var ok = list.filter(function (i) { return (i.role === 'hr' || i.role === 'technical') && (IV_IDS[i.id] || i.portraitUrl); })
                    .sort(function (a, b) { return (a.role === b.role ? 0 : a.role === 'hr' ? -1 : 1) || (a.sortOrder - b.sortOrder); });
       if (ok.length < 2) return;
+      ok.forEach(function (i) { if (i.greetingUrl && i.greetingUrl.charAt(0) === '/') i.greetingUrl = 'https://api.explain.global' + i.greetingUrl; });
       pickList = ok;
       if (!ok.some(function (i) { return i.id === pickSel; })) { var d = ok.filter(function (i) { return i.defaultFor === 'technical'; })[0]; pickSel = (d || ok[0]).id; }
       renderPick(); syncHello();
