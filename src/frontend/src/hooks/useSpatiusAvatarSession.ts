@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AvatarController, AvatarView } from '@spatius/avatarkit';
 import { fetchAvatarAudioPcm } from '../api/liveAvatarApi';
 import { useAuthStore } from '../auth/authStore';
+import { logFlowEvent } from '../api/flowLogger';
 
 // Spatius (on-device, audio-driven avatar) for one interviewer seat — the counterpart of useLiveAvatarSession (HeyGen) with the same shape
 // where it matters (connect / speak / disconnect / interrupt), so a page can pick either at runtime. Added 2026-09-29 for the admin-switchable
@@ -191,6 +192,16 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
           diag('first frame'); window.setTimeout(() => diag('+2s'), 2000);
         };
         const ctrl = view.controller;
+        // Lips and voice must ALWAYS move together (Francis, 2026-10-08: now and then the voice ran ahead and the lips only moved at the end of the line). By default the SDK keeps
+        // the audio playing when the lip animation hasn't arrived from the service yet ("audioIndependent"). "strictSync" instead holds the sound until the animation frames
+        // are there, and resumes it as they arrive, so the voice can never get ahead of the mouth. If the animation never comes at all, the sound simply never starts and the
+        // callers' "speech did not start" watchdogs fall back to the plain voice, as they always have.
+        try { ctrl.frameStarvationMode = sdk.FrameStarvationMode.strictSync; } catch { /* an SDK without the setting keeps its default */ }
+        let stalls = 0;
+        ctrl.onPlaybackStall = stalled => {
+          console.info('[Spatius] playback', stalled ? 'held for the lips' : 'resumed');
+          if (stalled && ++stalls === 1) logFlowEvent('SPATIUS_PLAYBACK_HELD', { avatar: avatarId.slice(0, 8) });
+        };
         ctrl.onError = e => console.warn('[Spatius]', e.code, e.message);
         ctrl.onConversationState = s => {
           if (s === sdk.ConversationState.playing) { sawPlayingRef.current = true; setSpeaking(true); const st = startedRef.current; startedRef.current = null; st?.(); }
@@ -267,7 +278,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
     sawPlayingRef.current = false;
     startedRef.current = onStarted ?? null;
     await new Promise<void>(resolve => {
-      const ceiling = window.setTimeout(resolve, seconds * 1000 + 4000);
+      const ceiling = window.setTimeout(resolve, seconds * 1000 + 15000); // generous: strict sync may hold the sound for a moment while the lips catch up
       waiterRef.current = () => { window.clearTimeout(ceiling); resolve(); };
       ctrl.send(pcm.slice().buffer, true); // copy so the SDK owns its buffer; true = last chunk of this turn
     });
