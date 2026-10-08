@@ -136,10 +136,11 @@
   .pick-tile:hover{border-color:rgba(52,211,153,.5)}
   .pick-tile[aria-checked="true"]{border-color:var(--green);background:rgba(52,211,153,.1)}
   .pick-tile img{width:100%;aspect-ratio:1/1;object-fit:cover;object-position:center 20%;border-radius:8px}
-  .pick-tile span{font-size:12px;font-weight:800}
+  .pick-tile span{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
   .pick-note{margin-top:12px;font-size:12.5px;color:var(--muted);line-height:1.5}
   .pick-note b{color:var(--green)}
-  @media(max-width:520px){.pick-bars{grid-template-columns:1fr}.pick-tile span{font-size:11px}}
+  @media(max-width:700px){.pick-tile span{font-size:10.5px}}
+  @media(max-width:520px){.pick-bars{grid-template-columns:1fr}.pick-tile span{font-size:10px}}
   .stage{position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 60px rgba(61,126,246,.12);background:#04060c;aspect-ratio:1200/962}
   .stage img,.stage video{width:100%;height:100%;object-fit:cover}
   .stage video{position:absolute;inset:0}
@@ -179,7 +180,7 @@
   .crew{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:38px}
   .person{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
   .person{overflow:hidden}
-  .person img{width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;transform:scale(1.05)}
+  .person img{width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;object-position:center 16%;transform:scale(1.05)}
   .person div{padding:18px 20px 22px}
   .person h3{font-size:18px;letter-spacing:-.02em}
   .person small{display:block;color:var(--green);font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin:2px 0 8px}
@@ -514,7 +515,7 @@
     <h2 class="reveal">Four steps to walk in ready.</h2>
     <div class="steps">
       <div class="step reveal"><div class="num">1</div><h3>Name your interview</h3><p>A job title, a company, an exam — anything. Add your CV and the real job description for a fully tailored session.</p></div>
-      <div class="step reveal"><div class="num">2</div><h3>Get interviewed, live</h3><p>Amina and Wayne ask you questions out loud. Answer by voice or by typing, at your own pace, from home.</p></div>
+      <div class="step reveal"><div class="num">2</div><h3>Get interviewed, live</h3><p>The interviewer you choose asks you questions out loud. Answer by voice or by typing, at your own pace, from home.</p></div>
       <div class="step reveal"><div class="num">3</div><h3>Get scored, honestly</h3><p>See exactly where you shone and where you fell short — question by question, with a stronger answer to learn from.</p></div>
       <div class="step reveal"><div class="num">4</div><h3>Fix the gaps — then share your best</h3><p>Learn turns every weak spot into short lessons and practice questions, with reminders by email so it sticks. Then, if you choose, share your best interview with recruiters.</p></div>
     </div>
@@ -529,7 +530,7 @@
     <p class="lede reveal">Most useful first.</p>
 
     <div class="feat-top">
-      <div class="feat big reveal"><span class="badge">1</span><div class="ico">🎙️</div><h3>Live interviews with real-looking interviewers</h3><p>Two AI interviewers — Amina (HR) and Wayne (technical) — ask 10+ questions built around your role, your CV and the job. They speak, they listen, they react &mdash; in 32 languages, answered by voice or typed. Michelle, your recruitment consultant, briefs you first.</p></div>
+      <div class="feat big reveal"><span class="badge">1</span><div class="ico">🎙️</div><h3>Live interviews with real-looking interviewers</h3><p>Two AI interviewers — an HR interviewer and a technical one, each chosen from a panel of five — ask 10+ questions built around your role, your CV and the job. They speak, they listen, they react &mdash; in 32 languages, answered by voice or typed. Michelle, your recruitment consultant, briefs you first.</p></div>
       <div class="feat big reveal"><span class="badge">2</span><div class="ico">📊</div><h3>Scored instantly, on five dimensions</h3><p>Clarity, relevance, accuracy, depth and confidence — with a clear Pass, Keep-on-file or Fail verdict, a spoken debrief, a replay of your session, and a shareable certificate when you pass.</p></div>
       <div class="feat big reveal"><span class="badge">3</span><div class="ico">📡</div><h3>Let the people hiring find you</h3><p>Save your best interview and share it with one link or a QR code for your CV. Recruiters and employers can search candidates and watch — without you applying to a single job. You decide which interviews are public.</p></div>
     </div>
@@ -561,10 +562,12 @@
     <h2 class="reveal">Meet the people across the table.</h2>
     <p class="lede reveal">Live, lip-synced AI interviewers who talk to you in real time — no scripts, no waiting rooms, no judgement.</p>
     <div class="crew">
-      <div class="person reveal"><img src="/img/amina.webp" width="480" height="276" alt="Amina, HR Director" loading="lazy"><div><h3>Amina</h3><small>HR Director</small><p>Warm but searching. Asks about your experience, motivation and how you handle people and pressure.</p></div></div>
-      <div class="person reveal"><img src="/img/wayne.webp" width="480" height="266" alt="Wayne, technical interviewer" loading="lazy"><div><h3>Wayne</h3><small>Technical interviewer</small><p>Precise and practical. Probes real knowledge with scenarios, follow-ups and the questions that separate good from great.</p></div></div>
-      <div class="person reveal"><img src="/img/michelle.webp" width="480" height="275" alt="Michelle, your interview host" loading="lazy"><div><h3>Michelle</h3><small>Your host</small><p>Briefs you before you begin, and talks you through your result afterwards — what worked and what to sharpen.</p></div></div>
-    </div>
+      <div class="person reveal"><img src="/img/iv-amina.webp" width="480" height="220" alt="Amina, HR Director" loading="lazy"><div><h3>Amina</h3><small>HR Director</small><p>Warm but searching. Asks about your experience, motivation and how you handle people and pressure.</p></div></div>
+      <div class="person reveal"><img src="/img/iv-catherine.webp" width="480" height="480" alt="Catherine, Head of Talent" loading="lazy"><div><h3>Catherine</h3><small>Head of Talent</small><p>Warm and encouraging. She puts nervous candidates at ease and draws out their best answers.</p></div></div>
+      <div class="person reveal"><img src="/img/iv-wayne.webp" width="480" height="215" alt="Wayne, technical interviewer" loading="lazy"><div><h3>Wayne</h3><small>Technical interviewer</small><p>Precise and practical. Probes real knowledge with scenarios, follow-ups and the questions that separate good from great.</p></div></div>
+      <div class="person reveal"><img src="/img/iv-haruto.webp" width="480" height="480" alt="Haruto, technical interviewer" loading="lazy"><div><h3>Haruto</h3><small>Technical interviewer</small><p>Calm and methodical, with a dry sense of humour. He gives you room to think, then goes a level deeper.</p></div></div>
+      <div class="person reveal"><img src="/img/iv-malcom.webp" width="480" height="480" alt="Malcolm, technical interviewer" loading="lazy"><div><h3>Malcolm</h3><small>Technical interviewer</small><p>Direct, composed and thorough. He won&rsquo;t rush you, and he won&rsquo;t let a vague answer slide.</p></div></div>
+      <div class="person reveal"><img src="/img/iv-michelle.webp" width="480" height="268" alt="Michelle, your interview host" loading="lazy"><div><h3>Michelle</h3><small>Your host</small><p>Briefs you before you begin, and talks you through your result afterwards &mdash; what worked and what to sharpen.</p></div></div>
   </div>
 </section>
 
@@ -715,7 +718,7 @@
       <details><summary>Will it feel awkward or embarrassing?</summary><p>No one is watching. It is just you and an AI interviewer, with no camera and no audience, so you can answer out loud or type. You can skip or repeat a question, and getting something wrong is exactly what practice is for. Make your mistakes here, not in the real interview.</p></details>
       <details><summary>I'm a recruiter or employer — how do I get in?</summary><p>We set up each account personally. <a href="/request-access.html" style="color:var(--green)">Request access</a> and we'll be in touch.</p></details>
       <details><summary>What is TheInterviewChair.com, in a sentence?</summary><p>An AI-powered place to get ready for interviews and exams: you&rsquo;re interviewed out loud by lifelike AI interviewers, scored honestly, and shown how to improve &mdash; plus courses on any topic, mock exams, a careers explorer, a free CV analysis and a career coach.</p></details>
-      <details><summary>Are the interviewers real people?</summary><p>No. Michelle, Amina and Wayne are AI interviewers with lifelike video and voices. They speak, listen and react to what you say.</p></details>
+      <details><summary>Are the interviewers real people?</summary><p>No. Michelle and the interviewers you can choose from (Amina, Catherine, Wayne, Haruto and Malcolm) are AI interviewers with lifelike video and voices. They speak, listen and react to what you say.</p></details>
       <details><summary>Will I get the same questions twice?</summary><p>No. Every interview is written fresh for your session, so no two candidates get the same interview and a second one won&rsquo;t repeat the first.</p></details>
       <details><summary>What if I get stuck on a question?</summary><p>Repeat it, pause, pass, or ask for the model answer. A question where you pass or ask for the answer scores zero because it isn&rsquo;t an attempt, but you can save the answer to your Question Bank and learn from it.</p></details>
       <details><summary>What do Passed, Keep on File and Not this time mean?</summary><p>Passed means you cleared the bar for your chosen level and can download a certificate. Keep on File means you were just short &mdash; a real employer would keep your CV on file for future roles. Not this time means you have work to do, which is what practice is for. <a href="/how-we-score.html" style="color:var(--green)">See exactly how we score</a>.</p></details>
