@@ -815,7 +815,7 @@ export default function TryItLivePage() {
                         answer (tap the mic and talk) comes first — typing is the fallback below it. */}
                     <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: GREEN, marginBottom: 6 }}>🎤 Your turn</div>
                     <div style={{ fontSize: 13.5, color: 'var(--text-2, #cbd5e1)', marginBottom: 12 }}>
-                      Tap the <strong style={{ color: GREEN }}>green microphone</strong> and answer out loud — it sends by itself when you stop. No mic? Type below instead.
+                      Tap the <strong style={{ color: GREEN }}>green microphone</strong> and answer out loud — it sends by itself when you stop. No mic? Type below instead. Aim for about a minute: fuller answers score better.
                     </div>
                     {/* The mic always gets its own full-width row — the same layout the full interview uses. Sharing a row with
                         the buttons let its waveform's width (and so the whole row) jump around as the card resized
