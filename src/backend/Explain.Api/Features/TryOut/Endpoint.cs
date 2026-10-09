@@ -39,8 +39,12 @@ public static class Endpoint
     public record CoachRequest(string? Topic, string? Question, string? Answer, string? Name, string? Language = null);
     public record ModelAnswerRequest(string? Topic, string? Question, string? Language = null);
 
+    // For the model-reply log below (the helpers that read the AI's reply are static and have no logger of their own).
+    private static ILogger? _modelLog;
+
     public static void Map(WebApplication app)
     {
+        _modelLog = app.Logger;
         app.MapPost("/api/tryout/start", async (StartRequest req, HttpContext ctx, AppDbContext db, CosmosService cosmos, IHttpClientFactory factory, IConfiguration config, ILogger<Program> logger) =>
         {
             var topic = CleanTopic(req.Topic);
@@ -597,8 +601,15 @@ public static class Endpoint
         Exception? last = null;
         for (var attempt = 0; attempt < 3; attempt++)
         {
-            try { return parse(await CallModelOnceAsync(system, user, temperature, factory, config)); }
-            catch (Exception ex) { last = ex; if (attempt < 2) await Task.Delay(400); }
+            string? reply = null;
+            try { reply = await CallModelOnceAsync(system, user, temperature, factory, config); return parse(reply); }
+            catch (Exception ex)
+            {
+                last = ex;
+                // What the AI actually sent back (first 300 characters), so an "empty answer" can be explained from the logs next time (Francis, 2026-10-09).
+                _modelLog?.LogWarning("TryOut: model reply unusable (attempt {Attempt} of 3): {Error}. Reply began: {Reply}", attempt + 1, ex.Message, reply is null ? "(no reply)" : reply[..Math.Min(reply.Length, 300)]);
+                if (attempt < 2) await Task.Delay(400);
+            }
         }
         throw last!;
     }
