@@ -6,7 +6,8 @@ import { speak as speakTts, unlockTTSAudio, setTTSLanguage } from '../api/ttsApi
 import { setInterviewTicket } from '../api/entitlementsApi';
 import { VoiceInput, type MicState } from '../components/VoiceInput';
 import { AnswerPrompt } from '../components/AnswerPrompt';
-import { startTryOut, scoreTryOut, coachTryOut, modelAnswerTryOut, questionsSeen, rememberQuestionsSeen, emailTryOutScore, getVisitorCountry, type TryOutStart, type TryOutFeedback, type TryOutResult } from '../api/tryOutApi';
+import { TryImproveLoop } from '../components/TryImproveLoop';
+import { startTryOut, scoreTryOut, coachTryOut, modelAnswerTryOut, questionsSeen, rememberQuestionsSeen, lastTryScore, saveTryScore, emailTryOutScore, getVisitorCountry, type TryOutStart, type TryOutFeedback, type TryOutResult } from '../api/tryOutApi';
 import { LANGUAGES, LANGUAGE_CHOICES, DIFFICULTIES, DEFAULT_LANGUAGE_VALUE, findLanguageChoice } from '../data/interviewOptions';
 import { logEvent } from '../api/flowLogger';
 
@@ -184,6 +185,7 @@ export default function TryItLivePage() {
   const [coaching, setCoaching] = useState<{ text: string; score: number } | null>(null);
   const [skipTransition, setSkipTransition] = useState(false);
   const [feedback, setFeedback] = useState<TryOutFeedback | null>(null);
+  const [previousScore, setPreviousScore] = useState<{ score: number; at: string } | null>(null);
   const [message, setMessage] = useState('');
   // Why the flow is showing the 'blocked' card — drives both the headline and which button we offer (Francis, 2026-09-22:
   // skipping every question isn't an error, so it needs its own honest headline, not "Something went wrong").
@@ -593,6 +595,8 @@ export default function TryItLivePage() {
     const r = await scoring;
     busyRef.current = false;
     if (!r.ok) { setMessage(r.message); setBlockReason(r.capped ? 'capped' : 'error'); setPhase('blocked'); return; }
+    // Last time's score for this role (this device) is read BEFORE this one is saved, for the "last time → now" line on the results.
+    setPreviousScore(lastTryScore(topic)); saveTryScore(topic, r.data.overall);
     setFeedback(r.data); setPhase('results');
   }
 
@@ -948,6 +952,10 @@ export default function TryItLivePage() {
                 </div>
               )}
             </div>
+
+            {/* Interview → Learn → Interview again → Pass (Francis, 2026-10-09): the weak areas, a free Learn lesson for each, one click to go again, and last time → now. */}
+            <TryImproveLoop subject={topic.trim() || start.subject} overall={feedback.overall} dimensions={feedback.dimensions} previous={previousScore} mobile={isMobile}
+              againUrl={`/try?${new URLSearchParams({ topic: topic.trim().slice(0, 90), name: name.trim().slice(0, 40), lang: languageValue, level: difficulty, ...(start.interviewerId ? { interviewer: start.interviewerId } : {}), go: '1' }).toString()}`} />
 
             {/* A short sign-up card right under the score, where the visitor is looking. The full one stays at the bottom (its own tracking tag: where='score_top' vs 'score'). */}
             <div style={{ ...card, marginTop: 12, textAlign: 'center', border: '1px solid rgba(52,211,153,0.35)', background: 'linear-gradient(135deg,rgba(52,211,153,0.10),rgba(4,120,87,0.06))' }}>

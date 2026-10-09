@@ -100,3 +100,24 @@ export function rememberQuestionsSeen(topic: string, questions: string[]): void 
     localStorage.setItem(SEEN_KEY, JSON.stringify(next));
   } catch { /* private mode — the server's random angles still keep it varied */ }
 }
+
+// The last score this browser got for each subject (2026-10-09): so the results screen can show "last time 54, now 71" and the Interview, Learn, Interview again loop
+// is visible. Kept on this device only (localStorage), the last twelve subjects; anything unreadable simply means "no earlier attempt".
+const LAST_SCORE_KEY = 'tryLastScore';
+export function lastTryScore(topic: string): { score: number; at: string } | null {
+  try {
+    const all = JSON.parse(localStorage.getItem(LAST_SCORE_KEY) ?? '{}') as Record<string, { score: number; at: string }>;
+    const v = all[seenKey(topic)];
+    return v && typeof v.score === 'number' ? v : null;
+  } catch { return null; }
+}
+export function saveTryScore(topic: string, score: number): void {
+  try {
+    const all = JSON.parse(localStorage.getItem(LAST_SCORE_KEY) ?? '{}') as Record<string, { score: number; at: string }>;
+    const k = seenKey(topic);
+    const next = { ...all, [k]: { score, at: new Date().toISOString() } };
+    const keys = Object.keys(next);
+    if (keys.length > 12) delete next[keys[0]];
+    localStorage.setItem(LAST_SCORE_KEY, JSON.stringify(next));
+  } catch { /* private browsing etc: the comparison just does not appear next time */ }
+}
