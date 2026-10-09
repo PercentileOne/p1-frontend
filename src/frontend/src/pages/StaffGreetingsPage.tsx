@@ -35,6 +35,9 @@ export default function StaffGreetingsPage() {
   const stageRef = useRef<HTMLDivElement>(null);
   const sp = useSpatiusAvatarSession(stageRef);
   const [faceOn, setFaceOn] = useState(false);
+  // A face built again and again in one page degrades (its graphics memory is not released reliably), which made the later takes go out of step. So the page keeps ONE face per
+  // interviewer (a retake just reopens its connection), and choosing another interviewer, or saving a clip, loads the page afresh.
+  const builtForRef = useRef<string | null>(null);
 
   async function load() {
     if (!token) return;
@@ -43,10 +46,14 @@ export default function StaffGreetingsPage() {
       if (!res.ok) throw new Error(res.status === 403 ? 'Your account does not have access to this tool.' : `Could not load the interviewers (${res.status}).`);
       const rows = await res.json() as AdminInterviewer[];
       setList(rows.filter(r => r.role !== 'briefing' || true));
-      setPickedId(p => p ?? rows[0]?.id ?? null);
+      const wanted = new URLSearchParams(window.location.search).get('i');
+      setPickedId(p => p ?? (rows.find(r => r.id === wanted) ? wanted : (rows[0]?.id ?? null)));
     } catch (e) { setError((e as Error).message); }
   }
   useEffect(() => { void load(); }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    try { const saved = sessionStorage.getItem('greeting.saved'); if (saved) { sessionStorage.removeItem('greeting.saved'); setNote(saved); } } catch { /* ignore */ }
+  }, []);
   useEffect(() => () => { if (clip) URL.revokeObjectURL(clip.url); }, [clip]);
 
   const iv = list?.find(i => i.id === pickedId) ?? null;
@@ -73,13 +80,17 @@ export default function StaffGreetingsPage() {
 
       setStep('preparing'); setNote('Getting the face ready…');
       setFaceOn(true);
-      await sp.disconnect(true);
+      if (builtForRef.current && builtForRef.current !== iv.id) await sp.disconnect(true); // a different face: start clean
+      builtForRef.current = iv.id;
       await Promise.race([
         sp.connect(iv.spatiusAvatarId, getInterviewTicket() ?? '', undefined, INTERVIEW_TOKEN_PATH),
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('The face took too long to load. Try again (the first time for a face can be slow).')), 90000)),
       ]);
       for (let i = 0; i < 80 && !stageBoxRef.current?.querySelector('canvas'); i++) await wait(250); // the first picture drawn
       await wait(1500);
+      // The first line after a face connects can run slightly out of step while the server warms up, so a throwaway line is spoken first (not recorded), then the real take.
+      try { await sp.speak('Hello.', iv.role === 'technical' ? 'technical' : 'hr', undefined, iv.id); } catch { /* the real take will say if the face does not work */ }
+      await wait(900);
 
       const mime = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].find(m => MediaRecorder.isTypeSupported(m));
       const recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2_500_000 } : { videoBitsPerSecond: 2_500_000 });
@@ -115,8 +126,8 @@ export default function StaffGreetingsPage() {
       form.append('file', new File([clip.blob], 'greeting.webm', { type: clip.blob.type || 'video/webm' }));
       const res = await fetch(`${API_BASE}/api/admin/interviewers/${encodeURIComponent(iv.id)}/greeting`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: form });
       if (!res.ok) { const b = await res.json().catch(() => ({})) as { error?: string }; throw new Error(b.error ?? `Saving failed (${res.status}).`); }
-      await load();
-      setClip(null); setStep('idle'); setNote(`${iv.displayName}'s greeting is saved.`);
+      try { sessionStorage.setItem('greeting.saved', `${iv.displayName}'s greeting is saved. (The page reloads after each save to keep the next face fresh.)`); } catch { /* ignore */ }
+      window.location.href = `/staff/greetings?i=${encodeURIComponent(iv.id)}`;
     } catch (e) { setStep('review'); setError((e as Error).message); }
   }
 
@@ -140,7 +151,7 @@ export default function StaffGreetingsPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 280px) minmax(0, 1fr)', gap: 24, alignItems: 'start' }}>
             <div style={{ display: 'grid', gap: 8 }}>
               {list.map(i => (
-                <button key={i.id} type="button" disabled={busy} onClick={() => { setPickedId(i.id); setStep('idle'); setFaceOn(false); setError(''); setNote(''); if (clip) { URL.revokeObjectURL(clip.url); setClip(null); } void sp.disconnect(true); }}
+                <button key={i.id} type="button" disabled={busy} onClick={() => { if (builtForRef.current && builtForRef.current !== i.id) { window.location.href = `/staff/greetings?i=${encodeURIComponent(i.id)}`; return; } setPickedId(i.id); setStep('idle'); setError(''); setNote(''); if (clip) { URL.revokeObjectURL(clip.url); setClip(null); } }}
                   style={{ ...btn, textAlign: 'left', display: 'flex', justifyContent: 'space-between', gap: 8, borderColor: i.id === pickedId ? '#34d399' : 'rgba(255,255,255,0.18)', background: i.id === pickedId ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.04)' }}>
                   <span>{i.displayName}{!i.active ? ' (hidden)' : ''}</span>
                   <span style={{ fontSize: 12, fontWeight: 700, color: i.greetingUrl ? '#34d399' : '#94a3b8' }}>{i.greetingUrl ? '🎬 recorded' : 'no clip'}</span>
