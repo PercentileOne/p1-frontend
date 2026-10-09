@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, type MutableRefObject } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { whisperLanguage, speechLocale } from '../data/interviewOptions';
 
@@ -14,6 +14,10 @@ interface Props {
   language?: string;
   /** For English: the region (ISO code, e.g. "US") so the browser listens for that accent. Ignored for other languages. */
   country?: string;
+  /** Lets a button elsewhere on the page (the "Click to speak your answer" button on the interviewer's picture) press this microphone: same start/stop, same result. */
+  controlRef?: MutableRefObject<{ toggle: () => void } | null>;
+  /** idle / listening / processing, so that outside button can show the right words and colour. */
+  onMicStateChange?: (state: MicState) => void;
 }
 
 export interface TranscriptMeta {
@@ -23,7 +27,7 @@ export interface TranscriptMeta {
   durationSeconds: number;
 }
 
-type MicState = 'idle' | 'listening' | 'processing';
+export type MicState = 'idle' | 'listening' | 'processing';
 
 const FILLER_WORDS = ['um', 'uh', 'like', 'basically', 'literally', 'you know', 'i mean', 'sort of', 'kind of', 'right so'];
 const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
@@ -82,7 +86,7 @@ async function transcribeWithWhisper(blob: Blob, _durationSeconds: number, langu
   }
 }
 
-export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false, highlightRecord = false, onListeningChange, language = 'en', country }: Props) {
+export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false, highlightRecord = false, onListeningChange, language = 'en', country, controlRef, onMicStateChange }: Props) {
   const [micState, setMicState] = useState<MicState>('idle');
   const [interim, setInterim] = useState('');
   const [processingLabel, setProcessingLabel] = useState('Processing…');
@@ -289,6 +293,12 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
   const isProcessing = micState === 'processing';
 
   useEffect(() => { onListeningChange?.(isListening); }, [isListening, onListeningChange]);
+  useEffect(() => { onMicStateChange?.(micState); }, [micState, onMicStateChange]);
+  useEffect(() => {
+    if (!controlRef) return;
+    controlRef.current = { toggle: () => { if (isProcessing || disabled) return; if (isListening) stopListening(); else void startListening(); } };
+    return () => { controlRef.current = null; };
+  }, [controlRef, isListening, isProcessing, disabled, startListening, stopListening]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>

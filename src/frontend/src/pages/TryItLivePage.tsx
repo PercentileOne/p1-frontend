@@ -4,7 +4,8 @@ import { useSpatiusAvatarSession } from '../hooks/useSpatiusAvatarSession';
 import { setSeatInterviewers } from '../lib/seatInterviewers';
 import { speak as speakTts, unlockTTSAudio, setTTSLanguage } from '../api/ttsApi';
 import { setInterviewTicket } from '../api/entitlementsApi';
-import { VoiceInput } from '../components/VoiceInput';
+import { VoiceInput, type MicState } from '../components/VoiceInput';
+import { AnswerPrompt } from '../components/AnswerPrompt';
 import { startTryOut, scoreTryOut, coachTryOut, modelAnswerTryOut, questionsSeen, rememberQuestionsSeen, emailTryOutScore, getVisitorCountry, type TryOutStart, type TryOutFeedback, type TryOutResult } from '../api/tryOutApi';
 import { LANGUAGES, LANGUAGE_CHOICES, DIFFICULTIES, DEFAULT_LANGUAGE_VALUE, findLanguageChoice } from '../data/interviewOptions';
 import { logEvent } from '../api/flowLogger';
@@ -176,6 +177,8 @@ export default function TryItLivePage() {
   const [revealedText, setRevealedText] = useState<Record<number, string>>({});
   // The same four controls as the full interview (Repeat / Pause / Tell Me The Answer / Pass) — Francis, 2026-10-03.
   const [paused, setPaused] = useState(false);
+  const micRef = useRef<{ toggle: () => void } | null>(null);   // lets the big button on the interviewer's picture press the microphone below
+  const [micState, setMicState] = useState<MicState>('idle');
   const [capturing, setCapturing] = useState(false);   // the mic is recording an answer right now — the four buttons wait, like in the full interview
   const [skippedIdx, setSkippedIdx] = useState<number[]>([]);   // which questions (0-based) were skipped, so the score sheet can list them
   const [coaching, setCoaching] = useState<{ text: string; score: number } | null>(null);
@@ -701,6 +704,8 @@ export default function TryItLivePage() {
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', textShadow: '0 1px 3px #000' }}>One tap, so your phone lets the sound play</div>
             </div>
           )}
+          {/* "Your turn" button on the interviewer's chest (Francis, 2026-10-09): nobody should have to find the small microphone below or learn how it works. */}
+          <AnswerPrompt show={!!start && !tapGate && phase === 'answering' && !revealed && !paused} mic={micState} onPress={() => micRef.current?.toggle()} />
           {start && (
             <div style={{ position: 'absolute', left: 12, bottom: 12, background: 'rgba(0,0,0,0.6)', borderRadius: 8, padding: '5px 10px', fontSize: 12, fontWeight: 700 }}>
               {start.interviewerName} · Interviewer{phase === 'asking' && !tapGate ? (getReadyActive ? ' · getting ready…' : ' · speaking…') : ''}
@@ -859,7 +864,7 @@ export default function TryItLivePage() {
                         answer (tap the mic and talk) comes first — typing is the fallback below it. */}
                     <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: GREEN, marginBottom: 6 }}>🎤 Your turn</div>
                     <div style={{ fontSize: 13.5, color: 'var(--text-2, #cbd5e1)', marginBottom: 12 }}>
-                      Tap the <strong style={{ color: GREEN }}>green microphone</strong> and answer out loud — it sends by itself when you stop. No mic? Type below instead. Aim for about a minute: fuller answers score better.
+                      Press the <strong style={{ color: GREEN }}>green button</strong> on the picture (or the microphone below), answer out loud, then press it again to stop — it sends by itself. No mic? Type below instead. Aim for about a minute: fuller answers score better.
                     </div>
                     {/* The mic always gets its own full-width row — the same layout the full interview uses. Sharing a row with
                         the buttons let its waveform's width (and so the whole row) jump around as the card resized
@@ -869,7 +874,7 @@ export default function TryItLivePage() {
                         onTranscript rather than requiring a separate manual click. The typed-answer path below keeps its
                         own manual Submit button, same as the full interview does for typed answers. */}
                     <div style={{ marginTop: 12 }}>
-                      <VoiceInput language={language} country={country || undefined} onListeningChange={setCapturing} onTranscript={text => {
+                      <VoiceInput language={language} country={country || undefined} onListeningChange={setCapturing} controlRef={micRef} onMicStateChange={setMicState} onTranscript={text => {
                         const combined = (draftRef.current ? draftRef.current + ' ' : '') + text;
                         setDraft(combined);
                         void submit(false, combined);

@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { InterviewerAvatar, PROFILES, WaveformBars } from '../components/InterviewerAvatar';
 import { MouthOverlay, MOUTH_POSITIONS, MOUTH_OVERLAY_ENABLED } from '../components/MouthOverlay';
 import { YouCamera } from '../components/YouCamera';
-import { VoiceInput, type TranscriptMeta } from '../components/VoiceInput';
+import { VoiceInput, type TranscriptMeta, type MicState } from '../components/VoiceInput';
+import { AnswerPrompt } from '../components/AnswerPrompt';
 import type { InterviewQuestion } from '../api/explainApi';
 import { speak, unlockTTSAudio, elevenLabsConfigured, getStoredInterviewerVolume, setInterviewerVolume, setTTSLanguage } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
@@ -294,6 +295,8 @@ export default function InterviewRoomPage() {
   // below so a mistimed click can't land while an answer recording is live (that's how a
   // repeated question ended up baked into a candidate's own answer clip).
   const [isCapturingAnswer, setIsCapturingAnswer] = useState(false);
+  const micRef = useRef<{ toggle: () => void } | null>(null);   // lets the big button on the asking interviewer's picture press the microphone below
+  const [micState, setMicState] = useState<MicState>('idle');
   // Fixed at intake, same read-only-after-the-fact treatment as Difficulty/Round below — the
   // in-room switcher used to let candidates change this live, but the interview's questions are
   // all generated once, right after Michelle's briefing, in whatever language was selected on
@@ -1494,6 +1497,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
                     needed here too since this <video> sits on top of (and hides) that
                     component's own copy of it. */}
+                {/* "Your turn" button on whoever asked the question (Francis, 2026-10-09). */}
+                <AnswerPrompt show={phase === 'answering' && useVoice && !paused && isHrQuestion} mic={micState} onPress={() => micRef.current?.toggle()} />
                 {(liveAvatarHr.status === 'connected' || seatOnSpatius('hr')) && (
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 18px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', userSelect: 'none', pointerEvents: 'none' }}>
                       <div>
@@ -1540,6 +1545,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
                     needed here too since this <video> sits on top of (and hides) that
                     component's own copy of it. */}
+                <AnswerPrompt show={phase === 'answering' && useVoice && !paused && !isHrQuestion} mic={micState} onPress={() => micRef.current?.toggle()} />
                 {(liveAvatarTechnical.status === 'connected' || seatOnSpatius('technical')) && (
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 18px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', userSelect: 'none', pointerEvents: 'none' }}>
                       <div>
@@ -2019,6 +2025,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         highlightRecord={highlightRecord}
                         disabled={phase !== 'answering'}
                         onListeningChange={setIsCapturingAnswer}
+                        controlRef={micRef}
+                        onMicStateChange={setMicState}
                       />
                     )}
                     <div style={{ flex: 1 }}>
