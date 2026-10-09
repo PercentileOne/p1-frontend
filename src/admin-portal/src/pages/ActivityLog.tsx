@@ -335,7 +335,7 @@ export default function ActivityLog() {
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', textTransform: 'capitalize', overflowWrap: 'anywhere' }}>{e.portal ?? '—'}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere' }}>
                       {describeCityAndCountry(e)}
-                      {e.isMachine && <div title={`Network owner: ${e.ownerName ?? 'unknown'}. This visit came from a server or crawler network (link previews, scanners and bots look like this), not a person's own connection.`} style={{ marginTop: 4, display: 'inline-block', fontSize: 10.5, fontWeight: 700, color: '#FBBF24', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 6, padding: '1px 6px' }}>🤖 {machineLabel(e.ownerName)}</div>}
+                      {e.isMachine && <div title={`Network owner: ${e.ownerName ?? 'unknown'}. This visit came through a company, cloud or hosting network. That could be a crawler, link preview or bot, or a person browsing from work, a university or a VPN.`} style={{ marginTop: 4, display: 'inline-block', fontSize: 10.5, fontWeight: 700, color: '#FBBF24', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 6, padding: '1px 6px' }}>🏢 {machineLabel(e.ownerName)}</div>}
                     </td>
                     <td title={e.userAgent ?? undefined} style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere' }}>{describeDevice(e.userAgent)}</td>
                     <td title={e.sessionId} style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere', fontFamily: 'ui-monospace, monospace', fontSize: 11 }}>{e.sessionId.slice(0, 8)}</td>
