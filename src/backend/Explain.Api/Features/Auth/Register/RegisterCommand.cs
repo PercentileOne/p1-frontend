@@ -11,7 +11,8 @@ public record RegisterCommand(
     int? Age,
     string? Profession,
     string? Role = null, // anything but candidate is refused (recruiters/employers are onboarded by us). Never trust this for Employer/Admin/SuperAdmin.
-    string? Next = null)   // where the person was headed (only "/subscription" is honoured); carried through the verification email so it works on any device
+    string? Next = null,   // where the person was headed (only "/subscription" is honoured); carried through the verification email so it works on any device
+    string? AccessCode = null)   // an invite code (Features/AccessCodes): free access for this person, redeemed once the account exists
     : IRequest<Result<AuthResponse>>;
 
 public record AuthResponse(string Token, UserDto User);

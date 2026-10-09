@@ -1193,6 +1193,7 @@
           </div>
           <div class="field"><label>Email address</label><input type="email" id="signup-email" placeholder="you@company.com" autocomplete="email"></div>
           <div class="field"><label>Password</label><div class="pw"><input type="password" id="signup-password" placeholder="At least 8 characters" autocomplete="new-password"><button type="button" class="pw-eye" aria-label="Show password" title="Show password" onclick="togglePw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+          <div class="field"><label>Invite code <span style="font-weight:400;opacity:.6">(optional)</span></label><input type="text" id="signup-code" placeholder="If you were given one" autocomplete="off" autocapitalize="characters" maxlength="24" style="text-transform:uppercase"></div>
           <div id="signup-error" style="display:none;font-size:12px;color:#F87171;line-height:1.5;"></div>
           <button class="btn-primary" type="submit" id="signup-submit">Create Account</button>
         </form>
@@ -1456,6 +1457,8 @@
   // portal-specific domain, so the whole account-creation step stays on the neutral
   // theinterviewchair.com gate until there's a real destination portal to send you to.
   // Where the person was headed before being sent here (the candidate portal sets ?next=/subscription) — only that one page is honoured.
+  // An invite code may arrive in the address (?code=XYZ123): it is put in the box so the person only has to fill in their own details.
+  (function () { try { var c = new URLSearchParams(location.search).get('code'); var el = document.getElementById('signup-code'); if (c && el) el.value = c.toUpperCase(); } catch (e) {} })();
   var NEXT = (function () { try { var n = new URLSearchParams(location.search).get('next'); return n === '/subscription' ? n : null; } catch (e) { return null; } })();
   var signupRole = null;
 
@@ -1480,6 +1483,7 @@
     var lastName  = document.getElementById('signup-lastname').value.trim();
     var email     = document.getElementById('signup-email').value.trim().toLowerCase();
     var password  = document.getElementById('signup-password').value;
+    var inviteCode = (document.getElementById('signup-code') || { value: '' }).value.trim();
     var errorEl   = document.getElementById('signup-error');
     var submitEl  = document.getElementById('signup-submit');
     errorEl.style.display = 'none';
@@ -1495,7 +1499,7 @@
     try {
       var res = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, firstName, lastName, role: signupRole.toLowerCase(), next: NEXT }),
+        body: JSON.stringify({ email, password, firstName, lastName, role: signupRole.toLowerCase(), next: NEXT, accessCode: inviteCode || undefined }),
       });
       if (!res.ok) {
         var err = await res.json().catch(() => ({}));

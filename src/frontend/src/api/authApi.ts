@@ -83,6 +83,7 @@ export const authApi = {
     lastName:   string;
     profession?: string;
     role?:      string; // "recruiter" — omit/anything else defaults to Candidate server-side
+    accessCode?: string; // an invite code: free access for this person
   }): Promise<AuthResponse> {
     return post('/auth/register', body);
   },

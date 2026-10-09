@@ -53,6 +53,17 @@ public class RegisterCommandHandler(
             return Result<AuthResponse>.Failure("Recruiter and employer accounts are set up by our team. Please request access at https://www.theinterviewchair.com/request-access.html and we'll be in touch.", 403);
 
         var email = cmd.Email.Trim().ToLower();
+
+        // An invite code, if one was given, must be good BEFORE anything is created, so a mistyped code is a clear message and not a half-made account.
+        string? inviteCode = null;
+        if (!string.IsNullOrWhiteSpace(cmd.AccessCode))
+        {
+            inviteCode = Explain.Api.Features.AccessCodes.Endpoint.Normalise(cmd.AccessCode);
+            var invite = inviteCode is null ? null : await Explain.Api.Features.AccessCodes.Endpoint.FindAsync(cosmos, inviteCode, ct);
+            var problem = invite is null ? "That invite code isn't valid." : Explain.Api.Features.AccessCodes.Endpoint.CheckUsable(invite, DateTimeOffset.UtcNow);
+            if (problem is not null) return Result<AuthResponse>.Failure(problem, 400);
+        }
+
         var (roleId, roleName) = cmd.Role is not null && SelfRegisterableRoles.TryGetValue(cmd.Role, out var r)
             ? r
             : SelfRegisterableRoles["candidate"];
@@ -88,6 +99,8 @@ public class RegisterCommandHandler(
                 await db.SaveChangesAsync(ct);
                 logger.LogInformation("Added {Role} role to existing account {Email} ({Id})", roleName, email, existing.Id);
             }
+
+            if (inviteCode is not null) await Explain.Api.Features.AccessCodes.Endpoint.RedeemAsync(cosmos, db, inviteCode, email, existing.Id, ct);
 
             var existingName     = $"{existing.FirstName} {existing.LastName}".Trim();
             var existingUsername = $"{existing.FirstName}{existing.LastName}".ToLower().Replace(" ", "");
@@ -130,6 +143,11 @@ public class RegisterCommandHandler(
         {
             await db.SaveChangesAsync(ct);
             logger.LogInformation("SQL user created: {Email} ({Id})", email, sqlUser.Id);
+            if (inviteCode is not null)
+            {
+                try { await Explain.Api.Features.AccessCodes.Endpoint.RedeemAsync(cosmos, db, inviteCode, email, sqlUser.Id, ct); }
+                catch (Exception ex) { logger.LogError(ex, "Could not redeem invite code for {Email} — the account exists; add the access by hand on the Access page", email); }
+            }
         }
         catch (Exception ex)
         {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Loader2, ShieldCheck, ShieldOff, UserPlus, Trash2, RefreshCw } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { AccessCodesPanel } from '../components/AccessCodesPanel'
 import { accessApi, type AccessOverview, type AccessGrant, type UsageRow, type ApiError } from '../api/accessApi'
 
 // Who gets in free, how many interviews people get, and the master switch (Francis, 2026-09-21). Nothing here blocks anyone until
@@ -11,7 +12,7 @@ const btn: React.CSSProperties = { display: 'inline-flex', alignItems: 'center',
 const danger: React.CSSProperties = { ...btn, color: '#EF4444', borderColor: 'rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.08)' }
 const fmt = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 
-type Tab = 'staff' | 'free' | 'usage'
+type Tab = 'staff' | 'free' | 'codes' | 'usage'
 
 export default function Access() {
   const { token } = useAuth()
@@ -113,12 +114,14 @@ export default function Access() {
 
       {/* Free access lists */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        {([['staff', `Staff (${data.counts.staff})`], ['free', `Complimentary & comps (${data.counts.complimentary + data.counts.comps})`], ['usage', 'Recent starts']] as [Tab, string][]).map(([t, label]) => (
+        {([['staff', `Staff (${data.counts.staff})`], ['free', `Complimentary & comps (${data.counts.complimentary + data.counts.comps})`], ['codes', 'Invite codes'], ['usage', 'Recent starts']] as [Tab, string][]).map(([t, label]) => (
           <button key={t} onClick={() => setTab(t)} style={{ ...btn, color: tab === t ? 'var(--blue)' : 'var(--text-3)', borderColor: tab === t ? 'var(--blue)' : 'var(--border)' }}>{label}</button>
         ))}
       </div>
 
-      {tab !== 'usage' && (
+      {tab === 'codes' && <AccessCodesPanel token={token!} />}
+
+      {tab !== 'usage' && tab !== 'codes' && (
         <>
           <div style={{ ...card, marginBottom: 12, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
             <UserPlus size={16} color="var(--text-3)" />

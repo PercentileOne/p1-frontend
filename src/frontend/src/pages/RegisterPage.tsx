@@ -50,6 +50,8 @@ export default function RegisterPage() {
   const [email,       setEmail]       = useState(() => searchParams.get('email') ?? "");
   const [password,    setPassword]    = useState("");
   const [confirm,     setConfirm]     = useState("");
+  // An invite code (from a link such as ?code=XYZ123, or typed): free access for this person. Optional.
+  const [inviteCode,  setInviteCode]  = useState(() => (searchParams.get('code') ?? "").toUpperCase());
 
   // Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -101,6 +103,7 @@ export default function RegisterPage() {
         firstName:  firstName.trim(),
         lastName:   lastName.trim(),
         role:       selectedRole.toLowerCase(),
+        accessCode: inviteCode.trim() || undefined,
       });
 
       const session = await authApi.getSession(token);
@@ -438,6 +441,17 @@ export default function RegisterPage() {
                     }
                   />
                   <ErrMsg msg={errors.confirm} />
+                </div>
+
+                {/* Invite code (optional) */}
+                <div>
+                  <FieldLabel>Invite code (optional)</FieldLabel>
+                  <RegInput
+                    placeholder="If you were given one"
+                    type="text"
+                    value={inviteCode}
+                    onChange={v => setInviteCode(v.toUpperCase())}
+                  />
                 </div>
 
                 {apiErr && (

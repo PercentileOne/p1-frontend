@@ -42,6 +42,10 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("interviewers", "/pk"));
 
+        // Invite codes (2026-10-09): a handful of small documents, one partition (Features/AccessCodes).
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("accessCodes", "/pk"));
+
         // Per-user talk history — every scored session; partition key = /userId for efficient user queries.
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("lessonHistory", "/userId"));

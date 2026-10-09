@@ -362,6 +362,7 @@ Explain.Api.Features.Comments.Admin.Endpoint.Map(app);
 Explain.Api.Features.CandidateSearch.Endpoint.Map(app);
 Explain.Api.Features.PlatformSettings.Endpoint.Map(app);
 Explain.Api.Features.Interviewers.Endpoint.Map(app);
+Explain.Api.Features.AccessCodes.Endpoint.Map(app);
 Explain.Api.Features.InDemandSubjects.Endpoint.Map(app);
 Explain.Api.Features.PlatformStats.Endpoint.Map(app);
 Explain.Api.Features.Spatius.Endpoint.Map(app);
