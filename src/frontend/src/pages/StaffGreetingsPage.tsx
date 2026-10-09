@@ -92,10 +92,6 @@ export default function StaffGreetingsPage() {
       ]);
       for (let i = 0; i < 80 && !stageBoxRef.current?.querySelector('canvas'); i++) await wait(250); // the first picture drawn
       await wait(1500);
-      // The first line after a face connects can run slightly out of step while the server warms up, so a throwaway line is spoken first (not recorded), then the real take.
-      try { await sp.speak('Hello.', iv.role === 'technical' ? 'technical' : 'hr', undefined, iv.id); } catch { /* the real take will say if the face does not work */ }
-      await wait(900);
-
       // vp8 first: it is much lighter to encode live than vp9.
       const mime = ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus', 'video/webm'].find(m => MediaRecorder.isTypeSupported(m));
       const recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2_000_000 } : { videoBitsPerSecond: 2_000_000 });
