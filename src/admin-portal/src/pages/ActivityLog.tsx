@@ -80,8 +80,6 @@ export default function ActivityLog() {
   const [confirm, setConfirm] = useState<null | { kind: 'selected' | 'matching' | 'one'; count: number; one?: SystemEvent }>(null)
   const [deleting, setDeleting] = useState(false)
   const [notice, setNotice] = useState('')
-  // Hide visits that come from a server/crawler network (the tag is on each row). Remembered between visits.
-  const [hideMachines, setHideMachines] = useState(() => { try { return localStorage.getItem('activityHideMachines') === '1' } catch { return false } })
 
   const load = useCallback(async () => {
     if (!token) return
@@ -260,11 +258,6 @@ export default function ActivityLog() {
         </div>
       )}
 
-      <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--text-2)', margin: '0 0 12px', cursor: 'pointer' }}>
-        <input type="checkbox" checked={hideMachines} onChange={e => { setHideMachines(e.target.checked); try { localStorage.setItem('activityHideMachines', e.target.checked ? '1' : '0') } catch { /* fine */ } }} />
-        Hide 🤖 visits from servers and crawlers ({rows.filter(r => r.isMachine).length} on this page)
-      </label>
-
       {error && (
         <div style={{ fontSize: 12, color: '#EF4444', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
           {error}
@@ -314,7 +307,7 @@ export default function ActivityLog() {
                 </tr>
               </thead>
               <tbody>
-                {rows.filter(r => !(hideMachines && r.isMachine)).map(e => (
+                {rows.map(e => (
                   <tr
                     key={e.id}
                     onClick={() => setSelectedEvent(e)}
@@ -342,7 +335,7 @@ export default function ActivityLog() {
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', textTransform: 'capitalize', overflowWrap: 'anywhere' }}>{e.portal ?? '—'}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere' }}>
                       {describeCityAndCountry(e)}
-                      {e.isMachine && <div title={`Network owner: ${e.ownerName ?? 'unknown'}. A server or crawler, not a person's own connection.`} style={{ marginTop: 4, display: 'inline-block', fontSize: 10.5, fontWeight: 700, color: '#FBBF24', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 6, padding: '1px 6px' }}>🤖 {machineLabel(e.ownerName)}</div>}
+                      {e.isMachine && <div title={`Network owner: ${e.ownerName ?? 'unknown'}. This visit came from a server or crawler network (link previews, scanners and bots look like this), not a person's own connection.`} style={{ marginTop: 4, display: 'inline-block', fontSize: 10.5, fontWeight: 700, color: '#FBBF24', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 6, padding: '1px 6px' }}>🤖 {machineLabel(e.ownerName)}</div>}
                     </td>
                     <td title={e.userAgent ?? undefined} style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere' }}>{describeDevice(e.userAgent)}</td>
                     <td title={e.sessionId} style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere', fontFamily: 'ui-monospace, monospace', fontSize: 11 }}>{e.sessionId.slice(0, 8)}</td>
