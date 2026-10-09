@@ -21,6 +21,8 @@ public static class Endpoint
     {
         app.MapGet("/api/admin/events", async (
             CosmosService cosmos,
+            Explain.Api.Infrastructure.Geo.IpOwnerService owners,
+            CancellationToken ct,
             string? userId, string? email, string? eventType, string? portal, string? q,
             DateTimeOffset? from, DateTimeOffset? to,
             string? sortBy, string? sortDir,
@@ -50,7 +52,18 @@ public static class Endpoint
                 while (feed.HasMoreResults)
                     rows.AddRange(await feed.ReadNextAsync());
 
-            return Results.Ok(new { total, page, size, rows });
+            // Who owns each visitor's network (Francis, 2026-10-09: "is that a bot?"): a cloud/hosting/crawler owner is tagged so the Activity Log can mark it and hide it.
+            // Same lookup the visitor funnel uses; if the ownership data is unavailable the tag is simply absent.
+            var ownerOf = await owners.GetResolverAsync(ct);
+            var tagged = rows.Select(r =>
+            {
+                var node = System.Text.Json.JsonSerializer.SerializeToNode(r, new JsonSerializerOptions(JsonSerializerDefaults.Web))!.AsObject();
+                var o = ownerOf(r.ipAddress);
+                node["ownerName"] = o?.Name;
+                node["isMachine"] = o?.IsMachine ?? false;
+                return node;
+            }).ToList();
+            return Results.Ok(new { total, page, size, rows = tagged });
         })
         .WithName("ListSystemEvents").WithTags("Events")
         // Matches Users/List/Endpoint.cs's own gate — CAN_VIEW_ADMIN_PORTAL, not the stricter

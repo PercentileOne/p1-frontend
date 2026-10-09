@@ -19,6 +19,8 @@ export interface SystemEvent {
   city: string | null;
   userAgent: string | null;
   region?: string | null;
+  ownerName?: string | null;   // who owns the visitor's network (e.g. "TENCENT-NET-AP-CN"), when known
+  isMachine?: boolean;         // that owner is a cloud/hosting/crawler network, not a home or mobile connection
   accuracyKm?: number | null;
   tokenIssuedAt?: string | null;
   metadata: Record<string, unknown> | null;
