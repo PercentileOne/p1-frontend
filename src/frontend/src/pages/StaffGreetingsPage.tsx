@@ -75,11 +75,20 @@ export default function StaffGreetingsPage() {
         audio: true, preferCurrentTab: true, selfBrowserSurface: 'include', systemAudio: 'include',
       });
       const track = stream.getVideoTracks()[0];
+      // The whole face window must be on screen: part of it hidden (scrolled out of view, or a short browser window) gives a clip with the top or bottom cut off (Catherine's
+      // second clip came out 960 x 604 instead of 4:3, with her hair touching the top edge). Bring it to the middle first, and check the shape afterwards.
+      stageBoxRef.current?.scrollIntoView({ block: 'center' });
+      await wait(250);
       const CropTargetCtor = (window as unknown as { CropTarget?: { fromElement: (el: Element) => Promise<unknown> } }).CropTarget;
       const cropTo = (track as unknown as { cropTo?: (t: unknown) => Promise<void> }).cropTo;
       if (!CropTargetCtor || !cropTo || !stageBoxRef.current) throw new Error('This browser cannot crop the recording to the face window. Please use Chrome or Edge on a computer.');
       await cropTo.call(track, await CropTargetCtor.fromElement(stageBoxRef.current));
       try { await track.applyConstraints({ width: 960, height: 720, frameRate: 30 }); } catch { /* the request above already asked for it */ }
+      await wait(400);
+      const got = track.getSettings();
+      if (got.width && got.height && Math.abs(got.width / got.height - 4 / 3) > 0.04) {
+        throw new Error(`The face window was not fully on screen (the recording would have been ${got.width} x ${got.height}, not 4:3). Make the browser window taller, or zoom out a little (Ctrl and minus), so the whole picture shows, then try again.`);
+      }
       if (!stream.getAudioTracks().length) throw new Error('No sound was shared. When the browser asks, choose "This tab" and tick "Also share tab audio".');
 
       setStep('preparing'); setNote('Getting the face ready…');
