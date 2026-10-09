@@ -313,8 +313,14 @@ export default function TryItLivePage() {
   useEffect(() => {
     if (phase !== 'answering' || !useAvatar) return;
     const t = setTimeout(() => {
-      void spatius.disconnect(true); void hr.disconnect(); void technical.disconnect();
-      setUseAvatar(false); setAvatarState('off');
+      if (providerRef.current === 'spatius') {
+        // Only the billed connection is closed. The face stays on screen (idling and blinking, free), and the next question reopens the connection and speaks as usual.
+        // (Francis, 2026-10-09: after a long pause the interviewer talked from a still photo; the demo used to drop to photo and voice for good.)
+        void spatius.disconnect();
+      } else {
+        void hr.disconnect(); void technical.disconnect();
+        setUseAvatar(false); setAvatarState('off');
+      }
       logEvent('try_avatar_idle_disconnect', { metadata: { provider: providerRef.current, q: index + 1, mobile: isMobile } });
     }, 150_000);
     return () => clearTimeout(t);
@@ -343,7 +349,15 @@ export default function TryItLivePage() {
     if (viaAvatar) {
       // HeyGen tells us the moment its avatar really starts talking (AVATAR_SPEAK_STARTED) — that ends the "getting ready" overlay, like Spatius's own
       // speaking state does. Waiting for HeyGen's separate pose-state update instead left the spinner up well after Wayne had started talking (Francis, 2026-09-30).
-      try { await withCeiling(providerRef.current === 'spatius' ? spatius.speak(text, s.interviewer) : seat.speak(text, s.interviewer, () => setFirstSpeechStarted(true)), text); return; }
+      try {
+        if (providerRef.current === 'spatius' && spatius.status !== 'connected' && s.spatiusAvatarId && s.ticket) {
+          // The face's connection was closed while the visitor was thinking: reopen it (quick, the face is still there) before the line.
+          const original = isOriginalInterviewer(s.chosenInterviewer?.id);
+          await withTimeout(spatius.connect(s.spatiusAvatarId, s.ticket, original ? spatiusTransformFromUrl(s.interviewer === 'technical' ? 'technical' : 'hr') : undefined, undefined, original ? false : 1), SPATIUS_CONNECT_LIMIT_MS, 'spatius reconnect');
+        }
+        await withCeiling(providerRef.current === 'spatius' ? spatius.speak(text, s.interviewer) : seat.speak(text, s.interviewer, () => setFirstSpeechStarted(true)), text);
+        return;
+      }
       catch { setUseAvatar(false); setAvatarState('off'); /* fall through to the voice-only path */ }
     }
     // Voice-only path: same idea — the overlay ends when the voice really starts playing, not on a guess.
