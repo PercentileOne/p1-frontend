@@ -15,6 +15,7 @@ import type { FeedbackOutcome } from '../utils/clientSession';
 import { buildCandidateFeedbackUrl, type CandidateFeedbackSession } from '../utils/clientSession';
 import { getRoleImprovementAreas } from '../utils/clientSession';
 import { speak } from '../api/ttsApi';
+import { ImproveLoopCard, DIM_AREAS, type LoopArea, type Dim } from '../components/TryImproveLoop';
 
 interface SessionAnswer {
   question: InterviewQuestion;
@@ -591,7 +592,6 @@ export default function InterviewSummaryPage() {
     .map(([tag, { total, count }]) => ({ tag, avg: total / count }))
     .sort((a, b) => a.avg - b.avg)[0]?.tag ?? null;
 
-  const showLearnBanner = overall < 0.70 && weakestTag;
 
   // Pass / Keep on file / Fail (Francis, 2026-09-19) — marks scale with the chosen difficulty (see lib/interviewVerdict.ts).
   const scorePct = Math.round(overall * 100);
@@ -613,6 +613,36 @@ export default function InterviewSummaryPage() {
   const goToLearn = (topic?: string | null) => {
     navigate('/dashboard?tab=learn', { state: { studyTopic: topic ?? weakestTag ?? undefined } });
   };
+
+  // "Your path to a pass" (Francis, 2026-10-09): the weak subjects and skills, each with a Learn button, one click to interview again, and last time → now for the same role.
+  // The earlier score comes from the candidate's own saved interviews (the same list My Interviews shows): the newest older one for the same role.
+  const loopRole = (jobCtx?.title ?? '').trim();
+  const [previousScore, setPreviousScore] = useState<{ score: number } | null>(null);
+  useEffect(() => {
+    if (!authToken || !loopRole) return;
+    let cancelled = false;
+    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+    fetch(`${apiBase}/api/interviews`, { headers: { Authorization: `Bearer ${authToken}` } })
+      .then(res => (res.ok ? res.json() : []))
+      .then((list: Array<{ id: string; createdAt: string; role?: string | null; overallScore: number }>) => {
+        if (cancelled) return;
+        const thisTime = new Date(createdAt).getTime();
+        const earlier = list.find(i => i.id !== interviewId && (i.role ?? '').trim().toLowerCase() === loopRole.toLowerCase() && new Date(i.createdAt).getTime() < thisTime && i.overallScore > 0);   // newest first
+        setPreviousScore(earlier ? { score: Math.round(earlier.overallScore) } : null);
+      })
+      .catch(() => { /* no comparison, nothing else changes */ });
+    return () => { cancelled = true; };
+  }, [authToken, loopRole, interviewId, createdAt]);
+  const loopAreas: LoopArea[] = (() => {
+    const fromTags: LoopArea[] = Object.entries(tagScores)
+      .map(([tag, { total, count }]) => ({ tag, avg: total / count }))
+      .filter(t => t.avg < 0.7).sort((a, b) => a.avg - b.avg).slice(0, 3)
+      .map(t => ({ key: t.tag, label: t.tag.replace(/[-_]+/g, ' '), score10: t.avg * 10, blurb: 'One of the subjects this interview tested', learn: { onClick: () => goToLearn(t.tag) } }));
+    const fromSkills: LoopArea[] = improvements.map(d => d as Dim)
+      .map(d => ({ key: d, label: DIM_AREAS[d].label, score10: avg(answers, d) * 10, blurb: DIM_AREAS[d].blurb, learn: { onClick: () => goToLearn(DIM_AREAS[d].topic(loopRole || 'any role')) } }))
+      .sort((a, b) => a.score10 - b.score10);
+    return [...fromTags, ...fromSkills].slice(0, 4);
+  })();
 
   // ── Mike's verbal debrief ────────────────────────────────────────────────────
   const mikeSpokeRef = useRef(false);
@@ -1040,18 +1070,12 @@ ${questionsHtml}
               </motion.div>
             )}
 
-            {/* Cross-sell banner */}
-            {showLearnBanner && (
-              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-                style={{ background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
-                <div style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.5 }}>
-                  <strong style={{ color: 'var(--blue)' }}>📚 LEARN:</strong> Your lowest-scoring area was <strong style={{ color: 'var(--text)' }}>{weakestTag}</strong> ({Math.round(tagScores[weakestTag!]!.total / tagScores[weakestTag!]!.count * 100)}%). Top candidates score 90%+. Use <strong>Learn</strong> to study this free.
-                </div>
-                <button onClick={() => goToLearn(weakestTag)}
-                  style={{ background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                  Study Now →
-                </button>
-              </motion.div>
+            {/* Your path to a pass: weak areas, Learn, interview again, last time → now */}
+            {answers.length > 0 && (
+              <ImproveLoopCard subject={loopRole || 'this role'} overall={scorePct} areas={loopAreas} previous={previousScore} eventPrefix="summary" mobile={false}
+                learnAll={{ onClick: () => goToLearn(loopRole || undefined) }}
+                again={{ onClick: () => navigate('/interview-pack/start', { state: { jobTitle: jobCtx?.title, company: jobCtx?.company } }) }}
+                footer="Learn is free. Interview again on the same role and we will show how your score moved." />
             )}
 
             {/* Score card, MCQ bonus rounds, per-question breakdown — shared with the public SharedInterviewPage */}
