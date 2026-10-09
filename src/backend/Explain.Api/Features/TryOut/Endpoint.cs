@@ -23,7 +23,7 @@ namespace Explain.Api.Features.TryOut;
 /// </summary>
 public static class Endpoint
 {
-    private const int DefaultStartsPerVisitorPerDay = 2;
+    private const int DefaultStartsPerVisitorPerDay = 5; // raised from 2 (Francis, 2026-10-09): two was tight when a first run failed or someone wanted to try a second role
     private const int DefaultStartsGlobalPerDay = 80;
     private const int DefaultAvatarsGlobalPerDay = 40;
     private const int DefaultFeedbackPerVisitorPerDay = 4;
