@@ -19,6 +19,22 @@ public class TryOutTests
     [InlineData("   ")]
     public void Empty_or_tiny_topics_are_rejected(string? raw) => Assert.Null(TryOut.CleanTopic(raw));
 
+    [Theory]
+    [InlineData("{\"answer\":\"I would start by finding where the briefs go wrong and fixing that first.\"}")]
+    [InlineData("{\"model_answer\":\"I would start by finding where the briefs go wrong and fixing that first.\",\"n\":3}")]
+    [InlineData("\"I would start by finding where the briefs go wrong and fixing that first.\"")]
+    [InlineData("I would start by finding where the briefs go wrong and fixing that first.")]
+    public void Model_answer_text_is_found_whatever_shape_the_model_replies_in(string reply) =>
+        Assert.StartsWith("I would start by finding", TryOut.ExtractAnswerText(reply));
+
+    [Theory]
+    [InlineData("{\"answer\":\"\"}")]
+    [InlineData("{}")]
+    [InlineData("")]
+    [InlineData("{\"answer\":null}")]
+    public void An_empty_model_reply_is_an_error_so_it_is_retried(string reply) =>
+        Assert.Throws<InvalidOperationException>(() => TryOut.ExtractAnswerText(reply));
+
     [Fact] public void Very_long_topics_are_rejected() => Assert.Null(TryOut.CleanTopic(new string('x', 91)));
 
     [Fact]

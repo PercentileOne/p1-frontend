@@ -536,11 +536,13 @@ public static class Endpoint
             Return ONLY JSON: {"coaching":"...","score":<0-10 integer>}
             """;
         var user = $"<subject>{topic}</subject>\n<name>{name ?? ""}</name>\n<question>{question}</question>\n<answer>{answer}</answer>";
-        var content = await CallModelAsync(system, user, 0.5, factory, config);
-        var r = JsonSerializer.Deserialize<CoachModelResult>(content, JsonOpts) ?? throw new InvalidOperationException("Empty coaching");
-        var text = (r.Coaching ?? "").Trim();
-        if (text.Length == 0) throw new InvalidOperationException("Empty coaching text");
-        return (Explain.Api.Infrastructure.TextTrim.ToSentence(text, 420), Math.Clamp(r.Score, 0, 10));
+        return await CallModelParsedAsync(system, user, 0.5, factory, config, content =>
+        {
+            var r = JsonSerializer.Deserialize<CoachModelResult>(content, JsonOpts) ?? throw new InvalidOperationException("Empty coaching");
+            var text = (r.Coaching ?? "").Trim();
+            if (text.Length == 0) throw new InvalidOperationException("Empty coaching text");
+            return (Explain.Api.Infrastructure.TextTrim.ToSentence(text, 420), Math.Clamp(r.Score, 0, 10));
+        });
     }
 
     public record CoachModelResult(string? Coaching, int Score);
@@ -554,11 +556,51 @@ public static class Endpoint
             Write it as the candidate would say it out loud, in first person, in natural spoken {{language}}: 4 to 6 sentences (about 90 words), no lists, no headings. Give a clear point, one concrete example with a result, and a confident close. Use realistic but generic details — never invent a named employer.
             Return ONLY JSON: {"answer":"..."}
             """;
-        var content = await CallModelAsync(system, $"<subject>{topic}</subject>\n<question>{question}</question>", 0.6, factory, config);
-        var r = JsonSerializer.Deserialize<ModelAnswerResult>(content, JsonOpts) ?? throw new InvalidOperationException("Empty model answer");
-        var text = (r.Answer ?? "").Trim();
-        if (text.Length == 0) throw new InvalidOperationException("Empty model answer text");
+        // The model sometimes sends back valid JSON with the text under another name, or nothing in it (found live 2026-10-09: "Empty model answer text", and that failure was
+        // outside the retry in CallModelAsync). So the whole ask-and-read is tried up to three times, and the reading accepts any sensible shape.
+        var text = await CallModelParsedAsync(system, $"<subject>{topic}</subject>\n<question>{question}</question>", 0.6, factory, config, ExtractAnswerText);
         return Explain.Api.Infrastructure.TextTrim.ToSentence(text, 900);
+    }
+
+    /// <summary>Pulls the answer text out of whatever the model returned: {"answer":"..."}, the same under another key, or plain text. Throws if there is nothing usable.</summary>
+    public static string ExtractAnswerText(string? content)
+    {
+        var raw = (content ?? "").Trim();
+        try
+        {
+            using var doc = JsonDocument.Parse(raw);
+            var root = doc.RootElement;
+            if (root.ValueKind == JsonValueKind.String) raw = root.GetString() ?? "";
+            else if (root.ValueKind == JsonValueKind.Object)
+            {
+                string? best = null;
+                foreach (var p in root.EnumerateObject())
+                {
+                    if (p.Value.ValueKind != JsonValueKind.String) continue;
+                    var v = (p.Value.GetString() ?? "").Trim();
+                    if (p.Name.Equals("answer", StringComparison.OrdinalIgnoreCase) && v.Length > 0) { best = v; break; }
+                    if (v.Length > (best?.Length ?? 0)) best = v;   // any other text field: take the longest
+                }
+                raw = best ?? "";
+            }
+            else raw = "";
+        }
+        catch (JsonException) { /* not JSON: the model just wrote the answer, so use it as it is */ }
+        raw = raw.Trim();
+        if (raw.Length < 20) throw new InvalidOperationException("Empty model answer text");
+        return raw;
+    }
+
+    /// <summary>Asks the model and reads the reply, trying again (up to three times in all) if the call fails OR the reply cannot be used.</summary>
+    private static async Task<T> CallModelParsedAsync<T>(string system, string user, double temperature, IHttpClientFactory factory, IConfiguration config, Func<string, T> parse)
+    {
+        Exception? last = null;
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            try { return parse(await CallModelOnceAsync(system, user, temperature, factory, config)); }
+            catch (Exception ex) { last = ex; if (attempt < 2) await Task.Delay(400); }
+        }
+        throw last!;
     }
 
     public record DimensionScores(int Clarity, int Relevance, int Accuracy, int Depth, int Confidence);

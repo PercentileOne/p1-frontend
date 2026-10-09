@@ -537,7 +537,8 @@ export default function TryItLivePage() {
     cancelSpeechRef.current?.();
     logEvent('try_answer_revealed', { metadata: { q: index + 1, mobile: isMobile } });
     setRevealed({ loading: true, text: null });
-    const r = await modelAnswerTryOut(start.subject, start.questions[index], language);
+    let r = await modelAnswerTryOut(start.subject, start.questions[index], language);
+    if (!r.ok && !r.capped) r = await modelAnswerTryOut(start.subject, start.questions[index], language);   // one quiet second go before showing a problem
     if (!r.ok) { setRevealed({ loading: false, text: null, failed: r.message }); return; }
     setRevealed({ loading: false, text: r.data.answer });
     void speakAsCoach(r.data.answer);
@@ -845,7 +846,10 @@ export default function TryItLivePage() {
                     ) : revealed.failed ? (
                       <>
                         <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-2, #cbd5e1)', marginBottom: 12 }}>{revealed.failed}</div>
-                        <button onClick={() => setRevealed(null)} style={ghost}>← Back to my answer</button>
+                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                          <button onClick={() => void showAnswer()} style={primary}>Try again</button>
+                          <button onClick={() => setRevealed(null)} style={ghost}>← Back to my answer</button>
+                        </div>
                       </>
                     ) : (
                       <>
