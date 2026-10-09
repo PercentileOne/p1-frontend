@@ -69,13 +69,17 @@ export default function StaffGreetingsPage() {
     try {
       setStep('sharing');
       stream = await (navigator.mediaDevices as unknown as { getDisplayMedia: (c: unknown) => Promise<MediaStream> }).getDisplayMedia({
-        video: { displaySurface: 'browser' }, audio: true, preferCurrentTab: true, selfBrowserSurface: 'include', systemAudio: 'include',
+        // Capped at 960 x 720: on a scaled-up screen the window is captured at 2400 x 1800, which a computer cannot encode in real time, so pictures were dropped and the lips
+        // froze before the voice finished (measured on Catherine's clip: the video stopped 2.4 s before the sound).
+        video: { displaySurface: 'browser', width: { ideal: 960, max: 960 }, height: { ideal: 720, max: 720 }, frameRate: { ideal: 30, max: 30 } },
+        audio: true, preferCurrentTab: true, selfBrowserSurface: 'include', systemAudio: 'include',
       });
       const track = stream.getVideoTracks()[0];
       const CropTargetCtor = (window as unknown as { CropTarget?: { fromElement: (el: Element) => Promise<unknown> } }).CropTarget;
       const cropTo = (track as unknown as { cropTo?: (t: unknown) => Promise<void> }).cropTo;
       if (!CropTargetCtor || !cropTo || !stageBoxRef.current) throw new Error('This browser cannot crop the recording to the face window. Please use Chrome or Edge on a computer.');
       await cropTo.call(track, await CropTargetCtor.fromElement(stageBoxRef.current));
+      try { await track.applyConstraints({ width: 960, height: 720, frameRate: 30 }); } catch { /* the request above already asked for it */ }
       if (!stream.getAudioTracks().length) throw new Error('No sound was shared. When the browser asks, choose "This tab" and tick "Also share tab audio".');
 
       setStep('preparing'); setNote('Getting the face ready…');
@@ -92,8 +96,9 @@ export default function StaffGreetingsPage() {
       try { await sp.speak('Hello.', iv.role === 'technical' ? 'technical' : 'hr', undefined, iv.id); } catch { /* the real take will say if the face does not work */ }
       await wait(900);
 
-      const mime = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].find(m => MediaRecorder.isTypeSupported(m));
-      const recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2_500_000 } : { videoBitsPerSecond: 2_500_000 });
+      // vp8 first: it is much lighter to encode live than vp9.
+      const mime = ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus', 'video/webm'].find(m => MediaRecorder.isTypeSupported(m));
+      const recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2_000_000 } : { videoBitsPerSecond: 2_000_000 });
       const chunks: Blob[] = [];
       recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
       const stopped = new Promise<void>(resolve => { recorder.onstop = () => resolve(); });
