@@ -251,6 +251,18 @@
     h1 { font-size: 1.9rem; }
     .card { padding: 22px; }
   }
+
+  /* "What you'll get" example (Francis, 2026-10-10: visitors looked, left in seconds, and could not see anything the page produces without handing over a CV) */
+  .reassure { text-align: center; font-size: 12.5px; color: var(--muted); margin-top: 14px; line-height: 1.55; }
+  .reassure strong { color: var(--pearl); font-weight: 600; }
+  .see-example { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; font-size: 13px; font-weight: 700; color: var(--green); text-decoration: none; border: 1px solid rgba(52,211,153,0.35); border-radius: 999px; padding: 8px 16px; background: rgba(52,211,153,0.07); }
+  .sample { margin-top: 26px; border-top: 1px dashed rgba(255,255,255,0.14); padding-top: 22px; }
+  .sample-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-bottom: 14px; }
+  .sample-title { font-size: 15px; font-weight: 800; color: var(--pearl); }
+  .sample-badge { font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #FBBF24; background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.35); border-radius: 6px; padding: 3px 8px; }
+  .sample-voice { width: 100%; margin-bottom: 22px; cursor: default; }
+  .sample .section { margin-bottom: 22px; }
+  .sample-cta { display: block; width: 100%; margin-top: 4px; background: linear-gradient(135deg, #34D399, #047857); color: #04120c; font-weight: 800; font-size: 14px; border: none; border-radius: 10px; padding: 13px 16px; cursor: pointer; font-family: var(--font); }
 </style>
 </head>
 <body>
@@ -273,6 +285,7 @@
       <div class="eyebrow" style="justify-content:center"><div class="pulse"></div>Free · No account needed</div>
       <h1>Get a real AI CV analysis —<br><span class="accent">not just a spellcheck.</span></h1>
       <p class="sub">Upload your CV and our AI will tell you which real roles fit, what they pay — highest first — and talk you through your genuine strengths and weaknesses out loud.</p>
+      <a class="see-example" href="#sample-example" id="see-example-link">👀 See an example result</a>
     </div>
 
     <div class="card">
@@ -283,6 +296,50 @@
           <div class="hint">PDF, DOCX, or TXT · Max 10MB</div>
         </div>
         <input type="file" id="file-input" accept=".pdf,.docx,.doc,.txt" />
+        <div class="reassure"><strong>We don&rsquo;t save your CV.</strong> It is read once to make your analysis, and we only keep an anonymous count of analyses. Nothing else is kept unless you choose to share your result or join our tips list. <a href="/privacy.html" style="color:var(--green)">Privacy</a></div>
+
+        <div class="sample" id="sample-example">
+          <div class="sample-head">
+            <div class="sample-title">What you&rsquo;ll get</div>
+            <span class="sample-badge">Example &middot; made-up CV, not a real person</span>
+          </div>
+          <div class="voice-btn sample-voice" id="sample-voice" role="button" tabindex="0" style="cursor:pointer">🎙️ Talk Me Through My CV <span style="font-weight:500;color:var(--muted)">&mdash; hear your strengths and weaknesses out loud</span></div>
+
+          <div class="section">
+            <div class="section-h">📈 Skills Breakdown</div>
+            <div class="skill-row"><div class="skill-top"><strong>Campaign management</strong><span>6 yrs</span></div><div class="skill-track"><div class="skill-fill" style="width:80%;background:var(--green)"></div></div></div>
+            <div class="skill-row"><div class="skill-top"><strong>Analytics and reporting</strong><span>4 yrs</span></div><div class="skill-track"><div class="skill-fill" style="width:60%;background:var(--amber)"></div></div></div>
+            <div class="skill-row"><div class="skill-top"><strong>Budget ownership</strong><span>2 yrs</span></div><div class="skill-track"><div class="skill-fill" style="width:40%;background:var(--amber)"></div></div></div>
+            <div class="skill-row"><div class="skill-top"><strong>Team leadership</strong><span>not shown on the CV</span></div><div class="skill-track"><div class="skill-fill" style="width:20%;background:var(--red)"></div></div></div>
+          </div>
+
+          <div class="section">
+            <div class="section-h">✨ Roles You Could Apply For <span style="text-transform:none;letter-spacing:0;font-weight:500">&middot; example figures</span></div>
+            <div class="roles-table">
+              <div class="role-row"><span class="role-title">Brand Manager</span><span class="role-salary">&pound;42k &ndash; &pound;72k</span></div>
+              <div class="role-row"><span class="role-title">Marketing Manager</span><span class="role-salary">&pound;38k &ndash; &pound;64k</span></div>
+              <div class="role-row"><span class="role-title">Digital Marketing Manager</span><span class="role-salary">&pound;36k &ndash; &pound;60k</span></div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-h"><span class="dot" style="background:var(--green)"></span> Strengths</div>
+            <ul class="narrative">
+              <li>Clear ownership of campaigns from brief to result, with numbers to back it up.</li>
+              <li>Steady progression: three promotions in six years at the same company.</li>
+            </ul>
+          </div>
+
+          <div class="section">
+            <div class="section-h"><span class="dot" style="background:var(--amber)"></span> Weaknesses</div>
+            <ul class="narrative">
+              <li>No people management shown, which most Manager roles will ask about.</li>
+              <li>Results are listed as activity (&ldquo;ran social campaigns&rdquo;) rather than outcomes.</li>
+            </ul>
+          </div>
+
+          <button type="button" class="sample-cta" id="sample-cta">Now try it with your CV &uarr;</button>
+        </div>
       </div>
 
       <div id="step-loading" class="loading" style="display:none">
@@ -908,6 +965,19 @@
       window.speechSynthesis.speak(utterance);
     } catch (e) { /* no TTS available — the written lines are still shown */ }
   }
+</script>
+<script>
+  // "Now try it with your CV": take the visitor back up to the drop zone (the example sits below it).
+  (function () {
+    function toDropzone() {
+      var z = document.getElementById('dropzone');
+      if (z && z.scrollIntoView) z.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    ['sample-cta', 'sample-voice'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('click', toDropzone);
+    });
+  })();
 </script>
 </body>
 </html>
