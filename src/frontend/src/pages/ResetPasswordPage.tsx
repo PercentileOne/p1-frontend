@@ -77,7 +77,7 @@ export default function ResetPasswordPage() {
             <Lock size={26} color="#34D399" />
           </div>
           <p style={{ fontSize: 18, fontWeight: 700, color: "#fff", letterSpacing: "0.02em", margin: 0 }}>
-            <span style={{ color: "#34D399" }}>The</span>Interview<span style={{ color: "#34D399" }}>Chair</span><span style={{ opacity: 0.55, fontWeight: 500 }}>.com</span>
+            <span style={{ color: "#34D399" }}>The</span>Interview<span style={{ color: "#34D399" }}>Chair</span><span style={{ opacity: 0.55, fontWeight: 500 }}>.com</span><sup style={{ fontSize: '0.5em', fontWeight: 600, opacity: 0.75, marginLeft: 2, verticalAlign: 'super', lineHeight: 0 }}>™</sup>
           </p>
         </div>
 

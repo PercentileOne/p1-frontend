@@ -482,7 +482,7 @@ export default function InterviewPackStart() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: 'linear-gradient(135deg,#34D399,#047857)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em' }}>TIC</div>
             <span style={{ fontWeight: 800, fontSize: '20px', color: '#fff' }}>
-              <span style={{ color: '#34D399' }}>The</span>Interview<span style={{ color: '#34D399' }}>Chair</span><span style={{ color: 'rgba(255,255,255,0.55)' }}>.com</span>
+              <span style={{ color: '#34D399' }}>The</span>Interview<span style={{ color: '#34D399' }}>Chair</span><span style={{ color: 'rgba(255,255,255,0.55)' }}>.com</span><sup style={{ fontSize: '0.5em', fontWeight: 600, opacity: 0.75, marginLeft: 2, verticalAlign: 'super', lineHeight: 0 }}>™</sup>
             </span>
           </div>
 

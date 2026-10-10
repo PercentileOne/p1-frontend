@@ -386,7 +386,7 @@ export default function ProductHome() {
 
       {/* NAV */}
       <nav className="ph-nav">
-        <div className="ph-nav-logo"><span className="ph-ex">TheInterviewChair</span><span className="ph-gl">.com</span><em className="ph-nav-by">by Percentile.One</em></div>
+        <div className="ph-nav-logo"><span className="ph-ex">TheInterviewChair</span><span className="ph-gl">.com</span><sup style={{ fontSize: '0.5em', fontWeight: 600, opacity: 0.75, marginLeft: 2, verticalAlign: 'super', lineHeight: 0 }}>™</sup><em className="ph-nav-by">by Percentile.One</em></div>
         <ul className="ph-nav-links">
           <li><a href="#ph-why">Why TheInterviewChair.com</a></li>
           <li><a href="#ph-global">Global</a></li>
@@ -894,7 +894,7 @@ export default function ProductHome() {
       {/* FOOTER */}
       <footer className="ph-footer">
         <div className="ph-footer-inner">
-          <div style={{fontSize:15,fontWeight:900,letterSpacing:"-.03em"}}><span className="ph-ex">TheInterviewChair</span><span className="ph-gl">.com</span></div>
+          <div style={{fontSize:15,fontWeight:900,letterSpacing:"-.03em"}}><span className="ph-ex">TheInterviewChair</span><span className="ph-gl">.com</span><sup style={{ fontSize: '0.5em', fontWeight: 600, opacity: 0.75, marginLeft: 2, verticalAlign: 'super', lineHeight: 0 }}>™</sup></div>
           <div className="ph-footer-links">
             <a href="#ph-why">Why TheInterviewChair.com</a><a href="#ph-global">Global</a>
             <a href="#ph-learn">Learn Engine</a><a href="#ph-eco">Ecosystem</a>

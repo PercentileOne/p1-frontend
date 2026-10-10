@@ -640,7 +640,7 @@ export default function TryItLivePage() {
       <div style={{ position: 'relative', maxWidth: 720, width: '100%', minWidth: 0, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 26 }}>
           <a href="https://www.theinterviewchair.com" style={{ textDecoration: 'none', fontWeight: 900, fontSize: 16, letterSpacing: '-0.02em', color: '#fff' }}>
-            <span style={{ color: GREEN }}>The</span>Interview<span style={{ color: GREEN }}>Chair</span><span style={{ color: 'rgba(255,255,255,0.55)', fontWeight: 400 }}>.com</span>
+            <span style={{ color: GREEN }}>The</span>Interview<span style={{ color: GREEN }}>Chair</span><span style={{ color: 'rgba(255,255,255,0.55)', fontWeight: 400 }}>.com</span><sup style={{ fontSize: '0.5em', fontWeight: 600, opacity: 0.75, marginLeft: 2, verticalAlign: 'super', lineHeight: 0 }}>™</sup>
           </a>
           <a href="https://www.theinterviewchair.com" style={{ fontSize: 13, color: 'var(--text-3, #94a3b8)', textDecoration: 'none' }}>← Back to site</a>
         </div>

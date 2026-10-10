@@ -168,7 +168,7 @@ export default function PortalFeedbackPage() {
       {/* Header */}
       <div style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "18px 24px", display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg,#34D399,#047857)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, color: "#fff" }}>P1</div>
-        <span style={{ fontSize: 15, fontWeight: 900, color: "#fff", letterSpacing: "-0.01em" }}><span style={{ color: "#34D399" }}>The</span>Interview<span style={{ color: "#34D399" }}>Chair</span><span style={{ opacity: 0.55, fontWeight: 500 }}>.com</span></span>
+        <span style={{ fontSize: 15, fontWeight: 900, color: "#fff", letterSpacing: "-0.01em" }}><span style={{ color: "#34D399" }}>The</span>Interview<span style={{ color: "#34D399" }}>Chair</span><span style={{ opacity: 0.55, fontWeight: 500 }}>.com</span><sup style={{ fontSize: '0.5em', fontWeight: 600, opacity: 0.75, marginLeft: 2, verticalAlign: 'super', lineHeight: 0 }}>™</sup></span>
       </div>
 
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "48px 24px 80px" }}>

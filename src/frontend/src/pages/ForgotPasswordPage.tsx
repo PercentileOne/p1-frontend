@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
             <Mail size={26} color="#34D399" />
           </div>
           <p style={{ fontSize: 18, fontWeight: 700, color: "#fff", letterSpacing: "0.02em", margin: "0 0 6px" }}>
-            <span style={{ color: "#34D399" }}>The</span>Interview<span style={{ color: "#34D399" }}>Chair</span><span style={{ color: "rgba(255,255,255,0.55)" }}>.com</span>
+            <span style={{ color: "#34D399" }}>The</span>Interview<span style={{ color: "#34D399" }}>Chair</span><span style={{ color: "rgba(255,255,255,0.55)" }}>.com</span><sup style={{ fontSize: '0.5em', fontWeight: 600, opacity: 0.75, marginLeft: 2, verticalAlign: 'super', lineHeight: 0 }}>™</sup>
           </p>
         </div>
 

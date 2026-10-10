@@ -68,7 +68,7 @@ export default function QuestionGiftPage() {
       <div className="qg-page" style={{ width: '100%', maxWidth: 720, background: '#fff', borderRadius: 16, border: `1px solid ${GREEN}33`, padding: '40px 36px', boxShadow: '0 20px 60px rgba(0,0,0,0.1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
           <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#34D399,#047857)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900 }}>TIC</div>
-          <span style={{ fontWeight: 800, fontSize: 15 }}><span style={{ color: GREEN }}>The</span>Interview<span style={{ color: GREEN }}>Chair</span>.com</span>
+          <span style={{ fontWeight: 800, fontSize: 15 }}><span style={{ color: GREEN }}>The</span>Interview<span style={{ color: GREEN }}>Chair</span>.com</span><sup style={{ fontSize: '0.5em', fontWeight: 600, opacity: 0.75, marginLeft: 2, verticalAlign: 'super', lineHeight: 0 }}>™</sup>
         </div>
         <div style={{ marginTop: 18, background: `${GREEN}0f`, border: `1px solid ${GREEN}33`, borderRadius: 10, padding: '10px 14px', fontSize: 13, color: GREEN, fontWeight: 700 }}>
           🎁 A gift from {fromLine}{gift.employerCompany ? ` for ${gift.employerCompany}` : ''}

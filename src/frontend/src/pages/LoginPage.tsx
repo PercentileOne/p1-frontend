@@ -185,7 +185,7 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.55, duration: 0.7, ease: "easeOut" }}
         >
-          <strong style={{ color: "#34D399" }}>The</strong><strong style={{ color: "#fff" }}>Interview</strong><strong style={{ color: "#34D399" }}>Chair</strong><span style={{ opacity: 0.55, fontWeight: 400 }}>.com</span>
+          <strong style={{ color: "#34D399" }}>The</strong><strong style={{ color: "#fff" }}>Interview</strong><strong style={{ color: "#34D399" }}>Chair</strong><span style={{ opacity: 0.55, fontWeight: 400 }}>.com</span><sup style={{ fontSize: '0.5em', fontWeight: 600, opacity: 0.75, marginLeft: 2, verticalAlign: 'super', lineHeight: 0 }}>™</sup>
         </motion.p>
 
         {/* Tagline */}
