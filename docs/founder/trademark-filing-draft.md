@@ -15,7 +15,7 @@ Drafted 10 Oct 2026. This is practical groundwork, not legal advice. Anything ma
 
 ## 2. Decisions only you can make
 
-1. **Who is the applicant? [you decide]**
+1. **Who is the applicant?** *Decided 10 Oct 2026: Francis Cobbinah personally, filing it himself (no representative), via the Right Start route.*
    - Francis Cobbinah personally, or the company that runs the business (name and number if it is a limited company)? The owner of the mark must be the applicant, and fixing a wrong applicant later is awkward.
    - Whoever owns the name should also own the domain and the social accounts.
 2. **Which mark?** I'd file the **word mark "THE INTERVIEW CHAIR"**. A word mark protects the name in any font, colour or style, which a logo does not.
@@ -29,8 +29,8 @@ Drafted 10 Oct 2026. This is practical groundwork, not legal advice. Anything ma
 |---|---|
 | Mark type | Series: no. Word mark: yes |
 | Mark text | THE INTERVIEW CHAIR |
-| Applicant | [fill in: name, address, email; Companies House number if a company] |
-| Address for service | [fill in: UK address; your own is fine if you are not using an agent] |
+| Applicant | Francis Cobbinah (individual). Address: use an address you are happy to see on the public register (see note below) |
+| Address for service | A UK address; the register is public, so a business or mail-forwarding address is better than a home address |
 | Classes | 41, 42, 35 |
 | Priority claim | None (this will be the first filing) |
 
