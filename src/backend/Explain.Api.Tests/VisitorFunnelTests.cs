@@ -6,6 +6,22 @@ namespace Explain.Api.Tests;
 // The admin "Visitor funnel" card (2026-09-26). Real people = visits that fired an `interaction` event; everything else is a crawler.
 public class VisitorFunnelTests
 {
+    private const string Mac = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36";
+    private const string LinuxDesktop = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
+    private const string Android = "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36";
+
+    [Theory]
+    [InlineData(LinuxDesktop, false, null, false, true)]    // Linux desktop that only loaded a page
+    [InlineData(LinuxDesktop, false, null, true, false)]    // same, but it scrolled/clicked: a person
+    [InlineData(Mac, true, null, false, true)]              // server network that only loaded a page
+    [InlineData(Mac, true, null, true, false)]              // server network but engaged: could be someone on a work VPN
+    [InlineData(Mac, false, null, false, false)]            // ordinary Mac, one page view and gone: not labelled
+    [InlineData(Android, false, null, false, false)]        // Android is Linux, but it is a phone
+    [InlineData("Mozilla/5.0 (compatible; Googlebot/2.1)", false, null, true, true)]   // names itself a robot
+    [InlineData(LinuxDesktop, true, "a@b.co", false, false)] // signed in: never labelled
+    public void Automated_label_is_a_cautious_guess(string ua, bool machineNetwork, string? email, bool engaged, bool expected) =>
+        Assert.Equal(expected, Admin.LooksAutomated(ua, machineNetwork, email, engaged));
+
     private static Admin.FunnelEvent E(string session, string type, Dictionary<string, object>? meta = null, string? page = "/", string? ip = null)
         => new(session, type, page, meta, ip);
 

@@ -55,12 +55,29 @@ public static class Endpoint
             // Who owns each visitor's network (Francis, 2026-10-09: "is that a bot?"): a cloud/hosting/crawler owner is tagged so the Activity Log can mark it and hide it.
             // Same lookup the visitor funnel uses; if the ownership data is unavailable the tag is simply absent.
             var ownerOf = await owners.GetResolverAsync(ct);
+            // Which of these visits did anything beyond loading the page (a click, a scroll, a section viewed...)? Looked up per visit (sessionId), not per row, because a
+            // single row of a visit cannot say whether the rest of it was empty. Used for the "automated?" label (Francis, 2026-10-10).
+            var engaged = new HashSet<string>();
+            var ids = rows.Select(r => r.sessionId).Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList();
+            if (ids.Count > 0)
+            {
+                try
+                {
+                    var engagedQuery = new QueryDefinition("SELECT DISTINCT VALUE c.sessionId FROM c WHERE ARRAY_CONTAINS(@ids, c.sessionId) AND c.eventType NOT IN ('page_view', 'page_leave')")
+                        .WithParameter("@ids", ids);
+                    using var engagedFeed = container.GetItemQueryIterator<string>(engagedQuery);
+                    while (engagedFeed.HasMoreResults)
+                        foreach (var s in await engagedFeed.ReadNextAsync(ct)) engaged.Add(s);
+                }
+                catch (CosmosException) { /* no label this time; the list itself is unaffected */ }
+            }
             var tagged = rows.Select(r =>
             {
                 var node = System.Text.Json.JsonSerializer.SerializeToNode(r, new JsonSerializerOptions(JsonSerializerDefaults.Web))!.AsObject();
                 var o = ownerOf(r.ipAddress);
                 node["ownerName"] = o?.Name;
                 node["isMachine"] = o?.IsMachine ?? false;
+                node["automated"] = LooksAutomated(r.userAgent, o?.IsMachine ?? false, r.email, engaged.Contains(r.sessionId));
                 return node;
             }).ToList();
             return Results.Ok(new { total, page, size, rows = tagged });
@@ -338,6 +355,21 @@ public static class Endpoint
     /// Robots that name themselves (Francis, 2026-10-06: "the majority of them will say Bot"): Googlebot, bingbot, LinkedInBot, link-preview fetchers, headless browsers,
     /// scripts and uptime monitors. A visit whose user agent says so is a robot for certain, whatever else it did.
     /// </summary>
+    /// <summary>
+    /// "Automated?" label for the Activity Log (Francis, 2026-10-10): a visit that is NOT signed in and either names itself as a robot, or did nothing but load a page
+    /// (no click, scroll or section) while coming from a server network or a Linux desktop browser. A guess, so the label carries a question mark: a real person on Linux
+    /// who loaded a page and left at once would also match. Signed-in visits are never labelled.
+    /// </summary>
+    public static bool LooksAutomated(string? userAgent, bool isMachineNetwork, string? email, bool sessionEngaged)
+    {
+        if (!string.IsNullOrEmpty(email)) return false;
+        if (IsBotAgent(userAgent)) return true;
+        if (sessionEngaged) return false;
+        if (isMachineNetwork) return true;
+        var ua = userAgent ?? "";
+        return ua.Contains("X11", StringComparison.OrdinalIgnoreCase) && !ua.Contains("Android", StringComparison.OrdinalIgnoreCase);
+    }
+
     internal static bool IsBotAgent(string? userAgent) =>
         !string.IsNullOrEmpty(userAgent) && BotAgentPattern.IsMatch(userAgent);
 

@@ -311,9 +311,9 @@ export default function ActivityLog() {
                   <tr
                     key={e.id}
                     onClick={() => setSelectedEvent(e)}
-                    style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.1s', cursor: 'pointer' }}
+                    style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.1s', cursor: 'pointer', ...(e.automated ? { background: 'rgba(251,191,36,0.035)', boxShadow: 'inset 3px 0 0 rgba(251,191,36,0.55)' } : {}) }}
                     onMouseEnter={ev => (ev.currentTarget.style.background = 'rgba(79,142,247,0.08)')}
-                    onMouseLeave={ev => (ev.currentTarget.style.background = '')}
+                    onMouseLeave={ev => (ev.currentTarget.style.background = e.automated ? 'rgba(251,191,36,0.035)' : '')}
                   >
                     <td style={{ padding: '12px 0 12px 16px', width: 36 }} onClick={ev => ev.stopPropagation()}>
                       <input type="checkbox" checked={ticked.has(e.id)} onChange={() => toggleTick(e.id)} aria-label="Select this event" style={{ cursor: 'pointer' }} />
@@ -322,6 +322,7 @@ export default function ActivityLog() {
                     <td style={{ padding: '12px 16px', color: 'var(--text)', overflowWrap: 'anywhere' }}>{e.email ?? <span style={{ color: 'var(--text-3)' }}>Anonymous</span>}</td>
                     <td style={{ padding: '12px 16px', overflowWrap: 'anywhere' }}>
                       <div style={{ fontWeight: 700, color: 'var(--text)' }}>{e.eventType}</div>
+                      {e.automated && <div title="Not signed in, and either it names itself as a robot or it only loaded the page (no click, scroll or section) from a server network or a Linux browser. A guess." style={{ marginTop: 4, display: 'inline-block', fontSize: 10.5, fontWeight: 800, color: '#FBBF24', background: 'rgba(251,191,36,0.14)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: 6, padding: '1px 7px' }}>🤖 Automated?</div>}
                       {describeEvent(e.eventType, e.metadata) && (
                         <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>{describeEvent(e.eventType, e.metadata)}</div>
                       )}
