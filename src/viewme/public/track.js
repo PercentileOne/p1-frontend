@@ -144,6 +144,9 @@
     var doc = document.documentElement;
     var total = Math.max(doc.scrollHeight, document.body ? document.body.scrollHeight : 0);
     if (total <= 0) return;
+    // A page that is barely taller than the screen has nothing to scroll (found 2026-10-10 on the CV analyser page, which fits one screen: any tiny movement
+    // reported 25/50/75/100% in one second and "100% scrolled" on every visit). Depth is only meaningful when there is a real amount of page below the fold.
+    if (total - window.innerHeight < 150) return;
     var pct = Math.min(100, Math.round(((y + window.innerHeight) / total) * 100));
     if (pct > maxPct) maxPct = pct;
     [25, 50, 75, 100].forEach(function (m) {
