@@ -76,6 +76,19 @@ What the results mean:
 - The UK IPO does not refuse an application just because of someone else's earlier mark. It tells the owner of the earlier mark, and *they* can oppose. So the clearance search is the real protection, not the examiner.
 - A name that is too descriptive of the service is what the examiner *can* refuse. "Interview chair" is allusive for AI interview practice, but a hot-seat or interview-seat phrase could be argued as descriptive. This is the main registrability risk.
 
+### Clearance results so far (Francis, 10 Oct 2026, screenshots saved)
+
+| Register | Search | Result |
+|---|---|---|
+| UK IPO | word search (term not recorded on the screenshot) | 1 mark found, "Interview Annie" (UK00801288967), filed 21 Jan 2016, classes 9 and 35, status **Removed**, so dead; the page confirms "filed between 1 January 1876 and 10 October 2026" |
+| UK IPO | word search (another term) | No trade marks matching the criteria |
+| TMview, all offices | "interview chair", Contains | 3 results, all USPTO, all **Ended**: THE RED CHAIR INTERVIEW (Vox Media, 2022, classes 9 and 42), ARMCHAIR INTERVIEWS (class 41, 2005), plus one more |
+| TMview, all offices | "theinterviewchair", Contains | No rows found |
+| TMview, US only | "theinterview", Contains | No rows found |
+| USPTO | "interview chair" (loose match) | 1,983 results, 513 live: too broad to read as a conflict; to redo as the quoted phrase, Live only, classes 009/035/041/042 |
+
+Still to do: USPTO quoted-phrase search; TMview "interviewchair"; record which UK term each screenshot used; ask the specialist about anything borderline. Conclusion so far: **no live mark found for the name in the UK, EU or US**, which supports filing.
+
 ## 6. Filing and what happens next
 
 1. Apply online with the UK IPO and pay by card.
