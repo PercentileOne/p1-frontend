@@ -8,8 +8,8 @@ Drafted 10 Oct 2026. This is practical groundwork, not legal advice. Anything ma
 |---|---|
 | What | A UK word mark application for **THE INTERVIEW CHAIR** |
 | Where | UK Intellectual Property Office (IPO), online application |
-| Classes | 41 (training and coaching), 42 (software as a service), 35 (recruitment side); optional 9 (downloadable software or apps) |
-| Cost | About **£205** for the first class plus **£60** for each extra class from 1 April 2026. Three classes is about **£325**; four is about **£385**. Confirm the figure on GOV.UK on the day (the figures come from law-firm summaries: [CITMA](https://www.citma.org.uk/resources/the-countdown-to-new-uk-ipo-fees-mb26.html), [Hindles](https://www.hindles.co.uk/content/fee-increases-at-the-ukipo-from-1-april-2026), [Fosters](https://fosters-solicitors.co.uk/?p=76847)) |
+| Classes | **Decided 10 Oct: 41 (training and coaching), 42 (software as a service), 35 (recruitment side).** Class 9 (downloadable software or apps) left out for now; add it in a separate application when the mobile app is a near-term plan |
+| Cost | About **£205** for the first class plus **£60** for each extra class from 1 April 2026. The three chosen classes come to about **£325** (£205 + 2 × £60); a fourth, if ever added, would be £60 more. Confirm the figure on GOV.UK on the day (the figures come from law-firm summaries: [CITMA](https://www.citma.org.uk/resources/the-countdown-to-new-uk-ipo-fees-mb26.html), [Hindles](https://www.hindles.co.uk/content/fee-increases-at-the-ukipo-from-1-april-2026), [Fosters](https://fosters-solicitors.co.uk/?p=76847)) |
 | Then | A 6-month priority window to file the same mark in the US and EU with the same date, if the traction justifies it |
 | Order | 1. Evidence file, 2. clearance search, 3. decide applicant and mark, 4. file, 5. wait and watch the mailbox |
 
@@ -21,7 +21,7 @@ Drafted 10 Oct 2026. This is practical groundwork, not legal advice. Anything ma
 2. **Which mark?** I'd file the **word mark "THE INTERVIEW CHAIR"**. A word mark protects the name in any font, colour or style, which a logo does not.
    - "TheInterviewChair" without spaces is very close to it, so one application should be enough to start.
    - A separate logo application (the green TIC tile) can come later, if it is worth the fee. It is the weaker of the two.
-3. **Which classes? [you decide]** See section 4. Every class costs £60, and you should only claim what you genuinely offer or will within a few years.
+3. **Which classes?** *Decided 10 Oct 2026: 41, 42 and 35.* See section 4. Every class costs £60, and you should only claim what you genuinely offer or will within a few years.
 
 ## 3. Mark details to enter on the form
 
@@ -31,7 +31,7 @@ Drafted 10 Oct 2026. This is practical groundwork, not legal advice. Anything ma
 | Mark text | THE INTERVIEW CHAIR |
 | Applicant | [fill in: name, address, email; Companies House number if a company] |
 | Address for service | [fill in: UK address; your own is fine if you are not using an agent] |
-| Classes | 41, 42, 35 (optional 9) |
+| Classes | 41, 42, 35 |
 | Priority claim | None (this will be the first filing) |
 
 ## 4. Goods and services wording (draft)
@@ -56,7 +56,7 @@ Use the UK IPO "Goods and Services Manager" to turn these into accepted terms, b
 - Providing online candidate screening and skills-assessment services for employers and recruitment professionals
 - Business and recruitment consultancy relating to hiring and candidate preparation
 
-**Class 9, downloadable software** (optional; only when the mobile app is a real near-term plan)
+**Class 9, downloadable software** (NOT in this application; kept here for when the mobile app is a near-term plan and you file separately)
 - Downloadable software and mobile applications for interview practice, preparation and scoring
 - Downloadable software using artificial intelligence for simulating job interviews
 
