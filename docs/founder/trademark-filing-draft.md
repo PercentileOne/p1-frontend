@@ -7,7 +7,7 @@ Drafted 10 Oct 2026. This is practical groundwork, not legal advice. Anything ma
 | | |
 |---|---|
 | Application number | **UK00004458000** |
-| Filing date | **10 October 2026** (this starts the 6-month window to file abroad with the same date: until **10 April 2027**) |
+| Filing date | **10 October 2026, 8:25pm** (confirmation screen and certificate agree; this starts the 6-month window to file abroad with the same date: until **10 April 2027**) |
 | Mark | THE INTERVIEW CHAIR (word mark, single mark, standard characters) |
 | Owner / declarant | Francis Cobbinah, filed personally, no representative |
 | Examination type | **Right Start**: first payment made; **the balance is due within 28 days of the date of the examination report** (about half of the £370 total: check the exact figure on the report) |
