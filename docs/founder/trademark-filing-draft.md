@@ -17,14 +17,15 @@ Drafted 10 Oct 2026. This is practical groundwork, not legal advice. Anything ma
 What is on the certificate:
 - **Class 41 (9 terms):** Coaching; Career counselling and coaching; Career counselling [training and education advice]; Career and vocational training; Education, teaching and training; Training relating to employment skills; Personal development training; Career and vocational counselling; Publication of educational and training guides.
 - **Class 42 (1 term):** Software as a service.
-- **Class 35 (20 terms):** the whole recruitment list that came up for "interview coaching", including several terms the business does not offer (executive and high-level management recruitment, recruitment consultants in the financial services field). See the note below.
+- **Class 35 (20 terms):** the recruitment list that came up for "interview coaching", including executive and high-level management recruitment and recruitment consultants in the financial services field. Francis added these deliberately (10 Oct 2026): the platform will go heavily into recruitment, advertising other recruiters' jobs, and a Jobs module already exists in the product. The UK test is a genuine intention to use, so the broad list is defensible; keep a dated note of the intention (below).
 
 Things to do:
 1. **Watch the email (and the spam folder)** for the examination report. Diary the 28-day deadline the day it arrives; missing it lets the application lapse.
-2. **Trim class 35** to what is genuinely offered, if the IPO allows it before publication (terms can be removed, never added). Suggested keep-list: Interviewing services [for personnel recruitment]; Employment recruiting services; Staff recruitment; Career advisory services (other than education and training advice).
-3. **The owner's address is on the public register** and is a residential address. A change of address can be requested from the IPO afterwards; check the current form and any fee on GOV.UK.
-4. **Ignore invoices from private registers** (warning is on the certificate email). The only body to pay is the UK IPO.
-5. Use **TM** after the name; do not use the registered symbol until it is registered.
+2. **Keep class 35 as filed**, and note the intention with a date: "10 Oct 2026: the platform will advertise recruiters' jobs; a Jobs module already exists in the product." If the very specific terms (high-level management, financial services recruiters) are not really planned, they can be removed later (never added).
+3. **Job-board wording is not spelled out.** The terms cover providing recruitment services; "online job listings" / "employment agency services" style terms are not included and cannot be added to this application. Registration for recruitment services should still be treated as similar. If explicit coverage is wanted, that is a second application (new fee, later filing date); decide after the examination report.
+4. **The owner's address is on the public register** (Francis is happy with that: decided 10 Oct 2026).
+5. **Ignore invoices from private registers** (warning is on the certificate email). The only body to pay is the UK IPO.
+6. Use **TM** after the name; do not use the registered symbol until it is registered.
 
 ## 1. The short version
 
