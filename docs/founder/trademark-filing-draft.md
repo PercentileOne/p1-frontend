@@ -80,14 +80,15 @@ What the results mean:
 
 | Register | Search | Result |
 |---|---|---|
-| UK IPO | word search (term not recorded on the screenshot) | 1 mark found, "Interview Annie" (UK00801288967), filed 21 Jan 2016, classes 9 and 35, status **Removed**, so dead; the page confirms "filed between 1 January 1876 and 10 October 2026" |
+| UK IPO | word search, all three terms run (The Interview Chair, Interview Chair, InterviewChair); one screenshot shows a hit, not recording which term | 1 mark found, "Interview Annie" (UK00801288967), filed 21 Jan 2016, classes 9 and 35, status **Removed**, so dead; the page confirms "filed between 1 January 1876 and 10 October 2026" |
 | UK IPO | word search (another term) | No trade marks matching the criteria |
 | TMview, all offices | "interview chair", Contains | 3 results, all USPTO, all **Ended**: THE RED CHAIR INTERVIEW (Vox Media, 2022, classes 9 and 42), ARMCHAIR INTERVIEWS (class 41, 2005), plus one more |
 | TMview, all offices | "theinterviewchair", Contains | No rows found |
 | TMview, US only | "theinterview", Contains | No rows found |
-| USPTO | "interview chair" (loose match) | 1,983 results, 513 live: too broad to read as a conflict; to redo as the quoted phrase, Live only, classes 009/035/041/042 |
+| USPTO | "interview chair" (loose match, then in quotes) | 1,983, then 981 results (286 live): the tool matches the two words separately, so this is noise; the first results are dead marks |
+| USPTO | "interviewchair" | No results found (live 0, dead 0) |
 
-Still to do: USPTO quoted-phrase search; TMview "interviewchair"; record which UK term each screenshot used; ask the specialist about anything borderline. Conclusion so far: **no live mark found for the name in the UK, EU or US**, which supports filing.
+Still optional: export the USPTO live results to CSV and scan for "interview" near "chair" or "seat"; a final plain web search for businesses already trading under the name; ask the specialist about anything borderline. Conclusion: **no live mark found for the name in the UK, EU or US**, which supports filing. This checks identical and close names only; it is not a legal clearance, and the registrability (descriptiveness) risk in section 8 is separate.
 
 ## 6. Filing and what happens next
 
