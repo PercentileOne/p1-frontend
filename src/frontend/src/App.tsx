@@ -111,6 +111,7 @@ import SharedCertExamPage from "./pages/SharedCertExamPage";
 import CertificatePage from "./pages/CertificatePage";
 import SubscriptionPage from "./pages/SubscriptionPage";
 import { AccessBanner } from "./components/AccessBanner";
+import { PhoneHeadsUp } from "./components/PhoneHeadsUp";
 import MyInterviewsPage from "./pages/MyInterviewsPage";
 import MyTalksPage from "./pages/MyTalksPage";
 import LearnFlashTalkPage from "./pages/LearnFlashTalkPage";
@@ -140,6 +141,7 @@ export default function App() {
   return (
     <>
     <AccessBanner />
+    <PhoneHeadsUp />
     <Routes>
       {/* InterviewMe public-facing routes */}
       <Route path="/" element={<ProductHome />} />
