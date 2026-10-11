@@ -131,6 +131,11 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   // Whether the billed service connection is open. Between questions the room closes only that connection (disconnect()) and leaves the face drawn on screen
   // (idling and blinking on this device, no cost); connect() then just restarts the connection. release() is the full teardown.
   const serviceOpenRef = useRef(false);
+  // Phones and Safari (2026-10-11): the face is drawn but the service connection has NOT been started, because ctrl.start() refuses to run until the sound system has been
+  // initialised, and that has to happen inside a real tap ("Audio context not initialized. Call initializeAudioContext() in a user gesture" — read live on an iPhone). unlockAudio()
+  // does both, in order, from the tap; speak() waits for that to finish.
+  const startPendingRef = useRef(false);
+  const startingRef = useRef<Promise<void> | null>(null);
   const viewAvatarRef = useRef<string | null>(null); // which avatar the on-screen face belongs to, so a restart never reuses another avatar's face
   // Bumped by disconnect(): a connect() that's still in flight when the page gives up on it (timeout) notices and tears itself down
   // instead of finishing later as a ghost, billed session.
@@ -145,12 +150,14 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
     try { viewRef.current?.dispose(); } catch { /* already disposed */ }
     ctrlRef.current = null; viewRef.current = null;
     serviceOpenRef.current = false;
+    startPendingRef.current = false; startingRef.current = null;
     setRendered(false);
     const w = waiterRef.current; waiterRef.current = null; w?.();
   }, []);
 
   const connect = useCallback((avatarId: string, ticket: string, transform?: { x: number; y: number; scale: number }, tokenPath: string = DEMO_TOKEN_PATH, autoFit: number | false = false, deferAudioUnlock = false): Promise<void> => {
     if (ctrlRef.current && serviceOpenRef.current) return Promise.resolve();
+    if (ctrlRef.current && startPendingRef.current) return Promise.resolve();   // face already drawn, waiting for the tap that starts it
     if (connectingRef.current) return connectingRef.current;
     const attempt = (async () => {
       const mine = ++attemptRef.current;
@@ -243,8 +250,8 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
           ]);
         }
         if (cancelled()) throw new Error('cancelled');
-        await ctrl.start();
-        serviceOpenRef.current = true;
+        if (deferAudioUnlock) startPendingRef.current = true;   // started later, from the tap: see unlockAudio()
+        else { await ctrl.start(); serviceOpenRef.current = true; }
         if (cancelled()) throw new Error('cancelled');
         // The test page sets the framing AFTER the avatar is fully started and it works; set early it is ignored, and the SDK can also drop it (or reset
         // it on a window resize) while still REPORTING the value we set — so comparing against its getter is not a safe check (that was tried and
@@ -300,6 +307,8 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   // Resolves when the avatar has finished saying the line (or a ceiling based on the clip's length, so a page can never hang).
   // onSent fires the moment the audio has been handed to the face (after it was produced), so callers can time "has it started?" from then rather than from the request.
   const speak = useCallback(async (text: string, role: 'hr' | 'technical' | 'michelle', onStarted?: () => void, interviewerId?: string, onSent?: () => void): Promise<void> => {
+    // A line asked for just after the tap: wait for the start that the tap began (a few seconds at most) instead of failing and dropping to the plain voice.
+    if (!serviceOpenRef.current && startingRef.current) { try { await startingRef.current; } catch { /* handled just below */ } }
     const ctrl = ctrlRef.current;
     if (!ctrl || !serviceOpenRef.current) throw new Error('spatius avatar not connected');
     const mySeq = ++speakSeqRef.current;
@@ -318,15 +327,25 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   }, []);
 
   // Starts the sound system. Call it as the FIRST thing in a tap handler (before anything is awaited): the browser only allows it inside the tap itself.
-  const unlockAudio = useCallback((): Promise<void> => {
+  // Called from inside a real tap. Its first statement starts the sound system synchronously (that is the part that must be in the gesture); then, if the connection
+  // was held back (phones, Safari), it is started here. Always resolves; if anything failed, speak() throws and the page falls back to the plain voice.
+  const unlockAudio = useCallback(async (): Promise<void> => {
     const c = ctrlRef.current;
-    if (!c) return Promise.resolve();
-    try {
-      return Promise.race([
-        c.initializeAudioContext(),
-        new Promise<void>(resolve => window.setTimeout(resolve, 5000)),
-      ]).catch(() => { /* the caller carries on; speaking will then fall back to the plain voice */ });
-    } catch { return Promise.resolve(); }
+    if (!c) return;
+    let init: Promise<void> | undefined;
+    try { init = Promise.resolve(c.initializeAudioContext()); } catch { init = undefined; }
+    const work = (async () => {
+      if (init) {
+        try { await Promise.race([init, new Promise<void>(resolve => window.setTimeout(resolve, 5000))]); } catch { /* carry on; the start below will fail and speaking falls back */ }
+      }
+      if (startPendingRef.current && !serviceOpenRef.current && ctrlRef.current === c) {
+        await Promise.race([c.start(), new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('spatius start timed out')), 20000))]);
+        serviceOpenRef.current = true;
+        startPendingRef.current = false;
+      }
+    })();
+    startingRef.current = work.catch(() => { /* speak() sees the connection is not open */ });
+    await startingRef.current;
   }, []);
 
   const interrupt = useCallback(() => { speakSeqRef.current++; try { ctrlRef.current?.interrupt(); } catch { /* nothing playing */ } }, []);
