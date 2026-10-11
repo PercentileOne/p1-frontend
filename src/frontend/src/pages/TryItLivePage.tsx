@@ -199,6 +199,8 @@ export default function TryItLivePage() {
   // found one answer — with the greeting — too thin, so it is two.)
   const [quick] = useState(() => { try { return new URLSearchParams(window.location.search).get('quick') === '1'; } catch { return false; } });
   const [useAvatar, setUseAvatar] = useState(false);
+  // Why the live face did not start (shown under the picture, 2026-10-11): an owner's own tests are not recorded, so on a phone this is the only place the reason can be read.
+  const [avatarNote, setAvatarNote] = useState<string | null>(null);
   // "Tap to meet your interviewer" (2026-10-08): on a phone the live face connects first and then waits for one real tap, which also starts the sound system (iPhones refuse
   // to start sound that is not tied to a tap; this is why they were kept on a photo and voice). tapResolveRef resumes begin() when the visitor taps.
   const [tapGate, setTapGate] = useState(false);
@@ -492,6 +494,7 @@ export default function TryItLivePage() {
         } catch (e) {
           void spatius.disconnect(true); // also cancels a connect() still in flight, so it can't finish later as a ghost session
           logEvent('try_avatar_fallback', { metadata: { from: 'spatius', reason: String(e instanceof Error ? e.message : e).slice(0, 80), willFallBack: s.fallbackToHeygen !== false, mobile: isMobile } });
+          if (s.fallbackToHeygen === false) setAvatarNote(String(e instanceof Error ? e.message : e).slice(0, 80));
         }
       }
       if (!live && (s.avatarProvider !== 'spatius' || s.fallbackToHeygen !== false)) {
@@ -728,6 +731,11 @@ export default function TryItLivePage() {
                 </path>
               </svg>
               <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', letterSpacing: '0.01em' }}>{start.interviewerName} is getting ready…</div>
+            </div>
+          )}
+          {start && !useAvatar && avatarNote && phase !== 'topic' && phase !== 'starting' && (
+            <div style={{ position: 'absolute', left: 12, right: 12, top: 12, zIndex: 3, background: 'rgba(0,0,0,0.68)', borderRadius: 8, padding: '6px 10px', fontSize: 11.5, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>
+              The live video didn&rsquo;t start on this device ({avatarNote}), so you have their voice and photo.
             </div>
           )}
           {start && tapGate && (
