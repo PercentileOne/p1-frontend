@@ -94,6 +94,9 @@ const WAYNE_GOODBYES: Array<(name: string) => string> = [
   name => `Take care${name}.`,
   name => `All the best${name}.`,
   name => `Thanks for your time${name}.`,
+  // Francis, 2026-10-11: "See you on the next interview" / "See you next time", the way a person ends a good conversation.
+  name => `See you on the next interview${name}.`,
+  name => `See you next time${name}.`,
 ];
 
 // ── Coaching cues — rotate during answering phase ────────────────────────────
