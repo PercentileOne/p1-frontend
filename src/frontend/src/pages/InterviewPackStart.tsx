@@ -18,6 +18,7 @@ import { pickSurveyQuestion, markSurveyAnswered } from '../lib/surveyQuestions';
 import { useAuthStore } from '../auth/authStore';
 import { LANGUAGES, DIFFICULTIES } from '../data/interviewOptions';
 import { InterviewerPicker } from '../components/InterviewerPicker';
+import { useIsPhone } from '../hooks/useIsPhone';
 
 // Which stage of the candidate's REAL interview process this practice session represents —
 // most candidates now face 2+ rounds (Francis: knows someone who had 5-6 for a Barclays VP
@@ -118,6 +119,7 @@ const SELECT_CHEVRON = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 // InterviewRoomPage falls back to when it receives no route state at all.
 export default function InterviewPackStart() {
   const navigate = useNavigate();
+  const phone = useIsPhone();
   const location = useLocation();
   const incoming = (location.state ?? {}) as IncomingState;
 
@@ -518,7 +520,7 @@ export default function InterviewPackStart() {
         {/* Interview Style — Standard (the interview we've always had) or a company-specific mock (Francis,
             2026-09-19). Deliberately styled like the Interview Round card below. A searchable picker, not a
             <select>, because the list passed ~190 names — see CompanyPicker (search by name or brand). */}
-        <div style={{ background: 'var(--bg2)', border: `1px solid ${companyMode ? 'rgba(52,211,153,0.35)' : 'var(--border)'}`, borderRadius: '16px', padding: '24px 28px', marginBottom: '16px' }}>
+        <div style={{ background: 'var(--bg2)', border: `1px solid ${companyMode ? 'rgba(52,211,153,0.35)' : 'var(--border)'}`, borderRadius: '16px', padding: phone ? '18px 14px' : '24px 28px', marginBottom: '16px' }}>
           <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
             Interview Style
           </div>
@@ -578,7 +580,7 @@ export default function InterviewPackStart() {
             </button>
           </div>
 
-          <div style={{ padding: '24px 28px' }}>
+          <div style={{ padding: phone ? '18px 14px' : '24px 28px' }}>
             {usingSavedCv && savedCv && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: '18px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: '10px', padding: '10px 14px' }}>
                 <span style={{ fontSize: 16 }}>📄</span>
@@ -747,7 +749,7 @@ export default function InterviewPackStart() {
             role-input card (Francis's explicit placement request, 2026-09-16), always visible
             regardless of which of the three role-input tabs is active, since it applies no
             matter how the role was described. */}
-        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 28px', marginBottom: '16px' }}>
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: phone ? '18px 14px' : '24px 28px', marginBottom: '16px' }}>
           <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
             Interview Round
           </div>
@@ -777,7 +779,7 @@ export default function InterviewPackStart() {
         <>
         {/* Salary Expectation — see SALARY_BANDS's own comment above. Optional, deliberately
             lets a candidate practice at a level above their comfort zone. */}
-        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 28px', marginBottom: '16px' }}>
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: phone ? '18px 14px' : '24px 28px', marginBottom: '16px' }}>
           <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
             Salary Expectation
           </div>
@@ -803,7 +805,7 @@ export default function InterviewPackStart() {
 
         {/* Special Focus — optional topics that narrow question generation; "What's Hot"
             suggests currently in-demand ones for the named role, candidate keeps/discards */}
-        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 28px', marginBottom: '16px' }}>
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: phone ? '18px 14px' : '24px 28px', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Special Focus</span>
             <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 400 }}>(optional — narrows questions to specific topics)</span>
@@ -885,7 +887,7 @@ export default function InterviewPackStart() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
 
           {/* Language */}
-          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: phone ? '18px 14px' : '24px 22px' }}>
             <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
               Interview Language
             </div>
@@ -910,7 +912,7 @@ export default function InterviewPackStart() {
           </div>
 
           {/* Difficulty */}
-          <div style={{ display: dayOne ? 'none' : undefined, flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+          <div style={{ display: dayOne ? 'none' : undefined, flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: phone ? '18px 14px' : '24px 22px' }}>
             <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
               Question Difficulty
             </div>
@@ -942,7 +944,7 @@ export default function InterviewPackStart() {
           {/* Question Count — defaults to 10 (matches the original fixed count); lets
               someone doing a quick test run pick 5 instead of sitting through/passing 10,
               and cuts AI generation cost proportionally for shorter sessions. */}
-          <div style={{ display: dayOne ? 'none' : undefined, flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+          <div style={{ display: dayOne ? 'none' : undefined, flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: phone ? '18px 14px' : '24px 22px' }}>
             <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
               Number of Questions
             </div>
@@ -971,7 +973,7 @@ export default function InterviewPackStart() {
               inside a collapsed panel AND behind its own CV/Job Spec tab, for a field that
               personalises every spoken line in the entire interview, Mike included). Kept in
               this same always-visible row, matching card style, instead of tucked away. */}
-          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 22px' }}>
+          <div style={{ flex: '1 1 200px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: phone ? '18px 14px' : '24px 22px' }}>
             <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
               Known As
             </div>

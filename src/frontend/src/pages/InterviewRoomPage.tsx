@@ -28,6 +28,7 @@ import { useInterviewerAudio, MIKE_VIDEO_ENABLED } from '../hooks/useInterviewer
 import { useMcqBonusRound, type McqGenParams } from '../hooks/useMcqBonusRound';
 import { useGoDeeperFollowUps, GO_DEEPER_LIMITS } from '../hooks/useGoDeeperFollowUps';
 import { useSpatiusSeat, type SeatRole } from '../hooks/useSpatiusSeat';
+import { useIsPhone } from '../hooks/useIsPhone';
 import { SpatiusSeatStage } from '../components/SpatiusSeatStage';
 import { fetchAvatarConfig, type AvatarConfig } from '../api/liveAvatarApi';
 import { fetchInterviewers, type PublicInterviewer } from '../api/interviewersApi';
@@ -1183,6 +1184,13 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     : '#EF4444';
 
   // Show Sarah + James only after Mike has finished
+  // Phones (2026-10-11): one interviewer at a time, full width, in portrait. Both faces stay mounted and connected exactly as on a laptop (a face is sized when it
+  // connects, so a seat is never hidden with display:none); the one that is not "on" is clipped to zero height by its wrapper, and the other takes the room.
+  const phone = useIsPhone();
+  const questionLive = !!q && (phase === 'asking' || phase === 'answering' || phase === 'scoring' || phase === 'coaching');
+  const activeSeat: 'hr' | 'technical' = techState === 'speaking' ? 'technical' : hrState === 'speaking' ? 'hr' : (questionLive && !isHrQuestion ? 'technical' : 'hr');
+  const seatWrap = (seat: 'hr' | 'technical'): React.CSSProperties =>
+    !phone ? { display: 'contents' } : activeSeat === seat ? { width: '100%' } : { width: '100%', height: 0, overflow: 'hidden' };
   const showInterviewers = phase !== 'intro' && phase !== 'mike';
   tilesVisibleRef.current = showInterviewers;
 
@@ -1246,12 +1254,12 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       {/* Top bar */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '16px 28px', borderBottom: '1px solid var(--border)',
-        background: 'var(--bg2)',
+        padding: phone ? '10px 12px' : '16px 28px', borderBottom: '1px solid var(--border)',
+        background: 'var(--bg2)', flexWrap: phone ? 'wrap' : 'nowrap', gap: phone ? '8px' : 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--blue)' }}>
-            TheInterviewChair.com · Interview Room
+            {phone ? 'Interview Room' : 'TheInterviewChair.com · Interview Room'}
           </div>
           {phase !== 'intro' && phase !== 'mike' && (
             <>
@@ -1279,13 +1287,13 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
             </>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: phone ? '6px' : '10px', flexWrap: phone ? 'wrap' : 'nowrap' }}>
           {/* Language — read-only here, fixed at intake (see sessionLanguage's own comment for
               why: the interview's questions are all generated once, in whatever language was
               selected before the session started, so a live in-room switcher couldn't actually
               translate anything already generated). Same read-only-badge treatment as
               Difficulty/Round further down this sidebar. */}
-          <div
+          {!phone && <div
             title="Set on the intake screen"
             style={{
               fontSize: '11px', fontWeight: 600, padding: '5px 8px', borderRadius: '7px',
@@ -1294,7 +1302,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
             }}
           >
             {LANGUAGE_LABELS[sessionLanguage] ?? LANGUAGE_LABELS.en}
-          </div>
+          </div>}
 
           {/* Interviewer volume — always visible, independent of OS/browser volume */}
           <div style={{ position: 'relative' }}>
@@ -1371,7 +1379,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   <line x1="3" y1="3" x2="21" y2="21"/>
                 </svg>
               )}
-              {cameraOn ? 'Camera' : 'Cam Off'}
+              {phone ? '' : (cameraOn ? 'Camera' : 'Cam Off')}
             </button>
           )}
 
@@ -1403,7 +1411,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
             </button>
           )}
           {/* Fullscreen toggle */}
-          <button onClick={toggleFullscreen} title={isFullscreen ? 'Exit fullscreen' : 'Go fullscreen'}
+          {!phone && <button onClick={toggleFullscreen} title={isFullscreen ? 'Exit fullscreen' : 'Go fullscreen'}
             style={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.18), rgba(124,58,237,0.14))', border: '1px solid rgba(167,139,250,0.45)', borderRadius: '8px', padding: '7px 14px', color: '#c4b5fd', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px', transition: 'all 0.2s', letterSpacing: '0.01em' }}>
             {isFullscreen ? (
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -1415,13 +1423,13 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               </svg>
             )}
             {isFullscreen ? 'Exit Full' : 'Full Screen'}
-          </button>
+          </button>}
           <button onClick={() => {
             uploadRecording(sessionAnswers, { mcqQuestions, mcqResults, mcqBonusPoints, cvCtx, jobCtx });
             closeInterview(sessionAnswers, mcqResults, mcqBonusPoints);
           }}
             style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '8px', padding: '7px 14px', color: '#34D399', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>
-            End Session
+            {phone ? 'End' : 'End Session'}
           </button>
         </div>
       </div>
@@ -1443,7 +1451,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
       )}
 
       {/* Main content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', maxWidth: '1128px', width: '100%', margin: '0 auto', padding: '24px 24px 32px', gap: '20px' }}> {/* One shared width (1080px of content): the two interviewers and the camera on top, and every panel underneath, share the same left and right edges (Francis, 2026-10-08). */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', maxWidth: '1128px', width: '100%', margin: '0 auto', padding: phone ? '12px 12px 28px' : '24px 24px 32px', gap: phone ? '12px' : '20px', boxSizing: 'border-box' }}> {/* One shared width (1080px of content): the two interviewers and the camera on top, and every panel underneath, share the same left and right edges (Francis, 2026-10-08). */}
 
         {/* Amina + Wayne — 2026-09-14: this block (and, critically, the two <video> elements
             inside it) is now PERMANENTLY mounted rather than gated by showInterviewers. Root
@@ -1466,9 +1474,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           animate={{ opacity: showInterviewers ? 1 : 0 }}
           transition={{ duration: 0.6 }}
           style={showInterviewers
-            ? { display: 'flex', gap: '16px' }
-            : { display: 'flex', gap: '16px', position: 'absolute', inset: 0, zIndex: -1, pointerEvents: 'none' }}
+            ? { display: 'flex', flexDirection: phone ? 'column' : 'row', gap: phone ? '0px' : '16px' }
+            : { display: 'flex', flexDirection: phone ? 'column' : 'row', gap: phone ? '0px' : '16px', position: 'absolute', inset: 0, zIndex: -1, pointerEvents: 'none' }}
         >
+              <div style={seatWrap('hr')}>
               {/* On Spatius the tile is a true 16:9 window (the shape of Spatius's stage); the old photo component then no longer sizes it. */}
               <div style={seatOnSpatius('hr') ? { position: 'relative', flex: 1, display: 'flex', aspectRatio: '16 / 9', alignSelf: 'flex-start', borderRadius: '16px', boxShadow: hrState === 'speaking' ? '0 0 0 2px rgba(167,139,250,0.5)' : '0 0 0 1px rgba(255,255,255,0.06)' } : { position: 'relative', flex: 1, display: 'flex' }}>
                 <div style={seatOnSpatius('hr') ? { position: 'absolute', inset: 0, display: 'flex', overflow: 'hidden', borderRadius: '16px', visibility: liveAvatarHr.status !== 'failed' ? 'hidden' : 'visible' } : { display: 'contents' }}>
@@ -1516,6 +1525,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     </div>
                 )}
               </div>
+              </div>
+              <div style={seatWrap('technical')}>
               <div style={seatOnSpatius('technical') ? { position: 'relative', flex: 1, display: 'flex', aspectRatio: '16 / 9', alignSelf: 'flex-start', borderRadius: '16px', boxShadow: techState === 'speaking' ? '0 0 0 2px rgba(79,142,247,0.5)' : '0 0 0 1px rgba(255,255,255,0.06)' } : { position: 'relative', flex: 1, display: 'flex' }}>
                 <div style={seatOnSpatius('technical') ? { position: 'absolute', inset: 0, display: 'flex', overflow: 'hidden', borderRadius: '16px', visibility: liveAvatarTechnical.status !== 'failed' ? 'hidden' : 'visible' } : { display: 'contents' }}>
                 <InterviewerAvatar
@@ -1557,7 +1568,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     </div>
                 )}
               </div>
-              {showInterviewers && <YouCamera cameraOn={cameraOn} speaking={phase === 'answering'} onToggle={() => setCameraOn(v => !v)} />}
+              </div>
+              {showInterviewers && (phone
+                ? <div style={{ alignSelf: 'center', marginTop: '12px' }}><YouCamera cameraOn={cameraOn} speaking={phase === 'answering'} onToggle={() => setCameraOn(v => !v)} /></div>
+                : <YouCamera cameraOn={cameraOn} speaking={phase === 'answering'} onToggle={() => setCameraOn(v => !v)} />)}
         </motion.div>
 
         <AnimatePresence mode="sync">
@@ -1596,7 +1610,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
               {/* The two interviewers who will be in the room (2026-10-07: replaces the chair photo once the interviewers are known); the chair is the fallback. */}
               {seatsIv.hr && seatsIv.technical ? (
-                <div style={{ position: 'relative', flex: '1 1 320px', minHeight: '320px', background: 'linear-gradient(160deg, #0d1424, #080b14)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '14px', padding: '28px 24px' }}>
+                <div style={{ position: 'relative', flex: '1 1 320px', minHeight: '320px', background: 'linear-gradient(160deg, #0d1424, #080b14)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '14px', padding: phone ? '20px 16px' : '28px 24px' }}>
                   {/* The chair, kept small above the interviewers (Francis, 2026-10-08). */}
                   <img src="/images/mastermind-chair.png" alt="" style={{ width: '190px', maxWidth: '60%', height: 'auto', borderRadius: '12px', opacity: 0.95 }} />
                   <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Your interviewers</div>
@@ -1604,7 +1618,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     <motion.div key={iv.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.6 }}
                       style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                       <img src={iv.portraitUrl ?? `/images/interviewers/${iv.id}.jpg`} alt="" onError={e => { const el = e.currentTarget; const file = `/images/interviewers/${iv.id}.jpg`; if (el.src.endsWith(file)) { if (iv.backgroundUrl && el.src !== iv.backgroundUrl) el.src = iv.backgroundUrl; } else el.src = file; }}
-                        style={{ width: '148px', aspectRatio: '4 / 3', objectFit: 'cover', objectPosition: 'center 25%', borderRadius: '12px', flexShrink: 0, background: '#232b3b' }} />
+                        style={{ width: phone ? '104px' : '148px', aspectRatio: '4 / 3', objectFit: 'cover', objectPosition: 'center 25%', borderRadius: '12px', flexShrink: 0, background: '#232b3b' }} />
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)' }}>{iv.displayName}</div>
                         <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: label === 'HR' ? '#a78bfa' : 'var(--blue)', marginBottom: '4px' }}>{label} interviewer</div>
@@ -1637,7 +1651,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               )}
 
               {/* Content — solid panel, left-aligned, no longer competing with the photo */}
-              <div style={{ flex: '1 1 340px', padding: '40px 36px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: '20px' }}>
+              <div style={{ flex: '1 1 340px', padding: phone ? '24px 16px' : '40px 36px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: '20px' }}>
                 {/* Eyebrow */}
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.7 }}
                   style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--purple, #a78bfa)' }}>
@@ -1732,7 +1746,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           {/* ── MIKE PHASE — ONLY Mike, nothing else ──────────────────────── */}
           {phase === 'mike' && (
             <motion.div key="mike" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '40px 32px', textAlign: 'center', width: '100%', margin: '0 auto' }}>
+              style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: phone ? '20px 14px' : '40px 32px', textAlign: 'center', width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
 
               {/* Mike on the left, appearance controls on the right — side by side rather
                   than stacked, so checking how you'll look doesn't push everything else down.
@@ -1742,7 +1756,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   static photo. */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px', justifyContent: 'center', alignItems: 'flex-start', marginBottom: '28px' }}>
 
-                <div style={{ flex: '2 1 380px', maxWidth: '460px' }}>
+                <div style={{ flex: phone ? '1 1 100%' : '2 1 380px', maxWidth: phone ? '100%' : '460px', minWidth: 0 }}>
                   <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: '20px' }}>
                     Your Recruitment Consultant
                   </div>
@@ -1827,7 +1841,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 {/* While Mike briefs you — the natural moment to check how you'll look before
                     Sarah and James actually appear. Same filter presets as the Profile Video
                     recorder; picking one here carries through to the interview itself. */}
-                <div style={{ flex: '1 1 200px', maxWidth: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', paddingLeft: '32px', borderLeft: '1px solid var(--border)' }}>
+                <div style={{ flex: phone ? '1 1 100%' : '1 1 200px', maxWidth: phone ? '100%' : '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', paddingLeft: phone ? 0 : '32px', borderLeft: phone ? 'none' : '1px solid var(--border)' }}>
                   {/* The same height as the "Your Recruitment Consultant" heading above Michelle's picture (about 35px), so the two pictures start level. */}
                   <div style={{ marginTop: '35px' }}>
                     <YouCamera cameraOn={cameraOn} onToggle={() => setCameraOn(v => !v)} videoFilterCss={FILTER_CSS[filterPreset]} width={180} height={180} />
@@ -1889,9 +1903,9 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           {/* ── INTERVIEWER INTRO ─────────────────────────────────────────── */}
           {phase === 'interviewer-intro' && (
             <motion.div key="int-intro" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '22px 24px' }}>
+              <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: phone ? '16px' : '22px 24px' }}>
                 {/* Header row */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.4 }}
                       style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#a78bfa', flexShrink: 0 }} />
@@ -1936,8 +1950,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               {/* Question card — animates per question, independent of answer panel */}
               <AnimatePresence mode="sync">
                 <motion.div key={`q-${qIndex}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
-                  style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '22px 24px', marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
+                  style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: phone ? '16px' : '22px 24px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
                     {phase === 'asking' && (
                       <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.4 }}
                         style={{ width: '7px', height: '7px', borderRadius: '50%', background: isHrQuestion ? '#a78bfa' : 'var(--blue)', flexShrink: 0 }} />
@@ -1956,21 +1970,21 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       </span>
                     )}
                     {phase === 'answering' && (
-                      <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
+                      <div style={phone ? { flex: '1 1 100%', display: 'flex', flexWrap: 'wrap', gap: '8px' } : { marginLeft: 'auto', display: 'flex', gap: '6px' }}>
                         {/* Disabled while actually recording a voice answer — a mistimed click used
                             to re-trigger the question audio (Repeat) or bail out (Pause/Pass) mid-
                             capture, which meant the repeated question itself got baked into the
                             candidate's own answer clip. */}
-                        <button onClick={repeatQuestion} disabled={isCapturingAnswer} title={isCapturingAnswer ? "Stop recording first" : undefined} style={{ background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.35)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: 'var(--blue)', cursor: isCapturingAnswer ? 'not-allowed' : 'pointer', opacity: isCapturingAnswer ? 0.4 : 1 }}>
+                        <button onClick={repeatQuestion} disabled={isCapturingAnswer} title={isCapturingAnswer ? "Stop recording first" : undefined} style={{ background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.35)', borderRadius: '7px', padding: phone ? '11px 14px' : '5px 13px', fontSize: phone ? '12px' : '11px', fontWeight: 600, color: 'var(--blue)', cursor: isCapturingAnswer ? 'not-allowed' : 'pointer', opacity: isCapturingAnswer ? 0.4 : 1 }}>
                           ↩ Repeat
                         </button>
-                        <button onClick={handlePause} disabled={isCapturingAnswer} title={isCapturingAnswer ? "Stop recording first" : undefined} style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.30)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: '#34D399', cursor: isCapturingAnswer ? 'not-allowed' : 'pointer', opacity: isCapturingAnswer ? 0.4 : 1 }}>
+                        <button onClick={handlePause} disabled={isCapturingAnswer} title={isCapturingAnswer ? "Stop recording first" : undefined} style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.30)', borderRadius: '7px', padding: phone ? '11px 14px' : '5px 13px', fontSize: phone ? '12px' : '11px', fontWeight: 600, color: '#34D399', cursor: isCapturingAnswer ? 'not-allowed' : 'pointer', opacity: isCapturingAnswer ? 0.4 : 1 }}>
                           ⏸ Pause
                         </button>
-                        <button onClick={handleTellMeTheAnswer} disabled={isCapturingAnswer} title={isCapturingAnswer ? "Stop recording first" : "See a model answer instead of guessing"} style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: '#34D399', cursor: isCapturingAnswer ? 'not-allowed' : 'pointer', opacity: isCapturingAnswer ? 0.4 : 1 }}>
+                        <button onClick={handleTellMeTheAnswer} disabled={isCapturingAnswer} title={isCapturingAnswer ? "Stop recording first" : "See a model answer instead of guessing"} style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '7px', padding: phone ? '11px 14px' : '5px 13px', fontSize: phone ? '12px' : '11px', fontWeight: 600, color: '#34D399', cursor: isCapturingAnswer ? 'not-allowed' : 'pointer', opacity: isCapturingAnswer ? 0.4 : 1 }}>
                           💡 Tell Me The Answer
                         </button>
-                        <button onClick={handlePass} disabled={isCapturingAnswer} title={isCapturingAnswer ? "Stop recording first" : undefined} style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '7px', padding: '5px 13px', fontSize: '11px', fontWeight: 600, color: '#EF4444', cursor: isCapturingAnswer ? 'not-allowed' : 'pointer', opacity: isCapturingAnswer ? 0.4 : 1 }}>
+                        <button onClick={handlePass} disabled={isCapturingAnswer} title={isCapturingAnswer ? "Stop recording first" : undefined} style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '7px', padding: phone ? '11px 14px' : '5px 13px', fontSize: phone ? '12px' : '11px', fontWeight: 600, color: '#EF4444', cursor: isCapturingAnswer ? 'not-allowed' : 'pointer', opacity: isCapturingAnswer ? 0.4 : 1 }}>
                           Pass →
                         </button>
                       </div>
@@ -1993,10 +2007,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
 
               {/* Answer area — always mounted, never animates between questions */}
               {(phase === 'asking' || phase === 'answering') && (
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
+                <div style={{ display: 'flex', flexDirection: phone ? 'column' : 'row', gap: '12px', alignItems: 'stretch' }}>
 
                   {/* Left — answer input (3/4) */}
-                  <div style={{ flex: 3, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ flex: phone ? 'none' : 3, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {useVoice && (
                       <VoiceInput
                         language={sessionLanguage}
@@ -2021,9 +2035,9 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       />
                     </div>
                     {typedAnswer.trim() && (
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <div style={{ display: 'flex', justifyContent: phone ? 'stretch' : 'flex-end' }}>
                         <button onClick={() => submitAnswer(typedAnswer, undefined, false)}
-                          style={{ background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9px', padding: '8px 20px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
+                          style={{ background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9px', padding: phone ? '12px 22px' : '8px 20px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
                           Submit Answer
                         </button>
                       </div>
@@ -2055,7 +2069,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                   </div>
 
                   {/* Right — session stats (1/4) */}
-                  <div style={{ flex: 1, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ flex: phone ? 'none' : 1, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
                     {/* Progress */}
                     <div>
@@ -2096,6 +2110,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       </div>
                     </motion.div>
 
+                    {!phone && (<>
                     {/* Percentile benchmark card */}
                     <motion.div
                       initial={{ opacity: 0, y: 6 }}
@@ -2158,6 +2173,8 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         {selectedInterviewRound}
                       </div>
                     </div>
+
+                    </>)}
 
                     {/* Pause */}
                     <div style={{ marginTop: 'auto' }}>
