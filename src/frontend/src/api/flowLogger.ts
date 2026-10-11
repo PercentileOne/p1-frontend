@@ -29,6 +29,21 @@ export function logFlowEvent(
   logEvent(flowStage, { page: window.location.pathname, metadata: payload });
 }
 
+const UTM_KEY = 'tic_utm';
+function campaignTag(): { src: string; med: string; camp: string } | undefined {
+  try {
+    const q = new URLSearchParams(window.location.search);
+    const src = q.get('utm_source'), med = q.get('utm_medium'), camp = q.get('utm_campaign');
+    if (src || med || camp) {
+      const tag = { src: (src ?? '').slice(0, 40), med: (med ?? '').slice(0, 30), camp: (camp ?? '').slice(0, 40) };
+      sessionStorage.setItem(UTM_KEY, JSON.stringify(tag));
+      return tag;
+    }
+    const saved = sessionStorage.getItem(UTM_KEY);
+    return saved ? JSON.parse(saved) as { src: string; med: string; camp: string } : undefined;
+  } catch { return undefined; }
+}
+
 // New, more general entry point — same transport, explicit page/portal fields (queryable on
 // the admin Activity Log) rather than burying them inside an opaque payload blob.
 export function logEvent(
@@ -38,12 +53,16 @@ export function logEvent(
   // Local development servers talk to the REAL API, so their page views would land in the production
   // Activity Log looking like real visitors (found 2026-09-20). Never log from localhost.
   if (typeof window !== 'undefined' && /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)) return;
+  // The campaign tag the visitor arrived on (?utm_source=…): the short link /try?utm_source=linkedin forwards here WITH its query string, but until 2026-10-11 nothing in
+  // this app read it, so a tagged post's clicks lost their source at the door. Kept for the visit, and added (flat keys) to every event so a demo start can be traced to
+  // the post that brought the person.
+  const tag = campaignTag();
   const body = {
     sessionId: getSessionId(),
     eventType,
     page: opts.page ?? window.location.pathname,
     portal: 'candidate',
-    metadata: opts.metadata,
+    metadata: tag ? { ...(opts.metadata ?? {}), utm_src: tag.src, utm_med: tag.med, utm_camp: tag.camp } : opts.metadata,
   };
 
   // Unlike the old version, this deliberately does NOT skip logging when there's no auth
