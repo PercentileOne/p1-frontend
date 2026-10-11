@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { needsTapForSound } from '../hooks/useSpatiusSeat';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
-import { useSpatiusAvatarSession } from '../hooks/useSpatiusAvatarSession';
+import { useSpatiusAvatarSession, preloadSpatiusAvatar, HELLO_TOKEN_PATH } from '../hooks/useSpatiusAvatarSession';
+import { fetchInterviewers } from '../api/interviewersApi';
 import { setSeatInterviewers } from '../lib/seatInterviewers';
 import { speak as speakTts, unlockTTSAudio, setTTSLanguage } from '../api/ttsApi';
 import { setInterviewTicket } from '../api/entitlementsApi';
@@ -72,6 +73,8 @@ type Phase = 'topic' | 'starting' | 'asking' | 'answering' | 'coaching' | 'scori
 const withTimeout = <T,>(p: Promise<T>, ms: number, label: string): Promise<T> =>
   Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`${label} timed out after ${Math.round(ms / 1000)}s`)), ms))]);
 const SPATIUS_CONNECT_LIMIT_MS = 15000;
+// Phones get longer (2026-10-11: on an iPhone the face's 6.5 MB model did not arrive inside 15 seconds, so the interview fell back to a photo, twice).
+const SPATIUS_CONNECT_LIMIT_MOBILE_MS = 35000;
 // Said before the first question in an English demo (other languages get the server's translation, in TryOutStart.privacy).
 const PRIVACY_LINE_EN = "Quick note before we start: your practice interview is private. It is never shown to recruiters or employers, and only you can choose to share your results.";
 const HEYGEN_CONNECT_LIMIT_MS = 25000;
@@ -245,7 +248,25 @@ export default function TryItLivePage() {
   // mouse/trackpad, while an actual phone/tablet has no hover-capable input at all. The UA regex is a backstop for older browsers
   // without matchMedia. Computed once — a device doesn't change mid-visit.
   const [isMobile] = useState(detectMobile);
-  const [needsTap] = useState(needsTapForSound);   // phones AND Safari: the sound can only start inside a real tap or click (see isSafariBrowser)
+  const [needsTap] = useState(needsTapForSound);
+  // Warm the interviewer's face while the visitor reads the page and types a role: the model (about 6.5 MB, cached for a week once complete) is the slow part of a
+  // first start, and on a phone it did not finish inside the connect limit, so the interview fell back to a photo (iPhone, 2026-10-11). Skipped when the visitor has
+  // switched the live video off, or their device asks to save data. A face that is already cached connects in a moment.
+  useEffect(() => {
+    let off = false;
+    void (async () => {
+      try {
+        const saveData = !!(navigator as unknown as { connection?: { saveData?: boolean } }).connection?.saveData;
+        if (saveData || (detectMobile() && (navigator as unknown as { connection?: { type?: string } }).connection?.type === 'cellular')) return;   // never spend a phone's mobile data on a face the visitor may not use
+        const list = await fetchInterviewers();
+        const wanted = wantedInterviewerFromUrl();
+        const iv = list.find(i => i.id === wanted) ?? list.find(i => i.defaultFor === 'technical') ?? list.find(i => i.role === 'technical');
+        if (off || !iv?.avatarId) return;
+        await preloadSpatiusAvatar(iv.avatarId, '', HELLO_TOKEN_PATH);
+      } catch { /* the interview then loads the face the normal way */ }
+    })();
+    return () => { off = true; };
+  }, []);   // phones AND Safari: the sound can only start inside a real tap or click (see isSafariBrowser)
 
   // Wi-Fi vs mobile data (Francis, 2026-09-27: live video "worked very, very well" on Wi-Fi, same as desktop — the earlier phone
   // problems were the browser blocking sound and a weak SIGNAL, not phones as such). The Network Information API only exists on
@@ -458,7 +479,7 @@ export default function TryItLivePage() {
                   await new Promise(r => setTimeout(r, 100));
                 }
                 await spatius.connect(s.spatiusAvatarId!, s.ticket!, undefined, undefined, 1, needsTap);
-              })(), SPATIUS_CONNECT_LIMIT_MS, 'spatius');
+              })(), isMobile ? SPATIUS_CONNECT_LIMIT_MOBILE_MS : SPATIUS_CONNECT_LIMIT_MS, 'spatius');
           live = true; providerRef.current = 'spatius'; setProvider('spatius'); setAvatarState('live');
           logEvent('try_avatar_connected', { metadata: { provider: 'spatius', ms: Math.round(performance.now() - connectStarted), mobile: isMobile } });
         } catch (e) {
