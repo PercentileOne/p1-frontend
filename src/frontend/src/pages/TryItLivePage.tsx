@@ -621,6 +621,14 @@ export default function TryItLivePage() {
 
     if (!isLast) { setIndex(index + 1); busyRef.current = false; void ask(index + 1, start, useAvatar); return; }
 
+    // The interviewer says goodbye themselves, after the coach's "let me put your result together" (Francis, 2026-10-11: "Bye, Francis... See you next time"). English only
+    // (these words are the page's own; other languages keep the server's finish line alone), and it can never hold up the result: any failure is swallowed.
+    if (nextAnswers.length > 0 && language === 'en') {
+      const who = firstName ? `, ${firstName}` : '';
+      const byes = [`See you on the next interview${who}.`, `Bye for now${who}. See you next time.`, `Well done today${who}. See you on the next one.`];
+      try { await speakLine(byes[Math.floor(Math.random() * byes.length)], start, useAvatar); } catch { /* the result matters more than the goodbye */ }
+    }
+
     // Done: stop the (billed) avatar connection straight away.
     void avatar.disconnect(); void spatius.disconnect(true); setAvatarState('off');
     setPhase('scoring');
