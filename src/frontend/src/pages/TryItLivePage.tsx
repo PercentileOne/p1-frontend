@@ -249,6 +249,13 @@ export default function TryItLivePage() {
   // without matchMedia. Computed once — a device doesn't change mid-visit.
   const [isMobile] = useState(detectMobile);
   const [needsTap] = useState(needsTapForSound);
+  // Arrival from the homepage form (2026-10-11): pairs with the homepage's try_form_submit, so the Activity Log can show how many people who press Start actually land here,
+  // and how long the page took to get going (ms since the browser began loading it).
+  useEffect(() => {
+    const from = new URLSearchParams(window.location.search).get('from');
+    if (from) logEvent('try_arrived', { metadata: { from: from.slice(0, 20), ms: Math.round(performance.now()), mobile: isMobile } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Warm the interviewer's face while the visitor reads the page and types a role: the model (about 6.5 MB, cached for a week once complete) is the slow part of a
   // first start, and on a phone it did not finish inside the connect limit, so the interview fell back to a photo (iPhone, 2026-10-11). Skipped when the visitor has
   // switched the live video off, or their device asks to save data. A face that is already cached connects in a moment.

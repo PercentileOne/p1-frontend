@@ -1050,13 +1050,15 @@
     var n = nameEl.value.trim();
     var err = document.getElementById('tryErr');
     // Both fields are required — the demo can't start without a role and a first name.
-    if (v.length < 2) { err.textContent = 'Please enter the job role you want to be interviewed for.'; input.focus(); return; }
-    if (n.length < 1) { err.textContent = 'Please tell us your first name so your interviewer can greet you.'; nameEl.focus(); return; }
+    // The two stops are logged (2026-10-11): a visitor who clicked a role suggestion and left six seconds later may simply have met the first-name box.
+    if (v.length < 2) { if (window.ticTrack) window.ticTrack('try_form_error', { field: 'role' }); err.textContent = 'Please enter the job role you want to be interviewed for.'; input.focus(); return; }
+    if (n.length < 1) { if (window.ticTrack) window.ticTrack('try_form_error', { field: 'name' }); err.textContent = 'Please tell us your first name so your interviewer can greet you.'; nameEl.focus(); return; }
     err.textContent = '';
     // go=1 takes them straight into the interview room (no second form) with these values.
     var parts = selLang.value.split('-');   // "en-US" -> lang=en&country=US ; "fr" -> lang=fr
     var extra = '&lang=' + encodeURIComponent(parts[0]) + (parts[1] ? '&country=' + encodeURIComponent(parts[1]) : '') + '&level=' + encodeURIComponent(selLevel.value) + (pickSel ? '&interviewer=' + encodeURIComponent(pickSel) : '');
-    window.location.href = TRY_URL + '?topic=' + encodeURIComponent(v) + '&name=' + encodeURIComponent(n.slice(0, 40)) + extra + '&go=1';
+    if (window.ticTrack) window.ticTrack('try_form_submit', { interviewer: pickSel || null });
+    window.location.href = TRY_URL + '?topic=' + encodeURIComponent(v) + '&name=' + encodeURIComponent(n.slice(0, 40)) + extra + '&from=home&go=1';
   });
   ['topic','tname'].forEach(function (id) { document.getElementById(id).addEventListener('input', function () { document.getElementById('tryErr').textContent = ''; }); });
   document.querySelectorAll('.chip').forEach(function (c) {
