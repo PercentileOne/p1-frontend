@@ -22,6 +22,7 @@ Kept short on purpose. Three things at the top; everything else waits. Updated b
 
 ## Quick checks (a few minutes each)
 
+- [ ] **Safari check (new, 11 Oct):** run the demo on a Mac in Safari (or ask someone with one): you should see "Click to meet" on the interviewer, and after clicking it the voice should start. I could only test this with unit tests, not real Safari.
 - [ ] **Activity Log:** after the deploy, the 🏢 network badge and 🤖 "Automated?" label show on the right rows.
 - [ ] **CV analyser page, live:** the example (your own analysis) shows and the upload still works.
 - [ ] **Evidence folder:** save the IPO certificate PDF, the confirmation screen, and a dated screenshot of the App Store and UK/TMview/USPTO searches.
