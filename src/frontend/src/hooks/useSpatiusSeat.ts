@@ -58,6 +58,20 @@ export function isPhoneDevice(): boolean {
   } catch { return false; }
 }
 
+/**
+ * True for Safari (desktop or iPad/iPhone's own browser): like phones, it only lets a page start sound from inside a real click or tap, and Spatius's sound
+ * system starts after network waits, so without a tap it never gets going ("audio start timed out" every time). Found 2026-10-11: a US visitor on Safari 26 on a
+ * Mac got no interviewer in the demo. Chrome, Edge, Firefox and Opera are all left alone.
+ */
+export function isSafariBrowser(ua: string = typeof navigator !== 'undefined' ? navigator.userAgent || '' : ''): boolean {
+  return /Safari\//.test(ua) && !/Chrome|Chromium|CriOS|FxiOS|Firefox|Edg|OPR|Android/i.test(ua);
+}
+
+/** A tap/click is needed before the interviewer's voice can start: every phone and tablet, and Safari everywhere. */
+export function needsTapForSound(): boolean {
+  return isPhoneDevice() || isSafariBrowser();
+}
+
 export function useSpatiusSeat(
   role: SeatRole,
   stageRef: React.RefObject<HTMLDivElement | null>,
@@ -71,7 +85,7 @@ export function useSpatiusSeat(
   requestTap?: (role: SeatRole) => Promise<void>,
 ) {
   const inner = useSpatiusAvatarSession(stageRef);
-  const phone = isPhoneDevice();
+  const phone = needsTapForSound();   // (name kept: "phone" now also means "Safari" — anything that needs a real tap before sound can start)
   const lockedRef = useRef(false); // phone only: connected, but the sound system has not been started by a tap yet
   const unlockedRef = useRef(false); // phone only: a tap has already started this seat's sound system, so later controllers start their sound normally
   const aliveRef = useRef(true);

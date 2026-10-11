@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { needsTapForSound } from '../hooks/useSpatiusSeat';
 import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
 import { useSpatiusAvatarSession } from '../hooks/useSpatiusAvatarSession';
 import { setSeatInterviewers } from '../lib/seatInterviewers';
@@ -244,6 +245,7 @@ export default function TryItLivePage() {
   // mouse/trackpad, while an actual phone/tablet has no hover-capable input at all. The UA regex is a backstop for older browsers
   // without matchMedia. Computed once — a device doesn't change mid-visit.
   const [isMobile] = useState(detectMobile);
+  const [needsTap] = useState(needsTapForSound);   // phones AND Safari: the sound can only start inside a real tap or click (see isSafariBrowser)
 
   // Wi-Fi vs mobile data (Francis, 2026-09-27: live video "worked very, very well" on Wi-Fi, same as desktop — the earlier phone
   // problems were the browser blocking sound and a weak SIGNAL, not phones as such). The Network Information API only exists on
@@ -446,7 +448,7 @@ export default function TryItLivePage() {
         logEvent('try_avatar_connecting', { metadata: { provider: 'spatius', mobile: isMobile } });
         try {
           await withTimeout(isOriginalInterviewer(s.chosenInterviewer?.id)
-            ? spatius.connect(s.spatiusAvatarId, s.ticket, spatiusTransformFromUrl(s.interviewer === 'technical' ? 'technical' : 'hr'), undefined, false, isMobile)
+            ? spatius.connect(s.spatiusAvatarId, s.ticket, spatiusTransformFromUrl(s.interviewer === 'technical' ? 'technical' : 'hr'), undefined, false, needsTap)
             : (async () => {
                 // The avatar view takes its size from the stage at the moment it connects and keeps it, and straight after "Start" the stage is still settling into its 16:9 shape
                 // (seen 2026-10-07: Malcolm connected while it was 718x600, so he came out low and cropped). Wait, briefly, for the real shape.
@@ -455,7 +457,7 @@ export default function TryItLivePage() {
                   if (el && el.clientWidth > 200 && Math.abs(el.clientHeight - el.clientWidth * 9 / 16) < 10) break;
                   await new Promise(r => setTimeout(r, 100));
                 }
-                await spatius.connect(s.spatiusAvatarId!, s.ticket!, undefined, undefined, 1, isMobile);
+                await spatius.connect(s.spatiusAvatarId!, s.ticket!, undefined, undefined, 1, needsTap);
               })(), SPATIUS_CONNECT_LIMIT_MS, 'spatius');
           live = true; providerRef.current = 'spatius'; setProvider('spatius'); setAvatarState('live');
           logEvent('try_avatar_connected', { metadata: { provider: 'spatius', ms: Math.round(performance.now() - connectStarted), mobile: isMobile } });
@@ -481,7 +483,7 @@ export default function TryItLivePage() {
       connectMs = performance.now() - connectStarted;
     }
     // Phones: the face is up and waiting; one real tap starts the sound and begins the interview (no tap within a minute: carry on with photo and voice).
-    if (live && providerRef.current === 'spatius' && isMobile) {
+    if (live && providerRef.current === 'spatius' && needsTap) {
       setUseAvatar(true); setPhase('asking'); setTapGate(true);
       logEvent('try_tap_to_meet_shown', { metadata: { mobile: isMobile } });
       const tapped = await new Promise<boolean>(resolve => { tapResolveRef.current = resolve; window.setTimeout(() => resolve(false), 60000); });
@@ -704,9 +706,9 @@ export default function TryItLivePage() {
             <div style={{ position: 'absolute', inset: 0, zIndex: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'rgba(5,8,15,0.45)' }}>
               <button type="button" onClick={onTapMeet}
                 style={{ background: GREEN, color: '#04120c', border: 'none', borderRadius: 14, padding: '14px 26px', fontSize: 16, fontWeight: 900, cursor: 'pointer', boxShadow: '0 8px 28px rgba(52,211,153,0.4)' }}>
-                ▶ Tap to meet {start.interviewerName}
+                ▶ {isMobile ? 'Tap' : 'Click'} to meet {start.interviewerName}
               </button>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', textShadow: '0 1px 3px #000' }}>One tap, so your phone lets the sound play</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', textShadow: '0 1px 3px #000' }}>One {isMobile ? 'tap' : 'click'}, so your {isMobile ? 'phone' : 'browser'} lets the sound play</div>
             </div>
           )}
           {/* "Your turn" button on the interviewer's chest (Francis, 2026-10-09): nobody should have to find the small microphone below or learn how it works. */}
@@ -872,7 +874,7 @@ export default function TryItLivePage() {
                         answer (tap the mic and talk) comes first — typing is the fallback below it. */}
                     <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: GREEN, marginBottom: 6 }}>🎤 Your turn</div>
                     <div style={{ fontSize: 13.5, color: 'var(--text-2, #cbd5e1)', marginBottom: 12 }}>
-                      Press the <strong style={{ color: GREEN }}>green button</strong> on the picture (or the microphone below), answer out loud, then press it again to stop — it sends by itself. No mic? Type below instead. Aim for about a minute: fuller answers score better.
+                      Press the <strong style={{ color: GREEN }}>green &ldquo;Click Here&rdquo; button</strong> on the picture, answer out loud, then press it again to stop — it sends by itself. No mic? Type below instead. Aim for about a minute: fuller answers score better.
                     </div>
                     {/* The mic always gets its own full-width row — the same layout the full interview uses. Sharing a row with
                         the buttons let its waveform's width (and so the whole row) jump around as the card resized
@@ -882,7 +884,7 @@ export default function TryItLivePage() {
                         onTranscript rather than requiring a separate manual click. The typed-answer path below keeps its
                         own manual Submit button, same as the full interview does for typed answers. */}
                     <div style={{ marginTop: 12 }}>
-                      <VoiceInput language={language} country={country || undefined} onListeningChange={setCapturing} controlRef={micRef} onMicStateChange={setMicState} onTranscript={text => {
+                      <VoiceInput language={language} country={country || undefined} onListeningChange={setCapturing} controlRef={micRef} onMicStateChange={setMicState} hideControls onTranscript={text => {
                         const combined = (draftRef.current ? draftRef.current + ' ' : '') + text;
                         setDraft(combined);
                         void submit(false, combined);
