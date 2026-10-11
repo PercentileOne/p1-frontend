@@ -41,9 +41,9 @@ public static class Endpoint
             return Results.Ok(setting);
         }).RequireAuthorization(Permissions.ViewSystemSettings);
 
-        // Avatar provider (Francis, 2026-09-29): which service draws the interviewer avatars. HeyGen LiveAvatar is the proven default (and the
-        // automatic backup); Spatius is ~1/10 the cost. "spatiusPercent" lets a share of public /try visitors get Spatius while the rest stay on
-        // HeyGen (an honest A/B — the funnel already measures completion). Missing doc = HeyGen, so nothing changes until this is switched on.
+        // Avatar provider (Francis, 2026-09-29): which service draws the interviewer avatars. HeyGen LiveAvatar was retired on 2026-10-11 (subscription cancelled),
+        // so Spatius is the only provider: "spatiusPercent" is the share of public /try visitors given a live face and "spatiusFullPercent" the share of full interviews
+        // and My Talks; everyone else gets the interviewer's photo and voice. Missing doc = Spatius, 100%.
         app.MapGet("/api/admin/settings/avatar-provider", async (CosmosService cosmos, IConfiguration config) =>
         {
             var setting = await GetAvatarProviderOrDefaultAsync(cosmos);
@@ -53,7 +53,7 @@ public static class Endpoint
         app.MapPost("/api/admin/settings/avatar-provider", async (UpdateAvatarProviderRequest req, HttpContext ctx, CosmosService cosmos) =>
         {
             var provider = (req.Provider ?? "").Trim().ToLowerInvariant();
-            if (provider is not ("heygen" or "spatius")) return Results.BadRequest(new { error = "provider must be 'heygen' or 'spatius'." });
+            if (provider != "spatius") return Results.BadRequest(new { error = "provider must be 'spatius' (HeyGen was retired on 2026-10-11)." });
             static string? CleanId(string? v)
             {
                 var t = v?.Trim();
@@ -68,7 +68,7 @@ public static class Endpoint
                 id: "avatarProvider", pk: "avatarProvider",
                 provider: provider,
                 spatiusPercent: Math.Clamp(req.SpatiusPercent, 0, 100),
-                fallbackToHeygen: req.FallbackToHeygen,
+                fallbackToHeygen: false, // there is no HeyGen to fall back to any more; the field stays on the document for older readers
                 spatiusAvatarHr: ids[0], spatiusAvatarTechnical: ids[1], spatiusAvatarMichelle: ids[2],
                 updatedAt: DateTimeOffset.UtcNow,
                 updatedBy: ctx.User.FindFirst("sub")?.Value ?? "unknown",
@@ -221,7 +221,7 @@ public static class Endpoint
         }
     }
 
-    /// <summary>Missing doc = HeyGen (the proven default), 100% share, fallback on — so an unset switch changes nothing.</summary>
+    /// <summary>Missing doc = Spatius, 100% of /try visitors and 100% of full interviews (HeyGen was retired on 2026-10-11).</summary>
     public static async Task<AvatarProviderSetting> GetAvatarProviderOrDefaultAsync(CosmosService cosmos)
     {
         try
@@ -231,7 +231,7 @@ public static class Endpoint
         }
         catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
         {
-            return new AvatarProviderSetting("avatarProvider", "avatarProvider", "heygen", 100, true, null, null, null, DateTimeOffset.MinValue, "", 0);
+            return new AvatarProviderSetting("avatarProvider", "avatarProvider", "spatius", 100, false, null, null, null, DateTimeOffset.MinValue, "", 100);
         }
     }
 }
@@ -244,15 +244,15 @@ public record UpdateAvatarProviderRequest(
 public record AvatarProviderSetting(
     string id,
     string pk,
-    string provider,            // "heygen" | "spatius"
+    string provider,            // "spatius" (older documents may still say "heygen"; nothing reads that as HeyGen any more)
     int spatiusPercent,         // share of public /try visitors given Spatius when provider = "spatius"
-    bool fallbackToHeygen,      // if Spatius can't start for a visitor, quietly use HeyGen instead of voice-only
+    bool fallbackToHeygen,      // retired with HeyGen: always false
     string? spatiusAvatarHr,
     string? spatiusAvatarTechnical,
     string? spatiusAvatarMichelle,
     DateTimeOffset updatedAt,
     string updatedBy,
-    int spatiusFullPercent = 0); // share of FULL interviews (and My Talks) given Spatius seats; independent of the /try share above. 0 = all HeyGen.
+    int spatiusFullPercent = 0); // share of FULL interviews (and My Talks) given Spatius seats; independent of the /try share above. 0 = photo and voice only.
 
 public record UpdateLiveAvatarRequest(bool Enabled);
 

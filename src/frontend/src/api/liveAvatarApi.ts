@@ -1,80 +1,59 @@
-// Backend calls for the LiveAvatar integration — the API key lives server-side only
-// (Features/Interviews/AvatarSession, AvatarAudio), same pattern as ttsApi.ts's relationship
-// to ElevenLabs. This file never touches a LiveAvatar credential directly.
+// Backend calls for the interviewers' live faces. HeyGen LiveAvatar was retired on 2026-10-11 (subscription cancelled); faces are drawn by Spatius, and every credential
+// lives server-side (Features/Interviews/AvatarSession, AvatarAudio), same pattern as ttsApi.ts's relationship to ElevenLabs.
 
 import { sanitiseForTTS, getTTSLanguage } from './ttsApi';
-import { getInterviewTicket } from './entitlementsApi';
 import { useAuthStore } from '../auth/authStore';
 import { seatInterviewerId } from '../lib/seatInterviewers';
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
-
-export interface AvatarSessionInfo {
-  sessionId: string;
-  sessionToken: string;
-  isSandbox: boolean;
-}
-
-export async function fetchAvatarSessionToken(role: 'hr' | 'technical' | 'michelle'): Promise<AvatarSessionInfo> {
-  const res = await fetch(`${API_BASE}/interviews/avatar-session`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...(getInterviewTicket() ? { 'X-Interview-Ticket': getInterviewTicket()! } : {}) },
-    body: JSON.stringify({ role }),
-  });
-  if (!res.ok) throw new Error(`avatar-session failed: HTTP ${res.status}`);
-  const data = await res.json() as { sessionId: string; sessionToken: string; isSandbox: boolean };
-  return { sessionId: data.sessionId, sessionToken: data.sessionToken, isSandbox: data.isSandbox };
-}
 
 // The LiveAvatar kill switch — read once per room mount, before either seat attempts to
 // connect. A failed fetch (network hiccup, backend blip) fails OPEN (enabled: true) rather
 // than silently killing a working feature over a transient error; the actual off-switch is
 // the Cosmos-backed admin setting, not this call's success/failure.
 //
-// It also says which service draws the three seats for THIS interview (the server rolls the dice once, so a whole interview stays on one
-// provider). Any failure means HeyGen, the proven default. A signed-in admin can add ?force=spatius or ?force=heygen to the room's address to test either side.
+// It also says whether faces are drawn for THIS interview (the server rolls the dice once, so a whole interview stays one way). Any failure means no faces: the
+// interviewers' photos and plain voices. A signed-in admin can add ?force=spatius to the room's address to test faces whatever the percentage is.
 export interface AvatarConfig {
   enabled: boolean;
-  provider: 'heygen' | 'spatius';
-  fallbackToHeygen: boolean;
+  provider: 'none' | 'spatius';
   spatius: { hr: string; technical: string; michelle: string } | null;
   // Uploaded background pictures for the three seats (from Admin > Interviewers), as full URLs; null/absent = use the picture files shipped with the page.
   backgrounds: { hr: string | null; technical: string | null; michelle: string | null } | null;
 }
 /**
- * ?force=spatius or ?force=heygen on any page address (for staff testing) is remembered for the rest of the browser tab's visit, because the app moves between screens that do
+ * ?force=spatius on any page address (for staff testing) is remembered for the rest of the browser tab's visit, because the app moves between screens that do
  * not carry the address's query along (setup screen to interview room). Without it a phone could never be switched to the new faces for a test.
  */
-export function getForceProvider(): 'spatius' | 'heygen' | null {
+export function getForceProvider(): 'spatius' | null {
   try {
     const q = new URLSearchParams(window.location.search).get('force');
-    if (q === 'spatius' || q === 'heygen') { sessionStorage.setItem('tic.force', q); return q; }
-    const kept = sessionStorage.getItem('tic.force');
-    return kept === 'spatius' || kept === 'heygen' ? kept : null;
+    if (q === 'spatius') { sessionStorage.setItem('tic.force', q); return q; }
+    return sessionStorage.getItem('tic.force') === 'spatius' ? 'spatius' : null;
   } catch { return null; }
 }
 
 export async function fetchAvatarConfig(): Promise<AvatarConfig> {
-  const heygen: AvatarConfig = { enabled: true, provider: 'heygen', fallbackToHeygen: true, spatius: null, backgrounds: null };
+  // A failed fetch means no faces for this interview (photos and plain voices), never a guess at a provider.
+  const noFaces: AvatarConfig = { enabled: false, provider: 'none', spatius: null, backgrounds: null };
   try {
     const force = getForceProvider();
     const token = useAuthStore.getState().token;
-    const res = await fetch(`${API_BASE}/interviews/avatar-config${force === 'spatius' || force === 'heygen' ? `?force=${force}` : ''}`,
+    const res = await fetch(`${API_BASE}/interviews/avatar-config${force === 'spatius' ? '?force=spatius' : ''}`,
       token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
-    if (!res.ok) return heygen;
+    if (!res.ok) return noFaces;
     const cfg = await res.json() as Partial<AvatarConfig>;
     const sp = cfg.spatius;
     const full = (u: string | null | undefined) => (u && u.startsWith('/') ? `${API_BASE}${u}` : null);
     const spatiusOk = cfg.provider === 'spatius' && !!sp?.hr && !!sp?.technical && !!sp?.michelle;
     return {
       enabled: cfg.enabled !== false,
-      provider: spatiusOk ? 'spatius' : 'heygen',
-      fallbackToHeygen: cfg.fallbackToHeygen !== false,
+      provider: spatiusOk ? 'spatius' : 'none',
       spatius: spatiusOk ? sp! : null,
       backgrounds: spatiusOk && cfg.backgrounds ? { hr: full(cfg.backgrounds.hr), technical: full(cfg.backgrounds.technical), michelle: full(cfg.backgrounds.michelle) } : null,
     };
   } catch {
-    return heygen;
+    return noFaces;
   }
 }
 

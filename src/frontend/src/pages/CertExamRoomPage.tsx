@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../auth/authStore';
-import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
+import { speak } from '../api/ttsApi';
 import { getExamCatalogEntry, ensureExamBlueprint, type ExamCatalogEntry } from '../api/examCatalogApi';
 import { generateExamQuestions, computeScaledScore, saveCertExamSession, type ExamQuestion } from '../api/certExamApi';
 import { ExamQuestionCard } from '../components/ExamQuestionCard';
@@ -19,9 +19,10 @@ type Phase = 'briefing' | 'generating' | 'exam' | 'saving';
 type CertLoadState = 'loading' | 'preparing' | 'ready' | 'not-found' | 'not-ready';
 
 // Deliberately NOT copy-trimmed from InterviewRoomPage.tsx — that machinery is built around
-// concurrent Sarah/James-style HR+technical avatar handoffs with real regression history (see
-// project-liveavatar-lipsync-investigation memory). A pure-MCQ exam needs none of that: one
-// avatar, one briefing line, then a plain question loop. Built fresh and small on purpose.
+// concurrent HR+technical interviewer handoffs with real regression history. A pure-MCQ exam needs
+// none of that: one briefing line from Michelle (her photo and voice — the live HeyGen face was
+// retired on 2026-10-11 and a 15-second briefing doesn't need a drawn one), then a plain question loop.
+// Built fresh and small on purpose.
 export default function CertExamRoomPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -63,7 +64,8 @@ export default function CertExamRoomPage() {
   }, [certId, loadAttempt]);
 
   const [phase, setPhase] = useState<Phase>('briefing');
-  const liveAvatarMichelle = useLiveAvatarSession('michelle');
+  const [michelleSpeaking, setMichelleSpeaking] = useState(false);
+  const cancelBriefingRef = useRef<(() => void) | null>(null);
 
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [qIndex, setQIndex] = useState(0);
@@ -84,15 +86,15 @@ export default function CertExamRoomPage() {
     const briefingText = `${name}I'm Michelle. You're about to take a mock ${cert.name} exam — ${questionCount} questions, all multiple choice, just like the real thing. Take your time, read each question carefully, and remember: this is practice, so there's no pressure. Good luck.`;
 
     try {
-      await liveAvatarMichelle.connect();
-      await liveAvatarMichelle.speak(briefingText, 'michelle');
+      // Her plain voice. A hard ceiling so a phone that never lets the sound start can't hold the exam up: the briefing is also on screen.
+      await new Promise<void>(resolve => {
+        const ceiling = window.setTimeout(resolve, 8000 + briefingText.split(/\s+/).length * 550);
+        cancelBriefingRef.current = speak(briefingText, 'michelle', () => { window.clearTimeout(ceiling); resolve(); }, undefined, () => setMichelleSpeaking(true));
+      });
     } catch (err) {
-      console.error('[CertExamRoom] Michelle briefing failed, continuing without avatar:', err);
+      console.error('[CertExamRoom] Michelle briefing failed, continuing without the voice:', err);
     } finally {
-      // Disconnect the instant the briefing ends, before the MCQ loop starts — same
-      // billed-per-connected-minute discipline as everywhere else LiveAvatar is used; there's
-      // no reason to hold a live avatar session open for a 15-60 question exam.
-      void liveAvatarMichelle.disconnect();
+      setMichelleSpeaking(false);
     }
 
     setPhase('generating');
@@ -100,18 +102,12 @@ export default function CertExamRoomPage() {
     setQuestions(generated);
     setPhase('exam');
     logFlowEvent('CERT_EXAM_QUESTIONS_READY', { certId: cert.id, count: generated.length });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fires once, deliberately not
-    // re-run on every liveAvatarMichelle identity change (it's not memoised).
   }, [cert, questionCount, preferredName]);
 
   useEffect(() => { void startBriefing(); }, [startBriefing]);
 
-  // Michelle's session is per-page, not shared with any other room — always tear it down if the
-  // candidate navigates away mid-briefing, same as every other LiveAvatar use in this codebase.
-  useEffect(() => {
-    return () => { void liveAvatarMichelle.disconnect(); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Stop her voice if the candidate navigates away mid-briefing.
+  useEffect(() => () => { cancelBriefingRef.current?.(); }, []);
 
   const handleAnswer = useCallback(async (selectedIndex: number) => {
     const question = questions[qIndex];
@@ -223,32 +219,15 @@ export default function CertExamRoomPage() {
             style={{ width: '100%', maxWidth: '460px', textAlign: 'center' }}>
             <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', margin: '0 auto 20px', borderRadius: '16px', overflow: 'hidden', background: 'var(--bg3)', border: '3px solid var(--blue)' }}>
               <img src="/images/michelle-static-avatar.png" alt="Michelle" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
-              <video ref={liveAvatarMichelle.setVideoEl} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
               <motion.div
                 animate={{ scale: [1, 1.03, 1], opacity: [0.6, 0.15, 0.6] }}
                 transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
                 style={{ position: 'absolute', inset: -8, borderRadius: '20px', border: '2px solid var(--blue)', pointerEvents: 'none' }}
               />
-              {/* HeyGen's cold-start handshake can take 30-40s — the pulsing border ring alone
-                  wasn't a clear enough "something is happening" signal (live-reported: "she's
-                  just staring at me"). A real spinner + explicit copy while not yet connected,
-                  swapped out the instant her session goes live. */}
-              {liveAvatarMichelle.status !== 'connected' && (
-                <div style={{ position: 'absolute', inset: 0, background: 'rgba(7,11,20,0.72)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                    style={{ width: 34, height: 34, borderRadius: '50%', border: '3px solid rgba(79,142,247,0.25)', borderTopColor: 'var(--blue)' }}
-                  />
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>Connecting you to Michelle…</div>
-                </div>
-              )}
             </div>
             <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)', marginBottom: '6px' }}>Michelle</div>
             <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>
-              {liveAvatarMichelle.status !== 'connected'
-                ? 'Setting up your live briefing — this can take up to a minute…'
-                : phase === 'briefing' ? 'Briefing you on your mock exam…' : 'Preparing your questions…'}
+              {phase === 'briefing' ? (michelleSpeaking ? 'Briefing you on your mock exam…' : 'Getting ready…') : 'Preparing your questions…'}
             </div>
           </motion.div>
         )}

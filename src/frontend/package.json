@@ -17,7 +17,6 @@
     "events": "3.3.0",
     "framer-motion": "^12.38.0",
     "katex": "^0.16.47",
-    "livekit-client": "2.15.7",
     "lucide-react": "^1.21.0",
     "mammoth": "^1.12.0",
     "mermaid": "^11.16.1",

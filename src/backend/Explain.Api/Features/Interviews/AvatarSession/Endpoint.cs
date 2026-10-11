@@ -1,4 +1,3 @@
-using MediatR;
 using System.Net;
 using Explain.Api.Features.Entitlements;
 using Explain.Api.Features.Spatius;
@@ -11,28 +10,17 @@ public static class Endpoint
 {
     public static void Map(WebApplication app)
     {
-        // Anonymous — same precedent as /interviews/speak: the interview room calls this before a
-        // candidate is necessarily authenticated in every flow that reaches it (demo/prep links).
-        app.MapPost("/interviews/avatar-session", async (AvatarSessionRequest req, HttpContext ctx, IMediator mediator, EntitlementService entitlements, IConfiguration config) =>
-        {
-            // Paywall backstop (see InterviewTicket): with enforcement ON, an avatar seat is only minted for an interview the server
-            // itself allowed. With it OFF (today) this check is skipped entirely, so nothing changes until the switch is flipped.
-            if ((await entitlements.GetSettingsAsync()).Enforce &&
-                !InterviewTicket.IsValid(config["Jwt:Secret"], ctx.Request.Headers["X-Interview-Ticket"].ToString(), DateTimeOffset.UtcNow))
-                return Results.Json(new { error = "An interview needs to be started first." }, statusCode: 403);
-            return (await mediator.Send(new AvatarSessionCommand(req.Role))).ToHttpResult();
-        })
-           .WithName("InterviewAvatarSession").WithTags("Interviews")
-           .AllowAnonymous();
+        // HeyGen LiveAvatar was retired on 2026-10-11 (subscription cancelled): POST /interviews/avatar-session, which minted its session tokens, is gone.
+        // Every interviewer face is now drawn by Spatius (config below + the token routes that follow).
 
         // Public kill-switch check — InterviewRoomPage reads this once per room mount, before
         // either seat ever attempts to connect. Same anonymous precedent as above; the actual
         // toggle is Super-Admin-gated (see Features/PlatformSettings), this just exposes the
         // current value read-only.
         //
-        // Also tells the room WHICH provider draws the three seats for this interview (HeyGen, or Spatius for the share of full interviews
-        // set in Admin > Live Avatar). The roll is made here, once per room mount, so the whole interview stays on one provider.
-        // "?force=spatius|heygen" is honoured only for signed-in admins/staff, so Francis can test either side whatever the percentage is.
+        // Also tells the room whether faces are drawn for this interview: "spatius" for the share of full interviews set in Admin > Live Avatar
+        // (the roll is made here, once per room mount), otherwise "none" and the room speaks in plain voice. "?force=spatius" is honoured only for signed-in
+        // admins/staff, so Francis can test whatever the percentage is. (There is no HeyGen any more: "?force=heygen" is ignored.)
         app.MapGet("/interviews/avatar-config", async (HttpContext ctx, CosmosService cosmos, AppDbContext db, IConfiguration config) =>
         {
             var setting = await Explain.Api.Features.PlatformSettings.Endpoint.GetLiveAvatarOrDefaultAsync(cosmos);
@@ -47,18 +35,18 @@ public static class Endpoint
 
             var useSpatius = ready && Random.Shared.Next(100) < Math.Clamp(provider.spatiusFullPercent, 0, 100);
             var force = ctx.Request.Query["force"].ToString().ToLowerInvariant();
-            if (force is "spatius" or "heygen")
+            if (force is "spatius")
             {
                 var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                 if (await Explain.Api.Features.TryOut.Endpoint.IsUnlimitedAsync(ctx.User, ip, db, config))
-                    useSpatius = ready && force == "spatius";
+                    useSpatius = ready;
             }
 
             return Results.Ok(new
             {
                 enabled = setting.enabled,
-                provider = useSpatius ? "spatius" : "heygen",
-                fallbackToHeygen = provider.fallbackToHeygen,
+                provider = useSpatius ? "spatius" : "none",
+                fallbackToHeygen = false,
                 spatius = useSpatius
                     ? new { hr = seats.Hr, technical = seats.Technical, michelle = seats.Michelle }
                     : null,

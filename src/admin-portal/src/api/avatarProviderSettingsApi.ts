@@ -1,11 +1,11 @@
-// Avatar provider switch (Francis, 2026-09-29) — which service draws the interviewer avatars: HeyGen LiveAvatar (the proven default and the
-// automatic backup) or Spatius (~1/10 the cost). Super-Admin only on the backend (CAN_VIEW_SYSTEM_SETTINGS), same as the LiveAvatar kill switch.
+// Avatar settings (Francis, 2026-09-29) — how much of the demo and of full interviews gets a Spatius-drawn face. HeyGen was retired on 2026-10-11, so Spatius is the only
+// provider (fallbackToHeygen stays on the document, always false). Super-Admin only on the backend (CAN_VIEW_SYSTEM_SETTINGS), same as the LiveAvatar kill switch.
 
 const EXPLAIN_API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined)
   ?? 'http://localhost:5000';
 
 export interface AvatarProviderSetting {
-  provider: 'heygen' | 'spatius';
+  provider: 'spatius';
   spatiusPercent: number;
   // Share of FULL interviews (and My Talks) whose three seats are drawn by Spatius; independent of spatiusPercent (the /try demo).
   spatiusFullPercent: number;
@@ -24,7 +24,7 @@ export interface AvatarProviderResponse {
 }
 
 export interface AvatarProviderUpdate {
-  provider: 'heygen' | 'spatius';
+  provider: 'spatius';
   spatiusPercent: number;
   spatiusFullPercent: number;
   fallbackToHeygen: boolean;

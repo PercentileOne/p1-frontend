@@ -33,7 +33,6 @@ import LearningQueue from "./pages/LearningQueue";
 import LearningEmployer from "./pages/LearningEmployer";
 import ProfilePage from "./pages/ProfilePage";
 import ProfileVideoPage from "./pages/ProfileVideoPage";
-import DevAvatarRepro from "./pages/DevAvatarRepro";
 const DevSpatiusTest = lazy(() => import("./pages/DevSpatiusTest")); // lazy: pulls in the Spatius WASM renderer only when opened
 import CandidateDashboard from "./pages/CandidateDashboard";
 import SettingsPage from "./pages/SettingsPage";
@@ -95,7 +94,6 @@ import ParentShell from "./pages/ParentShell";
 import TeacherShell from "./pages/TeacherShell";
 import UniversityShell from "./pages/UniversityShell";
 import InterviewRoomPage from "./pages/InterviewRoomPage";
-import AvatarTestPage from "./pages/dev/AvatarTestPage";
 import InterviewPackStart from "./pages/InterviewPackStart";
 import TalkPackStart from "./pages/TalkPackStart";
 import TalkRoomPage from "./pages/TalkRoomPage";
@@ -239,7 +237,6 @@ export default function App() {
       <Route path="/dashboard" element={<RequirePermission permission="CAN_START_INTERVIEW"><CandidateDashboard /></RequirePermission>} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/dev/spatius-test" element={<RequirePermission permission="CAN_VIEW_SYSTEM_SETTINGS"><Suspense fallback={null}><DevSpatiusTest /></Suspense></RequirePermission>} />
-      <Route path="/dev/avatar-repro" element={<RequirePermission permission="CAN_START_INTERVIEW"><DevAvatarRepro /></RequirePermission>} />
       <Route path="/profile/video" element={<RequirePermission permission="CAN_START_INTERVIEW"><ProfileVideoPage /></RequirePermission>} />
       <Route path="/profile/:userId" element={<ProfilePage />} />
       <Route path="/awards" element={<AwardsPage />} />
@@ -290,7 +287,6 @@ export default function App() {
       <Route path="/subscription" element={<RequirePermission permission="CAN_START_INTERVIEW"><SubscriptionPage /></RequirePermission>} />
       <Route path="/talk-summary/:id" element={<RequirePermission permission="CAN_START_INTERVIEW"><TalkSummaryPage /></RequirePermission>} />
       <Route path="/shared-talk/:token" element={<SharedTalkPage />} />
-      <Route path="/dev/avatar-test" element={<AvatarTestPage />} />
       <Route path="/interviews" element={<RequirePermission permission="CAN_START_INTERVIEW"><MyInterviewsPage /></RequirePermission>} />
       <Route path="/talks" element={<RequirePermission permission="CAN_START_INTERVIEW"><MyTalksPage /></RequirePermission>} />
 

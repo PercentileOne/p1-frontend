@@ -27,8 +27,7 @@ import { useAnswerScoring } from '../hooks/useAnswerScoring';
 import { useInterviewerAudio, MIKE_VIDEO_ENABLED } from '../hooks/useInterviewerAudio';
 import { useMcqBonusRound, type McqGenParams } from '../hooks/useMcqBonusRound';
 import { useGoDeeperFollowUps, GO_DEEPER_LIMITS } from '../hooks/useGoDeeperFollowUps';
-import { useLiveAvatarSession } from '../hooks/useLiveAvatarSession';
-import { useSpatiusSeat, deviceCanUseSpatiusInRoom, type SeatRole } from '../hooks/useSpatiusSeat';
+import { useSpatiusSeat, type SeatRole } from '../hooks/useSpatiusSeat';
 import { SpatiusSeatStage } from '../components/SpatiusSeatStage';
 import { fetchAvatarConfig, type AvatarConfig } from '../api/liveAvatarApi';
 import { fetchInterviewers, type PublicInterviewer } from '../api/interviewersApi';
@@ -357,15 +356,13 @@ export default function InterviewRoomPage() {
   // fails — an admin's explicit "off" is a real Cosmos doc, not something a network hiccup
   // should be able to fake. See PlatformSettings' liveAvatar setting for the actual toggle.
   const [avatarEnabled, setAvatarEnabled] = useState(true);
-  // Which service draws the three seats for this interview (HeyGen or Spatius — decided server-side, once per room). Spatius seats are also read from the ref so a
-  // very early connect() sees the settings the moment they arrive. If a Spatius seat fails to start, that seat alone drops back to HeyGen (when the admin allows it).
+  // Whether faces are drawn for this interview (Spatius, or none — decided server-side, once per room; HeyGen was retired on 2026-10-11). The seats' settings are also read from the ref so a
+  // very early connect() sees them the moment they arrive. If a seat fails to start, its own photo shows and its lines are spoken in the plain voice.
   const [avatarCfg, setAvatarCfg] = useState<AvatarConfig | null>(null);
   const avatarCfgRef = useRef<AvatarConfig | null>(null);
-  const [spatiusFailed, setSpatiusFailed] = useState<Record<SeatRole, boolean>>({ hr: false, technical: false, michelle: false });
-  const [deviceOkForSpatius] = useState(deviceCanUseSpatiusInRoom);
-  // Resolves once the settings have arrived (fetchAvatarConfig never rejects: it falls back to HeyGen). startInterview waits for it, because the server can be slow to
-  // answer (4 seconds seen right after a restart) and a seat must not start on the wrong provider while the answer is still on its way (2026-10-07: HeyGen's Michelle
-  // began connecting, then the answer said Spatius, and the room ended up on the old faces).
+  // Resolves once the settings have arrived (fetchAvatarConfig never rejects: on a failure it says "no faces"). startInterview waits for it, because the server can be slow to
+  // answer (4 seconds seen right after a restart) and a seat must not start before it knows whether it has a face (2026-10-07: a seat began connecting on
+  // the wrong provider while the answer was still on its way).
   const [cfgReady] = useState(() => { let resolve!: () => void; const promise = new Promise<void>(r => { resolve = r; }); return { promise, resolve }; });
   const avatarEnabledRef = useRef(true);
   // The interviewers the candidate chose at setup (or the defaults): their faces, rooms, voices and names. Known before anything is prepared, because the effect that prepares the
@@ -389,9 +386,9 @@ export default function InterviewRoomPage() {
   // The avatar each seat's Spatius face uses (read by the seat hooks when they connect).
   const seatIdsRef = useRef<{ hr?: string; technical?: string; michelle?: string }>({});
   seatIdsRef.current = { hr: seatsIv.hr?.avatarId, technical: seatsIv.technical?.avatarId, michelle: seatsIv.michelle?.avatarId };
-  const markSpatiusFailed = useCallback((role: SeatRole) => setSpatiusFailed(f => (f[role] ? f : { ...f, [role]: true })), []);
-  const seatOnSpatius = (role: SeatRole) =>
-    avatarCfg?.provider === 'spatius' && deviceOkForSpatius && !(spatiusFailed[role] && avatarCfg.fallbackToHeygen);
+  // A seat that cannot start keeps its photo and speaks in the plain voice (the seat object reports status 'failed'); nothing else to switch to.
+  const markSpatiusFailed = useCallback((_role: SeatRole) => { /* the seat's own status tells the room */ }, []);
+  const seatOnSpatius = (_role: SeatRole) => avatarCfg?.provider === 'spatius';
   // True once the interviewers' tiles are on screen (set below, where showInterviewers is known). Amina's and Wayne's Spatius seats wait for it before connecting.
   const tilesVisibleRef = useRef(false);
   const hrStageRef = useRef<HTMLDivElement>(null);
@@ -409,13 +406,12 @@ export default function InterviewRoomPage() {
   // video/plain-TTS paths) rather than threading it through that hook, since useInterviewerAudio
   // is constructed AFTER these two hooks (it needs liveAvatarSpeakHr/Technical as params), so
   // its own analyser setters don't exist yet at this point in the component.
-  const [liveHrAnalyser, setLiveHrAnalyser] = useState<AnalyserNode | null>(null);
-  const [liveTechAnalyser, setLiveTechAnalyser] = useState<AnalyserNode | null>(null);
-  const [liveMichelleAnalyser, setLiveMichelleAnalyser] = useState<AnalyserNode | null>(null);
-  const heygenHr = useLiveAvatarSession('hr', setLiveHrAnalyser);
-  const heygenTechnical = useLiveAvatarSession('technical', setLiveTechAnalyser);
+  // (A drawn face has no Web Audio analyser to hand over, so the waveform bars on a seat get none.)
+  const liveHrAnalyser: AnalyserNode | null = null;
+  const liveTechAnalyser: AnalyserNode | null = null;
+  const liveMichelleAnalyser: AnalyserNode | null = null;
   // Phones (2026-10-08): a face connects with its sound locked, and its first line waits for a real tap. This is the button for that tap; it also unlocks every seat that is
-  // connected by then, so one tap covers Catherine and Malcolm together. (Only reached on a phone with ?force=spatius for now; phones otherwise keep HeyGen.)
+  // connected by then, so one tap covers both interviewers together. (Phones and Safari; since HeyGen was retired on 2026-10-11 every phone uses these faces.)
   const [tapGate, setTapGate] = useState<{ label: string; resolve: () => void } | null>(null);
   const requestTap = useCallback((role: SeatRole) => new Promise<void>(resolve => {
     setTapGate(g => g
@@ -432,14 +428,13 @@ export default function InterviewRoomPage() {
   };
   // From here on the room only talks to liveAvatarHr/Technical/Michelle; each is whichever provider's seat is active (both have the same shape; the
   // one not in use never connects, so it costs nothing).
-  const liveAvatarHr = seatOnSpatius('hr') ? spatiusHr : heygenHr;
-  const liveAvatarTechnical = seatOnSpatius('technical') ? spatiusTechnical : heygenTechnical;
+  const liveAvatarHr = spatiusHr;
+  const liveAvatarTechnical = spatiusTechnical;
   // Michelle (2026-09-17, replacing the old static-photo "Mike") — a real HeyGen LiveAvatar
   // seat exactly like Amina/Wayne, connected only for the pre-interview briefing and
   // disconnected the moment it's over (see handleMikeIntroDone below), not a third seat that
   // runs the whole interview.
-  const heygenMichelle = useLiveAvatarSession('michelle', setLiveMichelleAnalyser);
-  const liveAvatarMichelle = seatOnSpatius('michelle') ? spatiusMichelle : heygenMichelle;
+  const liveAvatarMichelle = spatiusMichelle;
   // The seats as of the latest render, for code that runs after an await (it would otherwise hold the objects from before the settings arrived).
   const seatsRef = useRef({ hr: liveAvatarHr, technical: liveAvatarTechnical, michelle: liveAvatarMichelle });
   seatsRef.current = { hr: liveAvatarHr, technical: liveAvatarTechnical, michelle: liveAvatarMichelle };
@@ -1489,12 +1484,6 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     does, independent of visual reveal — see the block comment above). The
                     element renders no visible pixels until then, so the static photo above
                     shows through undisturbed in the meantime. */}
-                <video
-                  ref={heygenHr.setVideoEl}
-                  autoPlay
-                  playsInline
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
-                />
                 {/* Spatius draws Amina (16:9 stage with her background; the tile crops a window from it). Always mounted so the avatar can attach the moment it connects. */}
                 <SpatiusSeatStage seat="hr" avatarId={seatsIv.hr?.avatarId ?? avatarCfg?.spatius?.hr} backgroundUrl={seatsIv.hr?.backgroundUrl ?? avatarCfg?.backgrounds?.hr} stageRef={hrStageRef} visible={seatOnSpatius('hr') && liveAvatarHr.status !== 'failed'} live={liveAvatarHr.status === 'connected'} rendered={spatiusHr.rendered} />
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
@@ -1537,12 +1526,6 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 />
                 </div>
                 {/* LiveAvatar overlay — Wayne's slot, same treatment as Amina's above. */}
-                <video
-                  ref={heygenTechnical.setVideoEl}
-                  autoPlay
-                  playsInline
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
-                />
                 {/* Spatius draws Wayne (16:9 stage with his background; the tile crops a window from it). Always mounted so the avatar can attach the moment it connects. */}
                 <SpatiusSeatStage seat="technical" avatarId={seatsIv.technical?.avatarId ?? avatarCfg?.spatius?.technical} backgroundUrl={seatsIv.technical?.backgroundUrl ?? avatarCfg?.backgrounds?.technical} stageRef={technicalStageRef} visible={seatOnSpatius('technical') && liveAvatarTechnical.status !== 'failed'} live={liveAvatarTechnical.status === 'connected'} rendered={spatiusTechnical.rendered} />
                 {/* Same name/title/waveform overlay InterviewerAvatar renders for itself —
@@ -1788,12 +1771,6 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                     {/* LiveAvatar overlay — Michelle's real-time video, same treatment as Amina/
                         Wayne's tiles: renders no visible pixels until attach() fires, so the
                         static photo above shows through undisturbed until then. */}
-                    <video
-                      ref={heygenMichelle.setVideoEl}
-                      autoPlay
-                      playsInline
-                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
                 {/* Spatius draws Michelle (16:9 stage with her background; the tile crops a window from it). Always mounted so the avatar can attach the moment it connects. */}
                 <SpatiusSeatStage seat="michelle" avatarId={seatsIv.michelle?.avatarId ?? avatarCfg?.spatius?.michelle} backgroundUrl={seatsIv.michelle?.backgroundUrl ?? avatarCfg?.backgrounds?.michelle} stageRef={michelleStageRef} visible={seatOnSpatius('michelle') && liveAvatarMichelle.status !== 'failed'} live={liveAvatarMichelle.status === 'connected'} rendered={spatiusMichelle.rendered} rounded={false} />
                     {/* Pulse ring while speaking */}

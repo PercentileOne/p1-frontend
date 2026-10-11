@@ -45,10 +45,9 @@ export default function LiveAvatar() {
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>Live Avatar</h1>
           <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4, maxWidth: 640 }}>
-            The kill switch for HeyGen LiveAvatar — Amina (HR) and Wayne (technical) both run as
-            real-time video avatars in the candidate interview room. Off means every interview
-            falls back instantly to its pre-LiveAvatar path (static photo + ElevenLabs voice),
-            no redeploy needed — use this if HeyGen usage or cost needs a fast circuit breaker.
+            The kill switch for the live interviewer faces (drawn by Spatius; HeyGen was retired on
+            2026-10-11). Off means every interview falls back instantly to the interviewer's photo
+            and voice, no redeploy needed — use this if usage or cost needs a fast circuit breaker.
           </p>
         </div>
         <button
@@ -84,7 +83,7 @@ export default function LiveAvatar() {
                   Live avatars in the interview room
                 </p>
                 <p style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
-                  {setting.enabled ? 'On — Amina and Wayne appear as real-time video' : 'Off — static photo + voice only, everywhere'}
+                  {setting.enabled ? 'On — the interviewers appear as live faces' : 'Off — static photo + voice only, everywhere'}
                 </p>
               </div>
             </div>

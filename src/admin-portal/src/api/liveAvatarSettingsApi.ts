@@ -1,7 +1,7 @@
-// LiveAvatar kill switch — a single global setting, gated Super Admin only on the backend
+// Live-face kill switch — a single global setting, gated Super Admin only on the backend
 // (CAN_VIEW_SYSTEM_SETTINGS), same shape as Name Bank's. Off means every interview falls back
-// to its pre-LiveAvatar path instantly (static photo + ElevenLabs TTS) — a real circuit
-// breaker for HeyGen usage/cost, not just "stop starting new sessions."
+// instantly to the interviewer's photo and ElevenLabs voice — a real circuit breaker for
+// usage/cost, not just "stop starting new sessions." (HeyGen was retired on 2026-10-11; the faces are Spatius's.)
 
 const EXPLAIN_API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined)
   ?? 'http://localhost:5000';

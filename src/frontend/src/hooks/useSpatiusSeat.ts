@@ -5,8 +5,8 @@ import { getForceProvider, type AvatarConfig } from '../api/liveAvatarApi';
 import { getSeatInterviewer } from '../lib/seatInterviewers';
 import { logFlowEvent } from '../api/flowLogger';
 
-// One interviewer seat of a FULL interview drawn by Spatius, wearing the same shape as useLiveAvatarSession (HeyGen), so InterviewRoomPage's
-// seat wrappers, cost-control effect and recording code don't care which provider a seat has — the room just picks one of the two objects.
+// One interviewer seat of a FULL interview drawn by Spatius, wearing the same shape the old HeyGen seat hook had, so InterviewRoomPage's
+// seat wrappers, cost-control effect and recording code stay the same as when HeyGen (retired 2026-10-11) shared this shape.
 // Spatius draws the face on this device from the audio we send it, so there is no video stream, no listening pose and nothing to attach a <video> to.
 // (Planning notes: docs/specs/spatius-migration-plan.md.)
 
@@ -36,8 +36,9 @@ function manualTransform(): Transform | undefined {
 // A connection that neither succeeds nor fails must not hold the interview hostage (same limit as the demo).
 const CONNECT_LIMIT_MS = 15000;
 
-// Phones keep HeyGen for now (until recording of the interviewers' voices on a phone is carried over, and iOS's sound-start rule is tested on real devices).
-// A signed-in admin can still test them by adding ?force=spatius to the room's address.
+// Where a face may be drawn OUTSIDE the full interview room — the Talk room, the interviewer picker's preview and the "Say hi" page — which stay desktop-only until
+// the tap-to-start step is wired into them. The full interview room no longer asks: HeyGen was retired on 2026-10-11, so phones use these faces there (after a tap).
+// A signed-in admin can still test the rest by adding ?force=spatius to the page's address.
 export function deviceCanUseSpatiusInRoom(): boolean {
   try {
     if (getForceProvider() === 'spatius') return true;
@@ -117,7 +118,7 @@ export function useSpatiusSeat(
       try {
         await attempt();
       } catch (first) {
-        // One more try with a fresh token before giving the seat up to HeyGen (2026-10-07: Michelle dropped to her old HeyGen face after a "Say hi" preview earlier in the visit).
+        // One more try with a fresh token before giving the seat up to photo and voice (2026-10-07: Michelle dropped to her photo after a "Say hi" preview earlier in the visit).
         // The reason is recorded either way, so a failure can be read afterwards instead of guessed at.
         console.warn(`[Spatius] ${role} connect failed, retrying once:`, first);
         logFlowEvent('SPATIUS_SEAT_CONNECT_RETRY', { role, error: String((first as Error)?.message ?? first).slice(0, 200) });

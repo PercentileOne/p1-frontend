@@ -86,11 +86,11 @@ public static class Endpoint
             var interviewer = chosen?.role ?? "technical";
             var ticket = avatarAvailable ? InterviewTicket.Create(config["Jwt:Secret"] ?? string.Empty, $"tryout:{ip}", DateTimeOffset.UtcNow) : null;
 
-            // Which service draws the avatar for THIS visitor (admin setting — Features/PlatformSettings, "Avatar provider"). Spatius only when the admin
-            // has switched it on, it's configured, an avatar id is set for the seat, and this visitor falls inside the rollout percentage; otherwise HeyGen,
-            // exactly as before. The client falls back to HeyGen itself if Spatius can't start and fallbackToHeygen is on.
+            // Whether a face is drawn for THIS visitor (admin setting — Features/PlatformSettings, "Avatar provider"). Spatius only when the admin
+            // has switched it on, it's configured, an avatar id is set for the seat, and this visitor falls inside the rollout percentage; otherwise "none"
+            // and the page carries on with the interviewer's photo and voice. (HeyGen was retired on 2026-10-11, so there is no second provider to fall back to.)
             var providerSetting = await Explain.Api.Features.PlatformSettings.Endpoint.GetAvatarProviderOrDefaultAsync(cosmos);
-            var avatarProvider = "heygen";
+            var avatarProvider = "none";
             string? spatiusAvatarId = null;
             if (avatarAvailable && providerSetting.provider == "spatius" && Explain.Api.Features.Spatius.SpatiusClient.IsConfigured(config))
             {
@@ -126,9 +126,7 @@ public static class Endpoint
                 avatarAvailable,
                 avatarProvider,
                 spatiusAvatarId,
-                // HeyGen only has the OLD Amina and Wayne (different people from the ones in Admin > Interviewers), so whenever the interviewers come from the registry the fallback
-                // is their own photo and voice, never an old face under the right name (Francis, 2026-10-08: the old Amina turned up on his phone).
-                fallbackToHeygen = providerSetting.fallbackToHeygen && shown is null,
+                fallbackToHeygen = false, // kept so an older page still in someone's browser reads a definite "no"
                 ticket,
                 unlimited,
             });
