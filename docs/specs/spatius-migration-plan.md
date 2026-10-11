@@ -1,6 +1,6 @@
 # Moving the live interviewers from HeyGen to Spatius — plan (drafted 5 October 2026)
 
-Why: cost. A free 3-question demo costs about 2.4 pence on Spatius against about 30 pence on HeyGen; a full recorded interview about 5 to 14 US cents on Spatius (avatar cut off after each question) against about 60 cents on HeyGen. Spatius also draws the face on the visitor's own device (no video stream), which suits phones and slow connections. Spatius (Fadi Abbas, Head of Business & Partnerships) has agreed to be credited and has offered to review a showcase.
+Why: cost. A free 3-question demo costs about 2.4 pence on Spatius against about 30 pence on HeyGen; a full recorded interview about 5 pence on Spatius (avatar cut off after each question; agreed planning figure, 11 Oct 2026; the earlier estimate was 5 to 14 US cents and no full interview has been measured yet) against about 60 cents on HeyGen. Spatius also draws the face on the visitor's own device (no video stream), which suits phones and slow connections. Spatius (Fadi Abbas, Head of Business & Partnerships) has agreed to be credited and has offered to review a showcase.
 
 This is a first-pass plan from reading the code. Estimates are rough and get firmer once Phase 1 starts.
 
