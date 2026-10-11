@@ -5,6 +5,7 @@ import {
   type LearnAlert, type LearnAlertSummary,
 } from '../api/learnAlertsApi';
 import { generateHotTopics } from '../api/aiScoring';
+import { useIsPhone } from '../hooks/useIsPhone';
 
 const DIFFICULTIES: LearnAlert['difficulty'][] = ['Standard', 'Pro', 'Expert'];
 const DURATIONS = [1, 2, 3];
@@ -58,6 +59,7 @@ export default function LearnAlertsPage() {
   const [visibilityMenuOpen, setVisibilityMenuOpen] = useState(false);
   const [bulkConfirmTarget, setBulkConfirmTarget] = useState<boolean | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
+  const phone = useIsPhone();
 
   const load = () => {
     listLearnAlerts().then(setItems).catch(() => setError(true));
@@ -140,14 +142,14 @@ export default function LearnAlertsPage() {
     <div style={{ padding: '0 0 40px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 16, flexWrap: 'wrap' }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>Learn Alerts</h1>
+          <h1 style={{ fontSize: phone ? 19 : 22, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>Learn Alerts</h1>
           <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>
             {summary
               ? `${summary.totalCorrect}/${summary.totalSent} correct · 🔥 ${summary.bestCurrentStreak}-question streak (best ${summary.bestLongestStreak})`
               : 'One quick multiple-choice question at a time, straight to your inbox.'}
           </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           {items && items.length > 0 && (
             <div style={{ position: 'relative' }}>
               <button
@@ -209,7 +211,53 @@ export default function LearnAlertsPage() {
         </div>
       )}
 
-      {items && items.length > 0 && (
+      {/* Phones (2026-10-11): one card per alert instead of the eight-column table, with thumb-sized buttons. */}
+      {items && items.length > 0 && phone && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {items.map(alert => {
+            const busy = busyIds.has(alert.id);
+            const icon: React.CSSProperties = { flex: 1, minWidth: 0, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: 10, color: 'var(--text-2)', fontSize: 12, fontWeight: 700, cursor: busy ? 'default' : 'pointer', fontFamily: 'inherit', opacity: busy ? 0.5 : 1 };
+            return (
+              <div key={alert.id} style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)', overflowWrap: 'anywhere' }}>{alert.jobTitle}</div>
+                    {alert.specialFocus.length > 0 && (
+                      <div style={{ fontSize: 11.5, color: '#a78bfa', marginTop: 4, overflowWrap: 'anywhere' }}>🎯 {alert.specialFocus.join(', ')}</div>
+                    )}
+                  </div>
+                  <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: statusColor(alert.status), background: `${statusColor(alert.status)}18`, padding: '4px 10px', borderRadius: 20, textTransform: 'capitalize' }}>{alert.status}</span>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', marginTop: 10, fontSize: 12.5, color: 'var(--text-2)' }}>
+                  <span>{alert.difficulty}</span>
+                  <span>{formatInterval(alert.intervalHours)}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 700, color: alert.currentStreak > 0 ? '#F59E0B' : 'var(--text-3)' }}>
+                    <Flame size={13} fill={alert.currentStreak > 0 ? '#F59E0B' : 'none'} /> {alert.currentStreak} <span style={{ color: 'var(--text-3)', fontWeight: 400 }}>(best {alert.longestStreak})</span>
+                  </span>
+                  <span>{alert.correctCount}/{alert.sentCount} correct</span>
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                  {alert.status !== 'completed' && (
+                    <button onClick={() => togglePause(alert)} disabled={busy} style={icon}>
+                      {alert.status === 'active' ? <><Pause size={15} /> Pause</> : <><Play size={15} /> Resume</>}
+                    </button>
+                  )}
+                  <button onClick={() => setEditingAlert(alert)} style={{ ...icon, opacity: 1, cursor: 'pointer' }}><Pencil size={15} /> Edit</button>
+                  <button onClick={() => toggleVisibility(alert)} disabled={busy} style={icon} aria-label={alert.visibility === 'public' ? 'Public — tap to make hidden' : 'Hidden — tap to make public'}>
+                    {alert.visibility === 'public' ? <><Globe size={15} color="#34D399" /> Public</> : <><Lock size={15} /> Hidden</>}
+                  </button>
+                </div>
+                <div style={{ display: 'flex', gap: 16, marginTop: 10, justifyContent: 'flex-end' }}>
+                  <button onClick={() => handleReset(alert)} disabled={busy} style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', padding: '8px 4px', display: 'flex', alignItems: 'center', gap: 5 }}><RotateCcw size={13} /> Reset score</button>
+                  <button onClick={() => handleDelete(alert)} style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', padding: '8px 4px', display: 'flex', alignItems: 'center', gap: 5 }}><Trash2 size={13} /> Delete</button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {items && items.length > 0 && !phone && (
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', minWidth: 760, borderCollapse: 'collapse' }}>
@@ -352,6 +400,7 @@ function AlertModal({ initial, onClose, onSaved }: { initial?: LearnAlert; onClo
   const [err, setErr] = useState<string | null>(null);
 
   const canSubmit = jobTitle.trim().length > 2;
+  const phone = useIsPhone();
 
   // Same "narrow question generation toward specific named topics" concept as
   // InterviewPackStart.tsx's own Special Focus — reuses the identical chip-input + "What's Hot"
@@ -402,8 +451,8 @@ function AlertModal({ initial, onClose, onSaved }: { initial?: LearnAlert; onClo
   });
 
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 16, padding: 28 }}>
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: phone ? 'flex-end' : 'center', justifyContent: 'center', padding: phone ? 0 : 24 }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, boxSizing: 'border-box', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: phone ? '18px 18px 0 0' : 16, padding: phone ? '20px 16px calc(24px + env(safe-area-inset-bottom))' : 28, ...(phone ? { maxHeight: '92%', overflowY: 'auto' as const } : {}) }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>🧠 {initial ? 'Edit Learn Alert' : 'New Learn Alert'}</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', display: 'flex', padding: 4 }}><X size={18} /></button>

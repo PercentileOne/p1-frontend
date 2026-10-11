@@ -40,12 +40,12 @@ export function PhoneHeadsUp() {
   };
 
   return (
-    <div role="status" style={{ position: 'fixed', left: 12, right: 12, bottom: 'max(12px, env(safe-area-inset-bottom))', zIndex: 350 }}>
+    <div role="status" style={{ position: 'fixed', left: 12, right: 12, bottom: pathname.startsWith('/dashboard') ? 'calc(68px + env(safe-area-inset-bottom))' : 'max(12px, env(safe-area-inset-bottom))', zIndex: 350 }}>
       <div style={{ background: 'var(--bg2, #0f172a)', border: '1px solid var(--border, rgba(148,163,184,0.35))', borderRadius: 14, padding: '12px 14px', display: 'flex', gap: 10, alignItems: 'flex-start', boxShadow: '0 12px 36px rgba(0,0,0,0.45)' }}>
         <div aria-hidden="true" style={{ fontSize: 20, lineHeight: 1.2 }}>💻</div>
         <div style={{ flex: 1, minWidth: 0, fontSize: 13, lineHeight: 1.5, color: 'var(--text-2, #cbd5e1)' }}>
-          <strong style={{ color: 'var(--text, #f1f5f9)' }}>Best on a laptop or tablet for now.</strong>{' '}
-          We are building a proper phone experience. Until it arrives, some pages may scroll sideways.
+          <strong style={{ color: 'var(--text, #f1f5f9)' }}>Your phone version is being built.</strong>{' '}
+          Alerts, preps and your interview list fit your phone now. The interview room and a few other pages are still best on a laptop or tablet.
         </div>
         <button onClick={dismiss} aria-label="Dismiss" style={{ background: 'none', border: 'none', color: 'var(--text-3, #94a3b8)', fontSize: 20, lineHeight: 1, cursor: 'pointer', padding: 4 }}>×</button>
       </div>

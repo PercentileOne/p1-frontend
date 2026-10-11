@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { X, ChevronUp, ChevronDown, Trash2, Globe, Lock } from 'lucide-react';
 import { useAuthStore } from '../auth/authStore';
 import { Pagination } from '../components/Pagination';
+import { useIsPhone } from '../hooks/useIsPhone';
 
 interface InterviewSummary {
   id: string;
@@ -45,6 +46,7 @@ const thStyle: React.CSSProperties = {
 
 export default function MyInterviewsPage() {
   const navigate = useNavigate();
+  const phone = useIsPhone();
   const authToken = useAuthStore(s => s.token);
   const candidateId = useAuthStore(s => s.user?.id);
   const firstName = useAuthStore(s => s.user?.firstName);
@@ -172,12 +174,12 @@ export default function MyInterviewsPage() {
     <div style={{ padding: '0 0 40px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 16, flexWrap: 'wrap' }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>My Interviews</h1>
+          <h1 style={{ fontSize: phone ? 19 : 22, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>My Interviews</h1>
           <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>
             {(items ?? []).length} saved · {sharedCount} public
           </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           {items && items.length > 0 && (
             <div style={{ position: 'relative' }}>
               <button
@@ -282,7 +284,51 @@ export default function MyInterviewsPage() {
           </div>
 
           <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
-            <div style={{ overflowX: 'auto' }}>
+            {phone && (
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {visible.map(item => {
+                  const pct = Math.round(item.overallScore);
+                  const color = scoreColor(pct);
+                  const isToggling = togglingIds.has(item.id);
+                  const open = () => navigate(`/interview-summary/${item.id}`, { state: { from: '/interviews' } });
+                  return (
+                    <div key={item.id} onClick={open} style={{ padding: 16, borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)', overflowWrap: 'anywhere' }}>{item.role ?? 'Practice Interview'}</div>
+                          {item.company && <div style={{ fontSize: 12.5, color: 'var(--text-2)', marginTop: 2, overflowWrap: 'anywhere' }}>{item.company}</div>}
+                          <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 4 }}>{fmtDate(item.createdAt)}</div>
+                        </div>
+                        <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 800, color, background: `${color}18`, padding: '5px 10px', borderRadius: 20, textAlign: 'center' }}>
+                          {pct}<span style={{ display: 'block', fontSize: 9.5, fontWeight: 700 }}>{scoreLabel(pct)}</span>
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+                        <button
+                          onClick={e => { e.stopPropagation(); toggleVisibility(item); }}
+                          disabled={isToggling}
+                          aria-label={item.isShared ? 'Public — tap to make private' : 'Private — tap to make public'}
+                          style={{ flex: 1, minWidth: 0, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: 10, cursor: isToggling ? 'default' : 'pointer', opacity: isToggling ? 0.5 : 1, fontFamily: 'inherit', fontSize: 12, fontWeight: 700, color: item.isShared ? '#34D399' : 'var(--text-2)' }}
+                        >
+                          {item.isShared ? <Globe size={14} /> : <Lock size={14} />}{item.isShared ? 'Public' : 'Private'}
+                        </button>
+                        {item.hasVideo && <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, color: '#4F8EF7', background: 'rgba(79,142,247,0.1)', padding: '6px 10px', borderRadius: 20 }}>🎬 Video</span>}
+                        <button
+                          onClick={e => { e.stopPropagation(); open(); }}
+                          style={{ flex: 1, minWidth: 0, minHeight: 44, background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.35)', borderRadius: 10, color: '#4F8EF7', fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+                        >View →</button>
+                        <button
+                          aria-label="Discard"
+                          onClick={e => { e.stopPropagation(); handleDiscard(item.id); }}
+                          style={{ flexShrink: 0, width: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: '1px solid var(--border)', borderRadius: 10, cursor: 'pointer', color: 'var(--text-3)' }}
+                        ><Trash2 size={15} /></button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {!phone && <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', minWidth: 780, borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
@@ -359,7 +405,7 @@ export default function MyInterviewsPage() {
                   })}
                 </tbody>
               </table>
-            </div>
+            </div>}
             {visible.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>No interviews match your filter.</div>}
 
             <Pagination

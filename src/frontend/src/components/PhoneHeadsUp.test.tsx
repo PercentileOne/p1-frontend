@@ -19,23 +19,23 @@ describe('PhoneHeadsUp', () => {
   it('shows on a phone for a signed-in person in the portal', () => {
     setDevice(true);
     at('/dashboard');
-    expect(screen.getByText(/Best on a laptop or tablet for now/)).toBeTruthy();
+    expect(screen.getByText(/Your phone version is being built/)).toBeTruthy();
   });
 
   it('stays away on a laptop, when signed out, on the public demo and inside a live room', () => {
-    setDevice(false); at('/dashboard'); expect(screen.queryByText(/Best on a laptop/)).toBeNull(); cleanup();
-    setDevice(true); auth.token = null; at('/dashboard'); expect(screen.queryByText(/Best on a laptop/)).toBeNull(); cleanup();
-    auth.token = 'abc'; at('/try'); expect(screen.queryByText(/Best on a laptop/)).toBeNull(); cleanup();
-    at('/interview/abc123'); expect(screen.queryByText(/Best on a laptop/)).toBeNull();
+    setDevice(false); at('/dashboard'); expect(screen.queryByText(/Your phone version is being built/)).toBeNull(); cleanup();
+    setDevice(true); auth.token = null; at('/dashboard'); expect(screen.queryByText(/Your phone version is being built/)).toBeNull(); cleanup();
+    auth.token = 'abc'; at('/try'); expect(screen.queryByText(/Your phone version is being built/)).toBeNull(); cleanup();
+    at('/interview/abc123'); expect(screen.queryByText(/Your phone version is being built/)).toBeNull();
   });
 
   it('can be dismissed and then stays away on this device', () => {
     setDevice(true);
     at('/dashboard');
     fireEvent.click(screen.getByLabelText('Dismiss'));
-    expect(screen.queryByText(/Best on a laptop/)).toBeNull();
+    expect(screen.queryByText(/Your phone version is being built/)).toBeNull();
     cleanup();
     at('/dashboard');
-    expect(screen.queryByText(/Best on a laptop/)).toBeNull();
+    expect(screen.queryByText(/Your phone version is being built/)).toBeNull();
   });
 });

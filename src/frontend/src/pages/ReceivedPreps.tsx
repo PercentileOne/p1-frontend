@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { X, ChevronUp, ChevronDown, Gift, FileText } from 'lucide-react';
 import { useAuthStore } from '../auth/authStore';
 import { Pagination } from '../components/Pagination';
+import { useIsPhone } from '../hooks/useIsPhone';
 
 // Candidate-side half of the recruiter → candidate interview-prep loop. Backend endpoint
 // (GET /api/interview-preps/received) matches purely on the logged-in user's own JWT email
@@ -51,6 +52,7 @@ const thStyle: React.CSSProperties = {
 
 export default function ReceivedPreps() {
   const navigate = useNavigate();
+  const phone = useIsPhone();
   const token = useAuthStore(s => s.token);
 
   const [preps,   setPreps]   = useState<ReceivedPrep[] | null>(null);
@@ -130,7 +132,7 @@ export default function ReceivedPreps() {
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 0 40px' }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>Interview Preps</h1>
+        <h1 style={{ fontSize: phone ? 19 : 22, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>Interview Preps</h1>
         <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>
           {(preps ?? []).length} received · {upcomingCount} upcoming
         </p>
@@ -193,7 +195,39 @@ export default function ReceivedPreps() {
           </div>
 
           <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
-            <div style={{ overflowX: 'auto' }}>
+            {/* Phones (2026-10-11): one card per prep; the whole card opens it. */}
+            {phone && (
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {visible.map(prep => {
+                  const color = levelColor(prep.level);
+                  return (
+                    <div key={prep.id} onClick={() => reviewAndStart(prep)} style={{ padding: 16, borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)', overflowWrap: 'anywhere' }}>{prep.role}</div>
+                          <div style={{ fontSize: 12.5, color: 'var(--text-2)', marginTop: 2, overflowWrap: 'anywhere' }}>🎁 {prep.recruiterName}</div>
+                          <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 4 }}>{fmtDate(prep.interviewDate)}</div>
+                        </div>
+                        <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color, background: `${color}18`, padding: '4px 10px', borderRadius: 20 }}>{prep.level}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+                        {prep.cvFileUrl && (
+                          <a href={prep.cvFileUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+                            style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: '#34D399', background: 'rgba(52,211,153,0.1)', padding: '0 12px', borderRadius: 10, textDecoration: 'none', minWidth: 0 }}>
+                            <FileText size={13} style={{ flexShrink: 0 }} /><span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>CV</span>
+                          </a>
+                        )}
+                        <button onClick={e => { e.stopPropagation(); reviewAndStart(prep); }}
+                          style={{ flex: 1, minWidth: 0, minHeight: 44, background: 'rgba(52,211,153,0.14)', border: '1px solid rgba(52,211,153,0.4)', borderRadius: 10, color: '#34D399', fontFamily: 'inherit', fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>
+                          Review &amp; Start →
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {!phone && <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
@@ -250,7 +284,7 @@ export default function ReceivedPreps() {
                   })}
                 </tbody>
               </table>
-            </div>
+            </div>}
             {visible.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>No interview preps match your filter.</div>}
 
             <Pagination

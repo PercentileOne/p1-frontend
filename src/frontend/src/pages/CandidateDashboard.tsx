@@ -34,6 +34,8 @@ import { GettingStartedCard } from "../components/GettingStartedCard";
 import { HelpHint } from "../components/HelpHint";
 import { CANDIDATE_ARTICLES } from "../help/articles";
 import { logEvent } from "../api/flowLogger";
+import { useIsPhone } from "../hooks/useIsPhone";
+import { PhoneTabBar } from "../components/PhoneTabBar";
 
 /* ══════════════════════════════════════════════════════════════
    CANDIDATE DASHBOARD — cockpit-grade portal for TheInterviewChair.com
@@ -620,6 +622,8 @@ export default function CandidateDashboard() {
   // straight into the weak area that sent the candidate here.
   const studyTopic = (location.state as { studyTopic?: string } | null)?.studyTopic;
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
+  // Phones (2026-10-11): no sidebar, a bottom tab bar instead, and the grids below drop to one column.
+  const phone = useIsPhone();
   // Anyone without a paid plan sees "Subscribe" in the sidebar instead of "My Plan" — the button people look for.
   const [needsPlan, setNeedsPlan] = useState(false);
   useEffect(() => {
@@ -733,8 +737,8 @@ export default function CandidateDashboard() {
   return (
     <div style={{ display: "flex", width: "100%", minHeight: "100vh", background: "var(--bg)", fontFamily: '-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif' }}>
 
-      {/* ── SIDEBAR ── */}
-      <aside style={{
+      {/* ── SIDEBAR (laptops and tablets; phones get the tab bar at the bottom) ── */}
+      {!phone && <aside style={{
         width: 220, flexShrink: 0,
         background: "var(--bg2)", borderRight: "1px solid var(--border)",
         display: "flex", flexDirection: "column",
@@ -812,30 +816,48 @@ export default function CandidateDashboard() {
             <LogOut size={14} />
           </button>
         </div>
-      </aside>
+      </aside>}
+
+      {phone && (
+        <PhoneTabBar
+          main={[
+            { label: "Dashboard", short: "Home", Icon: LayoutDashboard },
+            { label: "Learn Alerts", short: "Alerts", Icon: BellRing },
+            { label: "Interview Preps", short: "Preps", Icon: Gift },
+            { label: "Job Interviews", short: "Interviews", Icon: Video },
+          ]}
+          more={NAV_ITEMS.filter(n => !["Dashboard", "Learn Alerts", "Interview Preps", "Job Interviews"].includes(n.label)).map(n => ({ label: n.label, Icon: n.Icon }))}
+          active={activeNav}
+          onNavigate={navTo}
+          userName={user?.name ?? "Candidate"}
+          needsPlan={needsPlan}
+          onAccount={() => navigate("/subscription")}
+          onSignOut={() => void handleLogout()}
+        />
+      )}
 
       {/* ── MAIN ── */}
-      <main style={{ marginLeft: 220, flex: 1, minWidth: 0, padding: "0 28px 60px" }}>
+      <main style={{ marginLeft: phone ? 0 : 220, flex: 1, minWidth: 0, padding: phone ? "0 16px 96px" : "0 28px 60px" }}>
 
         {/* Top bar */}
         <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "20px 0 24px", borderBottom: "1px solid var(--border)",
-          marginBottom: 28, position: "sticky", top: 0, background: "var(--bg)", zIndex: 5,
+          display: "flex", alignItems: phone ? "stretch" : "center", justifyContent: "space-between", flexDirection: phone ? "column" : "row", gap: phone ? 12 : 0,
+          padding: phone ? "14px 0 14px" : "20px 0 24px", borderBottom: "1px solid var(--border)",
+          marginBottom: phone ? 16 : 28, position: "sticky", top: 0, background: "var(--bg)", zIndex: 5,
         }}>
-          <div>
-            <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-0.02em", color: "var(--text)" }}>
-              {getGreeting()}, {firstName} — <span style={{ color: "#34D399" }}>{role}</span>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: phone ? 17 : 22, fontWeight: 900, letterSpacing: "-0.02em", color: "var(--text)", overflowWrap: "anywhere" }}>
+              {getGreeting()}, {firstName}{phone ? "" : <> — <span style={{ color: "#34D399" }}>{role}</span></>}
             </div>
             <div style={{ fontSize: 13, color: "var(--text-3)", marginTop: 2 }}>
-              {getTodayLabel()} · 2 interviews scheduled this week
+              {getTodayLabel()}{phone ? "" : " · 2 interviews scheduled this week"}
             </div>
           </div>
           {/* Quick actions only make sense on the Dashboard home view — every other panel
               (Learn, Careers, Interviews, etc.) has its own contextual primary action,
               so showing these here too would just duplicate it. */}
           {activeNav === "Dashboard" && (
-            <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <button
                 onClick={() => navigate("/interview-pack/start", { state: { preferredName: firstName } })}
                 style={{
@@ -909,7 +931,7 @@ export default function CandidateDashboard() {
         </div>
 
         {/* ── STATS ROW ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>
+        <div style={{ display: "grid", gridTemplateColumns: phone ? "minmax(0, 1fr)" : "repeat(5,1fr)", gap: 14, marginBottom: 28 }}>
           {liveStats.map((s, i) => <LiveStatCard key={i} card={s} onClick={() => setOpenCard(i)} />)}
         </div>
         {openCard !== null && (
@@ -928,7 +950,7 @@ export default function CandidateDashboard() {
         )}
 
         {/* ── TWO-COL LAYOUT ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: phone ? "minmax(0, 1fr)" : "1fr 320px", gap: 20 }}>
 
           {/* LEFT */}
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
