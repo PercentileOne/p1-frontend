@@ -126,6 +126,9 @@ function usePageViewLogging() {
     // /hello is the homepage's framed "Say hi" preview: it loads by itself a moment after the homepage does, so counting it as a page view would add a phantom visit for
     // every desktop homepage visitor. Its real activity is logged by the page itself (hello_say_hi).
     if (location.pathname === '/hello') return;
+    // An admin testing a face provider adds ?force=spatius (or heygen) to ANY page of the visit; remember it for the tab now, so it also applies to the interview room reached later
+    // by tapping around (typing a query string onto the room's own address on a phone is awkward). Only staff and admins are ever honoured server-side.
+    void getForceProvider();
     logEvent('page_view', { page: location.pathname });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
