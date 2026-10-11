@@ -18,6 +18,8 @@ interface Props {
   controlRef?: MutableRefObject<{ toggle: () => void } | null>;
   /** idle / listening / processing, so that outside button can show the right words and colour. */
   onMicStateChange?: (state: MicState) => void;
+  /** Hide the mic button, waveform and "Your turn" pill: the big button on the interviewer's chest (AnswerPrompt) is then the only way to answer by voice. The live words still show while speaking. */
+  hideControls?: boolean;
 }
 
 export interface TranscriptMeta {
@@ -86,7 +88,7 @@ async function transcribeWithWhisper(blob: Blob, _durationSeconds: number, langu
   }
 }
 
-export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false, highlightRecord = false, onListeningChange, language = 'en', country, controlRef, onMicStateChange }: Props) {
+export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false, highlightRecord = false, onListeningChange, language = 'en', country, controlRef, onMicStateChange, hideControls = false }: Props) {
   const [micState, setMicState] = useState<MicState>('idle');
   const [interim, setInterim] = useState('');
   const [processingLabel, setProcessingLabel] = useState('Processing…');
@@ -303,7 +305,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       {/* Your turn prompt — shown only when idle and it's actually the candidate's turn */}
-      {micState === 'idle' && !disabled && (
+      {!hideControls && micState === 'idle' && !disabled && (
         <motion.div
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
@@ -318,7 +320,7 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
       )}
 
       {/* Waveform + mic button row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      {!hideControls && <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div style={{ position: 'relative', flexShrink: 0, width: '56px', height: '56px' }}>
           {/* Ripple pulse only while it's genuinely the candidate's turn to record —
               not just whenever the button happens to be idle (e.g. mid-question). */}
@@ -447,6 +449,8 @@ export function VoiceInput({ onTranscript, onInterimTranscript, disabled = false
           </AnimatePresence>
         </div>
       </div>
+
+      }
 
       {/* Live interim preview */}
       <AnimatePresence>

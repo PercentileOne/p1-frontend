@@ -1,9 +1,10 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import type { MicState } from './VoiceInput';
 
 // The "your turn" button that sits on the interviewer's own picture (Francis, 2026-10-09): people did not know they had to scroll down, find the small green
 // microphone, click it to talk and click it again to stop. As soon as the interviewer has finished asking, this appears over their chest — big, green and pulsing —
-// and turns red ("Click to stop recording") while the answer is being recorded. It drives the same VoiceInput as the small microphone below, so nothing else changes.
+// and turns red ("Click Here to stop recording") while the answer is being recorded. It drives the same VoiceInput (now without its own mic row), so nothing else changes.
+// 2026-10-10: it is the ONLY way to answer by voice, it pulses obviously (rings + breathing) and the words are "Click Here" (Francis).
 // Render it inside a `position: relative` picture box; it hides itself whenever `show` is false (for instance while the interviewer is speaking).
 
 interface Props {
@@ -17,6 +18,8 @@ interface Props {
 export function AnswerPrompt({ show, mic, onPress, canType = true }: Props) {
   const listening = mic === 'listening';
   const processing = mic === 'processing';
+  const still = useReducedMotion();   // people who ask their device for less motion get a steady button
+  const ring = listening ? '239,68,68' : '52,211,153';
   return (
     <AnimatePresence>
       {show && (
@@ -26,17 +29,21 @@ export function AnswerPrompt({ show, mic, onPress, canType = true }: Props) {
           style={{ position: 'absolute', left: 0, right: 0, bottom: '17%', zIndex: 5, display: 'flex', justifyContent: 'center', padding: '0 12px', pointerEvents: 'none' }}
         >
           <div style={{ position: 'relative', maxWidth: '100%', pointerEvents: 'auto' }}>
-            {!listening && !processing && (
+            {!processing && !still && [0, 0.55].map(delay => (
               <motion.span
+                key={delay}
                 aria-hidden="true"
-                animate={{ opacity: [0.55, 0], scale: [1, 1.18] }} transition={{ repeat: Infinity, duration: 1.5, ease: 'easeOut' }}
-                style={{ position: 'absolute', inset: 0, borderRadius: 999, background: 'rgba(52,211,153,0.7)', pointerEvents: 'none' }}
+                animate={{ boxShadow: [`0 0 0 0 rgba(${ring},0.85)`, `0 0 0 30px rgba(${ring},0)`] }}
+                transition={{ repeat: Infinity, duration: 1.15, ease: 'easeOut', delay }}
+                style={{ position: 'absolute', inset: 0, borderRadius: 999, pointerEvents: 'none' }}
               />
-            )}
+            ))}
             <motion.button
               type="button"
               onClick={onPress}
               disabled={processing}
+              animate={processing || still ? { scale: 1 } : { scale: [1, 1.05, 1] }}
+              transition={{ repeat: Infinity, duration: 1.15, ease: 'easeInOut' }}
               whileTap={{ scale: 0.97 }}
               aria-live="polite"
               style={{
@@ -54,7 +61,7 @@ export function AnswerPrompt({ show, mic, onPress, canType = true }: Props) {
               ) : listening ? (
                 <>
                   <motion.span aria-hidden="true" animate={{ opacity: [1, 0.25, 1] }} transition={{ repeat: Infinity, duration: 1.1 }} style={{ width: 11, height: 11, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
-                  <span>Click to stop recording</span>
+                  <span>Click Here to stop recording</span>
                 </>
               ) : (
                 <>
@@ -62,7 +69,7 @@ export function AnswerPrompt({ show, mic, onPress, canType = true }: Props) {
                     <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" fill="#fff" />
                     <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M9 22h6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
                   </svg>
-                  <span>Click to speak your answer{canType ? <span style={{ fontWeight: 600, opacity: 0.92 }}>, or type it below</span> : null}</span>
+                  <span>Click Here to speak your answer{canType ? <span style={{ fontWeight: 600, opacity: 0.92 }}>, or type it below</span> : null}</span>
                 </>
               )}
             </motion.button>

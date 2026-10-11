@@ -1927,7 +1927,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                 {/* Animated bullet points */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {[
-                    { icon: '🎙️', text: 'When a question appears, click Record to start your answer' },
+                    { icon: '🎙️', text: 'When the interviewer finishes, click the green "Click Here" button on them to answer' },
                     { icon: '⏹️', text: 'Click Stop when you\'ve finished speaking' },
                     { icon: '↩️', text: 'Use Repeat if you\'d like to hear the question again' },
                     { icon: '⏸️', text: 'Hit Pause anytime you need a moment to collect your thoughts' },
@@ -2027,6 +2027,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                         onListeningChange={setIsCapturingAnswer}
                         controlRef={micRef}
                         onMicStateChange={setMicState}
+                        hideControls
                       />
                     )}
                     <div style={{ flex: 1 }}>
