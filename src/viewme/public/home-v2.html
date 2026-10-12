@@ -90,6 +90,7 @@
   .eyebrow.blue{color:#7DB3FF;background:rgba(79,142,247,.12);border-color:rgba(79,142,247,.32)}
   .try-note{font-size:12.5px;color:var(--dim);margin-top:12px}
   .try-safe{font-size:12.5px;color:var(--text);opacity:.85;margin-top:8px;line-height:1.7}
+  .try-lock{font-size:13.5px;font-weight:700;color:var(--green);margin:10px 2px 0;line-height:1.5}
   .ba{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:28px}
   .ba .side{padding:22px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
   .ba .side.after{border-color:rgba(52,211,153,.4);background:linear-gradient(135deg,rgba(52,211,153,.10),rgba(4,120,87,.05))}
@@ -400,6 +401,9 @@
           <input id="tname" name="name" maxlength="40" placeholder="Your first name" aria-label="Your first name" autocomplete="given-name" style="flex:.6" required>
           <button class="btn btn-green" type="submit">▶ Try it live</button>
         </div>
+        <!-- Right under the button (Francis, 2026-10-12): a visitor from LinkedIn skimmed the whole page and went straight to "Who can see my interview?", so the answer now
+             sits where the hesitation is, not only at the foot of the form. Literally true: the free demo is private to the visitor and nothing is kept. -->
+        <p class="try-lock">🔒 Private by default. Only you can see your practice interview.</p>
         <div class="chips" aria-label="Example job roles">
           <button type="button" class="chip">Product Manager</button>
           <button type="button" class="chip">Software Engineer</button>
