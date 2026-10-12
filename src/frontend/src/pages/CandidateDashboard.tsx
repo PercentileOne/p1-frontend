@@ -53,24 +53,29 @@ const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ??
 // real ?tab= query param so the address bar always matches what's on screen, and browser
 // back / our own Back button lands on the tab you were actually looking at, not a reset one.
 const NAV_ITEMS = [
-  { Icon: LayoutDashboard, label: "Dashboard",       slug: null },
-  { Icon: HeartHandshake,  label: "My Career Coach", slug: "career-coach" },
-  { Icon: User,            label: "My Profile",      slug: "profile" },
-  { Icon: Video,           label: "Job Interviews",      slug: "interviews" },
-  { Icon: GraduationCap,   label: "Certifications & Exams", slug: "certifications" },
-  { Icon: Wallet,          label: "What Am I Worth?",       slug: "cv-salary" },
-  { Icon: BookMarked,      label: "Question Bank",   slug: "question-bank" },
-  { Icon: Mic,             label: "My Talks",        slug: "talks" },
-  { Icon: BellRing,        label: "Learn Alerts",    slug: "learn-alerts" },
-  { Icon: Gift,            label: "Interview Preps", slug: "interview-preps" },
-  { Icon: PartyPopper,     label: "Interview Gifts", slug: "interview-gifts" },
-  { Icon: Briefcase,       label: "Jobs",             slug: "jobs" },
-  { Icon: BookOpen,        label: "Learn",            slug: "learn" },
-  { Icon: Compass,         label: "Careers",          slug: "careers" },
-  { Icon: MessageSquare,   label: "Messages",         slug: "messages" },
-  { Icon: Zap,             label: "Demo",             slug: "demo" },
-  { Icon: LifeBuoy,        label: "Help",             slug: "help" },
-  { Icon: Settings,        label: "Settings",         slug: "settings" },
+  // Home
+  { Icon: LayoutDashboard, label: "Dashboard", slug: null },
+  { Icon: User, label: "My Profile", slug: "profile" },
+  // Practise
+  { Icon: Video, label: "Job Interviews", slug: "interviews" },
+  { Icon: Mic, label: "My Talks", slug: "talks" },
+  { Icon: Gift, label: "Interview Preps", slug: "interview-preps" },
+  { Icon: PartyPopper, label: "Interview Gifts", slug: "interview-gifts" },
+  // Learn
+  { Icon: BookOpen, label: "Learn", slug: "learn" },
+  { Icon: BellRing, label: "Learn Alerts", slug: "learn-alerts" },
+  { Icon: GraduationCap, label: "Certifications & Exams", slug: "certifications" },
+  { Icon: BookMarked, label: "Question Bank", slug: "question-bank" },
+  // Career
+  { Icon: HeartHandshake, label: "My Career Coach", slug: "career-coach" },
+  { Icon: Compass, label: "Careers", slug: "careers" },
+  { Icon: Briefcase, label: "Jobs", slug: "jobs" },
+  { Icon: Wallet, label: "What Am I Worth?", slug: "cv-salary" },
+  // Other
+  { Icon: MessageSquare, label: "Messages", slug: "messages" },
+  { Icon: Zap, label: "Demo", slug: "demo" },
+  { Icon: LifeBuoy, label: "Help", slug: "help" },
+  { Icon: Settings, label: "Settings", slug: "settings" },
 ] as const;
 
 // Five real, live-sourced dashboard cards (Francis, 2026-09-11) — replaces an earlier version
