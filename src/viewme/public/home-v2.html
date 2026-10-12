@@ -93,6 +93,42 @@
   .try-lock{font-size:13.5px;font-weight:700;color:var(--green);margin:10px 2px 0;line-height:1.5}
   .try-nudge{font-size:14px;font-weight:700;color:var(--text);margin:10px 2px 0;line-height:1.5}
   .try-nudge[hidden]{display:none}
+
+  /* WHAT'S IN IT FOR ME (Francis, 2026-10-12) */
+  #whatsin{padding:72px 0}
+  .wi-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:28px 0 18px}
+  .wi-tab{font:inherit;text-align:left;cursor:pointer;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:2px;transition:border-color .15s,background .15s}
+  .wi-tab b{font-size:16px;font-weight:800;letter-spacing:-.01em}
+  .wi-tab span{font-size:12.5px;color:var(--muted)}
+  .wi-tab:hover{border-color:rgba(52,211,153,.5)}
+  .wi-tab.on{border-color:var(--green);background:rgba(52,211,153,.09);box-shadow:0 0 0 3px rgba(52,211,153,.12)}
+  .wi-tab.on span{color:var(--text)}
+  .wi-panel[hidden]{display:none}
+  .wi-free-strip{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);border-radius:12px;padding:12px 16px;font-size:14px;color:var(--text);margin-bottom:14px;line-height:1.55}
+  .wi-free-strip b{color:var(--green)}
+  .wi-intro{font-size:15.5px;color:var(--muted);margin:0 0 14px;max-width:760px}
+  .wi-intro b{color:var(--text)}
+  .wi-tbl{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .wi-tbl thead th{text-align:left;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:12px 18px;border-bottom:1px solid var(--line)}
+  .wi-tbl td,.wi-tbl tbody th{padding:14px 18px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14.5px;line-height:1.6;color:var(--muted)}
+  .wi-tbl tbody tr:last-child td{border-bottom:0}
+  .wi-tbl .wi-grp th{background:rgba(255,255,255,.03);color:var(--green);font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;text-align:left;padding:10px 18px}
+  .wi-tbl td.wi-n{width:30%;color:var(--text);font-weight:800;font-size:15px;letter-spacing:-.01em}
+  .wi-tbl td.wi-n span{display:inline-block;margin-right:8px}
+  .wi-free{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--green);background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);border-radius:99px;padding:2px 8px;margin-left:6px;white-space:nowrap}
+  .wi-foot{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:18px}
+  .wi-price{font-size:14.5px;color:var(--muted);max-width:720px;line-height:1.6}
+  .wi-price b{color:var(--text)}
+  .wi-btns{display:flex;gap:10px;flex-wrap:wrap}
+  @media(max-width:760px){
+    .wi-tabs{grid-template-columns:1fr}
+    .wi-tbl thead{display:none}
+    .wi-tbl tr,.wi-tbl td,.wi-tbl tbody th{display:block}
+    .wi-tbl td.wi-n{width:auto;padding:14px 16px 2px;border-bottom:0}
+    .wi-tbl td:not(.wi-n){padding:0 16px 14px}
+    .wi-tbl .wi-grp th{padding:10px 16px}
+    .wi-btns .btn{flex:1 1 220px}
+  }
   #tname.nudge{border-color:var(--green);box-shadow:0 0 0 3px rgba(52,211,153,.25)}
   .ba{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:28px}
   .ba .side{padding:22px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
@@ -470,6 +506,139 @@
     </div>
   </div>
 </header>
+
+<!-- 1a · WHAT'S IN IT FOR ME (Francis, 2026-10-12) ───────────────────────────────────────────────────────────────────────────────────
+     Visitors "are absolutely blind to our great features" (a friend only found Learn and Talks because he was given a subscription). One plain table, high up, of what each
+     kind of user actually gets. Every line is taken from statements this page already makes and that were checked against the product (the "What you get", "Pricing" and
+     "For recruiters" sections). Deliberately NOT listed because they are not real features yet: the Jobs board and in-app Messaging (both still show sample data in the portal).
+     If a feature is added, change its row here and in the section it came from. ─────────────────────────────────────────────────────────────────────────────── -->
+<section id="whatsin" class="alt">
+  <div class="wrap">
+    <span class="eyebrow">What&rsquo;s in it for me</span>
+    <h2 class="reveal">Everything you get, whoever you are.</h2>
+    <p class="lede reveal">Pick who you are. Each list is what you actually get once you have an account, in plain words.</p>
+
+    <div class="wi-tabs" role="tablist" aria-label="Who are you?">
+      <button type="button" class="wi-tab on" role="tab" aria-selected="true" aria-controls="wi-candidate" data-who="candidate">
+        <b>I&rsquo;m a candidate</b><span>Free to try &middot; &pound;4.99 a month</span>
+      </button>
+      <button type="button" class="wi-tab" role="tab" aria-selected="false" aria-controls="wi-recruiter" data-who="recruiter">
+        <b>I&rsquo;m a recruiter</b><span>&pound;49 per seat, per month</span>
+      </button>
+      <button type="button" class="wi-tab" role="tab" aria-selected="false" aria-controls="wi-employer" data-who="employer">
+        <b>I&rsquo;m an employer</b><span>&pound;399 a month for your team</span>
+      </button>
+    </div>
+
+    <!-- CANDIDATE -->
+    <div class="wi-panel" id="wi-candidate" role="tabpanel">
+      <div class="wi-free-strip"><b>Free, no card:</b> a 3-question live interview &middot; your first full interview &middot; mock exams &middot; a CV analysis &middot; printable interview questions</div>
+      <table class="wi-tbl">
+        <thead><tr><th>You get</th><th>In plain words</th></tr></thead>
+        <tbody>
+          <tr class="wi-grp"><th colspan="2">Practise out loud</th></tr>
+          <tr><td class="wi-n"><span>🎙️</span> Live practice interviews</td><td>Two AI interviewers, an HR one and a technical one, chosen from a panel of five, ask you 10+ questions built around your role, your CV and the job. Out loud, in 32 languages, answered by voice or typed. You walk in having already said it.</td></tr>
+          <tr><td class="wi-n"><span>🏢</span> Interviews in a company&rsquo;s style</td><td>Choose from 68 well-known employers and be interviewed the way they do it: their values, their style, their bar. Written fresh for you, never their real questions.</td></tr>
+          <tr><td class="wi-n"><span>📊</span> Honest scoring</td><td>Every answer scored on clarity, relevance, accuracy, depth and confidence, with a clear verdict (pass, keep on file, or not this time), a spoken debrief, a replay of your session, and a shareable certificate when you pass.</td></tr>
+          <tr><td class="wi-n"><span>🎤</span> My Talks</td><td>Rehearse a 3 or 5 minute presentation in front of two AI listeners, a factual one or a personal story, and get tips, a score and feedback. Keep it private or share it.</td></tr>
+          <tr><td class="wi-n"><span>⚡</span> Flash Talk</td><td>A quick-fire speaking game: you get a key term from your field and explain it out loud before the clock runs out. A fast way to find out whether you really know it.</td></tr>
+
+          <tr class="wi-grp"><th colspan="2">Learn and revise</th></tr>
+          <tr><td class="wi-n"><span>🧠</span> Learn</td><td>Type any topic, from plumbing fundamentals to a CTO certification, pick your level, and get a complete course: lectures to read or listen to, interview questions and a short multiple-choice test.</td></tr>
+          <tr><td class="wi-n"><span>🔔</span> Learn Alerts</td><td>One quick multiple-choice question at a time, sent to your inbox as often as you like, from every few hours to weekly, with a streak to keep you going. Ideal for the days before an interview.</td></tr>
+          <tr><td class="wi-n"><span>🎓</span> Certification &amp; exam practice <em class="wi-free">Free</em></td><td>172 professional and school exams, with scored mock papers and a pass or fail result. Can&rsquo;t find yours? Add it.</td></tr>
+          <tr><td class="wi-n"><span>🔖</span> Question Bank</td><td>Save any model answer from a practice interview and build your own library to search, read and listen to before the real thing.</td></tr>
+
+          <tr class="wi-grp"><th colspan="2">Know where you stand</th></tr>
+          <tr><td class="wi-n"><span>💷</span> What am I worth? <em class="wi-free">Free</em></td><td>Upload your CV and see which real roles fit, what they pay, your skills, strengths and gaps, and hear it talked through. Share the analysis by link. No account needed.</td></tr>
+          <tr><td class="wi-n"><span>🧭</span> Careers explorer</td><td>Search any career for real UK and US salaries, contract day rates, demand, outlook, how exposed it is to automation and the skills it needs, then practise an interview for it in one click.</td></tr>
+          <tr><td class="wi-n"><span>🤝</span> AI Career Coach</td><td>Chat about where you are, where you want to go and what to do next, whenever you like.</td></tr>
+
+          <tr class="wi-grp"><th colspan="2">Be found, if you want to be</th></tr>
+          <tr><td class="wi-n"><span>👤</span> Profile &amp; intro video</td><td>Your bio, projects, interests and dream role, plus a short introduction video guided by a friendly interviewer. You choose whether recruiters can find you.</td></tr>
+          <tr><td class="wi-n"><span>📡</span> Let the people hiring find you</td><td>Save your best interview and share it with one link or a QR code for your CV. Recruiters and employers can search candidates and watch, without you applying to a single job. You decide which interviews are public.</td></tr>
+          <tr><td class="wi-n"><span>🎁</span> Gift an interview</td><td>Know someone job hunting? Give them a session pass. Practice interviews sent by a recruiter appear in the account of whoever they are sent to.</td></tr>
+        </tbody>
+      </table>
+      <div class="wi-foot">
+        <div class="wi-price"><b>&pound;4.99 a month</b> &middot; up to 3 full interviews a day, 10 a month &middot; Career Coach, Learn and Careers included &middot; cancel any time. Or a 7-day interview pass for &pound;5.99, no subscription.</div>
+        <div class="wi-btns">
+          <a class="btn btn-green" href="#try" data-wi-try>&#9654; Try it live &mdash; free</a>
+          <a class="btn btn-ghost" href="#pricing">See pricing</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECRUITER -->
+    <div class="wi-panel" id="wi-recruiter" role="tabpanel" hidden>
+      <p class="wi-intro"><b>Watch them interview before you ever speak to them.</b> Skip the screening calls and see how candidates actually think, speak and handle pressure, scored consistently.</p>
+      <table class="wi-tbl">
+        <thead><tr><th>You get</th><th>In plain words</th></tr></thead>
+        <tbody>
+          <tr><td class="wi-n"><span>🔎</span> Candidate search</td><td>Search candidates who have chosen to be found, by role, location and score.</td></tr>
+          <tr><td class="wi-n"><span>🎬</span> Full interview recordings and scores</td><td>Watch a candidate&rsquo;s whole interview and see how they were scored, instead of reading a CV and guessing.</td></tr>
+          <tr><td class="wi-n"><span>🔔</span> Talent alerts</td><td>Get alerted the moment a matching candidate records.</td></tr>
+          <tr><td class="wi-n"><span>🔗</span> Interview-prep links</td><td>Send a candidate a link so they arrive ready. 99p each, and the candidate gets 3 free practice sessions.</td></tr>
+          <tr><td class="wi-n"><span>🎁</span> Gifts for your clients</td><td>Give your client a free set of interview questions, branded from you.</td></tr>
+          <tr><td class="wi-n"><span>📄</span> An AI read of any CV</td><td>Skills, suitable roles, strengths and weaknesses.</td></tr>
+          <tr><td class="wi-n"><span>👥</span> Team feed and seat roster</td><td>Share a feed and a seat roster across your agency.</td></tr>
+        </tbody>
+      </table>
+      <div class="wi-foot">
+        <div class="wi-price"><b>&pound;49 per seat, per month.</b> Full candidate search, talent alerts and interview recordings, per consultant. We set up every recruiter account personally.</div>
+        <div class="wi-btns"><a class="btn btn-blue" href="/request-access.html" data-wi-request="recruiter">Request access &rarr;</a></div>
+      </div>
+    </div>
+
+    <!-- EMPLOYER -->
+    <div class="wi-panel" id="wi-employer" role="tabpanel" hidden>
+      <p class="wi-intro"><b>See how candidates really interview before you hire.</b> Every candidate scored the same way.</p>
+      <table class="wi-tbl">
+        <thead><tr><th>You get</th><th>In plain words</th></tr></thead>
+        <tbody>
+          <tr><td class="wi-n"><span>🔎</span> Candidate search</td><td>Search candidates who have chosen to be found.</td></tr>
+          <tr><td class="wi-n"><span>🎬</span> Full interview recordings and scores</td><td>Watch whole interviews and see how each candidate was scored.</td></tr>
+          <tr><td class="wi-n"><span>🔔</span> Talent alerts</td><td>Get alerted the moment a matching candidate records.</td></tr>
+          <tr><td class="wi-n"><span>🧰</span> Interview-question and feedback tools</td><td>Interview-question and feedback tools for your team.</td></tr>
+          <tr><td class="wi-n"><span>🧠</span> Learn for your staff</td><td>Give your people the same Learn courses, &pound;14.99 per staff seat.</td></tr>
+        </tbody>
+      </table>
+      <div class="wi-foot">
+        <div class="wi-price"><b>&pound;399 a month.</b> Candidate search plus interview-question and feedback tools for your team. We set up every employer account personally.</div>
+        <div class="wi-btns"><a class="btn btn-blue" href="/request-access.html" data-wi-request="employer">Request access &rarr;</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+(function () {
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('#whatsin .wi-tab'));
+  function pick(who, userClick) {
+    tabs.forEach(function (t) {
+      var on = t.getAttribute('data-who') === who;
+      t.classList.toggle('on', on); t.setAttribute('aria-selected', on ? 'true' : 'false');
+      document.getElementById('wi-' + t.getAttribute('data-who')).hidden = !on;
+    });
+    if (userClick && window.ticTrack) window.ticTrack('whatsin_tab', { who: who });
+  }
+  tabs.forEach(function (t) { t.addEventListener('click', function () { pick(t.getAttribute('data-who'), true); }); });
+  // A shared link can open a given list: /#whatsin-recruiter or /#whatsin-employer
+  var h = (location.hash || '').replace('#whatsin-', '');
+  if (h === 'recruiter' || h === 'employer' || h === 'candidate') pick(h, false);
+  // "Try it live" buttons in the table go to the demo form and put the cursor in the role box, like every other Try it live button on the page.
+  document.querySelectorAll('[data-wi-try]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (window.ticTrack) window.ticTrack('whatsin_try', {});
+      var s = document.getElementById('try'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(function () { var t = document.getElementById('topic'); if (t) t.focus({ preventScroll: true }); }, 600);
+    });
+  });
+  document.querySelectorAll('[data-wi-request]').forEach(function (a) {
+    a.addEventListener('click', function () { if (window.ticTrack) window.ticTrack('whatsin_request', { who: a.getAttribute('data-wi-request') }); });
+  });
+})();
+</script>
 
 <!-- 1b · MAKE YOUR MISTAKES HERE (Francis, 2026-10-02) ──────── -->
 <section id="mistakes">
