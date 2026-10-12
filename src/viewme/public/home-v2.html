@@ -91,6 +91,9 @@
   .try-note{font-size:12.5px;color:var(--dim);margin-top:12px}
   .try-safe{font-size:12.5px;color:var(--text);opacity:.85;margin-top:8px;line-height:1.7}
   .try-lock{font-size:13.5px;font-weight:700;color:var(--green);margin:10px 2px 0;line-height:1.5}
+  .try-nudge{font-size:14px;font-weight:700;color:var(--text);margin:10px 2px 0;line-height:1.5}
+  .try-nudge[hidden]{display:none}
+  #tname.nudge{border-color:var(--green);box-shadow:0 0 0 3px rgba(52,211,153,.25)}
   .ba{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:28px}
   .ba .side{padding:22px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
   .ba .side.after{border-color:rgba(52,211,153,.4);background:linear-gradient(135deg,rgba(52,211,153,.10),rgba(4,120,87,.05))}
@@ -404,6 +407,7 @@
         <!-- Right under the button (Francis, 2026-10-12): a visitor from LinkedIn skimmed the whole page and went straight to "Who can see my interview?", so the answer now
              sits where the hesitation is, not only at the foot of the form. Literally true: the free demo is private to the visitor and nothing is kept. -->
         <p class="try-lock">🔒 Private by default. Only you can see your practice interview.</p>
+        <p class="try-nudge" id="tryNudge" hidden>&#128070; Now your first name, then press <b>Try it live</b>.</p>
         <div class="chips" aria-label="Example job roles">
           <button type="button" class="chip">Product Manager</button>
           <button type="button" class="chip">Software Engineer</button>
@@ -1067,8 +1071,24 @@
     window.location.href = TRY_URL + '?topic=' + encodeURIComponent(v) + '&name=' + encodeURIComponent(n.slice(0, 40)) + extra + '&from=home&go=1';
   });
   ['topic','tname'].forEach(function (id) { document.getElementById(id).addEventListener('input', function () { document.getElementById('tryErr').textContent = ''; }); });
+  // A role suggestion is a real shortcut (2026-10-12): a phone visitor pressed Try it live with the role box empty, and others stop at the first-name box. Tapping a
+  // suggestion fills the role; if the first name is already there the interview starts straight away, otherwise the cursor goes to the first-name box with a one-line nudge.
+  var nudge = document.getElementById('tryNudge'), nameBox = document.getElementById('tname'), formEl = document.getElementById('tryForm');
+  function clearNudge() { nudge.hidden = true; nameBox.classList.remove('nudge'); }
+  nameBox.addEventListener('input', clearNudge);
   document.querySelectorAll('.chip').forEach(function (c) {
-    c.addEventListener('click', function () { input.value = c.textContent; input.focus(); });
+    c.addEventListener('click', function () {
+      input.value = c.textContent;
+      document.getElementById('tryErr').textContent = '';
+      var haveName = nameBox.value.trim().length > 0;
+      if (window.ticTrack) window.ticTrack('try_chip', { role: c.textContent, auto: haveName });
+      if (haveName) {
+        clearNudge();
+        if (formEl.requestSubmit) formEl.requestSubmit(); else formEl.dispatchEvent(new Event('submit', { cancelable: true }));
+      } else {
+        nudge.hidden = false; nameBox.classList.add('nudge'); nameBox.focus();
+      }
+    });
   });
 
   // Hero video: only downloaded/played when it is on screen and the visitor hasn't asked for reduced motion.
