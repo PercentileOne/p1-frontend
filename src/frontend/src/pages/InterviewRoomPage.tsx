@@ -1775,7 +1775,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
                       />
                     ) : (
                       <>
-                        <img src="/images/michelle-static-avatar.png" alt="Michelle" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
+                        <img src={seatsIv.michelle?.portraitUrl ?? '/images/interviewers/michelle.jpg'} alt="Michelle" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
                         {/* Amplitude-driven mouth movement — only relevant on the non-English
                             live-TTS path; MOUTH_OVERLAY_ENABLED is currently false anyway
                             (see project-mouth-movement-avatars memory). */}
