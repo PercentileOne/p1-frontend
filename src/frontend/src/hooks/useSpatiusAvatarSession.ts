@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AvatarController, AvatarView } from '@spatius/avatarkit';
-import { fetchAvatarAudioPcm } from '../api/liveAvatarApi';
+import { fetchAvatarAudioPcm, loudenForFace } from '../api/liveAvatarApi';
+import { getStoredInterviewerVolume } from '../api/ttsApi';
 import { useAuthStore } from '../auth/authStore';
 import { logFlowEvent } from '../api/flowLogger';
 import { tapSpokenPcmForRecording } from '../api/ttsApi';
@@ -320,8 +321,11 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
     await new Promise<void>(resolve => {
       const ceiling = window.setTimeout(resolve, seconds * 1000 + 15000); // generous: strict sync may hold the sound for a moment while the lips catch up
       waiterRef.current = () => { window.clearTimeout(ceiling); resolve(); };
-      ctrl.send(pcm.slice().buffer, true); // copy so the SDK owns its buffer; true = last chunk of this turn
-      tapSpokenPcmForRecording(pcm); // phones only: the recording mix cannot hear the face's own player
+      // Louder than the raw clip, and following the Voice Volume slider. The recording copy gets the same lift but not the slider (a saved interview must not depend
+      // on how loud this listener had it).
+      const heard = loudenForFace(pcm, role, getStoredInterviewerVolume());
+      ctrl.send(heard.slice().buffer as ArrayBuffer, true); // copy so the SDK owns its buffer; true = last chunk of this turn
+      tapSpokenPcmForRecording(loudenForFace(pcm, role, 1)); // phones only: the recording mix cannot hear the face's own player
       try { onSent?.(); } catch { /* the caller's timer only */ }
     });
   }, []);

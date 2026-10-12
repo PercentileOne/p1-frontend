@@ -73,7 +73,7 @@ const MICHELLE_BOOST = 2.2;
 // Features/Interviews/AvatarAudio/AvatarAudioHandler.cs's own comment) — safe to reinterpret the
 // raw bytes as signed 16-bit samples directly. Clamped to avoid wraparound distortion on already-
 // loud passages.
-function boostPcm16(bytes: Uint8Array, gain: number, limitToPeak = false): Uint8Array {
+export function boostPcm16(bytes: Uint8Array, gain: number, limitToPeak = false): Uint8Array {
   const samples = new Int16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
   const boosted = new Int16Array(samples.length);
   let g = gain;
@@ -88,31 +88,14 @@ function boostPcm16(bytes: Uint8Array, gain: number, limitToPeak = false): Uint8
   return new Uint8Array(boosted.buffer);
 }
 
-// Fetches the raw PCM clip (see Features/Interviews/AvatarAudio), boosts it, and base64-encodes
-// it — exactly the shape LiveAvatarSession.repeatAudio() expects. Chunked conversion, not
-// String.fromCharCode(...bigArray), since that blows the call stack on anything more than a
-// few seconds of 24kHz 16-bit audio (~48,000 bytes/sec).
-export async function fetchAvatarAudioBase64(text: string, role: 'hr' | 'technical' | 'michelle'): Promise<string> {
-  const genRes = await fetch(`${API_BASE}/interviews/avatar-audio`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: sanitiseForTTS(text), role, language: getTTSLanguage(), interviewerId: seatInterviewerId(role) }),
-  });
-  if (!genRes.ok) throw new Error(`avatar-audio proxy error: ${genRes.status}`);
-  const { audioUrl } = await genRes.json() as { audioUrl: string };
-
-  const audioRes = await fetch(audioUrl);
-  if (!audioRes.ok) throw new Error(`avatar-audio clip fetch error: ${audioRes.status}`);
-  const bytes = role === 'michelle'
-    ? boostPcm16(new Uint8Array(await audioRes.arrayBuffer()), MICHELLE_BOOST, true)
-    : boostPcm16(new Uint8Array(await audioRes.arrayBuffer()), VOLUME_BOOST);
-
-  const CHUNK = 8192;
-  let binary = '';
-  for (let i = 0; i < bytes.length; i += CHUNK) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
-  }
-  return btoa(binary);
+/**
+ * The loudness of a Spatius face's voice (2026-10-12): the raw clip plays quietly, and the Voice Volume slider had no effect on faces at all (the slider only moved the
+ * plain-voice path), so Francis could not turn a quiet interviewer up even at maximum. Gives the faces the same lift the old HeyGen path had (VOLUME_BOOST, and the bigger
+ * MICHELLE_BOOST), scaled by the slider (0 = silent), and never past the point of clipping.
+ */
+export function loudenForFace(pcm: Uint8Array, role: 'hr' | 'technical' | 'michelle', volume: number): Uint8Array {
+  const base = role === 'michelle' ? MICHELLE_BOOST : VOLUME_BOOST;
+  return boostPcm16(pcm, base * Math.max(0, Math.min(1, volume)), true);
 }
 
 // Raw (un-boosted) PCM16 mono 24 kHz clip — same backend route as above, returned as bytes instead of base64.

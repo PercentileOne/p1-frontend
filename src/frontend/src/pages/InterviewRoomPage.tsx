@@ -1331,7 +1331,7 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
               <>
                 <div onClick={() => setVolumeMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
                 <div style={{
-                  position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 41, width: 180,
+                  position: phone ? 'fixed' : 'absolute', top: phone ? 56 : 'calc(100% + 6px)', right: phone ? 12 : 0, zIndex: 41, width: 180,
                   background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: 10,
                   boxShadow: '0 12px 32px rgba(0,0,0,0.4)', padding: '14px 16px',
                 }}>

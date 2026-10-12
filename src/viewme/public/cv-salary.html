@@ -914,7 +914,7 @@
   }
 
   function openVoiceOverlay(narrativeScript) {
-    var lines = narrativeScript.split(/(?<=[.!?])\s+/).map(function(s) { return s.trim(); }).filter(Boolean);
+    var lines = narrativeScript.replace(/([.!?])\s+/g, '$1|||').split('|||').map(function(s) { return s.trim(); }).filter(Boolean);
     linesEl.innerHTML = lines.map(function(l) { return '<p>' + escapeHtml(l) + '</p>'; }).join('');
     overlay.classList.add('open');
 

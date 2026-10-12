@@ -18,7 +18,8 @@ const GLOW = 'rgba(52,211,153,0.28)';
 // template), so it's split into sentences here rather than pre-authored as an array of lines.
 export function CvAnalysisVoiceOverlay({ narrativeScript, title, onClose }: Props) {
   const lines = useRef(
-    narrativeScript.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean)
+    // (no regex look-behind here: Safari before 16.4 cannot parse a script that contains one, and the whole app then never starts)
+    narrativeScript.replace(/([.!?])\s+/g, '$1|||').split('|||').map(s => s.trim()).filter(Boolean)
   ).current;
   const [visibleLines, setVisibleLines] = useState(0);
   const [speaking, setSpeaking] = useState(true);
