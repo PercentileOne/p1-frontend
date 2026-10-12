@@ -70,7 +70,7 @@ const NAV_ITEMS = [
   { Icon: HeartHandshake, label: "My Career Coach", slug: "career-coach" },
   { Icon: Compass, label: "Careers", slug: "careers" },
   { Icon: Briefcase, label: "Jobs", slug: "jobs" },
-  { Icon: Wallet, label: "What Am I Worth?", slug: "cv-salary" },
+  { Icon: Wallet, label: "CV Analysis", slug: "cv-salary" },
   // Other
   { Icon: MessageSquare, label: "Messages", slug: "messages" },
   { Icon: Zap, label: "Demo", slug: "demo" },
@@ -737,7 +737,7 @@ export default function CandidateDashboard() {
     setSearchParams({ tab: "help", article: articleId });
   }
   // Wording for "New to …?" where the menu label doesn't read naturally in a sentence.
-  const HINT_LABELS: Record<string, string> = { "Job Interviews": "practice interviews", "What Am I Worth?": "the CV Analyzer", "My Profile": "your profile", "My Career Coach": "your Career Coach" };
+  const HINT_LABELS: Record<string, string> = { "Job Interviews": "practice interviews", "CV Analysis": "CV Analysis", "My Profile": "your profile", "My Career Coach": "your Career Coach" };
 
   return (
     <div style={{ display: "flex", width: "100%", minHeight: "100vh", background: "var(--bg)", fontFamily: '-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif' }}>
@@ -902,7 +902,7 @@ export default function CandidateDashboard() {
         {activeNav === "Careers"        && <CareersPanel />}
         {activeNav === "Job Interviews"     && <MyInterviewsPage />}
         {activeNav === "Certifications & Exams" && <CertExamsPanel />}
-        {activeNav === "What Am I Worth?" && <CvAnalysisModal onClose={() => navTo("Dashboard")} onStudyTopic={(topic) => navigate("/dashboard?tab=learn", { state: { studyTopic: topic } })} />}
+        {activeNav === "CV Analysis" && <CvAnalysisModal onClose={() => navTo("Dashboard")} onStudyTopic={(topic) => navigate("/dashboard?tab=learn", { state: { studyTopic: topic } })} />}
         {activeNav === "Question Bank"  && <QuestionBankPage />}
         {activeNav === "My Talks"       && <MyTalksPage />}
         {activeNav === "Learn Alerts"   && <LearnAlertsPage />}
@@ -914,7 +914,7 @@ export default function CandidateDashboard() {
         {activeNav === "Demo"           && <DemoPanel />}
         {activeNav === "Settings"       && <SettingsPage />}
 
-        {!["My Career Coach", "Learn", "Careers", "Job Interviews", "Certifications & Exams", "What Am I Worth?", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Help", "Settings"].includes(activeNav) && <>
+        {!["My Career Coach", "Learn", "Careers", "Job Interviews", "Certifications & Exams", "CV Analysis", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Help", "Settings"].includes(activeNav) && <>
 
         <GettingStartedCard token={authToken} onNavigate={navTo} />
 

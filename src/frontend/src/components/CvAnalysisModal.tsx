@@ -174,7 +174,7 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontSize: 10, fontWeight: 700, color: ACCENT, letterSpacing: '0.06em', marginBottom: 4, textTransform: 'uppercase' }}>
-                  CV Analyzer {isRecruiterView && '· Candidate Evaluation'}
+                  CV Analysis {isRecruiterView && '· Candidate Evaluation'}
                 </div>
                 <h2 style={{ fontSize: 20, fontWeight: 800, color: '#fff', margin: 0 }}>
                   {isRecruiterView ? "What roles fit this candidate?" : "What roles could you apply for?"}

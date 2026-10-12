@@ -17,7 +17,7 @@ function fmtK(n: number) {
   return n >= 1000 ? `£${Math.round(n / 1000)}k` : `£${n}`;
 }
 
-// Public, unauthenticated view for a shared CV Analyzer link (Francis, 2026-09-18) — "Copy
+// Public, unauthenticated view for a shared CV Analysis link (Francis, 2026-09-18) — "Copy
 // and/or Share" so a candidate can send their own analysis to a friend or mentor without them
 // needing an account. Same shape as SharedInterviewPage.tsx: no nav chrome, fetched by token.
 export default function SharedCvAnalysisPage() {
@@ -61,7 +61,7 @@ export default function SharedCvAnalysisPage() {
     <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', padding: '48px 20px' }}>
       <div style={{ width: '100%', maxWidth: 680 }}>
         <div style={{ fontSize: 10, fontWeight: 700, color: ACCENT, letterSpacing: '0.06em', marginBottom: 8, textTransform: 'uppercase' }}>
-          CV Analyzer · Shared Analysis
+          CV Analysis · Shared Analysis
         </div>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fff', margin: '0 0 8px' }}>
           {record.candidateName ? `CV Analysis for ${record.candidateName}` : 'CV Analysis'}
