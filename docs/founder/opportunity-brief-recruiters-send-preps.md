@@ -4,6 +4,8 @@ Brief for the meeting with Mukesh. Draft, 12 October 2026. Written by Francis Co
 
 ## The idea in one sentence
 
+**Send a prep link every time you arrange an interview.** That is the whole habit. Simple.
+
 **At the moment a recruiter books an interview, the candidate gets a time, a place and "good luck". We put a rehearsal in that same message.** Recruitment is built to find and submit the candidate. Nobody is equipped, or paid, to prepare them, yet the interview is the one moment that decides whether the recruiter earns anything.
 
 ## The gap
@@ -57,6 +59,7 @@ Brief for the meeting with Mukesh. Draft, 12 October 2026. Written by Francis Co
 ## What I would test in the next 30 days
 
 - 10 recruiters, 20 preps each, over 30 days.
+- The headline number is the **attach rate**: of the interviews each recruiter arranges, what share carry a prep link? The aim is every one.
 - Measure: prep opened, started, completed, second attempt, score change, interview to offer.
 - Build per-job practice links so a recruiter can put one link on any advert.
 - Send each recruiter a short report: who practised, how they scored, who got the offer.
