@@ -1635,7 +1635,7 @@ export default function PublicLearnPage() {
             content toward specific sub-areas within the main subject. */}
         <div style={{ background: BG3, border: `1px solid ${BORDER}`, borderRadius: 12, padding: '18px 20px', marginTop: 16, marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT1 }}>Special Focus</span>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT1 }}>Special Focus: subjects or areas</span>
             <span style={{ fontSize: 11, color: TEXT3, fontWeight: 400 }}>(optional — narrows the course to specific sub-topics)</span>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
@@ -1650,13 +1650,25 @@ export default function PublicLearnPage() {
                   setSpecialFocusInput('');
                 }
               }}
-              placeholder="e.g. .NET, Microservices — press Enter to add"
+              onBlur={() => { if (specialFocusInput.trim()) { addSpecialFocusChip(specialFocusInput); setSpecialFocusInput(''); } }}
+              placeholder="e.g. .NET, Microservices — type it, then press Enter or tap Add"
               style={{
                 flex: 1, background: 'rgba(255,255,255,0.05)', border: `1px solid ${BORDER}`,
                 borderRadius: 10, padding: '13px 16px', color: TEXT1, fontSize: 14,
                 fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
               }}
             />
+            {specialFocusInput.trim() && (
+
+              <button type="button" onClick={() => { addSpecialFocusChip(specialFocusInput); setSpecialFocusInput(''); }}
+
+                style={{ flexShrink: 0, background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.5)', borderRadius: 10, padding: '0 16px', color: '#34D399', fontSize: 13, fontWeight: 800, fontFamily: 'inherit', cursor: 'pointer' }}>
+
+                + Add
+
+              </button>
+
+            )}
             <button
               type="button"
               onClick={handleWhatsHot}

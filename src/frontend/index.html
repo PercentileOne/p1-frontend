@@ -64,22 +64,40 @@
       <div id="boot-text">Loading TheInterviewChair.com&hellip;</div>
     </div>
     <script>
-      /* Boot watchdog (2026-10-12). If the app's script cannot run in this browser (found live: Safari 15.6.1 cannot read it at all, so the page sat on "Loading…"
-         for ever and a visitor thought the demo was broken), say so plainly after 12 seconds instead of leaving the loading screen up, and record it so it shows in the
-         Activity Log. Plain old JavaScript on purpose: it has to run in the browsers the app itself cannot. #boot-text only exists until the app replaces #root. */
+      /* Boot guard (2026-10-12). Two jobs, in plain old JavaScript because it has to run in the very browsers the app itself cannot:
+         1. If this browser is plainly too old (cannot read modern JavaScript, or has no module support), say so at once instead of leaving "Loading…" up for ever.
+            Found live: a visitor on Safari 15.6.1 sat on the loading screen thinking the demo was broken, and his older iMac was worse.
+         2. Otherwise, if the app has not replaced the loading text after 12 seconds, say it is taking too long and offer the same way out.
+         Both are recorded (boot_too_old / boot_stuck) so they show in the Activity Log. #boot-text only exists until the app replaces #root. */
       (function () {
-        setTimeout(function () {
-          var t = document.getElementById('boot-text');
-          if (!t) return;
-          t.style.cssText = 'max-width:340px;text-align:center;line-height:1.6;font-size:14px;color:rgba(240,244,255,0.85);padding:0 20px';
-          t.innerHTML = 'This is taking longer than it should.<br><span style="color:rgba(240,244,255,0.6)">If this screen stays, your browser may be too old for the interview room. Please update Safari or your system, or open this page in Chrome or Edge.</span><br><br><a href="" onclick="location.reload();return false" style="color:#34D399;font-weight:700">Try again</a>';
+        function tooOld() {
+          try { new Function('var o={}; o.a ||= 1; return o?.a ?? 2;'); } catch (e) { return true; }
+          try { if (!('noModule' in HTMLScriptElement.prototype)) return true; } catch (e) { return true; }
+          return typeof fetch === 'undefined' || typeof Promise === 'undefined';
+        }
+        function tell(kind) {
           try {
             fetch('https://api.explain.global/api/events', {
               method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
-              body: JSON.stringify({ sessionId: 'boot-' + Math.random().toString(36).slice(2) + Date.now().toString(36), eventType: 'boot_stuck', page: location.pathname, portal: 'candidate', metadata: { secs: 12 } })
+              body: JSON.stringify({ sessionId: 'boot-' + Math.random().toString(36).slice(2) + Date.now().toString(36), eventType: kind, page: location.pathname, portal: 'candidate', metadata: {} })
             });
           } catch (e) { /* nothing more to do */ }
-        }, 12000);
+        }
+        function show(old) {
+          var t = document.getElementById('boot-text');
+          if (!t) return false;
+          var btn = 'display:inline-block;margin:6px 6px 0;padding:10px 18px;border-radius:10px;background:#34D399;color:#04120c;font-weight:800;text-decoration:none;font-size:15px';
+          t.style.cssText = 'max-width:440px;text-align:center;line-height:1.6;font-size:15px;color:rgba(240,244,255,0.9);padding:0 20px';
+          t.innerHTML = (old
+            ? '<b style="font-size:19px;color:#fff">Your browser is too old for TheInterviewChair.com</b><br>This computer\'s browser can\'t run the interview. It takes two minutes to fix, and it\'s free: install one of these, then open this page again.'
+            : '<b style="font-size:19px;color:#fff">This is taking longer than it should</b><br>If this screen stays, your browser may be too old for the interview. Try again, or open this page in one of these (free):')
+            + '<br><a href="https://www.google.com/chrome/" style="' + btn + '">Google Chrome</a><a href="https://www.mozilla.org/firefox/new/" style="' + btn + '">Firefox</a>'
+            + (old ? '' : '<br><a href="" onclick="location.reload();return false" style="color:#34D399;font-weight:700;display:inline-block;margin-top:14px">Try again</a>')
+            + '<br><span style="display:inline-block;margin-top:14px;font-size:13px;color:rgba(240,244,255,0.55)">Still stuck? Email support@theinterviewchair.com</span>';
+          return true;
+        }
+        if (tooOld()) { if (show(true)) tell('boot_too_old'); return; }
+        setTimeout(function () { if (show(false)) tell('boot_stuck'); }, 12000);
       })();
     </script>
     <script type="module" src="/src/main.tsx"></script>

@@ -807,7 +807,7 @@ export default function InterviewPackStart() {
             suggests currently in-demand ones for the named role, candidate keeps/discards */}
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: phone ? '18px 14px' : '24px 28px', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Special Focus</span>
+            <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Special Focus: subjects or areas</span>
             <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 400 }}>(optional — narrows questions to specific topics)</span>
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
@@ -822,13 +822,25 @@ export default function InterviewPackStart() {
                   setSpecialFocusInput('');
                 }
               }}
-              placeholder="e.g. Agentic AI Patterns — press Enter to add"
+              onBlur={() => { if (specialFocusInput.trim()) { addSpecialFocusChip(specialFocusInput); setSpecialFocusInput(''); } }}
+              placeholder="e.g. Agentic AI Patterns — type it, then press Enter or tap Add"
               style={{
                 flex: 1, background: 'var(--bg3)', border: '1px solid var(--border)',
                 borderRadius: '10px', padding: '13px 16px', color: 'var(--text)', fontSize: '14px',
                 fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
               }}
             />
+            {specialFocusInput.trim() && (
+
+              <button type="button" onClick={() => { addSpecialFocusChip(specialFocusInput); setSpecialFocusInput(''); }}
+
+                style={{ flexShrink: 0, background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.5)', borderRadius: 10, padding: '0 16px', color: '#34D399', fontSize: 13, fontWeight: 800, fontFamily: 'inherit', cursor: 'pointer' }}>
+
+                + Add
+
+              </button>
+
+            )}
             <button
               type="button"
               onClick={handleWhatsHot}

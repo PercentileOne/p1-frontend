@@ -184,7 +184,7 @@ export default function QuestionPackPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>Special Focus</span>
+            <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>Special Focus: subjects or areas</span>
             <span style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.35)' }}>(optional — narrows questions to specific topics)</span>
           </div>
           <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
@@ -194,9 +194,21 @@ export default function QuestionPackPage() {
               onKeyDown={e => {
                 if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addFocusChip(focusInput); setFocusInput(''); }
               }}
-              placeholder="e.g. Agentic AI Patterns — press Enter to add"
+              onBlur={() => { if (focusInput.trim()) { addFocusChip(focusInput); setFocusInput(''); } }}
+              placeholder="e.g. Agentic AI Patterns — type it, then press Enter or tap Add"
               style={{ flex: 1, minWidth: 0, boxSizing: 'border-box', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '13px 14px', fontSize: 14, color: '#fff' }}
             />
+            {focusInput.trim() && (
+
+              <button type="button" onClick={() => { addFocusChip(focusInput); setFocusInput(''); }}
+
+                style={{ flexShrink: 0, background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.5)', borderRadius: 10, padding: '0 16px', color: '#34D399', fontSize: 13, fontWeight: 800, fontFamily: 'inherit', cursor: 'pointer' }}>
+
+                + Add
+
+              </button>
+
+            )}
             <button
               type="button"
               onClick={handleWhatsHot}
