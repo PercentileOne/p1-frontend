@@ -6,6 +6,10 @@ Brief for the meeting with Mukesh. Draft, 12 October 2026. Written by Francis Co
 
 **Send a prep link every time you arrange an interview.** That is the whole habit. Simple.
 
+**What we sell is realism.** Other tools give you questions. We give you the interview: a live interviewer who looks at you, speaks, listens and reacts, in 32 languages, for the exact job. Nerves only fade when the rehearsal feels real, and that is what we reproduce.
+
+**The pitch in two parts: the habit, and the product.** The habit: a prep link with every interview arranged. The product: the nearest thing to the real interview.
+
 **At the moment a recruiter books an interview, the candidate gets a time, a place and "good luck". We put a rehearsal in that same message.** Recruitment is built to find and submit the candidate. Nobody is equipped, or paid, to prepare them, yet the interview is the one moment that decides whether the recruiter earns anything.
 
 ## The gap
