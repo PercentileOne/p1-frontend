@@ -76,10 +76,15 @@ export default function MyTalksPage() {
 
   useEffect(() => {
     if (!authToken) return;
-    fetch(`${apiBase}/api/talks`, { headers: { Authorization: `Bearer ${authToken}` } })
+    // Gives up after 15 s with the normal "couldn't load, try refreshing" message instead of loading for ever (2026-10-12).
+    const ctl = new AbortController();
+    const timer = window.setTimeout(() => ctl.abort(), 15000);
+    fetch(`${apiBase}/api/talks`, { headers: { Authorization: `Bearer ${authToken}` }, signal: ctl.signal })
       .then(res => { if (!res.ok) throw new Error(String(res.status)); return res.json(); })
       .then((data: TalkSummary[]) => setItems(data))
-      .catch(() => setError(true));
+      .catch(() => setError(true))
+      .finally(() => window.clearTimeout(timer));
+    return () => { window.clearTimeout(timer); ctl.abort(); };
   }, [authToken, apiBase]);
 
   function toggleSort(key: SortKey) {
