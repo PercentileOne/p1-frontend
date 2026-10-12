@@ -49,8 +49,10 @@ select, button, input[type="file"], input[type="radio"], input[type="checkbox"],
   outline: none;
 }
 
-/* Keep caret only in actual text inputs and textareas */
-input[type="text"], input[type="email"], input[type="password"], input[type="search"], textarea {
+/* Keep caret only in actual text inputs and textareas. Written to cover EVERY typing field (2026-10-12): an input with no type attribute, or a number / date / url / tel one,
+   sits inside a <label> and inherited that label's "transparent caret" above, so clicking it showed no cursor and it looked like plain text (the Invite codes form). */
+input:not([type]), input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="number"], input[type="date"],
+input[type="url"], input[type="tel"], input[type="time"], input[type="datetime-local"], textarea {
   caret-color: var(--blue);
 }
 
