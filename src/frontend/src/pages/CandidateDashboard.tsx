@@ -68,7 +68,7 @@ const NAV_ITEMS = [
   { Icon: BookMarked, label: "Question Bank", slug: "question-bank" },
   // Career
   { Icon: HeartHandshake, label: "My Career Coach", slug: "career-coach" },
-  { Icon: Compass, label: "Careers", slug: "careers" },
+  { Icon: Compass, label: "Careers Explorer", slug: "careers" },
   { Icon: Briefcase, label: "Jobs", slug: "jobs" },
   { Icon: Wallet, label: "CV Analysis", slug: "cv-salary" },
   // Other
@@ -899,7 +899,7 @@ export default function CandidateDashboard() {
         {activeNav === "Help"           && <HelpCentre key={helpArticleId ?? "index"} initialArticleId={helpArticleId} onNavigate={navTo} />}
         {activeNav === "My Career Coach" && <CareerCoachPanel />}
         {activeNav === "Learn"          && <LearnPanel initialTopic={studyTopic} />}
-        {activeNav === "Careers"        && <CareersPanel />}
+        {activeNav === "Careers Explorer" && <CareersPanel />}
         {activeNav === "Job Interviews"     && <MyInterviewsPage />}
         {activeNav === "Certifications & Exams" && <CertExamsPanel />}
         {activeNav === "CV Analysis" && <CvAnalysisModal onClose={() => navTo("Dashboard")} onStudyTopic={(topic) => navigate("/dashboard?tab=learn", { state: { studyTopic: topic } })} />}
@@ -914,7 +914,7 @@ export default function CandidateDashboard() {
         {activeNav === "Demo"           && <DemoPanel />}
         {activeNav === "Settings"       && <SettingsPage />}
 
-        {!["My Career Coach", "Learn", "Careers", "Job Interviews", "Certifications & Exams", "CV Analysis", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Help", "Settings"].includes(activeNav) && <>
+        {!["My Career Coach", "Learn", "Careers Explorer", "Job Interviews", "Certifications & Exams", "CV Analysis", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Help", "Settings"].includes(activeNav) && <>
 
         <GettingStartedCard token={authToken} onNavigate={navTo} />
 
