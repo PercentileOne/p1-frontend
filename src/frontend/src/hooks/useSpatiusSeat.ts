@@ -34,7 +34,8 @@ function manualTransform(): Transform | undefined {
 }
 
 // A connection that neither succeeds nor fails must not hold the interview hostage (same limit as the demo).
-const CONNECT_LIMIT_MS = 15000;
+// 25 s (was 15, 2026-10-12): a slow connection (a visitor in Johannesburg) needs longer than the usual 3 to 7 seconds, and giving up early costs the interviewer's face for the whole seat.
+const CONNECT_LIMIT_MS = 25000;
 
 // Where a face may be drawn OUTSIDE the full interview room — the Talk room, the interviewer picker's preview and the "Say hi" page — which stay desktop-only until
 // the tap-to-start step is wired into them. The full interview room no longer asks: HeyGen was retired on 2026-10-11, so phones use these faces there (after a tap).

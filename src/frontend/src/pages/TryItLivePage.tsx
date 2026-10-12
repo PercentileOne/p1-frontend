@@ -71,7 +71,8 @@ type Phase = 'topic' | 'starting' | 'asking' | 'answering' | 'coaching' | 'scori
 // visitor sat on "taking their seat" for over four minutes) is treated as failed after a limit, and the page moves on to the next option.
 const withTimeout = <T,>(p: Promise<T>, ms: number, label: string): Promise<T> =>
   Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`${label} timed out after ${Math.round(ms / 1000)}s`)), ms))]);
-const SPATIUS_CONNECT_LIMIT_MS = 15000;
+// 30 s on a computer (was 15, 2026-10-12): normal connections take 3 to 7 seconds, but a visitor in Johannesburg timed out at 15 s and got the photo and voice. Slow is not broken.
+const SPATIUS_CONNECT_LIMIT_MS = 30000;
 // Phones get longer (2026-10-11: on an iPhone the face's 6.5 MB model did not arrive inside 15 seconds, so the interview fell back to a photo, twice).
 const SPATIUS_CONNECT_LIMIT_MOBILE_MS = 35000;
 // Said before the first question in an English demo (other languages get the server's translation, in TryOutStart.privacy).
@@ -834,7 +835,7 @@ export default function TryItLivePage() {
               <div style={{ position: 'absolute', top: 0, bottom: 0, width: '40%', borderRadius: 99, background: `linear-gradient(90deg,${GREEN},#047857)`, animation: 'tryBarSlide 1.3s ease-in-out infinite' }} />
             </div>
             {slowHint && (
-              <div style={{ fontSize: 12.5, color: 'var(--text-3, #94a3b8)', marginTop: 14 }}>Still working — some roles take a little longer to prepare. Thanks for hanging on.</div>
+              <div style={{ fontSize: 12.5, color: 'var(--text-3, #94a3b8)', marginTop: 14 }}>{avatarState === 'connecting' ? "Your connection is a little slow, so your interviewer's live face can take up to half a minute. If it takes longer we'll carry on with their photo and voice." : "Still working — some roles take a little longer to prepare. Thanks for hanging on."}</div>
             )}
           </div>
         )}
