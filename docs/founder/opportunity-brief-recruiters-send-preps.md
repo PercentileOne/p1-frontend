@@ -4,7 +4,7 @@ Brief for the meeting with Mukesh. Draft, 12 October 2026. Written by Francis Co
 
 ## The idea in one sentence
 
-Recruitment is built to find and submit the candidate. Nobody is equipped, or paid, to prepare them, yet the interview is the one moment that decides whether the recruiter earns anything.
+**At the moment a recruiter books an interview, the candidate gets a time, a place and "good luck". We put a rehearsal in that same message.** Recruitment is built to find and submit the candidate. Nobody is equipped, or paid, to prepare them, yet the interview is the one moment that decides whether the recruiter earns anything.
 
 ## The gap
 
@@ -14,7 +14,7 @@ Recruitment is built to find and submit the candidate. Nobody is equipped, or pa
 
 ## What TheInterviewChair does about it
 
-- **Interview Prep (push).** The recruiter sends a link with the job spec and CV loaded. The candidate gets up to 3 practice interviews: spoken, scored on five dimensions, with feedback and a path to a pass.
+- **Interview Prep (push), at the point of booking.** The recruiter sends a link, with the interview confirmation, with the job spec and CV loaded. The candidate gets up to 3 practice interviews: spoken, scored on five dimensions, with feedback and a path to a pass.
 - **The Magic Button (pull).** A "Practise for this job" button beside a job advert. One click puts the candidate into a practice interview for that exact job. Two demo versions exist: a job-board style page and a recruiter-branded careers page.
 - **The result belongs to the candidate.** Scores, certificate and a shareable link, so every prep sent also brings a new person onto the platform.
 
