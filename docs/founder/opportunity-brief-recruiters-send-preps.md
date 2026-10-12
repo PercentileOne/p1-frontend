@@ -52,7 +52,7 @@ Recruitment is built to find and submit the candidate. Nobody is equipped, or pa
 - **Does it win offers?** We do not yet measure sent, opened, started, completed, second attempt and offer. That funnel is the first thing to build, and the first number a recruiter will ask for.
 - **Per-prep billing.** 99p per prep is the published price. Billing it per prep is not built; recruiters pay through the seat fee today.
 - **The Magic Button on other people's job pages.** Demos exist. A one-line embed, or a "practice link" generated per job that a recruiter pastes into an advert, is the next build.
-- **"Nobody does this."** I have not found anyone who sells recruiter-sent practice as the product, but adjacent practice tools exist (for example Incruiter and Interviewer.AI). Say "I have not found one", not "there is none".
+- **What the big platforms do, and do not do.** LinkedIn Premium offers AI interview practice on job postings (for jobs where the member is a strong match), and Indeed has an AI mock-interview tool (Career Scout). Both are candidate-side and self-serve, and LinkedIn's is behind a paid subscription. I have not found any of them putting practice in the **recruiter's** hands to send, and none is free to the public beside every job. That is the gap. My first-hand evidence: in 25 years of interviewing and hiring, no recruiter has ever sent me practice questions, and Mike Petrie, 30 years in recruitment, has never seen it either.
 
 ## What I would test in the next 30 days
 
