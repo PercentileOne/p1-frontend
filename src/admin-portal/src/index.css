@@ -56,6 +56,13 @@ input[type="url"], input[type="tel"], input[type="time"], input[type="datetime-l
   caret-color: var(--blue);
 }
 
+/* A focused field is visibly focused (2026-10-12). Most inputs here set outline:none inline, so with no caret and no ring a clicked box looked untouched. !important is needed to
+   beat the inline border colour. */
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 3px rgba(79, 142, 247, 0.25);
+}
+
 @keyframes adminSpin { to { transform: rotate(360deg); } }
 .admin-spin { animation: adminSpin 0.8s linear infinite; }
 
