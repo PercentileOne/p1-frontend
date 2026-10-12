@@ -24,6 +24,10 @@ public class TryOutTests
     [InlineData("{\"model_answer\":\"I would start by finding where the briefs go wrong and fixing that first.\",\"n\":3}")]
     [InlineData("\"I would start by finding where the briefs go wrong and fixing that first.\"")]
     [InlineData("I would start by finding where the briefs go wrong and fixing that first.")]
+    [InlineData("{\"final\": {\"answer\": \"I would start by finding where the briefs go wrong and fixing that first.\"}}")]
+    [InlineData("{\"final\": {\"answer\": \"I would start by finding where the briefs go wrong and fixing that first.\", \"confidence\": \"high\"}, \"status\": \"ok\"}")]
+    [InlineData("{\"response\": {\"result\": {\"text\": \"I would start by finding where the briefs go wrong and fixing that first.\"}}}")]
+    [InlineData("{\"answers\": [\"I would start by finding where the briefs go wrong and fixing that first.\"]}")]
     public void Model_answer_text_is_found_whatever_shape_the_model_replies_in(string reply) =>
         Assert.StartsWith("I would start by finding", TryOut.ExtractAnswerText(reply));
 
@@ -32,6 +36,7 @@ public class TryOutTests
     [InlineData("{}")]
     [InlineData("")]
     [InlineData("{\"answer\":null}")]
+    [InlineData("{\"final\": {\"answer\": \"\"}}")]
     public void An_empty_model_reply_is_an_error_so_it_is_retried(string reply) =>
         Assert.Throws<InvalidOperationException>(() => TryOut.ExtractAnswerText(reply));
 

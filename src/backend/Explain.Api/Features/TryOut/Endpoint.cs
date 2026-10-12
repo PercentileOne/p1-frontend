@@ -564,33 +564,60 @@ public static class Endpoint
         return Explain.Api.Infrastructure.TextTrim.ToSentence(text, 900);
     }
 
-    /// <summary>Pulls the answer text out of whatever the model returned: {"answer":"..."}, the same under another key, or plain text. Throws if there is nothing usable.</summary>
+    /// <summary>
+    /// Pulls the answer text out of whatever the model returned: {"answer":"..."}, the same under another key, wrapped one or more levels down ({"final":{"answer":"..."}}, found live
+    /// 2026-10-12: all three tries came back in that shape, so the visitor waited 30 seconds for an error), or plain text. Throws if there is nothing usable.
+    /// </summary>
     public static string ExtractAnswerText(string? content)
     {
         var raw = (content ?? "").Trim();
         try
         {
             using var doc = JsonDocument.Parse(raw);
-            var root = doc.RootElement;
-            if (root.ValueKind == JsonValueKind.String) raw = root.GetString() ?? "";
-            else if (root.ValueKind == JsonValueKind.Object)
-            {
-                string? best = null;
-                foreach (var p in root.EnumerateObject())
-                {
-                    if (p.Value.ValueKind != JsonValueKind.String) continue;
-                    var v = (p.Value.GetString() ?? "").Trim();
-                    if (p.Name.Equals("answer", StringComparison.OrdinalIgnoreCase) && v.Length > 0) { best = v; break; }
-                    if (v.Length > (best?.Length ?? 0)) best = v;   // any other text field: take the longest
-                }
-                raw = best ?? "";
-            }
-            else raw = "";
+            raw = FindAnswerText(doc.RootElement, 0) ?? "";
         }
         catch (JsonException) { /* not JSON: the model just wrote the answer, so use it as it is */ }
         raw = raw.Trim();
         if (raw.Length < 20) throw new InvalidOperationException("Empty model answer text");
         return raw;
+    }
+
+    private static readonly string[] AnswerKeys = ["answer", "modelanswer", "model_answer", "text", "content", "response", "result", "final"];
+
+    /// <summary>The answer text anywhere inside the reply: a string under a likely key first (at any depth), otherwise the longest string found.</summary>
+    private static string? FindAnswerText(JsonElement e, int depth)
+    {
+        if (depth > 5) return null;
+        switch (e.ValueKind)
+        {
+            case JsonValueKind.String:
+                return (e.GetString() ?? "").Trim();
+            case JsonValueKind.Object:
+                foreach (var key in AnswerKeys)
+                    foreach (var p in e.EnumerateObject())
+                    {
+                        if (!p.Name.Equals(key, StringComparison.OrdinalIgnoreCase)) continue;
+                        var hit = FindAnswerText(p.Value, depth + 1);
+                        if (!string.IsNullOrWhiteSpace(hit)) return hit;
+                    }
+                string? best = null;
+                foreach (var p in e.EnumerateObject())
+                {
+                    var v = FindAnswerText(p.Value, depth + 1);
+                    if (v is not null && v.Length > (best?.Length ?? 0)) best = v;
+                }
+                return best;
+            case JsonValueKind.Array:
+                string? longest = null;
+                foreach (var item in e.EnumerateArray())
+                {
+                    var v = FindAnswerText(item, depth + 1);
+                    if (v is not null && v.Length > (longest?.Length ?? 0)) longest = v;
+                }
+                return longest;
+            default:
+                return null;
+        }
     }
 
     /// <summary>Asks the model and reads the reply, trying again (up to three times in all) if the call fails OR the reply cannot be used.</summary>
