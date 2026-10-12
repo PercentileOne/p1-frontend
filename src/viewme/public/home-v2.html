@@ -862,7 +862,9 @@
       <div class="sm-cta">
         <h3>See it happen in your own interview.</h3>
         <p>Every dimension above, scored live, on a role you actually name.</p>
-        <a class="btn btn-green" href="https://login.theinterviewchair.com/register">Start practicing &rarr;</a>
+        <!-- Was a link to the account sign-up (found 2026-10-12: a phone visitor read this popup for three minutes, tapped it, and stopped at the sign-up form). The copy
+             promises "your own interview, on a role you actually name", which is the free demo, so the button now closes the popup and takes them to the demo form. -->
+        <a class="btn btn-green" href="#try" onclick="event.preventDefault();closeScoreModal();setTimeout(function(){var s=document.getElementById('try');if(s)s.scrollIntoView({behavior:'smooth',block:'start'});var t=document.getElementById('topic');if(t)setTimeout(function(){t.focus({preventScroll:true})},500)},420)">&#9654; Try it live &mdash; free</a>
       </div>
     </div>
   </div>
