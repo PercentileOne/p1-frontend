@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, ChevronRight, ClipboardPaste, Compass, Pencil, Plus, Sun, Trash2, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, ClipboardPaste, Compass, Pencil, Plus, Square, Sun, Trash2, Volume2, X } from 'lucide-react';
 import { localDate, routinesApi, MAX_ITEM_TEXT, MAX_READ_TEXT } from '../api/routinesApi';
 import type { AddScope, DayItem, DaySummary, RoutineDay, RoutineKind } from '../api/routinesApi';
 import { RoutineImport } from '../components/RoutineImport';
-import { currentPeriod, routineStatus, sectionPeriod } from './routineStatus';
+import { currentPeriod, routineStatus, sectionPeriod, spokenStatus } from './routineStatus';
+import { speak, unlockTTSAudio } from '../api/ttsApi';
 
 // My Routines (Francis, 2026-10-13). One page per day, built from the person's template plus their if-then rules the first time that day is opened.
 // Left: Today and a year / month / day tree with a dot per day. Right: the day. Essentials are counted first, so a long list is never the thing that makes someone give up.
@@ -208,6 +209,17 @@ export default function RoutinesPage() {
 // "Where am I?": a plain-English read of the day from what is ticked, recalculated live as ticks change. Worked out in the browser; nothing is sent anywhere.
 function WhereAmI({ day, isToday, onClose }: { day: RoutineDay; isToday: boolean; onClose: () => void }) {
   const s = useMemo(() => routineStatus(day, new Date(), isToday), [day, isToday]);
+  const [speaking, setSpeaking] = useState(false);
+  const cancelRef = useRef<(() => void) | null>(null);
+  useEffect(() => () => { cancelRef.current?.(); }, []);   // closing the panel stops the voice
+
+  // The spoken line is generic on purpose (counts and parts of the day, no item names), because speech goes through the voice provider.
+  function listen() {
+    if (speaking) { cancelRef.current?.(); cancelRef.current = null; setSpeaking(false); return; }
+    unlockTTSAudio();   // must run inside the tap, before any network call, or phones stay silent
+    setSpeaking(true);
+    cancelRef.current = speak(spokenStatus(day, new Date(), isToday), 'hr', () => { cancelRef.current = null; setSpeaking(false); });
+  }
   const jump = (id: string) => {
     const el = document.getElementById(`routine-item-${id}`);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -218,6 +230,10 @@ function WhereAmI({ day, isToday, onClose }: { day: RoutineDay; isToday: boolean
         <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', lineHeight: 1.5 }}>{s.headline}</div>
         <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', display: 'flex', padding: 2 }}><X size={16} /></button>
       </div>
+      <button onClick={listen} aria-pressed={speaking} style={{
+        display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 10, padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit',
+        fontSize: 13, fontWeight: 700, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.05)', color: 'var(--text-2)',
+      }}>{speaking ? <><Square size={13} /> Stop</> : <><Volume2 size={14} /> Listen</>}</button>
       {s.blocks.map(b => (
         <div key={b.label} style={{ marginTop: 12 }}>
           <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-2)', marginBottom: 6 }}>{b.label}</div>

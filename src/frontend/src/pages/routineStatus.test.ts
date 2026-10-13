@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { routineStatus, sectionPeriod } from './routineStatus';
+import { routineStatus, sectionPeriod, spokenStatus } from './routineStatus';
 import type { DayItem, RoutineDay } from '../api/routinesApi';
 
 const item = (id: string, text: string, section: string, over: Partial<DayItem> = {}): DayItem =>
@@ -118,5 +118,37 @@ describe('routineStatus', () => {
     expect(routineStatus({ ...makeDay(), items: [] }, at(8), true).headline).toContain('nothing on this day yet');
     const notesOnly = { ...makeDay(), items: [item('n', 'Gratitude', 'Check in', { kind: 'text' })] };
     expect(routineStatus(notesOnly, at(8), true).headline).toContain('only notes to write');
+  });
+});
+
+describe('spokenStatus', () => {
+  const names = ["Quiet time", "Make the bed", "Read something", "Stretch", "tomorrow's calendar", "Prepare clothes", "Evening gratitude", 'Morning', 'Check in'];
+
+  it('is generic: counts and parts of the day only, never an item or section name', () => {
+    for (const hour of [8, 14, 20]) {
+      const text = spokenStatus(makeDay(['m1']), at(hour), true);
+      for (const n of names) expect(text).not.toContain(n);
+      expect(text).toMatch(/\d+ of your \d+ essentials/);
+    }
+  });
+
+  it('says where you are in the day', () => {
+    const morning = spokenStatus(makeDay(['m1']), at(9), true);
+    expect(morning).toContain('Right now it is your morning routine, and you have 3 things left in it.');
+    expect(morning).toContain('Your evening routine is still to come.');
+    const evening = spokenStatus(makeDay(['m1']), at(20), true);
+    expect(evening).toContain('Right now it is your evening routine');
+    expect(evening).toContain('left from earlier in the day');
+    expect(evening).toContain('1 note still to write.');
+  });
+
+  it('is brief and warm when everything is done, and plain about a past day', () => {
+    const all = makeDay(['m1', 'm2', 'm3', 'm4', 'e1', 'e2'], { n1: 'thanks' });
+    expect(spokenStatus(all, at(21), true)).toContain('You are all done. Well done.');
+    expect(spokenStatus(makeDay(['m1']), at(9), false)).toBe('Looking back on this day. You finished 1 of your 3 essentials, and 1 of 6 things in all.');
+  });
+
+  it('handles an empty day', () => {
+    expect(spokenStatus({ ...makeDay(), items: [] }, at(8), true)).toBe('There is nothing on your routine for this day yet.');
   });
 });

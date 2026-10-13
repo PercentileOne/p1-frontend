@@ -41,6 +41,16 @@ function cut(list: StatusItem[], n = SHOWN): { items: StatusItem[]; more: number
   return { items: list.slice(0, n), more: Math.max(0, list.length - n) };
 }
 
+function leadFor(p: { total: number; isToday: boolean; complete: boolean; essTotal: number; essLeft: number; ratio: number }): string {
+  if (p.total === 0) return 'There is nothing to tick on this day, only notes to write.';
+  if (!p.isToday) return 'Looking back on this day:';
+  if (p.complete) return 'You are all done. Well done!';
+  if (p.essTotal > 0 && p.essLeft === 0) return 'Your essentials are done.';
+  if (p.ratio === 0) return 'You have not started yet.';
+  if (p.ratio < 0.5) return 'You are underway.';
+  return 'You have completed most of it.';
+}
+
 export function routineStatus(day: RoutineDay, now: Date, isToday: boolean): RoutineStatus {
   const done = (i: DayItem) => !!day.checked[i.id] || (i.kind === 'number' && !!day.values[i.id]?.trim());
   const counted = day.items.filter(i => i.kind !== 'text');
@@ -62,14 +72,7 @@ export function routineStatus(day: RoutineDay, now: Date, isToday: boolean): Rou
     ? `${ess.length - essLeft.length} of ${ess.length} essentials done, ${doneAll} of ${counted.length} in all.`
     : `${doneAll} of ${counted.length} done.`;
 
-  let lead: string;
-  if (counted.length === 0) lead = 'There is nothing to tick on this day, only notes to write.';
-  else if (!isToday) lead = 'Looking back on this day:';
-  else if (complete) lead = 'You are all done. Well done!';
-  else if (ess.length > 0 && essLeft.length === 0) lead = 'Your essentials are done.';
-  else if (ratio === 0) lead = 'You have not started yet.';
-  else if (ratio < 0.5) lead = 'You are underway.';
-  else lead = 'You have completed most of it.';
+  const lead = leadFor({ total: counted.length, isToday, complete, essTotal: ess.length, essLeft: essLeft.length, ratio });
 
   const headline = counted.length > 0 ? `${lead} ${counts}` : lead;
 
@@ -114,4 +117,45 @@ export function routineStatus(day: RoutineDay, now: Date, isToday: boolean): Rou
   }
 
   return { headline, blocks, ahead, complete: complete && unwritten.length === 0 };
+}
+
+/**
+ * What "Listen" says. DELIBERATELY GENERIC: counts and parts of the day only, never an item or section name, because speech goes through the text-to-speech provider
+ * and a person's routine can name medication, readings or appointments. (Francis, 2026-10-13: "for now, speak just generic information".)
+ */
+export function spokenStatus(day: RoutineDay, now: Date, isToday: boolean): string {
+  const done = (i: DayItem) => !!day.checked[i.id] || (i.kind === 'number' && !!day.values[i.id]?.trim());
+  const counted = day.items.filter(i => i.kind !== 'text');
+  const notes = day.items.filter(i => i.kind === 'text');
+  if (counted.length === 0 && notes.length === 0) return 'There is nothing on your routine for this day yet.';
+  if (counted.length === 0) return 'There is nothing to tick on this day, only notes to write.';
+
+  const ess = counted.filter(i => i.essential);
+  const essDone = ess.filter(done).length;
+  const doneAll = counted.filter(done).length;
+  const left = counted.filter(i => !done(i));
+  const things = (n: number) => `${n} ${n === 1 ? 'thing' : 'things'}`;
+
+  const countLine = ess.length > 0
+    ? `${isToday ? 'You have done' : 'You finished'} ${essDone} of your ${ess.length} essentials, and ${doneAll} of ${counted.length} things in all.`
+    : `${isToday ? 'You have done' : 'You finished'} ${doneAll} of ${counted.length} things.`;
+
+  if (!isToday) return `Looking back on this day. ${countLine}`;
+
+  const ratio = ess.length > 0 ? essDone / ess.length : doneAll / counted.length;
+  const lead = leadFor({ total: counted.length, isToday, complete: left.length === 0, essTotal: ess.length, essLeft: ess.length - essDone, ratio });
+  const out = [lead.replace('!', '.'), countLine];
+
+  const nowP = currentPeriod(now);
+  const inPeriod = (pred: (p: Period) => boolean) => left.filter(i => { const p = sectionPeriod(i.section); return p !== null && pred(p); });
+  const nowLeft = inPeriod(p => p === nowP).length;
+  const earlierLeft = inPeriod(p => p < nowP).length;
+  const aheadWords = [...new Set(inPeriod(p => p > nowP).map(i => PERIOD_WORD[sectionPeriod(i.section) as Period]))];
+
+  if (nowLeft > 0) out.push(`Right now it is your ${PERIOD_WORD[nowP]} routine, and you have ${things(nowLeft)} left in it.`);
+  if (earlierLeft > 0) out.push(`You also have ${things(earlierLeft)} left from earlier in the day.`);
+  if (aheadWords.length > 0) out.push(`Your ${aheadWords.join(' and ')} routine is still to come.`);
+  const unwritten = notes.filter(i => !day.values[i.id]?.trim()).length;
+  if (unwritten > 0) out.push(`You have ${unwritten} ${unwritten === 1 ? 'note' : 'notes'} still to write.`);
+  return out.join(' ');
 }

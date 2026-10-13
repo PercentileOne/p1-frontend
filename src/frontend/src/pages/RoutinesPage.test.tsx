@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import RoutinesPage from './RoutinesPage';
+
+const speakSpy = vi.hoisted(() => vi.fn((_text: string, _role: string, _onEnd: () => void) => () => {}));
+vi.mock('../api/ttsApi', () => ({ speak: speakSpy, unlockTTSAudio: vi.fn() }));
 import type { RoutineDay } from '../api/routinesApi';
 
 const today = (() => {
@@ -89,6 +92,20 @@ describe('RoutinesPage', () => {
     fireEvent.click(screen.getByLabelText('Make the bed'));
     expect(screen.getByRole('status').textContent).toContain('You have completed most of it.');
     expect(screen.getByRole('status').textContent).toContain('2 of 3 essentials done');
+  });
+
+  it('"Listen" speaks only a generic line, with no item names', async () => {
+    speakSpy.mockClear();
+    render(<RoutinesPage />);
+    await screen.findByText('Make the bed');
+    fireEvent.click(screen.getByText('Where am I?'));
+    fireEvent.click(screen.getByText('Listen'));
+    expect(speakSpy).toHaveBeenCalledTimes(1);
+    const [text, role] = speakSpy.mock.calls[0];
+    expect(role).toBe('hr');
+    expect(text).toMatch(/essentials/);
+    for (const name of ['Make the bed', 'A few minutes of quiet', 'Read something', 'How do I feel', 'Every good thing']) expect(text).not.toContain(name);
+    expect(screen.getByText('Stop')).toBeTruthy();   // and it can be stopped
   });
 
   it('adds an item to an Evening section that did not exist yet', async () => {
