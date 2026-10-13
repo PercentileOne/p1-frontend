@@ -68,6 +68,36 @@ public class RoutinesTests
     }
 
     [Fact]
+    public void A_new_person_has_an_evening_section_with_an_evening_gratitude_note()
+    {
+        var t = Routines.DefaultTemplate("u1");
+        Assert.Contains("Evening", t.sections);
+        Assert.Contains(t.items, i => i.section == "Evening" && i.kind == "text" && i.text.Contains("gratitude", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(t.items, i => i.section == "Evening" && i.kind == "check");
+    }
+
+    [Fact]
+    public void Adding_to_a_section_the_day_does_not_have_creates_it()
+    {
+        var existing = new List<string> { "Morning", "Check in" };
+        Assert.Equal(("Morning", false, (string?)null), Routines.ResolveSection(existing, "Morning"));
+        Assert.Equal(("Check in", false, (string?)null), Routines.ResolveSection(existing, "  check IN "));   // same section, whatever the case
+        Assert.Equal(("Evening", true, (string?)null), Routines.ResolveSection(existing, " Evening "));
+        Assert.Equal(("Morning", false, (string?)null), Routines.ResolveSection(existing, null));            // no name: the first section
+        Assert.Equal(60, Routines.ResolveSection(existing, new string('x', 90)).section.Length);
+    }
+
+    [Fact]
+    public void A_new_section_is_refused_once_the_page_is_full()
+    {
+        var full = Enumerable.Range(1, Routines.MaxSections).Select(n => "S" + n).ToList();
+        var (_, isNew, error) = Routines.ResolveSection(full, "One more");
+        Assert.False(isNew);
+        Assert.NotNull(error);
+        Assert.Null(Routines.ResolveSection(full, "S3").error);   // an existing one is still fine
+    }
+
+    [Fact]
     public void Template_cleaning_drops_blanks_fixes_sections_and_gives_ids()
     {
         var (sections, items, error) = Routines.Clean(["Morning", " ", "Morning", "Evening"],

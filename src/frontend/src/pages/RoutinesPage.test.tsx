@@ -76,6 +76,47 @@ describe('RoutinesPage', () => {
     expect(JSON.parse(calls.find(c => c.url.includes('/state'))!.body!).checked).toEqual({ r: true });
   });
 
+  it('"Where am I?" says where the day stands, lists what is left, and updates as things are ticked', async () => {
+    render(<RoutinesPage />);
+    await screen.findByText('Make the bed');
+    fireEvent.click(screen.getByText('Where am I?'));
+    const panel = screen.getByRole('status');
+    expect(panel.textContent).toContain('You have not started yet.');
+    expect(panel.textContent).toContain('0 of 3 essentials done');
+    expect(panel.textContent).toContain('Essentials still to do');
+    expect(panel.textContent).toContain('A few minutes of quiet');
+    fireEvent.click(screen.getByLabelText('A few minutes of quiet'));
+    fireEvent.click(screen.getByLabelText('Make the bed'));
+    expect(screen.getByRole('status').textContent).toContain('You have completed most of it.');
+    expect(screen.getByRole('status').textContent).toContain('2 of 3 essentials done');
+  });
+
+  it('adds an item to an Evening section that did not exist yet', async () => {
+    render(<RoutinesPage />);
+    await screen.findByText('Make the bed');
+    fireEvent.click(screen.getByText('Add an item'));
+    fireEvent.change(screen.getByLabelText('What is the item'), { target: { value: 'Evening gratitude' } });
+    fireEvent.change(screen.getByLabelText('Section'), { target: { value: '__suggest__Evening' } });
+    fireEvent.click(screen.getByText('Add item'));
+    await waitFor(() => expect(calls.some(c => c.url.includes('/items') && c.method === 'POST')).toBe(true));
+    expect(JSON.parse(calls.find(c => c.url.includes('/items') && c.method === 'POST')!.body!).section).toBe('Evening');
+  });
+
+  it('asks for a name when "Another new section" is chosen', async () => {
+    render(<RoutinesPage />);
+    await screen.findByText('Make the bed');
+    fireEvent.click(screen.getByText('Add an item'));
+    fireEvent.change(screen.getByLabelText('What is the item'), { target: { value: 'Stretch' } });
+    fireEvent.change(screen.getByLabelText('Section'), { target: { value: '__new__' } });
+    fireEvent.click(screen.getByText('Add item'));
+    expect(screen.getByText('Name the new section.')).toBeTruthy();
+    expect(calls.some(c => c.url.includes('/items') && c.method === 'POST')).toBe(false);
+    fireEvent.change(screen.getByLabelText('New section name'), { target: { value: 'Weekend' } });
+    fireEvent.click(screen.getByText('Add item'));
+    await waitFor(() => expect(calls.some(c => c.url.includes('/items') && c.method === 'POST')).toBe(true));
+    expect(JSON.parse(calls.find(c => c.url.includes('/items') && c.method === 'POST')!.body!).section).toBe('Weekend');
+  });
+
   it('lets the wording of an item be edited, and saves it', async () => {
     render(<RoutinesPage />);
     await screen.findByText('Make the bed');

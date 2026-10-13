@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, ChevronRight, ClipboardPaste, Pencil, Plus, Sun, Trash2, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, ClipboardPaste, Compass, Pencil, Plus, Sun, Trash2, X } from 'lucide-react';
 import { localDate, routinesApi, MAX_ITEM_TEXT, MAX_READ_TEXT } from '../api/routinesApi';
 import type { AddScope, DayItem, DaySummary, RoutineDay, RoutineKind } from '../api/routinesApi';
 import { RoutineImport } from '../components/RoutineImport';
+import { currentPeriod, routineStatus, sectionPeriod } from './routineStatus';
 
 // My Routines (Francis, 2026-10-13). One page per day, built from the person's template plus their if-then rules the first time that day is opened.
 // Left: Today and a year / month / day tree with a dot per day. Right: the day. Essentials are counted first, so a long list is never the thing that makes someone give up.
@@ -10,6 +11,9 @@ import { RoutineImport } from '../components/RoutineImport';
 const GREEN = '#34D399';
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const NEW_SECTION = '__new__';
+const SUGGESTED = '__suggest__';
 
 const card: React.CSSProperties = { background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14 };
 const field: React.CSSProperties = {
@@ -44,6 +48,7 @@ export default function RoutinesPage() {
   const [openMonth, setOpenMonth] = useState<string | null>(today.slice(0, 7));
   const [adding, setAdding] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [showStatus, setShowStatus] = useState(false);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const saveTimer = useRef<number | null>(null);
   const year = Number(today.slice(0, 4));
@@ -139,6 +144,11 @@ export default function RoutinesPage() {
               <div style={{ minWidth: 0 }}>
                 <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>{prettyDate(day.date)}</h2>
                 <div style={{ fontSize: 13.5, color: 'var(--text-2)', marginTop: 3 }}>{day.date === today ? greeting() : 'Looking back on this day.'}</div>
+                <button onClick={() => setShowStatus(v => !v)} aria-expanded={showStatus} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 10, padding: '8px 14px', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit',
+                  fontSize: 13.5, fontWeight: 700, border: `1px solid ${showStatus ? GREEN : 'rgba(52,211,153,0.45)'}`,
+                  background: showStatus ? 'rgba(52,211,153,0.14)' : 'rgba(52,211,153,0.07)', color: GREEN,
+                }}><Compass size={15} /> Where am I?</button>
               </div>
               <div style={{ minWidth: 150, textAlign: 'right' }}>
                 <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
@@ -150,6 +160,8 @@ export default function RoutinesPage() {
                 {ess.length > 0 && <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 4 }}>{allDone} of {counted.length} in all</div>}
               </div>
             </div>
+
+            {showStatus && <WhereAmI day={day} isToday={day.date === today} onClose={() => setShowStatus(false)} />}
 
             {day.sections.map(section => {
               const items = day.items.filter(i => i.section === section);
@@ -193,6 +205,38 @@ export default function RoutinesPage() {
   );
 }
 
+// "Where am I?": a plain-English read of the day from what is ticked, recalculated live as ticks change. Worked out in the browser; nothing is sent anywhere.
+function WhereAmI({ day, isToday, onClose }: { day: RoutineDay; isToday: boolean; onClose: () => void }) {
+  const s = useMemo(() => routineStatus(day, new Date(), isToday), [day, isToday]);
+  const jump = (id: string) => {
+    const el = document.getElementById(`routine-item-${id}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+  return (
+    <div role="status" aria-live="polite" style={{ marginTop: 16, border: '1px solid rgba(52,211,153,0.4)', background: 'rgba(52,211,153,0.06)', borderRadius: 12, padding: '14px 16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', lineHeight: 1.5 }}>{s.headline}</div>
+        <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', display: 'flex', padding: 2 }}><X size={16} /></button>
+      </div>
+      {s.blocks.map(b => (
+        <div key={b.label} style={{ marginTop: 12 }}>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-2)', marginBottom: 6 }}>{b.label}</div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {b.items.map(i => (
+              <button key={i.id} onClick={() => jump(i.id)} style={{
+                padding: '5px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: 'var(--text)',
+                fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', overflowWrap: 'anywhere',
+              }}>{i.text.length > 70 ? i.text.slice(0, 67) + '…' : i.text}</button>
+            ))}
+            {b.more > 0 && <span style={{ fontSize: 12.5, color: 'var(--text-3)', alignSelf: 'center' }}>and {b.more} more</span>}
+          </div>
+        </div>
+      ))}
+      {s.ahead.length > 0 && <div style={{ marginTop: 12, fontSize: 12.5, color: 'var(--text-3)' }}>Still ahead: {s.ahead.join(' · ')}</div>}
+    </div>
+  );
+}
+
 function TreeButton({ on, onClick, icon, label }: { on: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
   return (
     <button onClick={onClick} style={{
@@ -229,7 +273,7 @@ function ItemRow(p: {
   );
 
   return (
-    <div style={{ borderBottom: '1px solid var(--border)', padding: '9px 0', position: 'relative' }}>
+    <div id={`routine-item-${item.id}`} style={{ borderBottom: '1px solid var(--border)', padding: '9px 0', position: 'relative' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
         {!note && !read && <input type="checkbox" checked={!!day.checked[item.id]} onChange={p.onTick} aria-label={item.text} style={{ marginTop: 3, width: 17, height: 17, accentColor: GREEN, flexShrink: 0, cursor: 'pointer' }} />}
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -303,7 +347,10 @@ function AddItem({ sections, onAdd, onCancel }: {
   onAdd: (b: { text: string; section: string; kind: RoutineKind; essential: boolean; scope: AddScope; rule?: { weekdays: number[]; lastDayOfMonth: boolean; label: string } }) => Promise<void>;
 }) {
   const [text, setText] = useState('');
-  const [section, setSection] = useState(sections[0] ?? '');
+  // Defaults to the part of the day it is now (so in the evening, "Evening"). Sections that do not exist yet can be created on the spot.
+  const [section, setSection] = useState(() => sections.find(s => sectionPeriod(s) === currentPeriod(new Date())) ?? sections[0] ?? '');
+  const [newSection, setNewSection] = useState('');
+  const missing = (['Morning', 'Afternoon', 'Evening'] as const).filter((_, idx) => !sections.some(s => sectionPeriod(s) === idx));
   const [kind, setKind] = useState<RoutineKind>('check');
   const [essential, setEssential] = useState(false);
   const [scope, setScope] = useState<AddScope>('today');
@@ -316,9 +363,13 @@ function AddItem({ sections, onAdd, onCancel }: {
   async function submit() {
     if (!text.trim()) { setProblem('Type what the item is.'); return; }
     if (scope === 'rule' && weekdays.length === 0 && !last) { setProblem('Choose which days.'); return; }
+    const target = section === NEW_SECTION ? newSection.trim()
+      : section.startsWith(SUGGESTED) ? section.slice(SUGGESTED.length)
+      : section;
+    if (!target) { setProblem('Name the new section.'); return; }
     setProblem(''); setBusy(true);
     try {
-      await onAdd({ text: text.trim(), section, kind, essential, scope, ...(scope === 'rule' ? { rule: { weekdays, lastDayOfMonth: last, label: label.trim() } } : {}) });
+      await onAdd({ text: text.trim(), section: target, kind, essential, scope, ...(scope === 'rule' ? { rule: { weekdays, lastDayOfMonth: last, label: label.trim() } } : {}) });
     } finally { setBusy(false); }
   }
   const radio = (v: AddScope, title: string, sub: string) => (
@@ -337,9 +388,15 @@ function AddItem({ sections, onAdd, onCancel }: {
         ? <textarea value={text} onChange={e => { setText(e.target.value); setProblem(''); }} rows={6} placeholder={'The words you read aloud, for example your morning declarations or a prayer. Keep your own line breaks.'} aria-label="What is the item" style={{ ...field, resize: 'vertical', lineHeight: 1.55 }} maxLength={MAX_READ_TEXT} />
         : <input value={text} onChange={e => { setText(e.target.value); setProblem(''); }} placeholder="For example: Take a walk after lunch" aria-label="What is the item" style={field} maxLength={MAX_ITEM_TEXT} />}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
-        <select value={section} onChange={e => setSection(e.target.value)} aria-label="Section" style={{ ...field, width: 'auto', minWidth: 140 }}>
+        <select value={section} onChange={e => { setSection(e.target.value); setProblem(''); }} aria-label="Section" style={{ ...field, width: 'auto', minWidth: 140 }}>
           {sections.map(s => <option key={s} value={s}>{s}</option>)}
+          {missing.map(n => <option key={n} value={SUGGESTED + n}>{n} (new section)</option>)}
+          <option value={NEW_SECTION}>Another new section…</option>
         </select>
+        {section === NEW_SECTION && (
+          <input value={newSection} onChange={e => { setNewSection(e.target.value); setProblem(''); }} placeholder="Name the section" aria-label="New section name" maxLength={60}
+            style={{ ...field, width: 'auto', minWidth: 160 }} />
+        )}
         <select value={kind} onChange={e => setKind(e.target.value as RoutineKind)} aria-label="Type of item" style={{ ...field, width: 'auto', minWidth: 140 }}>
           <option value="check">A tick box</option>
           <option value="number">A number to enter</option>

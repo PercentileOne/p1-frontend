@@ -94,7 +94,8 @@ public static class Endpoint
 
             var day = await LoadOrBuildDayAsync(cosmos, userId, d, ct);
             if (day.items.Count >= MaxItems) return Results.BadRequest(new { error = "That's the most items one day can hold." });
-            var section = day.sections.Contains(req.section ?? "") ? req.section! : day.sections.FirstOrDefault() ?? "Today";
+            var (section, isNewSection, sectionError) = ResolveSection(day.sections, req.section);
+            if (sectionError is not null) return Results.BadRequest(new { error = sectionError });
             var id = NewId();
             var essential = req.essential == true;
 
@@ -111,7 +112,8 @@ public static class Endpoint
             if (scope != "rule" || Applies(rule, d))
             {
                 var items = day.items.Append(new DayItem(id, text, section, kind, essential, rule?.label, scope == "today" ? "today" : "template")).ToList();
-                day = day with { items = items, updatedAt = DateTimeOffset.UtcNow.ToString("o") };
+                var daySections = isNewSection ? day.sections.Append(section).ToList() : day.sections;
+                day = day with { sections = daySections, items = items, updatedAt = DateTimeOffset.UtcNow.ToString("o") };
                 await cosmos.GetContainer("routines").UpsertItemAsync(day, new PartitionKey(userId), cancellationToken: ct);
             }
             return Results.Ok(day);
@@ -226,6 +228,21 @@ public static class Endpoint
     public static string NormaliseKind(string? kind) => kind is "number" or "text" or "read" ? kind : "check";
     public static int TextLimit(string? kind) => kind == "read" ? MaxReadText : MaxText;
 
+    /// <summary>
+    /// Which section an added item goes in. A name the day already has is used as it is; a name it does not have creates a new section (so "Evening" can be added on the spot);
+    /// no name falls back to the first section. Returns the section, whether it is new, and an error when the page is already at its section limit.
+    /// </summary>
+    public static (string section, bool isNew, string? error) ResolveSection(IReadOnlyList<string> existing, string? requested)
+    {
+        var name = (requested ?? "").Trim();
+        if (name.Length > 60) name = name[..60];
+        if (name.Length == 0) return (existing.FirstOrDefault() ?? "Today", false, null);
+        var match = existing.FirstOrDefault(s => string.Equals(s, name, StringComparison.OrdinalIgnoreCase));
+        if (match is not null) return (match, false, null);
+        if (existing.Count >= MaxSections) return ("", false, "That's the most sections one page can hold.");
+        return (name, true, null);
+    }
+
     private static string? UserId(HttpContext ctx) => ctx.User.FindFirst("sub")?.Value is { Length: > 0 } s ? s : null;
     private static string NewId() => Guid.NewGuid().ToString("N")[..10];
 
@@ -312,7 +329,7 @@ public static class Endpoint
     /// <summary>What a brand-new person starts with: plain, sensible, and theirs to change straight away. No health items are assumed.</summary>
     public static TemplateDoc DefaultTemplate(string userId)
     {
-        var sections = new List<string> { "Morning", "Plan for today", "Check in" };
+        var sections = new List<string> { "Morning", "Plan for today", "Check in", "Evening" };
         TemplateItem I(string text, string section, bool essential, string kind = "check", RuleDto? rule = null) => new(NewId(), text, section, kind, essential, rule);
         var items = new List<TemplateItem>
         {
@@ -325,6 +342,9 @@ public static class Endpoint
             I("Plan the week ahead", "Plan for today", false, "check", new RuleDto([0], null, "Sunday")),
             I("Three things I'm thankful for", "Check in", false, "text"),
             I("How do I feel right now?", "Check in", false, "text"),
+            I("Evening gratitude", "Evening", false, "text"),
+            I("Check tomorrow's calendar", "Evening", true),
+            I("Prepare for tomorrow", "Evening", false),
         };
         return new TemplateDoc("template", userId, "template", sections, items, DateTimeOffset.UtcNow.ToString("o"));
     }
