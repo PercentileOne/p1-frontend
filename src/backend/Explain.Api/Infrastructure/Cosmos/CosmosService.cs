@@ -156,6 +156,11 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("savedCvs", "/candidateId"));
 
+        // My Routines (2026-10-13): one template document and one document per opened day, per person. Private to that person; partition key = /userId.
+        // See Features/Routines/Endpoint.cs.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("routines", "/userId"));
+
         // "In Demand Subjects" — one document per (job title, subject) pair, counters
         // incremented every time a candidate keeps that subject in the intake screen's
         // Special Focus field when actually starting an interview (never for a suggestion
