@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, Sun, Trash2, X } from 'lucide-react';
-import { localDate, routinesApi } from '../api/routinesApi';
+import { ChevronDown, ChevronRight, ClipboardPaste, Pencil, Plus, Sun, Trash2, X } from 'lucide-react';
+import { localDate, routinesApi, MAX_ITEM_TEXT, MAX_READ_TEXT } from '../api/routinesApi';
 import type { AddScope, DayItem, DaySummary, RoutineDay, RoutineKind } from '../api/routinesApi';
+import { RoutineImport } from '../components/RoutineImport';
 
 // My Routines (Francis, 2026-10-13). One page per day, built from the person's template plus their if-then rules the first time that day is opened.
 // Left: Today and a year / month / day tree with a dot per day. Right: the day. Essentials are counted first, so a long list is never the thing that makes someone give up.
@@ -42,6 +43,7 @@ export default function RoutinesPage() {
   const [months, setMonths] = useState<Record<string, DaySummary[]>>({});
   const [openMonth, setOpenMonth] = useState<string | null>(today.slice(0, 7));
   const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const saveTimer = useRef<number | null>(null);
   const year = Number(today.slice(0, 4));
@@ -52,7 +54,7 @@ export default function RoutinesPage() {
 
   useEffect(() => {
     let alive = true;
-    setDay(null); setError(''); setAdding(false); setMenuFor(null);
+    setDay(null); setError(''); setAdding(false); setImporting(false); setMenuFor(null);
     routinesApi.day(date).then(d => { if (alive) setDay(d); }).catch(e => { if (alive) setError((e as Error).message || 'Could not open this day.'); });
     return () => { alive = false; };
   }, [date]);
@@ -160,6 +162,7 @@ export default function RoutinesPage() {
                       onMenu={() => setMenuFor(menuFor === i.id ? null : i.id)}
                       onTick={() => tick(i.id)} onValue={v => setValue(i.id, v)}
                       onEssential={() => { setMenuFor(null); void run(routinesApi.updateItem(day.date, i.id, { essential: !i.essential })); }}
+                      onEdit={async text => { await run(routinesApi.updateItem(day.date, i.id, { text })); setMenuFor(null); }}
                       onRemoveToday={() => { setMenuFor(null); void run(routinesApi.removeItem(day.date, i.id, 'today')); }}
                       onRemoveAlways={() => { setMenuFor(null); void run(routinesApi.removeItem(day.date, i.id, 'template')); }} />
                   ))}
@@ -168,13 +171,20 @@ export default function RoutinesPage() {
             })}
 
             <div style={{ marginTop: 18 }}>
-              {!adding && (
-                <button onClick={() => setAdding(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', border: '1px dashed var(--border)', borderRadius: 10, padding: '9px 14px', color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600 }}>
-                  <Plus size={15} /> Add an item
-                </button>
+              {!adding && !importing && (
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <button onClick={() => setAdding(true)} style={dashed}>
+                    <Plus size={15} /> Add an item
+                  </button>
+                  <button onClick={() => setImporting(true)} style={dashed}>
+                    <ClipboardPaste size={15} /> Paste your list
+                  </button>
+                </div>
               )}
               {adding && <AddItem sections={day.sections} onCancel={() => setAdding(false)}
                 onAdd={async body => { await run(routinesApi.addItem(day.date, body)); setAdding(false); }} />}
+              {importing && <RoutineImport date={day.date} onCancel={() => setImporting(false)}
+                onDone={d => { setDay(d); void loadMonth(d.date.slice(0, 7)); setImporting(false); }} />}
             </div>
           </>
         )}
@@ -194,35 +204,78 @@ function TreeButton({ on, onClick, icon, label }: { on: boolean; onClick: () => 
 
 function ItemRow(p: {
   item: DayItem; day: RoutineDay; menuOpen: boolean; onMenu: () => void; onTick: () => void; onValue: (v: string) => void;
-  onEssential: () => void; onRemoveToday: () => void; onRemoveAlways: () => void;
+  onEssential: () => void; onEdit: (text: string) => Promise<void>; onRemoveToday: () => void; onRemoveAlways: () => void;
 }) {
   const { item, day } = p;
   const done = !!day.checked[item.id] || (item.kind === 'number' && !!day.values[item.id]?.trim());
   const note = item.kind === 'text';
+  const read = item.kind === 'read';
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(item.text);
+  const [saving, setSaving] = useState(false);
+  const limit = read ? MAX_READ_TEXT : MAX_ITEM_TEXT;
+
+  async function saveEdit() {
+    if (!draft.trim()) return;
+    setSaving(true);
+    try { await p.onEdit(draft.trim()); setEditing(false); } finally { setSaving(false); }
+  }
+
+  const tags = (
+    <>
+      {item.essential && <span style={tag('52,211,153', GREEN)}>Essential</span>}
+      {item.ruleLabel && <span style={tag('245,158,11', '#F59E0B')}>{item.ruleLabel}</span>}
+    </>
+  );
+
   return (
     <div style={{ borderBottom: '1px solid var(--border)', padding: '9px 0', position: 'relative' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-        {!note && <input type="checkbox" checked={!!day.checked[item.id]} onChange={p.onTick} aria-label={item.text} style={{ marginTop: 3, width: 17, height: 17, accentColor: GREEN, flexShrink: 0, cursor: 'pointer' }} />}
+        {!note && !read && <input type="checkbox" checked={!!day.checked[item.id]} onChange={p.onTick} aria-label={item.text} style={{ marginTop: 3, width: 17, height: 17, accentColor: GREEN, flexShrink: 0, cursor: 'pointer' }} />}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14.5, color: done ? 'var(--text-3)' : 'var(--text)', textDecoration: done ? 'line-through' : 'none', overflowWrap: 'anywhere' }}>
-            {item.text}
-            {item.essential && <span style={tag('52,211,153', GREEN)}>Essential</span>}
-            {item.ruleLabel && <span style={tag('245,158,11', '#F59E0B')}>{item.ruleLabel}</span>}
-          </div>
-          {item.kind === 'number' && (
+          {editing ? (
+            <div>
+              <textarea value={draft} onChange={e => setDraft(e.target.value)} rows={read ? 6 : 2} maxLength={limit} aria-label="Edit wording" style={{ ...field, resize: 'vertical', lineHeight: 1.5 }} />
+              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                <SmallBtn onClick={() => void saveEdit()}>{saving ? 'Saving…' : 'Save wording'}</SmallBtn>
+                <SmallBtn onClick={() => { setEditing(false); setDraft(item.text); }}>Cancel</SmallBtn>
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 6 }}>
+                {item.source === 'template' ? 'This changes today and every day from now on. Past days keep their wording.' : 'This changes today only.'}
+              </div>
+            </div>
+          ) : read ? (
+            <>
+              <div style={{
+                whiteSpace: 'pre-wrap', fontSize: 15.5, lineHeight: 1.75, color: 'var(--text)', background: 'rgba(52,211,153,0.06)',
+                borderLeft: `3px solid ${GREEN}`, borderRadius: 10, padding: '12px 14px', overflowWrap: 'anywhere', opacity: day.checked[item.id] ? 0.7 : 1,
+              }}>{item.text}</div>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 9, marginTop: 10, cursor: 'pointer', fontSize: 14, color: done ? 'var(--text-3)' : 'var(--text)', fontWeight: 600 }}>
+                <input type="checkbox" checked={!!day.checked[item.id]} onChange={p.onTick} aria-label={`I've read it: ${item.text.slice(0, 40)}`} style={{ width: 17, height: 17, accentColor: GREEN, cursor: 'pointer' }} />
+                I've read it{tags}
+              </label>
+            </>
+          ) : (
+            <div style={{ fontSize: 14.5, color: done ? 'var(--text-3)' : 'var(--text)', textDecoration: done ? 'line-through' : 'none', overflowWrap: 'anywhere' }}>
+              {item.text}
+              {tags}
+            </div>
+          )}
+          {!editing && item.kind === 'number' && (
             <input value={day.values[item.id] ?? ''} onChange={e => p.onValue(e.target.value)} inputMode="decimal" placeholder="Enter the number" aria-label={`${item.text}: value`}
               style={{ ...field, width: 150, marginTop: 6, padding: '6px 9px', fontSize: 13.5 }} />
           )}
-          {note && (
+          {!editing && note && (
             <textarea value={day.values[item.id] ?? ''} onChange={e => p.onValue(e.target.value)} rows={2} placeholder="Write a line or two" aria-label={item.text}
               style={{ ...field, marginTop: 6, resize: 'vertical' }} />
           )}
         </div>
-        <button onClick={p.onMenu} aria-label={`Options for ${item.text}`} aria-expanded={p.menuOpen} style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 6px' }}>⋯</button>
+        <button onClick={p.onMenu} aria-label={`Options for ${item.text.slice(0, 60)}`} aria-expanded={p.menuOpen} style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 6px' }}>⋯</button>
       </div>
-      {p.menuOpen && (
+      {p.menuOpen && !editing && (
         <div style={{ margin: '8px 0 0 27px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <SmallBtn onClick={p.onEssential}>{item.essential ? 'Not essential' : 'Make essential'}</SmallBtn>
+          <SmallBtn onClick={() => { setDraft(item.text); setEditing(true); }}><Pencil size={12} /> Edit wording</SmallBtn>
+          {!note && <SmallBtn onClick={p.onEssential}>{item.essential ? 'Not essential' : 'Make essential'}</SmallBtn>}
           <SmallBtn onClick={p.onRemoveToday}><Trash2 size={12} /> Remove for today</SmallBtn>
           {item.source === 'template' && <SmallBtn onClick={p.onRemoveAlways}><Trash2 size={12} /> Remove from every day</SmallBtn>}
         </div>
@@ -230,6 +283,11 @@ function ItemRow(p: {
     </div>
   );
 }
+
+const dashed: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', border: '1px dashed var(--border)', borderRadius: 10, padding: '9px 14px',
+  color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600,
+};
 
 const tag = (rgb: string, color: string): React.CSSProperties => ({
   marginLeft: 8, fontSize: 10.5, fontWeight: 800, letterSpacing: '0.04em', padding: '2px 7px', borderRadius: 99, color,
@@ -275,7 +333,9 @@ function AddItem({ sections, onAdd, onCancel }: {
         <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>Add an item</div>
         <button onClick={onCancel} aria-label="Cancel" style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', display: 'flex' }}><X size={16} /></button>
       </div>
-      <input value={text} onChange={e => { setText(e.target.value); setProblem(''); }} placeholder="For example: Take a walk after lunch" aria-label="What is the item" style={field} maxLength={200} />
+      {kind === 'read'
+        ? <textarea value={text} onChange={e => { setText(e.target.value); setProblem(''); }} rows={6} placeholder={'The words you read aloud, for example your morning declarations or a prayer. Keep your own line breaks.'} aria-label="What is the item" style={{ ...field, resize: 'vertical', lineHeight: 1.55 }} maxLength={MAX_READ_TEXT} />
+        : <input value={text} onChange={e => { setText(e.target.value); setProblem(''); }} placeholder="For example: Take a walk after lunch" aria-label="What is the item" style={field} maxLength={MAX_ITEM_TEXT} />}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
         <select value={section} onChange={e => setSection(e.target.value)} aria-label="Section" style={{ ...field, width: 'auto', minWidth: 140 }}>
           {sections.map(s => <option key={s} value={s}>{s}</option>)}
@@ -284,6 +344,7 @@ function AddItem({ sections, onAdd, onCancel }: {
           <option value="check">A tick box</option>
           <option value="number">A number to enter</option>
           <option value="text">A note to write</option>
+          <option value="read">Something to read aloud</option>
         </select>
         {kind !== 'text' && (
           <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13.5, color: 'var(--text-2)', cursor: 'pointer' }}>

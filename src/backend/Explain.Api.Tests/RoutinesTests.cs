@@ -129,4 +129,106 @@ public class RoutinesTests
     [InlineData("13/10/2026", false)]
     [InlineData("", false)]
     public void Dates_must_be_year_month_day(string s, bool ok) => Assert.Equal(ok, Routines.TryDate(s, out _));
+
+    [Fact]
+    public void A_read_aloud_passage_keeps_its_length_and_counts_with_one_tick()
+    {
+        var passage = string.Join('\n', Enumerable.Repeat("Every good and great thing will come true today.", 20));
+        Assert.True(passage.Length > Routines.MaxText);
+        var (_, items, error) = Routines.Clean(["First"], [new("", passage, "First", "read", true, null)]);
+        Assert.Null(error);
+        Assert.Equal("read", items[0].kind);
+        Assert.Equal(passage, items[0].text);                       // not cut to one-line length
+        Assert.Equal(Routines.MaxText, Routines.TextLimit("check"));
+        Assert.Equal(Routines.MaxReadText, Routines.TextLimit("read"));
+
+        var day = new Routines.DayDoc("day:2026-10-13", "u1", "day", "2026-10-13", ["First"],
+            [new("r", passage, "First", "read", true, null, "template")], new() { ["r"] = true }, new(), "");
+        var s = Routines.Summary(day);
+        Assert.Equal(1, s.essentialsTotal);
+        Assert.Equal(1, s.essentialsDone);
+    }
+
+    [Fact]
+    public void A_very_long_passage_is_cut_at_the_read_limit()
+    {
+        var (_, items, _) = Routines.Clean(["First"], [new("", new string('a', 5000), "First", "read", false, null)]);
+        Assert.Equal(Routines.MaxReadText, items[0].text.Length);
+    }
+
+    private static Routines.TemplateItem Item(string text, string section = "Morning", string kind = "check", bool essential = false, Routines.RuleDto? rule = null)
+        => new("x", text, section, kind, essential, rule);
+
+    [Fact]
+    public void Importing_in_replace_mode_swaps_the_template_and_ignores_client_ids()
+    {
+        var current = Routines.DefaultTemplate("u1");
+        var req = new Routines.ImportRequest("2026-10-13", "replace", ["First", "Morning"],
+            [Item("Declarations", "First", "read", true), Item("Make the bed", "Morning"), Item("Make the bed too", "Morning")]);
+        var (t, newIds, error) = Routines.ApplyImport("u1", current, req);
+        Assert.Null(error);
+        Assert.Equal(["First", "Morning"], t!.sections);
+        Assert.Equal(3, t.items.Count);
+        Assert.Equal(3, newIds.Count);
+        Assert.DoesNotContain(t.items, i => i.id == "x");            // the client's id was never trusted
+        Assert.All(t.items, i => Assert.Contains(i.id, newIds));
+    }
+
+    [Fact]
+    public void Importing_in_add_mode_keeps_what_is_there()
+    {
+        var current = Routines.DefaultTemplate("u1");
+        var req = new Routines.ImportRequest("2026-10-13", "add", ["Evening"], [Item("Check calendar", "Evening")]);
+        var (t, _, error) = Routines.ApplyImport("u1", current, req);
+        Assert.Null(error);
+        Assert.Equal(current.items.Count + 1, t!.items.Count);
+        Assert.Contains("Evening", t.sections);
+        Assert.Contains("Morning", t.sections);
+    }
+
+    [Fact]
+    public void Importing_nothing_or_too_much_is_refused_with_a_reason()
+    {
+        var current = Routines.DefaultTemplate("u1");
+        var (t1, _, e1) = Routines.ApplyImport("u1", current, new Routines.ImportRequest("2026-10-13", "replace", ["A"], []));
+        Assert.Null(t1); Assert.NotNull(e1);
+        var many = Enumerable.Range(0, Routines.MaxItems + 1).Select(n => Item("item " + n)).ToList();
+        var (t2, _, e2) = Routines.ApplyImport("u1", current, new Routines.ImportRequest("2026-10-13", "replace", ["Morning"], many));
+        Assert.Null(t2); Assert.NotNull(e2);
+    }
+
+    [Fact]
+    public void Replacing_a_day_keeps_what_was_already_ticked_and_typed()
+    {
+        var current = Routines.DefaultTemplate("u1");
+        var today = Routines.BuildDay("u1", Tuesday, current);
+        var ticked = today.items[0].id;
+        var typed = today.items.First(i => i.kind == "text").id;
+        today = today with { @checked = new() { [ticked] = true }, values = new() { [typed] = "grateful" } };
+
+        var req = new Routines.ImportRequest("2026-10-13", "replace", ["Morning"], [Item("Pray"), Item("Stretch")]);
+        var (t, newIds, _) = Routines.ApplyImport("u1", current, req);
+        var day = Routines.ApplyImportToDay(today, "u1", t!, newIds, Tuesday, replace: true);
+
+        Assert.Contains(day.items, i => i.id == ticked);              // morning's tick survives
+        Assert.Contains(day.items, i => i.id == typed);
+        Assert.True(day.@checked[ticked]);
+        Assert.Equal("grateful", day.values[typed]);
+        Assert.Contains(day.items, i => i.text == "Pray");
+        Assert.Equal(2 + 2, day.items.Count);                         // the two kept + the two imported
+        Assert.DoesNotContain(day.items, i => i.text == "Read something");   // untouched old items are gone
+    }
+
+    [Fact]
+    public void Imported_rule_items_only_appear_on_the_days_they_cover()
+    {
+        var current = Routines.DefaultTemplate("u1");
+        var req = new Routines.ImportRequest("2026-10-13", "replace", ["Plan"],
+            [Item("Plan the week", "Plan", "check", false, new Routines.RuleDto([0], null, "Sunday")), Item("Pray", "Plan")]);
+        var (t, newIds, _) = Routines.ApplyImport("u1", current, req);
+        var tuesday = Routines.ApplyImportToDay(null, "u1", t!, newIds, Tuesday, true);
+        var sunday = Routines.ApplyImportToDay(null, "u1", t!, newIds, Sunday, true);
+        Assert.Single(tuesday.items);
+        Assert.Equal(2, sunday.items.Count);
+    }
 }

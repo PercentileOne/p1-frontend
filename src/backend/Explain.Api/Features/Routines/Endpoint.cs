@@ -16,6 +16,8 @@ public static class Endpoint
     public const int MaxItems = 80;
     public const int MaxSections = 12;
     public const int MaxText = 200;
+    /// <summary>A "read aloud" item is a whole passage (declarations, a prayer), so it gets a longer limit than a one-line item.</summary>
+    public const int MaxReadText = 2000;
     public const int MaxValue = 2000;
 
     public static void Map(WebApplication app)
@@ -83,9 +85,10 @@ public static class Endpoint
             if (!TryDate(date, out var d)) return Results.BadRequest(new { error = "Use a date like 2026-10-13." });
             var text = (req.text ?? "").Trim();
             if (text.Length == 0) return Results.BadRequest(new { error = "Type what the item is." });
-            if (text.Length > MaxText) text = text[..MaxText];
             var scope = req.scope is "always" or "rule" ? req.scope : "today";
-            var kind = req.kind is "number" or "text" ? req.kind : "check";
+            var kind = NormaliseKind(req.kind);
+            var limit = TextLimit(kind);
+            if (text.Length > limit) text = text[..limit];
             var rule = scope == "rule" ? CleanRule(req.rule) : null;
             if (scope == "rule" && rule is null) return Results.BadRequest(new { error = "Choose which days." });
 
@@ -124,7 +127,8 @@ public static class Endpoint
             if (target is null) return Results.NotFound();
             var text = req.text is null ? target.text : req.text.Trim();
             if (text.Length == 0) return Results.BadRequest(new { error = "Type what the item is." });
-            if (text.Length > MaxText) text = text[..MaxText];
+            var limit = TextLimit(target.kind);
+            if (text.Length > limit) text = text[..limit];
             var essential = req.essential ?? target.essential;
             day = day with { items = day.items.Select(i => i.id == itemId ? i with { text = text, essential = essential } : i).ToList(), updatedAt = DateTimeOffset.UtcNow.ToString("o") };
             await cosmos.GetContainer("routines").UpsertItemAsync(day, new PartitionKey(userId), cancellationToken: ct);
@@ -164,6 +168,26 @@ public static class Endpoint
             return Results.Ok(day);
         });
 
+        // "Paste your list": the person has reviewed a preview on screen, and this saves it. Replaces the template or adds to it, then brings the given day in line.
+        // Ticks and typed values already on that day are never lost. Other days are snapshots and are left alone.
+        group.MapPost("/import", async (ImportRequest req, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            if (!TryDate(req.date ?? "", out var d)) return Results.BadRequest(new { error = "Use a date like 2026-10-13." });
+            var current = await LoadTemplateAsync(cosmos, userId, ct);
+            var (tdoc, newIds, error) = ApplyImport(userId, current, req);
+            if (error is not null || tdoc is null) return Results.BadRequest(new { error });
+            var container = cosmos.GetContainer("routines");
+            await container.UpsertItemAsync(tdoc, new PartitionKey(userId), cancellationToken: ct);
+
+            DayDoc? existing = null;
+            try { existing = (await container.ReadItemAsync<DayDoc>("day:" + d.ToString("yyyy-MM-dd"), new PartitionKey(userId), cancellationToken: ct)).Resource; }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
+            var day = ApplyImportToDay(existing, userId, tdoc, newIds, d, req.mode != "add");
+            await container.UpsertItemAsync(day, new PartitionKey(userId), cancellationToken: ct);
+            return Results.Ok(day);
+        });
+
         // One line per opened day in a month, for the dots in the tree.
         group.MapGet("/month/{month}", async (string month, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
         {
@@ -196,6 +220,11 @@ public static class Endpoint
     public record StateRequest(Dictionary<string, bool>? @checked, Dictionary<string, string>? values);
     public record AddItemRequest(string? text, string? section, string? kind, bool? essential, string? scope, RuleDto? rule);
     public record UpdateItemRequest(string? text, bool? essential);
+    public record ImportRequest(string? date, string? mode, List<string>? sections, List<TemplateItem>? items);
+
+    /// <summary>check = a tick box, number = a tick plus a value, text = a note to write, read = a passage to read aloud with one tick.</summary>
+    public static string NormaliseKind(string? kind) => kind is "number" or "text" or "read" ? kind : "check";
+    public static int TextLimit(string? kind) => kind == "read" ? MaxReadText : MaxText;
 
     private static string? UserId(HttpContext ctx) => ctx.User.FindFirst("sub")?.Value is { Length: > 0 } s ? s : null;
     private static string NewId() => Guid.NewGuid().ToString("N")[..10];
@@ -236,11 +265,48 @@ public static class Endpoint
             if (text.Length == 0) continue;
             var section = secs.Contains(i.section ?? "") ? i.section! : secs[0];
             var id = string.IsNullOrWhiteSpace(i.id) || list.Any(x => x.id == i.id) ? NewId() : i.id;
-            var kind = i.kind is "number" or "text" ? i.kind : "check";
-            list.Add(new TemplateItem(id, text[..Math.Min(text.Length, MaxText)], section, kind, i.essential, CleanRule(i.rule)));
+            var kind = NormaliseKind(i.kind);
+            list.Add(new TemplateItem(id, text[..Math.Min(text.Length, TextLimit(kind))], section, kind, i.essential, CleanRule(i.rule)));
         }
         if (list.Count > MaxItems) return ([], [], "That's more items than a routine can hold.");
         return (secs, list, null);
+    }
+
+    /// <summary>
+    /// The template after "Paste your list": mode "add" appends to what the person has, anything else replaces it. Imported items always get fresh ids (never trusted from the
+    /// client), so they cannot collide with existing ones. Returns the ids that are new so the day can be brought in line.
+    /// </summary>
+    public static (TemplateDoc? template, HashSet<string> newIds, string? error) ApplyImport(string userId, TemplateDoc current, ImportRequest req)
+    {
+        var incoming = (req.items ?? []).Select(i => i with { id = NewId() }).ToList();
+        var (secs, items, error) = Clean(req.sections, incoming);
+        if (error is not null) return (null, [], error);
+        if (items.Count == 0) return (null, [], "There is nothing to import. Tick at least one item.");
+        var newIds = items.Select(i => i.id).ToHashSet();
+
+        var add = req.mode == "add";
+        var mergedSections = add ? current.sections.Concat(secs).Distinct().ToList() : secs;
+        var mergedItems = add ? current.items.Concat(items).ToList() : items;
+        var (cleanSections, cleanItems, mergedError) = Clean(mergedSections, mergedItems);
+        if (mergedError is not null) return (null, [], mergedError);
+        return (new TemplateDoc("template", userId, "template", cleanSections, cleanItems, DateTimeOffset.UtcNow.ToString("o")), newIds, null);
+    }
+
+    /// <summary>
+    /// A day after an import. "add": everything already on the day stays and the new items that apply are appended. "replace": the day becomes the new template's day,
+    /// except that items the person has already ticked or typed into are kept (and their ticks), so nothing they entered this morning disappears.
+    /// </summary>
+    public static DayDoc ApplyImportToDay(DayDoc? existing, string userId, TemplateDoc t, HashSet<string> newIds, DateOnly d, bool replace)
+    {
+        var fresh = BuildDay(userId, d, t);
+        if (existing is null) return fresh;
+        var keep = replace
+            ? existing.items.Where(i => existing.@checked.ContainsKey(i.id) || existing.values.ContainsKey(i.id)).ToList()
+            : existing.items.ToList();
+        var keepIds = keep.Select(i => i.id).ToHashSet();
+        var added = fresh.items.Where(i => newIds.Contains(i.id) && !keepIds.Contains(i.id));
+        var sections = t.sections.Concat(keep.Select(i => i.section)).Concat(existing.sections.Where(s => !replace)).Distinct().ToList();
+        return existing with { sections = sections, items = keep.Concat(added).ToList(), updatedAt = DateTimeOffset.UtcNow.ToString("o") };
     }
 
     /// <summary>What a brand-new person starts with: plain, sensible, and theirs to change straight away. No health items are assumed.</summary>
