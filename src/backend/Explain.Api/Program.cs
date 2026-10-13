@@ -371,6 +371,7 @@ Explain.Api.Features.CareerCoach.Endpoint.Map(app);
 Explain.Api.Features.CvAnalysis.Endpoint.Map(app);
 Explain.Api.Features.LearnTopics.Endpoint.Map(app);
 Explain.Api.Features.RoleActivity.Endpoint.Map(app);
+Explain.Api.Features.SubjectsAdmin.Endpoint.Map(app);
 Explain.Api.Features.Events.Endpoint.Map(app);
 Explain.Api.Features.Events.Admin.Endpoint.Map(app);
 Explain.Api.Features.SessionPasses.Endpoint.Map(app);

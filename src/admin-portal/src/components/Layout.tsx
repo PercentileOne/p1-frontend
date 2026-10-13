@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Building2, GraduationCap, Briefcase, UserSquare2, Compass, Video, ShieldAlert, Radio, FileText, FileSearch, Activity, KeyRound, MapPin, Inbox, LogOut, DollarSign, ShieldCheck, Users } from 'lucide-react'
+import { Building2, GraduationCap, Briefcase, UserSquare2, Compass, Video, ShieldAlert, Radio, FileText, FileSearch, Activity, KeyRound, MapPin, Inbox, LogOut, DollarSign, ShieldCheck, Users, Tags } from 'lucide-react'
 import { ChairLogo } from './LogoMark'
 import { useAuth } from '../context/AuthContext'
 
@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { to: '/question-packs', Icon: FileText, label: 'Question Packs' },
   { to: '/ai-protection', Icon: ShieldCheck, label: 'AI Protection' },
   { to: '/cv-analyzer', Icon: FileSearch, label: 'CV Analyzer' },
+  { to: '/subjects', Icon: Tags, label: 'Subjects' },
   { to: '/activity-log', Icon: Activity, label: 'Activity Log' },
   { to: '/access', Icon: KeyRound, label: 'Access' },
   { to: '/location-check', Icon: MapPin, label: 'Location Check' },
