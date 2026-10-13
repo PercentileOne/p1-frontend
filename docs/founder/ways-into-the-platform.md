@@ -32,9 +32,9 @@ Almost everyone, at some point, has to be interviewed, present, sit an exam or e
 
 **Who they are.** Agency recruiters and in-house talent teams, in the UK and worldwide. Several million people do this job.
 
-**Why it fits them.** A recruiter's income depends on one moment: the candidate performing well at the interview. Everything before it, the sourcing, the screening, the submission, is wasted if the candidate fumbles. Yet the support at that moment is usually "good luck on Thursday". Recruiters will see at once that it is best for them and for the candidate if the candidate goes in better prepared, having practised for the exact role, based on the CV the client has already seen and thinks fits the job.
+**Why it fits them.** A recruiter's income depends on one moment: the candidate performing well at the interview. Everything before it, the sourcing, the screening, the submission, is wasted if the candidate fumbles. Yet the support at that moment is usually "good luck on Thursday". Recruiters will see at once that it is best for them and for the candidate if the candidate goes in better prepared, having practiced for the exact role, based on the CV the client has already seen and thinks fits the job.
 
-Our interviews are built from the job spec and the candidate's CV together, so the questions go straight to the gaps between what the candidate says on their CV and what the client wants. That gives the candidate the chance to close those gaps and practise thoroughly before the real interview, not during it.
+Our interviews are built from the job spec and the candidate's CV together, so the questions go straight to the gaps between what the candidate says on their CV and what the client wants. That gives the candidate the chance to close those gaps and practice thoroughly before the real interview, not during it.
 
 **The habit we are selling.** Send a prep link every time you arrange an interview. That is all. It costs the recruiter about a minute and puts a rehearsal in the same message as the time and the address.
 
@@ -70,21 +70,21 @@ Our interviews are built from the job spec and the candidate's CV together, so t
 - The free 3-question demo with no sign-up, reached from our homepage, LinkedIn, TikTok and other social posts.
 - The prep link a recruiter sends (section 1).
 - A gift from someone who cares about them (section 5).
-- A "Practise for this job" button on a job advert (section 4).
+- A "Practice for this job" button on a job advert (section 4).
 - Search: people looking for "interview questions for [any job]" and "how to prepare for an interview".
 - Shared results and certificates: every candidate who shares a score, a link or a QR code on their CV or LinkedIn brings others in.
 - Printable question packs and the free CV analysis, each a small door into the platform.
 - The recruiter's own candidates asking, and employers pointing applicants to us.
 
-**What it could be worth.** A monthly subscription, and the most important thing for the platform: a growing pool of practised, scored candidates that employers and recruiters want to find.
+**What it could be worth.** A monthly subscription, and the most important thing for the platform: a growing pool of practiced, scored candidates that employers and recruiters want to find.
 
 ### 4. Job adverts and careers pages
 
 **Who they are.** Applicants reading a job advert on a job board, an agency site or an employer careers page.
 
-**Why it fits them.** The most natural moment to practise is the moment you decide to apply. One click from the advert puts the applicant into a practice interview for that exact job, with the job spec already loaded.
+**Why it fits them.** The most natural moment to practice is the moment you decide to apply. One click from the advert puts the applicant into a practice interview for that exact job, with the job spec already loaded.
 
-**How we get there.** A "Practise for this job" button, or a simple per-job practice link a recruiter pastes into any advert. Recruiters can add it to every job they post. Job boards and employer careers pages can add it as a feature for their applicants.
+**How we get there.** A "Practice for this job" button, or a simple per-job practice link a recruiter pastes into any advert. Recruiters can add it to every job they post. Job boards and employer careers pages can add it as a feature for their applicants.
 
 **What it could be worth.** Per-job links for recruiters, and partnerships with job boards and employers, where every advert becomes a doorway.
 
