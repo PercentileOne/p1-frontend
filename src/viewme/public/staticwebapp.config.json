@@ -35,6 +35,10 @@
     {
       "route": "/how-we-score",
       "rewrite": "/how-we-score.html"
+    },
+    {
+      "route": "/ways-in",
+      "rewrite": "/ways-in.html"
     }
   ],
   "navigationFallback": {

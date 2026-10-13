@@ -40,6 +40,7 @@ jobs:
           cp src/viewme/public/profile.html deploy-product/profile.html
           cp src/viewme/public/patent.html deploy-product/patent.html
           cp src/viewme/public/how-we-score.html deploy-product/how-we-score.html
+          cp src/viewme/public/ways-in.html deploy-product/ways-in.html
           cp src/viewme/public/gift-interview.html deploy-product/gift-interview.html
           cp src/viewme/public/gift-interview-success.html deploy-product/gift-interview-success.html
           cp src/viewme/public/privacy.html deploy-product/privacy.html
