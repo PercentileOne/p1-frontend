@@ -348,6 +348,18 @@ public static class Endpoint
 
     public record FunnelEvent(string sessionId, string eventType, string? page, Dictionary<string, object>? metadata, string? ipAddress = null, string? country = null, string? userAgent = null);
 
+    /// <summary>Same page under its different addresses is one page: "/ways-in.html" and "/ways-in/" are both "/ways-in"; the homepage is "/".</summary>
+    public static string NormalisePage(string? page)
+    {
+        var p = (page ?? "").Trim().ToLowerInvariant();
+        var cut = p.IndexOfAny(['?', '#']);
+        if (cut >= 0) p = p[..cut];
+        if (p.EndsWith("/index.html", StringComparison.Ordinal)) p = p[..^"index.html".Length];
+        else if (p.EndsWith(".html", StringComparison.Ordinal)) p = p[..^".html".Length];
+        p = p.TrimEnd('/');
+        return p.Length == 0 ? (page is null || page.Trim().Length == 0 ? "" : "/") : p;
+    }
+
     private static string? Meta(FunnelEvent e, string key) =>
         e.metadata is not null && e.metadata.TryGetValue(key, out var v) ? v?.ToString() : null;
 
@@ -432,6 +444,8 @@ public static class Endpoint
                     Tried = evs.Any(e => e.eventType == "try_submit" || (IsClick(e) && HrefHas(e, "/try"))),
                     Signup = evs.Any(e => IsClick(e) && HrefHas(e, "/register", "/subscription", "login.theinterviewchair.com")),
                     Sections = evs.Where(e => e.eventType == "section_view").Select(e => Meta(e, "section")).Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList(),
+                    // Every page this visit loaded, so the admin can see which pages are being opened (Francis, 2026-10-13: "page visits viewable in the admin page").
+                    Pages = evs.Where(e => e.eventType == "page_view").Select(e => NormalisePage(e.page)).Where(p => p.Length > 0).Distinct().ToList(),
                     Clicks = evs.Where(IsClick).Select(e => (Type: e.eventType, Label: Meta(e, "label") ?? "", Area: Meta(e, "area") ?? "", Href: Meta(e, "href") ?? "")).ToList(),
                 };
             })
@@ -489,6 +503,24 @@ public static class Endpoint
         var leaves = marketing.Where(e => e.eventType == "page_leave")
             .Select(e => double.TryParse(Meta(e, "sec"), out var s) ? s : (double?)null).Where(s => s is not null).Select(s => s!.Value).OrderBy(s => s).ToList();
 
+        // Page by page: how many visits opened each page, how many were people (not sure robots) and interacted, and how long people stayed (median seconds, from page_leave).
+        var secondsByPage = marketing.Where(e => e.eventType == "page_leave")
+            .Select(e => (Page: NormalisePage(e.page), Sec: double.TryParse(Meta(e, "sec"), out var s) ? s : (double?)null))
+            .Where(x => x.Page.Length > 0 && x.Sec is not null)
+            .GroupBy(x => x.Page).ToDictionary(g => g.Key, g => g.Select(x => x.Sec!.Value).OrderBy(v => v).ToList());
+        var pages = sessions.SelectMany(s => s.Pages.Select(pg => (Page: pg, S: s)))
+            .GroupBy(x => x.Page)
+            .Select(g => new
+            {
+                page = g.Key,
+                visits = g.Count(),
+                people = g.Count(x => !x.S.SureRobot),
+                real = g.Count(x => x.S.Human),
+                medianSeconds = secondsByPage.TryGetValue(g.Key, out var secs) && secs.Count > 0 ? secs[secs.Count / 2] : (double?)null,
+            })
+            .OrderByDescending(x => x.people).ThenByDescending(x => x.visits).ThenBy(x => x.page, StringComparer.Ordinal)
+            .Take(40).ToList();
+
         int TrySessions(string type) => tryEvents.Where(e => e.eventType == type).Select(e => e.sessionId).Distinct().Count();
         // "mobile":true is stamped on the demo's later steps by the candidate app (TryItLivePage) so phones can be compared with computers.
         int OnPhone(string type) => tryEvents.Where(e => e.eventType == type && string.Equals(Meta(e, "mobile"), "true", StringComparison.OrdinalIgnoreCase))
@@ -530,6 +562,7 @@ public static class Endpoint
             steps,
             devices,
             sources,
+            pages,
             countries,
             machines,
             topClicks,

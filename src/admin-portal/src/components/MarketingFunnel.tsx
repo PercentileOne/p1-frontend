@@ -139,6 +139,18 @@ export function MarketingFunnel({ onBrowse }: { onBrowse: (eventType: string) =>
             </div>
 
             <div>
+              <div style={h3}>Pages opened</div>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead><tr><th style={th}>Page</th><th style={th}>Visits</th><th style={th}>People</th><th style={th}>Interacted</th><th style={th}>Typical time</th></tr></thead>
+                <tbody>{(data.pages ?? []).length === 0 && <tr><td style={td} colSpan={5}>No data yet</td></tr>}
+                  {(data.pages ?? []).map(p => (
+                    <tr key={p.page}><td style={{ ...td, color: 'var(--text)', overflowWrap: 'anywhere' }}>{p.page}</td><td style={td}>{p.visits}</td><td style={td}>{p.people}</td><td style={td}>{p.real}</td><td style={td}>{p.medianSeconds === null ? '—' : `${Math.round(p.medianSeconds)}s`}</td></tr>
+                  ))}</tbody>
+              </table>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}>Marketing-site pages only (for example /ways-in, /about, /contact). One visit that opens three pages counts once on each. <b>Typical time</b> is the middle visible time on the page, from people who interacted.</div>
+            </div>
+
+            <div>
               <div style={h3}>Where visitors are (country)</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead><tr><th style={th}>Country</th><th style={th}>Visits</th><th style={th}>People</th><th style={th}>Looked around</th><th style={th}>Interacted</th><th style={th}>Tried it</th></tr></thead>

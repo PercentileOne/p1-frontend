@@ -91,6 +91,8 @@ export interface FunnelResponse {
   steps: { key: string; label: string; sessions: number }[];
   devices: { device: string; visits: number; people: number; real: number; tried: number }[];
   sources: { source: string; visits: number; people: number; real: number }[];
+  // Page by page (2026-10-13). Absent on a backend that predates it.
+  pages?: { page: string; visits: number; people: number; real: number; medianSeconds: number | null }[];
   countries: { country: string; visits: number; people: number; looked: number; real: number; tried: number }[];
   machines: { owner: string; visits: number; likelyPeople?: number }[];
   topClicks: { type: string; label: string; area: string; href: string; visitors: number }[];

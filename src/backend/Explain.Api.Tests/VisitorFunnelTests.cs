@@ -51,6 +51,42 @@ public class VisitorFunnelTests
     private static int Step(JsonElement f, string key) =>
         f.GetProperty("steps").EnumerateArray().First(s => s.GetProperty("key").GetString() == key).GetProperty("sessions").GetInt32();
 
+    [Theory]
+    [InlineData("/ways-in.html", "/ways-in")]
+    [InlineData("/ways-in", "/ways-in")]
+    [InlineData("/ways-in/", "/ways-in")]
+    [InlineData("/Ways-In.html?utm_source=x#top", "/ways-in")]
+    [InlineData("/index.html", "/")]
+    [InlineData("/", "/")]
+    [InlineData("", "")]
+    [InlineData(null, "")]
+    public void The_same_page_under_different_addresses_is_one_page(string? raw, string expected) =>
+        Assert.Equal(expected, Admin.NormalisePage(raw));
+
+    [Fact]
+    public void Pages_table_counts_each_page_once_per_visit_and_separates_people_from_robots()
+    {
+        var evs = new List<Admin.FunnelEvent>
+        {
+            // two real readers of /ways-in.html, one of whom also opened /about
+            E("a", "page_view", M(("dev", "desktop")), "/ways-in.html"),
+            E("a", "interaction", M(("dev", "desktop")), "/ways-in.html"),
+            E("a", "page_leave", M(("dev", "desktop"), ("sec", 90L)), "/ways-in.html"),
+            E("a", "page_view", M(("dev", "desktop")), "/about.html"),
+            E("b", "page_view", M(("dev", "mobile")), "/ways-in"),
+            E("b", "interaction", M(("dev", "mobile")), "/ways-in"),
+            // a crawler that opened it
+            new("c", "page_view", "/ways-in.html", M(("dev", "desktop")), null, null, "Mozilla/5.0 (compatible; Googlebot/2.1)"),
+        };
+        var pages = Run(evs).GetProperty("pages").EnumerateArray().ToList();
+        var ways = pages.First(p => p.GetProperty("page").GetString() == "/ways-in");
+        Assert.Equal(3, ways.GetProperty("visits").GetInt32());
+        Assert.Equal(2, ways.GetProperty("people").GetInt32());   // the crawler is not a person
+        Assert.Equal(2, ways.GetProperty("real").GetInt32());
+        Assert.Equal(90, ways.GetProperty("medianSeconds").GetDouble());
+        Assert.Equal(1, pages.First(p => p.GetProperty("page").GetString() == "/about").GetProperty("visits").GetInt32());
+    }
+
     [Fact]
     public void Steps_count_visits_real_people_pricing_tried_and_signup_clicks()
     {
