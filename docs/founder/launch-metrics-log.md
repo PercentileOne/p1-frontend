@@ -14,6 +14,10 @@ Where to find each number
 | Tue 6 Oct 2026 | 4,788 morning, 4,802 evening (+61 on Mon) | Top post (dialysis chair) 208 impressions / 5 engagements; 7-day totals: 487 profile views, 165 post impressions, 81 search appearances | | | | | **Product Hunt launch day.** Other recent posts: 25-questions 72 / 1, "where you stand" 53 / 2. Funnel numbers still to add. |
 | Wed 7 Oct 2026 | 4,813 (+11 overnight) | 7-day: 491 profile views, 156 post impressions, 81 search appearances | | | | | Profile banner/carousel still shows the old Amina and the HeyGen Wayne; v2 slides ready in docs/ProductHunt/linkedin-carousel-v2/. Funnel now counts everyone except robots we are sure of. |
 | Thu 8 Oct 2026 | 4,853 (+40 since Wed morning) | 7-day: 496 profile views, 153 post impressions, 33 search appearances | 30 visits, 28 not robots, 10 interacted (as at ~16:00, last 1 day) | 6 (21% of people; 5 of them UK) | 0 on the marketing site; 1 on the demo results screen (UK visitor, score 78, did not finish signing up) | 0 (still 4 candidate accounts, all testers) | Busy day. Sources: direct 18, LinkedIn 5, Product Hunt 3, l.wl.co 3. 15 mobile / 15 desktop. Interviewer picker, Say hi and the six-interviewer section live on the homepage. |
+| Fri 9 Oct 2026 | 4,865 (+12 since Thu morning) | 7-day: 494 profile views, 98 post impressions, 33 search appearances | | | | | |
+| Sat 10 and Sun 11 Oct 2026 | not recorded | | | | | | Weekend, no screenshot. |
+| Mon 12 Oct 2026 | 4,887 (+22 over the weekend, from Fri) | 7-day: 481 profile views, 42 post impressions, 33 search appearances | | | | | |
+| Tue 13 Oct 2026 | 4,937 (+50 since Mon morning) | 7-day: 494 profile views, 29 post impressions, 33 search appearances | | | | | Biggest one-day gain since launch week (Thu 8 Oct was +40). +124 since Wed 7 Oct morning, +196 since Mon 5 Oct. |
 
 ## Post experiments
 
