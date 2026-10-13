@@ -11,7 +11,7 @@ interface Props {
   /** The four tabs along the bottom, in order, with the short name shown under each icon. */
   main: { label: string; short: string; Icon: IconType }[];
   /** Everything else, shown in the More sheet. */
-  more: { label: string; Icon: IconType }[];
+  more: { label: string; Icon: IconType; group?: string }[];
   active: string;
   onNavigate: (label: string) => void;
   userName: string;
@@ -41,18 +41,23 @@ export function PhoneTabBar({ main, more, active, onNavigate, userName, needsPla
               <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>More</div>
               <button onClick={() => setSheet(false)} aria-label="Close" style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: 6, display: 'flex' }}><X size={20} /></button>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
-              {more.map(({ label, Icon }) => (
-                <button key={label} onClick={() => go(label)} style={{
-                  display: 'flex', alignItems: 'center', gap: 10, minHeight: 48, padding: '10px 12px', borderRadius: 12, textAlign: 'left', fontFamily: 'inherit',
-                  fontSize: 13, fontWeight: active === label ? 800 : 600, cursor: 'pointer', minWidth: 0,
-                  color: active === label ? '#34D399' : 'var(--text)',
-                  background: active === label ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.04)', border: '1px solid var(--border)',
-                }}>
-                  <Icon size={17} /><span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>{label}</span>
-                </button>
-              ))}
-            </div>
+            {Array.from(new Set(more.map(m => m.group ?? ''))).map(group => (
+              <div key={group || 'all'} style={{ marginBottom: 12 }}>
+                {group && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', color: 'var(--text-3)', margin: '4px 2px 8px' }}>{group}</div>}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
+                  {more.filter(m => (m.group ?? '') === group).map(({ label, Icon }) => (
+                    <button key={label} onClick={() => go(label)} style={{
+                      display: 'flex', alignItems: 'center', gap: 10, minHeight: 48, padding: '10px 12px', borderRadius: 12, textAlign: 'left', fontFamily: 'inherit',
+                      fontSize: 13, fontWeight: active === label ? 800 : 600, cursor: 'pointer', minWidth: 0,
+                      color: active === label ? '#34D399' : 'var(--text)',
+                      background: active === label ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.04)', border: '1px solid var(--border)',
+                    }}>
+                      <Icon size={17} /><span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
             <div style={{ display: 'flex', gap: 10, marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
               <button onClick={() => { setSheet(false); onAccount(); }} style={{ flex: 1, minWidth: 0, minHeight: 48, borderRadius: 12, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: '8px 12px' }}>
                 <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userName}</div>

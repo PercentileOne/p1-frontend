@@ -10,7 +10,7 @@ import { getTopLearnTopics, type LearnTopicStat } from "../api/learnTopicsApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
   MessageSquare, Settings, LogOut, ChevronRight, ChevronDown, CheckCircle2, Circle, Compass, Gift, Zap,
-  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked, GraduationCap, Wallet, LifeBuoy,
+  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked, GraduationCap, Wallet, LifeBuoy, House,
 } from "lucide-react";
 import { getMyEntitlements } from "../api/entitlementsApi";
 import { CvAnalysisModal } from "../components/CvAnalysisModal";
@@ -52,31 +52,33 @@ const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ??
 // slug: null keeps the URL as bare /dashboard for the home tab; every other tab gets a
 // real ?tab= query param so the address bar always matches what's on screen, and browser
 // back / our own Back button lands on the tab you were actually looking at, not a reset one.
+// zone (Francis, 2026-10-13, from the original P1 portal's My Life / My Work switch): "work" = getting and doing the job, "home" = you, your learning and your
+// account, "pinned" = always visible above the switch. The sidebar shows one zone at a time so a new user sees about nine things, not eighteen.
 const NAV_ITEMS = [
+  { Icon: LayoutDashboard, label: "Dashboard", slug: null, zone: "pinned" },
+  // Work
+  { Icon: Video, label: "Job Interviews", slug: "interviews", zone: "work" },
+  { Icon: Mic, label: "My Talks", slug: "talks", zone: "work" },
+  { Icon: Gift, label: "Interview Preps", slug: "interview-preps", zone: "work" },
+  { Icon: HeartHandshake, label: "My Career Coach", slug: "career-coach", zone: "work" },
+  { Icon: Compass, label: "Careers Explorer", slug: "careers", zone: "work" },
+  { Icon: Wallet, label: "CV Analysis", slug: "cv-salary", zone: "work" },
+  { Icon: GraduationCap, label: "Certifications & Exams", slug: "certifications", zone: "work" },
+  { Icon: Briefcase, label: "Jobs", slug: "jobs", zone: "work" },
+  { Icon: MessageSquare, label: "Messages", slug: "messages", zone: "work" },
   // Home
-  { Icon: LayoutDashboard, label: "Dashboard", slug: null },
-  { Icon: User, label: "My Profile", slug: "profile" },
-  // Practise
-  { Icon: Video, label: "Job Interviews", slug: "interviews" },
-  { Icon: Mic, label: "My Talks", slug: "talks" },
-  { Icon: Gift, label: "Interview Preps", slug: "interview-preps" },
-  { Icon: PartyPopper, label: "Interview Gifts", slug: "interview-gifts" },
-  // Learn
-  { Icon: BookOpen, label: "Learn", slug: "learn" },
-  { Icon: BellRing, label: "Learn Alerts", slug: "learn-alerts" },
-  { Icon: GraduationCap, label: "Certifications & Exams", slug: "certifications" },
-  { Icon: BookMarked, label: "Question Bank", slug: "question-bank" },
-  // Career
-  { Icon: HeartHandshake, label: "My Career Coach", slug: "career-coach" },
-  { Icon: Compass, label: "Careers Explorer", slug: "careers" },
-  { Icon: Briefcase, label: "Jobs", slug: "jobs" },
-  { Icon: Wallet, label: "CV Analysis", slug: "cv-salary" },
-  // Other
-  { Icon: MessageSquare, label: "Messages", slug: "messages" },
-  { Icon: Zap, label: "Demo", slug: "demo" },
-  { Icon: LifeBuoy, label: "Help", slug: "help" },
-  { Icon: Settings, label: "Settings", slug: "settings" },
+  { Icon: User, label: "My Profile", slug: "profile", zone: "home" },
+  { Icon: BookOpen, label: "Learn", slug: "learn", zone: "home" },
+  { Icon: BellRing, label: "Learn Alerts", slug: "learn-alerts", zone: "home" },
+  { Icon: BookMarked, label: "Question Bank", slug: "question-bank", zone: "home" },
+  { Icon: PartyPopper, label: "Interview Gifts", slug: "interview-gifts", zone: "home" },
+  { Icon: Zap, label: "Demo", slug: "demo", zone: "home" },
+  { Icon: LifeBuoy, label: "Help", slug: "help", zone: "home" },
+  { Icon: Settings, label: "Settings", slug: "settings", zone: "home" },
 ] as const;
+
+type NavZone = "work" | "home";
+const ZONE_KEY = "tic_nav_zone";
 
 // Five real, live-sourced dashboard cards (Francis, 2026-09-11) — replaces an earlier version
 // where every number on every card was hardcoded placeholder data ("Employers Watching: 12",
@@ -623,6 +625,18 @@ export default function CandidateDashboard() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const activeNav = NAV_ITEMS.find(n => n.slug === searchParams.get("tab"))?.label ?? "Dashboard";
+  // Which half of the menu is showing. It follows the page you are on (a link from a results page into Learn opens HOME), otherwise whatever you chose last.
+  const [zone, setZone] = useState<NavZone>(() => {
+    try { return localStorage.getItem(ZONE_KEY) === "home" ? "home" : "work"; } catch { return "work"; }
+  });
+  useEffect(() => {
+    const z = NAV_ITEMS.find(n => n.label === activeNav)?.zone;
+    if (z === "work" || z === "home") setZone(z);
+  }, [activeNav]);
+  function chooseZone(z: NavZone) {
+    setZone(z);
+    try { localStorage.setItem(ZONE_KEY, z); } catch { /* private window: it just won't be remembered */ }
+  }
   // Set when arriving from InterviewSummaryPage's "Study {topic}" buttons, so Learn opens
   // straight into the weak area that sent the candidate here.
   const studyTopic = (location.state as { studyTopic?: string } | null)?.studyTopic;
@@ -766,7 +780,35 @@ export default function CandidateDashboard() {
             is what makes overflowY: auto kick in instead of the whole sidebar growing past the
             viewport (a plain flex: 1 child ignores its parent's height without it). */}
         <nav style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "16px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
-          {NAV_ITEMS.map(({ Icon, label }) => {
+          {/* Dashboard stays put; the switch below it chooses which half of the menu is showing. */}
+          <button onClick={() => navTo("Dashboard")} style={{
+            display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 8, border: "none", cursor: "pointer", textAlign: "left", width: "100%",
+            background: activeNav === "Dashboard" ? "rgba(52,211,153,0.12)" : "transparent", color: activeNav === "Dashboard" ? "#34D399" : "var(--text-2)",
+            fontSize: 13, fontWeight: activeNav === "Dashboard" ? 700 : 500, fontFamily: "inherit",
+          }}>
+            <LayoutDashboard size={15} strokeWidth={activeNav === "Dashboard" ? 2.2 : 1.8} />
+            Dashboard
+          </button>
+          <div role="tablist" aria-label="Menu section" style={{ display: "flex", gap: 3, padding: 3, margin: "8px 0 6px", borderRadius: 11, border: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+            {([
+              { z: "work" as const, text: "WORK", Icon: Briefcase, tip: "Interviews, talks, CV and careers" },
+              { z: "home" as const, text: "HOME", Icon: House, tip: "Learning, your profile and settings" },
+            ]).map(({ z, text, Icon, tip }) => {
+              const on = zone === z;
+              return (
+                <button key={z} role="tab" aria-selected={on} title={tip} onClick={() => chooseZone(z)} style={{
+                  flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 6px", borderRadius: 8, border: "none", cursor: "pointer",
+                  fontFamily: "inherit", fontSize: 11, fontWeight: 800, letterSpacing: "0.1em",
+                  background: on ? "rgba(52,211,153,0.16)" : "transparent", color: on ? "#34D399" : "var(--text-3)",
+                  transition: "background 0.15s, color 0.15s",
+                }}>
+                  <Icon size={13} strokeWidth={on ? 2.4 : 1.9} />
+                  {text}
+                </button>
+              );
+            })}
+          </div>
+          {NAV_ITEMS.filter(n => n.zone === zone).map(({ Icon, label }) => {
             const active = activeNav === label;
             const hovered = hoveredNav === label;
             return (
@@ -831,7 +873,7 @@ export default function CandidateDashboard() {
             { label: "Interview Preps", short: "Preps", Icon: Gift },
             { label: "Job Interviews", short: "Interviews", Icon: Video },
           ]}
-          more={NAV_ITEMS.filter(n => !["Dashboard", "Learn Alerts", "Interview Preps", "Job Interviews"].includes(n.label)).map(n => ({ label: n.label, Icon: n.Icon }))}
+          more={NAV_ITEMS.filter(n => !["Dashboard", "Learn Alerts", "Interview Preps", "Job Interviews"].includes(n.label)).map(n => ({ label: n.label, Icon: n.Icon, group: n.zone === "work" ? "WORK" : "HOME" }))}
           active={activeNav}
           onNavigate={navTo}
           userName={user?.name ?? "Candidate"}
