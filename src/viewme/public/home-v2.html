@@ -382,6 +382,18 @@
     caret-color: var(--text);
     transition: background-color 9999s ease-out 0s;
   }
+
+  /* My Routines section (2026-10-14) */
+  .rt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:38px}
+  .rt-stat .n{display:block;font-size:clamp(2.1rem,4.6vw,2.9rem);font-weight:900;letter-spacing:-.03em;line-height:1;color:var(--green);margin:2px 0 12px}
+  .rt-src{display:block;margin-top:12px;font-size:12px;color:var(--muted);opacity:.85}
+  .rt-sub{font-size:clamp(1.15rem,2.4vw,1.45rem);letter-spacing:-.02em;margin:46px 0 4px;max-width:720px}
+  .rt-fine{color:var(--muted);font-size:14px;margin-top:16px;max-width:720px}
+  .rt-next{margin-top:38px;padding:26px;border-radius:18px;border:1px solid rgba(52,211,153,.3);background:linear-gradient(160deg,rgba(52,211,153,.09),var(--card) 60%)}
+  .rt-next h3{font-size:19px;letter-spacing:-.02em;margin-bottom:8px}
+  .rt-next p{color:var(--muted);font-size:15px;max-width:760px}
+  #routines .btns{display:flex;flex-wrap:wrap;gap:14px;margin-top:30px}
+  @media(max-width:900px){.rt-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -410,6 +422,7 @@
   <div class="drawer" id="drawer" onclick="if(event.target.tagName==='A')this.classList.remove('open')">
     <a href="#try" style="color:var(--green)">Try it live</a>
     <a href="#features">What you get</a>
+    <a href="#routines">My Routines</a>
     <a href="#interviewers">Your interviewers</a>
     <a href="/how-we-score.html" onclick="openScoreModal(event)">How we score</a>
     <a href="/about.html" onclick="openAboutModal(event)">Our story</a>
@@ -552,7 +565,7 @@
       <table class="wi-tbl">
         <thead><tr><th>You get</th><th>In plain words</th></tr></thead>
         <tbody>
-          <tr class="wi-grp"><th colspan="2">Practise out loud</th></tr>
+          <tr class="wi-grp"><th colspan="2">Practice out loud</th></tr>
           <tr><td class="wi-n"><span>🎙️</span> Live practice interviews</td><td>Two AI interviewers, an HR one and a technical one, chosen from a panel of five, ask you 10+ questions built around your role, your CV and the job. Out loud, in 32 languages, answered by voice or typed. You walk in having already said it.<a class="wi-shot" href="/img/ss-mid-interview.webp" data-shot="A live practice interview: the interviewer, the green Click Here button to answer by voice, and the question with Repeat, Pause, Tell Me The Answer and Pass" aria-label="Enlarge: A live practice interview: the interviewer, the green Click Here button to answer by voice, and the question with Repeat, Pause, Tell Me The Answer and Pass"><img src="/img/ss-mid-interview.webp" alt="A live practice interview: the interviewer, the green Click Here button to answer by voice, and the question with Repeat, Pause, Tell Me The Answer and Pass" width="1300" height="1153" loading="lazy" decoding="async" style="object-position:50% 58%"><span>Tap to enlarge</span></a></td></tr>
           <tr><td class="wi-n"><span>🏢</span> Interviews in a company&rsquo;s style</td><td>Choose from 68 well-known employers and be interviewed the way they do it: their values, their style, their bar. Written fresh for you, never their real questions.<a class="wi-shot" href="/img/ss-interview-style.webp" data-shot="Interview style: a searchable list of well-known employers to be interviewed in the style of, with Standard as the default" aria-label="Enlarge: Interview style: a searchable list of well-known employers to be interviewed in the style of, with Standard as the default"><img src="/img/ss-interview-style.webp" alt="Interview style: a searchable list of well-known employers to be interviewed in the style of, with Standard as the default" width="1216" height="988" loading="lazy" decoding="async" style="object-position:50% 20%"><span>Tap to enlarge</span></a></td></tr>
           <tr><td class="wi-n"><span>📊</span> Honest scoring</td><td>Every answer scored on clarity, relevance, accuracy, depth and confidence, with a clear verdict (pass, keep on file, or not this time), a spoken debrief, a replay of your session, and a shareable certificate when you pass.<a class="wi-shot" href="/img/ss-scored-result.webp" data-shot="A scored interview result: an overall score, marks out of 10 for clarity, relevance, accuracy, depth and confidence, and a path to a pass" aria-label="Enlarge: A scored interview result: an overall score, marks out of 10 for clarity, relevance, accuracy, depth and confidence, and a path to a pass"><img src="/img/ss-scored-result.webp" alt="A scored interview result: an overall score, marks out of 10 for clarity, relevance, accuracy, depth and confidence, and a path to a pass" width="1400" height="1242" loading="lazy" decoding="async"><span>Tap to enlarge</span></a></td></tr>
@@ -567,7 +580,7 @@
 
           <tr class="wi-grp"><th colspan="2">Know where you stand</th></tr>
           <tr><td class="wi-n"><span>💷</span> CV Analysis <em class="wi-free">Free</em></td><td>A full analysis of your CV: which real roles fit, what they pay, your skills, strengths and gaps, and you can hear it talked through. Share the analysis by link. No account needed.<a class="wi-shot" href="/img/ss-cv-analysis.webp" data-shot="CV Analysis: a skills breakdown from the CV, with the roles it could apply for and what they pay" aria-label="Enlarge: CV Analysis: a skills breakdown from the CV, with the roles it could apply for and what they pay"><img src="/img/ss-cv-analysis.webp" alt="CV Analysis: a skills breakdown from the CV, with the roles it could apply for and what they pay" width="1370" height="1404" loading="lazy" decoding="async"><span>Tap to enlarge</span></a></td></tr>
-          <tr><td class="wi-n"><span>🧭</span> Careers Explorer</td><td>Search any career for real UK and US salaries, contract day rates, demand, outlook, how exposed it is to automation and the skills it needs, then practise an interview for it in one click.<a class="wi-shot" href="/img/ss-careers-explorer.webp" data-shot="Careers Explorer: a career with its AI risk, journey timeline and UK and US salaries" aria-label="Enlarge: Careers Explorer: a career with its AI risk, journey timeline and UK and US salaries"><img src="/img/ss-careers-explorer.webp" alt="Careers Explorer: a career with its AI risk, journey timeline and UK and US salaries" width="1294" height="1318" loading="lazy" decoding="async"><span>Tap to enlarge</span></a></td></tr>
+          <tr><td class="wi-n"><span>🧭</span> Careers Explorer</td><td>Search any career for real UK and US salaries, contract day rates, demand, outlook, how exposed it is to automation and the skills it needs, then practice an interview for it in one click.<a class="wi-shot" href="/img/ss-careers-explorer.webp" data-shot="Careers Explorer: a career with its AI risk, journey timeline and UK and US salaries" aria-label="Enlarge: Careers Explorer: a career with its AI risk, journey timeline and UK and US salaries"><img src="/img/ss-careers-explorer.webp" alt="Careers Explorer: a career with its AI risk, journey timeline and UK and US salaries" width="1294" height="1318" loading="lazy" decoding="async"><span>Tap to enlarge</span></a></td></tr>
           <tr><td class="wi-n"><span>🤝</span> AI Career Coach</td><td>Chat about where you are, where you want to go and what to do next, whenever you like.<a class="wi-shot" href="/img/ss-career-coach.webp" data-shot="AI Career Coach: a conversation asking which cloud platform to learn, with a practical recommendation" aria-label="Enlarge: AI Career Coach: a conversation asking which cloud platform to learn, with a practical recommendation"><img src="/img/ss-career-coach.webp" alt="AI Career Coach: a conversation asking which cloud platform to learn, with a practical recommendation" width="1400" height="639" loading="lazy" decoding="async"><span>Tap to enlarge</span></a></td></tr>
 
           <tr class="wi-grp"><th colspan="2">Be found, if you want to be</th></tr>
@@ -838,6 +851,67 @@
     <div class="score-cta">
       <a class="btn btn-green" href="/how-we-score.html" onclick="openScoreModal(event)">See how we score interviews &rarr;</a>
       <small>With worked examples &mdash; including a real, unedited scored answer.</small>
+    </div>
+  </div>
+</section>
+
+<!-- 4c · MY ROUTINES ───────────────────────────────────── -->
+<section id="routines" class="alt">
+  <div class="wrap">
+    <span class="eyebrow">Beyond the interview</span>
+    <h2 class="reveal">Interviews are one day. Routines are every day.</h2>
+    <p class="lede reveal">Here at TheInterviewChair.com we believe that thinking in systems, and having routines you actually keep, is one of the surest ways to raise your chances of success. So alongside the interviews, we built you a place to run your day: <strong>My Routines</strong>.</p>
+
+    <div class="rt-grid">
+      <div class="sc rt-stat reveal">
+        <span class="k">The arithmetic of small habits</span>
+        <span class="n">37&times;</span>
+        <h3>1% better, every day, for a year</h3>
+        <p>1.01 multiplied by itself 365 times is about 37. Slip by 1% a day instead and you end the year close to zero. The small daily thing is the whole game.</p>
+        <span class="rt-src">The idea behind <em>Atomic Habits</em> by James Clear</span>
+      </div>
+      <div class="sc rt-stat reveal">
+        <span class="k">How long a habit takes</span>
+        <span class="n">66 days</span>
+        <h3>On average, to become automatic</h3>
+        <p>In a University College London study it ranged from 18 to 254 days depending on the person and the habit, and missing a single day did not derail it. Give it time, and do not panic when you slip.</p>
+        <span class="rt-src">Lally and colleagues, <em>European Journal of Social Psychology</em>, 2010</span>
+      </div>
+      <div class="sc rt-stat reveal">
+        <span class="k">Deciding in advance</span>
+        <span class="n">94 tests</span>
+        <h3>&ldquo;If it is Sunday, then I plan my week&rdquo;</h3>
+        <p>A review of 94 tests found that people who decide exactly when and where they will do something follow through far more often, a medium-to-large effect. It is why My Routines has if-then days built in.</p>
+        <span class="rt-src">Gollwitzer and Sheeran, 2006 review of implementation intentions</span>
+      </div>
+    </div>
+
+    <h3 class="rt-sub reveal">What the people at the top have in common is not talent. It is repetition.</h3>
+    <div class="feat-grid">
+      <div class="feat sm reveal"><div class="ico">📜</div><h3>Benjamin Franklin</h3><p>Planned each day in writing. He started every morning with one question, <em>&ldquo;What good shall I do this day?&rdquo;</em>, and ended every evening with another: <em>&ldquo;What good have I done today?&rdquo;</em> (from his <em>Autobiography</em>).</p></div>
+      <div class="feat sm reveal"><div class="ico">✍️</div><h3>Haruki Murakami</h3><p>When he is writing a novel, the novelist gets up at 4am, writes for five or six hours, runs or swims in the afternoon and is in bed by 9pm. He has said the repetition itself is what matters (Paris Review, 2004).</p></div>
+      <div class="feat sm reveal"><div class="ico">🏨</div><h3>Maya Angelou</h3><p>Kept a plain hotel room in town just for writing, arrived by about half past six each morning and worked until early afternoon, every day, whether she felt inspired or not (Paris Review, 1990).</p></div>
+    </div>
+    <p class="rt-fine reveal">They did it in completely different ways. What they share is that it was routine. These are examples, not a prescription: the right routine is the one you will keep.</p>
+
+    <h3 class="rt-sub reveal">My Routines, in your candidate account</h3>
+    <div class="feat-grid">
+      <div class="feat sm reveal"><div class="ico">🗂️</div><h3>One master list, a page for every day</h3><p>Build your routine once. Each day gets its own page, made from it. Improve the list later and past days stay exactly as they were.</p></div>
+      <div class="feat sm reveal"><div class="ico">⭐</div><h3>Essentials first</h3><p>Mark the few things that really matter. Your progress counts those first, so a long list is never the reason you give up.</p></div>
+      <div class="feat sm reveal"><div class="ico">🔁</div><h3>If-then days</h3><p>Every Sunday, the last day of the month, or your own days: &ldquo;If it is a Sunday, then plan the week ahead.&rdquo; Items appear only when they apply.</p></div>
+      <div class="feat sm reveal"><div class="ico">🧭</div><h3>Where am I?</h3><p>One tap tells you where you are in your day and what is left, and it can say it out loud, so the plan stays in front of you.</p></div>
+      <div class="feat sm reveal"><div class="ico">📋</div><h3>Bring the list you already have</h3><p>Paste your routine from Evernote, Notes or Word and review it before it is saved. Morning, afternoon, evening and your own sections all work.</p></div>
+      <div class="feat sm reveal"><div class="ico">🔒</div><h3>Private to you</h3><p>Your routine, your notes and any readings you record are visible only to you. Nothing goes to recruiters or employers. Make your mistakes here, miss a day here: nobody is watching.</p></div>
+    </div>
+
+    <div class="rt-next reveal">
+      <h3>We want you to succeed, in the interview and in the life around it</h3>
+      <p>Coming next to My Routines: videos from people who live by routines and systems, advice on what to do in your mornings, daytime and evenings, and goal setting and tracking, so you can see yourself getting closer to what you are working towards.</p>
+    </div>
+
+    <div class="btns">
+      <a class="btn btn-green" href="https://login.theinterviewchair.com/register">Create a free account</a>
+      <a class="btn btn-ghost" href="#try" onclick="setTimeout(function(){document.getElementById('topic').focus()},500)">▶ Try an interview first</a>
     </div>
   </div>
 </section>
