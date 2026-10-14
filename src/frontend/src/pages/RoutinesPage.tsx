@@ -52,6 +52,10 @@ export default function RoutinesPage() {
   const [showStatus, setShowStatus] = useState(false);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const saveTimer = useRef<number | null>(null);
+  const dayRef = useRef<RoutineDay | null>(null);        // the latest day on screen, so a change never builds on a stale copy
+  const pending = useRef<RoutineDay | null>(null);        // the latest unsaved ticks and typed text
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const applyDay = (d: RoutineDay | null) => { dayRef.current = d; setDay(d); };
   const year = Number(today.slice(0, 4));
 
   const loadMonth = useCallback(async (m: string) => {
@@ -60,35 +64,76 @@ export default function RoutinesPage() {
 
   useEffect(() => {
     let alive = true;
-    setDay(null); setError(''); setAdding(false); setImporting(false); setMenuFor(null);
-    routinesApi.day(date).then(d => { if (alive) setDay(d); }).catch(e => { if (alive) setError((e as Error).message || 'Could not open this day.'); });
+    applyDay(null); setSaveState('idle'); setError(''); setAdding(false); setImporting(false); setMenuFor(null);
+    routinesApi.day(date).then(d => { if (alive) applyDay(d); }).catch(e => { if (alive) setError((e as Error).message || 'Could not open this day.'); });
     return () => { alive = false; };
   }, [date]);
 
   useEffect(() => { if (openMonth) void loadMonth(openMonth); }, [openMonth, loadMonth]);
 
-  // Ticks and typed values are saved a moment after the last change.
+  // Ticks and typed text save by themselves a moment after the last change (there is no Save button). "Saving…" / "Saved" shows it happened.
+  const sendPending = useCallback(async () => {
+    if (saveTimer.current) { window.clearTimeout(saveTimer.current); saveTimer.current = null; }
+    const next = pending.current;
+    if (!next) return;
+    pending.current = null;
+    try {
+      const s = await routinesApi.saveState(next.date, next.checked, next.values);
+      setMonths(prev => {
+        const m = next.date.slice(0, 7);
+        const list = (prev[m] ?? []).filter(x => x.date !== s.date);
+        return { ...prev, [m]: [s, ...list].sort((a, b) => b.date.localeCompare(a.date)) };
+      });
+      if (!pending.current) setSaveState('saved');
+    } catch {
+      setSaveState('idle');
+      setError('Your last change could not be saved. Check your connection and try again.');
+    }
+  }, []);
+
   function scheduleSave(next: RoutineDay) {
+    if (pending.current && pending.current.date !== next.date) void sendPending();   // never drop another day's unsaved text
+    pending.current = next;
+    setSaveState('saving');
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(() => {
-      routinesApi.saveState(next.date, next.checked, next.values)
-        .then(s => setMonths(prev => {
-          const m = next.date.slice(0, 7);
-          const list = (prev[m] ?? []).filter(x => x.date !== s.date);
-          return { ...prev, [m]: [s, ...list].sort((a, b) => b.date.localeCompare(a.date)) };
-        }))
-        .catch(() => setError('Your last change could not be saved. Check your connection and try again.'));
-    }, 600);
+    saveTimer.current = window.setTimeout(() => { void sendPending(); }, 600);
   }
   function mutate(fn: (d: RoutineDay) => RoutineDay) {
-    setDay(prev => { if (!prev) return prev; const next = fn(prev); scheduleSave(next); return next; });
+    const prev = dayRef.current;
+    if (!prev) return;
+    const next = fn(prev);
+    applyDay(next);
+    scheduleSave(next);
   }
+
+  // Closing the tab or switching away inside that 600 ms must not lose what was just typed: send it at once, in a request that survives the page going.
+  useEffect(() => {
+    const flush = () => {
+      const next = pending.current;
+      if (!next) return;
+      pending.current = null;
+      if (saveTimer.current) { window.clearTimeout(saveTimer.current); saveTimer.current = null; }
+      routinesApi.saveStateOnExit(next.date, next.checked, next.values);
+    };
+    const onHide = () => { if (document.visibilityState === 'hidden') flush(); };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onHide);
+    return () => { window.removeEventListener('pagehide', flush); document.removeEventListener('visibilitychange', onHide); };
+  }, []);
+
   const tick = (id: string) => mutate(d => ({ ...d, checked: { ...d.checked, [id]: !d.checked[id] } }));
   const setValue = (id: string, v: string) => mutate(d => ({ ...d, values: { ...d.values, [id]: v } }));
 
   async function run(p: Promise<RoutineDay>) {
     setError('');
-    try { const d = await p; setDay(d); void loadMonth(d.date.slice(0, 7)); }
+    try {
+      let d = await p;
+      // The server's copy of the day may be a moment older than the screen: keep any text typed but not yet saved.
+      const waiting = pending.current;
+      if (waiting && waiting.date === d.date) d = { ...d, checked: waiting.checked, values: waiting.values };
+      applyDay(d);
+      void loadMonth(d.date.slice(0, 7));
+    }
     catch (e) { setError((e as Error).message || 'That did not work. Try again.'); }
   }
 
@@ -159,6 +204,9 @@ export default function RoutinesPage() {
                   <div style={{ height: '100%', width: `${Math.round(pct * 100)}%`, background: GREEN, transition: 'width 0.25s' }} />
                 </div>
                 {ess.length > 0 && <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 4 }}>{allDone} of {counted.length} in all</div>}
+                <div aria-live="polite" style={{ fontSize: 11.5, color: saveState === 'saved' ? GREEN : 'var(--text-3)', marginTop: 4, minHeight: 15 }}>
+                  {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved' : ''}
+                </div>
               </div>
             </div>
 
@@ -197,7 +245,7 @@ export default function RoutinesPage() {
               {adding && <AddItem sections={day.sections} onCancel={() => setAdding(false)}
                 onAdd={async body => { await run(routinesApi.addItem(day.date, body)); setAdding(false); }} />}
               {importing && <RoutineImport date={day.date} onCancel={() => setImporting(false)}
-                onDone={d => { setDay(d); void loadMonth(d.date.slice(0, 7)); setImporting(false); }} />}
+                onDone={d => { applyDay(d); void loadMonth(d.date.slice(0, 7)); setImporting(false); }} />}
             </div>
           </>
         )}

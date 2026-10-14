@@ -52,6 +52,14 @@ export const routinesApi = {
   day: (date: string) => call<RoutineDay>(`/day/${date}`, { headers: headers() }),
   saveState: (date: string, checked: Record<string, boolean>, values: Record<string, string>) =>
     call<DaySummary>(`/day/${date}/state`, { method: 'PUT', headers: headers(true), body: JSON.stringify({ checked, values }) }),
+  /** For the moment the page is going away: keepalive lets the browser finish the request after the tab closes. Fire and forget. */
+  saveStateOnExit: (date: string, checked: Record<string, boolean>, values: Record<string, string>): void => {
+    try {
+      void fetch(`${API_BASE}/api/routines/day/${date}/state`, {
+        method: 'PUT', headers: headers(true), body: JSON.stringify({ checked, values }), keepalive: true,
+      }).catch(() => { /* nothing more can be done as the page closes */ });
+    } catch { /* ditto */ }
+  },
   addItem: (date: string, body: { text: string; section?: string; kind?: RoutineKind; essential?: boolean; scope: AddScope; rule?: RoutineRule | null }) =>
     call<RoutineDay>(`/day/${date}/items`, { method: 'POST', headers: headers(true), body: JSON.stringify(body) }),
   updateItem: (date: string, id: string, body: { text?: string; essential?: boolean }) =>

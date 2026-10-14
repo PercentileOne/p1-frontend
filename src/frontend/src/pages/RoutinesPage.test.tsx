@@ -23,12 +23,12 @@ const day = (): RoutineDay => ({
   checked: {}, values: {},
 });
 
-const calls: { url: string; method: string; body?: string }[] = [];
+const calls: { url: string; method: string; body?: string; keepalive?: boolean }[] = [];
 
 beforeEach(() => {
   calls.length = 0;
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
-    calls.push({ url, method: init?.method ?? 'GET', body: init?.body as string | undefined });
+    calls.push({ url, method: init?.method ?? 'GET', body: init?.body as string | undefined, keepalive: init?.keepalive });
     if (url.includes('/month/')) return new Response('[]', { status: 200 });
     if (url.includes('/state')) return new Response(JSON.stringify({ date: today, essentialsDone: 1, essentialsTotal: 2, done: 1, total: 3 }), { status: 200 });
     if (url.endsWith('/api/routines/import')) return new Response(JSON.stringify(day()), { status: 200 });
@@ -77,6 +77,29 @@ describe('RoutinesPage', () => {
     expect(screen.getByText('1 of 3')).toBeTruthy();
     await waitFor(() => expect(calls.some(c => c.url.includes('/state') && c.method === 'PUT')).toBe(true), { timeout: 3000 });
     expect(JSON.parse(calls.find(c => c.url.includes('/state'))!.body!).checked).toEqual({ r: true });
+  });
+
+  it('saves typed text by itself and says so, with no Save button', async () => {
+    render(<RoutinesPage />);
+    const box = await screen.findByLabelText('How do I feel right now?');
+    expect(screen.queryByText('Save')).toBeNull();
+    fireEvent.change(box, { target: { value: 'Grateful and hopeful' } });
+    expect(screen.getByText('Saving…')).toBeTruthy();
+    await screen.findByText('Saved', {}, { timeout: 3000 });
+    const save = calls.find(c => c.url.includes('/state') && c.method === 'PUT')!;
+    expect(JSON.parse(save.body!).values).toEqual({ d: 'Grateful and hopeful' });
+  });
+
+  it('sends unsaved text at once when the page is being closed', async () => {
+    render(<RoutinesPage />);
+    const box = await screen.findByLabelText('How do I feel right now?');
+    fireEvent.change(box, { target: { value: 'Typed just before closing' } });
+    expect(calls.some(c => c.url.includes('/state'))).toBe(false);   // still inside the short wait
+    window.dispatchEvent(new Event('pagehide'));
+    const save = calls.find(c => c.url.includes('/state') && c.method === 'PUT')!;
+    expect(save).toBeTruthy();
+    expect(save.keepalive).toBe(true);
+    expect(JSON.parse(save.body!).values).toEqual({ d: 'Typed just before closing' });
   });
 
   it('"Where am I?" says where the day stands, lists what is left, and updates as things are ticked', async () => {
