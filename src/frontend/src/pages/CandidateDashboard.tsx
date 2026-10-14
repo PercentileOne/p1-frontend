@@ -794,8 +794,8 @@ export default function CandidateDashboard() {
           </button>
           <div role="tablist" aria-label="Menu section" style={{ display: "flex", gap: 3, padding: 3, margin: "8px 0 6px", borderRadius: 11, border: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
             {([
-              { z: "work" as const, text: "WORK", Icon: Briefcase, tip: "Interviews, talks, CV and careers" },
               { z: "home" as const, text: "HOME", Icon: House, tip: "Learning, your profile and settings" },
+              { z: "work" as const, text: "WORK", Icon: Briefcase, tip: "Interviews, talks, CV and careers" },
             ]).map(({ z, text, Icon, tip }) => {
               const on = zone === z;
               return (
@@ -876,7 +876,7 @@ export default function CandidateDashboard() {
             { label: "Interview Preps", short: "Preps", Icon: Gift },
             { label: "Job Interviews", short: "Interviews", Icon: Video },
           ]}
-          more={NAV_ITEMS.filter(n => !["Dashboard", "Learn Alerts", "Interview Preps", "Job Interviews"].includes(n.label)).map(n => ({ label: n.label, Icon: n.Icon, group: n.zone === "work" ? "WORK" : "HOME" }))}
+          more={NAV_ITEMS.filter(n => !["Dashboard", "Learn Alerts", "Interview Preps", "Job Interviews"].includes(n.label)).sort((x, y) => Number(y.zone === "home") - Number(x.zone === "home")).map(n => ({ label: n.label, Icon: n.Icon, group: n.zone === "work" ? "WORK" : "HOME" }))}
           active={activeNav}
           onNavigate={navTo}
           userName={user?.name ?? "Candidate"}

@@ -25,6 +25,7 @@ Almost everyone, at some point, has to be interviewed, present, sit an exam or e
 | 13 | Training providers and coaches | Colleges, bootcamps, career coaches, outplacement firms | Resale and white-label licences |
 | 14 | Professional bodies and exam providers | Certification bodies, awarding bodies | Exam practice partnerships |
 | 15 | Talks and public speaking | Speakers, clubs, founders pitching | Subscription, group licences |
+| 16 | Jobs (coming soon) | Job seekers, and the job boards and employers who advertise to them | Commission on each placement |
 
 ## The ways in, one by one
 
@@ -198,6 +199,16 @@ Our interviews are built from the job spec and the candidate's CV together, so t
 
 **What it could be worth.** Subscriptions and group licences, and every public talk is a shop window.
 
+### 16. Jobs (coming soon)
+
+**Who they are.** People looking for their next job, and the employers and agencies trying to fill one.
+
+**Why it fits them.** Jobs will be a big part of the platform, and it is coming soon. The thinking is not to run a job board of our own, which would mean managing a huge number of adverts and competing with boards that already do that well. Instead, we would advertise jobs that sit on other job boards, and give every one a practice interview for that exact role, so the journey becomes: find the job, practice for it, apply with confidence.
+
+**How we get there.** Partnerships with job boards, who gain better-prepared applicants, and a commission on each placement made through the platform. The Jobs and Messages pages in the candidate portal are already in place, marked coming soon.
+
+**What it could be worth.** A commission on each placement, instead of the cost and risk of running a job board. Every candidate who has practiced and been scored makes a placement more likely. This is the current thinking, and the commission model is still to be worked out.
+
 ## How people hear about us
 
 | Audience | Main routes |
@@ -225,6 +236,7 @@ Our interviews are built from the job spec and the candidate's CV together, so t
 | Government and charity programmes | Public and voluntary sector | Contract or programme licence |
 | Training provider and coach licences | Providers | White-label or resale licence |
 | Exam-provider partnerships | Professional bodies | Partnership or licence fee |
+| Placement commission (Jobs, coming soon) | Job boards and employers | A commission on each placement, to be worked out |
 
 ## Other ideas worth adding
 
