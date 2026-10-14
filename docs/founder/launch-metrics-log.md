@@ -31,9 +31,9 @@ One row per post. Give every link its own `utm_campaign` so the admin funnel (So
 
 ## Native ad campaigns
 
-One row per ad (or per audience, if the ad stays the same). Build every ad's link like this, so the admin funnel can tell the ads apart:
+One row per ad (or per audience, if the ad stays the same). Ads land on the homepage itself, so people see Try it live and every other feature in one place. Build every ad's link like this, so the admin funnel can tell the ads apart:
 
-`https://theinterviewchair.com/try?utm_source=NETWORK&utm_medium=native&utm_campaign=SHORTNAME`
+`https://theinterviewchair.com/?utm_source=NETWORK&utm_medium=native&utm_campaign=SHORTNAME`
 
 - `utm_source` is the network (up to 40 characters), `utm_medium` is always `native` (up to 30), `utm_campaign` is the short name in the first column (up to 40). Lower case, no spaces.
 - Change one thing per ad (headline, picture or audience) so a difference in results has one possible cause.
