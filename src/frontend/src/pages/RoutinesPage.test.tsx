@@ -146,8 +146,10 @@ describe('RoutinesPage', () => {
     fireEvent.click(screen.getByText('Listen'));
     expect(speakSpy).toHaveBeenCalledTimes(1);
     const [text, role, , , , opts] = speakSpy.mock.calls[0];
-    expect(role).toBe('hr');
-    expect(opts?.interviewerId).toBe('catherine');   // Catherine's voice, whoever sits in the HR seat
+    // Catherine (HR seat) through the day, Malcolm (technical seat) from five in the evening
+    const evening = new Date().getHours() >= 17;
+    expect(role).toBe(evening ? 'technical' : 'hr');
+    expect(opts?.interviewerId).toBe(evening ? 'malcom' : 'catherine');
     expect(text).toMatch(/essentials/);
     for (const name of ['Make the bed', 'A few minutes of quiet', 'Read something', 'How do I feel', 'Every good thing']) expect(text).not.toContain(name);
     expect(screen.getByText('Stop')).toBeTruthy();   // and it can be stopped

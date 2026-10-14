@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight, ClipboardPaste, Compass, Pencil, Plus, Squar
 import { localDate, routinesApi, MAX_ITEM_TEXT, MAX_READ_TEXT } from '../api/routinesApi';
 import type { AddScope, DayItem, DaySummary, RoutineDay, RoutineKind } from '../api/routinesApi';
 import { RoutineImport } from '../components/RoutineImport';
-import { currentPeriod, routineStatus, sectionPeriod, spokenStatus } from './routineStatus';
+import { coachVoiceFor, currentPeriod, routineStatus, sectionPeriod, spokenStatus } from './routineStatus';
 import { speak, unlockTTSAudio } from '../api/ttsApi';
 
 // My Routines (Francis, 2026-10-13). One page per day, built from the person's template plus their if-then rules the first time that day is opened.
@@ -12,11 +12,6 @@ import { speak, unlockTTSAudio } from '../api/ttsApi';
 const GREEN = '#34D399';
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-// Whose voice reads "Where am I?" aloud (Francis, 2026-10-14): Catherine, the warm, encouraging HR interviewer. The seat is her seat ('hr'); change the id to 'malcom'
-// (technical seat, spelled with one "l" in the registry) for Malcolm's voice.
-const COACH_SEAT = 'hr' as const;
-const COACH_VOICE_ID = 'catherine';
 
 const NEW_SECTION = '__new__';
 const SUGGESTED = '__suggest__';
@@ -290,7 +285,9 @@ function WhereAmI({ day, isToday, onClose }: { day: RoutineDay; isToday: boolean
     if (speaking) { cancelRef.current?.(); cancelRef.current = null; setSpeaking(false); return; }
     unlockTTSAudio();   // must run inside the tap, before any network call, or phones stay silent
     setSpeaking(true);
-    cancelRef.current = speak(spokenStatus(day, new Date(), isToday), COACH_SEAT, () => { cancelRef.current = null; setSpeaking(false); }, undefined, undefined, { interviewerId: COACH_VOICE_ID });
+    const now = new Date();
+    const voice = coachVoiceFor(now);   // Catherine through the day, Malcolm from five in the evening
+    cancelRef.current = speak(spokenStatus(day, now, isToday), voice.seat, () => { cancelRef.current = null; setSpeaking(false); }, undefined, undefined, { interviewerId: voice.interviewerId });
   }
   const jump = (id: string) => {
     const el = document.getElementById(`routine-item-${id}`);

@@ -159,3 +159,14 @@ export function spokenStatus(day: RoutineDay, now: Date, isToday: boolean): stri
   if (unwritten > 0) out.push(`You have ${unwritten} ${unwritten === 1 ? 'note' : 'notes'} still to write.`);
   return out.join(' ');
 }
+
+/**
+ * Whose voice reads "Where am I?" aloud (Francis, 2026-10-14): Catherine, the warm and encouraging HR interviewer, through the day, and Malcolm, direct and composed,
+ * from five in the evening. The seat has to be the interviewer's own seat (the voice service only accepts an id that belongs to the seat asked for).
+ * Malcolm's registry id is spelled "malcom", with one "l".
+ */
+export function coachVoiceFor(now: Date): { seat: 'hr' | 'technical'; interviewerId: string; name: string } {
+  return currentPeriod(now) === 2
+    ? { seat: 'technical', interviewerId: 'malcom', name: 'Malcolm' }
+    : { seat: 'hr', interviewerId: 'catherine', name: 'Catherine' };
+}

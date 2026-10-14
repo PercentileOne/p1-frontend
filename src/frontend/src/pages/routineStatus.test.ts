@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { routineStatus, sectionPeriod, spokenStatus } from './routineStatus';
+import { coachVoiceFor, routineStatus, sectionPeriod, spokenStatus } from './routineStatus';
 import type { DayItem, RoutineDay } from '../api/routinesApi';
 
 const item = (id: string, text: string, section: string, over: Partial<DayItem> = {}): DayItem =>
@@ -150,5 +150,15 @@ describe('spokenStatus', () => {
 
   it('handles an empty day', () => {
     expect(spokenStatus({ ...makeDay(), items: [] }, at(8), true)).toBe('There is nothing on your routine for this day yet.');
+  });
+});
+
+describe('coachVoiceFor', () => {
+  it('is Catherine through the day and Malcolm from five in the evening, each in their own seat', () => {
+    expect(coachVoiceFor(at(7))).toMatchObject({ seat: 'hr', interviewerId: 'catherine', name: 'Catherine' });
+    expect(coachVoiceFor(at(12))).toMatchObject({ seat: 'hr', interviewerId: 'catherine' });
+    expect(coachVoiceFor(at(16))).toMatchObject({ seat: 'hr', interviewerId: 'catherine' });
+    expect(coachVoiceFor(at(17))).toMatchObject({ seat: 'technical', interviewerId: 'malcom', name: 'Malcolm' });
+    expect(coachVoiceFor(at(22))).toMatchObject({ seat: 'technical', interviewerId: 'malcom' });
   });
 });
