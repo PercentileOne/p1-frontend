@@ -13,6 +13,11 @@ const GREEN = '#34D399';
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+// Whose voice reads "Where am I?" aloud (Francis, 2026-10-14): Catherine, the warm, encouraging HR interviewer. The seat is her seat ('hr'); change the id to 'malcom'
+// (technical seat, spelled with one "l" in the registry) for Malcolm's voice.
+const COACH_SEAT = 'hr' as const;
+const COACH_VOICE_ID = 'catherine';
+
 const NEW_SECTION = '__new__';
 const SUGGESTED = '__suggest__';
 
@@ -47,6 +52,8 @@ export default function RoutinesPage() {
   const [error, setError] = useState('');
   const [months, setMonths] = useState<Record<string, DaySummary[]>>({});
   const [openMonth, setOpenMonth] = useState<string | null>(today.slice(0, 7));
+  const [monthKeys, setMonthKeys] = useState<string[]>([]);        // yyyy-MM months that have opened days
+  const [openYears, setOpenYears] = useState<string[]>([today.slice(0, 4)]);
   const [adding, setAdding] = useState(false);
   const [importing, setImporting] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
@@ -56,7 +63,10 @@ export default function RoutinesPage() {
   const pending = useRef<RoutineDay | null>(null);        // the latest unsaved ticks and typed text
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
   const applyDay = (d: RoutineDay | null) => { dayRef.current = d; setDay(d); };
-  const year = Number(today.slice(0, 4));
+  // The tree is built from the months that really have days, plus this month, grouped by year (newest year first). A new year just adds a row; earlier years stay reachable.
+  const todayMonth = today.slice(0, 7);
+  const treeMonths = Array.from(new Set([...monthKeys, todayMonth])).sort();
+  const treeYears = Array.from(new Set(treeMonths.map(k => k.slice(0, 4)))).sort().reverse();
 
   const loadMonth = useCallback(async (m: string) => {
     try { const list = await routinesApi.month(m); setMonths(prev => ({ ...prev, [m]: list })); } catch { /* the dots are a nicety; the day still works */ }
@@ -70,6 +80,9 @@ export default function RoutinesPage() {
   }, [date]);
 
   useEffect(() => { if (openMonth) void loadMonth(openMonth); }, [openMonth, loadMonth]);
+  useEffect(() => {
+    routinesApi.months().then(list => { if (Array.isArray(list)) setMonthKeys(list); }).catch(() => { /* the tree still shows this month */ });
+  }, []);
 
   // Ticks and typed text save by themselves a moment after the last change (there is no Save button). "Saving…" / "Saved" shows it happened.
   const sendPending = useCallback(async () => {
@@ -150,29 +163,40 @@ export default function RoutinesPage() {
 
       <aside style={{ ...card, padding: 10 }}>
         <TreeButton on={date === today} onClick={() => setDate(today)} icon={<Sun size={15} />} label="Today" />
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', color: 'var(--text-3)', margin: '12px 8px 4px' }}>{year}</div>
-        {MONTHS.map((name, idx) => {
-          const key = `${year}-${String(idx + 1).padStart(2, '0')}`;
-          if (key > today.slice(0, 7)) return null;
-          const open = openMonth === key;
-          const list = months[key] ?? [];
+        {treeYears.map(y => {
+          const yearOpen = openYears.includes(y);
           return (
-            <div key={key}>
-              <TreeButton on={false} onClick={() => setOpenMonth(open ? null : key)} icon={open ? <ChevronDown size={14} /> : <ChevronRight size={14} />} label={name} />
-              {open && (
-                <div style={{ padding: '2px 0 6px 18px' }}>
-                  {list.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-3)', padding: '4px 8px' }}>No days opened yet</div>}
-                  {list.map(s => (
-                    <button key={s.date} onClick={() => setDate(s.date)} style={{
-                      display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '5px 8px', borderRadius: 7, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                      background: date === s.date ? 'rgba(52,211,153,0.12)' : 'transparent', color: date === s.date ? GREEN : 'var(--text-2)', fontSize: 12.5, textAlign: 'left',
-                    }}>
-                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor(s), flexShrink: 0 }} />
-                      {shortDay(s.date)}{s.date === today ? ' (today)' : ''}
-                    </button>
-                  ))}
-                </div>
-              )}
+            <div key={y}>
+              <button onClick={() => setOpenYears(prev => (prev.includes(y) ? prev.filter(x => x !== y) : [...prev, y]))} aria-expanded={yearOpen} style={{
+                display: 'flex', alignItems: 'center', gap: 6, width: '100%', margin: '12px 0 2px', padding: '4px 8px', border: 'none', background: 'transparent', cursor: 'pointer',
+                fontFamily: 'inherit', fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', color: 'var(--text-3)', textAlign: 'left',
+              }}>
+                {yearOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}{y}
+              </button>
+              {yearOpen && treeMonths.filter(k => k.startsWith(y)).map(key => {
+                const name = MONTHS[Number(key.slice(5)) - 1];
+                const open = openMonth === key;
+                const list = months[key] ?? [];
+                return (
+                  <div key={key}>
+                    <TreeButton on={false} onClick={() => setOpenMonth(open ? null : key)} icon={open ? <ChevronDown size={14} /> : <ChevronRight size={14} />} label={name} />
+                    {open && (
+                      <div style={{ padding: '2px 0 6px 18px' }}>
+                        {list.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-3)', padding: '4px 8px' }}>No days opened yet</div>}
+                        {list.map(s => (
+                          <button key={s.date} onClick={() => setDate(s.date)} style={{
+                            display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '5px 8px', borderRadius: 7, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                            background: date === s.date ? 'rgba(52,211,153,0.12)' : 'transparent', color: date === s.date ? GREEN : 'var(--text-2)', fontSize: 12.5, textAlign: 'left',
+                          }}>
+                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor(s), flexShrink: 0 }} />
+                            {shortDay(s.date)}{s.date === today ? ' (today)' : ''}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           );
         })}
@@ -266,7 +290,7 @@ function WhereAmI({ day, isToday, onClose }: { day: RoutineDay; isToday: boolean
     if (speaking) { cancelRef.current?.(); cancelRef.current = null; setSpeaking(false); return; }
     unlockTTSAudio();   // must run inside the tap, before any network call, or phones stay silent
     setSpeaking(true);
-    cancelRef.current = speak(spokenStatus(day, new Date(), isToday), 'hr', () => { cancelRef.current = null; setSpeaking(false); });
+    cancelRef.current = speak(spokenStatus(day, new Date(), isToday), COACH_SEAT, () => { cancelRef.current = null; setSpeaking(false); }, undefined, undefined, { interviewerId: COACH_VOICE_ID });
   }
   const jump = (id: string) => {
     const el = document.getElementById(`routine-item-${id}`);

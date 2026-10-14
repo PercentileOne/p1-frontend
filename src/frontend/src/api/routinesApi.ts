@@ -68,5 +68,7 @@ export const routinesApi = {
     call<RoutineDay>(`/day/${date}/items/${id}?scope=${scope}`, { method: 'DELETE', headers: headers() }),
   importList: (body: { date: string; mode: ImportMode; sections: string[]; items: Omit<TemplateItem, 'id'>[] }) =>
     call<RoutineDay>('/import', { method: 'POST', headers: headers(true), body: JSON.stringify({ ...body, items: body.items.map(i => ({ ...i, id: '' })) }) }),
+  /** The yyyy-MM months that have any opened days, newest first. */
+  months: () => call<string[]>('/months', { headers: headers() }),
   month: (month: string) => call<DaySummary[]>(`/month/${month}`, { headers: headers() }),
 };

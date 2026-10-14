@@ -209,6 +209,7 @@ async function speakElevenLabs(
   onAnalyser?: (a: AnalyserNode) => void,
   isCancelled?: () => boolean,
   onStart?: () => void,
+  interviewerId?: string,
 ): Promise<() => void> {
   // Resume the AudioContext FIRST — as the very first await, before any network
   // call — so the browser still considers it part of the click that got us here.
@@ -225,7 +226,7 @@ async function speakElevenLabs(
   const genRes = await fetch(`${API_BASE}/interviews/speak`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: sanitiseForTTS(text), role, language: ttsLanguage, interviewerId: seatInterviewerId(role) }),
+    body: JSON.stringify({ text: sanitiseForTTS(text), role, language: ttsLanguage, interviewerId: interviewerId ?? seatInterviewerId(role) }),
   });
   if (!genRes.ok) throw new Error(`Interview speak proxy error: ${genRes.status}`);
   const { audioUrl } = await genRes.json() as { audioUrl: string };
@@ -350,6 +351,8 @@ export function speak(
   onEnd: () => void,
   onAnalyser?: (a: AnalyserNode | null) => void,
   onStart?: () => void,
+  /** Speak in a specific interviewer's voice (their registry id, e.g. "catherine") instead of whoever sits in the seat. The id must belong to the same seat as `role`. */
+  options?: { interviewerId?: string },
 ): () => void {
   let cancelled = false;
   let cancelAudio: (() => void) | null = null;
@@ -363,7 +366,7 @@ export function speak(
   // over unchanged from the old Mike debrief) is untouched.
   speakElevenLabs(text, role, () => {
     if (!cancelled) onEnd();
-  }, 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined, () => cancelled, onStart)
+  }, 1.0, onAnalyser ? (a) => onAnalyser(a) : undefined, () => cancelled, onStart, options?.interviewerId)
     .then(cancel => { cancelAudio = cancel; })
     .catch((err) => {
       // Backend proxy or ElevenLabs itself failed — fall back to Web Speech. Logged (not

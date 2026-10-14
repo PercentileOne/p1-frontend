@@ -153,6 +153,14 @@ public class RoutinesTests
         Assert.Empty(tuesday.@checked);
     }
 
+    [Fact]
+    public void The_tree_lists_each_month_that_has_days_newest_first_across_years()
+    {
+        var months = Routines.MonthsWithDays(["2026-10-13", "2026-10-14", "2026-12-31", "2027-01-02", "not a date", null, "2026-11-05"]);
+        Assert.Equal(["2027-01", "2026-12", "2026-11", "2026-10"], months);
+        Assert.Empty(Routines.MonthsWithDays([]));
+    }
+
     [Theory]
     [InlineData("2026-10-13", true)]
     [InlineData("2026-13-01", false)]

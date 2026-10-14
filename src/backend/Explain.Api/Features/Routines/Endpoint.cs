@@ -190,6 +190,21 @@ public static class Endpoint
             return Results.Ok(day);
         });
 
+        // Which months the person has any opened days in (newest first), so the tree can show real history across years instead of a fixed calendar year.
+        group.MapGet("/months", async (HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            var q = new QueryDefinition("SELECT VALUE c.date FROM c WHERE c.userId = @u AND c.type = 'day'").WithParameter("@u", userId);
+            var dates = new List<string>();
+            try
+            {
+                using var feed = cosmos.GetContainer("routines").GetItemQueryIterator<string>(q, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userId) });
+                while (feed.HasMoreResults) dates.AddRange(await feed.ReadNextAsync(ct));
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
+            return Results.Ok(MonthsWithDays(dates));
+        });
+
         // One line per opened day in a month, for the dots in the tree.
         group.MapGet("/month/{month}", async (string month, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
         {
@@ -242,6 +257,10 @@ public static class Endpoint
         if (existing.Count >= MaxSections) return ("", false, "That's the most sections one page can hold.");
         return (name, true, null);
     }
+
+    /// <summary>The distinct yyyy-MM months in a list of yyyy-MM-dd dates, newest first. Anything that is not a date is ignored.</summary>
+    public static List<string> MonthsWithDays(IEnumerable<string?> dates) =>
+        dates.Where(d => d is not null && TryDate(d, out _)).Select(d => d![..7]).Distinct().OrderByDescending(m => m, StringComparer.Ordinal).ToList();
 
     private static string? UserId(HttpContext ctx) => ctx.User.FindFirst("sub")?.Value is { Length: > 0 } s ? s : null;
     private static string NewId() => Guid.NewGuid().ToString("N")[..10];

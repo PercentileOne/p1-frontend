@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import RoutinesPage from './RoutinesPage';
 
-const speakSpy = vi.hoisted(() => vi.fn((_text: string, _role: string, _onEnd: () => void) => () => {}));
+const speakSpy = vi.hoisted(() => vi.fn((_text: string, _role: string, _onEnd: () => void, _a?: unknown, _s?: unknown, _opts?: { interviewerId?: string }) => () => {}));
 vi.mock('../api/ttsApi', () => ({ speak: speakSpy, unlockTTSAudio: vi.fn() }));
 import type { RoutineDay } from '../api/routinesApi';
 
@@ -24,11 +24,13 @@ const day = (): RoutineDay => ({
 });
 
 const calls: { url: string; method: string; body?: string; keepalive?: boolean }[] = [];
+let monthsReply: string[] = [];
 
 beforeEach(() => {
   calls.length = 0;
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
     calls.push({ url, method: init?.method ?? 'GET', body: init?.body as string | undefined, keepalive: init?.keepalive });
+    if (url.endsWith('/api/routines/months')) return new Response(JSON.stringify(monthsReply), { status: 200 });
     if (url.includes('/month/')) return new Response('[]', { status: 200 });
     if (url.includes('/state')) return new Response(JSON.stringify({ date: today, essentialsDone: 1, essentialsTotal: 2, done: 1, total: 3 }), { status: 200 });
     if (url.endsWith('/api/routines/import')) return new Response(JSON.stringify(day()), { status: 200 });
@@ -36,7 +38,7 @@ beforeEach(() => {
     return new Response(JSON.stringify(day()), { status: 200 });
   }));
 });
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.useRealTimers(); monthsReply = []; });
 
 describe('RoutinesPage', () => {
   it('shows the day with essentials counted first and notes not counted', async () => {
@@ -67,6 +69,25 @@ describe('RoutinesPage', () => {
     fireEvent.click(screen.getByText('Add item'));
     expect(screen.getByText('Choose which days.')).toBeTruthy();
     expect(calls.some(c => c.url.includes('/items') && c.method === 'POST')).toBe(false);
+  });
+
+  it('in 2027 the tree gains a 2027 row and 2026 stays reachable, with only months that have days', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2027, 0, 2, 9, 0, 0));
+    monthsReply = ['2026-12', '2026-10'];
+    render(<RoutinesPage />);
+    await screen.findByText('Make the bed');
+    // this year is open and shows only January (no empty months), last year is a closed row
+    expect(screen.getByText('2027')).toBeTruthy();
+    expect(screen.getByText('2026')).toBeTruthy();
+    expect(screen.getByText('January')).toBeTruthy();
+    expect(screen.queryByText('February')).toBeNull();
+    expect(screen.queryByText('December')).toBeNull();
+    // opening 2026 shows just the two months that have days
+    fireEvent.click(screen.getByText('2026'));
+    expect(screen.getByText('December')).toBeTruthy();
+    expect(screen.getByText('October')).toBeTruthy();
+    expect(screen.queryByText('November')).toBeNull();
   });
 
   it('shows a read-aloud passage whole, with one tick that counts as an essential', async () => {
@@ -124,8 +145,9 @@ describe('RoutinesPage', () => {
     fireEvent.click(screen.getByText('Where am I?'));
     fireEvent.click(screen.getByText('Listen'));
     expect(speakSpy).toHaveBeenCalledTimes(1);
-    const [text, role] = speakSpy.mock.calls[0];
+    const [text, role, , , , opts] = speakSpy.mock.calls[0];
     expect(role).toBe('hr');
+    expect(opts?.interviewerId).toBe('catherine');   // Catherine's voice, whoever sits in the HR seat
     expect(text).toMatch(/essentials/);
     for (const name of ['Make the bed', 'A few minutes of quiet', 'Read something', 'How do I feel', 'Every good thing']) expect(text).not.toContain(name);
     expect(screen.getByText('Stop')).toBeTruthy();   // and it can be stopped
