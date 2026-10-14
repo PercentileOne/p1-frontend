@@ -170,7 +170,7 @@ export default function Register() {
           </div>
         </div>
 
-        <div style={{ fontSize: 11, color: 'rgba(160,200,255,0.3)', marginTop: 'auto' }}>© 2026 Explain Global Ltd · All rights reserved</div>
+        <div style={{ fontSize: 11, color: 'rgba(160,200,255,0.3)', marginTop: 'auto' }}>© 2026 Francis Cobbinah, trading as TheInterviewChair.com · All rights reserved</div>
       </motion.div>
 
       {/* Right panel — form */}

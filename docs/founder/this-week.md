@@ -27,11 +27,11 @@ Kept short on purpose. Three things at the top; everything else waits. Updated b
 - [ ] **CV analyser page, live:** the example (your own analysis) shows and the upload still works.
 - [ ] **Evidence folder:** save the IPO certificate PDF, the confirmation screen, and a dated screenshot of the App Store and UK/TMview/USPTO searches.
 - [ ] **ICO data protection fee:** confirm you're registered as a sole trader (the privacy policy now names you).
-- [ ] **Investor deck (`fp.html`)** still says "Percentile One Ltd": decide whether to change it.
+- [x] **Investor deck (`fp.html`)** no longer says "Percentile One Ltd"; it now says "Francis Cobbinah, trading as TheInterviewChair.com" (14 Oct).
 
 ## Mine, when you say go
 
-- [ ] Sweep the app's emails, terms and receipts for "Percentile One Ltd" and change them to match.
+- [x] Swept the repo for "Percentile One Ltd" (and "Explain Global Ltd") and changed every one (14 Oct). The app's emails and terms had none. **Still to check by you:** the business name and statement descriptor in the Stripe dashboard, and the "from" name on outgoing email.
 - [ ] Re-measure CV analyses against page visits on about **17 Oct** (baseline: 1 analysis, 15 visits in 10 days).
 - [ ] Paywall: a one-page brief on turning enforcement on (what it would block, what stays free).
 - [ ] Draft the follow-up message to Fadi at Spatius (regions, speed, batch rendering). You send it.

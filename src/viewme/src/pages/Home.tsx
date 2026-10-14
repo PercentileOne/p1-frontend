@@ -202,7 +202,7 @@ export default function Home() {
           </div>
           <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>interview<span style={{ color: '#4F8EF7' }}>me</span>.global</span>
         </div>
-        <p style={{ fontSize: 12, color: '#334155' }}>© 2026 InterviewMe — Percentile.One Ltd. Powered by <a href="https://explain.global" style={{ color: '#4F8EF7', textDecoration: 'none' }}>Explain.global</a></p>
+        <p style={{ fontSize: 12, color: '#334155' }}>© 2026 Francis Cobbinah, trading as TheInterviewChair.com. Powered by <a href="https://explain.global" style={{ color: '#4F8EF7', textDecoration: 'none' }}>Explain.global</a></p>
         <a href="https://explain.global" style={{ fontSize: 12, color: '#4F8EF7', textDecoration: 'none' }}>explain.global →</a>
       </footer>
     </div>

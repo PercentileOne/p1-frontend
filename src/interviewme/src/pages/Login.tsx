@@ -158,7 +158,7 @@ export default function Login() {
 
         {/* Footer */}
         <div style={{ fontSize: 11, color: '#3a3a60' }}>
-          © 2026 Explain Global Ltd · All rights reserved
+          © 2026 Francis Cobbinah, trading as TheInterviewChair.com · All rights reserved
         </div>
       </motion.div>
 

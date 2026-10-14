@@ -500,7 +500,7 @@ export default function Developer() {
 
         {/* Footer */}
         <div style={{ padding: '24px 60px', borderTop: `1px solid ${BORD}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12, color: 'rgba(160,200,255,0.3)' }}>
-          <span>© 2026 Explain Global Ltd</span>
+          <span>© 2026 Francis Cobbinah, trading as TheInterviewChair.com</span>
           <span><span style={{ color: BLUE, fontWeight: 700 }}>Explain.Global</span> Partner API · v1</span>
         </div>
 

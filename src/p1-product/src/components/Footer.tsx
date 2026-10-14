@@ -34,7 +34,7 @@ export default function Footer() {
           ))}
         </div>
         <div style={{ borderTop: '1px solid rgba(255,255,255,.05)', paddingTop: 24, display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 8 : 0 }}>
-          <div style={{ fontSize: 12, color: '#334155' }}>© 2025 Percentile.One Ltd. All rights reserved.</div>
+          <div style={{ fontSize: 12, color: '#334155' }}>© 2026 Francis Cobbinah, trading as TheInterviewChair.com. All rights reserved.</div>
           <div style={{ fontSize: 12, color: '#334155' }}>Built by founders, for founders. 🇬🇧</div>
         </div>
       </div>

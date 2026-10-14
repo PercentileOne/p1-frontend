@@ -356,7 +356,7 @@ export default function TheProblemPage() {
           </div>
           <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>Explain<span style={{ color: '#4F8EF7' }}>.global</span></span>
         </div>
-        <p style={{ fontSize: 12, color: '#334155' }}>© 2026 Explain — Percentile.One Ltd. All rights reserved.</p>
+        <p style={{ fontSize: 12, color: '#334155' }}>© 2026 Francis Cobbinah, trading as TheInterviewChair.com. All rights reserved.</p>
         <a href="https://explain.global" style={{ fontSize: 12, color: '#4F8EF7', textDecoration: 'none' }}>explain.global</a>
       </footer>
     </div>
