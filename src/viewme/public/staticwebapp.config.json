@@ -39,6 +39,10 @@
     {
       "route": "/ways-in",
       "rewrite": "/ways-in.html"
+    },
+    {
+      "route": "/recruiters",
+      "rewrite": "/recruiters.html"
     }
   ],
   "navigationFallback": {
