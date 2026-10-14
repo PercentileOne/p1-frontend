@@ -28,3 +28,18 @@ One row per post. Give every link its own `utm_campaign` so the admin funnel (So
 |---|---|---|---|---|---|---|---|
 | Mon 5 Oct 2026, afternoon | `mistakes` | Hook: "Make your mistakes here, not in the real interview" with the "practice answers are supposed to have mistakes" graphic | | | | | |
 
+
+## Native ad campaigns
+
+One row per ad (or per audience, if the ad stays the same). Build every ad's link like this, so the admin funnel can tell the ads apart:
+
+`https://theinterviewchair.com/try?utm_source=NETWORK&utm_medium=native&utm_campaign=SHORTNAME`
+
+- `utm_source` is the network (up to 40 characters), `utm_medium` is always `native` (up to 30), `utm_campaign` is the short name in the first column (up to 40). Lower case, no spaces.
+- Change one thing per ad (headline, picture or audience) so a difference in results has one possible cause.
+- Fill the network's own columns (spend, clicks) from the network dashboard, and the rest from admin portal → Activity Log → Visitor funnel, filtered to the tag. Judge after 48 to 72 hours, not after the first morning.
+- Clicks the network charges for are never the same as real visits: some are robots or people who leave at once. The gap is worth tracking.
+
+| Campaign (= utm_campaign) | Network (= utm_source) | The ad (headline and picture) | Started (date, time) | Spend so far | Clicks (network) | Cost per click | Real visits (funnel, this tag) | Tried the demo | Register clicks | New sign-ups | Cost per sign-up | What I learned |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| | | | | | | | | | | | | |
