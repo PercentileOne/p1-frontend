@@ -43,6 +43,11 @@
     {
       "route": "/recruiters",
       "rewrite": "/recruiters.html"
+    },
+    {
+      "route": "/pitch-deck",
+      "rewrite": "/pitch-deck.html",
+      "headers": { "X-Robots-Tag": "noindex, nofollow" }
     }
   ],
   "navigationFallback": {
