@@ -410,6 +410,7 @@
   .lock-time{font-size:42px;font-weight:200;letter-spacing:-.03em;line-height:1;color:var(--text);text-align:center;margin-bottom:12px}
   .lock-note{display:flex;gap:10px;align-items:baseline;background:rgba(255,255,255,.06);border-radius:12px;padding:9px 12px;font-size:13.5px;color:var(--muted);margin-top:8px}
   .lock-note b{color:var(--text);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  .lock-note.alert{border-left:3px solid #f87171}
   .lock-note.quiet{background:transparent;border:1px dashed var(--line);font-style:italic}
   .pain-out{margin-top:26px;text-align:center;padding:30px 24px;border-radius:20px;border:1px solid rgba(52,211,153,.3);background:linear-gradient(160deg,rgba(52,211,153,.09),var(--card) 60%)}
   .pain-out h3{font-size:clamp(1.3rem,2.6vw,1.8rem);letter-spacing:-.02em;margin-bottom:6px}
@@ -585,6 +586,12 @@
       </div>
       <div class="pain-col reveal">
         <div class="pain-tag">For recruiters</div>
+        <div class="lock" aria-hidden="true">
+          <div class="lock-time">09:20</div>
+          <div class="lock-note alert"><b>Missed call</b><span>Client</span></div>
+          <div class="lock-note"><b>Calendar</b><span>Interview ended at 9:15. It was booked until 10:00.</span></div>
+          <div class="lock-note quiet"><span>The client called: great CV, but does not interview well. Again?</span></div>
+        </div>
         <h3>Placing candidates?</h3>
         <ul class="pain-list">
           <li><span>🚪</span>Are your candidates not passing the first interview stage?</li>
