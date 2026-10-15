@@ -295,6 +295,34 @@ sequenceDiagram
 </pre>
     </div>
     <p class="note">Anonymous visitors take the same path with a ticket-guarded demo endpoint, a daily cap per visitor, and burst limits, because every demo costs real money.</p>
+
+    <h3 style="margin-top:28px">One recruiter prep, request by request</h3>
+    <div class="box">
+<pre class="mermaid">
+sequenceDiagram
+  participant R as Recruiter
+  participant RP as Recruiter portal
+  participant A as Explain.Api
+  participant D as Cosmos
+  participant E as Azure email
+  participant C as Candidate
+  participant CP as Candidate portal
+  R->>RP: Interview booked, enter candidate, role, level, date, job spec, CV
+  RP->>A: Create the prep, recruiter signed in
+  A->>D: Save the prep under the recruiter
+  A->>E: Send the invite email to the candidate
+  A-->>RP: Prep listed as sent
+  E-->>C: Email, practice for your interview
+  C->>CP: Sign in or register with the same email
+  CP->>A: Fetch preps received for this email
+  A->>D: Match by email address
+  A-->>CP: The recruiter's prep
+  C->>CP: Review and start, role, level, job spec and CV already filled in
+  Note over CP,A: The practice interview then runs exactly as in the diagram above
+  Note over R,RP: Planned, the recruiter sees whether the candidate practised and how they scored
+</pre>
+    </div>
+    <p class="note">Built today: sending, editing and resending a prep, the invite email, the candidate's "received" list, and a recruiter preview of the interview. Not built yet: the recruiter's view of whether and how the candidate practised.</p>
   </section>
 
   <section id="backend">
@@ -528,6 +556,7 @@ flowchart TB
         <ul>
           <li>Jobs and Messaging are shown as coming soon and use sample data</li>
           <li>The signed-in portal is best on a laptop or tablet, and phone support is improving</li>
+          <li>Recruiters cannot yet see whether a candidate opened or finished a prep</li>
           <li>No native mobile app yet</li>
         </ul>
       </div>
