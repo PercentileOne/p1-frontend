@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import { routinesApi, MAX_ITEMS, MAX_ITEM_TEXT, MAX_READ_TEXT, MAX_SECTIONS } from '../api/routinesApi';
-import type { ImportMode, RoutineDay, RoutineKind } from '../api/routinesApi';
+import type { ImportMode, Priority, RoutineDay, RoutineKind } from '../api/routinesApi';
 import { parseRoutineList } from '../pages/routineListParser';
 import type { ParsedItem } from '../pages/routineListParser';
 
@@ -36,7 +36,7 @@ export function RoutineImport({ date, onDone, onCancel }: { date: string; onDone
 
   const chosen = useMemo(() => (items ?? []).filter(i => i.include && i.text.trim().length > 0), [items]);
   const usedSections = useMemo(() => sections.filter(s => chosen.some(i => i.section === s)), [sections, chosen]);
-  const essentials = chosen.filter(i => i.essential && i.kind !== 'text').length;
+  const essentials = chosen.filter(i => i.priority === 'essential' && i.kind !== 'text').length;
   const missingDays = chosen.filter(i => i.needsDays && i.weekdays.length === 0 && !i.lastDay);
   const problem =
     chosen.length === 0 ? 'Tick at least one item.' :
@@ -51,7 +51,8 @@ export function RoutineImport({ date, onDone, onCancel }: { date: string; onDone
       const day = await routinesApi.importList({
         date, mode, sections: usedSections,
         items: chosen.map(i => ({
-          text: i.text.trim(), section: i.section, kind: i.kind, essential: i.kind === 'text' ? false : i.essential,
+          text: i.text.trim(), section: i.section, kind: i.kind,
+          essential: i.kind !== 'text' && i.priority === 'essential', priority: i.kind === 'text' ? 'standard' : i.priority,
           rule: i.weekdays.length > 0 || i.lastDay ? { weekdays: i.weekdays.length > 0 ? i.weekdays : null, lastDayOfMonth: i.lastDay || null, label: i.label || null } : null,
         })),
       });
@@ -87,7 +88,7 @@ export function RoutineImport({ date, onDone, onCancel }: { date: string; onDone
         <>
           <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.55 }}>
             <b style={{ color: 'var(--text)' }}>{chosen.length} items in {usedSections.length} section{usedSections.length === 1 ? '' : 's'}</b>
-            {essentials > 0 ? `, ${essentials} marked essential` : ''}. Untick anything you do not want, mark the few that matter most as essential, and fix anything I guessed wrong.
+            {essentials > 0 ? `, ${essentials} marked essential` : ''}. Untick anything you do not want, give each item a priority (the few that matter most are Essential), and fix anything I guessed wrong.
             {leftOut > 0 && <> {leftOut} line{leftOut === 1 ? '' : 's'} you had written under headings like gratitude or how you feel {leftOut === 1 ? 'was' : 'were'} left out on purpose, because those are written fresh each day.</>}
           </div>
 
@@ -149,9 +150,11 @@ function PreviewRow({ row, sections, onChange }: { row: ParsedItem; sections: st
               {sections.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             {row.kind !== 'text' && (
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: 'var(--text-2)', cursor: 'pointer' }}>
-                <input type="checkbox" checked={row.essential} onChange={e => onChange({ essential: e.target.checked })} style={{ accentColor: GREEN }} /> Essential
-              </label>
+              <select value={row.priority} onChange={e => onChange({ priority: e.target.value as Priority })} aria-label="Priority" style={{ ...field, width: 'auto', padding: '5px 8px', fontSize: 12.5 }}>
+                <option value="essential">Essential</option>
+                <option value="standard">Standard</option>
+                <option value="low">Low priority</option>
+              </select>
             )}
           </div>
           {hasRule && (

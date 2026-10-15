@@ -1,4 +1,4 @@
-import type { RoutineKind } from '../api/routinesApi';
+import type { Priority, RoutineKind } from '../api/routinesApi';
 import { MAX_ITEM_TEXT, MAX_READ_TEXT } from '../api/routinesApi';
 
 // "Paste your list" (Francis, 2026-10-13): turns a list pasted from Evernote, Notes, Word or an email into routine items for a preview the person reviews before anything is saved.
@@ -17,7 +17,7 @@ export interface ParsedItem {
   text: string;
   section: string;
   kind: RoutineKind;
-  essential: boolean;
+  priority: Priority;
   include: boolean;
   weekdays: number[];
   lastDay: boolean;
@@ -36,8 +36,10 @@ export interface ParsedList {
 }
 
 const NOTES_SECTION = 'Check in';
-const BULLET = /^\s*(?:[*•·–-]|\d{1,2}[.)])\s+/;
-const EMPTY_BULLET = /^\s*(?:[*•·–-]|\d{1,2}[.)])\s*$/;
+// A list marker: a bullet or number, a checkbox character (Evernote and Notion checklists paste with one), or a markdown task ("- [ ]", "[x]").
+const BOX = '\\u2610\\u2611\\u2612\\u2713\\u2714\\u25A1\\u25A0\\u25A2\\u25AA\\u25AB\\u25FB\\u25FC';
+const BULLET = new RegExp(`^\\s*(?:(?:[*•·–-]|\\d{1,2}[.)])\\s+(?:\\[[ xX]?\\]\\s*)?|[${BOX}]\\s*|\\[[ xX]?\\]\\s+)`);
+const EMPTY_BULLET = new RegExp(`^\\s*(?:[*•·–-]|\\d{1,2}[.)]|[${BOX}]|\\[[ xX]?\\])\\s*$`);
 const LEADING_DECOR = /^[\p{Extended_Pictographic}️‍\s]+/u;
 const NOTE_HEADING = /gratitude|thankful|how (?:do|will|am) i|\bfeel|retrospective|thoughts|expectation|skeleton|shopping|\bmeals?\b|important notes|reflect|journal|ideas|inspiration|things to remember/i;
 const SKIP_BY_DEFAULT = /ideas|inspiration|things to remember/i;
@@ -97,9 +99,22 @@ interface Block { heading: string; bullets: string[]; plain: string[] }
 export function parseRoutineList(raw: string): ParsedList {
   const blocks: Block[] = [];
   let cur: Block | null = null;
-  for (const rawLine of raw.replace(/\r/g, '').split('\n')) {
+  const lines = raw.replace(/\r/g, '').split('\n');
+  // Most pastes mark their headings (an emoji, a colon). If none do, a short title standing on its own above a run of lines is read as a heading instead.
+  const marked = lines.some(l => isHeading(l));
+  const bareHeading = (i: number): boolean => {
+    const t = lines[i].trim();
+    if (!t || BULLET.test(lines[i]) || EMPTY_BULLET.test(lines[i])) return false;
+    if (i > 0 && lines[i - 1].trim()) return false;                                   // must start a paragraph
+    if (t.split(/\s+/).length > 5 || /[.!?,;]$/.test(t) || !/^[A-Z0-9]/.test(t)) return false;
+    let n = 0;
+    for (let k = i + 1; k < lines.length && lines[k].trim(); k++) n++;
+    return n >= 2;                                                                    // and be followed by at least two more lines
+  };
+  for (let idx = 0; idx < lines.length; idx++) {
+    const rawLine = lines[idx];
     if (rawLine.trim().length === 0) continue;
-    if (isHeading(rawLine)) {
+    if (isHeading(rawLine) || (!marked && bareHeading(idx))) {
       cur = { heading: headingText(rawLine), bullets: [], plain: [] };
       blocks.push(cur);
       continue;
@@ -115,16 +130,19 @@ export function parseRoutineList(raw: string): ParsedList {
   let leftOut = 0;
   let n = 0;
   const addSection = (s: string) => { if (!sections.includes(s)) sections.push(s); };
-  const push = (p: Omit<ParsedItem, 'key' | 'essential' | 'include' | 'weekdays' | 'lastDay' | 'label' | 'needsDays'> & Partial<ParsedItem>) =>
-    items.push({ essential: false, include: true, weekdays: [], lastDay: false, label: '', needsDays: false, ...p, key: `i${n++}` });
+  const push = (p: Omit<ParsedItem, 'key' | 'priority' | 'include' | 'weekdays' | 'lastDay' | 'label' | 'needsDays'> & Partial<ParsedItem>) =>
+    items.push({ priority: 'standard', include: true, weekdays: [], lastDay: false, label: '', needsDays: false, ...p, key: `i${n++}` });
 
   const ruleItems: { text: string; rule: ReturnType<typeof conditionToRule> }[] = [];
   const noteItems: { text: string; include: boolean }[] = [];
 
   for (const b of blocks) {
     const heading = b.heading || 'My routine';
-    const content = b.bullets.filter(Boolean);
     const isNoteHeading = NOTE_HEADING.test(heading) && !/^plan for today(?!['’]s)\b/i.test(heading);
+    // Checklists copied from some apps arrive as plain lines with no marker at all. Plain lines under a heading are a list of items, not a passage to read
+    // aloud, unless the heading says it is declarations, a prayer and so on (or a line is too long to be an item).
+    const plainIsList = !isNoteHeading && b.bullets.length === 0 && !READ_HEADING.test(heading) && b.plain.length > 0 && b.plain.every(l => l.length <= MAX_ITEM_TEXT);
+    const content = (plainIsList ? b.plain : b.bullets).filter(Boolean);
 
     // If-then lines can sit under any heading ("IF DAY THEN DO") or on their own; they are pulled out wherever they are.
     const rest: string[] = [];
@@ -145,7 +163,7 @@ export function parseRoutineList(raw: string): ParsedList {
       const text = b.plain.join('\n').slice(0, MAX_READ_TEXT);
       const section = b.heading ? capital(heading).slice(0, 60) : 'First';
       addSection(section);
-      push({ text, section, kind: 'read', essential: READ_HEADING.test(heading), note: 'A passage to read aloud, with one tick: "I\'ve read it".' });
+      push({ text, section, kind: 'read', priority: READ_HEADING.test(heading) ? 'essential' : 'standard', note: 'A passage to read aloud, with one tick: "I\'ve read it".' });
       continue;
     }
 

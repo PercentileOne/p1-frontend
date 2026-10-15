@@ -57,7 +57,7 @@ describe('parseRoutineList', () => {
     const first = r.items.find(i => i.kind === 'read')!;
     expect(first.section).toBe('First');
     expect(first.text).toBe('Every good thing will come true today.\nGreat things are on their way to me right now.');
-    expect(first.essential).toBe(true);
+    expect(first.priority).toBe('essential');
     expect(r.items.filter(i => i.kind === 'read')).toHaveLength(1);
   });
 
@@ -125,5 +125,35 @@ describe('parseRoutineList', () => {
 
   it('copes with empty input', () => {
     expect(parseRoutineList('   \n\n')).toEqual({ sections: [], items: [], leftOut: 0 });
+  });
+
+  it('reads a checklist pasted with no markers as items, not as a passage', () => {
+    const text = ['Morning Routine', 'Win the first 40 Minutes', 'Charge everything that needs charging', 'Clean all equipment', 'Make bed and tidy my room', 'Open the window'].join('\n');
+    const r2 = parseRoutineList(text);
+    expect(r2.items.every(i => i.kind === 'check')).toBe(true);
+    expect(r2.items.map(i => i.text)).toContain('Clean all equipment');
+    expect(r2.sections).toEqual(['Morning Routine']);
+  });
+
+  it('still treats declarations under "First:" as a passage to read aloud', () => {
+    const r3 = parseRoutineList(['First:', 'Every good thing will come true today.', 'Great things are on their way.', 'May joy walk beside me.'].join('\n'));
+    expect(r3.items).toHaveLength(1);
+    expect(r3.items[0].kind).toBe('read');
+  });
+
+  it('understands checkbox characters and markdown tasks as list markers', () => {
+    const r4 = parseRoutineList(['Evening', '\u2610 Check calendar', '[ ] Prepare clothes', '- [x] Night vitamins', '\u2611 Lights out'].join('\n'));
+    expect(r4.items.map(i => i.text)).toEqual(['Check calendar', 'Prepare clothes', 'Night vitamins', 'Lights out']);
+  });
+  it('reads a short plain title above a list as a heading when nothing in the paste is marked as one', () => {
+    const r5 = parseRoutineList(['Morning', 'Pray', 'Make the bed', 'Stretch', '', 'Evening', 'Check calendar', 'Prepare clothes'].join('\n'));
+    expect(r5.sections).toEqual(['Morning', 'Evening']);
+    expect(r5.items.filter(i => i.section === 'Evening').map(i => i.text)).toEqual(['Check calendar', 'Prepare clothes']);
+  });
+
+  it('does not turn a lone short item into a heading', () => {
+    const r6 = parseRoutineList(['Pray', 'Stretch'].join('\n'));
+    expect(r6.sections).toEqual(['My routine']);
+    expect(r6.items).toHaveLength(2);
   });
 });
