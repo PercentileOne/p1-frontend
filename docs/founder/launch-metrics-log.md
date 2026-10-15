@@ -19,6 +19,7 @@ Where to find each number
 | Mon 12 Oct 2026 | 4,887 (+22 over the weekend, from Fri) | 7-day: 481 profile views, 42 post impressions, 33 search appearances | | | | | |
 | Tue 13 Oct 2026 | 4,937 (+50 since Mon morning) | 7-day: 494 profile views, 29 post impressions, 33 search appearances | | | | | Biggest one-day gain since launch week (Thu 8 Oct was +40). +124 since Wed 7 Oct morning, +196 since Mon 5 Oct. |
 | Wed 14 Oct 2026 | 4,961 (+24 since Tue morning) | 7-day: 495 profile views, 36 post impressions, 33 search appearances | | | | | Profile views and search appearances flat against yesterday (494 and 33); post impressions up 29 to 36. +148 since Wed 7 Oct morning, +220 since Mon 5 Oct. Search appearances has read 33 on every check since Thu 8 Oct, so it may only refresh weekly. |
+| Thu 15 Oct 2026 | 4,985 (+24 since Wed morning) | 7-day: 498 profile views, 130 post impressions, 49 search appearances | | | | | Post impressions up from 36 to 130 (about 3.6 times) and search appearances refreshed from 33 to 49; profile views flat (495 to 498). +172 since Wed 7 Oct morning, +244 since Mon 5 Oct. The profile banner now shows the v2 slides (Haruto and Michelle, "Practice. Get scored. Get ready."). |
 
 ## Post experiments
 
