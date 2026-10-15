@@ -115,6 +115,7 @@ html,body{margin:0}
     <a href="#backend">Backend design</a>
     <a href="#data">Data</a>
     <a href="#security">Security</a>
+    <a href="#business">Payments</a>
     <a href="#delivery">Delivery</a>
     <a href="#scale">Scale</a>
     <a href="#agents">Agents</a>
@@ -409,7 +410,37 @@ sequenceDiagram
         </ul>
       </div>
     </div>
-    <p class="note">The legal operator is Francis Cobbinah, trading as TheInterviewChair.com, with a UK trade mark application filed on 10 Oct 2026.</p>
+  </section>
+
+  <section id="business">
+    <h2>Payments and the business behind them</h2>
+    <p class="sub">Who is paid, how, and what is protected.</p>
+    <div class="cols">
+      <div class="card">
+        <h3>Payments: Stripe</h3>
+        <ul>
+          <li>Card payments and subscriptions run on Stripe's hosted Checkout, live since 20 Sep 2026</li>
+          <li>Card details go to Stripe and never touch our servers</li>
+          <li>Payment confirmation arrives by a signed Stripe webhook, and only then is access granted</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>The trading entity</h3>
+        <ul>
+          <li>A UK sole trader: Francis Cobbinah, trading as TheInterviewChair.com</li>
+          <li>Payments are paid to that sole-trader account</li>
+          <li>There is no limited company yet</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>The name</h3>
+        <ul>
+          <li>UK trade mark application UK00004458000 filed on 10 Oct 2026</li>
+          <li>Word mark THE INTERVIEW CHAIR, classes 35, 41 and 42</li>
+          <li>The ™ mark is shown on the site and in the portal while it is pending</li>
+        </ul>
+      </div>
+    </div>
   </section>
 
   <section id="delivery">
