@@ -28,6 +28,7 @@ One row per post. Give every link its own `utm_campaign` so the admin funnel (So
 | Date and time posted | Short name (= utm_campaign) | The one thing tested | Impressions (after 72h) | Real website visits from this tag | Tried the demo | Sign-ups | What I learned |
 |---|---|---|---|---|---|---|---|
 | Mon 5 Oct 2026, afternoon | `mistakes` | Hook: "Make your mistakes here, not in the real interview" with the "practice answers are supposed to have mistakes" graphic | | | | | |
+| Thu 15 Oct 2026 (drafted, not yet posted) | `stakes` | Hook: the 23:47 candidate scene and the 09:20 recruiter scene, pain first, from the homepage "Does this sound familiar?" section. Picture: a screenshot of that section. Link goes to `/#pains`. | | | | | |
 
 
 ## Native ad campaigns
