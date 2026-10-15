@@ -291,11 +291,22 @@ export default function RoutinesPage() {
               <div style={{ minWidth: 0 }}>
                 <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>{prettyDate(day.date)}</h2>
                 <div style={{ fontSize: 13.5, color: 'var(--text-2)', marginTop: 3 }}>{day.date === today ? greeting() : 'Looking back on this day.'}</div>
-                <button onClick={() => setShowStatus(v => !v)} aria-expanded={showStatus} style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 10, padding: '8px 14px', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit',
-                  fontSize: 13.5, fontWeight: 700, border: `1px solid ${showStatus ? GREEN : 'rgba(52,211,153,0.45)'}`,
-                  background: showStatus ? 'rgba(52,211,153,0.14)' : 'rgba(52,211,153,0.07)', color: GREEN,
-                }}><Compass size={15} /> Where am I?</button>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+                  <button onClick={() => setShowStatus(v => !v)} aria-expanded={showStatus} style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 14px', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit',
+                    fontSize: 13.5, fontWeight: 700, border: `1px solid ${showStatus ? GREEN : 'rgba(52,211,153,0.45)'}`,
+                    background: showStatus ? 'rgba(52,211,153,0.14)' : 'rgba(52,211,153,0.07)', color: GREEN,
+                  }}><Compass size={15} /> Where am I?</button>
+                  <button onClick={() => { setImporting(false); setEditingCats(false); setAdding(true); }} style={topBtn}>
+                    <Plus size={15} /> Add an item
+                  </button>
+                  <button onClick={() => { setAdding(false); setEditingCats(false); setImporting(true); }} style={topBtn}>
+                    <ClipboardPaste size={15} /> Paste your list
+                  </button>
+                  <button onClick={() => { setMenuFor(null); setAdding(false); setImporting(false); setEditingCats(true); }} style={topBtn}>
+                    <ListOrdered size={15} /> Edit categories
+                  </button>
+                </div>
               </div>
               <div style={{ minWidth: 150, textAlign: 'right' }}>
                 <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
@@ -312,6 +323,11 @@ export default function RoutinesPage() {
             </div>
 
             {showStatus && <WhereAmI day={day} isToday={day.date === today} onClose={() => setShowStatus(false)} />}
+
+            {adding && <AddItem sections={day.sections} onCancel={() => setAdding(false)}
+              onAdd={async body => { await run(routinesApi.addItem(day.date, body)); setAdding(false); }} />}
+            {importing && <RoutineImport date={day.date} onCancel={() => setImporting(false)}
+              onDone={d => { applyDay(d); void loadMonth(d.date.slice(0, 7)); setImporting(false); }} />}
 
             {!editingCats && day.sections.map(section => {
               const base = day.items.filter(i => i.section === section);
@@ -361,25 +377,6 @@ export default function RoutinesPage() {
                 onCancel={() => setEditingCats(false)} />
             )}
 
-            <div style={{ marginTop: 18 }}>
-              {!adding && !importing && !editingCats && (
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  <button onClick={() => setAdding(true)} style={dashed}>
-                    <Plus size={15} /> Add an item
-                  </button>
-                  <button onClick={() => setImporting(true)} style={dashed}>
-                    <ClipboardPaste size={15} /> Paste your list
-                  </button>
-                  <button onClick={() => { setMenuFor(null); setEditingCats(true); }} style={dashed}>
-                    <ListOrdered size={15} /> Edit categories
-                  </button>
-                </div>
-              )}
-              {adding && <AddItem sections={day.sections} onCancel={() => setAdding(false)}
-                onAdd={async body => { await run(routinesApi.addItem(day.date, body)); setAdding(false); }} />}
-              {importing && <RoutineImport date={day.date} onCancel={() => setImporting(false)}
-                onDone={d => { applyDay(d); void loadMonth(d.date.slice(0, 7)); setImporting(false); }} />}
-            </div>
           </>
         )}
       </section>
@@ -549,9 +546,9 @@ function ItemRow(p: {
   );
 }
 
-const dashed: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', border: '1px dashed var(--border)', borderRadius: 10, padding: '9px 14px',
-  color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600,
+const topBtn: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', border: '1px dashed var(--border)', borderRadius: 10, padding: '8px 12px',
+  color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
 };
 
 const tag = (rgb: string, color: string): React.CSSProperties => ({
