@@ -1,4 +1,9 @@
-import type { DayItem, RoutineDay } from '../api/routinesApi';
+import type { DayItem, Priority, RoutineDay } from '../api/routinesApi';
+
+/** essential, standard or low. The old essential flag still counts as essential. */
+export function priorityOf(i: DayItem): Priority {
+  return i.essential || i.priority === 'essential' ? 'essential' : i.priority === 'low' ? 'low' : 'standard';
+}
 
 // "Where am I?" for My Routines (Francis, 2026-10-13): a plain-English read of the open day, worked out on the device from what is ticked.
 // Nothing is sent anywhere, so health items and readings never leave the browser to produce it.
@@ -13,6 +18,27 @@ export interface RoutineStatus {
   ahead: string[];
   /** Everything that counts is done. */
   complete: boolean;
+  /** How many things are still to do at each priority. */
+  priorityLeft: Record<Priority, number>;
+}
+
+const NO_PRIORITY: Record<Priority, number> = { essential: 0, standard: 0, low: 0 };
+
+/** "2 essential, 3 standard and 1 low priority" (only the ones that are not zero). */
+export function priorityPhrase(c: Record<Priority, number>): string {
+  const parts = [
+    c.essential > 0 ? `${c.essential} essential` : '',
+    c.standard > 0 ? `${c.standard} standard` : '',
+    c.low > 0 ? `${c.low} low priority` : '',
+  ].filter(Boolean);
+  if (parts.length <= 1) return parts[0] ?? '';
+  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+}
+
+function countByPriority(items: DayItem[]): Record<Priority, number> {
+  const c = { ...NO_PRIORITY };
+  items.forEach(i => { c[priorityOf(i)] += 1; });
+  return c;
 }
 
 const SHOWN = 5;
@@ -57,7 +83,7 @@ export function routineStatus(day: RoutineDay, now: Date, isToday: boolean): Rou
   const notes = day.items.filter(i => i.kind === 'text');
 
   if (counted.length === 0 && notes.length === 0) {
-    return { headline: 'There is nothing on this day yet. Add an item, or paste your list.', blocks: [], ahead: [], complete: true };
+    return { headline: 'There is nothing on this day yet. Add an item, or paste your list.', blocks: [], ahead: [], complete: true, priorityLeft: { ...NO_PRIORITY } };
   }
 
   const ess = counted.filter(i => i.essential);
@@ -116,7 +142,7 @@ export function routineStatus(day: RoutineDay, now: Date, isToday: boolean): Rou
     blocks.push({ label: 'Not written yet', ...cut(unwritten.map(shown)) });
   }
 
-  return { headline, blocks, ahead, complete: complete && unwritten.length === 0 };
+  return { headline, blocks, ahead, complete: complete && unwritten.length === 0, priorityLeft: countByPriority(left) };
 }
 
 /**
@@ -145,6 +171,7 @@ export function spokenStatus(day: RoutineDay, now: Date, isToday: boolean): stri
   const ratio = ess.length > 0 ? essDone / ess.length : doneAll / counted.length;
   const lead = leadFor({ total: counted.length, isToday, complete: left.length === 0, essTotal: ess.length, essLeft: ess.length - essDone, ratio });
   const out = [lead.replace('!', '.'), countLine];
+  if (left.length > 0) out.push(`Still to do: ${priorityPhrase(countByPriority(left))}.`);
 
   const nowP = currentPeriod(now);
   const inPeriod = (pred: (p: Period) => boolean) => left.filter(i => { const p = sectionPeriod(i.section); return p !== null && pred(p); });

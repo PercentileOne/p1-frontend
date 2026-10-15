@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, ChevronRight, ClipboardPaste, Compass, Pencil, Plus, Square, Sun, Trash2, Volume2, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, ClipboardPaste, Compass, GripVertical, ListOrdered, Pencil, Plus, Square, Sun, Trash2, Volume2, X } from 'lucide-react';
 import { localDate, routinesApi, MAX_ITEM_TEXT, MAX_READ_TEXT } from '../api/routinesApi';
-import type { AddScope, DayItem, DaySummary, RoutineDay, RoutineKind } from '../api/routinesApi';
+import type { AddScope, DayItem, DaySummary, Priority, RoutineDay, RoutineKind } from '../api/routinesApi';
 import { RoutineImport } from '../components/RoutineImport';
-import { coachVoiceFor, currentPeriod, routineStatus, sectionPeriod, spokenStatus } from './routineStatus';
+import { RoutineCategories } from '../components/RoutineCategories';
+import type { CategoryEdit } from '../components/RoutineCategories';
+import { canMove, moveId, orderByDrop, reorderWithin } from './routineOrder';
+import type { MoveTo } from './routineOrder';
+import { coachVoiceFor, currentPeriod, priorityOf, priorityPhrase, routineStatus, sectionPeriod, spokenStatus } from './routineStatus';
 import { speak, unlockTTSAudio } from '../api/ttsApi';
 
 // My Routines (Francis, 2026-10-13). One page per day, built from the person's template plus their if-then rules the first time that day is opened.
@@ -52,6 +56,11 @@ export default function RoutinesPage() {
   const [adding, setAdding] = useState(false);
   const [importing, setImporting] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
+  const [editingCats, setEditingCats] = useState(false);
+  // While an item is being dragged: the category's ids in the order they would land in, drawn live.
+  const previewRef = useRef<{ section: string; ids: string[]; dragId: string } | null>(null);
+  const [preview, setPreviewState] = useState<{ section: string; ids: string[]; dragId: string } | null>(null);
+  const setPreview = (p: { section: string; ids: string[]; dragId: string } | null) => { previewRef.current = p; setPreviewState(p); };
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const saveTimer = useRef<number | null>(null);
   const dayRef = useRef<RoutineDay | null>(null);        // the latest day on screen, so a change never builds on a stale copy
@@ -132,17 +141,76 @@ export default function RoutinesPage() {
   const tick = (id: string) => mutate(d => ({ ...d, checked: { ...d.checked, [id]: !d.checked[id] } }));
   const setValue = (id: string, v: string) => mutate(d => ({ ...d, values: { ...d.values, [id]: v } }));
 
-  async function run(p: Promise<RoutineDay>) {
+  // The server's copy of the day may be a moment older than the screen: keep any text typed but not yet saved.
+  function withPending(d: RoutineDay): RoutineDay {
+    const waiting = pending.current;
+    return waiting && waiting.date === d.date ? { ...d, checked: waiting.checked, values: waiting.values } : d;
+  }
+
+  async function run(p: Promise<RoutineDay>): Promise<boolean> {
     setError('');
     try {
-      let d = await p;
-      // The server's copy of the day may be a moment older than the screen: keep any text typed but not yet saved.
-      const waiting = pending.current;
-      if (waiting && waiting.date === d.date) d = { ...d, checked: waiting.checked, values: waiting.values };
+      const d = withPending(await p);
       applyDay(d);
       void loadMonth(d.date.slice(0, 7));
+      return true;
     }
-    catch (e) { setError((e as Error).message || 'That did not work. Try again.'); }
+    catch (e) { setError((e as Error).message || 'That did not work. Try again.'); return false; }
+  }
+
+  // ---- ordering: Move to top / up / down / bottom, or drag the grip ----
+  async function commitOrder(section: string, ids: string[]) {
+    const base = dayRef.current;
+    if (!base) return;
+    applyDay({ ...base, items: reorderWithin(base.items, section, ids) });          // at once; the server then saves it for tomorrow too
+    const ok = await run(routinesApi.reorder(base.date, section, ids));
+    if (!ok) routinesApi.day(base.date).then(d => applyDay(withPending(d))).catch(() => { /* the error message is already showing */ });
+  }
+  function moveItem(section: string, ids: string[], id: string, to: MoveTo) {
+    const next = moveId(ids, id, to);
+    if (next.join('|') !== ids.join('|')) void commitOrder(section, next);
+  }
+  function beginDrag(e: React.PointerEvent, section: string, items: DayItem[], dragId: string) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    e.preventDefault();
+    const mids: Record<string, number> = {};
+    items.forEach(it => {
+      const el = document.getElementById(`routine-item-${it.id}`);
+      if (el) { const r = el.getBoundingClientRect(); mids[it.id] = r.top + window.scrollY + r.height / 2; }
+    });
+    const startIds = items.map(i => i.id);
+    setPreview({ section, ids: startIds, dragId });
+    const onMove = (ev: PointerEvent) => {
+      const next = orderByDrop(startIds, dragId, ev.clientY + window.scrollY, mids);
+      const cur = previewRef.current;
+      if (cur && cur.ids.join('|') !== next.join('|')) setPreview({ ...cur, ids: next });
+      if (ev.clientY < 70) window.scrollBy(0, -14); else if (ev.clientY > window.innerHeight - 70) window.scrollBy(0, 14);
+    };
+    const finish = (commit: boolean) => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onCancel);
+      window.removeEventListener('keydown', onKey);
+      const last = previewRef.current;
+      setPreview(null);
+      if (commit && last && last.ids.join('|') !== startIds.join('|')) void commitOrder(section, last.ids);
+    };
+    const onUp = () => finish(true);
+    const onCancel = () => finish(false);
+    const onKey = (ev: KeyboardEvent) => { if (ev.key === 'Escape') finish(false); };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onCancel);
+    window.addEventListener('keydown', onKey);
+  }
+
+  async function saveCategories(edit: CategoryEdit) {
+    const base = dayRef.current;
+    if (!base) return;
+    const d = withPending(await routinesApi.editSections(base.date, edit));       // a failure reaches the editor, which shows the message
+    applyDay(d);
+    setEditingCats(false);
+    void loadMonth(d.date.slice(0, 7));
   }
 
   const counted = day?.items.filter(i => i.kind !== 'text') ?? [];
@@ -231,17 +299,22 @@ export default function RoutinesPage() {
 
             {showStatus && <WhereAmI day={day} isToday={day.date === today} onClose={() => setShowStatus(false)} />}
 
-            {day.sections.map(section => {
-              const items = day.items.filter(i => i.section === section);
-              if (items.length === 0) return null;
+            {!editingCats && day.sections.map(section => {
+              const base = day.items.filter(i => i.section === section);
+              if (base.length === 0) return null;
+              const items = preview && preview.section === section
+                ? preview.ids.map(id => base.find(b => b.id === id)).filter((x): x is DayItem => !!x)
+                : base;
               return (
                 <div key={section} style={{ marginTop: 18 }}>
                   <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 4 }}>{section}</div>
-                  {items.map(i => (
-                    <ItemRow key={i.id} item={i} day={day} menuOpen={menuFor === i.id}
+                  {items.map((i, idx) => (
+                    <ItemRow key={i.id} item={i} day={day} menuOpen={menuFor === i.id} index={idx} count={items.length} dragging={preview?.dragId === i.id}
                       onMenu={() => setMenuFor(menuFor === i.id ? null : i.id)}
                       onTick={() => tick(i.id)} onValue={v => setValue(i.id, v)}
-                      onEssential={() => { setMenuFor(null); void run(routinesApi.updateItem(day.date, i.id, { essential: !i.essential })); }}
+                      onPriority={pr => { setMenuFor(null); void run(routinesApi.updateItem(day.date, i.id, { priority: pr })); }}
+                      onMove={to => { setMenuFor(null); moveItem(section, items.map(x => x.id), i.id, to); }}
+                      onGrip={e => beginDrag(e, section, items, i.id)}
                       onEdit={async text => { await run(routinesApi.updateItem(day.date, i.id, { text })); setMenuFor(null); }}
                       onRemoveToday={() => { setMenuFor(null); void run(routinesApi.removeItem(day.date, i.id, 'today')); }}
                       onRemoveAlways={() => { setMenuFor(null); void run(routinesApi.removeItem(day.date, i.id, 'template')); }} />
@@ -250,14 +323,25 @@ export default function RoutinesPage() {
               );
             })}
 
+            {editingCats && (
+              <RoutineCategories
+                sections={day.sections}
+                itemCount={day.items.reduce<Record<string, number>>((acc, i) => { acc[i.section] = (acc[i.section] ?? 0) + 1; return acc; }, {})}
+                onSave={saveCategories}
+                onCancel={() => setEditingCats(false)} />
+            )}
+
             <div style={{ marginTop: 18 }}>
-              {!adding && !importing && (
+              {!adding && !importing && !editingCats && (
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   <button onClick={() => setAdding(true)} style={dashed}>
                     <Plus size={15} /> Add an item
                   </button>
                   <button onClick={() => setImporting(true)} style={dashed}>
                     <ClipboardPaste size={15} /> Paste your list
+                  </button>
+                  <button onClick={() => { setMenuFor(null); setEditingCats(true); }} style={dashed}>
+                    <ListOrdered size={15} /> Edit categories
                   </button>
                 </div>
               )}
@@ -303,6 +387,7 @@ function WhereAmI({ day, isToday, onClose }: { day: RoutineDay; isToday: boolean
         display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 10, padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit',
         fontSize: 13, fontWeight: 700, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.05)', color: 'var(--text-2)',
       }}>{speaking ? <><Square size={13} /> Stop</> : <><Volume2 size={14} /> Listen</>}</button>
+      {priorityPhrase(s.priorityLeft) && <div style={{ marginTop: 10, fontSize: 13, color: 'var(--text-2)' }}>Still to do: {priorityPhrase(s.priorityLeft)}.</div>}
       {s.blocks.map(b => (
         <div key={b.label} style={{ marginTop: 12 }}>
           <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-2)', marginBottom: 6 }}>{b.label}</div>
@@ -333,12 +418,15 @@ function TreeButton({ on, onClick, icon, label }: { on: boolean; onClick: () => 
 
 function ItemRow(p: {
   item: DayItem; day: RoutineDay; menuOpen: boolean; onMenu: () => void; onTick: () => void; onValue: (v: string) => void;
-  onEssential: () => void; onEdit: (text: string) => Promise<void>; onRemoveToday: () => void; onRemoveAlways: () => void;
+  index: number; count: number; dragging: boolean;
+  onPriority: (pr: Priority) => void; onMove: (to: MoveTo) => void; onGrip: (e: React.PointerEvent) => void;
+  onEdit: (text: string) => Promise<void>; onRemoveToday: () => void; onRemoveAlways: () => void;
 }) {
   const { item, day } = p;
   const done = !!day.checked[item.id] || (item.kind === 'number' && !!day.values[item.id]?.trim());
   const note = item.kind === 'text';
   const read = item.kind === 'read';
+  const priority: Priority = priorityOf(item);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(item.text);
   const [saving, setSaving] = useState(false);
@@ -352,14 +440,26 @@ function ItemRow(p: {
 
   const tags = (
     <>
-      {item.essential && <span style={tag('52,211,153', GREEN)}>Essential</span>}
+      {priority === 'essential' && <span style={tag('52,211,153', GREEN)}>Essential</span>}
+      {priority === 'low' && <span style={tag('148,163,184', '#94A3B8')}>Low</span>}
       {item.ruleLabel && <span style={tag('245,158,11', '#F59E0B')}>{item.ruleLabel}</span>}
     </>
   );
 
   return (
-    <div id={`routine-item-${item.id}`} style={{ borderBottom: '1px solid var(--border)', padding: '9px 0', position: 'relative' }}>
+    <div id={`routine-item-${item.id}`} data-dragging={p.dragging ? 'true' : undefined}
+      style={{ borderBottom: '1px solid var(--border)', padding: '9px 0', position: 'relative', opacity: p.dragging ? 0.55 : 1, background: p.dragging ? 'rgba(52,211,153,0.07)' : undefined }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+        <button
+          onPointerDown={p.onGrip}
+          onKeyDown={e => {
+            if (e.key === 'ArrowUp') { e.preventDefault(); p.onMove('up'); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); p.onMove('down'); }
+          }}
+          aria-label={`Drag to reorder: ${item.text.slice(0, 60)}`} title="Drag to reorder, or use the arrow keys"
+          style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: p.dragging ? 'grabbing' : 'grab', padding: '2px 0', margin: '0 -2px 0 -4px', display: 'flex', touchAction: 'none', flexShrink: 0 }}>
+          <GripVertical size={16} />
+        </button>
         {!note && !read && <input type="checkbox" checked={!!day.checked[item.id]} onChange={p.onTick} aria-label={item.text} style={{ marginTop: 3, width: 17, height: 17, accentColor: GREEN, flexShrink: 0, cursor: 'pointer' }} />}
         <div style={{ flex: 1, minWidth: 0 }}>
           {editing ? (
@@ -404,7 +504,13 @@ function ItemRow(p: {
       {p.menuOpen && !editing && (
         <div style={{ margin: '8px 0 0 27px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <SmallBtn onClick={() => { setDraft(item.text); setEditing(true); }}><Pencil size={12} /> Edit wording</SmallBtn>
-          {!note && <SmallBtn onClick={p.onEssential}>{item.essential ? 'Not essential' : 'Make essential'}</SmallBtn>}
+          {!note && (['essential', 'standard', 'low'] as const).map(pr => (
+            <SmallBtn key={pr} onClick={() => p.onPriority(pr)} pressed={priority === pr}>{pr === 'essential' ? 'Essential' : pr === 'standard' ? 'Standard' : 'Low'}</SmallBtn>
+          ))}
+          {canMove(p.index, p.count, 'top') && <SmallBtn onClick={() => p.onMove('top')}>Move to top</SmallBtn>}
+          {canMove(p.index, p.count, 'up') && <SmallBtn onClick={() => p.onMove('up')}>Move up</SmallBtn>}
+          {canMove(p.index, p.count, 'down') && <SmallBtn onClick={() => p.onMove('down')}>Move down</SmallBtn>}
+          {canMove(p.index, p.count, 'bottom') && <SmallBtn onClick={() => p.onMove('bottom')}>Move to bottom</SmallBtn>}
           <SmallBtn onClick={p.onRemoveToday}><Trash2 size={12} /> Remove for today</SmallBtn>
           {item.source === 'template' && <SmallBtn onClick={p.onRemoveAlways}><Trash2 size={12} /> Remove from every day</SmallBtn>}
         </div>
@@ -423,13 +529,13 @@ const tag = (rgb: string, color: string): React.CSSProperties => ({
   background: `rgba(${rgb},0.14)`, border: `1px solid rgba(${rgb},0.35)`, whiteSpace: 'nowrap', textDecoration: 'none', display: 'inline-block',
 });
 
-function SmallBtn({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
-  return <button onClick={onClick} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', color: 'var(--text-2)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>{children}</button>;
+function SmallBtn({ children, onClick, pressed }: { children: React.ReactNode; onClick: () => void; pressed?: boolean }) {
+  return <button onClick={onClick} aria-pressed={pressed} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: pressed ? 'rgba(52,211,153,0.16)' : 'rgba(255,255,255,0.05)', border: `1px solid ${pressed ? GREEN : 'var(--border)'}`, borderRadius: 8, padding: '6px 10px', color: pressed ? GREEN : 'var(--text-2)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>{children}</button>;
 }
 
 function AddItem({ sections, onAdd, onCancel }: {
   sections: string[]; onCancel: () => void;
-  onAdd: (b: { text: string; section: string; kind: RoutineKind; essential: boolean; scope: AddScope; rule?: { weekdays: number[]; lastDayOfMonth: boolean; label: string } }) => Promise<void>;
+  onAdd: (b: { text: string; section: string; kind: RoutineKind; priority: Priority; scope: AddScope; rule?: { weekdays: number[]; lastDayOfMonth: boolean; label: string } }) => Promise<void>;
 }) {
   const [text, setText] = useState('');
   // Defaults to the part of the day it is now (so in the evening, "Evening"). Sections that do not exist yet can be created on the spot.
@@ -437,7 +543,7 @@ function AddItem({ sections, onAdd, onCancel }: {
   const [newSection, setNewSection] = useState('');
   const missing = (['Morning', 'Afternoon', 'Evening'] as const).filter((_, idx) => !sections.some(s => sectionPeriod(s) === idx));
   const [kind, setKind] = useState<RoutineKind>('check');
-  const [essential, setEssential] = useState(false);
+  const [priority, setPriority] = useState<Priority>('standard');
   const [scope, setScope] = useState<AddScope>('today');
   const [weekdays, setWeekdays] = useState<number[]>([]);
   const [last, setLast] = useState(false);
@@ -454,7 +560,7 @@ function AddItem({ sections, onAdd, onCancel }: {
     if (!target) { setProblem('Name the new section.'); return; }
     setProblem(''); setBusy(true);
     try {
-      await onAdd({ text: text.trim(), section: target, kind, essential, scope, ...(scope === 'rule' ? { rule: { weekdays, lastDayOfMonth: last, label: label.trim() } } : {}) });
+      await onAdd({ text: text.trim(), section: target, kind, priority, scope, ...(scope === 'rule' ? { rule: { weekdays, lastDayOfMonth: last, label: label.trim() } } : {}) });
     } finally { setBusy(false); }
   }
   const radio = (v: AddScope, title: string, sub: string) => (
@@ -489,9 +595,11 @@ function AddItem({ sections, onAdd, onCancel }: {
           <option value="read">Something to read aloud</option>
         </select>
         {kind !== 'text' && (
-          <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13.5, color: 'var(--text-2)', cursor: 'pointer' }}>
-            <input type="checkbox" checked={essential} onChange={e => setEssential(e.target.checked)} style={{ accentColor: GREEN }} /> Essential
-          </label>
+          <select value={priority} onChange={e => setPriority(e.target.value as Priority)} aria-label="Priority" style={{ ...field, width: 'auto', minWidth: 140 }}>
+            <option value="essential">Essential</option>
+            <option value="standard">Standard</option>
+            <option value="low">Low priority</option>
+          </select>
         )}
       </div>
       <div style={{ marginTop: 10 }}>

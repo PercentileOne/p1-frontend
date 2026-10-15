@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { coachVoiceFor, routineStatus, sectionPeriod, spokenStatus } from './routineStatus';
+import { coachVoiceFor, priorityOf, priorityPhrase, routineStatus, sectionPeriod, spokenStatus } from './routineStatus';
 import type { DayItem, RoutineDay } from '../api/routinesApi';
 
 const item = (id: string, text: string, section: string, over: Partial<DayItem> = {}): DayItem =>
@@ -160,5 +160,31 @@ describe('coachVoiceFor', () => {
     expect(coachVoiceFor(at(16))).toMatchObject({ seat: 'hr', interviewerId: 'catherine' });
     expect(coachVoiceFor(at(17))).toMatchObject({ seat: 'technical', interviewerId: 'malcom', name: 'Malcolm' });
     expect(coachVoiceFor(at(22))).toMatchObject({ seat: 'technical', interviewerId: 'malcom' });
+  });
+});
+
+describe('priority', () => {
+  it('reads essential, standard and low, with the old essential flag counting as essential', () => {
+    expect(priorityOf(item('a', 'x', 'S', { essential: true }))).toBe('essential');
+    expect(priorityOf(item('b', 'x', 'S', { priority: 'low' }))).toBe('low');
+    expect(priorityOf(item('c', 'x', 'S', { priority: 'essential' }))).toBe('essential');
+    expect(priorityOf(item('d', 'x', 'S'))).toBe('standard');
+  });
+
+  it('says only the priorities that have something left', () => {
+    expect(priorityPhrase({ essential: 2, standard: 3, low: 1 })).toBe('2 essential, 3 standard and 1 low priority');
+    expect(priorityPhrase({ essential: 0, standard: 3, low: 1 })).toBe('3 standard and 1 low priority');
+    expect(priorityPhrase({ essential: 1, standard: 0, low: 0 })).toBe('1 essential');
+    expect(priorityPhrase({ essential: 0, standard: 0, low: 0 })).toBe('');
+  });
+
+  it('counts what is left by priority, and the spoken line includes it without any names', () => {
+    const day = makeDay(['m1']);
+    day.items.push(item('l1', 'Tidy the shed', 'Morning', { priority: 'low' }));
+    const s = routineStatus(day, at(9), true);
+    expect(s.priorityLeft).toEqual({ essential: 2, standard: 3, low: 1 });   // m2, e1 essential; m3, m4, e2 standard; the shed low
+    const spoken = spokenStatus(day, at(9), true);
+    expect(spoken).toContain('Still to do: 2 essential, 3 standard and 1 low priority.');
+    expect(spoken).not.toContain('shed');
   });
 });

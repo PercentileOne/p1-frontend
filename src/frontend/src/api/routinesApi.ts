@@ -5,9 +5,10 @@ const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ??
 
 /** check = tick box, number = tick plus a value, text = a note to write, read = a passage to read aloud with one tick. */
 export type RoutineKind = 'check' | 'number' | 'text' | 'read';
+export type Priority = 'essential' | 'standard' | 'low';
 export interface RoutineRule { weekdays?: number[] | null; lastDayOfMonth?: boolean | null; label?: string | null }
-export interface TemplateItem { id: string; text: string; section: string; kind: RoutineKind; essential: boolean; rule?: RoutineRule | null }
-export interface DayItem { id: string; text: string; section: string; kind: RoutineKind; essential: boolean; ruleLabel?: string | null; source: 'template' | 'today' }
+export interface TemplateItem { id: string; text: string; section: string; kind: RoutineKind; essential: boolean; rule?: RoutineRule | null; priority?: Priority | null }
+export interface DayItem { id: string; text: string; section: string; kind: RoutineKind; essential: boolean; ruleLabel?: string | null; source: 'template' | 'today'; priority?: Priority | null }
 export interface RoutineDay {
   id: string; date: string; sections: string[]; items: DayItem[];
   checked: Record<string, boolean>; values: Record<string, string>;
@@ -60,14 +61,20 @@ export const routinesApi = {
       }).catch(() => { /* nothing more can be done as the page closes */ });
     } catch { /* ditto */ }
   },
-  addItem: (date: string, body: { text: string; section?: string; kind?: RoutineKind; essential?: boolean; scope: AddScope; rule?: RoutineRule | null }) =>
+  addItem: (date: string, body: { text: string; section?: string; kind?: RoutineKind; essential?: boolean; priority?: Priority; scope: AddScope; rule?: RoutineRule | null }) =>
     call<RoutineDay>(`/day/${date}/items`, { method: 'POST', headers: headers(true), body: JSON.stringify(body) }),
-  updateItem: (date: string, id: string, body: { text?: string; essential?: boolean }) =>
+  updateItem: (date: string, id: string, body: { text?: string; essential?: boolean; priority?: Priority }) =>
     call<RoutineDay>(`/day/${date}/items/${id}`, { method: 'PUT', headers: headers(true), body: JSON.stringify(body) }),
   removeItem: (date: string, id: string, scope: 'today' | 'template') =>
     call<RoutineDay>(`/day/${date}/items/${id}?scope=${scope}`, { method: 'DELETE', headers: headers() }),
   importList: (body: { date: string; mode: ImportMode; sections: string[]; items: Omit<TemplateItem, 'id'>[] }) =>
     call<RoutineDay>('/import', { method: 'POST', headers: headers(true), body: JSON.stringify({ ...body, items: body.items.map(i => ({ ...i, id: '' })) }) }),
+  /** Put one category's items in a new order (applies to the template too, so tomorrow follows). */
+  reorder: (date: string, section: string, ids: string[]) =>
+    call<RoutineDay>(`/day/${date}/order`, { method: 'PUT', headers: headers(true), body: JSON.stringify({ section, ids }) }),
+  /** Rename, reorder, add and delete categories. `was` is a category's current name (null when it is new). */
+  editSections: (date: string, body: { sections: { was: string | null; name: string }[]; removed: { was: string; moveTo: string | null }[] }) =>
+    call<RoutineDay>(`/day/${date}/sections`, { method: 'PUT', headers: headers(true), body: JSON.stringify(body) }),
   /** The yyyy-MM months that have any opened days, newest first. */
   months: () => call<string[]>('/months', { headers: headers() }),
   month: (month: string) => call<DaySummary[]>(`/month/${month}`, { headers: headers() }),

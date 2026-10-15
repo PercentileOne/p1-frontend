@@ -97,21 +97,22 @@ public static class Endpoint
             var (section, isNewSection, sectionError) = ResolveSection(day.sections, req.section);
             if (sectionError is not null) return Results.BadRequest(new { error = sectionError });
             var id = NewId();
-            var essential = req.essential == true;
+            var priority = NormalisePriority(req.priority, req.essential);
+            var essential = priority == "essential";
 
             if (scope != "today")
             {
                 var t = await LoadTemplateAsync(cosmos, userId, ct);
                 if (t.items.Count >= MaxItems) return Results.BadRequest(new { error = "Your template is full." });
                 var sections = t.sections.Contains(section) ? t.sections : t.sections.Append(section).ToList();
-                var items = t.items.Append(new TemplateItem(id, text, section, kind, essential, rule)).ToList();
+                var items = t.items.Append(new TemplateItem(id, text, section, kind, essential, rule, priority)).ToList();
                 var tdoc = new TemplateDoc("template", userId, "template", sections, items, DateTimeOffset.UtcNow.ToString("o"));
                 await cosmos.GetContainer("routines").UpsertItemAsync(tdoc, new PartitionKey(userId), cancellationToken: ct);
             }
             // The rule item only shows today if the rule covers today; "just for today" and "every day" always do.
             if (scope != "rule" || Applies(rule, d))
             {
-                var items = day.items.Append(new DayItem(id, text, section, kind, essential, rule?.label, scope == "today" ? "today" : "template")).ToList();
+                var items = day.items.Append(new DayItem(id, text, section, kind, essential, rule?.label, scope == "today" ? "today" : "template", priority)).ToList();
                 var daySections = isNewSection ? day.sections.Append(section).ToList() : day.sections;
                 day = day with { sections = daySections, items = items, updatedAt = DateTimeOffset.UtcNow.ToString("o") };
                 await cosmos.GetContainer("routines").UpsertItemAsync(day, new PartitionKey(userId), cancellationToken: ct);
@@ -131,8 +132,11 @@ public static class Endpoint
             if (text.Length == 0) return Results.BadRequest(new { error = "Type what the item is." });
             var limit = TextLimit(target.kind);
             if (text.Length > limit) text = text[..limit];
-            var essential = req.essential ?? target.essential;
-            day = day with { items = day.items.Select(i => i.id == itemId ? i with { text = text, essential = essential } : i).ToList(), updatedAt = DateTimeOffset.UtcNow.ToString("o") };
+            var priority = req.priority is not null ? NormalisePriority(req.priority, null)
+                : req.essential is not null ? (req.essential == true ? "essential" : (PriorityOf(target.essential, target.priority) == "low" ? "low" : "standard"))
+                : PriorityOf(target.essential, target.priority);
+            var essential = priority == "essential";
+            day = day with { items = day.items.Select(i => i.id == itemId ? i with { text = text, essential = essential, priority = priority } : i).ToList(), updatedAt = DateTimeOffset.UtcNow.ToString("o") };
             await cosmos.GetContainer("routines").UpsertItemAsync(day, new PartitionKey(userId), cancellationToken: ct);
             if (target.source == "template")
             {
@@ -140,7 +144,7 @@ public static class Endpoint
                 if (t.items.Any(i => i.id == itemId))
                 {
                     var tdoc = new TemplateDoc("template", userId, "template", t.sections,
-                        t.items.Select(i => i.id == itemId ? i with { text = text, essential = essential } : i).ToList(), DateTimeOffset.UtcNow.ToString("o"));
+                        t.items.Select(i => i.id == itemId ? i with { text = text, essential = essential, priority = priority } : i).ToList(), DateTimeOffset.UtcNow.ToString("o"));
                     await cosmos.GetContainer("routines").UpsertItemAsync(tdoc, new PartitionKey(userId), cancellationToken: ct);
                 }
             }
@@ -190,6 +194,60 @@ public static class Endpoint
             return Results.Ok(day);
         });
 
+        // Put one section's items in a new order (drag and drop, or Move to top / up / down / bottom). Changes this day AND the template, so tomorrow follows it;
+        // earlier days are snapshots and keep the order they had.
+        group.MapPut("/day/{date}/order", async (string date, ReorderRequest req, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            if (!TryDate(date, out var d)) return Results.BadRequest(new { error = "Use a date like 2026-10-13." });
+            var day = await LoadOrBuildDayAsync(cosmos, userId, d, ct);
+            var section = (req.section ?? "").Trim();
+            if (!day.sections.Contains(section)) return Results.BadRequest(new { error = "That section is not on this day." });
+
+            var items = ReorderSection(day.items, i => i.section, i => i.id, section, req.ids ?? []);
+            day = day with { items = items, updatedAt = DateTimeOffset.UtcNow.ToString("o") };
+            await cosmos.GetContainer("routines").UpsertItemAsync(day, new PartitionKey(userId), cancellationToken: ct);
+
+            var t = await LoadTemplateAsync(cosmos, userId, ct);
+            var reordered = ReorderTemplate(t.items, items.Where(i => i.section == section).ToList());
+            if (!reordered.Select(i => i.id).SequenceEqual(t.items.Select(i => i.id)))
+            {
+                var tdoc = new TemplateDoc("template", userId, "template", t.sections, reordered, DateTimeOffset.UtcNow.ToString("o"));
+                await cosmos.GetContainer("routines").UpsertItemAsync(tdoc, new PartitionKey(userId), cancellationToken: ct);
+            }
+            return Results.Ok(day);
+        });
+
+        // Edit the categories (sections): rename, reorder, add, delete (moving a deleted category's items into another one). Applies to the template and to this day;
+        // earlier days are snapshots and keep the names they had.
+        group.MapPut("/day/{date}/sections", async (string date, SectionsRequest req, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            if (!TryDate(date, out var d)) return Results.BadRequest(new { error = "Use a date like 2026-10-13." });
+            var day = await LoadOrBuildDayAsync(cosmos, userId, d, ct);
+            var t = await LoadTemplateAsync(cosmos, userId, ct);
+
+            var known = day.sections.Concat(t.sections).Distinct().ToList();
+            var withItems = day.items.Select(i => i.section).Concat(t.items.Select(i => i.section)).ToHashSet();
+            var (names, remap, error) = PlanSectionEdits(known, withItems, req);
+            if (error is not null) return Results.BadRequest(new { error });
+
+            string Map(string s) => remap.TryGetValue(s, out var n) ? n : s;
+            var daySections = names.Concat(day.sections.Select(Map).Where(s => !names.Contains(s))).Distinct().ToList();
+            var tplSections = names.Concat(t.sections.Select(Map).Where(s => !names.Contains(s))).Distinct().ToList();
+
+            day = day with
+            {
+                sections = daySections,
+                items = day.items.Select(i => i with { section = Map(i.section) }).ToList(),
+                updatedAt = DateTimeOffset.UtcNow.ToString("o"),
+            };
+            var tdoc = new TemplateDoc("template", userId, "template", tplSections, t.items.Select(i => i with { section = Map(i.section) }).ToList(), DateTimeOffset.UtcNow.ToString("o"));
+            await cosmos.GetContainer("routines").UpsertItemAsync(tdoc, new PartitionKey(userId), cancellationToken: ct);
+            await cosmos.GetContainer("routines").UpsertItemAsync(day, new PartitionKey(userId), cancellationToken: ct);
+            return Results.Ok(day);
+        });
+
         // Which months the person has any opened days in (newest first), so the tree can show real history across years instead of a fixed calendar year.
         group.MapGet("/months", async (HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
         {
@@ -225,9 +283,10 @@ public static class Endpoint
 
     // ---- shapes (lower-case names on purpose: they are also the stored JSON) ----
     public record RuleDto(int[]? weekdays, bool? lastDayOfMonth, string? label);
-    public record TemplateItem(string id, string text, string section, string kind, bool essential, RuleDto? rule);
+    /// <summary><c>priority</c> is essential, standard or low. <c>essential</c> is kept in step with it (true only for essential) so older documents and the progress counts keep working.</summary>
+    public record TemplateItem(string id, string text, string section, string kind, bool essential, RuleDto? rule, string? priority = null);
     public record TemplateDoc(string id, string userId, string type, List<string> sections, List<TemplateItem> items, string updatedAt);
-    public record DayItem(string id, string text, string section, string kind, bool essential, string? ruleLabel, string source);
+    public record DayItem(string id, string text, string section, string kind, bool essential, string? ruleLabel, string source, string? priority = null);
     public record DayDoc(string id, string userId, string type, string date, List<string> sections, List<DayItem> items,
         Dictionary<string, bool> @checked, Dictionary<string, string> values, string updatedAt);
     public record DaySummary(string date, int essentialsDone, int essentialsTotal, int done, int total);
@@ -235,13 +294,28 @@ public static class Endpoint
     public record TemplateReply(List<string> sections, List<TemplateItem> items);
     public record TemplateRequest(List<string>? sections, List<TemplateItem>? items);
     public record StateRequest(Dictionary<string, bool>? @checked, Dictionary<string, string>? values);
-    public record AddItemRequest(string? text, string? section, string? kind, bool? essential, string? scope, RuleDto? rule);
-    public record UpdateItemRequest(string? text, bool? essential);
+    public record AddItemRequest(string? text, string? section, string? kind, bool? essential, string? scope, RuleDto? rule, string? priority = null);
+    public record UpdateItemRequest(string? text, bool? essential, string? priority = null);
     public record ImportRequest(string? date, string? mode, List<string>? sections, List<TemplateItem>? items);
+    public record ReorderRequest(string? section, List<string>? ids);
+    /// <summary>One category in its new place: <c>was</c> is its current name (null for a brand-new one), <c>name</c> what it should now be called.</summary>
+    public record SectionEdit(string? was, string? name);
+    /// <summary>A category being deleted, and which category its items move to (required when it has items).</summary>
+    public record SectionRemoval(string? was, string? moveTo);
+    public record SectionsRequest(List<SectionEdit>? sections, List<SectionRemoval>? removed);
 
     /// <summary>check = a tick box, number = a tick plus a value, text = a note to write, read = a passage to read aloud with one tick.</summary>
     public static string NormaliseKind(string? kind) => kind is "number" or "text" or "read" ? kind : "check";
     public static int TextLimit(string? kind) => kind == "read" ? MaxReadText : MaxText;
+
+    /// <summary>essential, standard or low. A missing priority is essential when the old essential flag says so, otherwise standard.</summary>
+    public static string NormalisePriority(string? priority, bool? essentialFlag)
+    {
+        var p = (priority ?? "").Trim().ToLowerInvariant();
+        if (p is "essential" or "standard" or "low") return p;
+        return essentialFlag == true ? "essential" : "standard";
+    }
+    public static string PriorityOf(bool essential, string? priority) => essential ? "essential" : NormalisePriority(priority, false);
 
     /// <summary>
     /// Which section an added item goes in. A name the day already has is used as it is; a name it does not have creates a new section (so "Evening" can be added on the spot);
@@ -256,6 +330,94 @@ public static class Endpoint
         if (match is not null) return (match, false, null);
         if (existing.Count >= MaxSections) return ("", false, "That's the most sections one page can hold.");
         return (name, true, null);
+    }
+
+    /// <summary>
+    /// Works out a category edit. <paramref name="current"/> are the existing category names and <paramref name="withItems"/> those that have items. Returns the new names in
+    /// order, a map from every old name that changes (renamed, or deleted into another) to its new name, or an error to show the person. Categories the request does not
+    /// mention are left as they are.
+    /// </summary>
+    public static (List<string> names, Dictionary<string, string> remap, string? error) PlanSectionEdits(
+        IReadOnlyCollection<string> current, ISet<string> withItems, SectionsRequest req)
+    {
+        var empty = new Dictionary<string, string>();
+        var names = new List<string>();
+        foreach (var e in req.sections ?? [])
+        {
+            var n = (e.name ?? "").Trim();
+            if (n.Length == 0) return ([], empty, "A category needs a name.");
+            names.Add(n.Length > 60 ? n[..60] : n);
+        }
+        if (names.Count == 0) return ([], empty, "Keep at least one category.");
+        if (names.Count != names.Distinct(StringComparer.OrdinalIgnoreCase).Count()) return ([], empty, "Two categories have the same name.");
+        if (names.Count > MaxSections) return ([], empty, $"A routine holds up to {MaxSections} categories.");
+
+        var remap = new Dictionary<string, string>();
+        var edits = req.sections ?? [];
+        for (var i = 0; i < edits.Count; i++)
+        {
+            var was = edits[i].was;
+            if (was is not null && current.Contains(was) && was != names[i]) remap[was] = names[i];
+        }
+        foreach (var r in req.removed ?? [])
+        {
+            if (r.was is null || !current.Contains(r.was)) continue;
+            if (names.Contains(r.was, StringComparer.Ordinal) && !remap.ContainsKey(r.was)) continue;   // it is still there under its own name
+            var target = (r.moveTo ?? "").Trim();
+            if (withItems.Contains(r.was) && target.Length == 0) return ([], empty, $"Choose where the items in \"{r.was}\" should go.");
+            if (target.Length > 0)
+            {
+                var match = names.FirstOrDefault(n => string.Equals(n, target, StringComparison.OrdinalIgnoreCase));
+                if (match is null) return ([], empty, "The items have to move to a category that is kept.");
+                remap[r.was] = match;
+            }
+        }
+        return (names, remap, null);
+    }
+
+    /// <summary>
+    /// Puts the items of one section into the given order and leaves everything else exactly where it was: the section's items just trade places among the positions the
+    /// section already occupied. Ids that are not in the section are ignored, and items the list forgot keep their relative order at the end.
+    /// </summary>
+    public static List<T> ReorderSection<T>(IReadOnlyList<T> items, Func<T, string> sectionOf, Func<T, string> idOf, string section, IReadOnlyList<string> orderedIds)
+    {
+        var slots = new List<int>();
+        for (var i = 0; i < items.Count; i++) if (sectionOf(items[i]) == section) slots.Add(i);
+        var inSection = slots.Select(i => items[i]).ToList();
+        var byId = new Dictionary<string, T>();
+        foreach (var it in inSection) byId.TryAdd(idOf(it), it);
+
+        var ordered = new List<T>();
+        var used = new HashSet<string>();
+        foreach (var id in orderedIds) if (byId.TryGetValue(id, out var it) && used.Add(id)) ordered.Add(it);
+        foreach (var it in inSection) if (!used.Contains(idOf(it))) { ordered.Add(it); used.Add(idOf(it)); }
+
+        var result = items.ToList();
+        for (var k = 0; k < slots.Count && k < ordered.Count; k++) result[slots[k]] = ordered[k];
+        return result;
+    }
+
+    /// <summary>
+    /// The template after a day's section has been reordered. Each day item is found in the template by id, or (for days built before ids were stable) by section and wording.
+    /// The matched template items trade places among the positions they already held, so template items that are hidden today (an if-then item for another weekday)
+    /// keep their place.
+    /// </summary>
+    public static List<TemplateItem> ReorderTemplate(IReadOnlyList<TemplateItem> items, IReadOnlyList<DayItem> orderedDayItems)
+    {
+        var used = new HashSet<int>();
+        var matched = new List<int>();
+        foreach (var d in orderedDayItems)
+        {
+            var idx = -1;
+            for (var i = 0; i < items.Count && idx < 0; i++) if (!used.Contains(i) && items[i].id == d.id) idx = i;
+            for (var i = 0; i < items.Count && idx < 0; i++)
+                if (!used.Contains(i) && items[i].section == d.section && string.Equals(items[i].text.Trim(), d.text.Trim(), StringComparison.OrdinalIgnoreCase)) idx = i;
+            if (idx >= 0) { used.Add(idx); matched.Add(idx); }
+        }
+        var slots = matched.OrderBy(x => x).ToList();
+        var result = items.ToList();
+        for (var k = 0; k < slots.Count; k++) result[slots[k]] = items[matched[k]];
+        return result;
     }
 
     /// <summary>The distinct yyyy-MM months in a list of yyyy-MM-dd dates, newest first. Anything that is not a date is ignored.</summary>
@@ -302,7 +464,8 @@ public static class Endpoint
             var section = secs.Contains(i.section ?? "") ? i.section! : secs[0];
             var id = string.IsNullOrWhiteSpace(i.id) || list.Any(x => x.id == i.id) ? NewId() : i.id;
             var kind = NormaliseKind(i.kind);
-            list.Add(new TemplateItem(id, text[..Math.Min(text.Length, TextLimit(kind))], section, kind, i.essential, CleanRule(i.rule)));
+            var priority = NormalisePriority(i.priority, i.essential);
+            list.Add(new TemplateItem(id, text[..Math.Min(text.Length, TextLimit(kind))], section, kind, priority == "essential", CleanRule(i.rule), priority));
         }
         if (list.Count > MaxItems) return ([], [], "That's more items than a routine can hold.");
         return (secs, list, null);
@@ -349,7 +512,10 @@ public static class Endpoint
     public static TemplateDoc DefaultTemplate(string userId)
     {
         var sections = new List<string> { "Morning", "Plan for today", "Check in", "Evening" };
-        TemplateItem I(string text, string section, bool essential, string kind = "check", RuleDto? rule = null) => new(NewId(), text, section, kind, essential, rule);
+        // Stable ids ("d1", "d2", ...): the default routine is rebuilt on every load until the person saves their own, and a day, an edit or a reorder must be able to find the
+        // same item again by id. (With random ids a "remove from every day" or "move to top" on a default item could never match the template.)
+        var n = 0;
+        TemplateItem I(string text, string section, bool essential, string kind = "check", RuleDto? rule = null) => new("d" + (++n), text, section, kind, essential, rule, essential ? "essential" : "standard");
         var items = new List<TemplateItem>
         {
             I("A few minutes of quiet", "Morning", true),
@@ -402,7 +568,7 @@ public static class Endpoint
     {
         var date = d.ToString("yyyy-MM-dd");
         var items = t.items.Where(i => Applies(i.rule, d))
-            .Select(i => new DayItem(i.id, i.text, i.section, i.kind, i.essential, i.rule?.label, "template")).ToList();
+            .Select(i => new DayItem(i.id, i.text, i.section, i.kind, i.essential, i.rule?.label, "template", PriorityOf(i.essential, i.priority))).ToList();
         return new DayDoc("day:" + date, userId, "day", date, t.sections, items, new(), new(), DateTimeOffset.UtcNow.ToString("o"));
     }
 

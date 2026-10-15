@@ -31,6 +31,8 @@ beforeEach(() => {
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
     calls.push({ url, method: init?.method ?? 'GET', body: init?.body as string | undefined, keepalive: init?.keepalive });
     if (url.endsWith('/api/routines/months')) return new Response(JSON.stringify(monthsReply), { status: 200 });
+    if (url.includes('/order') && init?.method === 'PUT') return new Response(JSON.stringify(day()), { status: 200 });
+    if (url.includes('/sections') && init?.method === 'PUT') return new Response(JSON.stringify(day()), { status: 200 });
     if (url.includes('/month/')) return new Response('[]', { status: 200 });
     if (url.includes('/state')) return new Response(JSON.stringify({ date: today, essentialsDone: 1, essentialsTotal: 2, done: 1, total: 3 }), { status: 200 });
     if (url.endsWith('/api/routines/import')) return new Response(JSON.stringify(day()), { status: 200 });
@@ -179,6 +181,87 @@ describe('RoutinesPage', () => {
     fireEvent.click(screen.getByText('Add item'));
     await waitFor(() => expect(calls.some(c => c.url.includes('/items') && c.method === 'POST')).toBe(true));
     expect(JSON.parse(calls.find(c => c.url.includes('/items') && c.method === 'POST')!.body!).section).toBe('Weekend');
+  });
+
+  it('Move to top puts an item first in its category at once and saves the new order', async () => {
+    render(<RoutinesPage />);
+    await screen.findByText('Read something');
+    fireEvent.click(screen.getByLabelText('Options for Read something'));
+    fireEvent.click(screen.getByText('Move to top'));
+    await waitFor(() => expect(calls.some(c => c.url.includes('/order') && c.method === 'PUT')).toBe(true));
+    const sent = JSON.parse(calls.find(c => c.url.includes('/order'))!.body!);
+    expect(sent).toEqual({ section: 'Morning', ids: ['c', 'a', 'b'] });
+  });
+
+  it('only offers moves that are possible', async () => {
+    render(<RoutinesPage />);
+    await screen.findByText('A few minutes of quiet');
+    fireEvent.click(screen.getByLabelText('Options for A few minutes of quiet'));      // first in Morning
+    expect(screen.queryByText('Move to top')).toBeNull();
+    expect(screen.queryByText('Move up')).toBeNull();
+    expect(screen.getByText('Move down')).toBeTruthy();
+    expect(screen.getByText('Move to bottom')).toBeTruthy();
+  });
+
+  it('the arrow keys on the grip move an item one place', async () => {
+    render(<RoutinesPage />);
+    await screen.findByText('Read something');
+    const grip = screen.getByLabelText('Drag to reorder: Read something');
+    fireEvent.keyDown(grip, { key: 'ArrowUp' });
+    await waitFor(() => expect(calls.some(c => c.url.includes('/order'))).toBe(true));
+    expect(JSON.parse(calls.find(c => c.url.includes('/order'))!.body!).ids).toEqual(['a', 'c', 'b']);
+  });
+
+  it('chooses a priority when an item is created', async () => {
+    render(<RoutinesPage />);
+    await screen.findByText('Make the bed');
+    fireEvent.click(screen.getByText('Add an item'));
+    fireEvent.change(screen.getByLabelText('What is the item'), { target: { value: 'Water the plants' } });
+    expect((screen.getByLabelText('Priority') as HTMLSelectElement).value).toBe('standard');
+    fireEvent.change(screen.getByLabelText('Priority'), { target: { value: 'low' } });
+    fireEvent.click(screen.getByText('Add item'));
+    await waitFor(() => expect(calls.some(c => c.url.includes('/items') && c.method === 'POST')).toBe(true));
+    expect(JSON.parse(calls.find(c => c.url.includes('/items') && c.method === 'POST')!.body!).priority).toBe('low');
+  });
+
+  it('changes the priority of an item from its menu', async () => {
+    render(<RoutinesPage />);
+    await screen.findByText('Read something');
+    fireEvent.click(screen.getByLabelText('Options for Read something'));
+    fireEvent.click(screen.getByText('Low'));
+    await waitFor(() => expect(calls.some(c => c.url.includes('/items/c') && c.method === 'PUT')).toBe(true));
+    expect(JSON.parse(calls.find(c => c.url.includes('/items/c'))!.body!)).toEqual({ priority: 'low' });
+  });
+
+  it('edits categories: rename, add, and save them', async () => {
+    render(<RoutinesPage />);
+    await screen.findByText('Make the bed');
+    fireEvent.click(screen.getByText('Edit categories'));
+    fireEvent.change(screen.getByLabelText('Category name 2'), { target: { value: 'My morning' } });   // First, Morning, Check in
+    fireEvent.change(screen.getByLabelText('New category name'), { target: { value: 'Gym' } });
+    fireEvent.click(screen.getByText('Add'));
+    fireEvent.click(screen.getByText('Save categories'));
+    await waitFor(() => expect(calls.some(c => c.url.includes('/sections') && c.method === 'PUT')).toBe(true));
+    const sent = JSON.parse(calls.find(c => c.url.includes('/sections'))!.body!);
+    expect(sent.sections).toEqual([
+      { was: 'First', name: 'First' }, { was: 'Morning', name: 'My morning' }, { was: 'Check in', name: 'Check in' }, { was: null, name: 'Gym' },
+    ]);
+    expect(sent.removed).toEqual([]);
+  });
+
+  it('asks where the items go before deleting a category that has some', async () => {
+    render(<RoutinesPage />);
+    await screen.findByText('Make the bed');
+    fireEvent.click(screen.getByText('Edit categories'));
+    fireEvent.click(screen.getByLabelText('Delete Morning'));
+    expect(screen.getByText(/Move its 3 items to/)).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Move items to'), { target: { value: 'r0' } });             // First
+    fireEvent.click(screen.getByText('Move and delete'));
+    fireEvent.click(screen.getByText('Save categories'));
+    await waitFor(() => expect(calls.some(c => c.url.includes('/sections') && c.method === 'PUT')).toBe(true));
+    const sent = JSON.parse(calls.find(c => c.url.includes('/sections'))!.body!);
+    expect(sent.sections.map((x: { name: string }) => x.name)).toEqual(['First', 'Check in']);
+    expect(sent.removed).toEqual([{ was: 'Morning', moveTo: 'First' }]);
   });
 
   it('lets the wording of an item be edited, and saves it', async () => {

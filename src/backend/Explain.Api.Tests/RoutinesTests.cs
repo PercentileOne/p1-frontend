@@ -153,6 +153,143 @@ public class RoutinesTests
         Assert.Empty(tuesday.@checked);
     }
 
+    private static Routines.SectionsRequest Cats(string[][] keep, params (string was, string? moveTo)[] removed) =>
+        new(keep.Select(k => new Routines.SectionEdit(k[0] == "" ? null : k[0], k[1])).ToList(),
+            removed.Select(r => new Routines.SectionRemoval(r.was, r.moveTo)).ToList());
+
+    [Fact]
+    public void Categories_can_be_renamed_and_reordered()
+    {
+        var current = new[] { "Morning", "Plan for today", "Evening" };
+        var (names, remap, error) = Routines.PlanSectionEdits(current, new HashSet<string>(current),
+            Cats([["Evening", "Evening"], ["Morning", "My morning"], ["Plan for today", "Plan for today"]]));
+        Assert.Null(error);
+        Assert.Equal(["Evening", "My morning", "Plan for today"], names);
+        Assert.Equal("My morning", remap["Morning"]);
+        Assert.False(remap.ContainsKey("Evening"));
+    }
+
+    [Fact]
+    public void A_new_category_has_no_old_name()
+    {
+        var (names, remap, error) = Routines.PlanSectionEdits(["Morning"], new HashSet<string> { "Morning" },
+            Cats([["Morning", "Morning"], ["", "Gym"]]));
+        Assert.Null(error);
+        Assert.Equal(["Morning", "Gym"], names);
+        Assert.Empty(remap);
+    }
+
+    [Fact]
+    public void Deleting_a_category_with_items_needs_somewhere_to_put_them()
+    {
+        var current = new[] { "Morning", "Evening" };
+        var items = new HashSet<string>(current);
+        var (_, _, noTarget) = Routines.PlanSectionEdits(current, items, Cats([["Morning", "Morning"]], ("Evening", null)));
+        Assert.NotNull(noTarget);
+
+        var (names, remap, error) = Routines.PlanSectionEdits(current, items, Cats([["Morning", "Morning"]], ("Evening", "Morning")));
+        Assert.Null(error);
+        Assert.Equal(["Morning"], names);
+        Assert.Equal("Morning", remap["Evening"]);      // its items go to Morning
+
+        var (_, _, emptyOk) = Routines.PlanSectionEdits(current, new HashSet<string> { "Morning" }, Cats([["Morning", "Morning"]], ("Evening", null)));
+        Assert.Null(emptyOk);                           // an empty category can simply go
+    }
+
+    [Fact]
+    public void Category_names_are_checked()
+    {
+        var cur = new[] { "A", "B" };
+        var none = new HashSet<string>();
+        Assert.NotNull(Routines.PlanSectionEdits(cur, none, Cats([["A", "  "], ["B", "B"]])).error);                      // blank
+        Assert.NotNull(Routines.PlanSectionEdits(cur, none, Cats([["A", "Same"], ["B", "same"]])).error);                // duplicate, any case
+        Assert.NotNull(Routines.PlanSectionEdits(cur, none, Cats([])).error);                                           // none left
+        var many = Enumerable.Range(0, Routines.MaxSections + 1).Select(n => new[] { "", "C" + n }).ToArray();
+        Assert.NotNull(Routines.PlanSectionEdits(cur, none, Cats(many)).error);                                         // too many
+    }
+
+    [Theory]
+    [InlineData("essential", null, "essential")]
+    [InlineData("LOW", null, "low")]
+    [InlineData("standard", true, "standard")]       // an explicit priority wins over the old flag
+    [InlineData(null, true, "essential")]            // an old document with only the essential flag
+    [InlineData(null, false, "standard")]
+    [InlineData("nonsense", null, "standard")]
+    public void Priority_is_essential_standard_or_low(string? priority, bool? essentialFlag, string expected)
+        => Assert.Equal(expected, Routines.NormalisePriority(priority, essentialFlag));
+
+    [Fact]
+    public void A_priority_travels_with_the_item_and_keeps_the_essential_flag_in_step()
+    {
+        var (_, items, error) = Routines.Clean(["Morning"],
+        [
+            new("a", "Quiet", "Morning", "check", false, null, "essential"),
+            new("b", "Read", "Morning", "check", true, null, "low"),     // the explicit priority wins over a stale flag
+            new("c", "Walk", "Morning", "check", false, null),
+        ]);
+        Assert.Null(error);
+        Assert.Equal(["essential", "low", "standard"], items.Select(i => i.priority));
+        Assert.Equal([true, false, false], items.Select(i => i.essential));
+
+        var day = Routines.BuildDay("u1", new DateOnly(2026, 10, 15), new Routines.TemplateDoc("template", "u1", "template", ["Morning"], items, ""));
+        Assert.Equal(["essential", "low", "standard"], day.items.Select(i => i.priority));
+    }
+
+    [Fact]
+    public void The_default_routine_has_stable_ids_so_edits_can_find_its_items_again()
+    {
+        var a = Routines.DefaultTemplate("u1");
+        var b = Routines.DefaultTemplate("u1");
+        Assert.Equal(a.items.Select(i => i.id), b.items.Select(i => i.id));
+        Assert.Equal(a.items.Count, a.items.Select(i => i.id).Distinct().Count());
+    }
+
+    private static Routines.DayItem Day(string id, string section, string text = "") => new(id, text == "" ? id : text, section, "check", false, null, "template");
+
+    [Fact]
+    public void Reordering_a_section_moves_only_that_sections_items_and_leaves_the_rest_in_place()
+    {
+        var items = new List<Routines.DayItem> { Day("m1", "Morning"), Day("e1", "Evening"), Day("m2", "Morning"), Day("m3", "Morning"), Day("e2", "Evening") };
+        var r = Routines.ReorderSection(items, i => i.section, i => i.id, "Morning", ["m3", "m1", "m2"]);
+        Assert.Equal(["m3", "e1", "m1", "m2", "e2"], r.Select(i => i.id));        // the evening items did not move
+    }
+
+    [Fact]
+    public void Reordering_ignores_unknown_ids_and_keeps_forgotten_items_at_the_end()
+    {
+        var items = new List<Routines.DayItem> { Day("a", "S"), Day("b", "S"), Day("c", "S") };
+        var r = Routines.ReorderSection(items, i => i.section, i => i.id, "S", ["c", "zzz", "c"]);
+        Assert.Equal(["c", "a", "b"], r.Select(i => i.id));
+    }
+
+    [Fact]
+    public void Reordering_the_template_keeps_hidden_items_where_they_were()
+    {
+        // The template has a Sunday-only item between two daily ones; today (not a Sunday) shows only the daily ones.
+        var t = new List<Routines.TemplateItem>
+        {
+            new("a", "Quiet", "Morning", "check", false, null),
+            new("s", "Plan the week", "Morning", "check", false, new Routines.RuleDto([0], null, "Sunday")),
+            new("b", "Bed", "Morning", "check", false, null),
+        };
+        var today = new List<Routines.DayItem> { Day("b", "Morning", "Bed"), Day("a", "Morning", "Quiet") };   // the person moved Bed above Quiet
+        var r = Routines.ReorderTemplate(t, today);
+        Assert.Equal(["b", "s", "a"], r.Select(i => i.id));                        // Plan the week keeps its middle slot
+    }
+
+    [Fact]
+    public void Reordering_the_template_finds_items_by_wording_when_ids_do_not_match()
+    {
+        var t = new List<Routines.TemplateItem>
+        {
+            new("t1", "Quiet", "Morning", "check", false, null),
+            new("t2", "Bed", "Morning", "check", false, null),
+        };
+        var today = new List<Routines.DayItem> { Day("old-bed", "Morning", "bed"), Day("old-quiet", "Morning", "QUIET") };   // ids from before ids were stable
+        var r = Routines.ReorderTemplate(t, today);
+        Assert.Equal(["t2", "t1"], r.Select(i => i.id));
+    }
+
     [Fact]
     public void The_tree_lists_each_month_that_has_days_newest_first_across_years()
     {
