@@ -1,6 +1,6 @@
-# Pain points first
+# Pain points first ("the stakes")
 
-A working list for posts, adverts, landing pages and recruiter outreach. Started 15 October 2026 from Francis's reading: **say what hurts, in the reader's own words, before saying what we sell.** A speech therapist lists what parents worry about before offering anything.
+A working list for posts, adverts, landing pages and recruiter outreach. Started 15 October 2026 from Francis's reading, where this is called **the stakes**: **say what hurts, in the reader's own words, before saying what we sell.** A speech therapist lists what parents worry about before offering anything; the book's examples are "Parenting a late talker is tough" and "Have you been frustrated by brokers who...?", each followed by "we have the tools you need".
 
 ## The shape
 
@@ -45,5 +45,5 @@ Suggested additions (mine):
 
 ## Where it is already used, and where it is not (15 October 2026)
 
-- **Pain first already:** the recruiter page's second section ("The gap"), slide 2 of the pitch deck ("The problem"), and the homepage's "Make your mistakes here" section.
+- **Pain first already:** the homepage's new "Does this sound familiar?" section (15 Oct: two columns of questions, candidates and recruiters, with a night-before lock-screen graphic), the recruiter page's second section ("The gap"), slide 2 of the pitch deck ("The problem"), and the "Make your mistakes here" section.
 - **Product first:** the homepage hero ("Practice interviewing with AI. Get interview coaching. Get that job.") and the native posts sent on 14 October. These are the places to try the shape above, one at a time, tagged so the funnel can compare.

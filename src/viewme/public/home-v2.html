@@ -394,6 +394,27 @@
   .rt-next p{color:var(--muted);font-size:15px;max-width:760px}
   #routines .btns{display:flex;flex-wrap:wrap;gap:14px;margin-top:30px}
   @media(max-width:900px){.rt-grid{grid-template-columns:1fr}}
+
+  /* Pain points first (2026-10-15) */
+  #pains{padding-top:72px}
+  .pain-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:34px;align-items:start}
+  .pain-col{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px}
+  .pain-col h3{font-size:22px;letter-spacing:-.02em;margin:4px 0 12px}
+  .pain-tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);background:rgba(61,126,246,.08);border:1px solid rgba(61,126,246,.25);border-radius:99px;padding:4px 12px}
+  .pain-list{list-style:none}
+  .pain-list li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);color:var(--text);font-size:16px;line-height:1.45}
+  .pain-list li:first-child{border-top:0}
+  .pain-list li span{flex:0 0 28px;font-size:19px;line-height:1.3}
+  .lock{background:linear-gradient(160deg,#0b1428,#0a1020);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin-bottom:16px}
+  .lock-time{font-size:42px;font-weight:200;letter-spacing:-.03em;line-height:1;color:var(--text);text-align:center;margin-bottom:12px}
+  .lock-note{display:flex;gap:10px;align-items:baseline;background:rgba(255,255,255,.06);border-radius:12px;padding:9px 12px;font-size:13.5px;color:var(--muted);margin-top:8px}
+  .lock-note b{color:var(--text);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  .lock-note.quiet{background:transparent;border:1px dashed var(--line);font-style:italic}
+  .pain-out{margin-top:26px;text-align:center;padding:30px 24px;border-radius:20px;border:1px solid rgba(52,211,153,.3);background:linear-gradient(160deg,rgba(52,211,153,.09),var(--card) 60%)}
+  .pain-out h3{font-size:clamp(1.3rem,2.6vw,1.8rem);letter-spacing:-.02em;margin-bottom:6px}
+  .pain-out p{color:var(--muted);max-width:620px;margin:0 auto}
+  .pain-out .btns{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:20px}
+  @media(max-width:900px){.pain-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -691,6 +712,54 @@
 </script>
 
 <!-- 1b · MAKE YOUR MISTAKES HERE (Francis, 2026-10-02) ──────── -->
+<!-- 1c · DOES THIS SOUND FAMILIAR? ──────────────────────── -->
+<section id="pains">
+  <div class="wrap">
+    <span class="eyebrow">Does this sound familiar?</span>
+    <h2 class="reveal">The interview is rarely the problem. What happens before it is.</h2>
+    <div class="pain-grid">
+      <div class="pain-col reveal">
+        <div class="lock" aria-hidden="true">
+          <div class="lock-time">23:47</div>
+          <div class="lock-note"><b>Calendar</b><span>Interview tomorrow, 9:00</span></div>
+          <div class="lock-note quiet"><span>Still awake, going over it in your head?</span></div>
+        </div>
+        <h3>Preparing for an interview?</h3>
+        <ul class="pain-list">
+          <li><span>😰</span>Do nerves take over the night before?</li>
+          <li><span>😶</span>Do you know the answers, then go blank when someone is watching?</li>
+          <li><span>🌀</span>Do you ramble, and never know when to stop?</li>
+          <li><span>📄</span>Not sure how your CV reads to the person across the table?</li>
+          <li><span>🎭</span>Do you feel you are not good enough, even when you are?</li>
+          <li><span>👥</span>Do you freeze when two people interview you at once?</li>
+          <li><span>🗣️</span>Have you never actually said your answers out loud?</li>
+          <li><span>🙊</span>Is there nobody who will tell you honestly how you sound?</li>
+        </ul>
+      </div>
+      <div class="pain-col reveal">
+        <div class="pain-tag">For recruiters</div>
+        <h3>Placing candidates?</h3>
+        <ul class="pain-list">
+          <li><span>🚪</span>Are your candidates not passing the first interview stage?</li>
+          <li><span>📉</span>Not making enough placements, however many you send?</li>
+          <li><span>💸</span>Losing a fee after weeks of sourcing, screening and submitting?</li>
+          <li><span>💬</span>Hearing &ldquo;great on paper, did not interview well&rdquo; from clients?</li>
+          <li><span>🔁</span>Giving the same briefing again and again, with no way to rehearse twenty candidates?</li>
+          <li><span>🍀</span>Sending nothing with the interview confirmation but &ldquo;good luck&rdquo;?</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pain-out reveal">
+      <h3>Rehearse the real thing, in private.</h3>
+      <p>A live interviewer who speaks, listens and scores you, for the exact job. Make your mistakes here, not in the real interview.</p>
+      <div class="btns">
+        <a class="btn btn-green" href="#try" onclick="setTimeout(function(){document.getElementById('topic').focus()},500)">▶ Try it live, free</a>
+        <a class="btn btn-ghost" href="/recruiters">How it works for recruiters</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="mistakes">
   <div class="wrap">
     <span class="eyebrow">Why practice here</span>
