@@ -31,7 +31,7 @@ Kept short on purpose. Three things at the top; everything else waits. Updated b
 
 ## Mine, when you say go
 
-- [x] Swept the repo for "Percentile One Ltd" (and "Explain Global Ltd") and changed every one (14 Oct). The app's emails and terms had none. **Still to check by you:** the business name and statement descriptor in the Stripe dashboard, and the "from" name on outgoing email.
+- [x] Swept the repo for "Percentile One Ltd" (and "Explain Global Ltd") and changed every one (14 Oct). The app's emails and terms had none. **Stripe checked by you (15 Oct):** business name "The Interview Chair", statement descriptor THEINTERVIEWCHAIR.COM, no "Ltd" anywhere. **Still to check by you:** the business website field in Stripe (looks like a letter is missing from the domain, zoom in), the support phone number there (shows 07432 367704, the Contact page shows 07515 112345), and the "from" name on outgoing email.
 - [ ] Re-measure CV analyses against page visits on about **17 Oct** (baseline: 1 analysis, 15 visits in 10 days).
 - [ ] Paywall: a one-page brief on turning enforcement on (what it would block, what stays free).
 - [ ] Draft the follow-up message to Fadi at Spatius (regions, speed, batch rendering). You send it.
