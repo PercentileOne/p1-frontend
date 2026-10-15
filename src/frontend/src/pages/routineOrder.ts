@@ -47,3 +47,20 @@ export function orderByDrop(ids: string[], dragId: string, pointerY: number, mid
   others.forEach((id, i) => { if ((midpoints[id] ?? Infinity) < pointerY) at = i + 1; });
   return [...others.slice(0, at), dragId, ...others.slice(at)];
 }
+
+/**
+ * The category order after moving one category. `all` is every category in order (including any with nothing on this day); `visible` are the ones actually showing.
+ * Up and down step over categories that are hidden, so one press always moves it past something you can see.
+ */
+export function moveSection(all: string[], visible: string[], name: string, to: MoveTo): string[] {
+  if (!all.includes(name)) return all;
+  const rest = all.filter(s => s !== name);
+  if (to === 'top') return [name, ...rest];
+  if (to === 'bottom') return [...rest, name];
+  const vi = visible.indexOf(name);
+  if (vi < 0) return all;
+  const neighbour = to === 'up' ? visible[vi - 1] : visible[vi + 1];
+  if (!neighbour) return all;
+  const at = rest.indexOf(neighbour);
+  return to === 'up' ? [...rest.slice(0, at), name, ...rest.slice(at)] : [...rest.slice(0, at + 1), name, ...rest.slice(at + 1)];
+}

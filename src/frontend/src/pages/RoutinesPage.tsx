@@ -5,7 +5,7 @@ import type { AddScope, DayItem, DaySummary, Priority, RoutineDay, RoutineKind }
 import { RoutineImport } from '../components/RoutineImport';
 import { RoutineCategories } from '../components/RoutineCategories';
 import type { CategoryEdit } from '../components/RoutineCategories';
-import { canMove, moveId, orderByDrop, reorderWithin } from './routineOrder';
+import { canMove, moveId, moveSection, orderByDrop, reorderWithin } from './routineOrder';
 import type { MoveTo } from './routineOrder';
 import { coachVoiceFor, currentPeriod, priorityOf, priorityPhrase, routineStatus, sectionPeriod, spokenStatus } from './routineStatus';
 import { speak, unlockTTSAudio } from '../api/ttsApi';
@@ -57,6 +57,7 @@ export default function RoutinesPage() {
   const [importing, setImporting] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
   const [editingCats, setEditingCats] = useState(false);
+  const [catMenu, setCatMenu] = useState<string | null>(null);      // the category whose ⋯ menu is open
   // While an item is being dragged: the category's ids in the order they would land in, drawn live.
   const previewRef = useRef<{ section: string; ids: string[]; dragId: string } | null>(null);
   const [preview, setPreviewState] = useState<{ section: string; ids: string[]; dragId: string } | null>(null);
@@ -204,6 +205,19 @@ export default function RoutinesPage() {
     window.addEventListener('keydown', onKey);
   }
 
+  // Move a whole category (its items go with it). Saved like any category edit, so the template and tomorrow follow.
+  async function moveCategory(name: string, to: MoveTo) {
+    const base = dayRef.current;
+    if (!base) return;
+    const visible = base.sections.filter(sec => base.items.some(i => i.section === sec));
+    const next = moveSection(base.sections, visible, name, to);
+    setCatMenu(null);
+    if (next.join('|') === base.sections.join('|')) return;
+    applyDay({ ...base, sections: next });
+    const ok = await run(routinesApi.editSections(base.date, { sections: next.map(n => ({ was: n, name: n })), removed: [] }));
+    if (!ok) routinesApi.day(base.date).then(d => applyDay(withPending(d))).catch(() => { /* the error message is already showing */ });
+  }
+
   async function saveCategories(edit: CategoryEdit) {
     const base = dayRef.current;
     if (!base) return;
@@ -305,9 +319,25 @@ export default function RoutinesPage() {
               const items = preview && preview.section === section
                 ? preview.ids.map(id => base.find(b => b.id === id)).filter((x): x is DayItem => !!x)
                 : base;
+              const shown = day.sections.filter(sec => day.items.some(i => i.section === sec));
+              const pos = shown.indexOf(section);
               return (
                 <div key={section} style={{ marginTop: 18 }}>
-                  <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 4 }}>{section}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)' }}>{section}</div>
+                    {shown.length > 1 && (
+                      <button onClick={() => setCatMenu(catMenu === section ? null : section)} aria-label={`Options for category ${section}`} aria-expanded={catMenu === section}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 6px' }}>⋯</button>
+                    )}
+                  </div>
+                  {catMenu === section && (
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '0 0 6px' }}>
+                      {canMove(pos, shown.length, 'top') && <SmallBtn onClick={() => void moveCategory(section, 'top')}>Move to top</SmallBtn>}
+                      {canMove(pos, shown.length, 'up') && <SmallBtn onClick={() => void moveCategory(section, 'up')}>Move up</SmallBtn>}
+                      {canMove(pos, shown.length, 'down') && <SmallBtn onClick={() => void moveCategory(section, 'down')}>Move down</SmallBtn>}
+                      {canMove(pos, shown.length, 'bottom') && <SmallBtn onClick={() => void moveCategory(section, 'bottom')}>Move to bottom</SmallBtn>}
+                    </div>
+                  )}
                   {items.map((i, idx) => (
                     <ItemRow key={i.id} item={i} day={day} menuOpen={menuFor === i.id} index={idx} count={items.length} dragging={preview?.dragId === i.id}
                       onMenu={() => setMenuFor(menuFor === i.id ? null : i.id)}

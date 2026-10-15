@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canMove, moveId, orderByDrop, reorderWithin } from './routineOrder';
+import { canMove, moveId, moveSection, orderByDrop, reorderWithin } from './routineOrder';
 
 describe('moveId', () => {
   const ids = ['a', 'b', 'c', 'd'];
@@ -49,4 +49,22 @@ describe('orderByDrop', () => {
   it('drops between two items', () => expect(orderByDrop(ids, 'a', 250, mids)).toEqual(['b', 'a', 'c']));
   it('drops below the last item', () => expect(orderByDrop(ids, 'a', 900, mids)).toEqual(['b', 'c', 'a']));
   it('leaves the order alone when dropped where it was', () => expect(orderByDrop(ids, 'b', 200, mids)).toEqual(['a', 'b', 'c']));
+});
+
+describe('moveSection', () => {
+  const all = ['Morning', 'Empty', 'Plan', 'Evening'];
+  const visible = ['Morning', 'Plan', 'Evening'];
+  it('moves to the top and the bottom', () => {
+    expect(moveSection(all, visible, 'Evening', 'top')).toEqual(['Evening', 'Morning', 'Empty', 'Plan']);
+    expect(moveSection(all, visible, 'Morning', 'bottom')).toEqual(['Empty', 'Plan', 'Evening', 'Morning']);
+  });
+  it('steps over a hidden category, so one press always passes something you can see', () => {
+    expect(moveSection(all, visible, 'Plan', 'up')).toEqual(['Plan', 'Morning', 'Empty', 'Evening']);
+    expect(moveSection(all, visible, 'Morning', 'down')).toEqual(['Empty', 'Plan', 'Morning', 'Evening']);
+  });
+  it('does nothing at the ends or for an unknown name', () => {
+    expect(moveSection(all, visible, 'Morning', 'up')).toEqual(all);
+    expect(moveSection(all, visible, 'Evening', 'down')).toEqual(all);
+    expect(moveSection(all, visible, 'Nope', 'top')).toEqual(all);
+  });
 });

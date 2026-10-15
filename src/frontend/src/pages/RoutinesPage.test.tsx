@@ -249,6 +249,18 @@ describe('RoutinesPage', () => {
     expect(sent.removed).toEqual([]);
   });
 
+  it('moves a whole category from the ellipsis on its header, and saves the new order', async () => {
+    render(<RoutinesPage />);
+    await screen.findByText('Make the bed');
+    fireEvent.click(screen.getByLabelText('Options for category Morning'));
+    expect(screen.queryAllByText('Move to top').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByText('Move to bottom'));
+    await waitFor(() => expect(calls.some(c => c.url.includes('/sections') && c.method === 'PUT')).toBe(true));
+    const sent = JSON.parse(calls.find(c => c.url.includes('/sections'))!.body!);
+    expect(sent.sections.map((x: { name: string }) => x.name)).toEqual(['First', 'Check in', 'Morning']);
+    expect(sent.removed).toEqual([]);
+  });
+
   it('asks where the items go before deleting a category that has some', async () => {
     render(<RoutinesPage />);
     await screen.findByText('Make the bed');
