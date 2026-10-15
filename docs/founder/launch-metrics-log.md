@@ -43,4 +43,4 @@ One row per ad (or per audience, if the ad stays the same). Ads land on the home
 
 | Campaign (= utm_campaign) | Network (= utm_source) | The ad (headline and picture) | Started (date, time) | Spend so far | Clicks (network) | Cost per click | Real visits (funnel, this tag) | Tried the demo | Register clicks | New sign-ups | Cost per sign-up | What I learned |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| | | | | | | | | | | | | |
+| native-posts-wave-1 | Native (first subscription) | About three quarters of the set, sent on 14 Oct "for sending sake"; to be reviewed and tweaked before the rest go | Wed 14 Oct 2026 | about £70 (first subscription) | | | | | | | | Post impressions rose from 36 to 130 the next morning. More to send once the wording is tuned (pain points first, see pain-points.md). |
