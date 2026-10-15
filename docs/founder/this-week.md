@@ -43,6 +43,7 @@ Kept short on purpose. Three things at the top; everything else waits. Updated b
 - Refresh the stale Amina and Wayne copy on the later login-page slides.
 - "Learn in any language" plan.
 - Class 9 (mobile app) trade mark application; a second application for job-board wording, if wanted.
+- **Recruiter sees the outcome of a prep (agreed 15 Oct, build with the Employer portal pass):** let the recruiter know when the candidate opens a prep and when they finish it, with the score. Today a prep's status stays "sent" and the finished interview is not linked back, so the recruiter sees nothing after sending. Needs: a status change when the candidate hits Review and Start (opened) and when the interview ends (finished), a link from the saved interview to the prep, and the recruiter's Interview Preps list showing the status and the result. Notification (email or in-portal) once the candidate finishes. Candidate consent wording to settle first: the candidate should know the recruiter will see that they practised and how they scored. Shown as "planned" on the /architecture page; remove that label when built.
 
 ## Done this week
 
