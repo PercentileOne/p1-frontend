@@ -43,6 +43,7 @@ jobs:
           cp src/viewme/public/ways-in.html deploy-product/ways-in.html
           cp src/viewme/public/recruiters.html deploy-product/recruiters.html
           cp src/viewme/public/pitch-deck.html deploy-product/pitch-deck.html
+          cp src/viewme/public/architecture.html deploy-product/architecture.html
           cp src/viewme/public/gift-interview.html deploy-product/gift-interview.html
           cp src/viewme/public/gift-interview-success.html deploy-product/gift-interview-success.html
           cp src/viewme/public/privacy.html deploy-product/privacy.html

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TheInterviewChair.com architecture and flow</title>
+<meta name="description" content="How TheInterviewChair.com is built: flow, stack, security, delivery and the agent roadmap. Confidential.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script src="/track.js?v=2"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky section index on top, then one wide column of numbered-by-topic sections; diagrams and tables scroll inside their own boxes. */
+:root {
+  --bg: #f5f7f6;
+  --surface: #ffffff;
+  --fg: #11201a;
+  --muted: #55655d;
+  --line: #d7dfdb;
+  --accent: #047857;
+  --accent-soft: #dcf3ea;
+  --partial: #8a5a00;
+  --partial-soft: #fbefd2;
+  --planned: #5b3fc4;
+  --planned-soft: #e8e2fb;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1511; --surface: #12211b; --fg: #e6efea; --muted: #9bb0a6; --line: #25382f;
+    --accent: #34d399; --accent-soft: #0f3326; --partial: #f2c35b; --partial-soft: #33290d;
+    --planned: #b7a5ff; --planned-soft: #241d45;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1511; --surface: #12211b; --fg: #e6efea; --muted: #9bb0a6; --line: #25382f;
+  --accent: #34d399; --accent-soft: #0f3326; --partial: #f2c35b; --partial-soft: #33290d;
+  --planned: #b7a5ff; --planned-soft: #241d45;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: flex; flex-direction: column; gap: 44px; }
+header { display: flex; flex-direction: column; gap: 8px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1 { font-size: clamp(30px, 6vw, 42px); line-height: 1.1; margin: 0; font-weight: 600; text-wrap: balance; }
+h2 { font-size: clamp(22px, 3.6vw, 28px); line-height: 1.2; margin: 0 0 6px; font-weight: 600; text-wrap: balance; }
+h3 { font-size: 16px; margin: 0 0 4px; font-weight: 600; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 66ch; }
+.sub { color: var(--muted); max-width: 70ch; margin-bottom: 16px; }
+section { scroll-margin-top: 16px; }
+nav.index { display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--font-mono); font-size: 13px; padding: 12px 0; border-block: 1px solid var(--line); }
+nav.index a { color: var(--accent); text-decoration: none; }
+nav.index a:hover { text-decoration: underline; }
+.answer { background: var(--accent-soft); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+.answer b { font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 14px; color: var(--muted); align-items: center; }
+.chip { display: inline-block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.chip.live { background: var(--accent-soft); color: var(--accent); }
+.chip.part { background: var(--partial-soft); color: var(--partial); }
+.chip.plan { background: var(--planned-soft); color: var(--planned); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.fact { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fact b { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.fact span { color: var(--muted); font-size: 14px; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; overflow-x: auto; }
+.box pre.mermaid { margin: 0; display: flex; justify-content: center; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+th { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 600; white-space: nowrap; }
+td.num { font-variant-numeric: tabular-nums; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.card ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; color: var(--muted); }
+.card p { color: var(--muted); }
+code, pre.code { font-family: var(--font-mono); font-size: 13px; }
+pre.code { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; overflow-x: auto; margin: 0; line-height: 1.5; }
+.stack { display: flex; flex-direction: column; gap: 8px; }
+.note { color: var(--muted); font-size: 14px; margin-top: 10px; max-width: 74ch; }
+.rules { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.rules li::marker { color: var(--accent); }
+.mock { border: 1px dashed var(--planned); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 12px; background: var(--surface); }
+.mock .bar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; align-items: baseline; }
+.mock .bar b { font-weight: 600; }
+.mock .tablewrap { border: 1px solid var(--line); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.kpi { border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; min-width: 0; }
+.kpi b { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.kpi span { color: var(--muted); font-size: 13px; }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 14px; }
+html,body{margin:0}
+*,*::before,*::after{box-sizing:border-box}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Architecture and flow · 15 Oct 2026 · checked against the code and deploy pipelines · confidential</div>
+    <h1>How TheInterviewChair.com is built</h1>
+    <p class="lede">The whole flow, the technology under it, how it is secured and shipped, and where the agent layer goes next. Every item is marked as live, partly built or planned, so nothing here is described as finished when it is not.</p>
+  </header>
+
+  <nav class="index" aria-label="Sections">
+    <a href="#answer">Where it runs</a>
+    <a href="#system">System</a>
+    <a href="#stack">Stack</a>
+    <a href="#flows">Flows</a>
+    <a href="#backend">Backend design</a>
+    <a href="#data">Data</a>
+    <a href="#security">Security</a>
+    <a href="#delivery">Delivery</a>
+    <a href="#scale">Scale</a>
+    <a href="#agents">Agents</a>
+    <a href="#dashboard">Agent dashboard</a>
+    <a href="#roadmap">Roadmap</a>
+    <a href="#gaps">Gaps</a>
+  </nav>
+
+  <section id="answer">
+    <div class="answer">
+      <b>Is it running on a box at home? No.</b>
+      <p>Everything runs on Microsoft Azure. Five web front ends sit on Azure Static Web Apps, one .NET 10 backend sits on Azure App Service, data sits in Azure SQL, Cosmos DB and Blob Storage, and every change goes live through automated GitHub Actions pipelines.</p>
+    </div>
+    <div class="legend" style="margin-top:14px">
+      <span><span class="chip live">Live</span> running in production</span>
+      <span><span class="chip part">Partly built</span> some of it works today</span>
+      <span><span class="chip plan">Planned</span> design only, not built</span>
+    </div>
+  </section>
+
+  <section aria-label="At a glance">
+    <div class="facts">
+      <div class="fact"><b>6</b><span>web front ends: candidate, recruiter, employer, admin, marketing site, Explain hub</span></div>
+      <div class="fact"><b>40+</b><span>backend feature slices in one .NET API</span></div>
+      <div class="fact"><b>11</b><span>automated deploy pipelines</span></div>
+      <div class="fact"><b>3</b><span>data stores, each used for what it does best</span></div>
+      <div class="fact"><b>32</b><span>languages in the live demo</span></div>
+    </div>
+  </section>
+
+  <section id="system">
+    <h2>The system on one page</h2>
+    <p class="sub">The browser never talks to an AI or voice provider directly. Every call goes through the backend, which holds the keys and applies limits. That is the single most important rule in the codebase.</p>
+    <div class="box">
+<pre class="mermaid">
+flowchart LR
+  subgraph People["People"]
+    CAN["Candidates"]
+    REC["Recruiters"]
+    EMP["Employers"]
+    STAFF["Staff admin"]
+  end
+  subgraph FE["Front ends - Azure Static Web Apps"]
+    MKT["Marketing site"]
+    CP["Candidate portal"]
+    RP["Recruiter portal"]
+    EP["Employer portal"]
+    AP["Admin portal"]
+  end
+  subgraph BE["Backend - Azure App Service"]
+    API["Explain.Api - .NET 10 Minimal APIs"]
+    BG["Background services - emails, archiving, clean-up"]
+  end
+  subgraph DATA["Data"]
+    SQL["Azure SQL - accounts, billing, permissions"]
+    COS["Cosmos DB - interviews, profiles, lessons, alerts"]
+    BLOB["Blob Storage - video, audio cache, CV files"]
+  end
+  subgraph AIP["AI and voice providers"]
+    MR["Azure AI Foundry Model Router"]
+    WH["OpenAI Whisper - speech to text"]
+    EL["ElevenLabs - interviewer voices"]
+    SP["Spatius - live talking faces"]
+  end
+  subgraph OTH["Platform services"]
+    ST["Stripe - payments"]
+    ACS["Azure Communication Services - email"]
+    AIN["Application Insights - telemetry"]
+  end
+  AGT["Azure Functions - data agents"]
+  CAN --> CP
+  CAN --> MKT
+  REC --> RP
+  EMP --> EP
+  STAFF --> AP
+  CP --> API
+  RP --> API
+  EP --> API
+  AP --> API
+  MKT --> API
+  API --> SQL
+  API --> COS
+  API --> BLOB
+  API --> MR
+  API --> WH
+  API --> EL
+  API --> SP
+  API --> ST
+  API --> ACS
+  API --> AIN
+  BG --> SQL
+  BG --> ACS
+  AGT --> COS
+  AGT --> MR
+</pre>
+    </div>
+  </section>
+
+  <section id="stack">
+    <h2>Technology stack</h2>
+    <p class="sub">Chosen to be mainstream, hireable and Microsoft-first, because that is where the founder's 25 years sit and where a buyer's engineers will feel at home.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Layer</th><th>Technology</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Front ends</td><td>React 19, TypeScript 5.9, Vite 8, Tailwind CSS v4, Framer Motion 12, React Router 7</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Backend</td><td>.NET 10, ASP.NET Core Minimal APIs, MediatR, FluentValidation, EF Core</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Auth</td><td>JWT bearer tokens, BCrypt password hashing, permission policies loaded per user, multi-organisation accounts</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Relational data</td><td>Azure SQL serverless (accounts, subscriptions, billing, permissions, audit logs)</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Document data</td><td>Azure Cosmos DB serverless (interviews, profiles, lessons, alerts, careers)</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Files</td><td>Azure Blob Storage, private containers, per-request SAS links</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>AI reasoning</td><td>Azure AI Foundry Model Router: picks from 20+ models per request with automatic failover</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Voice and faces</td><td>ElevenLabs text to speech (cached), OpenAI Whisper transcription, Spatius real-time lip-synced faces</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Payments and email</td><td>Stripe (live), Azure Communication Services</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Documents</td><td>QuestPDF for certificates and question packs, PdfPig for CV reading, QR codes on certificates</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Background agents</td><td>Azure Functions (C# isolated worker): careers and exam catalogue agents on timers</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Telemetry</td><td>Application Insights plus a first-party activity log and visitor funnel in the admin portal</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Analytics store</td><td>Azure Data Lake Gen2 for analytics and AI training data</td><td><span class="chip plan">Planned</span></td></tr>
+          <tr><td>Mobile apps</td><td>Native iOS and Android, most likely a retrofit of an existing Expo app</td><td><span class="chip plan">Planned</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="flows">
+    <h2>The flows</h2>
+    <p class="sub">Two flows matter: the candidate's journey from stranger to returning user, and what the platform does inside a single spoken interview.</p>
+
+    <h3>Product flow</h3>
+    <div class="box" style="margin-bottom:24px">
+<pre class="mermaid">
+flowchart LR
+  V["Visitor on the homepage"] --> T["Try it live - 3 questions, no sign-up"]
+  T --> RS["Scored result and path to a pass"]
+  RS --> REG["Register"]
+  REG --> FI["Full interview with chosen interviewers"]
+  FI --> VER["Score, verdict and certificate"]
+  VER --> LN["Learn - short lessons on weak spots"]
+  LN --> AL["Learn Alerts - practice questions by email"]
+  VER --> SH["Share, or opt in to be found"]
+  SH --> CS["Recruiters and employers search opted-in candidates"]
+  RB["Recruiter books an interview"] --> PL["Sends a prep link"]
+  PL --> FI
+</pre>
+    </div>
+
+    <h3>One practice interview, request by request</h3>
+    <div class="box">
+<pre class="mermaid">
+sequenceDiagram
+  participant B as Candidate browser
+  participant A as Explain.Api
+  participant M as Model Router
+  participant V as ElevenLabs
+  participant F as Spatius
+  participant W as Whisper
+  participant D as Cosmos and Blob
+  B->>A: Start interview with role, CV or company
+  A->>M: Generate the questions
+  M-->>A: Questions
+  A-->>B: Session ready
+  B->>A: Speak this question
+  A->>V: Text to speech, cached in Blob
+  V-->>A: Audio
+  A-->>B: Audio
+  B->>A: Request a face token
+  A->>F: Mint a short-lived token
+  F-->>A: Token
+  A-->>B: Token, API key stays on the server
+  B->>F: Live face, lip-synced to the audio
+  B->>A: Candidate's spoken answer
+  A->>W: Transcribe
+  W-->>A: Text
+  A->>M: Score the answer and coach it
+  M-->>A: Score and feedback
+  A->>D: Save interview, scores and verdict
+  A-->>B: Feedback, then the next question
+</pre>
+    </div>
+    <p class="note">Anonymous visitors take the same path with a ticket-guarded demo endpoint, a daily cap per visitor, and burst limits, because every demo costs real money.</p>
+  </section>
+
+  <section id="backend">
+    <h2>Backend design</h2>
+    <p class="sub">A vertical-slice backend: each feature owns its endpoint, request handler, validation and data access in one folder, so a feature can be understood, changed or removed without touching the rest.</p>
+    <div class="cols">
+      <div class="card">
+        <h3>Patterns in use</h3>
+        <ul>
+          <li>Vertical slices: one folder per feature under <code>Features/</code></li>
+          <li>CQRS-style handlers through MediatR</li>
+          <li>FluentValidation on every request</li>
+          <li>A <code>Result&lt;T&gt;</code> type that maps to HTTP status codes in one place</li>
+          <li>Permission policies, not role strings, guard each endpoint</li>
+          <li>Rate limiting on every public route</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Domain-driven design, plainly</h3>
+        <p>The domain layer is small and pragmatic: entities for users, profiles and search events, with business rules sitting in the feature handlers beside them. It follows DDD's language and boundaries, but it is not a textbook aggregate-and-repository build, and I would not describe it as one.</p>
+      </div>
+      <div class="card">
+        <h3>Background services</h3>
+        <ul>
+          <li>Learn Alerts email sender</li>
+          <li>Exam catalogue refresh</li>
+          <li>Events archive and login-history retention</li>
+          <li>Unverified-account clean-up</li>
+          <li>Legacy session-pass import</li>
+        </ul>
+      </div>
+    </div>
+<pre class="code" style="margin-top:14px">Explain.Api/
+  Program.cs            composition root, auth, CORS, AI proxy
+  Common/               Result, token service, permission policies
+  Domain/               Auth, Profile, Search entities
+  Features/             40+ slices: Interviews, TryOut, Learn, LearnAlerts, CvAnalysis,
+                        Billing, Entitlements, InterviewPreps, CandidateSearch,
+                        Routines, Talks, QuestionBank, ClientGifts, Interviewers ...
+  Infrastructure/       Cosmos, Sql, Storage, Email, Geo, RateLimiting, Anthropic</pre>
+  </section>
+
+  <section id="data">
+    <h2>Where data lives</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Store</th><th>Holds</th><th>Why this store</th></tr></thead>
+        <tbody>
+          <tr><td>Azure SQL</td><td>Users, organisations, subscriptions, billing, permissions, audit logs, login history</td><td>Relational and transactional: money and permissions must be exact</td></tr>
+          <tr><td>Cosmos DB</td><td>Candidate profiles, interviews and scores, lessons, alerts, careers, question banks, routines</td><td>Document-shaped, read as a whole, and scales per request</td></tr>
+          <tr><td>Blob Storage</td><td>Recorded answers, cached interviewer audio, CV files, profile images</td><td>Large files, private containers, short-lived signed links only</td></tr>
+          <tr><td>Data Lake Gen2</td><td>Analytics and anonymised training data</td><td>Later phase, once volume justifies it</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="security">
+    <h2>Security and privacy</h2>
+    <div class="cols">
+      <div class="card">
+        <h3>Keys and calls</h3>
+        <ul>
+          <li>No third-party API key ever ships to a browser</li>
+          <li>Every AI, voice, face and transcription call passes through the backend</li>
+          <li>Short-lived tokens for live faces, minted server side</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Access</h3>
+        <ul>
+          <li>JWT authentication with per-permission endpoint policies</li>
+          <li>Brute-force lockout on login</li>
+          <li>Explicit CORS allowlists on the API and on storage</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>People's data</h3>
+        <ul>
+          <li>Private by default: candidates choose if and when to be found</li>
+          <li>Private blob containers, signed links per request</li>
+          <li>Account deletion and consent-based email lists</li>
+          <li>The CV analyser does not keep the uploaded CV</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">The legal operator is Francis Cobbinah, trading as TheInterviewChair.com, with a UK trade mark application filed on 10 Oct 2026.</p>
+  </section>
+
+  <section id="delivery">
+    <h2>Delivery and observability</h2>
+    <div class="cols">
+      <div class="card">
+        <h3>Commit to live</h3>
+        <p>Each portal and the API has its own GitHub Actions pipeline that builds and deploys to Azure on push. Type checks and .NET builds gate each change. There is no manual server step.</p>
+      </div>
+      <div class="card">
+        <h3>See what is happening</h3>
+        <p>Application Insights records exceptions and requests. The admin portal has an Activity Log with a visitor funnel, sources by campaign tag, a "pages opened" table, likely-robot labelling and a Subjects view of what people practise on.</p>
+      </div>
+      <div class="card">
+        <h3>Cost visibility</h3>
+        <p>Serverless data stores and a right-sized API plan mean spend tracks usage. Provider calls are metered per interview, so the cost of one practice session is a known number.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="scale">
+    <h2>Scaling, honestly</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Part</th><th>Today</th><th>When load grows</th></tr></thead>
+        <tbody>
+          <tr><td>Front ends</td><td>Static Web Apps on a CDN</td><td>Scale themselves</td></tr>
+          <tr><td>API</td><td>One App Service instance, right-sized for current traffic</td><td>Scale up or add instances: a setting, not a rebuild</td></tr>
+          <tr><td>Cosmos and SQL</td><td>Serverless, pay per use</td><td>Autoscale to a ceiling, then provisioned throughput</td></tr>
+          <tr><td>AI reasoning</td><td>Model Router with failover across providers</td><td>Quota increases, already applied for and granted at the next tier</td></tr>
+          <tr><td>Speech to text</td><td>OpenAI Whisper, single provider</td><td>Add a second provider behind the same endpoint</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="agents">
+    <h2>The agent layer</h2>
+    <p class="sub">The plan is one agent per subscribing candidate, and one per recruiter and employer, each working for its person around the clock. Two data agents are live today. The per-person agents are a design, and are labelled that way.</p>
+
+    <div class="tablewrap" style="margin-bottom:24px">
+      <table>
+        <thead><tr><th>Agent</th><th>What it does</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Careers agent</td><td>Discovers new careers twice daily, updates salary data weekly, re-enriches quarterly, and takes "missing career" reports</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Exam catalogue agent</td><td>Searches, adds and reports missing certifications and exams</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Learn Alerts</td><td>Sends each candidate spaced-repetition practice questions by email, on a schedule they choose</td><td><span class="chip part">Partly built</span></td></tr>
+          <tr><td>Guardian Angel coach</td><td>Reads each answer and says what worked and what to sharpen</td><td><span class="chip part">Partly built</span></td></tr>
+          <tr><td>Candidate agent</td><td>Knows the candidate's target role, weak spots and interview dates, plans their practice, nudges them, and tells them when they are ready</td><td><span class="chip plan">Planned</span></td></tr>
+          <tr><td>Recruiter agent</td><td>Sends a prep link when an interview is booked, chases, and reports how each candidate practised and scored</td><td><span class="chip plan">Planned</span></td></tr>
+          <tr><td>Employer agent</td><td>Shortlists opted-in candidates by demonstrated performance and keeps them warm</td><td><span class="chip plan">Planned</span></td></tr>
+          <tr><td>Company operations agents</td><td>Daily cost and security watch, funnel digest, competitor and price watch, support triage</td><td><span class="chip plan">Planned</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>How the agent layer plugs in</h3>
+    <div class="box" style="margin-bottom:24px">
+<pre class="mermaid">
+flowchart TB
+  subgraph AG["Agents - planned"]
+    CA["Candidate agent, one per subscriber"]
+    RA["Recruiter agent"]
+    EA["Employer agent"]
+    OA["Company operations agents"]
+  end
+  CTRL["Control plane - registry, schedules, budgets, approvals, kill switch"]
+  TOOLS["Tools - the existing Explain.Api endpoints"]
+  MR["Model Router"]
+  MEM["Cosmos - agent memory and run log"]
+  DASH["Agent dashboard for staff"]
+  USER["The person the agent works for"]
+  CA --> CTRL
+  RA --> CTRL
+  EA --> CTRL
+  OA --> CTRL
+  CTRL --> TOOLS
+  CTRL --> MR
+  CTRL --> MEM
+  MEM --> DASH
+  CTRL --> USER
+</pre>
+    </div>
+
+    <h3>Rules the agents run under</h3>
+    <ol class="rules">
+      <li><b>Agents use tools, they do not own systems.</b> An agent can only do what an existing API endpoint allows, with that person's permissions.</li>
+      <li><b>No agent holds a provider key.</b> Reasoning goes through the Model Router on the backend, the same as every other AI call.</li>
+      <li><b>Anything that leaves the building needs approval.</b> Emails and messages to third parties are drafted, then approved by the person or by a rule they set.</li>
+      <li><b>Every run is logged.</b> Input, tools called, output, tokens and cost, so any action can be explained afterwards.</li>
+      <li><b>Every agent has a budget and a kill switch.</b> Daily token and cost caps per agent, and one switch to pause a person's agent or all agents.</li>
+      <li><b>Depth follows the plan.</b> What an agent does for a candidate can map to subscription tiers, so Standard and Premium are different amounts of agent help.</li>
+    </ol>
+  </section>
+
+  <section id="dashboard">
+    <h2>The agent dashboard</h2>
+    <p class="sub">A staff page that extends today's Activity Log, so you see what every agent did, what it cost, and what is waiting for approval. This is a mock-up with example figures, not live data.</p>
+    <div class="mock" role="group" aria-label="Mock-up of the agent dashboard, example data">
+      <div class="bar"><b>Agent activity, last 24 hours</b><span class="chip plan">Mock-up · example data</span></div>
+      <div class="kpis">
+        <div class="kpi"><b>128</b><span>agent runs</span></div>
+        <div class="kpi"><b>9</b><span>waiting for approval</span></div>
+        <div class="kpi"><b>£1.84</b><span>model spend</span></div>
+        <div class="kpi"><b>2</b><span>paused by budget cap</span></div>
+        <div class="kpi"><b>0</b><span>errors</span></div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Time</th><th>Agent</th><th>For</th><th>Action</th><th>State</th></tr></thead>
+          <tbody>
+            <tr><td class="num">07:02</td><td>Candidate agent</td><td>Subscriber 4412</td><td>Planned today's practice: 2 weak areas, 1 mock interview</td><td><span class="chip live">Done</span></td></tr>
+            <tr><td class="num">07:15</td><td>Recruiter agent</td><td>Recruiter seat 12</td><td>Drafted prep-link message for an interview booked at 14:00</td><td><span class="chip part">Needs approval</span></td></tr>
+            <tr><td class="num">08:40</td><td>Operations agent</td><td>Company</td><td>Daily funnel digest: visits, demos started, sign-ups</td><td><span class="chip live">Done</span></td></tr>
+            <tr><td class="num">09:10</td><td>Candidate agent</td><td>Subscriber 3077</td><td>Nudge: interview tomorrow, no practice in 6 days</td><td><span class="chip part">Needs approval</span></td></tr>
+            <tr><td class="num">11:32</td><td>Operations agent</td><td>Company</td><td>Cost watch: one provider's spend up 40% on yesterday</td><td><span class="chip live">Flagged</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="roadmap">
+    <h2>Build order for the agents</h2>
+    <p class="sub">Low-risk, internal first, so the control plane is proven before an agent ever speaks to a customer.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Phase</th><th>What gets built</th><th>Why in this order</th></tr></thead>
+        <tbody>
+          <tr><td>1. Operations</td><td>Control plane, run log and dashboard; cost, security and funnel-digest agents</td><td>Nothing customer-facing, and it tests the logging and budget caps</td></tr>
+          <tr><td>2. Candidate</td><td>Candidate agent: daily plan, nudges before interview dates, readiness call</td><td>Largest audience, and it builds on Learn Alerts and My Routines</td></tr>
+          <tr><td>3. Recruiter</td><td>Recruiter agent: send prep links, chase, outcome report</td><td>The revenue line, once candidate agents are trusted</td></tr>
+          <tr><td>4. Employer</td><td>Employer agent: shortlists from opted-in candidates</td><td>Needs enough opted-in candidate data to be useful</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="gaps">
+    <h2>What is not built yet</h2>
+    <div class="cols">
+      <div class="card">
+        <h3>Product</h3>
+        <ul>
+          <li>Jobs and Messaging are shown as coming soon and use sample data</li>
+          <li>The signed-in portal is best on a laptop or tablet, and phone support is improving</li>
+          <li>No native mobile app yet</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Engineering</h3>
+        <ul>
+          <li>Per-person agents, the control plane and the dashboard are design only</li>
+          <li>Speech to text depends on one provider</li>
+          <li>Data Lake analytics is a later phase</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Business</h3>
+        <ul>
+          <li>Sole trader today, with no company yet</li>
+          <li>Recruiter pilot offered, none yet running</li>
+          <li>Go-to-market and distribution at scale are the next big build</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>Checked against the repository and deploy pipelines on 15 Oct 2026. Figures are counted from the code and are not marketing claims. The agent dashboard shown above is a mock-up.</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+  if (window.mermaid) {
+    var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    mermaid.initialize({ startOnLoad: true, theme: dark ? "dark" : "default", securityLevel: "strict", flowchart: { useMaxWidth: true }, sequence: { useMaxWidth: true } });
+  }
+</script>
+</body>
+</html>

@@ -48,6 +48,11 @@
       "route": "/pitch-deck",
       "rewrite": "/pitch-deck.html",
       "headers": { "X-Robots-Tag": "noindex, nofollow" }
+    },
+    {
+      "route": "/architecture",
+      "rewrite": "/architecture.html",
+      "headers": { "X-Robots-Tag": "noindex, nofollow" }
     }
   ],
   "navigationFallback": {
