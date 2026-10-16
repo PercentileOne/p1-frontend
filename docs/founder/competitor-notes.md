@@ -8,9 +8,9 @@ A running list of what we have actually seen of other interview-practice product
 
 - **What Francis did:** started a "Software Engineer interview" with an interviewer called "Michael AI" on `www.interviewpractice.com`, while signed in.
 - **What the screen showed:** two tiles, one for the AI and one for the candidate, and a Stop Interview button. The AI tile was a grey circle with the broken-image text "user's profile image", the label "AI is thinking", and no face, lips or reaction.
-- **Result:** still on "AI is thinking" after about half an hour. This was one run, so it shows that this run failed, not that the product is poor overall.
-- **To do if worth it:** repeat once and try a second role, then record the questions, voice, feedback, scoring and price. Send what you see and Claude will set it side by side with ours.
-- **How sure:** one screenshot, one session. Not enough to say anything public about it.
+- **Result:** still on "AI is thinking" after about half an hour. Francis ran it **three times and got the same result each time**, so this is repeatable from his account and browser, not a one-off.
+- **Still unknown:** whether it also fails for other people, browsers or roles (a microphone or region issue on our side is unlikely after three identical runs, but not ruled out). If it matters, try a second role or browser and record the questions, voice, feedback, scoring and price.
+- **How sure:** three identical runs by one person. Good enough for our own notes and for saying in conversation "I tried it three times and it never got past thinking". Not enough to publish a claim about the product.
 
 ### Top 3 data-science prep platforms (6 Oct 2026)
 
