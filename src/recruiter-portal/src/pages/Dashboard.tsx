@@ -237,7 +237,7 @@ export default function Dashboard() {
             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>{USER.fullName}</div>
             <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{USER.role}</div>
           </div>
-          <button onClick={() => { signOut(); window.location.href = 'https://www.interviewme.global/login' }} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', fontSize: 16 }} title="Sign out">⇥</button>
+          <button onClick={() => { signOut(); window.location.href = '/login' }} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', fontSize: 16 }} title="Sign out">⇥</button>
         </div>
       </aside>
 
