@@ -71,6 +71,23 @@ A ranked list of the best subjects for each profession. Questions of the day, po
 
 This also fits the micro-subjects idea: people search for and share narrow subjects, and each subject becomes a thing the feed can show.
 
+### General subjects (not tied to a profession)
+
+Success and learning content that suits everyone matters as much as profession content, so it has its own list. Starter set:
+
+- pitching and funding stories (the Shark Tank and Dragons' Den kind): pitch moments, how deals get made, what investors ask
+- "turned down, then built a huge company": stories of rejection and persistence
+- founder and builder stories
+- interview confidence and nerves
+- habits, routines and focus (ties to My Routines)
+- learning how to learn
+- public speaking and storytelling
+- changing career
+
+These are shown to everyone, ranked by each person's own likes and saves and not by their profession, and they take a share of every feed. The same pipeline applies: official clips by embed, facts checked against named sources, everything labelled.
+
+**Software and Cloud is the first profession.** Draft 1 of its subject map is in `subject-map-software-and-cloud.md`.
+
 ## 5. Videos
 
 **What LinkedIn does, and why it looks different.** Most videos on LinkedIn are uploaded directly to LinkedIn by people, pages and media brands. They are played in LinkedIn's own player: autoplay on scroll, muted, captioned, cropped for the feed. That look is a player and layout choice, not a different source. LinkedIn does not offer a library of its videos for other sites to use, and copying from it is against its terms, so we cannot take videos "from where LinkedIn gets them".
@@ -137,7 +154,7 @@ For staff, extending the Activity Log:
 
 ## 10. Build order
 
-1. **Small start:** the Question of the Day, the subject map for three career areas, books and courses for those subjects, the approval queue, and a simple feed on WORK.
+1. **Small start:** the Question of the Day, the subject map starting with Software and Cloud plus a starter set of general subjects, books and courses for those subjects, the approval queue, and a simple feed on WORK.
 2. **Add:** videos and news.
 3. **Add:** per-person ranking and the learning loop.
 4. **Add:** the agent dashboard and the agent message log, then auto-publish for safe types.
@@ -146,7 +163,7 @@ For staff, extending the Activity Log:
 ## 11. Open questions
 
 - Who reviews the subject lists for professions outside software?
-- Which three career areas first? (Suggestion: software and cloud, since Francis can judge the quality.)
+- Software and Cloud is first (decided 17 Oct 2026). Which two professions next? (Suggestion: software and cloud, since Francis can judge the quality.)
 - Which book database and which video sources, after reading their terms.
 - Where the feed sits in the WORK tab, and the exact Dashboard card.
 - Daily budget for the agents.
