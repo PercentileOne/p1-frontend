@@ -28,11 +28,14 @@ The feed solves the cold start. With no users there are no user posts, so the fi
 | Admin portal | for the approval queue and dashboard |
 | Video feed idea (Aug 2026) | YouTube no-cookie embeds in a custom player, per-portal playlists |
 | Profile skills and career | candidate profile in Cosmos |
+| Question engine | Learn Alerts: a timer in the API writes a multiple-choice question per person, emails it with a secure answer link, records the result and spaces repeats |
+| What people practise on | Admin portal Subjects page (finished demos and full interviews per job title) |
 
 ## 4. Content types and sources
 
 | Type | Source | How it is kept honest |
 |---|---|---|
+| Question of the Day | The Learn Alerts engine, topic taken from the person's career and skills | Questions come from our own generator and are labelled as ours |
 | Books | A book database (title, author, ISBN, cover) | The verifier confirms each book exists, so none are invented |
 | Courses | Real links (for example Microsoft Learn and free courses) | Links checked; affiliate links disclosed if ever used |
 | Videos | Official channels via embeds (see section 5) | Embed only where the owner allows it; never re-host |
@@ -41,6 +44,32 @@ The feed solves the cold start. With no users there are no user posts, so the fi
 | "Skipped, then succeeded" stories | Reputable articles and official clips | The verifier checks every claim against a named source |
 | Platform content | Question of the day, Learn lessons, interview tips | Labelled as ours |
 | User success posts | Real users, opted in | Later phase |
+
+### Question of the Day (the first content type)
+
+It reuses the Learn Alerts engine, so most of it is already built. Needing no outside sources and no rights checks, it works on day one with no users.
+
+| | Learn Alerts today | Question of the Day |
+|---|---|---|
+| Topic | The person creates it | Picked from their career, their skills and their weak spots |
+| Where it appears | Email | A card in the feed on WORK, with an optional email |
+| How often | On the person's schedule | One a day |
+| Answering | Click a link in the email | Tap in the feed card |
+
+Ideas to add: a **streak** ("7 days in a row", tied to My Routines), and a **spoken version**, an interview question of the day answered out loud to one of the interviewers and scored.
+
+### Subject map: the list everything is built from
+
+A ranked list of the best subjects for each profession. Questions of the day, posts, books, courses and videos are all made from this list, so the feed is never random and the cost per subject is known.
+
+1. **Professions** come from the careers catalogue and from the job titles people actually practise on.
+2. **AI proposes** the top subjects for each profession: core skills and the topics interviewers ask about.
+3. **Real data weights them:** what our users practise on (the admin Subjects page), and public occupational skills datasets, which are candidates to check for licence and fit (for example O*NET and ESCO).
+4. **A person reviews the first lists.** Francis can judge software and cloud; other professions need a reviewer or a trusted source. After that, an agent proposes a monthly refresh for approval.
+5. **Stored** as a `subjects` container: profession, subject, weight, why it matters, sources, last reviewed.
+6. **Looping:** the curator agent works down each profession's subjects in turn, so every profession gets coverage and the most valuable subjects get the most content.
+
+This also fits the micro-subjects idea: people search for and share narrow subjects, and each subject becomes a thing the feed can show.
 
 ## 5. Videos
 
@@ -108,7 +137,7 @@ For staff, extending the Activity Log:
 
 ## 10. Build order
 
-1. **Small start:** books and courses for three career areas, the approval queue, and a simple feed on WORK.
+1. **Small start:** the Question of the Day, the subject map for three career areas, books and courses for those subjects, the approval queue, and a simple feed on WORK.
 2. **Add:** videos and news.
 3. **Add:** per-person ranking and the learning loop.
 4. **Add:** the agent dashboard and the agent message log, then auto-publish for safe types.
@@ -116,6 +145,7 @@ For staff, extending the Activity Log:
 
 ## 11. Open questions
 
+- Who reviews the subject lists for professions outside software?
 - Which three career areas first? (Suggestion: software and cloud, since Francis can judge the quality.)
 - Which book database and which video sources, after reading their terms.
 - Where the feed sits in the WORK tab, and the exact Dashboard card.
