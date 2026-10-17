@@ -53,6 +53,11 @@
       "route": "/architecture",
       "rewrite": "/architecture.html",
       "headers": { "X-Robots-Tag": "noindex, nofollow" }
+    },
+    {
+      "route": "/feed-spec",
+      "rewrite": "/feed-spec.html",
+      "headers": { "X-Robots-Tag": "noindex, nofollow" }
     }
   ],
   "navigationFallback": {

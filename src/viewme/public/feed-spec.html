@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TheInterviewChair.com agent-driven feed spec</title>
+<meta name="description" content="Draft design for a personal, agent-curated feed: content sources, videos, architecture, dashboard and build order. Confidential.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script src="/track.js?v=2"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; a rule box first, then diagram, tables and cards that scroll inside their own boxes. */
+:root {
+  --bg: #f5f7f6; --surface: #ffffff; --fg: #11201a; --muted: #55655d; --line: #d7dfdb;
+  --accent: #047857; --accent-soft: #dcf3ea; --partial: #8a5a00; --partial-soft: #fbefd2;
+  --planned: #5b3fc4; --planned-soft: #e8e2fb;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1511; --surface: #12211b; --fg: #e6efea; --muted: #9bb0a6; --line: #25382f;
+    --accent: #34d399; --accent-soft: #0f3326; --partial: #f2c35b; --partial-soft: #33290d;
+    --planned: #b7a5ff; --planned-soft: #241d45; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1511; --surface: #12211b; --fg: #e6efea; --muted: #9bb0a6; --line: #25382f;
+  --accent: #34d399; --accent-soft: #0f3326; --partial: #f2c35b; --partial-soft: #33290d;
+  --planned: #b7a5ff; --planned-soft: #241d45; color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 900px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: flex; flex-direction: column; gap: 40px; }
+header { display: flex; flex-direction: column; gap: 8px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1 { font-size: clamp(30px, 6vw, 42px); line-height: 1.1; margin: 0; font-weight: 600; text-wrap: balance; }
+h2 { font-size: clamp(22px, 3.6vw, 28px); line-height: 1.2; margin: 0 0 6px; font-weight: 600; text-wrap: balance; }
+h3 { font-size: 16px; margin: 0 0 4px; font-weight: 600; }
+p { margin: 0; }
+.lede, .sub { color: var(--muted); max-width: 68ch; }
+.sub { margin-bottom: 16px; }
+section { scroll-margin-top: 16px; }
+nav.index { display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--font-mono); font-size: 13px; padding: 12px 0; border-block: 1px solid var(--line); }
+nav.index a { color: var(--accent); text-decoration: none; }
+nav.index a:hover { text-decoration: underline; }
+.rule { background: var(--accent-soft); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 6px; }
+.rule b { font-weight: 600; }
+.chip { display: inline-block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.chip.live { background: var(--accent-soft); color: var(--accent); }
+.chip.part { background: var(--partial-soft); color: var(--partial); }
+.chip.plan { background: var(--planned-soft); color: var(--planned); }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; overflow-x: auto; }
+.box pre.mermaid { margin: 0; display: flex; justify-content: center; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+th { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 600; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.card ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; color: var(--muted); }
+.card p { color: var(--muted); }
+.rules { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.rules li::marker { color: var(--accent); }
+code, pre.code { font-family: var(--font-mono); font-size: 13px; }
+pre.code { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; overflow-x: auto; margin: 0; line-height: 1.5; }
+.note { color: var(--muted); font-size: 14px; margin-top: 10px; max-width: 74ch; }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 14px; }
+html,body{margin:0}
+*,*::before,*::after{box-sizing:border-box}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Spec · draft 1 · 17 Oct 2026 · a design, not a build</div>
+    <h1>The agent-driven feed</h1>
+    <p class="lede">A personal feed on the WORK tab: books, courses, videos, articles and real success stories for each person's career, found and checked by agents, ranked for each person, and improved by what people like.</p>
+  </header>
+
+  <nav class="index" aria-label="Sections">
+    <a href="#rule">The rule</a>
+    <a href="#have">Already built</a>
+    <a href="#content">Content</a>
+    <a href="#qotd">Question of the day</a>
+    <a href="#subjects">Subject map</a>
+    <a href="#video">Videos</a>
+    <a href="#how">How it works</a>
+    <a href="#data">Data</a>
+    <a href="#dash">Dashboard</a>
+    <a href="#guard">Agent rules</a>
+    <a href="#order">Build order</a>
+    <a href="#open">Open questions</a>
+  </nav>
+
+  <section id="rule" aria-labelledby="rule-h">
+    <div class="rule">
+      <b id="rule-h">The one rule: curated, not made up.</b>
+      <p>Agents find, check and summarise real things. They never invent people, quotes, stories or reviews. Everything an agent writes is labelled as curated by TheInterviewChair. Real user success posts join later, only when the user opts in.</p>
+      <p>Why it matters: with no users yet, the first content has to come from outside the platform. Made-up success stories would break trust the first time someone noticed, and UK rules on fake reviews and testimonials are strict.</p>
+    </div>
+  </section>
+
+  <section id="have">
+    <h2>What already exists</h2>
+    <p class="sub">The feed uses pieces you already have, so the first version is smaller than it looks.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Building block</th><th>Where it lives</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Cosmos containers</td><td>The data layer in the API</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Timed agents</td><td>The Careers agent: discovery twice daily, weekly salary update, quarterly re-enrichment</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Careers and salary data</td><td>Careers agent and Careers Explorer</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Reactions and Comments</td><td>Two features already in the API</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>News tile component</td><td>The candidate portal</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Model Router</td><td>Every AI call goes through the backend</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Question engine</td><td>Learn Alerts: a timer in the API writes a question per person, emails a secure answer link, records the result and spaces repeats</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>What people practise on</td><td>The admin Subjects page: finished demos and full interviews per job title</td><td><span class="chip live">Live</span></td></tr>
+          <tr><td>Video player idea</td><td>YouTube embeds in a custom player, from your August plan</td><td><span class="chip plan">Planned</span></td></tr>
+          <tr><td>Feed, ranker, verifier, approval queue, agent dashboard</td><td>New</td><td><span class="chip plan">Planned</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="content">
+    <h2>What goes in the feed</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Type</th><th>Source</th><th>How it stays honest</th></tr></thead>
+        <tbody>
+          <tr><td>Question of the Day</td><td>The Learn Alerts engine, with the topic taken from the person's career and skills</td><td>Questions come from our own generator and are labelled as ours</td></tr>
+          <tr><td>Books</td><td>A book database with title, author, ISBN and cover</td><td>The verifier confirms every book exists, so none are invented</td></tr>
+          <tr><td>Courses</td><td>Real links, such as Microsoft Learn and free courses</td><td>Links checked; affiliate links disclosed if ever used</td></tr>
+          <tr><td>Videos</td><td>Official channels through embeds</td><td>Embed only where the owner allows it; never re-host</td></tr>
+          <tr><td>News and articles</td><td>RSS feeds of reputable sources</td><td>Short summary and a link, no copied text</td></tr>
+          <tr><td>Career success</td><td>Your careers data: salary, growth, skills</td><td>Figures come from the data, not the model</td></tr>
+          <tr><td>"Skipped, then succeeded" stories</td><td>Reputable articles and official clips</td><td>The verifier checks each claim against a named source</td></tr>
+          <tr><td>Platform content</td><td>Question of the day, Learn lessons, interview tips</td><td>Labelled as ours</td></tr>
+          <tr><td>User success posts</td><td>Real users who opt in</td><td>A later phase</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="qotd">
+    <h2>Question of the Day: the first content type</h2>
+    <p class="sub">It reuses the Learn Alerts engine, so most of it is already built. It needs no outside sources and no rights checks, so it works on day one with no users.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>Learn Alerts today</th><th>Question of the Day</th></tr></thead>
+        <tbody>
+          <tr><td>Topic</td><td>The person creates it</td><td>Picked from their career, skills and weak spots</td></tr>
+          <tr><td>Where it appears</td><td>Email</td><td>A card in the feed on WORK, with an optional email</td></tr>
+          <tr><td>How often</td><td>On the person's schedule</td><td>One a day</td></tr>
+          <tr><td>Answering</td><td>Click a link in the email</td><td>Tap in the feed card</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note"><b>Ideas to add.</b> A streak ("7 days in a row", tied to My Routines), and a spoken version: an interview question of the day, answered out loud to one of the interviewers and scored.</p>
+  </section>
+
+  <section id="subjects">
+    <h2>The subject map</h2>
+    <p class="sub">A ranked list of the best subjects for each profession. Questions of the day, posts, books, courses and videos are all made from it, so the feed is never random and the cost per subject is known.</p>
+    <div class="cols">
+      <div class="card"><h3>1. Professions</h3><p>From the careers catalogue and from the job titles people actually practise on.</p></div>
+      <div class="card"><h3>2. AI proposes</h3><p>The top subjects for each profession: core skills and the topics interviewers ask about.</p></div>
+      <div class="card"><h3>3. Real data weights them</h3><p>What our users practise on (the admin Subjects page), plus public occupational skills datasets, which are candidates to check for licence and fit, for example O*NET and ESCO.</p></div>
+      <div class="card"><h3>4. A person reviews</h3><p>Francis can judge software and cloud. Other professions need a reviewer or a trusted source. After that, an agent proposes a monthly refresh for approval.</p></div>
+      <div class="card"><h3>5. Stored as <code>subjects</code></h3><p>Profession, subject, weight, why it matters, sources, last reviewed.</p></div>
+      <div class="card"><h3>6. Looping</h3><p>The curator agent works down each profession's subjects in turn, so every profession gets coverage and the most valuable subjects get the most content.</p></div>
+    </div>
+    <p class="note">This also fits the micro-subjects idea: people search for and share narrow subjects, and each subject becomes something the feed can show.</p>
+
+    <h2 style="margin-top:28px">General subjects, not tied to a profession</h2>
+    <p class="sub">Success and learning content that suits everyone matters as much as profession content, so it has its own list. These are shown to everyone, ranked by each person's own likes and saves, and they take a share of every feed.</p>
+    <div class="cols">
+      <div class="card"><h3>Starter set</h3><ul><li>Pitching and funding stories, the Shark Tank and Dragons' Den kind</li><li>"Turned down, then built a huge company"</li><li>Founder and builder stories</li><li>Interview confidence and nerves</li><li>Habits, routines and focus</li><li>Learning how to learn</li><li>Public speaking and storytelling</li><li>Changing career</li></ul></div>
+      <div class="card"><h3>Same pipeline</h3><p>Official clips by embed, facts checked against named sources, everything labelled. Ranking comes from each person's own signals and not from their profession.</p></div>
+      <div class="card"><h3>First profession: Software and Cloud</h3><p>Draft 1 of its subject map has 41 subjects in 9 groups, each with a sample interview question. See <code>subject-map-software-and-cloud.md</code>.</p></div>
+    </div>
+  </section>
+
+  <section id="video">
+    <h2>Videos</h2>
+    <p class="sub">Videos like pitch moments and "turned down, then built a huge company" stories are the strongest part of a success feed.</p>
+    <div class="cols">
+      <div class="card">
+        <h3>Where LinkedIn's videos come from</h3>
+        <p>Most are uploaded straight to LinkedIn by people, pages and media brands, then shown in LinkedIn's own player: autoplay on scroll, muted, captioned, cropped for the feed. The look is a player and layout choice, not a different source.</p>
+        <p>LinkedIn offers no library of its videos for other sites, and copying from it breaks its terms, so we can't take videos from where LinkedIn gets them.</p>
+      </div>
+      <div class="card">
+        <h3>What we can do legitimately</h3>
+        <ul>
+          <li>Embed videos from official channels through the official player, where the owner allows it</li>
+          <li>Build our own look (card, progress bar, autoplay on scroll) around the embed, without hiding its controls or branding</li>
+          <li>Use platform-native videos: real users' shared results, with consent</li>
+          <li>Link out to a clip that has no embed, with our own summary</li>
+          <li>Consider licensing later if one source becomes important</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Before building</h3>
+        <ul>
+          <li>Read the current embed terms of each video source</li>
+          <li>Check, channel by channel, that embedding is switched on</li>
+          <li>Tag clips by theme so each person's ranking learns what they respond to</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <h2>How it works</h2>
+    <p class="sub">Content is made per topic and ranked per person. A few hundred topics a few times a day keeps model cost small and predictable, and each person's feed still feels personal.</p>
+    <div class="box">
+<pre class="mermaid">
+flowchart LR
+  SRC["Real sources - book database, official video channels, RSS, careers data"] --> CUR["Curator agent"]
+  CUR --> VER["Verifier agent"]
+  VER --> WRI["Writer agent"]
+  WRI --> Q["Approval queue"]
+  Q --> FI["Feed items in Cosmos"]
+  FI --> RNK["Ranker"]
+  PROF["Profile skills and career"] --> RNK
+  RNK --> FEED["Person's feed on WORK"]
+  FEED --> EV["Events - view, like, save, click, hide"]
+  EV --> LRN["Learning loop"]
+  LRN --> RNK
+  LRN --> CUR
+  CUR -.-> LOG["Agent message log"]
+  VER -.-> LOG
+  WRI -.-> LOG
+  LOG --> DASH["Agent dashboard"]
+</pre>
+    </div>
+    <p class="note"><b>Ranking, first version.</b> Match to the person's skills and career, plus freshness, plus how well the item has done with similar people, plus a little variety so the feed does not narrow. Model re-ranking can come later. <b>Approval.</b> At first Francis approves in batches in the admin portal. Safe types, such as verified books and courses, can auto-publish later with spot checks.</p>
+  </section>
+
+  <section id="data">
+    <h2>Data</h2>
+    <div class="cols">
+      <div class="card">
+        <h3><code>feed-items</code></h3>
+        <ul>
+          <li>type, title, summary, link, source</li>
+          <li>topic, skill and career tags</li>
+          <li>which agent made it, model, tokens, cost</li>
+          <li>verification result and status: draft, approved, published, retired</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><code>feed-events</code></h3>
+        <ul>
+          <li>user, item, event: view, like, save, click, hide</li>
+          <li>time spent and when</li>
+          <li>feeds the learning loop</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><code>agent-runs</code> and <code>agent-messages</code></h3>
+        <ul>
+          <li>each run's input, tools used, output, tokens, cost</li>
+          <li>each message one agent sends another</li>
+          <li>powers the dashboard</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="dash">
+    <h2>The agent dashboard</h2>
+    <p class="sub">A staff page extending the Activity Log.</p>
+    <div class="cols">
+      <div class="card"><h3>Activity</h3><ul><li>Runs per agent, items created, approval rate, errors</li><li>Source health: dead links and rejected items</li></ul></div>
+      <div class="card"><h3>Cost</h3><ul><li>Tokens and cost per agent and per item type</li><li>Spend against a daily budget</li></ul></div>
+      <div class="card"><h3>Learning</h3><ul><li>Engagement by item type and by source</li><li>Current topic and type weights</li></ul></div>
+      <div class="card"><h3>Agent conversations</h3><ul><li>Agents pass work through a queue and every message is logged</li><li>For example: "Curator sent 12 items to Verifier. Verifier rejected 3 for dead links."</li></ul></div>
+      <div class="card"><h3>Control</h3><ul><li>Pause one agent or all agents</li><li>Approve or reject items in batches</li></ul></div>
+    </div>
+  </section>
+
+  <section id="guard">
+    <h2>Rules the agents run under</h2>
+    <ol class="rules">
+      <li>Agents use tools (existing endpoints and the data stores). They do not own systems.</li>
+      <li>No agent holds a provider key. AI calls go through the Model Router on the backend.</li>
+      <li>Every run is logged with its cost, and every agent has a daily budget and a kill switch.</li>
+      <li>Nothing is published without verification, and anything uncertain waits in the approval queue.</li>
+      <li>Personalisation uses only profile and in-product behaviour, is explained to the user, and can be switched off.</li>
+      <li>Everything agent-made is labelled.</li>
+    </ol>
+    <p class="note"><b>Tiers, as a starting idea.</b> Standard: the curated feed ranked by career and skills. Premium: a personal agent with saved reading lists, weekly digests tied to interview dates, and deeper personalisation.</p>
+  </section>
+
+  <section id="order">
+    <h2>Build order</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Phase</th><th>What gets built</th></tr></thead>
+        <tbody>
+          <tr><td>1. Small start</td><td>The Question of the Day, the subject map starting with Software and Cloud plus a starter set of general subjects, books and courses for those subjects, the approval queue, and a simple feed on WORK</td></tr>
+          <tr><td>2. More content</td><td>Videos and news</td></tr>
+          <tr><td>3. Personal</td><td>Per-person ranking and the learning loop</td></tr>
+          <tr><td>4. Control</td><td>Agent dashboard and message log, then auto-publish for safe types</td></tr>
+          <tr><td>5. Community</td><td>Real user success posts, once there are users</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="open">
+    <h2>Open questions</h2>
+    <ul class="rules">
+      <li>Who reviews the subject lists for professions outside software?</li>
+      <li>Software and Cloud is first (decided 17 Oct 2026). Which two professions next?</li>
+      <li>Which book database and which video sources, after reading their terms.</li>
+      <li>Where the feed sits in the WORK tab, and the exact Dashboard card.</li>
+      <li>The agents' daily budget.</li>
+      <li>Which content types may auto-publish, and when.</li>
+      <li>Whether go-to-market work should feed recruiter-side content.</li>
+    </ul>
+  </section>
+
+  <footer>Source of truth: <code>docs/specs/agent-driven-feed.md</code> in the repository. Draft 1, 17 Oct 2026.</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+  if (window.mermaid) {
+    var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    mermaid.initialize({ startOnLoad: true, theme: dark ? "dark" : "default", securityLevel: "strict", flowchart: { useMaxWidth: true } });
+  }
+</script>
+</body>
+</html>
