@@ -32,7 +32,7 @@ A running list of what we have actually seen of other interview-practice product
 ### PracticAI Interview Kits (seen in a LinkedIn post, 17 Oct 2026)
 
 - **What the post says:** 13 role-specific "interview kits" for AI roles (AI engineer, RAG engineer, AI agents, MLOps and others), with 6,400+ answered interview questions, 3,900+ visuals and diagrams, real-world scenarios, system design and trade-off questions, and "questions-only" files for self-assessment.
-- **What it is:** downloadable study material (questions and answers), sold through a link in the post. We saw no price and no spoken practice.
+- **What it is:** study material (questions and answers) offered through a link in the post. We did not see how it is sold, the price, or any spoken practice.
 - **Lesson worth keeping:** its message is "don't prepare for every role, choose your target role", the same idea as our subject map by profession.
 - **How sure:** from the vendor's own post only. We have not seen the product.
 
