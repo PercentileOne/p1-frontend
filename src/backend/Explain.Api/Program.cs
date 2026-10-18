@@ -374,6 +374,7 @@ Explain.Api.Features.RoleActivity.Endpoint.Map(app);
 Explain.Api.Features.SubjectsAdmin.Endpoint.Map(app);
 Explain.Api.Features.Routines.Endpoint.Map(app);
 Explain.Api.Features.Planning.Endpoint.Map(app);
+Explain.Api.Features.QuestionOfTheDay.Endpoint.Map(app);
 Explain.Api.Features.Events.Endpoint.Map(app);
 Explain.Api.Features.Events.Admin.Endpoint.Map(app);
 Explain.Api.Features.SessionPasses.Endpoint.Map(app);

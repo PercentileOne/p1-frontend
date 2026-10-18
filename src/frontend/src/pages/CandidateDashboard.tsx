@@ -10,7 +10,7 @@ import { getTopLearnTopics, type LearnTopicStat } from "../api/learnTopicsApi";
 import {
   LayoutDashboard, User, Video, Briefcase, BookOpen,
   MessageSquare, Settings, LogOut, ChevronRight, ChevronDown, CheckCircle2, Circle, Compass, Gift, Zap,
-  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked, GraduationCap, Wallet, LifeBuoy, House, ListChecks,
+  HeartHandshake, Mic, BellRing, PartyPopper, BookMarked, GraduationCap, Wallet, LifeBuoy, House, ListChecks, Newspaper,
 } from "lucide-react";
 import { getMyEntitlements } from "../api/entitlementsApi";
 import { CvAnalysisModal } from "../components/CvAnalysisModal";
@@ -37,6 +37,7 @@ import { nextInterviewApi, inNextWeek } from "../api/nextInterviewApi";
 import type { NextInterview, NextInterviewInput } from "../api/nextInterviewApi";
 import { localDate } from "../api/routinesApi";
 import RoutinesAndSystemsPage from "./RoutinesAndSystemsPage";
+import WorkFeedPage from "./WorkFeedPage";
 import { HelpHint } from "../components/HelpHint";
 import { CANDIDATE_ARTICLES } from "../help/articles";
 import { logEvent } from "../api/flowLogger";
@@ -63,6 +64,7 @@ const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ??
 const NAV_ITEMS = [
   { Icon: LayoutDashboard, label: "Dashboard", slug: null, zone: "pinned" },
   // Work
+  { Icon: Newspaper, label: "Feed", slug: "feed", zone: "work" },
   { Icon: Video, label: "Job Interviews", slug: "interviews", zone: "work" },
   { Icon: Mic, label: "My Talks", slug: "talks", zone: "work" },
   { Icon: Gift, label: "Interview Preps", slug: "interview-preps", zone: "work" },
@@ -973,8 +975,9 @@ export default function CandidateDashboard() {
         {activeNav === "Demo"           && <DemoPanel />}
         {activeNav === "Settings"       && <SettingsPage />}
         {activeNav === "My Routines"    && <RoutinesAndSystemsPage />}
+        {activeNav === "Feed"           && <WorkFeedPage />}
 
-        {!["My Career Coach", "Learn", "Careers Explorer", "Job Interviews", "Certifications & Exams", "CV Analysis", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Help", "Settings", "My Routines"].includes(activeNav) && <>
+        {!["My Career Coach", "Learn", "Careers Explorer", "Job Interviews", "Certifications & Exams", "CV Analysis", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Help", "Settings", "My Routines", "Feed"].includes(activeNav) && <>
 
         <RoutineTodayCard onOpen={() => navTo("My Routines")} />
 

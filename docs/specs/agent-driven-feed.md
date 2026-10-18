@@ -101,6 +101,8 @@ These are shown to everyone, ranked by each person's own likes and saves and not
 
 **Topics that suit the feed.** Pitch moments, "turned down, then built a huge company" stories, interview advice, career talks. The agents tag these by theme so each person's ranking can learn what they respond to.
 
+**The layout Francis wants (LinkedIn screenshots, 18 Oct 2026).** A horizontal strip under a heading, for example "Seeing opportunity others miss". Each clip is a tall phone-shaped card, one centred and the next peeking in at the edge so people know to swipe; each has a creator name and burned-in captions, and a close button hides the strip. Our version: the same strip on WORK, built after the Question of the Day, filled with official-channel embeds and our own clips (see the rules above). Note that most clips in those screenshots are re-uploads by third-party channels, which we would not embed unless the original owner allows it.
+
 **Checks before building.** Read the current embed terms of each video source, and confirm per channel that embedding is enabled.
 
 ## 6. Architecture
@@ -153,6 +155,8 @@ For staff, extending the Activity Log:
 - **Premium:** a personal agent that saves reading lists, makes weekly digests tied to interview dates, and adds deeper personalisation.
 
 ## 10. Build order
+
+**Status, 18 Oct 2026:** the Question of the Day is built (Feed item on WORK, `Features/QuestionOfTheDay`, card in `QuestionOfTheDayCard.tsx`). The topic comes from the person's own choice, then their active Learn Alert role, job title, role, then dream role. Videos are next.
 
 1. **Small start:** the Question of the Day, the subject map starting with Software and Cloud plus a starter set of general subjects, books and courses for those subjects, the approval queue, and a simple feed on WORK.
 2. **Add:** videos and news.

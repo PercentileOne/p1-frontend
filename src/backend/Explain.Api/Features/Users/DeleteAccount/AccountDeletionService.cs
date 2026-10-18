@@ -49,6 +49,8 @@ public class AccountDeletionService(AppDbContext db, CosmosService cosmos, IConf
         "cvAnalysisUsage",       // /rateLimitKey (= candidate id when signed in)
         "introductions",         // /senderId
         "profile-comments",      // /profileUserId — everything left on their own profile
+        "routines",              // /userId — My Routines template and days
+        "planning",              // /userId — goals, reviews, notes, moods, favourites, next interviews, Question of the Day
     ];
 
     // (container, field that identifies the user, that container's partition key field) — things they created in OTHER people's partitions.

@@ -282,7 +282,7 @@ public static class Endpoint
     // ── Question generation (called by LearnAlertsSendService) ──────────────────────────────
 
     public static async Task<(string Question, List<string> Options, int CorrectIndex)?> GenerateQuestionAsync(
-        AnthropicService anthropic, string jobTitle, string difficulty, List<string> specialFocus, ILogger logger)
+        AnthropicService anthropic, string jobTitle, string difficulty, List<string> specialFocus, ILogger logger, IReadOnlyCollection<string>? avoid = null)
     {
         // Same "narrow toward specific named topics" concept as InterviewPackStart.tsx's Special
         // Focus chips (subject/aliases/tags — see careersApi's own "What's Hot" flow) — here it
@@ -297,6 +297,8 @@ public static class Endpoint
             "Generate ONE multiple-choice interview-knowledge question testing genuine expertise a \"" +
             jobTitle + "\" candidate at \"" + difficulty + "\" difficulty should know.\n" +
             focusLine +
+            // Question of the Day asks about the same topic every day, so it passes its recent questions to keep the next one different.
+            (avoid is { Count: > 0 } ? "Do NOT repeat or closely rephrase any of these recent questions:\n- " + string.Join("\n- ", avoid) + "\n" : "") +
             "Return JSON only, no markdown: {\"question\":\"...\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"answer\":0}\n" +
             "\"answer\" is the INDEX (0-3) of the correct option. Make the three wrong options " +
             "genuinely plausible to someone who half-knows the subject, not obviously silly.";
