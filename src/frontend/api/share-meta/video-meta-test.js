@@ -2,7 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const handler = require('./index.js');
-const { patchMeta, videoIdFrom, videoMeta } = handler.__test;
+const { patchMeta, videoIdFrom, videoMeta, originFrom } = handler.__test;
 
 const SHELL = `<!doctype html><html><head>
 <title>TheInterviewChair.com — The World's First Interview Broadcast Platform</title>
@@ -115,4 +115,37 @@ test('the deployed routing file is valid JSON and sends /watch to share-meta', (
   const route = config.routes.find((r) => r.route === '/watch');
   assert.ok(route, '/watch route missing from public/staticwebapp.config.json');
   assert.equal(route.rewrite, '/api/share-meta/watch');
+});
+
+test('the public address comes from the original request, not the function\'s own internal host', () => {
+  const internal = { host: 'explain-func-abc123.azurewebsites.net' };
+  assert.equal(originFrom({ headers: { ...internal, 'x-ms-original-url': 'https://candidate.theinterviewchair.com/watch?v=x' } }), 'https://candidate.theinterviewchair.com');
+  assert.equal(originFrom({ headers: { ...internal, 'x-forwarded-host': 'candidate.explain.global' } }), 'https://candidate.explain.global');
+  assert.equal(originFrom({ headers: { ...internal } }), 'https://candidate.theinterviewchair.com');          // internal host never used
+  assert.equal(originFrom({ headers: { 'x-forwarded-host': 'evil.example.com' } }), 'https://candidate.theinterviewchair.com');   // not one of ours
+  assert.equal(originFrom({ headers: { 'x-forwarded-host': 'localhost:5173' } }), 'http://localhost:5173');
+  assert.equal(originFrom({}), 'https://candidate.theinterviewchair.com');
+});
+
+test('an empty or failed app shell is never passed on as the page', async () => {
+  const realFetch = global.fetch;
+  const calls = [];
+  global.fetch = async (url) => { calls.push(String(url)); return { ok: true, text: async () => '' }; };
+  const context = { bindingData: { token: 'watch' }, log: Object.assign(() => {}, { error() {}, warn() {} }) };
+  try { await handler(context, { headers: { host: 'internal.azurewebsites.net' }, query: { v: ID } }); } finally { global.fetch = realFetch; }
+  assert.equal(context.res.status, 502);
+  assert.ok(calls.every((u) => u.endsWith('/index.html')));
+});
+
+test('if the first address gives no page, the canonical address is tried', async () => {
+  const realFetch = global.fetch;
+  global.fetch = async (url) => {
+    if (String(url) === 'https://candidate.explain.global/index.html') return { ok: false, text: async () => '' };
+    if (String(url) === 'https://candidate.theinterviewchair.com/index.html') return { ok: true, text: async () => SHELL };
+    return { ok: false, json: async () => ({}) };
+  };
+  const context = { bindingData: { token: 'watch' }, log: Object.assign(() => {}, { error() {}, warn() {} }) };
+  try { await handler(context, { headers: { 'x-forwarded-host': 'candidate.explain.global' }, query: {} }); } finally { global.fetch = realFetch; }
+  assert.equal(context.res.status, 200);
+  assert.match(context.res.body, /<div id="root">/);
 });

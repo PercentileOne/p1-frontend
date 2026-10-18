@@ -8,6 +8,9 @@
 const EXPLAIN_API_URL = process.env.EXPLAIN_API_URL || 'https://explain-api.azurewebsites.net';
 const FALLBACK_IMAGE = 'https://www.theinterviewchair.com/social-card.png';
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
+const CANONICAL_ORIGIN = 'https://candidate.theinterviewchair.com';
+// Only our own candidate-portal addresses (and localhost for development) may be used to fetch the app shell.
+const KNOWN_HOST = /^(candidate\.(theinterviewchair\.com|explain\.global|interviewme\.global)|localhost(:\d+)?)$/i;
 
 function escapeHtml(str) {
   return String(str)
@@ -38,6 +41,19 @@ function patchMeta(html, { title, description, url, image, imageWidth, imageHeig
   html = replaceMetaContent(html, /<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i, d);
   html = replaceMetaContent(html, /<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i, escapeHtml(image));
   return html;
+}
+
+// The public address of the request. Inside the function, `Host` is the function's own internal address, not ours: fetching the app shell from it returned an empty page (found 2026-10-18,
+// the first time a rewrite actually reached this function). Static Web Apps passes the original address in x-ms-original-url, so that is read first, then x-forwarded-host, and the result
+// must be one of our own hosts, otherwise the canonical candidate address is used.
+function originFrom(req) {
+  const headers = (req && req.headers) || {};
+  let host = null;
+  try { host = new URL(headers['x-ms-original-url']).host; } catch { /* no original address */ }
+  if (!host) host = headers['x-forwarded-host'] || headers.host || '';
+  host = String(host).split(',')[0].trim();
+  if (!KNOWN_HOST.test(host)) return CANONICAL_ORIGIN;
+  return /^localhost/i.test(host) ? `http://${host}` : `https://${host}`;
 }
 
 // The video id from /watch?v=…, read from the query or, if the rewrite dropped it, from the original address Static Web Apps passes along. Anything that is not an
@@ -90,15 +106,21 @@ async function patchForVideo(html, req, origin) {
 
 module.exports = async function (context, req) {
   const token = context.bindingData.token;
-  const host = req.headers['x-forwarded-host'] || req.headers.host;
-  const origin = `https://${host}`;
+  const origin = originFrom(req);
 
-  let html;
-  try {
-    const shellRes = await fetch(`${origin}/index.html`);
-    html = await shellRes.text();
-  } catch (err) {
-    context.log.error('share-meta: failed to fetch index.html shell', err);
+  // The app shell. It must really be the page: an empty or error answer would blank the whole site at this address, so it is retried once from the canonical address and otherwise refused.
+  let html = null;
+  for (const base of origin === CANONICAL_ORIGIN ? [origin] : [origin, CANONICAL_ORIGIN]) {
+    try {
+      const shellRes = await fetch(`${base}/index.html`);
+      const text = shellRes.ok ? await shellRes.text() : '';
+      if (text.includes('<html')) { html = text; break; }
+    } catch (err) {
+      context.log.warn(`share-meta: could not fetch the app shell from ${base}`, err);
+    }
+  }
+  if (html === null) {
+    context.log.error('share-meta: failed to fetch index.html shell');
     context.res = { status: 502, body: 'Failed to load app shell' };
     return;
   }
@@ -118,4 +140,4 @@ module.exports = async function (context, req) {
 };
 
 // Exposed for the tests in video-meta-test.js; not used by Azure.
-module.exports.__test = { patchMeta, videoIdFrom, videoMeta, replaceMetaContent, escapeHtml };
+module.exports.__test = { patchMeta, videoIdFrom, videoMeta, replaceMetaContent, escapeHtml, originFrom };
