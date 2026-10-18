@@ -109,13 +109,16 @@ test('videoMeta builds the link without the share tags', () => {
 
 // The routing file that is actually deployed is public/staticwebapp.config.json (the build copies it into dist, which is what the workflows upload).
 // The copy at the project root is NOT deployed, which is how the /shared rewrite there went unnoticed. This keeps /watch in the file that ships.
-test('the deployed routing file is valid JSON and sends /watch to share-meta', () => {
+test('the deployed routing file is valid JSON and sends /watch and /shared/{token} to share-meta', () => {
   const fs = require('node:fs');
   const path = require('node:path');
   const config = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'public', 'staticwebapp.config.json'), 'utf8'));
   const route = config.routes.find((r) => r.route === '/watch');
   assert.ok(route, '/watch route missing from public/staticwebapp.config.json');
   assert.equal(route.rewrite, '/api/share-meta/watch');
+  const shared = config.routes.find((r) => r.route === '/shared/{token}');
+  assert.ok(shared, '/shared/{token} route missing from public/staticwebapp.config.json');
+  assert.equal(shared.rewrite, '/api/share-meta/{token}');
 });
 
 test('the public address comes from the original request, not the function\'s own internal host', () => {
