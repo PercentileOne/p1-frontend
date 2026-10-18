@@ -25,6 +25,7 @@ public static class Endpoint
     public const int MaxInterviews = 50;
     public const int MaxFavourites = 200;
     public const int MaxFavouriteNote = 100;
+    public const int MaxDayNote = 4000;
     public const int MaxInterviewText = 120;
 
     private static readonly string[] Statuses = ["active", "paused", "completed"];
@@ -230,6 +231,38 @@ public static class Endpoint
                 await cosmos.GetContainer("planning").UpsertItemAsync(doc with { days = days, updatedAt = DateTimeOffset.UtcNow.ToString("o") }, new PartitionKey(userId), cancellationToken: ct);
             return Results.Ok(new { ok = true });
         });
+
+        // A free-text note for a day ("Notes for this day" in Routines): one small document per person per day that has a note, stored as plain text so it can be searched
+        // later (a query on type 'daynote' and the text). An empty note removes the document, so days without a note cost nothing.
+        var notes = app.MapGroup("/api/day-notes").RequireAuthorization(Permissions.PracticeInterview).WithTags("DayNotes");
+
+        notes.MapGet("/{date}", async (string date, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            if (!TryDate(date, out var d) || d.Year < 2000 || d.Year > 2100) return Results.BadRequest(new { error = "Use a date like 2026-10-18." });
+            try
+            {
+                var doc = (await cosmos.GetContainer("planning").ReadItemAsync<DayNoteDoc>("daynote:" + date, new PartitionKey(userId), cancellationToken: ct)).Resource;
+                return Results.Ok(new DayNoteReply(date, doc.text));
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { return Results.Ok(new DayNoteReply(date, "")); }
+        });
+
+        notes.MapPut("/{date}", async (string date, DayNoteRequest req, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            if (!TryDate(date, out var d) || d.Year < 2000 || d.Year > 2100) return Results.BadRequest(new { error = "Use a date like 2026-10-18." });
+            var text = Cut((req.text ?? "").Trim(), MaxDayNote);
+            var container = cosmos.GetContainer("planning");
+            if (text.Length == 0)
+            {
+                try { await container.DeleteItemAsync<DayNoteDoc>("daynote:" + date, new PartitionKey(userId), cancellationToken: ct); }
+                catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
+                return Results.Ok(new DayNoteReply(date, ""));
+            }
+            await container.UpsertItemAsync(new DayNoteDoc("daynote:" + date, userId, "daynote", date, text, DateTimeOffset.UtcNow.ToString("o")), new PartitionKey(userId), cancellationToken: ct);
+            return Results.Ok(new DayNoteReply(date, text));
+        });
     }
 
     // ---- shapes (lower-case names on purpose: they are also the stored JSON) ----
@@ -246,6 +279,9 @@ public static class Endpoint
         string? status, string? track, List<MilestoneDto>? milestones, double? targetValue, double? currentValue, string? unit);
     public record UpdateRequest(string? note, double? value, string? date);
 
+    public record DayNoteDoc(string id, string userId, string type, string date, string text, string updatedAt);
+    public record DayNoteReply(string date, string text);
+    public record DayNoteRequest(string? text);
     public record FavouriteDto(string date, string note, string createdAt);
     public record FavouriteDaysDoc(string id, string userId, string type, List<FavouriteDto> days, string updatedAt);
     public record FavouriteReply(string date, string note);

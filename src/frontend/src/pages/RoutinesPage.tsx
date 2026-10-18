@@ -6,6 +6,7 @@ import type { FavouriteDay } from '../api/planningApi';
 import type { AddScope, DayItem, DaySummary, Priority, RoutineDay, RoutineKind } from '../api/routinesApi';
 import { RoutineImport } from '../components/RoutineImport';
 import { RoutineCategories } from '../components/RoutineCategories';
+import { DayNotes } from '../components/DayNotes';
 import type { CategoryEdit } from '../components/RoutineCategories';
 import { canMove, moveId, moveSection, orderByDrop, reorderWithin } from './routineOrder';
 import type { MoveTo } from './routineOrder';
@@ -412,6 +413,7 @@ export default function RoutinesPage() {
                 onCancel={() => setEditingCats(false)} />
             )}
 
+            <DayNotes key={day.date} date={day.date} />
           </>
         )}
       </section>

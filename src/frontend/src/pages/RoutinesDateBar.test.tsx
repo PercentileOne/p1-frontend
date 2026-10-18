@@ -19,9 +19,18 @@ const dayFor = (date: string): RoutineDay => ({
 const dayCalls: string[] = [];
 const favCalls: { url: string; method: string; body?: string }[] = [];
 let favList: { date: string; note: string }[] = [];
+const noteCalls: { url: string; method: string; body?: string }[] = [];
+let notes: Record<string, string> = {};
 beforeEach(() => {
-  dayCalls.length = 0; favCalls.length = 0; favList = [];
+  dayCalls.length = 0; favCalls.length = 0; favList = []; noteCalls.length = 0; notes = {};
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+    if (url.includes('/api/day-notes/')) {
+      const method = init?.method ?? 'GET';
+      const date = url.split('/').pop()!;
+      noteCalls.push({ url, method, body: init?.body as string | undefined });
+      if (method === 'PUT') { const text = JSON.parse(init!.body as string).text as string; notes[date] = text; return new Response(JSON.stringify({ date, text }), { status: 200 }); }
+      return new Response(JSON.stringify({ date, text: notes[date] ?? '' }), { status: 200 });
+    }
     if (url.includes('/api/favourite-days')) {
       const method = init?.method ?? 'GET';
       favCalls.push({ url, method, body: init?.body as string | undefined });
@@ -116,5 +125,32 @@ describe('Favourite days', () => {
     render(<RoutinesPage />);
     await screen.findByText('A few minutes of quiet');
     expect(screen.queryByLabelText('Favourite days')).toBeNull();
+  });
+});
+
+describe('Notes for this day', () => {
+  it('shows the saved note for the day', async () => {
+    notes[today] = 'Met Mukesh in London';
+    render(<RoutinesPage />);
+    const box = await screen.findByLabelText('NOTES FOR THIS DAY');
+    await waitFor(() => expect((box as HTMLTextAreaElement).value).toBe('Met Mukesh in London'));
+  });
+
+  it('saves typed words by itself under that day', async () => {
+    render(<RoutinesPage />);
+    const box = await screen.findByLabelText('NOTES FOR THIS DAY');
+    await waitFor(() => expect((box as HTMLTextAreaElement).disabled).toBe(false));
+    fireEvent.change(box, { target: { value: 'A great day. I must study more on marketing.' } });
+    await waitFor(() => expect(noteCalls.some(c => c.method === 'PUT' && c.url.endsWith(`/api/day-notes/${today}`))).toBe(true), { timeout: 3000 });
+    expect(JSON.parse(noteCalls.find(c => c.method === 'PUT')!.body!).text).toBe('A great day. I must study more on marketing.');
+    await screen.findByText('Saved');
+  });
+
+  it('each day has its own note', async () => {
+    notes['2025-03-14'] = 'Met a dear friend';
+    render(<RoutinesPage />);
+    await screen.findByLabelText('NOTES FOR THIS DAY');
+    fireEvent.change(screen.getByLabelText('Go to a date'), { target: { value: '2025-03-14' } });
+    await waitFor(() => expect((screen.getByLabelText('NOTES FOR THIS DAY') as HTMLTextAreaElement).value).toBe('Met a dear friend'));
   });
 });
